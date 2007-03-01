@@ -1,58 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbXCAMvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbXCAMzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752368AbXCAMvb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbXCAMvb
+	id S1752373AbXCAMzI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXCAMzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:51:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46648 "EHLO mx2.mail.elte.hu"
+	Thu, 1 Mar 2007 07:55:08 -0500
+Received: from il.qumranet.com ([82.166.9.18]:52823 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752367AbXCAMva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:51:30 -0500
-Date: Thu, 1 Mar 2007 13:43:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301124336.GA24464@elte.hu>
-References: <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301110022.GA28260@elte.hu> <20070301111629.GA27381@2ka.mipt.ru> <20070301114137.GB897@elte.hu> <20070301114734.GA3508@elte.hu> <20070301121020.GC20773@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301121020.GC20773@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752373AbXCAMzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:55:06 -0500
+Message-ID: <45E6CCA5.6050905@qumranet.com>
+Date: Thu, 01 Mar 2007 14:52:53 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: [GIT PULL] KVM updates for Linux 2.6.21-rc2
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+The following changes since commit 2ff7354fe888f46f6629b57e463b0a1eb956c02b:
+  Eric W. Biederman (1):
+        x86_64/i386 irq: Fix !CONFIG_SMP compilation
 
-> I separated epoll and kevent servers, since originally kevent server 
-> included additional kevent features, but then new ones were added and 
-> I moved slowly to the similar to epoll case.
+are found in the git repository at:
 
-i dont care whether they are separate or not - but you have not replied 
-to the request that there be a handle_web_request() function in /both/ 
-files, which is precisely the same function. I didnt ask you to merge 
-the two files - i only asked for the two web handling functions to be 
-one and the same function.
+  git://kvm.qumranet.com/kvm.git#linus
 
-	Ingo
+The changes fall into three broad categories:
+- initial kvm paravirtulization support
+- the first batch of the stable userspace interface changes
+- fixes, fixes, fixes
+
+The userspace interface changes, while nontrivial, are crucially 
+important as I'd like to freeze the non-paravirt userspace interface for 
+2.6.21.  Unfortunately there are a few more changes of that nature pending.
+
+Please exercise more than the usual care when pulling as I am very much 
+a git newbie.
+
+Ahmed S. Darwish (1):
+      KVM: Use ARRAY_SIZE macro instead of manual calculation.
+
+Andrew Morton (1):
+      KVM: Move kvmfs magic number to <linux/magic.h>
+
+Avi Kivity (13):
+      KVM: mmu: add missing dirty page tracking cases
+      KVM: Cosmetics
+      KVM: Add hypercall host support for svm
+      KVM: Wire up hypercall handlers to a central arch-independent location
+      KVM: svm: init cr0 with the wp bit set
+      KVM: More 0 -> NULL conversions
+      KVM: Add internal filesystem for generating inodes
+      KVM: Create an inode per virtual machine
+      KVM: Rename some kvm_dev_ioctl_*() functions to kvm_vm_ioctl_*()
+      KVM: Move kvm_vm_ioctl_create_vcpu() around
+      KVM: Per-vcpu inodes
+      KVM: Bump API version
+      KVM: Fix bogus failure in kvm.ko module initialization
+
+Ingo Molnar (2):
+      KVM: add MSR based hypercall API
+      KVM: Add host hypercall support for vmx
+
+Jeremy Katz (1):
+      KVM: Move virtualization deactivation from CPU_DEAD state to 
+CPU_DOWN_PREPARE
+
+Joerg Roedel (2):
+      KVM: vmx: hack set_cr0_no_modeswitch() to actually do modeswitch
+      KVM: SVM: intercept SMI to handle it at host level
+
+Markus Rechberger (1):
+      KVM: Use page_private()/set_page_private() apis
+
+Uri Lublin (4):
+      KVM: Add missing calls to mark_page_dirty()
+      KVM: Fix dirty page log bitmap size/access calculation
+      kvm: move do_remove_write_access() up
+      KVM: Remove write access permissions when dirty-page-logging is 
+enabled
+
+ drivers/kvm/kvm.h         |   13 +-
+ drivers/kvm/kvm_main.c    |  776 
++++++++++++++++++++++++++++++++--------------
+ drivers/kvm/kvm_svm.h     |    3 +-
+ drivers/kvm/mmu.c         |   36 +-
+ drivers/kvm/paging_tmpl.h |   18 +-
+ drivers/kvm/svm.c         |   42 ++-
+ drivers/kvm/vmx.c         |   33 ++-
+ include/linux/kvm.h       |   50 ++--
+ include/linux/kvm_para.h  |   73 +++++
+ include/linux/magic.h     |    1 +
+ 10 files changed, 748 insertions(+), 297 deletions(-)
+ create mode 100644 include/linux/kvm_para.h
+
+-- 
+error compiling committee.c: too many arguments to function
+
