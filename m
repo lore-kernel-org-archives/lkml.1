@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965126AbXCAObf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965116AbXCAOeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965126AbXCAObf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 09:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965116AbXCAObf
+	id S965116AbXCAOeK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 09:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965115AbXCAOeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 09:31:35 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:57104 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965106AbXCAObU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 09:31:20 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Date: Thu, 1 Mar 2007 15:31:12 +0100
-User-Agent: KMail/1.9.5
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Pavel Machek <pavel@ucw.cz>,
-       Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070301095402.GA14603@elte.hu> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu>
-In-Reply-To: <20070301141637.GA20006@elte.hu>
+	Thu, 1 Mar 2007 09:34:10 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45326 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965122AbXCAOeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 09:34:09 -0500
+Cc: akpm@linux-foundation.org, linux-dvb@linuxtv.org, domi.dumont@free.fr,
+       Jiri Slaby <jirislaby@gmail.com>, bunk@stusta.de,
+       linux-kernel@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>,
+       venkatesh.pallipadi@intel.com
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 01 Mar 2007 15:34:07 +0100
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+Message-ID: <20070301143407.29950@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: 2.6.21-rc1-git2 is incompilable
+To: torvalds@linux-foundation.org
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX19cOexVCmNcpWY9EJJt9mFcGzPtp7WLG9FU3p3q95
+ tViZo3wYhufp1R8HNiEkSpAC4= 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703011531.12818.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 March 2007 15:16, Ingo Molnar wrote:
-> * Eric Dumazet <dada1@cosmosbay.com> wrote:
-> > I can tell you that the problem (at least on my machine) comes from :
-> >
-> > gettimeofday(&tm, NULL);
-> >
-> > in evserver_epoll.c
->
-> yeah, that's another difference - especially if it's something like an
-> Athlon64 and gettimeofday falls back to pm-timer, that could explain the
-> performance difference. That's why i repeatedly asked Evgeniy to use the
-> /very same/ client function for both the epoll and the kevent test and
-> redo the measurements. The numbers are still highly suspect - and we are
-> already down from the prior claim of kevent being almost twice as fast
-> to a 25% difference.
+Hi folks,
+trying to compile kernel 2.6.21-rc1-git2 is impossible. The broken module where the compiler gives up is /arch/i386/kernel/io_apic.c.
 
-Also, ab is quite lame... Maybe we could use a epoll based 'stresser' 
+Regards
 
-On my machines (again ...), ab is the slow thing... not the 'server'
+Uwe
 
-Some small differences in behavior could have a big impact on ab (and you 
-could think there is a problem on the remote side)
+P. S.: Wouldn't it be a good idea to test at least error-free compilation before stuff like this is being published?
 
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: www.gmx.net/de/go/mailfooter/topmail-out
