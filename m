@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932830AbXCAAWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXCAA2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932830AbXCAAWi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 19:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbXCAAWi
+	id S932840AbXCAA2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 19:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbXCAA2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 19:22:38 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:64876 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932830AbXCAAWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 19:22:37 -0500
-Date: Wed, 28 Feb 2007 18:21:48 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: 2.6.20 SATA error
-In-reply-to: <Pine.LNX.4.64.0702281825200.11020@mtl.rackplans.net>
-To: Gerhard Mack <gmack@innerfire.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Charles Shannon Hendrix <shannon@widomaker.com>
-Message-id: <45E61C9C.4080401@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa./FMiSBkno9w078cQXK8Y1+afU50@ifi.uio.no>
- <fa.OO5sHloeJxxBmHwyt7Swo5eydUY@ifi.uio.no>
- <fa.G7ZWCF8iZMzCCHcWS6votbmzA3U@ifi.uio.no>
- <fa.GSOUb36DPlkk7gFXS5FtJVpQIq0@ifi.uio.no>
- <fa.Evhbh+iC4EjQWXsDSWHX9shqJXc@ifi.uio.no> <45E60E36.2070709@shaw.ca>
- <Pine.LNX.4.64.0702281825200.11020@mtl.rackplans.net>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 28 Feb 2007 19:28:34 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:59495 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932835AbXCAA2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 19:28:33 -0500
+Date: Wed, 28 Feb 2007 16:27:58 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org, ak@suse.de, tony.luck@intel.com,
+       William Cohen <wcohen@redhat.com>
+Subject: Re: debug registers and fork
+Message-ID: <20070301002758.GF23543@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070228212510.1E213180067@magilla.sf.frob.com> <Pine.LNX.4.44L0.0702281847330.24215-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0702281847330.24215-100000@netrider.rowland.org>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerhard Mack wrote:
->>> Sorry for the false alarm, 
->> There is one thing that seems odd, if you do have an nForce4 chipset, the
->> kernel should be running the SATA controller in ADMA mode in 2.6.20, but it
->> doesn't seem like it is from your dmesg output. Can you post the output of
->> "lspci -vvn"? Also what kind of motherboard is that?
->>
-> Sure thing.  It's an Asus m2npv-vm.
+Alan,
 
-Ah, that would be why, it's not one of the original nForce4 
-(CK804/MCP04) chipsets, it's the newer nForce 430 (MCP51) chipset which 
-doesn't support ADMA. NVidia said they'd be sending some patches to 
-allow NCQ support on MCP51 and MCP61 chipsets back in October, but I 
-haven't seen any, or information required to implement same..
+On Wed, Feb 28, 2007 at 07:01:17PM -0500, Alan Stern wrote:
+> On Wed, 28 Feb 2007, Roland McGrath wrote:
+> 
+> > It is true that debug registers are inherited by fork and clone.
+> > I am 99% sure that this was never specifically intended, but it
+> > has been this way for a long time (since 2.4 at least).  It's an
+> > implicit consequence of the do_fork implementation style, which
+> > does a blind copy of the whole task_struct and then explicitly
+> > reinitializes some individual fields.  I suppose this has some
+> > benefit or other, but it is very prone to new pieces of state
+> > getting implicitly copied without the person adding that new state
+> > ever consciously deciding what its inheritance semantics should be.
+> > 
+> > Alan Stern is working on a revamp of the x86 debug register
+> > support.  This is a fine opportunity to clean this area up and
+> > decide positively what the semantics ought to be.
+> 
+> Absolutely.  Right now I just have a placeholder function with a note
+> about checking for CLONE_PTRACE.  The cleanest solution, far and away,
+> would be to have the child process inherit no breakpoints and no debug
+> register values.
+> 
+I agree and that is how we have it on IA-64. With debugging, there is
+always another process involved and no matter what I think it needs to 
+be aware of the new child. I don't think autoamtic inheritance is good.
+It should always be trigger by the controlling process (e.g., debugger).
+There is enough support in ptrace to catch the fork/vfork/pthread_create
+and decide what to do.  This is how I have coded perfmon so that hardware
+performance counters are never automatically inherited.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
-
+-Stephane
