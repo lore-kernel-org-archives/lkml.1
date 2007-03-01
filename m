@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965562AbXCAUUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965563AbXCAUX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965562AbXCAUUL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 15:20:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965563AbXCAUUL
+	id S965563AbXCAUX3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 15:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030200AbXCAUX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 15:20:11 -0500
-Received: from densedata.com ([217.160.171.7]:2195 "EHLO densedata.com"
+	Thu, 1 Mar 2007 15:23:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:43964 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965562AbXCAUUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 15:20:09 -0500
-Message-ID: <45E738C3.7010807@densedata.com>
-Date: Thu, 01 Mar 2007 21:34:11 +0100
-From: Johann Borck <johann.borck@densedata.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	id S965558AbXCAUX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 15:23:28 -0500
+Message-ID: <45E73637.1000508@garzik.org>
+Date: Thu, 01 Mar 2007 15:23:19 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: David Lang <david.lang@digitalinsight.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-References: <20070222074044.GA4158@elte.hu>  <20070222113148.GA3781@2ka.mipt.ru>  <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org>  <20070226172812.GC22454@2ka.mipt.ru>  <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org>  <20070226195416.GA11188 <20070301081808.GD7217@2ka.mipt.ru> <45E7287D.7000104@densedata.com> <Pine.LNX.4.63.0703011136570.23701@qynat.qvtvafvgr.pbz>
-In-Reply-To: <Pine.LNX.4.63.0703011136570.23701@qynat.qvtvafvgr.pbz>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       suparna@in.ibm.com, cmm@us.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com>
+In-Reply-To: <20070301183445.GA7911@amitarora.in.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Lang wrote:
->
-> On Thu, 1 Mar 2007, Johann Borck wrote:
->
->> I reported this a while ago and suggested to have the number of 
->> pending accepts reported with the event to save that last syscall.
->> I  created an ab replacement based on kevent, and at least with my 
->> machines, which are comparable to each other, the load on client 
->> dropped from 100% to 2% or something. ab just doesn't give meaningful 
->> results  (if the client is not way more powerful). With that new 
->> client I get very similar results for epoll and kevent, from 1000 
->> through to 26000 concurrent requests, the results have been posted on 
->> kevent-homepage in october, I just checked it with new version, but 
->> there's no significant difference.
->>
->> this is the benchmark with kevent-based client:
->> http://tservice.net.ru/~s0mbre/blog/2006/10/11#2006_10_11
->> btw, each result is average over 1,000,000 requests
->>
->> and just for comparison, this is on the same machines using ab:
->> http://tservice.net.ru/~s0mbre/blog/2006/10/08#2006_10_08
->
-> is this client avaialble? and what patches need to be added to the 
-> kernel to use it?
->
-It's based on an older version of kevent, so I'll have to adapt it a bit 
-for use with recent patch, no other than kevent is necessary. I'll post 
-a link when it's cleaned up, if you want.
+Amit K. Arora wrote:
+> This is to give a heads up on few patches that we will be soon coming up
+> with. These patches implement a new system call sys_fallocate() and a
+> new inode operation "fallocate", for persistent preallocation. The new
+> system call, as Andrew suggested, will look like:
+> 
+>   asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len);
+> 
+> As we are developing and testing the required patches, we decided to
+> post a preliminary patch and get inputs from the community to give it
+> a right direction and shape. First, a little description on the feature.
+>  
+> Persistent preallocation is a file system feature using which an
+> application (say, relational database servers) can explicitly
+> preallocate blocks to a particular file. This feature can be used to
+> reserve space for a file to get mainly the following benefits:
+> 1> contiguity - less defragmentation and thus faster access speed, and
+> 2> guarantee for a minimum space availibility (depending on how many
+> blocks were preallocated) for the file, even if the filesystem becomes
+> full.
+> 
+> XFS already has an implementation for this, using an ioctl interface. And,
+> ext4 is now coming up with this feature. In coming time we may see a few
+> more file systems implementing this. Thus, it makes sense to have a more
+> standard interface for this, like this new system call.
+> 
+> Here is the initial and incomplete version of the patch, which can be
+> used for the discussion, till we come up with a set of more complete
+> patches.
+> 
+> ---
+>  arch/i386/kernel/syscall_table.S |    1 +
+>  fs/ext4/file.c                   |    1 +
+>  fs/open.c                        |   18 ++++++++++++++++++
+>  include/asm-i386/unistd.h        |    3 ++-
+>  include/linux/fs.h               |    1 +
+>  include/linux/syscalls.h         |    1 +
+>  6 files changed, 24 insertions(+), 1 deletion(-)
 
-Johann
-> David Lang
->
+I certainly agree that we want something like this.
+
+posix_fallocate() is the glibc interface we want to be compatible with 
+(which your definition is, AFAICS).
+
+	Jeff
+
+
 
