@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965297AbXCAPjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965295AbXCAPlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965297AbXCAPjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965299AbXCAPjU
+	id S965295AbXCAPlg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965299AbXCAPlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:39:20 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:49517 "EHLO 2ka.mipt.ru"
+	Thu, 1 Mar 2007 10:41:36 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:58242 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965297AbXCAPjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:39:19 -0500
-Date: Thu, 1 Mar 2007 18:36:55 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Pavel Machek <pavel@ucw.cz>,
+	id S965295AbXCAPlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 10:41:35 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Date: Thu, 1 Mar 2007 16:41:27 +0100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
        Theodore Tso <tytso@mit.edu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
@@ -24,106 +26,52 @@ Cc: Eric Dumazet <dada1@cosmosbay.com>, Pavel Machek <pavel@ucw.cz>,
        Davide Libenzi <davidel@xmailserver.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301153655.GB8217@2ka.mipt.ru>
-References: <20070301095402.GA14603@elte.hu> <20070301131118.GA30228@elte.hu> <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru> <20070301150942.GA26025@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070301152323.GA8217@2ka.mipt.ru> <200703011632.37756.dada1@cosmosbay.com>
+In-Reply-To: <200703011632.37756.dada1@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070301150942.GA26025@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 18:37:25 +0300 (MSK)
+Message-Id: <200703011641.28064.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 04:09:42PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> 
-> > > > I can tell you that the problem (at least on my machine) comes from :
-> > > > 
-> > > > gettimeofday(&tm, NULL);
-> > > > 
-> > > > in evserver_epoll.c
-> > > 
-> > > yeah, that's another difference - especially if it's something like 
-> > > an Athlon64 and gettimeofday falls back to pm-timer, that could 
-> > > explain the performance difference. That's why i repeatedly asked 
-> > > Evgeniy to use the /very same/ client function for both the epoll 
-> > > and the kevent test and redo the measurements. The numbers are still 
-> > > highly suspect - and we are already down from the prior claim of 
-> > > kevent being almost twice as fast to a 25% difference.
-> > 
-> > There is no gettimeofday() in the running code anymore, and it was 
-> > placed not in common server processing code btw.
-> > 
-> > Ingo, do you really think I will send mails with faked benchmarks? :))
-> 
-> no, i'd not be in this discussion anymore if i thought that. But i do 
-> think that your benchmark results are extremely sloppy, that make your 
-> conclusions on them essentially useless.
->
-> you were hurling quite colorful and strong assertions into this 
-> discussion, backed up by these numbers, so you should expect at least 
-> some minimal amount of scrutiny of those numbers.
-
-This discussion was about event driven vs. thread driven IO models, and
-threadlet only behaves like event driven because in my tests there was
-exactly one threadlet rescheduling per severa thousands of clients.
-
-Kevent is just a logical interpolation of performance of event driven
-model.
-
-My assumptions were based not on kevent performance, but on the fact,
-that event delivery is much faster and simpler than thread handling.
-
-Ugh, I'm starting that stupid talk again - let's just jump to the end -
-I agree that in real-life high-performance systems both models must be
-used.
-
-Peace? :)
-
-> > > [...] The numbers are still highly suspect - and we are already down 
-> > > from the prior claim of kevent being almost twice as fast to a 25% 
-> > > difference.
+On Thursday 01 March 2007 16:32, Eric Dumazet wrote:
+> On Thursday 01 March 2007 16:23, Evgeniy Polyakov wrote:
+> > They are there, since ab runs only 50k requests.
+> > If I change it to something noticebly more than 50/80k, ab crashes:
+> > # ab -c8000 -t 600 -n800000000 http://192.168.0.48/
+> > This is ApacheBench, Version 2.0.40-dev <$Revision: 1.146 $> apache-2.0
+> > Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+> > Copyright 2006 The Apache Software Foundation, http://www.apache.org/
 > >
-> > Btw, there were never almost twice perfromance increase - epoll in my 
-> > tests always showed 4-5 thousands requests per second, kevent - up to 
-> > 7 thausands.
-> 
-> i'm referring to your claim in this mail of yours from 4 days ago for 
-> example:
-> 
->   http://lkml.org/lkml/2007/2/25/116
-> 
->  "But note, that on my athlon64 3500 test machine kevent is about 7900
->   requests per second compared to 4000+ epoll, so expect a challenge."
-> 
-> no matter how i look at it, but 7900 is 1.9 times 4000 - which is 
-> "almost twice".
+> > Benchmarking 192.168.0.48 (be patient)
+> > Segmentation fault
+> >
+> > Are there any other tool suitable for such loads?
+> > I only tested httperf (which is worse, since it uses poll/select) and
+> > 'ab'.
+> >
+> > Btw, host machine runs 100% too, so it is possible that client side is
+> > broken (too).
+>
+> I have similar problems here, ab test just doesnt complete...
+>
+> I am still investigating with strace and tcpdump.
 
-After your changes epoll increased to 5k.
-I can easily reproduce 6300/4300 split, but can not get more than 7k for
-kevent (with oprofile/idle=poll at least).
+OK... I found it.
 
-I've completed 800k run:
-kevent 4800
-epoll 4450
+I had to loop on accept() :
 
-with tons ofoverflows in 'ab':
+        for (i=0; i<num; ++i) {
+                if (event[i].data.fd == main_server_s) {
+                        do {
+                                err = evtest_callback_main(event[i].data.fd);
+                                } while (err != -1);
+                        }
+                else
+                        err = evtest_callback_client(event[i].data.fd);
+        }
 
-Write errors:           0
-Total transferred:      -1197367296 bytes
-HTML transferred:       -1478167296 bytes
-Requests per second:    4440.67 [#/sec] (mean)
-Time per request:       1801.529 [ms] (mean)
-Time per request:       0.225 [ms] (mean, across all concurrent
-requests)
-Transfer rate:          -6490.62 [Kbytes/sec] received
-
-Any other bench?
-
-> 	Ingo
-
--- 
-	Evgeniy Polyakov
+Or else we can miss an event forever...
