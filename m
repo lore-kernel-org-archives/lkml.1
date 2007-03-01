@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965310AbXCAQGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965175AbXCAQJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965310AbXCAQGO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 11:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965304AbXCAQGO
+	id S965175AbXCAQJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 11:09:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965315AbXCAQJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 11:06:14 -0500
-Received: from smtp103.biz.mail.re2.yahoo.com ([68.142.229.217]:34500 "HELO
-	smtp103.biz.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965310AbXCAQGN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 11:06:13 -0500
-X-YMail-OSG: K7ZycjQVM1mTOar2ZDJmc3GMrccYpksyyTZNrb1JjR7Q.JJFY3EXREp3nVtSjO4VOCnCst8tRcBQBDPcxHKrhABzaah_HQqKyOvc.EIGXc6zMptJgzhB0TCZUbNgdGWFwKfcYqzlsCiyiiw-
-In-Reply-To: <45E6F78A.7070603@freescale.com>
-References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com> <45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com> <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com> <E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org> <45E5D627.6030707@zytor.com> <45E5D84A.5000502@freescale.com> <278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org> <45E5DB49.8010205@freescale.com> <A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com> <a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org> <BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com> <45E6F78A.7070603@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D077F753-DA34-47AD-8F8F-76643A0DD692@embeddedalley.com>
-Cc: Torben.Mathiasen@hp.com, Segher Boessenkool <segher@kernel.crashing.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Content-Transfer-Encoding: 7bit
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-Date: Thu, 1 Mar 2007 11:06:12 -0500
-To: Timur Tabi <timur@freescale.com>
-X-Mailer: Apple Mail (2.752.2)
+	Thu, 1 Mar 2007 11:09:56 -0500
+Received: from smtp01.cdmon.com ([86.109.99.230]:53852 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965175AbXCAQJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 11:09:56 -0500
+X-Greylist: delayed 1920 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 11:09:56 EST
+Date: Thu, 1 Mar 2007 16:39:18 +0100
+From: DervishD <udev@dervishd.net>
+To: Udev/Hotplug <linux-hotplug-devel@lists.sourceforge.net>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: udev rule makes the system hang: revisited
+Message-ID: <20070301153918.GA2420@DervishD>
+Mail-Followup-To: Udev/Hotplug <linux-hotplug-devel@lists.sourceforge.net>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+    Hi all :))
 
+    I'm CC'ing this message to LKML because I don't know if this is some
+weird (and known) interaction between modules.
 
-Since I'm probably the only one that
-really uses the driver for custom
-uses and cares......
+    I'm using vanilla 2.6.19.5.
 
-On Mar 1, 2007, at 10:55 AM, Timur Tabi wrote:
+    I was having a problem using this rule:
 
-> Ok guys, I need a consensus here.  Are we going to allocate a  
-> second block of 4 minor numbers for the QE/CPM UART or not?
+ACTION=="add", ENV{MODALIAS}=="?*", RUN+="/sbin/modprobe $env{MODALIAS}"
 
-not.
+    and I finally found the module that was hanging the system:
+something with alias "serio:alotofnumbersanddigits".
 
-> My driver already has a macro that limits the number of UARTS to 4,
+    I've replaced the rule above by this one:
 
-perfect.
+ACTION=="add", ENV{MODALIAS}=="?*", ENV{MODALIAS}!="serio*",
+    RUN+="/sbin/modprobe $env{MODALIAS}"
 
-> I'll add a second TTY struct...
+    But the question is: why?. And: who is causing the request?. As far
+as I know, the only serio things I have are my keyboard and my PS/2
+mouse connector (which *doesn't* have a mouse connected), and of course
+my keyboard support is not a module (although psaux is).
 
-Don't worry about it for now.  We'll just keep this in
-mind when we make a major change someday in
-the future.  We may have a better solution then.
+    Anyone has any idea about what the problem may be? The aliases for
+the modules when the event is handled by udev are those:
 
-Thanks.
+    serio:ty06pr00id00ex00
+    serio:ty01pr00id00ex00
 
-	-- Dan
+    If I filter out THOSE TWO aliases and only those, the system doesn't
+hang. Otherwise, the system appears dead, not even sysrq works (I can't
+check ping because right now there aren't other machines in the network,
+so probably the machine is not *that* dead, and only the keyboard has
+dead :??).
 
+    Thanks a lot in advance. If anyone needs more information or tests,
+just ask.
+
+    Kay, I followed your advice, booted without udev and make some tests
+until I found the culprit. Hard, but fruitful ;)) Thanks :)
+
+    Raúl Núñez de Arenas Coronado
+
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
