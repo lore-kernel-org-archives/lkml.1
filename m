@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965044AbXCAN2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965049AbXCANb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965044AbXCAN2L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 08:28:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965049AbXCAN2L
+	id S965049AbXCANb0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965050AbXCANb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 08:28:11 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:41601 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965044AbXCAN2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 08:28:09 -0500
-Date: Thu, 1 Mar 2007 16:26:27 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301132626.GA30177@2ka.mipt.ru>
-References: <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301123423.GA10738@elte.hu>
+	Thu, 1 Mar 2007 08:31:26 -0500
+Received: from p02c11o145.mxlogic.net ([208.65.145.68]:41538 "EHLO
+	p02c11o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965049AbXCANbZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 08:31:25 -0500
+Subject: wait_for_completion_timeout problem ???
+From: Eli Cohen <eli@mellanox.co.il>
+Reply-To: eli@mellanox.co.il
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: rdreier@cisco.com, "Michael S. Tsirkin" <mst@mellanox.co.il>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Mellanox Technologies
+Date: Thu, 01 Mar 2007 15:32:12 +0200
+Message-Id: <1172755932.5175.37.camel@mtls03>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070301123423.GA10738@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 16:26:42 +0300 (MSK)
+X-Mailer: Evolution 2.8.1 
+X-Spam: [F=0.0100000000; S=0.010(2007010901)]
+X-MAIL-FROM: <eli@mellanox.co.il>
+X-SOURCE-IP: [194.90.237.34]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 01:34:23PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> 
-> > Document Length:        3521 bytes
-> 
-> > Concurrency Level:      8000
-> > Time taken for tests:   16.686737 seconds
-> > Complete requests:      80000
-> > Failed requests:        0
-> > Write errors:           0
-> > Total transferred:      309760000 bytes
-> > HTML transferred:       281680000 bytes
-> > Requests per second:    4794.23 [#/sec] (mean)
-> 
-> > Concurrency Level:      8000
-> > Time taken for tests:   12.366775 seconds
-> > Complete requests:      80000
-> > Failed requests:        0
-> > Write errors:           0
-> > Total transferred:      317047104 bytes
-> > HTML transferred:       288306522 bytes
-> > Requests per second:    6468.95 [#/sec] (mean)
-> 
-> i'm wondering - how can the 'Total transferred' and 'HTML transferred' 
-> numbers be different?
->
-> Since document length is 3521, and the number of requests is 80000, the 
-> correct 'HTML transferred' is 281680000 - which is the epoll result. The 
-> kevent result shows more bytes transferred, which suggests that the 
-> kevent loop is probably incorrect somewhere.
-> 
-> this might be some benign thing, but the /first/ thing you /have to/ do 
-> before claiming that 'kevent is 25% faster than epoll' is to make sure 
-> the results are totally reliable.
+Hi,
+	
+I have a problem with using this function. I am referring to
+drivers/infiniband/hw/mthca/mthca_cmd.c line 394. For convenience I
+quote from this code:
 
-Kevent sent additional 525 pages ((311792800-309760000)/3872) - that is why 
-number for kevent is higher - it uses edge-triggered handler (which you 
-asked to remove from epoll), which can produce false-positives, for 
-absolute result in that case ret_data must be checked where poll flags 
-were stored (before). 'ab' does not count additional data as new requests 
-and does not count them in 'requests per second'.
-Even if it could do so, additional 500 requests can not provide 35%
-higher rate.
+	init_completion(&context->done);
 
-For example, lighttpd results are the same for kevent and epoll and
-'Total transferred' and 'HTML transferred' numbers change between runs both 
-for epoll and kevent.
+	err = mthca_cmd_post(dev, in_param,
+			     out_param ? *out_param : 0,
+			     in_modifier, op_modifier,
+			     op, context->token, 1);
+	if (err)
+		goto out;
 
-> 	Ingo
+	if (!wait_for_completion_timeout(&context->done, timeout)) {
+		err = -EBUSY;
+		goto out;
+	}
 
--- 
-	Evgeniy Polyakov
+timeout is 10 * HZ. Sometimes this function returns 0 which signifies
+timeout. However I can see that the interrupt handler called
+complete(&context->done)
+around 200 usec after calling wait_for_completion_timout(). When the
+function returns I can see that context->done.done equals 1 which
+confirms that complete was indeed called. Looking at the implementation
+of wait_for_completion_timout() it appears that complete() did not
+succeed to wake the process sleeping. But the timer callback function in
+schedule_timeout() did manage to wake up the sleeping process. Do you
+have any idea if there are any known circumstances that can lead to this
+behaviour. Any idea how to debug this?
+
+Thanks
+Eli
