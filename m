@@ -1,63 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964791AbXCAKBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964802AbXCAKCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964791AbXCAKBo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 05:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964796AbXCAKBo
+	id S964802AbXCAKCc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 05:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964804AbXCAKCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 05:01:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54081 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964791AbXCAKBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 05:01:43 -0500
-Date: Thu, 1 Mar 2007 10:54:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301095402.GA14603@elte.hu>
-References: <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301094723.GJ7217@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 1 Mar 2007 05:02:32 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:56849 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964802AbXCAKCb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 05:02:31 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: akpm@linux-foundation.org
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Message-Id: <20070301100229.29753.86342.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/12] Group pages of related mobility together to reduce external fragmentation v28
+Date: Thu,  1 Mar 2007 10:02:29 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here is the latest revision of the anti-fragmentation patches. Of
+particular note in this version is special treatment of high-order atomic
+allocations. Care is taken to group them together and avoid grouping pages
+of other types near them. Artifical tests imply that it works. I'm trying to
+get the hardware together that would allow setting up of a "real" test. If
+anyone already has a setup and test that can trigger the atomic-allocation
+problem, I'd appreciate a test of these patches and a report.  The second
+major change is that these patches will apply cleanly with patches that
+implement anti-fragmentation through zones.
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+kernbench shows effectively no performance difference varying between -0.2%
+and +2% on a variety of test machines. Success rates for huge page allocation
+are dramatically increased. For example, on a ppc64 machine, the vanilla
+kernel was only able to allocate 1% of memory as a hugepage and this was
+due to a single hugepage reserved as min_free_kbytes. With these patches
+applied, 17% was allocatable as superpages.  With reclaim-related fixes from
+Andy Whitcroft, it was 40% and further reclaim-related improvements should
+increase this further.
 
-> I posted kevent/epoll benchmarks and related design issues too many 
-> times both with handmade applications (which might be broken as hell) 
-> and popular open-source servers to repeat them again.
+Changelog Since V28
+o Group high-order atomic allocations together
+o It is no longer required to set min_free_kbytes to 10% of memory. A value
+  of 16384 in most cases will be sufficient
+o Now applied with zone-based anti-fragmentation
+o Fix incorrect VM_BUG_ON within buffered_rmqueue()
+o Reorder the stack so later patches do not back out work from earlier patches
+o Fix bug were journal pages were being treated as movable
+o Bias placement of non-movable pages to lower PFNs
+o More agressive clustering of reclaimable pages in reactions to workloads
+  like updatedb that flood the size of inode caches
 
-numbers are crutial here - and given the epoll bugs in the evserver code 
-that we found, do you have updated evserver benchmark results that 
-compare epoll to kevent? I'm wondering why epoll has half the speed of 
-kevent in those measurements - i suspect some possible benchmarking bug. 
-The queueing model of epoll and kevent is roughly comparable, both do 
-only a constant number of steps to serve one particular request, 
-regardless of how many pending connections/requests there are. What is 
-the CPU utilization of the server system during an epoll test, and what 
-is the CPU utilization during a kevent test? 100% utilized in both 
-cases?
+Changelog Since V27
 
-	Ingo
+o Renamed anti-fragmentation to Page Clustering. Anti-fragmentation was giving
+  the mistaken impression that it was the 100% solution for high order
+  allocations. Instead, it greatly increases the chances high-order
+  allocations will succeed and lays the foundation for defragmentation and
+  memory hot-remove to work properly
+o Redefine page groupings based on ability to migrate or reclaim instead of
+  basing on reclaimability alone
+o Get rid of spurious inits
+o Per-cpu lists are no longer split up per-type. Instead the per-cpu list is
+  searched for a page of the appropriate type
+o Added more explanation commentary
+o Fix up bug in pageblock code where bitmap was used before being initalised
+
+Changelog Since V26
+o Fix double init of lists in setup_pageset
+
+Changelog Since V25
+o Fix loop order of for_each_rclmtype_order so that order of loop matches args
+o gfpflags_to_rclmtype uses gfp_t instead of unsigned long
+o Rename get_pageblock_type() to get_page_rclmtype()
+o Fix alignment problem in move_freepages()
+o Add mechanism for assigning flags to blocks of pages instead of page->flags
+o On fallback, do not examine the preferred list of free pages a second time
+
+The purpose of these patches is to reduce external fragmentation by grouping
+pages of related types together. When pages are migrated (or reclaimed under
+memory pressure), large contiguous pages will be freed. 
+
+This patch works by categorising allocations by their ability to migrate;
+
+Movable - The pages may be moved with the page migration mechanism. These are
+	generally userspace pages. 
+
+Reclaimable - These are allocations for some kernel caches that are
+	reclaimable or allocations that are known to be very short-lived.
+
+Unmovable - These are pages that are allocated by the kernel that
+	are not trivially reclaimed. For example, the memory allocated for a
+	loaded module would be in this category. By default, allocations are
+	considered to be of this type
+
+HighAtomic - These are high-order allocations belonging to callers that
+	cannot sleep or perform any IO. In practice, this is restricted to
+	jumbo frame allocation for network receive. It is assumed that the
+	allocations are short-lived
+
+Instead of having one MAX_ORDER-sized array of free lists in struct free_area,
+there is one for each type of reclaimability. Once a 2^MAX_ORDER block of
+pages is split for a type of allocation, it is added to the free-lists for
+that type, in effect reserving it. Hence, over time, pages of the different
+types can be clustered together.
+
+When the preferred freelists are expired, the largest possible block is taken
+from an alternative list. Buddies that are split from that large block are
+placed on the preferred allocation-type freelists to mitigate fragmentation.
+
+This implementation gives best-effort for low fragmentation in all zones.
+Ideally, min_free_kbytes needs to be set to a value equal to
+4 * (1 << (MAX_ORDER-1)) pages in most cases. This would be 16384 on x86
+and x86_64 for example.
+
+Our tests show that about 60-70% of physical memory can be allocated on
+a desktop after a few days uptime. In benchmarks and stress tests, we are
+finding that 80% of memory is available as contiguous blocks at the end of
+the test. To compare, a standard kernel was getting < 1% of memory as large
+pages on a desktop and about 8-12% of memory as large pages at the end of
+stress tests.
+
+Following this email are 12 patches that implement thie page grouping
+feature. The first patch introduces a mechanism for storing flags related
+to a whole block of pages. Then allocations are split between movable and
+all other allocations.  Following that are patches to deal with per-cpu
+pages and make the mechanism configurable. The next patch moves free pages
+between lists when partially allocated blocks are used for pages of another
+migrate type. The second last patch groups reclaimable kernel allocations
+such as inode caches together. The final patch related to groupings keeps
+high-order atomic allocations.
+
+The last two patches are more concerned with control of fragmentation. The
+second last patch biases placement of non-movable allocations towards the
+start of memory. This is with a view of supporting memory hot-remove of
+DIMMs with higher PFNs in the future. The biasing could be enforced a lot
+heavier but it would cost. The last patch agressively clusters reclaimable
+pages like inode caches together.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
