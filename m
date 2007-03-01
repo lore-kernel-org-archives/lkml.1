@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965280AbXCAPcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXCAPih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965280AbXCAPcq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965285AbXCAPcq
+	id S965287AbXCAPih (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965289AbXCAPih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:32:46 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:58118 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965280AbXCAPcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:32:45 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Date: Thu, 1 Mar 2007 16:32:37 +0100
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070301144717.GA24079@elte.hu> <20070301152323.GA8217@2ka.mipt.ru>
-In-Reply-To: <20070301152323.GA8217@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 1 Mar 2007 10:38:37 -0500
+Received: from p02c11o145.mxlogic.net ([208.65.145.68]:34039 "EHLO
+	p02c11o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965287AbXCAPig (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 10:38:36 -0500
+Subject: Re: wait_for_completion_timeout problem ???
+From: Eli Cohen <eli@mellanox.co.il>
+Reply-To: eli@mellanox.co.il
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <b647ffbd0703010714m5f8546ebw95ec607b38ba7e1@mail.gmail.com>
+References: <1172755932.5175.37.camel@mtls03>
+	 <b647ffbd0703010628u253a62cfi56cec22a1ee79d5f@mail.gmail.com>
+	 <1172760574.5175.42.camel@mtls03>
+	 <b647ffbd0703010714m5f8546ebw95ec607b38ba7e1@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703011632.37756.dada1@cosmosbay.com>
+Organization: Mellanox Technologies
+Date: Thu, 01 Mar 2007 17:39:23 +0200
+Message-Id: <1172763563.25580.5.camel@mtls03>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+X-Spam: [F=0.0100000000; S=0.010(2007010901)]
+X-MAIL-FROM: <eli@mellanox.co.il>
+X-SOURCE-IP: [194.90.237.34]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 March 2007 16:23, Evgeniy Polyakov wrote:
-> They are there, since ab runs only 50k requests.
-> If I change it to something noticebly more than 50/80k, ab crashes:
-> # ab -c8000 -t 600 -n800000000 http://192.168.0.48/
-> This is ApacheBench, Version 2.0.40-dev <$Revision: 1.146 $> apache-2.0
-> Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-> Copyright 2006 The Apache Software Foundation, http://www.apache.org/
->
-> Benchmarking 192.168.0.48 (be patient)
-> Segmentation fault
->
-> Are there any other tool suitable for such loads?
-> I only tested httperf (which is worse, since it uses poll/select) and
-> 'ab'.
->
-> Btw, host machine runs 100% too, so it is possible that client side is
-> broken (too).
+On Thu, 2007-03-01 at 16:14 +0100, Dmitry Adamushko wrote:
 
-I have similar problems here, ab test just doesnt complete...
+> Mea culpa. Don't know why I took it as 10 ms.. Yep, in case of seconds
+> it rather becomes a mere theoretical possibility.
+> 
+> Are you sure there are no other "waiters" being blocked on the same
+> "completion" at the same time? complete_all()?
+> 
+> Anyway, do "cat /proc/your_task_pid/status" and look at the "State: "
+> field. It should be "R" in case wake_up_*() was called for this task.
+> 
 
-I am still investigating with strace and tcpdump.
-
-In the meantime you could just rewrite it (based on epoll please :) ), since 
-it should be quite easy to do this (reverse of evserver_epoll)
-
+Thanks for your good advices. Right now it seems that increasing the
+timeout to 60 sec did the trick :-)
+The test I was running has many threads and maybe there is starvation of
+tasks. The system is also not too responsive to say the least.
