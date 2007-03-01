@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965405AbXCARAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965382AbXCARDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965405AbXCARAl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 12:00:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965402AbXCARAl
+	id S965382AbXCARDg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 12:03:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965395AbXCARDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 12:00:41 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35909 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965396AbXCARAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 12:00:39 -0500
-Message-Id: <200703011700.l21H0T22003070@death.nxdomain.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jaroslav Kysela <perex@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, netdev@vger.kernel.org,
-       Andy Gospodarek <andy@greyhouse.net>
-Subject: Re: [PATCH] bonding: replace system timer with work queue 
-In-reply-to: <20070228233512.d2d275a2.akpm@linux-foundation.org> 
-References: <Pine.LNX.4.61.0702281000050.9439@tm8103-a.perex-int.cz> <20070228233512.d2d275a2.akpm@linux-foundation.org>
-Comments: In-reply-to Andrew Morton <akpm@linux-foundation.org>
-   message dated "Wed, 28 Feb 2007 23:35:12 -0800."
-X-Mailer: MH-E 7.83; nmh 1.1-RC4; GNU Emacs 21.4.1
-Date: Thu, 01 Mar 2007 09:00:29 -0800
-From: Jay Vosburgh <fubar@us.ibm.com>
+	Thu, 1 Mar 2007 12:03:36 -0500
+Received: from averell.tiscali.it ([213.205.33.55]:53934 "EHLO
+	averell.tiscali.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965382AbXCARDf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 12:03:35 -0500
+X-Greylist: delayed 359 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 12:03:34 EST
+Subject: Re: SMP performance degradation with sysbench
+From: Lorenzo Allegrucci <l.allegrucci@gmail.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: "\"J.A." =?ISO-8859-1?Q?Magall=F3n=22?= <jamagallon@ono.com>,
+       Hiro Yoshioka <hyoshiok@miraclelinux.com>, davej@redhat.com,
+       harlan@artselect.com, nickpiggin@yahoo.com.au,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, suparna@in.ibm.com,
+       jens.axboe@oracle.com
+In-Reply-To: <1172603127.5482.35.camel@odyssey.lan>
+References: <20070226223645.GA24174@redhat.com>
+	 <98df96d30702261632u7479c9b2sce93f80f68bbc8d0@mail.gmail.com>
+	 <45E37EA3.3060101@redhat.com>
+	 <20070227.130305.424251739.hyoshiok@miraclelinux.com>
+	 <45E3B421.603@redhat.com> <20070227091409.6f3d12f9@werewolf-wl>
+	 <45E439E4.5030703@redhat.com>  <1172603127.5482.35.camel@odyssey.lan>
+Content-Type: text/plain
+Organization: -ENOENT
+Date: Thu, 01 Mar 2007 17:57:05 +0100
+Message-Id: <1172768226.5419.9.camel@odyssey.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Tue, 2007-02-27 at 20:05 +0100, Lorenzo Allegrucci wrote:
+> On Tue, 2007-02-27 at 09:02 -0500, Rik van Riel wrote:
+> > That still doesn't fix the potential Linux problem that this
+> > benchmark identified.
+> > 
+> > To clarify: I don't care as much about MySQL performance as
+> > I care about identifying and fixing this potential bug in
+> > Linux.
+> 
+> Here http://people.freebsd.org/~kris/scaling/mysql.html Kris Kennaway
+> talks about a patch for FreeBSD 7 which addresses poor scalability
+> of file descriptor locking and that it's responsible for almost all
+> of the performance and scaling improvements.
 
->On Wed, 28 Feb 2007 10:12:01 +0100 (CET) Jaroslav Kysela <perex@suse.cz> wrote:
->> ==================
->> bonding: replace system timer with work queue
->> 
->> This patch replaces system timer with work queue in monitor functions.
->> The reason for this change is that bonding handlers calls various
->> sleeping functions from the timer handler which is not allowed.
->
->Which sleeping functions?  I'd have expected the kernel to spew runtime
->warnings when this happens, but I don't recall any such reports.
+How does Linux scale with many threads contending for file descriptor
+lock?
+Has anyone tried to run the test with oprofile?
 
-	This affects one specific mode (balance-alb) in one specific
-case (moving MAC addresses around, which happens during failover or
-initialization), and a full fix is more complicated than just a switch
-to work queues, although that is part of the full fix.  There are three
-things going on: calls to sleeping functions with locks held, the same
-calls from the timer context, and rtnl hold issues.
 
-	The actual functions affected are various things called by
-notifier NETDEV_CHANGEADDR callbacks started by dev_set_mac_address() as
-well as some of the driver level set_mac_address functions that may
-sleep.
-
-	Andy Gospodarek <andy@greyhouse.net> and I have been working
-jointly on a two phased fix for these problems: he's working up the
-short term fix, which includes the changeover to workqueues, and I've
-been working on the long term fix, which involves refactoring the
-bonding link monitoring and failover system.  Jaroslav's patch looks to
-be a subset of the patch Andy is working on.
-
-	-J
-
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
