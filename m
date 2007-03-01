@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965114AbXCAOcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965126AbXCAObf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965114AbXCAOcZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 09:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965133AbXCAOcZ
+	id S965126AbXCAObf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 09:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965116AbXCAObf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 09:32:25 -0500
-Received: from mail.gmx.net ([213.165.64.20]:42603 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965114AbXCAOcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 09:32:23 -0500
-Cc: akpm@linux-foundation.org, linux-dvb@linuxtv.org, domi.dumont@free.fr,
-       Jiri Slaby <jirislaby@gmail.com>, bunk@stusta.de,
-       linux-kernel@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>,
-       venkatesh.pallipadi@intel.com
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 01 Mar 2007 15:32:22 +0100
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-Message-ID: <20070301143222.263070@gmx.net>
+	Thu, 1 Mar 2007 09:31:35 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:57104 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965106AbXCAObU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 09:31:20 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Date: Thu, 1 Mar 2007 15:31:12 +0100
+User-Agent: KMail/1.9.5
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20070301095402.GA14603@elte.hu> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu>
+In-Reply-To: <20070301141637.GA20006@elte.hu>
 MIME-Version: 1.0
-Subject: patch 3 / 3: fix floppy mount bug in kernel 2.6.21-rc1
-To: torvalds@linux-foundation.org
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/JdYkwzfzJ8cLYeE2CZOgcmUty/XpWQdGdEL9jzi
- npYaz3iOJywIpg9lTIlACIF1w= 
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703011531.12818.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
-this patch fixes the floppy mount bug (i. e. regression) in kernel 2.6.21-rc1. It was inspired by Stephane Eranian. It was tested on an Intel P4 1800 MHz
-(Intel ICH4 chipset) and on an AMD Athlon XP 1800 MHz (Silicon Integrated Systems chipset 740, 5513).
-My deep thanks and respect go to:
-Stephane Eranian, Linus Torvalds, Jiri Slaby. You are truthfully real men and reliable, accurate, fine chaps. It feels great to have you in this world-wide community!
-Would you still call the whole i386 architecture "a small number of machines", Mister Andrew Morton? If yes, in how far please?
+On Thursday 01 March 2007 15:16, Ingo Molnar wrote:
+> * Eric Dumazet <dada1@cosmosbay.com> wrote:
+> > I can tell you that the problem (at least on my machine) comes from :
+> >
+> > gettimeofday(&tm, NULL);
+> >
+> > in evserver_epoll.c
+>
+> yeah, that's another difference - especially if it's something like an
+> Athlon64 and gettimeofday falls back to pm-timer, that could explain the
+> performance difference. That's why i repeatedly asked Evgeniy to use the
+> /very same/ client function for both the epoll and the kevent test and
+> redo the measurements. The numbers are still highly suspect - and we are
+> already down from the prior claim of kevent being almost twice as fast
+> to a 25% difference.
 
-Signed-off-by: Uwe Bugla <uwe.bugla@gmx.de>
+Also, ab is quite lame... Maybe we could use a epoll based 'stresser' 
 
---- a/arch/i386/kernel/process.c
-+++ b/arch/i386/kernel/process.c
-@@ -154,6 +154,7 @@
- 		current_thread_info()->status |= TS_POLLING;
- 	} else {
- 		/* loop is done by the caller */
-+		local_irq_enable();
- 		cpu_relax();
- 	}
- }
+On my machines (again ...), ab is the slow thing... not the 'server'
 
--- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: www.gmx.net/de/go/mailfooter/topmail-out
+Some small differences in behavior could have a big impact on ab (and you 
+could think there is a problem on the remote side)
+
