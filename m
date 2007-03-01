@@ -1,72 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbXCAIXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933101AbXCAI1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752346AbXCAIXo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 03:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933014AbXCAIXo
+	id S933101AbXCAI1L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 03:27:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933097AbXCAI1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 03:23:44 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:53040 "EHLO 2ka.mipt.ru"
+	Thu, 1 Mar 2007 03:27:11 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34025 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440AbXCAIXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 03:23:43 -0500
-Date: Thu, 1 Mar 2007 11:18:08 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301081808.GD7217@2ka.mipt.ru>
-References: <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz>
+	id S933014AbXCAI1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 03:27:09 -0500
+Date: Thu, 1 Mar 2007 00:27:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 03/22] fix deadlock in balance_dirty_pages
+Message-Id: <20070301002704.8fbbcda2.akpm@linux-foundation.org>
+In-Reply-To: <E1HMfp2-0001fc-00@dorka.pomaz.szeredi.hu>
+References: <20070227223809.684624012@szeredi.hu>
+	<20070227223911.472192712@szeredi.hu>
+	<20070228225853.8df5bdd0.akpm@linux-foundation.org>
+	<E1HMfp2-0001fc-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070228161413.GA4319@ucw.cz>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 11:20:08 +0300 (MSK)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 04:14:14PM +0000, Pavel Machek (pavel@ucw.cz) wrote:
-> Hi!
-> 
-> > > I think what you are not hearing, and what everyone else is saying
-> > > (INCLUDING Linus), is that for most programmers, state machines are
-> > > much, much harder to program, understand, and debug compared to
-> > > multi-threaded code.  You may disagree (were you a MacOS 9 programmer
-> > > in another life?), and it may not even be true for you if you happen
-> > > to be one of those folks more at home with Scheme continuations, for
-> > > example.  But it is true that for most kernel programmers, threaded
-> > > programming is much easier to understand, and we need to engineer the
-> > > kernel for what will be maintainable for the majority of the kernel
-> > > development community.
+On Thu, 01 Mar 2007 08:35:28 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> > > This deadlock happens, when dirty pages from one filesystem are
+> > > written back through another filesystem.  It easiest to demonstrate
+> > > with fuse although it could affect looback mounts as well (see
+> > > following patches).
+> > > 
+> > > Let's call the filesystems A(bove) and B(elow).  Process Pr_a is
+> > > writing to A, and process Pr_b is writing to B.
+> > > 
+> > > Pr_a is bash-shared-mapping.  Pr_b is the fuse filesystem daemon
+> > > (fusexmp_fh), for simplicity let's assume that Pr_b is single
+> > > threaded.
+> > > 
+> > > These are the simplified stack traces of these processes after the
+> > > deadlock:
+> > > 
+> > > Pr_a (bash-shared-mapping):
+> > > 
+> > >   (block on queue)
+> > >   fuse_writepage
+> > >   generic_writepages
+> > >   writeback_inodes
+> > >   balance_dirty_pages
+> > >   balance_dirty_pages_ratelimited_nr
+> > >   set_page_dirty_mapping_balance
+> > >   do_no_page
+> > > 
+> > > 
+> > > Pr_b (fusexmp_fh):
+> > > 
+> > >   io_schedule_timeout
+> > >   congestion_wait
+> > >   balance_dirty_pages
+> > >   balance_dirty_pages_ratelimited_nr
+> > >   generic_file_buffered_write
+> > >   generic_file_aio_write
+> > >   ext3_file_write
+> > >   do_sync_write
+> > >   vfs_write
+> > >   sys_pwrite64
+> > > 
+> > > 
+> > > Thanks to the aggressive nature of Pr_a, it can happen, that
+> > > 
+> > >   nr_file_dirty > dirty_thresh + margin
+> > > 
+> > > This is due to both nr_dirty growing and dirty_thresh shrinking, which
+> > > in turn is due to nr_file_mapped rapidly growing.  The exact size of
+> > > the margin at which the deadlock happens is not known, but it's around
+> > > 100 pages.
+> > > 
+> > > At this point Pr_a enters balance_dirty_pages and starts to write back
+> > > some if it's dirty pages.  After submitting some requests, it blocks
+> > > on the request queue.
+> > > 
+> > > The first write request will trigger Pr_b to perform a write()
+> > > syscall.  This will submit a write request to the block device and
+> > > then may enter balance_dirty_pages().
+> > > 
+> > > The condition for exiting balance_dirty_pages() is
+> > > 
+> > >  - either that write_chunk pages have been written
+> > > 
+> > >  - or nr_file_dirty + nr_writeback < dirty_thresh
+> > > 
+> > > It is entirely possible that less than write_chunk pages were written,
+> > > in which case balance_dirty_pages() will not exit even after all the
+> > > submitted requests have been succesfully completed.
+> > > 
+> > > Which means that the write() syscall does not return.
 > > 
-> > I understand that - and I totally agree.
-> > But when more complex, more bug-prone code results in higher performance
-> > - that must be used. We have linked lists and binary trees - the latter
+> > But the balance_dirty_pages() loop does more than just wait for those two
+> > conditions.  It will also submit _more_ dirty pages for writeout.  ie: it
+> > should be feeding more of file A's pages into writepage.
+> > 
+> > Why isn't that happening?
 > 
-> No-o. Kernel is not designed like that.
+> All of A's data is actually written by B.  So just submitting more
+> pages to some queue doesn't help, it will just make the queue longer.
 > 
-> Often, more complex and slightly faster code exists, and we simply use
-> slower variant, because it is fast enough.
+> If the queue length were not limited, and B would have limitless
+> threads, and the write() wouldn't exclude other writes to the same
+> file (i_mutex), then there would be no deadlock.
 > 
-> 10% gain in speed is NOT worth major complexity increase.
+> But for fuse the first and the last condition isn't met.
+> 
+> For the loop device the second condition isn't met, loop is single
+> threaded.
 
-Should I create a patch to remove rb-tree implementation?
-That practice is stupid IMO.
+Sigh.  What's this about i_mutex?  That appears to be some critical
+information which _still_ isn't being communicated.
 
-> 							Pavel
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
--- 
-	Evgeniy Polyakov
