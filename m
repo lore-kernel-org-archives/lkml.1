@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933052AbXCAHgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750828AbXCAHi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933052AbXCAHgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 02:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933102AbXCAHgO
+	id S1750828AbXCAHi0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 02:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbXCAHi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 02:36:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60498 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933096AbXCAHgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 02:36:11 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: John Keller <jpk@sgi.com>
-Subject: Re: [PATCH 1/1] - Altix: reinitialize acpi tables
-Date: Thu, 1 Mar 2007 02:36:41 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-acpi@vger.kernel.org, ayoung@sgi.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20070228234727.11369.38394.sendpatchset@attica.americas.sgi.com>
-In-Reply-To: <20070228234727.11369.38394.sendpatchset@attica.americas.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 02:38:26 -0500
+Received: from mx10.go2.pl ([193.17.41.74]:60083 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750828AbXCAHiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 02:38:25 -0500
+Date: Thu, 1 Mar 2007 08:42:09 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Jean Tourrilhes <jt@hpl.hp.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       "David S\. Miller" <davem@davemloft.net>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
+Message-ID: <20070301074209.GA1735@ff.dom.local>
+References: <20070228012741.GA3988@bougret.hpl.hp.com> <20070228093437.GA1847@ff.dom.local> <20070228184541.GD6134@bougret.hpl.hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703010236.42128.lenb@kernel.org>
+In-Reply-To: <20070228184541.GD6134@bougret.hpl.hp.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so will the 1st acpi_table_init() always fail -- even
-on future machines?
+On Wed, Feb 28, 2007 at 10:45:41AM -0800, Jean Tourrilhes wrote:
+> On Wed, Feb 28, 2007 at 10:34:37AM +0100, Jarek Poplawski wrote:
+> > On 28-02-2007 02:27, Jean Tourrilhes wrote:
+> > > 	Hi all,
+> > ...
+> > > 	Patch for 2.6.20 is attached. The patch was tested on a system
+> > > running the hotplug scripts, and on another system running udev.
+> > > 
+> > > 	Have fun...
+> > > 
+> > > 	Jean
+> > > 
+> > > Signed-off-by: Jean Tourrilhes <jt@hpl.hp.com>
+> > > 
+> > > ---------------------------------------------------------
+> > ...
+> > > diff -u -p linux/net/core/net-sysfs.j1.c linux/net/core/net-sysfs.c
+> > > --- linux/net/core/net-sysfs.j1.c	2007-02-27 15:01:08.000000000 -0800
+> > > +++ linux/net/core/net-sysfs.c	2007-02-27 15:06:49.000000000 -0800
+> > > @@ -412,6 +412,17 @@ static int netdev_uevent(struct class_de
+> > >  	if ((size <= 0) || (i >= num_envp))
+> > >  		return -ENOMEM;
+> > >  
+> > > +	/* pass ifindex to uevent.
+> > > +	 * ifindex is useful as it won't change (interface name may change)
+> > > +	 * and is what RtNetlink uses natively. */
+> > > +	envp[i++] = buf;
+> > > +	n = snprintf(buf, size, "IFINDEX=%d", dev->ifindex) + 1;
+> > > +	buf += n;
+> > > +	size -= n;
+> > > +
+> > > +	if ((size <= 0) || (i >= num_envp))
+> > 
+> > Btw.:
+> > 1. if size == 10 and snprintf returns 9 (without NULL)
+> >    then n == 10 (with NULL), so isn't it enough (here and above):
+> >  
+> > 	if ((size < 0) || (i >= num_envp))
+> 
+> 	I just cut'n'pasted the code a few line above. If the original
+> code is incorrect, it need fixing. And it will need fixing in probably
+> a lot of places.
 
--Len
+I think you're kind of responsible for your part, at least.
 
-On Wednesday 28 February 2007 18:47, John Keller wrote:
-> To provide compatibilty with SN kernels that do and do not
-> have ACPI IO support, the SN PROM must build different
-> versions of some ACPI tables based on which kernel is booting.
-> As such, the tables may have to change at kernel boot time.
-> By default, prior to kernel boot, the PROM builds an empty
-> DSDT (header only) and no SSDTs. If an ACPI capable kernel
-> boots, the kernel will notify the PROM, at platform setup time,
-> and the PROM will build full DSDT and SSDT tables.
 > 
-> With the latest changes to acpi_table_init(), the table lengths
-> are saved, and when our PROM changes them, the changes are not seen,
-> and the kernel will crash on boot. Because of issues with kexec support,
-> we are not able to create the tables prior to acpi_table_init().
-> As a result, we are making a second call to acpi_table_init() to
-> process the rebuilt DSDT and SSDTs.
+> > 2. shouldn't there be (here and above):
+> >  
+> > 		envp[--i] = NULL;
+> > 
 > 
-> Signed-off-by: John Keller <jpk@sgi.com>
-> ---
-> 
-> 
-> Index: release/arch/ia64/sn/kernel/setup.c
-> ===================================================================
-> --- release.orig/arch/ia64/sn/kernel/setup.c	2007-02-28 11:02:34.558139870 -0600
-> +++ release/arch/ia64/sn/kernel/setup.c	2007-02-28 11:02:39.362737953 -0600
-> @@ -397,6 +397,8 @@ void __init sn_setup(char **cmdline_p)
->  	ia64_sn_set_os_feature(OSF_PCISEGMENT_ENABLE);
->  	ia64_sn_set_os_feature(OSF_ACPI_ENABLE);
->  
-> +	/* Load the new DSDT and SSDT tables into the global table list. */
-> + 	acpi_table_init();
->  
->  #if defined(CONFIG_VT) && defined(CONFIG_VGA_CONSOLE)
->  	/*
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> 	No, envp is local, so who cares.
+
+But envp[i] isn't (at least here). So, I guess, a caller
+of this function could care.
+
+> > > + 	if ((size <= 0) || (i >= num_envp))
+> > > + 		return -ENOMEM;
+
+And one more thing (not necessarily for you):
+ENOBUFS is probably more adequate here.
+
+Cheers,
+Jarek P.
