@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965283AbXCAP3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965280AbXCAPcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965283AbXCAP3I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965280AbXCAP3I
+	id S965280AbXCAPcq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965285AbXCAPcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:29:08 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56700 "EHLO smtp.osdl.org"
+	Thu, 1 Mar 2007 10:32:46 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:58118 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965285AbXCAP3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:29:06 -0500
-Date: Thu, 1 Mar 2007 07:28:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Daniel Hecht <dhecht@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+	id S965280AbXCAPcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 10:32:45 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Date: Thu, 1 Mar 2007 16:32:37 +0100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in on_each_cpu?
-Message-Id: <20070301072859.aea3c4da.akpm@linux-foundation.org>
-In-Reply-To: <45E6BA3A.2040306@vmware.com>
-References: <45E6AC1A.8050608@vmware.com>
-	<20070301024524.c7c8ea1a.akpm@linux-foundation.org>
-	<45E6BA3A.2040306@vmware.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070301144717.GA24079@elte.hu> <20070301152323.GA8217@2ka.mipt.ru>
+In-Reply-To: <20070301152323.GA8217@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703011632.37756.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Mar 2007 03:34:18 -0800 Zachary Amsden <zach@vmware.com> wrote:
+On Thursday 01 March 2007 16:23, Evgeniy Polyakov wrote:
+> They are there, since ab runs only 50k requests.
+> If I change it to something noticebly more than 50/80k, ab crashes:
+> # ab -c8000 -t 600 -n800000000 http://192.168.0.48/
+> This is ApacheBench, Version 2.0.40-dev <$Revision: 1.146 $> apache-2.0
+> Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+> Copyright 2006 The Apache Software Foundation, http://www.apache.org/
+>
+> Benchmarking 192.168.0.48 (be patient)
+> Segmentation fault
+>
+> Are there any other tool suitable for such loads?
+> I only tested httperf (which is worse, since it uses poll/select) and
+> 'ab'.
+>
+> Btw, host machine runs 100% too, so it is possible that client side is
+> broken (too).
 
-> > Why is it a bug?  Because there's a deadlock where this CPU is waiting for
-> > CPU A to take the IPI, but CPU A is waiting (with interrupts disabled) for
-> > this CPU to take an IPI.
-> >   
-> 
-> Then the bug is not in on_each_cpu().  It is in the usage of 
-> clock_was_set().  For example, look at do_settimeofday in kernel/timer.c:
-> 
->         write_sequnlock_irqrestore(&xtime_lock, flags);
-> 
->         /* signal hrtimers about time change */
->         clock_was_set();
-> 
->         return 0;
+I have similar problems here, ab test just doesnt complete...
 
-Perhaps a WARN_ON(irqs_disabled()) in clock_was_set() would help.  But probably
-the one in smp_call_function() will suffice.
+I am still investigating with strace and tcpdump.
 
-> And timekeeping_resume has similar code (and called from a sysdev 
-> callback, so I don't know what the interrupt state should be ).  Either 
-> the write_sequnlock_irqrestore is redundant, and should be merely an 
-> write_sequnlock_irq, or the callsite is not prepared to handle enabling 
-> interrupts temporarily as must be done for on_each_cpu(), which is a 
-> pretty scary scenario.
-> 
-> What would be really, really nice would be to statically check all 
-> callsites that issue irq disables actually keep irqs disabled.  
-> Presumably, there was a reason they disabled irqs, and re-enabling them 
-> underneath their noses, even if it is to avoid a race, breaks the logic 
-> behind that reason.
-
-yup.  I once played with adding warnings in places like spin_lock_irq(), 
-but there were false positives from places which were odd-but-correct.
-
-It would be worth revisiting however.
+In the meantime you could just rewrite it (based on epoll please :) ), since 
+it should be quite easy to do this (reverse of evserver_epoll)
 
