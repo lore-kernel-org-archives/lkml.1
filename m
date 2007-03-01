@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932969AbXCABsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932317AbXCAByq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932969AbXCABsP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 20:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932965AbXCABsP
+	id S932317AbXCAByq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 20:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932280AbXCAByq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 20:48:15 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44428
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932968AbXCABsO (ORCPT
+	Wed, 28 Feb 2007 20:54:46 -0500
+Received: from nz-out-0506.google.com ([64.233.162.238]:12151 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932435AbXCAByp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 20:48:14 -0500
-Date: Wed, 28 Feb 2007 17:48:12 -0800 (PST)
-Message-Id: <20070228.174812.25474757.davem@davemloft.net>
-To: clameter@engr.sgi.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] SLUB The unqueued slab allocator V3
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0702281656450.1488@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0702281120110.27828@schroedinger.engr.sgi.com>
-	<20070228.140022.74750199.davem@davemloft.net>
-	<Pine.LNX.4.64.0702281656450.1488@schroedinger.engr.sgi.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 28 Feb 2007 20:54:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=aDtM8V3jV3Ng0c4NUn0QpoccPjN+OBiJ615SPMpCxvEaASENDtd2syh5HniF3mU8AfJ/WudstpUY/ljqAEBfBnD9UBmzswZvMwQMkoGZCHPLpwQLvvWCIynDc05xJ+QEDsGs/fXhVNNIliM35/aIAQFxlcpVaw7RsxiIiNW4dvw=
+Subject: Re: [PATCH]: Fix radeon blanking return value.
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070228.162016.74750990.davem@davemloft.net>
+References: <20070228.162016.74750990.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 01 Mar 2007 09:56:50 +0800
+Message-Id: <1172714210.21204.11.camel@daplas>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@engr.sgi.com>
-Date: Wed, 28 Feb 2007 17:06:19 -0800 (PST)
+On Wed, 2007-02-28 at 16:20 -0800, David Miller wrote:
+> If you'll recall, over a year ago, I pointed out that the current
+> Radeon driver erroneously returns -EINVAL for valid blanking codes,
+> here is a link to that thread:
+> 
+> 	http://lkml.org/lkml/2006/1/28/6
+> 
+> No other driver does this, and it confuses the X server into thinking
+> that the device does not support blanking properly.
+> 
+> As a result I have to switch to a console VC and back to the X server
+> to unblank the screen, which is rediculious.
+> 
+> I've had to do this for more than 3 years and I'm really tired of this
+> problem still being around :-)
+> 
+> I looked again and there is simply no reason for the Radeon driver to
+> return -EINVAL for FB_BLANK_NORMAL.  It claims it wants to do this in
+> order to convince fbcon to blank in software, right here:
+> 
+> 			if (fb_blank(info, blank))
+> 				fbcon_generic_blank(vc, info, blank);
+> 
+> to software blank the screen.  But it only causes that to happen
+> in the FB_BLANK_NORMAL case.
+> 
+> That makes no sense because the Radeon code does this:
+> 
+> 		val |= CRTC_DISPLAY_DIS;
+> 
+> in the FB_BLANK_NORMAL case so should be blanking the hardware, and
+> there is therefore no reason to SW blank by returning -EINVAL.
+> 
+> Therefore I propose we finally apply the following patch.  No other
+> fbdev driver does this madness, and as I've shown above there is no
+> justification for the behavior at all :-)
 
-> On Wed, 28 Feb 2007, David Miller wrote:
-> 
-> > Arguably SLAB_HWCACHE_ALIGN and SLAB_MUST_HWCACHE_ALIGN should
-> > not be set here, but SLUBs change in semantics in this area
-> > could cause similar grief in other areas, an audit is probably
-> > in order.
-> > 
-> > The above example was from sparc64, but x86 does the same thing
-> > as probably do other platforms which use SLAB for pagetables.
-> 
-> Maybe this will address these concerns?
-> 
-> Index: linux-2.6.21-rc2/mm/slub.c
-> ===================================================================
-> --- linux-2.6.21-rc2.orig/mm/slub.c	2007-02-28 16:54:23.000000000 -0800
-> +++ linux-2.6.21-rc2/mm/slub.c	2007-02-28 17:03:54.000000000 -0800
-> @@ -1229,8 +1229,10 @@ static int calculate_order(int size)
->  static unsigned long calculate_alignment(unsigned long flags,
->  		unsigned long align)
->  {
-> -	if (flags & (SLAB_MUST_HWCACHE_ALIGN|SLAB_HWCACHE_ALIGN))
-> +	if (flags & SLAB_HWCACHE_ALIGN)
->  		return L1_CACHE_BYTES;
-> +	if (flags & SLAB_MUST_HWCACHE_ALIGN)
-> +		return max(align, (unsigned long)L1_CACHE_BYTES);
->  
->  	if (align < ARCH_SLAB_MINALIGN)
->  		return ARCH_SLAB_MINALIGN;
+This was before radeonfb did not fully differentiate each blanking
+levels.  Currently, it is fixed, so I agree with this patch.
 
-It would achiever parity with existing SLAB behavior, sure.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+Acked-by: Antonino Daplas <adaplas@gmail.com>
+
+Tony
+
+
