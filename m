@@ -1,137 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbXCAHfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933091AbXCAHgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933089AbXCAHfa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 02:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933087AbXCAHfa
+	id S933091AbXCAHgE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 02:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933096AbXCAHgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 02:35:30 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:60205 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933086AbXCAHf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 02:35:29 -0500
-Date: Wed, 28 Feb 2007 23:35:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jaroslav Kysela <perex@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, netdev@vger.kernel.org
-Subject: Re: [PATCH] bonding: replace system timer with work queue
-Message-Id: <20070228233512.d2d275a2.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.61.0702281000050.9439@tm8103-a.perex-int.cz>
-References: <Pine.LNX.4.61.0702281000050.9439@tm8103-a.perex-int.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 02:36:04 -0500
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:48979 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933091AbXCAHgC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 02:36:02 -0500
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <20070228225853.8df5bdd0.akpm@linux-foundation.org> (message from
+	Andrew Morton on Wed, 28 Feb 2007 22:58:53 -0800)
+Subject: Re: [patch 03/22] fix deadlock in balance_dirty_pages
+References: <20070227223809.684624012@szeredi.hu>
+	<20070227223911.472192712@szeredi.hu> <20070228225853.8df5bdd0.akpm@linux-foundation.org>
+Message-Id: <E1HMfp2-0001fc-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 01 Mar 2007 08:35:28 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Feb 2007 10:12:01 +0100 (CET) Jaroslav Kysela <perex@suse.cz> wrote:
-
-> Hi,
+> > This deadlock happens, when dirty pages from one filesystem are
+> > written back through another filesystem.  It easiest to demonstrate
+> > with fuse although it could affect looback mounts as well (see
+> > following patches).
+> > 
+> > Let's call the filesystems A(bove) and B(elow).  Process Pr_a is
+> > writing to A, and process Pr_b is writing to B.
+> > 
+> > Pr_a is bash-shared-mapping.  Pr_b is the fuse filesystem daemon
+> > (fusexmp_fh), for simplicity let's assume that Pr_b is single
+> > threaded.
+> > 
+> > These are the simplified stack traces of these processes after the
+> > deadlock:
+> > 
+> > Pr_a (bash-shared-mapping):
+> > 
+> >   (block on queue)
+> >   fuse_writepage
+> >   generic_writepages
+> >   writeback_inodes
+> >   balance_dirty_pages
+> >   balance_dirty_pages_ratelimited_nr
+> >   set_page_dirty_mapping_balance
+> >   do_no_page
+> > 
+> > 
+> > Pr_b (fusexmp_fh):
+> > 
+> >   io_schedule_timeout
+> >   congestion_wait
+> >   balance_dirty_pages
+> >   balance_dirty_pages_ratelimited_nr
+> >   generic_file_buffered_write
+> >   generic_file_aio_write
+> >   ext3_file_write
+> >   do_sync_write
+> >   vfs_write
+> >   sys_pwrite64
+> > 
+> > 
+> > Thanks to the aggressive nature of Pr_a, it can happen, that
+> > 
+> >   nr_file_dirty > dirty_thresh + margin
+> > 
+> > This is due to both nr_dirty growing and dirty_thresh shrinking, which
+> > in turn is due to nr_file_mapped rapidly growing.  The exact size of
+> > the margin at which the deadlock happens is not known, but it's around
+> > 100 pages.
+> > 
+> > At this point Pr_a enters balance_dirty_pages and starts to write back
+> > some if it's dirty pages.  After submitting some requests, it blocks
+> > on the request queue.
+> > 
+> > The first write request will trigger Pr_b to perform a write()
+> > syscall.  This will submit a write request to the block device and
+> > then may enter balance_dirty_pages().
+> > 
+> > The condition for exiting balance_dirty_pages() is
+> > 
+> >  - either that write_chunk pages have been written
+> > 
+> >  - or nr_file_dirty + nr_writeback < dirty_thresh
+> > 
+> > It is entirely possible that less than write_chunk pages were written,
+> > in which case balance_dirty_pages() will not exit even after all the
+> > submitted requests have been succesfully completed.
+> > 
+> > Which means that the write() syscall does not return.
 > 
-> 	please, review and apply to mm tree for further testing. The patch 
-> is also available at 
-> ftp://ftp.alsa-project.org/pub/kernel-patches/bonding-workqueue.patch .
-
-Please cc netdev@vger.kernel.org on net-related patches, thanks.
-
-> 					Thank you,
-> 						Jaroslav
+> But the balance_dirty_pages() loop does more than just wait for those two
+> conditions.  It will also submit _more_ dirty pages for writeout.  ie: it
+> should be feeding more of file A's pages into writepage.
 > 
-> ==================
-> bonding: replace system timer with work queue
-> 
-> This patch replaces system timer with work queue in monitor functions.
-> The reason for this change is that bonding handlers calls various
-> sleeping functions from the timer handler which is not allowed.
+> Why isn't that happening?
 
-Which sleeping functions?  I'd have expected the kernel to spew runtime
-warnings when this happens, but I don't recall any such reports.
+All of A's data is actually written by B.  So just submitting more
+pages to some queue doesn't help, it will just make the queue longer.
 
+If the queue length were not limited, and B would have limitless
+threads, and the write() wouldn't exclude other writes to the same
+file (i_mutex), then there would be no deadlock.
 
-> Because we cannot share the main workqueue threads (rtnl_lock is used
-> also in linkwatch_event) - new bond workqueue thread is created.
-> 
-> Signed-off-by: Jaroslav Kysela <perex@suse.cz>
-> 
-> diff -rupN linux-2.6.20.orig/drivers/net/bonding/bond_3ad.c linux-2.6.20/drivers/net/bonding/bond_3ad.c
-> --- linux-2.6.20.orig/drivers/net/bonding/bond_3ad.c	2007-02-04 19:44:54.000000000 +0100
-> +++ linux-2.6.20/drivers/net/bonding/bond_3ad.c	2007-02-28 09:19:43.831369202 +0100
-> @@ -2097,8 +2097,10 @@ void bond_3ad_unbind_slave(struct slave 
->   * times out, and it selects an aggregator for the ports that are yet not
->   * related to any aggregator, and selects the active aggregator for a bond.
->   */
-> -void bond_3ad_state_machine_handler(struct bonding *bond)
-> +void bond_3ad_state_machine_handler(struct work_struct *work)
->  {
-> +	struct ad_bond_info *ad_info = container_of(work, struct ad_bond_info, ad_work.work);
-> +	struct bonding *bond = (struct bonding *)((char *)ad_info - offsetof(struct bonding, ad_info));
+But for fuse the first and the last condition isn't met.
 
-We can use containers_of here too?
+For the loop device the second condition isn't met, loop is single
+threaded.
 
-> -void bond_alb_monitor(struct bonding *bond)
-> +void bond_alb_monitor(struct work_struct *work)
->  {
-> -	struct alb_bond_info *bond_info = &(BOND_ALB_INFO(bond));
-> +	struct alb_bond_info *bond_info = container_of(work, struct alb_bond_info, alb_work.work);
-> +	struct bonding *bond = (struct bonding *)((char *)bond_info - offsetof(struct bonding, alb_info));
-
-And here.
-
-> +		cancel_rearming_delayed_workqueue(bond_wq, &(BOND_AD_INFO(bond).ad_work));
->  		break;
->  	case BOND_MODE_TLB:
->  	case BOND_MODE_ALB:
-> -		del_timer_sync(&(BOND_ALB_INFO(bond).alb_timer));
-> +		cancel_rearming_delayed_workqueue(bond_wq, &(BOND_ALB_INFO(bond).alb_work));
->  		break;
->  	default:
->  		break;
-> @@ -4289,6 +4272,14 @@ static int bond_init(struct net_device *
->  	rwlock_init(&bond->lock);
->  	rwlock_init(&bond->curr_slave_lock);
->  
-> +	/* initialize work */
-> +	INIT_DELAYED_WORK(&bond->mii_work, (void *)&bond_mii_monitor);
-> +	if (params->mode == BOND_MODE_ACTIVEBACKUP) {
-> +	        INIT_DELAYED_WORK(&bond->arp_work, (void *)&bond_activebackup_arp_mon);
-> +	} else {
-> +		INIT_DELAYED_WORK(&bond->arp_work, (void *)&bond_loadbalance_arp_mon);
-> +	}
-
-Can we lose the unneeded braces, the unneeded typecasts and fit the code
-into 80 cols?
-
-<does all that>
-
-yup.
-
->  	bond->params = *params; /* copy params struct */
->  
->  	/* Initialize pointers */
-> @@ -4782,6 +4773,12 @@ static int __init bonding_init(void)
->  			goto err;
->  	}
->  
-> +	bond_wq = create_singlethread_workqueue("bond");
-> +	if (bond_wq == NULL) {
-> +		res = -ENOMEM;
-> +		goto err;
-> +	}
-> +
->  	res = bond_create_sysfs();
->  	if (res)
->  		goto err;
-> @@ -4807,6 +4804,7 @@ static void __exit bonding_exit(void)
->  
->  	rtnl_lock();
->  	bond_free_all();
-> +	destroy_workqueue(bond_wq);
->  	bond_destroy_sysfs();
->  	rtnl_unlock();
-
-Are you sure that all pending delayed works have been cancelled when we
-destroy this workqueue?
-
-
+Thanks,
+Miklos
