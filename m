@@ -1,74 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932866AbXCABC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbXCABGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932866AbXCABC3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 20:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932867AbXCABC3
+	id S932879AbXCABGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 20:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932881AbXCABGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 20:02:29 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:50105 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932866AbXCABC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 20:02:28 -0500
-Date: Wed, 28 Feb 2007 16:59:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] <linux/sysdev.h> needs to include <linux/module.h>
-Message-Id: <20070228165911.bb74a714.akpm@linux-foundation.org>
-In-Reply-To: <20070224122211.GA17040@linux-mips.org>
-References: <20070224122211.GA17040@linux-mips.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Feb 2007 20:06:21 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52914 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932879AbXCABGV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 20:06:21 -0500
+Date: Wed, 28 Feb 2007 17:06:19 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] SLUB The unqueued slab allocator V3
+In-Reply-To: <20070228.140022.74750199.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0702281656450.1488@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702281120110.27828@schroedinger.engr.sgi.com>
+ <20070228.140022.74750199.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Feb 2007 12:22:11 +0000
-Ralf Baechle <ralf@linux-mips.org> wrote:
+On Wed, 28 Feb 2007, David Miller wrote:
 
-> sysdev.h uses THIS_MODULE so should include <linux/module.h>.
+> Maybe if you managed your individual changes in GIT or similar
+> this could be debugged very quickly. :-)
+
+I think once things calm down and the changes become smaller its going 
+to be easier. Likely the case with after V4.
+
+> Meanwhile I noticed that your alignment algorithm is different
+> than SLAB's.  And I think this is important for the page table
+> SLABs that some platforms use.
+
+Ok.
+ 
+> No matter what flags are specified, SLAB gives at least the
+> passed in alignment specified in kmem_cache_create().  That
+> logic in slab is here:
 > 
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> 	/* 3) caller mandated alignment */
+> 	if (ralign < align) {
+> 		ralign = align;
+> 	}
+
+Hmmm... Right.
+ 
+> Whereas SLUB uses the CPU cacheline size when the MUSTALIGN
+> flag is set.  Architectures do things like:
 > 
-> diff --git a/include/linux/sysdev.h b/include/linux/sysdev.h
-> index 389ccf8..e699ab2 100644
-> --- a/include/linux/sysdev.h
-> +++ b/include/linux/sysdev.h
-> @@ -22,6 +22,7 @@
->  #define _SYSDEV_H_
->  
->  #include <linux/kobject.h>
-> +#include <linux/module.h>
->  #include <linux/pm.h>
->  
+> 	pgtable_cache = kmem_cache_create("pgtable_cache",
+> 					  PAGE_SIZE, PAGE_SIZE,
+> 					  SLAB_HWCACHE_ALIGN |
+> 					  SLAB_MUST_HWCACHE_ALIGN,
+> 					  zero_ctor,
+> 					  NULL);
+> 
+> to get a PAGE_SIZE aligned slab, SLUB doesn't give the same
+> behavior SLAB does in this case.
 
-This causes an x86_64 trainwreck:
+SLUB only supports this by passing through allocations to the page 
+allocator since it does not maintain queues. So the above will cause the 
+pgtable_cache to use the caches of the page allocator. The queueing effect 
+that you get from SLAB is not present in SLUB since it does not provide 
+them. If SLUB is to be used this way then we need to have higher order 
+page sizes and allocate chunks from the higher order page for the 
+pgtable_cache.
 
-akpm2:/usr/src/25> xb arch/x86_64/ia32/ia32_binfmt.o
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CC      arch/x86_64/kernel/asm-offsets.s
-  GEN     include/asm-x86_64/asm-offsets.h
-  CC      arch/x86_64/ia32/ia32_binfmt.o
-arch/x86_64/ia32/ia32_binfmt.c:48:1: warning: "ELF_ET_DYN_BASE" redefined
-In file included from include/linux/elf.h:7,
-                 from include/linux/module.h:15,
-                 from include/linux/sysdev.h:25,
-                 from include/linux/sched.h:1645,
-                 from arch/x86_64/ia32/ia32_binfmt.c:11:
-include/asm/elf.h:93:1: warning: this is the location of the previous definition
-arch/x86_64/ia32/ia32_binfmt.c:58:1: warning: "USE_ELF_CORE_DUMP" redefined
-include/asm/elf.h:85:1: warning: this is the location of the previous definition
-arch/x86_64/ia32/ia32_binfmt.c:62: error: conflicting types for 'elf_greg_t'
-include/asm/elf.h:32: error: previous declaration of 'elf_greg_t' was here
-arch/x86_64/ia32/ia32_binfmt.c:64:1: warning: "ELF_NGREG" redefined
-include/asm/elf.h:34:1: warning: this is the location of the previous definition
-arch/x86_64/ia32/ia32_binfmt.c:65: error: conflicting types for 'elf_gregset_t'
-include/asm/elf.h:35: error: previous declaration of 'elf_gregset_t' was here
-arch/x86_64/ia32/ia32_binfmt.c:118:1: warning: "ELF_CORE_COPY_REGS" redefined
-include/asm/elf.h:99:1: warning: this is the location of the previous definition
-arch/x86_64/ia32/ia32_binfmt.c:139:1: warning: "__ASM_X86_64_ELF_H" redefined
-include/asm/elf.h:2:1: warning: this is the location of the previous definition
-arch/x86_64/ia32/ia32_binfmt.c:144: error: conflicting types for 'elf_fpregset_t'
-include/asm/elf.h:37: error: previous declaration of 'elf_fpregset_t' was here
+There are other ways of doing it. IA64 f.e. uses a linked list to 
+accomplish the same avoiding SLAB overhead.
+
+> Arguably SLAB_HWCACHE_ALIGN and SLAB_MUST_HWCACHE_ALIGN should
+> not be set here, but SLUBs change in semantics in this area
+> could cause similar grief in other areas, an audit is probably
+> in order.
+> 
+> The above example was from sparc64, but x86 does the same thing
+> as probably do other platforms which use SLAB for pagetables.
+
+Maybe this will address these concerns?
+
+Index: linux-2.6.21-rc2/mm/slub.c
+===================================================================
+--- linux-2.6.21-rc2.orig/mm/slub.c	2007-02-28 16:54:23.000000000 -0800
++++ linux-2.6.21-rc2/mm/slub.c	2007-02-28 17:03:54.000000000 -0800
+@@ -1229,8 +1229,10 @@ static int calculate_order(int size)
+ static unsigned long calculate_alignment(unsigned long flags,
+ 		unsigned long align)
+ {
+-	if (flags & (SLAB_MUST_HWCACHE_ALIGN|SLAB_HWCACHE_ALIGN))
++	if (flags & SLAB_HWCACHE_ALIGN)
+ 		return L1_CACHE_BYTES;
++	if (flags & SLAB_MUST_HWCACHE_ALIGN)
++		return max(align, (unsigned long)L1_CACHE_BYTES);
+ 
+ 	if (align < ARCH_SLAB_MINALIGN)
+ 		return ARCH_SLAB_MINALIGN;
