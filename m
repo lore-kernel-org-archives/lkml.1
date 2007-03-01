@@ -1,225 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbXCAM5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbXCAM5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752380AbXCAM5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbXCAM5R
+	id S933285AbXCAM5j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933280AbXCAM5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:57:17 -0500
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:2799 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752374AbXCAM5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:57:16 -0500
-Date: Thu, 1 Mar 2007 13:55:16 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] scatterlist.h needs types.h
-Message-Id: <20070301135516.5e6b6b29.khali@linux-fr.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 07:57:39 -0500
+Received: from mail.suse.de ([195.135.220.2]:40115 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933279AbXCAM5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:57:38 -0500
+Date: Thu, 1 Mar 2007 13:57:36 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Fastboot] [PATCH 1/1] - platform_kernel_launch_event is noop on generic kernel
+Message-ID: <20070301125736.GA18853@strauss.suse.de>
+Mail-Followup-To: linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20070228194517.25635.98535.sendpatchset@attica.americas.sgi.com> <20070301042227.GO6479@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301042227.GO6479@verge.net.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most architectures' scatterlist.h use the type dma_addr_t, but omit
-to include <asm/types.h> which defines it. This could lead to build
-failures, so let's add the missing includes.
+* Horms <horms@verge.net.au> [2007-03-01 05:22]:
+> On Wed, Feb 28, 2007 at 01:45:17PM -0600, John Keller wrote:
+> > Add a missing #define for the platform_kernel_launch_event.
+> > Without this fix, a call to platform_kernel_launch_event()
+> > becomes a noop on generic kernels. SN systems require this
+> > fix to successfully kdump/kexec from certain hardware errors.
+> >
+> > Signed-off-by: John Keller <jpk@sgi.com>
+> 
+> I made a similar change when porting to xen, but I hadn't thought
+> to see if mainline linux needs it to.
+> 
+> Acked-by: Simon Horman <horms@verge.net.au>
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+I think there's an additional change needed. Without that, it leads to
+a NULL pointer dereference.
+
 ---
- include/asm-alpha/scatterlist.h     |    1 +
- include/asm-avr32/scatterlist.h     |    2 ++
- include/asm-frv/scatterlist.h       |    2 ++
- include/asm-h8300/scatterlist.h     |    2 ++
- include/asm-i386/scatterlist.h      |    2 ++
- include/asm-ia64/scatterlist.h      |    2 ++
- include/asm-m32r/scatterlist.h      |    2 ++
- include/asm-m68knommu/scatterlist.h |    1 +
- include/asm-mips/scatterlist.h      |    2 ++
- include/asm-parisc/scatterlist.h    |    1 +
- include/asm-sh/scatterlist.h        |    2 ++
- include/asm-sh64/scatterlist.h      |    2 ++
- include/asm-sparc64/scatterlist.h   |    1 +
- include/asm-v850/scatterlist.h      |    2 ++
- include/asm-x86_64/scatterlist.h    |    2 ++
- include/asm-xtensa/scatterlist.h    |    2 ++
- 16 files changed, 28 insertions(+)
+ include/asm-ia64/machvec.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- linux-2.6.21-rc2.orig/include/asm-x86_64/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-x86_64/scatterlist.h	2007-03-01 11:34:51.000000000 +0100
-@@ -1,6 +1,8 @@
- #ifndef _X8664_SCATTERLIST_H
- #define _X8664_SCATTERLIST_H
+Index: b/include/asm-ia64/machvec.h
+===================================================================
+--- a/include/asm-ia64/machvec.h
++++ b/include/asm-ia64/machvec.h
+@@ -168,6 +168,7 @@ extern void machvec_tlb_migrate_finish (
+ #  define platform_setup_msi_irq	ia64_mv.setup_msi_irq
+ #  define platform_teardown_msi_irq	ia64_mv.teardown_msi_irq
+ #  define platform_pci_fixup_bus	ia64_mv.pci_fixup_bus
++#  define platform_kernel_launch_event	ia64_mv.kernel_launch_event
+ # endif
  
-+#include <asm/types.h>
-+
- struct scatterlist {
-     struct page		*page;
-     unsigned int	offset;
---- linux-2.6.21-rc2.orig/include/asm-alpha/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-alpha/scatterlist.h	2007-03-01 11:31:49.000000000 +0100
-@@ -2,6 +2,7 @@
- #define _ALPHA_SCATTERLIST_H
+ /* __attribute__((__aligned__(16))) is required to make size of the
+@@ -269,6 +270,7 @@ struct ia64_machine_vector {
+ 	platform_setup_msi_irq,			\
+ 	platform_teardown_msi_irq,		\
+ 	platform_pci_fixup_bus,			\
++        platform_kernel_launch_event            \
+ }
  
- #include <asm/page.h>
-+#include <asm/types.h>
-   
- struct scatterlist {
- 	struct page *page;
---- linux-2.6.21-rc2.orig/include/asm-avr32/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-avr32/scatterlist.h	2007-03-01 11:31:59.000000000 +0100
-@@ -1,6 +1,8 @@
- #ifndef __ASM_AVR32_SCATTERLIST_H
- #define __ASM_AVR32_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
-     struct page		*page;
-     unsigned int	offset;
---- linux-2.6.21-rc2.orig/include/asm-frv/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-frv/scatterlist.h	2007-03-01 11:32:29.000000000 +0100
-@@ -1,6 +1,8 @@
- #ifndef _ASM_SCATTERLIST_H
- #define _ASM_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- /*
-  * Drivers must set either ->address or (preferred) ->page and ->offset
-  * to indicate where data must be transferred to/from.
---- linux-2.6.21-rc2.orig/include/asm-h8300/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-h8300/scatterlist.h	2007-03-01 11:32:34.000000000 +0100
-@@ -1,6 +1,8 @@
- #ifndef _H8300_SCATTERLIST_H
- #define _H8300_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
- 	struct page	*page;
- 	unsigned int	offset;
---- linux-2.6.21-rc2.orig/include/asm-i386/scatterlist.h	2007-03-01 11:27:39.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-i386/scatterlist.h	2007-03-01 11:32:38.000000000 +0100
-@@ -1,6 +1,8 @@
- #ifndef _I386_SCATTERLIST_H
- #define _I386_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
-     struct page		*page;
-     unsigned int	offset;
---- linux-2.6.21-rc2.orig/include/asm-ia64/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-ia64/scatterlist.h	2007-03-01 11:33:08.000000000 +0100
-@@ -6,6 +6,8 @@
-  *	David Mosberger-Tang <davidm@hpl.hp.com>, Hewlett-Packard Co
-  */
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
- 	struct page *page;
- 	unsigned int offset;
---- linux-2.6.21-rc2.orig/include/asm-m32r/scatterlist.h	2007-02-21 08:36:27.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-m32r/scatterlist.h	2007-03-01 11:33:15.000000000 +0100
-@@ -1,6 +1,8 @@
- #ifndef _ASM_M32R_SCATTERLIST_H
- #define _ASM_M32R_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
-     char *  address;    /* Location data is to be transferred to, NULL for
-                          * highmem page */
---- linux-2.6.21-rc2.orig/include/asm-m68knommu/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-m68knommu/scatterlist.h	2007-03-01 11:33:31.000000000 +0100
-@@ -2,6 +2,7 @@
- #define _M68KNOMMU_SCATTERLIST_H
- 
- #include <linux/mm.h>
-+#include <asm/types.h>
- 
- struct scatterlist {
- 	struct page	*page;
---- linux-2.6.21-rc2.orig/include/asm-mips/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-mips/scatterlist.h	2007-03-01 11:33:39.000000000 +0100
-@@ -1,6 +1,8 @@
- #ifndef __ASM_SCATTERLIST_H
- #define __ASM_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
- 	struct page *	page;
- 	unsigned int	offset;
---- linux-2.6.21-rc2.orig/include/asm-parisc/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-parisc/scatterlist.h	2007-03-01 11:33:47.000000000 +0100
-@@ -2,6 +2,7 @@
- #define _ASM_PARISC_SCATTERLIST_H
- 
- #include <asm/page.h>
-+#include <asm/types.h>
- 
- struct scatterlist {
- 	struct page *page;
---- linux-2.6.21-rc2.orig/include/asm-sh/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-sh/scatterlist.h	2007-03-01 11:34:09.000000000 +0100
-@@ -1,6 +1,8 @@
- #ifndef __ASM_SH_SCATTERLIST_H
- #define __ASM_SH_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
-     struct page * page; /* Location for highmem page, if any */
-     unsigned int offset;/* for highmem, page offset */
---- linux-2.6.21-rc2.orig/include/asm-sh64/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-sh64/scatterlist.h	2007-03-01 11:34:15.000000000 +0100
-@@ -11,6 +11,8 @@
- #ifndef __ASM_SH64_SCATTERLIST_H
- #define __ASM_SH64_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
-     struct page * page; /* Location for highmem page, if any */
-     unsigned int offset;/* for highmem, page offset */
---- linux-2.6.21-rc2.orig/include/asm-sparc64/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-sparc64/scatterlist.h	2007-03-01 11:34:35.000000000 +0100
-@@ -3,6 +3,7 @@
- #define _SPARC64_SCATTERLIST_H
- 
- #include <asm/page.h>
-+#include <asm/types.h>
- 
- struct scatterlist {
- 	struct page	*page;
---- linux-2.6.21-rc2.orig/include/asm-v850/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-v850/scatterlist.h	2007-03-01 11:34:44.000000000 +0100
-@@ -14,6 +14,8 @@
- #ifndef __V850_SCATTERLIST_H__
- #define __V850_SCATTERLIST_H__
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
- 	struct page	*page;
- 	unsigned	offset;
---- linux-2.6.21-rc2.orig/include/asm-xtensa/scatterlist.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc2/include/asm-xtensa/scatterlist.h	2007-03-01 11:34:56.000000000 +0100
-@@ -11,6 +11,8 @@
- #ifndef _XTENSA_SCATTERLIST_H
- #define _XTENSA_SCATTERLIST_H
- 
-+#include <asm/types.h>
-+
- struct scatterlist {
- 	struct page 	*page;
- 	unsigned int	offset;
-
-
--- 
-Jean Delvare
+ extern struct ia64_machine_vector ia64_mv;
