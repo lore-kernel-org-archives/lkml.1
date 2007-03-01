@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbXCAMkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbXCAMmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752266AbXCAMkX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:40:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXCAMkX
+	id S1752355AbXCAMmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXCAMmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:40:23 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:34308 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752355AbXCAMkW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:40:22 -0500
-Date: Thu, 1 Mar 2007 12:40:21 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix sysfs build breakage if !CONFIG_SYSFS
-Message-ID: <20070301124020.GA2023@linux-mips.org>
+	Thu, 1 Mar 2007 07:42:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57651 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752268AbXCAMmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:42:52 -0500
+Date: Thu, 1 Mar 2007 13:34:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301123423.GA10738@elte.hu>
+References: <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070301105928.GA15709@2ka.mipt.ru>
 User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-B0rkage introduced by dfa87c824a9a5430008acd1ed2e8111ed164fcbe.
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 21805b5..523405e 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -211,9 +211,8 @@ static inline int sysfs_add_file_to_group(struct kobject *kobj,
- }
- 
- static inline void sysfs_remove_file_from_group(struct kobject *kobj,
--		const struct attribute *attr, const char *group);
-+		const struct attribute *attr, const char *group)
- {
--	;
- }
- 
- static inline void sysfs_notify(struct kobject * k, char *dir, char *attr)
+> Document Length:        3521 bytes
+
+> Concurrency Level:      8000
+> Time taken for tests:   16.686737 seconds
+> Complete requests:      80000
+> Failed requests:        0
+> Write errors:           0
+> Total transferred:      309760000 bytes
+> HTML transferred:       281680000 bytes
+> Requests per second:    4794.23 [#/sec] (mean)
+
+> Concurrency Level:      8000
+> Time taken for tests:   12.366775 seconds
+> Complete requests:      80000
+> Failed requests:        0
+> Write errors:           0
+> Total transferred:      317047104 bytes
+> HTML transferred:       288306522 bytes
+> Requests per second:    6468.95 [#/sec] (mean)
+
+i'm wondering - how can the 'Total transferred' and 'HTML transferred' 
+numbers be different?
+
+Since document length is 3521, and the number of requests is 80000, the 
+correct 'HTML transferred' is 281680000 - which is the epoll result. The 
+kevent result shows more bytes transferred, which suggests that the 
+kevent loop is probably incorrect somewhere.
+
+this might be some benign thing, but the /first/ thing you /have to/ do 
+before claiming that 'kevent is 25% faster than epoll' is to make sure 
+the results are totally reliable.
+
+	Ingo
