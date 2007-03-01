@@ -1,119 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964844AbXCAKFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbXCAKG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964844AbXCAKFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 05:05:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964798AbXCAKFw
+	id S964825AbXCAKG3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 05:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964798AbXCAKG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 05:05:52 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:57023 "EHLO
+	Thu, 1 Mar 2007 05:06:29 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:57102 "EHLO
 	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964825AbXCAKFL (ORCPT
+	with ESMTP id S964825AbXCAKGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 05:05:11 -0500
+	Thu, 1 Mar 2007 05:06:12 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: akpm@linux-foundation.org
 Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
-Message-Id: <20070301100510.29753.93334.sendpatchset@skynet.skynet.ie>
+Message-Id: <20070301100610.29753.15879.sendpatchset@skynet.skynet.ie>
 In-Reply-To: <20070301100229.29753.86342.sendpatchset@skynet.skynet.ie>
 References: <20070301100229.29753.86342.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 8/12] Move free pages between lists on steal
-Date: Thu,  1 Mar 2007 10:05:10 +0000 (GMT)
+Subject: [PATCH 11/12] Bias the placement of kernel pages at lower PFNs
+Date: Thu,  1 Mar 2007 10:06:10 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-When a fallback occurs, there will be free pages for one allocation type
-stored on the list for another. When a large steal occurs, this patch will
-move all the free pages within one list to the other.
+This patch chooses blocks with lower PFNs when placing kernel allocations. This
+is particularly important during fallback in low memory situations to stop
+unmovable pages being placed throughout the entire address space.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
 
- page_alloc.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 62 insertions(+), 3 deletions(-)
+ page_alloc.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+)
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-007_drainpercpu/mm/page_alloc.c linux-2.6.20-mm2-008_movefree/mm/page_alloc.c
---- linux-2.6.20-mm2-007_drainpercpu/mm/page_alloc.c	2007-02-20 18:35:52.000000000 +0000
-+++ linux-2.6.20-mm2-008_movefree/mm/page_alloc.c	2007-02-20 18:38:07.000000000 +0000
-@@ -682,6 +682,63 @@ static int fallbacks[MIGRATE_TYPES][MIGR
- 	[MIGRATE_MOVABLE]   = { MIGRATE_UNMOVABLE },
- };
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-010_cluster_atomic/mm/page_alloc.c linux-2.6.20-mm2-011_biasplacement/mm/page_alloc.c
+--- linux-2.6.20-mm2-010_cluster_atomic/mm/page_alloc.c	2007-02-20 18:50:00.000000000 +0000
++++ linux-2.6.20-mm2-011_biasplacement/mm/page_alloc.c	2007-02-20 18:52:18.000000000 +0000
+@@ -750,6 +750,23 @@ int move_freepages_block(struct zone *zo
+ 	return move_freepages(zone, start_page, end_page, migratetype);
+ }
  
-+/*
-+ * Move the free pages in a range to the free lists of the requested type.
-+ * Note that start_page and end_pages are not aligned in a MAX_ORDER_NR_PAGES
-+ * boundary. If alignment is required, use move_freepages_block()
-+ */
-+int move_freepages(struct zone *zone,
-+			struct page *start_page, struct page *end_page,
-+			int migratetype)
++/* Return the page with the lowest PFN in the list */
++static struct page *min_page(struct list_head *list)
 +{
-+	struct page *page;
-+	unsigned long order;
-+	int blocks_moved = 0;
++	unsigned long min_pfn = -1UL;
++	struct page *min_page = NULL, *page;;
 +
-+	BUG_ON(page_zone(start_page) != page_zone(end_page));
-+
-+	for (page = start_page; page < end_page;) {
-+		if (!PageBuddy(page)) {
-+			page++;
-+			continue;
++	list_for_each_entry(page, list, lru) {
++		unsigned long pfn = page_to_pfn(page);
++		if (pfn < min_pfn) {
++			min_pfn = pfn;
++			min_page = page;
 +		}
-+#ifdef CONFIG_HOLES_IN_ZONE
-+		if (!pfn_valid(page_to_pfn(page))) {
-+			page++;
-+			continue;
-+		}
-+#endif
-+
-+		order = page_order(page);
-+		list_del(&page->lru);
-+		list_add(&page->lru,
-+			&zone->free_area[order].free_list[migratetype]);
-+		page += 1 << order;
-+		blocks_moved++;
 +	}
 +
-+	return blocks_moved;
-+}
-+
-+int move_freepages_block(struct zone *zone, struct page *page, int migratetype)
-+{
-+	unsigned long start_pfn;
-+	struct page *start_page, *end_page;
-+
-+	start_pfn = page_to_pfn(page);
-+	start_pfn = start_pfn & ~(MAX_ORDER_NR_PAGES-1);
-+	start_page = pfn_to_page(start_pfn);
-+	end_page = start_page + MAX_ORDER_NR_PAGES;
-+
-+	/* Do not cross zone boundaries */
-+	if (page_zone(page) != page_zone(start_page))
-+		start_page = page;
-+	if (page_zone(page) != page_zone(end_page))
-+		return 0;
-+
-+	return move_freepages(zone, start_page, end_page, migratetype);
++	return min_page;
 +}
 +
  /* Remove an element from the buddy allocator from the fallback list */
  static struct page *__rmqueue_fallback(struct zone *zone, int order,
  						int start_migratetype)
-@@ -706,11 +763,13 @@ static struct page *__rmqueue_fallback(s
+@@ -780,8 +797,11 @@ retry:
+ 			if (list_empty(&area->free_list[migratetype]))
+ 				continue;
+ 
++			/* Bias kernel allocations towards low pfns */
+ 			page = list_entry(area->free_list[migratetype].next,
+ 					struct page, lru);
++			if (unlikely(start_migratetype != MIGRATE_MOVABLE))
++				page = min_page(&area->free_list[migratetype]);
  			area->nr_free--;
  
  			/*
--			 * If breaking a large block of pages, place the buddies
--			 * on the preferred allocation list
-+			 * If breaking a large block of pages, move all free
-+			 * pages to the preferred allocation list
- 			 */
--			if (unlikely(current_order >= MAX_ORDER / 2))
-+			if (unlikely(current_order >= MAX_ORDER / 2)) {
- 				migratetype = start_migratetype;
-+				move_freepages_block(zone, page, migratetype);
-+			}
- 
- 			/* Remove the page from the freelists */
- 			list_del(&page->lru);
