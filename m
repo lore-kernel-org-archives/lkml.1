@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932705AbXCALrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933252AbXCALtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932705AbXCALrl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 06:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933251AbXCALrl
+	id S933252AbXCALtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 06:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXCALtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 06:47:41 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:51230 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932705AbXCALrl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 06:47:41 -0500
-Message-ID: <45E6BD5B.4030305@vmware.com>
-Date: Thu, 01 Mar 2007 03:47:39 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Hecht <dhecht@vmware.com>, Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in on_each_cpu?
-References: <45E6AC1A.8050608@vmware.com>	 <20070301024524.c7c8ea1a.akpm@linux-foundation.org>	 <45E6BA3A.2040306@vmware.com> <1172749278.10271.43.camel@localhost.localdomain>
-In-Reply-To: <1172749278.10271.43.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 06:49:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34640 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933252AbXCALtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 06:49:23 -0500
+Date: Thu, 1 Mar 2007 12:41:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301114137.GB897@elte.hu>
+References: <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301110022.GA28260@elte.hu> <20070301111629.GA27381@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301111629.GA27381@2ka.mipt.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Thu, 2007-03-01 at 03:34 -0800, Zachary Amsden wrote:
->   
->> What would be really, really nice would be to statically check all 
->> callsites that issue irq disables actually keep irqs disabled.  
->> Presumably, there was a reason they disabled irqs, and re-enabling them 
->> underneath their noses, even if it is to avoid a race, breaks the logic 
->> behind that reason.
->>     
->
-> For the moment, how about a BUG_ON() in on_each_cpu()?
->   
 
-Sounds quite decent.  But why does on_each_cpu need to disable 
-interrupts at all?  It just calls func(), then re-enables interrupts.  
-So whatever was going to happen during func() that might not be 
-interrupt safe could just be done in the callee, avoiding the rather 
-expensive mess of disabling and re-enabling interrupts for those cases 
-where it doesn't matter.
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-I haven't looked at the call sites, but perhaps on_each_cpu() and 
-on_each_cpu_noirq() might be an appropriate distinction.
+> I also changed client socket to nonblocking mode with the same result 
+> in epoll server. If you will find it broken, please send me corrected 
+> to test too.
 
-Zach
+this line in evserver_kevent.c looks a bit fishy:
+
+        err = recv(s, buf, 100, 0);
+
+because on the evserver_epoll.c side the following is done:
+
+        err = recv(s, buf, 4096, 0);
+
+now, for 'ab', the request size is 76 bytes, so it should fit fine 
+functionality-wise. But, the TCP stack might decide differently of 
+whether to return with a partial packet depending on how much data is 
+requested. I dont know whether it actually makes a difference in the TCP 
+flow decisions, and whether it makes a performance difference in your 
+test, but safest would be to use 4096 in both cases.
+
+in general, please make sure the exact same system calls are done in the 
+client function. (except of course for the event queueing syscalls 
+themselves)
+
+	Ingo
