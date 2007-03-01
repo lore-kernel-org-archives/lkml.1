@@ -1,79 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161295AbXCBACF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161297AbXCBACr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161295AbXCBACF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 19:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161297AbXCBAB4
+	id S1161297AbXCBACr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 19:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422643AbXCBABp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 19:01:56 -0500
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47907 "EHLO
+	Thu, 1 Mar 2007 19:01:45 -0500
+Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47896 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161296AbXCAX4u (ORCPT
+	with ESMTP id S1161303AbXCAX4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 18:56:50 -0500
-Message-Id: <20070301232528.462923016@goop.org>
+	Thu, 1 Mar 2007 18:56:51 -0500
+Message-Id: <20070301232528.926984984@goop.org>
 References: <20070301232443.195603797@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Mar 2007 15:25:01 -0800
+Date: Thu, 01 Mar 2007 15:25:04 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: [patch 18/26] Xen-paravirt_ops: Add XEN config options
-Content-Disposition: inline; filename=xen-config.patch
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 21/26] Xen-paravirt_ops: Use the hvc console infrastructure for Xen console
+Content-Disposition: inline; filename=xen-hvc-console.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The XEN config option enables the Xen paravirt_ops interface, which is
-installed when the kernel finds itself running under Xen.
+Implement a Xen back-end for hvc console.
 
-Xen is no longer a sub-architecture, so the X86_XEN subarch config
-option has gone.
-
-Xen is currently incompatible with:
-- PREEMPT
-- HZ: set to 100Hz for now, to cut down on VCPU context switch rate.
-  This will be adapted to use tickless later.
-
+From: Gerd Hoffmann <kraxel@suse.de>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- arch/i386/Kconfig     |    2 ++
- arch/i386/xen/Kconfig |   10 ++++++++++
- 2 files changed, 12 insertions(+)
+ arch/i386/xen/Kconfig     |    1 
+ arch/i386/xen/events.c    |    3 -
+ drivers/Makefile          |    3 +
+ drivers/xen/Makefile      |    1 
+ drivers/xen/hvc-console.c |  134 +++++++++++++++++++++++++++++++++++++++++++++
+ include/xen/events.h      |    1 
+ 6 files changed, 142 insertions(+), 1 deletion(-)
 
 ===================================================================
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -216,6 +216,8 @@ config PARAVIRT
- 	  under a hypervisor, improving performance significantly.
- 	  However, when run without a hypervisor the kernel is
- 	  theoretically slower.  If in doubt, say N.
-+
-+source "arch/i386/xen/Kconfig"
+--- a/arch/i386/xen/Kconfig
++++ b/arch/i386/xen/Kconfig
+@@ -5,6 +5,7 @@ config XEN
+ config XEN
+ 	bool "Enable support for Xen hypervisor"
+ 	depends on PARAVIRT && HZ_100 && !PREEMPT && !NO_HZ
++	select HVC_DRIVER
+ 	default y
+ 	help
+ 	  This is the Linux Xen port.
+===================================================================
+--- a/arch/i386/xen/events.c
++++ b/arch/i386/xen/events.c
+@@ -209,7 +209,7 @@ static int find_unbound_irq(void)
+ 	return irq;
+ }
  
- config VMI
- 	bool "VMI Paravirt-ops support"
+-static int bind_evtchn_to_irq(unsigned int evtchn)
++int bind_evtchn_to_irq(unsigned int evtchn)
+ {
+ 	int irq;
+ 
+@@ -233,6 +233,7 @@ static int bind_evtchn_to_irq(unsigned i
+ 
+ 	return irq;
+ }
++EXPORT_SYMBOL_GPL(bind_evtchn_to_irq);
+ 
+ static int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
+ {
+===================================================================
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -14,6 +14,9 @@ obj-$(CONFIG_ACPI)		+= acpi/
+ # was used and do nothing if so
+ obj-$(CONFIG_PNP)		+= pnp/
+ obj-$(CONFIG_ARM_AMBA)		+= amba/
++
++# Xen is the default console when running as a guest
++obj-$(CONFIG_XEN)		+= xen/
+ 
+ # char/ comes before serial/ etc so that the VT console is the boot-time
+ # default.
 ===================================================================
 --- /dev/null
-+++ b/arch/i386/xen/Kconfig
-@@ -0,0 +1,10 @@
-+#
-+# This Kconfig describes xen options
-+#
++++ b/drivers/xen/Makefile
+@@ -0,0 +1,1 @@
++obj-y	+= hvc-console.o
+===================================================================
+--- /dev/null
++++ b/drivers/xen/hvc-console.c
+@@ -0,0 +1,134 @@
++/*
++ * xen console driver interface to hvc_console.c
++ *
++ * (c) 2007 Gerd Hoffmann <kraxel@suse.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
 +
-+config XEN
-+	bool "Enable support for Xen hypervisor"
-+	depends on PARAVIRT && HZ_100 && !PREEMPT && !NO_HZ
-+	default y
-+	help
-+	  This is the Linux Xen port.
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/types.h>
++
++#include <asm/xen/hypervisor.h>
++#include <xen/page.h>
++#include <xen/events.h>
++#include <xen/interface/io/console.h>
++
++#include "../char/hvc_console.h"
++
++#define HVC_COOKIE   0x58656e /* "Xen" in hex */
++
++static struct hvc_struct *hvc;
++static int xencons_irq;
++
++/* ------------------------------------------------------------------ */
++
++static inline struct xencons_interface *xencons_interface(void)
++{
++	return mfn_to_virt(xen_start_info->console.domU.mfn);
++}
++
++static inline void notify_daemon(void)
++{
++	/* Use evtchn: this is called early, before irq is set up. */
++	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
++}
++
++static int write_console(uint32_t vtermno, const char *data, int len)
++{
++	struct xencons_interface *intf = xencons_interface();
++	XENCONS_RING_IDX cons, prod;
++	int sent = 0;
++
++	cons = intf->out_cons;
++	prod = intf->out_prod;
++	mb();
++	BUG_ON((prod - cons) > sizeof(intf->out));
++
++	while ((sent < len) && ((prod - cons) < sizeof(intf->out)))
++		intf->out[MASK_XENCONS_IDX(prod++, intf->out)] = data[sent++];
++
++	wmb();
++	intf->out_prod = prod;
++
++	notify_daemon();
++	return sent;
++}
++
++static int read_console(uint32_t vtermno, char *buf, int len)
++{
++	struct xencons_interface *intf = xencons_interface();
++	XENCONS_RING_IDX cons, prod;
++	int recv = 0;
++
++	cons = intf->in_cons;
++	prod = intf->in_prod;
++	mb();
++	BUG_ON((prod - cons) > sizeof(intf->in));
++
++	while (cons != prod && recv < len)
++		buf[recv++] = intf->in[MASK_XENCONS_IDX(cons++,intf->in)];
++
++	mb();
++	intf->in_cons = cons;
++
++	notify_daemon();
++	return recv;
++}
++
++static struct hv_ops hvc_ops = {
++	.get_chars = read_console,
++	.put_chars = write_console,
++};
++
++static int __init xen_init(void)
++{
++	struct hvc_struct *hp;
++
++	if (!is_running_on_xen())
++		return 0;
++
++	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
++	if (xencons_irq < 0)
++		xencons_irq = 0 /* NO_IRQ */;
++	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
++	if (IS_ERR(hp))
++		return PTR_ERR(hp);
++
++	hvc = hp;
++	return 0;
++}
++
++static void __exit xen_fini(void)
++{
++	if (hvc)
++		hvc_remove(hvc);
++}
++
++static int xen_cons_init(void)
++{
++	if (!is_running_on_xen())
++		return 0;
++
++	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
++	return 0;
++}
++
++module_init(xen_init);
++module_exit(xen_fini);
++console_initcall(xen_cons_init);
+===================================================================
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/irq.h>
+ 
++int bind_evtchn_to_irq(unsigned int evtchn);
+ int bind_evtchn_to_irqhandler(unsigned int evtchn,
+ 			      irqreturn_t (*handler)(int, void *),
+ 			      unsigned long irqflags, const char *devname,
 
 -- 
 
