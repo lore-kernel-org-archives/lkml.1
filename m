@@ -1,175 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161266AbXCBAEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161301AbXCAX4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161266AbXCBAEo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 19:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161296AbXCBAEl
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 19:04:41 -0500
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47895 "EHLO
-	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161294AbXCAX4u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1161301AbXCAX4u (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 1 Mar 2007 18:56:50 -0500
-Message-Id: <20070301232528.155002121@goop.org>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161295AbXCAX4t
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 1 Mar 2007 18:56:49 -0500
+Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47856 "EHLO
+	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161261AbXCAX4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 18:56:48 -0500
+Message-Id: <20070301232525.663955593@goop.org>
 References: <20070301232443.195603797@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Mar 2007 15:24:58 -0800
+Date: Thu, 01 Mar 2007 15:24:44 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: [patch 15/26] Xen-paravirt_ops: Add apply_to_page_range() which applies a function to a pte range.
-Content-Disposition: inline; filename=apply-to-page-range.patch
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 01/26] Xen-paravirt_ops: Fix typo in sync_constant_test_bit()s name.
+Content-Disposition: inline; filename=fix-sync-bitops.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new mm function apply_to_page_range() which applies a given
-function to every pte in a given virtual address range in a given mm
-structure. This is a generic alternative to cut-and-pasting the Linux
-idiomatic pagetable walking code in every place that a sequence of
-PTEs must be accessed.
-
-Although this interface is intended to be useful in a wide range of
-situations, it is currently used specifically by several Xen
-subsystems, for example: to ensure that pagetables have been allocated
-for a virtual address range, and to construct batched special
-pagetable update requests to map I/O memory (in ioremap()).
-
-Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/mm.h |    5 ++
- mm/memory.c        |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 99 insertions(+)
+ include/asm-i386/sync_bitops.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 ===================================================================
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1135,6 +1135,11 @@ struct page *follow_page(struct vm_area_
- #define FOLL_GET	0x04	/* do get_page on page */
- #define FOLL_ANON	0x08	/* give ZERO_PAGE if no pgtable */
- 
-+typedef int (*pte_fn_t)(pte_t *pte, struct page *pmd_page, unsigned long addr,
-+			void *data);
-+extern int apply_to_page_range(struct mm_struct *mm, unsigned long address,
-+			       unsigned long size, pte_fn_t fn, void *data);
-+
- #ifdef CONFIG_PROC_FS
- void vm_stat_account(struct mm_struct *, unsigned long, struct file *, long);
- #else
-===================================================================
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1448,6 +1448,100 @@ int remap_pfn_range(struct vm_area_struc
+--- a/include/asm-i386/sync_bitops.h
++++ b/include/asm-i386/sync_bitops.h
+@@ -130,7 +130,7 @@ static inline int sync_test_and_change_b
+ 	return oldbit;
  }
- EXPORT_SYMBOL(remap_pfn_range);
  
-+static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
-+{
-+	pte_t *pte;
-+	int err;
-+	struct page *pmd_page;
-+	spinlock_t *ptl;
-+
-+	pte = (mm == &init_mm) ?
-+		pte_alloc_kernel(pmd, addr) :
-+		pte_alloc_map_lock(mm, pmd, addr, &ptl);
-+	if (!pte)
-+		return -ENOMEM;
-+
-+	BUG_ON(pmd_huge(*pmd));
-+
-+	pmd_page = pmd_page(*pmd);
-+
-+	do {
-+		err = fn(pte, pmd_page, addr, data);
-+		if (err)
-+			break;
-+	} while (pte++, addr += PAGE_SIZE, addr != end);
-+
-+	if (mm != &init_mm)
-+		pte_unmap_unlock(pte-1, ptl);
-+	return err;
-+}
-+
-+static int apply_to_pmd_range(struct mm_struct *mm, pud_t *pud,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
-+{
-+	pmd_t *pmd;
-+	unsigned long next;
-+	int err;
-+
-+	pmd = pmd_alloc(mm, pud, addr);
-+	if (!pmd)
-+		return -ENOMEM;
-+	do {
-+		next = pmd_addr_end(addr, end);
-+		err = apply_to_pte_range(mm, pmd, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pmd++, addr = next, addr != end);
-+	return err;
-+}
-+
-+static int apply_to_pud_range(struct mm_struct *mm, pgd_t *pgd,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
-+{
-+	pud_t *pud;
-+	unsigned long next;
-+	int err;
-+
-+	pud = pud_alloc(mm, pgd, addr);
-+	if (!pud)
-+		return -ENOMEM;
-+	do {
-+		next = pud_addr_end(addr, end);
-+		err = apply_to_pmd_range(mm, pud, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pud++, addr = next, addr != end);
-+	return err;
-+}
-+
-+/*
-+ * Scan a region of virtual memory, filling in page tables as necessary
-+ * and calling a provided function on each leaf page table.
-+ */
-+int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
-+			unsigned long size, pte_fn_t fn, void *data)
-+{
-+	pgd_t *pgd;
-+	unsigned long next;
-+	unsigned long end = addr + size;
-+	int err;
-+
-+	BUG_ON(addr >= end);
-+	pgd = pgd_offset(mm, addr);
-+	do {
-+		next = pgd_addr_end(addr, end);
-+		err = apply_to_pud_range(mm, pgd, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pgd++, addr = next, addr != end);
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(apply_to_page_range);
-+
- /*
-  * handle_pte_fault chooses page fault handler according to an entry
-  * which was read non-atomically.  Before making any commitment, on
+-static __always_inline int sync_const_test_bit(int nr, const volatile unsigned long *addr)
++static __always_inline int sync_constant_test_bit(int nr, const volatile unsigned long *addr)
+ {
+ 	return ((1UL << (nr & 31)) &
+ 		(((const volatile unsigned int *)addr)[nr >> 5])) != 0;
 
 -- 
 
