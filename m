@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933114AbXCAIj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbXCAIlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933114AbXCAIj4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 03:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933108AbXCAIjz
+	id S933121AbXCAIlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 03:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbXCAIlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 03:39:55 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:42472 "EHLO 2ka.mipt.ru"
+	Thu, 1 Mar 2007 03:41:17 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34517 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933114AbXCAIjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 03:39:54 -0500
-Date: Thu, 1 Mar 2007 11:38:06 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Chris Friesen <cfriesen@nortel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301083806.GF7217@2ka.mipt.ru>
-References: <20070222074044.GA4158@elte.hu> <Pine.LNX.4.64.0702221130050.1356@alien.or.mcafeemobile.com> <20070228094522.GA17716@elte.hu> <Pine.LNX.4.64.0702280740250.5935@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0702280836080.12485@woody.linux-foundation.org> <Pine.LNX.4.64.0702281011220.6806@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0702281040030.12485@woody.linux-foundation.org> <Pine.LNX.4.64.0702281047430.6806@alien.or.mcafeemobile.com> <45E5D217.9060101@nortel.com> <Pine.LNX.4.64.0702281134380.6806@alien.or.mcafeemobile.com>
+	id S933121AbXCAIlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 03:41:16 -0500
+Date: Thu, 1 Mar 2007 00:41:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 03/22] fix deadlock in balance_dirty_pages
+Message-Id: <20070301004111.c56f4fd1.akpm@linux-foundation.org>
+In-Reply-To: <E1HMgmg-0001mc-00@dorka.pomaz.szeredi.hu>
+References: <20070227223809.684624012@szeredi.hu>
+	<20070227223911.472192712@szeredi.hu>
+	<20070228225853.8df5bdd0.akpm@linux-foundation.org>
+	<E1HMfp2-0001fc-00@dorka.pomaz.szeredi.hu>
+	<20070301002704.8fbbcda2.akpm@linux-foundation.org>
+	<E1HMgmg-0001mc-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702281134380.6806@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 11:38:50 +0300 (MSK)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 11:42:24AM -0800, Davide Libenzi (davidel@xmailserver.org) wrote:
-> On Wed, 28 Feb 2007, Chris Friesen wrote:
-> 
-> > Davide Libenzi wrote:
-> > 
-> > > struct async_syscall {
-> > > 	unsigned long nr_sysc;
-> > > 	unsigned long params[8];
-> > > 	long *result;
-> > > };
-> > > 
-> > > And what would async_wait() return bak? Pointers to "struct async_syscall"
-> > > or pointers to "result"?
-> > 
-> > Either one has downsides.  Pointer to struct async_syscall requires that the
-> > caller keep the struct around.  Pointer to result requires that the caller
-> > always reserve a location for the result.
-> > 
-> > Does the kernel care about the (possibly rare) case of callers that don't want
-> > to pay attention to result?  If so, what about adding some kind of
-> > caller-specified handle to struct async_syscall, and having async_wait()
-> > return the handle?  In the case where the caller does care about the result,
-> > the handle could just be the address of result.
-> 
-> Something like this (with async_wait() returning asynid's)?
-> 
-> struct async_syscall {
-> 	long *result;
-> 	unsigned long asynid;
-> 	unsigned long nr_sysc;
-> 	unsigned long params[8];
-> };
+On Thu, 01 Mar 2007 09:37:06 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-Having result pointer as NULL might imply that result is not interested
-in and thus it can be discarded and event async syscall will not be
-returned through aync_wait().
-More flexible is having request flags field in the structure.
- 
-> - Davide
+> > Sigh.  What's this about i_mutex?  That appears to be some critical
+> > information which _still_ isn't being communicated.
+> > 
 > 
+> This:
+> 
+> ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
+> 		unsigned long nr_segs, loff_t pos)
+> {
+> 	struct file *file = iocb->ki_filp;
+> 	struct address_space *mapping = file->f_mapping;
+> 	struct inode *inode = mapping->host;
+> 	ssize_t ret;
+> 
+> 	BUG_ON(iocb->ki_pos != pos);
+> 
+> 	mutex_lock(&inode->i_mutex);
+> 	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
+> 			&iocb->ki_pos);
+> 	mutex_unlock(&inode->i_mutex);
+> 
+> 
+> It's in the stack trace.  I thought it was obvious.
 
--- 
-	Evgeniy Polyakov
+No, it is not obvious.
+
+I'm just not going to apply weird hacks to work around a bug which
+I do not understand, and I have spent way too much time trying to understand
+this one.
+
+So let us persist.
+
+Please fully describe the role of i_mutex in this hang.
