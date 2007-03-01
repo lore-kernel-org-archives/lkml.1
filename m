@@ -1,147 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965103AbXCAO26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965105AbXCAO3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965103AbXCAO26 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 09:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965096AbXCAO25
+	id S965105AbXCAO3K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 09:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965115AbXCAO3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 09:28:57 -0500
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:3807 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965094AbXCAO24 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 09:28:56 -0500
-Date: Thu, 1 Mar 2007 15:26:55 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070301152655.f232db64.khali@linux-fr.org>
-In-Reply-To: <20070228213803.GA4877@ucw.cz>
-References: <45D5EA88.7090300@redhat.com>
-	<45D6DDCE.5050803@assembler.cz>
-	<45D7461A.2040808@redhat.com>
-	<20070218183805.5a4fd813.khali@linux-fr.org>
-	<20070228213803.GA4877@ucw.cz>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 1 Mar 2007 09:29:10 -0500
+Received: from mail.gmx.net ([213.165.64.20]:53343 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965104AbXCAO3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 09:29:06 -0500
+Cc: akpm@linux-foundation.org, linux-dvb@linuxtv.org, domi.dumont@free.fr,
+       Jiri Slaby <jirislaby@gmail.com>, bunk@stusta.de,
+       linux-kernel@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>,
+       venkatesh.pallipadi@intel.com
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 01 Mar 2007 15:29:04 +0100
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+Message-ID: <20070301142904.29930@gmx.net>
+MIME-Version: 1.0
+Subject: patch 1 / 3: fix broken documentation for bt8xx cards
+To: torvalds@linux-foundation.org
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1+KaHI6zwiKkElb3jvsSxi7JjPaOdhTChUxar6P8Y
+ V6He1gasPAuUGedl42Hs+6wxM= 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+Hi folks,
+although this patch is fine and necessary it has been blocked and ignored for months by the following so-called "maintainers"
+who are a tall order and a shame for the whole linux community:
+a. Manuel Abraham <abraham.manu@gmail.com>
+b. Mauro Carvalho Chehab <mchehab@infradead.org>
+I vote for excluding Manuel Abraham from maintainership, as we all need communicatable, reliable and accurate maintainers, no mismatches!
+This patch fixes the documentation for dvb-bt8xx cards, synchronizing it to the actual state of kernel development.
+Please sign-off or ack this only in connection with the DST deselection patch (i. e. patch 2 / 3)
+Written and
+Signed-off-by: Uwe Bugla <uwe.bugla@gmx.de>
 
-On Wed, 28 Feb 2007 21:38:04 +0000, Pavel Machek wrote:
-> > > Well I had an idea after looking at k8temp -- why not make it default to
-> > > doing only reads from the sensor?  You'd only get information from whatever
-> > > core/sensor combination that ACPI had last used, but it would be safe.
-> > 
-> > ACPI is broken here, not k8temp, so let's fix ACPI instead. ACPI
-> > doesn't conflict with only k8temp, but with virtually all hardware
-> > monitoring drivers, all I2C/SMBus drivers, and probably other types of
-> > drivers too. We just can't restrict or blacklist all these drivers
-> > because ACPI misbehaves.
-> 
-> Oops, sorry about that but no, that will not work.
-> 
-> There's piece of paper, called ACPI specification, and we are
-> following it.
+--- a/Documentation/dvb/bt8xx.txt
++++ b/Documentation/dvb/bt8xx.txt
+@@ -9,9 +9,33 @@
+ Please see Documentation/dvb/cards.txt => o Cards based on the Conexant Bt8xx PCI bridge:
+ 
+ Compiling kernel please enable:
+-a.)"Device drivers" => "Multimedia devices" => "Video For Linux" => "BT848 Video For Linux"
++a.)"Device drivers" => "Multimedia devices" => "Video For Linux" => "Enable Video for Linux API 1 (DEPRECATED)"
+-b.)"Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices"
+- => "DVB for Linux" "DVB Core Support" "Bt8xx based PCI Cards"
++b.)"Device drivers" => "Multimedia devices" => "Video For Linux" => "Video Capture Adapters" => "BT848 Video For Linux"
++c.)"Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices" => "DVB for Linux" "DVB Core Support" "Bt8xx based PCI Cards"
++
++Please use the following options with care as deselection of drivers which are in fact necessary
++may result in DVB devices that cannot be tuned due to lack of driver support:
++You can save RAM by deselecting every frontend or DST module that your DVB card does not need.
++
++First please remove the static dependency of DVB card drivers on all frontend modules for all possible card variants by enabling:
++d.) "Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices"
++ => "DVB for Linux" "DVB Core Support" "Load and attach frontend modules as needed"
++
++If you know the frontend driver that your card needs please enable:
++e.)"Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices"
++ => "DVB for Linux" "DVB Core Support" "Customise DVB Frontends" => "Customise the frontend modules to build"
++ Then please select your card-specific frontend module.
++
++Do you use one of the following cards?
++1. Twinhan DST (FTA and CI) family (DVB-S/C/T/ATSC)
++2. Pinnacle PCTV SAT CI
++3. Chaintech DST-1000
++4. DNTV Live !
++
++If not you can save additional RAM by enabling:
++f.)"Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices" => "DVB for Linux" "DVB Core Support"
++ "Bt8xx based PCI Cards" => "Customise DST support" => "Customise DST modules to build"
++ Then please deselect "DST module" and "DST CA module"
+ 
+ 2) Loading Modules
+ ==================
+@@ -68,7 +92,7 @@
+ 	$ modprobe dvb-bt8xx
+ 
+ For a full list of card ID's please see Documentation/video4linux/CARDLIST.bttv.
+-In case of further problems send questions to the mailing list: www.linuxdvb.org.
++In case of further problems please subscribe and send questions to the mailing list: linux-dvb@linuxtv.org.
+ 
+ Authors: Richard Walker,
+ 	 Jamie Honan,
 
-I never suggested otherwise. But the Linux 2.6 device driver model is
-based, in part, on the fact that each driver must request the
-resources it needs before actually using them. The acpi subsystem fails
-to do that, so it is, in that sense, misbehaving. The is the root cause
-of the problems people are reporting these days.
-
-> Bug is not in our implementation.
-> 
-> Bug is in the ACPI specs... it does not explicitely allow you to go
-> out and bitbang i2c, and you do it, and you get problems.
-
-It really doesn't have anything to do with bit-banged I2C. It's about
-SMBus master chips (most often embedded in south bridges), hardware
-monitoring chips (be them SMBus-based or not), or basically any driver
-which uses a resource ACPI is using as well (virtually any driver
-accessing a Super-IO/LPC device is affected, for example.)
-
-Secondly, your logic is somewhat broken. Just because one specification
-doesn't explicitely allow me to do something, I must stop doing it?
-There must be two dozen different specifications modern PC hardware
-supposedly conforms to. If we stop doing everything which isn't
-explicitely allowed by all of them, I fear there won't be much left ;)
-A better question would be IMHO: Does the ACPI specification
-explicitely _prohibits_ accessing directly to some categories of
-hardware?
-
-Lastly, I wholeheartedly agree that the core problem appears to be in
-the ACPI design rather than in the Linux implementation. As a matter of
-fact, other operating systems are facing the same problem [1]. The
-problem isn't less real, though.
-
-> Now, you may try to change specs to be hwmon-friendly... good luck.
-
-I would like them to be driver-model-friendly, that's even a broader
-challenge ;)
-
-> But currently hw manufacturers follow ACPI specs, so we have to follow
-> it, too; bad luck for hwmon. BIOS hiding smbus from you is good hint
-> you are doing something wrong...?
-
-I would love things to be that easy, but unfortunately they are not.
-
-Firstly, the first records of hidden SMBus, in September 2000, predate
-ACPI. All the early boards where the SMBus was hidden did not have ACPI
-code poking at it at all, so this is definitely not the reason why it
-was removed. The Asus P4 series is a good example of that. Unhiding the
-SMBus on these boards actually let the user take benefit of the
-hardware they had paid for.
-
-Secondly, only a few south bridges are capable of hiding the SMBus. And
-an even smaller number of systems have their SMBus actually hidden by
-the BIOS. A much large number of systems, especially recent ones, have
-ACPI poking at the hardware monitoring chip (again, SMBus-based or
-not.) So there is no correlation between hidden SMBus and ACPI poking
-at the hardware monitoring chip. So, even though we are very careful
-these days when adding a quirk to unhide the SMBus on a new system (we
-make sure that ACPI isn't accessing it), this is not going to solve the
-general problem.
-
-I would be happy to prevent SMBus and/or hardware monitoring drivers
-from being loaded on ACPI-based system if we had a way to know which
-systems do have ACPI code accessing these chips and which do not, and if
-ACPI was offering a level of functionality comparable to what
-individual hardware monitoring drivers offer. Unfortunately:
-
-1* As far as I know, we currently have no way to know if the ACPI code
-plans to ever access the hardware monitoring chip. If the acpi
-subsystem could export this information somehow, it would help a lot.
-But I'm not familiar with ACPI, so I don't know if this is feasable or
-not. We just can't prevent the SMBus and hardware monitoring drivers
-drivers from being loaded as soon as ACPI is enabled. This would
-prevent a majority of users from using them, while they work fine for
-most of them.
-
-2* The hardware monitoring features offered by ACPI today are one level
-of magnitude weaker than what lm_sensors was already offering back in
-1999. The monitoring chips can do much but unfortunately ACPI only
-exposes a very small subset of the chip features. ACPI doesn't handle
-voltage monitoring at all. It usually reports no more than one fan, and
-in my experience, more often than not, the speed is reported as a
-boolean (spinning or not), when lm_sensors gives you the exact speed of
-all your fans. ACPI thermal zones are not so bad, but the interface to
-control them is ugly, and lm_sensors usually gives more details. And
-more importantly, on almost all desktop and server motherboards, ACPI
-does _not_ provide any hardware monitoring feature. So we really can't
-go tell our users: give up the individual hardware monitoring drivers
-and lm_sensors on all ACPI-enabled systems and use whatever ACPI offers
-instead. This would be a major functionality loss for a vast majority
-of users.
-
-What do you propose?
-
-[1] http://www.microsoft.com/whdc/system/pnppwr/powermgmt/BIOSAML.mspx
+P. S.: "There are two things that are infinite and endless: The human stupidity and the universe.
+While I am sometimes doubting about the universe I am damn sure as far as the human stupidity is concerned."
+ALBERT EINSTEIN
 
 -- 
-Jean Delvare
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: www.gmx.net/de/go/mailfooter/topmail-out
