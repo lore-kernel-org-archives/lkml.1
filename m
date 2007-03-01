@@ -1,78 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbXCAAUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932836AbXCAAU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932825AbXCAAUT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 19:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932830AbXCAAUT
+	id S932836AbXCAAU6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 19:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbXCAAU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 19:20:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58128
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932825AbXCAAUS (ORCPT
+	Wed, 28 Feb 2007 19:20:58 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:28251 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932836AbXCAAU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 19:20:18 -0500
-Date: Wed, 28 Feb 2007 16:20:16 -0800 (PST)
-Message-Id: <20070228.162016.74750990.davem@davemloft.net>
-To: adaplas@pol.net
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH]: Fix radeon blanking return value.
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Feb 2007 19:20:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=nchcxkUIhvydaf1r7TjQ9GLfGLrXbjbofLsGVjqxIRMrRuKmNe3i7lVpHjYH6Q4ETKxnjNIYyiKHa/+OnssdDKNZkNrTiE00nur3xxQo43diMfiinqcHibDbk8I2b4Ll2N2sTSU2KkLTCXU8KgStj0csnTe9gXIwRtmqoaQYQ5Y=
+Message-ID: <29495f1d0702281620j43f576ack2d7e942136e8ea56@mail.gmail.com>
+Date: Wed, 28 Feb 2007 16:20:54 -0800
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Bill Davidsen" <davidsen@tmr.com>
+Subject: Re: SMP performance degradation with sysbench
+Cc: "Paulo Marques" <pmarques@grupopie.com>, "Rik van Riel" <riel@redhat.com>,
+       "=?ISO-8859-1?Q?J.A._Magall=F3n?=" <jamagallon@ono.com>,
+       "Hiro Yoshioka" <hyoshiok@miraclelinux.com>, davej@redhat.com,
+       harlan@artselect.com, nickpiggin@yahoo.com.au, l_allegrucci@yahoo.it,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, suparna@in.ibm.com,
+       jens.axboe@oracle.com
+In-Reply-To: <29495f1d0702271852y5aab9d53mbd4b45931a393534@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_39820_29066912.1172708454089"
+References: <20070226223645.GA24174@redhat.com>
+	 <98df96d30702261632u7479c9b2sce93f80f68bbc8d0@mail.gmail.com>
+	 <45E37EA3.3060101@redhat.com>
+	 <20070227.130305.424251739.hyoshiok@miraclelinux.com>
+	 <45E3B421.603@redhat.com> <20070227091409.6f3d12f9@werewolf-wl>
+	 <45E439E4.5030703@redhat.com> <45E4469C.8000505@grupopie.com>
+	 <45E4E736.2050505@tmr.com>
+	 <29495f1d0702271852y5aab9d53mbd4b45931a393534@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_39820_29066912.1172708454089
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-If you'll recall, over a year ago, I pointed out that the current
-Radeon driver erroneously returns -EINVAL for valid blanking codes,
-here is a link to that thread:
+On 2/27/07, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
+> On 2/27/07, Bill Davidsen <davidsen@tmr.com> wrote:
+> > Paulo Marques wrote:
+> > > Rik van Riel wrote:
+> > >> J.A. Magall=F3n wrote:
+> > >>> [...]
+> > >>> Its the same to answer 4+4 queries than 8 at half the speed, isn't =
+it ?
+> > >>
+> > >> That still doesn't fix the potential Linux problem that this
+> > >> benchmark identified.
+> > >>
+> > >> To clarify: I don't care as much about MySQL performance as
+> > >> I care about identifying and fixing this potential bug in
+> > >> Linux.
+> > >
+> > > IIRC a long time ago there was a change in the scheduler to prevent a
+> > > low prio task running on a sibling of a hyperthreaded processor to sl=
+ow
+> > > down a higher prio task on another sibling of the same processor.
+> > >
+> > > Basically the scheduler would put the low prio task to sleep during a=
+n
+> > > adequate task slice to allow the other sibling to run at full speed f=
+or
+> > > a while.
+<snip>
+> > > If that is the case, turning off CONFIG_SCHED_SMT would solve the pro=
+blem.
+<snip>
+> > Note that Intel does make multicore HT processors, and hopefully when
+> > this code works as intended it will result in more total throughput. My
+> > supposition is that it currently is NOT working as intended, since
+> > disabling SMT scheduling is reported to help.
+>
+> It does help, but we still drop off, clearly. Also, that's my
+> baseline, so I'm not able to reproduce the *sharp* dropoff from the
+> blog post yet.
+>
+> > A test with MC on and SMT off would be informative for where to look ne=
+xt.
+>
+> I'm rebooting my box with 2.6.20.1 and exactly this setup now.
 
-	http://lkml.org/lkml/2006/1/28/6
+Here are the results:
 
-No other driver does this, and it confuses the X server into thinking
-that the device does not support blanking properly.
+idle.png: average % idle over 120s runs from 1 to 32 threads
+transactions.png: TPS over 120s runs from 1 to 32 threads
 
-As a result I have to switch to a console VC and back to the X server
-to unblank the screen, which is rediculious.
+Hope the data is useful. All I can conclude right now is that SMT
+appears to help (contradicting what I said earlier), but that MC seems
+to have no effect (or no substantial effect).
 
-I've had to do this for more than 3 years and I'm really tired of this
-problem still being around :-)
+Thanks,
+Nish
 
-I looked again and there is simply no reason for the Radeon driver to
-return -EINVAL for FB_BLANK_NORMAL.  It claims it wants to do this in
-order to convince fbcon to blank in software, right here:
+------=_Part_39820_29066912.1172708454089
+Content-Type: image/png; name=idle.png
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_eyqg4u8x
+Content-Disposition: attachment; filename="idle.png"
 
-			if (fb_blank(info, blank))
-				fbcon_generic_blank(vc, info, blank);
+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
+AABJRU5ErkJggg==
+------=_Part_39820_29066912.1172708454089
+Content-Type: image/png; name=transactions.png
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_eyqg58n7
+Content-Disposition: attachment; filename="transactions.png"
 
-to software blank the screen.  But it only causes that to happen
-in the FB_BLANK_NORMAL case.
-
-That makes no sense because the Radeon code does this:
-
-		val |= CRTC_DISPLAY_DIS;
-
-in the FB_BLANK_NORMAL case so should be blanking the hardware, and
-there is therefore no reason to SW blank by returning -EINVAL.
-
-Therefore I propose we finally apply the following patch.  No other
-fbdev driver does this madness, and as I've shown above there is no
-justification for the behavior at all :-)
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index c32b714..af7eb07 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -1032,8 +1032,7 @@ int radeon_screen_blank(struct radeonfb_info *rinfo, int blank, int mode_switch)
- 		break;
- 	}
- 
--	/* let fbcon do a soft blank for us */
--	return (blank == FB_BLANK_NORMAL) ? -EINVAL : 0;
-+	return 0;
- }
- 
- static int radeonfb_blank (int blank, struct fb_info *info)
+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
+------=_Part_39820_29066912.1172708454089--
