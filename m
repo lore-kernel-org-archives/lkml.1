@@ -1,129 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbXCAIzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933166AbXCAI7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933158AbXCAIzV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 03:55:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933156AbXCAIzU
+	id S933166AbXCAI7T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 03:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbXCAI7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 03:55:20 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38424 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933152AbXCAIzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 03:55:18 -0500
-X-Provags-ID: V01U2FsdGVkX1+Sx31UY6iSI68yT50Lyi07dSNYXBThHZhGyGhrR0
-	M+1Q==
-Subject: [patch take 2] Re: linux-2.6.today: rtc_cmos init oops/panic in
-	rtc_sysfs_remove_device()
-From: Mike Galbraith <efault@gmx.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: a.zummo@towertech.it
-In-Reply-To: <1172568305.7009.39.camel@Homer.simpson.net>
-References: <1171967177.6939.10.camel@Homer.simpson.net>
-	 <1172392313.6888.23.camel@Homer.simpson.net>
-	 <1172568305.7009.39.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Thu, 01 Mar 2007 09:55:06 +0100
-Message-Id: <1172739306.6709.27.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Thu, 1 Mar 2007 03:59:18 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:51115 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933152AbXCAI7R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 03:59:17 -0500
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <20070301004111.c56f4fd1.akpm@linux-foundation.org> (message from
+	Andrew Morton on Thu, 1 Mar 2007 00:41:11 -0800)
+Subject: Re: [patch 03/22] fix deadlock in balance_dirty_pages
+References: <20070227223809.684624012@szeredi.hu>
+	<20070227223911.472192712@szeredi.hu>
+	<20070228225853.8df5bdd0.akpm@linux-foundation.org>
+	<E1HMfp2-0001fc-00@dorka.pomaz.szeredi.hu>
+	<20070301002704.8fbbcda2.akpm@linux-foundation.org>
+	<E1HMgmg-0001mc-00@dorka.pomaz.szeredi.hu> <20070301004111.c56f4fd1.akpm@linux-foundation.org>
+Message-Id: <E1HMh7n-0001qk-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 01 Mar 2007 09:58:55 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 10:25 +0100, Mike Galbraith wrote:
-> On Sun, 2007-02-25 at 09:32 +0100, Mike Galbraith wrote:
+> I'm just not going to apply weird hacks to work around a bug which
+> I do not understand, and I have spent way too much time trying to understand
+> this one.
+
+I suggest you apply patch #5 "balance dirty pages from loop device"
+and see for yourself the same deadlock with a simple loopback mount.
+
+I beleive _not_ doing balance_dirty_pages() in loop is rather a bigger
+hack, then mine ;)
+
+> So let us persist.
 > 
-> > Fix NULL pointer dereference in cmos_rtc registration failure path.
-> > 
-> > Signed-off-by: Mike Galbraith <efault@gmx.de>
-> > 
-> > diff --git a/drivers/rtc/class.c b/drivers/rtc/class.c
-> > index 7a0d8ee..9201786 100644
-> > --- a/drivers/rtc/class.c
-> > +++ b/drivers/rtc/class.c
-> > @@ -113,10 +113,10 @@ EXPORT_SYMBOL_GPL(rtc_device_register);
-> >   */
-> >  void rtc_device_unregister(struct rtc_device *rtc)
-> >  {
-> > +	class_device_unregister(&rtc->class_dev);
-> >  	mutex_lock(&rtc->ops_lock);
-> >  	rtc->ops = NULL;
-> >  	mutex_unlock(&rtc->ops_lock);
-> > -	class_device_unregister(&rtc->class_dev);
-> >  }
-> >  EXPORT_SYMBOL_GPL(rtc_device_unregister);
-> 
-> However, re-enabling CONFIG_DEBUG_SLAB which somehow got disabled
-> emitted the below.
-> 
-> [   36.765977] rtc_cmos 00:03: rtc intf: sysfs
-> [   36.779301] rtc_cmos 00:03: rtc intf: proc
-> [   36.792557] rtc_cmos 00:03: rtc intf: dev (239:0)
-> [   36.806139] rtc_cmos 00:03: rtc core: registered rtc_cmos as rtc0
-> [   36.821017] rtc_cmos 00:03: i/o registers already in use
-> [   36.834992] rtc_cmos 00:03: removing char 239:0
-> [   36.848268] pnp: Device 00:03 does not support disabling.
-> [   36.862282] rtc_cmos: probe of 00:03 failed with error -16
-> [   36.876394] md: linear personality registered for level -1
-> [   36.890508] md: raid0 personality registered for level 0
-> [   36.904563] md: raid1 personality registered for level 1
-> [   36.918454] md: raid10 personality registered for level 10
-> [   36.949187] raid6: int32x1    722 MB/s
-> [   36.978092] raid6: int32x2    800 MB/s
-> [   37.006101] raid6: int32x4    917 MB/s
-> [   37.034047] raid6: int32x8    671 MB/s
-> [   37.062030] raid6: mmxx1     2371 MB/s
-> [   37.090000] raid6: mmxx2     3066 MB/s
-> [   37.118001] raid6: sse1x1    1449 MB/s
-> [   37.145964] raid6: sse1x2    2699 MB/s
-> [   37.172947] raid6: sse2x1    2222 MB/s
-> [   37.199912] raid6: sse2x2    3375 MB/s
-> [   37.210371] raid6: using algorithm sse2x2 (3375 MB/s)
-> [   37.222143] md: raid6 personality registered for level 6
-> [   37.234127] md: raid5 personality registered for level 5
-> [   37.245889] md: raid4 personality registered for level 4
-> [   37.257313] raid5: automatically using best checksumming function: pIII_sse
-> [   37.274853]    pIII_sse  :  3812.000 MB/sec
-> [   37.284947] raid5: using function: pIII_sse (3812.000 MB/sec)
-> [   37.296648] md: multipath personality registered for level -4
-> [   37.308377] Slab corruption: start=dfede248, len=512
-> [   37.319200] Redzone: 0x5a2cf071/0x5a2cf071.
-> [   37.329211] Last user: [<c03c8ab2>](rtc_device_release+0x31/0x34)
-> [   37.341274] 0b0: 6b 6b 6b 6b 00 00 00 00 6b 6b 6b 6b 6b 6b 6b 6b
-> [   37.353894] Prev obj: start=dfede03c, len=512
-> [   37.364285] Redzone: 0x5a2cf071/0x5a2cf071.
-> [   37.374409] Last user: [<c0408643>](skb_release_data+0x57/0x79)
-> [   37.386402] 000: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
-> [   37.399116] 010: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
-> [   37.411788] Next obj: start=dfede454, len=512
-> [   37.422309] Redzone: 0x170fc2a5/0x170fc2a5.
-> [   37.432642] Last user: [<c0350168>](device_create+0x2b/0xa3)
-> [   37.444670] 000: 01 00 00 00 00 00 00 00 5c e4 ed df 5c e4 ed df
-> [   37.457532] 010: 73 f2 34 c0 ff f0 34 c0 00 00 00 00 00 00 00 00
-> [   37.470429] device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
+> Please fully describe the role of i_mutex in this hang.
 
-Dummy here created a use after free.
+OK.  Added description of the multithreaded case, with i_mutex's role:
 
-Fix NULL pointer dereference in cmos_rtc registration failure path.
-Since we're freeing rtc in rtc_device_release(), there should be no need
-to NULL rtc->ops.  Anybody who has a reference to the freed rtc after
-device release, and uses it, will hopefully explode violently.
++ What if Pr_b is multithreaded?  The first thread will enter
++ balance_dirty_pages() and loop there as shown above.  It will hold
++ i_mutex for the inode, taken in generic_file_aio_write().
++ 
++ The other theads now try to write back more data into the same file,
++ but will block on i_mutex.  So even with unlimited number of threads
++ no progress is made.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-
-diff --git a/drivers/rtc/class.c b/drivers/rtc/class.c
-index 7a0d8ee..d338fb8 100644
---- a/drivers/rtc/class.c
-+++ b/drivers/rtc/class.c
-@@ -113,9 +113,6 @@ EXPORT_SYMBOL_GPL(rtc_device_register);
-  */
- void rtc_device_unregister(struct rtc_device *rtc)
- {
--	mutex_lock(&rtc->ops_lock);
--	rtc->ops = NULL;
--	mutex_unlock(&rtc->ops_lock);
- 	class_device_unregister(&rtc->class_dev);
- }
- EXPORT_SYMBOL_GPL(rtc_device_unregister);
+Thanks,
+Miklos
 
 
+From: Miklos Szeredi <mszeredi@suse.cz>
+
+This deadlock happens, when dirty pages from one filesystem are
+written back through another filesystem.  It easiest to demonstrate
+with fuse although it could affect looback mounts as well (see
+following patches).
+
+Let's call the filesystems A(bove) and B(elow).  Process Pr_a is
+writing to A, and process Pr_b is writing to B.
+
+Pr_a is bash-shared-mapping.  Pr_b is the fuse filesystem daemon
+(fusexmp_fh), for simplicity let's assume that Pr_b is single
+threaded.
+
+These are the simplified stack traces of these processes after the
+deadlock:
+
+Pr_a (bash-shared-mapping):
+
+  (block on queue)
+  fuse_writepage
+  generic_writepages
+  writeback_inodes
+  balance_dirty_pages
+  balance_dirty_pages_ratelimited_nr
+  set_page_dirty_mapping_balance
+  do_no_page
+
+
+Pr_b (fusexmp_fh):
+
+  io_schedule_timeout
+  congestion_wait
+  balance_dirty_pages
+  balance_dirty_pages_ratelimited_nr
+  generic_file_buffered_write
+  generic_file_aio_write
+  ext3_file_write
+  do_sync_write
+  vfs_write
+  sys_pwrite64
+
+
+Thanks to the aggressive nature of Pr_a, it can happen, that
+
+  nr_file_dirty > dirty_thresh + margin
+
+This is due to both nr_dirty growing and dirty_thresh shrinking, which
+in turn is due to nr_file_mapped rapidly growing.  The exact size of
+the margin at which the deadlock happens is not known, but it's around
+100 pages.
+
+At this point Pr_a enters balance_dirty_pages and starts to write back
+some if it's dirty pages.  After submitting some requests, it blocks
+on the request queue.
+
+The first write request will trigger Pr_b to perform a write()
+syscall.  This will submit a write request to the block device and
+then may enter balance_dirty_pages().
+
+The condition for exiting balance_dirty_pages() is
+
+ - either that write_chunk pages have been written
+
+ - or nr_file_dirty + nr_writeback < dirty_thresh
+
+It is entirely possible that less than write_chunk pages were written,
+in which case balance_dirty_pages() will not exit even after all the
+submitted requests have been succesfully completed.
+
+Which means that the write() syscall does not return.
+
+Which means, that no more dirty pages from A will be written back, and
+neither nr_writeback nor nr_file_dirty will decrease.
+
+Which means, that balance_dirty_pages() will loop forever.
+
+What if Pr_b is multithreaded?  The first thread will enter
+balance_dirty_pages() and loop there as shown above.  It will hold
+i_mutex for the inode, taken in generic_file_aio_write().
+
+The other theads now try to write back more data into the same file,
+but will block on i_mutex.  So even with unlimited number of threads
+no progress is made.
+
+Q.E.D.
+
+The solution is to exit balance_dirty_pages() on the condition, that
+there are only a few dirty + writeback pages for this backing dev.  This
+makes sure, that there is always some progress with this setup.
+
+The number of outstanding dirty + written pages is limited to 8, which
+means that when over the threshold (dirty_exceeded == 1), each
+filesystem may only effectively pin a maximum of 16 (+8 because of
+ratelimiting) extra pages.
+
+Note: a similar safety vent is always needed if there's a global limit
+for the dirty+writeback pages, even if in the future there will be
+some per-queue (or other) soft limit.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux/mm/page-writeback.c
+===================================================================
+--- linux.orig/mm/page-writeback.c	2007-02-27 14:41:07.000000000 +0100
++++ linux/mm/page-writeback.c	2007-02-27 14:41:07.000000000 +0100
+@@ -201,6 +201,17 @@ static void balance_dirty_pages(struct a
+ 		if (!dirty_exceeded)
+ 			dirty_exceeded = 1;
+ 
++		/*
++		 * Acquit producer of dirty pages if there's little or
++		 * nothing to write back to this particular queue.
++		 *
++		 * Without this check a deadlock is possible for if
++		 * one filesystem is writing data through another.
++		 */
++		if (atomic_long_read(&bdi->nr_dirty) +
++		    atomic_long_read(&bdi->nr_writeback) < 8)
++			break;
++
+ 		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
+ 		 * Unstable writes are a feature of certain networked
+ 		 * filesystems (i.e. NFS) in which data may have been
