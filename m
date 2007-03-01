@@ -1,120 +1,331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422639AbXCBAFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161175AbXCBAGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422639AbXCBAFR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 19:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422637AbXCBAEi
+	id S1161175AbXCBAGJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 19:06:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422661AbXCBAGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 19:04:38 -0500
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47906 "EHLO
+	Thu, 1 Mar 2007 19:06:08 -0500
+Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47901 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161266AbXCAX4u (ORCPT
+	with ESMTP id S1161284AbXCAX4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 18:56:50 -0500
-Message-Id: <20070301232528.297902504@goop.org>
+	Thu, 1 Mar 2007 18:56:49 -0500
+Message-Id: <20070301232527.638508535@goop.org>
 References: <20070301232443.195603797@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Mar 2007 15:24:59 -0800
+Date: Thu, 01 Mar 2007 15:24:54 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       "Jan Beulich" <JBeulich@novell.com>
-Subject: [patch 16/26] Xen-paravirt_ops: Allocate and free vmalloc areas
-Content-Disposition: inline; filename=alloc-vm-area.patch
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 11/26] Xen-paravirt_ops: Use patch site IDs computed from offset in paravirt_ops structure
+Content-Disposition: inline; filename=paravirt-use-offset-site-ids.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocate/destroy a 'vmalloc' VM area: alloc_vm_area and free_vm_area
-The alloc function ensures that page tables are constructed for the
-region of kernel virtual address space and mapped into init_mm.
+Use patch type identifiers derived from the offset of the operation in
+the paravirt_ops structure.  This avoids having to maintain a separate
+enum for patch site types.
+
+This patch also drops the fused save_fl+cli operation, which doesn't
+really add much and makes things more complex.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Cc: "Jan Beulich" <JBeulich@novell.com>
-Cc: "Andi Kleen" <ak@muc.de>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Zachary Amsden <zach@vmware.com>
 
 ---
- arch/i386/mm/fault.c    |   43 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/vmalloc.h |    4 ++++
- 2 files changed, 47 insertions(+)
+ arch/i386/kernel/asm-offsets.c |    5 +
+ arch/i386/kernel/paravirt.c    |   14 ++---
+ arch/i386/kernel/vmi.c         |   38 ++------------
+ include/asm-i386/paravirt.h    |  107 +++++++++++++++++++---------------------
+ 4 files changed, 70 insertions(+), 94 deletions(-)
 
 ===================================================================
---- a/arch/i386/mm/fault.c
-+++ b/arch/i386/mm/fault.c
-@@ -23,6 +23,7 @@
- #include <linux/module.h>
- #include <linux/kprobes.h>
- #include <linux/uaccess.h>
-+#include <linux/vmalloc.h>
- 
- #include <asm/system.h>
- #include <asm/desc.h>
-@@ -624,3 +625,45 @@ void _vmalloc_sync_all(void)
- 			start = address + PGDIR_SIZE;
- 	}
+--- a/arch/i386/kernel/asm-offsets.c
++++ b/arch/i386/kernel/asm-offsets.c
+@@ -110,5 +110,10 @@ void foo(void)
+ 	OFFSET(PARAVIRT_irq_enable_sysexit, paravirt_ops, irq_enable_sysexit);
+ 	OFFSET(PARAVIRT_iret, paravirt_ops, iret);
+ 	OFFSET(PARAVIRT_read_cr0, paravirt_ops, read_cr0);
++
++	DEFINE(PARAVIRT_IRQ_DISABLE, PARAVIRT_PATCH(irq_disable));
++	DEFINE(PARAVIRT_IRQ_ENABLE, PARAVIRT_PATCH(irq_enable));
++	DEFINE(PARAVIRT_STI_SYSEXIT, PARAVIRT_PATCH(irq_enable_sysexit));
++	DEFINE(PARAVIRT_INTERRUPT_RETURN, PARAVIRT_PATCH(iret));
+ #endif
  }
-+
-+
-+static int f(pte_t *pte, struct page *pmd_page, unsigned long addr, void *data)
-+{
-+	/* apply_to_page_range() does all the hard work. */
-+	return 0;
-+}
-+
-+struct vm_struct *alloc_vm_area(unsigned long size)
-+{
-+	struct vm_struct *area;
-+
-+	area = get_vm_area(size, VM_IOREMAP);
-+	if (area == NULL)
-+		return NULL;
-+
-+	/*
-+	 * This ensures that page tables are constructed for this region
-+	 * of kernel virtual address space and mapped into init_mm.
-+	 */
-+	if (apply_to_page_range(&init_mm, (unsigned long)area->addr,
-+				area->size, f, NULL)) {
-+		free_vm_area(area);
-+		return NULL;
-+	}
-+
-+	/* Make sure the pagetables are constructed in process kernel
-+	   mappings */
-+	vmalloc_sync_all();
-+
-+	return area;
-+}
-+EXPORT_SYMBOL_GPL(alloc_vm_area);
-+
-+void free_vm_area(struct vm_struct *area)
-+{
-+	struct vm_struct *ret;
-+	ret = remove_vm_area(area->addr);
-+	BUG_ON(ret != area);
-+	kfree(area);
-+}
-+EXPORT_SYMBOL_GPL(free_vm_area);
 ===================================================================
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -68,6 +68,10 @@ extern int map_vm_area(struct vm_struct 
- 			struct page ***pages);
- extern void unmap_vm_area(struct vm_struct *area);
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -57,7 +57,6 @@ DEF_NATIVE(sti, "sti");
+ DEF_NATIVE(sti, "sti");
+ DEF_NATIVE(popf, "push %eax; popf");
+ DEF_NATIVE(pushf, "pushf; pop %eax");
+-DEF_NATIVE(pushf_cli, "pushf; pop %eax; cli");
+ DEF_NATIVE(iret, "iret");
+ DEF_NATIVE(sti_sysexit, "sti; sysexit");
  
-+/* Allocate/destroy a 'vmalloc' VM area. */
-+extern struct vm_struct *alloc_vm_area(unsigned long size);
-+extern void free_vm_area(struct vm_struct *area);
+@@ -65,13 +64,12 @@ static const struct native_insns
+ {
+ 	const char *start, *end;
+ } native_insns[] = {
+-	[PARAVIRT_IRQ_DISABLE] = { start_cli, end_cli },
+-	[PARAVIRT_IRQ_ENABLE] = { start_sti, end_sti },
+-	[PARAVIRT_RESTORE_FLAGS] = { start_popf, end_popf },
+-	[PARAVIRT_SAVE_FLAGS] = { start_pushf, end_pushf },
+-	[PARAVIRT_SAVE_FLAGS_IRQ_DISABLE] = { start_pushf_cli, end_pushf_cli },
+-	[PARAVIRT_INTERRUPT_RETURN] = { start_iret, end_iret },
+-	[PARAVIRT_STI_SYSEXIT] = { start_sti_sysexit, end_sti_sysexit },
++	[PARAVIRT_PATCH(irq_disable)] = { start_cli, end_cli },
++	[PARAVIRT_PATCH(irq_enable)] = { start_sti, end_sti },
++	[PARAVIRT_PATCH(restore_fl)] = { start_popf, end_popf },
++	[PARAVIRT_PATCH(save_fl)] = { start_pushf, end_pushf },
++	[PARAVIRT_PATCH(iret)] = { start_iret, end_iret },
++	[PARAVIRT_PATCH(irq_enable_sysexit)] = { start_sti_sysexit, end_sti_sysexit },
+ };
+ 
+ static unsigned native_patch(u8 type, u16 clobbers, void *insns, unsigned len)
+===================================================================
+--- a/arch/i386/kernel/vmi.c
++++ b/arch/i386/kernel/vmi.c
+@@ -78,11 +78,6 @@ struct {
+ #define MNEM_JMP  0xe9
+ #define MNEM_RET  0xc3
+ 
+-static char irq_save_disable_callout[] = {
+-	MNEM_CALL, 0, 0, 0, 0,
+-	MNEM_CALL, 0, 0, 0, 0,
+-	MNEM_RET
+-};
+ #define IRQ_PATCH_INT_MASK 0
+ #define IRQ_PATCH_DISABLE  5
+ 
+@@ -130,33 +125,17 @@ static unsigned vmi_patch(u8 type, u16 c
+ static unsigned vmi_patch(u8 type, u16 clobbers, void *insns, unsigned len)
+ {
+ 	switch (type) {
+-		case PARAVIRT_IRQ_DISABLE:
++		case PARAVIRT_PATCH(irq_disable):
+ 			return patch_internal(VMI_CALL_DisableInterrupts, len, insns);
+-		case PARAVIRT_IRQ_ENABLE:
++		case PARAVIRT_PATCH(irq_enable):
+ 			return patch_internal(VMI_CALL_EnableInterrupts, len, insns);
+-		case PARAVIRT_RESTORE_FLAGS:
++		case PARAVIRT_PATCH(restore_fl):
+ 			return patch_internal(VMI_CALL_SetInterruptMask, len, insns);
+-		case PARAVIRT_SAVE_FLAGS:
++		case PARAVIRT_PATCH(save_fl):
+ 			return patch_internal(VMI_CALL_GetInterruptMask, len, insns);
+-        	case PARAVIRT_SAVE_FLAGS_IRQ_DISABLE:
+-			if (len >= 10) {
+-				patch_internal(VMI_CALL_GetInterruptMask, len, insns);
+-				patch_internal(VMI_CALL_DisableInterrupts, len-5, insns+5);
+-				return 10;
+-			} else {
+-				/*
+-				 * You bastards didn't leave enough room to
+-				 * patch save_flags_irq_disable inline.  Patch
+-				 * to a helper
+-				 */
+-				BUG_ON(len < 5);
+-				*(char *)insns = MNEM_CALL;
+-				patch_offset(insns, irq_save_disable_callout);
+-				return 5;
+-			}
+-		case PARAVIRT_INTERRUPT_RETURN:
++		case PARAVIRT_PATCH(iret):
+ 			return patch_internal(VMI_CALL_IRET, len, insns);
+-		case PARAVIRT_STI_SYSEXIT:
++		case PARAVIRT_PATCH(irq_enable_sysexit):
+ 			return patch_internal(VMI_CALL_SYSEXIT, len, insns);
+ 		default:
+ 			break;
+@@ -733,11 +712,6 @@ static inline int __init activate_vmi(vo
+ 	para_fill(restore_fl, SetInterruptMask);
+ 	para_fill(irq_disable, DisableInterrupts);
+ 	para_fill(irq_enable, EnableInterrupts);
+-	/* irq_save_disable !!! sheer pain */
+-	patch_offset(&irq_save_disable_callout[IRQ_PATCH_INT_MASK],
+-		     (char *)paravirt_ops.save_fl);
+-	patch_offset(&irq_save_disable_callout[IRQ_PATCH_DISABLE],
+-		     (char *)paravirt_ops.irq_disable);
+ #ifndef CONFIG_NO_IDLE_HZ
+ 	para_fill(safe_halt, Halt);
+ #else
+===================================================================
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -4,18 +4,7 @@
+  * para-virtualization: those hooks are defined here. */
+ 
+ #ifdef CONFIG_PARAVIRT
+-#include <linux/stringify.h>
+ #include <asm/page.h>
+-
+-/* These are the most performance critical ops, so we want to be able to patch
+- * callers */
+-#define PARAVIRT_IRQ_DISABLE 0
+-#define PARAVIRT_IRQ_ENABLE 1
+-#define PARAVIRT_RESTORE_FLAGS 2
+-#define PARAVIRT_SAVE_FLAGS 3
+-#define PARAVIRT_SAVE_FLAGS_IRQ_DISABLE 4
+-#define PARAVIRT_INTERRUPT_RETURN 5
+-#define PARAVIRT_STI_SYSEXIT 6
+ 
+ /* Bitmask of what can be clobbered: usually at least eax. */
+ #define CLBR_NONE 0x0
+@@ -26,6 +15,23 @@
+ 
+ #ifndef __ASSEMBLY__
+ #include <linux/types.h>
 +
- /*
-  *	Internals.  Dont't use..
-  */
++#define paravirt_type(type)		[paravirt_typenum] "i" (type)
++#define paravirt_clobber(clobber)	[paravirt_clobber] "i" (clobber)
++
++#define PARAVIRT_PATCH(x)		(offsetof(struct paravirt_ops, x) / sizeof(void *))
++
++#define _paravirt_alt(insn_string, type, clobber)	\
++	"771:\n\t" insn_string "\n" "772:\n"		\
++	".pushsection .parainstructions,\"a\"\n"	\
++	"  .long 771b\n"				\
++	"  .byte " type "\n"				\
++	"  .byte 772b-771b\n"				\
++	"  .short " clobber "\n"			\
++	".popsection\n"
++
++#define paravirt_alt(insn_string)				\
++	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
+ 
+ struct thread_struct;
+ struct Xgt_desc_struct;
+@@ -512,24 +518,16 @@ extern struct paravirt_patch_site __star
+ extern struct paravirt_patch_site __start_parainstructions[],
+ 	__stop_parainstructions[];
+ 
+-#define paravirt_alt(insn_string, typenum, clobber)	\
+-	"771:\n\t" insn_string "\n" "772:\n"		\
+-	".pushsection .parainstructions,\"a\"\n"	\
+-	"  .long 771b\n"				\
+-	"  .byte " __stringify(typenum) "\n"		\
+-	"  .byte 772b-771b\n"				\
+-	"  .short " __stringify(clobber) "\n"		\
+-	".popsection"
+-
+ static inline unsigned long __raw_local_save_flags(void)
+ {
+ 	unsigned long f;
+ 
+ 	__asm__ __volatile__(paravirt_alt( "pushl %%ecx; pushl %%edx;"
+ 					   "call *%1;"
+-					   "popl %%edx; popl %%ecx",
+-					  PARAVIRT_SAVE_FLAGS, CLBR_NONE)
+-			     : "=a"(f): "m"(paravirt_ops.save_fl)
++					   "popl %%edx; popl %%ecx")
++			     : "=a"(f): "m"(paravirt_ops.save_fl),
++			       paravirt_type(PARAVIRT_PATCH(save_fl)),
++			       paravirt_clobber(CLBR_NONE)
+ 			     : "memory", "cc");
+ 	return f;
+ }
+@@ -538,9 +536,10 @@ static inline void raw_local_irq_restore
+ {
+ 	__asm__ __volatile__(paravirt_alt( "pushl %%ecx; pushl %%edx;"
+ 					   "call *%1;"
+-					   "popl %%edx; popl %%ecx",
+-					  PARAVIRT_RESTORE_FLAGS, CLBR_EAX)
+-			     : "=a"(f) : "m" (paravirt_ops.restore_fl), "0"(f)
++					   "popl %%edx; popl %%ecx")
++			     : "=a"(f) : "m" (paravirt_ops.restore_fl), "0"(f),
++			       paravirt_type(PARAVIRT_PATCH(restore_fl)),
++			       paravirt_clobber(CLBR_EAX)
+ 			     : "memory", "cc");
+ }
+ 
+@@ -548,9 +547,10 @@ static inline void raw_local_irq_disable
+ {
+ 	__asm__ __volatile__(paravirt_alt( "pushl %%ecx; pushl %%edx;"
+ 					   "call *%0;"
+-					   "popl %%edx; popl %%ecx",
+-					  PARAVIRT_IRQ_DISABLE, CLBR_EAX)
+-			     : : "m" (paravirt_ops.irq_disable)
++					   "popl %%edx; popl %%ecx")
++			     : : "m" (paravirt_ops.irq_disable),
++			       paravirt_type(PARAVIRT_PATCH(irq_disable)),
++			       paravirt_clobber(CLBR_EAX)
+ 			     : "memory", "eax", "cc");
+ }
+ 
+@@ -558,9 +558,10 @@ static inline void raw_local_irq_enable(
+ {
+ 	__asm__ __volatile__(paravirt_alt( "pushl %%ecx; pushl %%edx;"
+ 					   "call *%0;"
+-					   "popl %%edx; popl %%ecx",
+-					  PARAVIRT_IRQ_ENABLE, CLBR_EAX)
+-			     : : "m" (paravirt_ops.irq_enable)
++					   "popl %%edx; popl %%ecx")
++			     : : "m" (paravirt_ops.irq_enable),
++			       paravirt_type(PARAVIRT_PATCH(irq_enable)),
++			       paravirt_clobber(CLBR_EAX)
+ 			     : "memory", "eax", "cc");
+ }
+ 
+@@ -568,33 +569,31 @@ static inline unsigned long __raw_local_
+ {
+ 	unsigned long f;
+ 
+-	__asm__ __volatile__(paravirt_alt( "pushl %%ecx; pushl %%edx;"
+-					   "call *%1; pushl %%eax;"
+-					   "call *%2; popl %%eax;"
+-					   "popl %%edx; popl %%ecx",
+-					  PARAVIRT_SAVE_FLAGS_IRQ_DISABLE,
+-					  CLBR_NONE)
+-			     : "=a"(f)
+-			     : "m" (paravirt_ops.save_fl),
+-			       "m" (paravirt_ops.irq_disable)
+-			     : "memory", "cc");
++	f = __raw_local_save_flags();
++	raw_local_irq_disable();
++
+ 	return f;
+ }
+ 
+-#define CLI_STRING paravirt_alt("pushl %%ecx; pushl %%edx;"		\
+-		     "call *paravirt_ops+%c[irq_disable];"		\
+-		     "popl %%edx; popl %%ecx",				\
+-		     PARAVIRT_IRQ_DISABLE, CLBR_EAX)
+-
+-#define STI_STRING paravirt_alt("pushl %%ecx; pushl %%edx;"		\
+-		     "call *paravirt_ops+%c[irq_enable];"		\
+-		     "popl %%edx; popl %%ecx",				\
+-		     PARAVIRT_IRQ_ENABLE, CLBR_EAX)
++#define CLI_STRING _paravirt_alt("pushl %%ecx; pushl %%edx;"		\
++				 "call *paravirt_ops+%c[irq_disable];"	\
++				 "popl %%edx; popl %%ecx",		\
++				 "%c[paravirt_cli_type]", "%c[paravirt_clobber]")
++
++#define STI_STRING _paravirt_alt("pushl %%ecx; pushl %%edx;"		\
++				"call *paravirt_ops+%c[irq_enable];"	\
++				 "popl %%edx; popl %%ecx",		\
++				 "%c[paravirt_cli_type]", "%c[paravirt_clobber]")
++
++
+ #define CLI_STI_CLOBBERS , "%eax"
+-#define CLI_STI_INPUT_ARGS \
++#define CLI_STI_INPUT_ARGS						\
+ 	,								\
+-	[irq_disable] "i" (offsetof(struct paravirt_ops, irq_disable)),	\
+-	[irq_enable] "i" (offsetof(struct paravirt_ops, irq_enable))
++		[irq_disable] "i" (offsetof(struct paravirt_ops, irq_disable)),	\
++		[irq_enable] "i" (offsetof(struct paravirt_ops, irq_enable)), \
++		[paravirt_cli_type] "i" (PARAVIRT_PATCH(irq_disable)),	\
++		[paravirt_sti_type] "i" (PARAVIRT_PATCH(irq_disable)),	\
++		paravirt_clobber(CLBR_NONE)
+ 
+ #else  /* __ASSEMBLY__ */
+ 
 
 -- 
 
