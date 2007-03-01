@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965049AbXCANb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965050AbXCANeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965049AbXCANb0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 08:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965050AbXCANb0
+	id S965050AbXCANeM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965051AbXCANeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 08:31:26 -0500
-Received: from p02c11o145.mxlogic.net ([208.65.145.68]:41538 "EHLO
-	p02c11o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965049AbXCANbZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 08:31:25 -0500
-Subject: wait_for_completion_timeout problem ???
-From: Eli Cohen <eli@mellanox.co.il>
-Reply-To: eli@mellanox.co.il
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: rdreier@cisco.com, "Michael S. Tsirkin" <mst@mellanox.co.il>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Mellanox Technologies
-Date: Thu, 01 Mar 2007 15:32:12 +0200
-Message-Id: <1172755932.5175.37.camel@mtls03>
+	Thu, 1 Mar 2007 08:34:12 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:52819 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965050AbXCANeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 08:34:10 -0500
+Date: Thu, 1 Mar 2007 16:30:20 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301133018.GB30177@2ka.mipt.ru>
+References: <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301110022.GA28260@elte.hu> <20070301111629.GA27381@2ka.mipt.ru> <20070301114137.GB897@elte.hu> <20070301114734.GA3508@elte.hu> <20070301121020.GC20773@2ka.mipt.ru> <20070301124336.GA24464@elte.hu> <20070301130135.GA20554@2ka.mipt.ru> <20070301131118.GA30228@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-X-Spam: [F=0.0100000000; S=0.010(2007010901)]
-X-MAIL-FROM: <eli@mellanox.co.il>
-X-SOURCE-IP: [194.90.237.34]
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070301131118.GA30228@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 16:32:12 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-	
-I have a problem with using this function. I am referring to
-drivers/infiniband/hw/mthca/mthca_cmd.c line 394. For convenience I
-quote from this code:
+On Thu, Mar 01, 2007 at 02:11:18PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> ok?
 
-	init_completion(&context->done);
+I undesrtood you couple of mails ago.
+No problem, I can put processing into the same function called from
+different servers :)
 
-	err = mthca_cmd_post(dev, in_param,
-			     out_param ? *out_param : 0,
-			     in_modifier, op_modifier,
-			     op, context->token, 1);
-	if (err)
-		goto out;
+> Btw., am i correct that in this particular 'ab' test, the 'immediately' 
+> flag is always zero, i.e. kweb_kevent_remove() is always called?
 
-	if (!wait_for_completion_timeout(&context->done, timeout)) {
-		err = -EBUSY;
-		goto out;
-	}
+Yes.
 
-timeout is 10 * HZ. Sometimes this function returns 0 which signifies
-timeout. However I can see that the interrupt handler called
-complete(&context->done)
-around 200 usec after calling wait_for_completion_timout(). When the
-function returns I can see that context->done.done equals 1 which
-confirms that complete was indeed called. Looking at the implementation
-of wait_for_completion_timout() it appears that complete() did not
-succeed to wake the process sleeping. But the timer callback function in
-schedule_timeout() did manage to wake up the sleeping process. Do you
-have any idea if there are any known circumstances that can lead to this
-behaviour. Any idea how to debug this?
+> 	Ingo
 
-Thanks
-Eli
+-- 
+	Evgeniy Polyakov
