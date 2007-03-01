@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933238AbXCALWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933249AbXCAL2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933238AbXCALWR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 06:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933239AbXCALWR
+	id S933249AbXCAL2L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 06:28:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933248AbXCAL2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 06:22:17 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:56031 "EHLO 2ka.mipt.ru"
+	Thu, 1 Mar 2007 06:28:10 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:54600 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933238AbXCALWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 06:22:16 -0500
-Date: Thu, 1 Mar 2007 14:20:19 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Eric Dumazet <dada1@cosmosbay.com>
+	id S933244AbXCAL2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 06:28:09 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Date: Thu, 1 Mar 2007 12:28:00 +0100
+User-Agent: KMail/1.9.5
 Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
        Theodore Tso <tytso@mit.edu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -24,66 +26,36 @@ Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
        Davide Libenzi <davidel@xmailserver.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301112017.GB27381@2ka.mipt.ru>
-References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <200703011214.45144.dada1@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <200703011214.45144.dada1@cosmosbay.com> <20070301112017.GB27381@2ka.mipt.ru>
+In-Reply-To: <20070301112017.GB27381@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200703011214.45144.dada1@cosmosbay.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 14:20:59 +0300 (MSK)
+Message-Id: <200703011228.01144.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 12:14:44PM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
-> On Thursday 01 March 2007 11:59, Evgeniy Polyakov wrote:
-> 
-> > Yes, it is about 98-100% in both cases.
-> > I've just re-run tests on my amd64 test machine without debug options:
+On Thursday 01 March 2007 12:20, Evgeniy Polyakov wrote:
+> On Thu, Mar 01, 2007 at 12:14:44PM +0100, Eric Dumazet (dada1@cosmosbay.com) 
+wrote:
+> > On Thursday 01 March 2007 11:59, Evgeniy Polyakov wrote:
+> > > Yes, it is about 98-100% in both cases.
+> > > I've just re-run tests on my amd64 test machine without debug options:
+> > >
+> > > epoll		4794.23
+> > > kevent		6468.95
 > >
-> > epoll		4794.23
-> > kevent		6468.95
-> >
-> 
-> It would be valuable if you could post oprofile results (CPU_CLK_UNHALTED) for 
-> both tests.
+> > It would be valuable if you could post oprofile results
+> > (CPU_CLK_UNHALTED) for both tests.
+>
+> I can't - oprofile does not work on this x86_64 machine:
+>
 
-I can't - oprofile does not work on this x86_64 machine:
+Yes, this is a known problem, but you can make it works, as I did.
 
-#opcontrol --setup --vmlinux=/home/s0mbre/aWork/git/linux-2.6.kevent/vmlinux
-# opcontrol --start
-Using default event: CPU_CLK_UNHALTED:100000:0:1:1
-/usr/bin/opcontrol: line 994: /dev/oprofile/0/enabled: No such file or
-directory
-/usr/bin/opcontrol: line 994: /dev/oprofile/0/event: No such file or
-directory
-/usr/bin/opcontrol: line 994: /dev/oprofile/0/count: No such file or
-directory
-/usr/bin/opcontrol: line 994: /dev/oprofile/0/kernel: No such file or
-directory
-/usr/bin/opcontrol: line 994: /dev/oprofile/0/user: No such file or
-directory
-/usr/bin/opcontrol: line 994: /dev/oprofile/0/unit_mask: No such file or
-directory
+Please :)
 
-# ls -l /dev/oprofile/
-total 0
-drwxr-xr-x 1 root root 0 2007-03-01 09:41 1
-drwxr-xr-x 1 root root 0 2007-03-01 09:41 2
-drwxr-xr-x 1 root root 0 2007-03-01 09:41 3
--rw-r--r-- 1 root root 0 2007-03-01 09:41 backtrace_depth
--rw-r--r-- 1 root root 0 2007-03-01 09:41 buffer
--rw-r--r-- 1 root root 0 2007-03-01 09:41 buffer_size
--rw-r--r-- 1 root root 0 2007-03-01 09:41 buffer_watershed
--rw-r--r-- 1 root root 0 2007-03-01 09:41 cpu_buffer_size
--rw-r--r-- 1 root root 0 2007-03-01 09:41 cpu_type
--rw-rw-rw- 1 root root 0 2007-03-01 09:41 dump
--rw-r--r-- 1 root root 0 2007-03-01 09:41 enable
--rw-r--r-- 1 root root 0 2007-03-01 09:41 pointer_size
-drwxr-xr-x 1 root root 0 2007-03-01 09:41 stats
-
-> Thank you
-
--- 
-	Evgeniy Polyakov
+I used the CVS version of oprofile plus a patch you can find in the mailing 
+list archives. Dont remember exactly, since I hit this some months ago
