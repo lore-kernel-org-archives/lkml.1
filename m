@@ -1,69 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbXCAIEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbXCAIRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932861AbXCAIEu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 03:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932865AbXCAIEt
+	id S932980AbXCAIRO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 03:17:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXCAIRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 03:04:49 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:33328 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932861AbXCAIEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 03:04:48 -0500
-Date: Thu, 1 Mar 2007 00:03:51 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Oleg Nesterov <oleg@tv-sign.ru>,
-       vatsa@in.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>, David Chinner <dgc@sgi.com>,
-       Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [PATCH] Make XFS workqueues nonfreezable
-Message-Id: <20070301000351.ad3f641c.akpm@linux-foundation.org>
-In-Reply-To: <200703010054.33536.rjw@sisk.pl>
-References: <200702272251.28844.rjw@sisk.pl>
-	<200702282339.31234.rjw@sisk.pl>
-	<20070228224443.GC19542@elf.ucw.cz>
-	<200703010054.33536.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 1 Mar 2007 03:17:14 -0500
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:45804 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932980AbXCAIRO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 03:17:14 -0500
+Subject: Re: [Fastboot] [PATCH 2/5] Use the APIC to determine the hardware
+	processor id -	i386
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: vgoyal@in.ibm.com
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, judith@linux-foundation.org,
+       fastboot@lists.osdl.org, ebiederm@xmission.com, ak@suse.de
+In-Reply-To: <20070301075900.GA17405@in.ibm.com>
+References: <1172733419.1498.269.camel@sebastian.intellilink.co.jp>
+	 <20070301075900.GA17405@in.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Organization: NTT Open Source Software Center
+Date: Thu, 01 Mar 2007 17:17:39 +0900
+Message-Id: <1172737059.21214.11.camel@sebastian.intellilink.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007 00:54:32 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> Since freezable workqueues are broken in 2.6.21-rc
-> (cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
-> http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
-> it's better to change the only user of them, which is XFS, to use "normal"
-> nonfreezable workqueues.
+On Thu, 2007-03-01 at 13:29 +0530, Vivek Goyal wrote:
+> On Thu, Mar 01, 2007 at 04:16:59PM +0900, Fernando Luis Vázquez Cao wrote:
+> > Use the APIC to determine the hardware processor id when APIC support
+> > has been selected, independently of whether CONFIG_SMP is set or not.
+> > 
+> > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> > ---
+> > 
+> > diff -urNp linux-2.6.21-rc2/include/asm-i386/smp.h linux-2.6.21-rc2-hwcpuid/include/asm-i386/smp.h
+> > --- linux-2.6.21-rc2/include/asm-i386/smp.h	2007-03-01 14:02:21.000000000 +0900
+> > +++ linux-2.6.21-rc2-hwcpuid/include/asm-i386/smp.h	2007-03-01 14:08:50.000000000 +0900
+> > @@ -74,20 +74,6 @@ static inline int num_booting_cpus(void)
+> >  	return cpus_weight(cpu_callout_map);
+> >  }
+> >  
+> > -#ifdef CONFIG_X86_LOCAL_APIC
+> > -
+> > -#ifdef APIC_DEFINITION
+> > -extern int hard_smp_processor_id(void);
+> > -#else
+> > -#include <mach_apicdef.h>
+> > -static inline int hard_smp_processor_id(void)
+> > -{
+> > -	/* we don't want to mark this access volatile - bad code generation */
+> > -	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
+> > -}
+> > -#endif
+> > -#endif
+> > -
+> >  extern int safe_smp_processor_id(void);
+> >  extern int __cpu_disable(void);
+> >  extern void __cpu_die(unsigned int cpu);
+> > @@ -102,10 +88,23 @@ extern unsigned int num_processors;
+> >  
+> >  #define NO_PROC_ID		0xFF		/* No processor magic marker */
+> >  
+> > -#endif
+> > +#endif /* CONFIG_SMP */
+> >  
+> >  #ifndef __ASSEMBLY__
+> >  
+> > +#ifdef CONFIG_X86_LOCAL_APIC
+> > +#ifdef APIC_DEFINITION
+> > +extern int hard_smp_processor_id(void);
+> > +#else
+> > +#include <mach_apicdef.h>
+> > +static inline int hard_smp_processor_id(void)
+> > +{
+> > +	/* we don't want to mark this access volatile - bad code generation */
+> > +	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
+> > +}
+> > +#endif /* APIC_DEFINITION */
+> > +#endif /* CONFIG_X86_LOCAL_APIC */
+> > +
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> I think compilation will fail if CONFIG_X86_LOCAL_APIC=n and I build a UP
+> kernel? There is no definition of hard_smp_processor_id in that case.
+Hi Vivek,
+
+Thank you for the feedback.
+
+I tested that combination and it compiled properly. The reason is that
+hard_smp_processor_id is not used anywhere in the kernel when
+CONFIG_X86_LOCAL_APIC=n and CONFIG_SMP=n.
+
+I tested all the combinations (including voyager) and everything seems
+to work as expected.
+
+Regards,
+
+Fernando
+
+> Otherwise, as a concept it seems to make sense that hard_smp_processor_id()
+> is not necessarily zero on UP systems.
 > 
-> Index: linux-2.6.21-rc2/fs/xfs/linux-2.6/xfs_buf.c
-> ===================================================================
-> --- linux-2.6.21-rc2.orig/fs/xfs/linux-2.6/xfs_buf.c
-> +++ linux-2.6.21-rc2/fs/xfs/linux-2.6/xfs_buf.c
-> @@ -1829,11 +1829,11 @@ xfs_buf_init(void)
->  	if (!xfs_buf_zone)
->  		goto out_free_trace_buf;
->  
-> -	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
-> +	xfslogd_workqueue = create_workqueue("xfslogd");
->  	if (!xfslogd_workqueue)
->  		goto out_free_buf_zone;
->  
-> -	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
-> +	xfsdatad_workqueue = create_workqueue("xfsdatad");
->  	if (!xfsdatad_workqueue)
->  		goto out_destroy_xfslogd_workqueue;
->  
+> Thanks
+> Vivek
 
-Won't this break suspend+XFS?
-
-If so, and given that nobody seems to be reporting this deadlock, perhaps
-we'd be better off leaving things as-is for the while?
