@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752429AbXCAOJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752430AbXCAOJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752429AbXCAOJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 09:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbXCAOJ6
+	id S1752430AbXCAOJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 09:09:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbXCAOJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 09:09:58 -0500
-Received: from 85-18-76-201.ip.fastwebnet.it ([85.18.76.201]:53957 "EHLO
-	85-18-76-201.ip.fastwebnet.it" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752429AbXCAOJ5 (ORCPT
+	Thu, 1 Mar 2007 09:09:59 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:39171 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752430AbXCAOJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Mar 2007 09:09:57 -0500
-X-Greylist: delayed 1692 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 09:09:57 EST
-Message-ID: <45E6D7EB.5080501@robox.it>
-Date: Thu, 01 Mar 2007 14:40:59 +0100
-From: Marco Lazzarotto <m.lazzarotto@robox.it>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20070113)
-X-Accept-Language: it, it-it, en-us, en
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SKe4j+zbXV+xVOqueo1RJ5Xasy8ZTcYUnLYUsWVtXPLKFJlf3Pp8/bR73z5vlJ1gElWAK5yQKWccSd1XvXzG7/rMPMcJLiDThDV9F5q4VVXL/mkfP0TLCjUzhFrX9YSJPBl/FJVl1e6g26TMADSz0eTG2rSn+BcndtI0WWm+/A4=
+Message-ID: <8bd0f97a0703010609x6e745d8cv76d033a91822d568@mail.gmail.com>
+Date: Thu, 1 Mar 2007 09:09:57 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>, "Wu, Bryan" <bryan.wu@analog.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>, a.zummo@towertech.it,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 5/5] Blackfin: on-chip RTC controller driver
+In-Reply-To: <20070301091408.GA4324@linux-sh.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Trouble using some (fast) compact flash as ide device on an embedded
- system
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1172722546.5264.79.camel@roc-desktop>
+	 <20070301091408.GA4324@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I reported in bug 8036 in bugzilla.kernel.org,
+On 3/1/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> On Thu, Mar 01, 2007 at 12:15:46PM +0800, Wu, Bryan wrote:
+> > +#define stamp(fmt, args...) pr_debug("%s:%i: " fmt "\n", __FUNCTION__, __LINE__, ## args)
+> > +#define stampit() stamp("here i am")
+>
+> Are these really necessary for the final driver? It's littered all over
+> the place, and presumably the driver should be functional enough to not
+> need this sort of debugging instrumentation.
 
-Hardware Environment:
+is there really such a thing as a "final driver" ? :)
 
- - Use a compact flash SanDisk SDCFB-128 Firmware revision HDX 2.15
-   (we used other compact flashes with the same hw ad sw for years
-    with  no trouble)
+keeping the stampit()'s in place means i dont have to re-add and
+re-delete them every time some one reports a bug ...
 
-It happens on both etx boards:
- - VIA SOM-ETX (4475)
- - Gene-4312
+> > +static void rtc_bfin_sync_pending(void)
+> > +{
+> > +     stampit();
+> > +     while (!(bfin_read_RTC_ISTAT() & RTC_ISTAT_WRITE_COMPLETE)) {
+> > +             if (!(bfin_read_RTC_ISTAT() & RTC_ISTAT_WRITE_PENDING))
+> > +                     break;
+> > +     }
+> > +     bfin_write_RTC_ISTAT(RTC_ISTAT_WRITE_COMPLETE);
+> > +}
+>
+> No timeout? (and superfluous braces)
 
-Doing the command
-sfdisk -R /dev/hdc
+the ISTAT is reset every clock tick by the hardware itself ... so the
+timeout is implicit
 
-gives:
+> > +     case RTC_PIE_ON:
+> > +             stampit();
+> > +             spin_lock_irq(&rtc->lock);
+> > +             rtc_bfin_sync_pending();
+>
+> And it's also called under a spinlock each time.. this is a disaster
+> waiting to happen.
 
- * * *
-ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
-hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-ide: failed opcode was: unknown
-hdc: drive not ready for command
-ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
-hdc: do_special: 0x02
-hdc: do_special: recalibrate
-ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
-hdc: reading: block=0 sectors=8, buffer = 0xc6cd40000
-ide1: end_request: current=0xc6ebe754
- * * *
-
-the 'bad bit' in status error is DataRequest
-
-
-
-doing
-sfdisk -l /dev/hdc
-
-gives:
-
- * * *
-ide1: start_request: current=0xc6ebecd4 (rq->sect=0,block 0)
-hdc: reading: block=0, sectors=32, buffer=0xc6f37000
-hdc: lost interrupt
-hdc: lost interrupt [and so on several times]
- * * *
-
-I have no knowledge of the internals of the linux kernel, but I'm a
-programmer and have both hardware and time to spend on solving this issue.
-
-Thanks for suggestions...
-
-	Marco Lazzarotto
-	Robox s.p.a.
-
--- 
- *------------------------------------------------------------------*
- | Vi preghiamo, se questo messaggio fosse ricevuto per errore,     |
- | di avvisare il mittente e, tenuto conto delle responsabilita'    |
- | connesse all'indebito utilizzo e/o divulgazione del messaggio    |
- | e/o delle informazioni in esso contenute, di cancellare          |
- | l'originale e distruggere le varie copie o stampe. Grazie        |
- *------------------------------------------------------------------*
- | The information in this e-mail is solely for the addressee.      |
- | Please delete this e-mail if you are not the intended recipient. |
- | Do not disclose or distribute the communication in any form.     |
- *------------------------------------------------------------------*
+i noted the logic behind this decision in the comments in the driver
+... i too think it sucks, but i cant fathom a better idea so i'm
+certainly open to suggestions :)
+-mike
