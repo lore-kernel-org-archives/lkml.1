@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbXCALC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964944AbXCALHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933242AbXCALC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 06:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933239AbXCALC4
+	id S964944AbXCALHx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 06:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933238AbXCALHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 06:02:56 -0500
-Received: from gate.crashing.org ([63.228.1.57]:53706 "EHLO gate.crashing.org"
+	Thu, 1 Mar 2007 06:07:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49716 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933242AbXCALCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 06:02:55 -0500
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Arjan van de Ven <arjan@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
+	id S933235AbXCALHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 06:07:52 -0500
+Date: Thu, 1 Mar 2007 12:00:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <m1649mie1c.fsf@ebiederm.dsl.xmission.com>
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	 <200702280141.51420.arnd@arndb.de>
-	 <m14pp6kat9.fsf@ebiederm.dsl.xmission.com>
-	 <200702281324.19884.arnd@arndb.de>
-	 <m1649mie1c.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Thu, 01 Mar 2007 11:47:27 +0100
-Message-Id: <1172746048.11949.103.camel@localhost.localdomain>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301110022.GA28260@elte.hu>
+References: <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301105928.GA15709@2ka.mipt.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> > Similarly, in a pci device, one could imagine that the
-> > struct pci_driver contains a irq_handler_t member that
-> > is registered from the pci_device_probe() function
-> > if present.
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+
+> I've just re-run tests on my amd64 test machine without debug options:
 > 
-> Yes.  There is some potential there.  Although we would have to go
-> through an extra hoop to make it a pci specific handler type.
+> epoll        4794.23
+> kevent       6468.95
 
-Beware with that approach though. If you are on a shared IRQ line, when
-do you start getting called when an IRQ happen (possibly for the "other"
-device) ? As soon as you are bound to the device ? But that means
-potentially before the driver internal data structures are fully
-initialized...
+could you please post the two URLs for the exact evserver code used for 
+these measurements? (even if you did so already in the past - best to 
+have them always together with the numbers) Thanks!
 
-I like the driver having in control the "hooking" of the irq handler,
-thus, when it starts being capable of handling interrupts (even if they
-aren't initiated by that driver's device).
-
-
-
+	Ingo
