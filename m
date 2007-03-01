@@ -1,308 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161213AbXCAXd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161253AbXCAXgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161213AbXCAXd1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 18:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161250AbXCAXd1
+	id S1161253AbXCAXgg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 18:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161258AbXCAXgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 18:33:27 -0500
-Received: from xyzzy.farnsworth.org ([65.39.95.219]:3837 "HELO farnsworth.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1161213AbXCAXdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 18:33:25 -0500
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Thu, 1 Mar 2007 16:33:24 -0700
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
-Subject: [PATCH 2/2] mv643xx_eth: Place explicit port number in mv643xx_eth_platform_data
-Message-ID: <20070301233324.GA20193@xyzzy.farnsworth.org>
-References: <20070301233148.GA19550@xyzzy.farnsworth.org>
-MIME-Version: 1.0
+	Thu, 1 Mar 2007 18:36:36 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42826 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161250AbXCAXge (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 18:36:34 -0500
+Date: Thu, 1 Mar 2007 23:36:28 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       suparna@in.ibm.com, cmm@us.ibm.com, alex@clusterfs.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-ID: <20070301233628.GA31072@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
+	cmm@us.ibm.com, alex@clusterfs.com
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070301233148.GA19550@xyzzy.farnsworth.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070301183445.GA7911@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We were using the platform_device.id field to identify which ethernet
-port is used for mv643xx_eth device.  This is not generally correct.
-It will be incorrect, for example, if a hardware platform uses a single
-port but not the first port.  Here, we add an explicit port_number field
-to struct mv643xx_eth_platform_data.
+On Fri, Mar 02, 2007 at 12:04:45AM +0530, Amit K. Arora wrote:
+> This is to give a heads up on few patches that we will be soon coming up
+> with. These patches implement a new system call sys_fallocate() and a
+> new inode operation "fallocate", for persistent preallocation. The new
+> system call, as Andrew suggested, will look like:
+> 
+>   asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len);
+> 
+> As we are developing and testing the required patches, we decided to
+> post a preliminary patch and get inputs from the community to give it
+> a right direction and shape. First, a little description on the feature.
 
-This makes the mv643xx_eth_platform_data structure required, but that
-isn't an issue since all users currently provide it already.
+Thanks a lot, this has been long overdue.
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+Please don't forget to Cc the XFS list to keep developers of the only
+Linux filesystem supporting persistant allocations for a long time :)
 
----
+Various people will beat you up for the above syscall as lots of
+architectures really want 64bit arguments aligned in a proper way,
+e.g. you at least need a pad after 'int fd'.  Then again I already
+have suggestions for filling up that slot with useful information:
 
- arch/mips/momentum/jaguar_atx/platform.c  |    8 ++
- arch/mips/momentum/ocelot_3/platform.c    |    8 ++
- arch/mips/momentum/ocelot_c/platform.c    |    4 +
- arch/powerpc/platforms/chrp/pegasos_eth.c |    2 
- arch/ppc/syslib/mv64x60.c                 |   12 +++-
- drivers/net/mv643xx_eth.c                 |   59 ++++++++++----------
- include/linux/mv643xx.h                   |    1 
- 7 files changed, 62 insertions(+), 32 deletions(-)
+ - you really want a whence argument as to lseek, as it makes a lot
+   of sense for applications to allocate from the end of the file
+   or the current file positions.  The existing XFS ioctl already
+   has this, and it's trivial to support this in any preallocation
+   implementation I could imagine.
+ - we should think about having a flag value for which kind of preallocation
+   we want.  XFS currently has two:
 
-diff --git a/arch/mips/momentum/jaguar_atx/platform.c b/arch/mips/momentum/jaguar_atx/platform.c
-index 035ea51..003d3ee 100644
-Index: b/arch/mips/momentum/jaguar_atx/platform.c
-===================================================================
---- a/arch/mips/momentum/jaguar_atx/platform.c
-+++ b/arch/mips/momentum/jaguar_atx/platform.c
-@@ -48,6 +48,8 @@ static struct resource mv64x60_eth0_reso
- };
- 
- static struct mv643xx_eth_platform_data eth0_pd = {
-+	.port_number	= 0,
-+
- 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
- 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
- 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
-@@ -77,6 +79,8 @@ static struct resource mv64x60_eth1_reso
- };
- 
- static struct mv643xx_eth_platform_data eth1_pd = {
-+	.port_number	= 1,
-+
- 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
- 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
- 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
-@@ -105,7 +109,9 @@ static struct resource mv64x60_eth2_reso
- 	},
- };
- 
--static struct mv643xx_eth_platform_data eth2_pd;
-+static struct mv643xx_eth_platform_data eth2_pd = {
-+	.port_number	= 2,
-+};
- 
- static struct platform_device eth2_device = {
- 	.name		= MV643XX_ETH_NAME,
-Index: b/arch/mips/momentum/ocelot_3/platform.c
-===================================================================
---- a/arch/mips/momentum/ocelot_3/platform.c
-+++ b/arch/mips/momentum/ocelot_3/platform.c
-@@ -48,6 +48,8 @@ static struct resource mv64x60_eth0_reso
- };
- 
- static struct mv643xx_eth_platform_data eth0_pd = {
-+	.port_number	= 0,
-+
- 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
- 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
- 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
-@@ -77,6 +79,8 @@ static struct resource mv64x60_eth1_reso
- };
- 
- static struct mv643xx_eth_platform_data eth1_pd = {
-+	.port_number	= 1,
-+
- 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
- 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
- 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
-@@ -105,7 +109,9 @@ static struct resource mv64x60_eth2_reso
- 	},
- };
- 
--static struct mv643xx_eth_platform_data eth2_pd;
-+static struct mv643xx_eth_platform_data eth2_pd = {
-+	.port_number	= 2,
-+};
- 
- static struct platform_device eth2_device = {
- 	.name		= MV643XX_ETH_NAME,
-Index: b/arch/mips/momentum/ocelot_c/platform.c
-===================================================================
---- a/arch/mips/momentum/ocelot_c/platform.c
-+++ b/arch/mips/momentum/ocelot_c/platform.c
-@@ -47,6 +47,8 @@ static struct resource mv64x60_eth0_reso
- };
- 
- static struct mv643xx_eth_platform_data eth0_pd = {
-+	.port_number	= 0,
-+
- 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
- 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
- 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
-@@ -76,6 +78,8 @@ static struct resource mv64x60_eth1_reso
- };
- 
- static struct mv643xx_eth_platform_data eth1_pd = {
-+	.port_number	= 1,
-+
- 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
- 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
- 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
-Index: b/arch/powerpc/platforms/chrp/pegasos_eth.c
-===================================================================
---- a/arch/powerpc/platforms/chrp/pegasos_eth.c
-+++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
-@@ -58,6 +58,7 @@ static struct resource mv643xx_eth0_reso
- 
- 
- static struct mv643xx_eth_platform_data eth0_pd = {
-+	.port_number	= 0,
- 	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH0,
- 	.tx_sram_size = PEGASOS2_SRAM_TXRING_SIZE,
- 	.tx_queue_size = PEGASOS2_SRAM_TXRING_SIZE/16,
-@@ -87,6 +88,7 @@ static struct resource mv643xx_eth1_reso
- };
- 
- static struct mv643xx_eth_platform_data eth1_pd = {
-+	.port_number	= 1,
- 	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH1,
- 	.tx_sram_size = PEGASOS2_SRAM_TXRING_SIZE,
- 	.tx_queue_size = PEGASOS2_SRAM_TXRING_SIZE/16,
-Index: b/arch/ppc/syslib/mv64x60.c
-===================================================================
---- a/arch/ppc/syslib/mv64x60.c
-+++ b/arch/ppc/syslib/mv64x60.c
-@@ -339,7 +339,9 @@ static struct resource mv64x60_eth0_reso
- 	},
- };
- 
--static struct mv643xx_eth_platform_data eth0_pd;
-+static struct mv643xx_eth_platform_data eth0_pd = {
-+	.port_number	= 0,
-+};
- 
- static struct platform_device eth0_device = {
- 	.name		= MV643XX_ETH_NAME,
-@@ -362,7 +364,9 @@ static struct resource mv64x60_eth1_reso
- 	},
- };
- 
--static struct mv643xx_eth_platform_data eth1_pd;
-+static struct mv643xx_eth_platform_data eth1_pd = {
-+	.port_number	= 1,
-+};
- 
- static struct platform_device eth1_device = {
- 	.name		= MV643XX_ETH_NAME,
-@@ -385,7 +389,9 @@ static struct resource mv64x60_eth2_reso
- 	},
- };
- 
--static struct mv643xx_eth_platform_data eth2_pd;
-+static struct mv643xx_eth_platform_data eth2_pd = {
-+	.port_number	= 2,
-+};
- 
- static struct platform_device eth2_device = {
- 	.name		= MV643XX_ETH_NAME,
-Index: b/drivers/net/mv643xx_eth.c
-===================================================================
---- a/drivers/net/mv643xx_eth.c
-+++ b/drivers/net/mv643xx_eth.c
-@@ -1309,7 +1309,7 @@ static void mv643xx_init_ethtool_cmd(str
- static int mv643xx_eth_probe(struct platform_device *pdev)
- {
- 	struct mv643xx_eth_platform_data *pd;
--	int port_num = pdev->id;
-+	int port_num;
- 	struct mv643xx_private *mp;
- 	struct net_device *dev;
- 	u8 *p;
-@@ -1319,6 +1319,12 @@ static int mv643xx_eth_probe(struct plat
- 	int duplex = DUPLEX_HALF;
- 	int speed = 0;			/* default to auto-negotiation */
- 
-+	pd = pdev->dev.platform_data;
-+	if (pd == NULL) {
-+		printk(KERN_ERR "No mv643xx_eth_platform_data\n");
-+		return -ENODEV;
-+	}
-+
- 	dev = alloc_etherdev(sizeof(struct mv643xx_private));
- 	if (!dev)
- 		return -ENOMEM;
-@@ -1331,8 +1337,6 @@ static int mv643xx_eth_probe(struct plat
- 	BUG_ON(!res);
- 	dev->irq = res->start;
- 
--	mp->port_num = port_num;
--
- 	dev->open = mv643xx_eth_open;
- 	dev->stop = mv643xx_eth_stop;
- 	dev->hard_start_xmit = mv643xx_eth_start_xmit;
-@@ -1373,39 +1377,40 @@ static int mv643xx_eth_probe(struct plat
- 
- 	spin_lock_init(&mp->lock);
- 
-+	port_num = pd->port_number;
-+
- 	/* set default config values */
- 	eth_port_uc_addr_get(dev, dev->dev_addr);
- 	mp->rx_ring_size = MV643XX_ETH_PORT_DEFAULT_RECEIVE_QUEUE_SIZE;
- 	mp->tx_ring_size = MV643XX_ETH_PORT_DEFAULT_TRANSMIT_QUEUE_SIZE;
- 
--	pd = pdev->dev.platform_data;
--	if (pd) {
--		if (is_valid_ether_addr(pd->mac_addr))
--			memcpy(dev->dev_addr, pd->mac_addr, 6);
--
--		if (pd->phy_addr || pd->force_phy_addr)
--			ethernet_phy_set(port_num, pd->phy_addr);
--
--		if (pd->rx_queue_size)
--			mp->rx_ring_size = pd->rx_queue_size;
--
--		if (pd->tx_queue_size)
--			mp->tx_ring_size = pd->tx_queue_size;
--
--		if (pd->tx_sram_size) {
--			mp->tx_sram_size = pd->tx_sram_size;
--			mp->tx_sram_addr = pd->tx_sram_addr;
--		}
-+	if (is_valid_ether_addr(pd->mac_addr))
-+		memcpy(dev->dev_addr, pd->mac_addr, 6);
- 
--		if (pd->rx_sram_size) {
--			mp->rx_sram_size = pd->rx_sram_size;
--			mp->rx_sram_addr = pd->rx_sram_addr;
--		}
-+	if (pd->phy_addr || pd->force_phy_addr)
-+		ethernet_phy_set(port_num, pd->phy_addr);
-+
-+	if (pd->rx_queue_size)
-+		mp->rx_ring_size = pd->rx_queue_size;
-+
-+	if (pd->tx_queue_size)
-+		mp->tx_ring_size = pd->tx_queue_size;
-+
-+	if (pd->tx_sram_size) {
-+		mp->tx_sram_size = pd->tx_sram_size;
-+		mp->tx_sram_addr = pd->tx_sram_addr;
-+	}
- 
--		duplex = pd->duplex;
--		speed = pd->speed;
-+	if (pd->rx_sram_size) {
-+		mp->rx_sram_size = pd->rx_sram_size;
-+		mp->rx_sram_addr = pd->rx_sram_addr;
- 	}
- 
-+	duplex = pd->duplex;
-+	speed = pd->speed;
-+
-+	mp->port_num = port_num;
-+
- 	/* Hook up MII support for ethtool */
- 	mp->mii.dev = dev;
- 	mp->mii.mdio_read = mv643xx_mdio_read;
-Index: b/include/linux/mv643xx.h
-===================================================================
---- a/include/linux/mv643xx.h
-+++ b/include/linux/mv643xx.h
-@@ -1289,6 +1289,7 @@ struct mv64xxx_i2c_pdata {
- #define MV643XX_ETH_NAME	"mv643xx_eth"
- 
- struct mv643xx_eth_platform_data {
-+	int		port_number;
- 	u16		force_phy_addr;	/* force override if phy_addr == 0 */
- 	u16		phy_addr;
- 
+	ALLOCSP which updates the inode size and physically zeroes blocks
+	RESVSP which does not update inode size but creates and unwritten
+	       extent
+
+   the current posix_fallocate semantics are somewhere in the middle, as
+   it requires and update to the inode size, but does not specify at
+   all what happens if you read from the newly allocated space.
+   And yes, as and heads up to developers implementing this feature
+   on new filesystems: don't just return new blocks, that's a gapping
+   security hole :)
+
+> +asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len)
+> +{
+> +	struct file *file;
+> +	struct inode *inode;
+> +	long ret = -EINVAL;
+> +	file = fget(fd);
+> +	if (!file)
+> +		goto out;
+> +	inode = file->f_path.dentry->d_inode;
+> +	if (inode->i_op && inode->i_op->fallocate)
+> +		ret = inode->i_op->fallocate(inode, offset, len);
+> +	else
+> +		ret = -ENOTTY;
+> +	fput(file);
+> +out:
+> +        return ret;
+> +}
+
+This should use fget_light, and I'm sure the code could be written
+in a slightly more readable:
+
+asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len)
+{
+	struct file *file = fget(fd);
+	 ret = -EINVAL;
+
+	if (file)
+		struct inode *inode = file->f_path.dentry->d_inode;
+		if (inode->i_op && inode->i_op->fallocate)
+			ret = inode->i_op->fallocate(inode, offset, len);
+		else
+			ret = -ENOTTY;
+		fput(file);
+	}
+
+	return ret;
+}
+
+p.s. you reference ext4_fallocate in the patch but don't actually
+introduce it, it definitively won't compile as-is :)
