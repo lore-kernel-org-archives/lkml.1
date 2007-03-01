@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932504AbXCAMMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933254AbXCAMPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932504AbXCAMMt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbXCAMMs
+	id S933254AbXCAMPE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:15:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933259AbXCAMPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:12:48 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:36893 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932504AbXCAMMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:12:47 -0500
-Date: Thu, 1 Mar 2007 15:10:22 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+	Thu, 1 Mar 2007 07:15:04 -0500
+Received: from www.osadl.org ([213.239.205.134]:53673 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933254AbXCAMPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:15:01 -0500
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Adrian Bunk <bunk@stusta.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301121020.GC20773@2ka.mipt.ru>
-References: <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301110022.GA28260@elte.hu> <20070301111629.GA27381@2ka.mipt.ru> <20070301114137.GB897@elte.hu> <20070301114734.GA3508@elte.hu>
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703012305.53997.kernel@kolivas.org>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <200703012213.25629.kernel@kolivas.org>
+	 <1172748837.11473.53.camel@localhost.localdomain>
+	 <200703012305.53997.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Thu, 01 Mar 2007 13:20:42 +0100
+Message-Id: <1172751642.11473.57.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070301114734.GA3508@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 15:10:59 +0300 (MSK)
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 12:47:35PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+On Thu, 2007-03-01 at 23:05 +1100, Con Kolivas wrote:
+> > > And that's the depressing part because of course I was interested in that
+> > > as the original approach to the problem (and it was a big problem). When
+> > > I spoke to Intel and AMD (of course to date no SMT AMD chip exists) at
+> > > kernel summit they said it was too hard to implement hardware priorities
+> > > well. Which is real odd since IBM have already done it with Power...
+> > >
+> > > Still I think it has been working fine in software till now, but now it
+> > > has to deal with the added confusion of dynticks, so I already know what
+> > > will happen to it.
+> >
+> > Well, it's not a dyntick problem in the first place. Even w/o dynticks
+> > we go idle with local_softirq_pending(). Dynticks contains an explicit
+> > check for that, which makes it visible.
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > I also changed client socket to nonblocking mode with the same result 
-> > > in epoll server. If you will find it broken, please send me corrected 
-> > > to test too.
-> > 
-> > this line in evserver_kevent.c looks a bit fishy:
-> 
-> this one in evserver_kevent.c looks problematic too:
-> 
->         shutdown(s, SHUT_RDWR);
->         close(s);
-> 
-> as evserver_epoll.c only does:
-> 
->         close(s);
-> 
-> again, there might be TCP control flow differences due to this. [ Or the 
-> removal of this shutdown() call might be a small speedup for the kevent 
-> case ;) ]
+> Oops I'm sorry if I made it sound like there's a dynticks problem. That was 
+> not my intent and I said as much in an earlier email. Even though I'm finding 
+> myself defending code that has already been softly tagged for redundancy, 
+> let's be clear here; we're talking about at most a further 70ms delay in 
+> scheduling a niced task in the presence of a nice 0 task, which is a 
+> reasonable delay for ksoftirqd which we nice the eyeballs out of in mainline. 
+> Considering under load our scheduler has been known to cause scheduling 
+> delays of 10 seconds I still don't see this as a bug. Dynticks just "points 
+> it out to us".
 
-:)
+Well, dyntick might end up to delay it for X seconds as well, which _is_
+observable and that's why the check was put there in the first place.
 
-> Also, the order of fd and socket close() is different in the two cases. 
-> It shouldnt make any difference - but that too just makes the results 
-> harder to trust. Would it be so hard to introduce a single 
-> handle_web_request() function that is exactly the same in the two tests? 
-> All the queueing details (which are of course different in the epoll and 
-> the kevent case) should be in the client function, which calls 
-> handle_web_request().
+	tglx
 
-I've removed shutdown - things are the same.
 
-Sometimes kevent performance drops to lower numbers and its graph of
-times needed to handle events has high platoes (with and without
-shutdown - it was always), like this:
-
-Percentage of the requests served within a certain time (ms)
-50%    128
-66%    486
-75%    505
-80%    507
-90%    732
-95%   3087	// something is wrong at this point
-98%   9058
-99%   9072
-100%  15562 (longest request)
-
-it is possible that threre are some other bugs in the server though,
-which prevent sockets from being quicly closed and thus its processing
-time increases - I do not know for sure the root of that event.
-
-I separated epoll and kevent servers, since originally kevent server 
-included additional kevent features, but then new ones were added 
-and I moved slowly to the similar to epoll case.
-
-Current version of the server was a pre-test one for lighttpd patches,
-so essentially it should be like epoll except minor details.
-
-> 	Ingo
-
--- 
-	Evgeniy Polyakov
