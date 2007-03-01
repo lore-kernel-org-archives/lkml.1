@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933280AbXCANDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXCANEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933280AbXCANDj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 08:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXCANDj
+	id S933265AbXCANEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXCANEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 08:03:39 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40466 "EHLO mx1.suse.de"
+	Thu, 1 Mar 2007 08:04:48 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:57477 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933271AbXCANDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 08:03:38 -0500
-Date: Thu, 1 Mar 2007 14:03:36 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Fastboot] [PATCH 1/1] - platform_kernel_launch_event is noop on generic kernel
-Message-ID: <20070301130336.GB18853@strauss.suse.de>
-Mail-Followup-To: linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20070228194517.25635.98535.sendpatchset@attica.americas.sgi.com> <20070301042227.GO6479@verge.net.au> <20070301125736.GA18853@strauss.suse.de>
+	id S933265AbXCANEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 08:04:48 -0500
+Date: Thu, 1 Mar 2007 14:03:07 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Avi Kivity <avi@qumranet.com>
+cc: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: minor device number request for /dev/kvm (kernel-based virtual
+ machine)
+In-Reply-To: <45E6BFD0.1060003@qumranet.com>
+Message-ID: <Pine.LNX.4.61.0703011401370.23355@yvahk01.tjqt.qr>
+References: <45975F61.4070506@qumranet.com>
+ <93C4769E3BED6B42B7203BD6F065654C08C5D6D3@dmoexc01.emea.cpqcorp.net>
+ <45E6BFD0.1060003@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301125736.GA18853@strauss.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bernhard Walle <bwalle@suse.de> [2007-03-01 13:57]:
-> * Horms <horms@verge.net.au> [2007-03-01 05:22]:
-> > On Wed, Feb 28, 2007 at 01:45:17PM -0600, John Keller wrote:
-> > > Add a missing #define for the platform_kernel_launch_event.
-> > > Without this fix, a call to platform_kernel_launch_event()
-> > > becomes a noop on generic kernels. SN systems require this
-> > > fix to successfully kdump/kexec from certain hardware errors.
-> > >
-> > > Signed-off-by: John Keller <jpk@sgi.com>
-> > 
-> > I made a similar change when porting to xen, but I hadn't thought
-> > to see if mainline linux needs it to.
-> > 
-> > Acked-by: Simon Horman <horms@verge.net.au>
-> 
-> I think there's an additional change needed. Without that, it leads to
-> a NULL pointer dereference.
 
-Maybe I should also get my editor right ... ;):
+On Mar 1 2007 13:58, Avi Kivity wrote:
+>
+> fs/char_dev.c:
+>> int register_chrdev(unsigned int major, const char *name,
+>>            const struct file_operations *fops)
+>> {
+>> struct char_device_struct *cd;
+>> struct cdev *cdev;
+>> char *s;
+>> int err = -ENOMEM;
+>> 
+>> cd = __register_chrdev_region(major, 0, 256, name);
+>
+> So misc minor numbers under 256 are not supported.
+>
+> What's the way out?  Increase the region size?  I don't know if that's safe.
 
----
- include/asm-ia64/machvec.h |    2 ++
- 1 file changed, 2 insertions(+)
+If it does not increase memory usage, then possibly:
 
-Index: b/include/asm-ia64/machvec.h
-===================================================================
---- a/include/asm-ia64/machvec.h
-+++ b/include/asm-ia64/machvec.h
-@@ -168,6 +168,7 @@ extern void machvec_tlb_migrate_finish (
- #  define platform_setup_msi_irq	ia64_mv.setup_msi_irq
- #  define platform_teardown_msi_irq	ia64_mv.teardown_msi_irq
- #  define platform_pci_fixup_bus	ia64_mv.pci_fixup_bus
-+#  define platform_kernel_launch_event	ia64_mv.kernel_launch_event
- # endif
- 
- /* __attribute__((__aligned__(16))) is required to make size of the
-@@ -269,6 +270,7 @@ struct ia64_machine_vector {
- 	platform_setup_msi_irq,			\
- 	platform_teardown_msi_irq,		\
- 	platform_pci_fixup_bus,			\
-+	platform_kernel_launch_event            \
- }
- 
- extern struct ia64_machine_vector ia64_mv;
+  __register_chrdev_region(major, 0, (~0U) & MINORMASK, name);
+                                  or (1<<MINORMASK)-1 if that's more clear
+
+
+Jan
+-- 
