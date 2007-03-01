@@ -1,139 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965028AbXCAMCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964964AbXCAMH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965028AbXCAMCr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964964AbXCAMCr
+	id S964964AbXCAMH1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965031AbXCAMH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:02:47 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:51937 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965028AbXCAMCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:02:47 -0500
-Date: Thu, 1 Mar 2007 15:01:16 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+	Thu, 1 Mar 2007 07:07:26 -0500
+Received: from mail09.syd.optusnet.com.au ([211.29.132.190]:40655 "EHLO
+	mail09.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964964AbXCAMH0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:07:26 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: tglx@linutronix.de
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 2)
+Date: Thu, 1 Mar 2007 23:05:53 +1100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Adrian Bunk <bunk@stusta.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301120114.GB20773@2ka.mipt.ru>
-References: <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301110022.GA28260@elte.hu> <20070301111629.GA27381@2ka.mipt.ru> <20070301114137.GB897@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <200703012213.25629.kernel@kolivas.org> <1172748837.11473.53.camel@localhost.localdomain>
+In-Reply-To: <1172748837.11473.53.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070301114137.GB897@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 15:01:53 +0300 (MSK)
+Message-Id: <200703012305.53997.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 12:41:37PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> 
-> > I also changed client socket to nonblocking mode with the same result 
-> > in epoll server. If you will find it broken, please send me corrected 
-> > to test too.
-> 
-> this line in evserver_kevent.c looks a bit fishy:
-> 
->         err = recv(s, buf, 100, 0);
-> 
-> because on the evserver_epoll.c side the following is done:
-> 
->         err = recv(s, buf, 4096, 0);
-> 
-> now, for 'ab', the request size is 76 bytes, so it should fit fine 
-> functionality-wise. But, the TCP stack might decide differently of 
-> whether to return with a partial packet depending on how much data is 
-> requested. I dont know whether it actually makes a difference in the TCP 
-> flow decisions, and whether it makes a performance difference in your 
-> test, but safest would be to use 4096 in both cases.
+On Thursday 01 March 2007 22:33, Thomas Gleixner wrote:
+> On Thu, 2007-03-01 at 22:13 +1100, Con Kolivas wrote:
+> > > if then there should be a mechanism /in the hardware/ to set the
+> > > priority of a CPU - and then the hardware could decide how to
+> > > prioritize between siblings. Doing this in software is really hard.
+> >
+> > And that's the depressing part because of course I was interested in that
+> > as the original approach to the problem (and it was a big problem). When
+> > I spoke to Intel and AMD (of course to date no SMT AMD chip exists) at
+> > kernel summit they said it was too hard to implement hardware priorities
+> > well. Which is real odd since IBM have already done it with Power...
+> >
+> > Still I think it has been working fine in software till now, but now it
+> > has to deal with the added confusion of dynticks, so I already know what
+> > will happen to it.
+>
+> Well, it's not a dyntick problem in the first place. Even w/o dynticks
+> we go idle with local_softirq_pending(). Dynticks contains an explicit
+> check for that, which makes it visible.
 
-Well, that would be quite strange - as far as I known linux network
-stack (for which kevent was originally created to support network AIO),
-there should not be any difference.
-
-Anyway, I've reran the test with the same values:
-
-# ab -c8000 -n80000 http://192.168.0.48/
-This is ApacheBench, Version 2.0.40-dev <$Revision: 1.146 $> apache-2.0
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Copyright 2006 The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking 192.168.0.48 (be patient)
-Completed 8000 requests
-Completed 16000 requests
-Completed 24000 requests
-Completed 32000 requests
-Completed 40000 requests
-Completed 48000 requests
-Completed 56000 requests
-Completed 64000 requests
-Completed 72000 requests
-Finished 80000 requests
-
-
-Server Software:        Apache/1.3.27
-Server Hostname:        192.168.0.48
-Server Port:            80
-
-Document Path:          /
-Document Length:        3521 bytes
-
-Concurrency Level:      8000
-Time taken for tests:   18.398381 seconds
-Complete requests:      80000
-Failed requests:        0
-Write errors:           0
-Total transferred:      338738048 bytes
-HTML transferred:       308031164 bytes
-Requests per second:    4348.21 [#/sec] (mean)
-Time per request:       1839.838 [ms] (mean)
-Time per request:       0.230 [ms] (mean, across all concurrent
-requests)
-Transfer rate:          17979.73 [Kbytes/sec] received
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:      148  795 196.9    808    3599
-Processing:   824  882  39.7    878     986
-Waiting:       59  426 212.6    423     914
-Total:       1073 1678 200.8   1673    4579
-
-Percentage of the requests served within a certain time (ms)
-50%   1673
-66%   1674
-75%   1678
-80%   1686
-90%   1852
-95%   1861
-98%   1864
-99%   1865
-100%   4579 (longest request)
-
-Essentially the same result (in limits of some inaccuracy).
-
-> in general, please make sure the exact same system calls are done in the 
-> client function. (except of course for the event queueing syscalls 
-> themselves)
-
-Yes, that should be done of course.
-I even have a plan to create the same binary for both, but have also in
-plans to turn some kevent optimization (mainly readiness-on-submit, when
-requested event (secv/send/anything) is ready immediately - kevent
-supports to return that event in the submission syscall without
-additional overhead by reading it from ring or queue).
-
-> 	Ingo
+Oops I'm sorry if I made it sound like there's a dynticks problem. That was 
+not my intent and I said as much in an earlier email. Even though I'm finding 
+myself defending code that has already been softly tagged for redundancy, 
+let's be clear here; we're talking about at most a further 70ms delay in 
+scheduling a niced task in the presence of a nice 0 task, which is a 
+reasonable delay for ksoftirqd which we nice the eyeballs out of in mainline. 
+Considering under load our scheduler has been known to cause scheduling 
+delays of 10 seconds I still don't see this as a bug. Dynticks just "points 
+it out to us".
 
 -- 
-	Evgeniy Polyakov
+-ck
