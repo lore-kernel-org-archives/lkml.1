@@ -1,159 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964808AbXCAKEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXCAKFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964808AbXCAKEp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 05:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964810AbXCAKEl
+	id S964810AbXCAKFD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 05:05:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964828AbXCAKFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 05:04:41 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:56987 "EHLO
+	Thu, 1 Mar 2007 05:05:01 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:57003 "EHLO
 	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964801AbXCAKEb (ORCPT
+	with ESMTP id S964810AbXCAKEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 05:04:31 -0500
+	Thu, 1 Mar 2007 05:04:52 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: akpm@linux-foundation.org
 Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
-Message-Id: <20070301100430.29753.55673.sendpatchset@skynet.skynet.ie>
+Message-Id: <20070301100450.29753.26488.sendpatchset@skynet.skynet.ie>
 In-Reply-To: <20070301100229.29753.86342.sendpatchset@skynet.skynet.ie>
 References: <20070301100229.29753.86342.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 6/12] Add a configure option to group pages by mobility
-Date: Thu,  1 Mar 2007 10:04:30 +0000 (GMT)
+Subject: [PATCH 7/12] Drain per-cpu lists when high-order allocations fail
+Date: Thu,  1 Mar 2007 10:04:50 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The grouping mechanism has some memory overhead and a more complex allocation
-path. This patch allows the strategy to be disabled for small memory systems
-or if it is known the workload is suffering because of the strategy. It also
-acts to show where the page groupings strategy interacts with the standard
-buddy allocator.
-
+Per-cpu pages can accidentally cause fragmentation because they are free, but
+pinned pages in an otherwise contiguous block.  When this patch is applied,
+the per-cpu caches are drained after the direct-reclaim is entered if the
+requested order is greater than 0. It simply reuses the code used by suspend
+and hotplug.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
 ---
 
- include/linux/mmzone.h |    6 ++++++
- init/Kconfig           |   13 +++++++++++++
- mm/page_alloc.c        |   31 +++++++++++++++++++++++++++++++
- 3 files changed, 50 insertions(+)
+ page_alloc.c |   28 +++++++++++++++++++++++++++-
+ 1 files changed, 27 insertions(+), 1 deletion(-)
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-005_percpu/include/linux/mmzone.h linux-2.6.20-mm2-006_configurable/include/linux/mmzone.h
---- linux-2.6.20-mm2-005_percpu/include/linux/mmzone.h	2007-02-20 18:29:42.000000000 +0000
-+++ linux-2.6.20-mm2-006_configurable/include/linux/mmzone.h	2007-02-20 18:33:41.000000000 +0000
-@@ -25,9 +25,15 @@
- #endif
- #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-006_configurable/mm/page_alloc.c linux-2.6.20-mm2-007_drainpercpu/mm/page_alloc.c
+--- linux-2.6.20-mm2-006_configurable/mm/page_alloc.c	2007-02-20 18:33:41.000000000 +0000
++++ linux-2.6.20-mm2-007_drainpercpu/mm/page_alloc.c	2007-02-20 18:35:52.000000000 +0000
+@@ -916,7 +916,9 @@ void mark_free_pages(struct zone *zone)
  
-+#ifdef CONFIG_PAGE_GROUP_BY_MOBILITY
- #define MIGRATE_UNMOVABLE     0
- #define MIGRATE_MOVABLE       1
- #define MIGRATE_TYPES         2
-+#else
-+#define MIGRATE_UNMOVABLE     0
-+#define MIGRATE_MOVABLE       0
-+#define MIGRATE_TYPES         1
-+#endif
- 
- #define for_each_migratetype_order(order, type) \
- 	for (order = 0; order < MAX_ORDER; order++) \
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-005_percpu/init/Kconfig linux-2.6.20-mm2-006_configurable/init/Kconfig
---- linux-2.6.20-mm2-005_percpu/init/Kconfig	2007-02-19 01:22:33.000000000 +0000
-+++ linux-2.6.20-mm2-006_configurable/init/Kconfig	2007-02-20 18:33:41.000000000 +0000
-@@ -556,6 +556,19 @@ config SLOB
- 	default !SLAB
- 	bool
- 
-+config PAGE_GROUP_BY_MOBILITY
-+	bool "Group pages based on their mobility in the page allocator"
-+	def_bool y
-+	help
-+	  The standard allocator will fragment memory over time which means
-+	  that high order allocations will fail even if kswapd is running. If
-+	  this option is set, the allocator will try and group page types
-+	  based on their ability to migrate or reclaim. This is a best effort
-+	  attempt at lowering fragmentation which a few workloads care about.
-+	  The loss is a more complex allocator that may perform slower. If
-+	  you are interested in working with large pages, say Y and set
-+	  /proc/sys/vm/min_free_bytes to 16374. Otherwise say N
-+
- menu "Loadable module support"
- 
- config MODULES
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-005_percpu/mm/page_alloc.c linux-2.6.20-mm2-006_configurable/mm/page_alloc.c
---- linux-2.6.20-mm2-005_percpu/mm/page_alloc.c	2007-02-20 18:31:48.000000000 +0000
-+++ linux-2.6.20-mm2-006_configurable/mm/page_alloc.c	2007-02-20 18:33:41.000000000 +0000
-@@ -136,6 +136,7 @@ static unsigned long __initdata dma_rese
- #endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
- #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
- 
-+#ifdef CONFIG_PAGE_GROUP_BY_MOBILITY
- static inline int get_pageblock_migratetype(struct page *page)
- {
- 	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
-@@ -152,6 +153,22 @@ static inline int gfpflags_to_migratetyp
- 	return ((gfp_flags & __GFP_MOVABLE) != 0);
+ 	spin_unlock_irqrestore(&zone->lock, flags);
  }
++#endif /* CONFIG_PM */
  
-+#else
-+static inline int get_pageblock_migratetype(struct page *page)
-+{
-+	return MIGRATE_UNMOVABLE;
-+}
-+
-+static void set_pageblock_migratetype(struct page *page, int migratetype)
-+{
-+}
-+
-+static inline int gfpflags_to_migratetype(gfp_t gfp_flags)
-+{
-+	return MIGRATE_UNMOVABLE;
-+}
-+#endif /* CONFIG_PAGE_GROUP_BY_MOBILITY */
-+
- #ifdef CONFIG_DEBUG_VM
- static int page_outside_zone_boundaries(struct zone *zone, struct page *page)
- {
-@@ -655,6 +672,7 @@ static int prep_new_page(struct page *pa
- 	return 0;
- }
- 
-+#ifdef CONFIG_PAGE_GROUP_BY_MOBILITY
++#if defined(CONFIG_PM) || defined(CONFIG_PAGE_GROUP_BY_MOBILITY)
  /*
-  * This array describes the order lists are fallen back to when
-  * the free lists for the desirable migrate type are depleted
-@@ -711,6 +729,13 @@ static struct page *__rmqueue_fallback(s
- 
- 	return NULL;
+  * Spill all of this CPU's per-cpu pages back into the buddy allocator.
+  */
+@@ -928,7 +930,28 @@ void drain_local_pages(void)
+ 	__drain_pages(smp_processor_id());
+ 	local_irq_restore(flags);	
  }
-+#else
-+static struct page *__rmqueue_fallback(struct zone *zone, int order,
-+						int start_migratetype)
+-#endif /* CONFIG_PM */
++
++void smp_drain_local_pages(void *arg)
 +{
-+	return NULL;
++	drain_local_pages();
 +}
-+#endif /* CONFIG_PAGE_GROUP_BY_MOBILITY */
- 
- /* 
-  * Do the hard work of removing an element from the buddy allocator.
-@@ -993,6 +1018,7 @@ again:
- 			if (unlikely(!pcp->count))
- 				goto failed;
- 		}
-+#ifdef CONFIG_PAGE_GROUP_BY_MOBILITY
- 		/* Find a page of the appropriate migrate type */
- 		list_for_each_entry(page, &pcp->list, lru) {
- 			if (page_private(page) == migratetype) {
-@@ -1014,6 +1040,11 @@ again:
- 			list_del(&page->lru);
- 			pcp->count--;
- 		}
++
++/*
++ * Spill all the per-cpu pages from all CPUs back into the buddy allocator
++ */
++void drain_all_local_pages(void)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	__drain_pages(smp_processor_id());
++	local_irq_restore(flags);
++
++	smp_call_function(smp_drain_local_pages, NULL, 0, 1);
++}
 +#else
-+		page = list_entry(pcp->list.next, struct page, lru);
-+		list_del(&page->lru);
-+		pcp->count--;
-+#endif /* CONFIG_PAGE_GROUP_BY_MOBILITY */
- 	} else {
- 		spin_lock_irqsave(&zone->lock, flags);
- 		page = __rmqueue(zone, order, migratetype);
++void drain_all_local_pages(void) {}
++#endif /* CONFIG_PM || CONFIG_PAGE_GROUP_BY_MOBILITY */
+ 
+ /*
+  * Free a 0-order page
+@@ -1557,6 +1580,9 @@ nofail_alloc:
+ 
+ 	cond_resched();
+ 
++	if (order != 0)
++		drain_all_local_pages();
++
+ 	if (likely(did_some_progress)) {
+ 		page = get_page_from_freelist(gfp_mask, order,
+ 						zonelist, alloc_flags);
