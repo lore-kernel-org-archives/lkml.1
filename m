@@ -1,37 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965446AbXCARO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965424AbXCARPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965446AbXCARO4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 12:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965439AbXCAROx
+	id S965424AbXCARPA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 12:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965447AbXCARPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 12:14:53 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35753 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965425AbXCAROr (ORCPT
+	Thu, 1 Mar 2007 12:15:00 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:14674 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965424AbXCARNk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 12:14:47 -0500
-Date: Thu, 1 Mar 2007 18:18:56 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com
-Subject: [PATCH] pata_platform: set a cable type (which to set ?)
-Message-ID: <20070301181856.694deb7b@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 12:13:40 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=iEsWL6e0eMwBefNhAbBGNv+ha29UZTR/uDwou5P2OVr430/MBtzjMXUraYwcty9+0
+	wunK8SrygzbJ8RrDG7+KQ==
+Date: Thu, 1 Mar 2007 09:13:19 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andi Kleen <ak@suse.de>, Rohit Seth <rohitseth@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: [patch -mm 6/7] x86_64: export physnode mapping to userspace
+In-Reply-To: <Pine.LNX.4.64.0703010130310.10045@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0703010131070.10045@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0703010127130.10045@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0703010128150.10045@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0703010128490.10045@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0703010129180.10045@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0703010130310.10045@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Exports the physical NUMA node to fake NUMA node mapping to user-space via
+sysfs.  The information is now accessible via the 'physnode' file.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc2/drivers/ata/pata_platform.c linux-2.6.21-rc2/drivers/ata/pata_platform.c
---- linux.vanilla-2.6.21-rc2/drivers/ata/pata_platform.c	2007-03-01 13:36:03.000000000 +0000
-+++ linux-2.6.21-rc2/drivers/ata/pata_platform.c	2007-03-01 15:04:47.368032464 +0000
-@@ -80,6 +80,7 @@
- 	.thaw			= ata_bmdma_thaw,
- 	.error_handler		= ata_bmdma_error_handler,
- 	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
-+	.cable_detect		= ata_cable_unknown,
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Rohit Seth <rohitseth@google.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ drivers/base/node.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/base/node.c b/drivers/base/node.c
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -133,6 +133,13 @@ static ssize_t node_read_distance(struct sys_device * dev, char * buf)
+ }
+ static SYSDEV_ATTR(distance, S_IRUGO, node_read_distance, NULL);
  
- 	.qc_prep		= ata_qc_prep,
- 	.qc_issue		= ata_qc_issue_prot,
++#ifdef CONFIG_NUMA_EMU
++static ssize_t node_read_physnode(struct sys_device *dev, char *buf)
++{
++	return sprintf(buf, "%d\n", get_phys_node(dev->id));
++}
++static SYSDEV_ATTR(physnode, S_IRUGO, node_read_physnode, NULL);
++#endif
+ 
+ /*
+  * register_node - Setup a driverfs device for a node.
+@@ -153,6 +160,9 @@ int register_node(struct node *node, int num, struct node *parent)
+ 		sysdev_create_file(&node->sysdev, &attr_meminfo);
+ 		sysdev_create_file(&node->sysdev, &attr_numastat);
+ 		sysdev_create_file(&node->sysdev, &attr_distance);
++#ifdef CONFIG_NUMA_EMU
++		sysdev_create_file(&node->sysdev, &attr_physnode);
++#endif
+ 	}
+ 	return error;
+ }
+@@ -170,6 +180,9 @@ void unregister_node(struct node *node)
+ 	sysdev_remove_file(&node->sysdev, &attr_meminfo);
+ 	sysdev_remove_file(&node->sysdev, &attr_numastat);
+ 	sysdev_remove_file(&node->sysdev, &attr_distance);
++#ifdef CONFIG_NUMA_EMU
++	sysdev_remove_file(&node->sysdev, &attr_physnode);
++#endif
+ 
+ 	sysdev_unregister(&node->sysdev);
+ }
