@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXCAN1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965044AbXCAN2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965034AbXCAN1v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 08:27:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXCAN1v
+	id S965044AbXCAN2L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:28:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965049AbXCAN2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 08:27:51 -0500
-Received: from web52902.mail.yahoo.com ([206.190.49.12]:43950 "HELO
-	web52902.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965034AbXCAN1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 08:27:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=nce27yiUcCZrer5xEUMIW2LONUKDsseRBw4PnIB2a6j6z4X6bntaGAqywHctpo6if97PQqvcsvOAi6XiRogrs354ZKkTSYZh3AitkBTOSd7s3LVaIlgXjrSIMysC5XI5x/BF3xWQNHxRCKwg0f6+xPzq8Yjs00bpuFF348hnzcM=;
-X-YMail-OSG: h4JyuAkVM1ki1Vm9HiXnzGGN5Tc91f3Wh_uhcIVFkR7sTBbP5OKJuM1udxj..8coVzhh71wn9dRYtWisecmcgo73TYbHFV6bvj_sqKLXKPAoJsOTR4vewNiLPxTIsMzRwnlCgzqeSdpLci9HNTqm8Ias
-Date: Thu, 1 Mar 2007 13:27:49 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: [BUG] Linux 2.6.20.1 - unable to handle kernel paging request - accessing freed memory?
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0703011330330.29829@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <700199.70204.qm@web52902.mail.yahoo.com>
+	Thu, 1 Mar 2007 08:28:11 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:41601 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965044AbXCAN2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 08:28:09 -0500
+Date: Thu, 1 Mar 2007 16:26:27 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301132626.GA30177@2ka.mipt.ru>
+References: <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301123423.GA10738@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070301123423.GA10738@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 16:26:42 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oh yes - I'd better mention what my Ethernet devices are:
+On Thu, Mar 01, 2007 at 01:34:23PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> 
+> > Document Length:        3521 bytes
+> 
+> > Concurrency Level:      8000
+> > Time taken for tests:   16.686737 seconds
+> > Complete requests:      80000
+> > Failed requests:        0
+> > Write errors:           0
+> > Total transferred:      309760000 bytes
+> > HTML transferred:       281680000 bytes
+> > Requests per second:    4794.23 [#/sec] (mean)
+> 
+> > Concurrency Level:      8000
+> > Time taken for tests:   12.366775 seconds
+> > Complete requests:      80000
+> > Failed requests:        0
+> > Write errors:           0
+> > Total transferred:      317047104 bytes
+> > HTML transferred:       288306522 bytes
+> > Requests per second:    6468.95 [#/sec] (mean)
+> 
+> i'm wondering - how can the 'Total transferred' and 'HTML transferred' 
+> numbers be different?
+>
+> Since document length is 3521, and the number of requests is 80000, the 
+> correct 'HTML transferred' is 281680000 - which is the epoll result. The 
+> kevent result shows more bytes transferred, which suggests that the 
+> kevent loop is probably incorrect somewhere.
+> 
+> this might be some benign thing, but the /first/ thing you /have to/ do 
+> before claiming that 'kevent is 25% faster than epoll' is to make sure 
+> the results are totally reliable.
 
-$ cat /proc/net/dev
-Inter-|   Receive                                                |  Transmit
- face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo
-colls carrier compressed
-    lo:  820705   15570    0    0    0     0          0         0   820705   15570    0    0    0 
-   0       0          0
-  eth0: 3289077   14258    0    0    0     0          0       639  1379700   14175    0    0    0 
-   0       0          0
-  eth1:       0       0    0    0    0     0          0         0        0  0    0    0    0     0
-      0          0
-  eth2:       0       0    0    0    0     0          0         0        0  0    0    0    0     0
-      0          0
+Kevent sent additional 525 pages ((311792800-309760000)/3872) - that is why 
+number for kevent is higher - it uses edge-triggered handler (which you 
+asked to remove from epoll), which can produce false-positives, for 
+absolute result in that case ret_data must be checked where poll flags 
+were stored (before). 'ab' does not count additional data as new requests 
+and does not count them in 'requests per second'.
+Even if it could do so, additional 500 requests can not provide 35%
+higher rate.
 
+For example, lighttpd results are the same for kevent and epoll and
+'Total transferred' and 'HTML transferred' numbers change between runs both 
+for epoll and kevent.
 
-$ /sbin/ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:0D:56:0D:E7:3F
-          inet addr:192.168.0.3  Bcast:192.168.0.255  Mask:255.255.255.0
-          inet6 addr: fe80::20d:56ff:fe0d:e73f/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:14262 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:14175 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:100
-          RX bytes:3289533 (3.1 MiB)  TX bytes:1379700 (1.3 MiB)
-          Base address:0xdcc0 Memory:ff6e0000-ff700000
+> 	Ingo
 
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:15570 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:15570 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:820705 (801.4 KiB)  TX bytes:820705 (801.4 KiB)
-
-# /sbin/ifconfig eth1
-eth1      Link encap:UNSPEC  HWaddr 87-FF-FF-FF-FF-FF-FF-00-00-00-00-00-00-00-00-00
-          BROADCAST MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
-
-# /sbin/ifconfig eth2
-eth2      Link encap:UNSPEC  HWaddr 00-02-3C-00-A1-03-71-11-00-00-00-00-00-00-00-00
-          BROADCAST MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
-
-I think that eth1 and eth2 are both "eth1394" devices, automatically loaded on the two Firewire
-"hubs"(?) in this machine?
-
-Cheers,
-Chris
-
-
-
-		
-___________________________________________________________ 
-All New Yahoo! Mail – Tired of unwanted email come-ons? Let our SpamGuard protect you. http://uk.docs.yahoo.com/nowyoucan.html
+-- 
+	Evgeniy Polyakov
