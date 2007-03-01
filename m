@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965045AbXCAOEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752426AbXCAOH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965045AbXCAOEF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 09:04:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbXCAOEF
+	id S1752426AbXCAOH3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 09:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbXCAOH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 09:04:05 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:55840 "EHLO smtp.ocgnet.org"
+	Thu, 1 Mar 2007 09:07:29 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:50779 "EHLO kanga.kvack.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752426AbXCAOEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 09:04:04 -0500
-Date: Thu, 1 Mar 2007 23:01:31 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH/RFC 2.6.20 1/2] fbdev, mm: Deferred IO support
-Message-ID: <20070301140131.GA6603@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Jaya Kumar <jayakumar.lkml@gmail.com>,
-	linux-fbdev-devel@lists.sourceforge.net, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20070225051312.17454.80741.sendpatchset@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752426AbXCAOH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 09:07:28 -0500
+Date: Thu, 1 Mar 2007 09:06:48 -0500
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fastboot@lists.osdl.org, ebiederm@xmission.com, ak@suse.de,
+       akpm@linux-foundation.org, judith@linux-foundation.org
+Subject: Re: [PATCH RFC 0/5] hard_smp_processor_id overhaul
+Message-ID: <20070301140648.GX26583@kvack.org>
+References: <1172733373.1498.264.camel@sebastian.intellilink.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070225051312.17454.80741.sendpatchset@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1172733373.1498.264.camel@sebastian.intellilink.co.jp>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 06:13:12AM +0100, Jaya Kumar wrote:
-> This patch implements deferred IO support in fbdev. Deferred IO is a way to
-> delay and repurpose IO. This implementation is done using mm's page_mkwrite
-> and page_mkclean hooks in order to detect, delay and then rewrite IO. This
-> functionality is used by hecubafb.
+On Thu, Mar 01, 2007 at 04:16:13PM +0900, Fernando Luis Vázquez Cao wrote:
+> As a consequence, the hardcoding of hard_smp_processor_id() to 0 on UP
+> systems (see "linux/smp.h") is not correct.
 > 
-Any updates on this? If there are no other concerns, it would be nice to
-at least get this in to -mm for testing if nothing else.
+> This patch-set does the following:
+> 
+> 1- Remove hardcoding of hard_smp_processor_id on UP systems.
 
-Jaya, can you roll the fsync() patch in to your defio patch? There's not
-much point in keeping them separate.
+NAK.  This has to be configurable, as many embedded systems don't even 
+have APICs.  Please rework the patch set so that there is not any overhead 
+for existing UP systems.
+
+		-ben
+-- 
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
