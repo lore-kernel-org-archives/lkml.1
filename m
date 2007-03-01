@@ -1,86 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932481AbXCAMbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751010AbXCAMff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932481AbXCAMbH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:31:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933261AbXCAMbG
+	id S1751010AbXCAMff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbXCAMfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:31:06 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:1687 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932481AbXCAMbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:31:04 -0500
-Date: Thu, 1 Mar 2007 13:30:57 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Frank Seidel <linux@f-seidel.de>
-Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests (2.6.21-rc2 and 2.6.20)
-Message-ID: <20070301123057.GO23985@kernel.dk>
-References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com> <200703011308.28266.linux@f-seidel.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703011308.28266.linux@f-seidel.de>
+	Thu, 1 Mar 2007 07:35:34 -0500
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:33463 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbXCAMfd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:35:33 -0500
+Message-ID: <45E6C888.4050300@hitachi.com>
+Date: Thu, 01 Mar 2007 21:35:20 +0900
+From: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: Markus Gutschke <markus@google.com>
+Cc: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Robin Holt <holt@sgi.com>,
+       dhowells@redhat.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>
+Subject: Re: [PATCH 0/4] coredump: core dump masking support v3
+References: <45D5B2E3.3030607@hitachi.com> <45DFB1C7.1030205@google.com>
+In-Reply-To: <45DFB1C7.1030205@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01 2007, Frank Seidel wrote:
-> Am Mittwoch, 28. Februar 2007 19:02 schrieb Dan Williams:
-> > I can reliably reproduce a null pointer dereference on 2.6.20 and
-> > 2.6.21-rc2.  I will keep digging to find the kernel version where
-> > this last worked, but wanted to see if there were any immediate
-> > experiments I should try.
-> > ...
-> > Kernel 2.6.21-rc2 on an i686
-> > ...
-> > [  431.709022] BUG: unable to handle kernel NULL pointer dereference
-> > at virtual address 0000005c [  431.717993]  printing eip:
-> > ...
-> > [  431.825386] EIP is at cfq_dispatch_insert+0xb/0x53
-> > ...
-> > [  431.887396]  [<c01e1fc9>] cfq_dispatch_requests+0x138/0x3f0
-> Hi,
-> unfortunately i yet don't really have much/enough knowledge of cfq and 
-> the kernels inwards at the moment...
-> but looking at cfq_dispatch_insert+0xb it seems the struct request 
-> pointer given (as second parameter by cfq_dispatch_request) was NULL 
-> and dereferencing it in the RQ_CFQQ macro leads to this oops.
-> 
-> The "break"-out patch below for __cfq_dispatch_request might be at least 
-> a possible workaround for this, but it could also be total bullsh.. 
-> Perhaps someone smarter might pick this up.. and give a real fix.
-> 
-> Have fun,
-> Frank
-> ---
-> 
->  block/cfq-iosched.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/block/cfq-iosched.c
-> ===================================================================
-> --- linux-2.6.orig/block/cfq-iosched.c
-> +++ linux-2.6/block/cfq-iosched.c
-> @@ -962,7 +962,8 @@ __cfq_dispatch_requests(struct cfq_data
->                  * follow expired path, else get first next available
->                  */
->                 if ((rq = cfq_check_fifo(cfqq)) == NULL)
-> -                       rq = cfqq->next_rq;
-> +                       if ((rq = cfqq->next_rq) == NULL)
-> +                               break;
-> 
->                 /*
->                  * finally, insert request into driver dispatch list
+Hi,
 
-That is not the right fix. A little further up in this function, a check
-(well BUG_ON()) is done for a non-empty sort list. So we know at this
-point, that we have requests pending for this queue. When that is the
-case, ->next_rq must always be kept uptodate and non-NULL. The oops at
-least tells us this, it should not be papered around. The real fix is
-finding out _where_ this now isn't being updated.
+Markus Gutschke wrote:
 
-I'm puzzled why this is hitting Dan, but no one else has reported
-anything. Dan, did 2.6.19 work for you?
+> Kawai, Hidehiro wrote:
+> 
+>> This patch series is version 3 of the core dump masking feature,
+>> which provides a per-process flag not to dump anonymous shared
+>> memory segments.
+> 
+> I just wanted to remind you that you need to be careful about dumping
+> the [vdso] segment no matter whether you omit other segments. I didn't
+> actually try running your patches, and if the kernel doesn't actually
+> consider this segment anonymous and shared, things might already work
+> fine as is.
 
+Thank you for your advice and sorry for not replying soon.
+
+Fortunately, the latest kernel uses VM_ALWAYSDUMP flag to always dump
+the vdso segment.  My patchset doesn't change this behavior.  So we
+don't need to worry about the vdso segment.
+
+ 
+> As an alternative to your kernel patch, you could achieve the same goal
+> in user space, by linking my coredumper
+> http://code.google.com/p/google-coredumper/ into your binaries and
+> setting up appropriate signal handlers. An equivalent patch for
+> selectively omitting memory regions would be trivial to add.
+
+As far as I can see, google-coredumper has more flexibility.
+Can google-coredumper satisfy the following requirements easily?
+
+Requirements are:
+  (1) a user can change the core dump settings _anytime_
+      - sometimes want to dump anonymous shared memory segments and
+        sometimes don't want to dump them
+  (2) a user can change the core dump settings of _any processes_
+      (although permission checks are performed)
+      - in a huge application which forks many processes, a user
+        hopes that some processes dump anonymous shared memory
+        segments and some processes don't dump them
+
+And reliability of the core dump feature is also important.
+
+
+> While this
+> does give you more flexibility, it of course has the drawback of
+> requiring you to change your applications, so there still is some
+> benefit in a kernelspace solution.
+
+And all the software vendors don't necessarily apply
+google-coredumper.  If the vendor doesn't apply it, the user will
+be bothered by huge core dumps or the buggy application which
+remains unfixed.  So I believe that in kernel solution is still
+needed.
+
+Thanks,
 -- 
-Jens Axboe
+Hidehiro Kawai
+Hitachi, Ltd., Systems Development Laboratory
 
