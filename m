@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965458AbXCAR3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965442AbXCARbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965458AbXCAR3M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 12:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965459AbXCAR3L
+	id S965442AbXCARbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 12:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965449AbXCARbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 12:29:11 -0500
-Received: from nijmegen.renzel.net ([195.243.213.130]:60879 "EHLO
+	Thu, 1 Mar 2007 12:31:36 -0500
+Received: from nijmegen.renzel.net ([195.243.213.130]:32914 "EHLO
 	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965458AbXCAR3J (ORCPT
+	with ESMTP id S965442AbXCARbf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 12:29:09 -0500
-From: Mws <mws@twisted-brains.org>
+	Thu, 1 Mar 2007 12:31:35 -0500
+From: Marcel Siegert <mws@linuxtv.org>
 To: linux-dvb@linuxtv.org
 Subject: Re: [linux-dvb] 2.6.21-rc1-git2 is incompilable
-Date: Thu, 1 Mar 2007 18:28:57 +0100
+Date: Thu, 1 Mar 2007 18:31:25 +0100
 User-Agent: KMail/1.9.6
 Cc: "Uwe Bugla" <uwe.bugla@gmx.de>, torvalds@linux-foundation.org,
-       Slaby <jirislaby@gmail.com>, Jiri@playadelingles,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
-       bunk@stusta.de, Stephane Eranian <eranian@hpl.hp.com>,
-       akpm@linux-foundation.org
+       Slaby <jirislaby@gmail.com>, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, bunk@stusta.de,
+       Stephane Eranian <eranian@hpl.hp.com>, akpm@linux-foundation.org
 References: <20070301143407.29950@gmx.net>
 In-Reply-To: <20070301143407.29950@gmx.net>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200703011831.26520.mws@linuxtv.org>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703011828.59469.mws@twisted-brains.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -57,5 +56,3 @@ p.s. wouldn't it be a good idea to check your mail recipients instead of sending
       have no use with fixes of floppy drivers and or compile status in io_apic? :)
 
 dont take it too hard man...
-
-
