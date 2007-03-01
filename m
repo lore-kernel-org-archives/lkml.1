@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965289AbXCAPsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965301AbXCAPtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965289AbXCAPsp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965300AbXCAPsp
+	id S965301AbXCAPtS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965303AbXCAPtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:48:45 -0500
-Received: from smtp106.biz.mail.re2.yahoo.com ([206.190.52.175]:44622 "HELO
-	smtp106.biz.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965289AbXCAPso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:48:44 -0500
-X-YMail-OSG: ISzwIxoVM1l7HGkY_76N5PhlNbUEvzLg87VKfc95josfomby98YMNBN676zTO9KRb.IehzI.yEIrw2PAm1eIUbbk7cU2pTuKA1x5ynFOoputr3TIneqQxRIqv9pOHBzZDCtR55r9vHPfUbQ-
-In-Reply-To: <a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org>
-References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com> <45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com> <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com> <E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org> <45E5D627.6030707@zytor.com> <45E5D84A.5000502@freescale.com> <278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org> <45E5DB49.8010205@freescale.com> <A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com> <a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-       Timur Tabi <timur@freescale.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Torben.Mathiasen@hp.com
-Content-Transfer-Encoding: 7bit
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-Date: Thu, 1 Mar 2007 10:48:45 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-X-Mailer: Apple Mail (2.752.2)
+	Thu, 1 Mar 2007 10:49:18 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:59732 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965301AbXCAPtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 10:49:16 -0500
+Date: Thu, 1 Mar 2007 18:47:08 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301154707.GC8217@2ka.mipt.ru>
+References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070301144717.GA24079@elte.hu> <20070301152323.GA8217@2ka.mipt.ru> <200703011632.37756.dada1@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <200703011632.37756.dada1@cosmosbay.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 18:47:32 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 01, 2007 at 04:32:37PM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
+> On Thursday 01 March 2007 16:23, Evgeniy Polyakov wrote:
+> > They are there, since ab runs only 50k requests.
+> > If I change it to something noticebly more than 50/80k, ab crashes:
+> > # ab -c8000 -t 600 -n800000000 http://192.168.0.48/
+> > This is ApacheBench, Version 2.0.40-dev <$Revision: 1.146 $> apache-2.0
+> > Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+> > Copyright 2006 The Apache Software Foundation, http://www.apache.org/
+> >
+> > Benchmarking 192.168.0.48 (be patient)
+> > Segmentation fault
+> >
+> > Are there any other tool suitable for such loads?
+> > I only tested httperf (which is worse, since it uses poll/select) and
+> > 'ab'.
+> >
+> > Btw, host machine runs 100% too, so it is possible that client side is
+> > broken (too).
+> 
+> I have similar problems here, ab test just doesnt complete...
+> 
+> I am still investigating with strace and tcpdump.
+> 
+> In the meantime you could just rewrite it (based on epoll please :) ), since 
+> it should be quite easy to do this (reverse of evserver_epoll)
 
-On Feb 28, 2007, at 5:08 PM, Segher Boessenkool wrote:
+Rewriting 'ab' with pure epoll instead of APR lib is like
+dandruff treatment on a guillotine.
 
-> Since you say no one has ever used more than 4 UARTs,
-> there are two options:
+I will try to cook up something own - simple client (based on epoll)
+tomorrow/weekend, now I need to work for money :)
 
-People have used more than 4, but we just
-allocated the additional /dev entries to cover
-them.  I know of only one time this has happened.
-It's such a custom case that the other device
-names didn't matter.
-
-> - Cap the driver at 4 UARTs;
-
-Let's do this, but design the code to
-allow more by just changing a #define.
-
-> Just randomly using some extra minors that aren't
-> assigned to you isn't such a great idea.
-
-Maybe for a desktop or generic server where
-you don't know what's going to be configured,
-but it's not unusual to do so with custom
-embedded systems.  The small experimental
-or user allocations often don't cover what
-is needed, so we just grab some allocation
-from a device that isn't ever going to be
-used on the system.
-
-
-Thanks.
-
-	-- Dan
-
+-- 
+	Evgeniy Polyakov
