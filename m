@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965529AbXCATbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXCATi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965529AbXCATbT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 14:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965532AbXCATbS
+	id S965521AbXCATi4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 14:38:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965534AbXCATi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 14:31:18 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:1974 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965529AbXCATbR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 14:31:17 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 1 Mar 2007 11:31:14 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <dada1@cosmosbay.com>,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <20070301145454.GB12684@2ka.mipt.ru>
-Message-ID: <Pine.LNX.4.64.0703011123200.23932@alien.or.mcafeemobile.com>
-References: <20070301095402.GA14603@elte.hu> <20070301131118.GA30228@elte.hu>
- <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com>
- <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 1 Mar 2007 14:38:56 -0500
+Received: from ozlabs.org ([203.10.76.45]:60296 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965533AbXCATiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 14:38:55 -0500
+Date: Thu, 1 Mar 2007 13:38:26 -0600
+From: Anton Blanchard <anton@samba.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Aneesh Kumar <aneesh.kumar@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread
+Message-ID: <20070301193826.GA14587@kryten>
+References: <200702260800.49603.rjw@sisk.pl> <200703011605.46692.rjw@sisk.pl> <200703011609.43804.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703011609.43804.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007, Evgeniy Polyakov wrote:
 
-> Ingo, do you really think I will send mails with faked benchmarks? :))
+Hi,
 
-I don't think he ever implied that. He was only suggesting that when you 
-post benchmarks, and even more when you make claims based on benchmarks, 
-you need to be extra carefull about what you measure. Otherwise the 
-external view that you give to others does not look good.
-Kevent can be really faster than epoll, but if you post broken benchmarks 
-(that can be, unrealiable HTTP loaders, broken server implemenations, 
-etc..) and make claims based on that, the only effect that you have is to 
-lose your point.
+> Remove PF_NOFREEZE from the rcutorture thread, adding a
+> try_to_freeze() call as required.
 
+...
 
+> @@ -607,6 +607,7 @@ rcu_torture_writer(void *arg)
+>  		}
+>  		rcu_torture_current_version++;
+>  		oldbatch = cur_ops->completed();
+> +		try_to_freeze();
+>  	} while (!kthread_should_stop() && !fullstop);
+>  	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
+>  	while (!kthread_should_stop())
 
-- Davide
+I wonder if it makes sense to embed try_to_freeze() into the kthread
+API somewhere. Short of that we should document the try_to_freeze()
+requirement in the kthread documentation... Unfortunately I cant find
+any kthread docs in Documentation/ :)
 
-
+Anton
