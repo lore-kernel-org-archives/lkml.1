@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965451AbXCAR0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965456AbXCAR2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965451AbXCAR0k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 12:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965456AbXCAR0k
+	id S965456AbXCAR2n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 12:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965457AbXCAR2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 12:26:40 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:56197 "EHLO
+	Thu, 1 Mar 2007 12:28:43 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:57976 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965451AbXCAR0j (ORCPT
+	with ESMTP id S965456AbXCAR2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 12:26:39 -0500
-Date: Thu, 1 Mar 2007 09:10:59 -0800
+	Thu, 1 Mar 2007 12:28:42 -0500
+Date: Thu, 1 Mar 2007 09:14:52 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: "Uwe Bugla" <uwe.bugla@gmx.de>
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
@@ -18,10 +18,10 @@ Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        Jiri Slaby <jirislaby@gmail.com>, bunk@stusta.de,
        linux-kernel@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>,
        venkatesh.pallipadi@intel.com
-Subject: Re: patch 1 / 3: fix broken documentation for bt8xx cards
-Message-Id: <20070301091059.cdc837a8.randy.dunlap@oracle.com>
-In-Reply-To: <20070301142904.29930@gmx.net>
-References: <20070301142904.29930@gmx.net>
+Subject: Re: 2.6.21-rc1-git2 is incompilable
+Message-Id: <20070301091452.7f1bd700.randy.dunlap@oracle.com>
+In-Reply-To: <20070301143407.29950@gmx.net>
+References: <20070301143407.29950@gmx.net>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -33,59 +33,25 @@ X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Mar 2007 15:29:04 +0100 Uwe Bugla wrote:
+On Thu, 01 Mar 2007 15:34:07 +0100 Uwe Bugla wrote:
 
-> --- a/Documentation/dvb/bt8xx.txt
-> +++ b/Documentation/dvb/bt8xx.txt
-> @@ -9,9 +9,33 @@
->  Please see Documentation/dvb/cards.txt => o Cards based on the Conexant Bt8xx PCI bridge:
->  
->  Compiling kernel please enable:
-> -a.)"Device drivers" => "Multimedia devices" => "Video For Linux" => "BT848 Video For Linux"
-> +a.)"Device drivers" => "Multimedia devices" => "Video For Linux" => "Enable Video for Linux API 1 (DEPRECATED)"
-> -b.)"Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices"
-> - => "DVB for Linux" "DVB Core Support" "Bt8xx based PCI Cards"
-> +b.)"Device drivers" => "Multimedia devices" => "Video For Linux" => "Video Capture Adapters" => "BT848 Video For Linux"
-> +c.)"Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices" => "DVB for Linux" "DVB Core Support" "Bt8xx based PCI Cards"
-> +
-> +Please use the following options with care as deselection of drivers which are in fact necessary
-> +may result in DVB devices that cannot be tuned due to lack of driver support:
-> +You can save RAM by deselecting every frontend or DST module that your DVB card does not need.
+> Hi folks,
+> trying to compile kernel 2.6.21-rc1-git2 is impossible. The broken module where the compiler gives up is /arch/i386/kernel/io_apic.c.
+> 
+> Regards
+> 
+> Uwe
+> 
+> P. S.: Wouldn't it be a good idea to test at least error-free compilation before stuff like this is being published?
 
-Please limit (prose) text to less than 80 columns.  Thanks.
+1) 2.6.*-gitN kernels are automated snapshots of Linus's git kernel tree.
+There is no coordination between Linus adding changesets to his kernel
+tree and some script reading changes out of it.  (I could read your
+note as saying that there should be some coordination, I suppose.)
 
-> +
-> +First please remove the static dependency of DVB card drivers on all frontend modules for all possible card variants by enabling:
-> +d.) "Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices"
-> + => "DVB for Linux" "DVB Core Support" "Load and attach frontend modules as needed"
-> +
-> +If you know the frontend driver that your card needs please enable:
-> +e.)"Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices"
-> + => "DVB for Linux" "DVB Core Support" "Customise DVB Frontends" => "Customise the frontend modules to build"
-> + Then please select your card-specific frontend module.
-> +
-> +Do you use one of the following cards?
-> +1. Twinhan DST (FTA and CI) family (DVB-S/C/T/ATSC)
-> +2. Pinnacle PCTV SAT CI
-> +3. Chaintech DST-1000
-> +4. DNTV Live !
-> +
-> +If not you can save additional RAM by enabling:
-> +f.)"Device drivers" => "Multimedia devices" => "Digital Video Broadcasting Devices" => "DVB for Linux" "DVB Core Support"
-> + "Bt8xx based PCI Cards" => "Customise DST support" => "Customise DST modules to build"
-> + Then please deselect "DST module" and "DST CA module"
->  
->  2) Loading Modules
->  ==================
-> @@ -68,7 +92,7 @@
->  	$ modprobe dvb-bt8xx
->  
->  For a full list of card ID's please see Documentation/video4linux/CARDLIST.bttv.
-> -In case of further problems send questions to the mailing list: www.linuxdvb.org.
-> +In case of further problems please subscribe and send questions to the mailing list: linux-dvb@linuxtv.org.
->  
->  Authors: Richard Walker,
->  	 Jamie Honan,
+2) Linus doesn't build i386 non-SMP kernels AFAIK.
+
+3) The small bug has been discussed & fixed (several times).
 
 
 ---
