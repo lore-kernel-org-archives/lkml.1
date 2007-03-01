@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933023AbXCAHSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXCAHUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933023AbXCAHSi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 02:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933040AbXCAHSi
+	id S932903AbXCAHUF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 02:20:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932908AbXCAHUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 02:18:38 -0500
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:44769 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933023AbXCAHSh (ORCPT
+	Thu, 1 Mar 2007 02:20:04 -0500
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:54187 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932903AbXCAHUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 02:18:37 -0500
-Date: Thu, 1 Mar 2007 02:18:35 -0500
+	Thu, 1 Mar 2007 02:20:03 -0500
+Date: Thu, 1 Mar 2007 02:20:01 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH] linux-kernel-markers-non-optimized-architures-fallback-flags
-Message-ID: <20070301071835.GE19339@Krystal>
+Subject: [PATCH] linux-kernel-markers-documentation-update-flags
+Message-ID: <20070301072001.GF19339@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -24,76 +24,80 @@ Content-Disposition: inline
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 02:16:38 up 26 days, 21:24,  7 users,  load average: 1.60, 1.53, 1.36
+X-Uptime: 02:18:44 up 26 days, 21:26,  7 users,  load average: 1.22, 1.40, 1.33
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-kernel-markers-non-optimized-architures-fallback-flags
+linux-kernel-markers-documentation-update-flags
 
-- asm-generic/marker.h is now only used as a fallback defining _MARK as
-  MARK_GENERIC.
-- flags support
+Documents the flag usage.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
---- a/include/asm-generic/marker.h
-+++ b/include/asm-generic/marker.h
-@@ -1,8 +1,11 @@
-+#ifndef _ASM_GENERIC_MARKER_H
-+#define _ASM_GENERIC_MARKER_H
+--- a/Documentation/marker.txt
++++ b/Documentation/marker.txt
+@@ -78,6 +78,21 @@ which saves a data cache hit, but also requires cross CPU code modification. In
+ order to support embedded systems which use read-only memory for their code, the
+ optimization can be disabled through menu options.
+ 
++The MF_* flags can be used to control the type of marker. See the
++include/marker.h header for the list of flags. They can be specified as the
++first parameter of the _MARK() macro, such as the following example which is
++safe wrt lockdep.c (useful for marking lockdep.c functions).
 +
- /*
-  * marker.h
-  *
-  * Code markup for dynamic and static tracing. Generic header.
-  *
-  * This file is released under the GPLv2.
-  * See the file COPYING for more details.
-  *
-@@ -10,31 +13,18 @@
-  * "used" attribute to fix a gcc 4.1.x bug.
-  */
++_MARK(_MF_DEFAULT | ~_MF_LOCKDEP, subsystem_eventb,
++  MARK_NOARGS);
++
++Another example is to specify that a specific marker must never call printk :
++_MARK(_MF_DEFAULT | ~_MF_PRINTK, subsystem_eventc,
++  "%d %s %p[struct task_struct]",
++  someint, somestring, current);
++
++Flag compatibility is checked before connecting the probe to the marker.
++
  
--#ifdef CONFIG_MARKERS
-+#define _MF_DEFAULT			(_MF_LOCKDEP | _MF_PRINTK)
+ * Probe example
  
--#define GEN_MARK(name, format, args...) \
--	do { \
--		static marker_probe_func *__mark_call_##name = \
--					__mark_empty_function; \
--		static char __marker_enable_##name = 0; \
--		static const struct __mark_marker_c __mark_c_##name \
--			__attribute__((section(".markers.c"))) = \
--			{ #name, &__mark_call_##name, format, \
--			MARKER_GENERIC } ; \
--		static const struct __mark_marker __mark_##name \
--			__attribute__((section(".markers"))) = \
--			{ &__mark_c_##name, &__marker_enable_##name } ; \
--		asm volatile ( "" : : "i" (&__mark_##name)); \
--		__mark_check_format(format, ## args); \
--		if (unlikely(__marker_enable_##name)) { \
--			preempt_disable(); \
--			(*__mark_call_##name)(format, ## args); \
--			preempt_enable(); \
--		} \
--	} while (0)
-+#define MARK_OPTIMIZED			MARK_GENERIC
-+#define _MARK				MARK_GENERIC
-+#define MARK(format, args...)		_MARK(_MF_DEFAULT, format, ## args)
+@@ -122,6 +137,13 @@ void probe_subsystem_event(const char *format, ...)
+ 	va_end(ap);
+ }
  
-+#define MARK_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET \
-+		MARK_GENERIC_ENABLE_IMMEDIATE_OFFSET
-+#define MARK_OPTIMIZED_ENABLE_TYPE	MARK_GENERIC_ENABLE_TYPE
-+/* Dereference enable as lvalue from a pointer to its instruction */
-+#define MARK_OPTIMIZED_ENABLE		MARK_GENERIC_ENABLE
++#define SUBSYSTEM_EVENTB_FORMAT MARK_NOARGS
++void probe_subsystem_eventb(const char *format, ...)
++{
++	/* Increment counters, trace, ... but _never_ generate a call to
++	 * lockdep.c ! */
++}
++
+ static int __init probe_init(void)
+ {
+ 	int result;
+@@ -130,16 +152,24 @@ static int __init probe_init(void)
+ 			probe_subsystem_event);
+ 	if (!result)
+ 		goto cleanup;
++	result = _marker_set_probe(_MF_DEFAULT & ~_MF_LOCKDEP,
++			"subsystem_eventb",
++			SUBSYSTEM_EVENTB_FORMAT,
++			probe_subsystem_eventb);
++	if (!result)
++		goto cleanup;
+ 	return 0;
  
--#define GEN_MARK_ENABLE_IMMEDIATE_OFFSET 0
--#define GEN_MARK_ENABLE_TYPE char
-+#define marker_optimized_set_enable marker_generic_set_enable
+ cleanup:
+ 	marker_remove_probe(probe_subsystem_event);
++	marker_remove_probe(probe_subsystem_eventb);
+ 	return -EPERM;
+ }
  
--#endif
-+#endif /* _ASM_GENERIC_MARKER_H */
+ static void __exit probe_fini(void)
+ {
+ 	marker_remove_probe(probe_subsystem_event);
++	marker_remove_probe(probe_subsystem_eventb);
+ }
+ 
+ module_init(probe_init);
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
