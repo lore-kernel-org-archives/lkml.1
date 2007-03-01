@@ -1,104 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965511AbXCATWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965526AbXCAT2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965511AbXCATWa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 14:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965518AbXCATWa
+	id S965526AbXCAT2P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 14:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXCAT2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 14:22:30 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:17401 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965511AbXCATW3 (ORCPT
+	Thu, 1 Mar 2007 14:28:15 -0500
+Received: from gundega.hpl.hp.com ([192.6.19.190]:62220 "EHLO
+	gundega.hpl.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965524AbXCAT2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 14:22:29 -0500
-X-AuditID: d80ac287-9e19abb000002978-9c-45e727f4f3c6 
-Date: Thu, 1 Mar 2007 19:22:32 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] shmem and simple const super_operations
-Message-ID: <Pine.LNX.4.64.0703011915460.17890@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 01 Mar 2007 19:22:28.0621 (UTC) FILETIME=[F37A33D0:01C75C36]
-X-Brightmail-Tracker: AAAAAA==
+	Thu, 1 Mar 2007 14:28:14 -0500
+Date: Thu, 1 Mar 2007 11:27:34 -0800
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
+Message-ID: <20070301192734.GB9098@bougret.hpl.hp.com>
+Reply-To: jt@hpl.hp.com
+References: <20070228012741.GA3988@bougret.hpl.hp.com> <20070228093437.GA1847@ff.dom.local> <20070228184541.GD6134@bougret.hpl.hp.com> <20070301074209.GA1735@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301074209.GA1735@ff.dom.local>
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: jt@hpl.hp.com
+User-Agent: Mutt/1.5.9i
+From: Jean Tourrilhes <jt@hpl.hp.com>
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: jt@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-shmem's super_operations were missed from the recent const-ification;
-and simple_fill_super()'s, which can share with get_sb_pseudo()'s.
+On Thu, Mar 01, 2007 at 08:42:09AM +0100, Jarek Poplawski wrote:
+> On Wed, Feb 28, 2007 at 10:45:41AM -0800, Jean Tourrilhes wrote:
+> > > > +
+> > > > +	if ((size <= 0) || (i >= num_envp))
+> > > 
+> > > Btw.:
+> > > 1. if size == 10 and snprintf returns 9 (without NULL)
+> > >    then n == 10 (with NULL), so isn't it enough (here and above):
+> > >  
+> > > 	if ((size < 0) || (i >= num_envp))
+> > 
+> > 	I just cut'n'pasted the code a few line above. If the original
+> > code is incorrect, it need fixing. And it will need fixing in probably
+> > a lot of places.
+> 
+> I think you're kind of responsible for your part, at least.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
+	I personally don't go fixing stuff without having a full
+undersunding of the context and why it was done this way. To me it
+look this test was intentionally done this way, so there may be
+something I don't know about. I guess I would need to double check
+more closely what weid calculation the caller does with the buffer
+size.
+	That's why I would prefer a separate patch about those issues
+that give the opportunity for the stakeholder to really talk about
+this, rather than slipping it under the carpet.
+	In the worse case, this is not a bug, this just means that we
+may not use the last char of the buffer.
 
- fs/libfs.c |   10 ++++++----
- mm/shmem.c |    4 ++--
- 2 files changed, 8 insertions(+), 6 deletions(-)
+> > > 2. shouldn't there be (here and above):
+> > >  
+> > > 		envp[--i] = NULL;
+> > > 
+> > 
+> > 	No, envp is local, so who cares.
+> 
+> But envp[i] isn't (at least here). So, I guess, a caller
+> of this function could care.
 
---- 2.6.21-rc2/fs/libfs.c	2007-02-28 08:30:26.000000000 +0000
-+++ linux/fs/libfs.c	2007-02-28 13:12:07.000000000 +0000
-@@ -190,6 +190,10 @@ const struct inode_operations simple_dir
- 	.lookup		= simple_lookup,
- };
- 
-+static const struct super_operations simple_super_operations = {
-+	.statfs		= simple_statfs,
-+};
-+
- /*
-  * Common helper for pseudo-filesystems (sockfs, pipefs, bdev - stuff that
-  * will never be mountable)
-@@ -199,7 +203,6 @@ int get_sb_pseudo(struct file_system_typ
- 	struct vfsmount *mnt)
- {
- 	struct super_block *s = sget(fs_type, NULL, set_anon_super, NULL);
--	static const struct super_operations default_ops = {.statfs = simple_statfs};
- 	struct dentry *dentry;
- 	struct inode *root;
- 	struct qstr d_name = {.name = name, .len = strlen(name)};
-@@ -212,7 +215,7 @@ int get_sb_pseudo(struct file_system_typ
- 	s->s_blocksize = 1024;
- 	s->s_blocksize_bits = 10;
- 	s->s_magic = magic;
--	s->s_op = ops ? ops : &default_ops;
-+	s->s_op = ops ? ops : &simple_super_operations;
- 	s->s_time_gran = 1;
- 	root = new_inode(s);
- 	if (!root)
-@@ -359,7 +362,6 @@ int simple_commit_write(struct file *fil
- 
- int simple_fill_super(struct super_block *s, int magic, struct tree_descr *files)
- {
--	static struct super_operations s_ops = {.statfs = simple_statfs};
- 	struct inode *inode;
- 	struct dentry *root;
- 	struct dentry *dentry;
-@@ -368,7 +370,7 @@ int simple_fill_super(struct super_block
- 	s->s_blocksize = PAGE_CACHE_SIZE;
- 	s->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	s->s_magic = magic;
--	s->s_op = &s_ops;
-+	s->s_op = &simple_super_operations;
- 	s->s_time_gran = 1;
- 
- 	inode = new_inode(s);
---- 2.6.21-rc2/mm/shmem.c	2007-02-28 08:30:33.000000000 +0000
-+++ linux/mm/shmem.c	2007-02-28 13:12:07.000000000 +0000
-@@ -175,7 +175,7 @@ static inline void shmem_unacct_blocks(u
- 		vm_unacct_memory(pages * VM_ACCT(PAGE_CACHE_SIZE));
- }
- 
--static struct super_operations shmem_ops;
-+static const struct super_operations shmem_ops;
- static const struct address_space_operations shmem_aops;
- static const struct file_operations shmem_file_operations;
- static const struct inode_operations shmem_inode_operations;
-@@ -2382,7 +2382,7 @@ static const struct inode_operations shm
- #endif
- };
- 
--static struct super_operations shmem_ops = {
-+static const struct super_operations shmem_ops = {
- 	.alloc_inode	= shmem_alloc_inode,
- 	.destroy_inode	= shmem_destroy_inode,
- #ifdef CONFIG_TMPFS
+	Check the full source code of the caller, and you will see
+that the caller does not care (and it's local to the caller).
+
+> > > > + 	if ((size <= 0) || (i >= num_envp))
+> > > > + 		return -ENOMEM;
+> 
+> And one more thing (not necessarily for you):
+> ENOBUFS is probably more adequate here.
+
+	This error should never happen. If it happens, the caller need
+to be fixed.
+
+> Cheers,
+> Jarek P.
+
+	Note that there are various other things that are puzzling in
+this function. The internal object name and the symlinks are changed
+even if the kcore rename returns an error. That does not seem right.
+	But, this is separate from this patch...
+
+	Have fun...
+
+	Jean
