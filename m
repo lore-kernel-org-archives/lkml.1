@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964771AbXCAJpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964780AbXCAJtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964771AbXCAJpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 04:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964774AbXCAJpd
+	id S964780AbXCAJtd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 04:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964783AbXCAJtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 04:45:33 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:36782 "EHLO smtp.osdl.org"
+	Thu, 1 Mar 2007 04:49:33 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:43387 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964771AbXCAJpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 04:45:32 -0500
-Date: Thu, 1 Mar 2007 01:45:23 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Mathieu Desnoyers <compudj@google.com>, linux-kernel@vger.kernel.org
-Subject: Re: Thread flags modified without set_thread_flag() (non
- atomically)
-Message-Id: <20070301014523.e45c3cc5.akpm@linux-foundation.org>
-In-Reply-To: <20070301103451.2618cc35@dhcp-252-105.norway.atmel.com>
-References: <45E33EBD.6020603@google.com>
-	<20070228220349.b42bf571.akpm@linux-foundation.org>
-	<20070301103451.2618cc35@dhcp-252-105.norway.atmel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S964780AbXCAJtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 04:49:32 -0500
+Date: Thu, 1 Mar 2007 12:47:23 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301094723.GJ7217@2ka.mipt.ru>
+References: <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070301092634.GB20171@elf.ucw.cz>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 12:48:28 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007 10:34:51 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-
-> > On Mon, 26 Feb 2007 12:10:37 -0800 Mathieu Desnoyers <compudj@google.com> wrote:
+On Thu, Mar 01, 2007 at 10:26:34AM +0100, Pavel Machek (pavel@ucw.cz) wrote:
+> > > 10% gain in speed is NOT worth major complexity increase.
+> > 
+> > Should I create a patch to remove rb-tree implementation?
 > 
-> > > avr32/kernel/ptrace.c:          ti->flags |= _TIF_BREAKPOINT;
-> > 
-> > No, I don't immediately see anything in the flush_old_exec() code path
-> > which tells us that nobody else can look up this thread_info (or be holding
-> > a ref to it) in this context.
-> > 
-> > 
-> > > avr32/kernel/ptrace.c:                  ti->flags |= TIF_SINGLE_STEP;
-> > 
-> > heh.  Haarvard, you got a bug.
+> If you can replace them with something simpler, and no worse than 10%
+> slower in worst case, then go ahead. (We actually tried to do that at
+> some point, only to realize that efence stresses vm subsystem in very
+> unexpected/unfriendly way).
+
+Agh, only 10% in the worst case.
+I think you can not even imagine what tricks network uses to get at
+least aditional 1% out of the box.
+Using such logic you can just abandon any further development, since it
+work as is right now.
+
+> > That practice is stupid IMO.
 > 
-> Heh, yeah. That would indeed explain some strange gdb behaviour. It
-> will only trigger when single-stepping into an exception or interrupt
-> handler so thanks for pointing it out; I would have had a hard time
-> figuring it out on my own...
+> Too bad. Now you can start Linux fork called Eugenix.
+> 
+> (But really, Linux is not "maximum performance at any cost". Linux is
+> "how fast can we get that while keeping it maintainable?").
 
-yup, tricky.
+Should I read it like: we do not understand what it is and thus we do
+not want it?
 
-If there's a lesson here, it is "don't provide #defines in the header for
-both versions".
+> That is why, while arguing syslets vs. kevents, you need need to argue
+> not "kevents are faster because they avoid context switch overhead",
+> but "kevents are _so much_ faster that it is worth the added
+> complexity". And Ingo seems to showing you they are not _so much_
+> faster.
 
-The block code does a similar thing:
+Threadlets behave much worse without event driven model, events can
+behave worse without backed threads, they are mutually compensating.
 
-#define REQ_RW          (1 << __REQ_RW)
-#define REQ_FAILFAST    (1 << __REQ_FAILFAST)
-#define REQ_SORTED      (1 << __REQ_SORTED)
-#define REQ_SOFTBARRIER (1 << __REQ_SOFTBARRIER)
+I posted kevent/epoll benchmarks and related design issues too many 
+times both with handmade applications (which might be broken as hell)
+and popular open-source servers to repeat them again.
 
-and I've caught Jens using the wrong identifier at least twice in the past.
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-It's better I think to just provide #defines for the bit offsets and
-open-code the shifting if needed.  Like PG_foo and BH_Foo.
-
-> I don't think either of those need to be atomic though, since both of
-> them happen in monitor mode with interrupts disabled.
-
-That's true until you implement SMP ;)
+-- 
+	Evgeniy Polyakov
