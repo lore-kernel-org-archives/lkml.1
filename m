@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965551AbXCAT5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965549AbXCAT7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965551AbXCAT5X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 14:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965552AbXCAT5W
+	id S965549AbXCAT7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 14:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXCAT7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 14:57:22 -0500
-Received: from warden-p.diginsite.com ([208.29.163.248]:47945 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S965551AbXCAT5V (ORCPT
+	Thu, 1 Mar 2007 14:59:25 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:1760 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965549AbXCAT7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 14:57:21 -0500
-Date: Thu, 1 Mar 2007 11:37:59 -0800 (PST)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Johann Borck <johann.borck@densedata.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <45E7287D.7000104@densedata.com>
-Message-ID: <Pine.LNX.4.63.0703011136570.23701@qynat.qvtvafvgr.pbz>
-References: <20070222074044.GA4158@elte.hu>  <20070222113148.GA3781@2ka.mipt.ru>
-  <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> 
- <20070226172812.GC22454@2ka.mipt.ru>  <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org>
-  <20070226195416.GA11188 <20070301081808.GD7217@2ka.mipt.ru>
- <45E7287D.7000104@densedata.com>
+	Thu, 1 Mar 2007 14:59:24 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=wC3vjYoC8502TrfSttfobNDzV6p38ryN0YxdsjWqHg65zUlr8OoeIfx7VSXCFOWNx
+	+hJnyYcCCZnJe1CHR64VQ==
+Message-ID: <45E7308B.3050106@google.com>
+Date: Thu, 01 Mar 2007 11:59:07 -0800
+From: Mathieu Desnoyers <compudj@google.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Haavard Skinnemoen <hskinnemoen@atmel.com>, linux-kernel@vger.kernel.org
+Subject: Re: Thread flags modified without set_thread_flag() (non atomically)
+References: <45E33EBD.6020603@google.com>	<20070228220349.b42bf571.akpm@linux-foundation.org>	<20070301103451.2618cc35@dhcp-252-105.norway.atmel.com> <20070301014523.e45c3cc5.akpm@linux-foundation.org>
+In-Reply-To: <20070301014523.e45c3cc5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 1 Mar 2007, Johann Borck wrote:
-
-> I reported this a while ago and suggested to have the number of pending 
-> accepts reported with the event to save that last syscall.
-> I  created an ab replacement based on kevent, and at least with my machines, 
-> which are comparable to each other, the load on client dropped from 100% to 
-> 2% or something. ab just doesn't give meaningful results  (if the client is 
-> not way more powerful). With that new client I get very similar results for 
-> epoll and kevent, from 1000 through to 26000 concurrent requests, the results 
-> have been posted on kevent-homepage in october, I just checked it with new 
-> version, but there's no significant difference.
+Andrew Morton wrote:
+> On Thu, 1 Mar 2007 10:34:51 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 >
-> this is the benchmark with kevent-based client:
-> http://tservice.net.ru/~s0mbre/blog/2006/10/11#2006_10_11
-> btw, each result is average over 1,000,000 requests
+>   
+>>> On Mon, 26 Feb 2007 12:10:37 -0800 Mathieu Desnoyers <compudj@google.com> wrote:
+>>>       
+>>>> avr32/kernel/ptrace.c:          ti->flags |= _TIF_BREAKPOINT;
+>>>>         
+>>> No, I don't immediately see anything in the flush_old_exec() code path
+>>> which tells us that nobody else can look up this thread_info (or be holding
+>>> a ref to it) in this context.
+>>>
+>>>
+>>>       
+>>>> avr32/kernel/ptrace.c:                  ti->flags |= TIF_SINGLE_STEP;
+>>>>         
+>>> heh.  Haarvard, you got a bug.
+>>>       
+>> Heh, yeah. That would indeed explain some strange gdb behaviour. It
+>> will only trigger when single-stepping into an exception or interrupt
+>> handler so thanks for pointing it out; I would have had a hard time
+>> figuring it out on my own...
+>>     
 >
-> and just for comparison, this is on the same machines using ab:
-> http://tservice.net.ru/~s0mbre/blog/2006/10/08#2006_10_08
+> yup, tricky.
+>
+> If there's a lesson here, it is "don't provide #defines in the header for
+> both versions".
+>
+>   
 
-is this client avaialble? and what patches need to be added to the kernel to use 
-it?
+Hrm, but the bitmask version is useful (and correctly used) whenever
+the flag is read and tested.
 
-David Lang
+The proper way to do this would be to change every use the _TIF_* flag 
+in a flag comparison
+for a call to test_ti_thread_flag(). I wonder if gcc optimizes multiple 
+constant test_bit() applying
+on the same variable linked by logical and/or so it becomes a single 
+read and a small set of comparisons.
+
+> The block code does a similar thing:
+>
+> #define REQ_RW          (1 << __REQ_RW)
+> #define REQ_FAILFAST    (1 << __REQ_FAILFAST)
+> #define REQ_SORTED      (1 << __REQ_SORTED)
+> #define REQ_SOFTBARRIER (1 << __REQ_SOFTBARRIER)
+>
+> and I've caught Jens using the wrong identifier at least twice in the past.
+>
+> It's better I think to just provide #defines for the bit offsets and
+> open-code the shifting if needed.  Like PG_foo and BH_Foo.
+>
+>   
+>> I don't think either of those need to be atomic though, since both of
+>> them happen in monitor mode with interrupts disabled.
+>>     
+>
+> That's true until you implement SMP ;)
+>   
+
