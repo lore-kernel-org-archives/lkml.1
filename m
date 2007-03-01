@@ -1,40 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965400AbXCARFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965411AbXCARLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965400AbXCARFH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 12:05:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965410AbXCARFH
+	id S965411AbXCARLs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 12:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965413AbXCARLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 12:05:07 -0500
-Received: from outmail1.freedom2surf.net ([194.106.33.237]:37052 "EHLO
-	outmail1.freedom2surf.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965400AbXCARFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 12:05:06 -0500
-Message-ID: <45E7071C.6030103@f2s.com>
-Date: Thu, 01 Mar 2007 17:02:20 +0000
-From: Ian Molton <spyro@f2s.com>
-Organization: The Dragon Roost
-User-Agent: Thunderbird 2.0a1 (X11/20061107)
+	Thu, 1 Mar 2007 12:11:48 -0500
+Received: from sbcsmtp6.sbc.com ([144.160.20.53]:33463 "EHLO
+	mlph073.enaf.sfdc.sbc.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965411AbXCARLr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 12:11:47 -0500
+X-Greylist: delayed 2768 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 12:11:46 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] udivdi3: 64 bit divide
-References: <20070226173517.66bf0fec@freekitty> <20070227122437.da27c3cd.akpm@linux-foundation.org> <20070227131840.672d6932@localhost> <20070227133656.c452fbb4.akpm@linux-foundation.org> <20070227222430.GC10380@flint.arm.linux.org.uk> <45E4B33D.8080705@f2s.com> <Pine.LNX.4.61.0702282327410.23355@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0702282327410.23355@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: 3c905B - Transmit error, Tx status register 82
+Date: Thu, 1 Mar 2007 10:25:15 -0600
+Message-ID: <0D69EE79F863484FB73D20A95656730D02F9CBA1@ILNORT1MSGUSR18.ITServices.sbc.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 3c905B - Transmit error, Tx status register 82
+Thread-Index: AcdcHjHN+Dhfs4q7SIubh3oFIDdSBQ==
+From: "WHITE, JOE \(ASI-AIT\)" <jw2365@att.com>
+To: <andrewm@uow.edu.au>, <netdev@oss.sgi.com>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 01 Mar 2007 16:25:16.0452 (UTC) FILETIME=[3235F640:01C75C1E]
+X-TM-AS-Product-Ver: SMEX-7.0.0.1433-3.6.1039-15028.000
+X-TM-AS-Result: No--9.322300-0.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
+This server I inherited is a SUSE Linux box.  
 
-> The non-arch specific code does not use 64/64
-> divides through the "/" operator (otherwise there would
-> already have been udivdi3 linking errors). So what
-> remains to check is arch/arm26. grep -Pr 'int64|\bu64'
-> returns only a few results to check (kernel/ecard.c,
-> nwfpe/), so the answer is most likely no.
+Here is the eth0 device info: eth0      device: 3Com Corporation 3c905B
+100BaseTX [Cyclone] (rev 24)
 
-Looks that way. ok, nuke it :)
+
+There is this reoccurring issue I am seeing in the /var/log/messages:
+
+Mar  1 09:44:04 thor kernel: eth0: Transmit error, Tx status register
+82.
+Mar  1 09:44:04 thor kernel: Probably a duplex mismatch.  See
+Documentation/networking/vortex.txt
+
+Any ideas on how I can fix this issue, I have been all over google and
+have not found a solution.
+
+
+Joe White
+AT&T Midwest
+Manager Web Development
+Phone: 847-248-7800
+Pager: 312-689-3100
+
