@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965263AbXCAPWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965172AbXCAPY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965263AbXCAPWe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbXCAPWd
+	id S965172AbXCAPY7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965277AbXCAPY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:22:33 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56503 "EHLO smtp.osdl.org"
+	Thu, 1 Mar 2007 10:24:59 -0500
+Received: from lmv.inov.pt ([146.193.64.2]:55434 "EHLO lmv.inov.pt"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965263AbXCAPWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:22:32 -0500
-Date: Thu, 1 Mar 2007 07:22:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Daniel Hecht <dhecht@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in on_each_cpu?
-Message-Id: <20070301072225.9f00c36c.akpm@linux-foundation.org>
-In-Reply-To: <45E6BD5B.4030305@vmware.com>
-References: <45E6AC1A.8050608@vmware.com>
-	<20070301024524.c7c8ea1a.akpm@linux-foundation.org>
-	<45E6BA3A.2040306@vmware.com>
-	<1172749278.10271.43.camel@localhost.localdomain>
-	<45E6BD5B.4030305@vmware.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S965172AbXCAPY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 10:24:58 -0500
+Message-ID: <45E6F032.2050501@inov.pt>
+Date: Thu, 01 Mar 2007 15:24:34 +0000
+From: Jose Goncalves <jose.goncalves@inov.pt>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
+MIME-Version: 1.0
+To: Jose Goncalves <jose.goncalves@inov.pt>,
+       Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+References: <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk> <45DDB096.2020807@inov.pt> <20070222170354.GB633@flint.arm.linux.org.uk> <45E6D628.90800@inov.pt> <20070301151022.GA15447@flint.arm.linux.org.uk>
+In-Reply-To: <20070301151022.GA15447@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-INOV-EmailServer-Information: Please contact the Email service provider for more information
+X-INOV-EmailServer: Found to be clean
+X-INOV-EmailServer-From: jose.goncalves@inov.pt
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Mar 2007 03:47:39 -0800 Zachary Amsden <zach@vmware.com> wrote:
+Russell King wrote:
+> On Thu, Mar 01, 2007 at 01:33:28PM +0000, Jose Goncalves wrote:
+>   
+>> I've also done your suggestion and I've inserted "msleep(10);" just
+>> before the "And clear the interrupt registers again for luck." and my
+>> application is now running without problems fore more than 24H! So,
+>> inserting a delay in this point definitely makes some difference (has
+>> was with adding some extra printk() in several points of
+>> serial8250_startup()).
+>>
+>> This said, for me, this is definitely a software problem. The question
+>> is were?
+>>     
+>
+> I'm personally convinced it's hardware because according to my analysis
+> your CPU behaving in a way that the code is not asking it to do so.
+>   
 
-> Rusty Russell wrote:
-> > On Thu, 2007-03-01 at 03:34 -0800, Zachary Amsden wrote:
-> >   
-> >> What would be really, really nice would be to statically check all 
-> >> callsites that issue irq disables actually keep irqs disabled.  
-> >> Presumably, there was a reason they disabled irqs, and re-enabling them 
-> >> underneath their noses, even if it is to avoid a race, breaks the logic 
-> >> behind that reason.
-> >>     
-> >
-> > For the moment, how about a BUG_ON() in on_each_cpu()?
-> >   
-> 
-> Sounds quite decent.  But why does on_each_cpu need to disable 
-> interrupts at all?  It just calls func(), then re-enables interrupts.  
-> So whatever was going to happen during func() that might not be 
-> interrupt safe could just be done in the callee, avoiding the rather 
-> expensive mess of disabling and re-enabling interrupts for those cases 
-> where it doesn't matter.
+It's not possible that a interrupt is hitting just after enabling
+interrupts with "serial_outp(up, UART_IER, up->ier);" which triggers the
+execution of some code that is not reported by the Oops dump (at least
+with my current configuration) ?
 
-The handler for smp_call_function() is called with local interrupts
-disabled (from the IPI handler).
-
-So to provide a consistent call environment for that handler, on_each_cpu()
-will also disable local interrupts when making the direct call on this CPU.
-
-Similarly the !CONFIG_SMP version of on_each_cpu() disables local
-interrupts when running the caller's function.
+José Gonçalves
 
