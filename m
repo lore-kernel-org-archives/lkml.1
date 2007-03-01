@@ -1,124 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030289AbXCAVZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030296AbXCAV2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030289AbXCAVZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 16:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030296AbXCAVZ5
+	id S1030296AbXCAV2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 16:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXCAV2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 16:25:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53631 "EHLO mx1.redhat.com"
+	Thu, 1 Mar 2007 16:28:16 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42212 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030289AbXCAVZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 16:25:57 -0500
-Message-ID: <45E744E2.1040000@redhat.com>
-Date: Thu, 01 Mar 2007 15:25:54 -0600
-From: Robert Peterson <rpeterso@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S1030296AbXCAV2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 16:28:15 -0500
+Date: Thu, 1 Mar 2007 13:27:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Davide Libenzi <davidel@xmailserver.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+In-Reply-To: <20070228231228.GA12328@elte.hu>
+Message-ID: <Pine.LNX.4.64.0703011322390.12485@woody.linux-foundation.org>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+ <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com>
+ <20070222074044.GA4158@elte.hu> <Pine.LNX.4.64.0702221130050.1356@alien.or.mcafeemobile.com>
+ <20070228094522.GA17716@elte.hu> <Pine.LNX.4.64.0702280740250.5935@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0702280836080.12485@woody.linux-foundation.org>
+ <20070228231228.GA12328@elte.hu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.21-rc1] Extend print_symbol capability
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today's print_symbol function dumps a kernel symbol with printk.
-This patch extends the functionality of kallsyms.c so that the symbol
-lookup function may be used without the printk.  This is
-useful for modules that want to dump symbols elsewhere, for
-example, to debugfs.  I intend to use the new function call in the
-GFS2 file system (which will be a separate patch).
 
-Signed-off-by: Robert Peterson <rpeterso@redhat.com>
----
- include/linux/kallsyms.h |   10 ++++++++++
- kernel/kallsyms.c        |   21 ++++++++++++++-------
- 2 files changed, 24 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index 1cebcbc..a54afe5 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -7,6 +7,8 @@
- 
- 
- #define KSYM_NAME_LEN 127
-+#define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + KSYM_NAME_LEN + \
-+                        2*(BITS_PER_LONG*3/10) + MODULE_NAME_LEN + 1)
- 
- #ifdef CONFIG_KALLSYMS
- /* Lookup the address for a symbol. Returns 0 if not found. */
-@@ -22,6 +24,9 @@ const char *kallsyms_lookup(unsigned long addr,
-                            unsigned long *offset,
-                            char **modname, char *namebuf);
- 
-+/* Look up a kernel symbol and return it in a text buffer. */
-+extern void lookup_symbol(unsigned long addr, char *buffer);
-+
- /* Replace "%s" in format with address, if found */
- extern void __print_symbol(const char *fmt, unsigned long address);
- 
-@@ -47,6 +52,11 @@ static inline const char *kallsyms_lookup(unsigned 
-long addr,
-        return NULL;
- }
- 
-+static inline void lookup_symbol(unsigned long addr, char *buffer)
-+{
-+       return NULL;
-+}
-+
- /* Stupid that this does nothing, but I didn't create this mess. */
- #define __print_symbol(fmt, addr)
- #endif /*CONFIG_KALLSYMS*/
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index 6f294ff..a5fedf5 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -267,20 +267,17 @@ const char *kallsyms_lookup(unsigned long addr,
-        return NULL;
- }
- 
--/* Replace "%s" in format with address, or returns -errno. */
--void __print_symbol(const char *fmt, unsigned long address)
-+/* Look up a kernel symbol and return it in a text buffer. */
-+void lookup_symbol(unsigned long addr, char *buffer)
- {
-        char *modname;
-        const char *name;
-        unsigned long offset, size;
-        char namebuf[KSYM_NAME_LEN+1];
--       char buffer[sizeof("%s+%#lx/%#lx [%s]") + KSYM_NAME_LEN +
--                   2*(BITS_PER_LONG*3/10) + MODULE_NAME_LEN + 1];
--
--       name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
- 
-+       name = kallsyms_lookup(addr, &size, &offset, &modname, namebuf);
-        if (!name)
--               sprintf(buffer, "0x%lx", address);
-+               sprintf(buffer, "0x%lx", addr);
-        else {
-                if (modname)
-                        sprintf(buffer, "%s+%#lx/%#lx [%s]", name, offset,
-@@ -288,6 +285,15 @@ void __print_symbol(const char *fmt, unsigned long 
-address)
-                else
-                        sprintf(buffer, "%s+%#lx/%#lx", name, offset, size);
-        }
-+}
-+
-+/* Replace "%s" in format with address, or returns -errno. */
-+void __print_symbol(const char *fmt, unsigned long address)
-+{
-+       char buffer[KSYM_SYMBOL_LEN];
-+
-+       lookup_symbol(address, buffer);
-+
-        printk(fmt, buffer);
- }
- 
-@@ -452,3 +458,4 @@ static int __init kallsyms_init(void)
- __initcall(kallsyms_init);
- 
- EXPORT_SYMBOL(__print_symbol);
-+EXPORT_SYMBOL(lookup_symbol);
+On Thu, 1 Mar 2007, Ingo Molnar wrote:
+> 
+> wrt. one-shot syscalls, the user-space stack footprint would still 
+> probably be there, because even async contexts that only do single-shot 
+> processing need to drop out of kernel mode to handle signals.
 
+Why?
+
+The easiest thing to do with signals is to just not pick them up. If the 
+signal was to that *particular* threadlet (ie a "cancel"), then we just 
+want to kill the threadlet. And if the signal was to the thread group, 
+there is no reason why the threadlet should pick it up.
+
+In neither case is there *any* reason to handle the signal in the 
+threadlet, afaik.
+
+And having to have a stack allocation for each threadlet certainly means 
+that you complicate things a lot. Suddenly you have allocations that can't 
+just go away. Again, I'm pointing to the problems I already pointed out 
+with the allocations of the atom structures - quite often you do *not* 
+want to keep track of anything specific for completion time, and that 
+means that you MUST NOT have to de-allocate anythign either.
+
+Again, think aio_read(). With the *exact* current binary interface. 
+PLEASE. If you cannot emulate that with threadlets, then threadlets are 
+*pointless*. On eof the major reasons for the whole exercise was to get 
+rid of the special code in fs/aio.c.
+
+So I repeat: if you cannot do that, and remain binary compatible, don't 
+even bother.
+
+		Linus
