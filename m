@@ -1,130 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXCAJZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933209AbXCAJ1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933212AbXCAJZo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 04:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933209AbXCAJZo
+	id S933209AbXCAJ1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 04:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933214AbXCAJ1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 04:25:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45322 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933212AbXCAJZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 04:25:43 -0500
-Date: Thu, 1 Mar 2007 10:18:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Kevin O'Connor" <kevin@koconnor.net>
-Cc: linux-kernel@vger.kernel.org,
+	Thu, 1 Mar 2007 04:27:18 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53227 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933209AbXCAJ1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 04:27:17 -0500
+Date: Thu, 1 Mar 2007 10:26:34 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
        Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Zach Brown <zach.bro@NONE.mta.everyone.net>
-Subject: Re: [patch 02/12] syslets: add syslet.h include file, user API/ABI definitions
-Message-ID: <20070301091840.GA3313@elte.hu>
-References: <20070228213938.GA945@elte.hu> <20070228214117.GB2305@elte.hu> <20070301030533.GA26381@double.lan>
-Mime-Version: 1.0
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301092634.GB20171@elf.ucw.cz>
+References: <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070301030533.GA26381@double.lan>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070301081808.GD7217@2ka.mipt.ru>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Kevin O'Connor <kevin@koconnor.net> wrote:
-
-> I'd like to propose a simpler userspace API for syslets.  I believe 
-> this revised API is just as capable as yours (anything done purely in 
-> kernel space with the existing API can also be done with this one).
+> > > I understand that - and I totally agree.
+> > > But when more complex, more bug-prone code results in higher performance
+> > > - that must be used. We have linked lists and binary trees - the latter
+> > 
+> > No-o. Kernel is not designed like that.
+> > 
+> > Often, more complex and slightly faster code exists, and we simply use
+> > slower variant, because it is fast enough.
+> > 
+> > 10% gain in speed is NOT worth major complexity increase.
 > 
-> An "atom" would look like:
-> 
-> struct syslet_uatom {
-> 	u32		nr;
-> 	u64		ret_ptr;
-> 	u64		next;
-> 	u64		arg_nr;
-> 	u64		args[6];
-> };
-> 
-> The sys_nr, ret_ptr, and next fields would be unchanged.  The args 
-> array would directly store the arguments to the system call.  To 
-> optimize the case where only a few arguments are necessary, an 
-> explicit argument count would be set in the arg_nr field.
+> Should I create a patch to remove rb-tree implementation?
 
-i dont see the advantage of arg_nr - if the arguments are direct then 
-the best way is to just fetch them all, not to do testing upon arg_nr. 
-Furthermore, regarding the indirect pointers, they are quite essential 
-for some uses, see:
+If you can replace them with something simpler, and no worse than 10%
+slower in worst case, then go ahead. (We actually tried to do that at
+some point, only to realize that efence stresses vm subsystem in very
+unexpected/unfriendly way).
 
-  http://lkml.org/lkml/2007/2/28/292
+> That practice is stupid IMO.
 
-> Of course, the above lacks the syscall return testing capabilities in 
-> your atoms.  To obtain that capability, one could add a new syscall:
-> 
-> long sys_syslet_helper(long flags, long *ptr, long inc, u64 new_next)
+Too bad. Now you can start Linux fork called Eugenix.
 
-yes. But a 'flags' field is handy anyway, to signal things like 
-NOCOMPLETE or SYSLET_SYNC/SYSLET_ASYNC (a flags field is always useful 
-in such structures). So the condition testing comes 'for free' in 
-essence.
+(But really, Linux is not "maximum performance at any cost". Linux is
+"how fast can we get that while keeping it maintainable?").
 
-but ... as you can see it with sys_umem_add(), i like the addition of 
-helper syscalls - i just think that this particular one wouldnt be too 
-helpful.
+That is why, while arguing syslets vs. kevents, you need need to argue
+not "kevents are faster because they avoid context switch overhead",
+but "kevents are _so much_ faster that it is worth the added
+complexity". And Ingo seems to showing you they are not _so much_
+faster.
 
-> I would also change the event ring notification system.  Instead of 
-> building that support into all syslets, one could introduce an "add to 
-> head" syscall specifically for that purpose.  If done this way, 
-> userspace could arrange for this new sys_addtoring call to always be 
-> the last uatom executed in a syslet.  This would make the support 
-> optional - those userspace applications that prefer to use a futex or 
-> signal as an event system could arrange to have those system calls as 
-> the last one in the chain instead. [...]
-
-the problem is signals: a syslet has to return to user-space upon 
-signals or upon a stop condition. So to notify about the precise place 
-of stoppage, the notification ring is a 'built in' property.
-
-(nevertheless, as i mentioned it in a prior mail, i'll create separate 
-ring syscalls, because they are useful for other stuff too.)
-
-> For example, the open & stat case could be done with a chain like the 
-> following:
-> 
-> atom1: &atom3->args[1] = sys_open(...)
-> atom2: sys_syslet_helper(SYSLET_BRANCH_ON_NON_POSITIVE,
->                          &atom3->args[1], 0, atom4)
-
-i dont see a huge conceptual difference between having the syslet helper 
-in flags versus having it in a separate syscall. Other than yours has 
-twice the number of atoms.
-
-> It is also possible to use sys_syslet_helper to push a return value to 
-> multiple syslet parameters (for example, propagating an fd from open 
-> to multiple reads).  For example:
-> 
-> atom1: &atom3->args[1] = sys_open(...)
-> atom2: &atom4->args[1] = sys_syslet_helper(0, &atom3->args[1], 0, 0)
-> atom3: sys_read([arg1 filled in atom1], ...)
-> atom4: sys_read([arg1 filled in atom2], ...)
-
-try to do this in FIO. You'd have to create many extra atoms to push the 
-fd into the argument fields - instead of just sharing the variable. 
-Sharing is /good/. These 'simplifications' complicate the whole syslet 
-programming model down to being near unusable.
-
-> Although this is a bit ugly, I must wonder how many times one would 
-> build chains complex enough to require it.
-
-take a look at FIO.
-
-	Ingo
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
