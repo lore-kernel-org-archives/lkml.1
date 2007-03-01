@@ -1,159 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965510AbXCATGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965514AbXCATGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965510AbXCATGJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 14:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965512AbXCATGI
+	id S965514AbXCATGw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 14:06:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965513AbXCATGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 14:06:08 -0500
-Received: from warden-p.diginsite.com ([208.29.163.248]:42838 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S965510AbXCATGH (ORCPT
+	Thu, 1 Mar 2007 14:06:52 -0500
+Received: from an-out-0708.google.com ([209.85.132.240]:46495 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965514AbXCATGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 14:06:07 -0500
-Date: Thu, 1 Mar 2007 10:41:40 -0800 (PST)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <20070301175643.GA20219@2ka.mipt.ru>
-Message-ID: <Pine.LNX.4.63.0703011008060.23701@qynat.qvtvafvgr.pbz>
-References: <20070227102832.GC23170@2ka.mipt.ru>  <20070227115221.GJ8154@thunk.org>
- <20070227121116.GA31597@2ka.mipt.ru>  <20070228161413.GA4319@ucw.cz>
- <20070301081808.GD7217@2ka.mipt.ru>  <20070301092634.GB20171@elf.ucw.cz>
- <20070301094723.GJ7217@2ka.mipt.ru>  <20070301095402.GA14603@elte.hu>
- <20070301105928.GA15709@2ka.mipt.ru>  <Pine.LNX.4.63.0703010822560.23701@qynat.qvtvafvgr.pbz>
- <20070301175643.GA20219@2ka.mipt.ru>
+	Thu, 1 Mar 2007 14:06:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oz56RFi3yJiZg1hoLRdcLD1OGvVmZHnK83i+L/oeOvgtE+2JsmwVhMBdKf65EsB9YY7fue2eTf/5ZuEYypggL7rXLOBfGPZeT6B66QjFlzdCuLo6j6NRqPa7JKYFIoXEOPc8NYi8qR1WKP5Fb24qvZs17fEHcMq4oMstVjqs7Pc=
+Message-ID: <8bd0f97a0703011106j7cb3664dx190686b0251cd1fa@mail.gmail.com>
+Date: Thu, 1 Mar 2007 14:06:49 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: + blackfin-on-chip-rtc-controller-driver.patch added to -mm tree
+Cc: akpm@linux-foundation.org, bryan.wu@analog.com, mm-commits@vger.kernel.org,
+       a.zummo@towertech.it, "Paul Mundt" <lethal@linux-sh.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200703011039.32876.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703010848.l218me3e008819@shell0.pdx.osdl.net>
+	 <200703011039.32876.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007, Evgeniy Polyakov wrote:
+On 3/1/07, David Brownell <david-b@pacbell.net> wrote:
+> Bryan, it'd be nice to see a followup patch addressing those
+> comments from Paul Mundt, especially about that code which
+> will spin-forever-under-spinlock.  That spin should probably
+> drop the lock then msleep(1) then restore it before retest...
 
-> On Thu, Mar 01, 2007 at 08:56:28AM -0800, David Lang (david.lang@digitalinsight.com) wrote:
->> the ab numbers below do not seem that impressive to me, especially for such
->> stripped down server processes.
-> ...
->> client and server are dual opteron 252 with 8G of ram, running debian in 64
->> bit mode
->
-> Decrease your hardware setup in 2-4 times, leave only one apache process
-> and try to get the same - we are not talking about how to create a
-> perfect web server, instead we try to focus possible problems in
-> epoll/kevent event driven logic.
+i've been chatting with Paul on irc about it
 
-for apache I agree that the target box was maxed out, so if you only had a 
-single core on your AMD64 box that would be about half, however the thttpd is 
-only useing ~1 of the CPU's (OS overhead is useing just a smidge of the second, 
-but overall the box is 45-48% idle
+> The set_alarm() method needs to enable the alarm irq if the
+> "enabled" flag is set, and the read_alarm() method needs to
+> report whether the alarm is enabled.
 
-if the amount of ram is an issue then you are swapping in your tests (or at 
-least throwing out cache that you need) and so would not be testing what you 
-think you are.
+from reading other drivers and the documentation, i couldnt determine
+whether this was the standard behavior or whether set_alarm simply set
+the alarm time but you still needed to call the ioctl RTC_AIE_ON in
+order to actual enable it
 
-> Vanilla (epoll) lighttpd shows 4000-5000 requests per second in my setup (no logs).
-> Default mpm-apache2 with bunch of threads - about 8k req/s.
-> Default thttpd (disabled logging) - about 2k req/s
->
-> Btw, all your tests are network bound, try to decrease
-> html page size to get actual event processing speed out of that machines.
+> It's unclear why you
+> chose to report "pending" (irq issued but not yet acked) since
+> that's uselessly transient state on non-polled hardwre.  (That
+> flag definition came from EFI, a polled firmware RTC.)
 
-same test retreiving a ~128b file the server never gets below 51% idle (so it's 
-only useing one CPU)
+because other drivers do ?  there is no documentation here that covers
+what exactly the read_alarm function in the rtc_class_ops is supposed
+to do which leaves it up to people looking at other drivers
 
-Server Software:        thttpd/2.23beta1
-Server Hostname:        208.2.188.5
-Server Port:            81
+rtc-sa1100.c for example:
+static int sa1100_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+{
+    memcpy(&alrm->time, &rtc_alarm, sizeof(struct rtc_time));
+    alrm->pending = RTSR & RTSR_AL ? 1 : 0;
+    return 0;
+}
 
-Document Path:          /128b
-Document Length:        136 bytes
+if someone decides what the behavior is supposed to be here, i'll
+happily implement it
 
-Concurrency Level:      8000
-Time taken for tests:   9.372902 seconds
-Complete requests:      80000
-Failed requests:        0
-Write errors:           0
-Total transferred:      30762842 bytes
-HTML transferred:       10952216 bytes
-Requests per second:    8535.24 [#/sec] (mean)
-Time per request:       937.290 [ms] (mean)
-Time per request:       0.117 [ms] (mean, across all concurrent requests)
-Transfer rate:          3205.09 [Kbytes/sec] received
+> Correct handling of the "enabled" flag in read_alarm() will let
+> you remove a redundant seq_printf() in your proc() callback...
 
-Connection Times (ms)
-               min  mean[+/-sd] median   max
-Connect:       36  287 1125.6     73    9109
-Processing:    49   89  19.8     87     339
-Waiting:       17   62  16.4     62     292
-Total:         92  376 1137.4    159    9262
+i dont understand this ... rtc-sh.c and rtc-sa1100.c both do a
+seq_printf() for the alarm irq
 
-Percentage of the requests served within a certain time (ms)
-   50%    159
-   66%    164
-   75%    165
-   80%    165
-   90%    203
-   95%    260
-   98%   3233
-   99%   9201
-  100%   9262 (longest request)
+> It looks to me like you're handling the time in set_alarm()
+> incorrectly.  Do the conversion and test in set_alarm, not
+> AIE_ON ... since set_alarm() needs to be able to include AIE_ON
+> capability.
 
-note that this is showing the slowdown from the large concurrancy level, if I 
-reduce the concurrancy level to 500 I get
+the reason for this is so that i do not have to worry about keeping
+two structures in sync ... there's the common RTC representation and
+then there's the funky Blackfin representation, so by delaying the
+conversion until RTC_AIE_ON, i didnt have to worry about keeping these
+fields in sync
 
-Document Path:          /128b
-Document Length:        136 bytes
+> The fields tm_{wday,yday,isdst} are never used,
+> but you're testing tm_yday.  If you meant to test tm_mday in
+> order to distinguish the WKALM_SET and ALM_SET cases, then you
+> are mishandling a wraparound case; see how rtc-omap handles
+> it.  (If it's 23:00 now, an 01:00 alarm means TOMORROW.  I
+> think other RTCs may goof this case too.)
 
-Concurrency Level:      500
-Time taken for tests:   4.215025 seconds
-Complete requests:      80000
-Failed requests:        0
-Write errors:           0
-Total transferred:      30565348 bytes
-HTML transferred:       10881904 bytes
-Requests per second:    18979.72 [#/sec] (mean)
-Time per request:       26.344 [ms] (mean)
-Time per request:       0.053 [ms] (mean, across all concurrent requests)
-Transfer rate:          7081.33 [Kbytes/sec] received
+this is exactly why i'm checking tm_yday ... the rtc-dev interface
+sets those fields to -1 when using the WKALM ioctls and there's no
+other way to distinguish this
 
-Connection Times (ms)
-               min  mean[+/-sd] median   max
-Connect:        0   15 206.3      1    3006
-Processing:     2    7   6.4      6     224
-Waiting:        1    6   6.4      5     224
-Total:          3   22 208.4      6    3229
+if the wraparound case is so common, then perhaps it should be a
+helper function in the generic rtc code rather than reimplementing in
+every rtc driver ...
 
-Percentage of the requests served within a certain time (ms)
-   50%      6
-   66%      8
-   75%     10
-   80%     12
-   90%     16
-   95%     17
-   98%     21
-   99%     24
-  100%   3229 (longest request)
-loadtest2:/proc/sys#
+> The use of class_device conflicts with the patch series I
+> recently resubmitted, see it on rtc-linux@googlegroups.com ...
+> if you submit a separate patch, then maybe your Blackfin RTC
+> can be merged first.
 
-again with >50% idle on the server box
-
-also, ab appears to only use a single cpu so the fact that there are two on the 
-client box should not make a difference.
-
-I will reboot these boxes into a UP kernel if you think that this is still a 
-significant difference. based on what I'm seeing I don't think it will make much 
-of a difference (except for the apache test)
-
-David Lang
+i'll take a look
+-mike
