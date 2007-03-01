@@ -1,134 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965031AbXCAML4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932504AbXCAMMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965031AbXCAML4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:11:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965035AbXCAML4
+	id S932504AbXCAMMt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbXCAMMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:11:56 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42290 "EHLO mx2.redhat.com"
+	Thu, 1 Mar 2007 07:12:48 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36893 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965031AbXCAMLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:11:55 -0500
-Message-ID: <45E6C2F2.8090007@redhat.com>
-Date: Thu, 01 Mar 2007 07:11:30 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, jbeulich@novell.com,
-       anil.s.keshavamurthy@intel.com, amul.shah@unisys.com
-Subject: Re: [PATCH]: Use stop_machine_run in the Intel RNG driver
-References: <20070227120835.14880.38530.sendpatchset@prarit.boston.redhat.com>	<45E42268.30209@redhat.com> <20070228221619.dc135f3c.akpm@linux-foundation.org>
-In-Reply-To: <20070228221619.dc135f3c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S932504AbXCAMMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:12:47 -0500
+Date: Thu, 1 Mar 2007 15:10:22 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301121020.GC20773@2ka.mipt.ru>
+References: <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301110022.GA28260@elte.hu> <20070301111629.GA27381@2ka.mipt.ru> <20070301114137.GB897@elte.hu> <20070301114734.GA3508@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070301114734.GA3508@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 15:10:59 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 01, 2007 at 12:47:35PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > I also changed client socket to nonblocking mode with the same result 
+> > > in epoll server. If you will find it broken, please send me corrected 
+> > > to test too.
+> > 
+> > this line in evserver_kevent.c looks a bit fishy:
+> 
+> this one in evserver_kevent.c looks problematic too:
+> 
+>         shutdown(s, SHUT_RDWR);
+>         close(s);
+> 
+> as evserver_epoll.c only does:
+> 
+>         close(s);
+> 
+> again, there might be TCP control flow differences due to this. [ Or the 
+> removal of this shutdown() call might be a small speedup for the kevent 
+> case ;) ]
 
-> I think what you're describing here is just the standard old
-> smp_call_function() deadlock, rather than anything which is specific to
-> intel-rng, yes?
->
-> It is "well known" that you can't call smp_call_function() with local
-> interrupts disabled.  In fact i386 will spit a warning if you try it.
->
->
-> intel-rng doesn't do that, but what it _does_ do is:
->
-> 	smp_call_function(..., wait = 0);
-> 	local_irq_disable();
->
-> so some CPUs will still be entering the IPI while this CPU has gone and
-> disabled interrupts, thus exposing us to the deadlock, yes?
->   
+:)
 
-Not quite Andrew.  This was a different and little more complicated.
+> Also, the order of fd and socket close() is different in the two cases. 
+> It shouldnt make any difference - but that too just makes the results 
+> harder to trust. Would it be so hard to introduce a single 
+> handle_web_request() function that is exactly the same in the two tests? 
+> All the queueing details (which are of course different in the epoll and 
+> the kevent case) should be in the client function, which calls 
+> handle_web_request().
 
-The deadlock occurs because two CPUs are in contention over a rw_lock 
-and the "call_function" puts the CPUs in such a state that no forward 
-progress will be made until the calling CPU has completed it's code.
+I've removed shutdown - things are the same.
 
-Here's a more detailed example (sorry for the cut-and-paste):
+Sometimes kevent performance drops to lower numbers and its graph of
+times needed to handle events has high platoes (with and without
+shutdown - it was always), like this:
 
-1.  CPU A has done read_lock(&lock), and has acquired the lock.
-2.  CPU B has done write_lock_irq(&lock) and is waiting for A to release 
-the lock.  CPU B has disabled interrupts while waiting for the interrupt:
+Percentage of the requests served within a certain time (ms)
+50%    128
+66%    486
+75%    505
+80%    507
+90%    732
+95%   3087	// something is wrong at this point
+98%   9058
+99%   9072
+100%  15562 (longest request)
 
-void __lockfunc _write_lock_irq(rwlock_t *lock)
-{
-        local_irq_disable();
-        preempt_disable();
-        rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
-        _raw_write_lock(lock);
-}
+it is possible that threre are some other bugs in the server though,
+which prevent sockets from being quicly closed and thus its processing
+time increases - I do not know for sure the root of that event.
 
-3.  CPU C issues smp_call_function, as in the case of the intel-rng driver:
+I separated epoll and kevent servers, since originally kevent server 
+included additional kevent features, but then new ones were added 
+and I moved slowly to the similar to epoll case.
 
-    set_mb(waitflag, 1);
-    smp_call_function(intel_init_wait, NULL, 1, 0);
-    ...
-    // do some stuff with interrupts disabled
-    ...
-    set_mb(waitflag, 0);
+Current version of the server was a pre-test one for lighttpd patches,
+so essentially it should be like epoll except minor details.
 
-where
+> 	Ingo
 
-static char __initdata waitflag;
-
-static void __init intel_init_wait(void *unused)
-{
-        while (waitflag)
-                cpu_relax();
-}
-
-In this code the calling processor, C, has issued an IPI and disabled 
-interrupts on every processor except itself.  When each processor takes 
-the IPI it runs intel_init_wait and waits in a tight loop until  
-waitflag is zero.  ie) no forward progress on any CPU.
-
-CPU C will not execute the code below the smp_call_function until all 
-processors have started (not completed!) the IPI function.  From 
-call_smp_function:
-
-        cpus = num_online_cpus() - 1;
-        ...
-
-        /* Send a message to all other CPUs and wait for them to respond */
-        send_IPI_allbutself(CALL_FUNCTION_VECTOR);
-
-        /* Wait for response */
-        while (atomic_read(&data.started) != cpus)
-                cpu_relax();
-
-So CPU C is waiting here.
-
-4.  CPU A, which holds the lock sees the IPI and is in the 
-intel_init_wait code, happily waiting.  CPU A has incremented 
-data.started.  CPU A will stay in this loop until CPU C sets waitflag = 0.
-
-5.  CPU B, if you recall is _waiting with interrupts disabled_ for CPU A 
-to release the  lock.  It does not see the IPI because it has interrupts 
-disabled.  It will not see the IPI until CPU A has released the lock.
-
-6.  CPU C is eventually only waiting for CPU B to do the final increment 
-of data.started = cpus.  CPU B is waiting for CPU A to release the 
-lock.  CPU A is executing a tight loop which it will not exit from until 
-CPU C can set waitflag to zero.
-
-That's a 3-way deadlock.
-
-So, the issue is placing the other CPUs in a state that they do not make 
-forward progress.  The deadlock occurs before the calling CPU has 
-disabled interrupts in the code in step 3.
-
-I also tested this code without the __init tags and explicitly coding 
-waitflag=0 to avoid the gcc only setting .bss section variables to zero 
-error that someone fixed last week.  I also removed the code that 
-disabled interrupts on the calling processor which had no effect -- at 
-first I thought it was a simple interrupt issue ...
-
-Maybe smp_call_function needs a written warning that the called function 
-should not "suspend" CPUs?
-
-P.
+-- 
+	Evgeniy Polyakov
