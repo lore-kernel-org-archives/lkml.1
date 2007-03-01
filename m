@@ -1,111 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbXCAIRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXCAIRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932980AbXCAIRO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 03:17:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXCAIRO
+	id S932978AbXCAIRa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 03:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933001AbXCAIRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 03:17:14 -0500
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:45804 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932980AbXCAIRO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 03:17:14 -0500
-Subject: Re: [Fastboot] [PATCH 2/5] Use the APIC to determine the hardware
-	processor id -	i386
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: vgoyal@in.ibm.com
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, judith@linux-foundation.org,
-       fastboot@lists.osdl.org, ebiederm@xmission.com, ak@suse.de
-In-Reply-To: <20070301075900.GA17405@in.ibm.com>
-References: <1172733419.1498.269.camel@sebastian.intellilink.co.jp>
-	 <20070301075900.GA17405@in.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Organization: NTT Open Source Software Center
-Date: Thu, 01 Mar 2007 17:17:39 +0900
-Message-Id: <1172737059.21214.11.camel@sebastian.intellilink.co.jp>
+	Thu, 1 Mar 2007 03:17:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:33668 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932978AbXCAIR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 03:17:26 -0500
+Date: Thu, 1 Mar 2007 00:17:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: compudj@google.com, mbligh@google.com, linux-kernel@vger.kernel.org,
+       ak@suse.de, paulus@samba.org, tony.luck@intel.com,
+       hskinnemoen@atmel.com
+Subject: Re: Thread flags modified without set_thread_flag() (non
+ atomically)
+Message-Id: <20070301001708.900eb5e5.akpm@linux-foundation.org>
+In-Reply-To: <20070228.222341.74751530.davem@davemloft.net>
+References: <45E33EBD.6020603@google.com>
+	<20070228220349.b42bf571.akpm@linux-foundation.org>
+	<20070228.222341.74751530.davem@davemloft.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-01 at 13:29 +0530, Vivek Goyal wrote:
-> On Thu, Mar 01, 2007 at 04:16:59PM +0900, Fernando Luis Vázquez Cao wrote:
-> > Use the APIC to determine the hardware processor id when APIC support
-> > has been selected, independently of whether CONFIG_SMP is set or not.
+On Wed, 28 Feb 2007 22:23:41 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+
+> > That all looks rather deliberate.
 > > 
-> > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> > ---
+> > > powerpc/kernel/process.c:               t->flags ^= (_TIF_ABI_PENDING | 
+> > > _TIF_32BIT);
+> > >
+> > > ia64/kernel/mca.c:      ti->flags = _TIF_MCA_INIT;
+> > >
+> > > avr32/kernel/ptrace.c:          ti->flags |= _TIF_BREAKPOINT;
 > > 
-> > diff -urNp linux-2.6.21-rc2/include/asm-i386/smp.h linux-2.6.21-rc2-hwcpuid/include/asm-i386/smp.h
-> > --- linux-2.6.21-rc2/include/asm-i386/smp.h	2007-03-01 14:02:21.000000000 +0900
-> > +++ linux-2.6.21-rc2-hwcpuid/include/asm-i386/smp.h	2007-03-01 14:08:50.000000000 +0900
-> > @@ -74,20 +74,6 @@ static inline int num_booting_cpus(void)
-> >  	return cpus_weight(cpu_callout_map);
-> >  }
-> >  
-> > -#ifdef CONFIG_X86_LOCAL_APIC
-> > -
-> > -#ifdef APIC_DEFINITION
-> > -extern int hard_smp_processor_id(void);
-> > -#else
-> > -#include <mach_apicdef.h>
-> > -static inline int hard_smp_processor_id(void)
-> > -{
-> > -	/* we don't want to mark this access volatile - bad code generation */
-> > -	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
-> > -}
-> > -#endif
-> > -#endif
-> > -
-> >  extern int safe_smp_processor_id(void);
-> >  extern int __cpu_disable(void);
-> >  extern void __cpu_die(unsigned int cpu);
-> > @@ -102,10 +88,23 @@ extern unsigned int num_processors;
-> >  
-> >  #define NO_PROC_ID		0xFF		/* No processor magic marker */
-> >  
-> > -#endif
-> > +#endif /* CONFIG_SMP */
-> >  
-> >  #ifndef __ASSEMBLY__
-> >  
-> > +#ifdef CONFIG_X86_LOCAL_APIC
-> > +#ifdef APIC_DEFINITION
-> > +extern int hard_smp_processor_id(void);
-> > +#else
-> > +#include <mach_apicdef.h>
-> > +static inline int hard_smp_processor_id(void)
-> > +{
-> > +	/* we don't want to mark this access volatile - bad code generation */
-> > +	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
-> > +}
-> > +#endif /* APIC_DEFINITION */
-> > +#endif /* CONFIG_X86_LOCAL_APIC */
-> > +
+> > No, I don't immediately see anything in the flush_old_exec() code path
+> > which tells us that nobody else can look up this thread_info (or be holding
+> > a ref to it) in this context.
 > 
-> I think compilation will fail if CONFIG_X86_LOCAL_APIC=n and I build a UP
-> kernel? There is no definition of hard_smp_processor_id in that case.
-Hi Vivek,
+> Provide the counter example, what other threads of control can modify
+> relevant flags while a thread is exec()'ing?  It's essentially frozen
+> outside of these code paths, otherwise we wouldn't be able to make all
+> of these modifications to the task state.
 
-Thank you for the feedback.
-
-I tested that combination and it compiled properly. The reason is that
-hard_smp_processor_id is not used anywhere in the kernel when
-CONFIG_X86_LOCAL_APIC=n and CONFIG_SMP=n.
-
-I tested all the combinations (including voyager) and everything seems
-to work as expected.
-
-Regards,
-
-Fernando
-
-> Otherwise, as a concept it seems to make sense that hard_smp_processor_id()
-> is not necessarily zero on UP systems.
-> 
-> Thanks
-> Vivek
-
+As Mathieu points out, resched_task(), perhaps.  It can be called from interrupt.
