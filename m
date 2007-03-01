@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933277AbXCANBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933280AbXCANDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933277AbXCANBJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 08:01:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933265AbXCANBI
+	id S933280AbXCANDj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXCANDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 08:01:08 -0500
-Received: from il.qumranet.com ([82.166.9.18]:36065 "EHLO il.qumranet.com"
+	Thu, 1 Mar 2007 08:03:39 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40466 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933271AbXCANBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 08:01:07 -0500
-Message-ID: <45E6CE0F.4060904@qumranet.com>
-Date: Thu, 01 Mar 2007 14:58:55 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S933271AbXCANDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 08:03:38 -0500
+Date: Thu, 1 Mar 2007 14:03:36 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Fastboot] [PATCH 1/1] - platform_kernel_launch_event is noop on generic kernel
+Message-ID: <20070301130336.GB18853@strauss.suse.de>
+Mail-Followup-To: linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20070228194517.25635.98535.sendpatchset@attica.americas.sgi.com> <20070301042227.GO6479@verge.net.au> <20070301125736.GA18853@strauss.suse.de>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [GIT PULL] KVM updates for Linux 2.6.21-rc2
-References: <45E6CCA5.6050905@qumranet.com>
-In-Reply-To: <45E6CCA5.6050905@qumranet.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301125736.GA18853@strauss.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Linus,
->
-> The following changes since commit 
-> 2ff7354fe888f46f6629b57e463b0a1eb956c02b:
->  Eric W. Biederman (1):
->        x86_64/i386 irq: Fix !CONFIG_SMP compilation
->
-> are found in the git repository at:
->
->  git://kvm.qumranet.com/kvm.git#linus
+* Bernhard Walle <bwalle@suse.de> [2007-03-01 13:57]:
+> * Horms <horms@verge.net.au> [2007-03-01 05:22]:
+> > On Wed, Feb 28, 2007 at 01:45:17PM -0600, John Keller wrote:
+> > > Add a missing #define for the platform_kernel_launch_event.
+> > > Without this fix, a call to platform_kernel_launch_event()
+> > > becomes a noop on generic kernels. SN systems require this
+> > > fix to successfully kdump/kexec from certain hardware errors.
+> > >
+> > > Signed-off-by: John Keller <jpk@sgi.com>
+> > 
+> > I made a similar change when porting to xen, but I hadn't thought
+> > to see if mainline linux needs it to.
+> > 
+> > Acked-by: Simon Horman <horms@verge.net.au>
+> 
+> I think there's an additional change needed. Without that, it leads to
+> a NULL pointer dereference.
 
-Oops.  git://kvm.qumranet.com/home/avi/kvm.git#linus
+Maybe I should also get my editor right ... ;):
 
--- 
-error compiling committee.c: too many arguments to function
+---
+ include/asm-ia64/machvec.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
+Index: b/include/asm-ia64/machvec.h
+===================================================================
+--- a/include/asm-ia64/machvec.h
++++ b/include/asm-ia64/machvec.h
+@@ -168,6 +168,7 @@ extern void machvec_tlb_migrate_finish (
+ #  define platform_setup_msi_irq	ia64_mv.setup_msi_irq
+ #  define platform_teardown_msi_irq	ia64_mv.teardown_msi_irq
+ #  define platform_pci_fixup_bus	ia64_mv.pci_fixup_bus
++#  define platform_kernel_launch_event	ia64_mv.kernel_launch_event
+ # endif
+ 
+ /* __attribute__((__aligned__(16))) is required to make size of the
+@@ -269,6 +270,7 @@ struct ia64_machine_vector {
+ 	platform_setup_msi_irq,			\
+ 	platform_teardown_msi_irq,		\
+ 	platform_pci_fixup_bus,			\
++	platform_kernel_launch_event            \
+ }
+ 
+ extern struct ia64_machine_vector ia64_mv;
