@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030420AbXCAWIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030427AbXCAWL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030420AbXCAWIn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 17:08:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030427AbXCAWIn
+	id S1030427AbXCAWL6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 17:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030435AbXCAWL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 17:08:43 -0500
-Received: from sbcsmtp6.sbc.com ([144.160.20.53]:51378 "EHLO
-	mlph073.enaf.sfdc.sbc.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030420AbXCAWIm convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 17:08:42 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 1 Mar 2007 17:11:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:50232 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030359AbXCAWL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 17:11:57 -0500
+X-Provags-ID: V01U2FsdGVkX1+QeFdwxg+QWLOoOxyzekjRq+mFyWXWB0Cqa38/0+
+	4OhI4Pgm6txN6y
+Date: Thu, 1 Mar 2007 23:11:54 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com, linux-pm@lists.osdl.org,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] pata_sil680 suspend/resume
+In-Reply-To: <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
+Message-ID: <Pine.LNX.4.60.0703012305030.7351@poirot.grange>
+References: <20061122172841.0b90f042@localhost.localdomain>
+ <Pine.LNX.4.60.0702262150460.5079@poirot.grange> <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 3c905B - Transmit error, Tx status register 82
-Date: Thu, 1 Mar 2007 16:08:24 -0600
-Message-ID: <0D69EE79F863484FB73D20A95656730D02F9CBB3@ILNORT1MSGUSR18.ITServices.sbc.com>
-In-Reply-To: <75b66ecd0703011013h704319c4h9f5ad7b572c53b28@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 3c905B - Transmit error, Tx status register 82
-Thread-Index: AcdcLVg7Zi9tDzErSu6aTouprfPd9gAIJtEA
-From: "WHITE, JOE \(ASI-AIT\)" <jw2365@att.com>
-To: "Lee Revell" <rlrevell@joe-job.com>
-Cc: <andrewm@uow.edu.au>, <netdev@oss.sgi.com>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 01 Mar 2007 22:08:25.0224 (UTC) FILETIME=[22134080:01C75C4E]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1433-3.6.1039-15028.001
-X-TM-AS-Result: No--18.392400-0.000000-31
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee,
+Tejun,
 
-Thanks for the reply.
+I tracked this change down to your patch: 
+http://marc.theaimsgroup.com/?t=115012763500002&r=1&w=2 (approximately). 
+(Interestingly, Jeff submitted the respective cumulative libata patch last 
+year on my birthday:-( ) Also, there's a Ubuntu bug report: 
+https://launchpad.net/ubuntu/+source/linux-source-2.6.20/+bug/76431 
+identical to what I see, although I cannot check if it worked before 
+2.6.20. Could you, please, comment how is this supposed to work? In 
+particular, what shoud trigger the EH action, leading to setting the 
+ATA_DFLAG_SUSPENDED flag? Below again my earlier post for reference.
 
-We have tried moving my network connection to a new switch, replaced the
-cables, but still getting that error.
+Thanks
+Guennadi
 
-What do I do with that command options 3c59x full_duplex=1, where do I
-put it?  Bare with me as I am a newbie.
+On Wed, 28 Feb 2007, Guennadi Liakhovetski wrote:
 
-Thanks,
-Joe
+> On Mon, 26 Feb 2007, Guennadi Liakhovetski wrote:
+> 
+> > With a post 2.6.20 kernel from powerpc.git I cannot suspend at all:
+> > 
+> > pata_sil680 0000:00:0c.0: suspend
+> > ata1: suspend failed, device 0 still active
+> > pci_device_suspend(): ata_pci_device_suspend+0x0/0x74() returns -16
+> > suspend_device(): pci_device_suspend+0x0/0xac() returns -16
+> > Could not suspend device 0000:00:0c.0: error -16
+> 
+> AFAICS, "still active" is printed from ata_host_suspend() if a device 
+> (disk) on the host to be suspended doesn't have ATA_DFLAG_SUSPENDED flag 
+> set. This flag is only set in ata_eh_suspend(), which is only called from 
+> ata_eh_recover(), like this:
+> 
+> generic_error_handler()
+> ata_bmdma_drive_eh()
+> ata_do_eh()
+> ata_eh_recover()
+> ata_eh_suspend()
+> dev->flags |= ATA_DFLAG_SUSPENDED;
+> 
+> but I don't understand why the error handler should be envoked? Should the 
+> "disk" be suspended before the host and is it when the eh should set the 
+> flag? If my guess is right - why doesn't the disk get suspended on my 
+> machine? Shall I suspend it explicitely from userspace? I do "hdparm -Y", 
+> and it does stop spinning", but I still get the error.
+> 
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
+> 
 
------Original Message-----
-From: rlrevell@gmail.com [mailto:rlrevell@gmail.com] On Behalf Of Lee
-Revell
-Sent: Thursday, March 01, 2007 12:14 PM
-To: WHITE, JOE (ASI-AIT)
-Cc: andrewm@uow.edu.au; netdev@oss.sgi.com; linux-kernel@vger.kernel.org
-Subject: Re: 3c905B - Transmit error, Tx status register 82
-
-
-On 3/1/07, WHITE, JOE (ASI-AIT) <jw2365@att.com> wrote:
-> Mar  1 09:44:04 thor kernel: Probably a duplex mismatch.  See
-> Documentation/networking/vortex.txt
-
-Um... did you check Documentation/networking/vortex.txt?
-
-261	Transmit error, Tx status register 82
-262	-------------------------------------
-263	
-264	This is a common error which is almost always caused by another
-host on
-265	the same network being in full-duplex mode, while this host is
-in
-266	half-duplex mode.  You need to find that other host and make it
-run in
-267	half-duplex mode or fix this host to run in full-duplex mode.
-268	
-269	As a last resort, you can force the 3c59x driver into
-full-duplex mode
-270	with
-271	
-272		options 3c59x full_duplex=1
-273	
-274	but this has to be viewed as a workaround for broken network
-gear and
-275	should only really be used for equipment which cannot
-autonegotiate.
-276	
-
-Lee
+---
+Guennadi Liakhovetski
