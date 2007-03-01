@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932927AbXCAB3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932953AbXCABde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932927AbXCAB3W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 20:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbXCAB3V
+	id S932953AbXCABde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 20:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932956AbXCABde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 20:29:21 -0500
-Received: from [139.30.44.16] ([139.30.44.16]:18639 "EHLO
-	gockel.physik3.uni-rostock.de" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932927AbXCAB3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 20:29:21 -0500
-Date: Thu, 1 Mar 2007 02:29:19 +0100 (CET)
-From: Tim Schmielau <tim@physik3.uni-rostock.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] udivdi3: 64 bit divide
-In-Reply-To: <20070227122437.da27c3cd.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.63.0703010220210.21277@gockel.physik3.uni-rostock.de>
-References: <20070226173517.66bf0fec@freekitty> <20070227122437.da27c3cd.akpm@linux-foundation.org>
+	Wed, 28 Feb 2007 20:33:34 -0500
+Received: from mtl.rackplans.net ([69.90.0.18]:44167 "EHLO mtl.rackplans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932953AbXCABdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 20:33:33 -0500
+Date: Wed, 28 Feb 2007 20:33:32 -0500 (EST)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Robert Hancock <hancockr@shaw.ca>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Charles Shannon Hendrix <shannon@widomaker.com>
+Subject: Re: 2.6.20 SATA error
+In-Reply-To: <45E61C9C.4080401@shaw.ca>
+Message-ID: <Pine.LNX.4.64.0702282032560.11020@mtl.rackplans.net>
+References: <fa./FMiSBkno9w078cQXK8Y1+afU50@ifi.uio.no>
+ <fa.OO5sHloeJxxBmHwyt7Swo5eydUY@ifi.uio.no> <fa.G7ZWCF8iZMzCCHcWS6votbmzA3U@ifi.uio.no>
+ <fa.GSOUb36DPlkk7gFXS5FtJVpQIq0@ifi.uio.no> <fa.Evhbh+iC4EjQWXsDSWHX9shqJXc@ifi.uio.no>
+ <45E60E36.2070709@shaw.ca> <Pine.LNX.4.64.0702281825200.11020@mtl.rackplans.net>
+ <45E61C9C.4080401@shaw.ca>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Feb 2007, Andrew Morton wrote:
-> > On Mon, 26 Feb 2007 17:35:17 -0800 Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > The kernel already has several implmentations and usages of 64 by 64 
-> > bit divide.
-> > 
-> > Although it is significantly slower, there are places that need it so
-> > provide one generic version using scaling, and allow existing platform
-> > versions to continue.
+On Wed, 28 Feb 2007, Robert Hancock wrote:
+
+> Date: Wed, 28 Feb 2007 18:21:48 -0600
+> From: Robert Hancock <hancockr@shaw.ca>
+> To: Gerhard Mack <gmack@innerfire.net>
+> Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+>     Charles Shannon Hendrix <shannon@widomaker.com>
+> Subject: Re: 2.6.20 SATA error
 > 
-> The reason we implement 64/32 via do_div() is, for better or for worse, to
-> make people think before they use it.  And to make it stand out, and so
-> that we discover places that are using it by accident, where they could use
-> something cheaper.
+> Gerhard Mack wrote:
+> > > > Sorry for the false alarm, 
+> > > There is one thing that seems odd, if you do have an nForce4 chipset, the
+> > > kernel should be running the SATA controller in ADMA mode in 2.6.20, but
+> > > it
+> > > doesn't seem like it is from your dmesg output. Can you post the output of
+> > > "lspci -vvn"? Also what kind of motherboard is that?
+> > > 
+> > Sure thing.  It's an Asus m2npv-vm.
+> 
+> Ah, that would be why, it's not one of the original nForce4 (CK804/MCP04)
+> chipsets, it's the newer nForce 430 (MCP51) chipset which doesn't support
+> ADMA. NVidia said they'd be sending some patches to allow NCQ support on MCP51
+> and MCP61 chipsets back in October, but I haven't seen any, or information
+> required to implement same..
 
-IMHO it is even more important that the user of your 64/64 div is aware 
-that it only returns an approximate result.
+fun stuff.. I guess it's back to trying to get the onboard ethernet card 
+to work in debian.
 
-I certainly don't want to have any code in the kernel that by accident 
-makes an allocation a few bytes short of the actual size of the object 
-(just to make up a drastic example).
+	Gerhard
 
-Tim
+--
+Gerhard Mack
+
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
