@@ -1,47 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030407AbXCAWIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030420AbXCAWIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030407AbXCAWIb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 17:08:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030420AbXCAWIb
+	id S1030420AbXCAWIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 17:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030427AbXCAWIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 17:08:31 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45637 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030407AbXCAWIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 17:08:30 -0500
-Date: Thu, 1 Mar 2007 23:11:18 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
-       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070301231118.427544a4@lxorguk.ukuu.org.uk>
-In-Reply-To: <45E74E30.8080909@goop.org>
-References: <20070117094658.GA17390@amitarora.in.ibm.com>
-	<20070225022326.137b4875.akpm@linux-foundation.org>
-	<20070301183445.GA7911@amitarora.in.ibm.com>
-	<45E74238.3040606@goop.org>
-	<20070301225855.24ecaba0@lxorguk.ukuu.org.uk>
-	<45E74E30.8080909@goop.org>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 17:08:43 -0500
+Received: from sbcsmtp6.sbc.com ([144.160.20.53]:51378 "EHLO
+	mlph073.enaf.sfdc.sbc.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030420AbXCAWIm convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 17:08:42 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 3c905B - Transmit error, Tx status register 82
+Date: Thu, 1 Mar 2007 16:08:24 -0600
+Message-ID: <0D69EE79F863484FB73D20A95656730D02F9CBB3@ILNORT1MSGUSR18.ITServices.sbc.com>
+In-Reply-To: <75b66ecd0703011013h704319c4h9f5ad7b572c53b28@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 3c905B - Transmit error, Tx status register 82
+Thread-Index: AcdcLVg7Zi9tDzErSu6aTouprfPd9gAIJtEA
+From: "WHITE, JOE \(ASI-AIT\)" <jw2365@att.com>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Cc: <andrewm@uow.edu.au>, <netdev@oss.sgi.com>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 01 Mar 2007 22:08:25.0224 (UTC) FILETIME=[22134080:01C75C4E]
+X-TM-AS-Product-Ver: SMEX-7.0.0.1433-3.6.1039-15028.001
+X-TM-AS-Result: No--18.392400-0.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Mar 2007 14:05:36 -0800
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Lee,
 
-> Alan wrote:
-> > A lot of people get confused about -ENOTTY, but it is the return for
-> > attempting to use an ioctl on the wrong type of object, so this appears
-> > to be quite correct.
-> 
-> This is a syscall though; ENOSYS is probably a better match.
+Thanks for the reply.
 
-ENOSYS indicates quite different things and ENOTTY is also used for
-syscalls. I still think ENOTTY is correct.
+We have tried moving my network connection to a new switch, replaced the
+cables, but still getting that error.
+
+What do I do with that command options 3c59x full_duplex=1, where do I
+put it?  Bare with me as I am a newbie.
+
+Thanks,
+Joe
+
+-----Original Message-----
+From: rlrevell@gmail.com [mailto:rlrevell@gmail.com] On Behalf Of Lee
+Revell
+Sent: Thursday, March 01, 2007 12:14 PM
+To: WHITE, JOE (ASI-AIT)
+Cc: andrewm@uow.edu.au; netdev@oss.sgi.com; linux-kernel@vger.kernel.org
+Subject: Re: 3c905B - Transmit error, Tx status register 82
+
+
+On 3/1/07, WHITE, JOE (ASI-AIT) <jw2365@att.com> wrote:
+> Mar  1 09:44:04 thor kernel: Probably a duplex mismatch.  See
+> Documentation/networking/vortex.txt
+
+Um... did you check Documentation/networking/vortex.txt?
+
+261	Transmit error, Tx status register 82
+262	-------------------------------------
+263	
+264	This is a common error which is almost always caused by another
+host on
+265	the same network being in full-duplex mode, while this host is
+in
+266	half-duplex mode.  You need to find that other host and make it
+run in
+267	half-duplex mode or fix this host to run in full-duplex mode.
+268	
+269	As a last resort, you can force the 3c59x driver into
+full-duplex mode
+270	with
+271	
+272		options 3c59x full_duplex=1
+273	
+274	but this has to be viewed as a workaround for broken network
+gear and
+275	should only really be used for equipment which cannot
+autonegotiate.
+276	
+
+Lee
