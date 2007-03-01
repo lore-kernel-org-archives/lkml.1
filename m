@@ -1,73 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933147AbXCAIsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbXCAIxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933147AbXCAIsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 03:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933142AbXCAIsv
+	id S933151AbXCAIxn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 03:53:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbXCAIxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 03:48:51 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:35172 "EHLO smtps.tip.net.au"
+	Thu, 1 Mar 2007 03:53:43 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34798 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933147AbXCAIsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 03:48:50 -0500
-Date: Thu, 1 Mar 2007 19:48:48 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tony@bakeyournoodle.com (Tony Breeds),
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Fix soft lockup with iSeries viocd driver
-Message-Id: <20070301194848.29aa5884.sfr@canb.auug.org.au>
-In-Reply-To: <20070301003748.5a571916.akpm@linux-foundation.org>
-References: <20070301035640.GS4575@bakeyournoodle.com>
-	<20070301003748.5a571916.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	id S933108AbXCAIxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 03:53:42 -0500
+Date: Thu, 1 Mar 2007 00:53:15 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: bryan.wu@analog.com
+Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH -mm 3/5] Blackfin: on-chip ethernet MAC controller
+ driver
+Message-Id: <20070301005315.3a37c960.akpm@linux-foundation.org>
+In-Reply-To: <1172722514.5264.77.camel@roc-desktop>
+References: <1172722514.5264.77.camel@roc-desktop>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__1_Mar_2007_19_48_48_+1100_kXit/s80BPD2lNhs"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__1_Mar_2007_19_48_48_+1100_kXit/s80BPD2lNhs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Thu, 01 Mar 2007 12:15:14 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
 
-On Thu, 1 Mar 2007 00:37:48 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> Hi folks,
+> 
+> Here is the blackfin on-chip ethernet MAC controller driver for Linux.
+> 
+> It's name is blackfin-driver-net-stamp537.patch
+> 
+> [PATCH] Blackfin: on-chip ethernet MAC controller driver
+> 
+> This patch implements the driver necessary use the Analog Devices
+> Blackfin processor's on-chip ethernet MAC controller.
+> 
+> ...
 >
-> On Thu, 1 Mar 2007 14:56:40 +1100 tony@bakeyournoodle.com (Tony Breeds) wrote:
->
-> > From: Tony Breeds <tony@bakeyournoodle.com>
-> >
-> > Fix soft lockup with iSeries viocd driver, caused by eventually calling
-> > end_that_request_first() with nr_bytes 0.
-> >
-> > The lockup is triggered by hald, interrogating the device.
-> >
->
-> What causes the lockup, and how does this patch fix it?
+> +
+> +extern void get_bf537_ether_addr(char *addr);
 
-Some versions of hald do an SG_IO ioctl on the viocd device which becomes
-a request with hard_nr_sectors and hard_cur_sectors set to zero.  Passing
-zero as the number of sectors to end_request() (which calls
-end_that_request_first()) causes an infinite loop when the bio is being
-freed.  This patch makes sure that the zero is never passed. It only
-requires some number larger the the request size the terminate the loop.
+Please don't put extern declarations in .c code.  Put them in a header file
+which is included by the file which provides the definition and by all
+files which refer to the symbol.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Please review the entire blackfin patchset for more occurrences of this
+mistake.
 
---Signature=_Thu__1_Mar_2007_19_48_48_+1100_kXit/s80BPD2lNhs
-Content-Type: application/pgp-signature
+> +static int bf537mac_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+> +{
+> +	struct bf537mac_local *lp = netdev_priv(dev);
+> +	unsigned int data;
+> +
+> +	current_tx_ptr->skb = skb;
+> +	// Is skb->data always 16-bit aligned? Do we need to memcpy((char *)(tail->packet + 2),skb->data,len)?
+> +	if ((((unsigned int)(skb->data)) & 0x02) == 2) {
+> +		//move skb->data to current_tx_ptr payload
+> +		data = (unsigned int)(skb->data) - 2;
+> +		*((unsigned short *)data) = (unsigned short)(skb->len);
+> +		current_tx_ptr->desc_a.start_addr = (unsigned long)data;
+> +		blackfin_dcache_flush_range(data, (data + (skb->len)) + 2);	//this is important!
+> +
+> +	} else {
+> +		*((unsigned short *)(current_tx_ptr->packet)) =
+> +		    (unsigned short)(skb->len);
+> +		memcpy((char *)(current_tx_ptr->packet + 2), skb->data,
+> +		       (skb->len));
+> +		current_tx_ptr->desc_a.start_addr =
+> +		    (unsigned long)current_tx_ptr->packet;
+> +		if (current_tx_ptr->status.status_word != 0)
+> +			current_tx_ptr->status.status_word = 0;
+> +		blackfin_dcache_flush_range((unsigned int)current_tx_ptr->
+> +					    packet,
+> +					    (unsigned int)(current_tx_ptr->
+> +							   packet + skb->len) +
+> +					    2);
+> +	}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+hm, I'd have thought that networking provided a way of avoiding that
+memcpy, but it has been too long..
 
-iD8DBQFF5pN1FdBgD/zoJvwRArjCAJ9GvrM+Pl+s5JLE2LAE6RD+fsHQwwCdEwkh
-yRT0XKCk1BuQCuizCZtolrs=
-=vXgg
------END PGP SIGNATURE-----
 
---Signature=_Thu__1_Mar_2007_19_48_48_+1100_kXit/s80BPD2lNhs--
+> +	current_tx_ptr->desc_a.config.b_DMA_EN = 1;	//enable this packet's dma
+> +
+> +	if (bfin_read_DMA2_IRQ_STATUS() & 0x08) {	//tx dma is running, just return
+> +		goto out;
+> +	} else {		//tx dma is not running
+> +		bfin_write_DMA2_NEXT_DESC_PTR(&(current_tx_ptr->desc_a));
+> +		bfin_write_DMA2_CONFIG(*((unsigned short *)(&(current_tx_ptr->desc_a.config))));	// dma enabled, read from memory, size is 6
+> +		// Turn on the EMAC tx
+> +		bfin_write_EMAC_OPMODE(bfin_read_EMAC_OPMODE() | TE);
+> +	}
+> +
+> +      out:
+> +	adjust_tx_list();
+> +	current_tx_ptr = current_tx_ptr->next;
+> +	dev->trans_start = jiffies;
+> +	lp->stats.tx_packets++;
+> +	lp->stats.tx_bytes += (skb->len);
+> +	return 0;
+> +}
+
