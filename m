@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbXCANhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965052AbXCANh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbXCANhP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 08:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbXCANhP
+	id S965052AbXCANh4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:37:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965057AbXCANh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 08:37:15 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:57998 "EHLO e4.ny.us.ibm.com"
+	Thu, 1 Mar 2007 08:37:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60087 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752388AbXCANhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 08:37:13 -0500
-Date: Thu, 1 Mar 2007 19:05:43 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: menage@google.com
-Cc: ebiederm@xmission.com, sam@vilain.net, akpm@linux-foundation.org,
-       pj@sgi.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       containers@lists.osdl.org, winget@google.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070301133543.GK15509@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
+	id S965052AbXCANhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 08:37:55 -0500
+Date: Thu, 1 Mar 2007 14:30:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: tglx@linutronix.de, Mike Galbraith <efault@gmx.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 2)
+Message-ID: <20070301133004.GA32724@elte.hu>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <200703012213.25629.kernel@kolivas.org> <1172748837.11473.53.camel@localhost.localdomain> <200703012305.53997.kernel@kolivas.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200703012305.53997.kernel@kolivas.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul,
-	Based on some of the feedback to container patches, I have
-respun them to avoid the "container" structure abstraction and instead use
-nsproxy structure in the kernel. User interface (which I felt was neat
-in your patches) has been retained to be same.
 
-What follows is the core (big) patch and the cpu_acct subsystem to serve
-as an example of how to use it. I suspect we can make cpusets also work
-on top of this very easily.
+* Con Kolivas <kernel@kolivas.org> wrote:
 
-Oh and since most of the code is serving the purpose of being a
-filesystem, I have renamed the patch to be a resource control file
-system - rcfs!
+> [...] Even though I'm finding myself defending code that has already 
+> been softly tagged for redundancy, let's be clear here; we're talking 
+> about at most a further 70ms delay in scheduling a niced task in the 
+> presence of a nice 0 task, which is a reasonable delay for ksoftirqd 
+> which we nice the eyeballs out of in mainline. Considering under load 
+> our scheduler has been known to cause scheduling delays of 10 seconds 
+> I still don't see this as a bug. Dynticks just "points it out to us".
 
+well, not running softirqs when we could is a bug. It's not a big bug, 
+but it's a bug nevertheless. It doesnt matter that softirqs could be 
+delayed even worse under high load - there was no 'high load' here.
 
--- 
-Regards,
-vatsa
+	Ingo
