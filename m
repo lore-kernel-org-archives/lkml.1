@@ -1,156 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXCAA3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbXCAAbC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932857AbXCAA3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 19:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932853AbXCAA3R
+	id S932838AbXCAAbC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 19:31:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbXCAAbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 19:29:17 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:59515 "EHLO madara.hpl.hp.com"
+	Wed, 28 Feb 2007 19:31:01 -0500
+Received: from ozlabs.org ([203.10.76.45]:47066 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932850AbXCAA3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 19:29:16 -0500
-Date: Wed, 28 Feb 2007 16:26:47 -0800
-To: Greg KH <gregkh@suse.de>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Jarek Poplawski <jarkao2@o2.pl>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
-Message-ID: <20070301002647.GA7045@bougret.hpl.hp.com>
-Reply-To: jt@hpl.hp.com
-References: <20070228012741.GA3988@bougret.hpl.hp.com> <20070228153617.GA5670@suse.de>
+	id S932838AbXCAAbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 19:31:00 -0500
+Subject: Re: Make sure we populate the initroot filesystem late enough
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       john stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Paul TBBle Hampson <Paul.Hampson@Pobox.com>,
+       torvalds@linux-foundation.org
+In-Reply-To: <1172657584.3452.51.camel@pmac.infradead.org>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org>
+	 <1172448057.3971.9.camel@shinybook.infradead.org>
+	 <1172518068.15970.6.camel@localhost> <20070226222724.GA13182@keitarou>
+	 <1172558897.11949.43.camel@localhost.localdomain>
+	 <3ac1a55a11baddefb903f24b988566fe@kernel.crashing.org>
+	 <1172644987.11949.90.camel@localhost.localdomain>
+	 <1172657584.3452.51.camel@pmac.infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2ZNM82A6n2fXIxhibzWK"
+Date: Thu, 01 Mar 2007 09:30:56 +0900
+Message-Id: <1172709056.5852.6.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070228153617.GA5670@suse.de>
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: jt@hpl.hp.com
-User-Agent: Mutt/1.5.9i
-From: Jean Tourrilhes <jt@hpl.hp.com>
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: jt@hpl.hp.com
+X-Mailer: Evolution 2.8.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 07:36:17AM -0800, Greg KH wrote:
-> On Tue, Feb 27, 2007 at 05:27:41PM -0800, Jean Tourrilhes wrote:
-> > diff -u -p linux/drivers/base/class.j1.c linux/drivers/base/class.c
-> > --- linux/drivers/base/class.j1.c	2007-02-26 18:38:10.000000000 -0800
-> > +++ linux/drivers/base/class.c	2007-02-27 15:52:37.000000000 -0800
-> > @@ -841,6 +841,8 @@ int class_device_rename(struct class_dev
-> 
-> This function is not in the 2.6.21-rc2 kernel, so you might want to
-> rework this patch a bit :)
 
-	Thanks for all you good comments. I ported my patch to
-2.6.21-rc2, and tested it both on a hotplug and a udev system. Patch
-is attached, I would be glad if you could push that through the usual
-channels.
+--=-2ZNM82A6n2fXIxhibzWK
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-	Also, I realised that I forgot to say in my original e-mail
-that migrating udev to use ifindex instead of ifname would fix the
-remove/add race condition for network devices. But that's not going to
-happen overnight...
+On Wed, 2007-02-28 at 10:13 +0000, David Woodhouse wrote:
+> On Wed, 2007-02-28 at 07:43 +0100, Benjamin Herrenschmidt wrote:
+> > I wouldn't be that sure ... I've had problems in the past with PMU base=
+d
+> > cpufreq... looks like flushing all caches and hard-resetting the
+> > processor on the fly when there can be pending DMAs might be a source o=
+f
+> > trouble... especially on CPUs that don't have working cache flush HW
+> > assist.=20
+>=20
+> I've seen it on a PowerMac3,1 (400MHz G4) where we don't have cpufreq.
+> I've also seen it on the latest 1.5GHz Mac Mini, and on my shinybook.
+> They all fall over with the latest kernel, although the shinybook only
+> does so immediately when booted with mem=3D512M. The shinybook does crash
+> later with new kernels though; I don't yet know why. It could be the
+> same thing, or it could be something different. That one seemed to
+> appear between Fedora's 2.6.19-1.2913 and 2.6.19-1.2914 kernels, where
+> we did nothing but turned CONFIG_SYSFS_DEPRECATED on.
+>=20
+> I don't blame cpufreq. At various times I've been equally convinced that
+> it was due to CONFIG_KPROBES, and Linus' initrd-moving patch.
 
-	Have fun...
+Is there any pattern to the way it dies? Or is it just randomly dieing
+somewhere depending on which config options you have enabled?
 
-	Jean
+This is starting to sound reminiscent of a bug I chased for a while last
+year on Power5, but didn't find. It was "fixed" on some machines by
+disabling CONFIG_KEXEC, and/or other random unrelated CONFIG options.
+Unfortunately it magically stopped reproducing so I never caught it :/
 
-Signed-off-by: Jean Tourrilhes <jt@hpl.hp.com>
+cheers
 
----------------------------------------------------------
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-diff -u -p linux/include/linux/kobject.j1.h linux/include/linux/kobject.h
---- linux/include/linux/kobject.j1.h	2007-02-28 14:26:29.000000000 -0800
-+++ linux/include/linux/kobject.h	2007-02-28 14:27:54.000000000 -0800
-@@ -48,6 +48,7 @@ enum kobject_action {
- 	KOBJ_OFFLINE	= (__force kobject_action_t) 0x06,	/* device offline */
- 	KOBJ_ONLINE	= (__force kobject_action_t) 0x07,	/* device online */
- 	KOBJ_MOVE	= (__force kobject_action_t) 0x08,	/* device move */
-+	KOBJ_RENAME	= (__force kobject_action_t) 0x09,	/* device renamed */
- };
- 
- struct kobject {
-diff -u -p linux/net/core/net-sysfs.j1.c linux/net/core/net-sysfs.c
---- linux/net/core/net-sysfs.j1.c	2007-02-28 14:26:45.000000000 -0800
-+++ linux/net/core/net-sysfs.c	2007-02-28 14:27:54.000000000 -0800
-@@ -424,6 +424,17 @@ static int netdev_uevent(struct device *
- 	if ((size <= 0) || (i >= num_envp))
- 		return -ENOMEM;
- 
-+	/* pass ifindex to uevent.
-+	 * ifindex is useful as it won't change (interface name may change)
-+	 * and is what RtNetlink uses natively. */
-+	envp[i++] = buf;
-+	n = snprintf(buf, size, "IFINDEX=%d", dev->ifindex) + 1;
-+	buf += n;
-+	size -= n;
-+
-+	if ((size <= 0) || (i >= num_envp))
-+		return -ENOMEM;
-+
- 	envp[i] = NULL;
- 	return 0;
- }
-diff -u -p linux/lib/kobject_uevent.j1.c linux/lib/kobject_uevent.c
---- linux/lib/kobject_uevent.j1.c	2007-02-28 14:26:58.000000000 -0800
-+++ linux/lib/kobject_uevent.c	2007-02-28 14:27:54.000000000 -0800
-@@ -52,6 +52,8 @@ static char *action_to_string(enum kobje
- 		return "online";
- 	case KOBJ_MOVE:
- 		return "move";
-+	case KOBJ_RENAME:
-+		return "rename";
- 	default:
- 		return NULL;
- 	}
-diff -u -p linux/drivers/base/core.j1.c linux/drivers/base/core.c
---- linux/drivers/base/core.j1.c	2007-02-28 15:45:45.000000000 -0800
-+++ linux/drivers/base/core.c	2007-02-28 15:47:30.000000000 -0800
-@@ -1007,6 +1007,8 @@ int device_rename(struct device *dev, ch
- 	char *new_class_name = NULL;
- 	char *old_symlink_name = NULL;
- 	int error;
-+	char *devname_string = NULL;
-+	char *envp[2];
- 
- 	dev = get_device(dev);
- 	if (!dev)
-@@ -1014,6 +1016,15 @@ int device_rename(struct device *dev, ch
- 
- 	pr_debug("DEVICE: renaming '%s' to '%s'\n", dev->bus_id, new_name);
- 
-+	devname_string = kmalloc(strlen(dev->bus_id) + 15, GFP_KERNEL);
-+	if (!devname_string) {
-+		put_device(dev);
-+		return -ENOMEM;
-+	}
-+	sprintf(devname_string, "INTERFACE_OLD=%s", dev->bus_id);
-+	envp[0] = devname_string;
-+	envp[1] = NULL;
-+
- #ifdef CONFIG_SYSFS_DEPRECATED
- 	if ((dev->class) && (dev->parent))
- 		old_class_name = make_class_name(dev->class->name, &dev->kobj);
-@@ -1049,12 +1060,20 @@ int device_rename(struct device *dev, ch
- 		sysfs_create_link(&dev->class->subsys.kset.kobj, &dev->kobj,
- 				  dev->bus_id);
- 	}
-+
-+	/* This function is only used for network interface.
-+	 * Some hotplug package track interfaces by their name and
-+	 * therefore want to know when the name is changed by the user. */
-+	if(!error)
-+		kobject_uevent_env(&dev->kobj, KOBJ_RENAME, envp);
-+
- 	put_device(dev);
- 
- 	kfree(new_class_name);
- 	kfree(old_symlink_name);
-  out_free_old_class:
- 	kfree(old_class_name);
-+	kfree(devname_string);
- 
- 	return error;
- }
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-2ZNM82A6n2fXIxhibzWK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBF5h6/dSjSd0sB4dIRArzvAJwMMBfvhEnZ/v0EdjbUz2tRQlh/zgCgs5+G
+MB8crp0n6/EuMWImcVCQfXI=
+=OueZ
+-----END PGP SIGNATURE-----
+
+--=-2ZNM82A6n2fXIxhibzWK--
+
