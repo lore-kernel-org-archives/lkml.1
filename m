@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965442AbXCARbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXCARuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965442AbXCARbg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 12:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965449AbXCARbg
+	id S965407AbXCARuB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 12:50:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965462AbXCARuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 12:31:36 -0500
-Received: from nijmegen.renzel.net ([195.243.213.130]:32914 "EHLO
-	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965442AbXCARbf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 12:31:35 -0500
-From: Marcel Siegert <mws@linuxtv.org>
-To: linux-dvb@linuxtv.org
-Subject: Re: [linux-dvb] 2.6.21-rc1-git2 is incompilable
-Date: Thu, 1 Mar 2007 18:31:25 +0100
-User-Agent: KMail/1.9.6
-Cc: "Uwe Bugla" <uwe.bugla@gmx.de>, torvalds@linux-foundation.org,
-       Slaby <jirislaby@gmail.com>, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, bunk@stusta.de,
-       Stephane Eranian <eranian@hpl.hp.com>, akpm@linux-foundation.org
-References: <20070301143407.29950@gmx.net>
-In-Reply-To: <20070301143407.29950@gmx.net>
-MIME-Version: 1.0
+	Thu, 1 Mar 2007 12:50:01 -0500
+Received: from mail.screens.ru ([213.234.233.54]:36402 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965407AbXCARuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 12:50:00 -0500
+Date: Thu, 1 Mar 2007 20:52:07 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: John Reiser <jreiser@BitWagon.com>
+Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
+Message-ID: <20070301175207.GA849@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703011831.26520.mws@linuxtv.org>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 March 2007, Uwe Bugla wrote:
-> Hi folks,
-> trying to compile kernel 2.6.21-rc1-git2 is impossible. The broken module where the compiler gives up is /arch/i386/kernel/io_apic.c.
-> 
-> Regards
-> 
-> Uwe
-> 
-> P. S.: Wouldn't it be a good idea to test at least error-free compilation before stuff like this is being published?
-> 
+John Reiser wrote:
+>
+> --- a/arch/i386/kernel/sysenter.c~fully-honor-vdso_enabled
+> +++ a/arch/i386/kernel/sysenter.c
+> @@ -22,6 +22,8 @@
+>  #include <asm/msr.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/unistd.h>
+> +#include <asm/a.out.h>
+> +#include <asm/mman.h>
+>
+>  /*
+>   * Should the kernel map a VDSO page into processes and pass its
+> @@ -105,10 +107,25 @@ int arch_setup_additional_pages(struct l
+>  {
+>  	struct mm_struct *mm = current->mm;
+>  	unsigned long addr;
+> +	unsigned long flags;
+>  	int ret;
+>
+> +	switch (vdso_enabled) {
+> +	case 0:  /* none */
+> +		return 0;
 
-hi uwe,
+This means we don't initialize mm->context.vdso and ->sysenter_return.
 
-according to kernel.org 
-2.6.21-rc2-git1 is an actual snapshot
+Is it ok? For example, setup_rt_frame() uses VDSO_SYM(&__kernel_rt_sigreturn),
+sysenter_past_esp pushes ->sysenter_return on stack.
 
-but, those are iirc auto generated. thus not being able to compile can happen.
-it also depends on your special .config
+Note also that load_elf_binary does
 
-best regards
-marcel
+	arch_setup_additional_pages()
+	create_elf_tables()
 
-p.s. wouldn't it be a good idea to check your mail recipients instead of sending mails to e.g. linux-dvb that do 
-      have no use with fixes of floppy drivers and or compile status in io_apic? :)
+, looks like application can crash after exec if vdso_enabled changes from 0
+to 1 in between.
 
-dont take it too hard man...
+Could you please explain if I missed something?
+
+Oleg.
+
