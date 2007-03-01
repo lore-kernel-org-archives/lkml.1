@@ -1,175 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965176AbXCAPOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965182AbXCAPOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965176AbXCAPOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965181AbXCAPOO
+	id S965182AbXCAPOd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965181AbXCAPOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:14:14 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:55673 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965176AbXCAPOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:14:12 -0500
-Date: Thu, 1 Mar 2007 16:13:41 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@google.com>, linux-kernel@vger.kernel.org
-Subject: Re: Thread flags modified without set_thread_flag() (non
- atomically)
-Message-ID: <20070301161341.1dd3ade7@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070301111447.37ae08f5@dhcp-252-105.norway.atmel.com>
-References: <45E33EBD.6020603@google.com>
-	<20070228220349.b42bf571.akpm@linux-foundation.org>
-	<20070301103451.2618cc35@dhcp-252-105.norway.atmel.com>
-	<20070301014523.e45c3cc5.akpm@linux-foundation.org>
-	<20070301111447.37ae08f5@dhcp-252-105.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 1 Mar 2007 10:14:33 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:51976 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965182AbXCAPOc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 10:14:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RC6mviJwTTPTKAs1FDsYUvy1aKv6+/zTICEjQYWXR8DfB2UuHxlOZ8Uk6Jg/bWBgV7tdpNQQ5WqqAA6rgHL8pKM35lah/W5JtFOYMah6DQhOAeXjSJyb8NqRPyPUMn7NVoP5whrrNg0aVgprlF53f0iooAm3kX4U/2jYqHWRcNg=
+Message-ID: <b647ffbd0703010714m5f8546ebw95ec607b38ba7e1@mail.gmail.com>
+Date: Thu, 1 Mar 2007 16:14:30 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: eli@mellanox.co.il
+Subject: Re: wait_for_completion_timeout problem ???
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1172760574.5175.42.camel@mtls03>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1172755932.5175.37.camel@mtls03>
+	 <b647ffbd0703010628u253a62cfi56cec22a1ee79d5f@mail.gmail.com>
+	 <1172760574.5175.42.camel@mtls03>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007 11:14:47 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+On 01/03/07, Eli Cohen <eli@mellanox.co.il> wrote:
+> >...
+> > wait_for_completion_timeout() should return something different that
+> > encodes the fact /event happened/ and not just /event happened _and_ a
+> > caller has got scheduled back earlier than timeout.
+> That possibility crossed my mind but I ruled it out since the the
+> timeout is 10 sec while completion arrived less then 4 msec after
+> calling wait_for_completion_timeout(). So it appears to me unlikely that
+> it will the task will be in the run list but will not get CPU time for
+> nearly 10 seconds. I will give it a try though. I will increase timeout
+> to 20 sec.
+>
 
-> On Thu, 1 Mar 2007 01:45:23 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > If there's a lesson here, it is "don't provide #defines in the header for
-> > both versions".
-> 
-> Yes, that's true. It looks like all the other arches do the same thing
-> with the _TIF flags, however, so just ripping it out probably won't
-> work. Maybe I'll give it a try just to see how much trouble it is.
+Mea culpa. Don't know why I took it as 10 ms.. Yep, in case of seconds
+it rather becomes a mere theoretical possibility.
 
-Actually, it wasn't much trouble at all since the _TIF definitions were
-only used by arch code (at least in the configurations I tested, and I
-couldn't find any users by grepping.) The below patch rips them out and
-fixes up the few users that depend on them.
+Are you sure there are no other "waiters" being blocked on the same
+"completion" at the same time? complete_all()?
 
-This is just an RFC, btw. The ptrace fix needs to go in earlier than the
-rest, so I have to split this differently.
+Anyway, do "cat /proc/your_task_pid/status" and look at the "State: "
+field. It should be "R" in case wake_up_*() was called for this task.
 
-Is this something other arches should consider doing as well?
 
-> > > I don't think either of those need to be atomic though, since both of
-> > > them happen in monitor mode with interrupts disabled.
-> > 
-> > That's true until you implement SMP ;)
-> 
-> True. I'm not sure what it can race against though...perhaps something
-> in kernel/signal.c?
-
-Nevermind, I didn't pay attention to the rest of the thread.
-
-Haavard
-
-===============[cut here]==============
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [AVR32] Eliminate the _TIF definitions in asm/thread_info.h
-
-Having definitions for both bit offsets and bitmasks that only differ
-by a single underscore may introduce nasty bugs that are very hard
-to spot. This patch removes the thread flag bitmask definitions from
-asm-avr32/thread_info.h and converts the few cases that depends on
-them to use an explicit shift instead.
-
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
- arch/avr32/kernel/entry-avr32b.S |    6 +++---
- arch/avr32/kernel/ptrace.c       |    4 ++--
- arch/avr32/kernel/signal.c       |    2 +-
- include/asm-avr32/thread_info.h  |   10 ----------
- 4 files changed, 6 insertions(+), 16 deletions(-)
-
-diff --git a/arch/avr32/kernel/entry-avr32b.S b/arch/avr32/kernel/entry-avr32b.S
-index eeb6679..fc1c435 100644
---- a/arch/avr32/kernel/entry-avr32b.S
-+++ b/arch/avr32/kernel/entry-avr32b.S
-@@ -250,7 +250,7 @@ syscall_exit_work:
- 	ld.w	r1, r0[TI_flags]
- 	rjmp	1b
- 
--2:	mov	r2, _TIF_SIGPENDING | _TIF_RESTORE_SIGMASK
-+2:	mov	r2, (1 << TIF_SIGPENDING) | (1 << TIF_RESTORE_SIGMASK)
- 	tst	r1, r2
- 	breq	3f
- 	unmask_interrupts
-@@ -479,7 +479,7 @@ fault_exit_work:
- 	ld.w	r1, r0[TI_flags]
- 	rjmp	fault_exit_work
- 
--1:	mov	r2, _TIF_SIGPENDING | _TIF_RESTORE_SIGMASK
-+1:	mov	r2, (1 << TIF_SIGPENDING) | (1 << TIF_RESTORE_SIGMASK)
- 	tst	r1, r2
- 	breq	2f
- 	unmask_interrupts
-@@ -588,7 +588,7 @@ debug_resume_user:
- 	ld.w	r1, r0[TI_flags]
- 	rjmp	1b
- 
--2:	mov	r2, _TIF_SIGPENDING | _TIF_RESTORE_SIGMASK
-+2:	mov	r2, (1 << TIF_SIGPENDING) | (1 << TIF_RESTORE_SIGMASK)
- 	tst	r1, r2
- 	breq	3f
- 	unmask_interrupts
-diff --git a/arch/avr32/kernel/ptrace.c b/arch/avr32/kernel/ptrace.c
-index ce6734d..6f4388f 100644
---- a/arch/avr32/kernel/ptrace.c
-+++ b/arch/avr32/kernel/ptrace.c
-@@ -313,7 +313,7 @@ asmlinkage void do_debug_priv(struct pt_regs *regs)
- 		__mtdr(DBGREG_DC, dc);
- 
- 		ti = current_thread_info();
--		ti->flags |= _TIF_BREAKPOINT;
-+		set_ti_thread_flag(ti, TIF_BREAKPOINT);
- 
- 		/* The TLB miss handlers don't check thread flags */
- 		if ((regs->pc >= (unsigned long)&itlb_miss)
-@@ -328,7 +328,7 @@ asmlinkage void do_debug_priv(struct pt_regs *regs)
- 		 * single step.
- 		 */
- 		if ((regs->sr & MODE_MASK) != MODE_SUPERVISOR)
--			ti->flags |= TIF_SINGLE_STEP;
-+			set_ti_thread_flag(ti, TIF_SINGLE_STEP);
- 	} else {
- 		panic("Unable to handle debug trap at pc = %08lx\n",
- 		      regs->pc);
-diff --git a/arch/avr32/kernel/signal.c b/arch/avr32/kernel/signal.c
-index 0ec1485..cf52d47 100644
---- a/arch/avr32/kernel/signal.c
-+++ b/arch/avr32/kernel/signal.c
-@@ -323,6 +323,6 @@ asmlinkage void do_notify_resume(struct pt_regs *regs, struct thread_info *ti)
- 	if ((sysreg_read(SR) & MODE_MASK) == MODE_SUPERVISOR)
- 		syscall = 1;
- 
--	if (ti->flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
-+	if (ti->flags & ((1 << TIF_SIGPENDING) | (1 << TIF_RESTORE_SIGMASK)))
- 		do_signal(regs, &current->blocked, syscall);
- }
-diff --git a/include/asm-avr32/thread_info.h b/include/asm-avr32/thread_info.h
-index d1f5b35..a037dde 100644
---- a/include/asm-avr32/thread_info.h
-+++ b/include/asm-avr32/thread_info.h
-@@ -85,16 +85,6 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_RESTORE_SIGMASK	8	/* restore signal mask in do_signal */
- #define TIF_USERSPACE		31      /* true if FS sets userspace */
- 
--#define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
--#define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
--#define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
--#define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
--#define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
--#define _TIF_BREAKPOINT		(1 << TIF_BREAKPOINT)
--#define _TIF_SINGLE_STEP	(1 << TIF_SINGLE_STEP)
--#define _TIF_MEMDIE		(1 << TIF_MEMDIE)
--#define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
--
- /* XXX: These two masks must never span more than 16 bits! */
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK		0x0000013e
 -- 
-1.4.4.4
-
+Best regards,
+Dmitry Adamushko
