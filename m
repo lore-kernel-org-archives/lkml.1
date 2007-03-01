@@ -1,159 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965494AbXCASfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965496AbXCASjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965494AbXCASfM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 13:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965492AbXCASfF
+	id S965496AbXCASjp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 13:39:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965497AbXCASjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 13:35:05 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:37030 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965491AbXCASfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 13:35:00 -0500
-Date: Fri, 2 Mar 2007 00:04:45 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
-       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
-Subject: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070301183445.GA7911@amitarora.in.ibm.com>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 1 Mar 2007 13:39:45 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:39776 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965496AbXCASjo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 13:39:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=Bc8UxYsYUo94uc+08c1xUYNluUs8BZqV6SGvKn0Kxflio16ilMj5Hmc6+rtKSs+uFsehyS6gFv2sx3BLoMb43AOWpthUcX4zFcp6N7LBYq5MLyO0xlafID1wBVpYc0yQVSJ+tmkvztaqPZQucxJzmwKX+k+9UYjkg5quptiSYGw=
+Message-ID: <953c67830703011039x53a28509v3af6dddabffbca9f@mail.gmail.com>
+Date: Thu, 1 Mar 2007 10:39:41 -0800
+From: "Thomas Davies" <daviesth@onid.orst.edu>
+To: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix warnings that occur on make *docs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070225022326.137b4875.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+X-Google-Sender-Auth: 1fc3f7e526cfeda5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is to give a heads up on few patches that we will be soon coming up
-with. These patches implement a new system call sys_fallocate() and a
-new inode operation "fallocate", for persistent preallocation. The new
-system call, as Andrew suggested, will look like:
+From: Thomas Davies <daviesth@onid.orst.edu>
 
-  asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len);
+Cleaned up comments and whitespace in /drivers/message/fusion/*.c and also
+/lib/bitmap.c to remove make *docs warnings.  An attempt by a newbie
+to contribute
+in some small way to the codebase.  Did I do it right?
 
-As we are developing and testing the required patches, we decided to
-post a preliminary patch and get inputs from the community to give it
-a right direction and shape. First, a little description on the feature.
- 
-Persistent preallocation is a file system feature using which an
-application (say, relational database servers) can explicitly
-preallocate blocks to a particular file. This feature can be used to
-reserve space for a file to get mainly the following benefits:
-1> contiguity - less defragmentation and thus faster access speed, and
-2> guarantee for a minimum space availibility (depending on how many
-blocks were preallocated) for the file, even if the filesystem becomes
-full.
-
-XFS already has an implementation for this, using an ioctl interface. And,
-ext4 is now coming up with this feature. In coming time we may see a few
-more file systems implementing this. Thus, it makes sense to have a more
-standard interface for this, like this new system call.
-
-Here is the initial and incomplete version of the patch, which can be
-used for the discussion, till we come up with a set of more complete
-patches.
-
+Signed-off-by: Thomas Davies <daviesth@onid.orst.edu>
 ---
- arch/i386/kernel/syscall_table.S |    1 +
- fs/ext4/file.c                   |    1 +
- fs/open.c                        |   18 ++++++++++++++++++
- include/asm-i386/unistd.h        |    3 ++-
- include/linux/fs.h               |    1 +
- include/linux/syscalls.h         |    1 +
- 6 files changed, 24 insertions(+), 1 deletion(-)
+diff -uprN -X linux-2.6/Documentation/dontdiff
+linux-2.6/drivers/message/fusion/mptbase.c
+linux-2.6-new/drivers/message/fusion/mptbase.c
+--- linux-2.6/drivers/message/fusion/mptbase.c	2007-02-27
+21:46:49.000000000 -0800
++++ linux-2.6-new/drivers/message/fusion/mptbase.c	2007-02-28
+23:03:26.000000000 -0800
+@@ -4743,7 +4743,7 @@ mpt_readScsiDevicePageHeaders(MPT_ADAPTE
+  *
+  * This clears this link list.
+  *
+- * @ioc - pointer to per adapter structure
++ * @ioc: pointer to per adapter structure
+  *
+  **/
+ static void
+@@ -4768,9 +4768,9 @@ mpt_inactive_raid_list_free(MPT_ADAPTER
+  *
+  * This sets up link list of phy_disk_nums for devices belonging in
+an inactive volume
+  *
+- * @ioc - pointer to per adapter structure
+- * @channel - volume channel
+- * @id - volume target id
++ * @ioc: pointer to per adapter structure
++ * @channel: volume channel
++ * @id: volume target id
+  *
+  *
+  **/
+@@ -4782,7 +4782,7 @@ mpt_inactive_raid_volumes(MPT_ADAPTER *i
+ 	dma_addr_t			dma_handle;
+ 	pRaidVolumePage0_t		buffer = NULL;
+ 	int				i;
+-	RaidPhysDiskPage0_t 		phys_disk;
++	RaidPhysDiskPage0_t		phys_disk;
+ 	struct inactive_raid_component_info *component_info;
+ 	int				handle_inactive_volumes;
 
-Index: linux-2.6.20.1/arch/i386/kernel/syscall_table.S
-===================================================================
---- linux-2.6.20.1.orig/arch/i386/kernel/syscall_table.S
-+++ linux-2.6.20.1/arch/i386/kernel/syscall_table.S
-@@ -319,3 +319,4 @@ ENTRY(sys_call_table)
- 	.long sys_move_pages
- 	.long sys_getcpu
- 	.long sys_epoll_pwait
-+	.long sys_fallocate		/* 320 */
-Index: linux-2.6.20.1/fs/ext4/file.c
-===================================================================
---- linux-2.6.20.1.orig/fs/ext4/file.c
-+++ linux-2.6.20.1/fs/ext4/file.c
-@@ -135,5 +135,6 @@ struct inode_operations ext4_file_inode_
- 	.removexattr	= generic_removexattr,
- #endif
- 	.permission	= ext4_permission,
-+	.fallocate	= ext4_fallocate,
- };
- 
-Index: linux-2.6.20.1/fs/open.c
-===================================================================
---- linux-2.6.20.1.orig/fs/open.c
-+++ linux-2.6.20.1/fs/open.c
-@@ -350,6 +350,24 @@ asmlinkage long sys_ftruncate64(unsigned
+@@ -6663,7 +6663,7 @@ union loginfo_type {
+ /**
+  *	mpt_iocstatus_info_config - IOCSTATUS information for config pages
+  *	@ioc: Pointer to MPT_ADAPTER structure
+- *	ioc_status: U32 IOCStatus word from IOC
++ *	@ioc_status: U32 IOCStatus word from IOC
+  *	@mf: Pointer to MPT request frame
+  *
+  *	Refer to lsi/mpi.h.
+diff -uprN -X linux-2.6/Documentation/dontdiff
+linux-2.6/drivers/message/fusion/mptscsih.c
+linux-2.6-new/drivers/message/fusion/mptscsih.c
+--- linux-2.6/drivers/message/fusion/mptscsih.c	2007-02-27
+21:46:49.000000000 -0800
++++ linux-2.6-new/drivers/message/fusion/mptscsih.c	2007-02-28
+23:03:26.000000000 -0800
+@@ -1540,11 +1540,13 @@ mptscsih_freeChainBuffers(MPT_ADAPTER *i
+  *	Fall through to mpt_HardResetHandler if: not operational, too many
+  *	failed TM requests or handshake failure.
+  *
+- *	@ioc: Pointer to MPT_ADAPTER structure
++ *	@hd: Pointer to MPT_SCSI_HOST structure
+  *	@type: Task Management type
++ *	@channel: Logical bus number of the device
+  *	@id: Logical Target ID for reset (if appropriate)
+  *	@lun: Logical Unit for reset (if appropriate)
+  *	@ctx2abort: Context for the task to be aborted (if appropriate)
++ *	@timeout: Time to wait in seconds before giving up
+  *
+  *	Remark: Currently invoked from a non-interrupt thread (_bh).
+  *
+@@ -1650,9 +1652,11 @@ mptscsih_TMHandler(MPT_SCSI_HOST *hd, u8
+  *	mptscsih_IssueTaskMgmt - Generic send Task Management function.
+  *	@hd: Pointer to MPT_SCSI_HOST structure
+  *	@type: Task Management type
++ *	@channel: Logical bus number of the device
+  *	@id: Logical Target ID for reset (if appropriate)
+  *	@lun: Logical Unit for reset (if appropriate)
+  *	@ctx2abort: Context for the task to be aborted (if appropriate)
++ *	@timeout: time to wait in seconds before giving up
+  *
+  *	Remark: _HardResetHandler can be invoked from an interrupt thread (timer)
+  *	or a non-interrupt thread.  In the former, must not call schedule().
+@@ -2022,6 +2026,7 @@ mptscsih_tm_pending_wait(MPT_SCSI_HOST *
+ /**
+  *	mptscsih_tm_wait_for_completion - wait for completion of TM task
+  *	@hd: Pointer to MPT host structure.
++ *	@timeout: time to wait in seconds before giving up
+  *
+  *	Returns {SUCCESS,FAILED}.
+  */
+diff -uprN -X linux-2.6/Documentation/dontdiff
+linux-2.6/drivers/message/fusion/mptspi.c
+linux-2.6-new/drivers/message/fusion/mptspi.c
+--- linux-2.6/drivers/message/fusion/mptspi.c	2007-02-27
+21:46:49.000000000 -0800
++++ linux-2.6-new/drivers/message/fusion/mptspi.c	2007-02-28
+23:03:26.000000000 -0800
+@@ -101,7 +101,7 @@ static int	mptspiInternalCtx = -1; /* Us
+  *	and NVRAM settings
+  *
+  *	@hd: Pointer to a SCSI Host Structure
+- *	@vtarget: per target private data
++ *	@target: per target private data
+  *	@sdev: SCSI device
+  *
+  **/
+@@ -232,9 +232,9 @@ mptspi_setTargetNegoParms(MPT_SCSI_HOST
  }
- #endif
- 
-+asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len)
-+{
-+	struct file *file;
-+	struct inode *inode;
-+	long ret = -EINVAL;
-+	file = fget(fd);
-+	if (!file)
-+		goto out;
-+	inode = file->f_path.dentry->d_inode;
-+	if (inode->i_op && inode->i_op->fallocate)
-+		ret = inode->i_op->fallocate(inode, offset, len);
-+	else
-+		ret = -ENOTTY;
-+	fput(file);
-+out:
-+        return ret;
-+}
-+
- /*
-  * access() needs to use the real uid/gid, not the effective uid/gid.
-  * We do this by temporarily clearing all FS-related capabilities and
-Index: linux-2.6.20.1/include/asm-i386/unistd.h
-===================================================================
---- linux-2.6.20.1.orig/include/asm-i386/unistd.h
-+++ linux-2.6.20.1/include/asm-i386/unistd.h
-@@ -325,10 +325,11 @@
- #define __NR_move_pages		317
- #define __NR_getcpu		318
- #define __NR_epoll_pwait	319
-+#define __NR_fallocate		320
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 320
-+#define NR_syscalls 321
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-Index: linux-2.6.20.1/include/linux/fs.h
-===================================================================
---- linux-2.6.20.1.orig/include/linux/fs.h
-+++ linux-2.6.20.1/include/linux/fs.h
-@@ -1124,6 +1124,7 @@ struct inode_operations {
- 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
- 	int (*removexattr) (struct dentry *, const char *);
- 	void (*truncate_range)(struct inode *, loff_t, loff_t);
-+	long (*fallocate)(struct inode *, loff_t, loff_t);
- };
- 
- struct seq_file;
-Index: linux-2.6.20.1/include/linux/syscalls.h
-===================================================================
---- linux-2.6.20.1.orig/include/linux/syscalls.h
-+++ linux-2.6.20.1/include/linux/syscalls.h
-@@ -602,6 +602,7 @@ asmlinkage long sys_get_robust_list(int 
- asmlinkage long sys_set_robust_list(struct robust_list_head __user *head,
- 				    size_t len);
- asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
-+asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len);
- 
- int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
 
---
-Regards,
-Amit Arora 
+ /**
+- * 	mptspi_writeIOCPage4  - write IOC Page 4
++ *	mptspi_writeIOCPage4  - write IOC Page 4
+  *	@hd: Pointer to a SCSI Host Structure
+- *	@channel:
++ *	@channel: Logical bus number of the device
+  *	@id: write IOC Page4 for this ID & Bus
+  *
+  *	Return: -EAGAIN if unable to obtain a Message Frame
+@@ -243,7 +243,7 @@ mptspi_setTargetNegoParms(MPT_SCSI_HOST
+  *	Remark: We do not wait for a return, write pages sequentially.
+  **/
+ static int
+-mptspi_writeIOCPage4(MPT_SCSI_HOST *hd, u8 channel , u8 id)
++mptspi_writeIOCPage4(MPT_SCSI_HOST *hd, u8 channel, u8 id)
+ {
+ 	MPT_ADAPTER		*ioc = hd->ioc;
+ 	Config_t		*pReq;
+diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6/lib/bitmap.c
+linux-2.6-new/lib/bitmap.c
+--- linux-2.6/lib/bitmap.c	2007-02-28 23:15:13.000000000 -0800
++++ linux-2.6-new/lib/bitmap.c	2007-02-28 23:15:19.000000000 -0800
+@@ -97,10 +97,10 @@ EXPORT_SYMBOL(__bitmap_complement);
+
+ /**
+  * __bitmap_shift_right - logical right shift of the bits in a bitmap
+- *   @dst - destination bitmap
+- *   @src - source bitmap
+- *   @nbits - shift by this many bits
+- *   @bits - bitmap size, in bits
++ *   @dst: destination bitmap
++ *   @src: source bitmap
++ *   @shift: shift by this many bits
++ *   @bits: bitmap size, in bits
+  *
+  * Shifting right (dividing) means moving bits in the MS -> LS bit
+  * direction.  Zeros are fed into the vacated MS positions and the
+@@ -141,10 +141,10 @@ EXPORT_SYMBOL(__bitmap_shift_right);
+
+ /**
+  * __bitmap_shift_left - logical left shift of the bits in a bitmap
+- *   @dst - destination bitmap
+- *   @src - source bitmap
+- *   @nbits - shift by this many bits
+- *   @bits - bitmap size, in bits
++ *   @dst: destination bitmap
++ *   @src: source bitmap
++ *   @shift: shift by this many bits
++ *   @bits: bitmap size, in bits
+  *
+  * Shifting left (multiplying) means moving bits in the LS -> MS
+  * direction.  Zeros are fed into the vacated LS bit positions
