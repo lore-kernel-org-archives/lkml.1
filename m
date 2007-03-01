@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752445AbXCAOZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965082AbXCAO03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752445AbXCAOZH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 09:25:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXCAOZG
+	id S965082AbXCAO03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 09:26:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965083AbXCAO03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 09:25:06 -0500
-Received: from ookhoi.xs4all.nl ([213.84.114.66]:58111 "EHLO
-	cumulus.humilis.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752445AbXCAOZF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 09:25:05 -0500
-Date: Thu, 1 Mar 2007 15:25:01 +0100
-From: Sander <sander@humilis.net>
-To: Tomas Carnecky <tom@dbservice.com>
-Cc: Ralf M??ller <ralf@bj-ig.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Gerhard Mack <gmack@innerfire.net>
-Subject: Re: 2.6.20 SATA error
-Message-ID: <20070301142501.GA10353@cumulus>
-Reply-To: sander@humilis.net
-References: <fa./FMiSBkno9w078cQXK8Y1+afU50@ifi.uio.no> <45E58FC7.7020102@shaw.ca> <Pine.LNX.4.64.0702280936140.28570@mtl.rackplans.net> <45E59C07.7020902@dbservice.com> <D26234EB-3A11-4DF9-B773-559C4AAE5455@bj-ig.de> <45E5A2F4.6030806@dbservice.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 1 Mar 2007 09:26:29 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:52385 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965082AbXCAO02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 09:26:28 -0500
+Date: Thu, 1 Mar 2007 17:24:31 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301142430.GA25424@2ka.mipt.ru>
+References: <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301123423.GA10738@elte.hu> <20070301132626.GA30177@2ka.mipt.ru> <20070301133242.GA5477@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <45E5A2F4.6030806@dbservice.com>
-X-Uptime: 14:19:36 up  5:00, 13 users,  load average: 0.23, 0.17, 0.34
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070301133242.GA5477@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 17:25:27 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas Carnecky wrote (ao):
-> Ralf M??ller wrote:
-> >I had the same type of problem using an unstable power supply - after 
-> >replacing it the problems
-> >were gone ...
+On Thu, Mar 01, 2007 at 02:32:42PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> Hm.. my shuttle box has only a 350W power supply, that could indeed be 
-> the problem, as I have an Athlon 64 X2 4400+ CPU (dual core), two 
-> SATA-II 500GB harddrives and a GeForce 7800GTX.
-> Damn.. I thought I payed attention to the power supply when I bought the 
-> components for my computer  :(
+> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> 
+> > [...] that is why number for kevent is higher - it uses edge-triggered 
+> > handler (which you asked to remove from epoll), [...]
+> 
+> no - i did not 'ask' it to be removed from epoll, i only pointed out 
+> that with edge-triggered the results were highly unreliable here and 
+> that with level-triggered it worked better. Just to make sure: if you 
+> put back edge-triggered into evserver_epoll.c, do you get the same 
+> numbers, and is CPU utilization still the same 98-100%?
 
-FWIW, my system currently lurks around 300W from the outlet. This is
-including one 21" LCD (some 30W - 50W). System is a dual dual-core
-Opteron, 8x Raptor and 2x XFX 7950GT.
+No.
+_Now_ it is about 1500-2000 req/sec with 10-20% CPU utilization. 
+Number of 'Total transferred' and 'HTML transferred' does
+not equal to 80000 multiplied by size of the page.
 
-Full pull it does a bit above 400W. If the PSU has 80% efficiency then
-it delivers around 320W to all components.
+That are strange tests actually - I managed to get 9000 requests per
+second from epoll server (only once!) and 8900 from kevent (two times
+only), sometimes they both drop down to 2300-2700 req/s.
 
-I'm pretty sure your 350W PSU is adequate.
-
-	With kind regards, Sander
+> 	Ingo
 
 -- 
-Humilis IT Services and Solutions
-http://www.humilis.net
+	Evgeniy Polyakov
