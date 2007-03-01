@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbXCAM5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933264AbXCANAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933285AbXCAM5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933280AbXCAM5j
+	id S933264AbXCANAU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933265AbXCANAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:57:39 -0500
-Received: from mail.suse.de ([195.135.220.2]:40115 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933279AbXCAM5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:57:38 -0500
-Date: Thu, 1 Mar 2007 13:57:36 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Fastboot] [PATCH 1/1] - platform_kernel_launch_event is noop on generic kernel
-Message-ID: <20070301125736.GA18853@strauss.suse.de>
-Mail-Followup-To: linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20070228194517.25635.98535.sendpatchset@attica.americas.sgi.com> <20070301042227.GO6479@verge.net.au>
+	Thu, 1 Mar 2007 08:00:20 -0500
+Received: from mail-cpk.bigfish.com ([207.46.163.10]:42071 "EHLO
+	outbound4-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933264AbXCANAS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 08:00:18 -0500
+X-Greylist: delayed 5292 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 08:00:18 EST
+X-BigFish: VP
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Date: Thu, 1 Mar 2007 12:31:21 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: discuss@x86-64.org
+cc: "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] remove constant_tsc reporting from /proc/cpuinfo' power
+ flags
+Message-ID: <20070301113121.GB26809@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 01 Mar 2007 11:31:48.0726 (UTC)
+ FILETIME=[33303160:01C75BF5]
+X-WSS-ID: 69F8662D2MC9409152-01-01
+Content-Type: multipart/mixed;
+ boundary=HlL+5n6rz5pIUxbD
 Content-Disposition: inline
-In-Reply-To: <20070301042227.GO6479@verge.net.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Horms <horms@verge.net.au> [2007-03-01 05:22]:
-> On Wed, Feb 28, 2007 at 01:45:17PM -0600, John Keller wrote:
-> > Add a missing #define for the platform_kernel_launch_event.
-> > Without this fix, a call to platform_kernel_launch_event()
-> > becomes a noop on generic kernels. SN systems require this
-> > fix to successfully kdump/kexec from certain hardware errors.
-> >
-> > Signed-off-by: John Keller <jpk@sgi.com>
-> 
-> I made a similar change when porting to xen, but I hadn't thought
-> to see if mainline linux needs it to.
-> 
-> Acked-by: Simon Horman <horms@verge.net.au>
 
-I think there's an additional change needed. Without that, it leads to
-a NULL pointer dereference.
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
----
- include/asm-ia64/machvec.h |    2 ++
- 1 file changed, 2 insertions(+)
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Index: b/include/asm-ia64/machvec.h
-===================================================================
---- a/include/asm-ia64/machvec.h
-+++ b/include/asm-ia64/machvec.h
-@@ -168,6 +168,7 @@ extern void machvec_tlb_migrate_finish (
- #  define platform_setup_msi_irq	ia64_mv.setup_msi_irq
- #  define platform_teardown_msi_irq	ia64_mv.teardown_msi_irq
- #  define platform_pci_fixup_bus	ia64_mv.pci_fixup_bus
-+#  define platform_kernel_launch_event	ia64_mv.kernel_launch_event
- # endif
+This patch removes the reporting of the constant_tsc flag from the
+"power management" field in /proc/cpuinfo. The NULL value there was
+replaced by "" because the former would result in a printout of [8] if
+the flag is set.
+
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+
+-- 
+Joerg Roedel
+Operating System Research Center
+AMD Saxony LLC & Co. KG
+
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: attachment;
+ filename=cleanup-tsc_invariant-reporting.patch
+Content-Transfer-Encoding: 7bit
+
+diff --git a/arch/i386/kernel/cpu/proc.c b/arch/i386/kernel/cpu/proc.c
+index 47e3ebb..89d91e6 100644
+--- a/arch/i386/kernel/cpu/proc.c
++++ b/arch/i386/kernel/cpu/proc.c
+@@ -72,8 +72,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		"stc",
+ 		"100mhzsteps",
+ 		"hwpstate",
+-		NULL,
+-		NULL,	/* constant_tsc - moved to flags */
++		"",	/* constant_tsc - moved to flags */
+ 		/* nothing */
+ 	};
+ 	struct cpuinfo_x86 *c = v;
+diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
+index 3d98b69..4aad515 100644
+--- a/arch/x86_64/kernel/setup.c
++++ b/arch/x86_64/kernel/setup.c
+@@ -987,9 +987,8 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		"stc",
+ 		"100mhzsteps",
+ 		"hwpstate",
+-		NULL,	/* tsc invariant mapped to constant_tsc */
+-		NULL,
+-		/* nothing */	/* constant_tsc - moved to flags */
++		"",	/* tsc invariant mapped to constant_tsc */
++		/* nothing */
+ 	};
  
- /* __attribute__((__aligned__(16))) is required to make size of the
-@@ -269,6 +270,7 @@ struct ia64_machine_vector {
- 	platform_setup_msi_irq,			\
- 	platform_teardown_msi_irq,		\
- 	platform_pci_fixup_bus,			\
-+        platform_kernel_launch_event            \
- }
  
- extern struct ia64_machine_vector ia64_mv;
+
+--HlL+5n6rz5pIUxbD--
+
+
