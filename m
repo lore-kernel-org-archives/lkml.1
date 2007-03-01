@@ -1,34 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030337AbXCAVsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030352AbXCAVvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030337AbXCAVsG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 16:48:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030340AbXCAVsG
+	id S1030352AbXCAVvj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 16:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030357AbXCAVvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 16:48:06 -0500
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:50276 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030337AbXCAVsF (ORCPT
+	Thu, 1 Mar 2007 16:51:39 -0500
+Received: from de01egw02.freescale.net ([192.88.165.103]:60297 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030352AbXCAVvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 16:48:05 -0500
-Date: Thu, 1 Mar 2007 16:47:41 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Timur Tabi <timur@freescale.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Someone please turn on the http protocol on git.kernel.org!
-Message-ID: <20070301214741.GD4489@athena.road.mcmartin.ca>
-References: <45E7260F.8000908@freescale.com>
+	Thu, 1 Mar 2007 16:51:38 -0500
+Message-ID: <45E74AE4.10508@freescale.com>
+Date: Thu, 01 Mar 2007 15:51:32 -0600
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; it; rv:1.8.1) Gecko/20061010 Firefox/2.0 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E7260F.8000908@freescale.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Kyle McMartin <kyle@mcmartin.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Someone please turn on the http protocol on git.kernel.org!
+References: <45E7260F.8000908@freescale.com> <20070301214741.GD4489@athena.road.mcmartin.ca>
+In-Reply-To: <20070301214741.GD4489@athena.road.mcmartin.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 01:14:23PM -0600, Timur Tabi wrote:
->
+Kyle McMartin wrote:
 
-git-clone \
-http://ftp.kernel.org/pub/scm/linux/kernel/git/$user/$tree
+> git-clone \
+> http://ftp.kernel.org/pub/scm/linux/kernel/git/$user/$tree
+> 
+> Works fine.
 
-Works fine.
+Thanks!  That works.  git.kernel.org is still down, but this will do in the meantime.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
