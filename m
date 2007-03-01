@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965172AbXCAPY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965275AbXCAPZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965172AbXCAPY7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965277AbXCAPY7
+	id S965275AbXCAPZA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965279AbXCAPZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 1 Mar 2007 10:25:00 -0500
+Received: from www.osadl.org ([213.239.205.134]:46311 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965275AbXCAPY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Mar 2007 10:24:59 -0500
-Received: from lmv.inov.pt ([146.193.64.2]:55434 "EHLO lmv.inov.pt"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965172AbXCAPY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:24:58 -0500
-Message-ID: <45E6F032.2050501@inov.pt>
-Date: Thu, 01 Mar 2007 15:24:34 +0000
-From: Jose Goncalves <jose.goncalves@inov.pt>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
-MIME-Version: 1.0
-To: Jose Goncalves <jose.goncalves@inov.pt>,
-       Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-References: <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk> <45DDB096.2020807@inov.pt> <20070222170354.GB633@flint.arm.linux.org.uk> <45E6D628.90800@inov.pt> <20070301151022.GA15447@flint.arm.linux.org.uk>
-In-Reply-To: <20070301151022.GA15447@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-INOV-EmailServer-Information: Please contact the Email service provider for more information
-X-INOV-EmailServer: Found to be clean
-X-INOV-EmailServer-From: jose.goncalves@inov.pt
+Subject: [PATCH 2.6.21-rc2] AT91SAM9261: Enable second and third UART
+From: Jan Altenberg <jan.altenberg@linutronix.de>
+To: andrew@sanpeople.com
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Thu, 01 Mar 2007 16:24:53 +0100
+Message-Id: <1172762693.13036.5.camel@bender.tec.linutronix.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> On Thu, Mar 01, 2007 at 01:33:28PM +0000, Jose Goncalves wrote:
->   
->> I've also done your suggestion and I've inserted "msleep(10);" just
->> before the "And clear the interrupt registers again for luck." and my
->> application is now running without problems fore more than 24H! So,
->> inserting a delay in this point definitely makes some difference (has
->> was with adding some extra printk() in several points of
->> serial8250_startup()).
->>
->> This said, for me, this is definitely a software problem. The question
->> is were?
->>     
->
-> I'm personally convinced it's hardware because according to my analysis
-> your CPU behaving in a way that the code is not asking it to do so.
->   
+- Enable ttyS1 and ttyS2 for the AT91SAM9261EK
 
-It's not possible that a interrupt is hitting just after enabling
-interrupts with "serial_outp(up, UART_IER, up->ier);" which triggers the
-execution of some code that is not reported by the Oops dump (at least
-with my current configuration) ?
+Signed-off-by: Jan Altenberg <jan@linutronix.de>
 
-José Gonçalves
+---
+ arch/arm/mach-at91/board-sam9261ek.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/arch/arm/mach-at91/board-sam9261ek.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-at91/board-sam9261ek.c
++++ linux-2.6/arch/arm/mach-at91/board-sam9261ek.c
+@@ -50,8 +50,8 @@
+  */
+ static struct at91_uart_config __initdata ek_uart_config = {
+ 	.console_tty	= 0,				/* ttyS0 */
+-	.nr_tty		= 1,
+-	.tty_map	= { 3, -1, -1, -1 }		/* ttyS0, ..., ttyS3 */
++	.nr_tty		= 3,
++	.tty_map	= { 3, 0, 1, -1 }		/* ttyS0, ..., ttyS3 */
+ };
+ 
+ static void __init ek_map_io(void)
+
 
