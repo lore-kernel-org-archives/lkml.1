@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964855AbXCAKK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964848AbXCAKMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964855AbXCAKK5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 05:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964863AbXCAKK5
+	id S964848AbXCAKMI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 05:12:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964865AbXCAKMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 05:10:57 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:57403 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964855AbXCAKKp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 05:10:45 -0500
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Message-Id: <20070301101042.30048.96532.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20070301100802.30048.45045.sendpatchset@skynet.skynet.ie>
-References: <20070301100802.30048.45045.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 8/8] Add documentation for additional boot parameter and sysctl
-Date: Thu,  1 Mar 2007 10:10:42 +0000 (GMT)
+	Thu, 1 Mar 2007 05:12:07 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42446 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964848AbXCAKME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 05:12:04 -0500
+Date: Thu, 1 Mar 2007 11:11:02 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301101102.GE20171@elf.ucw.cz>
+References: <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301094723.GJ7217@2ka.mipt.ru>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-Once all patches are applied, a new command-line parameter exist and a new
-sysctl. This patch adds the necessary documentation.
+> > > > 10% gain in speed is NOT worth major complexity increase.
+> > > 
+> > > Should I create a patch to remove rb-tree implementation?
+> > 
+> > If you can replace them with something simpler, and no worse than 10%
+> > slower in worst case, then go ahead. (We actually tried to do that at
+> > some point, only to realize that efence stresses vm subsystem in very
+> > unexpected/unfriendly way).
+> 
+> Agh, only 10% in the worst case.
+> I think you can not even imagine what tricks network uses to get at
+> least aditional 1% out of the box.
 
+Yep? Feel free to rewrite networking to assembly on Eugenix. That
+should get you 1% improvement. If you reserve few registers to be only
+used by kernel (not allowed by userspace), you can speedup networking
+5%, too. Ouch and you could turn off MMU, that is sure way to get few
+more percent improvement in your networking case.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
+> Using such logic you can just abandon any further development, since it
+> work as is right now.
 
- filesystems/proc.txt  |   15 +++++++++++++++
- kernel-parameters.txt |   16 ++++++++++++++++
- sysctl/vm.txt         |    3 ++-
- 3 files changed, 33 insertions(+), 1 deletion(-)
+Stop trying to pervert my logic.
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-007_ia64_set_kernelcore/Documentation/filesystems/proc.txt linux-2.6.20-mm2-008_documentation/Documentation/filesystems/proc.txt
---- linux-2.6.20-mm2-007_ia64_set_kernelcore/Documentation/filesystems/proc.txt	2007-02-19 01:19:19.000000000 +0000
-+++ linux-2.6.20-mm2-008_documentation/Documentation/filesystems/proc.txt	2007-02-19 09:24:19.000000000 +0000
-@@ -1289,6 +1289,21 @@ nr_hugepages configures number of hugetl
- hugetlb_shm_group contains group id that is allowed to create SysV shared
- memory segment using hugetlb page.
- 
-+hugepages_treat_as_movable
-+--------------------------
-+
-+This parameter is only useful when kernelcore= is specified at boot time to
-+create ZONE_MOVABLE for pages that may be reclaimed or migrated. Huge pages
-+are not movable so are not normally allocated from ZONE_MOVABLE. A non-zero
-+value written to hugepages_treat_as_movable allows huge pages to be allocated
-+from ZONE_MOVABLE.
-+
-+Once enabled, the ZONE_MOVABLE is treated as an area of memory the huge
-+pages pool can easily grow or shrink within. Assuming that applications are
-+not running that mlock() a lot of memory, it is likely the huge pages pool
-+can grow to the size of ZONE_MOVABLE by repeatedly entering the desired value
-+into nr_hugepages and triggering page reclaim.
-+
- laptop_mode
- -----------
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-007_ia64_set_kernelcore/Documentation/kernel-parameters.txt linux-2.6.20-mm2-008_documentation/Documentation/kernel-parameters.txt
---- linux-2.6.20-mm2-007_ia64_set_kernelcore/Documentation/kernel-parameters.txt	2007-02-19 01:19:20.000000000 +0000
-+++ linux-2.6.20-mm2-008_documentation/Documentation/kernel-parameters.txt	2007-02-19 09:24:19.000000000 +0000
-@@ -762,6 +762,22 @@ and is between 256 and 4096 characters. 
- 	js=		[HW,JOY] Analog joystick
- 			See Documentation/input/joystick.txt.
- 
-+	kernelcore=nn[KMG]	[KNL,IA-32,IA-64,PPC,X86-64] This parameter
-+			specifies the amount of memory usable by the kernel
-+			for non-movable allocations.  The requested amount is
-+			spread evenly throughout all nodes in the system. The
-+			remaining memory in each node is used for Movable
-+			pages. In the event, a node is too small to have both
-+			kernelcore and Movable pages, kernelcore pages will
-+			take priority and other nodes will have a larger number
-+			of kernelcore pages.  The Movable zone is used for the
-+			allocation of pages that may be reclaimed or moved
-+			by the page migration subsystem.  This means that
-+			HugeTLB pages may not be allocated from this zone.
-+			Note that allocations like PTEs-from-HighMem still
-+			use the HighMem zone if it exists, and the Normal
-+			zone if it does not.
-+
- 	keepinitrd	[HW,ARM]
- 
- 	kstack=N	[IA-32,X86-64] Print N words from the kernel stack
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-mm2-007_ia64_set_kernelcore/Documentation/sysctl/vm.txt linux-2.6.20-mm2-008_documentation/Documentation/sysctl/vm.txt
---- linux-2.6.20-mm2-007_ia64_set_kernelcore/Documentation/sysctl/vm.txt	2007-02-19 01:19:20.000000000 +0000
-+++ linux-2.6.20-mm2-008_documentation/Documentation/sysctl/vm.txt	2007-02-19 09:24:19.000000000 +0000
-@@ -39,7 +39,8 @@ Currently, these files are in /proc/sys/
- 
- dirty_ratio, dirty_background_ratio, dirty_expire_centisecs,
- dirty_writeback_centisecs, vfs_cache_pressure, laptop_mode,
--block_dump, swap_token_timeout, drop-caches:
-+block_dump, swap_token_timeout, drop-caches,
-+hugepages_treat_as_movable:
- 
- See Documentation/filesystems/proc.txt
- 
+> > > That practice is stupid IMO.
+> > 
+> > Too bad. Now you can start Linux fork called Eugenix.
+> > 
+> > (But really, Linux is not "maximum performance at any cost". Linux is
+> > "how fast can we get that while keeping it maintainable?").
+> 
+> Should I read it like: we do not understand what it is and thus we do
+> not want it?
+
+Actually, yes, that's a concern. If your code is so crappy that we
+can't understand it, guess what, it is not going to be merged. Notice
+that someone will have to maintain your code if you get hit by bus.
+
+If your code is so complex that it is almost impossible to use from
+userspace, that is good enough reason not to be merged. "But it is 3%
+faster if..." is not a good-enough argument.
+
+> > That is why, while arguing syslets vs. kevents, you need need to argue
+> > not "kevents are faster because they avoid context switch overhead",
+> > but "kevents are _so much_ faster that it is worth the added
+> > complexity". And Ingo seems to showing you they are not _so much_
+> > faster.
+> 
+> Threadlets behave much worse without event driven model, events can
+> behave worse without backed threads, they are mutually compensating.
+
+I think Ingo demonstrated unoptimized threadlets to be within 5% to
+the speed of kevent. Demonstrate that kevents are twice faster than
+syslets on reasonable test case, and I guess we'll listen...
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
