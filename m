@@ -1,110 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161090AbXCAWuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161104AbXCAWwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161090AbXCAWuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 17:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161102AbXCAWuo
+	id S1161104AbXCAWwi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 17:52:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161116AbXCAWwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 17:50:44 -0500
-Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:32818 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161084AbXCAWuj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 17:50:39 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 2.6.21 1/6] iw_cxgb3: Fixes for "normal close" failures.
-Date: Thu, 01 Mar 2007 16:50:38 -0600
-To: rdreier@cisco.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       general@lists.openfabrics.org
-Message-Id: <20070301225038.2373.13980.stgit@dell3.ogc.int>
-In-Reply-To: <20070301225036.2373.71668.stgit@dell3.ogc.int>
-References: <20070301225036.2373.71668.stgit@dell3.ogc.int>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.10
+	Thu, 1 Mar 2007 17:52:37 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:42168 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161102AbXCAWwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 17:52:09 -0500
+Message-ID: <45E75911.3070907@simon.arlott.org.uk>
+Date: Thu, 01 Mar 2007 22:52:01 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: akpm@linux-foundation.org, arjan@linux.intel.com
+Subject: Re: [PATCH (updated)] timer: Run calc_load halfway through each round_jiffies
+ second
+References: <45E0577C.9020409@simon.arlott.org.uk> <45E698DF.4010006@simon.arlott.org.uk> <45E720E8.1010809@simon.arlott.org.uk>
+In-Reply-To: <45E720E8.1010809@simon.arlott.org.uk>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Whenever jiffies is started at a multiple of 5*HZ or wraps, calc_load is 
+run exactly on the second which is when tasks using round_jiffies will 
+be scheduled to run. This has a bad effect on the load average, making 
+it tend towards 1.00 if a task happens to run every time the load is 
+being calculated.
 
-Fixes for "normal close" failures.
+This changes calc_load so that it updates load half a second after any 
+tasks scheduled using round_jiffies.
 
-- Start normal close timer when moving to CLOSING state.
-- Handle ABORTING state in close_con_rpl().
-- Stop timer correctly on abort during a normal close.
-
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
 ---
+Without this change or an appropriate equivalent, my change to cxacru 
+causes the load to stay around 1.00 even when mostly idle since it now 
+runs every second using round_jiffies:
+> [  332.416288] cxacru_poll_status(..), jiffies=5000 [start]
+> [  332.417312] calc_load(1), count=-1, jiffies=5001 [start]
+> [  332.417322] calc_load(1), count=4999, jiffies=5001 [finish]
+> [  332.423382] cxacru_poll_status(..), jiffies=5007, next=993 [finish]
 
- drivers/infiniband/hw/cxgb3/iwch_cm.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+ kernel/timer.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-index b21fde8..1dcfedc 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-@@ -1415,6 +1415,7 @@ static int peer_close(struct t3cdev *tde
- 		wake_up(&ep->com.waitq);
- 		break;
- 	case FPDU_MODE:
-+		start_ep_timer(ep);
- 		__state_set(&ep->com, CLOSING);
- 		attrs.next_state = IWCH_QP_STATE_CLOSING;
- 		iwch_modify_qp(ep->com.qp->rhp, ep->com.qp,
-@@ -1425,7 +1426,6 @@ static int peer_close(struct t3cdev *tde
- 		disconnect = 0;
- 		break;
- 	case CLOSING:
--		start_ep_timer(ep);
- 		__state_set(&ep->com, MORIBUND);
- 		disconnect = 0;
- 		break;
-@@ -1507,9 +1507,10 @@ static int peer_abort(struct t3cdev *tde
- 		get_ep(&ep->com);
- 		break;
- 	case MORIBUND:
-+	case CLOSING:
- 		stop_ep_timer(ep);
-+		/*FALLTHROUGH*/
- 	case FPDU_MODE:
--	case CLOSING:
- 		if (ep->com.cm_id && ep->com.qp) {
- 			attrs.next_state = IWCH_QP_STATE_ERROR;
- 			ret = iwch_modify_qp(ep->com.qp->rhp,
-@@ -1570,7 +1571,6 @@ static int close_con_rpl(struct t3cdev *
- 	spin_lock_irqsave(&ep->com.lock, flags);
- 	switch (ep->com.state) {
- 	case CLOSING:
--		start_ep_timer(ep);
- 		__state_set(&ep->com, MORIBUND);
- 		break;
- 	case MORIBUND:
-@@ -1586,6 +1586,8 @@ static int close_con_rpl(struct t3cdev *
- 		__state_set(&ep->com, DEAD);
- 		release = 1;
- 		break;
-+	case ABORTING:
-+		break;
- 	case DEAD:
- 	default:
- 		BUG_ON(1);
-@@ -1659,6 +1661,7 @@ static void ep_timeout(unsigned long arg
- 		break;
- 	case MPA_REQ_WAIT:
- 		break;
-+	case CLOSING:
- 	case MORIBUND:
- 		if (ep->com.cm_id && ep->com.qp) {
- 			attrs.next_state = IWCH_QP_STATE_ERROR;
-@@ -1957,11 +1960,11 @@ int iwch_ep_disconnect(struct iwch_ep *e
- 	case MPA_REQ_RCVD:
- 	case MPA_REP_SENT:
- 	case FPDU_MODE:
-+		start_ep_timer(ep);
- 		ep->com.state = CLOSING;
- 		close = 1;
- 		break;
- 	case CLOSING:
--		start_ep_timer(ep);
- 		ep->com.state = MORIBUND;
- 		close = 1;
- 		break;
+diff --git a/kernel/timer.c b/kernel/timer.c
+index cb1b86a..ee61f6c 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -1225,17 +1225,19 @@ EXPORT_SYMBOL(avenrun);
+ static inline void calc_load(unsigned long ticks)
+ {
+ 	unsigned long active_tasks; /* fixed-point */
+-	static int count = LOAD_FREQ;
++	static int count = LOAD_FREQ + HZ/2;
+ 
+ 	count -= ticks;
+-	if (unlikely(count < 0)) {
++	if (unlikely(count <= 0)) {
+ 		active_tasks = count_active_tasks();
+ 		do {
+ 			CALC_LOAD(avenrun[0], EXP_1, active_tasks);
+ 			CALC_LOAD(avenrun[1], EXP_5, active_tasks);
+ 			CALC_LOAD(avenrun[2], EXP_15, active_tasks);
+ 			count += LOAD_FREQ;
+-		} while (count < 0);
++		} while (count <= 0);
++
++		count = round_jiffies_relative(count + HZ/2) - HZ/2;
+ 	}
+ }
+ 
+-- 
+1.5.0.1
+
+
+-- 
+Simon Arlott
