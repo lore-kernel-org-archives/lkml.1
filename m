@@ -1,294 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965291AbXCAPTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965263AbXCAPWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965291AbXCAPTY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:19:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965227AbXCAPSu
+	id S965263AbXCAPWe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbXCAPWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:18:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48053 "EHLO ogre.sisk.pl"
+	Thu, 1 Mar 2007 10:22:33 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:56503 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965232AbXCAPRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:17:36 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH -mm 5/7] Freezer: Add try_to_freeze calls to all kernel threads
-Date: Thu, 1 Mar 2007 16:12:18 +0100
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Aneesh Kumar <aneesh.kumar@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-References: <200702260800.49603.rjw@sisk.pl> <200703011605.46692.rjw@sisk.pl>
-In-Reply-To: <200703011605.46692.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	id S965263AbXCAPWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 10:22:32 -0500
+Date: Thu, 1 Mar 2007 07:22:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Daniel Hecht <dhecht@vmware.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Bug in on_each_cpu?
+Message-Id: <20070301072225.9f00c36c.akpm@linux-foundation.org>
+In-Reply-To: <45E6BD5B.4030305@vmware.com>
+References: <45E6AC1A.8050608@vmware.com>
+	<20070301024524.c7c8ea1a.akpm@linux-foundation.org>
+	<45E6BA3A.2040306@vmware.com>
+	<1172749278.10271.43.camel@localhost.localdomain>
+	<45E6BD5B.4030305@vmware.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703011612.20168.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu, 01 Mar 2007 03:47:39 -0800 Zachary Amsden <zach@vmware.com> wrote:
 
-Add try_to_freeze() calls to the remaining kernel threads that do not call
-try_to_freeze() already, although they set PF_NOFREEZE.
+> Rusty Russell wrote:
+> > On Thu, 2007-03-01 at 03:34 -0800, Zachary Amsden wrote:
+> >   
+> >> What would be really, really nice would be to statically check all 
+> >> callsites that issue irq disables actually keep irqs disabled.  
+> >> Presumably, there was a reason they disabled irqs, and re-enabling them 
+> >> underneath their noses, even if it is to avoid a race, breaks the logic 
+> >> behind that reason.
+> >>     
+> >
+> > For the moment, how about a BUG_ON() in on_each_cpu()?
+> >   
+> 
+> Sounds quite decent.  But why does on_each_cpu need to disable 
+> interrupts at all?  It just calls func(), then re-enables interrupts.  
+> So whatever was going to happen during func() that might not be 
+> interrupt safe could just be done in the callee, avoiding the rather 
+> expensive mess of disabling and re-enabling interrupts for those cases 
+> where it doesn't matter.
 
-In the future we are going to replace PF_NOFREEZE with a set of flags that will
-be set to indicate in which situations the task should not be frozen (for
-example, there can be a task that should be frozen for the CPU hotplugging and
-should not be frozen for the system suspend).  For this reason every kernel
-thread should be able to freeze itself (ie. call try_to_freeze()), so that it
-can be frozen whenever necessary.
+The handler for smp_call_function() is called with local interrupts
+disabled (from the IPI handler).
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- arch/i386/kernel/apm.c              |    2 ++
- drivers/block/loop.c                |    2 ++
- drivers/char/apm-emulation.c        |    3 +++
- drivers/ieee1394/ieee1394_core.c    |    3 +++
- drivers/md/md.c                     |    2 ++
- drivers/mmc/card/queue.c            |    3 +++
- drivers/mtd/mtd_blkdevs.c           |    3 +++
- drivers/scsi/libsas/sas_scsi_host.c |    3 +++
- drivers/scsi/scsi_error.c           |    3 +++
- drivers/usb/storage/usb.c           |    2 ++
- kernel/softirq.c                    |    2 ++
- kernel/softlockup.c                 |    2 ++
- 12 files changed, 30 insertions(+)
+So to provide a consistent call environment for that handler, on_each_cpu()
+will also disable local interrupts when making the direct call on this CPU.
 
-Index: linux-2.6.20-mm2/arch/i386/kernel/apm.c
-===================================================================
---- linux-2.6.20-mm2.orig/arch/i386/kernel/apm.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/arch/i386/kernel/apm.c	2007-02-25 12:49:30.000000000 +0100
-@@ -227,6 +227,7 @@
- #include <linux/dmi.h>
- #include <linux/suspend.h>
- #include <linux/kthread.h>
-+#include <linux/freezer.h>
- 
- #include <asm/system.h>
- #include <asm/uaccess.h>
-@@ -1402,6 +1403,7 @@ static void apm_mainloop(void)
- 	add_wait_queue(&apm_waitqueue, &wait);
- 	set_current_state(TASK_INTERRUPTIBLE);
- 	for (;;) {
-+		try_to_freeze();
- 		schedule_timeout(APM_CHECK_TIMEOUT);
- 		if (kthread_should_stop())
- 			break;
-Index: linux-2.6.20-mm2/drivers/md/md.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/md/md.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/md/md.c	2007-02-25 12:49:30.000000000 +0100
-@@ -4513,6 +4513,8 @@ static int md_thread(void * arg)
- 			 || kthread_should_stop(),
- 			 thread->timeout);
- 
-+		try_to_freeze();
-+
- 		clear_bit(THREAD_WAKEUP, &thread->flags);
- 
- 		thread->run(thread->mddev);
-Index: linux-2.6.20-mm2/drivers/mmc/card/queue.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/mmc/card/queue.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/mmc/card/queue.c	2007-02-25 12:49:30.000000000 +0100
-@@ -12,6 +12,7 @@
- #include <linux/module.h>
- #include <linux/blkdev.h>
- #include <linux/kthread.h>
-+#include <linux/freezer.h>
- 
- #include <linux/mmc/card.h>
- #include <linux/mmc/host.h>
-@@ -71,6 +72,8 @@ static int mmc_queue_thread(void *d)
- 	do {
- 		struct request *req = NULL;
- 
-+		try_to_freeze();
-+
- 		spin_lock_irq(q->queue_lock);
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		if (!blk_queue_plugged(q))
-Index: linux-2.6.20-mm2/drivers/mtd/mtd_blkdevs.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/mtd/mtd_blkdevs.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/mtd/mtd_blkdevs.c	2007-02-25 12:49:30.000000000 +0100
-@@ -20,6 +20,7 @@
- #include <linux/hdreg.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
-+#include <linux/freezer.h>
- #include <asm/uaccess.h>
- 
- static LIST_HEAD(blktrans_majors);
-@@ -113,6 +114,8 @@ static int mtd_blktrans_thread(void *arg
- 			schedule();
- 			remove_wait_queue(&tr->blkcore_priv->thread_wq, &wait);
- 
-+			try_to_freeze();
-+
- 			spin_lock_irq(rq->queue_lock);
- 
- 			continue;
-Index: linux-2.6.20-mm2/drivers/usb/storage/usb.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/usb/storage/usb.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/usb/storage/usb.c	2007-02-25 12:49:30.000000000 +0100
-@@ -304,6 +304,8 @@ static int usb_stor_control_thread(void 
- 	current->flags |= PF_NOFREEZE;
- 
- 	for(;;) {
-+		try_to_freeze();
-+
- 		US_DEBUGP("*** thread sleeping.\n");
- 		if(down_interruptible(&us->sema))
- 			break;
-Index: linux-2.6.20-mm2/drivers/ieee1394/ieee1394_core.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/ieee1394/ieee1394_core.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/ieee1394/ieee1394_core.c	2007-02-25 12:49:30.000000000 +0100
-@@ -35,6 +35,7 @@
- #include <linux/kthread.h>
- #include <linux/preempt.h>
- #include <linux/time.h>
-+#include <linux/freezer.h>
- 
- #include <asm/system.h>
- #include <asm/byteorder.h>
-@@ -1081,6 +1082,8 @@ static int hpsbpkt_thread(void *__hi)
- 			complete_routine(complete_data);
- 		}
- 
-+		try_to_freeze();
-+
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		if (!skb_peek(&hpsbpkt_queue))
- 			schedule();
-Index: linux-2.6.20-mm2/drivers/char/apm-emulation.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/char/apm-emulation.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/char/apm-emulation.c	2007-02-25 12:49:30.000000000 +0100
-@@ -27,6 +27,7 @@
- #include <linux/completion.h>
- #include <linux/kthread.h>
- #include <linux/delay.h>
-+#include <linux/freezer.h>
- 
- #include <asm/system.h>
- 
-@@ -539,6 +540,8 @@ static int kapmd(void *arg)
- 		apm_event_t event;
- 		int ret;
- 
-+		try_to_freeze();
-+
- 		wait_event_interruptible(kapmd_wait,
- 				!queue_empty(&kapmd_queue) || kthread_should_stop());
- 
-Index: linux-2.6.20-mm2/drivers/block/loop.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/block/loop.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/block/loop.c	2007-02-25 12:49:30.000000000 +0100
-@@ -74,6 +74,7 @@
- #include <linux/highmem.h>
- #include <linux/gfp.h>
- #include <linux/kthread.h>
-+#include <linux/freezer.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -580,6 +581,7 @@ static int loop_thread(void *data)
- 	set_user_nice(current, -20);
- 
- 	while (!kthread_should_stop() || lo->lo_bio) {
-+		try_to_freeze();
- 
- 		wait_event_interruptible(lo->lo_event,
- 				lo->lo_bio || kthread_should_stop());
-Index: linux-2.6.20-mm2/drivers/scsi/libsas/sas_scsi_host.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/scsi/libsas/sas_scsi_host.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/scsi/libsas/sas_scsi_host.c	2007-02-25 12:49:30.000000000 +0100
-@@ -39,6 +39,7 @@
- #include <linux/err.h>
- #include <linux/blkdev.h>
- #include <linux/scatterlist.h>
-+#include <linux/freezer.h>
- 
- /* ---------- SCSI Host glue ---------- */
- 
-@@ -875,6 +876,8 @@ static int sas_queue_thread(void *_sas_h
- 	complete(&queue_th_comp);
- 
- 	while (1) {
-+		try_to_freeze();
-+
- 		down_interruptible(&core->queue_thread_sema);
- 		sas_queue(sas_ha);
- 		if (core->queue_thread_kill)
-Index: linux-2.6.20-mm2/drivers/scsi/scsi_error.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/scsi/scsi_error.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/scsi/scsi_error.c	2007-02-25 12:49:30.000000000 +0100
-@@ -24,6 +24,7 @@
- #include <linux/interrupt.h>
- #include <linux/blkdev.h>
- #include <linux/delay.h>
-+#include <linux/freezer.h>
- 
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
-@@ -1536,6 +1537,8 @@ int scsi_error_handler(void *data)
- 	 */
- 	set_current_state(TASK_INTERRUPTIBLE);
- 	while (!kthread_should_stop()) {
-+		try_to_freeze();
-+
- 		if ((shost->host_failed == 0 && shost->host_eh_scheduled == 0) ||
- 		    shost->host_failed != shost->host_busy) {
- 			SCSI_LOG_ERROR_RECOVERY(1,
-Index: linux-2.6.20-mm2/kernel/softlockup.c
-===================================================================
---- linux-2.6.20-mm2.orig/kernel/softlockup.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/kernel/softlockup.c	2007-02-25 12:49:30.000000000 +0100
-@@ -13,6 +13,7 @@
- #include <linux/kthread.h>
- #include <linux/notifier.h>
- #include <linux/module.h>
-+#include <linux/freezer.h>
- 
- static DEFINE_SPINLOCK(print_lock);
- 
-@@ -93,6 +94,7 @@ static int watchdog(void * __bind_cpu)
- 	 * debug-printout triggers in softlockup_tick().
- 	 */
- 	while (!kthread_should_stop()) {
-+		try_to_freeze();
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		touch_softlockup_watchdog();
- 		schedule();
-Index: linux-2.6.20-mm2/kernel/softirq.c
-===================================================================
---- linux-2.6.20-mm2.orig/kernel/softirq.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/kernel/softirq.c	2007-02-25 12:49:30.000000000 +0100
-@@ -18,6 +18,7 @@
- #include <linux/rcupdate.h>
- #include <linux/smp.h>
- #include <linux/tick.h>
-+#include <linux/freezer.h>
- 
- #include <asm/irq.h>
- /*
-@@ -494,6 +495,7 @@ static int ksoftirqd(void * __bind_cpu)
- 	set_current_state(TASK_INTERRUPTIBLE);
- 
- 	while (!kthread_should_stop()) {
-+		try_to_freeze();
- 		preempt_disable();
- 		if (!local_softirq_pending()) {
- 			preempt_enable_no_resched();
+Similarly the !CONFIG_SMP version of on_each_cpu() disables local
+interrupts when running the caller's function.
 
