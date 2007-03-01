@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933254AbXCAMPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXCAMUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933254AbXCAMPE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:15:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933259AbXCAMPE
+	id S932089AbXCAMUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933261AbXCAMUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:15:04 -0500
-Received: from www.osadl.org ([213.239.205.134]:53673 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933254AbXCAMPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:15:01 -0500
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 2)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <200703012305.53997.kernel@kolivas.org>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <200703012213.25629.kernel@kolivas.org>
-	 <1172748837.11473.53.camel@localhost.localdomain>
-	 <200703012305.53997.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Thu, 01 Mar 2007 13:20:42 +0100
-Message-Id: <1172751642.11473.57.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Thu, 1 Mar 2007 07:20:40 -0500
+Received: from uhweb15152.united-hoster.com ([85.88.15.152]:50898 "EHLO
+	uhweb15152.united-hoster.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932089AbXCAMUj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:20:39 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 07:20:39 EST
+From: Frank Seidel <linux@f-seidel.de>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests (2.6.21-rc2 and 2.6.20)
+Date: Thu, 1 Mar 2007 13:08:27 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com>
+In-Reply-To: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703011308.28266.linux@f-seidel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-01 at 23:05 +1100, Con Kolivas wrote:
-> > > And that's the depressing part because of course I was interested in that
-> > > as the original approach to the problem (and it was a big problem). When
-> > > I spoke to Intel and AMD (of course to date no SMT AMD chip exists) at
-> > > kernel summit they said it was too hard to implement hardware priorities
-> > > well. Which is real odd since IBM have already done it with Power...
-> > >
-> > > Still I think it has been working fine in software till now, but now it
-> > > has to deal with the added confusion of dynticks, so I already know what
-> > > will happen to it.
-> >
-> > Well, it's not a dyntick problem in the first place. Even w/o dynticks
-> > we go idle with local_softirq_pending(). Dynticks contains an explicit
-> > check for that, which makes it visible.
-> 
-> Oops I'm sorry if I made it sound like there's a dynticks problem. That was 
-> not my intent and I said as much in an earlier email. Even though I'm finding 
-> myself defending code that has already been softly tagged for redundancy, 
-> let's be clear here; we're talking about at most a further 70ms delay in 
-> scheduling a niced task in the presence of a nice 0 task, which is a 
-> reasonable delay for ksoftirqd which we nice the eyeballs out of in mainline. 
-> Considering under load our scheduler has been known to cause scheduling 
-> delays of 10 seconds I still don't see this as a bug. Dynticks just "points 
-> it out to us".
+Am Mittwoch, 28. Februar 2007 19:02 schrieb Dan Williams:
+> I can reliably reproduce a null pointer dereference on 2.6.20 and
+> 2.6.21-rc2.  I will keep digging to find the kernel version where
+> this last worked, but wanted to see if there were any immediate
+> experiments I should try.
+> ...
+> Kernel 2.6.21-rc2 on an i686
+> ...
+> [  431.709022] BUG: unable to handle kernel NULL pointer dereference
+> at virtual address 0000005c [  431.717993]  printing eip:
+> ...
+> [  431.825386] EIP is at cfq_dispatch_insert+0xb/0x53
+> ...
+> [  431.887396]  [<c01e1fc9>] cfq_dispatch_requests+0x138/0x3f0
+Hi,
+unfortunately i yet don't really have much/enough knowledge of cfq and 
+the kernels inwards at the moment...
+but looking at cfq_dispatch_insert+0xb it seems the struct request 
+pointer given (as second parameter by cfq_dispatch_request) was NULL 
+and dereferencing it in the RQ_CFQQ macro leads to this oops.
 
-Well, dyntick might end up to delay it for X seconds as well, which _is_
-observable and that's why the check was put there in the first place.
+The "break"-out patch below for __cfq_dispatch_request might be at least 
+a possible workaround for this, but it could also be total bullsh.. 
+Perhaps someone smarter might pick this up.. and give a real fix.
 
-	tglx
+Have fun,
+Frank
+---
 
+ block/cfq-iosched.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 
+Index: linux-2.6/block/cfq-iosched.c
+===================================================================
+--- linux-2.6.orig/block/cfq-iosched.c
++++ linux-2.6/block/cfq-iosched.c
+@@ -962,7 +962,8 @@ __cfq_dispatch_requests(struct cfq_data
+                 * follow expired path, else get first next available
+                 */
+                if ((rq = cfq_check_fifo(cfqq)) == NULL)
+-                       rq = cfqq->next_rq;
++                       if ((rq = cfqq->next_rq) == NULL)
++                               break;
+
+                /*
+                 * finally, insert request into driver dispatch list
