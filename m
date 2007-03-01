@@ -1,97 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbXCAAbC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752276AbXCAAik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932838AbXCAAbC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 19:31:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbXCAAbB
+	id S1752276AbXCAAik (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 19:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbXCAAik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 19:31:01 -0500
-Received: from ozlabs.org ([203.10.76.45]:47066 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932838AbXCAAbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 19:31:00 -0500
-Subject: Re: Make sure we populate the initroot filesystem late enough
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       john stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Paul TBBle Hampson <Paul.Hampson@Pobox.com>,
-       torvalds@linux-foundation.org
-In-Reply-To: <1172657584.3452.51.camel@pmac.infradead.org>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org>
-	 <1172448057.3971.9.camel@shinybook.infradead.org>
-	 <1172518068.15970.6.camel@localhost> <20070226222724.GA13182@keitarou>
-	 <1172558897.11949.43.camel@localhost.localdomain>
-	 <3ac1a55a11baddefb903f24b988566fe@kernel.crashing.org>
-	 <1172644987.11949.90.camel@localhost.localdomain>
-	 <1172657584.3452.51.camel@pmac.infradead.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2ZNM82A6n2fXIxhibzWK"
-Date: Thu, 01 Mar 2007 09:30:56 +0900
-Message-Id: <1172709056.5852.6.camel@concordia.ozlabs.ibm.com>
+	Wed, 28 Feb 2007 19:38:40 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:33661 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbXCAAik (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 19:38:40 -0500
+Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
+From: Johannes Berg <johannes@sipsolutions.net>
+To: jt@hpl.hp.com
+Cc: Greg KH <gregkh@suse.de>, Jarek Poplawski <jarkao2@o2.pl>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <20070301002647.GA7045@bougret.hpl.hp.com>
+References: <20070228012741.GA3988@bougret.hpl.hp.com>
+	 <20070228153617.GA5670@suse.de>  <20070301002647.GA7045@bougret.hpl.hp.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ozk2WigRgUkGJe/Sb/Yv"
+Date: Thu, 01 Mar 2007 01:37:46 +0100
+Message-Id: <1172709466.11911.7.camel@johannes.berg>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.6.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-2ZNM82A6n2fXIxhibzWK
+--=-ozk2WigRgUkGJe/Sb/Yv
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2007-02-28 at 10:13 +0000, David Woodhouse wrote:
-> On Wed, 2007-02-28 at 07:43 +0100, Benjamin Herrenschmidt wrote:
-> > I wouldn't be that sure ... I've had problems in the past with PMU base=
-d
-> > cpufreq... looks like flushing all caches and hard-resetting the
-> > processor on the fly when there can be pending DMAs might be a source o=
-f
-> > trouble... especially on CPUs that don't have working cache flush HW
-> > assist.=20
->=20
-> I've seen it on a PowerMac3,1 (400MHz G4) where we don't have cpufreq.
-> I've also seen it on the latest 1.5GHz Mac Mini, and on my shinybook.
-> They all fall over with the latest kernel, although the shinybook only
-> does so immediately when booted with mem=3D512M. The shinybook does crash
-> later with new kernels though; I don't yet know why. It could be the
-> same thing, or it could be something different. That one seemed to
-> appear between Fedora's 2.6.19-1.2913 and 2.6.19-1.2914 kernels, where
-> we did nothing but turned CONFIG_SYSFS_DEPRECATED on.
->=20
-> I don't blame cpufreq. At various times I've been equally convinced that
-> it was due to CONFIG_KPROBES, and Linus' initrd-moving patch.
+On Wed, 2007-02-28 at 16:26 -0800, Jean Tourrilhes wrote:
 
-Is there any pattern to the way it dies? Or is it just randomly dieing
-somewhere depending on which config options you have enabled?
+> +	/* This function is only used for network interface.
+> +	 * Some hotplug package track interfaces by their name and
+> +	 * therefore want to know when the name is changed by the user. */
 
-This is starting to sound reminiscent of a bug I chased for a while last
-year on Power5, but didn't find. It was "fixed" on some machines by
-disabling CONFIG_KEXEC, and/or other random unrelated CONFIG options.
-Unfortunately it magically stopped reproducing so I never caught it :/
+Right now, that's true, but wireless is going to start using
+device_rename pretty soon as well. Could you rephrase this comment?
 
-cheers
+johannes
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-2ZNM82A6n2fXIxhibzWK
+--=-ozk2WigRgUkGJe/Sb/Yv
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
+Comment: Johannes Berg (powerbook)
 
-iD8DBQBF5h6/dSjSd0sB4dIRArzvAJwMMBfvhEnZ/v0EdjbUz2tRQlh/zgCgs5+G
-MB8crp0n6/EuMWImcVCQfXI=
-=OueZ
+iD8DBQBF5iBa/ETPhpq3jKURAkmNAJ9oDQyYy34aGHVIh9nLlz5pq/rokwCfYGpR
+09Dq5+hrGtmTKTX8XIQOWUw=
+=J5vm
 -----END PGP SIGNATURE-----
 
---=-2ZNM82A6n2fXIxhibzWK--
+--=-ozk2WigRgUkGJe/Sb/Yv--
 
