@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964988AbXCALeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964974AbXCALiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964988AbXCALeV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 06:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964989AbXCALeV
+	id S964974AbXCALiK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 06:38:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964964AbXCALiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 06:34:21 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:59330 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964988AbXCALeT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 06:34:19 -0500
-Message-ID: <45E6BA3A.2040306@vmware.com>
-Date: Thu, 01 Mar 2007 03:34:18 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Daniel Hecht <dhecht@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in on_each_cpu?
-References: <45E6AC1A.8050608@vmware.com> <20070301024524.c7c8ea1a.akpm@linux-foundation.org>
-In-Reply-To: <20070301024524.c7c8ea1a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 06:38:10 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:45523 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965013AbXCALiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 06:38:09 -0500
+Date: Thu, 1 Mar 2007 14:36:27 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301113627.GA19141@2ka.mipt.ru>
+References: <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301095402.GA14603@elte.hu> <20070301105928.GA15709@2ka.mipt.ru> <20070301110022.GA28260@elte.hu> <20070301111629.GA27381@2ka.mipt.ru> <20070301112700.GA897@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070301112700.GA897@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 14:36:47 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 01 Mar 2007 02:34:02 -0800 Zachary Amsden <zach@vmware.com> wrote:
->
->   
->> I think on_each_cpu has a serious bug now that hrtimers has been 
->> integrated.  Basically, there are many callsites of clock_was_set, none 
->> of which actually know the current interrupt state - enabled or 
->> disabled.  So they save and restore irqs, as they should.  But 
->> on_each_cpu does not do so, creating bugs in any function which calls 
->> these functions with interrupts disabled.
->>     
->
-> on_each_cpu() calls smp_call_function().  It is a bug to call
-> smp_call_function() with local interrupts disabled, hence it is a bug to
-> call on_each_cpu() with local interrupts disabled.
->
-> There is a WARN_ON() in smp_call_function() to catch this.
->   
+On Thu, Mar 01, 2007 at 12:27:00PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> 
+> > I've uploaded them to:
+> > 
+> > http://tservice.net.ru/~s0mbre/archive/kevent/evserver_epoll.c
+> > http://tservice.net.ru/~s0mbre/archive/kevent/evserver_kevent.c
+> 
+> thanks.
+> 
+> > I also changed client socket to nonblocking mode with the same result 
+> > in epoll server. [...]
+> 
+> what does this mean exactly? Did you change this line in 
+> evserver_epoll.c:
+> 
+>         //fcntl(cs, F_SETFL, O_NONBLOCK);
+> 
+> to:
+> 
+>         fcntl(cs, F_SETFL, O_NONBLOCK);
+> 
+> and the result was the same?
 
-Ok, I thought that might be the case.  We probably infinite looped in 
-the interrupt handler because of bad state and thus missed the WARN_ON 
-output.
+Yep.
 
-> Why is it a bug?  Because there's a deadlock where this CPU is waiting for
-> CPU A to take the IPI, but CPU A is waiting (with interrupts disabled) for
-> this CPU to take an IPI.
->   
+> 	Ingo
 
-Then the bug is not in on_each_cpu().  It is in the usage of 
-clock_was_set().  For example, look at do_settimeofday in kernel/timer.c:
-
-        write_sequnlock_irqrestore(&xtime_lock, flags);
-
-        /* signal hrtimers about time change */
-        clock_was_set();
-
-        return 0;
-
-And timekeeping_resume has similar code (and called from a sysdev 
-callback, so I don't know what the interrupt state should be ).  Either 
-the write_sequnlock_irqrestore is redundant, and should be merely an 
-write_sequnlock_irq, or the callsite is not prepared to handle enabling 
-interrupts temporarily as must be done for on_each_cpu(), which is a 
-pretty scary scenario.
-
-What would be really, really nice would be to statically check all 
-callsites that issue irq disables actually keep irqs disabled.  
-Presumably, there was a reason they disabled irqs, and re-enabling them 
-underneath their noses, even if it is to avoid a race, breaks the logic 
-behind that reason.
-
-Basically, it is just always a bug to re-enable interrupts from a caller 
-which has disabled them.  Either there is no reason they needed to 
-disable them in the first place, and it is just a performance issue, or 
-they are updating some shared state used by the interrupt handler, which 
-can then operate incorrectly, or they were taking some lock to prevent 
-this, and the interrupt handler can then attempt to take a nested lock 
-and hang forever.
-
-In our case, the bug is easily worked around - we don't actually need to 
-set the wallclock time here.  But there is a deeper fundamental issue 
-which I think needs to be addressed.
-
-Zach
+-- 
+	Evgeniy Polyakov
