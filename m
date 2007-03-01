@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161135AbXCAW5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161130AbXCAXAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161135AbXCAW5X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 17:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161132AbXCAW5X
+	id S1161130AbXCAXAj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 18:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161193AbXCAXAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 17:57:23 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:60008 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161135AbXCAW5W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 17:57:22 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org, michael@ellerman.id.au
-Subject: Re: [Cbe-oss-dev] [PATCH 14/22] spufs: use SPU master control to prevent =?iso-8859-15?q?wild=09SPU?= execution
-Date: Thu, 1 Mar 2007 14:50:50 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-References: <20061120174454.067872000@arndb.de> <20061120180525.281408000@arndb.de> <1172729890.5852.40.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1172729890.5852.40.camel@concordia.ozlabs.ibm.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 1 Mar 2007 18:00:39 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52889 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161130AbXCAXAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 18:00:37 -0500
+Date: Thu, 1 Mar 2007 14:59:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       suparna@in.ibm.com, cmm@us.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-Id: <20070301145949.3efac328.akpm@linux-foundation.org>
+In-Reply-To: <1172789056.11165.42.camel@kleikamp.austin.ibm.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com>
+	<20070225022326.137b4875.akpm@linux-foundation.org>
+	<20070301183445.GA7911@amitarora.in.ibm.com>
+	<20070301142537.b5950cd7.akpm@linux-foundation.org>
+	<1172789056.11165.42.camel@kleikamp.austin.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703011450.50935.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX18xtYZGF9qXkiAFu5sRL8wvI1nPQZhhyip50GV
- o5PkuLlJ5rRsrjWW+J7Z+qJb9Hj/XMA4NsjeXeIiQEDZ5ZPyyL
- krbo0CnVJnpuZMq2r3VSg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 March 2007, Michael Ellerman wrote:
-> On Mon, 2006-11-20 at 18:45 +0100, Arnd Bergmann wrote:
-> > plain text document attachment (spufs-master-control.diff)
-> > When the user changes the runcontrol register, an SPU might be
-> > running without a process being attached to it and waiting for
-> > events. In order to prevent this, make sure we always disable
-> > the priv1 master control when we're not inside of spu_run.
+On Thu, 01 Mar 2007 22:44:16 +0000
+Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
+
+> On Thu, 2007-03-01 at 14:25 -0800, Andrew Morton wrote:
+> > On Fri, 2 Mar 2007 00:04:45 +0530
+> > "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
 > 
-> Hi Arnd,
+> > > +asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len)
+> > > +{
+> > > +	struct file *file;
+> > > +	struct inode *inode;
+> > > +	long ret = -EINVAL;
+> > > +	file = fget(fd);
+> > > +	if (!file)
+> > > +		goto out;
+> > > +	inode = file->f_path.dentry->d_inode;
+> > > +	if (inode->i_op && inode->i_op->fallocate)
+> > > +		ret = inode->i_op->fallocate(inode, offset, len);
+> > > +	else
+> > > +		ret = -ENOTTY;
+> > > +	fput(file);
+> > > +out:
+> > > +        return ret;
+> > > +}
+> > 
 > 
-> Sorry I didn't comment on this when you sent it, I wasn't paying enough
-> attention. This patch confuses me, you say we should make sure we always
-> disable the master control when we're not inside spu_run, but I see
-> several exit paths where we leave the master run bit enabled - or maybe
-> I'm reading it wrong.
+> > ENOTTY is a bit unconventional - we often use EINVAL for this sort of
+> > thing.  But EINVAL has other meanings for posix_fallocate() and isn't
+> > really appropriate here anyway.  So I'm not sure what would be better...
+> 
+> Would EINVAL (or whatever) make it back to the caller of
+> posix_fallocate(), or would glibc fall back to its current
+> implementation?
+> 
+> Forgive me if I haven't put enough thought into it, but would it be
+> useful to create a generic_fallocate() that writes zeroed pages for any
+> non-existent pages in the range?  I don't know how glibc currently
+> implements posix_fallocate(), but maybe the kernel could do it more
+> efficiently, even in generic code.  Maybe we don't care, since the major
+> file systems can probably do something better in their own code.
 
-I think you're right, there is at least one path that I now saw
-getting out of spufs_run_spu incorrectly. In particular, when
-spu_reacquire_runnable() fails, we never call the master stop,
-which is a bug, but should happen very infrequently in practice.
-Do you see another case where we end up with the same problem?
+Given that glibc already implements fallocate for all filesystems, it will
+need to continue to do so for filesystems which don't implement this
+syscall - otherwise applications would start breaking.
 
-If not, I'll prepare a patch to fix this one case.
+However with this kernel change, glibc will need to look at the errno,
+so that it can correctly propagate EIO, ENOSPC and whatever.  So we will
+need to return a reliable and stable and sensible value so that glibc knows
+when it should emulate and when it should propagate.
 
-	Arnd <><
-
+Perhaps Ulrich can comment.
