@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965526AbXCAT2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965522AbXCAT3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965526AbXCAT2P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 14:28:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXCAT2P
+	id S965522AbXCAT3M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 14:29:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXCAT3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 14:28:15 -0500
-Received: from gundega.hpl.hp.com ([192.6.19.190]:62220 "EHLO
-	gundega.hpl.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965524AbXCAT2O (ORCPT
+	Thu, 1 Mar 2007 14:29:12 -0500
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:56911 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965522AbXCAT3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 14:28:14 -0500
-Date: Thu, 1 Mar 2007 11:27:34 -0800
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
-Message-ID: <20070301192734.GB9098@bougret.hpl.hp.com>
-Reply-To: jt@hpl.hp.com
-References: <20070228012741.GA3988@bougret.hpl.hp.com> <20070228093437.GA1847@ff.dom.local> <20070228184541.GD6134@bougret.hpl.hp.com> <20070301074209.GA1735@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301074209.GA1735@ff.dom.local>
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: jt@hpl.hp.com
-User-Agent: Mutt/1.5.9i
-From: Jean Tourrilhes <jt@hpl.hp.com>
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: jt@hpl.hp.com
+	Thu, 1 Mar 2007 14:29:11 -0500
+Message-ID: <45E7297F.4030901@freedesktop.org>
+Date: Thu, 01 Mar 2007 11:29:03 -0800
+From: Josh Triplett <josh@freedesktop.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] rcutorture: Mark rcu_torture_init as __init
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig13E6027D5E6093DA793A6A70"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 08:42:09AM +0100, Jarek Poplawski wrote:
-> On Wed, Feb 28, 2007 at 10:45:41AM -0800, Jean Tourrilhes wrote:
-> > > > +
-> > > > +	if ((size <= 0) || (i >= num_envp))
-> > > 
-> > > Btw.:
-> > > 1. if size == 10 and snprintf returns 9 (without NULL)
-> > >    then n == 10 (with NULL), so isn't it enough (here and above):
-> > >  
-> > > 	if ((size < 0) || (i >= num_envp))
-> > 
-> > 	I just cut'n'pasted the code a few line above. If the original
-> > code is incorrect, it need fixing. And it will need fixing in probably
-> > a lot of places.
-> 
-> I think you're kind of responsible for your part, at least.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig13E6027D5E6093DA793A6A70
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-	I personally don't go fixing stuff without having a full
-undersunding of the context and why it was done this way. To me it
-look this test was intentionally done this way, so there may be
-something I don't know about. I guess I would need to double check
-more closely what weid calculation the caller does with the buffer
-size.
-	That's why I would prefer a separate patch about those issues
-that give the opportunity for the stakeholder to really talk about
-this, rather than slipping it under the carpet.
-	In the worse case, this is not a bug, this just means that we
-may not use the last char of the buffer.
+Signed-off-by: Josh Triplett <josh@freedesktop.org>
+---
+The corresponding rcu_torture_cleanup cannot get marked as __exit, becaus=
+e
+rcu_torture_init uses it to clean up if init fails.
 
-> > > 2. shouldn't there be (here and above):
-> > >  
-> > > 		envp[--i] = NULL;
-> > > 
-> > 
-> > 	No, envp is local, so who cares.
-> 
-> But envp[i] isn't (at least here). So, I guess, a caller
-> of this function could care.
+ kernel/rcutorture.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Check the full source code of the caller, and you will see
-that the caller does not care (and it's local to the caller).
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+index 7258bcb..df49eca 100644
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -866,7 +866,7 @@ rcu_torture_cleanup(void)
+ 		rcu_torture_print_module_parms("End of test: SUCCESS");
+ }
+=20
+-static int
++static int __init
+ rcu_torture_init(void)
+ {
+ 	int i;
 
-> > > > + 	if ((size <= 0) || (i >= num_envp))
-> > > > + 		return -ENOMEM;
-> 
-> And one more thing (not necessarily for you):
-> ENOBUFS is probably more adequate here.
 
-	This error should never happen. If it happens, the caller need
-to be fixed.
+--------------enig13E6027D5E6093DA793A6A70
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-> Cheers,
-> Jarek P.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-	Note that there are various other things that are puzzling in
-this function. The internal object name and the symlinks are changed
-even if the kcore rename returns an error. That does not seem right.
-	But, this is separate from this patch...
+iD8DBQFF5ymAGJuZRtD+evsRAkL/AJ0dXKJBm+fcib6FRvVJ6mGHGwd7tQCdE5G0
+7wo1xqjBuYZaVt13dIevQ/Y=
+=unCT
+-----END PGP SIGNATURE-----
 
-	Have fun...
-
-	Jean
+--------------enig13E6027D5E6093DA793A6A70--
