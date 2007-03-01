@@ -1,63 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933276AbXCANHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXCANNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933276AbXCANHU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 08:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933287AbXCANHU
+	id S933290AbXCANNA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:13:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933287AbXCANNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 08:07:20 -0500
-Received: from il.qumranet.com ([82.166.9.18]:56159 "EHLO il.qumranet.com"
+	Thu, 1 Mar 2007 08:13:00 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:55593 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933276AbXCANHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 08:07:19 -0500
-Message-ID: <45E6CF82.9090001@qumranet.com>
-Date: Thu, 01 Mar 2007 15:05:06 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S933290AbXCANM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 08:12:59 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Date: Thu, 1 Mar 2007 14:12:50 +0100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <200703011228.01144.dada1@cosmosbay.com> <20070301114731.GA20773@2ka.mipt.ru>
+In-Reply-To: <20070301114731.GA20773@2ka.mipt.ru>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: minor device number request for /dev/kvm (kernel-based virtual
- machine)
-References: <45975F61.4070506@qumranet.com> <93C4769E3BED6B42B7203BD6F065654C08C5D6D3@dmoexc01.emea.cpqcorp.net> <45E6BFD0.1060003@qumranet.com> <Pine.LNX.4.61.0703011401370.23355@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0703011401370.23355@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_TFt5FQIfTw7yHXj"
+Message-Id: <200703011412.51256.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Mar 1 2007 13:58, Avi Kivity wrote:
->   
->> fs/char_dev.c:
->>     
->>> int register_chrdev(unsigned int major, const char *name,
->>>            const struct file_operations *fops)
->>> {
->>> struct char_device_struct *cd;
->>> struct cdev *cdev;
->>> char *s;
->>> int err = -ENOMEM;
->>>
->>> cd = __register_chrdev_region(major, 0, 256, name);
->>>       
->> So misc minor numbers under 256 are not supported.
->>
->> What's the way out?  Increase the region size?  I don't know if that's safe.
->>     
+--Boundary-00=_TFt5FQIfTw7yHXj
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+On Thursday 01 March 2007 12:47, Evgeniy Polyakov wrote:
 >
-> If it does not increase memory usage, then possibly:
+> Could you provide at least remote way to find it?
 >
->   __register_chrdev_region(major, 0, (~0U) & MINORMASK, name);
->                                   or (1<<MINORMASK)-1 if that's more clear
+
+Sure :)
+
+> I only found the same problem at
+> http://lkml.org/lkml/2006/10/27/3
 >
->   
+> but without any hits to solve the problem.
+>
+> I will try CVS oprofile, if it works I will provide details of course.
+>
 
-I'm more worried about something in the chardev bowels not supporting 
- >8bit minors well.
+# cat CVS/Root
+CVS/Root::pserver:anonymous@oprofile.cvs.sourceforge.net:/cvsroot/oprofile
 
+# cvs diff >/tmp/oprofile.diff
 
--- 
-error compiling committee.c: too many arguments to function
+Hope it helps
 
+--Boundary-00=_TFt5FQIfTw7yHXj
+Content-Type: text/x-diff;
+  charset="koi8-r";
+  name="oprofile.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="oprofile.diff"
+
+Index: libop/op_alloc_counter.c
+===================================================================
+RCS file: /cvsroot/oprofile/oprofile/libop/op_alloc_counter.c,v
+retrieving revision 1.8
+diff -r1.8 op_alloc_counter.c
+14a15,16
+> #include <ctype.h>
+> #include <dirent.h>
+133c135
+< 			return 0;
+---
+> 			continue;
+145a148,183
+> /* determine which directories are counter directories
+>  */
+> static int perfcounterdir(const struct dirent * entry)
+> {
+> 	return (isdigit(entry->d_name[0]));
+> }
+> 
+> 
+> /**
+>  * @param mask pointer where to place bit mask of unavailable counters
+>  *
+>  * return >= 0 number of counters that are available
+>  *        < 0  could not determine number of counters
+>  *
+>  */
+> static int op_get_counter_mask(u32 * mask)
+> {
+> 	struct dirent **counterlist;
+> 	int count, i;
+> 	/* assume nothing is available */
+> 	u32 available=0;
+> 
+> 	count = scandir("/dev/oprofile", &counterlist, perfcounterdir,
+> 			alphasort);
+> 	if (count < 0)
+> 		/* unable to determine bit mask */
+> 		return -1;
+> 	/* convert to bit map (0 where counter exists) */
+> 	for (i=0; i<count; ++i) {
+> 		available |= 1 << atoi(counterlist[i]->d_name);
+> 		free(counterlist[i]);
+> 	}
+> 	*mask=~available;
+> 	free(counterlist);
+> 	return count;
+> }
+152a191
+> 	u32 unavailable_counters = 0;
+154c193,195
+< 	nr_counters = op_get_nr_counters(cpu_type);
+---
+> 	nr_counters = op_get_counter_mask(&unavailable_counters);
+> 	if (nr_counters < 0) 
+> 		nr_counters = op_get_nr_counters(cpu_type);
+162c203,204
+< 	if (!allocate_counter(ctr_arc, nr_events, 0, 0, counter_map)) {
+---
+> 	if (!allocate_counter(ctr_arc, nr_events, 0, unavailable_counters,
+> 			      counter_map)) {
+
+--Boundary-00=_TFt5FQIfTw7yHXj--
