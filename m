@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933222AbXCAJgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbXCAJmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933222AbXCAJgk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 04:36:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933223AbXCAJgk
+	id S933234AbXCAJmp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 04:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933235AbXCAJmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 04:36:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43156 "EHLO smtps.tip.net.au"
+	Thu, 1 Mar 2007 04:42:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44037 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933222AbXCAJgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 04:36:39 -0500
-Date: Thu, 1 Mar 2007 20:36:36 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
+	id S933234AbXCAJmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 04:42:44 -0500
+Date: Thu, 1 Mar 2007 10:34:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@stusta.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/12] Syslets, Threadlets, generic AIO support, v5
-Message-Id: <20070301203636.910b3828.sfr@canb.auug.org.au>
-In-Reply-To: <20070228213938.GA945@elte.hu>
-References: <20070228213938.GA945@elte.hu>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Message-ID: <20070301093450.GA8508@elte.hu>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__1_Mar_2007_20_36_36_+1100_v.E66a8qKymIofAg"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070227111515.GA4271@kernel.dk>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__1_Mar_2007_20_36_36_+1100_v.E66a8qKymIofAg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
 
-On Wed, 28 Feb 2007 22:39:38 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
->  - 32-bit user-space on 64-bit kernel compat support. 32-bit syslet and
->    threadlet binaries work fine on 64-bit kernels.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Yay!  :-)
+> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, [...]
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+update: f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me too, and 
+01363220f5d23ef68276db8974e46a502e43d01d is broken. I too will attempt 
+to bisect this.
 
---Signature=_Thu__1_Mar_2007_20_36_36_+1100_v.E66a8qKymIofAg
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFF5p6sFdBgD/zoJvwRAoUbAJ43+f1ubR95PifShQsGi6eVmwjHeACfU+/9
-LQ4bdkr901zB2+Qe+M87zHM=
-=j/YO
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_Mar_2007_20_36_36_+1100_v.E66a8qKymIofAg--
+	Ingo
