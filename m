@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965238AbXCAPSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965214AbXCAPSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965238AbXCAPSF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965214AbXCAPRi
+	id S965214AbXCAPSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965242AbXCAPRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:17:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48045 "EHLO ogre.sisk.pl"
+	Thu, 1 Mar 2007 10:17:37 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48044 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965210AbXCAPRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S965214AbXCAPRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Mar 2007 10:17:33 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread
-Date: Thu, 1 Mar 2007 16:09:42 +0100
+Subject: [PATCH -mm 2/7] Freezer: Close theoretical race between refrigerator and thaw_tasks
+Date: Thu, 1 Mar 2007 16:08:12 +0100
 User-Agent: KMail/1.9.5
 Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
        Oleg Nesterov <oleg@tv-sign.ru>, Aneesh Kumar <aneesh.kumar@gmail.com>,
@@ -26,47 +26,83 @@ Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703011609.43804.rjw@sisk.pl>
+Message-Id: <200703011608.13758.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Remove PF_NOFREEZE from the rcutorture thread, adding a try_to_freeze() call as
-required.
+If the freezing of tasks fails and a task is preempted in refrigerator() before
+calling frozen_process(), then thaw_tasks() may run before this task is frozen.
+In that case the task will freeze and no one will thaw it.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+To fix this race we can call freezing(current) in refrigerator() along with
+frozen_process(current) under the task_lock() which also should be taken in
+the error path of try_to_freeze_tasks() as well as in thaw_process().  Moreover,
+if thaw_process() additionally clears TIF_FREEZE for tasks that are not frozen,
+we can be sure that all tasks are thawed and there are no pending "freeze"
+requests after thaw_tasks() has run.
+
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/rcutorture.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/linux/freezer.h |    4 ++++
+ kernel/power/process.c  |   12 +++++++++++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.20-mm2/kernel/rcutorture.c
+Index: linux-2.6.20-mm2/include/linux/freezer.h
 ===================================================================
---- linux-2.6.20-mm2.orig/kernel/rcutorture.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/kernel/rcutorture.c	2007-02-25 12:49:23.000000000 +0100
-@@ -46,6 +46,7 @@
- #include <linux/byteorder/swabb.h>
- #include <linux/stat.h>
- #include <linux/srcu.h>
-+#include <linux/freezer.h>
+--- linux-2.6.20-mm2.orig/include/linux/freezer.h
++++ linux-2.6.20-mm2/include/linux/freezer.h
+@@ -40,11 +40,15 @@ static inline void do_not_freeze(struct 
+  */
+ static inline int thaw_process(struct task_struct *p)
+ {
++	task_lock(p);
+ 	if (frozen(p)) {
+ 		p->flags &= ~PF_FROZEN;
++		task_unlock(p);
+ 		wake_up_process(p);
+ 		return 1;
+ 	}
++	clear_tsk_thread_flag(p, TIF_FREEZE);
++	task_unlock(p);
+ 	return 0;
+ }
  
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
-@@ -585,7 +586,6 @@ rcu_torture_writer(void *arg)
+Index: linux-2.6.20-mm2/kernel/power/process.c
+===================================================================
+--- linux-2.6.20-mm2.orig/kernel/power/process.c
++++ linux-2.6.20-mm2/kernel/power/process.c
+@@ -39,10 +39,18 @@ void refrigerator(void)
+ 	/* Hmm, should we be allowed to suspend when there are realtime
+ 	   processes around? */
+ 	long save;
++
++	task_lock(current);
++	if (freezing(current)) {
++		frozen_process(current);
++		task_unlock(current);
++	} else {
++		task_unlock(current);
++		return;
++	}
+ 	save = current->state;
+ 	pr_debug("%s entered refrigerator\n", current->comm);
  
- 	VERBOSE_PRINTK_STRING("rcu_torture_writer task started");
- 	set_user_nice(current, 19);
--	current->flags |= PF_NOFREEZE;
+-	frozen_process(current);
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	recalc_sigpending(); /* We sent fake signal, clean it up */
+ 	spin_unlock_irq(&current->sighand->siglock);
+@@ -159,10 +167,12 @@ static unsigned int try_to_freeze_tasks(
+ 			if (is_user_space(p) == !freeze_user_space)
+ 				continue;
  
- 	do {
- 		schedule_timeout_uninterruptible(1);
-@@ -607,6 +607,7 @@ rcu_torture_writer(void *arg)
- 		}
- 		rcu_torture_current_version++;
- 		oldbatch = cur_ops->completed();
-+		try_to_freeze();
- 	} while (!kthread_should_stop() && !fullstop);
- 	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
- 	while (!kthread_should_stop())
++			task_lock(p);
+ 			if (freezeable(p) && !frozen(p))
+ 				printk(KERN_ERR " %s\n", p->comm);
+ 
+ 			cancel_freezing(p);
++			task_unlock(p);
+ 		} while_each_thread(g, p);
+ 		read_unlock(&tasklist_lock);
+ 	}
