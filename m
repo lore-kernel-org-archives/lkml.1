@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933249AbXCAL2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933244AbXCAL2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933249AbXCAL2L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 06:28:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933248AbXCAL2K
+	id S933244AbXCAL2R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 06:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933248AbXCAL2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 06:28:10 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:54600 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933244AbXCAL2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 06:28:09 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Date: Thu, 1 Mar 2007 12:28:00 +0100
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Theodore Tso <tytso@mit.edu>,
+	Thu, 1 Mar 2007 06:28:17 -0500
+Received: from www.osadl.org ([213.239.205.134]:56042 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933244AbXCAL2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 06:28:16 -0500
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 2)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Adrian Bunk <bunk@stusta.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <200703011214.45144.dada1@cosmosbay.com> <20070301112017.GB27381@2ka.mipt.ru>
-In-Reply-To: <20070301112017.GB27381@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="koi8-r"
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703012213.25629.kernel@kolivas.org>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <1172707341.7027.95.camel@Homer.simpson.net>
+	 <20070301084657.GA31728@elte.hu>  <200703012213.25629.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Thu, 01 Mar 2007 12:33:56 +0100
+Message-Id: <1172748837.11473.53.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703011228.01144.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 March 2007 12:20, Evgeniy Polyakov wrote:
-> On Thu, Mar 01, 2007 at 12:14:44PM +0100, Eric Dumazet (dada1@cosmosbay.com) 
-wrote:
-> > On Thursday 01 March 2007 11:59, Evgeniy Polyakov wrote:
-> > > Yes, it is about 98-100% in both cases.
-> > > I've just re-run tests on my amd64 test machine without debug options:
-> > >
-> > > epoll		4794.23
-> > > kevent		6468.95
-> >
-> > It would be valuable if you could post oprofile results
-> > (CPU_CLK_UNHALTED) for both tests.
->
-> I can't - oprofile does not work on this x86_64 machine:
->
+On Thu, 2007-03-01 at 22:13 +1100, Con Kolivas wrote:
+> > if then there should be a mechanism /in the hardware/ to set the
+> > priority of a CPU - and then the hardware could decide how to prioritize
+> > between siblings. Doing this in software is really hard.
+> 
+> And that's the depressing part because of course I was interested in that as 
+> the original approach to the problem (and it was a big problem). When I spoke 
+> to Intel and AMD (of course to date no SMT AMD chip exists) at kernel summit 
+> they said it was too hard to implement hardware priorities well. Which is 
+> real odd since IBM have already done it with Power...
+> 
+> Still I think it has been working fine in software till now, but now it has to 
+> deal with the added confusion of dynticks, so I already know what will happen 
+> to it.
 
-Yes, this is a known problem, but you can make it works, as I did.
+Well, it's not a dyntick problem in the first place. Even w/o dynticks
+we go idle with local_softirq_pending(). Dynticks contains an explicit
+check for that, which makes it visible.
 
-Please :)
+	tglx
 
-I used the CVS version of oprofile plus a patch you can find in the mailing 
-list archives. Dont remember exactly, since I hit this some months ago
+
+	
+
