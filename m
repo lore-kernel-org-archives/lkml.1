@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965197AbXCBTbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbXCBTcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965197AbXCBTbW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 14:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965199AbXCBTbW
+	id S964834AbXCBTcy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 14:32:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965185AbXCBTcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 14:31:22 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45144 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965197AbXCBTbV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 14:31:21 -0500
-Date: Fri, 2 Mar 2007 11:31:16 -0800 (PST)
-From: Christoph Lameter <clameter@engr.sgi.com>
-To: Rik van Riel <riel@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
-       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-In-Reply-To: <45E86BA0.50508@redhat.com>
-Message-ID: <Pine.LNX.4.64.0703021126470.17883@schroedinger.engr.sgi.com>
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
- <45E842F6.5010105@redhat.com> <20070302085838.bcf9099e.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>
- <20070302093501.34c6ef2a.akpm@linux-foundation.org> <45E8624E.2080001@redhat.com>
- <20070302100619.cec06d6a.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com>
- <45E86BA0.50508@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Mar 2007 14:32:54 -0500
+Received: from mail.screens.ru ([213.234.233.54]:50144 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964834AbXCBTcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 14:32:53 -0500
+Date: Fri, 2 Mar 2007 22:32:19 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Paul Mundt <lethal@linux-sh.org>, John Reiser <jreiser@BitWagon.com>,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
+Message-ID: <20070302193219.GA87@tv-sign.ru>
+References: <20070301175207.GA849@tv-sign.ru> <20070302034800.GA12530@linux-sh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070302034800.GA12530@linux-sh.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Rik van Riel wrote:
+On 03/02, Paul Mundt wrote:
+>
+> On Thu, Mar 01, 2007 at 08:52:07PM +0300, Oleg Nesterov wrote:
+> > >
+> > > @@ -105,10 +107,25 @@ int arch_setup_additional_pages(struct l
+> > >  {
+> > >  	struct mm_struct *mm = current->mm;
+> > >  	unsigned long addr;
+> > > +	unsigned long flags;
+> > >  	int ret;
+> > >
+> > > +	switch (vdso_enabled) {
+> > > +	case 0:  /* none */
+> > > +		return 0;
+> > 
+> > This means we don't initialize mm->context.vdso and ->sysenter_return.
+> > 
+> > Is it ok? For example, setup_rt_frame() uses VDSO_SYM(&__kernel_rt_sigreturn),
+> > sysenter_past_esp pushes ->sysenter_return on stack.
+>
+> The setup_rt_frame() case is fairly straightforward, both PPC and SH
+> already check to make sure there's a valid context before trying to use
+> VDSO_SYM(), I'm not sure why x86 doesn't.
+>
+> Though I wonder if there's any point in checking binfmt->hasvdso here?
+> There shouldn't be a valid mm->context.vdso in the !hasvdso case..
 
-> I would like to see separate pageout selection queues
-> for anonymous/tmpfs and page cache backed pages.  That
-> way we can simply scan only that what we want to scan.
-> 
-> There are several ways available to balance pressure
-> between both sets of lists.
-> 
-> Splitting them out will also make it possible to do
-> proper use-once replacement for the page cache pages.
-> Ie. leaving the really active page cache pages on the
-> page cache active list, instead of deactivating them
-> because they're lower priority than anonymous pages.
+setup_rt_frame() is obviously wrong? Surely it must check ->hasvdso like
+setup_frame() does! Otherwise, we will have SIGSEGV on SA_SIGINFO if
+->load_binary() does not call arch_setup_additional_pages(), no?
 
-Well I would expect this to have marginal improvements and delay the 
-inevitable for awhile until we have even bigger memory. If the app uses 
-mmapped data areas then the problem is still there. And such tinkering 
-does not solve the issue of large scale I/O requiring the handling of 
-gazillions of page structs. I do not think that there is a way around 
-somehow handling larger chunks of memory in an easier way. We already do 
-handle larger page sizes for some limited purposes and with huge pages we 
-already have a larger page size. Mel's defrag/anti-frag patches are 
-necessary to allow us to deal with the resulting fragmentation problems.
+If no, what ->hasvdso is?
+
+> Someone else will have to comment on ->sysenter_return.
+
+It is needed for sysexit. If we don't use sysenter (and we shouldn't, because
+syscall_page is not mapped), we don't need to initialize it. Note also that
+sys_execve() sets TIF_IRET, so we are safe even if sys_execve() was called
+using __kernel_vsyscall.
+
+Still, I don't understand why we don't pass NEW_AUX_ENT(AT_SYSINFO) when
+vdso_enabled == 0. We don't need linux-gate.so to use __kernel_vsyscall,
+we have FIX_VDSO. In that case we should s/PAGE_KERNEL_RO/PAGE_READONLY/
+of course. I guess the reason is some magic in glibc.
+
+Oleg.
 
