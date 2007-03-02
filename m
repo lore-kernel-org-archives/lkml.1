@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030628AbXCBWYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030630AbXCBW0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030628AbXCBWYF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 17:24:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030584AbXCBWYF
+	id S1030630AbXCBW0Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 17:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030638AbXCBW0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 17:24:05 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:44029 "EHLO smtp.osdl.org"
+	Fri, 2 Mar 2007 17:26:16 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42705 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030628AbXCBWYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 17:24:03 -0500
-Date: Fri, 2 Mar 2007 14:22:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Bill Irwin <bill.irwin@oracle.com>,
-       Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
+	id S1030630AbXCBW0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 17:26:15 -0500
+Message-ID: <45E87D93.9000100@redhat.com>
+Date: Fri, 02 Mar 2007 14:40:03 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@engr.sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
        npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
        arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Subject: Re: The performance and behaviour of the anti-fragmentation related
  patches
-Message-Id: <20070302142256.0127f5ac.akpm@linux-foundation.org>
-In-Reply-To: <45E89F1E.8020803@redhat.com>
-References: <20070301101249.GA29351@skynet.ie>
-	<20070301160915.6da876c5.akpm@linux-foundation.org>
-	<45E842F6.5010105@redhat.com>
-	<20070302085838.bcf9099e.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>
-	<20070302093501.34c6ef2a.akpm@linux-foundation.org>
-	<45E8624E.2080001@redhat.com>
-	<20070302100619.cec06d6a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com>
-	<45E86BA0.50508@redhat.com>
-	<20070302211207.GJ10643@holomorphy.com>
-	<45E894D7.2040309@redhat.com>
-	<20070302135243.ada51084.akpm@linux-foundation.org>
-	<45E89F1E.8020803@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <45E842F6.5010105@redhat.com> <20070302085838.bcf9099e.akpm@linux-foundation.org> <Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com> <20070302093501.34c6ef2a.akpm@linux-foundation.org> <45E8624E.2080001@redhat.com> <20070302100619.cec06d6a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com> <45E86BA0.50508@redhat.com> <Pine.LNX.4.64.0703021126470.17883@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0703021126470.17883@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Mar 2007 17:03:10 -0500
-Rik van Riel <riel@redhat.com> wrote:
-
-> Andrew Morton wrote:
-> > On Fri, 02 Mar 2007 16:19:19 -0500
-> > Rik van Riel <riel@redhat.com> wrote:
-> >> Bill Irwin wrote:
-> >>> On Fri, Mar 02, 2007 at 01:23:28PM -0500, Rik van Riel wrote:
-> >>>> With 32 CPUs diving into the page reclaim simultaneously,
-> >>>> each trying to scan a fraction of memory, this is disastrous
-> >>>> for performance.  A 256GB system should be even worse.
-> >>> Thundering herds of a sort pounding the LRU locks from direct reclaim
-> >>> have set off the NMI oopser for users here.
-> >> Ditto here.
-> > 
-> > Opterons?
+Christoph Lameter wrote:
+> On Fri, 2 Mar 2007, Rik van Riel wrote:
 > 
-> It's happened on IA64, too.  Probably on Intel x86-64 as well.
-
-Opterons seem to be particularly prone to lock starvation where a cacheline
-gets captured in a single package for ever.
-
-> >> The main reason they end up pounding the LRU locks is the
-> >> swappiness heuristic.  They scan too much before deciding
-> >> that it would be a good idea to actually swap something
-> >> out, and with 32 CPUs doing such scanning simultaneously...
-> > 
-> > What kernel version?
+>> I would like to see separate pageout selection queues
+>> for anonymous/tmpfs and page cache backed pages.  That
+>> way we can simply scan only that what we want to scan.
+>>
+>> There are several ways available to balance pressure
+>> between both sets of lists.
+>>
+>> Splitting them out will also make it possible to do
+>> proper use-once replacement for the page cache pages.
+>> Ie. leaving the really active page cache pages on the
+>> page cache active list, instead of deactivating them
+>> because they're lower priority than anonymous pages.
 > 
-> Customers are on the 2.6.9 based RHEL4 kernel, but I believe
-> we have reproduced the problem on 2.6.18 too during stress
-> tests.
+> Well I would expect this to have marginal improvements and delay the 
+> inevitable for awhile until we have even bigger memory. If the app uses 
+> mmapped data areas then the problem is still there.
 
-The prev_priority fixes were post-2.6.18
+I suspect we would not need to treat mapped file backed memory any
+different from page cache that's not mapped.  After all, if we do
+proper use-once accounting, the working set will be on the active
+list and other cache will be flushed out the inactive list quickly.
 
-> I have no reason to believe we should stick our heads in the
-> sand and pretend it no longer exists on 2.6.21.
+Also, the IO cost for mmapped data areas is the same as the IO
+cost for unmapped files, so there's no IO reason to treat them
+differently, either.
 
-I have no reason to believe anything.  All I see is handwaviness,
-speculation and grand plans to rewrite vast amounts of stuff without even a
-testcase to demonstrate that said rewrite improved anything.
 
-None of this is going anywhere, is it?
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
