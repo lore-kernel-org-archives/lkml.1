@@ -1,128 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933363AbXCBStO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXCBSuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933363AbXCBStO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 13:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933365AbXCBStO
+	id S933365AbXCBSuP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 13:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933367AbXCBSuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 13:49:14 -0500
-Received: from mga09.intel.com ([134.134.136.24]:28926 "EHLO mga09.intel.com"
+	Fri, 2 Mar 2007 13:50:15 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:45160 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933363AbXCBStN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 13:49:13 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,243,1170662400"; 
-   d="scan'208"; a="52523423:sNHT23542281"
-Date: Fri, 2 Mar 2007 10:45:29 -0800
-From: Mark Gross <mgross@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@in.ibm.com>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
-       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070302184529.GA8761@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E7835A.8000908@in.ibm.com> <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org> <20070301195943.8ceb221a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703012105080.3953@woody.linux-foundation.org> <20070302162023.GA4691@linux.intel.com> <Pine.LNX.4.64.0703020903190.3953@woody.linux-foundation.org>
-MIME-Version: 1.0
+	id S933365AbXCBSuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 13:50:14 -0500
+Date: Fri, 2 Mar 2007 19:50:35 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: FN <zzzz444@ml1.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: module builds need improvement / top Makefile not good enough
+Message-ID: <20070302185035.GA19305@uranus.ravnborg.org>
+References: <1172855662.23830.1177403935@webmail.messagingengine.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703020903190.3953@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1172855662.23830.1177403935@webmail.messagingengine.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 09:16:17AM -0800, Linus Torvalds wrote:
+On Fri, Mar 02, 2007 at 09:14:22AM -0800, FN wrote:
+> Hello list,
 > 
-> 
-> On Fri, 2 Mar 2007, Mark Gross wrote:
-> > > 
-> > > Yes, the same issues exist for other DRAM forms too, but to a *much* 
-> > > smaller degree.
-> > 
-> > DDR3-1333 may be better than FBDIMM's but don't count on it being much
-> > better.
-> 
-> Hey, fair enough. But it's not a problem (and it doesn't have a solution) 
-> today. I'm not sure it's going to have a solution tomorrow either.
-> 
-> > > Also, IN PRACTICE you're never ever going to see this anyway. Almost 
-> > > everybody wants bank interleaving, because it's a huge performance win on 
-> > > many loads. That, in turn, means that your memory will be spread out over 
-> > > multiple DIMM's even for a single page, much less any bigger area.
-> > 
-> > 4-way interleave across banks on systems may not be as common as you may
-> > think for future chip sets.  2-way interleave across DIMMs within a bank
-> > will stay.
-> 
-> .. and think about a realistic future.
-> 
-> EVERYBODY will do on-die memory controllers. Yes, Intel doesn't do it 
-> today, but in the one- to two-year timeframe even Intel will.
+> I am unhappy with the direction the 2.6 kernel builds have taken.
+> Very much like Micro$loth DDKs we (linux users) are being forced to
+> build
+> modules by plugging into a framework that doesn't respect the fine
+> aspects
+> of dependency generation and analysis.
 
-True.
+The build system for the kernel (kbuild) have a number of goals to fulfill.
+The most important ones was to be reliable and easy to use.
+The easy to use part has mandated a very simple syntax in the
+more than 1000 Makefiles in the kernel - and kbuild has been extended
+support external modules too.
 
-> 
-> What does that mean? It means that in bigger systems, you will no longer 
-> even *have* 8 or 16 banks where turning off a few banks makes sense. 
-> You'll quite often have just a few DIMM's per die, because that's what you 
-> want for latency. Then you'll have CSI or HT or another interconnect.
-> 
-> And with a few DIMM's per die, you're back where even just 2-way 
-> interleaving basically means that in order to turn off your DIMM, you 
-> probably need to remove HALF the memory for that CPU.
+With the 2.6 kernel it is mandatory to use kbuild for external
+modules for a number of reasons:
+-> compiler and to some extent linker options now much more rely on
+   the actual configuration. So a gcc commandline for a module may look
+   different depending on the actual configuration.
 
-I think there will be more than just 2 dims per cpu socket on systems
-that care about this type of capability.
+-> The module support code is well integrated with kbuildand when
+   it changes (and it does so now and then) then all external modules
+   do not need to apply the same changes.
 
-> 
-> In other words: TURNING OFF DIMM's IS A BEDTIME STORY FOR DIMWITTED 
-> CHILDREN.
+-> Same syntax for in-kernel and external modules makes it simpler.
 
 
-Its very true that taking advantage of the first incarnations of this
-type of thing will be limited to specific workloads you personally don't
-care about, but its got applications and customers.
+The infrastructure used to achieve the goals of simplicity and reliability
+rely and a great deal of the features supported by GNU make and that
+clearmake and others does not support.
+So faced with the two possibilities which is 
+1) to rely on less GNU make features and support other make tools
+2) full feature set but rely on GNU make
+the choice was easy.
 
-BTW I hope we aren't talking past each other, there are low power states
-where the ram contents are persevered.
+The point here is that even if kbuild was changed slightly to allow a user
+to specify an alternative make program when building external modules
+that would not work because kbuild rely too much on the GNU make features.
 
-> 
-> There are maybe a couple machines IN EXISTENCE TODAY that can do it. But 
-> nobody actually does it in practice, and nobody even knows if it's going 
-> to be viable (yes, DRAM takes energy, but trying to keep memory free will 
-> likely waste power *too*, and I doubt anybody has any real idea of how 
-> much any of this would actually help in practice).
-> 
-> And I don't think that will change. See above. The future is *not* moving 
-> towards more and more DIMMS. Quite the reverse. On workstations, we are 
-> currently in the "one or two DIMM's per die". Do you really think that 
-> will change? Hell no. And in big servers, pretty much everybody agrees 
-> that we will move towards that, rather than away from it.
-> 
-> So:
->  - forget about turning DIMM's off. There is *no* actual data supporting 
->    the notion that it's a good idea today, and I seriously doubt you can 
->    really argue that it will be a good idea in five or ten years. It's a 
->    hardware hack for a hardware problem, and the problems are way too 
->    complex for us to solve in time for the solution to be relevant.
-> 
->  - aim for NUMA memory allocation and turning off whole *nodes*. That's 
->    much more likely to be productive in the longer timeframe. And yes, we 
->    may well want to do memory compaction for that too, but I suspect that 
->    the issues are going to be different (ie the way to do it is to simply 
->    prefer certain nodes for certain allocations, and then try to keep the 
->    jobs that you know can be idle on other nodes)
+You can try this today.
+MAKE=/usr/bin/my_make_utility make M=`pwd`
 
-We doing the NUMA approach.  
+And see how it fails due to use of GNU make features.
 
-> 
-> Do you actually have real data supporting the notion that turning DIMM's 
-> off will be reasonable and worthwhile? 
-> 
-
-Yes we have data from our internal and external customers showing that
-this stuff is worthwhile for specific workload that some people care
-about.  However; you need to understand that its by definition marketing data.
-
---mgross
+	Sam
