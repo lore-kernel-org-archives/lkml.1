@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXCBIMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932782AbXCBINj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932768AbXCBIMh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 03:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932779AbXCBIMh
+	id S932782AbXCBINj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 03:13:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932785AbXCBINj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 03:12:37 -0500
-Received: from ns2.suse.de ([195.135.220.15]:38729 "EHLO mx2.suse.de"
+	Fri, 2 Mar 2007 03:13:39 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36178 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932768AbXCBIMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 03:12:36 -0500
-Date: Fri, 2 Mar 2007 09:12:10 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@engr.sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070302081210.GD5557@wotan.suse.de>
-References: <20070302050625.GD15867@wotan.suse.de> <Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com> <20070302054944.GE15867@wotan.suse.de> <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com> <20070302060831.GF15867@wotan.suse.de> <Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com> <20070302062950.GG15867@wotan.suse.de> <Pine.LNX.4.64.0703012236160.1979@schroedinger.engr.sgi.com> <20070302071955.GA5557@wotan.suse.de> <Pine.LNX.4.64.0703012335250.13224@schroedinger.engr.sgi.com>
+	id S932782AbXCBINi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 03:13:38 -0500
+Date: Fri, 2 Mar 2007 11:10:48 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <dada1@cosmosbay.com>,
+       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070302081047.GA27122@2ka.mipt.ru>
+References: <20070301095402.GA14603@elte.hu> <20070301131118.GA30228@elte.hu> <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru> <Pine.LNX.4.64.0703011123200.23932@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703012335250.13224@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0703011123200.23932@alien.or.mcafeemobile.com>
 User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 02 Mar 2007 11:11:26 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 11:44:05PM -0800, Christoph Lameter wrote:
-> On Fri, 2 Mar 2007, Nick Piggin wrote:
+On Thu, Mar 01, 2007 at 11:31:14AM -0800, Davide Libenzi (davidel@xmailserver.org) wrote:
+> On Thu, 1 Mar 2007, Evgeniy Polyakov wrote:
 > 
-> > > Sure we will. And you believe that the the newer controllers will be able 
-> > > to magically shrink the the SG lists somehow? We will offload the 
-> > > coalescing of the page structs into bios in hardware or some such thing? 
-> > > And the vmscans etc too?
-> > 
-> > As far as pagecache page management goes, is that an issue for you?
-> > I don't want to know about how many billions of pages for some operation,
-> > just some profiles.
+> > Ingo, do you really think I will send mails with faked benchmarks? :))
 > 
-> If there are billions of pages in the system and we are allocating and 
-> deallocating then pages need to be aged. If there are just few pages 
-> freeable then we run into issues.
+> I don't think he ever implied that. He was only suggesting that when you 
+> post benchmarks, and even more when you make claims based on benchmarks, 
+> you need to be extra carefull about what you measure. Otherwise the 
+> external view that you give to others does not look good.
+> Kevent can be really faster than epoll, but if you post broken benchmarks 
+> (that can be, unrealiable HTTP loaders, broken server implemenations, 
+> etc..) and make claims based on that, the only effect that you have is to 
+> lose your point.
+ 
+We seems to move far away from original topic - I never built any
+assumptions on top of kevent _performance_ - kevent is a logical
+extrapolation of the epoll, I only showed that event driven model can be
+fast and it outperforms threadlet one - after we changed topic we were
+unable to actually test threadlets in networking environment, since the
+only test I ran showed that threadlest do not reschedule at all, and
+Ingo's tests showed small number of reschedulings.
 
-page writeout and vmscan don't work too badly. What are the issues?
+So, I only talked that kevent is superior compared to epoll because (and
+it is _main_ issue) of its ability to handle essentially any kind of
+events with very small overhead (the same as epoll has in struct file -
+list and spinlock) and without significant price of struct file binding
+to event.
 
-> > > > I understand you have controllers (or maybe it is a block layer limit)
-> > > > that doesn't work well with 4K pages, but works OK with 16K pages.
-> > > Really? This is the first that I have heard about it.
-> > Maybe that's the issue you're running into.
+I did not want and do not want to hurt anyone (even Ingo, although he is 
+against kevent :), but my opinion is that thread moved from nice 
+discussion about threads and events with jokes and fun into quite angry 
+word throwings, and that is too good - let's make it fun again.
+I'm not a native english speaker (and do not use a dictionary), so it is 
+quite possible that some my phrases were not exactly nice, but it was 
+unintentional (at least not very) :)
+
+Peace?
+
+> - Davide
 > 
-> Oh, I am running into an issue on a system that does not yet exist? I am 
-> extrapolating from the problems that we commonly see now. Those will get 
-> worse the more memory increases.
 
-So what problems that you commonly see now? Some of us here don't
-have 4TB of memory, so you actually have to tell us ;)
-
-> > > > This is not something that we would introduce variable sized pagecache
-> > > > for, surely.
-> > > I am not sure where you get the idea that this is the sole reason why we 
-> > > need to be able to handle larger contiguous chunks of memory.
-> > I'm not saying that. You brought up this subject of variable sized pagecache.
-> 
-> You keep bringing up the 4k/16k issue into this for some reason. I want 
-> just the ability to handle large amounts of memory. Larger page sizes are 
-> a way to accomplish that.
-
-As I said in my other mail to you, Linux runs on systems with 6 orders
-of magnitude more struct pages than when it was first created. What's
-the problem?
-
-> > Eventually, increasing x86 page size a bit might be an idea. We could even
-> > do it in software if CPU manufacturers don't for us.
-> 
-> A bit? Are we back to the 4k/16k issue? We need to reach 2M at mininum. 
-> Some way to handle continuous memory segments of 1GB and larger 
-> effectively would be great.
-
-How did you come up with that 2MB number?
-
-Anyway, we have hugetlbfs for things like that.
-
-> > That doesn't buy us a great deal if you think there is this huge looming
-> > problem with struct page management though.
-> 
-> I am not the first one.... See Rik's posts regarding the reasons for his 
-> new page replacement algorithms.
-
-Different issue, isn't it? Rik wants to be smarter in figuring out which
-pages to throw away. More work per page == worse for you.
+-- 
+	Evgeniy Polyakov
