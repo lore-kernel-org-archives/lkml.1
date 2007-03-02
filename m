@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992690AbXCBWnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992700AbXCBWsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992690AbXCBWnI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 17:43:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992641AbXCBWnH
+	id S2992700AbXCBWsT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 17:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992697AbXCBWsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 17:43:07 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54292 "EHLO mail.dvmed.net"
+	Fri, 2 Mar 2007 17:48:19 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54329 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992645AbXCBWnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 17:43:05 -0500
-Message-ID: <45E8A873.30604@garzik.org>
-Date: Fri, 02 Mar 2007 17:42:59 -0500
+	id S2992669AbXCBWsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 17:48:18 -0500
+Message-ID: <45E8A9B0.2070205@garzik.org>
+Date: Fri, 02 Mar 2007 17:48:16 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
 To: Alan <alan@lxorguk.ukuu.org.uk>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@osdl.org,
-       torvalds@osdl.org
-Subject: Re: [PATCH] libata-core: Fix simplex handling
-References: <20070301173646.4138981b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070301173646.4138981b@lxorguk.ukuu.org.uk>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] libata: Cable detection fixes
+References: <20070301173003.5d5ab4a6@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070301173003.5d5ab4a6@lxorguk.ukuu.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
@@ -29,20 +30,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Alan wrote:
-> The initial simplex handling code is fooled if you suspend and resume.
-> This also causes problems with some single channel controllers which
-> claim to be simplex.
+> 2.6.21-rc has horrible problems with libata and PATA cable types (and
+> thus speeds). This occurs because Tejun fixed a pile of other bugs and
+> we now do cable detect enforcement for drive side detection properly.
 > 
-> The fix is fairly simple, instead of keeping a flag to remember if we
-> gave away the simplex channel we remember the actual owner. As the owner
-> is always part of the host_set we don't even need a refcount.
+> Unfortunately we don't do the process around cable detection right. Tejun
+> identified the problem and pointed to the right Annex in the spec, this patch
+> implements the needed changes.
 > 
-> Knowing the owner also means we can reassign simplex DMA channels in
-> future hotplug code etc if we need to
+> The basic requirement is that we have to identify the slave before the
+> master.
 > 
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> (and a signed-off for the patch I sent before while I remember)
+> The patch switches the identify order so that we can do the drive side
+> detection correctly. 
 
-applied
+> @@ -1850,8 +1900,11 @@
+>  	for (i = 0; i < ATA_MAX_DEVICES; i++)
+>  		ap->device[i].pio_mode = XFER_PIO_0;
+>  
+> -	/* read IDENTIFY page and configure devices */
+> -	for (i = 0; i < ATA_MAX_DEVICES; i++) {
+> +	/* read IDENTIFY page and configure devices. We have to do the identify
+> +	   specific sequence bass-ackwards so that PDIAG- is released by
+> +	   the slave device */
+> +
+> +	for (i = ATA_MAX_DEVICES - 1; i >=  0; i--) {
+>  		dev = &ap->device[i];
+>  
+>  		if (tries[i])
+> @@ -1864,6 +1917,19 @@
+>  				     dev->id);
+>  		if (rc)
+>  			goto fail;
+> +	}
+> +
+> +	/* After the identify sequence we can now set up the devices. We do
+> +	   this in the normal order so that the user doesn't get confused */
+> +
+> +	for(i = 0; i < ATA_MAX_DEVICES; i++) {
+> +		dev = &ap->device[i];
+> +		if (!ata_dev_enabled(dev))
+> +			continue;
+>  
+>  		ap->eh_context.i.flags |= ATA_EHI_PRINTINFO;
+>  		rc = ata_dev_configure(dev);
 
+applied this part
 
