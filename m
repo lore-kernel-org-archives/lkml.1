@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423054AbXCBMPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423060AbXCBM1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423054AbXCBMPc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 07:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423055AbXCBMPc
+	id S1423060AbXCBM1A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 07:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423057AbXCBM07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 07:15:32 -0500
-Received: from cavan.codon.org.uk ([217.147.92.49]:54042 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423054AbXCBMPb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 07:15:31 -0500
-Date: Fri, 2 Mar 2007 12:15:12 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>, Werner LEMBERG <wl@gnu.org>,
-       linux-kernel@vger.kernel.org
-Message-ID: <20070302121512.GD1212@srcf.ucam.org>
-References: <20070302.102351.146595518.wl@gnu.org> <45E7F13E.60408@drzeus.cx> <20070302122130.2004419d@lxorguk.ukuu.org.uk>
+	Fri, 2 Mar 2007 07:26:59 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35372 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423055AbXCBM07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 07:26:59 -0500
+Date: Fri, 2 Mar 2007 13:26:41 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, linux-acpi@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@stusta.de>,
+       linux-pm@lists.osdl.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] 2.6.21-rc1: known regressions (v2) (part 1)
+Message-ID: <20070302122641.GA3034@elf.ucw.cz>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070226220152.GA29575@stusta.de> <20070228211318.GB4301@mellanox.co.il> <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070302122130.2004419d@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: Memory stick reader Ricoh R5C592 supported?
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 12:21:30PM +0000, Alan wrote:
+On Thu 2007-03-01 11:45:35, Jeff Chua wrote:
+> On 3/1/07, Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+> 
+> > with 2.6.20, pressing Fn/F4 generates an ACPI event and triggers suspend to RAM.
+> >
+> > On 2.6.21-rc2, after resume (when the box is accessible from network),
+> > pressing Fn/F4 again does not seem to have any effect.
+> 
+> I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
+> from RAM, can't suspend to disk. It is possible to revert all the
+> changes to ACPI and test it?
 
-> Don't hold your breath either. The reverse engineering work done a long
-> time ago on some of the memory sticks suggests the "security" (DRM)
-> features are actually done in software by the driver so I doubt we'll see
-> specs soon.
-
-DRM on memory stick appears to be about as widely used as the secure 
-part of SD, so I don't think that's intrinsically a problem.
-
+As I said elsewhere in the thread, suspend/resume to RAM works ok on
+my thinkpad x60. I posted my .config there, perhaps difference is in
+it? Ingo identified KVM as possible culprit.
+								Pavel
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
