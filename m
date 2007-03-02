@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992715AbXCBXKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992721AbXCBXLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992715AbXCBXKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 18:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992721AbXCBXKj
+	id S2992721AbXCBXLK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 18:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992720AbXCBXLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 18:10:39 -0500
-Received: from webmail.woosh.co.nz ([202.74.207.2]:4626 "EHLO
-	mail2.woosh.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992715AbXCBXKi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 18:10:38 -0500
-Date: Sat, 3 Mar 2007 12:10:35 +1300 (NZDT)
-From: Keith Duthie <keith@no.net.nz>
-To: Mike Accetta <maccetta@laurelnetworks.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Someone please turn on the http protocol on git.kernel.org!
-In-Reply-To: <45E8220D.9040905@laurelnetworks.com>
-Message-ID: <alpine.DEB.0.82.0703031208290.15443@sleipnir.no.net.nz>
-References: <7TYYU-5L8-11@gated-at.bofh.it> <7U2zx-392-13@gated-at.bofh.it>
- <45E8220D.9040905@laurelnetworks.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Mar 2007 18:11:09 -0500
+Received: from mail.screens.ru ([213.234.233.54]:56884 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992724AbXCBXLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 18:11:08 -0500
+Date: Sat, 3 Mar 2007 02:11:03 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: John Reiser <jreiser@BitWagon.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
+Message-ID: <20070302231103.GA249@tv-sign.ru>
+References: <20070301175207.GA849@tv-sign.ru> <45E891E6.7090807@BitWagon.com> <45E8A300.9020001@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E8A300.9020001@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Mike Accetta wrote:
+On 03/02, Chuck Ebbert wrote:
+>
+> John Reiser wrote:
+> > The value of ->sysenter_return is interpreted in user space by the
+> > sysexit instruction; nobody else cares what the value is.  The kernel
+> > is not required to provide a good value when vdso_enabled is zero,
+> > because the kernel has not told the process that sysenter is valid
+> > (by setting AT_SYSINFO.)
+> 
+> Doesn't matter because a malicious user can still execute sysenter.
+> We do have to deal with that somehow, so we have to put something
+> safe in there.
 
-> error: Couldn't get
-> http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/refs/tags/v2.6.11
-> for tags/v2.6.11
-> The requested URL returned error: 404
-> error: Could not interpret tags/v2.6.11 as something to pull
+Yes, but a malicious user can't make any harm to the system, sysexit
+jumps to ->sysenter_return when user_mode() is true, right?
 
-This would be because the tag v2.6.11 points to a nonexistant object in
-the repository.
+(I am asking because I don't know in details what sysexit does).
 
--- 
-The universe hates you, but don't worry - it's nothing personal.
+Oleg.
+
