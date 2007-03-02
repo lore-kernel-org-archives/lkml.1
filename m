@@ -1,112 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992481AbXCBOYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992483AbXCBOY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992481AbXCBOYn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 09:24:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992483AbXCBOYn
+	id S2992483AbXCBOY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 09:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992485AbXCBOY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 09:24:43 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:34917 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992476AbXCBOYj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 09:24:39 -0500
-Date: Fri, 2 Mar 2007 15:23:08 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
-       Christian Borntraeger <cborntra@de.ibm.com>, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] timer/hrtimer: take per cpu locks in sane order
-Message-ID: <20070302142308.GB8226@osiris.boeblingen.de.ibm.com>
-References: <20070227153051.GD7911@osiris.boeblingen.de.ibm.com> <20070302125848.GA8226@osiris.boeblingen.de.ibm.com> <20070302130433.GA4391@elte.hu>
+	Fri, 2 Mar 2007 09:24:57 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48872 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992482AbXCBOYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 09:24:55 -0500
+Date: Fri, 2 Mar 2007 15:24:41 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-ID: <20070302142441.GL2156@elf.ucw.cz>
+References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <20070218183805.5a4fd813.khali@linux-fr.org> <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302150313.198b6053.khali@linux-fr.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070302130433.GA4391@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <20070302150313.198b6053.khali@linux-fr.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 02:04:33PM +0100, Ingo Molnar wrote:
-> 
-> * Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> 
-> > -	spin_lock(&new_base->lock);
-> > -	spin_lock(&old_base->lock);
-> > +	/*
-> > +	 * If we take a lock from a different cpu, make sure we have always
-> > +	 * the same locking order. That is the lock that belongs to the cpu
-> > +	 * with the lowest number is taken first.
-> > +	 */
-> > +	lock1 = smp_processor_id() < cpu ? &new_base->lock : &old_base->lock;
-> > +	lock2 = smp_processor_id() < cpu ? &old_base->lock : &new_base->lock;
-> > +	spin_lock(lock1);
-> > +	spin_lock(lock2);
-> 
-> looks good to me. Wouldnt this be cleaner via double_lock_timer() - 
-> similar to how double_rq_lock() works in kernel/sched.c - instead of 
-> open-coding it?
+Hi!
 
-Something like the stuff below? Exploits the knowledge that the two
-tvec_base_t's are in a per_cpu array. Otherwise I would end up passing
-a lot of redundant stuff. But still I think that isn't a good solution
-but rather a hack...?
-I'd go for the patch above.
+> > Ok. You are right that ACPI is an ugly piece of mess. But I'm pretty
+> > sure that 90%+ of ACPI notebook implementations *will* want to talk to
+> > their monitoring chips... for temperature readings.
+> >
+> > So even if we fixed ACPI to reserve the ports, you'd be still unhappy;
+> > lm-sensors would break at least on all the notebooks.
+> 
+> That's a secondary problem. The primary issue is the concurrent access
+> to resources, which cause lots of trouble which are hard to investigate.
+> If ACPI reserves the ports, then the SMBus or hardware monitoring
+> drivers (or any other conflicting driver) will cleanly fail to load,
+> which would be a move in the right direction. Ideally we would be able
+> to synchronize the accesses between ACPI and the other drivers, but if
+> we can't, I'd already be _very happy_ to just prevent conflicting
+> drivers from being loaded at the same time.
+> 
+> So, can ACPI actually reserve the ports it accesses?
 
----
-Index: linux-2.6/kernel/timer.c
-===================================================================
---- linux-2.6.orig/kernel/timer.c
-+++ linux-2.6/kernel/timer.c
-@@ -1640,6 +1640,28 @@ static void migrate_timer_list(tvec_base
- 	}
- }
- 
-+static void __devinit double_tvec_lock(tvec_base_t *base1, tvec_base_t *base2)
-+{
-+	if (base1 < base2) {
-+		spin_lock(&base1->lock);
-+		spin_lock(&base2->lock);
-+	} else {
-+		spin_lock(&base2->lock);
-+		spin_lock(&base1->lock);
-+	}
-+}
-+
-+static void __devinit double_tvec_unlock(tvec_base_t *base1, tvec_base_t *base2)
-+{
-+	if (base1 < base2) {
-+		spin_unlock(&base1->lock);
-+		spin_unlock(&base2->lock);
-+	} else {
-+		spin_unlock(&base2->lock);
-+		spin_unlock(&base1->lock);
-+	}
-+}
-+
- static void __devinit migrate_timers(int cpu)
- {
- 	tvec_base_t *old_base;
-@@ -1651,8 +1673,7 @@ static void __devinit migrate_timers(int
- 	new_base = get_cpu_var(tvec_bases);
- 
- 	local_irq_disable();
--	spin_lock(&new_base->lock);
--	spin_lock(&old_base->lock);
-+	double_tvec_lock(new_base, old_base);
- 
- 	BUG_ON(old_base->running_timer);
- 
-@@ -1665,8 +1686,7 @@ static void __devinit migrate_timers(int
- 		migrate_timer_list(new_base, old_base->tv5.vec + i);
- 	}
- 
--	spin_unlock(&old_base->lock);
--	spin_unlock(&new_base->lock);
-+	double_tvec_unlock(new_base, old_base);
- 	local_irq_enable();
- 	put_cpu_var(tvec_bases);
- }
+No idea, talk to Len Brown (or start reading the code) :-(. I don't
+think it will be easy.
+
+> > > 1* As far as I know, we currently have no way to know if the ACPI code
+> > > plans to ever access the hardware monitoring chip. If the acpi
+> > > subsystem could export this information somehow, it would help a lot.
+> > > But I'm not familiar with ACPI, so I don't know if this is feasable or
+> > > not. We just can't prevent the SMBus and hardware monitoring drivers
+> > > drivers from being loaded as soon as ACPI is enabled. This would
+> > > prevent a majority of users from using them, while they work fine for
+> > > most of them.
+> > 
+> > What about whitelist? DMI-based? That's only way to do it, I'm afraid.
+> 
+> What kind of whitelist do you have in mind? We can't realistically
+> maintain an ever-growing whitelist of hundreds of entries in the
+> kernel. We could block all laptops by default and maintain a white list
+> only for them, and a black list for other systems, the would probably
+> limit the maintenance work, maybe not to an acceptable level though.
+
+I'm afraid something like that is way to go.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
