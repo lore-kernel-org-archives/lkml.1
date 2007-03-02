@@ -1,73 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXCBSuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964773AbXCBSvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933365AbXCBSuP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 13:50:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933367AbXCBSuP
+	id S964773AbXCBSvf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 13:51:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964781AbXCBSvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 13:50:15 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45160 "EHLO pasmtpB.tele.dk"
+	Fri, 2 Mar 2007 13:51:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53118 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933365AbXCBSuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 13:50:14 -0500
-Date: Fri, 2 Mar 2007 19:50:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: FN <zzzz444@ml1.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: module builds need improvement / top Makefile not good enough
-Message-ID: <20070302185035.GA19305@uranus.ravnborg.org>
-References: <1172855662.23830.1177403935@webmail.messagingengine.com>
+	id S964773AbXCBSvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 13:51:33 -0500
+Subject: [PATCH] Add xfrm policy change auditing to pfkey_spdget
+From: Eric Paris <eparis@parisplace.org>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: davem@davemloft.net, jmorris@namei.org, vyekkirala@trustedcs.com,
+       cxzhang@watson.ibm.com, sds@tycho.nsa.gov
+Content-Type: text/plain
+Date: Fri, 02 Mar 2007 13:51:24 -0500
+Message-Id: <1172861484.31047.26.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1172855662.23830.1177403935@webmail.messagingengine.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 09:14:22AM -0800, FN wrote:
-> Hello list,
-> 
-> I am unhappy with the direction the 2.6 kernel builds have taken.
-> Very much like Micro$loth DDKs we (linux users) are being forced to
-> build
-> modules by plugging into a framework that doesn't respect the fine
-> aspects
-> of dependency generation and analysis.
+pfkey_spdget neither had an LSM security hook nor auditing for the
+removal of xfrm_policy structs.  The security hook was added when it was
+moved into xfrm_policy_byid instead of the callers to that function by
+my earlier patch and this patch adds the auditing hooks as well.
 
-The build system for the kernel (kbuild) have a number of goals to fulfill.
-The most important ones was to be reliable and easy to use.
-The easy to use part has mandated a very simple syntax in the
-more than 1000 Makefiles in the kernel - and kbuild has been extended
-support external modules too.
+Signed-off-by: Eric Paris <eparis@redhat.com>
 
-With the 2.6 kernel it is mandatory to use kbuild for external
-modules for a number of reasons:
--> compiler and to some extent linker options now much more rely on
-   the actual configuration. So a gcc commandline for a module may look
-   different depending on the actual configuration.
+ net/key/af_key.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
 
--> The module support code is well integrated with kbuildand when
-   it changes (and it does so now and then) then all external modules
-   do not need to apply the same changes.
+diff --git a/net/key/af_key.c b/net/key/af_key.c
+index 3542435..7cbf0a2 100644
+--- a/net/key/af_key.c
++++ b/net/key/af_key.c
+@@ -2537,7 +2537,7 @@ static int pfkey_migrate(struct sock *sk, struct sk_buff *skb,
+ static int pfkey_spdget(struct sock *sk, struct sk_buff *skb, struct sadb_msg *hdr, void **ext_hdrs)
+ {
+ 	unsigned int dir;
+-	int err;
++	int err = 0, delete;
+ 	struct sadb_x_policy *pol;
+ 	struct xfrm_policy *xp;
+ 	struct km_event c;
+@@ -2549,16 +2549,20 @@ static int pfkey_spdget(struct sock *sk, struct sk_buff *skb, struct sadb_msg *h
+ 	if (dir >= XFRM_POLICY_MAX)
+ 		return -EINVAL;
+ 
++	delete = (hdr->sadb_msg_type == SADB_X_SPDDELETE2);
+ 	xp = xfrm_policy_byid(XFRM_POLICY_TYPE_MAIN, dir, pol->sadb_x_policy_id,
+-			      hdr->sadb_msg_type == SADB_X_SPDDELETE2, &err);
++			      delete, &err);
+ 	if (xp == NULL)
+ 		return -ENOENT;
+ 
+-	err = 0;
++	if (delete)
++		xfrm_audit_log(audit_get_loginuid(current->audit_context), 0,
++			       AUDIT_MAC_IPSEC_DELSPD, err ? 0 : 1, xp, NULL);
+ 
+-	c.seq = hdr->sadb_msg_seq;
+-	c.pid = hdr->sadb_msg_pid;
+-	if (hdr->sadb_msg_type == SADB_X_SPDDELETE2) {
++		if (err)
++			goto out;
++		c.seq = hdr->sadb_msg_seq;
++		c.pid = hdr->sadb_msg_pid;
+ 		c.data.byid = 1;
+ 		c.event = XFRM_MSG_DELPOLICY;
+ 		km_policy_notify(xp, dir, &c);
+@@ -2566,6 +2570,7 @@ static int pfkey_spdget(struct sock *sk, struct sk_buff *skb, struct sadb_msg *h
+ 		err = key_pol_get_resp(sk, xp, hdr, dir);
+ 	}
+ 
++out:
+ 	xfrm_pol_put(xp);
+ 	return err;
+ }
 
--> Same syntax for in-kernel and external modules makes it simpler.
 
-
-The infrastructure used to achieve the goals of simplicity and reliability
-rely and a great deal of the features supported by GNU make and that
-clearmake and others does not support.
-So faced with the two possibilities which is 
-1) to rely on less GNU make features and support other make tools
-2) full feature set but rely on GNU make
-the choice was easy.
-
-The point here is that even if kbuild was changed slightly to allow a user
-to specify an alternative make program when building external modules
-that would not work because kbuild rely too much on the GNU make features.
-
-You can try this today.
-MAKE=/usr/bin/my_make_utility make M=`pwd`
-
-And see how it fails due to use of GNU make features.
-
-	Sam
