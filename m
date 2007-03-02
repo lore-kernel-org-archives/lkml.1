@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422806AbXCBDor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422820AbXCBDue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422806AbXCBDor (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 22:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422818AbXCBDor
+	id S1422820AbXCBDue (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 22:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXCBDud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 22:44:47 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40015 "EHLO smtp.osdl.org"
+	Thu, 1 Mar 2007 22:50:33 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:39986 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422806AbXCBDoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 22:44:46 -0500
-Date: Thu, 1 Mar 2007 19:44:27 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Balbir Singh <balbir@in.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
-       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-In-Reply-To: <45E7835A.8000908@in.ibm.com>
-Message-ID: <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
- <45E7835A.8000908@in.ibm.com>
+	id S1422820AbXCBDud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 22:50:33 -0500
+Date: Fri, 2 Mar 2007 12:48:00 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: John Reiser <jreiser@BitWagon.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
+Message-ID: <20070302034800.GA12530@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Oleg Nesterov <oleg@tv-sign.ru>, John Reiser <jreiser@BitWagon.com>,
+	Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070301175207.GA849@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301175207.GA849@tv-sign.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 2 Mar 2007, Balbir Singh wrote:
->
-> > My personal opinion is that while I'm not a huge fan of virtualization,
-> > these kinds of things really _can_ be handled more cleanly at that layer,
-> > and not in the kernel at all. Afaik, it's what IBM already does, and has
-> > been doing for a while. There's no shame in looking at what already works,
-> > especially if it's simpler.
+On Thu, Mar 01, 2007 at 08:52:07PM +0300, Oleg Nesterov wrote:
+> > --- a/arch/i386/kernel/sysenter.c~fully-honor-vdso_enabled
+> > +++ a/arch/i386/kernel/sysenter.c
+> > @@ -22,6 +22,8 @@
+> >  #include <asm/msr.h>
+> >  #include <asm/pgtable.h>
+> >  #include <asm/unistd.h>
+> > +#include <asm/a.out.h>
+> > +#include <asm/mman.h>
+> >
+> >  /*
+> >   * Should the kernel map a VDSO page into processes and pass its
+> > @@ -105,10 +107,25 @@ int arch_setup_additional_pages(struct l
+> >  {
+> >  	struct mm_struct *mm = current->mm;
+> >  	unsigned long addr;
+> > +	unsigned long flags;
+> >  	int ret;
+> >
+> > +	switch (vdso_enabled) {
+> > +	case 0:  /* none */
+> > +		return 0;
 > 
-> Could you please clarify as to what "that layer" means - is it the
-> firmware/hardware for virtualization? or does it refer to user space?
+> This means we don't initialize mm->context.vdso and ->sysenter_return.
+> 
+> Is it ok? For example, setup_rt_frame() uses VDSO_SYM(&__kernel_rt_sigreturn),
+> sysenter_past_esp pushes ->sysenter_return on stack.
+> 
+The setup_rt_frame() case is fairly straightforward, both PPC and SH
+already check to make sure there's a valid context before trying to use
+VDSO_SYM(), I'm not sure why x86 doesn't.
 
-Virtualization in general. We don't know what it is - in IBM machines it's 
-a hypervisor. With Xen and VMware, it's usually a hypervisor too. With 
-KVM, it's obviously a host Linux kernel/user-process combination.
+Though I wonder if there's any point in checking binfmt->hasvdso here?
+There shouldn't be a valid mm->context.vdso in the !hasvdso case..
 
-The point being that in the guests, hotunplug is almost useless (for 
-bigger ranges), and we're much better off just telling the virtualization 
-hosts on a per-page level whether we care about a page or not, than to 
-worry about fragmentation.
+Someone else will have to comment on ->sysenter_return.
 
-And in hosts, we usually don't care EITHER, since it's usually done in a 
-hypervisor.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-> It would also be useful to have a resource controller like per-container
-> RSS control (container refers to a task grouping) within the kernel or
-> non-virtualized environments as well.
+--
 
-.. but this has again no impact on anti-fragmentation.
+ arch/i386/kernel/signal.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-In other words, I really don't see a huge upside. I see *lots* of 
-downsides, but upsides? Not so much. Almost everybody who wants unplug 
-wants virtualization, and right now none of the "big virtualization" 
-people would want to have kernel-level anti-fragmentation anyway sicne 
-they'd need to do it on their own.
-
-		Linus
+diff --git a/arch/i386/kernel/signal.c b/arch/i386/kernel/signal.c
+index 4f99e87..f778d34 100644
+--- a/arch/i386/kernel/signal.c
++++ b/arch/i386/kernel/signal.c
+@@ -350,7 +350,7 @@ static int setup_frame(int sig, struct k_sigaction *ka,
+ 			goto give_sigsegv;
+ 	}
+ 
+-	if (current->binfmt->hasvdso)
++	if (current->binfmt->hasvdso && current->mm->context.vdso)
+ 		restorer = (void *)VDSO_SYM(&__kernel_sigreturn);
+ 	else
+ 		restorer = (void *)&frame->retcode;
