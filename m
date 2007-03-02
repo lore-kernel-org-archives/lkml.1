@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965650AbXCBVSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965652AbXCBVUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965650AbXCBVSl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965652AbXCBVSk
+	id S965652AbXCBVUu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965655AbXCBVUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:18:40 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:1726 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965650AbXCBVSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:18:40 -0500
-Date: Fri, 02 Mar 2007 13:18:09 -0800
-From: "David Schwartz" <davids@webmaster.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: License violation?
+	Fri, 2 Mar 2007 16:20:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48303 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965652AbXCBVUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 16:20:49 -0500
+Message-ID: <45E894D7.2040309@redhat.com>
+Date: Fri, 02 Mar 2007 16:19:19 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-ID: <WorldClient-F200703021318.AA18090017@webmaster.com>
-X-Mailer: WorldClient 8.1.3
-In-Reply-To: <45E76C16.1030706@gmail.com>
-References: <45E76C16.1030706@gmail.com>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Fri, 02 Mar 2007 13:18:10 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 216.152.64.169
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Fri, 02 Mar 2007 13:18:11 -0800
+To: Bill Irwin <bill.irwin@oracle.com>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <45E842F6.5010105@redhat.com> <20070302085838.bcf9099e.akpm@linux-foundation.org> <Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com> <20070302093501.34c6ef2a.akpm@linux-foundation.org> <45E8624E.2080001@redhat.com> <20070302100619.cec06d6a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com> <45E86BA0.50508@redhat.com> <20070302211207.GJ10643@holomorphy.com>
+In-Reply-To: <20070302211207.GJ10643@holomorphy.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bill Irwin wrote:
+> On Fri, Mar 02, 2007 at 01:23:28PM -0500, Rik van Riel wrote:
+>> With 32 CPUs diving into the page reclaim simultaneously,
+>> each trying to scan a fraction of memory, this is disastrous
+>> for performance.  A 256GB system should be even worse.
+> 
+> Thundering herds of a sort pounding the LRU locks from direct reclaim
+> have set off the NMI oopser for users here.
 
-> I have a GPL driver (written by me) with workarounds, since I hadn't
-> know-how, 
-> when I wrote it. Now I've got 2.4 proprietary driver from the vendor.
-> Is use of 
-> the 2.4 driver know-how OK? (And could be such driver merged?)
+Ditto here.
 
-Unless you made some kind of agreement with the copyright holder or did
-not lawfully acquire the software, you have every right to study it and
-learn from it. You have every right to use your own knowledge to implement
-a driver any way you want.
+The main reason they end up pounding the LRU locks is the
+swappiness heuristic.  They scan too much before deciding
+that it would be a good idea to actually swap something
+out, and with 32 CPUs doing such scanning simultaneously...
 
-What you can't do, of course, is steal protected expression from the
-driver. Function is not protected. Facts are not protected.
-
-DS
-
-
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
