@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965113AbXCBUsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965605AbXCBUxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965113AbXCBUsv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 15:48:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965590AbXCBUsv
+	id S965605AbXCBUxc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 15:53:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965606AbXCBUxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 15:48:51 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:50212 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965113AbXCBUsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 15:48:50 -0500
-Date: Fri, 2 Mar 2007 12:47:52 -0800
-From: Greg KH <greg@kroah.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH,RFC] pci: do not mark exported functions as __devinit
-Message-ID: <20070302204752.GA24716@kroah.com>
-References: <20070227092702.GA21337@uranus.ravnborg.org>
+	Fri, 2 Mar 2007 15:53:32 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3163 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965605AbXCBUxb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 15:53:31 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 2 Mar 2007 12:53:28 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+In-Reply-To: <20070302202931.GA5101@elte.hu>
+Message-ID: <Pine.LNX.4.64.0703021246380.2381@alien.or.mcafeemobile.com>
+References: <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com>
+ <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru>
+ <20070301150942.GA26025@elte.hu> <20070301153655.GB8217@2ka.mipt.ru>
+ <20070302105713.GB15576@elte.hu> <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
+ <20070302193941.GB8450@elte.hu> <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
+ <20070302202931.GA5101@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070227092702.GA21337@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27, 2007 at 10:27:02AM +0100, Sam Ravnborg wrote:
-> Functions marked __devinit will be removed after kernel init.
-> But being exported they are potentially called by a module
-> much later.
-> So the safer choice seems to be to keep the function even
-> in the non CONFIG_HOTPLUG case.
+On Fri, 2 Mar 2007, Ingo Molnar wrote:
+
 > 
-> This silence the follwoing section mismatch warnings:
-> WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:pci_bus_add_device from __ksymtab_gpl between '__ksymtab_pci_bus_add_device' (at offset 0x20) and '__ksymtab_pci_walk_bus'
-> WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:pci_create_bus from __ksymtab_gpl between '__ksymtab_pci_create_bus' (at offset 0x40) and '__ksymtab_pci_stop_bus_device'
-> WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:pci_bus_max_busnr from __ksymtab_gpl between '__ksymtab_pci_bus_max_busnr' (at offset 0xc0) and '__ksymtab_pci_assign_resource_fixed'
-> WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:pci_claim_resource from __ksymtab_gpl between '__ksymtab_pci_claim_resource' (at offset 0xe0) and '__ksymtab_pcie_port_bus_type'
-> WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:pci_bus_add_devices from __ksymtab between '__ksymtab_pci_bus_add_devices' (at offset 0x70) and '__ksymtab_pci_bus_alloc_resource'
-> WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:pci_scan_bus_parented from __ksymtab between '__ksymtab_pci_scan_bus_parented' (at offset 0x90) and '__ksymtab_pci_root_buses'
-> WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:pci_bus_assign_resources from __ksymtab between '__ksymtab_pci_bus_assign_resources' (at offset 0x4d0) and '__ksymtab_pci_bus_size_bridges'
-> WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:pci_bus_size_bridges from __ksymtab between '__ksymtab_pci_bus_size_bridges' (at offset 0x4e0) and '__ksymtab_pci_setup_cardbus'
+> * Davide Libenzi <davidel@xmailserver.org> wrote:
 > 
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
-> Is this the correct approach or do we allow __init symbols to be
-> exported? In that case we need to find a way to export them without
-> causing a section mismatch warning.
+> > I think that the "dirty" FPU context must, at least, follow the new 
+> > head. That's what the userspace sees, and you don't want an async_exec 
+> > to re-emerge with a different FPU context.
+> 
+> well. I think there's some confusion about terminology, so please let me 
+> describe everything in detail. This is how execution goes:
+> 
+>   outer loop() {
+>       call_threadlet();
+>   }
+> 
+> this all runs in the 'head' context. call_threadlet() always switches to 
+> the 'threadlet stack'. The 'outer context' runs in the 'head stack'. If, 
+> while executing the threadlet function, we block, then the 
+> threadlet-thread gets to keep the task (the threadlet stack and also the 
+> FPU), and blocks - and we pick a 'new head' from the thread pool and 
+> continue executing in that context - right after the call_threadlet() 
+> function, in the 'old' head's stack. I.e. it's as if we returned 
+> immediately from call_threadlet(), with a return code that signals that 
+> the 'threadlet went async'.
+> 
+> now, the FPU state that was when the threadlet blocked is totally 
+> meaningless to the 'new head' - that FPU state is from the middle of the 
+> threadlet execution.
 
-Yes, we allow them to be exported globally, as other init code might
-need to call them, like these functions.
+For threadlets, it might be. Now think about a task wanting to dispatch N 
+parallel AIO requests as N independent syslets.
+Think about this task having USEDFPU set, so the FPU context is dirty.
+When it returns from async_exec, with one of the requests being become 
+sleepy, it needs to have the same FPU context it had when it entered, 
+otherwise it won't prolly be happy.
+For the same reason a schedule() must preserve/sync the "prev" FPU 
+context, to be reloaded at the next FPU fault.
 
-So yes, I think we need to find a way to fix the warning tools, as the
-code is correct here.
 
-thanks,
 
-greg k-h
+
+> > So, IMO, if the USEDFPU bit is set, we need to sync the dirty FPU 
+> > context with an early unlazy_fpu(), *and* copy the sync'd FPU context 
+> > to the new head. This should really be a fork of the dirty FPU context 
+> > IMO, and should only happen if the USEDFPU bit is set.
+> 
+> why? The only effect this will have is a slowdown :) The FPU context 
+> from the middle of the threadlet function is totally meaningless to the 
+> 'new head'. It might be anything. (although in practice system calls are 
+> almost never called with a truly in-use FPU.)
+
+See above ;)
+
+
+
+- Davide
+
+
