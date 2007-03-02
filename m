@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992738AbXCBXar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992740AbXCBXdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992738AbXCBXar (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 18:30:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992741AbXCBXar
+	id S2992740AbXCBXdH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 18:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992745AbXCBXdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 18:30:47 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49784
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2992738AbXCBXaq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 18:30:46 -0500
-Date: Fri, 02 Mar 2007 15:30:45 -0800 (PST)
-Message-Id: <20070302.153045.71090285.davem@davemloft.net>
-To: johnstul@us.ibm.com
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org,
-       andreas.friedrich@fujitsu-siemens.com, tglx@linutronix.de,
-       dwalker@mvista.com
-Subject: Re: [PATCH -mm][Take 2] clocksource init adjustments (fix bug
- #7426)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1172877840.5449.39.camel@localhost.localdomain>
-References: <1172865491.5449.13.camel@localhost.localdomain>
-	<20070302.123202.11628478.davem@davemloft.net>
-	<1172877840.5449.39.camel@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 2 Mar 2007 18:33:07 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54714 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992740AbXCBXdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 18:33:04 -0500
+Message-ID: <45E8B42E.7010900@garzik.org>
+Date: Fri, 02 Mar 2007 18:33:02 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] libata: warn if speed limited due to 40-wire cable (v2)
+References: <45DA44B4.6000209@shaw.ca>
+In-Reply-To: <45DA44B4.6000209@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: john stultz <johnstul@us.ibm.com>
-Date: Fri, 02 Mar 2007 15:24:00 -0800
-
-> On Fri, 2007-03-02 at 12:32 -0800, David Miller wrote:
-> > From: john stultz <johnstul@us.ibm.com>
-> > Date: Fri, 02 Mar 2007 11:58:11 -0800
-> > 
-> > > Oh! Sorry! Yea, looking at it more the ioremap isn't actually necessary,
-> > > as we can use hpet_readl() instead of re-calculating the hpet base
-> > > address pointer.
-> > > 
-> > > I'll fix this up (and find an HPET enabled x86_64 box to test it on) and
-> > > get a patch to you shortly.
-> > 
-> > Not to pressure you John but I'd really like to see this go
-> > in soon, it does fix real bugs such as the Radeon FB issue
-> > I pointed out the other week.
+Robert Hancock wrote:
+> Here's a revised version of my previous patch to warn the user if a
+> drive's transfer rate is limited because of a 40-wire cable detection.
+> This one hopefully addresses Alan's previous comments - we now do this
+> at the very end of the function, and the ugly if condition has been
+> cleaned up somewhat. Also, it's been inadvertently tested (it seems that
+> pata_amd Nvidia cable detection is broken in current -git..)
 > 
-> Here's my second try at this. This time I caught three bugs from the
-> last patch (all in x86_64):
-> 1) Calling ioremap too early in the HPET code (which is unnecessary)
-> 2) hpet_period local variable aliasing
-> 3) forgot to re-add call to init_tsc_clocksource()
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 > 
-> I boot tested on two x86_64 boxes (one ACPI PM and the other HPET).
-> However it probably should still go through a bit of testing in -mm to
-> make sure all the quirks are shaken out.
+> --- linux-2.6.20-git6/drivers/ata/libata-core.c    2007-02-11 
+> 17:31:19.000000000 -0600
+> +++ linux-2.6.20-git6edit/drivers/ata/libata-core.c    2007-02-13 
+> 19:15:58.000000000 -0600
+> @@ -3305,19 +3305,7 @@ static void ata_dev_xfermask(struct ata_
+>     xfer_mask = ata_pack_xfermask(ap->pio_mask,
+>                       ap->mwdma_mask, ap->udma_mask);
+> 
+> -    /* Apply cable rule here.  Don't apply it early because when
+> -     * we handle hot plug the cable type can itself change.
+> -     */
+> -    if (ap->cbl == ATA_CBL_PATA40)
+> -        xfer_mask &= ~(0xF8 << ATA_SHIFT_UDMA);
+> -    /* Apply drive side cable rule. Unknown or 80 pin cables reported
+> -     * host side are checked drive side as well. Cases where we know a
+> -     * 40wire cable is used safely for 80 are not checked here.
+> -     */
+> -        if (ata_drive_40wire(dev->id) && (ap->cbl == ATA_CBL_PATA_UNK 
+> || ap->cbl == ATA_CBL_PATA80))
+> -        xfer_mask &= ~(0xF8 << ATA_SHIFT_UDMA);
+> -
+> -
+> +    /* drive modes available */
+>     xfer_mask &= ata_pack_xfermask(dev->pio_mask,
+>                        dev->mwdma_mask, dev->udma_mask);
+>     xfer_mask &= ata_id_xfermask(dev->id);
+> @@ -3348,6 +3336,25 @@ static void ata_dev_xfermask(struct ata_
+>     if (ap->ops->mode_filter)
+>         xfer_mask = ap->ops->mode_filter(ap, dev, xfer_mask);
+> 
+> +    /* Apply cable rule here.  Don't apply it early because when
+> +     * we handle hot plug the cable type can itself change.
+> +     * Check this last so that we know if the transfer rate was
+> +     * solely limited by the cable.
+> +     * Unknown or 80 wire cables reported host side are checked
+> +     * drive side as well. Cases where we know a 40wire cable
+> +     * is used safely for 80 are not checked here.
+> +     */
+> +    if (xfer_mask & (0xF8 << ATA_SHIFT_UDMA))
+> +        /* UDMA/44 or higher would be available */
+> +        if((ap->cbl == ATA_CBL_PATA40) ||
+> +               (ata_drive_40wire(dev->id) &&
+> +             (ap->cbl == ATA_CBL_PATA_UNK ||
+> +                     ap->cbl == ATA_CBL_PATA80))) {
+> +                  ata_dev_printk(dev, KERN_WARNING,
+> +                 "limited to UDMA/33 due to 40-wire cable\n");
+> +            xfer_mask &= ~(0xF8 << ATA_SHIFT_UDMA);
+> +        }
 
-Agreed and it looks good to me after going over it a few times.
+it seems broken to manipulate xfer_mask after returning from the 
+driver's ->mode_filter hook.
+
+this patch is more than just a speed-limited warning printk, afaics
+
+
