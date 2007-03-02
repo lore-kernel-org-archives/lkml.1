@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030659AbXCBWjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422673AbXCBWma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030659AbXCBWjk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 17:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030660AbXCBWjk
+	id S1422673AbXCBWma (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 17:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422692AbXCBWma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 17:39:40 -0500
-Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:41072 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030659AbXCBWjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 17:39:39 -0500
-Subject: Re: Someone please turn on the http protocol on git.kernel.org!
-From: Steve Wise <swise@opengridcomputing.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: Mike Accetta <maccetta@laurelnetworks.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <45E8A571.9030601@freescale.com>
-References: <7TYYU-5L8-11@gated-at.bofh.it> <7U2zx-392-13@gated-at.bofh.it>
-	 <45E8220D.9040905@laurelnetworks.com>  <45E8A571.9030601@freescale.com>
-Content-Type: text/plain
-Date: Fri, 02 Mar 2007 16:39:38 -0600
-Message-Id: <1172875178.21241.68.camel@stevo-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 17:42:30 -0500
+Received: from mail.gmx.net ([213.165.64.20]:40787 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1422673AbXCBWm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 17:42:29 -0500
+X-Provags-ID: V01U2FsdGVkX1+nRLAojh6noCY1kSMcaFn5fQ89UgIjHrCFqklr9L
+	Qvm/ktCkvaSEMI
+Date: Fri, 2 Mar 2007 23:42:27 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Tejun Heo <htejun@gmail.com>
+cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, linux-pm@lists.osdl.org, linux-ide@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH 1/2 -stable] libata: add missing PM callbacks
+In-Reply-To: <20070302084530.GN20322@htj.dyndns.org>
+Message-ID: <Pine.LNX.4.60.0703022334550.6467@poirot.grange>
+References: <20061122172841.0b90f042@localhost.localdomain>
+ <Pine.LNX.4.60.0702262150460.5079@poirot.grange> <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
+ <Pine.LNX.4.60.0703012305030.7351@poirot.grange> <20070302084530.GN20322@htj.dyndns.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-02 at 16:30 -0600, Timur Tabi wrote:
-> Mike Accetta wrote:
+On Fri, 2 Mar 2007, Tejun Heo wrote:
+
+> Some LLDs were missing scsi device PM callbacks while having host/port
+> suspend support.  Add missing ones.
 > 
-> > error: Couldn't get 
-> > http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/refs/tags/v2.6.11 
-> > for tags/v2.6.11
-> > The requested URL returned error: 404
-> > error: Could not interpret tags/v2.6.11 as something to pull
-> 
-> I just tried it and got the same error, so it looks like something is wrong on the server.
-> 
-> Isn't 2.6.11 around the time that Linus moved to git?  Maybe the server can't find tag for 
-> the initial check-in of the code.
-> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+> This should fix the problem you're seeing on sil680.  These patches
+> are against 2.6.20.1.  Patches for libata-dev#upstream is separately
+> posted to linux-ide in the following thread.
 
-Aren't the older commits in another git tree?  Like maybe 
+Yep, this looks good now, I think, thanks! I still have to fix some 
+badness, but it looks unrelated. The disk switches off and on now 
+automatically as expected. I'll do further tests, but, it looks quite good 
+as it stands.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/old-2.6-bkcvs.git
-
-
-Steve.
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
