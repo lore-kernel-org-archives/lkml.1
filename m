@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422649AbXCBATL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422642AbXCBA1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422649AbXCBATL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 19:19:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422650AbXCBATL
+	id S1422642AbXCBA1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 19:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422650AbXCBA1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 19:19:11 -0500
-Received: from mail.velocitynet.com.au ([203.17.154.25]:49067 "EHLO
-	m0.velocity.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422649AbXCBATJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 19:19:09 -0500
-Message-ID: <45E76D65.30405@iinet.net.au>
-Date: Fri, 02 Mar 2007 11:18:45 +1100
-From: Ben Nizette <ben.nizette@iinet.net.au>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: Dmitry Torokhov <dtor@mail.ru>, pHilipp Zabel <philipp.zabel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.21-rc2] gpio_keys driver shouldn't be ARM-specific
-References: <200703011551.29696.david-b@pacbell.net>
-In-Reply-To: <200703011551.29696.david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 1 Mar 2007 19:27:54 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:59382 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422642AbXCBA1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 19:27:53 -0500
+Date: Thu, 1 Mar 2007 16:27:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
+       Mike Galbraith <efault@gmx.de>, Ken Chen <kenneth.w.chen@intel.com>,
+       balducci@units.it, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Fix posix-cpu-timer breakage caused by stale
+ p->last_ran value
+Message-Id: <20070301162716.81a53b64.akpm@linux-foundation.org>
+In-Reply-To: <45E7658A.9060309@redhat.com>
+References: <20070221104747.3cb0da32.akpm@linux-foundation.org>
+	<1172104409.25076.165.camel@localhost.localdomain>
+	<45E7658A.9060309@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> The gpio_keys driver is wrongly ARM-specific; it can't build on
-> other platforms with GPIO suport.  This fixes that problem.
+On Thu, 01 Mar 2007 18:45:14 -0500
+Chuck Ebbert <cebbert@redhat.com> wrote:
+
+> Thomas Gleixner wrote:
+> > Problem description at:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8048
+> > 
+> > Commit b18ec80396834497933d77b81ec0918519f4e2a7 
+> >     [PATCH] sched: improve migration accuracy
+> > optimized the scheduler time calculations, but broke posix-cpu-timers.
+> > 
+> > The problem is that the p->last_ran value is not updated after a context
+> > switch. So a subsequent call to current_sched_time() calculates with a
+> > stale p->last_ran value, i.e. accounts the full time, which the task was
+> > scheduled away.
+> > 
+> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > 
+> > Index: linux-2.6/kernel/sched.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/sched.c
+> > +++ linux-2.6/kernel/sched.c
+> > @@ -3566,7 +3566,7 @@ switch_tasks:
+> >  
+> >  	sched_info_switch(prev, next);
+> >  	if (likely(prev != next)) {
+> > -		next->timestamp = now;
+> > +		next->timestamp = next->last_ran = now;
+> >  		rq->nr_switches++;
+> >  		rq->curr = next;
+> >  		++*switch_count;
+> > 
 > 
-I did up a similar patch a few days back, you beat me too it ;).  I've 
-been using this driver on AVR32 for a while now.
+> Is this going to be merged or not??
 
-The other thing was that this driver only depends on the machine 
-supporting your generic GPIO conventions.  Currently the Kconfig entry 
-for gpio_keys reads:
-
-	depends on (ARCH_SA1100 || ARCH_PXA || ARCH_S3C2410)
-
-With the || AVR32 I've added to my version it's getting a bit out of 
-hand!  Anyone else think it would be worth introducing a GPIO_FRAMEWORK 
-symbol selected by each machine which supports it and just set the 
-gpio_keys dependency to that?
-
-Ben.
+It just hit mainline.
