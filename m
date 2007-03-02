@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422857AbXCBEWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422851AbXCBEXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422857AbXCBEWs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 23:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422854AbXCBEWs
+	id S1422851AbXCBEXB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 23:23:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422853AbXCBEXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 23:22:48 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:34697 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422856AbXCBEWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 23:22:46 -0500
-Date: Fri, 2 Mar 2007 13:20:13 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@engr.sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070302042013.GA12669@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Nick Piggin <npiggin@suse.de>,
-	Christoph Lameter <clameter@engr.sgi.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Mel Gorman <mel@skynet.ie>, mingo@elte.hu, jschopp@austin.ibm.com,
-	arjan@infradead.org, torvalds@linux-foundation.org,
-	mbligh@mbligh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com> <20070302035751.GA15867@wotan.suse.de>
+	Thu, 1 Mar 2007 23:23:00 -0500
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:36040 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422851AbXCBEW7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 23:22:59 -0500
+Message-ID: <45E7A69F.40407@blueyonder.co.uk>
+Date: Fri, 02 Mar 2007 04:22:55 +0000
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302035751.GA15867@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Avi Kivity <avi@argo.co.il>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
+References: <45E5DE32.2070902@argo.co.il> <45E6DA9A.2030301@blueyonder.co.uk> <45E6ED26.10308@argo.co.il>
+In-Reply-To: <45E6ED26.10308@argo.co.il>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 04:57:51AM +0100, Nick Piggin wrote:
-> On Thu, Mar 01, 2007 at 07:05:48PM -0800, Christoph Lameter wrote:
-> > On Thu, 1 Mar 2007, Andrew Morton wrote:
-> > > For prioritisation purposes I'd judge that memory hot-unplug is of similar
-> > > value to the antifrag work (because memory hot-unplug permits DIMM
-> > > poweroff).
-> > 
-> > I would say that anti-frag / defrag enables memory unplug.
-> 
-> Well that really depends. If you want to have any sort of guaranteed
-> amount of unplugging or shrinking (or hugepage allocating), then antifrag
-> doesn't work because it is a heuristic.
-> 
-> One thing that worries me about anti-fragmentation is that people might
-> actually start _using_ higher order pages in the kernel. Then fragmentation
-> comes back, and it's worse because now it is not just the fringe hugepage or
-> unplug users (who can anyway work around the fragmentation by allocating
-> from reserve zones).
-> 
-There's two sides to that, the ability to use higher order pages in the
-kernel also means that it's possible to use larger TLB entries while
-keeping the base page size small, too. There are already many places in
-the kernel that attempt to use the largest possible size when setting up
-the entries, and this is something that those of us with tiny
-software-managed TLBs are a huge fan of -- some platforms have even opted
-to do perverse things such as scanning for contiguous PTEs and bumping to
-the next order automatically at set_pte() time.
+Avi Kivity wrote:
+> Sid Boyce wrote:
+>>> > That's very much appreciated. The point is that all vanilla 
+>>> kernels up
+>>> > to 2.6.20+ have not had the problems now seen on 2.6.20-rc1 and
+>>> > 2.6.20-rc2 and like other problems reported, sic framebuffer, etc.,
+>>> > there is a distinct likelihood that it's related to those kernels and
+>>> > worth reporting here where it will also be seen by the openSUSE 
+>>> kernel
+>>> > developers.
+>>>
+>>> Try running an strace on kwin and reporting the result.
+>>>
+>>>
+>> Modified /opt/kde3/bin/startkde as below, but got no output, not even 
+>> an empty file.
+>> strace -s 256 -f kwin --lock -o /home/lancelot/KWIN.out &
+>
+> Perhaps that line is never executed.
+>
+> Try running kwin from your konsole after it dies, with the strace of 
+> course. Oh, and put the '-o ...' before the kwin command, not after.
+>
+>
 
-Unplug is also interesting from a power management point of view.
-Powering off is still more attractive than self-refresh, for example, but
-could also be used at run-time depending on the workload.
+Oops!, above text should read the same as the subject line,  problems 
+seen on 2.6.21-rc1 and 2.6.21-rc2.
+The strace is huge 2737627 2007-03-02 03:28 KWIN.out.  Further digging 
+shows kwin, kicker and klauncher and perhaps other kdeinit stuff also 
+die - no desktop icons after those 3 are started from the commandline. 
+Moving kdesktop_lock out of /opt/kde3/bin, everything comes back after 
+the video is blanked -- no password required.
+I shall run like that (2.6.21-rc2-git1 currently) and wait for openSUSE 
+to upgrade to 2.6.21. I can send the straces of kicker and kwin on if 
+you think it's still worth it.
+Thanks and Regards
+Sid.
+
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
+
+
