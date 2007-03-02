@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932569AbXCBHR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161169AbXCBHTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932569AbXCBHR1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 02:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932643AbXCBHR1
+	id S1161169AbXCBHTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 02:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161235AbXCBHTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 02:17:27 -0500
-Received: from vms048pub.verizon.net ([206.46.252.48]:45652 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932569AbXCBHR0 (ORCPT
+	Fri, 2 Mar 2007 02:19:20 -0500
+Received: from ellpspace.math.ualberta.ca ([129.128.207.67]:58246 "EHLO
+	ellpspace.math.ualberta.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161141AbXCBHTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 02:17:26 -0500
-Date: Fri, 02 Mar 2007 02:16:39 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: belkin bulldog ups monitor vs 2.6.21-rc2
-In-reply-to: <8cd998d50703012259l274b2d13k6da5048706c4664a@mail.gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Con Kolivas" <kernel@kolivas.org>
-Message-id: <200703020216.40047.gene.heskett@gmail.com>
-Organization: very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703020042.17902.gene.heskett@gmail.com>
- <8cd998d50703012259l274b2d13k6da5048706c4664a@mail.gmail.com>
-User-Agent: KMail/1.9.6
+	Fri, 2 Mar 2007 02:19:19 -0500
+X-Greylist: delayed 2641 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Mar 2007 02:19:19 EST
+Date: Thu, 1 Mar 2007 23:35:07 -0700
+From: Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] libata: Cable detection fixes
+Message-ID: <20070302063507.GA8345@ellpspace.math.ualberta.ca>
+Reply-To: michal@harddata.com
+References: <20070301173003.5d5ab4a6@lxorguk.ukuu.org.uk> <Pine.LNX.4.64.0703011723270.12485@woody.linux-foundation.org> <45E77EDD.3010205@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E77EDD.3010205@garzik.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 March 2007, Con Kolivas wrote:
->On 02/03/07, Gene Heskett <gene.heskett@gmail.com> wrote:
->> Greetings;
->>
->> I just rebooted to 2.6.21-rc2 and noted that getting x up and running
->> was about 15 seconds longer than usual.  When it got a bash shell
->> going I went to it and ran htop which showed that the bulldog monitor
->> was taking 90% of the cpu.  Killed it, then restarted it, but when I
->> ran the gui which ran fine and then stopped the gui, the daemon once
->> again went hog wild and had to be killed,  and I'm losing my kmail
->> composer focus for 30 seconds at a time now that amanda is making her
->> nightly run.
->>
->> There is nothing in the log about it other than from xinetd as it ran
->> the amanda server stuff.
->>
->> Not quite ready for prime time methinks.  Using the ck scheduler, this
->> is terrible performance, virtually no multitasking.  Back to
->> 2.6.20-ck1 in the morning if it lives the rest of the night.
->
->HI Gene.
->
->I'm not sure if you're saying here that the performance is terrible on
->2.6.21-rc2 only with the -ck scheduler, or only 2.6.21-rc2, or that
->2.6.20-ck1 is terrible or that it fixes the problem.  Can you please
->clarify this?
+On Thu, Mar 01, 2007 at 08:33:17PM -0500, Jeff Garzik wrote:
+> 
+> That little change, buried in the middle of Alan's patch, changes the 
+> probing order for a /lot/ of devices, possibly millions, when you 
+> consider that it changes behavior of ata_piix (Intel SATA) as well as 
+> all the not-yet-default PATA controllers.
 
-I miss-spoke above now that I read it again, sorry Con.  I think I thought 
-my fingers had put 'Comparing' in front of the 'Using' above. This time 
-of the night, my mind has been known to be running a chapter or more 
-ahead of (or in some cases behind) my fingers.
+Hm, I got recently hands on a hardware where 2.6.21-rc1 based
+kernels from Fedora rawhide simply do not boot as there is no
+way to get to disks.  I would not mind some change in behavior
+although so far I can boot at least some earlier kernels.
 
-2.6.20-ck1 runs great, 2.6.21-rc2 was not only a dog, it fed amanda a 
-bunch of lsd via bad data from tar, so tar when told to do a level 1 
-while 21-rc2 (without your patch) was running, it actually did a level 0, 
-and predictably ran out of vtape.  /usr/pix didn't change over 7GB of its 
-contents overnight, in fact nothing changed there yesterday, but tar sure 
-went on a rampage.
+This looks like ATIIXP issue and details are here:
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229621
+Changelogs for kernels in question have this:
 
-Sorry about the confusion.  I'm back in 2.6.20-ck1 and everythings cool.
+* Wed Feb 21 2007 Dave Jones <davej@redhat.com>
+- 2.6.21-rc1
 
->Regards,
->-ck
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
+   Michal
