@@ -1,97 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992691AbXCBSJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992693AbXCBSKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992691AbXCBSJn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 13:09:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992692AbXCBSJn
+	id S2992693AbXCBSKN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 13:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992697AbXCBSKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 13:09:43 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:33707 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992691AbXCBSJl (ORCPT
+	Fri, 2 Mar 2007 13:10:13 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:27142 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992693AbXCBSKK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 13:09:41 -0500
-Message-ID: <45E86858.20900@us.ibm.com>
-Date: Fri, 02 Mar 2007 10:09:28 -0800
-From: Mingming Cao <cmm@us.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910
-X-Accept-Language: en-us, en
+	Fri, 2 Mar 2007 13:10:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CAI1yPbX2E10LultKkU6DwvSdLsu0SDj6hoICrp1fcwvqXkwMJaj3N+NYErxqyntrNdH5+jxYT+dL5387pULMh5IJNytiCDefrd9fThx1ytJBGof5l6CvU8Hqq0aKx3PvV+Yzq2tS88EeuAlW/q1FQKBjh3eWo1A63+154nksxY=
+Message-ID: <6bffcb0e0703021010s27488f17l26fcd61cec88d012@mail.gmail.com>
+Date: Fri, 2 Mar 2007 19:10:08 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Jiri Slaby" <lnx4us@gmail.com>
+Subject: Re: [PATCH] longhaul pci_find_device -> pci_get_device conversion (was: Re: 2.6.21-rc2-mm1)
+Cc: "Dave Jones" <davej@codemonkey.org.uk>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <3888a5cd0703020945r4ca51f3dxe981050b817e7594@mail.gmail.com>
 MIME-Version: 1.0
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [RFC] Heads up on sys_fallocate()
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301145949.3efac328.akpm@linux-foundation.org> <1172790570.11165.62.camel@kleikamp.austin.ibm.com>
-In-Reply-To: <1172790570.11165.62.camel@kleikamp.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+	 <45E84E81.5080002@googlemail.com>
+	 <3888a5cd0703020945r4ca51f3dxe981050b817e7594@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Kleikamp wrote:
-> On Thu, 2007-03-01 at 14:59 -0800, Andrew Morton wrote:
-> 
->>On Thu, 01 Mar 2007 22:44:16 +0000
->>Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
->>
->>
->>>On Thu, 2007-03-01 at 14:25 -0800, Andrew Morton wrote:
->>>
->>>>On Fri, 2 Mar 2007 00:04:45 +0530
->>>>"Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
->>>
->>>>>+asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len)
->>>>>+{
->>>>>+	struct file *file;
->>>>>+	struct inode *inode;
->>>>>+	long ret = -EINVAL;
->>>>>+	file = fget(fd);
->>>>>+	if (!file)
->>>>>+		goto out;
->>>>>+	inode = file->f_path.dentry->d_inode;
->>>>>+	if (inode->i_op && inode->i_op->fallocate)
->>>>>+		ret = inode->i_op->fallocate(inode, offset, len);
->>>>>+	else
->>>>>+		ret = -ENOTTY;
->>>>>+	fput(file);
->>>>>+out:
->>>>>+        return ret;
->>>>>+}
->>>>
->>>>ENOTTY is a bit unconventional - we often use EINVAL for this sort of
->>>>thing.  But EINVAL has other meanings for posix_fallocate() and isn't
->>>>really appropriate here anyway.  So I'm not sure what would be better...
->>>
->>>Would EINVAL (or whatever) make it back to the caller of
->>>posix_fallocate(), or would glibc fall back to its current
->>>implementation?
->>>
->>>Forgive me if I haven't put enough thought into it, but would it be
->>>useful to create a generic_fallocate() that writes zeroed pages for any
->>>non-existent pages in the range?  I don't know how glibc currently
->>>implements posix_fallocate(), but maybe the kernel could do it more
->>>efficiently, even in generic code.  Maybe we don't care, since the major
->>>file systems can probably do something better in their own code.
->>
->>Given that glibc already implements fallocate for all filesystems, it will
->>need to continue to do so for filesystems which don't implement this
->>syscall - otherwise applications would start breaking.
-> 
-> 
-> I didn't make it clear, but my point was to call generic_fallocate if
-> the file system did not define i_op->allocate().
-> 
-> if (inode->i_op && inode->i_op->fallocate)
-> 	ret = inode->i_op->fallocate(inode, offset, len);
-> else
-> 	ret = generic_fallocate(inode, offset, len);
-> 
-> I'm not sure it's worth the effort, but I thought I'd throw the idea out
-> there.
-> 
-I think this is useful.
+On 02/03/07, Jiri Slaby <lnx4us@gmail.com> wrote:
+> missing pci_dev_put()s
 
-Mingming
+Yes.
 
+Please ignore this patch.
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
