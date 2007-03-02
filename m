@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbXCBJ0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbXCBJee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933295AbXCBJ0d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 04:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbXCBJ0d
+	id S933298AbXCBJee (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 04:34:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933299AbXCBJee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 04:26:33 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:64615 "EHLO relay.atmel.no"
+	Fri, 2 Mar 2007 04:34:34 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59436 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933295AbXCBJ0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 04:26:32 -0500
-Date: Fri, 2 Mar 2007 10:26:17 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <andrew@sanpeople.com>,
-       Milan Svoboda <msvoboda@ra.rockwell.com>
-Subject: Re: [patch 2.6.20-rc2] gpio_direction_output() needs an initial
- value
-Message-ID: <20070302102617.2fb8e0dc@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <200703011825.10370.david-b@pacbell.net>
-References: <200703011825.10370.david-b@pacbell.net>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S933298AbXCBJed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 04:34:33 -0500
+Date: Fri, 2 Mar 2007 10:34:19 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Robin Holt <holt@sgi.com>,
+       David Howells <dhowells@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>, Hideo AOKI <haoki@redhat.com>
+Subject: Re: [PATCH 1/4] coredump: add an interface to control the core dump routine
+Message-ID: <20070302093419.GA2001@elf.ucw.cz>
+References: <45E7AAFA.4070402@hitachi.com> <45E7AC6F.8080704@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E7AC6F.8080704@hitachi.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007 18:25:09 -0800
-David Brownell <david-b@pacbell.net> wrote:
+Hi!
 
-> It's been pointed out that output GPIOs should have an initial value, to
-> avoid signal glitching ... among other things, it can be some time before
-> a driver is ready.  This patch corrects that oversight, fixing
+> This patch adds an interface to set/reset a flag which determines
+> anonymous shared memory segments should be dumped or not when a core
+> file is generated.
 > 
->  - documentation
->  - platforms supporting the GPIO interface
->  - users of that call (just one for now, others are pending)
-> 
-> Note that most platforms are clear about the hardware letting the output
-> value be set before the pin direction is changed, but the s3c241x docs
-> are vague on that topic ... so those chips might not avoid the glitches.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> /proc/<pid>/coredump_omit_anonymous_shared file is provided to access
+> the flag. You can change the flag status for a particular process by
+> writing to or reading from the file.
 
-Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Yes. So, you used very different interface interface from ulimit,
+which means locking is hard.
 
-Thanks, Dave.
+Plus, what you are doing can be done in userspace using google
+coredumper.
 
-Haavard
+> +	if (down_write_trylock(&coredump_settings_sem)) {
+> +		set_coredump_omit_anon_shared(mm, (val != 0));
+> +		up_write(&coredump_settings_sem);
+> +	} else
+> +		ret = -EBUSY;
+
+Now this is an ugly interface. "If user tries to write to /proc file
+while it is locked, return him spurious error.
+
+
+> @@ -75,6 +77,8 @@ extern int suid_dumpable;
+>  #define SUID_DUMP_USER		1	/* Dump as user of process */
+>  #define SUID_DUMP_ROOT		2	/* Dump as root */
+>  
+> +extern struct rw_semaphore coredump_settings_sem;
+> +
+>  /* Stack area protections */
+>  #define EXSTACK_DEFAULT   0	/* Whatever the arch defaults to */
+>  #define EXSTACK_DISABLE_X 1	/* Disable executable stacks */
+
+Yep, very nice, if you used interface suited for the task (ulimit),
+you'd not have to invent new locking like this.
+
+Anyway, I don't care, and you don't listen. You got the design wrong,
+and your code can be done in userspace, anyway. This is "NAK" from me,
+but unfortunately I'm not in power to decide this. So at least drop me
+from Cc in future submissions.
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
