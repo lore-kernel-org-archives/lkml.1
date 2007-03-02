@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992652AbXCBRYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992654AbXCBRYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992652AbXCBRYr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992655AbXCBRYr
+	id S2992654AbXCBRYx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:24:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992663AbXCBRYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:24:47 -0500
-Received: from 206-72-67-168.dsl.dock.net ([206.72.67.168]:35595 "EHLO
-	elektro.pacujo.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992652AbXCBRYq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:24:46 -0500
-To: tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Is the clockevent resolution fine-grained enough?
-References: <m3649kweyj.fsf@elektro.pacujo.net>
-	<1172851546.24738.62.camel@localhost.localdomain>
-Date: 02 Mar 2007 09:24:44 -0800
-In-Reply-To: <1172851546.24738.62.camel@localhost.localdomain>
-Message-ID: <m3k5xzy2w3.fsf@elektro.pacujo.net>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Fri, 2 Mar 2007 12:24:53 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47344 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992654AbXCBRYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 12:24:51 -0500
+Message-ID: <45E85DD2.8010905@redhat.com>
+Date: Fri, 02 Mar 2007 11:24:34 -0600
+From: Robert Peterson <rpeterso@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Delivery-Agent: TMDA/1.0.3 (Seattle Slew)
-From: Marko Rauhamaa <marko@pacujo.net>
+To: Paulo Marques <pmarques@grupopie.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21-rc1] Extend print_symbol capability
+References: <45E744E2.1040000@redhat.com> <45E84C95.3060604@grupopie.com>
+In-Reply-To: <45E84C95.3060604@grupopie.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de>:
+Paulo Marques wrote:
+> I don't like this name much :(
+>
+> We already have kallsyms_lookup and kallsyms_lookup_name. The name of 
+> this function should imply that it will print the formatted result 
+> into the buffer, not just lookup a symbol.
+>
+> Maybe "__sprint_symbol", and change the interface to 
+> "__sprint_symbol(char *buffer, unsigned long addr)"?
+I'm not sure I like the leading __.  In the print_symbol case, I think 
+the function
+was given a leading __ so that code referencing print_symbol would use the
+macro which formulates the call into __print_symbol.  I don't mind 
+sprint_symbol
+though.  Since Andrew Morton included the patch, I'll defer to his judgment.
+>> +static inline void lookup_symbol(unsigned long addr, char *buffer)
+>> +{
+>> +       return NULL;
+>> +}
+> Returning NULL in a function returning "void" doesn't seem right :P
+You're right.  This should just be a simple "return;".  My bad.  Good catch.
+Since Andrew Morton has already included this patch, I'll let him
+make this change if he sees fit.
 
-> On Thu, 2007-03-01 at 18:34 -0800, Marko Rauhamaa wrote:
-> > It would appear the new clockevent API has a one-nanosecond
-> > resolution. It certainly looks sufficiently fine-grained, but I'm
-> > afraid it's too coarse for some applications.
-> 
-> That's an academic exercise, or are you talking about some real world
-> hardware which runs Linux ?
+Regards,
 
-Real hardware running linux.
+Bob Peterson
+Red Hat Cluster Suite
 
-> > In our application, we need periodic clock interrupts at about 100
-> > kHz.
-> 
-> With a stock kernel ?
-
-Well, with a "clockevent" patch of our own. We'd like to use a stock
-kernel, though.
-
-> > If the (programmable) frequency must be rounded to the nearest
-> > nanosecond, we have a cumulative error of
-> > 
-> >    100,000 * 0.5 ns/s = 50 µs/s
-> 
-> clockevents is based on the monotonic system clock and depends on the
-> accuracy of that and the device which deliveres the interrupts.
-> [...]
-> There is nothing to nugde. The clockevent subsystem operates on
-> absolute time, so there is no cummulative error, except you setup your
-> timers relative per event.
-
-I'm afraid you didn't quite understand what I was getting at. Say the
-user programs the frequency to be 109,000 Hz. That means a nominal clock
-interval of ~9174.3119 ns. Now the clockevent interface forces me to
-round it down to 9174 ns. That means the clock interrupts fall behind
-with respect to the other parts in the system that implement 109,000 Hz
-much more to the letter. The error grows by 34 µs every second so that
-after 8 hours, we are lagging by a whole second.
-
-
-Marko
-
--- 
-Marko Rauhamaa      mailto:marko@pacujo.net     http://pacujo.net/marko/
