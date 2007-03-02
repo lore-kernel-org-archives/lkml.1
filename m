@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422838AbXCBEG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422841AbXCBEPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422838AbXCBEG3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 23:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422839AbXCBEG3
+	id S1422841AbXCBEPK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 23:15:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422844AbXCBEPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 23:06:29 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42614 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422838AbXCBEG2 (ORCPT
+	Thu, 1 Mar 2007 23:15:10 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:39612 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422841AbXCBEPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 23:06:28 -0500
-Date: Thu, 1 Mar 2007 20:06:25 -0800 (PST)
-From: Christoph Lameter <clameter@engr.sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-In-Reply-To: <20070302035751.GA15867@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com>
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com>
- <20070302035751.GA15867@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 1 Mar 2007 23:15:07 -0500
+Date: Fri, 2 Mar 2007 09:44:56 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Benjamin LaHaise <bcrl@kvack.org>
+Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       ebiederm@xmission.com, judith@linux-foundation.org,
+       akpm@linux-foundation.org, fastboot@lists.osdl.org, ak@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Fastboot] [PATCH RFC 0/5] hard_smp_processor_id overhaul
+Message-ID: <20070302041455.GA15386@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <1172733373.1498.264.camel@sebastian.intellilink.co.jp> <20070301140648.GX26583@kvack.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070301140648.GX26583@kvack.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Nick Piggin wrote:
-
-> > I would say that anti-frag / defrag enables memory unplug.
+On Thu, Mar 01, 2007 at 09:06:48AM -0500, Benjamin LaHaise wrote:
+> On Thu, Mar 01, 2007 at 04:16:13PM +0900, Fernando Luis Vázquez Cao wrote:
+> > As a consequence, the hardcoding of hard_smp_processor_id() to 0 on UP
+> > systems (see "linux/smp.h") is not correct.
+> > 
+> > This patch-set does the following:
+> > 
+> > 1- Remove hardcoding of hard_smp_processor_id on UP systems.
 > 
-> Well that really depends. If you want to have any sort of guaranteed
-> amount of unplugging or shrinking (or hugepage allocating), then antifrag
-> doesn't work because it is a heuristic.
+> NAK.  This has to be configurable, as many embedded systems don't even 
+> have APICs.  Please rework the patch set so that there is not any overhead 
+> for existing UP systems.
 
-We would need additional measures such as real defrag and make more 
-structure movable.
+Fernando did the code audit and found no instance of hard_smp_processor_id
+being used for non APIC case. So are embedded systems you are referring,
+patching the kernel?
 
-> One thing that worries me about anti-fragmentation is that people might
-> actually start _using_ higher order pages in the kernel. Then fragmentation
-> comes back, and it's worse because now it is not just the fringe hugepage or
-> unplug users (who can anyway work around the fragmentation by allocating
-> from reserve zones).
+Anyway, I think providing hard_smp_processor_id() definition for UP systems
+without APIC does not harm.
 
-Yes, we (SGI) need exactly that: Use of higher order pages in the kernel 
-in order to reduce overhead of managing page structs for large I/O and 
-large memory applications. We need appropriate measures to deal with the 
-fragmentation problem.
-
-> > Thats a value judgement that I doubt. Zone based balancing is bad and has 
-> > been repeatedly patched up so that it works with the usual loads.
-> 
-> Shouldn't we fix it instead of deciding it is broken and add another layer
-> on top that supposedly does better balancing?
-
-We need to reduce the real hardware zones as much as possible. Most high 
-performance architectures have no need for additional DMA zones f.e. and
-do not have to deal with the complexities that arise there.
-
-> But just because zones are hardware _now_ doesn't mean they have to stay
-> that way. The upshot is that a lot of work for zones is already there.
-
-Well you cannot get there without the nodes. The control of memory 
-allocations with user space support etc only comes with the nodes.
-
-> > A. moveable/unmovable
-> > B. DMA restrictions
-> > C. container assignment.
-> 
-> There are alternatives to adding a new layer of virtual zones. We could try
-> using zones, enven.
-
-No merge them to one thing and handle them as one. No difference between 
-zones and nodes anymore.
- 
-> zones aren't perfect right now, but they are quite similar to what you
-> want (ie. blocks of memory). I think we should first try to generalise what
-> we have rather than adding another layer.
-
-Yes that would mean merging nodes and zones. So "nones".
-
+Thanks
+Vivek
