@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422642AbXCBA1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422655AbXCBA2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422642AbXCBA1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 19:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422650AbXCBA1y
+	id S1422655AbXCBA2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 19:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422656AbXCBA2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 19:27:54 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:59382 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422642AbXCBA1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 19:27:53 -0500
-Date: Thu, 1 Mar 2007 16:27:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
-       Mike Galbraith <efault@gmx.de>, Ken Chen <kenneth.w.chen@intel.com>,
-       balducci@units.it, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] Fix posix-cpu-timer breakage caused by stale
- p->last_ran value
-Message-Id: <20070301162716.81a53b64.akpm@linux-foundation.org>
-In-Reply-To: <45E7658A.9060309@redhat.com>
-References: <20070221104747.3cb0da32.akpm@linux-foundation.org>
-	<1172104409.25076.165.camel@localhost.localdomain>
-	<45E7658A.9060309@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 19:28:33 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:13762 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422655AbXCBA2c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 19:28:32 -0500
+Date: Thu, 1 Mar 2007 16:28:18 -0800
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Adam Litke <agl@us.ibm.com>
+Cc: torvalds@linux-foundation.org, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Fix get_unmapped_area and fsync for hugetlb shm segments
+Message-ID: <20070302002818.GF10643@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Adam Litke <agl@us.ibm.com>, torvalds@linux-foundation.org,
+	ebiederm@xmission.com, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070301234608.29532.66932.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301234608.29532.66932.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Mar 2007 18:45:14 -0500
-Chuck Ebbert <cebbert@redhat.com> wrote:
+On Thu, Mar 01, 2007 at 03:46:08PM -0800, Adam Litke wrote:
+>  static inline int is_file_hugepages(struct file *file)
+>  {
+> -	return file->f_op == &hugetlbfs_file_operations;
+> +	if (file->f_op == &hugetlbfs_file_operations)
+> +		return 1;
+> +	if (is_file_shm_hugepages(file))
+> +		return 1;
+> +
+> +	return 0;
+>  }
+...
+> +int is_file_shm_hugepages(struct file *file)
+> +{
+> +	int ret = 0;
+> +
+> +	if (file->f_op == &shm_file_operations) {
+> +		struct shm_file_data *sfd;
+> +		sfd = shm_file_data(file);
+> +		ret = is_file_hugepages(sfd->file);
+> +	}
+> +	return ret;
 
-> Thomas Gleixner wrote:
-> > Problem description at:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8048
-> > 
-> > Commit b18ec80396834497933d77b81ec0918519f4e2a7 
-> >     [PATCH] sched: improve migration accuracy
-> > optimized the scheduler time calculations, but broke posix-cpu-timers.
-> > 
-> > The problem is that the p->last_ran value is not updated after a context
-> > switch. So a subsequent call to current_sched_time() calculates with a
-> > stale p->last_ran value, i.e. accounts the full time, which the task was
-> > scheduled away.
-> > 
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> > Index: linux-2.6/kernel/sched.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/sched.c
-> > +++ linux-2.6/kernel/sched.c
-> > @@ -3566,7 +3566,7 @@ switch_tasks:
-> >  
-> >  	sched_info_switch(prev, next);
-> >  	if (likely(prev != next)) {
-> > -		next->timestamp = now;
-> > +		next->timestamp = next->last_ran = now;
-> >  		rq->nr_switches++;
-> >  		rq->curr = next;
-> >  		++*switch_count;
-> > 
-> 
-> Is this going to be merged or not??
+A comment to prepare others for the impending doubletake might be nice.
+Or maybe just open-coding the equality check for &huetlbfs_file_operations
+in is_file_shm_hugepages() if others find it as jarring as I. Please
+extend my ack to any follow-up fiddling with that.
 
-It just hit mainline.
+The patch addresses relatively straightforward issues and naturally at
+that.
+
+Acked-by: William Irwin <bill.irwin@oracle.com>
+
+
+-- wli
