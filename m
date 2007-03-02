@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992626AbXCBRF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992629AbXCBRFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992626AbXCBRF3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992577AbXCBRF3
+	id S2992629AbXCBRFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992577AbXCBRFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:05:29 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34829 "EHLO smtp.osdl.org"
+	Fri, 2 Mar 2007 12:05:39 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:48195 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992626AbXCBRF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:05:27 -0500
-Date: Fri, 2 Mar 2007 09:01:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Eric Sandeen <sandeen@redhat.com>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>, ext4 <linux-ext4@vger.kernel.org>,
-       suparna@in.ibm.com, cmm@us.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-Id: <20070302090105.43f9b41c.akpm@linux-foundation.org>
-In-Reply-To: <1172851980.9213.13.camel@dyn9047017100.beaverton.ibm.com>
-References: <20070117094658.GA17390@amitarora.in.ibm.com>
-	<20070225022326.137b4875.akpm@linux-foundation.org>
-	<20070301183445.GA7911@amitarora.in.ibm.com>
-	<45E7BE4B.5070602@us.ibm.com>
-	<45E83FCE.4040008@redhat.com>
-	<1172851980.9213.13.camel@dyn9047017100.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S2992627AbXCBRFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 12:05:38 -0500
+Message-ID: <45E8594B.6020904@austin.ibm.com>
+Date: Fri, 02 Mar 2007 11:05:15 -0600
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
+       arjan@infradead.org, mbligh@mbligh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Mar 2007 08:13:00 -0800 Badari Pulavarty <pbadari@us.ibm.com> wrote:
-
-> > 
-> > > What about 
-> > > if the
-> > > blocks already exists ? What would be return values in those cases ?
-> > 
-> > 0 on success, other normal errors oetherwise..
-> > 
-> > If asked for a range that includes already-allocated blocks, you just 
-> > allocate any non-allocated blocks in the range, I think.
+Linus Torvalds wrote:
 > 
-> Yes. What I was trying to figure out is, if there is a requirement that
-> interface need to return exact number of bytes it *really* allocated
-> (like write() or read()). I can't think of any, but just wanted to
-> through it out..
+> On Thu, 1 Mar 2007, Andrew Morton wrote:
+>> So some urgent questions are: how are we going to do mem hotunplug and
+>> per-container RSS?
 
-Hopefully not, because posix didn't anticipate that.
+The people who were trying to do memory hot-unplug basically all stopped waiting for 
+these patches, or something similar, to solve the fragmentation problem.  Our last 
+working set of patches built on top of an earlier version of Mel's list based solution.
 
-We could of course return a positive number on success, but it'd get
-tricky on 32-bit machines.
+> 
+> Also: how are we going to do this in virtualized environments? Usually the 
+> people who care abotu memory hotunplug are exactly the same people who 
+> also care (or claim to care, or _will_ care) about virtualization.
 
-> BTW, what is the interface for finding out what is the size of the
-> pre-allocated file ? 
+Yes, we are.  And we are very much in favor of these patches.  At last year's OLS 
+developers from IBM, HP, Xen coauthored a paper titled "Resizing Memory with Balloons 
+and Hotplug".  http://www.linuxsymposium.org/2006/linuxsymposium_procv2.pdf  Our 
+conclusion was that ballooning is simply not good enough and we need memory 
+hot-unplug.  Here is a quote from the article I find relevant to today's discussion:
 
-stat.st_blocks?
+"Memory Hotplug remove is not in mainline.
+Patches exist, released under the GPL, but are
+only occasionally rebased. To be worthwhile
+the existing patches would need either a remappable
+kernel, which remains highly doubtful, or
+a fragmentation avoidance strategy to keep migrateable
+and non-migrateable pages clumped
+together nicely."
+
+At IBM all of our Power4, Power5, and future hardware supports a lot of 
+virtualization features.  This hardware took "Best Virtualization Solution" at 
+LinuxWorld Expo, so we aren't talking research projects here. 
+http://www-03.ibm.com/press/us/en/pressrelease/20138.wss
+
+> My personal opinion is that while I'm not a huge fan of virtualization, 
+> these kinds of things really _can_ be handled more cleanly at that layer, 
+> and not in the kernel at all. Afaik, it's what IBM already does, and has 
+> been doing for a while. There's no shame in looking at what already works, 
+> especially if it's simpler.
+
+I believe you are talking about the zSeries (aka mainframe) because the rest of IBM 
+needs these patches.  zSeries built their whole processor instruction set, memory 
+model, etc around their form of virtualization, and I doubt the rest of us are going 
+to change our processor instruction set that drastically.  I've had a lot of talks 
+with Martin Schwidefsky (the maintainer of Linux on zSeries) about how we could do 
+more of what they do and the basic answer is we can't because what they do is so 
+fundamentally incompatible.
+
+While I appreciate that we should all dump our current hardware and buy mainframes it 
+seems to me that an easier solution is to take a few patches from Mel and work with 
+the hardware we already have.
+
