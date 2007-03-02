@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423065AbXCBNQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423064AbXCBNSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423065AbXCBNQI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 08:16:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423069AbXCBNQH
+	id S1423064AbXCBNSK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 08:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423067AbXCBNSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 08:16:07 -0500
-Received: from staple.laurelnetworks.com ([63.94.127.68]:50879 "EHLO
-	staple.laurelnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423065AbXCBNQG (ORCPT
+	Fri, 2 Mar 2007 08:18:10 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:46443 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423064AbXCBNSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 08:16:06 -0500
-X-Greylist: delayed 390 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Mar 2007 08:16:06 EST
-Message-ID: <45E8220D.9040905@laurelnetworks.com>
-Date: Fri, 02 Mar 2007 08:09:33 -0500
-From: Mike Accetta <maccetta@laurelnetworks.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Someone please turn on the http protocol on git.kernel.org!
-References: <7TYYU-5L8-11@gated-at.bofh.it> <7U2zx-392-13@gated-at.bofh.it>
-In-Reply-To: <7U2zx-392-13@gated-at.bofh.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 2 Mar 2007 08:18:07 -0500
+Subject: Re: [RFC] Heads up on sys_fallocate()
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Andreas Dilger <adilger@clusterfs.com>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       suparna@in.ibm.com, cmm@us.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com
+In-Reply-To: <20070302104532.GT6573@schatzie.adilger.int>
+References: <20070117094658.GA17390@amitarora.in.ibm.com>
+	 <20070225022326.137b4875.akpm@linux-foundation.org>
+	 <20070301183445.GA7911@amitarora.in.ibm.com> <45E72647.9000001@redhat.com>
+	 <20070302104532.GT6573@schatzie.adilger.int>
+Content-Type: text/plain
+Date: Fri, 02 Mar 2007 07:17:59 -0600
+Message-Id: <1172841479.7992.10.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Timur Tabi wrote:
->> I see we now have a dedicate machine for the git server.  That's 
->> great.  How about turning on the http protocol so that those of use 
->> behind a firewall can clone trees?
+On Fri, 2007-03-02 at 18:45 +0800, Andreas Dilger wrote:
+> On Mar 01, 2007  13:15 -0600, Eric Sandeen wrote:
+> > One thing I'd like to see is a cmd argument as well, to allow for 
+> > example allocation vs. reservation (i.e. allocating blocks vs. simply 
+> > reserving a number), as well as the inverse of those functions 
+> > (un-reservation, de-allocation)?
+> > 
+> > If the allocation interface allows allocation/reservation within 
+> > arbitrary ranges, if the only way to un-allocate is via a truncate, 
+> > that's pretty asymmetric.
 > 
->> I get this:
->>
->> $ git-clone http://git.kernel.org/pub/scm/git.git
->> Initialized empty Git repository in /temp/git/.git/
->> Cannot get remote repository information.
->> Perhaps git-update-server-info needs to be run there?
+> I'd rather we just get the oft-discussed punch() syscall instead.
+> This is really what "unallocate" would do for persistent allocations
+> and it would be useful for files that were not preallocated.
+
+I can see a difference though.  punch() would throw away written data as
+well as pre-allocated-but-never-written-to data.  I can see where a user
+might preallocate a large file and do a lot of random writes.  At some
+point, he decides the file isn't going to grow much more, so let's free
+up the remaining pre-allocated blocks.  This makes even more sense with
+reservation.
+
+The alternative would be to have punch() take a flag to specify if only
+preallocated or reserved blocks should be freed.
+
 > 
-> Don't use the git server for that, please.  Use 
-> http://www.kernel.org/pub/scm/... instead.
+> For filesystems that don't implement punch glibc() would do zero-filling
+> of the punched area I guess (to make it equivalent to reading from a
+> hole in the file).
 
-Another unfortunate stuck behind a firewall here.  When I try this it chugs
-along for a while seeming to work but eventually aborts:
+Or it could just fail.  Writing zeroes may be really slow and not give
+the caller any benefit.  (The intention was to free blocks back to the
+file system.)
 
-% git clone http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linus
-...
-walk 0964ce24d091a1d3dc7f667e1b107ab77d4325e6
-walk c264852726dde251a0c09ec22f61a9be8b0db68b
-walk 69903d6500c73af8329a5fba7153b0d50748981c
-walk b59a9504cb93db7fae31e60760725d48652a1fc3
-error: Couldn't get http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/refs/tags/v2.6.11 for tags/v2.6.11
-The requested URL returned error: 404
-error: Could not interpret tags/v2.6.11 as something to pull
+Shaggy
 -- 
-Mike Accetta
+David Kleikamp
+IBM Linux Technology Center
 
-ECI Telecom Ltd.
-Data Networking Division (previously Laurel Networks)
