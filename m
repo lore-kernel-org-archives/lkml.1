@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992698AbXCBSKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964790AbXCBSPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992698AbXCBSKk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 13:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965536AbXCBSKk
+	id S964790AbXCBSPj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 13:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964793AbXCBSPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 13:10:40 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:36574 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965480AbXCBSKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 13:10:39 -0500
-Date: Fri, 2 Mar 2007 10:02:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mgross@linux.intel.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Balbir Singh <balbir@in.ibm.com>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
-       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
+	Fri, 2 Mar 2007 13:15:39 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55182 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S964790AbXCBSPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 13:15:38 -0500
+Date: Fri, 2 Mar 2007 10:15:36 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Rik van Riel <riel@redhat.com>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Subject: Re: The performance and behaviour of the anti-fragmentation related
  patches
-Message-Id: <20070302100257.fd0d44a8.akpm@linux-foundation.org>
-In-Reply-To: <20070302173527.GA7280@linux.intel.com>
-References: <20070301101249.GA29351@skynet.ie>
-	<20070301160915.6da876c5.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
-	<45E7835A.8000908@in.ibm.com>
-	<Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
-	<20070301195943.8ceb221a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703012105080.3953@woody.linux-foundation.org>
-	<20070302162023.GA4691@linux.intel.com>
-	<20070302090753.b06ed267.akpm@linux-foundation.org>
-	<20070302173527.GA7280@linux.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070302100619.cec06d6a.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
+ <45E842F6.5010105@redhat.com> <20070302085838.bcf9099e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>
+ <20070302093501.34c6ef2a.akpm@linux-foundation.org> <45E8624E.2080001@redhat.com>
+ <20070302100619.cec06d6a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007 09:35:27 -0800
-Mark Gross <mgross@linux.intel.com> wrote:
+On Fri, 2 Mar 2007, Andrew Morton wrote:
 
-> > 
-> > Will it be possible to just power the DIMMs off?  I don't see much point in
-> > some half-power non-destructive mode.
+> > One particular case is a 32GB system with a database that takes most
+> > of memory.  The amount of actually freeable page cache memory is in
+> > the hundreds of MB.
 > 
-> I think so, but need to double check with the HW folks.
-> 
-> Technically, the dims could be powered off, and put into 2 different low
-> power non-destructive states.  (standby and suspend), but putting them
-> in a low power non-destructive mode has much less latency and provides
-> good bang for the buck or LOC change needed to make work.
-> 
-> Which lower power mode an application chooses will depend on latency
-> tolerances of the app.  For the POC activities we are looking at we are
-> targeting the lower latency option, but that doesn't lock out folks from
-> trying to do something with the other options.
-> 
+> Where's the rest of the memory? tmpfs?  mlocked?  hugetlb?
 
-If we don't evacuate all live data from all of the DIMM, we'll never be
-able to power the thing down in many situations.
+The memory is likely in use but there is enough memory free in unmapped 
+clean pagecache pages so that we occasionally are able to free pages. Then 
+the app is reading more from disk replenishing that ...
+Thus we are forever cycling through the LRU lists moving pages between 
+the lists aging etc etc. Can lead to a livelock.
 
-Given that we _have_ emptied the DIMM, we can just turn it off.  And
-refilling it will be slow - often just disk speed.
+> > A third scenario is where a system has way more RAM than swap, and not
+> > a whole lot of freeable page cache.  In this case, the VM ends up
+> > spending WAY too much CPU time scanning and shuffling around essentially
+> > unswappable anonymous memory and tmpfs files.
+> 
+> Well we've allegedly fixed that, but it isn't going anywhere without
+> testing.
 
-So I don't see a useful use-case for non-destructive states.
+We have fixed the case in which we compile the kernel without swap. Then 
+anonymous pages behave like mlocked pages. Did we do more than that?
+
