@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422809AbXCBDnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422806AbXCBDor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422809AbXCBDnG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 22:43:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422817AbXCBDnG
+	id S1422806AbXCBDor (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 22:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422818AbXCBDor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 22:43:06 -0500
-Received: from fgwnews.fujitsu.co.jp ([164.71.1.134]:60472 "EHLO
-	fgwnews.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422809AbXCBDnF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 22:43:05 -0500
-X-Greylist: delayed 4031 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 22:43:04 EST
-Date: Fri, 2 Mar 2007 11:34:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mel@skynet.ie, npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
-       jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
+	Thu, 1 Mar 2007 22:44:47 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:40015 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422806AbXCBDoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 22:44:46 -0500
+Date: Thu, 1 Mar 2007 19:44:27 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Balbir Singh <balbir@in.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
+       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Subject: Re: The performance and behaviour of the anti-fragmentation related
  patches
-Message-Id: <20070302113412.eeacb60d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070301160915.6da876c5.akpm@linux-foundation.org>
-References: <20070301101249.GA29351@skynet.ie>
-	<20070301160915.6da876c5.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <45E7835A.8000908@in.ibm.com>
+Message-ID: <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
+ <45E7835A.8000908@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007 16:09:15 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Thu, 1 Mar 2007 10:12:50 +0000
-> mel@skynet.ie (Mel Gorman) wrote:
+
+On Fri, 2 Mar 2007, Balbir Singh wrote:
+>
+> > My personal opinion is that while I'm not a huge fan of virtualization,
+> > these kinds of things really _can_ be handled more cleanly at that layer,
+> > and not in the kernel at all. Afaik, it's what IBM already does, and has
+> > been doing for a while. There's no shame in looking at what already works,
+> > especially if it's simpler.
 > 
-> > Any opinion on merging these patches into -mm
-> > for wider testing?
-> 
-> I'm a little reluctant to make changes to -mm's core mm unless those
-> changes are reasonably certain to be on track for mainline, so let's talk
-> about that.
-> 
-> What worries me is memory hot-unplug and per-container RSS limits.  We
-> don't know how we're going to do either of these yet, and it could well be
-> that the anti-frag work significantly complexicates whatever we end up
-> doing there.
-> 
-> For prioritisation purposes I'd judge that memory hot-unplug is of similar
-> value to the antifrag work (because memory hot-unplug permits DIMM
-> poweroff).
+> Could you please clarify as to what "that layer" means - is it the
+> firmware/hardware for virtualization? or does it refer to user space?
 
-About memory-hot-unplug, I'm now writing a new patch-set for memory-unplug for
-showing my overview and roadmap. I'm now debugging it. I think I will be able to
-post them as RFC in a week.
+Virtualization in general. We don't know what it is - in IBM machines it's 
+a hypervisor. With Xen and VMware, it's usually a hypervisor too. With 
+KVM, it's obviously a host Linux kernel/user-process combination.
 
-At least, ZONE_MOVABLE(or something partitioning memory) is necessary for
-memory-hot-unplug like DIMM-poweroff. (I'm now using my own ZONE_MOVABLE patch, but
-It is O.K. to migrate to Mel's one if it's ready to be merged.)
+The point being that in the guests, hotunplug is almost useless (for 
+bigger ranges), and we're much better off just telling the virtualization 
+hosts on a per-page level whether we care about a page or not, than to 
+worry about fragmentation.
 
+And in hosts, we usually don't care EITHER, since it's usually done in a 
+hypervisor.
 
-> Our basic unit of memory management is the zone.  Right now, a zone maps
-> onto some hardware-imposed thing.  But the zone-based MM works *well*.  I
-> suspect that a good way to solve both per-container RSS and mem hotunplug
-> is to split the zone concept away from its hardware limitations: create a
-> "software zone" and a "hardware zone".  All the existing page allocator and
-> reclaim code remains basically unchanged, and it operates on "software
-> zones".  Each software zones always lies within a single hardware zone. 
-> The software zones are resizeable.  For per-container RSS we give each
-> container one (or perhaps multiple) resizeable software zones.
-> 
-> For memory hotunplug, some of the hardware zone's software zones are marked
-> reclaimable and some are not; DIMMs which are wholly within reclaimable
-> zones can be depopulated and powered off or removed.
-> 
-Hmm...software-zone seems attractive.
-I remember someone posted pesuedo-zone(pzone) patch in past.
+> It would also be useful to have a resource controller like per-container
+> RSS control (container refers to a task grouping) within the kernel or
+> non-virtualized environments as well.
 
--Kame
+.. but this has again no impact on anti-fragmentation.
 
+In other words, I really don't see a huge upside. I see *lots* of 
+downsides, but upsides? Not so much. Almost everybody who wants unplug 
+wants virtualization, and right now none of the "big virtualization" 
+people would want to have kernel-level anti-fragmentation anyway sicne 
+they'd need to do it on their own.
+
+		Linus
