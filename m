@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbXCBIQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbXCBIVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932796AbXCBIQd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 03:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932859AbXCBIQd
+	id S932973AbXCBIVx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 03:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932965AbXCBIVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 03:16:33 -0500
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47072 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932796AbXCBIQc (ORCPT
+	Fri, 2 Mar 2007 03:21:53 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36464 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932910AbXCBIVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 03:16:32 -0500
-Subject: [PATCH] hard_smp_processor_id definition for UP systems without
-	APIC (i386)
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: vgoyal@in.ibm.com
-Cc: Benjamin LaHaise <bcrl@kvack.org>, ebiederm@xmission.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fastboot@lists.osdl.org, ak@suse.de, akpm@linux-foundation.org,
-       judith@linux-foundation.org
-In-Reply-To: <1172822794.6025.11.camel@sebastian.intellilink.co.jp>
-References: <1172733373.1498.264.camel@sebastian.intellilink.co.jp>
-	 <20070301140648.GX26583@kvack.org>  <20070302041455.GA15386@in.ibm.com>
-	 <1172822794.6025.11.camel@sebastian.intellilink.co.jp>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Fri, 02 Mar 2007 17:16:56 +0900
-Message-Id: <1172823416.6025.16.camel@sebastian.intellilink.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 03:21:53 -0500
+Date: Fri, 2 Mar 2007 00:21:49 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
+       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+In-Reply-To: <20070302081210.GD5557@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0703020015080.14651@schroedinger.engr.sgi.com>
+References: <20070302050625.GD15867@wotan.suse.de>
+ <Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com>
+ <20070302054944.GE15867@wotan.suse.de> <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>
+ <20070302060831.GF15867@wotan.suse.de> <Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com>
+ <20070302062950.GG15867@wotan.suse.de> <Pine.LNX.4.64.0703012236160.1979@schroedinger.engr.sgi.com>
+ <20070302071955.GA5557@wotan.suse.de> <Pine.LNX.4.64.0703012335250.13224@schroedinger.engr.sgi.com>
+ <20070302081210.GD5557@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide hard_smp_processor_id definition also for non apic case.
+On Fri, 2 Mar 2007, Nick Piggin wrote:
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+> > If there are billions of pages in the system and we are allocating and 
+> > deallocating then pages need to be aged. If there are just few pages 
+> > freeable then we run into issues.
+> 
+> page writeout and vmscan don't work too badly. What are the issues?
 
-diff -urNp linux-2.6.21-rc2-orig/include/asm-i386/smp.h linux-2.6.21-rc2/include/asm-i386/smp.h
---- linux-2.6.21-rc2-orig/include/asm-i386/smp.h	2007-03-02 16:47:37.000000000 +0900
-+++ linux-2.6.21-rc2/include/asm-i386/smp.h	2007-03-02 16:59:42.000000000 +0900
-@@ -93,6 +93,7 @@ extern unsigned int num_processors;
- #ifndef __ASSEMBLY__
- 
- #ifdef CONFIG_X86_LOCAL_APIC
-+
- #ifdef APIC_DEFINITION
- extern int hard_smp_processor_id(void);
- #else
-@@ -103,6 +104,13 @@ static inline int hard_smp_processor_id(
- 	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
- }
- #endif /* APIC_DEFINITION */
-+
-+#else /* CONFIG_X86_LOCAL_APIC */
-+
-+#ifndef CONFIG_SMP
-+#define hard_smp_processor_id()		0
-+#endif
-+
- #endif /* CONFIG_X86_LOCAL_APIC */
- 
- extern u8 apicid_2_node[];
+Slow downs up to livelocks with large memory configurations.
 
+> So what problems that you commonly see now? Some of us here don't
+> have 4TB of memory, so you actually have to tell us ;)
+
+Oh just run a 32GB SMP system with sparsely freeable pages and lots of 
+allocs and frees and you will see it too. F.e try Linus tree and mlock 
+a large portion of the memory and then see the fun starting. See also 
+Rik's list of pathological cases on this.
+
+> How did you come up with that 2MB number?
+
+Huge page size. The only basic choice on x86_64
+
+> Anyway, we have hugetlbfs for things like that.
+
+Good to know that direct io works.
+
+> > I am not the first one.... See Rik's posts regarding the reasons for his 
+> > new page replacement algorithms.
+> 
+> Different issue, isn't it? Rik wants to be smarter in figuring out which
+> pages to throw away. More work per page == worse for you.
+
+Rik is trying to solve the same issue in a different way. He is trying to 
+manage gazillion entries better instead of reducing the entries to be 
+managed. That can only work in a limited way. Drastic reductions in the 
+entries to be manages have good effects in multiple ways. Reduce 
+management overhead, improve I/O throughput, etc etc.
 
