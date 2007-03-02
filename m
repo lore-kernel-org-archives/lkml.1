@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992483AbXCBOY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992480AbXCBOZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992483AbXCBOY5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 09:24:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992485AbXCBOY5
+	id S2992480AbXCBOZx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 09:25:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992484AbXCBOZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 09:24:57 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48872 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992482AbXCBOYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 09:24:55 -0500
-Date: Fri, 2 Mar 2007 15:24:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-ID: <20070302142441.GL2156@elf.ucw.cz>
-References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <20070218183805.5a4fd813.khali@linux-fr.org> <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302150313.198b6053.khali@linux-fr.org>
+	Fri, 2 Mar 2007 09:25:52 -0500
+Received: from mail.tpi.com ([198.107.51.143]:1804 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992480AbXCBOZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 09:25:51 -0500
+Message-ID: <45E833ED.2070402@tpi.com>
+Date: Fri, 02 Mar 2007 07:25:49 -0700
+From: Tim Gardner <timg@tpi.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302150313.198b6053.khali@linux-fr.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Pavel Machek <pavel@ucw.cz>
+CC: nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
+       Ben Collins <ben.collins@ubuntu.com>
+Subject: Re: Resume from S2R fails after dpm_resume()
+References: <45E5E799.1000502@tpi.com> <20070302141259.GJ2156@elf.ucw.cz>
+In-Reply-To: <20070302141259.GJ2156@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Ok. You are right that ACPI is an ugly piece of mess. But I'm pretty
-> > sure that 90%+ of ACPI notebook implementations *will* want to talk to
-> > their monitoring chips... for temperature readings.
-> >
-> > So even if we fixed ACPI to reserve the ports, you'd be still unhappy;
-> > lm-sensors would break at least on all the notebooks.
+Pavel Machek wrote:
+> Hi!
 > 
-> That's a secondary problem. The primary issue is the concurrent access
-> to resources, which cause lots of trouble which are hard to investigate.
-> If ACPI reserves the ports, then the SMBus or hardware monitoring
-> drivers (or any other conflicting driver) will cleanly fail to load,
-> which would be a move in the right direction. Ideally we would be able
-> to synchronize the accesses between ACPI and the other drivers, but if
-> we can't, I'd already be _very happy_ to just prevent conflicting
-> drivers from being loaded at the same time.
+>> I instrumented 2.6.21-rc1 base/power/resume.c device_resume() with
+>> TRACE_RESUME(0) as the last statement in the function. Sure enough it
+>> was the last hash value in the RTC after a hard reboot when resume failed:
+>>
+>> [   12.028820]   hash matches drivers/base/power/resume.c:104
+>>
+>> The machine appears to be absolutely wedged after initiating resume by
+>> pressing the power button. The disk flashes for a half second or so,
+>> then thats it.
+>>
+>> It is a Dell XPS, BIOS rev A04. I'm using 'echo 1 > /sys/power/pm_trace;
+>> echo mem > /sys/power/state' to initiate the S2R sequence.
+>>
+>> Any suggestions on where to go from here?
 > 
-> So, can ACPI actually reserve the ports it accesses?
+> Did it work ok in 2.6.20? Can you try to get video working/get serial
+> console/something?
+> 									Pavel
 
-No idea, talk to Len Brown (or start reading the code) :-(. I don't
-think it will be easy.
+Pavel,
 
-> > > 1* As far as I know, we currently have no way to know if the ACPI code
-> > > plans to ever access the hardware monitoring chip. If the acpi
-> > > subsystem could export this information somehow, it would help a lot.
-> > > But I'm not familiar with ACPI, so I don't know if this is feasable or
-> > > not. We just can't prevent the SMBus and hardware monitoring drivers
-> > > drivers from being loaded as soon as ACPI is enabled. This would
-> > > prevent a majority of users from using them, while they work fine for
-> > > most of them.
-> > 
-> > What about whitelist? DMI-based? That's only way to do it, I'm afraid.
-> 
-> What kind of whitelist do you have in mind? We can't realistically
-> maintain an ever-growing whitelist of hundreds of entries in the
-> kernel. We could block all laptops by default and maintain a white list
-> only for them, and a black list for other systems, the would probably
-> limit the maintenance work, maybe not to an acceptable level though.
+The last version that worked well was Ubuntu Edgy (2.6.17). It was
+broken by 2.6.18. I have not started the 'git bisect' process, instead
+I've been trying to figure out why it doesn't work in 2.6.21-rc2. Using
+the TRACE_RESUME macro I've drilled down to
+kernel/printk.c:__call_console_drivers. So far the last trace info that
+I have is just before the call to con->write(). I'm trying to figure out
+what driver has registered as the console (intel_agp or agpgart?).
 
-I'm afraid something like that is way to go.
+Am I banging my head on a known problem?
 
-									Pavel
+rtg
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Tim Gardner timg@tpi.com www.tpi.com
+OR 503-601-0234 x102 MT 406-443-5357
