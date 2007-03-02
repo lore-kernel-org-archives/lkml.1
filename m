@@ -1,65 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933094AbXCBIa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422650AbXCBIdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933094AbXCBIa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 03:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXCBIa6
+	id S1422650AbXCBIdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 03:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422657AbXCBIdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 03:30:58 -0500
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47083 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933094AbXCBIa5 (ORCPT
+	Fri, 2 Mar 2007 03:33:45 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:32286 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422650AbXCBIdp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 03:30:57 -0500
-Subject: Re: [PATCH 5/5] Move definition of hard_smp_processor_id to
-	asm/smp.h - alpha, m32r, powerpc, s390, sparc, sparc64, um
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fastboot@lists.osdl.org, ebiederm@xmission.com, ak@suse.de,
-       akpm@linux-foundation.org, judith@linux-foundation.org
-In-Reply-To: <20070301090348.GA8405@osiris.boeblingen.de.ibm.com>
-References: <1172733503.1498.275.camel@sebastian.intellilink.co.jp>
-	 <20070301090348.GA8405@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Organization: NTT Open Source Software Center
-Date: Fri, 02 Mar 2007 17:31:21 +0900
-Message-Id: <1172824281.6646.3.camel@sebastian.intellilink.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Fri, 2 Mar 2007 03:33:45 -0500
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH 2.6.21-rc2] ehca: fix mismatched sync between completion handler and destroy cq
+Date: Fri, 2 Mar 2007 09:37:46 +0100
+User-Agent: KMail/1.8.2
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       general@lists.openfabrics.org, hch@infradead.org, raisch@de.ibm.com,
+       heiko.carstens@de.ibm.com
+References: <200702281801.02747.hnguyen@linux.vnet.ibm.com> <ada8xegr7zu.fsf@cisco.com>
+In-Reply-To: <ada8xegr7zu.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703020937.47012.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-01 at 10:03 +0100, Heiko Carstens wrote:
-> On Thu, Mar 01, 2007 at 04:18:23PM +0900, Fernando Luis Vázquez Cao wrote:
-> > Move definition of hard_smp_processor_id to asm/smp.h on alpha, m32r,
-> > powerpc, s390, sparc, sparc64, and um architectures.
-> > 
-> > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> > ---
-> > 
-> > diff -urNp linux-2.6.21-rc2/include/asm-alpha/smp.h linux-2.6.21-rc2-hwcpuid/include/asm-alpha/smp.h
-> > --- linux-2.6.21-rc2/include/asm-alpha/smp.h	2007-02-05 03:44:54.000000000 +0900
-> > +++ linux-2.6.21-rc2-hwcpuid/include/asm-alpha/smp.h	2007-03-07 13:34:14.000000000 +0900
-> > @@ -51,6 +51,7 @@ int smp_call_function_on_cpu(void (*func
-> > 
-> >  #else /* CONFIG_SMP */
-> > 
-> > +#define hard_smp_processor_id()		0
-> >  #define smp_call_function_on_cpu(func,info,retry,wait,cpu)    ({ 0; })
-> > 
-> >  #endif /* CONFIG_SMP */
-> 
-> /me thinks you should merge this patch with patch 1. Otherwise there is no
-> hard_smp_processor_id() defined on any architecture if only patch 1 is
-> applied. That would break a git bisect search.
-Hi Heiko,
-
-Thank you for reviewing the patch-set. The patches have already been
-merged in Andrew's tree but I will take your advice into account when
-submitting new patches. I certainly would not like to break bisect
-searches.
-
-Fernando
+>  > +#include <linux/completion.h>
+> This can just be <linux/wait.h>, because you're only using
+> wait_queue_head_t and not struct completion, right?
+> I fixed this up before merging.
+Yes, right. Thanks for your help!
+Regards
+Nam 
 
