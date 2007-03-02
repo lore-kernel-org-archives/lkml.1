@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030185AbXCBVoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030307AbXCBVqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030185AbXCBVoT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030189AbXCBVoT
+	id S1030307AbXCBVqR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:46:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933374AbXCBVqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:44:19 -0500
-Received: from smtp-105-friday.nerim.net ([62.4.16.105]:3207 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030185AbXCBVoR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:44:17 -0500
-Date: Fri, 2 Mar 2007 22:41:55 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070302224155.143b8643.khali@linux-fr.org>
-In-Reply-To: <20070302145709.GA3710@srcf.ucam.org>
-References: <45D5EA88.7090300@redhat.com>
-	<45D6DDCE.5050803@assembler.cz>
-	<45D7461A.2040808@redhat.com>
-	<20070218183805.5a4fd813.khali@linux-fr.org>
-	<20070228213803.GA4877@ucw.cz>
-	<20070301152655.f232db64.khali@linux-fr.org>
-	<20070302114023.GD2163@elf.ucw.cz>
-	<20070302150313.198b6053.khali@linux-fr.org>
-	<20070302145709.GA3710@srcf.ucam.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+	Fri, 2 Mar 2007 16:46:17 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:35689 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933368AbXCBVqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 16:46:16 -0500
+Date: Fri, 2 Mar 2007 13:46:08 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>,
+       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Aneesh Kumar <aneesh.kumar@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread
+Message-ID: <20070302214608.GD2373@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200702260800.49603.rjw@sisk.pl> <200703011605.46692.rjw@sisk.pl> <200703011609.43804.rjw@sisk.pl> <20070302065729.GA22085@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070302065729.GA22085@in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthew,
+On Fri, Mar 02, 2007 at 12:27:30PM +0530, Gautham R Shenoy wrote:
+> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > 
+> > Remove PF_NOFREEZE from the rcutorture thread, adding a try_to_freeze() call as
+> > required.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > Acked-by: Pavel Machek <pavel@ucw.cz>
+> > ---
+> >  kernel/rcutorture.c |    3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6.20-mm2/kernel/rcutorture.c
+> > ===================================================================
+> > --- linux-2.6.20-mm2.orig/kernel/rcutorture.c	2007-02-25 12:07:15.000000000 +0100
+> > +++ linux-2.6.20-mm2/kernel/rcutorture.c	2007-02-25 12:49:23.000000000 +0100
+> > @@ -46,6 +46,7 @@
+> >  #include <linux/byteorder/swabb.h>
+> >  #include <linux/stat.h>
+> >  #include <linux/srcu.h>
+> > +#include <linux/freezer.h>
+> > 
+> >  MODULE_LICENSE("GPL");
+> >  MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
+> > @@ -585,7 +586,6 @@ rcu_torture_writer(void *arg)
+> > 
+> >  	VERBOSE_PRINTK_STRING("rcu_torture_writer task started");
+> >  	set_user_nice(current, 19);
+> > -	current->flags |= PF_NOFREEZE;
+> > 
+> >  	do {
+> >  		schedule_timeout_uninterruptible(1);
+> > @@ -607,6 +607,7 @@ rcu_torture_writer(void *arg)
+> >  		}
+> >  		rcu_torture_current_version++;
+> >  		oldbatch = cur_ops->completed();
+> > +		try_to_freeze();
+> >  	} while (!kthread_should_stop() && !fullstop);
+> >  	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
+> >  	while (!kthread_should_stop())
+> 
+> Paul, 
+> Any reasons for not try_to_freeze()'ing the fakewriter and the reader
+> threads?? (Ok, I admit, I haven't looked into the code for the reason
+> which might be obvious.)
 
-On Fri, 2 Mar 2007 14:57:09 +0000, Matthew Garrett wrote:
-> How about this? It's informational only, but ought to result in 
-> complaints whenever ACPI tries to touch something that other hardware 
-> has reserved. We can't fail these accesses, but in theory we could 
-> consider some sort of locking layer that made it possible to interact 
-> anyway. I haven't even checked if this builds, but I think the concept 
-> is reasonable.
+None that I know of -- though I do like Anton's idea of burying a
+try_to_freeze() in kthread_should_stop(), which would get rid of all
+try_to_freeze() calls in rcutorture, and many other places as well.
 
-I like the patch, after adding some casts to the printf args it
-compiles fine. However you print warnings each time a resource has been
-reserved... without checking if it hasn't been reserved by ACPI itself!
-My machine looks like this:
-
-1000-107f : 0000:00:1f.0
-  1000-1003 : ACPI PM1a_EVT_BLK
-  1004-1005 : ACPI PM1a_CNT_BLK
-  1008-100b : ACPI PM_TMR
-  1010-1015 : ACPI CPU throttle
-  1020-1020 : ACPI PM2_CNT_BLK
-  1028-102b : ACPI GPE0_BLK
-  102c-102f : ACPI GPE1_BLK
-
-Given that these ports were reserved by ACPI it is perfectly legitimate
-that ACPI accesses it, so we must not print a warning in this case. We
-need to exclude from the test the regions those "name" starts with
-"ACPI", but I'm not sure how we can do that.
-
-Thanks,
--- 
-Jean Delvare
+						Thanx, Paul
