@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965042AbXCBR7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965445AbXCBSED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965042AbXCBR7e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965445AbXCBR7e
+	id S965445AbXCBSED (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 13:04:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965468AbXCBSED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:59:34 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:34698 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965042AbXCBR7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:59:33 -0500
-Date: Fri, 2 Mar 2007 17:59:30 +0000 (GMT)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: Christoph Lameter <clameter@engr.sgi.com>
-Cc: Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       npiggin@suse.de, mingo@elte.hu, Joel Schopp <jschopp@austin.ibm.com>,
-       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
-       kamezawa.hiroyu@jp.fujitsu.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-In-Reply-To: <Pine.LNX.4.64.0703020942550.17017@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0703021750490.16858@skynet.skynet.ie>
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
- <20070302163206.GA1555@skynet.ie> <Pine.LNX.4.64.0703020916330.16719@schroedinger.engr.sgi.com>
- <20070302172818.GA15730@skynet.ie> <Pine.LNX.4.64.0703020942550.17017@schroedinger.engr.sgi.com>
+	Fri, 2 Mar 2007 13:04:03 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:46918 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965445AbXCBSEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 13:04:01 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: [PATCH (update 3)] timer: Run calc_load halfway through each round_jiffies second
+Date: Fri, 2 Mar 2007 19:03:56 +0100
+User-Agent: KMail/1.9.5
+Cc: akpm@linux-foundation.org, Bill Irwin <bill.irwin@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       arjan@linux.intel.com
+References: <45E0577C.9020409@simon.arlott.org.uk> <200703021735.55142.dada1@cosmosbay.com> <45E85FC3.801@simon.arlott.org.uk>
+In-Reply-To: <45E85FC3.801@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703021903.56720.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Christoph Lameter wrote:
+On Friday 02 March 2007 18:32, Simon Arlott wrote:
+> On 02/03/07 16:35, Eric Dumazet wrote:
 
-> On Fri, 2 Mar 2007, Mel Gorman wrote:
+> > You could just change LOAD_FREQ from (5*HZ) to (5*HZ+1)
+> > You can see that 5.01 instead of 5.00 second gives the same EXP_xx
+> > values.
+> >
+> > So (5*HZ + 1) is safe. (because HZ >= 100)
 >
->>> I still think that the list based approach is sufficient for memory
->>> hotplug if one restricts  the location of the unmovable MAX_ORDER chunks
->>> to not overlap the memory area where we would like to be able to remove
->>> memory.
->>
->> Yes, true. In the part where I bias placements of unmovable pages at
->> lower PFNs, additional steps would need to be taken. Specifically, the
->> lowest block MAX_ORDER_NR_PAGES used for movable pages would need to be
->> reclaimed for unmovable allocations.
->
-> I think sparsemem can provide some memory maps that show where there are
-> section of memory that are hot pluggable. So the MAX_ORDER blocks need
-> to be categorized as to whether they are in such a section or not.
+> On HZ=1000, this would cause the load average to be pushed towards +1.00
+> for up to 2 minutes every ~83 minutes with no obvious cause. (If a task
+> takes ~10-20ms to run, so 20 runs are needed at HZ=1000 before it passes
+> it again).
 
-That makes the problem slightly easier. If sparsemem sections are aware of 
-whether they are hotpluggable or not, __rmqueue_fallback() (from the 
-list-based anti-frag patches) can be taught to never use those sections 
-for unmovable allocations.
+Nope, you dont quite understand how load (avenrun[]) is computed.
 
-> If you
-> need another MAX_ORDER block for an unmovable type of allocation then make
-> sure that it is not marked as hotpluggable by sparsemem. If we are in an
-> emergency situation were we must use a MAX_ORDER block that is currently
-> hotpluggable for unmovable allocations then we need to trigger something
-> in sparsmem that disabled hotplug for that memory section.
->
+Every 5 seconds, three values are adjusted, based on their previous value and 
+the actual value. Lets focus on the first value (mean load average on one 
+minute)
 
-Which should be doable.
+exp = 1.0 / exp(5.0/60.0);
+avenrun[0] = (avenrun[0] * exp) + (active * (1.0 - exp));
 
->> It's simply more complex. I believe it's doable. The main plus going for
->> the zone is that it is a clearly understood concept and it gives hard
->> guarantees.
->
-> And it gives the sysadmin headaches and increases management VM management
-> overhead because we now have more bits in the page struct that tell us
-> about the zone that the page belongs to. Another distinction to worry
-> about in the VM. If the limit is set too high then we have memory that is
-> actually movable but since its on the wrong side of the limit we cannot
-> use it. If the limit is set too low then the systewm will crash.
->
+If previous value is 0.0, and current active count 1, then next value for 
+avenrun[0] will be : 0.0799556
 
-I'm aware of this. It believe it could all be done in the context of 
-list-based - just that it requires more code. Zones are easier to 
-understand for most people and their behavior is better understood. If a 
-workload is discovered that list-based doesn't handle, the zone can be 
-used until the problem is solved.
+Not exactly 1.0 as you think !
 
-This is why the anti-fragmentation and zone-based approaches are no longer 
-mutually exclusive as they were in earlier versions.
+Then in the next intervals (if active count is 0), it will decrease 'slowly' : 
+0.0735627
+0.0676809
+0.0622695
+0.0572907
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+In average, your load factor close to reality.
+
+Just try my suggestion, it should work. I even proved it in my previous 
+mail :)
+
+Eric
