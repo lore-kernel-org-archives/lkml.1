@@ -1,134 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423001AbXCBKOC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbXCBKPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423001AbXCBKOC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 05:14:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423002AbXCBKOB
+	id S933305AbXCBKPX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 05:15:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933299AbXCBKPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 05:14:01 -0500
-Received: from ozlabs.org ([203.10.76.45]:55582 "EHLO ozlabs.org"
+	Fri, 2 Mar 2007 05:15:23 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:41511 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423001AbXCBKOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 05:14:00 -0500
-Subject: Re: [Cbe-oss-dev] [PATCH 14/22] spufs: use SPU master control to
-	prevent wild	SPU execution
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <200703011450.50935.arnd@arndb.de>
-References: <20061120174454.067872000@arndb.de>
-	 <20061120180525.281408000@arndb.de>
-	 <1172729890.5852.40.camel@concordia.ozlabs.ibm.com>
-	 <200703011450.50935.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-55G8gmVN1fLU+I4MzSsa"
-Date: Fri, 02 Mar 2007 19:13:57 +0900
-Message-Id: <1172830438.16533.6.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	id S1423004AbXCBKPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 05:15:21 -0500
+Message-ID: <45E7F92E.7090407@simon.arlott.org.uk>
+Date: Fri, 02 Mar 2007 10:15:10 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+MIME-Version: 1.0
+To: akpm@linux-foundation.org
+CC: Bill Irwin <bill.irwin@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       arjan@linux.intel.com
+Subject: Re: [PATCH (update 2)] timer: Run calc_load halfway through each
+ round_jiffies second
+References: <45E0577C.9020409@simon.arlott.org.uk> <45E698DF.4010006@simon.arlott.org.uk> <45E720E8.1010809@simon.arlott.org.uk> <45E75911.3070907@simon.arlott.org.uk> <20070301231003.GD10643@holomorphy.com>
+In-Reply-To: <20070301231003.GD10643@holomorphy.com>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Whenever jiffies is started at a multiple of 5*HZ or wraps, calc_load is 
+run exactly on the second which is when tasks using round_jiffies will 
+be scheduled to run. This has a bad effect on the load average, making 
+it tend towards 1.00 if a task happens to run every time the load is 
+being calculated.
 
---=-55G8gmVN1fLU+I4MzSsa
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This changes calc_load so that it updates load half a second after any 
+tasks scheduled using round_jiffies.
 
-On Thu, 2007-03-01 at 14:50 +0100, Arnd Bergmann wrote:=20
-> On Thursday 01 March 2007, Michael Ellerman wrote:
-> > On Mon, 2006-11-20 at 18:45 +0100, Arnd Bergmann wrote:
-> > > plain text document attachment (spufs-master-control.diff)
-> > > When the user changes the runcontrol register, an SPU might be
-> > > running without a process being attached to it and waiting for
-> > > events. In order to prevent this, make sure we always disable
-> > > the priv1 master control when we're not inside of spu_run.
-> >=20
-> > Hi Arnd,
-> >=20
-> > Sorry I didn't comment on this when you sent it, I wasn't paying enough
-> > attention. This patch confuses me, you say we should make sure we alway=
-s
-> > disable the master control when we're not inside spu_run, but I see
-> > several exit paths where we leave the master run bit enabled - or maybe
-> > I'm reading it wrong.
->=20
-> I think you're right, there is at least one path that I now saw
-> getting out of spufs_run_spu incorrectly. In particular, when
-> spu_reacquire_runnable() fails, we never call the master stop,
-> which is a bug, but should happen very infrequently in practice.
-> Do you see another case where we end up with the same problem?
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+---
+This version starts count off at 0, since LOAD_FREQ + HZ/2 is no better 
+than LOAD_FREQ, and avoids rounding it to a negative value.
 
-That was the first one that caught my eye, but I wasn't sure about the
-semantics of the error case.
+ kernel/timer.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-There's also the error case for spu_run_init() which skips the master
-stop. I guess that's ok because we've only set the master control in the
-backing store, and the only way that will ever get propagated to an
-actual spu is by coming back thorough spufs_run_spu().
+diff --git a/kernel/timer.c b/kernel/timer.c
+index cb1b86a..11ccfed 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -1225,17 +1225,19 @@ EXPORT_SYMBOL(avenrun);
+ static inline void calc_load(unsigned long ticks)
+ {
+ 	unsigned long active_tasks; /* fixed-point */
+-	static int count = LOAD_FREQ;
++	static int count = 0;
+ 
+ 	count -= ticks;
+-	if (unlikely(count < 0)) {
++	if (unlikely(count <= 0)) {
+ 		active_tasks = count_active_tasks();
+ 		do {
+ 			CALC_LOAD(avenrun[0], EXP_1, active_tasks);
+ 			CALC_LOAD(avenrun[1], EXP_5, active_tasks);
+ 			CALC_LOAD(avenrun[2], EXP_15, active_tasks);
+ 			count += LOAD_FREQ;
+-		} while (count < 0);
++		} while (count < HZ/2);
++
++		count = round_jiffies_relative(count + HZ/2) - HZ/2;
+ 	}
+ }
+ 
+-- 
+1.5.0.1
 
-What originally caught my eye on this was the output from xmon. When we
-drop into xmon with no spu programs running and stop the spus, it
-reports that they _all_ have the master run enabled, and some of them
-have the runcntl enabled (those that have had spu programs run on them
-since boot it seems).
-
-It looks like the save/restore code sets the master bit in several
-places, but never sets/clears the runcntl, which seems bogus to me.
-
-So when we leave spufs_spu_run we do the master stop call:
-
-spu_mfc_sr1_set: spu: c00000007ffdfc80 (15) sr1: 0x1b runcntl: 0x1
-Call Trace:
-[C00000000196BAA0] [C00000000000F920] .show_stack+0x68/0x1b0 (unreliable)
-[C00000000196BB40] [D0000000001475C0] .spu_hw_master_stop+0xa8/0x170 [spufs=
-]
-[C00000000196BBE0] [D000000000148598] .spufs_run_spu+0x5ec/0x770 [spufs]
-[C00000000196BCC0] [D000000000144BA0] .do_spu_run+0xb4/0x180 [spufs]
-[C00000000196BD80] [C00000000003905C] .sys_spu_run+0xb0/0x108
-[C00000000196BE30] [C000000000008634] syscall_exit+0x0/0x40
-
-
-But then the save/restore code sets it back on?
-
-spu_mfc_sr1_set: spu: c00000007ffdfc80 (15) sr1: 0x32 runcntl: 0x1
-Call Trace:
-[C00000000FF9B790] [C00000000000F920] .show_stack+0x68/0x1b0 (unreliable)
-[C00000000FF9B830] [C00000000003B310] .spu_save+0x9b0/0x156c
-[C00000000FF9B950] [D0000000001457FC] .spu_unbind_context+0x124/0x1a4 [spuf=
-s]
-[C00000000FF9B9F0] [D0000000001458B0] .spu_deactivate+0x34/0x138 [spufs]
-[C00000000FF9BA80] [D00000000014448C] .spu_acquire_saved+0x34/0x4c [spufs]
-[C00000000FF9BB10] [D00000000014493C] .spu_forget+0x18/0x4c [spufs]
-[C00000000FF9BBA0] [D00000000014030C] .spufs_dir_close+0x78/0xb4 [spufs]
-[C00000000FF9BC50] [C0000000000B8594] .__fput+0x110/0x200
-[C00000000FF9BD00] [C0000000000B4F38] .filp_close+0xac/0xd4
-[C00000000FF9BD90] [C0000000000B68BC] .sys_close+0xc4/0x130
-[C00000000FF9BE30] [C000000000008634] syscall_exit+0x0/0x40
-
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-55G8gmVN1fLU+I4MzSsa
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBF5/jldSjSd0sB4dIRAslrAJ9jIKuU9H0IqTybcPgszgpiPDqKQQCgmrtN
-2b+aAW95kQnvq2FYk842f8E=
-=E1sj
------END PGP SIGNATURE-----
-
---=-55G8gmVN1fLU+I4MzSsa--
-
+-- 
+Simon Arlott
