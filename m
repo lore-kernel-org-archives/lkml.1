@@ -1,47 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030622AbXCBWUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030628AbXCBWYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030622AbXCBWUi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 17:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030628AbXCBWUi
+	id S1030628AbXCBWYF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 17:24:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030584AbXCBWYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 17:20:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41013 "EHLO mx1.redhat.com"
+	Fri, 2 Mar 2007 17:24:05 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:44029 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030622AbXCBWUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 17:20:37 -0500
-Message-ID: <45E8A300.9020001@redhat.com>
-Date: Fri, 02 Mar 2007 17:19:44 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: John Reiser <jreiser@BitWagon.com>
-CC: Oleg Nesterov <oleg@tv-sign.ru>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
-References: <20070301175207.GA849@tv-sign.ru> <45E891E6.7090807@BitWagon.com>
-In-Reply-To: <45E891E6.7090807@BitWagon.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1030628AbXCBWYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 17:24:03 -0500
+Date: Fri, 2 Mar 2007 14:22:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Bill Irwin <bill.irwin@oracle.com>,
+       Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+Message-Id: <20070302142256.0127f5ac.akpm@linux-foundation.org>
+In-Reply-To: <45E89F1E.8020803@redhat.com>
+References: <20070301101249.GA29351@skynet.ie>
+	<20070301160915.6da876c5.akpm@linux-foundation.org>
+	<45E842F6.5010105@redhat.com>
+	<20070302085838.bcf9099e.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>
+	<20070302093501.34c6ef2a.akpm@linux-foundation.org>
+	<45E8624E.2080001@redhat.com>
+	<20070302100619.cec06d6a.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com>
+	<45E86BA0.50508@redhat.com>
+	<20070302211207.GJ10643@holomorphy.com>
+	<45E894D7.2040309@redhat.com>
+	<20070302135243.ada51084.akpm@linux-foundation.org>
+	<45E89F1E.8020803@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Reiser wrote:
-> The value of ->sysenter_return is interpreted in user space by the
-> sysexit instruction; nobody else cares what the value is.  The kernel
-> is not required to provide a good value when vdso_enabled is zero,
-> because the kernel has not told the process that sysenter is valid
-> (by setting AT_SYSINFO.)
+On Fri, 02 Mar 2007 17:03:10 -0500
+Rik van Riel <riel@redhat.com> wrote:
 
-Doesn't matter because a malicious user can still execute sysenter.
-We do have to deal with that somehow, so we have to put something
-safe in there.
-
-> Correct.  Changing vdso_enabled from 0 to non-zero must be prepared
-> to lose this race if it is not prevented.  Ordinarily it won't matter
-> because the administrator will perform such changes at a "quiet" time.
+> Andrew Morton wrote:
+> > On Fri, 02 Mar 2007 16:19:19 -0500
+> > Rik van Riel <riel@redhat.com> wrote:
+> >> Bill Irwin wrote:
+> >>> On Fri, Mar 02, 2007 at 01:23:28PM -0500, Rik van Riel wrote:
+> >>>> With 32 CPUs diving into the page reclaim simultaneously,
+> >>>> each trying to scan a fraction of memory, this is disastrous
+> >>>> for performance.  A 256GB system should be even worse.
+> >>> Thundering herds of a sort pounding the LRU locks from direct reclaim
+> >>> have set off the NMI oopser for users here.
+> >> Ditto here.
+> > 
+> > Opterons?
 > 
+> It's happened on IA64, too.  Probably on Intel x86-64 as well.
 
-We have to deal with all the possibilities here, too.
+Opterons seem to be particularly prone to lock starvation where a cacheline
+gets captured in a single package for ever.
+
+> >> The main reason they end up pounding the LRU locks is the
+> >> swappiness heuristic.  They scan too much before deciding
+> >> that it would be a good idea to actually swap something
+> >> out, and with 32 CPUs doing such scanning simultaneously...
+> > 
+> > What kernel version?
+> 
+> Customers are on the 2.6.9 based RHEL4 kernel, but I believe
+> we have reproduced the problem on 2.6.18 too during stress
+> tests.
+
+The prev_priority fixes were post-2.6.18
+
+> I have no reason to believe we should stick our heads in the
+> sand and pretend it no longer exists on 2.6.21.
+
+I have no reason to believe anything.  All I see is handwaviness,
+speculation and grand plans to rewrite vast amounts of stuff without even a
+testcase to demonstrate that said rewrite improved anything.
+
+None of this is going anywhere, is it?
