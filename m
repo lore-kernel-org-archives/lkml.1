@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965618AbXCBVCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965620AbXCBVCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965618AbXCBVCK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:02:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965620AbXCBVCK
+	id S965620AbXCBVCi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965621AbXCBVCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:02:10 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:44358 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965618AbXCBVCJ (ORCPT
+	Fri, 2 Mar 2007 16:02:38 -0500
+Received: from mga06.intel.com ([134.134.136.21]:44845 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965620AbXCBVCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:02:09 -0500
-X-Sasl-enc: sKdncjuH1XjUjENAx23OHdvVmbXxL2fyl+OfYKdEPSH9 1172869326
-Date: Fri, 2 Mar 2007 18:01:57 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, romosan@sycorax.lbl.gov,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       rpurdie@rpsys.net
-Subject: Re: 2.6.21-rc2 radeon backlight
-Message-ID: <20070302210157.GA11786@khazad-dum.debian.net>
-References: <20070301184531.b3aeafe3.akpm@linux-foundation.org> <87tzx35zkc.fsf@sycorax.lbl.gov> <20070302122920.a2967ebf.akpm@linux-foundation.org> <20070302.123514.35465791.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302.123514.35465791.davem@davemloft.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 2 Mar 2007 16:02:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,244,1170662400"; 
+   d="scan'208"; a="203418982:sNHT21197358"
+Subject: system call time increase when turning on CONFIG_PARAVIRT
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Reply-To: tim.c.chen@linux.intel.com
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Intel
+Date: Fri, 02 Mar 2007 12:11:14 -0800
+Message-Id: <1172866274.4898.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Mar 2007, David Miller wrote:
-> Why don't we compromise for 2.6.21 by marking the Radeon backlight
-> stuff EXPERIMENTAL until the cases where IBM ACPI works and the
-> Radeon backlight stuff does not are worked out?
 
-What ibm-acpi backlight control does is *very* different from what the
-radeon backlight control does.
+With CONFIG_PARAVIRT turned on, I've found that time invoking
+system_call jumped up quite a lot.  Using TCP streaming test as a
+workload and running on 32-bit 2.6.20 kernel, system_call goes up from
+0.00025% all the way to 1.6% in the oprofile data.  There is a drop of
+about 4% in overall throughput for this particular workload. 
 
-ibm-acpi talks to the ThinkPad EC to change the brightness of the backlight,
-it has *NO* on/off support.  Radeon talks to the video chipset to turn the
-LVDS output on/off (or something to that effect), and thus to turn the
-backlight on/off.
+With lmbench's null system call test, the call time goes up from 0.10
+usec to 0.225 usec.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I'm testing on dual socket Intel core 2 processor running at 2.67 GHz
+with 4 GB RAM.
+
+Tim 
