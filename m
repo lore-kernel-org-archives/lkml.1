@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbXCBE6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422668AbXCBE7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932280AbXCBE6D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 23:58:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932643AbXCBE6B
+	id S1422668AbXCBE7E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 23:59:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422657AbXCBE7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 23:58:01 -0500
-Received: from mx2.suse.de ([195.135.220.15]:60639 "EHLO mx2.suse.de"
+	Thu, 1 Mar 2007 23:59:04 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42050 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932280AbXCBE6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 23:58:00 -0500
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 2 Mar 2007 15:56:55 +1100
-Message-Id: <1070302045655.19069@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] md: Fix for raid6 reshape.
-References: <20070302155626.19014.patches@notabene>
+	id S1422658AbXCBE7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 23:59:01 -0500
+Date: Thu, 1 Mar 2007 20:58:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@engr.sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@skynet.ie>, mingo@elte.hu,
+       jschopp@austin.ibm.com, arjan@infradead.org,
+       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+Message-Id: <20070301205826.4045eda4.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703012031410.14299@schroedinger.engr.sgi.com>
+References: <20070301101249.GA29351@skynet.ie>
+	<20070301160915.6da876c5.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com>
+	<20070302035751.GA15867@wotan.suse.de>
+	<Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com>
+	<20070301202917.7abe4ad8.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703012031410.14299@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-### Comments for Changeset
+On Thu, 1 Mar 2007 20:33:04 -0800 (PST) Christoph Lameter <clameter@engr.sgi.com> wrote:
 
-Recent patch for raid6 reshape had a change missing that showed up in
-subsequent review.
+> On Thu, 1 Mar 2007, Andrew Morton wrote:
+> 
+> > Sorry, but this is crap.  zones and nodes are distinct, physical concepts
+> > and you're kidding yourself if you think you can somehow fudge things to make
+> > one of them just go away.
+> > 
+> > Think: ZONE_DMA32 on an Opteron machine.  I don't think there is a sane way
+> > in which we can fudge away the distinction between
+> > bus-addresses-which-have-the-32-upper-bits-zero and
+> > memory-which-is-local-to-each-socket.
+> 
+> Of course you can. Add a virtual DMA and DMA32 zone/node and extract the 
+> relevant memory from the base zone/node.
 
-Many places in the raid5 code used "conf->raid_disks-1" to mean
-"number of data disks".  With raid6 that had to be changed to
-"conf->raid_disk - conf->max_degraded" or similar.  One place was missed.
+You're using terms which I've never seen described anywhere.
 
-This bug means that if a raid6 reshape were aborted in the middle the
-recorded position would be wrong.  On restart it would either fail (as
-the position wasn't on an appropriate boundary) or would leave a section
-of the array unreshaped, causing data corruption.
+Please, just stop here.  Give us a complete design proposal which we can
+understand and review.
 
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./drivers/md/raid5.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
---- .prev/drivers/md/raid5.c	2007-03-02 15:47:51.000000000 +1100
-+++ ./drivers/md/raid5.c	2007-03-02 15:48:35.000000000 +1100
-@@ -3071,7 +3071,7 @@ static sector_t reshape_request(mddev_t 
- 		release_stripe(sh);
- 	}
- 	spin_lock_irq(&conf->device_lock);
--	conf->expand_progress = (sector_nr + i)*(conf->raid_disks-1);
-+	conf->expand_progress = (sector_nr + i) * new_data_disks);
- 	spin_unlock_irq(&conf->device_lock);
- 	/* Ok, those stripe are ready. We can start scheduling
- 	 * reads on the source stripes.
