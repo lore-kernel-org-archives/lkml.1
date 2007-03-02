@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422694AbXCBBbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422704AbXCBBdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422694AbXCBBbg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 20:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422683AbXCBBbg
+	id S1422704AbXCBBdW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 20:33:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422703AbXCBBdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 20:31:36 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34288 "EHLO smtp.osdl.org"
+	Thu, 1 Mar 2007 20:33:21 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:46436 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422694AbXCBBbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 20:31:35 -0500
-Date: Thu, 1 Mar 2007 17:30:30 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-Subject: [RFC] Arp announce (for Xen)
-Message-ID: <20070301173030.754514ec@freekitty>
-In-Reply-To: <45E7764A.7000100@goop.org>
-References: <20070301232443.195603797@goop.org>
-	<20070301232529.648076372@goop.org>
-	<20070301164214.4a40bc59@freekitty>
-	<45E7764A.7000100@goop.org>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1422692AbXCBBdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 20:33:20 -0500
+Message-ID: <45E77EDD.3010205@garzik.org>
+Date: Thu, 01 Mar 2007 20:33:17 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] libata: Cable detection fixes
+References: <20070301173003.5d5ab4a6@lxorguk.ukuu.org.uk> <Pine.LNX.4.64.0703011723270.12485@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703011723270.12485@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What about implementing the unused arp_announce flag on the inetdevice?
-Something like the following.  Totally untested...
+Linus Torvalds wrote:
+> 
+> On Thu, 1 Mar 2007, Alan wrote:
+>> The patch switches the identify order so that we can do the drive side
+>> detection correctly. 
+>>
+>> Secondly we add a ->cable_detect() method called after the identify
+>> sequence which allows a host to do host side detection at this point
+>> should it wish, or to modify the results of the drive side identify.
+> 
+> Alan, sign-offs?
+> 
+> Jeff, should I just expect to get these things through you?
 
-Looks like it either was there (and got removed) or was planned but
-never implemented.
+See my reply, which passed yours in-flight :)
 
-diff --git a/net/ipv4/devinet.c b/net/ipv4/devinet.c
-index e10794d..cefc339 100644
---- a/net/ipv4/devinet.c
-+++ b/net/ipv4/devinet.c
-@@ -1089,6 +1089,16 @@ static int inetdev_event(struct notifier
- 			}
- 		}
- 		ip_mc_up(in_dev);
-+		/* fallthru */
-+
-+	case NETDEV_CHANGEADDR:
-+		/* Send gratuitous ARP in case of address change or new device */
-+		if (IN_DEV_ARP_ANNOUNCE(in_dev))
-+			arp_send(ARPOP_REQUEST, ETH_P_ARP,
-+				 in_dev->ifa_list->ifa_address, dev,
-+				 in_dev->ifa_list->ifa_address, NULL, 
-+				 dev->dev_addr, NULL);
-+			
- 		break;
- 	case NETDEV_DOWN:
- 		ip_mc_down(in_dev);
+I'm OK with all the changes, but ->cable_detect (and _nice_ cleanups) 
+does not seem like 2.6.21-rc bugfix material to me.
+
+We definitely want the IDENTIFY ordering changes, though we'll also want 
+that passed through at least one more 2.6.21-rcX release before 
+confidence appears.
+
+That little change, buried in the middle of Alan's patch, changes the 
+probing order for a /lot/ of devices, possibly millions, when you 
+consider that it changes behavior of ata_piix (Intel SATA) as well as 
+all the not-yet-default PATA controllers.
+
+A wanted fix, but something that definitely wants a lot of public 
+testing before 2.6.21 release.
+
+	Jeff
+
+
 
