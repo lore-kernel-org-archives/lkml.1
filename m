@@ -1,53 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030500AbXCBVyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030474AbXCBV65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030500AbXCBVyL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:54:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030503AbXCBVyK
+	id S1030474AbXCBV65 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:58:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030486AbXCBV65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:54:10 -0500
-Received: from gw.goop.org ([64.81.55.164]:58579 "EHLO mail.goop.org"
+	Fri, 2 Mar 2007 16:58:57 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42657 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030500AbXCBVyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:54:08 -0500
-Message-ID: <45E89CFB.4090905@goop.org>
-Date: Fri, 02 Mar 2007 13:54:03 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: tim.c.chen@linux.intel.com
-CC: linux-kernel@vger.kernel.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: system call time increase when turning on CONFIG_PARAVIRT
-References: <1172866274.4898.14.camel@localhost.localdomain>
-In-Reply-To: <1172866274.4898.14.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
+	id S1030474AbXCBV64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 16:58:56 -0500
+Date: Fri, 2 Mar 2007 13:58:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, rpurdie@rpsys.net,
+       romosan@sycorax.lbl.gov, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [Linux-fbdev-devel] 2.6.21-rc2 radeon backlight
+Message-Id: <20070302135841.fbfc1e32.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703022131310.6960@pentafluge.infradead.org>
+References: <20070301184531.b3aeafe3.akpm@linux-foundation.org>
+	<87tzx35zkc.fsf@sycorax.lbl.gov>
+	<20070302122920.a2967ebf.akpm@linux-foundation.org>
+	<20070302.123514.35465791.davem@davemloft.net>
+	<Pine.LNX.4.64.0703022131310.6960@pentafluge.infradead.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Chen wrote:
-> With CONFIG_PARAVIRT turned on, I've found that time invoking
-> system_call jumped up quite a lot.  Using TCP streaming test as a
-> workload and running on 32-bit 2.6.20 kernel, system_call goes up from
-> 0.00025% all the way to 1.6% in the oprofile data.  There is a drop of
-> about 4% in overall throughput for this particular workload. 
->
-> With lmbench's null system call test, the call time goes up from 0.10
-> usec to 0.225 usec.
->
-> I'm testing on dual socket Intel core 2 processor running at 2.67 GHz
-> with 4 GB RAM.
-[ I assume you're talking about running on native hardware. ]
 
-In the current paravirt changes in the kernel, many of the
-paravirtualized operations are implemented as (expensive) indirect calls
-via paravirt_ops.  Among the changes in the paravirt patches I posted
-yesterday is an enhanced patching mechanism which inlines a lot of the
-common operations, and converts the rest into direct calls.
+(davem cc restored)
 
-I haven't done any detailed measurements on what effect this will have,
-but it does bring the actual executed instruction stream much closer to
-the !CONFIG_PARAVIRT case, and so I would hope it would recover most or
-all of the performance loss you've noticed.
+On Fri, 2 Mar 2007 21:41:12 +0000 (GMT)
+James Simmons <jsimmons@infradead.org> wrote:
 
-    J
+> > > > yes, if i disable the radeon backlight and use the ibm acpi module,
+> > > > than the backlight works. if i enable the radeon backlight, the screen
+> > > > stays dark and i can't turn it on (i tried using radeontool to control
+> > > > it but nothing happened).
+> > > 
+> > > Richard, is this actually a bug, or is it a config error or something like that?
+> > > 
+> > > And should we track it as a post-2.6.20 regression?
+> > 
+> > Why don't we compromise for 2.6.21 by marking the Radeon backlight
+> > stuff EXPERIMENTAL until the cases where IBM ACPI works and the
+> > Radeon backlight stuff does not are worked out?
+> 
+> How about this?
+> 
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index b8f0a11..eb54d1f 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -679,7 +679,6 @@ config FB_NVIDIA
+>  	depends on FB && PCI
+>  	select I2C_ALGOBIT if FB_NVIDIA_I2C
+>  	select I2C if FB_NVIDIA_I2C
+> -	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
+>  	select FB_MODE_HELPERS
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+> @@ -708,7 +707,8 @@ config FB_NVIDIA_I2C
+>  
+>  config FB_NVIDIA_BACKLIGHT
+>  	bool "Support for backlight control"
+> -	depends on FB_NVIDIA
+> +	depends on FB_NVIDIA && EXPERIMENTAL
+> +	select FB_BACKLIGHT
+>  	default y
+>  	help
+>  	  Say Y here if you want to control the backlight of your display.
+> @@ -717,7 +717,6 @@ config FB_RIVA
+>  	tristate "nVidia Riva support"
+>  	depends on FB && PCI
+>  	select FB_DDC if FB_RIVA_I2C
+> -	select FB_BACKLIGHT if FB_RIVA_BACKLIGHT
+>  	select FB_MODE_HELPERS
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+> @@ -754,7 +753,8 @@ config FB_RIVA_DEBUG
+>  
+>  config FB_RIVA_BACKLIGHT
+>  	bool "Support for backlight control"
+> -	depends on FB_RIVA
+> +	depends on FB_RIVA && EXPERIMENTAL
+> +	select FB_BACKLIGHT
+>  	default y
+>  	help
+>  	  Say Y here if you want to control the backlight of your display.
+> @@ -994,7 +994,6 @@ config FB_RADEON
+>  	tristate "ATI Radeon display support"
+>  	depends on FB && PCI
+>  	select FB_DDC if FB_RADEON_I2C
+> -	select FB_BACKLIGHT if FB_RADEON_BACKLIGHT
+>  	select FB_MODE_HELPERS
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+> @@ -1024,7 +1023,8 @@ config FB_RADEON_I2C
+>  
+>  config FB_RADEON_BACKLIGHT
+>  	bool "Support for backlight control"
+> -	depends on FB_RADEON
+> +	depends on FB_RADEON && EXPERIMENTAL 
+> +	select FB_BACKLIGHT
+>  	default y
+>  	help
+>  	  Say Y here if you want to control the backlight of your display.
+> @@ -1044,7 +1044,6 @@ config FB_ATY128
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> -	select FB_BACKLIGHT if FB_ATY128_BACKLIGHT
+>  	select FB_MACMODES if PPC_PMAC
+>  	help
+>  	  This driver supports graphics boards with the ATI Rage128 chips.
+> @@ -1056,7 +1055,8 @@ config FB_ATY128
+>  
+>  config FB_ATY128_BACKLIGHT
+>  	bool "Support for backlight control"
+> -	depends on FB_ATY128
+> +	depends on FB_ATY128 && EXPERIMENTAL
+> +	select FB_BACKLIGHT
+>  	default y
+>  	help
+>  	  Say Y here if you want to control the backlight of your display.
+> @@ -1067,7 +1067,6 @@ config FB_ATY
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> -	select FB_BACKLIGHT if FB_ATY_BACKLIGHT
+>  	select FB_MACMODES if PPC
+>  	help
+>  	  This driver supports graphics boards with the ATI Mach64 chips.
+> @@ -1106,7 +1105,8 @@ config FB_ATY_GX
+>  
+>  config FB_ATY_BACKLIGHT
+>  	bool "Support for backlight control"
+> -	depends on FB_ATY
+> +	depends on FB_ATY && EXPERIMENTAL
+> +	select FB_BACKLIGHT	
+>  	default y
+>  	help
+>  	  Say Y here if you want to control the backlight of your display.
+
+Sorry, but my confidence level on this one is very low.  We've had heaps
+and heaps of Kconfig-related build errors in exactly this area.  I'd prefer
+that a patch like this one have a lot of testing and review (and a
+changelog?) before we let it near a tree.
+
+coz I've been bitten before.
+
