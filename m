@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933329AbXCBLEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933330AbXCBLEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933329AbXCBLEQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 06:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933330AbXCBLEQ
+	id S933330AbXCBLEc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 06:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423020AbXCBLEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 06:04:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52656 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933329AbXCBLEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 06:04:14 -0500
-Date: Fri, 2 Mar 2007 11:56:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070302105618.GA18377@elte.hu>
-References: <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301101102.GE20171@elf.ucw.cz> <20070301111815.GB15709@2ka.mipt.ru> <20070302102714.GB27687@elf.ucw.cz> <20070302103713.GB28444@2ka.mipt.ru>
+	Fri, 2 Mar 2007 06:04:32 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2384 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933330AbXCBLE1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 06:04:27 -0500
+Date: Fri, 2 Mar 2007 11:04:20 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm1
+Message-ID: <20070302110420.GA2824@flint.arm.linux.org.uk>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070302103713.GB28444@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 02, 2007 at 03:00:26AM -0800, Andrew Morton wrote:
+> Changes since 2.6.20-mm2:
+> 
+>  origin.patch
+>  git-acpi.patch
+>  git-alsa.patch
+>  git-avr32.patch
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+I guess you're not pulling the ARM master branch in addition to the devel
+branch?  The master branch contains fixes for -rc kernels whereas devel
+contains stuff for post-rc kernels.
 
-> Even if kevent has the same speed, it still allows to handle _any_ 
-> kind of events without any major surgery - a very tiny structure of 
-> lock and list head and you can process your own kernel event in 
-> userspace with timers, signals, io events, private userspace events 
-> and others without races and invention of differnet hacks for 
-> different types - _this_ is main point.
-
-did it ever occur to you to ... extend epoll? To speed it up? To add a 
-new wait syscall to it? Instead of introducing a whole new parallel 
-framework?
-
-	Ingo
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
