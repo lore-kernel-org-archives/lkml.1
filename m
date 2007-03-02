@@ -1,78 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965672AbXCBVcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965673AbXCBVdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965672AbXCBVcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965673AbXCBVcU
+	id S965673AbXCBVdw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030177AbXCBVdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:32:20 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:49333 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965672AbXCBVcT (ORCPT
+	Fri, 2 Mar 2007 16:33:52 -0500
+Received: from mga05.intel.com ([192.55.52.89]:22766 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965673AbXCBVdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:32:19 -0500
-Subject: Re: Resume from S2R fails after dpm_resume()
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Tim Gardner <timg@tpi.com>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       Ben Collins <ben.collins@ubuntu.com>
-In-Reply-To: <45E833ED.2070402@tpi.com>
-References: <45E5E799.1000502@tpi.com> <20070302141259.GJ2156@elf.ucw.cz>
-	 <45E833ED.2070402@tpi.com>
-Content-Type: text/plain
-Date: Sat, 03 Mar 2007 08:32:19 +1100
-Message-Id: <1172871139.18544.87.camel@nigel.suspend2.net>
+	Fri, 2 Mar 2007 16:33:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,244,1170662400"; 
+   d="scan'208"; a="206099001:sNHT29230131"
+Date: Fri, 2 Mar 2007 12:57:29 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Laurent Riffard <laurent.riffard@free.fr>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: 2.6.21-rc2-mm1: what about CONFIG_NO_HZ and !CONFIG_SMP ?
+Message-ID: <20070302125729.A27368@unix-os.sc.intel.com>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <45E89339.1050504@free.fr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.2.5.1i
+In-Reply-To: <45E89339.1050504@free.fr>; from laurent.riffard@free.fr on Fri, Mar 02, 2007 at 10:12:25PM +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Fri, 2007-03-02 at 07:25 -0700, Tim Gardner wrote:
-> Pavel Machek wrote:
-> > Hi!
+On Fri, Mar 02, 2007 at 10:12:25PM +0100, Laurent Riffard wrote:
+> Le 02.03.2007 12:00, Andrew Morton a écrit :
+> > Temporarily at
 > > 
-> >> I instrumented 2.6.21-rc1 base/power/resume.c device_resume() with
-> >> TRACE_RESUME(0) as the last statement in the function. Sure enough it
-> >> was the last hash value in the RTC after a hard reboot when resume failed:
-> >>
-> >> [   12.028820]   hash matches drivers/base/power/resume.c:104
-> >>
-> >> The machine appears to be absolutely wedged after initiating resume by
-> >> pressing the power button. The disk flashes for a half second or so,
-> >> then thats it.
-> >>
-> >> It is a Dell XPS, BIOS rev A04. I'm using 'echo 1 > /sys/power/pm_trace;
-> >> echo mem > /sys/power/state' to initiate the S2R sequence.
-> >>
-> >> Any suggestions on where to go from here?
+> >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
 > > 
-> > Did it work ok in 2.6.20? Can you try to get video working/get serial
-> > console/something?
-> > 									Pavel
+> > Will appear later at
+> > 
+> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
 > 
-> Pavel,
+> Got this when CONFIG_NO_HZ=y and CONFIG_SMP=n:
 > 
-> The last version that worked well was Ubuntu Edgy (2.6.17). It was
-> broken by 2.6.18. I have not started the 'git bisect' process, instead
-> I've been trying to figure out why it doesn't work in 2.6.21-rc2. Using
-> the TRACE_RESUME macro I've drilled down to
-> kernel/printk.c:__call_console_drivers. So far the last trace info that
-> I have is just before the call to con->write(). I'm trying to figure out
-> what driver has registered as the console (intel_agp or agpgart?).
+>   CC      kernel/sched.o
+> kernel/sched.c: In function 'trigger_load_balance':
+> kernel/sched.c:3384: error: 'struct rq' has no member named 'in_nohz_recently'
+> kernel/sched.c:3384: error: 'struct rq' has no member named 'idle_at_tick'
+> kernel/sched.c:3385: error: 'struct rq' has no member named 'in_nohz_recently'
+> kernel/sched.c:3387: error: 'nohz' undeclared (first use in this function)
+> kernel/sched.c:3387: error: (Each undeclared identifier is reported only once
+> kernel/sched.c:3387: error: for each function it appears in.)
+> kernel/sched.c:3404: warning: implicit declaration of function 'resched_cpu'
+> kernel/sched.c:3412: error: 'struct rq' has no member named 'idle_at_tick'
+> kernel/sched.c:3422: error: 'struct rq' has no member named 'idle_at_tick'
+> make[1]: *** [kernel/sched.o] Error 1
+> make: *** [kernel] Error 2
 > 
-> Am I banging my head on a known problem?
+> Looking at kernel/sched.c, it seems CONFIG_NO_HZ should depend on CONFIG_SMP...
 
-Tim, it's possible that the problem you're seeing is completely
-different to the one Pavel is looking for. Given that you're down to
-looking in console write code, I wonder if it's related to the changes
-to console suspending that were done around that time. I'd suggest
-either looking in LKML or Linux-PM archives for a commit related to
-suspending the console, or doing your git bisect.
+No. There is no such dependency. Can you please check if the below patch fixes
+the compilation issue. Thanks.
 
-Regards,
+---
 
-Nigel
+Move trigger_load_balance() under ifdef CONFIG_SMP.
 
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff -pNru linux-2.6.21-rc2/kernel/sched.c linux-mm/kernel/sched.c
+--- linux-2.6.21-rc2/kernel/sched.c	2007-03-02 13:23:46.000000000 -0800
++++ linux-mm/kernel/sched.c	2007-03-02 13:26:38.000000000 -0800
+@@ -3156,6 +3156,68 @@ static void run_rebalance_domains(struct
+ 	}
+ #endif
+ }
++
++/*
++ * Trigger the SCHED_SOFTIRQ if it is time to do periodic load balancing.
++ *
++ * In case of CONFIG_NO_HZ, this is the place where we nominate a new
++ * idle load balancing owner or decide to stop the periodic load balancing,
++ * if the whole system is idle.
++ */
++static inline void trigger_load_balance(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++#ifdef CONFIG_NO_HZ
++	/*
++	 * If we were in the nohz mode recently and busy at the current
++	 * scheduler tick, then check if we need to nominate new idle
++	 * load balancer.
++	 */
++	if (rq->in_nohz_recently && !rq->idle_at_tick) {
++		rq->in_nohz_recently = 0;
++
++		if (atomic_read(&nohz.load_balancer) == cpu) {
++			cpu_clear(cpu, nohz.cpu_mask);
++			atomic_set(&nohz.load_balancer, -1);
++		}
++
++		if (atomic_read(&nohz.load_balancer) == -1) {
++			/*
++			 * simple selection for now: Nominate the
++			 * first cpu in the nohz list to be the next
++			 * ilb owner.
++			 *
++			 * TBD: Traverse the sched domains and nominate
++			 * the nearest cpu in the nohz.cpu_mask.
++			 */
++			int ilb = first_cpu(nohz.cpu_mask);
++
++			if (ilb != NR_CPUS)
++				resched_cpu(ilb);
++		}
++	}
++
++	/*
++	 * If this cpu is idle and doing idle load balancing for all the
++	 * cpus with ticks stopped, is it time for that to stop?
++	 */
++	if (rq->idle_at_tick && atomic_read(&nohz.load_balancer) == cpu &&
++	    cpus_weight(nohz.cpu_mask) == num_online_cpus()) {
++		resched_cpu(cpu);
++		return;
++	}
++
++	/*
++	 * If this cpu is idle and the idle load balancing is done by
++	 * someone else, then no need raise the SCHED_SOFTIRQ
++	 */
++	if (rq->idle_at_tick && atomic_read(&nohz.load_balancer) != cpu &&
++	    cpu_isset(cpu, nohz.cpu_mask))
++		return;
++#endif
++	if (time_after_eq(jiffies, rq->next_balance))
++		raise_softirq(SCHED_SOFTIRQ);
++}
+ #else
+ /*
+  * on UP we do not need to balance between CPUs:
+@@ -3366,68 +3428,6 @@ out_unlock:
+ }
+ 
+ /*
+- * Trigger the SCHED_SOFTIRQ if it is time to do periodic load balancing.
+- *
+- * In case of CONFIG_NO_HZ, this is the place where we nominate a new
+- * idle load balancing owner or decide to stop the periodic load balancing,
+- * if the whole system is idle.
+- */
+-static inline void trigger_load_balance(int cpu)
+-{
+-	struct rq *rq = cpu_rq(cpu);
+-#ifdef CONFIG_NO_HZ
+-	/*
+-	 * If we were in the nohz mode recently and busy at the current
+-	 * scheduler tick, then check if we need to nominate new idle
+-	 * load balancer.
+-	 */
+-	if (rq->in_nohz_recently && !rq->idle_at_tick) {
+-		rq->in_nohz_recently = 0;
+-
+-		if (atomic_read(&nohz.load_balancer) == cpu) {
+-			cpu_clear(cpu, nohz.cpu_mask);
+-			atomic_set(&nohz.load_balancer, -1);
+-		}
+-
+-		if (atomic_read(&nohz.load_balancer) == -1) {
+-			/*
+-			 * simple selection for now: Nominate the
+-			 * first cpu in the nohz list to be the next
+-			 * ilb owner.
+-			 *
+-			 * TBD: Traverse the sched domains and nominate
+-			 * the nearest cpu in the nohz.cpu_mask.
+-			 */
+-			int ilb = first_cpu(nohz.cpu_mask);
+-
+-			if (ilb != NR_CPUS)
+-				resched_cpu(ilb);
+-		}
+-	}
+-
+-	/*
+-	 * If this cpu is idle and doing idle load balancing for all the
+-	 * cpus with ticks stopped, is it time for that to stop?
+-	 */
+-	if (rq->idle_at_tick && atomic_read(&nohz.load_balancer) == cpu &&
+-	    cpus_weight(nohz.cpu_mask) == num_online_cpus()) {
+-		resched_cpu(cpu);
+-		return;
+-	}
+-
+-	/*
+-	 * If this cpu is idle and the idle load balancing is done by
+-	 * someone else, then no need raise the SCHED_SOFTIRQ
+-	 */
+-	if (rq->idle_at_tick && atomic_read(&nohz.load_balancer) != cpu &&
+-	    cpu_isset(cpu, nohz.cpu_mask))
+-		return;
+-#endif
+-	if (time_after_eq(jiffies, rq->next_balance))
+-		raise_softirq(SCHED_SOFTIRQ);
+-}
+-
+-/*
+  * This function gets called by the timer code, with HZ frequency.
+  * We call it with interrupts disabled.
+  *
