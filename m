@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965193AbXCBT2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965197AbXCBTbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965193AbXCBT2H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 14:28:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965197AbXCBT2H
+	id S965197AbXCBTbW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 14:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965199AbXCBTbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 14:28:07 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52920
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965193AbXCBT2F (ORCPT
+	Fri, 2 Mar 2007 14:31:22 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45144 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965197AbXCBTbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 14:28:05 -0500
-Date: Fri, 02 Mar 2007 11:28:04 -0800 (PST)
-Message-Id: <20070302.112804.48527254.davem@davemloft.net>
-To: grzegorz.nosek@netart.pl
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Very slow routing table modification if RTA_FLOW is set
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070301142911.GA8187@tech.serwery.pl>
-References: <20070301142911.GA8187@tech.serwery.pl>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 14:31:21 -0500
+Date: Fri, 2 Mar 2007 11:31:16 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Rik van Riel <riel@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+In-Reply-To: <45E86BA0.50508@redhat.com>
+Message-ID: <Pine.LNX.4.64.0703021126470.17883@schroedinger.engr.sgi.com>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
+ <45E842F6.5010105@redhat.com> <20070302085838.bcf9099e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>
+ <20070302093501.34c6ef2a.akpm@linux-foundation.org> <45E8624E.2080001@redhat.com>
+ <20070302100619.cec06d6a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com>
+ <45E86BA0.50508@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: NetArt - Grzegorz Nosek <grzegorz.nosek@netart.pl>
-Date: Thu, 1 Mar 2007 15:29:11 +0100
+On Fri, 2 Mar 2007, Rik van Riel wrote:
 
-> I have noticed that using realm patch for quagga
-> <http://vcalinus.gemenii.ro/quaggarealms.html> causes the kernel to
-> spend a lot more time processing rtnetlink messages.
+> I would like to see separate pageout selection queues
+> for anonymous/tmpfs and page cache backed pages.  That
+> way we can simply scan only that what we want to scan.
+> 
+> There are several ways available to balance pressure
+> between both sets of lists.
+> 
+> Splitting them out will also make it possible to do
+> proper use-once replacement for the page cache pages.
+> Ie. leaving the really active page cache pages on the
+> page cache active list, instead of deactivating them
+> because they're lower priority than anonymous pages.
 
-For the second time, I am going to ask you very nicely to
-please post this instead to the Linux networking development
-mailing list, located at netdev@vger.kernel.org
+Well I would expect this to have marginal improvements and delay the 
+inevitable for awhile until we have even bigger memory. If the app uses 
+mmapped data areas then the problem is still there. And such tinkering 
+does not solve the issue of large scale I/O requiring the handling of 
+gazillions of page structs. I do not think that there is a way around 
+somehow handling larger chunks of memory in an easier way. We already do 
+handle larger page sizes for some limited purposes and with huge pages we 
+already have a larger page size. Mel's defrag/anti-frag patches are 
+necessary to allow us to deal with the resulting fragmentation problems.
 
-That is where you will reach the most people knowledgable in
-the area of your problem report, networking developers mostly
-do not read linux-kernel
-
-Thank you.
