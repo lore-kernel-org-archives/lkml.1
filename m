@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992522AbXCBPcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992519AbXCBPfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992522AbXCBPcM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 10:32:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992524AbXCBPcM
+	id S2992519AbXCBPfS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 10:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992521AbXCBPfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 10:32:12 -0500
-Received: from smtp.bulldogdsl.com ([212.158.248.8]:3159 "EHLO
-	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992522AbXCBPcL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 10:32:11 -0500
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] libata Kconfig: Update the various experimentality levels
-Date: Fri, 2 Mar 2007 15:32:01 +0000
-User-Agent: KMail/1.9.5
-Cc: jgarzik@pobox.com, akpm@osdl.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20070302150512.281af8d3@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070302150512.281af8d3@lxorguk.ukuu.org.uk>
+	Fri, 2 Mar 2007 10:35:17 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:47987 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992519AbXCBPfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 10:35:16 -0500
+Message-ID: <45E84682.6040500@openvz.org>
+Date: Fri, 02 Mar 2007 18:45:06 +0300
+From: Kirill Korotaev <dev@openvz.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paul Jackson <pj@sgi.com>
+CC: vatsa@in.ibm.com, menage@google.com, ebiederm@xmission.com, sam@vilain.net,
+       akpm@linux-foundation.org, xemul@sw.ru, serue@us.ibm.com,
+       containers@lists.osdl.org, winget@google.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on
+ top of nsproxy!
+References: <20070301133543.GK15509@in.ibm.com> <20070301113900.a7dace47.pj@sgi.com>
+In-Reply-To: <20070301113900.a7dace47.pj@sgi.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703021532.02215.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 March 2007 15:05, you wrote:
-> Signed-off-by: Alan Cox <alan@redhat.com>
-[snip]
->  config PATA_OLDPIIX
-> -	tristate "Intel PATA old PIIX support (Experimental)"
-> +	tristate "Intel PATA support for the original PIIX"
->  	depends on PCI && EXPERIMENTAL
->  	help
-> -	  This option enables support for old(?) PIIX PATA support.
-> +	  This option enables support for early Intel PIIX PATA support.
+Paul,
 
-Probably nothing, but is it intentional to remove the "(Experimental)" text 
-here, but not the dependency on EXPERIMENTAL?
+>>I suspect we can make cpusets also work
+>>on top of this very easily.
+> 
+> 
+> I'm skeptical, and kinda worried.
+> 
+> ... can you show me the code that does this?
+don't worry. we are not planning to commit any code breaking cpusets...
+I will be the first one against it.
 
--- 
-Cheers,
-Alistair.
+> Namespaces are not the same thing as actual resources
+> (memory, cpu cycles, ...).  Namespaces are fluid mappings;
+> Resources are scarce commodities.
+hm... interesing comparison.
+as for me, I can't see much difference between virtualization namespaces
+and resource namespaces.
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+Both have some impact on what the task in the namespace can do and what can't.
+The only difference is that virtualization namespaces usually also
+make one user to be invisible to another. That's the only difference imho.
+
+Also if you take a look at IPC namespace you'll note that IPC
+can also limit IPC resources in question.
+So it is kinda of virtualization + resource namespace.
+
+> I'm wagering you'll break either the semantics, and/or the
+> performance, of cpusets doing this.
+I like Paul's containers patch. It looks good and pretty well.
+After some of the context issues are resolved it's fine.
+Maybe it is even the best way of doing things.
+
+Thanks,
+Kirill
+
