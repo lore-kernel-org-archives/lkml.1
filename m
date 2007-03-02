@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992577AbXCBRJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992627AbXCBRJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992577AbXCBRJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:09:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992627AbXCBRJh
+	id S2992627AbXCBRJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:09:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992635AbXCBRJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:09:37 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34802 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2992577AbXCBRJh (ORCPT
+	Fri, 2 Mar 2007 12:09:57 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:33913 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992627AbXCBRJ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:09:37 -0500
-Date: Fri, 2 Mar 2007 09:09:30 -0800 (PST)
-From: Christoph Lameter <clameter@engr.sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+	Fri, 2 Mar 2007 12:09:56 -0500
+Date: Fri, 2 Mar 2007 17:09:50 +0000
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, npiggin@suse.de, clameter@engr.sgi.com,
        mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
        torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-In-Reply-To: <20070302083832.GF5557@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0703020909010.16719@schroedinger.engr.sgi.com>
-References: <20070302054944.GE15867@wotan.suse.de>
- <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>
- <20070302060831.GF15867@wotan.suse.de> <Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com>
- <20070302062950.GG15867@wotan.suse.de> <Pine.LNX.4.64.0703012236160.1979@schroedinger.engr.sgi.com>
- <20070302071955.GA5557@wotan.suse.de> <Pine.LNX.4.64.0703012335250.13224@schroedinger.engr.sgi.com>
- <20070302081210.GD5557@wotan.suse.de> <Pine.LNX.4.64.0703020015080.14651@schroedinger.engr.sgi.com>
- <20070302083832.GF5557@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070302170950.GD14379@skynet.ie>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <45E842F6.5010105@redhat.com> <20070302085838.bcf9099e.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070302085838.bcf9099e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Nick Piggin wrote:
-
-> > Oh just run a 32GB SMP system with sparsely freeable pages and lots of 
-> > allocs and frees and you will see it too. F.e try Linus tree and mlock 
-> > a large portion of the memory and then see the fun starting. See also 
-> > Rik's list of pathological cases on this.
+On (02/03/07 08:58), Andrew Morton didst pronounce:
+> On Fri, 02 Mar 2007 10:29:58 -0500 Rik van Riel <riel@redhat.com> wrote:
 > 
-> Ah, so your problem is lots of unreclaimable pages. There are heaps
-> of things we can try to reduce the rate at which we scan those.
+> > Andrew Morton wrote:
+> > 
+> > > And I'd judge that per-container RSS limits are of considerably more value
+> > > than antifrag (in fact per-container RSS might be a superset of antifrag,
+> > > in the sense that per-container RSS and containers could be abused to fix
+> > > the i-cant-get-any-hugepages problem, dunno).
+> > 
+> > The RSS bits really worry me, since it looks like they could
+> > exacerbate the scalability problems that we are already running
+> > into on very large memory systems.
+> 
+> Using a zone-per-container or N-64MB-zones-per-container should actually
+> move us in the direction of *fixing* any such problems.  Because, to a
+> first-order, the scanning of such a zone has the same behaviour as a 64MB
+> machine.
+> 
 
-Well this is one possible sympton of the basic issue of having too many 
-page structs. I wonder how long we can patch things up.
+Quite possibly. Taking software zones from the other large mail I sent,
+one could get the 64MB effect by increasing MAX_ORDER_NR_PAGES to be 64MB
+in pages. To avoid external fragmentation issues, I'd prefer of course
+if these container zones consisted of mainly contiguous memory but with
+anti-fragmentation, that would be possible.
 
+> (We'd run into a few other problems, some related to the globalness of the
+> dirty-memory management, but that's fixable).
+> 
+
+It would be fixable, especially if containers do their own reclaim on their
+container zones and not kswapd. Writing dirty data back periodically would
+still need to be global in nature but that's no different to today.
+
+> > Linux is *not* happy on 256GB systems.  Even on some 32GB systems
+> > the swappiness setting *needs* to be tweaked before Linux will even
+> > run in a reasonable way.
+> 
+> Please send testcases.
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
