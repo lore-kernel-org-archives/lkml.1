@@ -1,99 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992499AbXCBO52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965370AbXCBPAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992499AbXCBO52 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 09:57:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992501AbXCBO52
+	id S965370AbXCBPAS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 10:00:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965366AbXCBPAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 09:57:28 -0500
-Received: from cavan.codon.org.uk ([217.147.92.49]:44631 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992499AbXCBO51 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 09:57:27 -0500
-Date: Fri, 2 Mar 2007 14:57:09 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Message-ID: <20070302145709.GA3710@srcf.ucam.org>
-References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <20070218183805.5a4fd813.khali@linux-fr.org> <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302150313.198b6053.khali@linux-fr.org>
+	Fri, 2 Mar 2007 10:00:18 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56360 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992500AbXCBPAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 10:00:17 -0500
+Date: Fri, 2 Mar 2007 16:00:02 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ben Collins <ben.collins@ubuntu.com>
+Cc: Tim Gardner <timg@tpi.com>, nigel@nigel.suspend2.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Resume from S2R fails after dpm_resume()
+Message-ID: <20070302150002.GP2156@elf.ucw.cz>
+References: <45E5E799.1000502@tpi.com> <20070302141259.GJ2156@elf.ucw.cz> <45E833ED.2070402@tpi.com> <20070302143934.GN2156@elf.ucw.cz> <1172847345.5821.42.camel@gullible>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070302150313.198b6053.khali@linux-fr.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <1172847345.5821.42.camel@gullible>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How about this? It's informational only, but ought to result in 
-complaints whenever ACPI tries to touch something that other hardware 
-has reserved. We can't fail these accesses, but in theory we could 
-consider some sort of locking layer that made it possible to interact 
-anyway. I haven't even checked if this builds, but I think the concept 
-is reasonable.
+On Fri 2007-03-02 09:55:45, Ben Collins wrote:
+> On Fri, 2007-03-02 at 15:39 +0100, Pavel Machek wrote:
+> > On Fri 2007-03-02 07:25:49, Tim Gardner wrote:
+> > > Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > >> I instrumented 2.6.21-rc1 base/power/resume.c device_resume() with
+> > > >> TRACE_RESUME(0) as the last statement in the function. Sure enough it
+> > > >> was the last hash value in the RTC after a hard reboot when resume failed:
+> > > >>
+> > > >> [   12.028820]   hash matches drivers/base/power/resume.c:104
+> > > >>
+> > > >> The machine appears to be absolutely wedged after initiating resume by
+> > > >> pressing the power button. The disk flashes for a half second or so,
+> > > >> then thats it.
+> > > >>
+> > > >> It is a Dell XPS, BIOS rev A04. I'm using 'echo 1 > /sys/power/pm_trace;
+> > > >> echo mem > /sys/power/state' to initiate the S2R sequence.
+> > > >>
+> > > >> Any suggestions on where to go from here?
+> > > > 
+> > > > Did it work ok in 2.6.20? Can you try to get video working/get serial
+> > > > console/something?
+> > > > 									Pavel
+> > > 
+> > > Pavel,
+> > > 
+> > > The last version that worked well was Ubuntu Edgy (2.6.17). It was
+> > > broken by 2.6.18. I have not started the 'git bisect' process, instead
+> > > I've been trying to figure out why it doesn't work in 2.6.21-rc2. Using
+> > > the TRACE_RESUME macro I've drilled down to
+> > > kernel/printk.c:__call_console_drivers. So far the last trace info that
+> > > I have is just before the call to con->write(). I'm trying to figure out
+> > > what driver has registered as the console (intel_agp or agpgart?).
+> > > 
+> > > Am I banging my head on a known problem?
+> > 
+> > 2.6.21-rc* is known broken (in more than 1 way). I'd suggest playing
+> > with 2.6.20.
+> 
+> It's broken for him in 2.6.20 too, which led him to test 2.6.21-rc, and
+> some vanilla kernels back to 2.6.18. Everything past 2.6.17 is broken
+> for him.
 
-diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-index d870fb2..088abd1 100644
---- a/drivers/acpi/osl.c
-+++ b/drivers/acpi/osl.c
-@@ -35,6 +35,7 @@
- #include <linux/kmod.h>
- #include <linux/delay.h>
- #include <linux/workqueue.h>
-+#include <linux/ioport.h>
- #include <linux/nmi.h>
- #include <acpi/acpi.h>
- #include <asm/io.h>
-@@ -338,6 +339,10 @@ acpi_status acpi_os_read_port(acpi_io_address port, u32 * value, u32 width)
- {
- 	u32 dummy;
- 
-+	if (__check_region(&ioport_resource, port, width/8))
-+		printk (KERN_INFO "ACPI read from allocated ioport %lx\n", 
-+			port);
-+
- 	if (!value)
- 		value = &dummy;
- 
-@@ -362,6 +367,10 @@ EXPORT_SYMBOL(acpi_os_read_port);
- 
- acpi_status acpi_os_write_port(acpi_io_address port, u32 value, u32 width)
- {
-+	if (__check_region(&ioport_resource, port, width/8))
-+		printk (KERN_INFO "ACPI write to allocated ioport %lx\n", 
-+			port);
-+
- 	switch (width) {
- 	case 8:
- 		outb(value, port);
-@@ -387,6 +396,10 @@ acpi_os_read_memory(acpi_physical_address phys_addr, u32 * value, u32 width)
- 	u32 dummy;
- 	void __iomem *virt_addr;
- 
-+	if (__check_region(&iomem_resource, phys_addr, width/8))
-+		printk (KERN_INFO "ACPI read from allocated iomem %lx\n", 
-+			phys_addr);
-+
- 	virt_addr = ioremap(phys_addr, width);
- 	if (!value)
- 		value = &dummy;
-@@ -415,6 +428,10 @@ acpi_os_write_memory(acpi_physical_address phys_addr, u32 value, u32 width)
- {
- 	void __iomem *virt_addr;
- 
-+	if (__check_region(&iomem_resource, phys_addr, width/8))
-+		printk (KERN_INFO "ACPI write to allocated iomem %lx\n", 
-+			phys_addr);
-+
- 	virt_addr = ioremap(phys_addr, width);
- 
- 	switch (width) {
+Yep, I understood.
 
+But 2.6.20 tends to work for people while 2.6.21-rc is broken for
+people, and even broken for me (*). So I suggest to debug
+2.6.20. Debugging three different problems at the same time is not
+fun.
+
+(*) timing is wrong after resume, disk spinup waits for timeout.
+									Pavel
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
