@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422740AbXCBDIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422743AbXCBDKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422740AbXCBDIg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 22:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422742AbXCBDIf
+	id S1422743AbXCBDKW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 22:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422792AbXCBDKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 22:08:35 -0500
-Received: from gw.goop.org ([64.81.55.164]:59524 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422740AbXCBDIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 22:08:35 -0500
-Message-ID: <45E79529.9000305@goop.org>
-Date: Thu, 01 Mar 2007 19:08:25 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andi Kleen <ak@muc.de>, Linus Torvalds <torvalds@osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Dan Hecht <dhecht@vmware.com>,
-       Dan Arai <arai@vmware.com>, Andrew Morton <akpm@osdl.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/9] Vmi fix highpte
-References: <200703020254.l222smBB009668@zach-dev.vmware.com>
-In-Reply-To: <200703020254.l222smBB009668@zach-dev.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 22:10:22 -0500
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:46640 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422743AbXCBDKW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 22:10:22 -0500
+Subject: Re: [PATCH RFC 0/5] hard_smp_processor_id overhaul
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Benjamin LaHaise <bcrl@kvack.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fastboot@lists.osdl.org, ebiederm@xmission.com, ak@suse.de,
+       akpm@linux-foundation.org, judith@linux-foundation.org
+In-Reply-To: <20070301140648.GX26583@kvack.org>
+References: <1172733373.1498.264.camel@sebastian.intellilink.co.jp>
+	 <20070301140648.GX26583@kvack.org>
+Content-Type: text/plain; charset=UTF-8
+Organization: NTT Open Source Software Center
+Date: Fri, 02 Mar 2007 12:10:46 +0900
+Message-Id: <1172805046.3362.20.camel@sebastian.intellilink.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> Provide a PT map hook for HIGHPTE kernels to designate where they are mapping
-> page tables.  This information is required so the physical address of PTE
-> updates can be determined; otherwise, the mm layer would have to carry the
-> physical address all the way to each PTE modification callsite, which is
-> even more hideous that the macros required to provide the proper hooks.
->
-> So lets not mess up arch neutral code to achieve this, but keep the horror
-> in an #ifdef HIGHPTE in include/asm-i386/pgtable.h.  I had to use macros
-> here because some types are not yet defined in all the include paths for
-> this header.
->
-> This patch is absolutely required for HIGHPTE kernels to operate properly
-> with VMI.
->   
+On Thu, 2007-03-01 at 09:06 -0500, Benjamin LaHaise wrote:
+> On Thu, Mar 01, 2007 at 04:16:13PM +0900, Fernando Luis Vázquez Cao wrote:
+> > As a consequence, the hardcoding of hard_smp_processor_id() to 0 on UP
+> > systems (see "linux/smp.h") is not correct.
+> > 
+> > This patch-set does the following:
+> > 
+> > 1- Remove hardcoding of hard_smp_processor_id on UP systems.
+> 
+> NAK.  This has to be configurable, as many embedded systems don't even 
+> have APICs.  Please rework the patch set so that there is not any overhead 
+> for existing UP systems.
+In i386 (with the exception of voyager) and x86_64,
+hard_smp_processor_id is not used anywhere in the kernel when there are
+no APICs available.
 
-Hm, I don't think this interface will work for Xen.  In Xen, whenever a
-pagetable page gets mapped, it must be mapped RO.  map_pt_hook gets
-called after the mapping has already been created, so its too late for Xen.
+Regarding the overhead, hard_smp_processor_id is used mostly during
+initialization and doesn't seem to be used in any fast path in i386,
+x86_64, and ia64. All the other architectures are not affected by this
+patch, because I kept the hardcoding of hard_smp_processor_id on UP
+kernels, and just moved the definition to asm/smp.h because it should be
+handled by architecture-speficic code.
 
-I was planning on adding kmap_atomic_pte() for use in pte_offset_map*(),
-which would be wired through to paravirt_ops to allow Xen to make this a
-RO mapping.  Would this be sufficient for you to do your vmi thing?
+So unless strictly necessary I would not like to make this patches
+dependent on kdump.
 
-    J
