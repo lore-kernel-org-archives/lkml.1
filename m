@@ -1,81 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932961AbXCBUhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbXCBUio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932961AbXCBUhG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 15:37:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933367AbXCBUhG
+	id S933367AbXCBUio (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 15:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXCBUio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 15:37:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52750 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932961AbXCBUhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 15:37:04 -0500
-Date: Fri, 2 Mar 2007 21:29:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070302202931.GA5101@elte.hu>
-References: <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru> <20070301150942.GA26025@elte.hu> <20070301153655.GB8217@2ka.mipt.ru> <20070302105713.GB15576@elte.hu> <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com> <20070302193941.GB8450@elte.hu> <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
-Mime-Version: 1.0
+	Fri, 2 Mar 2007 15:38:44 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:62624 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933367AbXCBUin (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 15:38:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=MMchM9rA56b6cXDxT20ZIPEAuSWiEIHRno5TuKiS4kogQhMl0FM37yCycyui+SSBm1VU4GJ6MijAqWwcax280yndxLIVfoDEyItl+UzktwCESNeeu1AKH51x64ad87Wzq/cqqmqYNyJuVC4PNB7vkiNmJIhNTaIW4t3WNlTSzV4=
+Date: Fri, 2 Mar 2007 23:38:36 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: linux-kernel-list <linux-kernel@vger.kernel.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Dan Aloni <da-x@monatomic.org>
+Subject: [PATCH] MTD: ESB2 check for closed ROM window
+Message-ID: <20070302203836.GA10525@cvg>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds checking for closed ROM window
+on Intel ESB2 Southbridge.
 
-* Davide Libenzi <davidel@xmailserver.org> wrote:
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 
-> I think that the "dirty" FPU context must, at least, follow the new 
-> head. That's what the userspace sees, and you don't want an async_exec 
-> to re-emerge with a different FPU context.
+---
 
-well. I think there's some confusion about terminology, so please let me 
-describe everything in detail. This is how execution goes:
+I made this patch looking into ichxrom.c from which
+ESB2 driver has been derived. So review for the patch
+is needed :) Actually a such checking takes a place in
+original ichxrom.c so ESB2 should has it too I think.
 
-  outer loop() {
-      call_threadlet();
-  }
+ drivers/mtd/maps/esb2rom.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-this all runs in the 'head' context. call_threadlet() always switches to 
-the 'threadlet stack'. The 'outer context' runs in the 'head stack'. If, 
-while executing the threadlet function, we block, then the 
-threadlet-thread gets to keep the task (the threadlet stack and also the 
-FPU), and blocks - and we pick a 'new head' from the thread pool and 
-continue executing in that context - right after the call_threadlet() 
-function, in the 'old' head's stack. I.e. it's as if we returned 
-immediately from call_threadlet(), with a return code that signals that 
-the 'threadlet went async'.
-
-now, the FPU state that was when the threadlet blocked is totally 
-meaningless to the 'new head' - that FPU state is from the middle of the 
-threadlet execution.
-
-and here is where thinking about threadlets as a function call and not 
-as an asynchronous context helps alot: the classic gcc convention for 
-FPU use & function calls should apply: gcc does not call an external 
-function with an in-use FPU stack/register, it always neatly unuses it, 
-as no FPU register is callee-saved, all are caller-saved.
-
-> So, IMO, if the USEDFPU bit is set, we need to sync the dirty FPU 
-> context with an early unlazy_fpu(), *and* copy the sync'd FPU context 
-> to the new head. This should really be a fork of the dirty FPU context 
-> IMO, and should only happen if the USEDFPU bit is set.
-
-why? The only effect this will have is a slowdown :) The FPU context 
-from the middle of the threadlet function is totally meaningless to the 
-'new head'. It might be anything. (although in practice system calls are 
-almost never called with a truly in-use FPU.)
-
-	Ingo
+diff --git a/drivers/mtd/maps/esb2rom.c b/drivers/mtd/maps/esb2rom.c
+index 0bc013f..aa64a47 100644
+--- a/drivers/mtd/maps/esb2rom.c
++++ b/drivers/mtd/maps/esb2rom.c
+@@ -30,7 +30,7 @@
+ 
+ #define ROM_PROBE_STEP_SIZE (64*1024) /* 64KiB */
+ 
+-#define BIOS_CNTL	0xDC
++#define BIOS_CNTL		0xDC
+ #define BIOS_LOCK_ENABLE	0x02
+ #define BIOS_WRITE_ENABLE	0x01
+ 
+@@ -145,7 +145,7 @@ static void esb2rom_cleanup(struct esb2rom_window *window)
+ }
+ 
+ static int __devinit esb2rom_init_one(struct pci_dev *pdev,
+-				const struct pci_device_id *ent)
++				      const struct pci_device_id *ent)
+ {
+ 	static char *rom_probe_types[] = { "cfi_probe", "jedec_probe", NULL };
+ 	struct esb2rom_window *window = &esb2rom_window;
+@@ -185,7 +185,7 @@ static int __devinit esb2rom_init_one(struct pci_dev *pdev,
+ 	/* Find a region continuous to the end of the ROM window  */
+ 	window->phys = 0;
+ 	pci_read_config_word(pdev, FWH_DEC_EN1, &word);
+-	printk(KERN_DEBUG "pci_read_config_byte : %x\n", word);
++	printk(KERN_DEBUG "pci_read_config_word : %x\n", word);
+ 
+ 	if ((word & FWH_8MiB) == FWH_8MiB)
+ 		window->phys = 0xff400000;
+@@ -212,6 +212,11 @@ static int __devinit esb2rom_init_one(struct pci_dev *pdev,
+ 	else if ((word & FWH_0_5MiB) == FWH_0_5MiB)
+ 		window->phys = 0xfff80000;
+ 
++	if (window->phys == 0) {
++		printk(KERN_ERR MOD_NAME ": Rom window is closed\n");
++		goto out;
++	}
++
+ 	/* reserved  0x0020 and 0x0010 */
+ 	window->phys -= 0x400000UL;
+ 	window->size = (0xffffffffUL - window->phys) + 1UL;
