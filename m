@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992667AbXCBRcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992668AbXCBRdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992667AbXCBRcs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992669AbXCBRcs
+	id S2992668AbXCBRdj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:33:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992666AbXCBRdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:32:48 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:3076 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992667AbXCBRcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:32:47 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 2 Mar 2007 09:32:45 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Eric Dumazet <dada1@cosmosbay.com>,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <20070302105713.GB15576@elte.hu>
-Message-ID: <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
-References: <20070301095402.GA14603@elte.hu> <20070301131118.GA30228@elte.hu>
- <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com>
- <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru>
- <20070301150942.GA26025@elte.hu> <20070301153655.GB8217@2ka.mipt.ru>
- <20070302105713.GB15576@elte.hu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Fri, 2 Mar 2007 12:33:39 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:58874 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992668AbXCBRdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 12:33:38 -0500
+Message-ID: <45E85FC3.801@simon.arlott.org.uk>
+Date: Fri, 02 Mar 2007 17:32:51 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: akpm@linux-foundation.org, Bill Irwin <bill.irwin@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       arjan@linux.intel.com
+Subject: Re: [PATCH (update 3)] timer: Run calc_load halfway through each
+ round_jiffies second
+References: <45E0577C.9020409@simon.arlott.org.uk> <45E7F92E.7090407@simon.arlott.org.uk> <45E83F7A.9030307@simon.arlott.org.uk> <200703021735.55142.dada1@cosmosbay.com>
+In-Reply-To: <200703021735.55142.dada1@cosmosbay.com>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Ingo Molnar wrote:
-
-> > After your changes epoll increased to 5k.
+On 02/03/07 16:35, Eric Dumazet wrote:
+> On Friday 02 March 2007 16:15, Simon Arlott wrote:
+>> Whenever jiffies is started at a multiple of 5*HZ or wraps, calc_load is
+>> run exactly on the second which is when tasks using round_jiffies will
+>> be scheduled to run. This has a bad effect on the load average, making
+>> it tend towards 1.00 if a task happens to run every time the load is
+>> being calculated.
+>>
+>> This changes calc_load so that it updates load half a second after any
+>> tasks scheduled using round_jiffies.
 > 
-> Can we please stop this pointless episode of benchmarketing, where every 
-> mail of yours shows different results and you even deny having said 
-> something which you clearly said just a few days ago? At this point i 
-> simply cannot trust the numbers you are posting, nor is the discussion 
-> style you are following productive in any way in my opinion.
+> I believe this patch is too complex/hazardous and may break exp decay 
+> computation.
 
-Agreed. Can we focus on the topic here? We're still missing proper FPU 
-context switch in the move_user_context(). In v6?
+Only for a single calculation whenever it has to adjust, which should only 
+happen every 49.7 days (on 32-bit archs). (Or 5 minutes after booting... 
+I always wondered why that happened and now I see it's initialised so it 
+always wraps early). Whilst it is in sync with jiffies it will not affect 
+the process - count is just set to the current value every time. Even with 
+NO_HZ because jiffies will be correct when calc_load is called.
+
+> (Even if nobody care about avenrun[] those days :), do you ? )
+> 
+> You could just change LOAD_FREQ from (5*HZ) to (5*HZ+1)
+> You can see that 5.01 instead of 5.00 second gives the same EXP_xx values.
+> 
+> So (5*HZ + 1) is safe. (because HZ >= 100)
+
+On HZ=1000, this would cause the load average to be pushed towards +1.00 
+for up to 2 minutes every ~83 minutes with no obvious cause. (If a task 
+takes ~10-20ms to run, so 20 runs are needed at HZ=1000 before it passes 
+it again).
+
+On HZ=100 it would happen every ~8 minutes for up to 10 seconds and never 
+be noticed.
+
+Using 5*HZ+2 would move this to ~167 and ~17 minutes which would mitigate 
+the effect further still without changing the exp values.
+
+1884.25 -> 1883.62
+2014.15 -> 2014.02
+2036.65 -> 2036.61
+
+Will anyone notice if the load is adjusted slightly less frequently?
 
 
-- Davide
+If this is considered preferable to adjusting calc_load to avoid almost all 
+round_jiffies scheduled tasks (some of which may take longer than ~15ms to 
+run), then I have no problems with it - I just needed something to stop my 
+driver changes doing odd things to the load average for other people. I'll 
+continue to run with this version, is it possible to add a Kconfig option 
+for it somewhere?
 
-
+-- 
+Simon Arlott
