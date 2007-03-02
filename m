@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964800AbXCBFEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422751AbXCBFHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964800AbXCBFEA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 00:04:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964863AbXCBFD7
+	id S1422751AbXCBFHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 00:07:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422752AbXCBFHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 00:03:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48219 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964800AbXCBFD7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 00:03:59 -0500
-Date: Fri, 2 Mar 2007 05:03:51 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, support@coraid.com,
-       "Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: PATCH 2.6.21-rc1 aoe: handle zero _count pages in bios
-Message-ID: <20070302050351.GA24705@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>, support@coraid.com,
-	"Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org,
-	Greg KH <greg@kroah.com>
-References: <20070301231510.GC8524@coraid.com> <20070301174204.a550dd3a.akpm@linux-foundation.org> <20070302022919.GA26285@infradead.org> <20070301192245.bf034385.akpm@linux-foundation.org> <20070302043039.GA18651@infradead.org> <20070301204806.61225e2b.akpm@linux-foundation.org> <20070302044910.GA22209@infradead.org> <20070301210044.d95bcd70.akpm@linux-foundation.org>
+	Fri, 2 Mar 2007 00:07:00 -0500
+Received: from mx2.suse.de ([195.135.220.15]:60882 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422751AbXCBFG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 00:06:57 -0500
+Date: Fri, 2 Mar 2007 06:06:25 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@engr.sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
+       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070302050625.GD15867@wotan.suse.de>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com> <20070302035751.GA15867@wotan.suse.de> <Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com> <20070302042149.GB15867@wotan.suse.de> <Pine.LNX.4.64.0703012022320.14299@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070301210044.d95bcd70.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <Pine.LNX.4.64.0703012022320.14299@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 09:00:44PM -0800, Andrew Morton wrote:
-> I that case we're talking about different things.
+On Thu, Mar 01, 2007 at 08:31:24PM -0800, Christoph Lameter wrote:
+> On Fri, 2 Mar 2007, Nick Piggin wrote:
 > 
-> I thought the proposal was to continue to use slab pages, but to take a ref
-> on them as they're added to the bio, drop that ref in bi_end_io()?
+> > > Yes, we (SGI) need exactly that: Use of higher order pages in the kernel 
+> > > in order to reduce overhead of managing page structs for large I/O and 
+> > > large memory applications. We need appropriate measures to deal with the 
+> > > fragmentation problem.
+> > 
+> > I don't understand why, out of any architecture, ia64 would have to hack
+> > around this in software :(
+> 
+> Ummm... We have x86_64 platforms with the 4k page problem. 4k pages are 
+> very useful for the large number of small files that are around. But for 
+> the large streams of data you would want other methods of handling these.
+> 
+> If I want to write 1 terabyte (2^50) to disk then the I/O subsystem has 
+> to handle 2^(50-12) = 2^38 = 256 million page structs! This limits I/O 
+> bandwiths and leads to huge scatter gather lists (and we are limited in 
+> terms of the numbe of items on those lists in many drivers). Our future 
+> platforms have up to serveral petabytes of memory. There needs to be some 
+> way to handle these capacities in an efficient way. We cannot wait 
+> an hour for the terabyte to reach the disk.
 
-That would give you silent memory corruption in case the networking code
-hold a reference after the memory gets returned to slab and reused.
+I guess you mean 256 billion page structs.
 
-We need to either stop allowing to pass slab memory to the block layer,
-or document that drivers need to handle it specially and give them a
-way to find out about them. (Or do the horrible slab refcounting hack
-I wrote up above)
+So what do you mean by efficient? I guess you aren't talking about CPU
+efficiency, because even if you make the IO subsystem submit larger
+physical IOs, you still have to deal with 256 billion TLB entries, the
+pagecache has to deal with 256 billion struct pages, so does the
+filesystem code to build the bios.
+
+So you are having problems with your IO controller's handling of sg
+lists?
+
 
