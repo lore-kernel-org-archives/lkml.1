@@ -1,111 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992714AbXCBXGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992719AbXCBXHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992714AbXCBXGe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 18:06:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992715AbXCBXGe
+	id S2992719AbXCBXHD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 18:07:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992718AbXCBXHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 18:06:34 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46108 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992714AbXCBXGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 18:06:33 -0500
-Date: Fri, 2 Mar 2007 14:59:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Bill Irwin <bill.irwin@oracle.com>,
-       Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
-       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-Message-Id: <20070302145906.653d3b82.akpm@linux-foundation.org>
-In-Reply-To: <45E8A677.7000205@redhat.com>
-References: <20070301101249.GA29351@skynet.ie>
-	<20070301160915.6da876c5.akpm@linux-foundation.org>
-	<45E842F6.5010105@redhat.com>
-	<20070302085838.bcf9099e.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>
-	<20070302093501.34c6ef2a.akpm@linux-foundation.org>
-	<45E8624E.2080001@redhat.com>
-	<20070302100619.cec06d6a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com>
-	<45E86BA0.50508@redhat.com>
-	<20070302211207.GJ10643@holomorphy.com>
-	<45E894D7.2040309@redhat.com>
-	<20070302135243.ada51084.akpm@linux-foundation.org>
-	<45E89F1E.8020803@redhat.com>
-	<20070302142256.0127f5ac.akpm@linux-foundation.org>
-	<45E8A677.7000205@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 18:07:01 -0500
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:57031 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992719AbXCBXHA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 18:07:00 -0500
+To: jdike@addtoit.com
+CC: linux-kernel@vger.kernel.org, user-mode-linux@lists.sourceforge.net
+Subject: nonlinear vma problem in uml
+Message-Id: <E1HNGpQ-0005yE-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 03 Mar 2007 00:06:20 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Mar 2007 17:34:31 -0500
-Rik van Riel <riel@redhat.com> wrote:
+_PAGE_PROTNONE conflicts with the lowest bit of pgoff.  This causes
+all sorts of weirdness when nonlinear mappings are used.
 
-> >>>> The main reason they end up pounding the LRU locks is the
-> >>>> swappiness heuristic.  They scan too much before deciding
-> >>>> that it would be a good idea to actually swap something
-> >>>> out, and with 32 CPUs doing such scanning simultaneously...
-> >>> What kernel version?
-> >> Customers are on the 2.6.9 based RHEL4 kernel, but I believe
-> >> we have reproduced the problem on 2.6.18 too during stress
-> >> tests.
-> > 
-> > The prev_priority fixes were post-2.6.18
-> 
-> We tested them.  They only alleviate the problem slightly in
-> good situations, but things still fall apart badly with less
-> friendly workloads.
+Took me a good half day to track this down.
 
-What is it with vendors finding MM problems and either not fixing them or
-kludging around them and not telling the upstream maintainers about *any*
-of it?
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
 
-> >> I have no reason to believe we should stick our heads in the
-> >> sand and pretend it no longer exists on 2.6.21.
-> > 
-> > I have no reason to believe anything.  All I see is handwaviness,
-> > speculation and grand plans to rewrite vast amounts of stuff without even a
-> > testcase to demonstrate that said rewrite improved anything.
-> 
-> Your attitude is exactly why the VM keeps falling apart over
-> and over again.
-> 
-> Fixing "a testcase" in the VM tends to introduce problems for
-> other test cases, ad infinitum.
-
-In that case it was a bad fix.  The aim is to fix known problems without
-introducing regressions in other areas.  A perfectly legitimate approach.
-
-You seem to be saying that we'd be worse off if we actually had a testcase.
-
-> There's a reason we end up
-> fixing the same bugs over and over again.
-
-No we don't.
-
-> I have been looking through a few hundred VM related bugzillas
-> and have found the same bugs persist over many different
-> versions of Linux, sometimes temporarily fixed, but they seem
-> to always come back eventually...
-> 
-> > None of this is going anywhere, is is it?
-> 
-> I will test my changes before I send them to you, but I cannot
-> promise you that you'll have the computers or software needed
-> to reproduce the problems.  I doubt I'll have full time access
-> to such systems myself, either.
-> 
-> 32GB is pretty much the minimum size to reproduce some of these
-> problems. Some workloads may need larger systems to easily trigger
-
-32GB isn't particularly large.
-
-Somehow I don't believe that a person or organisation which is incapable of
-preparing even a simple testcase will be capable of fixing problems such as
-this without breaking things.
+Index: linux/include/asm-um/pgtable-2level.h
+===================================================================
+--- linux.orig/include/asm-um/pgtable-2level.h	2007-03-02 23:03:15.000000000 +0100
++++ linux/include/asm-um/pgtable-2level.h	2007-03-02 23:03:26.000000000 +0100
+@@ -45,12 +45,12 @@ static inline void pgd_mkuptodate(pgd_t 
+ 	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
+ 
+ /*
+- * Bits 0 through 3 are taken
++ * Bits 0 through 4 are taken
+  */
+-#define PTE_FILE_MAX_BITS	28
++#define PTE_FILE_MAX_BITS	27
+ 
+-#define pte_to_pgoff(pte) (pte_val(pte) >> 4)
++#define pte_to_pgoff(pte) (pte_val(pte) >> 5)
+ 
+-#define pgoff_to_pte(off) ((pte_t) { ((off) << 4) + _PAGE_FILE })
++#define pgoff_to_pte(off) ((pte_t) { ((off) << 5) + _PAGE_FILE })
+ 
+ #endif
