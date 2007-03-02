@@ -1,119 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992545AbXCBP4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992557AbXCBP4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992545AbXCBP4z (ORCPT <rfc822;w@1wt.eu>);
+	id S2992557AbXCBP4z (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 2 Mar 2007 10:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992550AbXCBP4A
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992546AbXCBPz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 10:56:00 -0500
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:49710 "EHLO
+	Fri, 2 Mar 2007 10:55:59 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:49711 "EHLO
 	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992545AbXCBPzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S2992549AbXCBPzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 2 Mar 2007 10:55:25 -0500
-Subject: [PATCH 8/9] mtd: Allow mtd block device drivers to have a custom
-	ioctl function
+Subject: [PATCH 6/9] mtd: Add a 'block unused' ioctl call to provide hints
+	to block drivers
 From: Richard Purdie <rpurdie@openedhand.com>
 To: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
        kernel list <linux-kernel@vger.kernel.org>,
        linux-mtd@lists.infradead.org, dwmw2@infradead.org
 Content-Type: text/plain
-Date: Fri, 02 Mar 2007 15:55:02 +0000
-Message-Id: <1172850902.11149.130.camel@localhost.localdomain>
+Date: Fri, 02 Mar 2007 15:54:54 +0000
+Message-Id: <1172850894.11149.126.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow mtd block drivers to customise their ioctl functions. Also
-allow the drivers to obtain the gendisk struct since ioctl 
-functions can need this.
+Knowing that the data in a given block is now unused is a useful
+feature that some block drivers can take advantage of, especially 
+when dealing with devices like flash.
 
-This also moves the mtd ioctl functions from locked to unlocked.
-As far as I can see, nothing in the mtd code has locking problems.
+This adds an ioctl which allows such hints to be passed to the
+block driver. Its shouldn't provide false positives but doesn't
+have to provide the signal in all cases - its intended as a hint.
+
+Support for the ioctl is added to the swap subsystem when the swap
+header indicates such notification would be useful though an added
+flags bitfield. The swaponflash driver takes advantage of this
+functionality.
 
 Signed-off-by: Richard Purdie <rpurdie@openedhand.com>
 
 ---
- drivers/mtd/mtd_blkdevs.c    |   14 +++++++++++---
- include/linux/mtd/blktrans.h |    5 +++++
- 2 files changed, 16 insertions(+), 3 deletions(-)
+ block/ioctl.c        |    4 ++++
+ include/linux/fs.h   |    1 +
+ include/linux/swap.h |    5 ++++-
+ mm/swapfile.c        |    7 ++++++-
+ 4 files changed, 15 insertions(+), 2 deletions(-)
 
-Index: linux/drivers/mtd/mtd_blkdevs.c
+Index: linux/include/linux/fs.h
 ===================================================================
---- linux.orig/drivers/mtd/mtd_blkdevs.c	2007-03-02 14:46:29.000000000 +0000
-+++ linux/drivers/mtd/mtd_blkdevs.c	2007-03-02 14:46:47.000000000 +0000
-@@ -204,9 +204,10 @@ static int blktrans_getgeo(struct block_
- 	return -ENOTTY;
- }
+--- linux.orig/include/linux/fs.h	2007-02-28 18:16:52.000000000 +0000
++++ linux/include/linux/fs.h	2007-03-02 14:46:34.000000000 +0000
+@@ -214,6 +214,7 @@ extern int dir_notify_enable;
+ #define BLKTRACESTART _IO(0x12,116)
+ #define BLKTRACESTOP _IO(0x12,117)
+ #define BLKTRACETEARDOWN _IO(0x12,118)
++#define BLKSWAPMARKUNUSED _IOW(0x12, 1197, int)
  
--static int blktrans_ioctl(struct inode *inode, struct file *file,
--			      unsigned int cmd, unsigned long arg)
-+static long blktrans_unlocked_ioctl(struct file *file, unsigned cmd,
-+				unsigned long arg)
- {
-+	struct inode *inode = file->f_dentry->d_inode;
- 	struct mtd_blktrans_dev *dev = inode->i_bdev->bd_disk->private_data;
- 	struct mtd_blktrans_ops *tr = dev->tr;
- 
-@@ -217,6 +218,8 @@ static int blktrans_ioctl(struct inode *
- 		/* The core code did the work, we had nothing to do. */
- 		return 0;
- 	default:
-+		if (tr->ioctl)
-+			return tr->ioctl(dev, cmd, arg);
- 		return -ENOTTY;
- 	}
- }
-@@ -225,7 +228,7 @@ struct block_device_operations mtd_blktr
- 	.owner		= THIS_MODULE,
- 	.open		= blktrans_open,
- 	.release	= blktrans_release,
--	.ioctl		= blktrans_ioctl,
-+	.unlocked_ioctl = blktrans_unlocked_ioctl,
- 	.getgeo		= blktrans_getgeo,
+ #define BMAP_IOCTL 1		/* obsolete - kept for compatibility */
+ #define FIBMAP	   _IO(0x00,1)	/* bmap access */
+Index: linux/include/linux/swap.h
+===================================================================
+--- linux.orig/include/linux/swap.h	2007-03-02 14:35:02.000000000 +0000
++++ linux/include/linux/swap.h	2007-03-02 14:46:34.000000000 +0000
+@@ -65,7 +65,9 @@ union swap_header {
+ 		__u32		nr_badpages;
+ 		unsigned char	sws_uuid[16];
+ 		unsigned char	sws_volume[16];
+-		__u32		padding[117];
++		__u32		flags;
++#define SWAPFLAG_UNUSED_IOCTL (1 << 0)
++		__u32		padding[113];
+ 		__u32		badpages[1];
+ 	} info;
  };
- 
-@@ -312,6 +315,11 @@ int add_mtd_blktrans_dev(struct mtd_blkt
- 	return 0;
- }
- 
-+struct gendisk *get_mtd_blktrans_gendisk(struct mtd_blktrans_dev *dev)
-+{
-+	return dev->blkcore_priv;
-+}
-+
- int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- {
- 	if (!!mutex_trylock(&mtd_table_mutex)) {
-Index: linux/include/linux/mtd/blktrans.h
+@@ -119,6 +121,7 @@ enum {
+ 	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
+ 	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
+ 	SWP_ACTIVE	= (SWP_USED | SWP_WRITEOK),
++	SWP_UNUSED_IOCTL = (1 << 2),
+ 					/* add others here before... */
+ 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
+ };
+Index: linux/mm/swapfile.c
 ===================================================================
---- linux.orig/include/linux/mtd/blktrans.h	2007-02-28 18:16:52.000000000 +0000
-+++ linux/include/linux/mtd/blktrans.h	2007-03-02 14:46:47.000000000 +0000
-@@ -11,6 +11,7 @@
- #define __MTD_TRANS_H__
+--- linux.orig/mm/swapfile.c	2007-03-02 14:35:04.000000000 +0000
++++ linux/mm/swapfile.c	2007-03-02 14:46:34.000000000 +0000
+@@ -284,6 +284,8 @@ static int swap_entry_free(struct swap_i
+ 				swap_list.next = p - swap_info;
+ 			nr_swap_pages++;
+ 			p->inuse_pages--;
++			if (p->flags & SWP_UNUSED_IOCTL)
++				blkdev_ioctl(p->swap_file->f_mapping->host, p->swap_file, BLKSWAPMARKUNUSED, offset);
+ 		}
+ 	}
+ 	return count;
+@@ -1649,6 +1651,9 @@ asmlinkage long sys_swapon(const char __
+ 			goto bad_swap;
+ 		}
  
- #include <linux/mutex.h>
-+#include <linux/genhd.h>
- 
- struct hd_geometry;
- struct mtd_info;
-@@ -48,6 +49,9 @@ struct mtd_blktrans_ops {
- 	int (*getgeo)(struct mtd_blktrans_dev *dev, struct hd_geometry *geo);
- 	int (*flush)(struct mtd_blktrans_dev *dev);
- 
-+	/* Optional ioctl passthrough */
-+	int (*ioctl)(struct mtd_blktrans_dev *dev, unsigned int cmd, unsigned long arg);
++		if (swap_header->info.flags & SWAPFLAG_UNUSED_IOCTL)
++			p->flags |= SWP_UNUSED_IOCTL;
 +
- 	/* Called with mtd_table_mutex held; no race with add/remove */
- 	int (*open)(struct mtd_blktrans_dev *dev);
- 	int (*release)(struct mtd_blktrans_dev *dev);
-@@ -68,6 +72,7 @@ extern int register_mtd_blktrans(struct 
- extern int deregister_mtd_blktrans(struct mtd_blktrans_ops *tr);
- extern int add_mtd_blktrans_dev(struct mtd_blktrans_dev *dev);
- extern int del_mtd_blktrans_dev(struct mtd_blktrans_dev *dev);
-+extern struct gendisk *get_mtd_blktrans_gendisk(struct mtd_blktrans_dev *dev);
+ 		error = 0;
+ 		memset(p->swap_map, 0, maxpages * sizeof(short));
+ 		for (i = 0; i < swap_header->info.nr_badpages; i++) {
+@@ -1684,7 +1689,7 @@ asmlinkage long sys_swapon(const char __
  
+ 	mutex_lock(&swapon_mutex);
+ 	spin_lock(&swap_lock);
+-	p->flags = SWP_ACTIVE;
++	p->flags |= SWP_ACTIVE;
+ 	nr_swap_pages += nr_good_pages;
+ 	total_swap_pages += nr_good_pages;
  
- #endif /* __MTD_TRANS_H__ */
+Index: linux/block/ioctl.c
+===================================================================
+--- linux.orig/block/ioctl.c	2007-02-28 18:16:52.000000000 +0000
++++ linux/block/ioctl.c	2007-03-02 14:46:34.000000000 +0000
+@@ -274,6 +274,10 @@ int blkdev_ioctl(struct inode *inode, st
+ 			return -EFAULT;
+ 		return 0;
+ 	}
++	case BLKSWAPMARKUNUSED:
++		if (!capable(CAP_SYS_ADMIN))
++			return -EACCES;
++		return blkdev_driver_ioctl(inode, file, disk, cmd, arg);
+ 	}
+ 
+ 	lock_kernel();
 
 
