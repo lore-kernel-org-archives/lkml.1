@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXCBJYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbXCBJ0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964792AbXCBJYG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 04:24:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933303AbXCBJYG
+	id S933295AbXCBJ0d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 04:26:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbXCBJ0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 04:24:06 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:55390 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933295AbXCBJYF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 04:24:05 -0500
-Date: Fri, 02 Mar 2007 10:23:51 +0100 (CET)
-Message-Id: <20070302.102351.146595518.wl@gnu.org>
-To: linux-kernel@vger.kernel.org
-Cc: Pierre Ossman <drzeus@drzeus.cx>
-Subject: Memory stick reader Ricoh R5C592 supported?
-From: Werner LEMBERG <wl@gnu.org>
-X-Mailer: Mew version 5.1.50 on Emacs 22.0.95.1 / Mule 5.0 (SAKAKI)
+	Fri, 2 Mar 2007 04:26:33 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:64615 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933295AbXCBJ0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 04:26:32 -0500
+Date: Fri, 2 Mar 2007 10:26:17 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <andrew@sanpeople.com>,
+       Milan Svoboda <msvoboda@ra.rockwell.com>
+Subject: Re: [patch 2.6.20-rc2] gpio_direction_output() needs an initial
+ value
+Message-ID: <20070302102617.2fb8e0dc@dhcp-252-105.norway.atmel.com>
+In-Reply-To: <200703011825.10370.david-b@pacbell.net>
+References: <200703011825.10370.david-b@pacbell.net>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:2dc398bc694a1e60948148ba0a42c0da
-X-Provags-ID2: V01U2FsdGVkX1+2aEd1rAX67WDwZ0FHA02cNLMS+mTf0LUjoJ4
- 4il0hXLJVG4HJ6Akg5H4e30FcxnO0rOhf5K7KqBaJihD+ap+Tx
- ylT8WSujNyzD3PYy5+AIQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 1 Mar 2007 18:25:09 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-Folks,
+> It's been pointed out that output GPIOs should have an initial value, to
+> avoid signal glitching ... among other things, it can be some time before
+> a driver is ready.  This patch corrects that oversight, fixing
+> 
+>  - documentation
+>  - platforms supporting the GPIO interface
+>  - users of that call (just one for now, others are pending)
+> 
+> Note that most platforms are clear about the hardware letting the output
+> value be set before the pin direction is changed, but the s3c241x docs
+> are vague on that topic ... so those chips might not avoid the glitches.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
+Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-my Dell Inspiron 6400 laptop has both a Ricoh R5C822 host adapter (for
-SD, MMC, etc.) and a Ricoh R5C592 host adapter for memory sticks.
+Thanks, Dave.
 
-While the former works just fine, it seems to me that the latter
-hasn't any support.  Indeed, inserting a Sony MSA-128A memory stick
-causes no reaction whatsoever.  Searching with google, I haven't found
-anything related to this chip; looking into the kernel source code
-wasn't successful either.
-
-Can you please shed some light on the current situation?  I'm using
-kernel 2.6.20.
-
-
-    Werner
+Haavard
