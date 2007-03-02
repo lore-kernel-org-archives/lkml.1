@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992636AbXCBROS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992630AbXCBROn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992636AbXCBROS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992630AbXCBROR
+	id S2992630AbXCBROn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992638AbXCBROm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:14:17 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:30558 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992638AbXCBROQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:14:16 -0500
-Date: Fri, 2 Mar 2007 09:11:13 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: dedekind@infradead.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] Kconfig: enlarge printk buffer size limit
-Message-Id: <20070302091113.1920ca0f.randy.dunlap@oracle.com>
-In-Reply-To: <1172842068.17031.55.camel@sauron>
-References: <1172842068.17031.55.camel@sauron>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 2 Mar 2007 12:14:42 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:59423 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992630AbXCBROX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 12:14:23 -0500
+Message-Id: <1172855662.23830.1177403935@webmail.messagingengine.com>
+X-Sasl-Enc: E+PX6mfYvR1Y59vAgUrunQ4Ji2SSQ/X+W2zkyVwbc/tV 1172855662
+From: "FN" <zzzz444@ml1.net>
+To: linux-kernel@vger.kernel.org
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: module builds need improvement / top Makefile not good enough
+Date: Fri, 02 Mar 2007 09:14:22 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Mar 2007 15:27:48 +0200 Artem Bityutskiy wrote:
+Hello list,
 
-> From: Artem Bityutskiy <artem.bityutskiy@nokia.com>
-> Subject: [RFC] [PATCH] Kconfig: enlarge printk buffer size limit
-> 
-> This patch makes the upper kernel ring buffer size limit larger. It
-> is often very handy to have huge ring-buffer for debugging purposes,
-> when the subsystem which is being debugged produces large amount of
-> useful output.
-> 
-> Index: ubi-2.6.git/lib/Kconfig.debug
-> ===================================================================
-> --- ubi-2.6.git.orig/lib/Kconfig.debug
-> +++ ubi-2.6.git/lib/Kconfig.debug
-> @@ -79,7 +79,7 @@ config DEBUG_KERNEL
->  
->  config LOG_BUF_SHIFT
->  	int "Kernel log buffer size (16 => 64KB, 17 => 128KB)" if DEBUG_KERNEL
-> -	range 12 21
-> +	range 12 26
->  	default 17 if S390 || LOCKDEP
->  	default 16 if X86_NUMAQ || IA64
->  	default 15 if SMP
+I am unhappy with the direction the 2.6 kernel builds have taken.
+Very much like Micro$loth DDKs we (linux users) are being forced to
+build
+modules by plugging into a framework that doesn't respect the fine
+aspects
+of dependency generation and analysis.
 
-That's simple enough, but you could also just add
-	log_buf_len=huge_number
-or
-	log_buf_len=500M
-or
-	log_buf_len=1G
-(for megabytes or gigabytes) to the kernel boot command line.
+Two problems I've identified
+1. module builds are forcing me to use a particular make program (gnu
+make)
+   Well, what if someone uses a different tool to express the DAG (dep.
+   graph)?
 
+2. gnu make is a somewhat dated program and can't do profound dependency
+   generation and analysis like some newer tools. All it can do is
+   produce
+   .d from .c with the -MM option using an idiom like this
+     -include f1.d f2.d
+      %.d: %.c
+         $(CC) -MM <whatever>
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+   But that's not good enough for 2 reasons.
+   a) version rollback that causes timestamp rollback in time does NOT
+      trigger regeneration of dependencies (e.g. clearcase based
+      builds).
+   b) dependencies on order of things can't be expressed in gnu make,
+   for
+      example -Iinc1 -Iinc2 causes different results from -Iinc2 -Iinc1
+      if you have 2 different header files that have the same name in
+      both
+      directories. Same goes for "ld -r -o mod.o f1.o f2.o" vs 
+      "ld -r -o mod.o f2.o f1.o" if order mattered (which it doesn't in
+      this case).
+
+   Bottom line - there exist free tools that are vastly superior to gnu
+   make,
+   one such example is omake, and I don't want you to force me to switch
+   to
+   inferior dependency analysis with gnu make.
+
+My suggestion how to solve this problem is the following.
+Instead of
+gnumake -C /lib/modules/`uname -r`/build M=`pwd` modules
+it's better to be able to do 
+gnumake -C /lib/modules/`uname -r`/build M=`pwd` MYMAKE=mymake modules 
+and then inside your gnu Makefile you'd call mymake like so
+
+chdir $(M)
+mymake MODFLAGS="whatever modflags" INCFLAGS="whatever incflags" modules
+and pass on whatever flags are necessary.
+
+You can set MYMAKE to gmake if unspecified thus "MYMAKE ?= make"
+
+That would make the callback into the user's build environment clean and
+unbind it from gnu make.
+
+Any replies, critique -- cc me, as I am not on this list.
+-- 
+  FN
+  zzzz444@ml1.net
+
+-- 
+http://www.fastmail.fm - And now for something completely different…
+
