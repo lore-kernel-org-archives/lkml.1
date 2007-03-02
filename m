@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933332AbXCBLFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933333AbXCBLIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933332AbXCBLFc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 06:05:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933331AbXCBLFc
+	id S933333AbXCBLIB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 06:08:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933336AbXCBLIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 06:05:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52807 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933332AbXCBLFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 06:05:31 -0500
-Date: Fri, 2 Mar 2007 11:57:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Pavel Machek <pavel@ucw.cz>,
-       Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070302105713.GB15576@elte.hu>
-References: <20070301095402.GA14603@elte.hu> <20070301131118.GA30228@elte.hu> <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru> <20070301150942.GA26025@elte.hu> <20070301153655.GB8217@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Mar 2007 06:08:01 -0500
+Received: from wx-out-0506.google.com ([66.249.82.230]:13119 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933333AbXCBLH7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 06:07:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=O9AjcS78fKWuod/tADteAAMUHkfHBhLeTIPWG5VVyGXO+/O55iqSzz9oqgtS/rWvIlD35rXydwgLEHXtJBZWvQkIlXK8i1HCljPdzhMdTZs5hPM9asjt89k7Heh3pUihpW8YztizVLSRb4craHQrVYCunIJXq/hTWYOnjdkwkk0=
+Message-ID: <43c301fe0703020307g37f7df7dxd8f94adaac3acaf3@mail.gmail.com>
+Date: Fri, 2 Mar 2007 20:07:58 +0900
+From: "Takayoshi Kochi" <takayoshi.kochi@gmail.com>
+To: linux-acpi@vger.kernel.org
+Subject: [PATCH] supporting MMCONFIG over 4GB on x86_64
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070301153655.GB8217@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+Currently MMCONFIG is ignored if it is located over 4G, but I see no reason
+to reject it on x86_64 platform.
 
-> > > > [...] The numbers are still highly suspect - and we are already 
-> > > > down from the prior claim of kevent being almost twice as fast 
-> > > > to a 25% difference.
-> > >
-> > > Btw, there were never almost twice perfromance increase - epoll in 
-> > > my tests always showed 4-5 thousands requests per second, kevent - 
-> > > up to 7 thausands.
-> > 
-> > i'm referring to your claim in this mail of yours from 4 days ago 
-> > for example:
-> > 
-> >   http://lkml.org/lkml/2007/2/25/116
-> > 
-> >  "But note, that on my athlon64 3500 test machine kevent is about 7900
-> >   requests per second compared to 4000+ epoll, so expect a challenge."
-> > 
-> > no matter how i look at it, but 7900 is 1.9 times 4000 - which is 
-> > "almost twice".
-> 
-> After your changes epoll increased to 5k.
+This patch is against 2.6.21-rc2 and was tested on
+such a machine (MMCONFIG is located at 0xfe10000000)
+without any problem.
 
-Can we please stop this pointless episode of benchmarketing, where every 
-mail of yours shows different results and you even deny having said 
-something which you clearly said just a few days ago? At this point i 
-simply cannot trust the numbers you are posting, nor is the discussion 
-style you are following productive in any way in my opinion.
+Any comments?
 
-(you are never ever wrong, and if you are proven wrong on topic A you 
-claim it is an irrelevant topic (without even admitting you were wrong 
-about it) and you point to topic B claiming it's the /real/ topic you 
-talked about all along. And along the way you are slandering other 
-projects like epoll and threadlets, distorting the discussion. This kind 
-of keep-the-ball-moving discussion style is effective in politics but 
-IMO it's a waste of time when developing a kernel.)
+-- 
+Takayoshi Kochi
 
-	Ingo
+Signed-off-by: Takayoshi Kochi <takayoshi.kochi@gmail.com>
+---
+ boot.c |    2 ++
+ 1 files changed, 2 insertions(+)
+
+--- linux-2.6.20/arch/i386/kernel/acpi/boot.c.orig	2007-03-02
+14:34:02.000000000 +0900
++++ linux-2.6.20/arch/i386/kernel/acpi/boot.c	2007-03-02
+19:38:10.000000000 +0900
+@@ -198,6 +198,7 @@ int __init acpi_parse_mcfg(struct acpi_t
+
+ 	memcpy(pci_mmcfg_config, &mcfg[1], config_size);
+ 	for (i = 0; i < pci_mmcfg_config_num; ++i) {
++#ifndef CONFIG_X86_64
+ 		if (pci_mmcfg_config[i].address > 0xFFFFFFFF) {
+ 			printk(KERN_ERR PREFIX
+ 			       "MMCONFIG not in low 4GB of memory\n");
+@@ -205,6 +206,7 @@ int __init acpi_parse_mcfg(struct acpi_t
+ 			pci_mmcfg_config_num = 0;
+ 			return -ENODEV;
+ 		}
++#endif
+ 	}
+
+ 	return 0;
