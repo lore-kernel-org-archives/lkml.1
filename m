@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992622AbXCBQ4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992614AbXCBQ7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992622AbXCBQ4i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 11:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992623AbXCBQ4h
+	id S2992614AbXCBQ7B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 11:59:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992619AbXCBQ7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 11:56:37 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34409 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992620AbXCBQ4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 11:56:36 -0500
-Date: Fri, 2 Mar 2007 08:48:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
-       Christian Borntraeger <cborntra@de.ibm.com>, linux-s390@vger.kernel.org,
+	Fri, 2 Mar 2007 11:59:01 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:33621 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992614AbXCBQ7A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 11:59:00 -0500
+Date: Fri, 2 Mar 2007 16:58:57 +0000
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
+       clameter@engr.sgi.com, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, mbligh@mbligh.org, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch] timer/hrtimer: take per cpu locks in sane order
-Message-Id: <20070302084833.732d09dd.akpm@linux-foundation.org>
-In-Reply-To: <20070302142308.GB8226@osiris.boeblingen.de.ibm.com>
-References: <20070227153051.GD7911@osiris.boeblingen.de.ibm.com>
-	<20070302125848.GA8226@osiris.boeblingen.de.ibm.com>
-	<20070302130433.GA4391@elte.hu>
-	<20070302142308.GB8226@osiris.boeblingen.de.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070302165857.GB14379@skynet.ie>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007 15:23:08 +0100 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-
-> On Fri, Mar 02, 2007 at 02:04:33PM +0100, Ingo Molnar wrote:
-> > 
-> > * Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > 
-> > > -	spin_lock(&new_base->lock);
-> > > -	spin_lock(&old_base->lock);
-> > > +	/*
-> > > +	 * If we take a lock from a different cpu, make sure we have always
-> > > +	 * the same locking order. That is the lock that belongs to the cpu
-> > > +	 * with the lowest number is taken first.
-> > > +	 */
-> > > +	lock1 = smp_processor_id() < cpu ? &new_base->lock : &old_base->lock;
-> > > +	lock2 = smp_processor_id() < cpu ? &old_base->lock : &new_base->lock;
-> > > +	spin_lock(lock1);
-> > > +	spin_lock(lock2);
-> > 
-> > looks good to me. Wouldnt this be cleaner via double_lock_timer() - 
-> > similar to how double_rq_lock() works in kernel/sched.c - instead of 
-> > open-coding it?
+On (01/03/07 16:44), Linus Torvalds didst pronounce:
 > 
-> Something like the stuff below? Exploits the knowledge that the two
-> tvec_base_t's are in a per_cpu array. Otherwise I would end up passing
-> a lot of redundant stuff. But still I think that isn't a good solution
-> but rather a hack...?
-> I'd go for the patch above.
+> 
+> On Thu, 1 Mar 2007, Andrew Morton wrote:
+> > 
+> > So some urgent questions are: how are we going to do mem hotunplug and
+> > per-container RSS?
+> 
+> Also: how are we going to do this in virtualized environments? Usually the 
+> people who care abotu memory hotunplug are exactly the same people who 
+> also care (or claim to care, or _will_ care) about virtualization.
+> 
 
-Yeah, it'd be nicer to pass in the CPU number(s), use that to make the
-ordering decision.  Perhaps (smp_processor_id() - cpu).
+I sent a mail out with a fairly detailed treatment of how RSS could be done.
+Essentially, I feel that containers should simply limit the number of
+pages used by the container, and not try and do anything magic with a
+poorly defined concept like RSS. It would do this by creating a
+"software zone" and taking pages from a "hardware zone" at creation
+time. It has a similar affect to RSS limits except it's better defined.
 
-> ---
-> Index: linux-2.6/kernel/timer.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/timer.c
-> +++ linux-2.6/kernel/timer.c
-> @@ -1640,6 +1640,28 @@ static void migrate_timer_list(tvec_base
->  	}
->  }
->  
-> +static void __devinit double_tvec_lock(tvec_base_t *base1, tvec_base_t *base2)
-> +{
-> +	if (base1 < base2) {
-> +		spin_lock(&base1->lock);
-> +		spin_lock(&base2->lock);
-> +	} else {
-> +		spin_lock(&base2->lock);
-> +		spin_lock(&base1->lock);
-> +	}
-> +}
-> +
-> +static void __devinit double_tvec_unlock(tvec_base_t *base1, tvec_base_t *base2)
-> +{
-> +	if (base1 < base2) {
-> +		spin_unlock(&base1->lock);
-> +		spin_unlock(&base2->lock);
-> +	} else {
-> +		spin_unlock(&base2->lock);
-> +		spin_unlock(&base1->lock);
-> +	}
-> +}
+In that setup, a virtualized environment would create it's own software
+zone. It would hand that over to the guest OS and the guest OS could do
+whatever it liked. It would be responsible for it's own reclaim and so on
+and not have to worry about other containers (or virtualized environments
+for that matter) or kswapd interfering with it.
 
-And to undo the locks in the reverse order from that in which they were
-taken.
+> My personal opinion is that while I'm not a huge fan of virtualization, 
+> these kinds of things really _can_ be handled more cleanly at that layer, 
+> and not in the kernel at all. Afaik, it's what IBM already does, and has 
+> been doing for a while. There's no shame in looking at what already works, 
+> especially if it's simpler.
+> 
+> 		Linus
 
-
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
