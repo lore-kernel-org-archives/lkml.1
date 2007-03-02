@@ -1,32 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422668AbXCBE7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161178AbXCBFAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422668AbXCBE7E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 23:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422657AbXCBE7E
+	id S1161178AbXCBFAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 00:00:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964863AbXCBFAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 23:59:04 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42050 "EHLO smtp.osdl.org"
+	Fri, 2 Mar 2007 00:00:54 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42069 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422658AbXCBE7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 23:59:01 -0500
-Date: Thu, 1 Mar 2007 20:58:26 -0800
+	id S964800AbXCBFAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 00:00:53 -0500
+Date: Thu, 1 Mar 2007 21:00:44 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@engr.sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@skynet.ie>, mingo@elte.hu,
-       jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-Message-Id: <20070301205826.4045eda4.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703012031410.14299@schroedinger.engr.sgi.com>
-References: <20070301101249.GA29351@skynet.ie>
-	<20070301160915.6da876c5.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com>
-	<20070302035751.GA15867@wotan.suse.de>
-	<Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com>
-	<20070301202917.7abe4ad8.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703012031410.14299@schroedinger.engr.sgi.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: support@coraid.com, "Ed L. Cashin" <ecashin@coraid.com>,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: PATCH 2.6.21-rc1 aoe: handle zero _count pages in bios
+Message-Id: <20070301210044.d95bcd70.akpm@linux-foundation.org>
+In-Reply-To: <20070302044910.GA22209@infradead.org>
+References: <20070301231510.GC8524@coraid.com>
+	<20070301174204.a550dd3a.akpm@linux-foundation.org>
+	<20070302022919.GA26285@infradead.org>
+	<20070301192245.bf034385.akpm@linux-foundation.org>
+	<20070302043039.GA18651@infradead.org>
+	<20070301204806.61225e2b.akpm@linux-foundation.org>
+	<20070302044910.GA22209@infradead.org>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,24 +31,25 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007 20:33:04 -0800 (PST) Christoph Lameter <clameter@engr.sgi.com> wrote:
+On Fri, 2 Mar 2007 04:49:10 +0000 Christoph Hellwig <hch@infradead.org> wrote:
 
-> On Thu, 1 Mar 2007, Andrew Morton wrote:
-> 
-> > Sorry, but this is crap.  zones and nodes are distinct, physical concepts
-> > and you're kidding yourself if you think you can somehow fudge things to make
-> > one of them just go away.
+> On Thu, Mar 01, 2007 at 08:48:06PM -0800, Andrew Morton wrote:
+> > On Fri, 2 Mar 2007 04:30:39 +0000 Christoph Hellwig <hch@infradead.org> wrote:
 > > 
-> > Think: ZONE_DMA32 on an Opteron machine.  I don't think there is a sane way
-> > in which we can fudge away the distinction between
-> > bus-addresses-which-have-the-32-upper-bits-zero and
-> > memory-which-is-local-to-each-socket.
+> > > But in this case we'd really need to enforce this, and add a
+> > > BUG_ON(PageSlab(page)) in bio_add_page to trip everyone submit
+> > > this kind of pages.
+> > 
+> > That would be
+> > 
+> > 	BUG_ON(PageSlab(page) && page_count(page) == 0)?
 > 
-> Of course you can. Add a virtual DMA and DMA32 zone/node and extract the 
-> relevant memory from the base zone/node.
+> No, all slab pages.  Currently they all have a reference count of
+> zero, but we generally don't want people to pass in pages that
+> come from a non-refcounted allocator.
 
-You're using terms which I've never seen described anywhere.
+I that case we're talking about different things.
 
-Please, just stop here.  Give us a complete design proposal which we can
-understand and review.
+I thought the proposal was to continue to use slab pages, but to take a ref
+on them as they're added to the bio, drop that ref in bi_end_io()?
 
