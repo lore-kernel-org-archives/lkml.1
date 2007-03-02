@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992610AbXCBQwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992611AbXCBQx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992610AbXCBQwL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 11:52:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992611AbXCBQwL
+	id S2992611AbXCBQx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 11:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992612AbXCBQx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 11:52:11 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45030 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992610AbXCBQwK (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 11:52:10 -0500
-Message-Id: <200703021651.l22Gpp01008083@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: James Simmons <jsimmons@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Antonino Daplas <adaplas@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>
-Subject: Re: 2.6.21-rc2-mm1 - fb_ddc_read() not defined
-In-Reply-To: Your message of "Fri, 02 Mar 2007 16:31:02 GMT."
-             <Pine.LNX.4.64.0703021630040.3216@pentafluge.infradead.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <200703021603.l22G37Sa022890@turing-police.cc.vt.edu>
-            <Pine.LNX.4.64.0703021630040.3216@pentafluge.infradead.org>
+	Fri, 2 Mar 2007 11:53:29 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34364 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992611AbXCBQx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 11:53:28 -0500
+Date: Fri, 2 Mar 2007 08:52:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kirill Korotaev <dev@openvz.org>
+Cc: Paul Jackson <pj@sgi.com>, vatsa@in.ibm.com, menage@google.com,
+       ebiederm@xmission.com, sam@vilain.net, xemul@sw.ru, serue@us.ibm.com,
+       containers@lists.osdl.org, winget@google.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on
+ top of nsproxy!
+Message-Id: <20070302085224.48212452.akpm@linux-foundation.org>
+In-Reply-To: <45E84682.6040500@openvz.org>
+References: <20070301133543.GK15509@in.ibm.com>
+	<20070301113900.a7dace47.pj@sgi.com>
+	<45E84682.6040500@openvz.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1172854311_6664P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Fri, 02 Mar 2007 11:51:51 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1172854311_6664P
-Content-Type: text/plain; charset=us-ascii
+On Fri, 02 Mar 2007 18:45:06 +0300 Kirill Korotaev <dev@openvz.org> wrote:
 
-On Fri, 02 Mar 2007 16:31:02 GMT, James Simmons said:
+> > I'm wagering you'll break either the semantics, and/or the
+> > performance, of cpusets doing this.
+> I like Paul's containers patch. It looks good and pretty well.
+> After some of the context issues are resolved it's fine.
+> Maybe it is even the best way of doing things.
 
-> > > nvidiafb-bring-back-generic-ddc-reading.patch
+Have you thought about the relationship between it and UBC?
 
-> To have a patch to cleans things up. Give it a try
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index b8f0a11..855a09e 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-
-Queued up for the next time I build a -mm kernel.  This build of 21-rc2-mm1
-has been up for 33 minutes already, so it may be later tonight (when I try
-to get my Intel 3945 wireless card working with the new 80211 stack).
-
---==_Exmh_1172854311_6664P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFF6FYncC3lWbTT17ARArtCAKDLHmajzcRE5CDN0faKZvFWXkJcsQCgwvy8
-oRtvBZN3tAQK69JKF4ep2L0=
-=E5W8
------END PGP SIGNATURE-----
-
---==_Exmh_1172854311_6664P--
