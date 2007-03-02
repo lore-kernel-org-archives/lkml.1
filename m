@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992706AbXCBWx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992707AbXCBWyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992706AbXCBWx4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 17:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992707AbXCBWx4
+	id S2992707AbXCBWyF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 17:54:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992709AbXCBWyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 17:53:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51680 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992706AbXCBWxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 17:53:55 -0500
-Message-ID: <45E8AAB9.7040707@redhat.com>
-Date: Fri, 02 Mar 2007 17:52:41 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Fri, 2 Mar 2007 17:54:05 -0500
+Received: from webmail.woosh.co.nz ([202.74.207.2]:3258 "EHLO
+	mail2.woosh.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992707AbXCBWyD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 17:54:03 -0500
+X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Mar 2007 17:54:02 EST
+Date: Sat, 3 Mar 2007 11:43:54 +1300 (NZDT)
+From: Keith Duthie <keith@no.net.nz>
+To: Timur Tabi <timur@freescale.com>
+cc: Mike Accetta <maccetta@laurelnetworks.com>, linux-kernel@vger.kernel.org
+Subject: Re: Someone please turn on the http protocol on git.kernel.org!
+In-Reply-To: <45E8A571.9030601@freescale.com>
+Message-ID: <alpine.DEB.0.82.0703031142100.8900@sleipnir.no.net.nz>
+References: <7TYYU-5L8-11@gated-at.bofh.it> <7U2zx-392-13@gated-at.bofh.it>
+ <45E8220D.9040905@laurelnetworks.com> <45E8A571.9030601@freescale.com>
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Bill Irwin <bill.irwin@oracle.com>,
-       Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
-       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-References: <20070301101249.GA29351@skynet.ie>	<20070301160915.6da876c5.akpm@linux-foundation.org>	<45E842F6.5010105@redhat.com>	<20070302085838.bcf9099e.akpm@linux-foundation.org>	<Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>	<20070302093501.34c6ef2a.akpm@linux-foundation.org>	<45E8624E.2080001@redhat.com>	<20070302100619.cec06d6a.akpm@linux-foundation.org>	<Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com>	<45E86BA0.50508@redhat.com>	<20070302211207.GJ10643@holomorphy.com>	<45E894D7.2040309@redhat.com>	<20070302135243.ada51084.akpm@linux-foundation.org>	<45E89F1E.8020803@redhat.com> <20070302142256.0127f5ac.akpm@linux-foundation.org> <45E8A677.7000205@redhat.com>
-In-Reply-To: <45E8A677.7000205@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> 32GB is pretty much the minimum size to reproduce some of these
-> problems. Some workloads may need larger systems to easily trigger
-> them.
-> 
+On Fri, 2 Mar 2007, Timur Tabi wrote:
 
-Hundreds of disks all doing IO at once may also be needed, as
-wli points out. Such systems are not readily available for testing.
+> Isn't 2.6.11 around the time that Linus moved to git?  Maybe the server can't
+> find tag for the initial check-in of the code.
 
+v2.6.12-rc2, in fact. If you want to look at v2.6.11 in git you'll need to
+look at the bkcvs tree.
 
-
+-- 
+The universe hates you, but don't worry - it's nothing personal.
