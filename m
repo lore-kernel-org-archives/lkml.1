@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992581AbXCBQ17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992589AbXCBQ3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992581AbXCBQ17 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 11:27:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992583AbXCBQ16
+	id S2992589AbXCBQ3c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 11:29:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992584AbXCBQ3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 11:27:58 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41385 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992581AbXCBQ16 (ORCPT
+	Fri, 2 Mar 2007 11:29:32 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:54452 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992589AbXCBQ3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 11:27:58 -0500
-X-AuditID: d80ac287-a1830bb000002978-73-45e8508de47c 
-Date: Fri, 2 Mar 2007 16:27:58 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: PREEMPT_RCU breaks anon_vma locking ?
-In-Reply-To: <20070224225316.GH5049@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0703021617520.6498@blonde.wat.veritas.com>
-References: <20070223212303.GA423@tv-sign.ru> <Pine.LNX.4.64.0702242203080.4370@blonde.wat.veritas.com>
- <20070224225316.GH5049@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 02 Mar 2007 16:27:56.0789 (UTC) FILETIME=[BC313250:01C75CE7]
-X-Brightmail-Tracker: AAAAAA==
+	Fri, 2 Mar 2007 11:29:31 -0500
+Subject: Re: Kernel Oops with shm namespace cleanups
+From: Adam Litke <agl@us.ibm.com>
+To: Bill Irwin <bill.irwin@oracle.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org
+In-Reply-To: <20070302000808.GE10643@holomorphy.com>
+References: <1172693610.12805.16.camel@localhost.localdomain>
+	 <20070302000808.GE10643@holomorphy.com>
+Content-Type: text/plain
+Date: Fri, 02 Mar 2007 10:29:16 -0600
+Message-Id: <1172852957.12220.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Feb 2007, Paul E. McKenney wrote:
-> On Sat, Feb 24, 2007 at 10:04:04PM +0000, Hugh Dickins wrote:
-> >
-> > Have you checked through the SLAB_DESTROY_BY_RCU end in slab.c?
-> > Is what that's doing still valid?
+On Thu, 2007-03-01 at 16:08 -0800, Bill Irwin wrote:
+> On Wed, Feb 28, 2007 at 02:13:29PM -0600, Adam Litke wrote:
+> > Hey.  While testing 2.6.21-rc2 with libhugetlbfs, the shm-fork test case
+> > causes the kernel to oops.  To reproduce:  Execute 'make check' in the
+> > latest libhugetlbfs source on a 2.6.21-rc2 kernel with 100 huge pages
+> > allocated.  Using fewer huge pages will likely also trigger the oops.
+> > Libhugetlbfs can be downloaded from:
+> > http://libhugetlbfs.ozlabs.org/snapshots/libhugetlbfs-dev-20070228.tar.gz
 > 
-> The only thing I see needed due to PREEMPT_RCU is the following comment
-> change.
-> 
-> For a terrified few minutes, I thought that the code assumed that struct
-> rcu_head was the same size as struct list_head, but it turns out to only
-> assume that struct slab is at least as large as struct slab_rcu.
-> 
-> 						Thanx, Paul
+> Looks like I should grab these testcases for the sake of due diligence
+> (not to say I intend to alter maintenance style from primarily review,
+> approval, and bugfixing, not that I've been doing as much of any of those
+> as I should). To which architectures and/or distributions have the
+> userspace bits been ported, or otherwise run/tested on? A quick sniff
+> test on an Altix suggests SLES and/or ia64 may trip up the scripts:
 
-Thanks for enduring the terror, checking it out, and arriving at
-such a reassuring conclusion.  Andrew, please add this to your -mm
-collection after (or folded into) Paul's rcu-preemptible-rcu.patch.
+Right now we support x86, powerpc, and x86_64.  Segment remapping and
+hugetlb malloc won't work on ia64 until long format vhpt is supported (I
+suspect).  But the test framework should be adaptable to other
+architectures.
 
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
-PREEMPT_RCU has stricter needs: updated comment on SLAB_DESTROY_BY_RCU.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Hugh Dickins <hugh@veritas.com>
----
-
-diff -urpNa -X dontdiff linux-2.6.20/mm/slab.c linux-2.6.20-slabrcufix/mm/slab.c
---- linux-2.6.20/mm/slab.c	2007-02-04 10:44:54.000000000 -0800
-+++ linux-2.6.20-slabrcufix/mm/slab.c	2007-02-24 14:50:39.000000000 -0800
-@@ -238,7 +238,7 @@ struct slab {
-  * other kind of object (which our subsystem's lock might corrupt).
-  *
-  * rcu_read_lock before reading the address, then rcu_read_unlock after
-- * taking the spinlock within the structure expected at that address.
-+ * releasing the spinlock within the structure expected at that address.
-  *
-  * We assume struct slab_rcu can overlay struct slab when destroying.
-  */
