@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422788AbXCBC3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422790AbXCBCbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422788AbXCBC3Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 21:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422790AbXCBC3Z
+	id S1422790AbXCBCbt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 21:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422792AbXCBCbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 21:29:25 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37665 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422788AbXCBC3Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 21:29:24 -0500
-Date: Fri, 2 Mar 2007 02:29:19 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: support@coraid.com, "Ed L. Cashin" <ecashin@coraid.com>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: PATCH 2.6.21-rc1 aoe: handle zero _count pages in bios
-Message-ID: <20070302022919.GA26285@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>, support@coraid.com,
-	"Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org,
-	Greg KH <greg@kroah.com>
-References: <20070301231510.GC8524@coraid.com> <20070301174204.a550dd3a.akpm@linux-foundation.org>
+	Thu, 1 Mar 2007 21:31:49 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35874 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422790AbXCBCbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 21:31:48 -0500
+Date: Thu, 1 Mar 2007 18:31:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ryan Hope" <rmh3093@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: -mm release schedule?
+Message-Id: <20070301183143.812b27a5.akpm@linux-foundation.org>
+In-Reply-To: <48f7fe350703010634o17a35dd0p31a61cceefea27f6@mail.gmail.com>
+References: <48f7fe350703010634o17a35dd0p31a61cceefea27f6@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301174204.a550dd3a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 05:42:04PM -0800, Andrew Morton wrote:
-> Something funny is going on here.
+On Thu, 1 Mar 2007 09:34:42 -0500
+"Ryan Hope" <rmh3093@gmail.com> wrote:
 
-Not so funny for those who've tried to sort out the issue over
-the past years and just got ignored..
+> I didn't really know of a better place to ask this question, bus is
+> there any rhyme or reason to when -mm kernels are released?
 
-> Generally, one should increment the refcount of a page when it is put into
-> some container.  That means that the page should get +1 when it is added to
-> a bio.  (direct-io does this, but the mpage.c pagecache code cheats, and
-> relies upon PG_locked and PG-writeback protecting the page).
+Not really.  I basically release them as quickly as I can, given that it
+takes pretty much a full day to get a release compiling and pretending to
+boot on various machines and configs.
 
-It's a slab page, and slab pages aren't refcounted (which is a good thing
-as you don't own the whole page)
+I tend not to bother doing -mm releases during the two-week merge window
+because a) I'm busy sending stuff and b) the upstream tree is changing too
+fast and c) I'm busy watching people merrily merge things into mainline
+which I've never seen before.
 
-> Similarly, the network code (or its caller) should be incrementing the
-> page's refcount as the page goes into a container (ie: the skb) and
-> decrementing it as the page is removed.
-> 
-> But someone somewhere is breaking those rules.  Who?
+> Is there a
+> -git repo that I can get work in progress for -mm?
 
-slab code.  
+Nope.  Because it's almost never in a compileable state.  I don't see a lot
+of point in publishing a known-broken tree - all people can do is to send
+me little fixes for stuff which I'll quickly fix myself anyway.
 
-> So.  Who is breaking refcounting protocol here?  Perhaps it is AOE, failing
-> to increment the refcount on pages as they are added to an skb?
-> 
-> (Do we know which callsite in XFS is adding zero-ref pages to a BIO, btw?)
+I should upload snapshots more regularly to
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/ but there always
+seems to be a reason not to.
 
-For example all log I/O is done from kmalloce pages.
-
-Anyway, to rehash what I've been trying to get clarified for ages:
-
-
- (1) should we allow to pass slab pages into bios
-
-and
-
- (2) if yes what's the way lower layers are supposed to handle them
-     for any possible refcounting operations like networking or rdma.
-
-There's also a pontial caller in ext3 that can send down kmalloc'ed
-buffers: journal_write_metadata_buffer() in need_copy_out && !done_copy_out
-case.  But apparently that's an almost dead code path as I've never
-seen anyone tripping this one, it's always XFS that people report.
