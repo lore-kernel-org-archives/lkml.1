@@ -1,62 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422829AbXCBLjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933345AbXCBLki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422829AbXCBLjF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 06:39:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422826AbXCBLjF
+	id S933345AbXCBLki (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 06:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933340AbXCBLki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 06:39:05 -0500
-Received: from p02c11o143.mxlogic.net ([208.65.145.66]:37876 "EHLO
-	p02c11o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422824AbXCBLjE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 06:39:04 -0500
-Date: Fri, 2 Mar 2007 13:39:20 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>,
-       git@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: Re: [patch] KVM: T60 resume fix
-Message-ID: <20070302113920.GB9367@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu>
+	Fri, 2 Mar 2007 06:40:38 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46964 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933336AbXCBLkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 06:40:37 -0500
+Date: Fri, 2 Mar 2007 12:40:23 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-ID: <20070302114023.GD2163@elf.ucw.cz>
+References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <20070218183805.5a4fd813.khali@linux-fr.org> <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070302102216.GA13575@elte.hu>
-User-Agent: Mutt/1.5.11
-X-OriginalArrivalTime: 02 Mar 2007 11:41:21.0902 (UTC) FILETIME=[B33DA8E0:01C75CBF]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1526-3.6.1039-15028.003
-X-TM-AS-Result: No--7.728700-4.000000-31
-X-Spam: [F=0.2210152620; S=0.221(2007010901)]
-X-MAIL-FROM: <mst@mellanox.co.il>
-X-SOURCE-IP: [194.90.237.34]
+In-Reply-To: <20070301152655.f232db64.khali@linux-fr.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Ingo Molnar <mingo@elte.hu>:
-> Subject: [patch] KVM: T60 resume fix
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> my T60 laptop does not resume correctly due to KVM attempting to send an 
-> IPI to a CPU that might be down (or not up yet). (Doing so also triggers 
-> the send_IPI_mask_bitmask() warning in arch/i386/kernel/smp.c, line 
-> 732.)
-> 
-> with this fix applied my laptop does not hang during resume.
-> 
-> [ KVM will have to disable/enable virtualization on the CPU itself that
->   goes down / comes up, not via an IPI sent from the requesting CPU. ]
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Hi!
 
-Since I don't normally have kvm loaded, this patch is unlikely
-to help me, is that right?
+> > > > Well I had an idea after looking at k8temp -- why not make it default to
+> > > > doing only reads from the sensor?  You'd only get information from whatever
+> > > > core/sensor combination that ACPI had last used, but it would be safe.
+> > > 
+> > > ACPI is broken here, not k8temp, so let's fix ACPI instead. ACPI
+> > > doesn't conflict with only k8temp, but with virtually all hardware
+> > > monitoring drivers, all I2C/SMBus drivers, and probably other types of
+> > > drivers too. We just can't restrict or blacklist all these drivers
+> > > because ACPI misbehaves.
+> > 
+> > Oops, sorry about that but no, that will not work.
+> > 
+> > There's piece of paper, called ACPI specification, and we are
+> > following it.
+> 
+> I never suggested otherwise. But the Linux 2.6 device driver model is
+> based, in part, on the fact that each driver must request the
+> resources it needs before actually using them. The acpi subsystem fails
+> to do that, so it is, in that sense, misbehaving. The is the root cause
+> of the problems people are reporting these days.
 
+Ok. You are right that ACPI is an ugly piece of mess. But I'm pretty
+sure that 90%+ of ACPI notebook implementations *will* want to talk to
+their monitoring chips... for temperature readings.
+
+So even if we fixed ACPI to reserve the ports, you'd be still unhappy;
+lm-sensors would break at least on all the notebooks.
+
+> > Now, you may try to change specs to be hwmon-friendly... good luck.
+> 
+> I would like them to be driver-model-friendly, that's even a broader
+> challenge ;)
+
+:-).
+
+> > But currently hw manufacturers follow ACPI specs, so we have to follow
+> > it, too; bad luck for hwmon. BIOS hiding smbus from you is good hint
+> > you are doing something wrong...?
+> 
+> I would love things to be that easy, but unfortunately they are not.
+> 
+> Firstly, the first records of hidden SMBus, in September 2000, predate
+> ACPI. All the early boards where the SMBus was hidden did not have ACPI
+> code poking at it at all, so this is definitely not the reason why it
+> was removed. The Asus P4 series is a good example of that. Unhiding the
+> SMBus on these boards actually let the user take benefit of the
+> hardware they had paid for.
+
+...against wishes of the manufacturers. Which sometimes know what they
+are doing. (Sometimes not :-).
+
+> I would be happy to prevent SMBus and/or hardware monitoring drivers
+> from being loaded on ACPI-based system if we had a way to know which
+> systems do have ACPI code accessing these chips and which do not, and if
+> ACPI was offering a level of functionality comparable to what
+> individual hardware monitoring drivers offer. Unfortunately:
+
+Well, I'm afraid you should assume all recent notebooks touch sensors
+from ACPI.
+
+> 1* As far as I know, we currently have no way to know if the ACPI code
+> plans to ever access the hardware monitoring chip. If the acpi
+> subsystem could export this information somehow, it would help a lot.
+> But I'm not familiar with ACPI, so I don't know if this is feasable or
+> not. We just can't prevent the SMBus and hardware monitoring drivers
+> drivers from being loaded as soon as ACPI is enabled. This would
+> prevent a majority of users from using them, while they work fine for
+> most of them.
+
+What about whitelist? DMI-based? That's only way to do it, I'm afraid.
+
+> 2* The hardware monitoring features offered by ACPI today are one level
+> of magnitude weaker than what lm_sensors was already offering back in
+> 1999. The monitoring chips can do much but unfortunately ACPI only
+> exposes a very small subset of the chip features. ACPI doesn't
+> handle
+
+Yes, I know ACPI sucks at hardware monitoring. Unfortunately, we can't
+go without ACPI.
+
+> voltage monitoring at all. It usually reports no more than one fan, and
+> in my experience, more often than not, the speed is reported as a
+> boolean (spinning or not), when lm_sensors gives you the exact speed of
+> all your fans. ACPI thermal zones are not so bad, but the interface to
+> control them is ugly, and lm_sensors usually gives more details. And
+
+Fix the interface? ;-). Actually that move may be underway as we are
+moving out of /proc.
+
+> What do you propose?
+
+Whitelist seems like a way to go :(.
+									Pavel
 -- 
-MST
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
