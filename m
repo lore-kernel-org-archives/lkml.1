@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965565AbXCBUfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932961AbXCBUhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965565AbXCBUfQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 15:35:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965585AbXCBUfQ
+	id S932961AbXCBUhG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 15:37:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933367AbXCBUhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 15:35:16 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56614
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965565AbXCBUfP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 15:35:15 -0500
-Date: Fri, 02 Mar 2007 12:35:14 -0800 (PST)
-Message-Id: <20070302.123514.35465791.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: romosan@sycorax.lbl.gov, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net, rpurdie@rpsys.net
-Subject: Re: 2.6.21-rc2 radeon backlight
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070302122920.a2967ebf.akpm@linux-foundation.org>
-References: <20070301184531.b3aeafe3.akpm@linux-foundation.org>
-	<87tzx35zkc.fsf@sycorax.lbl.gov>
-	<20070302122920.a2967ebf.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 2 Mar 2007 15:37:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52750 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932961AbXCBUhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 15:37:04 -0500
+Date: Fri, 2 Mar 2007 21:29:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070302202931.GA5101@elte.hu>
+References: <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru> <20070301150942.GA26025@elte.hu> <20070301153655.GB8217@2ka.mipt.ru> <20070302105713.GB15576@elte.hu> <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com> <20070302193941.GB8450@elte.hu> <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 2 Mar 2007 12:29:20 -0800
 
-> On Fri, 02 Mar 2007 09:24:03 -0800
-> Alex Romosan <romosan@sycorax.lbl.gov> wrote:
-> 
-> > Andrew Morton <akpm@linux-foundation.org> writes:
-> > 
-> > > On Wed, 28 Feb 2007 08:32:43 -0800
-> > > Alex Romosan <romosan@sycorax.lbl.gov> wrote:
-> > >
-> > >> the backlight on my thinkpad still (2.6.20 worked fine) doesn't come
-> > >> on if i have the radeon backlight enabled. without it, i guess it's
-> > >> the ibm acpi modules that controls the backlight and it seems to work
-> > >> fine.
-> > >> 
-> > >
-> > > Unclear. Are you saying that the backlight comes on OK if you use
-> > > the IBM acpi module?
-> > 
-> > yes, if i disable the radeon backlight and use the ibm acpi module,
-> > than the backlight works. if i enable the radeon backlight, the screen
-> > stays dark and i can't turn it on (i tried using radeontool to control
-> > it but nothing happened).
-> 
-> Richard, is this actually a bug, or is it a config error or something like that?
-> 
-> And should we track it as a post-2.6.20 regression?
+* Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Why don't we compromise for 2.6.21 by marking the Radeon backlight
-stuff EXPERIMENTAL until the cases where IBM ACPI works and the
-Radeon backlight stuff does not are worked out?
+> I think that the "dirty" FPU context must, at least, follow the new 
+> head. That's what the userspace sees, and you don't want an async_exec 
+> to re-emerge with a different FPU context.
+
+well. I think there's some confusion about terminology, so please let me 
+describe everything in detail. This is how execution goes:
+
+  outer loop() {
+      call_threadlet();
+  }
+
+this all runs in the 'head' context. call_threadlet() always switches to 
+the 'threadlet stack'. The 'outer context' runs in the 'head stack'. If, 
+while executing the threadlet function, we block, then the 
+threadlet-thread gets to keep the task (the threadlet stack and also the 
+FPU), and blocks - and we pick a 'new head' from the thread pool and 
+continue executing in that context - right after the call_threadlet() 
+function, in the 'old' head's stack. I.e. it's as if we returned 
+immediately from call_threadlet(), with a return code that signals that 
+the 'threadlet went async'.
+
+now, the FPU state that was when the threadlet blocked is totally 
+meaningless to the 'new head' - that FPU state is from the middle of the 
+threadlet execution.
+
+and here is where thinking about threadlets as a function call and not 
+as an asynchronous context helps alot: the classic gcc convention for 
+FPU use & function calls should apply: gcc does not call an external 
+function with an in-use FPU stack/register, it always neatly unuses it, 
+as no FPU register is callee-saved, all are caller-saved.
+
+> So, IMO, if the USEDFPU bit is set, we need to sync the dirty FPU 
+> context with an early unlazy_fpu(), *and* copy the sync'd FPU context 
+> to the new head. This should really be a fork of the dirty FPU context 
+> IMO, and should only happen if the USEDFPU bit is set.
+
+why? The only effect this will have is a slowdown :) The FPU context 
+from the middle of the threadlet function is totally meaningless to the 
+'new head'. It might be anything. (although in practice system calls are 
+almost never called with a truly in-use FPU.)
+
+	Ingo
