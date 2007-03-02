@@ -1,84 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992689AbXCBSHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992691AbXCBSJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992689AbXCBSHz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 13:07:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992691AbXCBSHz
+	id S2992691AbXCBSJn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 13:09:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992692AbXCBSJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 13:07:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:36459 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992689AbXCBSHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 13:07:54 -0500
-Date: Fri, 2 Mar 2007 10:06:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
-       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-Message-Id: <20070302100619.cec06d6a.akpm@linux-foundation.org>
-In-Reply-To: <45E8624E.2080001@redhat.com>
-References: <20070301101249.GA29351@skynet.ie>
-	<20070301160915.6da876c5.akpm@linux-foundation.org>
-	<45E842F6.5010105@redhat.com>
-	<20070302085838.bcf9099e.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>
-	<20070302093501.34c6ef2a.akpm@linux-foundation.org>
-	<45E8624E.2080001@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 Mar 2007 13:09:43 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:33707 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992691AbXCBSJl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 13:09:41 -0500
+Message-ID: <45E86858.20900@us.ibm.com>
+Date: Fri, 02 Mar 2007 10:09:28 -0800
+From: Mingming Cao <cmm@us.ibm.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301145949.3efac328.akpm@linux-foundation.org> <1172790570.11165.62.camel@kleikamp.austin.ibm.com>
+In-Reply-To: <1172790570.11165.62.camel@kleikamp.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Mar 2007 12:43:42 -0500
-Rik van Riel <riel@redhat.com> wrote:
-
-> Andrew Morton wrote:
-> > On Fri, 2 Mar 2007 09:23:49 -0800 (PST) Christoph Lameter <clameter@engr.sgi.com> wrote:
-> > 
-> >> On Fri, 2 Mar 2007, Andrew Morton wrote:
-> >>
-> >>>> Linux is *not* happy on 256GB systems.  Even on some 32GB systems
-> >>>> the swappiness setting *needs* to be tweaked before Linux will even
-> >>>> run in a reasonable way.
-> >>> Please send testcases.
-> >> It is not happy if you put 256GB into one zone.
-> > 
-> > Oh come on.  What's the workload?  What happens?  system time?  user time?
-> > kernel profiles?
+Dave Kleikamp wrote:
+> On Thu, 2007-03-01 at 14:59 -0800, Andrew Morton wrote:
 > 
-> I can't share all the details, since a lot of the problems are customer
-> workloads.
+>>On Thu, 01 Mar 2007 22:44:16 +0000
+>>Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
+>>
+>>
+>>>On Thu, 2007-03-01 at 14:25 -0800, Andrew Morton wrote:
+>>>
+>>>>On Fri, 2 Mar 2007 00:04:45 +0530
+>>>>"Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+>>>
+>>>>>+asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len)
+>>>>>+{
+>>>>>+	struct file *file;
+>>>>>+	struct inode *inode;
+>>>>>+	long ret = -EINVAL;
+>>>>>+	file = fget(fd);
+>>>>>+	if (!file)
+>>>>>+		goto out;
+>>>>>+	inode = file->f_path.dentry->d_inode;
+>>>>>+	if (inode->i_op && inode->i_op->fallocate)
+>>>>>+		ret = inode->i_op->fallocate(inode, offset, len);
+>>>>>+	else
+>>>>>+		ret = -ENOTTY;
+>>>>>+	fput(file);
+>>>>>+out:
+>>>>>+        return ret;
+>>>>>+}
+>>>>
+>>>>ENOTTY is a bit unconventional - we often use EINVAL for this sort of
+>>>>thing.  But EINVAL has other meanings for posix_fallocate() and isn't
+>>>>really appropriate here anyway.  So I'm not sure what would be better...
+>>>
+>>>Would EINVAL (or whatever) make it back to the caller of
+>>>posix_fallocate(), or would glibc fall back to its current
+>>>implementation?
+>>>
+>>>Forgive me if I haven't put enough thought into it, but would it be
+>>>useful to create a generic_fallocate() that writes zeroed pages for any
+>>>non-existent pages in the range?  I don't know how glibc currently
+>>>implements posix_fallocate(), but maybe the kernel could do it more
+>>>efficiently, even in generic code.  Maybe we don't care, since the major
+>>>file systems can probably do something better in their own code.
+>>
+>>Given that glibc already implements fallocate for all filesystems, it will
+>>need to continue to do so for filesystems which don't implement this
+>>syscall - otherwise applications would start breaking.
 > 
-> One particular case is a 32GB system with a database that takes most
-> of memory.  The amount of actually freeable page cache memory is in
-> the hundreds of MB.
-
-Where's the rest of the memory? tmpfs?  mlocked?  hugetlb?
-
->   With swappiness at the default level of 60, kswapd
-> ends up eating most of a CPU, and other tasks also dive into the pageout
-> code.  Even with swappiness as high as 98, that system still has
-> problems with the CPU use in the pageout code!
 > 
-> Another typical problem is that people want to back up their database
-> servers.  During the backup, parts of the working set get evicted from
-> the VM and performance is horrible.
+> I didn't make it clear, but my point was to call generic_fallocate if
+> the file system did not define i_op->allocate().
+> 
+> if (inode->i_op && inode->i_op->fallocate)
+> 	ret = inode->i_op->fallocate(inode, offset, len);
+> else
+> 	ret = generic_fallocate(inode, offset, len);
+> 
+> I'm not sure it's worth the effort, but I thought I'd throw the idea out
+> there.
+> 
+I think this is useful.
 
-userspace fixes for this are far, far better than any magic goo the kernel
-can implement.  We really need to get off our butts and start educating
-people.
-
-> A third scenario is where a system has way more RAM than swap, and not
-> a whole lot of freeable page cache.  In this case, the VM ends up
-> spending WAY too much CPU time scanning and shuffling around essentially
-> unswappable anonymous memory and tmpfs files.
-
-Well we've allegedly fixed that, but it isn't going anywhere without
-testing.
-
+Mingming
 
