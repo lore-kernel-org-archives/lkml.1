@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992659AbXCBR2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992663AbXCBRa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992659AbXCBR2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992662AbXCBR2X
+	id S2992663AbXCBRa4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992664AbXCBRa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:28:23 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:34268 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992659AbXCBR2W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:28:22 -0500
-Date: Fri, 2 Mar 2007 17:28:18 +0000
-To: Christoph Lameter <clameter@engr.sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de, mingo@elte.hu,
-       jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070302172818.GA15730@skynet.ie>
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <20070302163206.GA1555@skynet.ie> <Pine.LNX.4.64.0703020916330.16719@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Fri, 2 Mar 2007 12:30:56 -0500
+Received: from mail.suse.de ([195.135.220.2]:57563 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992663AbXCBRaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 12:30:55 -0500
+Date: Fri, 2 Mar 2007 18:30:54 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix ACPI documentation in kernel-parameters.txt
+Message-ID: <20070302173054.GB9157@strauss.suse.de>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703020916330.16719@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (02/03/07 09:19), Christoph Lameter didst pronounce:
-> On Fri, 2 Mar 2007, Mel Gorman wrote:
-> 
-> > However, if that is objectionable, I'd at least like to see zone-based patches
-> > go into -mm on the expectation that the memory hot-remove patches will be
-> > able to use the infrastructure. It's not ideal for hugepages and it is not my
-> > first preference, but it's a step in the right direction. Is this reasonable?
-> 
-> I still think that the list based approach is sufficient for memory 
-> hotplug if one restricts  the location of the unmovable MAX_ORDER chunks 
-> to not overlap the memory area where we would like to be able to remove 
-> memory.
+Add hint that acpi=off doesn't work on IA64.
 
-Yes, true. In the part where I bias placements of unmovable pages at
-lower PFNs, additional steps would need to be taken. Specifically, the
-lowest block MAX_ORDER_NR_PAGES used for movable pages would need to be
-reclaimed for unmovable allocations.
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
-> In very pressing memory situations where we have too much 
-> unmovable memory we could dynamically disable  memory hotplug. There 
-> would be no need for this partitioning and additional zones.
-> 
+---
+ Documentation/kernel-parameters.txt |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-It's simply more complex. I believe it's doable. The main plus going for
-the zone is that it is a clearly understood concept and it gives hard
-guarantees.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Index: linux-2.6.21-rc2-mm1/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.21-rc2-mm1.orig/Documentation/kernel-parameters.txt
++++ linux-2.6.21-rc2-mm1/Documentation/kernel-parameters.txt
+@@ -126,7 +126,8 @@ and is between 256 and 4096 characters. 
+ 			See header of drivers/scsi/53c7xx.c.
+ 			See also Documentation/scsi/ncr53c7xx.txt.
+ 
+-	acpi=		[HW,ACPI] Advanced Configuration and Power Interface
++	acpi=		[HW,ACPI,X86-64,i386]
++			Advanced Configuration and Power Interface
+ 			Format: { force | off | ht | strict | noirq }
+ 			force -- enable ACPI if default was off
+ 			off -- disable ACPI if default was on
