@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992748AbXCBX30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992738AbXCBXar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992748AbXCBX30 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 18:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992747AbXCBX3Z
+	id S2992738AbXCBXar (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 18:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992741AbXCBXar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 18:29:25 -0500
-Received: from de01egw01.freescale.net ([192.88.165.102]:38881 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992748AbXCBX3Y (ORCPT
+	Fri, 2 Mar 2007 18:30:47 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49784
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S2992738AbXCBXaq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 18:29:24 -0500
-Message-ID: <45E8B34F.8020405@freescale.com>
-Date: Fri, 02 Mar 2007 17:29:19 -0600
-From: Timur Tabi <timur@freescale.com>
-Organization: Freescale
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
-MIME-Version: 1.0
-To: Steve Wise <swise@opengridcomputing.com>
-CC: Mike Accetta <maccetta@laurelnetworks.com>, linux-kernel@vger.kernel.org
-Subject: Re: Someone please turn on the http protocol on git.kernel.org!
-References: <7TYYU-5L8-11@gated-at.bofh.it> <7U2zx-392-13@gated-at.bofh.it>	 <45E8220D.9040905@laurelnetworks.com>  <45E8A571.9030601@freescale.com> <1172875178.21241.68.camel@stevo-desktop>
-In-Reply-To: <1172875178.21241.68.camel@stevo-desktop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 2 Mar 2007 18:30:46 -0500
+Date: Fri, 02 Mar 2007 15:30:45 -0800 (PST)
+Message-Id: <20070302.153045.71090285.davem@davemloft.net>
+To: johnstul@us.ibm.com
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org,
+       andreas.friedrich@fujitsu-siemens.com, tglx@linutronix.de,
+       dwalker@mvista.com
+Subject: Re: [PATCH -mm][Take 2] clocksource init adjustments (fix bug
+ #7426)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1172877840.5449.39.camel@localhost.localdomain>
+References: <1172865491.5449.13.camel@localhost.localdomain>
+	<20070302.123202.11628478.davem@davemloft.net>
+	<1172877840.5449.39.camel@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Wise wrote:
+From: john stultz <johnstul@us.ibm.com>
+Date: Fri, 02 Mar 2007 15:24:00 -0800
 
-> Aren't the older commits in another git tree?  Like maybe 
+> On Fri, 2007-03-02 at 12:32 -0800, David Miller wrote:
+> > From: john stultz <johnstul@us.ibm.com>
+> > Date: Fri, 02 Mar 2007 11:58:11 -0800
+> > 
+> > > Oh! Sorry! Yea, looking at it more the ioremap isn't actually necessary,
+> > > as we can use hpet_readl() instead of re-calculating the hpet base
+> > > address pointer.
+> > > 
+> > > I'll fix this up (and find an HPET enabled x86_64 box to test it on) and
+> > > get a patch to you shortly.
+> > 
+> > Not to pressure you John but I'd really like to see this go
+> > in soon, it does fix real bugs such as the Radeon FB issue
+> > I pointed out the other week.
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/old-2.6-bkcvs.git
+> Here's my second try at this. This time I caught three bugs from the
+> last patch (all in x86_64):
+> 1) Calling ioremap too early in the HPET code (which is unnecessary)
+> 2) hpet_period local variable aliasing
+> 3) forgot to re-add call to init_tsc_clocksource()
+> 
+> I boot tested on two x86_64 boxes (one ACPI PM and the other HPET).
+> However it probably should still go through a bit of testing in -mm to
+> make sure all the quirks are shaken out.
 
-git-clone http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/old-2.6-bkcvs.git works 
-for me, so that can't be it.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Agreed and it looks good to me after going over it a few times.
