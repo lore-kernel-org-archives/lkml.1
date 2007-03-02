@@ -1,83 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422972AbXCBGvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422903AbXCBG4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422972AbXCBGvG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 01:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422975AbXCBGvG
+	id S1422903AbXCBG4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 01:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422905AbXCBG4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 01:51:06 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49706 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422972AbXCBGvF (ORCPT
+	Fri, 2 Mar 2007 01:56:19 -0500
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:1804 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422903AbXCBG4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 01:51:05 -0500
-Date: Thu, 1 Mar 2007 22:51:00 -0800 (PST)
-From: Christoph Lameter <clameter@engr.sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-In-Reply-To: <20070302062950.GG15867@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0703012236160.1979@schroedinger.engr.sgi.com>
-References: <20070302035751.GA15867@wotan.suse.de>
- <Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com>
- <20070302042149.GB15867@wotan.suse.de> <Pine.LNX.4.64.0703012022320.14299@schroedinger.engr.sgi.com>
- <20070302050625.GD15867@wotan.suse.de> <Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com>
- <20070302054944.GE15867@wotan.suse.de> <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>
- <20070302060831.GF15867@wotan.suse.de> <Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com>
- <20070302062950.GG15867@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Mar 2007 01:56:18 -0500
+Date: Fri, 2 Mar 2007 07:54:10 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] scatterlist.h needs types.h
+Message-Id: <20070302075410.5b49f260.khali@linux-fr.org>
+In-Reply-To: <20070301161106.5687156e.akpm@linux-foundation.org>
+References: <20070301135516.5e6b6b29.khali@linux-fr.org>
+	<20070301161106.5687156e.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Nick Piggin wrote:
+Hi Andrew,
 
-> > There was no talk about slightly. 1G page size would actually be quite 
-> > convenient for some applications.
+On Thu, 1 Mar 2007 16:11:06 -0800, Andrew Morton wrote:
+> On Thu, 1 Mar 2007 13:55:16 +0100
+> Jean Delvare <khali@linux-fr.org> wrote:
 > 
-> But it is far from convenient for the kernel. So we have hugepages, so
-> we can stay out of the hair of those applications and they can stay out
-> of hours.
-
-Huge pages cannot do I/O so we would get back to the gazillions of pages 
-to be handled for I/O. I'd love to have I/O support for huge pages. This 
-would address some of the issues.
-
-> > Writing a terabyte of memory to disk with handling 256 billion page 
-> > structs? In case of a system with 1 petabyte of memory this may be rather 
-> > typical and necessary for the application to be able to save its state
-> > on disk.
+> > Most architectures' scatterlist.h use the type dma_addr_t, but omit
+> > to include <asm/types.h> which defines it. This could lead to build
+> > failures, so let's add the missing includes.
 > 
-> But you will have newer IO controllers, faster CPUs...
+> _does_ it actually lead to build errors?  If so, 2.6.21.  If not, 2.6.22.
 
-Sure we will. And you believe that the the newer controllers will be able 
-to magically shrink the the SG lists somehow? We will offload the 
-coalescing of the page structs into bios in hardware or some such thing? 
-And the vmscans etc too?
+No known build error at the moment, so 2.6.22 is fine with me.
 
-> Is it a problem or isn't it? Waving around the 256 billion number isn't
-> impressive because it doesn't really say anything.
+I'm working on a patch cleaning up the inclusion of <linux/pci.h>
+across the whole kernel, and this is how I've hit the problem. I'll
+post that patch later today for comments.
 
-It is the number of items that needs to be handled by the I/O layer and 
-likely by the SG engine.
- 
-> I understand you have controllers (or maybe it is a block layer limit)
-> that doesn't work well with 4K pages, but works OK with 16K pages.
-
-Really? This is the first that I have heard about it.
-
-> This is not something that we would introduce variable sized pagecache
-> for, surely.
-
-I am not sure where you get the idea that this is the sole reason why we 
-need to be able to handle larger contiguous chunks of memory.
-
-How about coming up with a response to the issue at hand? How do I write 
-back 1 Terabyte effectively? Ok this may be an exotic configuration today 
-but in one year this may be much more common. Memory sizes keep on 
-increasing and so is the number of page structs to be handled for I/O. At 
-some point we need a solution here.
-
+Thanks,
+-- 
+Jean Delvare
