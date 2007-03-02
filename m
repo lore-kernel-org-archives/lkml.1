@@ -1,91 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992571AbXCBQU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992578AbXCBQYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992571AbXCBQU5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 11:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992578AbXCBQU5
+	id S2992578AbXCBQYI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 11:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992582AbXCBQYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 11:20:57 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:1916 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992571AbXCBQU4 (ORCPT
+	Fri, 2 Mar 2007 11:24:08 -0500
+Received: from mga05.intel.com ([192.55.52.89]:22264 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992578AbXCBQYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 11:20:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=Wj04PRTZVBlzz4pD7Bww/WbjZ5/l6ovteV7jjqDBav3lVsDn8iF1q8LgR/rdmkeTRlZ8zo4ml1fzTx07pbKu7t1SFh2dFPAiMK3/fu4ZS8dlu/11edTxBjEeJh3NfOU7RnunUR/EAui1M8dyHTtd/rA36FNeEgRY9TydpCXI30s=
-Message-ID: <45E84E81.5080002@googlemail.com>
-Date: Fri, 02 Mar 2007 17:19:13 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Fri, 2 Mar 2007 11:24:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,243,1170662400"; 
+   d="scan'208"; a="205989173:sNHT21980028"
+Date: Fri, 2 Mar 2007 08:20:23 -0800
+From: Mark Gross <mgross@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@in.ibm.com>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
+       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070302162023.GA4691@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E7835A.8000908@in.ibm.com> <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org> <20070301195943.8ceb221a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703012105080.3953@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Dave Jones <davej@codemonkey.org.uk>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] longhaul pci_find_device -> pci_get_device conversion (was:
- Re: 2.6.21-rc2-mm1)
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703012105080.3953@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
-
-Andrew Morton napisał(a):
-> Temporarily at
+On Thu, Mar 01, 2007 at 09:11:58PM -0800, Linus Torvalds wrote:
 > 
->   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+> On Thu, 1 Mar 2007, Andrew Morton wrote:
+> >
+> > On Thu, 1 Mar 2007 19:44:27 -0800 (PST) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> > > In other words, I really don't see a huge upside. I see *lots* of 
+> > > downsides, but upsides? Not so much. Almost everybody who wants unplug 
+> > > wants virtualization, and right now none of the "big virtualization" 
+> > > people would want to have kernel-level anti-fragmentation anyway sicne 
+> > > they'd need to do it on their own.
+> > 
+> > Agree with all that, but you're missing the other application: power
+> > saving.  FBDIMMs take eight watts a pop.
 > 
+> This is a hardware problem. Let's see how long it takes for Intel to 
+> realize that FBDIMM's were a hugely bad idea from a power perspective.
+> 
+> Yes, the same issues exist for other DRAM forms too, but to a *much* 
+> smaller degree.
 
-  CC [M]  arch/i386/kernel/cpu/cpufreq/longhaul.o
-arch/i386/kernel/cpu/cpufreq/longhaul.c: In function 'enable_arbiter_disable':
-arch/i386/kernel/cpu/cpufreq/longhaul.c:598: warning: 'pci_find_device' is deprecated (declared at include/linux/pci.h:485)
-arch/i386/kernel/cpu/cpufreq/longhaul.c:602: warning: 'pci_find_device' is deprecated (declared at include/linux/pci.h:485)
-arch/i386/kernel/cpu/cpufreq/longhaul.c:605: warning: 'pci_find_device' is deprecated (declared at include/linux/pci.h:485)
-arch/i386/kernel/cpu/cpufreq/longhaul.c: In function 'longhaul_setup_vt8235':
-arch/i386/kernel/cpu/cpufreq/longhaul.c:632: warning: 'pci_find_device' is deprecated (declared at include/linux/pci.h:485)
+DDR3-1333 may be better than FBDIMM's but don't count on it being much
+better.
 
-Regards,
-Michal
+> 
+> Also, IN PRACTICE you're never ever going to see this anyway. Almost 
+> everybody wants bank interleaving, because it's a huge performance win on 
+> many loads. That, in turn, means that your memory will be spread out over 
+> multiple DIMM's even for a single page, much less any bigger area.
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+4-way interleave across banks on systems may not be as common as you may
+think for future chip sets.  2-way interleave across DIMMs within a bank
+will stay.
 
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Also the performance gains between 2 and 4 way interleave have been
+shown to be hard to measure.  It may be counter intuitive but its not
+the huge performance win you may expect.  At least in some of the test
+cases I've seen reported showed it to be under the noise floor of the
+lmbench test cases.  
 
---- linux-mm/arch/i386/kernel/cpu/cpufreq/longhaul.c	2007-03-02 15:15:51.000000000 +0100
-+++ linux-work/arch/i386/kernel/cpu/cpufreq/longhaul.c	2007-03-02 17:12:46.000000000 +0100
-@@ -595,14 +595,14 @@ static int enable_arbiter_disable(void)
 
- 	/* Find PLE133 host bridge */
- 	reg = 0x78;
--	dev = pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8601_0, NULL);
-+	dev = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8601_0, NULL);
- 	/* Find CLE266 host bridge */
- 	if (dev == NULL) {
- 		reg = 0x76;
--		dev = pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_862X_0, NULL);
-+		dev = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_862X_0, NULL);
- 		/* Find CN400 V-Link host bridge */
- 		if (dev == NULL)
--			dev = pci_find_device(PCI_VENDOR_ID_VIA, 0x7259, NULL);
-+			dev = pci_get_device(PCI_VENDOR_ID_VIA, 0x7259, NULL);
+> 
+> In other words - forget about DRAM power savings. It's not realistic. And 
+> if you want low-power, don't use FBDIMM's. It really *is* that simple.
+>
 
- 	}
- 	if (dev != NULL) {
-@@ -629,7 +629,7 @@ static int longhaul_setup_vt8235(void)
- 	u8 pci_cmd;
+DDR3-1333 won't be much better.  
 
- 	/* Find VT8235 southbridge */
--	dev = pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8235, NULL);
-+	dev = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8235, NULL);
- 	if (dev != NULL) {
- 		/* Set transition time to max */
- 		pci_read_config_byte(dev, 0xec, &pci_cmd);
+> (And yes, maybe FBDIMM controllers in a few years won't use 8 W per 
+> buffer. I kind of doubt that, since FBDIMM fairly fundamentally is highish 
+> voltage swings at high frequencies.)
+> 
+> Also, on a *truly* idle system, we'll see the power savings whatever we 
+> do, because the working set will fit in D$, and to get those DRAM power 
+> savings in reality you need to have the DRAM controller shut down on its 
+> own anyway (ie sw would only help a bit).
+> 
+> The whole DRAM power story is a bedtime story for gullible children. Don't 
+> fall for it. It's not realistic. The hardware support for it DOES NOT 
+> EXIST today, and probably won't for several years. And the real fix is 
+> elsewhere anyway (ie people will have to do a FBDIMM-2 interface, which 
+> is against the whole point of FBDIMM in the first place, but that's what 
+> you get when you ignore power in the first version!).
+>
 
+Hardware support for some of this is coming this year in the ATCA space
+on the MPCBL0050.  The feature is a bit experimental, and
+power/performance benefits will be workload and configuration
+dependent.  Its not a bed time story.
+
+--mgross
