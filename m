@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422908AbXCBHGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422910AbXCBHMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422908AbXCBHGu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 02:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422909AbXCBHGu
+	id S1422910AbXCBHMK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 02:12:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422911AbXCBHMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 02:06:50 -0500
-Received: from vms046pub.verizon.net ([206.46.252.46]:61982 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422908AbXCBHGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 02:06:49 -0500
-Date: Fri, 02 Mar 2007 02:06:09 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: belkin bulldog ups monitor vs 2.6.21-rc2
-In-reply-to: <200703020042.17902.gene.heskett@gmail.com>
-To: linux-kernel@vger.kernel.org
-Message-id: <200703020206.09721.gene.heskett@gmail.com>
-Organization: very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703020042.17902.gene.heskett@gmail.com>
-User-Agent: KMail/1.9.6
+	Fri, 2 Mar 2007 02:12:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41370 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422909AbXCBHMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 02:12:08 -0500
+Message-ID: <45E7CD8C.6040908@redhat.com>
+Date: Thu, 01 Mar 2007 23:09:00 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+References: <20070117094658.GA17390@amitarora.in.ibm.com>	<20070225022326.137b4875.akpm@linux-foundation.org>	<20070301183445.GA7911@amitarora.in.ibm.com>	<20070301142537.b5950cd7.akpm@linux-foundation.org>	<1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301145949.3efac328.akpm@linux-foundation.org>
+In-Reply-To: <20070301145949.3efac328.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.1.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC2E015409181A2640213885F"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 March 2007, Gene Heskett wrote:
->Greetings;
->
->I just rebooted to 2.6.21-rc2 and noted that getting x up and running
-> was about 15 seconds longer than usual.  When it got a bash shell going
-> I went to it and ran htop which showed that the bulldog monitor was
-> taking 90% of the cpu.  Killed it, then restarted it, but when I ran
-> the gui which ran fine and then stopped the gui, the daemon once again
-> went hog wild and had to be killed,  and I'm losing my kmail composer
-> focus for 30 seconds at a time now that amanda is making her nightly
-> run.
->
->There is nothing in the log about it other than from xinetd as it ran
-> the amanda server stuff.
->
->Not quite ready for prime time methinks.  Using the ck scheduler, this
-> is terrible performance, virtually no multitasking.  Back to 2.6.20-ck1
-> in the morning if it lives the rest of the night.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC2E015409181A2640213885F
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Addendum, amanda finished early, it seems tar thought every level was a 
-level 0, so it ran out of storage after only 3 dle's were processed and 
-backed up.  There are about 25 dle's.  It tried to put 11GB on an 8GB 
-vtape, which because it was a vtape, it could do.
+Andrew Morton wrote:
+> Perhaps Ulrich can comment.
 
-So it appears something in the ext3 filesystem is sadly miss-informing tar 
-when it does the estimate scan vs doing the real file reading.  Or the 
-scan is updating the ctime?
+I was out of town, hence the delay.
 
-I'm back on 2.6.20-ck1 & everything is copacetic again.  I'll find out if 
-the filesystem is damaged tomorrow night cause if the ctimes are all 
-screwed up, amanda will effectively be starting from scratch.  That is 
-not exactly a Good Thing(TM).
+I think that if there is no support for the syscall the correct answer
+is to return ENOSYS.  In this case the current userlevel code would be
+used and ENOSYS is also used to trigger the use of the compat code in
+glibc in case the syscall does not exist at all.
 
-I did find the ls -lt command, and the filesystem looks ok timewise when 
-rebooted now.  I have no more ready clues without your able questions to 
-guide me on this.
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
+
+--------------enigC2E015409181A2640213885F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFF582M2ijCOnn/RHQRAoQOAJ9Rp7RD6N5GQXiyypFz29BnOcGpxwCeIKO+
+UCDUfmTcACHjHep2Jv+Zr60=
+=agIK
+-----END PGP SIGNATURE-----
+
+--------------enigC2E015409181A2640213885F--
