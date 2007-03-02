@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbXCBTcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965236AbXCBTqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964834AbXCBTcy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 14:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965185AbXCBTcy
+	id S965236AbXCBTqF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 14:46:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965225AbXCBTqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 14:32:54 -0500
-Received: from mail.screens.ru ([213.234.233.54]:50144 "EHLO mail.screens.ru"
+	Fri, 2 Mar 2007 14:46:04 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:38849 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964834AbXCBTcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 14:32:53 -0500
-Date: Fri, 2 Mar 2007 22:32:19 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Paul Mundt <lethal@linux-sh.org>, John Reiser <jreiser@BitWagon.com>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
-Message-ID: <20070302193219.GA87@tv-sign.ru>
-References: <20070301175207.GA849@tv-sign.ru> <20070302034800.GA12530@linux-sh.org>
+	id S965199AbXCBTp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 14:45:56 -0500
+Date: Fri, 2 Mar 2007 11:45:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
+       Christian Borntraeger <cborntra@de.ibm.com>, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] timer/hrtimer: take per cpu locks in sane order
+Message-Id: <20070302114524.1c61cf22.akpm@linux-foundation.org>
+In-Reply-To: <20070302190836.GA7942@osiris.ibm.com>
+References: <20070227153051.GD7911@osiris.boeblingen.de.ibm.com>
+	<20070302125848.GA8226@osiris.boeblingen.de.ibm.com>
+	<20070302130433.GA4391@elte.hu>
+	<20070302142308.GB8226@osiris.boeblingen.de.ibm.com>
+	<20070302084833.732d09dd.akpm@linux-foundation.org>
+	<20070302190836.GA7942@osiris.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302034800.GA12530@linux-sh.org>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/02, Paul Mundt wrote:
+On Fri, 2 Mar 2007 20:08:36 +0100
+Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+
+> +/*
+> + * double_hrtimer_lock/unlock are used to ensure that on cpu hotplug the
+> + * per cpu timer locks are always taken in the same order.
+> + */
+> +static void double_hrtimer_lock(struct hrtimer_cpu_base *base1,
+> +				struct hrtimer_cpu_base *base2, int ind)
+> +	__acquires(base1->lock)
+> +	__acquires(base2->lock)
+> +{
 >
-> On Thu, Mar 01, 2007 at 08:52:07PM +0300, Oleg Nesterov wrote:
-> > >
-> > > @@ -105,10 +107,25 @@ int arch_setup_additional_pages(struct l
-> > >  {
-> > >  	struct mm_struct *mm = current->mm;
-> > >  	unsigned long addr;
-> > > +	unsigned long flags;
-> > >  	int ret;
-> > >
-> > > +	switch (vdso_enabled) {
-> > > +	case 0:  /* none */
-> > > +		return 0;
-> > 
-> > This means we don't initialize mm->context.vdso and ->sysenter_return.
-> > 
-> > Is it ok? For example, setup_rt_frame() uses VDSO_SYM(&__kernel_rt_sigreturn),
-> > sysenter_past_esp pushes ->sysenter_return on stack.
+> ...
 >
-> The setup_rt_frame() case is fairly straightforward, both PPC and SH
-> already check to make sure there's a valid context before trying to use
-> VDSO_SYM(), I'm not sure why x86 doesn't.
->
-> Though I wonder if there's any point in checking binfmt->hasvdso here?
-> There shouldn't be a valid mm->context.vdso in the !hasvdso case..
+> +/*
+> + * double_timer_lock/unlock are used to ensure that on cpu hotplug the
+> + * per cpu timer locks are always taken in the same order.
+> + */
+> +static void __devinit double_timer_lock(tvec_base_t *base1,
+> +					tvec_base_t *base2, int ind)
+> +	__acquires(base1->lock)
+> +	__acquires(base2->lock)
 
-setup_rt_frame() is obviously wrong? Surely it must check ->hasvdso like
-setup_frame() does! Otherwise, we will have SIGSEGV on SA_SIGINFO if
-->load_binary() does not call arch_setup_additional_pages(), no?
+hm.  Can we not just pass in the spinlock_t*'s and use a common function?
 
-If no, what ->hasvdso is?
+	void double_spin_lock(spinlock_t *l1, spinlock_t *l2, int ind);
 
-> Someone else will have to comment on ->sysenter_return.
+that way it has nothing to do with timers and can potentially be used
+elsewhere in the kernel, too.
 
-It is needed for sysexit. If we don't use sysenter (and we shouldn't, because
-syscall_page is not mapped), we don't need to initialize it. Note also that
-sys_execve() sets TIF_IRET, so we are safe even if sys_execve() was called
-using __kernel_vsyscall.
-
-Still, I don't understand why we don't pass NEW_AUX_ENT(AT_SYSINFO) when
-vdso_enabled == 0. We don't need linux-gate.so to use __kernel_vsyscall,
-we have FIX_VDSO. In that case we should s/PAGE_KERNEL_RO/PAGE_READONLY/
-of course. I guess the reason is some magic in glibc.
-
-Oleg.
-
+(what does "ind" mean?)
