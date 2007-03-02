@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992737AbXCBX2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992744AbXCBX2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992737AbXCBX2h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 18:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992743AbXCBX2h
+	id S2992744AbXCBX2q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 18:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992743AbXCBX2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 18:28:37 -0500
-Received: from ns1.suse.de ([195.135.220.2]:52696 "EHLO mx1.suse.de"
+	Fri, 2 Mar 2007 18:28:46 -0500
+Received: from dvhart.com ([64.146.134.43]:39977 "EHLO dvhart.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992737AbXCBX2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 18:28:36 -0500
-Subject: patch pci-fix-section-mismatch-warning.patch added to gregkh-2.6 tree
-To: sam@ravnborg.org, greg@kroah.com, gregkh@suse.de,
+	id S2992744AbXCBX2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 18:28:45 -0500
+Message-ID: <45E8B32B.4050903@mbligh.org>
+Date: Fri, 02 Mar 2007 15:28:43 -0800
+From: "Martin J. Bligh" <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bill Irwin <bill.irwin@oracle.com>,
+       Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Fri, 02 Mar 2007 15:27:44 -0800
-In-Reply-To: <20070302225904.GB22555@uranus.ravnborg.org>
-Message-Id: <20070302232833.BEB80C526CD@imap.suse.de>
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+References: <20070301101249.GA29351@skynet.ie>	<20070301160915.6da876c5.akpm@linux-foundation.org>	<45E842F6.5010105@redhat.com>	<20070302085838.bcf9099e.akpm@linux-foundation.org>	<Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>	<20070302093501.34c6ef2a.akpm@linux-foundation.org>	<45E8624E.2080001@redhat.com>	<20070302100619.cec06d6a.akpm@linux-foundation.org>	<Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com>	<45E86BA0.50508@redhat.com>	<20070302211207.GJ10643@holomorphy.com>	<45E894D7.2040309@redhat.com>	<20070302135243.ada51084.akpm@linux-foundation.org>	<45E89F1E.8020803@redhat.com> <20070302142256.0127f5ac.akpm@linux-foundation.org> <45E8A677.7000205@redhat.com> <45E8AA64.3050506@mbligh.org> <45E8AB36.3030104@redhat.com>
+In-Reply-To: <45E8AB36.3030104@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> 32GB is pretty much the minimum size to reproduce some of these
+>>> problems. Some workloads may need larger systems to easily trigger
+>>> them.
+>>
+>> We can find a 32GB system here pretty easily to test things on if
+>> need be.  Setting up large commercial databases is much harder.
+> 
+> That's my problem, too.
+> 
+> There does not seem to exist any single set of test cases that
+> accurately predicts how the VM will behave with customer
+> workloads.
 
-This is a note to let you know that I've just added the patch titled
+Tracing might help? Showing Andrew traces of what happened in
+production for the prev_priority change made it much easier to
+demonstrate and explain the real problem ...
 
-     Subject: pci: fix section mismatch warning
+M.
 
-to my gregkh-2.6 tree.  Its filename is
-
-     pci-fix-section-mismatch-warning.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From sam@ravnborg.org  Fri Mar  2 15:06:44 2007
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Fri, 2 Mar 2007 23:59:04 +0100
-Subject: pci: fix section mismatch warning
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-ID: <20070302225904.GB22555@uranus.ravnborg.org>
-Content-Disposition: inline
-
-
-drivers/pci/search.c caused following section mismatch warning
-(if compiled with CONFIG_HOTPLUG=n):
-
-WARNING: drivers/pci/built-in.o - Section mismatch: reference to .init.text: from .text.pci_find_bus after 'pci_find_bus' (at offset 0x24)
-
-This was due to pci_find_bus() calling a function marked __devinit.
-Fix was to remove the __devinit from the offending function.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/pci/search.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- gregkh-2.6.orig/drivers/pci/search.c
-+++ gregkh-2.6/drivers/pci/search.c
-@@ -15,7 +15,7 @@
- 
- DECLARE_RWSEM(pci_bus_sem);
- 
--static struct pci_bus * __devinit
-+static struct pci_bus *
- pci_do_find_bus(struct pci_bus* bus, unsigned char busnr)
- {
- 	struct pci_bus* child;
-
-
-Patches currently in gregkh-2.6 which might be from sam@ravnborg.org are
 
