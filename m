@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXCBINp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbXCBIQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbXCBINp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 03:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932796AbXCBINp
+	id S932796AbXCBIQd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 03:16:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932859AbXCBIQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 03:13:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47675 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932785AbXCBINo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 03:13:44 -0500
-Date: Fri, 2 Mar 2007 09:04:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+	Fri, 2 Mar 2007 03:16:33 -0500
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47072 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932796AbXCBIQc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 03:16:32 -0500
+Subject: [PATCH] hard_smp_processor_id definition for UP systems without
+	APIC (i386)
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: vgoyal@in.ibm.com
+Cc: Benjamin LaHaise <bcrl@kvack.org>, ebiederm@xmission.com,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>,
-       git@vger.kernel.org
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Message-ID: <20070302080441.GA12785@elte.hu>
-References: <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu>
+       fastboot@lists.osdl.org, ak@suse.de, akpm@linux-foundation.org,
+       judith@linux-foundation.org
+In-Reply-To: <1172822794.6025.11.camel@sebastian.intellilink.co.jp>
+References: <1172733373.1498.264.camel@sebastian.intellilink.co.jp>
+	 <20070301140648.GX26583@kvack.org>  <20070302041455.GA15386@in.ibm.com>
+	 <1172822794.6025.11.camel@sebastian.intellilink.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Fri, 02 Mar 2007 17:16:56 +0900
+Message-Id: <1172823416.6025.16.camel@sebastian.intellilink.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302072100.GB30634@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Provide hard_smp_processor_id definition also for non apic case.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-> I'll try what i've described in the previous mail: mark all bisection 
-> points that do not include f3ccb06f as 'good' - thus 'merging' the 
-> known-bad area with the first known-good commit, and thus eliminating 
-> it from the bisection space.
+diff -urNp linux-2.6.21-rc2-orig/include/asm-i386/smp.h linux-2.6.21-rc2/include/asm-i386/smp.h
+--- linux-2.6.21-rc2-orig/include/asm-i386/smp.h	2007-03-02 16:47:37.000000000 +0900
++++ linux-2.6.21-rc2/include/asm-i386/smp.h	2007-03-02 16:59:42.000000000 +0900
+@@ -93,6 +93,7 @@ extern unsigned int num_processors;
+ #ifndef __ASSEMBLY__
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
++
+ #ifdef APIC_DEFINITION
+ extern int hard_smp_processor_id(void);
+ #else
+@@ -103,6 +104,13 @@ static inline int hard_smp_processor_id(
+ 	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
+ }
+ #endif /* APIC_DEFINITION */
++
++#else /* CONFIG_X86_LOCAL_APIC */
++
++#ifndef CONFIG_SMP
++#define hard_smp_processor_id()		0
++#endif
++
+ #endif /* CONFIG_X86_LOCAL_APIC */
+ 
+ extern u8 apicid_2_node[];
 
-this got me quite a bit further:
 
- git-bisect start
- git-bisect bad       01363220f5d23ef68276db8974e46a502e43d01d
- git-bisect good      f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 
- git-bisect fake-good ee404566f97f9254433399fbbcfa05390c7c55f7
- git-bisect bad       d43a338e395371733a80ec473b40baac5f74d768
- git-bisect bad       255f0385c8e0d6b9005c0e09fffb5bd852f3b506
- git-bisect fake-good f99c6bb6e2e9c35bd3dc0b1d0faa28bd6970930d
- git-bisect fake-good 0187f221e96e3436d552c0c7143f183eb82fb658
- git-bisect bad       81450b73dde07f473a4a7208b209b4c8b7251d90
- git-bisect fake-good ef29498655b18d2bfd69048e20835d19333981ab
- git-bisect fake-good 8a03d9a498eaf02c8a118752050a5154852c13bf
- git-bisect good      5c95d3f5783ab184f64b7848f0a871352c35c3cf
- git-bisect good      ecb5f7521a309cb9c5fc0832b9705cd2a03d7d45
- git-bisect good      0539771d7236b425f285652f6f297cc7939c8f9a
-
- 81450b73dde07f473a4a7208b209b4c8b7251d90 is first bad commit
-
-[ note: by having the "git-bisect must-have-bugfix f3ccb06f" 
-  functionality i mentioned in the previous mail git-bisect could
-  have eliminated the fake-good steps. ]
-
-it's not a resolution of this regression yet, because this commit is a 
-merge with upstream:
-
-|  commit 81450b73dde07f473a4a7208b209b4c8b7251d90
-|  Merge: 8a03d9a... 0539771...
-|  Author: Len Brown <len.brown@intel.com>
-|  Date:   Fri Feb 16 18:52:41 2007 -0500
-|
-|      Pull misc-for-upstream into release branch
-
-which means that the fix in Len's tree got broken by merging with 
-upstream. Note: this 'upstream' in isolation is broken too, due to not 
-having that essential fix from Len's tree!
-
-So we quite likely have /two/ bugs, any of which breaks resume (which 
-breakage looks the same, so no way to isolate them via testing).
-
-I'll now try the following: i'll try to manually apply Len's fix to 
-every tree that git-bisect offers me, in the hope of being able to 
-isolate the /other/ bug.
-
-[ But really, i'm not expecting any miracles because this is way out of
-  league for git-bisect which really depends on only having a binary 
-  space to search for. ]
-
-	Ingo
