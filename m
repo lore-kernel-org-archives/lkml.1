@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992625AbXCBRDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992626AbXCBRF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992625AbXCBRDj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992626AbXCBRDj
+	id S2992626AbXCBRF3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992577AbXCBRF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:03:39 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:15385 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992625AbXCBRDi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:03:38 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=DVGmsMtPCdw6AVXo6HxdoiZzcpYLwodZZQUfGsEAkjfxMz7mMC16hGWtSGjLQlxAx
-	2y97ae9/YAW+YAriDbzVg==
-Date: Fri, 2 Mar 2007 09:03:29 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Badari Pulavarty <pbadari@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [patch -mm] x86_64: fake numa cmdline flag fix
-In-Reply-To: <1172853148.9213.15.camel@dyn9047017100.beaverton.ibm.com>
-Message-ID: <Pine.LNX.4.64.0703020901510.14893@chino.kir.corp.google.com>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
- <1172853148.9213.15.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Mar 2007 12:05:29 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34829 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992626AbXCBRF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 12:05:27 -0500
+Date: Fri, 2 Mar 2007 09:01:05 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>, ext4 <linux-ext4@vger.kernel.org>,
+       suparna@in.ibm.com, cmm@us.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-Id: <20070302090105.43f9b41c.akpm@linux-foundation.org>
+In-Reply-To: <1172851980.9213.13.camel@dyn9047017100.beaverton.ibm.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com>
+	<20070225022326.137b4875.akpm@linux-foundation.org>
+	<20070301183445.GA7911@amitarora.in.ibm.com>
+	<45E7BE4B.5070602@us.ibm.com>
+	<45E83FCE.4040008@redhat.com>
+	<1172851980.9213.13.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sure we only reference 'cmdline' on CONFIG_NUMA_EMU.
+On Fri, 02 Mar 2007 08:13:00 -0800 Badari Pulavarty <pbadari@us.ibm.com> wrote:
 
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- arch/x86_64/mm/numa.c |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+> > 
+> > > What about 
+> > > if the
+> > > blocks already exists ? What would be return values in those cases ?
+> > 
+> > 0 on success, other normal errors oetherwise..
+> > 
+> > If asked for a range that includes already-allocated blocks, you just 
+> > allocate any non-allocated blocks in the range, I think.
+> 
+> Yes. What I was trying to figure out is, if there is a requirement that
+> interface need to return exact number of bytes it *really* allocated
+> (like write() or read()). I can't think of any, but just wanted to
+> through it out..
 
-diff --git a/arch/x86_64/mm/numa.c b/arch/x86_64/mm/numa.c
---- a/arch/x86_64/mm/numa.c
-+++ b/arch/x86_64/mm/numa.c
-@@ -524,22 +524,28 @@ void __init numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn)
- { 
- 	unsigned long start_addr = start_pfn << PAGE_SHIFT;
- 	unsigned long end_addr = end_pfn << PAGE_SHIFT;
-+	int numa_fake = 0;
- 	int i;
- 
-+#ifdef CONFIG_NUMA_EMU
-+	/* Determine if we have a numa=fake command line */
-+	if (cmdline != 0)
-+		numa_fake = 1;
-+#endif
-+
- #ifdef CONFIG_ACPI_NUMA
--	if (!numa_off && !cmdline && !acpi_scan_nodes(start_addr, end_addr))
-+	if (!numa_off && !numa_fake && !acpi_scan_nodes(start_addr, end_addr))
-  		return;
- #endif
- 
- #ifdef CONFIG_K8_NUMA
--	if (!numa_off && !k8_scan_nodes(start_addr, end_addr, cmdline != 0))
--		if (cmdline == 0)
-+	if (!numa_off && !k8_scan_nodes(start_addr, end_addr, numa_fake))
-+		if (!numa_fake)
- 			return;
- #endif
- 
- #ifdef CONFIG_NUMA_EMU
--	if (cmdline)
--	{
-+	if (numa_fake) {
- 		numa_emu = !numa_emulation(start_pfn, end_pfn);
- 		if (numa_emu)
- 			return;
+Hopefully not, because posix didn't anticipate that.
+
+We could of course return a positive number on success, but it'd get
+tricky on 32-bit machines.
+
+> BTW, what is the interface for finding out what is the size of the
+> pre-allocated file ? 
+
+stat.st_blocks?
