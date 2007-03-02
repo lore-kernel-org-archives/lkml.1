@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992721AbXCBXLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992724AbXCBXM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992721AbXCBXLK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 18:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992720AbXCBXLJ
+	id S2992724AbXCBXM3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 18:12:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992722AbXCBXM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 18:11:09 -0500
-Received: from mail.screens.ru ([213.234.233.54]:56884 "EHLO mail.screens.ru"
+	Fri, 2 Mar 2007 18:12:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54558 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992724AbXCBXLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 18:11:08 -0500
-Date: Sat, 3 Mar 2007 02:11:03 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: John Reiser <jreiser@BitWagon.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
-Message-ID: <20070302231103.GA249@tv-sign.ru>
-References: <20070301175207.GA849@tv-sign.ru> <45E891E6.7090807@BitWagon.com> <45E8A300.9020001@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E8A300.9020001@redhat.com>
-User-Agent: Mutt/1.5.11
+	id S2992717AbXCBXM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 18:12:28 -0500
+Message-ID: <45E8AF5A.30902@garzik.org>
+Date: Fri, 02 Mar 2007 18:12:26 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Alan <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] pata_legacy: Fix missing methods and add cable types
+References: <20070301174852.6bd60580@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070301174852.6bd60580@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/02, Chuck Ebbert wrote:
->
-> John Reiser wrote:
-> > The value of ->sysenter_return is interpreted in user space by the
-> > sysexit instruction; nobody else cares what the value is.  The kernel
-> > is not required to provide a good value when vdso_enabled is zero,
-> > because the kernel has not told the process that sysenter is valid
-> > (by setting AT_SYSINFO.)
+Alan wrote:
+> Several method sets lacked freeze/resume methods. Fix this and while we
+> are at it force the cable to 40wire
 > 
-> Doesn't matter because a malicious user can still execute sysenter.
-> We do have to deal with that somehow, so we have to put something
-> safe in there.
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-Yes, but a malicious user can't make any harm to the system, sysexit
-jumps to ->sysenter_return when user_mode() is true, right?
+For this, pata_sc1200 and pata_sl82c105:  applied the missing-hook 
+portion of the patch, and dropped the ->cable_detect portion pending resend.
 
-(I am asking because I don't know in details what sysexit does).
+Please resend the cable_detect patches one this other stuff lands (will 
+push tonight).  I would suggest doing two patches:
 
-Oleg.
+	1) add ->cable_detect hook
+	2) use ->cable_detect in PATA drivers
+
+There is no need to split up the same change across multiple drivers. 
+It is the same logical change, and people doing git-bisect won't be left 
+with a broken configuration, so a single update-drivers patch makes more 
+sense.  And, hopefully, is less work for you.
+
+	Jeff
+
+
 
