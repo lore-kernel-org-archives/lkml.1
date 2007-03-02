@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965236AbXCBTqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965199AbXCBTri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965236AbXCBTqF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 14:46:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965225AbXCBTqE
+	id S965199AbXCBTri (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 14:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965218AbXCBTri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 14:46:04 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:38849 "EHLO smtp.osdl.org"
+	Fri, 2 Mar 2007 14:47:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45588 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965199AbXCBTp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 14:45:56 -0500
-Date: Fri, 2 Mar 2007 11:45:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
-       Christian Borntraeger <cborntra@de.ibm.com>, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] timer/hrtimer: take per cpu locks in sane order
-Message-Id: <20070302114524.1c61cf22.akpm@linux-foundation.org>
-In-Reply-To: <20070302190836.GA7942@osiris.ibm.com>
-References: <20070227153051.GD7911@osiris.boeblingen.de.ibm.com>
-	<20070302125848.GA8226@osiris.boeblingen.de.ibm.com>
-	<20070302130433.GA4391@elte.hu>
-	<20070302142308.GB8226@osiris.boeblingen.de.ibm.com>
-	<20070302084833.732d09dd.akpm@linux-foundation.org>
-	<20070302190836.GA7942@osiris.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	id S965199AbXCBTrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 14:47:37 -0500
+Date: Fri, 2 Mar 2007 20:39:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070302193941.GB8450@elte.hu>
+References: <20070301095402.GA14603@elte.hu> <20070301131118.GA30228@elte.hu> <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru> <20070301150942.GA26025@elte.hu> <20070301153655.GB8217@2ka.mipt.ru> <20070302105713.GB15576@elte.hu> <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007 20:08:36 +0100
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-> +/*
-> + * double_hrtimer_lock/unlock are used to ensure that on cpu hotplug the
-> + * per cpu timer locks are always taken in the same order.
-> + */
-> +static void double_hrtimer_lock(struct hrtimer_cpu_base *base1,
-> +				struct hrtimer_cpu_base *base2, int ind)
-> +	__acquires(base1->lock)
-> +	__acquires(base2->lock)
-> +{
->
-> ...
->
-> +/*
-> + * double_timer_lock/unlock are used to ensure that on cpu hotplug the
-> + * per cpu timer locks are always taken in the same order.
-> + */
-> +static void __devinit double_timer_lock(tvec_base_t *base1,
-> +					tvec_base_t *base2, int ind)
-> +	__acquires(base1->lock)
-> +	__acquires(base2->lock)
+* Davide Libenzi <davidel@xmailserver.org> wrote:
 
-hm.  Can we not just pass in the spinlock_t*'s and use a common function?
+> [...] We're still missing proper FPU context switch in the 
+> move_user_context(). [...]
 
-	void double_spin_lock(spinlock_t *l1, spinlock_t *l2, int ind);
+yeah - i'm starting to be of the opinion that the FPU context should 
+stay with the threadlet, exclusively. I.e. when calling a threadlet, the 
+'outer loop' (the event loop) should not leak FPU context into the 
+threadlet and then expect it to be replicated from whatever random point 
+the threadlet ended up sleeping at. It would be possible, but it just 
+makes no sense. What makes most sense is to just keep the FPU context 
+with the threadlet, and to let the 'new head' use an initial (unused) 
+FPU context. And it's in fact the threadlet that will most likely have 
+an acrive FPU context across a system call, not the outer loop. In other 
+words: no special FPU support needed at all for threadlets (i.e. no 
+flipping needed even) - this behavior just naturally happens in the 
+current implementation. Hm?
 
-that way it has nothing to do with timers and can potentially be used
-elsewhere in the kernel, too.
-
-(what does "ind" mean?)
+	Ingo
