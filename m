@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965639AbXCBVMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965647AbXCBVNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965639AbXCBVMa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965638AbXCBVM3
+	id S965647AbXCBVNQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965645AbXCBVNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:12:29 -0500
-Received: from smtp19.orange.fr ([80.12.242.1]:1837 "EHLO smtp19.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965639AbXCBVM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:12:29 -0500
-X-ME-UUID: 20070302211226770.BBF9C5400086@mwinf1901.orange.fr
-Message-ID: <45E89339.1050504@free.fr>
-Date: Fri, 02 Mar 2007 22:12:25 +0100
-From: Laurent Riffard <laurent.riffard@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.0.9) Gecko/20061222 SeaMonkey/1.0.7
+	Fri, 2 Mar 2007 16:13:16 -0500
+Received: from cavan.codon.org.uk ([217.147.92.49]:38996 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965647AbXCBVNO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 16:13:14 -0500
+Date: Fri, 2 Mar 2007 21:12:51 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
+       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Message-ID: <20070302211251.GA10035@srcf.ucam.org>
+References: <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <20070218183805.5a4fd813.khali@linux-fr.org> <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302114747.GB1212@srcf.ucam.org> <20070302151055.d2665d66.khali@linux-fr.org> <20070302141840.GA3441@srcf.ucam.org> <20070302220454.a0c66d04.khali@linux-fr.org>
 MIME-Version: 1.0
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: 2.6.21-rc2-mm1: what about CONFIG_NO_HZ and !CONFIG_SMP ?
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070302220454.a0c66d04.khali@linux-fr.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 02.03.2007 12:00, Andrew Morton a écrit :
-> Temporarily at
+On Fri, Mar 02, 2007 at 10:04:54PM +0100, Jean Delvare wrote:
+> On Fri, 2 Mar 2007 14:18:40 +0000, Matthew Garrett wrote:
+> > In theory I /think/ so, but it would probably end up being an 
+> > overestimate of the coverage actually needed. Trapping at runtime is 
+> > arguably more elegant?
 > 
->   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
-> 
-> Will appear later at
-> 
->   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
+> It might be more elegant but it won't work. We don't want to prevent
+> ACPI from accessing these I/O ports. If we need to choose only one
+> "driver" accessing the I/O port, it must be acpi, at leat for now,
+> despite the fact that acpi provides very weak hardware monitoring
+> capabilities compared to the specific drivers.
 
-Got this when CONFIG_NO_HZ=y and CONFIG_SMP=n:
+Assuming arbitration of access, what's the problem with having two 
+drivers accessing the same hardware? Do these chips generally have any 
+significant internal state other than trip points and the like?
 
-  CC      kernel/sched.o
-kernel/sched.c: In function 'trigger_load_balance':
-kernel/sched.c:3384: error: 'struct rq' has no member named 'in_nohz_recently'
-kernel/sched.c:3384: error: 'struct rq' has no member named 'idle_at_tick'
-kernel/sched.c:3385: error: 'struct rq' has no member named 'in_nohz_recently'
-kernel/sched.c:3387: error: 'nohz' undeclared (first use in this function)
-kernel/sched.c:3387: error: (Each undeclared identifier is reported only once
-kernel/sched.c:3387: error: for each function it appears in.)
-kernel/sched.c:3404: warning: implicit declaration of function 'resched_cpu'
-kernel/sched.c:3412: error: 'struct rq' has no member named 'idle_at_tick'
-kernel/sched.c:3422: error: 'struct rq' has no member named 'idle_at_tick'
-make[1]: *** [kernel/sched.o] Error 1
-make: *** [kernel] Error 2
+> Why would we end up with an overestimation if we check the I/O ports at
+> boot time? Do you have concrete cases in mind?
 
-Looking at kernel/sched.c, it seems CONFIG_NO_HZ should depend on CONFIG_SMP...
+ACPI will often describe large operation regions, but won't necessarily 
+touch all of them. Effectively, every codepath would have to be walked 
+through at boot time and checked for io access.
 
- 238 struct rq {
- 239         spinlock_t lock;
- 240 
- 241         /*
- 242          * nr_running and cpu_load should be in the same cacheline because
- 243          * remote CPUs use both these fields when doing load calculation.
- 244          */
- 245         unsigned long nr_running;
- 246         unsigned long raw_weighted_load;
- 247 #ifdef CONFIG_SMP
- 248         unsigned long cpu_load[3];
- 249         unsigned char idle_at_tick;
- 250 #ifdef CONFIG_NO_HZ
- 251         unsigned char in_nohz_recently;
- 252 #endif
- 253 #endif
- 254         unsigned long long nr_switches;
-
-~~
-laurent
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
