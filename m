@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422688AbXCBB1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422689AbXCBBah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422688AbXCBB1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 20:27:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422696AbXCBB1O
+	id S1422689AbXCBBah (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 20:30:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422692AbXCBBag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 20:27:14 -0500
-Received: from mail1.skjellin.no ([80.239.42.67]:59362 "EHLO mx1.skjellin.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422688AbXCBB1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 20:27:06 -0500
-X-Greylist: delayed 1909 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 20:27:06 EST
-Message-ID: <45E775DC.9080405@tomt.net>
-Date: Fri, 02 Mar 2007 01:54:52 +0100
-From: Andre Tomt <andre@tomt.net>
-User-Agent: Thunderbird 2.0b2 (Windows/20070116)
+	Thu, 1 Mar 2007 20:30:36 -0500
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:59778 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422689AbXCBBaf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 20:30:35 -0500
+Message-ID: <45E77D41.1080408@hitachi.com>
+Date: Fri, 02 Mar 2007 10:26:25 +0900
+From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-CC: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH, RFT, v2] sata_mv: convert to new EH
-References: <20070225233454.GA31282@havoc.gtf.org>
-In-Reply-To: <20070225233454.GA31282@havoc.gtf.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, miklos@szeredi.hu,
+       yumiko.sugita.yf@hitachi.com, masami.hiramatsu.pt@hitachi.com,
+       hidehiro.kawai.ez@hitachi.com, yuji.kakutani.uw@hitachi.com,
+       soshima@redhat.com, haoki@redhat.com, nikita@clusterfs.com
+Subject: Re: [RFC][PATCH 0/3] VM throttling: avoid blocking occasional writers
+References: <45DED819.9040404@hitachi.com>	<20070224134646.0f4edeae.kamezawa.hiroyu@jp.fujitsu.com>	<45E38048.3020705@hitachi.com> <20070227103952.4fc236bd.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070227103952.4fc236bd.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Just got sata_mv working under the new EH, on my 6041.
->
-> It probes and talks to disks just fine (chip doesn't support ATAPI),
-> and hotplug actually has a chance of working.
->
-> The 'mv-eh' branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git mv-eh
->   
+Hi Kamezawa-san,
 
-It's great to see this driver getting some more love. On a 6041 I'm 
-seeing very bad behaviour when encountering errors using the 2.6.19 
-driver. If a disk gets the fits, the port dies and 500000 interrupts/s 
-gets fired until the server gets rebooted. Good thing it only pegs one 
-of four available cpu cores.. I hope the new EH is more robust in this 
-regard ;-)
+KAMEZAWA Hiroyuki wrote:
+>>> >>> Interesting, but how about adjust this parameter like below instead of
+>>> >>> adding new control knob ?(this kind of knob is not easy to use.)
+<snip>
+>>> >>> count_dirty_pages_on_device_limited(bdi, writechunk) above returns
+>>> >>> dirty pages on bdi. if # of dirty_pages on bdi is larger than writechunk,
+>>> >>> just returns writechunk.
+>> >>
+>> >> I think that way is not enough to control the total amount of
+>> >> Dirty+Writeback.
+>> >>
+>> >> In that way, while writeback_inodes() scans for dirty pages and writes
+>> >> them back, the caller will be blocked only if the length of the write-
+>> >> requests queue is longer than nr_requests.
 
-Ramblings aside; I see there is a mv-ncq head in libata-dev.git, do you 
-have it working? Is there a timeframe for NCQ support?
+> > What nr_request means ?
+
+nr_requests is a parameter that means upper limit of the length of I/O
+(read- and write-)requests queue of the device, which is configurable
+from /sys/block/<device>/queue/nr_requests. A process, which perform I/O
+when there are more than nr_requests requests in the queue, will be blocked.
+
+> > But Ok, maybe I'm not understanding. What I want to ask you is do
+> > per-device-write-throttling rather than adding a new parameter.
+
+In the patchset, per-device-write-throttling is done by the behavior
+of the write-requests queue described above.
+
+When the queue of the disk becomes full while writeback of Dirty in
+writeback_inodes(), heavy writes to the disk will be blocked.
+In contrast, if it's so occasional that the queue doesn't become full,
+writes will not be blocked.
+
+
+Regards
+--
+Tomoki Sekiyama
+Hitachi, Ltd., Systems Development Laboratory
