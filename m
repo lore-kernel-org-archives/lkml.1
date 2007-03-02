@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422940AbXCBGJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422941AbXCBGLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422940AbXCBGJI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 01:09:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422941AbXCBGJI
+	id S1422941AbXCBGLz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 01:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422945AbXCBGLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 01:09:08 -0500
-Received: from ns2.suse.de ([195.135.220.15]:34319 "EHLO mx2.suse.de"
+	Fri, 2 Mar 2007 01:11:55 -0500
+Received: from 1wt.eu ([62.212.114.60]:4922 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422940AbXCBGJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 01:09:07 -0500
-Date: Fri, 2 Mar 2007 07:08:31 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@engr.sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070302060831.GF15867@wotan.suse.de>
-References: <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com> <20070302035751.GA15867@wotan.suse.de> <Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com> <20070302042149.GB15867@wotan.suse.de> <Pine.LNX.4.64.0703012022320.14299@schroedinger.engr.sgi.com> <20070302050625.GD15867@wotan.suse.de> <Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com> <20070302054944.GE15867@wotan.suse.de> <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>
+	id S1422941AbXCBGLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 01:11:54 -0500
+Date: Fri, 2 Mar 2007 07:11:49 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Sean Young <sean@mess.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.21-rc2] divide error: 0000
+Message-ID: <20070302061149.GF943@1wt.eu>
+References: <20070301231241.GA32630@atlantis.8hz.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070301231241.GA32630@atlantis.8hz.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 09:53:42PM -0800, Christoph Lameter wrote:
-> On Fri, 2 Mar 2007, Nick Piggin wrote:
+On Thu, Mar 01, 2007 at 11:12:42PM +0000, Sean Young wrote:
+> Apologies if this has already been reported.
 > 
-> > > You do not have to deal with TLB entries if you do buffered I/O.
-> > 
-> > Where does the data come from?
+> If I call clock_gettime(CLOCK_THREAD_CPUTIME_ID, .. ) twice I get:
 > 
-> >From the I/O controller and from the application. 
-
-Why doesn't the application need to deal with TLB entries?
-
-
-> > > We currently have problems with the kernel limits of 128 SG 
-> > > entries but the fundamental issue is that we can only do 2 Meg of I/O in 
-> > > one go given the default limits of the block layer. Typically the number 
-> > > of hardware SG entrie is also limited. We never will be able to put a 
-> > 
-> > Seems like changing the default limits would be the easiest way to
-> > fix it then?
+> divide error: 0000 [#1]
+> Modules linked in: binfmt_misc rfcomm l2cap bluetooth sonypi speedstep_ich speedstep_lib cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_ondemand freq_table cpufreq_conservative video thermal sbs processor i2c_ec fan dock button battery ac af_packet ipv6 sbp2 lp usb_storage libusual orinoco_cs orinoco hermes joydev tsdev usbhid pcmcia e100 mii psmouse ohci1394 serio_raw yenta_socket rsrc_nonstatic pcmcia_core ieee1394 sr_mod cdrom sg uhci_hcd parport_pc parport pcspkr evdev usbcore
+> CPU:    0
+> EIP:    0060:[<c0126a07>]    Not tainted VLI
+> EFLAGS: 00010246   (2.6.21-rc2 #1)
+> EIP is at sample_to_timespec+0x28/0x33
+> eax: 63b5a669   ebx: fffffffa   ecx: 63b5a669   edx: fffffffa
+> esi: d4a56fa4   edi: 3b9aca00   ebp: d4a56fa4   esp: d4a56f74
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process x (pid: 3894, ti=d4a56000 task=dfe9aa50 task.ti=d4a56000)
+> Stack: 00000000 fffffffe 00000000 c0127d49 d4a56fa4 63b5a669 fffffffa fffffffe
+>        00000003 00000000 d4a56000 c0125bf3 b7f68ff4 b7f9fce0 fffffffe 00000003
+>        c0103bfc fffffffe bfd6d5d8 b7f74ff4 00000003 00000000 bfd6d5b8 00000109
+> Call Trace:
+>  [<c0127d49>] posix_cpu_clock_get+0x47/0xdc
+>  [<c0125bf3>] sys_clock_gettime+0x80/0x82
+>  [<c0103bfc>] syscall_call+0x7/0xb
+>  [<c02f0000>] svc_ioctl+0xc2/0x261
+>  =======================
+> Code: 0b eb fe 57 56 53 89 cb 89 d1 8b 74 24 10 83 e0 03 83 f8 02 74 0c 89 f2 89 c8 5b 5e 5f e9 ee 3f ff ff bf 00 ca 9a 3b 89 d0 89 da <f7> f7 89 56 04 89 06 5b 5e 5f c3 55 57 56 53 89 c7 89 d6 89 cb
+> EIP: [<c0126a07>] sample_to_timespec+0x28/0x33 SS:ESP 0068:d4a56f74
 > 
-> This would only be a temporary fix pushing the limits to the double or so?
-
-And using slightly larger page sizes isn't?
-
-> > As far as hardware limits go, I don't think you need to scale that
-> > number linearly with the amount of memory you have, or even with the
-> > IO throughput. You should reach a point where your command overhead
-> > is amortised sufficiently, and the controller will be pipelining the
-> > commands.
+> The instruction is:
 > 
-> Amortized? The controller still would have to hunt down the 4kb page 
-> pieces that we have to feed him right now. Result: Huge scatter gather 
-> lists that may themselves create issues with higher page order.
+> 	div %edi
+> 
+> And edi is 1e9 (0x3b9aca00). I don't understand why this results in an 
+> divide error. 
 
-What sort of numbers do you have for these controllers that aren't
-very good at doing sg?
+It does this because 'div' does an unsigned divide of edx:eax by edi.
+Here, edx=fffffffa and eax is 63b5a669. Clearly, such a number cannot
+be divided by 1e9 to return a 32 bits value.
 
-Isn't the issue was something like your IO controllers have only a
-limited number of sg entries, which is fine with 16K pages, but with
-4K pages that doesn't give enough data to cover your RAID stripe?
+Given the values we see here, I suspect the code should have used an
+integer divide (idiv). This means that something in the code implies
+that the result is unsigned while it should be signed.
 
-We're never going to do a variable sized pagecache just because of that.
+Regards,
+Willy
 
