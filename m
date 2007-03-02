@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992654AbXCBRYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992656AbXCBRZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992654AbXCBRYx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992663AbXCBRYx
+	id S2992656AbXCBRZP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:25:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992659AbXCBRZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:24:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47344 "EHLO mx1.redhat.com"
+	Fri, 2 Mar 2007 12:25:15 -0500
+Received: from sycorax.lbl.gov ([128.3.11.121]:3146 "EHLO sycorax.lbl.gov"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992654AbXCBRYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:24:51 -0500
-Message-ID: <45E85DD2.8010905@redhat.com>
-Date: Fri, 02 Mar 2007 11:24:34 -0600
-From: Robert Peterson <rpeterso@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S2992657AbXCBRZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 12:25:12 -0500
+From: Alex Romosan <romosan@sycorax.lbl.gov>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: 2.6.21-rc2 radeon backlight
+References: <87ps7uutsk.fsf@sycorax.lbl.gov>
+	<20070301184531.b3aeafe3.akpm@linux-foundation.org>
+Date: Fri, 02 Mar 2007 09:24:03 -0800
+In-Reply-To: <20070301184531.b3aeafe3.akpm@linux-foundation.org> (message from
+	Andrew Morton on Thu, 1 Mar 2007 18:45:31 -0800)
+Message-ID: <87tzx35zkc.fsf@sycorax.lbl.gov>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Paulo Marques <pmarques@grupopie.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21-rc1] Extend print_symbol capability
-References: <45E744E2.1040000@redhat.com> <45E84C95.3060604@grupopie.com>
-In-Reply-To: <45E84C95.3060604@grupopie.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paulo Marques wrote:
-> I don't like this name much :(
+Andrew Morton <akpm@linux-foundation.org> writes:
+
+> On Wed, 28 Feb 2007 08:32:43 -0800
+> Alex Romosan <romosan@sycorax.lbl.gov> wrote:
 >
-> We already have kallsyms_lookup and kallsyms_lookup_name. The name of 
-> this function should imply that it will print the formatted result 
-> into the buffer, not just lookup a symbol.
+>> the backlight on my thinkpad still (2.6.20 worked fine) doesn't come
+>> on if i have the radeon backlight enabled. without it, i guess it's
+>> the ibm acpi modules that controls the backlight and it seems to work
+>> fine.
+>> 
 >
-> Maybe "__sprint_symbol", and change the interface to 
-> "__sprint_symbol(char *buffer, unsigned long addr)"?
-I'm not sure I like the leading __.  In the print_symbol case, I think 
-the function
-was given a leading __ so that code referencing print_symbol would use the
-macro which formulates the call into __print_symbol.  I don't mind 
-sprint_symbol
-though.  Since Andrew Morton included the patch, I'll defer to his judgment.
->> +static inline void lookup_symbol(unsigned long addr, char *buffer)
->> +{
->> +       return NULL;
->> +}
-> Returning NULL in a function returning "void" doesn't seem right :P
-You're right.  This should just be a simple "return;".  My bad.  Good catch.
-Since Andrew Morton has already included this patch, I'll let him
-make this change if he sees fit.
+> Unclear. Are you saying that the backlight comes on OK if you use
+> the IBM acpi module?
 
-Regards,
+yes, if i disable the radeon backlight and use the ibm acpi module,
+than the backlight works. if i enable the radeon backlight, the screen
+stays dark and i can't turn it on (i tried using radeontool to control
+it but nothing happened).
 
-Bob Peterson
-Red Hat Cluster Suite
+--alex--
 
+-- 
+| I believe the moment is at hand when, by a paranoiac and active |
+|  advance of the mind, it will be possible (simultaneously with  |
+|  automatism and other passive states) to systematize confusion  |
+|  and thus to help to discredit completely the world of reality. |
