@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422900AbXCBGpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422972AbXCBGvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422900AbXCBGpg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 01:45:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422960AbXCBGpg
+	id S1422972AbXCBGvG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 01:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422975AbXCBGvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 01:45:36 -0500
-Received: from gw.goop.org ([64.81.55.164]:36247 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422900AbXCBGpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 01:45:35 -0500
-Message-ID: <45E7C80E.1020107@goop.org>
-Date: Thu, 01 Mar 2007 22:45:34 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Fri, 2 Mar 2007 01:51:06 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49706 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422972AbXCBGvF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 01:51:05 -0500
+Date: Thu, 1 Mar 2007 22:51:00 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
+       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+In-Reply-To: <20070302062950.GG15867@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0703012236160.1979@schroedinger.engr.sgi.com>
+References: <20070302035751.GA15867@wotan.suse.de>
+ <Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com>
+ <20070302042149.GB15867@wotan.suse.de> <Pine.LNX.4.64.0703012022320.14299@schroedinger.engr.sgi.com>
+ <20070302050625.GD15867@wotan.suse.de> <Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com>
+ <20070302054944.GE15867@wotan.suse.de> <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>
+ <20070302060831.GF15867@wotan.suse.de> <Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com>
+ <20070302062950.GG15867@wotan.suse.de>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/9] Vmi fix highpte
-References: <200703020254.l222smBB009668@zach-dev.vmware.com> <45E79529.9000305@goop.org> <45E79C72.4000806@goop.org> <45E7C4DD.1040403@vmware.com>
-In-Reply-To: <45E7C4DD.1040403@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> Yeah, actually that does work, since you pass the km_type, we can use
-> that.  But I would rather not respin this for 2.6.21; getting this
-> 100% right can be tricky, and we've already done a good deal of
-> testing on this patch the way it is.
+On Fri, 2 Mar 2007, Nick Piggin wrote:
 
-It seems fairly low risk to me; its basically the same structure with
-the same calls happening in the same order, but just slightly rearranged
-in the source.  Of course, if I'd seen this patch earlier I could have
-given you earlier feedback...
+> > There was no talk about slightly. 1G page size would actually be quite 
+> > convenient for some applications.
+> 
+> But it is far from convenient for the kernel. So we have hugepages, so
+> we can stay out of the hair of those applications and they can stay out
+> of hours.
 
->   Do you have any objection to me creating a patch for -mm tree that
-> implements kmap_atomic_pte the way you have described above and
-> attaching it to the Xen patch series, but leaving the current patch as
-> is for now?
+Huge pages cannot do I/O so we would get back to the gazillions of pages 
+to be handled for I/O. I'd love to have I/O support for huge pages. This 
+would address some of the issues.
 
-Not particularly, but it seems odd to put something in knowing its going
-to be immediately replaced.  What's the urgency?
+> > Writing a terabyte of memory to disk with handling 256 billion page 
+> > structs? In case of a system with 1 petabyte of memory this may be rather 
+> > typical and necessary for the application to be able to save its state
+> > on disk.
+> 
+> But you will have newer IO controllers, faster CPUs...
 
-> Thanks, (and thanks for the suggestion - I was a little worried about
-> how it would play with Xen when HIGHPTE support came around, but it
-> looks like it will work for both of us with just one paravirt-op).
+Sure we will. And you believe that the the newer controllers will be able 
+to magically shrink the the SG lists somehow? We will offload the 
+coalescing of the page structs into bios in hardware or some such thing? 
+And the vmscans etc too?
 
-Yeah, the kpte_clear_flush change helped as well.  I have a patch to
-make that into a pvop as well, since its useful to do the clear+flush in
-a single call.
+> Is it a problem or isn't it? Waving around the 256 billion number isn't
+> impressive because it doesn't really say anything.
 
-    J
+It is the number of items that needs to be handled by the I/O layer and 
+likely by the SG engine.
+ 
+> I understand you have controllers (or maybe it is a block layer limit)
+> that doesn't work well with 4K pages, but works OK with 16K pages.
+
+Really? This is the first that I have heard about it.
+
+> This is not something that we would introduce variable sized pagecache
+> for, surely.
+
+I am not sure where you get the idea that this is the sole reason why we 
+need to be able to handle larger contiguous chunks of memory.
+
+How about coming up with a response to the issue at hand? How do I write 
+back 1 Terabyte effectively? Ok this may be an exotic configuration today 
+but in one year this may be much more common. Memory sizes keep on 
+increasing and so is the number of page structs to be handled for I/O. At 
+some point we need a solution here.
+
