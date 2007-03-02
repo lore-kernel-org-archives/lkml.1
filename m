@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965445AbXCBSED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992689AbXCBSHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965445AbXCBSED (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 13:04:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965468AbXCBSED
+	id S2992689AbXCBSHz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 13:07:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992691AbXCBSHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 13:04:03 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:46918 "EHLO pfx2.jmh.fr"
+	Fri, 2 Mar 2007 13:07:55 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36459 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965445AbXCBSEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 13:04:01 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH (update 3)] timer: Run calc_load halfway through each round_jiffies second
-Date: Fri, 2 Mar 2007 19:03:56 +0100
-User-Agent: KMail/1.9.5
-Cc: akpm@linux-foundation.org, Bill Irwin <bill.irwin@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       arjan@linux.intel.com
-References: <45E0577C.9020409@simon.arlott.org.uk> <200703021735.55142.dada1@cosmosbay.com> <45E85FC3.801@simon.arlott.org.uk>
-In-Reply-To: <45E85FC3.801@simon.arlott.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S2992689AbXCBSHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 13:07:54 -0500
+Date: Fri, 2 Mar 2007 10:06:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+Message-Id: <20070302100619.cec06d6a.akpm@linux-foundation.org>
+In-Reply-To: <45E8624E.2080001@redhat.com>
+References: <20070301101249.GA29351@skynet.ie>
+	<20070301160915.6da876c5.akpm@linux-foundation.org>
+	<45E842F6.5010105@redhat.com>
+	<20070302085838.bcf9099e.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com>
+	<20070302093501.34c6ef2a.akpm@linux-foundation.org>
+	<45E8624E.2080001@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703021903.56720.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 March 2007 18:32, Simon Arlott wrote:
-> On 02/03/07 16:35, Eric Dumazet wrote:
+On Fri, 02 Mar 2007 12:43:42 -0500
+Rik van Riel <riel@redhat.com> wrote:
 
-> > You could just change LOAD_FREQ from (5*HZ) to (5*HZ+1)
-> > You can see that 5.01 instead of 5.00 second gives the same EXP_xx
-> > values.
-> >
-> > So (5*HZ + 1) is safe. (because HZ >= 100)
->
-> On HZ=1000, this would cause the load average to be pushed towards +1.00
-> for up to 2 minutes every ~83 minutes with no obvious cause. (If a task
-> takes ~10-20ms to run, so 20 runs are needed at HZ=1000 before it passes
-> it again).
+> Andrew Morton wrote:
+> > On Fri, 2 Mar 2007 09:23:49 -0800 (PST) Christoph Lameter <clameter@engr.sgi.com> wrote:
+> > 
+> >> On Fri, 2 Mar 2007, Andrew Morton wrote:
+> >>
+> >>>> Linux is *not* happy on 256GB systems.  Even on some 32GB systems
+> >>>> the swappiness setting *needs* to be tweaked before Linux will even
+> >>>> run in a reasonable way.
+> >>> Please send testcases.
+> >> It is not happy if you put 256GB into one zone.
+> > 
+> > Oh come on.  What's the workload?  What happens?  system time?  user time?
+> > kernel profiles?
+> 
+> I can't share all the details, since a lot of the problems are customer
+> workloads.
+> 
+> One particular case is a 32GB system with a database that takes most
+> of memory.  The amount of actually freeable page cache memory is in
+> the hundreds of MB.
 
-Nope, you dont quite understand how load (avenrun[]) is computed.
+Where's the rest of the memory? tmpfs?  mlocked?  hugetlb?
 
-Every 5 seconds, three values are adjusted, based on their previous value and 
-the actual value. Lets focus on the first value (mean load average on one 
-minute)
+>   With swappiness at the default level of 60, kswapd
+> ends up eating most of a CPU, and other tasks also dive into the pageout
+> code.  Even with swappiness as high as 98, that system still has
+> problems with the CPU use in the pageout code!
+> 
+> Another typical problem is that people want to back up their database
+> servers.  During the backup, parts of the working set get evicted from
+> the VM and performance is horrible.
 
-exp = 1.0 / exp(5.0/60.0);
-avenrun[0] = (avenrun[0] * exp) + (active * (1.0 - exp));
+userspace fixes for this are far, far better than any magic goo the kernel
+can implement.  We really need to get off our butts and start educating
+people.
 
-If previous value is 0.0, and current active count 1, then next value for 
-avenrun[0] will be : 0.0799556
+> A third scenario is where a system has way more RAM than swap, and not
+> a whole lot of freeable page cache.  In this case, the VM ends up
+> spending WAY too much CPU time scanning and shuffling around essentially
+> unswappable anonymous memory and tmpfs files.
 
-Not exactly 1.0 as you think !
+Well we've allegedly fixed that, but it isn't going anywhere without
+testing.
 
-Then in the next intervals (if active count is 0), it will decrease 'slowly' : 
-0.0735627
-0.0676809
-0.0622695
-0.0572907
 
-In average, your load factor close to reality.
-
-Just try my suggestion, it should work. I even proved it in my previous 
-mail :)
-
-Eric
