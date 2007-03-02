@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932738AbXCBBHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964796AbXCBBL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932738AbXCBBHD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 20:07:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932747AbXCBBHD
+	id S964796AbXCBBL3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 20:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964793AbXCBBL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 20:07:03 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:33295 "EHLO cacti.profiwh.com"
+	Thu, 1 Mar 2007 20:11:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:46206 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932738AbXCBBHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 20:07:01 -0500
-Message-ID: <45E778C8.8020500@gmail.com>
-Date: Fri, 02 Mar 2007 02:07:20 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	id S964790AbXCBBL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 20:11:28 -0500
+Message-ID: <45E779BC.7020605@garzik.org>
+Date: Thu, 01 Mar 2007 20:11:24 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: License violation?
-References: <45E76C16.1030706@gmail.com> <45E77073.1000208@goop.org> <45E77176.7070200@gmail.com> <45E771D9.90003@goop.org>
-In-Reply-To: <45E771D9.90003@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andre Tomt <andre@tomt.net>
+CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, RFT, v2] sata_mv: convert to new EH
+References: <20070225233454.GA31282@havoc.gtf.org> <45E775DC.9080405@tomt.net>
+In-Reply-To: <45E775DC.9080405@tomt.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge napsal(a):
-> Jiri Slaby wrote:
->> No other text in there, but simple Copyright:
+Andre Tomt wrote:
+> Jeff Garzik wrote:
+>> Just got sata_mv working under the new EH, on my 6041.
 >>
->> /* Copyright (c) 1997-2002 Sensable Technologies, Inc.
->>    All rights reserved.
+>> It probes and talks to disks just fine (chip doesn't support ATAPI),
+>> and hotplug actually has a chance of working.
+>>
+>> The 'mv-eh' branch of
+>> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git 
+>> mv-eh
+>>   
 > 
-> Well, I think that means you can use info from that file to make your's
-> better, but you can't copy actual code.
+> It's great to see this driver getting some more love. On a 6041 I'm 
+> seeing very bad behaviour when encountering errors using the 2.6.19 
+> driver. If a disk gets the fits, the port dies and 500000 interrupts/s 
+> gets fired until the server gets rebooted. Good thing it only pegs one 
+> of four available cpu cores.. I hope the new EH is more robust in this 
+> regard ;-)
 
-Nice to hear this, thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+So, does this patch work for you?  :)  It's against 2.6.21-rc1 IIRC.
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+
+> Ramblings aside; I see there is a mv-ncq head in libata-dev.git, do you 
+> have it working? Is there a timeframe for NCQ support?
+
+No and no.  All this Marvell work is spare-time work for me, nobody's 
+paying for it, so who knows.  I'll have it working eventually, if 
+someone else doesn't beat me to it.
+
+	Jeff
+
+
+
