@@ -1,113 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161261AbXCBACr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422646AbXCBADR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161261AbXCBACr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 19:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422642AbXCBABn
+	id S1422646AbXCBADR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 19:03:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161304AbXCBACr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 19:01:43 -0500
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47910 "EHLO
-	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161309AbXCAX4w (ORCPT
+	Thu, 1 Mar 2007 19:02:47 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:13743 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161261AbXCBACi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 18:56:52 -0500
-Message-Id: <20070301232529.031999567@goop.org>
-References: <20070301232443.195603797@goop.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 01 Mar 2007 15:25:05 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Andi Kleen <ak@muc.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [patch 22/26] Xen-paravirt_ops: Add early printk support via hvc console
-Content-Disposition: inline; filename=xen-hvc-earlyprintk.patch
+	Thu, 1 Mar 2007 19:02:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HzRunlHJ64OmH/HWhUrREJzr9jR6n+5LSs6r4QhZNGL3+gcjbN6nkmrubiey983NOr8eDQHo55XuAX5Y96vwLN9S68awz+/vWFXEDke0jX/VxfnVLeNWcb4ZNwxjajPMujmpap35B6hipYsN0lIhVb+AdlzkWI65Vodrur7fbKE=
+Message-ID: <45a44e480703011602j698f67dev469b49d6b527f502@mail.gmail.com>
+Date: Thu, 1 Mar 2007 19:02:34 -0500
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>,
+       "Jaya Kumar" <jayakumar.lkml@gmail.com>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH/RFC 2.6.20 1/2] fbdev, mm: Deferred IO support
+In-Reply-To: <20070301140131.GA6603@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070225051312.17454.80741.sendpatchset@localhost>
+	 <20070301140131.GA6603@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add early printk support via hvc console, enable using
-"earlyprintk=xen" on the kernel command line.
+On 3/1/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> On Sun, Feb 25, 2007 at 06:13:12AM +0100, Jaya Kumar wrote:
+> > This patch implements deferred IO support in fbdev. Deferred IO is a way to
+> > delay and repurpose IO. This implementation is done using mm's page_mkwrite
+> > and page_mkclean hooks in order to detect, delay and then rewrite IO. This
+> > functionality is used by hecubafb.
+> >
+> Any updates on this? If there are no other concerns, it would be nice to
+> at least get this in to -mm for testing if nothing else.
 
-From: Gerd Hoffmann <kraxel@suse.de>
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+I think Andrew merged it into -mm.
 
----
- arch/x86_64/kernel/early_printk.c |    5 +++++
- drivers/xen/hvc-console.c         |   25 +++++++++++++++++++++++++
- include/xen/hvc-console.h         |    6 ++++++
- 3 files changed, 36 insertions(+)
+>
+> Jaya, can you roll the fsync() patch in to your defio patch? There's not
+> much point in keeping them separate.
+>
 
-===================================================================
---- a/arch/x86_64/kernel/early_printk.c
-+++ b/arch/x86_64/kernel/early_printk.c
-@@ -6,6 +6,7 @@
- #include <asm/io.h>
- #include <asm/processor.h>
- #include <asm/fcntl.h>
-+#include <xen/hvc-console.h>
- 
- /* Simple VGA output */
- 
-@@ -243,6 +244,10 @@ static int __init setup_early_printk(cha
-  		simnow_init(buf + 6);
-  		early_console = &simnow_console;
-  		keep_early = 1;
-+#ifdef CONFIG_XEN
-+	} else if (!strncmp(buf, "xen", 3)) {
-+ 		early_console = &xenboot_console;
-+#endif
- 	}
- 	register_console(early_console);
- 	return 0;
-===================================================================
---- a/drivers/xen/hvc-console.c
-+++ b/drivers/xen/hvc-console.c
-@@ -28,6 +28,7 @@
- #include <xen/page.h>
- #include <xen/events.h>
- #include <xen/interface/io/console.h>
-+#include <xen/hvc-console.h>
- 
- #include "../char/hvc_console.h"
- 
-@@ -132,3 +133,27 @@ module_init(xen_init);
- module_init(xen_init);
- module_exit(xen_fini);
- console_initcall(xen_cons_init);
-+
-+static void xenboot_write_console(struct console *console, const char *string,
-+				  unsigned len)
-+{
-+	unsigned int linelen, off = 0;
-+	const char *pos;
-+
-+	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
-+		linelen = pos-string+off;
-+		if (off + linelen > len)
-+			break;
-+		write_console(0, string+off, linelen);
-+		write_console(0, "\r\n", 2);
-+		off += linelen + 1;
-+	}
-+	if (off < len)
-+		write_console(0, string+off, len-off);
-+}
-+
-+struct console xenboot_console = {
-+	.name		= "xenboot",
-+	.write		= xenboot_write_console,
-+	.flags		= CON_PRINTBUFFER | CON_BOOT,
-+};
-===================================================================
---- /dev/null
-+++ b/include/xen/hvc-console.h
-@@ -0,0 +1,6 @@
-+#ifndef XEN_HVC_CONSOLE_H
-+#define XEN_HVC_CONSOLE_H
-+
-+extern struct console xenboot_console;
-+
-+#endif	/* XEN_HVC_CONSOLE_H */
+I forgot to add that. Sorry about that. Should I resubmit with it or
+would you prefer to post it?
 
--- 
-
+Thanks,
+jaya
