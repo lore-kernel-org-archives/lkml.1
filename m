@@ -1,99 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422953AbXCBGTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422948AbXCBGTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422953AbXCBGTA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 01:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422957AbXCBGS7
+	id S1422948AbXCBGTu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 01:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422957AbXCBGTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 01:18:59 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:44747 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422953AbXCBGS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 01:18:58 -0500
-Date: Thu, 1 Mar 2007 22:15:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] <linux/sysdev.h> needs to include <linux/module.h>
-Message-Id: <20070301221541.9e48bbc3.akpm@linux-foundation.org>
-In-Reply-To: <20070224122211.GA17040@linux-mips.org>
-References: <20070224122211.GA17040@linux-mips.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 01:19:50 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59510 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422952AbXCBGTt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 01:19:49 -0500
+Date: Thu, 1 Mar 2007 22:19:48 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
+       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+In-Reply-To: <20070302060831.GF15867@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com>
+References: <20070301160915.6da876c5.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com>
+ <20070302035751.GA15867@wotan.suse.de> <Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com>
+ <20070302042149.GB15867@wotan.suse.de> <Pine.LNX.4.64.0703012022320.14299@schroedinger.engr.sgi.com>
+ <20070302050625.GD15867@wotan.suse.de> <Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com>
+ <20070302054944.GE15867@wotan.suse.de> <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>
+ <20070302060831.GF15867@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Feb 2007 12:22:11 +0000 Ralf Baechle <ralf@linux-mips.org> wrote:
+On Fri, 2 Mar 2007, Nick Piggin wrote:
 
-> sysdev.h uses THIS_MODULE so should include <linux/module.h>.
+> > >From the I/O controller and from the application. 
 > 
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> Why doesn't the application need to deal with TLB entries?
+
+Because it may only operate on a small section of the file and hopefully 
+splice the rest through? But yes support for mmapped I/O would be 
+necessary.
+
+> > This would only be a temporary fix pushing the limits to the double or so?
 > 
-> diff --git a/include/linux/sysdev.h b/include/linux/sysdev.h
-> index 389ccf8..e699ab2 100644
-> --- a/include/linux/sysdev.h
-> +++ b/include/linux/sysdev.h
-> @@ -22,6 +22,7 @@
->  #define _SYSDEV_H_
->  
->  #include <linux/kobject.h>
-> +#include <linux/module.h>
->  #include <linux/pm.h>
->  
+> And using slightly larger page sizes isn't?
 
+There was no talk about slightly. 1G page size would actually be quite 
+convenient for some applications.
 
-You can't just make changes like this without a lot of compile testing, I'm
-afraid.
+> > Amortized? The controller still would have to hunt down the 4kb page 
+> > pieces that we have to feed him right now. Result: Huge scatter gather 
+> > lists that may themselves create issues with higher page order.
+> 
+> What sort of numbers do you have for these controllers that aren't
+> very good at doing sg?
 
-This causes a recursive inclusion and sched.h blows up:
+Writing a terabyte of memory to disk with handling 256 billion page 
+structs? In case of a system with 1 petabyte of memory this may be rather 
+typical and necessary for the application to be able to save its state
+on disk.
 
-In file included from include/linux/utsname.h:35,
-                 from include/asm/elf.h:12,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:15,
-                 from include/linux/sysdev.h:25,
-                 from kernel/time/clocksource.c:28:
-include/linux/sched.h:1648: warning: 'struct sysdev_class' declared inside parameter list
-include/linux/sched.h:1648: warning: its scope is only this definition or declaration, which is probably not what you want
+> Isn't the issue was something like your IO controllers have only a
+> limited number of sg entries, which is fine with 16K pages, but with
+> 4K pages that doesn't give enough data to cover your RAID stripe?
+> 
+> We're never going to do a variable sized pagecache just because of that.
 
-
-I think we can fix that by moving the declarations into cpu.h and getting
-that unpleasant include out of sched.h.
-
-Of course, this will probably make other things blow up and additional
-sysdev.h includes will now be needed.  We'll see..
-
-
-
-
-
-diff -puN include/linux/cpu.h~linux-sysdevh-needs-to-include-linux-moduleh-up-fix include/linux/cpu.h
---- a/include/linux/cpu.h~linux-sysdevh-needs-to-include-linux-moduleh-up-fix
-+++ a/include/linux/cpu.h
-@@ -41,6 +41,9 @@ extern void cpu_remove_sysdev_attr(struc
- extern int cpu_add_sysdev_attr_group(struct attribute_group *attrs);
- extern void cpu_remove_sysdev_attr_group(struct attribute_group *attrs);
- 
-+extern struct sysdev_attribute attr_sched_mc_power_savings;
-+extern struct sysdev_attribute attr_sched_smt_power_savings;
-+extern int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls);
- 
- #ifdef CONFIG_HOTPLUG_CPU
- extern void unregister_cpu(struct cpu *cpu);
-diff -puN include/linux/sched.h~linux-sysdevh-needs-to-include-linux-moduleh-up-fix include/linux/sched.h
---- a/include/linux/sched.h~linux-sysdevh-needs-to-include-linux-moduleh-up-fix
-+++ a/include/linux/sched.h
-@@ -1642,10 +1642,7 @@ static inline void arch_pick_mmap_layout
- extern long sched_setaffinity(pid_t pid, cpumask_t new_mask);
- extern long sched_getaffinity(pid_t pid, cpumask_t *mask);
- 
--#include <linux/sysdev.h>
- extern int sched_mc_power_savings, sched_smt_power_savings;
--extern struct sysdev_attribute attr_sched_mc_power_savings, attr_sched_smt_power_savings;
--extern int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls);
- 
- extern void normalize_rt_tasks(void);
- 
-_
-
+No, we need support for larger page sizes than 16k. 16k has not been fine 
+for a couple of years. We only agreed to 16k because that was the common 
+consensus. Best performance was always at 64k 4 years ago (but then we 
+have no numbers for higher page sizes yet). Now we would prefer much 
+larger sizes.
