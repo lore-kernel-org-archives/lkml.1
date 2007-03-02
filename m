@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965659AbXCBVWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXCBVWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965659AbXCBVWe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965657AbXCBVWe
+	id S965661AbXCBVWj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965657AbXCBVWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:22:34 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:43286 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965659AbXCBVWd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:22:33 -0500
-X-Sasl-enc: Numeg7JjtU2jlEoLjdQuikRqfTUT8e95YZQU3eB3zz2F 1172870552
-Date: Fri, 2 Mar 2007 18:22:28 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-ID: <20070302212228.GC11786@khazad-dum.debian.net>
-References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <20070218183805.5a4fd813.khali@linux-fr.org> <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302114747.GB1212@srcf.ucam.org> <20070302135810.GF2156@elf.ucw.cz> <20070302220052.f93f3976.khali@linux-fr.org>
+	Fri, 2 Mar 2007 16:22:39 -0500
+Received: from sycorax.lbl.gov ([128.3.11.121]:1254 "EHLO sycorax.lbl.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965658AbXCBVWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 16:22:37 -0500
+From: Alex Romosan <romosan@sycorax.lbl.gov>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       rpurdie@rpsys.net
+Subject: Re: 2.6.21-rc2 radeon backlight
+References: <20070301184531.b3aeafe3.akpm@linux-foundation.org>
+	<87tzx35zkc.fsf@sycorax.lbl.gov>
+	<20070302122920.a2967ebf.akpm@linux-foundation.org>
+	<20070302.123514.35465791.davem@davemloft.net>
+	<20070302210157.GA11786@khazad-dum.debian.net>
+Date: Fri, 02 Mar 2007 13:22:27 -0800
+In-Reply-To: <20070302210157.GA11786@khazad-dum.debian.net> (message from
+	Henrique de Moraes Holschuh on Fri, 2 Mar 2007 18:01:57 -0300)
+Message-ID: <87mz2v5oj0.fsf@sycorax.lbl.gov>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302220052.f93f3976.khali@linux-fr.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Mar 2007, Jean Delvare wrote:
-> I like the idea, it should work as long as we are guaranteed that all
-> the hwmon device accesses happen in the AML code? I'm not familiar with
-> ACPI, so you tell me.
+Henrique de Moraes Holschuh <hmh@hmh.eng.br> writes:
 
-Some fubar machines do it in SMM mode, and the AML code just reads memory
-regions that were updated by the SMBIOS.  Or, if one is lucky, the AML
-triggers the SMI (ThinkPads do this, for example -- but I am not sure that's
-the only way a ThinkPad will cause a SMI), so it could be made to run
-protected by the lock.
+> On Fri, 02 Mar 2007, David Miller wrote:
+>> Why don't we compromise for 2.6.21 by marking the Radeon backlight
+>> stuff EXPERIMENTAL until the cases where IBM ACPI works and the
+>> Radeon backlight stuff does not are worked out?
+>
+> What ibm-acpi backlight control does is *very* different from what the
+> radeon backlight control does.
+>
+> ibm-acpi talks to the ThinkPad EC to change the brightness of the backlight,
+> it has *NO* on/off support.  Radeon talks to the video chipset to turn the
+> LVDS output on/off (or something to that effect), and thus to turn the
+> backlight on/off.
+
+if i don't enable the radeon backlight support the backlight works and
+i can turn it on and off using radeontool. if i enable the radeon
+backlight support the screen stays dark (although i can log on my
+laptop remotely). if i try to use radeontool to turn the backlight on
+nothing happens. so, at least on the thinkpad, the radeon backlight
+support disables some other kind of backlight support that works
+otherwise.
+
+--alex--
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+| I believe the moment is at hand when, by a paranoiac and active |
+|  advance of the mind, it will be possible (simultaneously with  |
+|  automatism and other passive states) to systematize confusion  |
+|  and thus to help to discredit completely the world of reality. |
