@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965597AbXCBVDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965626AbXCBVEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965597AbXCBVDQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:03:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965626AbXCBVDQ
+	id S965626AbXCBVEq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965627AbXCBVEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:03:16 -0500
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:1924 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965624AbXCBVDO (ORCPT
+	Fri, 2 Mar 2007 16:04:46 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:50895 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965626AbXCBVEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:03:14 -0500
-Date: Fri, 2 Mar 2007 22:00:52 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070302220052.f93f3976.khali@linux-fr.org>
-In-Reply-To: <20070302135810.GF2156@elf.ucw.cz>
-References: <45D5EA88.7090300@redhat.com>
-	<45D6DDCE.5050803@assembler.cz>
-	<45D7461A.2040808@redhat.com>
-	<20070218183805.5a4fd813.khali@linux-fr.org>
-	<20070228213803.GA4877@ucw.cz>
-	<20070301152655.f232db64.khali@linux-fr.org>
-	<20070302114023.GD2163@elf.ucw.cz>
-	<20070302114747.GB1212@srcf.ucam.org>
-	<20070302135810.GF2156@elf.ucw.cz>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 16:04:45 -0500
+X-Sasl-enc: tAkjIIOD+YcQ3WjCEE00fOQxAP5yeK9s/sw3xH5uJruH 1172869485
+Date: Fri, 2 Mar 2007 18:04:40 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Marko Rauhamaa <marko@pacujo.net>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: Is the clockevent resolution fine-grained enough?
+Message-ID: <20070302210440.GB11786@khazad-dum.debian.net>
+References: <m3649kweyj.fsf@elektro.pacujo.net> <1172851546.24738.62.camel@localhost.localdomain> <m3k5xzy2w3.fsf@elektro.pacujo.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <m3k5xzy2w3.fsf@elektro.pacujo.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+On Fri, 02 Mar 2007, Marko Rauhamaa wrote:
+> I'm afraid you didn't quite understand what I was getting at. Say the
+> user programs the frequency to be 109,000 Hz. That means a nominal clock
+> interval of ~9174.3119 ns. Now the clockevent interface forces me to
+> round it down to 9174 ns. That means the clock interrupts fall behind
+> with respect to the other parts in the system that implement 109,000 Hz
+> much more to the letter. The error grows by 34 µs every second so that
+> after 8 hours, we are lagging by a whole second.
 
-On Fri, 2 Mar 2007 14:58:10 +0100, Pavel Machek wrote:
-> Actually for the acpi stuff... we might wrap ACPI interpretter with a
-> semaphore that needs to be taken before starting any AML code. Then
-> just make sure sensors take same semaphore?
+Shouldn't you switch to a design where these errors become jitter instead of
+cumulative?
 
-I like the idea, it should work as long as we are guaranteed that all
-the hwmon device accesses happen in the AML code? I'm not familiar with
-ACPI, so you tell me.
-
-In practice it's rather the SMBus drivers which will need to take the
-lock, as this is what the AML code will access (for SMBus-based
-hardware monitoring drivers.) For non-SMBus based hardware monitoring
-drivers, indeed the driver itself should take it. We will have to pay
-attention to deadlocks on systems with multiple hardware monitoring
-chips and/or SMBus channels.
-
-Can you please provide a patch implementing your proposal in acpi? Then
-I could implement the i2c/hwmon part on some selected drivers and start
-testing real world scenarii.
-
-Thanks,
 -- 
-Jean Delvare
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
