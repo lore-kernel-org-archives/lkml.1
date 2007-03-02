@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422950AbXCBGSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422953AbXCBGTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422950AbXCBGSX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 01:18:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422952AbXCBGSX
+	id S1422953AbXCBGTA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 01:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422957AbXCBGS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 01:18:23 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:58406 "EHLO smtp.ocgnet.org"
+	Fri, 2 Mar 2007 01:18:59 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:44747 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422950AbXCBGSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 01:18:22 -0500
-Date: Fri, 2 Mar 2007 15:15:48 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       balbir@in.ibm.com, mel@skynet.ie, npiggin@suse.de,
-       clameter@engr.sgi.com, mingo@elte.hu, jschopp@austin.ibm.com,
-       arjan@infradead.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070302061548.GA13552@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	akpm@linux-foundation.org, balbir@in.ibm.com, mel@skynet.ie,
-	npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
-	jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E7835A.8000908@in.ibm.com> <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org> <20070301195943.8ceb221a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703012105080.3953@woody.linux-foundation.org> <20070302145029.d4847577.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302145029.d4847577.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1422953AbXCBGS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 01:18:58 -0500
+Date: Thu, 1 Mar 2007 22:15:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] <linux/sysdev.h> needs to include <linux/module.h>
+Message-Id: <20070301221541.9e48bbc3.akpm@linux-foundation.org>
+In-Reply-To: <20070224122211.GA17040@linux-mips.org>
+References: <20070224122211.GA17040@linux-mips.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 02:50:29PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Thu, 1 Mar 2007 21:11:58 -0800 (PST)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Sat, 24 Feb 2007 12:22:11 +0000 Ralf Baechle <ralf@linux-mips.org> wrote:
+
+> sysdev.h uses THIS_MODULE so should include <linux/module.h>.
 > 
-> > The whole DRAM power story is a bedtime story for gullible children. Don't 
-> > fall for it. It's not realistic. The hardware support for it DOES NOT 
-> > EXIST today, and probably won't for several years. And the real fix is 
-> > elsewhere anyway (ie people will have to do a FBDIMM-2 interface, which 
-> > is against the whole point of FBDIMM in the first place, but that's what 
-> > you get when you ignore power in the first version!).
-> > 
+> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 > 
-> Note:
-> I heard embeded people often designs their own memory-power-off control on
-> embeded Linux. (but it never seems to be posted to the list.) But I don't know
-> they are interested in generic memory hotremove or not.
-> 
-Yes, this is not that uncommon of a thing. People tend to do this in a
-couple of different ways, in some cases the system is too loaded to ever
-make doing such a thing at run-time worthwhile, and in those cases these
-sorts of things tend to be munged in with the suspend code. Unfortunately
-it tends to be quite difficult in practice to keep pages in one place,
-so people rely on lame chip-select hacks and limiting the amount of
-memory that the kernel treats as RAM instead so it never ends up being an
-issue. Having some sort of a balance would certainly be nice, though.
+> diff --git a/include/linux/sysdev.h b/include/linux/sysdev.h
+> index 389ccf8..e699ab2 100644
+> --- a/include/linux/sysdev.h
+> +++ b/include/linux/sysdev.h
+> @@ -22,6 +22,7 @@
+>  #define _SYSDEV_H_
+>  
+>  #include <linux/kobject.h>
+> +#include <linux/module.h>
+>  #include <linux/pm.h>
+>  
+
+
+You can't just make changes like this without a lot of compile testing, I'm
+afraid.
+
+This causes a recursive inclusion and sched.h blows up:
+
+In file included from include/linux/utsname.h:35,
+                 from include/asm/elf.h:12,
+                 from include/linux/elf.h:7,
+                 from include/linux/module.h:15,
+                 from include/linux/sysdev.h:25,
+                 from kernel/time/clocksource.c:28:
+include/linux/sched.h:1648: warning: 'struct sysdev_class' declared inside parameter list
+include/linux/sched.h:1648: warning: its scope is only this definition or declaration, which is probably not what you want
+
+
+I think we can fix that by moving the declarations into cpu.h and getting
+that unpleasant include out of sched.h.
+
+Of course, this will probably make other things blow up and additional
+sysdev.h includes will now be needed.  We'll see..
+
+
+
+
+
+diff -puN include/linux/cpu.h~linux-sysdevh-needs-to-include-linux-moduleh-up-fix include/linux/cpu.h
+--- a/include/linux/cpu.h~linux-sysdevh-needs-to-include-linux-moduleh-up-fix
++++ a/include/linux/cpu.h
+@@ -41,6 +41,9 @@ extern void cpu_remove_sysdev_attr(struc
+ extern int cpu_add_sysdev_attr_group(struct attribute_group *attrs);
+ extern void cpu_remove_sysdev_attr_group(struct attribute_group *attrs);
+ 
++extern struct sysdev_attribute attr_sched_mc_power_savings;
++extern struct sysdev_attribute attr_sched_smt_power_savings;
++extern int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern void unregister_cpu(struct cpu *cpu);
+diff -puN include/linux/sched.h~linux-sysdevh-needs-to-include-linux-moduleh-up-fix include/linux/sched.h
+--- a/include/linux/sched.h~linux-sysdevh-needs-to-include-linux-moduleh-up-fix
++++ a/include/linux/sched.h
+@@ -1642,10 +1642,7 @@ static inline void arch_pick_mmap_layout
+ extern long sched_setaffinity(pid_t pid, cpumask_t new_mask);
+ extern long sched_getaffinity(pid_t pid, cpumask_t *mask);
+ 
+-#include <linux/sysdev.h>
+ extern int sched_mc_power_savings, sched_smt_power_savings;
+-extern struct sysdev_attribute attr_sched_mc_power_savings, attr_sched_smt_power_savings;
+-extern int sched_create_sysfs_power_savings_entries(struct sysdev_class *cls);
+ 
+ extern void normalize_rt_tasks(void);
+ 
+_
+
