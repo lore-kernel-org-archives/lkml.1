@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965190AbXCBB5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422746AbXCBCCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965190AbXCBB5d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 20:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965330AbXCBB5d
+	id S1422746AbXCBCCt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 21:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422745AbXCBCCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 20:57:33 -0500
-Received: from ozlabs.org ([203.10.76.45]:43012 "EHLO ozlabs.org"
+	Thu, 1 Mar 2007 21:02:49 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:33023 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965190AbXCBB5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 20:57:33 -0500
-Date: Fri, 2 Mar 2007 12:57:29 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] Define FIXED_PORT flag for serial_core
-Message-ID: <20070302015729.GB1687@localhost.localdomain>
-Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-References: <20070220031717.GI17818@localhost.localdomain> <20070220031951.56492DDD09@ozlabs.org> <20070228222630.GA11999@flint.arm.linux.org.uk> <20070228234424.GD3048@localhost.localdomain> <20070301103004.GA25033@flint.arm.linux.org.uk>
+	id S1422744AbXCBCCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 21:02:48 -0500
+Date: Fri, 2 Mar 2007 11:00:08 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH/RFC 2.6.20 1/2] fbdev, mm: Deferred IO support
+Message-ID: <20070302020008.GA6822@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jaya Kumar <jayakumar.lkml@gmail.com>,
+	linux-fbdev-devel@lists.sourceforge.net, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20070225051312.17454.80741.sendpatchset@localhost> <20070301140131.GA6603@linux-sh.org> <45a44e480703011602j698f67dev469b49d6b527f502@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070301103004.GA25033@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <45a44e480703011602j698f67dev469b49d6b527f502@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 10:30:04AM +0000, Russell King wrote:
-> On Thu, Mar 01, 2007 at 10:44:24AM +1100, David Gibson wrote:
-> > On Wed, Feb 28, 2007 at 10:26:30PM +0000, Russell King wrote:
-> > > On Tue, Feb 20, 2007 at 02:19:51PM +1100, David Gibson wrote:
-> > > > Therefore, this patch defines a UPF_FIXED_PORT flag for the uart_port
-> > > > structure.  If this flag is set when the serial port is configured,
-> > > > any attempts to alter the port's type, io address, irq or base clock
-> > > > with setserial are ignored.
-> > > 
-> > > I've been wondering about this, and it is questionable whether we
-> > > should allow any serial port which isn't owned by the legacy platform
-> > > device (the one called "serial8250", iow by the 8250 driver itself)
-> > > to have the base addresses and interrupts changed.
-> > > 
-> > > IOW, we apply this "fixed port" to any port registered by probe
-> > > modules external to the 8250 driver itself, such as PCI, PNP, etc.
-> > 
-> > Sounds reasonable to me.  But maybe in that case we should invert the
-> > sense of the flag.  UPF_MOVABLE_PORT or UPF_USER_CONFIGURABLE or
-> > something.
+On Thu, Mar 01, 2007 at 07:02:34PM -0500, Jaya Kumar wrote:
+> On 3/1/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> >Any updates on this? If there are no other concerns, it would be nice to
+> >at least get this in to -mm for testing if nothing else.
 > 
-> I was thinking about not even having a flag, but instead checking for
-> port->dev == &serial8250_isa_devs->dev.
+> I think Andrew merged it into -mm.
+> 
+Ok, I didn't see it go in, sorry for the noise in that case.
 
-Hmm.. ok.  Will you spin a patch, or should I?
+> >Jaya, can you roll the fsync() patch in to your defio patch? There's not
+> >much point in keeping them separate.
+> >
+> 
+> I forgot to add that. Sorry about that. Should I resubmit with it or
+> would you prefer to post it?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I'll repost it separately.
