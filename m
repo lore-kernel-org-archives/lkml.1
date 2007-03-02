@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422991AbXCBJxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422995AbXCBJ6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422991AbXCBJxM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 04:53:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422989AbXCBJxM
+	id S1422995AbXCBJ6i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 04:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422996AbXCBJ6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 04:53:12 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:51067 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422988AbXCBJxK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 04:53:10 -0500
-Message-ID: <45E7F405.6020507@vmware.com>
-Date: Fri, 02 Mar 2007 01:53:09 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Fri, 2 Mar 2007 04:58:38 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:46680 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422995AbXCBJ6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 04:58:37 -0500
+Message-ID: <45E7F55F.6090807@gmail.com>
+Date: Fri, 02 Mar 2007 10:58:55 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/9] Vmi fix highpte
-References: <200703020254.l222smBB009668@zach-dev.vmware.com> <45E79529.9000305@goop.org> <45E79C72.4000806@goop.org> <45E7C4DD.1040403@vmware.com> <45E7C80E.1020107@goop.org>
-In-Reply-To: <45E7C80E.1020107@goop.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Werner LEMBERG <wl@gnu.org>, linux-kernel@vger.kernel.org
+Subject: Re: Memory stick reader Ricoh R5C592 supported?
+References: <20070302.102351.146595518.wl@gnu.org> <45E7F13E.60408@drzeus.cx>
+In-Reply-To: <45E7F13E.60408@drzeus.cx>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Zachary Amsden wrote:
->   
->> Yeah, actually that does work, since you pass the km_type, we can use
->> that.  But I would rather not respin this for 2.6.21; getting this
->> 100% right can be tricky, and we've already done a good deal of
->> testing on this patch the way it is.
->>     
->
-> It seems fairly low risk to me; its basically the same structure with
-> the same calls happening in the same order, but just slightly rearranged
-> in the source.  Of course, if I'd seen this patch earlier I could have
-> given you earlier feedback...
->   
+Pierre Ossman napsal(a):
+> Werner LEMBERG wrote:
+>> Folks,
+>>
+>>
+>> my Dell Inspiron 6400 laptop has both a Ricoh R5C822 host adapter (for
+>> SD, MMC, etc.) and a Ricoh R5C592 host adapter for memory sticks.
+>>
+>> While the former works just fine, it seems to me that the latter
+>> hasn't any support.  Indeed, inserting a Sony MSA-128A memory stick
+>> causes no reaction whatsoever.  Searching with google, I haven't found
+>> anything related to this chip; looking into the kernel source code
+>> wasn't successful either.
+>>
+>> Can you please shed some light on the current situation?  I'm using
+>> kernel 2.6.20.
+>>
+> 
+> Memory stick is completely unsupported. We haven't got any specs for neither the
+> the host controllers or the protocol. So I would guess it would be quite some
+> time before memorystick is supported directly by Linux.
 
-I've been sending out this particular patch or a variant of it for a 
-long time.  It did get lost for a while during the paravirt-ops 
-conversion, however.  You're the first to give any feedback on it.
+There is an experimental out-of-the-tree ricoh driver. I don't know if your 
+reader is supported, you can give it a try and report back. Make sure, you have 
+backed your data up.
+http://marc.theaimsgroup.com/?l=linux-kernel&m=117123096427193&w=2
 
->>   Do you have any objection to me creating a patch for -mm tree that
->> implements kmap_atomic_pte the way you have described above and
->> attaching it to the Xen patch series, but leaving the current patch as
->> is for now?
->>     
->
-> Not particularly, but it seems odd to put something in knowing its going
-> to be immediately replaced.  What's the urgency?
->   
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
 
-Better to keep what is known working for now, even if it is going to be 
-replaced later... code is easy to change in development cycles, less 
-easy to fix when nearing release.  It really is easy to mess up one of 
-the pte conversions by, say, shift the wrong value or calculate wrong or 
-PAE dependent PTE offset.  Plus it is harder to test, since you need > 
-896 M memory for your VM before the code even gets run.
-
-Not that I expect anything to go wrong with it, but I would prefer to 
-err on the side of caution for now, that's all.
-
-Zach
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
