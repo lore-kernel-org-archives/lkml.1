@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965647AbXCBVNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXCBVNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965647AbXCBVNQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965645AbXCBVNQ
+	id S965645AbXCBVNj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:13:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965640AbXCBVNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:13:16 -0500
-Received: from cavan.codon.org.uk ([217.147.92.49]:38996 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965647AbXCBVNO (ORCPT
+	Fri, 2 Mar 2007 16:13:39 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:27013 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965645AbXCBVNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:13:14 -0500
-Date: Fri, 2 Mar 2007 21:12:51 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Message-ID: <20070302211251.GA10035@srcf.ucam.org>
-References: <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <20070218183805.5a4fd813.khali@linux-fr.org> <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302114747.GB1212@srcf.ucam.org> <20070302151055.d2665d66.khali@linux-fr.org> <20070302141840.GA3441@srcf.ucam.org> <20070302220454.a0c66d04.khali@linux-fr.org>
+	Fri, 2 Mar 2007 16:13:38 -0500
+Date: Fri, 2 Mar 2007 13:12:07 -0800
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Christoph Lameter <clameter@engr.sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070302211207.GJ10643@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Rik van Riel <riel@redhat.com>,
+	Christoph Lameter <clameter@engr.sgi.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Mel Gorman <mel@skynet.ie>, npiggin@suse.de, mingo@elte.hu,
+	jschopp@austin.ibm.com, arjan@infradead.org,
+	torvalds@linux-foundation.org, mbligh@mbligh.org,
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <45E842F6.5010105@redhat.com> <20070302085838.bcf9099e.akpm@linux-foundation.org> <Pine.LNX.4.64.0703020919350.16719@schroedinger.engr.sgi.com> <20070302093501.34c6ef2a.akpm@linux-foundation.org> <45E8624E.2080001@redhat.com> <20070302100619.cec06d6a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com> <45E86BA0.50508@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070302220454.a0c66d04.khali@linux-fr.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <45E86BA0.50508@redhat.com>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 10:04:54PM +0100, Jean Delvare wrote:
-> On Fri, 2 Mar 2007 14:18:40 +0000, Matthew Garrett wrote:
-> > In theory I /think/ so, but it would probably end up being an 
-> > overestimate of the coverage actually needed. Trapping at runtime is 
-> > arguably more elegant?
-> 
-> It might be more elegant but it won't work. We don't want to prevent
-> ACPI from accessing these I/O ports. If we need to choose only one
-> "driver" accessing the I/O port, it must be acpi, at leat for now,
-> despite the fact that acpi provides very weak hardware monitoring
-> capabilities compared to the specific drivers.
+On Fri, Mar 02, 2007 at 01:23:28PM -0500, Rik van Riel wrote:
+> With 32 CPUs diving into the page reclaim simultaneously,
+> each trying to scan a fraction of memory, this is disastrous
+> for performance.  A 256GB system should be even worse.
 
-Assuming arbitration of access, what's the problem with having two 
-drivers accessing the same hardware? Do these chips generally have any 
-significant internal state other than trip points and the like?
+Thundering herds of a sort pounding the LRU locks from direct reclaim
+have set off the NMI oopser for users here.
 
-> Why would we end up with an overestimation if we check the I/O ports at
-> boot time? Do you have concrete cases in mind?
 
-ACPI will often describe large operation regions, but won't necessarily 
-touch all of them. Effectively, every codepath would have to be walked 
-through at boot time and checked for io access.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+-- wli
