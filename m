@@ -1,122 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992456AbXCBOF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992458AbXCBOFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992456AbXCBOF3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 09:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992455AbXCBOF3
+	id S2992458AbXCBOFr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 09:05:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992462AbXCBOFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 09:05:29 -0500
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:2861 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992452AbXCBOF2 (ORCPT
+	Fri, 2 Mar 2007 09:05:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:62618 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992458AbXCBOFp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 09:05:28 -0500
-Date: Fri, 2 Mar 2007 15:03:13 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070302150313.198b6053.khali@linux-fr.org>
-In-Reply-To: <20070302114023.GD2163@elf.ucw.cz>
-References: <45D5EA88.7090300@redhat.com>
-	<45D6DDCE.5050803@assembler.cz>
-	<45D7461A.2040808@redhat.com>
-	<20070218183805.5a4fd813.khali@linux-fr.org>
-	<20070228213803.GA4877@ucw.cz>
-	<20070301152655.f232db64.khali@linux-fr.org>
-	<20070302114023.GD2163@elf.ucw.cz>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+	Fri, 2 Mar 2007 09:05:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=GuiTONiuenQtBvQGscM6vxBKIM97VFcf41qlRykw3zYwLeNAO0FQir4GxCxC/E9r4nMjwWO188jtoa39MPjxc+JsgjTerZEyzRsUSnLdvFjxzQO10QaZbJdvtuSz7MYhygoQrrOBFcXBzgMTks6x6Ul1OOiFuYOf4UzlfbJ/2TQ=
+Date: Fri, 2 Mar 2007 17:05:52 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: 2.6.21-rc2-mm1: EIP is at ext2_discard_reservation+0x1c/0x52
+Message-ID: <20070302140552.GA5545@martell.zuzino.mipt.ru>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+BUG: unable to handle kernel paging request at virtual address 5a5a5a72
+ printing eip:
+c01b09fd
+*pde = 00000000
+Oops: 0000 [#1]
+PREEMPT DEBUG_PAGEALLOC
+last sysfs file: devices/pci0000:00/0000:00:1d.3/usb5/5-0:1.0/bInterfaceProtocol
+CPU:    0
+EIP:    0060:[<c01b09fd>]    Not tainted VLI
+EFLAGS: 00010206   (2.6.21-rc2-mm1 #1)
+EIP is at ext2_discard_reservation+0x1c/0x52
+eax: dec2bdf8   ebx: 5a5a5a5a   ecx: d8f14000   edx: c01b4fe4
+esi: d70c6ddc   edi: 5a5a5a6e   ebp: 00000000   esp: d8f15dc8
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process ccache (pid: 6406, ti=d8f14000 task=ccaef5b0 task.ti=d8f14000)
+Stack: d70c6d0c 5a5a5a5a 00000044 00000000 c01b4ff4 d70c6ddc d70c6fdc c015b69d
+       00000000 d70c6ddc deddabf8 c015b8c6 d70c6ddc 00000000 c015aede ffffffe4
+       c01b27c8 c01f75c4 00000246 c03b5f80 c03b5f80 df90e758 c01599a0 c045cfe8
+Call Trace:
+ [<c01b4ff4>] ext2_clear_inode+0x10/0x27
+ [<c015b69d>] clear_inode+0x8f/0xdd
+ [<c015b8c6>] generic_drop_inode+0x115/0x125
+ [<c015aede>] iput+0x60/0x62
+ [<c01b27c8>] ext2_new_inode+0x8fd/0x941
+ [<c01f75c4>] _atomic_dec_and_lock+0x10/0x44
+ [<c01599a0>] __d_lookup+0x6a/0x10a
+ [<c01599a0>] __d_lookup+0x6a/0x10a
+ [<c030726b>] _spin_unlock+0x25/0x3b
+ [<c0159a23>] __d_lookup+0xed/0x10a
+ [<c01b45ec>] ext2_create+0xc/0x95
+ [<c01b45e0>] ext2_create+0x0/0x95
+ [<c0151f14>] vfs_create+0x5f/0x6c
+ [<c0154282>] open_namei+0x177/0x555
+ [<c014ac56>] do_filp_open+0x25/0x39
+ [<c030726b>] _spin_unlock+0x25/0x3b
+ [<c014aa62>] get_unused_fd+0xaa/0xb4
+ [<c014aca4>] do_sys_open+0x3a/0x6b
+ [<c014ad0e>] sys_open+0x1c/0x1e
+ [<c0102586>] sysenter_past_esp+0x5f/0x99
+ =======================
+Code: 00 00 c7 42 20 00 00 00 00 89 56 88 5b 5e c3 55 57 56 53 89 c6 8b 58 88 8b 80 24 01 00 00 8b 80 98 02 00 00 85 db 74 34 8d 7b 14 <83> 7f 04 00 74 2b 8d a8 c8 00 00 00 89 e8 e8 b6 63 15 00 83 7f
+EIP: [<c01b09fd>] ext2_discard_reservation+0x1c/0x52 SS:ESP 0068:d8f15dc8
+------------------------------------------------------------------
 
-On Fri, 2 Mar 2007 12:40:23 +0100, Pavel Machek wrote:
-> Ok. You are right that ACPI is an ugly piece of mess. But I'm pretty
-> sure that 90%+ of ACPI notebook implementations *will* want to talk to
-> their monitoring chips... for temperature readings.
->
-> So even if we fixed ACPI to reserve the ports, you'd be still unhappy;
-> lm-sensors would break at least on all the notebooks.
+This happened after following build script which
+a) blows old build dirs and old cloned kernel
+b) clones kernel to ext2 partition from reiserfs partition
+c) starts build with help of .ccache also on ext2 partition
+   it is mostly filled:
+   /dev/hda4   8649576   7438480    771720  91% /home/ad/.ccache
+d) make hangs somewhere after CC init/main.o
 
-That's a secondary problem. The primary issue is the concurrent access
-to resources, which cause lots of trouble which are hard to investigate.
-If ACPI reserves the ports, then the SMBus or hardware monitoring
-drivers (or any other conflicting driver) will cleanly fail to load,
-which would be a move in the right direction. Ideally we would be able
-to synchronize the accesses between ACPI and the other drivers, but if
-we can't, I'd already be _very happy_ to just prevent conflicting
-drivers from being loaded at the same time.
 
-So, can ACPI actually reserve the ports it accesses?
+/dev/sda1	/home/linux		ext2     defaults,noatime 0 0
+/dev/hda4	/home/ad/.ccache	ext2     defaults,noatime 0 0
+------------------------------------------------------------------
+#!/bin/sh -x
 
-> > I would be happy to prevent SMBus and/or hardware monitoring drivers
-> > from being loaded on ACPI-based system if we had a way to know which
-> > systems do have ACPI code accessing these chips and which do not, and if
-> > ACPI was offering a level of functionality comparable to what
-> > individual hardware monitoring drivers offer. Unfortunately:
-> 
-> Well, I'm afraid you should assume all recent notebooks touch sensors
-> from ACPI.
+cd /home/linux
+rm -rf logs build linux-irq-flags-t
+git clone -s ~/linux/linux-linus linux-irq-flags-t
+cd linux-irq-flags-t
+patch -p1 <../akmk.patch        || exit 1
+find . -type f -name '*.orig' | xargs rm -f
+git commit -a -m 'akmk.patch'   || exit 1
 
-Correct, and on most notebooks, traditional hardware monitoring
-drivers do not work anyway. Or I should say, used to not work. The
-recent CPUs have embedded sensors which can be read using Rudolf
-Marek's k8temp and coretemp drivers, this works on laptops as well.
-Chances are good that future laptops will not include a separate
-temperature sensor but will read the temperature from the CPU directly,
-which will cause conflicts with our drivers.
+make tags &
 
-Now the problem is that we can't blacklist SMBus and hardware
-monitoring drivers on all laptops by default. There may be other
-devices on the SMBus which the user can legitimately want to access,
-such as EEPROMs or RTCs.
+mkdir ../logs ../build
 
-> > 1* As far as I know, we currently have no way to know if the ACPI code
-> > plans to ever access the hardware monitoring chip. If the acpi
-> > subsystem could export this information somehow, it would help a lot.
-> > But I'm not familiar with ACPI, so I don't know if this is feasable or
-> > not. We just can't prevent the SMBus and hardware monitoring drivers
-> > drivers from being loaded as soon as ACPI is enabled. This would
-> > prevent a majority of users from using them, while they work fine for
-> > most of them.
-> 
-> What about whitelist? DMI-based? That's only way to do it, I'm afraid.
+TARGET=i386-allnoconfig
+mkdir ../build/$TARGET
+make O=../build/$TARGET allnoconfig >/dev/null
+akmk $TARGET -k 2>&1 | tee ../logs/$TARGET-000.log
 
-What kind of whitelist do you have in mind? We can't realistically
-maintain an ever-growing whitelist of hundreds of entries in the
-kernel. We could block all laptops by default and maintain a white list
-only for them, and a black list for other systems, the would probably
-limit the maintenance work, maybe not to an acceptable level though.
-
-Anyway I would definitely prefer the resource conflicts approach, as it
-wouldn't need maintenance at all.
-
-> > 2* The hardware monitoring features offered by ACPI today are one level
-> > of magnitude weaker than what lm_sensors was already offering back in
-> > 1999. The monitoring chips can do much but unfortunately ACPI only
-> > exposes a very small subset of the chip features. ACPI doesn't
-> > handle
-> 
-> Yes, I know ACPI sucks at hardware monitoring. Unfortunately, we can't
-> go without ACPI.
-
-Agreed.
-
-> > voltage monitoring at all. It usually reports no more than one fan, and
-> > in my experience, more often than not, the speed is reported as a
-> > boolean (spinning or not), when lm_sensors gives you the exact speed of
-> > all your fans. ACPI thermal zones are not so bad, but the interface to
-> > control them is ugly, and lm_sensors usually gives more details. And
-> 
-> Fix the interface? ;-). Actually that move may be underway as we are
-> moving out of /proc.
-
-Great, looking forward.
-
--- 
-Jean Delvare
