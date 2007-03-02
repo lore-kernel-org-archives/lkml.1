@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422883AbXCBFxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422931AbXCBGAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422883AbXCBFxo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 00:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422922AbXCBFxo
+	id S1422931AbXCBGAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 01:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422930AbXCBGAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 00:53:44 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58412 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422883AbXCBFxn (ORCPT
+	Fri, 2 Mar 2007 01:00:15 -0500
+Received: from za-gw.sanpeople.com ([196.211.225.226]:4180 "EHLO
+	za-gw.sanpeople.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422933AbXCBGAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 00:53:43 -0500
-Date: Thu, 1 Mar 2007 21:53:42 -0800 (PST)
-From: Christoph Lameter <clameter@engr.sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-In-Reply-To: <20070302054944.GE15867@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com>
- <20070302035751.GA15867@wotan.suse.de> <Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com>
- <20070302042149.GB15867@wotan.suse.de> <Pine.LNX.4.64.0703012022320.14299@schroedinger.engr.sgi.com>
- <20070302050625.GD15867@wotan.suse.de> <Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com>
- <20070302054944.GE15867@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Mar 2007 01:00:14 -0500
+Subject: Re: [patch 2.6.20-rc2] gpio_direction_output() needs an initial
+	value
+From: Andrew Victor <andrew@sanpeople.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Milan Svoboda <msvoboda@ra.rockwell.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+In-Reply-To: <200703011825.10370.david-b@pacbell.net>
+References: <200703011825.10370.david-b@pacbell.net>
+Content-Type: text/plain
+Organization: Multenet Technologies (Pty) Ltd
+Message-Id: <1172814491.26751.4.camel@fuzzie.sanpeople.com>
+Mime-Version: 1.0
+X-Mailer: Ximian Evolution 1.2.2 
+Date: 02 Mar 2007 07:48:12 +0200
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Nick Piggin wrote:
+hi David,
 
-> > You do not have to deal with TLB entries if you do buffered I/O.
-> 
-> Where does the data come from?
+> It's been pointed out that output GPIOs should have an initial value, to
+> avoid signal glitching ... among other things, it can be some time before
+> a driver is ready.  This patch corrects that oversight, fixing
 
->From the I/O controller and from the application. 
+For the AT91 changes:
+  Acked-by: Andrew Victor <andrew@sanpeople.com>
 
-> > We currently have problems with the kernel limits of 128 SG 
-> > entries but the fundamental issue is that we can only do 2 Meg of I/O in 
-> > one go given the default limits of the block layer. Typically the number 
-> > of hardware SG entrie is also limited. We never will be able to put a 
-> 
-> Seems like changing the default limits would be the easiest way to
-> fix it then?
 
-This would only be a temporary fix pushing the limits to the double or so?
- 
-> As far as hardware limits go, I don't think you need to scale that
-> number linearly with the amount of memory you have, or even with the
-> IO throughput. You should reach a point where your command overhead
-> is amortised sufficiently, and the controller will be pipelining the
-> commands.
+> --- g26.orig/drivers/spi/atmel_spi.c	2007-02-28 12:47:43.000000000 -0800
+> +++ g26/drivers/spi/atmel_spi.c	2007-03-01 15:29:30.000000000 -0800
 
-Amortized? The controller still would have to hunt down the 4kb page 
-pieces that we have to feed him right now. Result: Huge scatter gather 
-lists that may themselves create issues with higher page order.
+> -		gpio_direction_output(npcs_pin);
+> +		gpio_direction_output(npcs_pin, !(spi->mode & SPI_CS_HIGH));
+>  	}
+
+As mentioned previously (by Walter Tuppa), wouldn't it be better to just
+change this to:
+     cs_deactivate(spi);
+
+
+Regards,
+  Andrew Victor
+
 
