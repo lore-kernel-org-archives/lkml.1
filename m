@@ -1,93 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422856AbXCBEat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422873AbXCBEaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422856AbXCBEat (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 23:30:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422875AbXCBEat
+	id S1422873AbXCBEaE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 23:30:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422860AbXCBEaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 23:30:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42511 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422870AbXCBEao (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 23:30:44 -0500
-Date: Fri, 2 Mar 2007 04:30:39 +0000
-From: Christoph Hellwig <hch@infradead.org>
+	Thu, 1 Mar 2007 23:30:00 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58956 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422856AbXCBE3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 23:29:41 -0500
+From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, support@coraid.com,
-       "Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: PATCH 2.6.21-rc1 aoe: handle zero _count pages in bios
-Message-ID: <20070302043039.GA18651@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>, support@coraid.com,
-	"Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org,
-	Greg KH <greg@kroah.com>
-References: <20070301231510.GC8524@coraid.com> <20070301174204.a550dd3a.akpm@linux-foundation.org> <20070302022919.GA26285@infradead.org> <20070301192245.bf034385.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301192245.bf034385.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Fri, 2 Mar 2007 15:28:35 +1100
+Message-Id: <1070302042835.5796@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Subject: [PATCH 003 of 3] knfsd: Remove CONFIG_IPV6 ifdefs from sunrpc server code.
+References: <20070302151748.5226.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 07:22:45PM -0800, Andrew Morton wrote:
-> Well I spose slab _could_ take a ref on these pages.
 
-What it would need to do is:
+They don't really save that much, and aren't worth the hassle.
 
- - add a reference for every object touching this page
- - don't give the page back to the page allocator or reuse any
-   single object inside it until there are no more reference to the page.
+Signed-off-by: Neil Brown <neilb@suse.de>
 
-I don't think this is a very good idea, although the netowkring references
-tend to be rather short-term once making this not a that bad burden.
+### Diffstat output
+ ./include/linux/sunrpc/svc.h |    2 --
+ ./net/sunrpc/svcsock.c       |   13 +++----------
+ 2 files changed, 3 insertions(+), 12 deletions(-)
 
-> Networking internally maintains caller memory lifetimes, and it assumes
-> that the caller allocated memory via __alloc_pages() - because it uses
-> get_page() and put_page().
-> 
-> BIO, however, does not internally manage caller memory lifetime.  This is
-> because the caller's ->bi_end_io is always called, so the caller can do it.
-> 
-> So where we've come unstuck is in a module which has gone and fed BIO
-> memory into networking.  The differing design philosophies are clashing.
-> 
-> I'm surprised this doesn't happen in other places - aren't there any other
-> drivers which take a BIO and stuff it down the network?
-> 
-> Anyway, where's the bug?
-> 
-> Really, I'd say it's XFS (and ext3).  Even though BIO doesn't presently
-> manage page lifetimes, it _could_.  After all, the function is called
-> bio_add_page(), not bio_add_virtual_address().  It's a bit hacky to kmalloc
-> some memory, run virt_to_page() and to then present that page to BIO even
-> though the caller (thanks to the slab optimisation) doesn't actually have
-> control of that page's lifetime.
+diff .prev/include/linux/sunrpc/svc.h ./include/linux/sunrpc/svc.h
+--- .prev/include/linux/sunrpc/svc.h	2007-03-02 14:20:13.000000000 +1100
++++ ./include/linux/sunrpc/svc.h	2007-03-02 15:14:11.000000000 +1100
+@@ -194,9 +194,7 @@ static inline void svc_putu32(struct kve
+ 
+ union svc_addr_u {
+     struct in_addr	addr;
+-#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+     struct in6_addr	addr6;
+-#endif
+ };
+ 
+ /*
 
-That was the conclusion I came to when this was brought up initially.
-Fixing up XFS would be easyish and only waste a tiny amount of memory,
-and the same is true for ext3 (I did in fact suggest just using get_free_page
-for this case but got shot down for stupid reasons when the slab debug
-alignment issues in that area came up)
-
-But in this case we'd really need to enforce this, and add a
-BUG_ON(PageSlab(page)) in bio_add_page to trip everyone submit
-this kind of pages.
-
-> So we have a few options to look at:
-> 
-> a) kludge things in AOE.  Unpleasing, and might cause memory leaks
->    (although it won't, because the caller hasn't run bi_end_io yet).
-> 
-> b) Take a ref on slab pages in slab.  A bit costly, perhaps.
-> 
-> c) teach ext3 and XFS to take a ref on these pages as they are added to
->    the BIOs, undo that ref in bi_end_io.
-> 
-> I think c)?
-
-Yes.  I'm perfectly fine with this as long as we document and enforce
-this.
+diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
+--- .prev/net/sunrpc/svcsock.c	2007-03-02 15:12:52.000000000 +1100
++++ ./net/sunrpc/svcsock.c	2007-03-02 15:14:11.000000000 +1100
+@@ -131,13 +131,13 @@ static char *__svc_print_addr(struct soc
+ 			NIPQUAD(((struct sockaddr_in *) addr)->sin_addr),
+ 			htons(((struct sockaddr_in *) addr)->sin_port));
+ 		break;
+-#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
++
+ 	case AF_INET6:
+ 		snprintf(buf, len, "%x:%x:%x:%x:%x:%x:%x:%x, port=%u",
+ 			NIP6(((struct sockaddr_in6 *) addr)->sin6_addr),
+ 			htons(((struct sockaddr_in6 *) addr)->sin6_port));
+ 		break;
+-#endif
++
+ 	default:
+ 		snprintf(buf, len, "unknown address type: %d", addr->sa_family);
+ 		break;
+@@ -449,9 +449,7 @@ svc_wake_up(struct svc_serv *serv)
+ 
+ union svc_pktinfo_u {
+ 	struct in_pktinfo pkti;
+-#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+ 	struct in6_pktinfo pkti6;
+-#endif
+ };
+ 
+ static void svc_set_cmsg_data(struct svc_rqst *rqstp, struct cmsghdr *cmh)
+@@ -467,7 +465,7 @@ static void svc_set_cmsg_data(struct svc
+ 			cmh->cmsg_len = CMSG_LEN(sizeof(*pki));
+ 		}
+ 		break;
+-#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
++
+ 	case AF_INET6: {
+ 			struct in6_pktinfo *pki = CMSG_DATA(cmh);
+ 
+@@ -479,7 +477,6 @@ static void svc_set_cmsg_data(struct svc
+ 			cmh->cmsg_len = CMSG_LEN(sizeof(*pki));
+ 		}
+ 		break;
+-#endif
+ 	}
+ 	return;
+ }
+@@ -730,13 +727,11 @@ static inline void svc_udp_get_dest_addr
+ 		rqstp->rq_daddr.addr.s_addr = pki->ipi_spec_dst.s_addr;
+ 		break;
+ 		}
+-#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+ 	case AF_INET6: {
+ 		struct in6_pktinfo *pki = CMSG_DATA(cmh);
+ 		ipv6_addr_copy(&rqstp->rq_daddr.addr6, &pki->ipi6_addr);
+ 		break;
+ 		}
+-#endif
+ 	}
+ }
+ 
+@@ -976,11 +971,9 @@ static inline int svc_port_is_privileged
+ 	case AF_INET:
+ 		return ntohs(((struct sockaddr_in *)sin)->sin_port)
+ 			< PROT_SOCK;
+-#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+ 	case AF_INET6:
+ 		return ntohs(((struct sockaddr_in6 *)sin)->sin6_port)
+ 			< PROT_SOCK;
+-#endif
+ 	default:
+ 		return 0;
+ 	}
