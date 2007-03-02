@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965634AbXCBVHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965635AbXCBVHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965634AbXCBVHS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965632AbXCBVHS
+	id S965635AbXCBVHy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965636AbXCBVHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:07:18 -0500
-Received: from smtp-105-friday.nerim.net ([62.4.16.105]:3946 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965627AbXCBVHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:07:16 -0500
-Date: Fri, 2 Mar 2007 22:04:54 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070302220454.a0c66d04.khali@linux-fr.org>
-In-Reply-To: <20070302141840.GA3441@srcf.ucam.org>
-References: <45D5EA88.7090300@redhat.com>
-	<45D6DDCE.5050803@assembler.cz>
-	<45D7461A.2040808@redhat.com>
-	<20070218183805.5a4fd813.khali@linux-fr.org>
-	<20070228213803.GA4877@ucw.cz>
-	<20070301152655.f232db64.khali@linux-fr.org>
-	<20070302114023.GD2163@elf.ucw.cz>
-	<20070302114747.GB1212@srcf.ucam.org>
-	<20070302151055.d2665d66.khali@linux-fr.org>
-	<20070302141840.GA3441@srcf.ucam.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 Mar 2007 16:07:53 -0500
+Received: from jade.aracnet.com ([216.99.193.136]:41411 "EHLO jade.aracnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965635AbXCBVHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 16:07:52 -0500
+Message-ID: <45E891E6.7090807@BitWagon.com>
+Date: Fri, 02 Mar 2007 13:06:46 -0800
+From: John Reiser <jreiser@BitWagon.com>
+Organization: -
+User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
+References: <20070301175207.GA849@tv-sign.ru>
+In-Reply-To: <20070301175207.GA849@tv-sign.ru>
+X-Enigmail-Version: 0.92.0.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007 14:18:40 +0000, Matthew Garrett wrote:
-> On Fri, Mar 02, 2007 at 03:10:55PM +0100, Jean Delvare wrote:
+Oleg Nesterov wrote:
+> John Reiser wrote:
+
+>>+	switch (vdso_enabled) {
+>>+	case 0:  /* none */
+>>+		return 0;
 > 
-> > I'm not familiar with APCI at all so I didn't know, but what you write
-> > here brings some hope. Would it be possible to parse all the DSDT code
-> > at boot time and deduce all the ports which ACPI would need to request
-> > to be safe? Or do we have to wait for the accesses to actually happen?
 > 
-> In theory I /think/ so, but it would probably end up being an 
-> overestimate of the coverage actually needed. Trapping at runtime is 
-> arguably more elegant?
+> This means we don't initialize mm->context.vdso and ->sysenter_return.
+> 
+> Is it ok? For example, setup_rt_frame() uses VDSO_SYM(&__kernel_rt_sigreturn),
+> sysenter_past_esp pushes ->sysenter_return on stack.
 
-It might be more elegant but it won't work. We don't want to prevent
-ACPI from accessing these I/O ports. If we need to choose only one
-"driver" accessing the I/O port, it must be acpi, at leat for now,
-despite the fact that acpi provides very weak hardware monitoring
-capabilities compared to the specific drivers.
+Paul Mundt has commented on setup_rt_frame() and provided a patch which
+bullet-proofs that area.  I will include that patch into the next revision.
 
-Why would we end up with an overestimation if we check the I/O ports at
-boot time? Do you have concrete cases in mind?
+The value of ->sysenter_return is interpreted in user space by the
+sysexit instruction; nobody else cares what the value is.  The kernel
+is not required to provide a good value when vdso_enabled is zero,
+because the kernel has not told the process that sysenter is valid
+(by setting AT_SYSINFO.)  The kernel requires specific register values
+for sysenter+sysexit and these values may change at the whim of the
+kernel, so correct code must follow the kernel's protocol.
+glibc uses sysenter only when AT_SYSINFO is present.  User code can
+screw up even when vdso_enabled is non-zero, by overwriting or re-
+mapping the vdso page (clobber memory at the destination of sysexit.)
 
-Thanks,
+Both context.vdso and sysenter_return could be set to zero whenever
+vdso_enabled is zero; those two values might even be defaulted.
+I'll add such a change to the next revision of the patch, if you'll
+defend it against claims of "unnecessary code."
+
+> 
+> Note also that load_elf_binary does
+> 
+> 	arch_setup_additional_pages()
+> 	create_elf_tables()
+> 
+> , looks like application can crash after exec if vdso_enabled changes from 0
+> to 1 in between.
+
+Correct.  Changing vdso_enabled from 0 to non-zero must be prepared
+to lose this race if it is not prevented.  Ordinarily it won't matter
+because the administrator will perform such changes at a "quiet" time.
+
 -- 
-Jean Delvare
+John Reiser, jreiser@BitWagon.com
