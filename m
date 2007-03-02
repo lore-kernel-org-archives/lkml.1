@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992611AbXCBQx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992612AbXCBQyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992611AbXCBQx3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 11:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992612AbXCBQx3
+	id S2992612AbXCBQyo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 11:54:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992614AbXCBQyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 11:53:29 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34364 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992611AbXCBQx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 11:53:28 -0500
-Date: Fri, 2 Mar 2007 08:52:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kirill Korotaev <dev@openvz.org>
-Cc: Paul Jackson <pj@sgi.com>, vatsa@in.ibm.com, menage@google.com,
-       ebiederm@xmission.com, sam@vilain.net, xemul@sw.ru, serue@us.ibm.com,
-       containers@lists.osdl.org, winget@google.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] resource control file system - aka containers on
- top of nsproxy!
-Message-Id: <20070302085224.48212452.akpm@linux-foundation.org>
-In-Reply-To: <45E84682.6040500@openvz.org>
-References: <20070301133543.GK15509@in.ibm.com>
-	<20070301113900.a7dace47.pj@sgi.com>
-	<45E84682.6040500@openvz.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 2 Mar 2007 11:54:44 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:51049 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992612AbXCBQyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 11:54:44 -0500
+Subject: Re: [PATCH 4/9] swap: Simplify shmem_unuse() usage [optional]
+From: Richard Purdie <rpurdie@openedhand.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org, dwmw2@infradead.org
+In-Reply-To: <Pine.LNX.4.64.0703021631470.11135@blonde.wat.veritas.com>
+References: <1172850884.11149.124.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703021631470.11135@blonde.wat.veritas.com>
+Content-Type: text/plain
+Date: Fri, 02 Mar 2007 16:54:35 +0000
+Message-Id: <1172854476.11149.147.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Mar 2007 18:45:06 +0300 Kirill Korotaev <dev@openvz.org> wrote:
+On Fri, 2007-03-02 at 16:44 +0000, Hugh Dickins wrote:
+> Definite NAK to this one from me: I'm sorry the optimization confuses
+> you, but it's well commented at both ends, and speeds up shmem swapoff
+> very significantly e.g. minutes down to seconds.  There may well be a
+> less confusing way of achieving the same effect, with another return
+> code from shmem_unuse, and some gotos, but I'm not all that keen.
 
-> > I'm wagering you'll break either the semantics, and/or the
-> > performance, of cpusets doing this.
-> I like Paul's containers patch. It looks good and pretty well.
-> After some of the context issues are resolved it's fine.
-> Maybe it is even the best way of doing things.
+Currently there is only one site its used in but with the changes, you
+end up with two. My concern is that the behaviour of that function is
+not obvious to anyone new to the code and I suspect something will get
+broken at some point due to that, even if comments are there.
 
-Have you thought about the relationship between it and UBC?
+I'd have no problem with a different return code and some gotos and/or
+improved logic. The changes these patches make might even make that
+easier to implement. I'll take another look at it and see if I can find
+a nicer patch.
+
+> Your other patches, well, as ever I hope I'll get to look at them,
+> but there are so many people, all much quicker than me, playing in
+> mm these days...
+
+I'm open to offers... :)
+
+Cheers,
+
+Richard
+
 
