@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422841AbXCBEPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422844AbXCBES6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422841AbXCBEPK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 23:15:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422844AbXCBEPK
+	id S1422844AbXCBES6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 23:18:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422845AbXCBES6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 23:15:10 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:39612 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422841AbXCBEPH (ORCPT
+	Thu, 1 Mar 2007 23:18:58 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:33830 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422844AbXCBES5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 23:15:07 -0500
-Date: Fri, 2 Mar 2007 09:44:56 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       ebiederm@xmission.com, judith@linux-foundation.org,
-       akpm@linux-foundation.org, fastboot@lists.osdl.org, ak@suse.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Fastboot] [PATCH RFC 0/5] hard_smp_processor_id overhaul
-Message-ID: <20070302041455.GA15386@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <1172733373.1498.264.camel@sebastian.intellilink.co.jp> <20070301140648.GX26583@kvack.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070301140648.GX26583@kvack.org>
-User-Agent: Mutt/1.5.11
+	Thu, 1 Mar 2007 23:18:57 -0500
+Message-ID: <45E7A59E.6020004@in.ibm.com>
+Date: Fri, 02 Mar 2007 09:48:38 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
+       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E7835A.8000908@in.ibm.com> <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 09:06:48AM -0500, Benjamin LaHaise wrote:
-> On Thu, Mar 01, 2007 at 04:16:13PM +0900, Fernando Luis Vázquez Cao wrote:
-> > As a consequence, the hardcoding of hard_smp_processor_id() to 0 on UP
-> > systems (see "linux/smp.h") is not correct.
-> > 
-> > This patch-set does the following:
-> > 
-> > 1- Remove hardcoding of hard_smp_processor_id on UP systems.
+Linus Torvalds wrote:
 > 
-> NAK.  This has to be configurable, as many embedded systems don't even 
-> have APICs.  Please rework the patch set so that there is not any overhead 
-> for existing UP systems.
+> On Fri, 2 Mar 2007, Balbir Singh wrote:
+>>> My personal opinion is that while I'm not a huge fan of virtualization,
+>>> these kinds of things really _can_ be handled more cleanly at that layer,
+>>> and not in the kernel at all. Afaik, it's what IBM already does, and has
+>>> been doing for a while. There's no shame in looking at what already works,
+>>> especially if it's simpler.
+>> Could you please clarify as to what "that layer" means - is it the
+>> firmware/hardware for virtualization? or does it refer to user space?
+> 
+> Virtualization in general. We don't know what it is - in IBM machines it's 
+> a hypervisor. With Xen and VMware, it's usually a hypervisor too. With 
+> KVM, it's obviously a host Linux kernel/user-process combination.
+> 
 
-Fernando did the code audit and found no instance of hard_smp_processor_id
-being used for non APIC case. So are embedded systems you are referring,
-patching the kernel?
+Thanks for clarifying.
 
-Anyway, I think providing hard_smp_processor_id() definition for UP systems
-without APIC does not harm.
+> The point being that in the guests, hotunplug is almost useless (for 
+> bigger ranges), and we're much better off just telling the virtualization 
+> hosts on a per-page level whether we care about a page or not, than to 
+> worry about fragmentation.
+> 
+> And in hosts, we usually don't care EITHER, since it's usually done in a 
+> hypervisor.
+> 
+>> It would also be useful to have a resource controller like per-container
+>> RSS control (container refers to a task grouping) within the kernel or
+>> non-virtualized environments as well.
+> 
+> .. but this has again no impact on anti-fragmentation.
+> 
 
-Thanks
-Vivek
+Yes, I agree that anti-fragmentation and resource management are independent
+of each other. I must admit to being a bit selfish here, in that my main
+interest is in resource management and we would love to see a well
+written  and easy to understand resource management infrastructure and 
+controllers to control CPU and memory usage. Since the issue of
+per-container RSS control came up, I wanted to ensure that we do not mix
+up resource control and anti-fragmentation.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
