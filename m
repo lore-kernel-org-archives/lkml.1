@@ -1,46 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965655AbXCBVVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965656AbXCBVVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965655AbXCBVVA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965656AbXCBVVA
+	id S965656AbXCBVVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965657AbXCBVVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:21:00 -0500
-Received: from ruby.spiritone.com ([216.99.193.130]:55232 "EHLO
-	ruby.spiritone.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965655AbXCBVU7 (ORCPT
+	Fri, 2 Mar 2007 16:21:51 -0500
+Received: from nz-out-0506.google.com ([64.233.162.226]:22637 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965656AbXCBVVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:20:59 -0500
-Message-ID: <45E894FA.2040103@BitWagon.com>
-Date: Fri, 02 Mar 2007 13:19:54 -0800
-From: John Reiser <jreiser@BitWagon.com>
-Organization: -
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
+	Fri, 2 Mar 2007 16:21:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WeAvtQg2KlwLAevOepnX9va/C6jxe3YRGEZS6ENzKbcdc2r4Ltp7utKjza84nV0y28jEdR7x8r5ATlIBCXZkkmZrJDUsaCkY0FF818xDwMDOq5isanDQU3KjZhRGzdgB3iB4hBdlW2AZdqJGXi95qI6hySZmiXfpNLV4LvaUBZM=
+Message-ID: <f2b55d220703021321r1491daa1if64ad555aade7060@mail.gmail.com>
+Date: Fri, 2 Mar 2007 13:21:48 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703021246380.2381@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Paul Mundt <lethal@linux-sh.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
-References: <20070301175207.GA849@tv-sign.ru> <20070302034800.GA12530@linux-sh.org> <20070302193219.GA87@tv-sign.ru>
-In-Reply-To: <20070302193219.GA87@tv-sign.ru>
-X-Enigmail-Version: 0.92.0.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070301133018.GB30177@2ka.mipt.ru>
+	 <20070301145454.GB12684@2ka.mipt.ru> <20070301150942.GA26025@elte.hu>
+	 <20070301153655.GB8217@2ka.mipt.ru> <20070302105713.GB15576@elte.hu>
+	 <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
+	 <20070302193941.GB8450@elte.hu>
+	 <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
+	 <20070302202931.GA5101@elte.hu>
+	 <Pine.LNX.4.64.0703021246380.2381@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
+On 3/2/07, Davide Libenzi <davidel@xmailserver.org> wrote:
+> For threadlets, it might be. Now think about a task wanting to dispatch N
+> parallel AIO requests as N independent syslets.
+> Think about this task having USEDFPU set, so the FPU context is dirty.
+> When it returns from async_exec, with one of the requests being become
+> sleepy, it needs to have the same FPU context it had when it entered,
+> otherwise it won't prolly be happy.
+> For the same reason a schedule() must preserve/sync the "prev" FPU
+> context, to be reloaded at the next FPU fault.
 
-> Still, I don't understand why we don't pass NEW_AUX_ENT(AT_SYSINFO) when
-> vdso_enabled == 0. We don't need linux-gate.so to use __kernel_vsyscall,
-> we have FIX_VDSO. In that case we should s/PAGE_KERNEL_RO/PAGE_READONLY/
-> of course. I guess the reason is some magic in glibc.
+And if you actually think this through, I think you will arrive at (a
+subset of) the conclusions I did a week ago: to keep the threadlets
+lightweight enough to schedule and migrate cheaply, they can't be
+allowed to "own" their own FPU and TLS context.  They have to be
+allowed to _use_ the FPU (or they're useless) and to _use_ TLS (or
+they can't use any glibc wrapper around a syscall, since they
+practically all set the thread-local errno).  But they have to
+"quiesce" the FPU and stash any thread-local state they want to keep
+on their stack before entering the next syscall, or else it'll get
+clobbered.
 
-In the past there were problems where user code could not single-step
-(or even read the code of) such system calls.  Can these two operations
-be performed today with what you propose, particularly if FIX_VDSO is
-near 0xfffff000 ?
+Keep thinking, especially about FPU flags, and you'll see why
+threadlets spawned from the _same_ threadlet entrypoint should all run
+in the same pool of threads, one per CPU, while threadlets from
+_different_ entrypoints should never run in the same thread (FPU/TLS
+context).  You'll see why threadlets in the same pool shouldn't be
+permitted to preempt one another except at syscalls that block, and
+the cost of preempting the real thread associated with one threadlet
+pool with another real thread associated with a different threadlet
+pool is the same as any other thread switch.  At which point,
+threadlet pools are themselves first-class objects (to use the snake
+oil phrase), and might as well be enhanced to a data structure that
+has efficient operations for reprioritization, bulk cancellation, and
+all that jazz.
 
--- 
-John Reiser, jreiser@BitWagon.com
+Did I mention that there is actually quite a bit of prior art in this
+area, which makes a much better guide to the design of round wheels
+than micro-benchmarks do?
+
+Cheers,
+- Michael
