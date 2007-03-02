@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422734AbXCBC4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422731AbXCBC4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422734AbXCBC4L (ORCPT <rfc822;w@1wt.eu>);
+	id S1422731AbXCBC4L (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 1 Mar 2007 21:56:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422731AbXCBC4K
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422795AbXCBC4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 21:56:10 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52752 "EHLO
+	Thu, 1 Mar 2007 21:56:07 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52759 "EHLO
 	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422733AbXCBCzu (ORCPT
+	by vger.kernel.org with ESMTP id S1422742AbXCBCz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 21:55:50 -0500
-Date: Thu, 1 Mar 2007 18:55:47 -0800
-Message-Id: <200703020255.l222tltk009694@zach-dev.vmware.com>
-Subject: [PATCH 8/9] Vmi apic ops.diff
+	Thu, 1 Mar 2007 21:55:59 -0500
+Date: Thu, 1 Mar 2007 18:55:58 -0800
+Message-Id: <200703020255.l222twSE009700@zach-dev.vmware.com>
+Subject: [PATCH 9/9] Vmi smp fixes.patch
 From: Zachary Amsden <zach@vmware.com>
 To: Andi Kleen <ak@muc.de>, Linus Torvalds <torvalds@osdl.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
@@ -22,328 +22,56 @@ To: Andi Kleen <ak@muc.de>, Linus Torvalds <torvalds@osdl.org>,
        Virtualization Mailing List <virtualization@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Zachary Amsden <zach@vmware.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>
-X-OriginalArrivalTime: 02 Mar 2007 02:55:48.0599 (UTC) FILETIME=[47ED7870:01C75C76]
+X-OriginalArrivalTime: 02 Mar 2007 02:55:58.0659 (UTC) FILETIME=[4DEC8130:01C75C76]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use para_fill instead of directly setting the APIC ops to the result of the
-vmi_get_function call - this allows one to implement a VMI ROM without
-implementing APIC functions, just using the native APIC functions.
+Critical fixes for SMP.
 
-While doing this, I realized that there is a lot more cleanup that should
-have been done.  Basically, we should never assume that the ROM implements
-a specific set of functions, and always allow fallback to the native
-implementation.
+Fix a couple functions which needed to be __devinit and fix a bogus
+parameter to AP startup that just so happened to work because the
+low virtual mapping of memory was still established.
 
-This is critical for future compatibility.
-
-Signed-off-by: Anthony Liguori <anthony@codemonkey.ws>
 Signed-off-by: Zachary Amsden <zach@vmware.com>
 
-diff -r 0ba8434a5c7e arch/i386/kernel/vmi.c
---- a/arch/i386/kernel/vmi.c	Thu Mar 01 16:49:27 2007 -0800
-+++ b/arch/i386/kernel/vmi.c	Thu Mar 01 16:49:33 2007 -0800
-@@ -54,6 +54,7 @@ static int disable_tsc;
- static int disable_tsc;
- static int disable_mtrr;
- static int disable_noidle;
-+static int disable_vmi_timer;
- 
- /* Cached VMI operations */
- struct {
-@@ -662,12 +663,12 @@ void vmi_bringup(void)
- void vmi_bringup(void)
- {
-  	/* We must establish the lowmem mapping for MMU ops to work */
--	if (vmi_rom)
-+	if (vmi_ops.set_linear_mapping)
- 		vmi_ops.set_linear_mapping(0, __PAGE_OFFSET, max_low_pfn, 0);
- }
- 
- /*
-- * Return a pointer to the VMI function or a NOP stub
-+ * Return a pointer to a VMI function or NULL if unimplemented
-  */
- static void *vmi_get_function(int vmicall)
- {
-@@ -678,12 +679,13 @@ static void *vmi_get_function(int vmical
- 	if (rel->type == VMI_RELOCATION_CALL_REL)
- 		return (void *)rel->eip;
- 	else
--		return (void *)vmi_nop;
-+		return NULL;
- }
- 
- /*
-  * Helper macro for making the VMI paravirt-ops fill code readable.
-- * For unimplemented operations, fall back to default.
-+ * For unimplemented operations, fall back to default, unless nop
-+ * is returned by the ROM.
-  */
- #define para_fill(opname, vmicall)				\
- do {								\
-@@ -692,8 +694,28 @@ do {								\
- 	if (rel->type != VMI_RELOCATION_NONE) {			\
- 		BUG_ON(rel->type != VMI_RELOCATION_CALL_REL);	\
- 		paravirt_ops.opname = (void *)rel->eip;		\
-+	} else if (rel->type == VMI_RELOCATION_NOP) 		\
-+		paravirt_ops.opname = (void *)vmi_nop;		\
-+} while (0)
-+
-+/*
-+ * Helper macro for making the VMI paravirt-ops fill code readable.
-+ * For cached operations which do not match the VMI ROM ABI and must
-+ * go through a tranlation stub.  Ignore NOPs, since it is not clear
-+ * a NOP * VMI function corresponds to a NOP paravirt-op when the
-+ * functions are not in 1-1 correspondence.
-+ */
-+#define para_wrap(opname, wrapper, cache, vmicall)		\
-+do {								\
-+	reloc = call_vrom_long_func(vmi_rom, get_reloc,		\
-+				    VMI_CALL_##vmicall);	\
-+	BUG_ON(rel->type == VMI_RELOCATION_JUMP_REL);		\
-+	if (rel->type == VMI_RELOCATION_CALL_REL) {		\
-+		paravirt_ops.opname = wrapper;			\
-+		vmi_ops.cache = (void *)rel->eip;		\
- 	}							\
- } while (0)
-+
- 
- /*
-  * Activate the VMI interface and switch into paravirtualized mode
-@@ -731,13 +753,8 @@ static inline int __init activate_vmi(vo
- 	 *  rdpmc is not yet used in Linux
- 	 */
- 
--	/* CPUID is special, so very special */
--	reloc = call_vrom_long_func(vmi_rom, get_reloc,	VMI_CALL_CPUID);
--	if (rel->type != VMI_RELOCATION_NONE) {
--		BUG_ON(rel->type != VMI_RELOCATION_CALL_REL);
--		vmi_ops.cpuid = (void *)rel->eip;
--		paravirt_ops.cpuid = vmi_cpuid;
--	}
-+	/* CPUID is special, so very special it gets wrapped like a present */
-+	para_wrap(cpuid, vmi_cpuid, cpuid, CPUID);
- 
- 	para_fill(clts, CLTS);
- 	para_fill(get_debugreg, GetDR);
-@@ -754,6 +771,7 @@ static inline int __init activate_vmi(vo
- 	para_fill(restore_fl, SetInterruptMask);
- 	para_fill(irq_disable, DisableInterrupts);
- 	para_fill(irq_enable, EnableInterrupts);
-+
- 	/* irq_save_disable !!! sheer pain */
- 	patch_offset(&irq_save_disable_callout[IRQ_PATCH_INT_MASK],
- 		     (char *)paravirt_ops.save_fl);
-@@ -761,26 +779,18 @@ static inline int __init activate_vmi(vo
- 		     (char *)paravirt_ops.irq_disable);
- 
- 	para_fill(wbinvd, WBINVD);
-+	para_fill(read_tsc, RDTSC);
-+
-+	/* The following we emulate with trap and emulate for now */
- 	/* paravirt_ops.read_msr = vmi_rdmsr */
- 	/* paravirt_ops.write_msr = vmi_wrmsr */
--	para_fill(read_tsc, RDTSC);
- 	/* paravirt_ops.rdpmc = vmi_rdpmc */
- 
--	/* TR interface doesn't pass TR value */
--	reloc = call_vrom_long_func(vmi_rom, get_reloc,	VMI_CALL_SetTR);
--	if (rel->type != VMI_RELOCATION_NONE) {
--		BUG_ON(rel->type != VMI_RELOCATION_CALL_REL);
--		vmi_ops.set_tr = (void *)rel->eip;
--		paravirt_ops.load_tr_desc = vmi_set_tr;
--	}
-+	/* TR interface doesn't pass TR value, wrap */
-+	para_wrap(load_tr_desc, vmi_set_tr, set_tr, SetTR);
- 
- 	/* LDT is special, too */
--	reloc = call_vrom_long_func(vmi_rom, get_reloc,	VMI_CALL_SetLDT);
--	if (rel->type != VMI_RELOCATION_NONE) {
--		BUG_ON(rel->type != VMI_RELOCATION_CALL_REL);
--		vmi_ops._set_ldt = (void *)rel->eip;
--		paravirt_ops.set_ldt = vmi_set_ldt;
--	}
-+	para_wrap(set_ldt, vmi_set_ldt, _set_ldt, SetLDT);
- 
- 	para_fill(load_gdt, SetGDT);
- 	para_fill(load_idt, SetIDT);
-@@ -791,25 +801,14 @@ static inline int __init activate_vmi(vo
- 	para_fill(write_ldt_entry, WriteLDTEntry);
- 	para_fill(write_gdt_entry, WriteGDTEntry);
- 	para_fill(write_idt_entry, WriteIDTEntry);
--	reloc = call_vrom_long_func(vmi_rom, get_reloc,
--				    VMI_CALL_UpdateKernelStack);
--	if (rel->type != VMI_RELOCATION_NONE) {
--		BUG_ON(rel->type != VMI_RELOCATION_CALL_REL);
--		vmi_ops.set_kernel_stack = (void *)rel->eip;
--		paravirt_ops.load_esp0 = vmi_load_esp0;
--	}
--
-+	para_wrap(load_esp0, vmi_load_esp0, set_kernel_stack, UpdateKernelStack);
- 	para_fill(set_iopl_mask, SetIOPLMask);
--	paravirt_ops.io_delay = (void *)vmi_nop;
--
-+	para_fill(io_delay, IODelay);
- 	para_fill(set_lazy_mode, SetLazyMode);
- 
--	reloc = call_vrom_long_func(vmi_rom, get_reloc, VMI_CALL_FlushTLB);
--	if (rel->type != VMI_RELOCATION_NONE) {
--		vmi_ops.flush_tlb = (void *)rel->eip;
--		paravirt_ops.flush_tlb_user = vmi_flush_tlb_user;
--		paravirt_ops.flush_tlb_kernel = vmi_flush_tlb_kernel;
--	}
-+	/* user and kernel flush are just handled with different flags to FlushTLB */
-+	para_wrap(flush_tlb_user, vmi_flush_tlb_user, flush_tlb, FlushTLB);
-+	para_wrap(flush_tlb_kernel, vmi_flush_tlb_kernel, flush_tlb, FlushTLB);
- 	para_fill(flush_tlb_single, InvalPage);
- 
- 	/*
-@@ -824,28 +823,40 @@ static inline int __init activate_vmi(vo
- 	vmi_ops.set_pte = vmi_get_function(VMI_CALL_SetPxE);
- 	vmi_ops.update_pte = vmi_get_function(VMI_CALL_UpdatePxE);
+diff -r baf2e278a482 arch/i386/kernel/vmi.c
+--- a/arch/i386/kernel/vmi.c	Thu Mar 01 18:08:53 2007 -0800
++++ b/arch/i386/kernel/vmi.c	Thu Mar 01 18:10:18 2007 -0800
+@@ -525,13 +525,14 @@ void vmi_pmd_clear(pmd_t *pmd)
  #endif
--	vmi_ops.set_linear_mapping = vmi_get_function(VMI_CALL_SetLinearMapping);
-+
-+	if (vmi_ops.set_pte) {
-+		paravirt_ops.set_pte = vmi_set_pte;
-+		paravirt_ops.set_pte_at = vmi_set_pte_at;
-+		paravirt_ops.set_pmd = vmi_set_pmd;
-+#ifdef CONFIG_X86_PAE
-+		paravirt_ops.set_pte_atomic = vmi_set_pte_atomic;
-+		paravirt_ops.set_pte_present = vmi_set_pte_present;
-+		paravirt_ops.set_pud = vmi_set_pud;
-+		paravirt_ops.pte_clear = vmi_pte_clear;
-+		paravirt_ops.pmd_clear = vmi_pmd_clear;
-+#endif
-+	}
-+
-+	if (vmi_ops.update_pte) {
-+		paravirt_ops.pte_update = vmi_update_pte;
-+		paravirt_ops.pte_update_defer = vmi_update_pte_defer;
-+	}
-+
- 	vmi_ops.allocate_page = vmi_get_function(VMI_CALL_AllocatePage);
-+	if (vmi_ops.allocate_page) {
-+		paravirt_ops.alloc_pt = vmi_allocate_pt;
-+		paravirt_ops.alloc_pd = vmi_allocate_pd;
-+		paravirt_ops.alloc_pd_clone = vmi_allocate_pd_clone;
-+	}
-+
- 	vmi_ops.release_page = vmi_get_function(VMI_CALL_ReleasePage);
--
--	paravirt_ops.map_pt_hook = vmi_map_pt_hook;
--	paravirt_ops.alloc_pt = vmi_allocate_pt;
--	paravirt_ops.alloc_pd = vmi_allocate_pd;
--	paravirt_ops.alloc_pd_clone = vmi_allocate_pd_clone;
--	paravirt_ops.release_pt = vmi_release_pt;
--	paravirt_ops.release_pd = vmi_release_pd;
--	paravirt_ops.set_pte = vmi_set_pte;
--	paravirt_ops.set_pte_at = vmi_set_pte_at;
--	paravirt_ops.set_pmd = vmi_set_pmd;
--	paravirt_ops.pte_update = vmi_update_pte;
--	paravirt_ops.pte_update_defer = vmi_update_pte_defer;
--#ifdef CONFIG_X86_PAE
--	paravirt_ops.set_pte_atomic = vmi_set_pte_atomic;
--	paravirt_ops.set_pte_present = vmi_set_pte_present;
--	paravirt_ops.set_pud = vmi_set_pud;
--	paravirt_ops.pte_clear = vmi_pte_clear;
--	paravirt_ops.pmd_clear = vmi_pmd_clear;
--#endif
-+	if (vmi_ops.release_page) {
-+		paravirt_ops.release_pt = vmi_release_pt;
-+		paravirt_ops.release_pd = vmi_release_pd;
-+	}
-+	para_wrap(map_pt_hook, vmi_map_pt_hook, set_linear_mapping,
-+		  SetLinearMapping);
-+
- 	/*
- 	 * These MUST always be patched.  Don't support indirect jumps
- 	 * through these operations, as the VMI interface may use either
-@@ -857,21 +868,20 @@ static inline int __init activate_vmi(vo
- 	paravirt_ops.iret = (void *)0xbadbab0;
  
  #ifdef CONFIG_SMP
--	paravirt_ops.startup_ipi_hook = vmi_startup_ipi_hook;
--	vmi_ops.set_initial_ap_state = vmi_get_function(VMI_CALL_SetInitialAPState);
-+	para_wrap(startup_ipi_hook, vmi_startup_ipi_hook, set_initial_ap_state, SetInitialAPState);
- #endif
+-struct vmi_ap_state ap;
+ extern void setup_pda(void);
  
- #ifdef CONFIG_X86_LOCAL_APIC
--	paravirt_ops.apic_read = vmi_get_function(VMI_CALL_APICRead);
--	paravirt_ops.apic_write = vmi_get_function(VMI_CALL_APICWrite);
--	paravirt_ops.apic_write_atomic = vmi_get_function(VMI_CALL_APICWrite);
-+	para_fill(apic_read, APICRead);
-+	para_fill(apic_write, APICWrite);
-+	para_fill(apic_write_atomic, APICWrite);
- #endif
- 
- 	/*
- 	 * Check for VMI timer functionality by probing for a cycle frequency method
- 	 */
- 	reloc = call_vrom_long_func(vmi_rom, get_reloc, VMI_CALL_GetCycleFrequency);
--	if (rel->type != VMI_RELOCATION_NONE) {
-+	if (!disable_vmi_timer && rel->type != VMI_RELOCATION_NONE) {
- 		vmi_timer_ops.get_cycle_frequency = (void *)rel->eip;
- 		vmi_timer_ops.get_cycle_counter =
- 			vmi_get_function(VMI_CALL_GetCycleCounter);
-@@ -891,13 +901,19 @@ static inline int __init activate_vmi(vo
- #endif
- 		paravirt_ops.get_scheduled_cycles = vmi_get_sched_cycles;
-  		paravirt_ops.get_cpu_khz = vmi_cpu_khz;
--	}
--	if (!disable_noidle)
+-static void __init /* XXX cpu hotplug */
++static void __devinit
+ vmi_startup_ipi_hook(int phys_apicid, unsigned long start_eip,
+ 		     unsigned long start_esp)
+ {
++	struct vmi_ap_state ap;
 +
-+		/* We have true wallclock functions; disable CMOS clock sync */
-+		no_sync_cmos_clock = 1;
-+	} else {
-+		disable_noidle = 1;
-+		disable_vmi_timer = 1;
-+	}
-+
-+	/* No idle HZ mode only works if VMI timer and no idle is enabled */
-+	if (disable_noidle || disable_vmi_timer)
- 		para_fill(safe_halt, Halt);
--	else {
--		vmi_ops.halt = vmi_get_function(VMI_CALL_Halt);
--		paravirt_ops.safe_halt = vmi_safe_halt;
--	}
-+	else
-+		para_wrap(safe_halt, vmi_safe_halt, halt, Halt);
+ 	/* Default everything to zero.  This is fine for most GPRs. */
+ 	memset(&ap, 0, sizeof(struct vmi_ap_state));
  
- 	/*
- 	 * Alternative instruction rewriting doesn't happen soon enough
-@@ -933,10 +949,9 @@ void __init vmi_init(void)
- 	activate_vmi();
- 
- #ifdef CONFIG_X86_IO_APIC
-+	/* This is virtual hardware; timer routing is wired correctly */
- 	no_timer_check = 1;
- #endif
--	no_sync_cmos_clock = 1;
--
- 	local_irq_restore(flags & X86_EFLAGS_IF);
+@@ -570,7 +571,7 @@ vmi_startup_ipi_hook(int phys_apicid, un
+ 	/* Protected mode, paging, AM, WP, NE, MP. */
+ 	ap.cr0 = 0x80050023;
+ 	ap.cr4 = mmu_cr4_features;
+-	vmi_ops.set_initial_ap_state(__pa(&ap), phys_apicid);
++	vmi_ops.set_initial_ap_state((u32)&ap, phys_apicid);
  }
+ #endif
  
-@@ -960,6 +975,9 @@ static int __init parse_vmi(char *arg)
- 	} else if (!strcmp(arg, "disable_mtrr")) {
- 		clear_bit(X86_FEATURE_MTRR, boot_cpu_data.x86_capability);
- 		disable_mtrr = 1;
-+	} else if (!strcmp(arg, "disable_timer")) {
-+		disable_vmi_timer = 1;
-+		disable_noidle = 1;
- 	} else if (!strcmp(arg, "disable_noidle"))
- 		disable_noidle = 1;
- 	return 0;
-diff -r 0ba8434a5c7e include/asm-i386/vmi.h
---- a/include/asm-i386/vmi.h	Thu Mar 01 16:49:27 2007 -0800
-+++ b/include/asm-i386/vmi.h	Thu Mar 01 16:49:33 2007 -0800
-@@ -97,6 +97,7 @@
- #define VMI_CALL_SetInitialAPState	62
- #define VMI_CALL_APICWrite		63
- #define VMI_CALL_APICRead		64
-+#define VMI_CALL_IODelay		65
- #define VMI_CALL_SetLazyMode		73
+diff -r baf2e278a482 arch/i386/kernel/vmitime.c
+--- a/arch/i386/kernel/vmitime.c	Thu Mar 01 18:08:53 2007 -0800
++++ b/arch/i386/kernel/vmitime.c	Thu Mar 01 18:08:53 2007 -0800
+@@ -243,7 +243,7 @@ void __init vmi_timer_setup_boot_alarm(v
  
- /*
+ /* Initialize the time accounting variables for an AP on an SMP system.
+  * Also, set the local alarm for the AP. */
+-void __init vmi_timer_setup_secondary_alarm(void)
++void __devinit vmi_timer_setup_secondary_alarm(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
