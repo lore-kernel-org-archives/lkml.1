@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbXCBNwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992444AbXCBNzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933351AbXCBNwn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 08:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965347AbXCBNwn
+	id S2992444AbXCBNzW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 08:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992440AbXCBNzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 08:52:43 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46710 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933357AbXCBNwm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 08:52:42 -0500
-Date: Fri, 2 Mar 2007 14:56:35 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] pata_qdi: Fix initialisation
-Message-ID: <20070302145635.1fc6fac7@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 08:55:21 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:33256 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992435AbXCBNzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 08:55:19 -0500
+Date: Fri, 2 Mar 2007 14:41:01 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+In-Reply-To: <1172790570.11165.62.camel@kleikamp.austin.ibm.com>
+Message-ID: <Pine.LNX.4.61.0703021439360.23355@yvahk01.tjqt.qr>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> 
+ <20070225022326.137b4875.akpm@linux-foundation.org> 
+ <20070301183445.GA7911@amitarora.in.ibm.com>  <20070301142537.b5950cd7.akpm@linux-foundation.org>
+  <1172789056.11165.42.camel@kleikamp.austin.ibm.com> 
+ <20070301145949.3efac328.akpm@linux-foundation.org>
+ <1172790570.11165.62.camel@kleikamp.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The QDI init code contains some bugs which mean it only works if you have
-a test setup that causes both a successful and failed probe. Fix this
 
-Found by Philip Guo
+On Mar 1 2007 23:09, Dave Kleikamp wrote:
+>> 
+>> Given that glibc already implements fallocate for all filesystems, it will
+>> need to continue to do so for filesystems which don't implement this
+>> syscall - otherwise applications would start breaking.
+>
+>I didn't make it clear, but my point was to call generic_fallocate if
+>the file system did not define i_op->allocate().
+>
+>if (inode->i_op && inode->i_op->fallocate)
+>	ret = inode->i_op->fallocate(inode, offset, len);
+>else
+>	ret = generic_fallocate(inode, offset, len);
+>
+>I'm not sure it's worth the effort, but I thought I'd throw the idea out
+>there.
 
-(Who found it working on code analysis tools not running VLB IDE
-controllers)
-
-Signed-off-by: Alan Cox <alan@redhat.com>diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc2/drivers/ata/pata_qdi.c linux-2.6.21-rc2/drivers/ata/pata_qdi.c
---- linux.vanilla-2.6.21-rc2/drivers/ata/pata_qdi.c	2007-03-01 13:36:03.000000000 +0000
-+++ linux-2.6.21-rc2/drivers/ata/pata_qdi.c	2007-03-02 13:20:27.000000000 +0000
-@@ -363,7 +365,8 @@
- 					release_region(port, 2);
- 					continue;
- 				}
--				ct += qdi_init_one(port, 6500, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04);
-+				if (qdi_init_one(port, 6500, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04) == 0)
-+					ct++;
- 			}
- 			if (((r & 0xF0) == 0xA0) || (r & 0xF0) == 0x50) {
- 				/* QD6580: dual channel */
-@@ -375,11 +378,14 @@
- 				res = inb(port + 3);
- 				if (res & 1) {
- 					/* Single channel mode */
--					ct += qdi_init_one(port, 6580, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04);
-+					if (qdi_init_one(port, 6580, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04))
-+						ct++;
- 				} else {
- 					/* Dual channel mode */
--					ct += qdi_init_one(port, 6580, 0x1F0, 14, r & 0x04);
--					ct += qdi_init_one(port + 2, 6580, 0x170, 15, r & 0x04);
-+					if (qdi_init_one(port, 6580, 0x1F0, 14, r & 0x04) == 0)
-+						ct++;
-+					if (qdi_init_one(port + 2, 6580, 0x170, 15, r & 0x04) == 0)
-+						ct++;
- 				}
- 			}
- 		}
+Writing zeroes using glibc emu most likely means write() --
+so generic_fallocate should be preferable (think splice).
+Or does glibc use mmap() and it's all different?
 
 
+Jan
+-- 
