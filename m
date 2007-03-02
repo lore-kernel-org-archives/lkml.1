@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964773AbXCBSvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbXCBTEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964773AbXCBSvf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 13:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964781AbXCBSvf
+	id S964824AbXCBTEo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 14:04:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964834AbXCBTEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 13:51:35 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53118 "EHLO mx1.redhat.com"
+	Fri, 2 Mar 2007 14:04:44 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:37854 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964773AbXCBSvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 13:51:33 -0500
-Subject: [PATCH] Add xfrm policy change auditing to pfkey_spdget
-From: Eric Paris <eparis@parisplace.org>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: davem@davemloft.net, jmorris@namei.org, vyekkirala@trustedcs.com,
-       cxzhang@watson.ibm.com, sds@tycho.nsa.gov
-Content-Type: text/plain
-Date: Fri, 02 Mar 2007 13:51:24 -0500
-Message-Id: <1172861484.31047.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
-Content-Transfer-Encoding: 7bit
+	id S964824AbXCBTEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 14:04:43 -0500
+Date: Fri, 2 Mar 2007 11:03:58 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mark Gross <mgross@linux.intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@in.ibm.com>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
+       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+In-Reply-To: <20070302184529.GA8761@linux.intel.com>
+Message-ID: <Pine.LNX.4.64.0703021051580.3953@woody.linux-foundation.org>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
+ <45E7835A.8000908@in.ibm.com> <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
+ <20070301195943.8ceb221a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703012105080.3953@woody.linux-foundation.org>
+ <20070302162023.GA4691@linux.intel.com> <Pine.LNX.4.64.0703020903190.3953@woody.linux-foundation.org>
+ <20070302184529.GA8761@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pfkey_spdget neither had an LSM security hook nor auditing for the
-removal of xfrm_policy structs.  The security hook was added when it was
-moved into xfrm_policy_byid instead of the callers to that function by
-my earlier patch and this patch adds the auditing hooks as well.
-
-Signed-off-by: Eric Paris <eparis@redhat.com>
-
- net/key/af_key.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
-
-diff --git a/net/key/af_key.c b/net/key/af_key.c
-index 3542435..7cbf0a2 100644
---- a/net/key/af_key.c
-+++ b/net/key/af_key.c
-@@ -2537,7 +2537,7 @@ static int pfkey_migrate(struct sock *sk, struct sk_buff *skb,
- static int pfkey_spdget(struct sock *sk, struct sk_buff *skb, struct sadb_msg *hdr, void **ext_hdrs)
- {
- 	unsigned int dir;
--	int err;
-+	int err = 0, delete;
- 	struct sadb_x_policy *pol;
- 	struct xfrm_policy *xp;
- 	struct km_event c;
-@@ -2549,16 +2549,20 @@ static int pfkey_spdget(struct sock *sk, struct sk_buff *skb, struct sadb_msg *h
- 	if (dir >= XFRM_POLICY_MAX)
- 		return -EINVAL;
- 
-+	delete = (hdr->sadb_msg_type == SADB_X_SPDDELETE2);
- 	xp = xfrm_policy_byid(XFRM_POLICY_TYPE_MAIN, dir, pol->sadb_x_policy_id,
--			      hdr->sadb_msg_type == SADB_X_SPDDELETE2, &err);
-+			      delete, &err);
- 	if (xp == NULL)
- 		return -ENOENT;
- 
--	err = 0;
-+	if (delete)
-+		xfrm_audit_log(audit_get_loginuid(current->audit_context), 0,
-+			       AUDIT_MAC_IPSEC_DELSPD, err ? 0 : 1, xp, NULL);
- 
--	c.seq = hdr->sadb_msg_seq;
--	c.pid = hdr->sadb_msg_pid;
--	if (hdr->sadb_msg_type == SADB_X_SPDDELETE2) {
-+		if (err)
-+			goto out;
-+		c.seq = hdr->sadb_msg_seq;
-+		c.pid = hdr->sadb_msg_pid;
- 		c.data.byid = 1;
- 		c.event = XFRM_MSG_DELPOLICY;
- 		km_policy_notify(xp, dir, &c);
-@@ -2566,6 +2570,7 @@ static int pfkey_spdget(struct sock *sk, struct sk_buff *skb, struct sadb_msg *h
- 		err = key_pol_get_resp(sk, xp, hdr, dir);
- 	}
- 
-+out:
- 	xfrm_pol_put(xp);
- 	return err;
- }
 
 
+On Fri, 2 Mar 2007, Mark Gross wrote:
+> 
+> I think there will be more than just 2 dims per cpu socket on systems
+> that care about this type of capability.
+
+I agree. I think you'll have a nice mix of 2 and 4, although not likely a 
+lot more. You want to have independent channels, and then within a channel 
+you want to have as close to point-to-point as possible. 
+
+But the reason that I think you're better off looking at a "node level" is 
+that 
+
+ (a) describing the DIMM setup is a total disaster. The interleaving is 
+     part of it, but even in the absense of interleaving, we have so far 
+     seen that describing DIMM mapping simply isn't a realistic thing to 
+     be widely deplyed, judging by the fact that we cannot even get a 
+     first-order approximate mapping for the ECC error events.
+
+     Going node-level means that we just piggy-back on the existing node 
+     mapping, which is a lot more likely to actually be correct and 
+     available (ie you may not know which bank is bank0 and how the 
+     interleaving works, but you usually *do* know which bank is connected 
+     to which CPU package)
+
+     (Btw, I shouldn't have used the word "die", since it's really about 
+     package - Intel obviously has a penchant for putting two dies per 
+     package)
+
+ (b) especially if you can actually shut down the memory, going node-wide 
+     may mean that you can shut down the CPU's too (ie per-package sleep). 
+     I bet the people who care enough to care about DIMM's would want to 
+     have that *anyway*, so tying them together simplifies the problem.
+
+> BTW I hope we aren't talking past each other, there are low power states
+> where the ram contents are persevered.
+
+Yes. They are almost as hard to handle, but the advantage is that if we 
+get things wrong, it can still work most of the time (ie we don't have to 
+migrate everything off, we just need to try to migrate the stuff that gets 
+*used* off a DIMM, and hardware will hopefully end up quiescing the right 
+memory controller channel totally automatically, without us having to know 
+the exact mapping or even having to 100% always get it 100% right).
+
+With FBDIMM in particular, I guess the biggest power cost isn't actually 
+the DRAM content, but just the controllers.
+
+Of course, I wonder how much actual point there is to FBDIMM's once you 
+have on-die memory controllers and thus the reason for deep queueing is 
+basically gone (since you'd spread out the memory rather than having it 
+behind a few central controllers).
+
+		Linus
