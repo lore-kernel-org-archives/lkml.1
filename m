@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422894AbXCBEtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422889AbXCBEtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422894AbXCBEtQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 23:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422893AbXCBEtQ
+	id S1422889AbXCBEtX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 23:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422893AbXCBEtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 23:49:16 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36167 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422894AbXCBEtP (ORCPT
+	Thu, 1 Mar 2007 23:49:23 -0500
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:56844 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422889AbXCBEtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 23:49:15 -0500
-Date: Fri, 2 Mar 2007 04:49:10 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, support@coraid.com,
-       "Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: PATCH 2.6.21-rc1 aoe: handle zero _count pages in bios
-Message-ID: <20070302044910.GA22209@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>, support@coraid.com,
-	"Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org,
-	Greg KH <greg@kroah.com>
-References: <20070301231510.GC8524@coraid.com> <20070301174204.a550dd3a.akpm@linux-foundation.org> <20070302022919.GA26285@infradead.org> <20070301192245.bf034385.akpm@linux-foundation.org> <20070302043039.GA18651@infradead.org> <20070301204806.61225e2b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070301204806.61225e2b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 1 Mar 2007 23:49:21 -0500
+Message-ID: <45E7ACC9.6030907@hitachi.com>
+Date: Fri, 02 Mar 2007 13:49:13 +0900
+From: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Pavel Machek <pavel@ucw.cz>, Robin Holt <holt@sgi.com>,
+       David Howells <dhowells@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>, Hideo AOKI <haoki@redhat.com>
+Subject: [PATCH 2/4] coredump: ELF: enable to omit anonymous shared memory
+References: <45E7AAFA.4070402@hitachi.com>
+In-Reply-To: <45E7AAFA.4070402@hitachi.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 08:48:06PM -0800, Andrew Morton wrote:
-> On Fri, 2 Mar 2007 04:30:39 +0000 Christoph Hellwig <hch@infradead.org> wrote:
-> 
-> > But in this case we'd really need to enforce this, and add a
-> > BUG_ON(PageSlab(page)) in bio_add_page to trip everyone submit
-> > this kind of pages.
-> 
-> That would be
-> 
-> 	BUG_ON(PageSlab(page) && page_count(page) == 0)?
+This patch enables to omit anonymous shared memory from an ELF
+formatted core file when it is generated.
 
-No, all slab pages.  Currently they all have a reference count of
-zero, but we generally don't want people to pass in pages that
-come from a non-refcounted allocator.
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ fs/binfmt_elf.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.20-mm2/fs/binfmt_elf.c
+===================================================================
+--- linux-2.6.20-mm2.orig/fs/binfmt_elf.c
++++ linux-2.6.20-mm2/fs/binfmt_elf.c
+@@ -1191,9 +1191,15 @@ static int maydump(struct vm_area_struct
+ 	if (vma->vm_flags & (VM_IO | VM_RESERVED))
+ 		return 0;
+ 
+-	/* Dump shared memory only if mapped from an anonymous file. */
+-	if (vma->vm_flags & VM_SHARED)
+-		return vma->vm_file->f_path.dentry->d_inode->i_nlink == 0;
++	/*
++	 * Dump shared memory only if mapped from an anonymous file and
++	 * /proc/<pid>/coredump_omit_anonymous_shared flag is not set.
++	 */
++	if (vma->vm_flags & VM_SHARED) {
++		if (vma->vm_file->f_path.dentry->d_inode->i_nlink)
++			return 0;
++		return vma->vm_mm->coredump_omit_anon_shared == 0;
++	}
+ 
+ 	/* If it hasn't been written to, don't write it out */
+ 	if (!vma->anon_vma)
+
 
