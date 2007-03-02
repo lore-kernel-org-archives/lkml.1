@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992532AbXCBPud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992537AbXCBPyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992532AbXCBPud (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 10:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992535AbXCBPud
+	id S2992537AbXCBPyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 10:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992541AbXCBPyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 10:50:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36721 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992532AbXCBPuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 10:50:32 -0500
-Message-ID: <45E83FCE.4040008@redhat.com>
-Date: Fri, 02 Mar 2007 09:16:30 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
-MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@us.ibm.com>
-CC: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, suparna@in.ibm.com,
-       cmm@us.ibm.com, alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <45E7BE4B.5070602@us.ibm.com>
-In-Reply-To: <45E7BE4B.5070602@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 2 Mar 2007 10:54:52 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:49634 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992537AbXCBPyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 10:54:51 -0500
+Subject: [PATCH 0/9] swap on flash support
+From: Richard Purdie <rpurdie@openedhand.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org, dwmw2@infradead.org
+Content-Type: text/plain
+Date: Fri, 02 Mar 2007 15:54:30 +0000
+Message-Id: <1172850870.11149.117.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty wrote:
-> 
-> Amit K. Arora wrote:
-> 
->> This is to give a heads up on few patches that we will be soon coming up
->> with. These patches implement a new system call sys_fallocate() and a
->> new inode operation "fallocate", for persistent preallocation. The new
->> system call, as Andrew suggested, will look like:
->>
->>  asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len);
->>
-> I am wondering about return values from this syscall ? Is it supposed to 
-> return the
-> number of bytes allocated ? What about partial allocations ? 
+The following patch series adds a device driver which allows an mtd
+flash device to be used as a swap device. Since flash needs wear
+levelling, a normal block device can't be used directly.
 
-If you don't have enough blocks to cover the request, you should 
-probably just return -ENOSPC, not a partial allocation.
+In order to work efficiently, some changes to other parts of Linux are
+needed. Most of these changes are hopefully useful in their own right.
 
-> What about 
-> if the
-> blocks already exists ? What would be return values in those cases ?
+The better handling of swap write failure patches have been seen before.
+There were no real problems identified last time these were posted and
+they haven't changed since then, I'm just posting them in context now.
+The resulting patches are not particularly invasive and I hopefully
+these could be considered for merging.
 
-0 on success, other normal errors oetherwise..
+The most controversial part of the series is probably the mark unused
+ioctl. Whilst frowned upon, I used an ioctl as it seemed the only way to
+get a message from the swap layer to the block driver. I'm open to
+suggestions for a better way to do this. Knowing which blocks it can
+reuse is extremely useful to the swaponflash driver and makes it much
+more efficient.
 
-If asked for a range that includes already-allocated blocks, you just 
-allocate any non-allocated blocks in the range, I think.
+Its possible to think of races where a block is marked as used but a
+write is still in the bio queue and ends up containing data when it
+could really be empty. The false positive of a block being marked empty
+when its not shouldn't (and mustn't) happen though. The ioctl should be
+thought of as a hint to the block device rather than an absolute.
 
--Eric
+The swaponflash driver itself has several features to try and extend the
+lifetime of any flash chip being used as swap. There is some detail at
+the top of the file but in summary, it creates a block device (mtdswapX)
+which already contains the swap header and can then be directly used by
+swapon. Devices appearing as swap must be explicitly referenced on the
+commandline or as a module parameter.
+
+A simple map is then used to keep track of blocks in use by the kernel
+and the placement of these blocks on flash is determined by the driver.
+These blocks can be moved around for wear levelling as needed,
+transparent to the kernel's swap layer. If we run out of space (too many
+bad blocks), we return a write error to the kernel which is why bad swap
+handling needs improvement. I've tested the pathological case where all
+swap goes bad and the swap device size tends to zero and the kernel
+survives!
+
+One simplification it takes advantage of is that no state need be stored
+over a reboot and it assumes it can start wear levelling from scratch
+since it would have tried to keep wear level before in any previous
+runs.
+
+Richard
+
 
