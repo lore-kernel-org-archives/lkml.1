@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965635AbXCBVHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965639AbXCBVMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965635AbXCBVHy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 16:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965636AbXCBVHx
+	id S965639AbXCBVMa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 16:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965638AbXCBVM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 16:07:53 -0500
-Received: from jade.aracnet.com ([216.99.193.136]:41411 "EHLO jade.aracnet.com"
+	Fri, 2 Mar 2007 16:12:29 -0500
+Received: from smtp19.orange.fr ([80.12.242.1]:1837 "EHLO smtp19.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965635AbXCBVHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 16:07:52 -0500
-Message-ID: <45E891E6.7090807@BitWagon.com>
-Date: Fri, 02 Mar 2007 13:06:46 -0800
-From: John Reiser <jreiser@BitWagon.com>
-Organization: -
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
+	id S965639AbXCBVM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 16:12:29 -0500
+X-ME-UUID: 20070302211226770.BBF9C5400086@mwinf1901.orange.fr
+Message-ID: <45E89339.1050504@free.fr>
+Date: Fri, 02 Mar 2007 22:12:25 +0100
+From: Laurent Riffard <laurent.riffard@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.0.9) Gecko/20061222 SeaMonkey/1.0.7
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
-References: <20070301175207.GA849@tv-sign.ru>
-In-Reply-To: <20070301175207.GA849@tv-sign.ru>
-X-Enigmail-Version: 0.92.0.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: 2.6.21-rc2-mm1: what about CONFIG_NO_HZ and !CONFIG_SMP ?
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> John Reiser wrote:
-
->>+	switch (vdso_enabled) {
->>+	case 0:  /* none */
->>+		return 0;
+Le 02.03.2007 12:00, Andrew Morton a écrit :
+> Temporarily at
 > 
+>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
 > 
-> This means we don't initialize mm->context.vdso and ->sysenter_return.
+> Will appear later at
 > 
-> Is it ok? For example, setup_rt_frame() uses VDSO_SYM(&__kernel_rt_sigreturn),
-> sysenter_past_esp pushes ->sysenter_return on stack.
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
 
-Paul Mundt has commented on setup_rt_frame() and provided a patch which
-bullet-proofs that area.  I will include that patch into the next revision.
+Got this when CONFIG_NO_HZ=y and CONFIG_SMP=n:
 
-The value of ->sysenter_return is interpreted in user space by the
-sysexit instruction; nobody else cares what the value is.  The kernel
-is not required to provide a good value when vdso_enabled is zero,
-because the kernel has not told the process that sysenter is valid
-(by setting AT_SYSINFO.)  The kernel requires specific register values
-for sysenter+sysexit and these values may change at the whim of the
-kernel, so correct code must follow the kernel's protocol.
-glibc uses sysenter only when AT_SYSINFO is present.  User code can
-screw up even when vdso_enabled is non-zero, by overwriting or re-
-mapping the vdso page (clobber memory at the destination of sysexit.)
+  CC      kernel/sched.o
+kernel/sched.c: In function 'trigger_load_balance':
+kernel/sched.c:3384: error: 'struct rq' has no member named 'in_nohz_recently'
+kernel/sched.c:3384: error: 'struct rq' has no member named 'idle_at_tick'
+kernel/sched.c:3385: error: 'struct rq' has no member named 'in_nohz_recently'
+kernel/sched.c:3387: error: 'nohz' undeclared (first use in this function)
+kernel/sched.c:3387: error: (Each undeclared identifier is reported only once
+kernel/sched.c:3387: error: for each function it appears in.)
+kernel/sched.c:3404: warning: implicit declaration of function 'resched_cpu'
+kernel/sched.c:3412: error: 'struct rq' has no member named 'idle_at_tick'
+kernel/sched.c:3422: error: 'struct rq' has no member named 'idle_at_tick'
+make[1]: *** [kernel/sched.o] Error 1
+make: *** [kernel] Error 2
 
-Both context.vdso and sysenter_return could be set to zero whenever
-vdso_enabled is zero; those two values might even be defaulted.
-I'll add such a change to the next revision of the patch, if you'll
-defend it against claims of "unnecessary code."
+Looking at kernel/sched.c, it seems CONFIG_NO_HZ should depend on CONFIG_SMP...
 
-> 
-> Note also that load_elf_binary does
-> 
-> 	arch_setup_additional_pages()
-> 	create_elf_tables()
-> 
-> , looks like application can crash after exec if vdso_enabled changes from 0
-> to 1 in between.
+ 238 struct rq {
+ 239         spinlock_t lock;
+ 240 
+ 241         /*
+ 242          * nr_running and cpu_load should be in the same cacheline because
+ 243          * remote CPUs use both these fields when doing load calculation.
+ 244          */
+ 245         unsigned long nr_running;
+ 246         unsigned long raw_weighted_load;
+ 247 #ifdef CONFIG_SMP
+ 248         unsigned long cpu_load[3];
+ 249         unsigned char idle_at_tick;
+ 250 #ifdef CONFIG_NO_HZ
+ 251         unsigned char in_nohz_recently;
+ 252 #endif
+ 253 #endif
+ 254         unsigned long long nr_switches;
 
-Correct.  Changing vdso_enabled from 0 to non-zero must be prepared
-to lose this race if it is not prevented.  Ordinarily it won't matter
-because the administrator will perform such changes at a "quiet" time.
+~~
+laurent
 
--- 
-John Reiser, jreiser@BitWagon.com
