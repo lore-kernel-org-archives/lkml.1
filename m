@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965199AbXCBTri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965233AbXCBT7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965199AbXCBTri (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 14:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965218AbXCBTri
+	id S965233AbXCBT7d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 14:59:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965248AbXCBT7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 14:47:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45588 "EHLO mx2.mail.elte.hu"
+	Fri, 2 Mar 2007 14:59:33 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:38216 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965199AbXCBTrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 14:47:37 -0500
-Date: Fri, 2 Mar 2007 20:39:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070302193941.GB8450@elte.hu>
-References: <20070301095402.GA14603@elte.hu> <20070301131118.GA30228@elte.hu> <20070301133018.GB30177@2ka.mipt.ru> <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru> <20070301150942.GA26025@elte.hu> <20070301153655.GB8217@2ka.mipt.ru> <20070302105713.GB15576@elte.hu> <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
+	id S965233AbXCBT7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 14:59:32 -0500
+Subject: Re: [PATCH -mm] clocksource init adjustments (fix bug #7426)
+From: john stultz <johnstul@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, andreas.friedrich@fujitsu-siemens.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Daniel Walker <dwalker@mvista.com>
+In-Reply-To: <20070302021827.7edc1a23.akpm@linux-foundation.org>
+References: <1172189582.5422.26.camel@localhost.localdomain>
+	 <20070302021827.7edc1a23.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 02 Mar 2007 11:58:11 -0800
+Message-Id: <1172865491.5449.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-03-02 at 02:18 -0800, Andrew Morton wrote:
+> On Thu, 22 Feb 2007 16:13:02 -0800 john stultz <johnstul@us.ibm.com> wrote:
+> > Thus the solution here is to register clocksources earlier (ideally when
+> > the hardware is being initialized), and then we enable clocksource
+> > selection at fs_initcall (before device_initcall).
+> > 
+> > This patch should probably get some testing time in -mm, since
+> > clocksource selection is one of the most important issues for correct
+> > timekeeping, and I've only been able to test this on a few of my own
+> > boxes.
+> 
+> This doornails my Nocona box early in boot:
+> http://userweb.kernel.org/~akpm/s5000431.jpg
+> 
+> Slab isn't ready yet - time_init()->hpet_arch_init() is called before
+> start_kernel() has run kmem_cache_init().
 
-* Davide Libenzi <davidel@xmailserver.org> wrote:
+Oh! Sorry! Yea, looking at it more the ioremap isn't actually necessary,
+as we can use hpet_readl() instead of re-calculating the hpet base
+address pointer.
 
-> [...] We're still missing proper FPU context switch in the 
-> move_user_context(). [...]
+I'll fix this up (and find an HPET enabled x86_64 box to test it on) and
+get a patch to you shortly.
 
-yeah - i'm starting to be of the opinion that the FPU context should 
-stay with the threadlet, exclusively. I.e. when calling a threadlet, the 
-'outer loop' (the event loop) should not leak FPU context into the 
-threadlet and then expect it to be replicated from whatever random point 
-the threadlet ended up sleeping at. It would be possible, but it just 
-makes no sense. What makes most sense is to just keep the FPU context 
-with the threadlet, and to let the 'new head' use an initial (unused) 
-FPU context. And it's in fact the threadlet that will most likely have 
-an acrive FPU context across a system call, not the outer loop. In other 
-words: no special FPU support needed at all for threadlets (i.e. no 
-flipping needed even) - this behavior just naturally happens in the 
-current implementation. Hm?
+Sorry again!
+-john
 
-	Ingo
+
