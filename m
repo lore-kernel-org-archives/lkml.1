@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992426AbXCBN2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992438AbXCBNjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992426AbXCBN2M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 08:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbXCBN2M
+	id S2992438AbXCBNjk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 08:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992437AbXCBNjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 08:28:12 -0500
-Received: from smtp.nokia.com ([131.228.20.172]:30538 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992426AbXCBN2M (ORCPT
+	Fri, 2 Mar 2007 08:39:40 -0500
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:2065 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992434AbXCBNjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 08:28:12 -0500
-Subject: [RFC] [PATCH] Kconfig: enlarge printk buffer size limit
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 02 Mar 2007 15:27:48 +0200
-Message-Id: <1172842068.17031.55.camel@sauron>
+	Fri, 2 Mar 2007 08:39:39 -0500
+Date: Fri, 2 Mar 2007 14:37:20 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Dave Jones <davej@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-Id: <20070302143720.cfd8afeb.khali@linux-fr.org>
+In-Reply-To: <20070302113158.GC2156@elf.ucw.cz>
+References: <45D5EA88.7090300@redhat.com>
+	<45D6DDCE.5050803@assembler.cz>
+	<45D7461A.2040808@redhat.com>
+	<20070218183805.5a4fd813.khali@linux-fr.org>
+	<20070228213803.GA4877@ucw.cz>
+	<20070301152655.f232db64.khali@linux-fr.org>
+	<20070301174806.GA4979@redhat.com>
+	<20070302122736.f14a7a22.khali@linux-fr.org>
+	<20070302113158.GC2156@elf.ucw.cz>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Mar 2007 13:27:48.0656 (UTC) FILETIME=[920AFB00:01C75CCE]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070302152808-4BCD4BB0-35A45573/0-0/0-1
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Artem Bityutskiy <artem.bityutskiy@nokia.com>
-Subject: [RFC] [PATCH] Kconfig: enlarge printk buffer size limit
+On Fri, 2 Mar 2007 12:31:58 +0100, Pavel Machek wrote:
+> > My point (which you didn't quote) was that there is no correlation
+> > between the SMBus being hidden and ACPI accessing the hardware
+> > monitoring chip, contrary to what Pavel was suggesting.
+> 
+> It may not be correlated with ACPI, but BIOS authors clearly want to
+> keep you away from their SMBus controllers....
 
-This patch makes the upper kernel ring buffer size limit larger. It
-is often very handy to have huge ring-buffer for debugging purposes,
-when the subsystem which is being debugged produces large amount of
-useful output.
+drivers/pci/quirks.c is full of things we do against the BIOS authors
+intent. You don't plan to remove them all, do you?
 
-Index: ubi-2.6.git/lib/Kconfig.debug
-===================================================================
---- ubi-2.6.git.orig/lib/Kconfig.debug
-+++ ubi-2.6.git/lib/Kconfig.debug
-@@ -79,7 +79,7 @@ config DEBUG_KERNEL
- 
- config LOG_BUF_SHIFT
- 	int "Kernel log buffer size (16 => 64KB, 17 => 128KB)" if DEBUG_KERNEL
--	range 12 21
-+	range 12 26
- 	default 17 if S390 || LOCKDEP
- 	default 16 if X86_NUMAQ || IA64
- 	default 15 if SMP
+(And as a side note, this is really the board's owner SMBus controller.
+The hardware doesn't belong to the BIOS author.)
 
-
-
+-- 
+Jean Delvare
