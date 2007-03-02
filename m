@@ -1,70 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422821AbXCBF3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422867AbXCBFfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422821AbXCBF3c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 00:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422914AbXCBF3c
+	id S1422867AbXCBFfL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 00:35:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422913AbXCBFfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 00:29:32 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:51891 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422821AbXCBF3b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 00:29:31 -0500
-Message-ID: <45E7B0E9.3040202@in.ibm.com>
-Date: Fri, 02 Mar 2007 10:36:49 +0530
-From: Balbir Singh <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
-To: vatsa@in.ibm.com
-CC: menage@google.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru, pj@sgi.com,
-       sam@vilain.net, ebiederm@xmission.com, winget@google.com,
-       containers@lists.osdl.org, serue@us.ibm.com, akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 1/2] rcfs core patch
-References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com>
-In-Reply-To: <20070301134528.GL15509@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 00:35:10 -0500
+Received: from main.gmane.org ([80.91.229.2]:33756 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422867AbXCBFfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 00:35:09 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Giridhar Pemmasani <giri@lmc.cs.sunysb.edu>
+Subject: [PATCH] mv643xx ethernet driver
+Date: Thu, 01 Mar 2007 23:52:06 -0500
+Message-ID: <es8ahm$64p$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: ool-18b86566.dyn.optonline.net
+User-Agent: KNode/0.10.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> Heavily based on Paul Menage's (inturn cpuset) work. The big difference
-> is that the patch uses task->nsproxy to group tasks for resource control
-> purpose (instead of task->containers).
-> 
-> The patch retains the same user interface as Paul Menage's patches. In
-> particular, you can have multiple hierarchies, each hierarchy giving a 
-> different composition/view of task-groups.
-> 
-> (Ideally this patch should have been split into 2 or 3 sub-patches, but
-> will do that on a subsequent version post)
-> 
+During initialization, mv643xx driver registers IRQ before setting up tx/rx
+rings. This causes kernel oops because mv643xx_poll, which gets called
+right after registering IRQ, calls netif_rx_complete, which accesses the rx
+ring (I don't have the oops message anymore; I just remember this sequence
+of calls). Attached (tested) patch first initializes the rx/tx rings and
+then registers the IRQ.
 
-With this don't we end up with a lot of duplicate between cpusets and rcfs.
+Giri
 
+Signed-off-by: Giridhar Pemmasani <pgiri@yahoo.com>
 
-> Signed-off-by : Srivatsa Vaddagiri <vatsa@in.ibm.com>
-> Signed-off-by : Paul Menage <menage@google.com>
-> 
-> 
-> ---
-> 
->  linux-2.6.20-vatsa/include/linux/init_task.h |    4 
->  linux-2.6.20-vatsa/include/linux/nsproxy.h   |    5 
->  linux-2.6.20-vatsa/init/Kconfig              |   22 
->  linux-2.6.20-vatsa/init/main.c               |    1 
->  linux-2.6.20-vatsa/kernel/Makefile           |    1 
-> 
-> 
-> ---
+--- drivers/net/mv643xx_eth.c   2006-11-29 16:57:37.000000000 -0500
++++ ../linux-2.6.20.orig/drivers/net/mv643xx_eth.c      2007-02-23
+09:38:21.000000000 -0500
+@@ -778,14 +778,6 @@
+        unsigned int size;
+        int err;
+ 
+-       err = request_irq(dev->irq, mv643xx_eth_int_handler,
+-                       IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
+-       if (err) {
+-               printk(KERN_ERR "Can not assign IRQ number to MV643XX_eth%d\n",
+-                                                               port_num);
+-               return -EAGAIN;
+-       }
+-
+        eth_port_init(mp);
+ 
+        memset(&mp->timeout, 0, sizeof(struct timer_list));
+@@ -797,8 +789,7 @@
+                                                                GFP_KERNEL);
+        if (!mp->rx_skb) {
+                printk(KERN_ERR "%s: Cannot allocate Rx skb ring\n", dev->name);
+-               err = -ENOMEM;
+-               goto out_free_irq;
++               return -ENOMEM;
+        }
+        mp->tx_skb = kmalloc(sizeof(*mp->tx_skb) * mp->tx_ring_size,
+                                                                GFP_KERNEL);
+@@ -852,13 +843,8 @@
+                                                        dev->name, size);
+                printk(KERN_ERR "%s: Freeing previously allocated TX queues...",
+                                                        dev->name);
+-               if (mp->rx_sram_size)
+-                       iounmap(mp->p_tx_desc_area);
+-               else
+-                       dma_free_coherent(NULL, mp->tx_desc_area_size,
+-                                       mp->p_tx_desc_area, mp->tx_desc_dma);
+                err = -ENOMEM;
+-               goto out_free_tx_skb;
++               goto out_free_tx_ring;
+        }
+        memset((void *)mp->p_rx_desc_area, 0, size);
+ 
+@@ -866,6 +852,14 @@
+ 
+        mv643xx_eth_rx_refill_descs(dev);       /* Fill RX ring with skb's */
+ 
++       err = request_irq(dev->irq, mv643xx_eth_int_handler,
++                         IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
++       if (err) {
++               printk(KERN_ERR "Can not assign IRQ number to MV643XX_eth%d\n",
++                      port_num);
++               goto out_free_rx_ring;
++       }
++
+        /* Clear any pending ethernet port interrupts */
+        mv_write(MV643XX_ETH_INTERRUPT_CAUSE_REG(port_num), 0);
+        mv_write(MV643XX_ETH_INTERRUPT_CAUSE_EXTEND_REG(port_num), 0);
+@@ -891,12 +885,22 @@
+ 
+        return 0;
+ 
++out_free_rx_ring:
++       if (mp->rx_sram_size)
++               iounmap(mp->p_rx_desc_area);
++       else
++               dma_free_coherent(NULL, mp->rx_desc_area_size,
++                                 mp->p_rx_desc_area, mp->rx_desc_dma);
++out_free_tx_ring:
++       if (mp->tx_sram_size)
++               iounmap(mp->p_tx_desc_area);
++       else
++               dma_free_coherent(NULL, mp->tx_desc_area_size,
++                                 mp->p_tx_desc_area, mp->tx_desc_dma);
+ out_free_tx_skb:
+        kfree(mp->tx_skb);
+ out_free_rx_skb:
+        kfree(mp->rx_skb);
+-out_free_irq:
+-       free_irq(dev->irq, dev);
+ 
+        return err;
+ }
 
-The diffstat does not look quite right.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
