@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933358AbXCBNwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbXCBNwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933358AbXCBNwp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 08:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933357AbXCBNwp
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 08:52:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51426 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933358AbXCBNwn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S933351AbXCBNwn (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 2 Mar 2007 08:52:43 -0500
-Subject: Re: The performance and behaviour of the anti-fragmentation
-	related patches
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mel Gorman <mel@skynet.ie>, npiggin@suse.de, clameter@engr.sgi.com,
-       mingo@elte.hu, jschopp@austin.ibm.com, torvalds@linux-foundation.org,
-       mbligh@mbligh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070301160915.6da876c5.akpm@linux-foundation.org>
-References: <20070301101249.GA29351@skynet.ie>
-	 <20070301160915.6da876c5.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 02 Mar 2007 05:50:57 -0800
-Message-Id: <1172843457.3237.11.camel@laptopd505.fenrus.org>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965347AbXCBNwn
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 2 Mar 2007 08:52:43 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46710 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933357AbXCBNwm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 08:52:42 -0500
+Date: Fri, 2 Mar 2007 14:56:35 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] pata_qdi: Fix initialisation
+Message-ID: <20070302145635.1fc6fac7@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-01 at 16:09 -0800, Andrew Morton wrote:
-> And I'd judge that per-container RSS limits are of considerably more value
-> than antifrag (in fact per-container RSS might be a superset of antifrag,
-> in the sense that per-container RSS and containers could be abused to fix
-> the i-cant-get-any-hugepages problem, dunno).
+The QDI init code contains some bugs which mean it only works if you have
+a test setup that causes both a successful and failed probe. Fix this
 
+Found by Philip Guo
 
-Hi,
+(Who found it working on code analysis tools not running VLB IDE
+controllers)
 
-the RSS thing is.. .funky.
-I'm saying that because we have not been able to define what RSS means,
-so before we expand how RSS is used that needs solving first.
+Signed-off-by: Alan Cox <alan@redhat.com>diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc2/drivers/ata/pata_qdi.c linux-2.6.21-rc2/drivers/ata/pata_qdi.c
+--- linux.vanilla-2.6.21-rc2/drivers/ata/pata_qdi.c	2007-03-01 13:36:03.000000000 +0000
++++ linux-2.6.21-rc2/drivers/ata/pata_qdi.c	2007-03-02 13:20:27.000000000 +0000
+@@ -363,7 +365,8 @@
+ 					release_region(port, 2);
+ 					continue;
+ 				}
+-				ct += qdi_init_one(port, 6500, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04);
++				if (qdi_init_one(port, 6500, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04) == 0)
++					ct++;
+ 			}
+ 			if (((r & 0xF0) == 0xA0) || (r & 0xF0) == 0x50) {
+ 				/* QD6580: dual channel */
+@@ -375,11 +378,14 @@
+ 				res = inb(port + 3);
+ 				if (res & 1) {
+ 					/* Single channel mode */
+-					ct += qdi_init_one(port, 6580, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04);
++					if (qdi_init_one(port, 6580, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04))
++						ct++;
+ 				} else {
+ 					/* Dual channel mode */
+-					ct += qdi_init_one(port, 6580, 0x1F0, 14, r & 0x04);
+-					ct += qdi_init_one(port + 2, 6580, 0x170, 15, r & 0x04);
++					if (qdi_init_one(port, 6580, 0x1F0, 14, r & 0x04) == 0)
++						ct++;
++					if (qdi_init_one(port + 2, 6580, 0x170, 15, r & 0x04) == 0)
++						ct++;
+ 				}
+ 			}
+ 		}
 
-This is relevant for the pagetable sharing patches: if RSS can exclude
-shared, they're relatively easy. If RSS has to include shared always, we
-have currently a problem because hugepages aren't part of RSS right now.
-
-I would really really really like to see this unclarity sorted out on
-the concept level before going through massive changes in the code based
-on something so fundamentally unclear.
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
