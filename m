@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161309AbXCBALc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161311AbXCBAMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161309AbXCBALc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 19:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422637AbXCBALc
+	id S1161311AbXCBAMy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 19:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161304AbXCBAMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 19:11:32 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:57625 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161304AbXCBALb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 19:11:31 -0500
-Date: Thu, 1 Mar 2007 16:08:08 -0800
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Adam Litke <agl@us.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org
-Subject: Re: Kernel Oops with shm namespace cleanups
-Message-ID: <20070302000808.GE10643@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Adam Litke <agl@us.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	akpm@linux-foundation.org
-References: <1172693610.12805.16.camel@localhost.localdomain>
+	Thu, 1 Mar 2007 19:12:53 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:47347 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161311AbXCBAMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 19:12:52 -0500
+Message-ID: <45E76C16.1030706@gmail.com>
+Date: Fri, 02 Mar 2007 01:13:10 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1172693610.12805.16.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: License violation?
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 02:13:29PM -0600, Adam Litke wrote:
-> Hey.  While testing 2.6.21-rc2 with libhugetlbfs, the shm-fork test case
-> causes the kernel to oops.  To reproduce:  Execute 'make check' in the
-> latest libhugetlbfs source on a 2.6.21-rc2 kernel with 100 huge pages
-> allocated.  Using fewer huge pages will likely also trigger the oops.
-> Libhugetlbfs can be downloaded from:
-> http://libhugetlbfs.ozlabs.org/snapshots/libhugetlbfs-dev-20070228.tar.gz
+Hi.
 
-Looks like I should grab these testcases for the sake of due diligence
-(not to say I intend to alter maintenance style from primarily review,
-approval, and bugfixing, not that I've been doing as much of any of those
-as I should). To which architectures and/or distributions have the
-userspace bits been ported, or otherwise run/tested on? A quick sniff
-test on an Altix suggests SLES and/or ia64 may trip up the scripts:
-$ su -c "make check"
-Password:
-         VERSION
-	 ./run_tests.sh: line 1: get_hugetlbfs_path: command not found
-	 run_tests.sh: unable to find hugetlbfs mountpoint
-	 make: *** [check] Error 1
+I have a GPL driver (written by me) with workarounds, since I hadn't know-how, 
+when I wrote it. Now I've got 2.4 proprietary driver from the vendor. Is use of 
+the 2.4 driver know-how OK? (And could be such driver merged?)
 
+These are lines from the proprietary driver:
+	   IMPORTANT SAFETY & LEGAL INFORMATION:
 
--- wli
+         This source file is provided as part of the SensAble
+         Technologies PDD/GHOST Software Development Toolkit in
+         order to facilitate the use of PCI-based PHANToM haptic
+         interface devices across various Linux kernel revisions.
+         It is meant to be recompiled without modification.  It
+         should NOT be modified in any way. Any modification of
+         this source code will void any and all software and/or
+         hardware warranties and maintenance agreements with
+         SensAble Technologies or its assignees.  Furthermore,
+         modification of this source file may result in the damage
+         or failure of the user's hardware.  SensAble Technologies
+         and its assignees assume no responsibility for any damage
+         or injury resulting from the modification of this file.
+
+It's obvious, that if somebody was using the GPL driver, he'll lost warranty et 
+al. (But this is not the question.)
+
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
