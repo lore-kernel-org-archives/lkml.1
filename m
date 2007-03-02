@@ -1,121 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422873AbXCBEaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422874AbXCBEbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422873AbXCBEaE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 23:30:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422860AbXCBEaA
+	id S1422874AbXCBEbe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 23:31:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422866AbXCBEba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 23:30:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58956 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422856AbXCBE3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 23:29:41 -0500
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 2 Mar 2007 15:28:35 +1100
-Message-Id: <1070302042835.5796@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Subject: [PATCH 003 of 3] knfsd: Remove CONFIG_IPV6 ifdefs from sunrpc server code.
-References: <20070302151748.5226.patches@notabene>
+	Thu, 1 Mar 2007 23:31:30 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43403 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422867AbXCBEb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 23:31:26 -0500
+Date: Thu, 1 Mar 2007 20:31:24 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
+       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+In-Reply-To: <20070302042149.GB15867@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0703012022320.14299@schroedinger.engr.sgi.com>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703011854540.5530@schroedinger.engr.sgi.com>
+ <20070302035751.GA15867@wotan.suse.de> <Pine.LNX.4.64.0703012001260.5548@schroedinger.engr.sgi.com>
+ <20070302042149.GB15867@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2 Mar 2007, Nick Piggin wrote:
 
-They don't really save that much, and aren't worth the hassle.
+> > Yes, we (SGI) need exactly that: Use of higher order pages in the kernel 
+> > in order to reduce overhead of managing page structs for large I/O and 
+> > large memory applications. We need appropriate measures to deal with the 
+> > fragmentation problem.
+> 
+> I don't understand why, out of any architecture, ia64 would have to hack
+> around this in software :(
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+Ummm... We have x86_64 platforms with the 4k page problem. 4k pages are 
+very useful for the large number of small files that are around. But for 
+the large streams of data you would want other methods of handling these.
 
-### Diffstat output
- ./include/linux/sunrpc/svc.h |    2 --
- ./net/sunrpc/svcsock.c       |   13 +++----------
- 2 files changed, 3 insertions(+), 12 deletions(-)
+If I want to write 1 terabyte (2^50) to disk then the I/O subsystem has 
+to handle 2^(50-12) = 2^38 = 256 million page structs! This limits I/O 
+bandwiths and leads to huge scatter gather lists (and we are limited in 
+terms of the numbe of items on those lists in many drivers). Our future 
+platforms have up to serveral petabytes of memory. There needs to be some 
+way to handle these capacities in an efficient way. We cannot wait 
+an hour for the terabyte to reach the disk.
+ 
+> > We need to reduce the real hardware zones as much as possible. Most high 
+> > performance architectures have no need for additional DMA zones f.e. and
+> > do not have to deal with the complexities that arise there.
+> 
+> And then you want to add something else on top of them?
 
-diff .prev/include/linux/sunrpc/svc.h ./include/linux/sunrpc/svc.h
---- .prev/include/linux/sunrpc/svc.h	2007-03-02 14:20:13.000000000 +1100
-+++ ./include/linux/sunrpc/svc.h	2007-03-02 15:14:11.000000000 +1100
-@@ -194,9 +194,7 @@ static inline void svc_putu32(struct kve
- 
- union svc_addr_u {
-     struct in_addr	addr;
--#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-     struct in6_addr	addr6;
--#endif
- };
- 
- /*
+zones are basically managing a number of MAX_ORDER chunks. The adding of 
+something here is dealing with the categorization of these MAX_ORDER 
+chunks in order to insure movability and thus defragmentability of
+most of them. Or the upper layer may limit the number of those chunks
+assigned to a certain container.
 
-diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
---- .prev/net/sunrpc/svcsock.c	2007-03-02 15:12:52.000000000 +1100
-+++ ./net/sunrpc/svcsock.c	2007-03-02 15:14:11.000000000 +1100
-@@ -131,13 +131,13 @@ static char *__svc_print_addr(struct soc
- 			NIPQUAD(((struct sockaddr_in *) addr)->sin_addr),
- 			htons(((struct sockaddr_in *) addr)->sin_port));
- 		break;
--#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+
- 	case AF_INET6:
- 		snprintf(buf, len, "%x:%x:%x:%x:%x:%x:%x:%x, port=%u",
- 			NIP6(((struct sockaddr_in6 *) addr)->sin6_addr),
- 			htons(((struct sockaddr_in6 *) addr)->sin6_port));
- 		break;
--#endif
-+
- 	default:
- 		snprintf(buf, len, "unknown address type: %d", addr->sa_family);
- 		break;
-@@ -449,9 +449,7 @@ svc_wake_up(struct svc_serv *serv)
- 
- union svc_pktinfo_u {
- 	struct in_pktinfo pkti;
--#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
- 	struct in6_pktinfo pkti6;
--#endif
- };
- 
- static void svc_set_cmsg_data(struct svc_rqst *rqstp, struct cmsghdr *cmh)
-@@ -467,7 +465,7 @@ static void svc_set_cmsg_data(struct svc
- 			cmh->cmsg_len = CMSG_LEN(sizeof(*pki));
- 		}
- 		break;
--#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+
- 	case AF_INET6: {
- 			struct in6_pktinfo *pki = CMSG_DATA(cmh);
- 
-@@ -479,7 +477,6 @@ static void svc_set_cmsg_data(struct svc
- 			cmh->cmsg_len = CMSG_LEN(sizeof(*pki));
- 		}
- 		break;
--#endif
- 	}
- 	return;
- }
-@@ -730,13 +727,11 @@ static inline void svc_udp_get_dest_addr
- 		rqstp->rq_daddr.addr.s_addr = pki->ipi_spec_dst.s_addr;
- 		break;
- 		}
--#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
- 	case AF_INET6: {
- 		struct in6_pktinfo *pki = CMSG_DATA(cmh);
- 		ipv6_addr_copy(&rqstp->rq_daddr.addr6, &pki->ipi6_addr);
- 		break;
- 		}
--#endif
- 	}
- }
- 
-@@ -976,11 +971,9 @@ static inline int svc_port_is_privileged
- 	case AF_INET:
- 		return ntohs(((struct sockaddr_in *)sin)->sin_port)
- 			< PROT_SOCK;
--#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
- 	case AF_INET6:
- 		return ntohs(((struct sockaddr_in6 *)sin)->sin6_port)
- 			< PROT_SOCK;
--#endif
- 	default:
- 		return 0;
- 	}
+> > Yes that would mean merging nodes and zones. So "nones".
+> 
+> Yes, this is what Andrew just said. But you then wanted to add virtual zones
+> or something on top. I just don't understand why. You agree that merging
+> nodes and zones is a good idea. Did I miss the important post where some
+> bright person discovered why merging zones and "virtual zones" is a bad
+> idea?
+
+Hmmm.. I usually talk about the "virtual zones" as virtual nodes. But we 
+are basically at the same point there. Node level controls and APIs exist and 
+can even be used from user space. A container could just be a special node 
+and then the allocations to this container could be controlled via the 
+existing APIs.
+
+A virtual zone/node would be assigned a number of MAX_ORDER blocks from 
+real zones/nodes. Then it may hopefully be managed like a real node. In 
+the original zone/node these MAX_ORDER blocks would show up as 
+unavailable. The "upper" layer therefore is the existing node/zone layer. 
+The virtual zones/nodes just steal memory from the real ones.
+
+
