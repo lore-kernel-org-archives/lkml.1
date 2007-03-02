@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992760AbXCBXlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992761AbXCBXmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992760AbXCBXlO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 18:41:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992761AbXCBXlN
+	id S2992761AbXCBXmk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 18:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992762AbXCBXmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 18:41:13 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:46611 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992760AbXCBXlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 18:41:12 -0500
-Subject: Re: [Linux-fbdev-devel] 2.6.21-rc2 radeon backlight
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Simmons <jsimmons@infradead.org>,
-       linux-fbdev-devel@lists.sourceforge.net, romosan@sycorax.lbl.gov,
-       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20070302135841.fbfc1e32.akpm@linux-foundation.org>
-References: <20070301184531.b3aeafe3.akpm@linux-foundation.org>
-	 <87tzx35zkc.fsf@sycorax.lbl.gov>
-	 <20070302122920.a2967ebf.akpm@linux-foundation.org>
-	 <20070302.123514.35465791.davem@davemloft.net>
-	 <Pine.LNX.4.64.0703022131310.6960@pentafluge.infradead.org>
-	 <20070302135841.fbfc1e32.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 02 Mar 2007 23:40:12 +0000
-Message-Id: <1172878812.11149.207.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 2 Mar 2007 18:42:40 -0500
+Received: from wr-out-0506.google.com ([64.233.184.232]:28138 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992761AbXCBXmj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 18:42:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OtsTmCw4zY+8/ym/+0ausUbzHwmm6lsIJg78rnRuyLtH4qAi8Rnsq7CGIDZnPWKEVAMgR0W/bXb1fcR+55pQnK9cBnk4WEuls+jnHiUf8L8vh6Rpna7Gi6F9i4kFo2oxSGOvtR5SxRm3d4gCopQlSQ4RUVMMi8Iohbi/t206Hhk=
+Message-ID: <6bffcb0e0703021542k4f882531r21807c7efdbd0ebc@mail.gmail.com>
+Date: Sat, 3 Mar 2007 00:42:33 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc2-mm1
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-02 at 13:58 -0800, Andrew Morton wrote:
-> > @@ -1106,7 +1105,8 @@ config FB_ATY_GX
-> >  
-> >  config FB_ATY_BACKLIGHT
-> >  	bool "Support for backlight control"
-> > -	depends on FB_ATY
-> > +	depends on FB_ATY && EXPERIMENTAL
-> > +	select FB_BACKLIGHT	
-> >  	default y
-> >  	help
-> >  	  Say Y here if you want to control the backlight of your display.
-> 
-> Sorry, but my confidence level on this one is very low.  We've had heaps
-> and heaps of Kconfig-related build errors in exactly this area.  I'd prefer
-> that a patch like this one have a lot of testing and review (and a
-> changelog?) before we let it near a tree.
+On 02/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> Temporarily at
+>
+>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+>
 
-Agreed, I can tell from what I've seen so far this will at least break
-the PMAC users...
+I have noticed some strange system behavior. When i try to build a
+kernel (medium load) - X, keyboard, mouse and sound hangs.
 
-See my proposed patch, if that doesn't work, we should revert the
-problematic change.
+I can ping machine and I can use magic SysRq key, but that's all.
 
-Richard
+2.6.20-mm2 was fine, 2.6.21-rc2 works well (over 800 patches since
+2.6.20-mm2 - great...)
 
+NIL (Nothing Interesting in Logs)
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
