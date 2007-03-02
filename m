@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992619AbXCBRBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992625AbXCBRDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992619AbXCBRBt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 12:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992625AbXCBRBs
+	id S2992625AbXCBRDj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 12:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992626AbXCBRDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 12:01:48 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:33728 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992619AbXCBRBs (ORCPT
+	Fri, 2 Mar 2007 12:03:39 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:15385 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992625AbXCBRDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 12:01:48 -0500
-Date: Fri, 2 Mar 2007 17:01:42 +0000
-To: Paul Mundt <lethal@linux-sh.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, balbir@in.ibm.com, npiggin@suse.de,
-       clameter@engr.sgi.com, mingo@elte.hu, jschopp@austin.ibm.com,
-       arjan@infradead.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070302170142.GC14379@skynet.ie>
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E7835A.8000908@in.ibm.com> <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org> <20070301195943.8ceb221a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703012105080.3953@woody.linux-foundation.org> <20070302145029.d4847577.kamezawa.hiroyu@jp.fujitsu.com> <20070302061548.GA13552@linux-sh.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070302061548.GA13552@linux-sh.org>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+	Fri, 2 Mar 2007 12:03:38 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=DVGmsMtPCdw6AVXo6HxdoiZzcpYLwodZZQUfGsEAkjfxMz7mMC16hGWtSGjLQlxAx
+	2y97ae9/YAW+YAriDbzVg==
+Date: Fri, 2 Mar 2007 09:03:29 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Badari Pulavarty <pbadari@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [patch -mm] x86_64: fake numa cmdline flag fix
+In-Reply-To: <1172853148.9213.15.camel@dyn9047017100.beaverton.ibm.com>
+Message-ID: <Pine.LNX.4.64.0703020901510.14893@chino.kir.corp.google.com>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+ <1172853148.9213.15.camel@dyn9047017100.beaverton.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (02/03/07 15:15), Paul Mundt didst pronounce:
-> On Fri, Mar 02, 2007 at 02:50:29PM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 1 Mar 2007 21:11:58 -0800 (PST)
-> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> > > The whole DRAM power story is a bedtime story for gullible children. Don't 
-> > > fall for it. It's not realistic. The hardware support for it DOES NOT 
-> > > EXIST today, and probably won't for several years. And the real fix is 
-> > > elsewhere anyway (ie people will have to do a FBDIMM-2 interface, which 
-> > > is against the whole point of FBDIMM in the first place, but that's what 
-> > > you get when you ignore power in the first version!).
-> > > 
-> > 
-> > Note:
-> > I heard embeded people often designs their own memory-power-off control on
-> > embeded Linux. (but it never seems to be posted to the list.) But I don't know
-> > they are interested in generic memory hotremove or not.
-> > 
-> Yes, this is not that uncommon of a thing. People tend to do this in a
-> couple of different ways, in some cases the system is too loaded to ever
-> make doing such a thing at run-time worthwhile, and in those cases these
-> sorts of things tend to be munged in with the suspend code. Unfortunately
-> it tends to be quite difficult in practice to keep pages in one place,
-> so people rely on lame chip-select hacks and limiting the amount of
-> memory that the kernel treats as RAM instead so it never ends up being an
-> issue. Having some sort of a balance would certainly be nice, though.
+Make sure we only reference 'cmdline' on CONFIG_NUMA_EMU.
 
-If the range of memory you want to offline is MAX_ORDER_NR_PAGES,
-anti-fragmentation should group pages you can reclaim into those size of
-chunks. It might simplify the number of hacks you have to perform to
-limit where the kernel uses memory.
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ arch/x86_64/mm/numa.c |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff --git a/arch/x86_64/mm/numa.c b/arch/x86_64/mm/numa.c
+--- a/arch/x86_64/mm/numa.c
++++ b/arch/x86_64/mm/numa.c
+@@ -524,22 +524,28 @@ void __init numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn)
+ { 
+ 	unsigned long start_addr = start_pfn << PAGE_SHIFT;
+ 	unsigned long end_addr = end_pfn << PAGE_SHIFT;
++	int numa_fake = 0;
+ 	int i;
+ 
++#ifdef CONFIG_NUMA_EMU
++	/* Determine if we have a numa=fake command line */
++	if (cmdline != 0)
++		numa_fake = 1;
++#endif
++
+ #ifdef CONFIG_ACPI_NUMA
+-	if (!numa_off && !cmdline && !acpi_scan_nodes(start_addr, end_addr))
++	if (!numa_off && !numa_fake && !acpi_scan_nodes(start_addr, end_addr))
+  		return;
+ #endif
+ 
+ #ifdef CONFIG_K8_NUMA
+-	if (!numa_off && !k8_scan_nodes(start_addr, end_addr, cmdline != 0))
+-		if (cmdline == 0)
++	if (!numa_off && !k8_scan_nodes(start_addr, end_addr, numa_fake))
++		if (!numa_fake)
+ 			return;
+ #endif
+ 
+ #ifdef CONFIG_NUMA_EMU
+-	if (cmdline)
+-	{
++	if (numa_fake) {
+ 		numa_emu = !numa_emulation(start_pfn, end_pfn);
+ 		if (numa_emu)
+ 			return;
