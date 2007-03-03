@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751267AbXCCI4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751275AbXCCJCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751267AbXCCI4b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 03:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbXCCI4b
+	id S1751275AbXCCJCb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 04:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXCCJCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 03:56:31 -0500
-Received: from www.osadl.org ([213.239.205.134]:57330 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751267AbXCCI4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 03:56:30 -0500
-Subject: Re: [PATCH] dynticks: don't unlock spinlock twice
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andres Salomon <dilinger@debian.org>
-Cc: linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <45E8E2F8.1030102@debian.org>
-References: <45E8E2F8.1030102@debian.org>
-Content-Type: text/plain
-Date: Sat, 03 Mar 2007 10:02:20 +0100
-Message-Id: <1172912540.24738.108.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Mar 2007 04:02:30 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:32829 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbXCCJC3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 04:02:29 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 3 Mar 2007 01:02:24 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+In-Reply-To: <20070303071933.GA2241@elte.hu>
+Message-ID: <Pine.LNX.4.64.0703030026500.5290@alien.or.mcafeemobile.com>
+References: <20070302105713.GB15576@elte.hu> <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
+ <20070302193941.GB8450@elte.hu> <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
+ <20070302202931.GA5101@elte.hu> <Pine.LNX.4.64.0703021246380.2381@alien.or.mcafeemobile.com>
+ <1172871820.2999.22.camel@entropy> <Pine.LNX.4.64.0703021615140.2381@alien.or.mcafeemobile.com>
+ <1172885761.2999.32.camel@entropy> <Pine.LNX.4.64.0703021746060.2381@alien.or.mcafeemobile.com>
+ <20070303071933.GA2241@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-02 at 21:52 -0500, Andres Salomon wrote:
-> During boot with dynticks enabled, we would sometimes get:
+On Sat, 3 Mar 2007, Ingo Molnar wrote:
+
+> * Davide Libenzi <davidel@xmailserver.org> wrote:
 > 
-> [   35.271900] Switched to high resolution mode on CPU 0
-> [   35.304468] BUG: spinlock already unlocked on CPU#0, swapper/1
-> [   35.338099]  lock: c06428a0, .magic: dead4ead, .owner: <none>/-1,
-> .owner_cpu:
->  -1
-> [   35.373597]  [<c04d7cf0>] _raw_spin_unlock+0x28/0x67
-> [   35.406647]  [<c05ba279>] _spin_unlock+0x5/0x23
-> [   35.439369]  [<c04255f7>] tick_sched_timer+0x4e/0xa7
-> [   35.472388]  [<c04255a9>] tick_sched_timer+0x0/0xa7
-> [   35.504833]  [<c0422528>] hrtimer_run_queues+0x199/0x1ec
-> [   35.537617]  [<c0416b72>] run_timer_softirq+0x12/0x166
-> [   35.570019]  [<c04144d9>] __do_softirq+0x40/0x85
+> > [...] Status word and control bits should not be changed from 
+> > underneath userspace AFAIK. [...]
 > 
-> [   35.601542]  [<c0405494>] do_softirq+0x53/0xa9
-> ...
-> 
-> This appears to be caused by run_hrtimer_queue() (called by
-> hrtimer_run_queues) calling spin_unlock_irq(&cpu_base->lock) before
-> calling timer->function(timer).  The callback function
-> (tick_sched_timer) expects cpu_base->lock to be held when it is called,
-> and attempts to unlock it.  Since it doesn't seem like anything within
-> tick_sched_timer really needs to hold the lock (afaict), the attached
-> patch simply removes the lock handling from tick_sched_timer.  Things
-> called by tick_sched_timer may grab the base->lock, but that's fine (and
-> their responsibility).  Let me know if there's some reason why the lock
-> should be held, and I can rework this.
+> Note that the control bits do not just magically change during normal 
+> FPU use. It's a bit like sys_setsid()/iopl/etc., it makes little sense 
+> to change those per-thread anyway. This is a non-issue anyway - what is 
+> important is that the big bulk of 512 (or more) bytes of FPU state /are/ 
+> callee-saved (both on 32-bit and on 64-bit), hence there's no need to 
+> unlazy anything or to do expensive FPU state saves or other FPU juggling 
+> around threadlet (or even syslet) use.
 
-The BUG is somewhere else. the tick timer should never be seen in
-hrtimer_run_queues. The tick timer is operated solely from the timer
-interrupt. 
-
-The question is, how the tick timer gets enqueued in the softirq queue.
-Can you isolate the codepath, where this happens ?
-
-	tglx
+Well, the unlazy/sync happen in any case later when we switch (given 
+TS_USEDFPU set). We'd avoid a copy of it given the above conditions true. 
+Wouldn't it makes sense to carry over only the status word and the control 
+bits eventually?
+Also, if the caller saves the whole context, and if we're scheduled while 
+inside a system call (not totally unfrequent case), can't we implement a 
+smarter unlazy_fpu that avoids fxsave during schedule-out and frstor after 
+schedule-in (do not do stts on this condition, so the newly scheduled 
+task don't get a fault at all)? If the above conditions are true (no need 
+context-copy for new head in async_exec), this should be possible too.
 
 
+- Davide
 
-	
 
