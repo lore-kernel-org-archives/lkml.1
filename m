@@ -1,87 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751903AbXCCLDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbXCCLKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751903AbXCCLDt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 06:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXCCLDt
+	id S1751923AbXCCLKv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 06:10:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbXCCLKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 06:03:49 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:59875 "EHLO 2ka.mipt.ru"
+	Sat, 3 Mar 2007 06:10:51 -0500
+Received: from vsmtp2.tin.it ([212.216.176.222]:45602 "EHLO vsmtp2.tin.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751903AbXCCLDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 06:03:48 -0500
-Date: Sat, 3 Mar 2007 14:03:27 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ihar `Philips` Filipau <thephilips@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070303110327.GA11992@2ka.mipt.ru>
-References: <efa6f5910703021120ia0b8d18ne0c806eb2e73da4c@mail.gmail.com> <20070303103427.GC22557@2ka.mipt.ru> <efa6f5910703030258ne76cd8as8a3900fc22456a91@mail.gmail.com>
+	id S1751923AbXCCLKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 06:10:50 -0500
+Subject: Re: Problem with libata-pata, ATAPI DVD reader and a
+	"copy-protected" audio cd
+From: GhePeU <ghepeu@virgilio.it>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1172919624.23576.31.camel@KazeNoTani>
+References: <1172919624.23576.31.camel@KazeNoTani>
+Content-Type: text/plain
+Date: Sat, 03 Mar 2007 12:10:25 +0100
+Message-Id: <1172920248.23576.35.camel@KazeNoTani>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <efa6f5910703030258ne76cd8as8a3900fc22456a91@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sat, 03 Mar 2007 14:03:50 +0300 (MSK)
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 03, 2007 at 11:58:17AM +0100, Ihar `Philips` Filipau (thephilips@gmail.com) wrote:
-> On 3/3/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> >On Fri, Mar 02, 2007 at 08:20:26PM +0100, Ihar `Philips` Filipau 
-> >(thephilips@gmail.com) wrote:
-> >> I'm not well versed in modern kernel development discussions, and
-> >> since you have put the thing into the networked context anyway, can
-> >> you please ask on lkml why (if they want threadlets solely for AIO)
-> >> not to implement analogue of recv(*filedes*, b, l, MSG_DONTWAIT).
-> >> Developers already know the inteface, socket infrastructure is already
-> >> in kernel, etc. And it might do precisely what they want: access file
-> >> in disk cache - just like in case of socket it does access recv buffer
-> >> of socket. Why bother with implicit threads/waiting/etc - if all they
-> >> want some way to probe cache?
-> >
-> >Threadlets can work with any functionas a base - if it would be
-> >recv-like it will limit possible case for parallel programming, so you
-> >can code anything in threadlets - it is not only about IO.
-> >
+Il giorno sab, 03/03/2007 alle 12.00 +0100, GhePeU ha scritto:
+> Hello,
 > 
-> Ingo defined them as "plain function calls as long as they do not block".
+> when kernel 2.6.20 was released I switched to the new libata-pata
+> infrastructure for my EIDE hard disk and ATAPI dvd-reader. 
 > 
-> But when/what function could block?
+> ...
+>
+> Thank you in advance
 > 
-> (1) File descriptors. Read. If data are in cache it wouldn't block.
-> Otherwise it would. Write. If there is space in cache it wouldn't
-> block. Otherwise it would.
+> Giacomo
 > 
-> (2) Network sockets. Recv. If data are in buffer they wouldn't block.
-> Otherwise they would. Send. If there is space in send buffer it
-> wouldn't block. Otherwise it would.
+> PS. I'm not subscribed to the list. I'm going to regularly check the
+> archives in the next days to see if there are responses, CC me if you
+> can. Thank you.
 > 
-> (3) Pipes, fifos & unix sockets. Unfortunately gain nothing since the
-> reliable local communication used mostly for control information
-> passing. If you have to block on such socket it most likely important
-> information anyway. (e.g. X server communication or sql query to SQL
-> server). (Or even less important here case of shell pipes.) And most
-> users here are all single threaded and I/O bound: they would gain
-> nothing from multi-threading - only PITA of added locking.
-> 
-> What I'm trying to get to: keep things simple. The proposed
-> optimization by Ingo does nothing else but allowing AIO to probe file
-> cache - if data there to go with fast path. So why not to implement
-> what the people want - probing of cache? Because it sounds bad? But
-> they are in fact proposing precisely that just masked with "fast
-> threads".
 
-There can be other parts than just plain recv/read syscalls - you can
-create a logical processing entity and if it will block (as a whole, no
-matter where), the whole processing will continue as a new thread.
-And having different syscall to warm cache can end up in cache flush in
-between warming and processing itself.
- 
-> -- 
-> Don't walk behind me, I may not lead.
-> Don't walk in front of me, I may not follow.
-> Just walk beside me and be my friend.
->    -- Albert Camus (attributed to)
+I forgot the lspci -vv output:
 
--- 
-	Evgeniy Polyakov
+00:06.0 IDE interface: nVidia Corporation CK804 IDE (rev f2) (prog-if 8a
+[Master SecP PriP])
+        Subsystem: Unknown device f47b:1c28
+        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0 (750ns min, 250ns max)
+        Region 0: [virtual] Memory at 000001f0 (32-bit,
+non-prefetchable) [disabled] [size=8]
+        Region 1: [virtual] Memory at 000003f0 (type 3,
+non-prefetchable) [disabled] [size=1]
+        Region 2: [virtual] Memory at 00000170 (32-bit,
+non-prefetchable) [disabled] [size=8]
+        Region 3: [virtual] Memory at 00000370 (type 3,
+non-prefetchable) [disabled] [size=1]
+        Region 4: I/O ports at e800 [size=16]
+        Capabilities: [44] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:07.0 IDE interface: nVidia Corporation CK804 Serial ATA Controller
+(rev f3) (prog-if 85 [Master SecO PriO])
+        Subsystem: ABIT Computer Corp. Unknown device 1c28
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0 (750ns min, 250ns max)
+        Interrupt: pin A routed to IRQ 16
+        Region 0: I/O ports at 09f0 [size=8]
+        Region 1: I/O ports at 0bf0 [size=4]
+        Region 2: I/O ports at 0970 [size=8]
+        Region 3: I/O ports at 0b70 [size=4]
+        Region 4: I/O ports at d400 [size=16]
+        Region 5: Memory at fe02c000 (32-bit, non-prefetchable)
+[size=4K]
+        Capabilities: [44] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:08.0 IDE interface: nVidia Corporation CK804 Serial ATA Controller
+(rev f3) (prog-if 85 [Master SecO PriO])
+        Subsystem: ABIT Computer Corp. Unknown device 1c28
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0 (750ns min, 250ns max)
+        Interrupt: pin A routed to IRQ 17
+        Region 0: I/O ports at 09e0 [size=8]
+        Region 1: I/O ports at 0be0 [size=4]
+        Region 2: I/O ports at 0960 [size=8]
+        Region 3: I/O ports at 0b60 [size=4]
+        Region 4: I/O ports at c000 [size=16]
+        Region 5: Memory at fe02b000 (32-bit, non-prefetchable)
+[size=4K]
+        Capabilities: [44] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+
