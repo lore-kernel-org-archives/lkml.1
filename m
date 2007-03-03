@@ -1,270 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750962AbXCCLAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751903AbXCCLDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750962AbXCCLAh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 06:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXCCLAh
+	id S1751903AbXCCLDt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 06:03:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXCCLDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 06:00:37 -0500
-Received: from vsmtp14.tin.it ([212.216.176.118]:58309 "EHLO vsmtp14.tin.it"
+	Sat, 3 Mar 2007 06:03:49 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:59875 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbXCCLAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 06:00:36 -0500
-Subject: Problem with libata-pata, ATAPI DVD reader and a "copy-protected"
-	audio cd
-From: GhePeU <ghepeu@virgilio.it>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary="=-arOHUgStt+4x9mvIeQx/"
-Date: Sat, 03 Mar 2007 12:00:01 +0100
-Message-Id: <1172919624.23576.31.camel@KazeNoTani>
+	id S1751903AbXCCLDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 06:03:48 -0500
+Date: Sat, 3 Mar 2007 14:03:27 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ihar `Philips` Filipau <thephilips@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070303110327.GA11992@2ka.mipt.ru>
+References: <efa6f5910703021120ia0b8d18ne0c806eb2e73da4c@mail.gmail.com> <20070303103427.GC22557@2ka.mipt.ru> <efa6f5910703030258ne76cd8as8a3900fc22456a91@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <efa6f5910703030258ne76cd8as8a3900fc22456a91@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sat, 03 Mar 2007 14:03:50 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 03, 2007 at 11:58:17AM +0100, Ihar `Philips` Filipau (thephilips@gmail.com) wrote:
+> On 3/3/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> >On Fri, Mar 02, 2007 at 08:20:26PM +0100, Ihar `Philips` Filipau 
+> >(thephilips@gmail.com) wrote:
+> >> I'm not well versed in modern kernel development discussions, and
+> >> since you have put the thing into the networked context anyway, can
+> >> you please ask on lkml why (if they want threadlets solely for AIO)
+> >> not to implement analogue of recv(*filedes*, b, l, MSG_DONTWAIT).
+> >> Developers already know the inteface, socket infrastructure is already
+> >> in kernel, etc. And it might do precisely what they want: access file
+> >> in disk cache - just like in case of socket it does access recv buffer
+> >> of socket. Why bother with implicit threads/waiting/etc - if all they
+> >> want some way to probe cache?
+> >
+> >Threadlets can work with any functionas a base - if it would be
+> >recv-like it will limit possible case for parallel programming, so you
+> >can code anything in threadlets - it is not only about IO.
+> >
+> 
+> Ingo defined them as "plain function calls as long as they do not block".
+> 
+> But when/what function could block?
+> 
+> (1) File descriptors. Read. If data are in cache it wouldn't block.
+> Otherwise it would. Write. If there is space in cache it wouldn't
+> block. Otherwise it would.
+> 
+> (2) Network sockets. Recv. If data are in buffer they wouldn't block.
+> Otherwise they would. Send. If there is space in send buffer it
+> wouldn't block. Otherwise it would.
+> 
+> (3) Pipes, fifos & unix sockets. Unfortunately gain nothing since the
+> reliable local communication used mostly for control information
+> passing. If you have to block on such socket it most likely important
+> information anyway. (e.g. X server communication or sql query to SQL
+> server). (Or even less important here case of shell pipes.) And most
+> users here are all single threaded and I/O bound: they would gain
+> nothing from multi-threading - only PITA of added locking.
+> 
+> What I'm trying to get to: keep things simple. The proposed
+> optimization by Ingo does nothing else but allowing AIO to probe file
+> cache - if data there to go with fast path. So why not to implement
+> what the people want - probing of cache? Because it sounds bad? But
+> they are in fact proposing precisely that just masked with "fast
+> threads".
 
---=-arOHUgStt+4x9mvIeQx/
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+There can be other parts than just plain recv/read syscalls - you can
+create a logical processing entity and if it will block (as a whole, no
+matter where), the whole processing will continue as a new thread.
+And having different syscall to warm cache can end up in cache flush in
+between warming and processing itself.
+ 
+> -- 
+> Don't walk behind me, I may not lead.
+> Don't walk in front of me, I may not follow.
+> Just walk beside me and be my friend.
+>    -- Albert Camus (attributed to)
 
-Hello,
-
-when kernel 2.6.20 was released I switched to the new libata-pata
-infrastructure for my EIDE hard disk and ATAPI dvd-reader. 
-
-Until yesterday I didn't have any problem, then I tried to play an audio
-CD and my media player hanged. Looking to the logs, I found that the DVD
-reader (a Toshiba SD-M1612) was having problems reading the disk and
-that the kernel dropped its speed from UDMA/33 to PIO3 before I could
-eject the CD. Attached to this mail are the relevant lines of the system
-log.
-
-After a careful scrutiny of the box, I noticed that the disk was one of
-those "Copy protected" non-standard CD. With the old ide driver I could
-play and rip the CD without problems, so from a user point of view this
-is a regression.
-
-Besides, with the reduced speed the DVD reader was almost unusable, and
-since the new libata layer doesn't support forcing the driver speed with
-hdparm, I had to reboot the machine.
-
-So my questions are:
-
-1) it is possible to implement a command to force re-detection of the
-better transfer mode available? I suppose that by unloading and
-reloading the module, the transfer mode should become again the better
-available, but when the driver is compiled in-kernel, this is not
-possible.
-
-2) is there a way to access copy protected audio CD again? the only
-change here was ide -> libata, so there has to be some difference in the
-error handling of the two layer that caused this pseudo-regression.
-
-Thank you in advance
-
-Giacomo
-
-PS. I'm not subscribed to the list. I'm going to regularly check the
-archives in the next days to see if there are responses, CC me if you
-can. Thank you.
-
-
-
---=-arOHUgStt+4x9mvIeQx/
-Content-Disposition: attachment; filename=DMA-drop.txt
-Content-Type: text/plain; name=DMA-drop.txt; charset=utf8
-Content-Transfer-Encoding: 7bit
-
-SCSI subsystem initialized
-libata version 2.00 loaded.
-sata_nv 0000:00:07.0: version 3.2
-sata_nv 0000:00:07.0: Using ADMA mode
-ata1: SATA max UDMA/133 cmd 0xF0804480 ctl 0xF08044A0 bmdma 0xD400 irq 16
-ata2: SATA max UDMA/133 cmd 0xF0804580 ctl 0xF08045A0 bmdma 0xD408 irq 16
-scsi0 : sata_nv
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.00: ATA-7, max UDMA/133, 312581808 sectors: LBA48 NCQ (depth 31/32)
-ata1.00: ata1: dev 0 multi count 16
-ata1.00: configured for UDMA/133
-scsi 0:0:0:0: Direct-Access     ATA      WDC WD1600JS-22N 10.0 PQ: 0 ANSI: 5
-ata1: bounce limit 0xFFFFFFFFFFFFFFFF, segment boundary 0xFFFFFFFF, hw segs 61
-SCSI device sda: 312581808 512-byte hdwr sectors (160042 MB)
-sda: Write Protect is off
-sda: Mode Sense: 00 3a 00 00
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-SCSI device sda: 312581808 512-byte hdwr sectors (160042 MB)
-sda: Write Protect is off
-sda: Mode Sense: 00 3a 00 00
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sda: sda1 sda2 < sda5 sda6 sda7 sda8 sda9 >
-sd 0:0:0:0: Attached scsi disk sda
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-sata_nv 0000:00:08.0: Using ADMA mode
-ata3: SATA max UDMA/133 cmd 0xF0806480 ctl 0xF08064A0 bmdma 0xC000 irq 17
-ata4: SATA max UDMA/133 cmd 0xF0806580 ctl 0xF08065A0 bmdma 0xC008 irq 17
-scsi2 : sata_nv
-ata3: SATA link down (SStatus 0 SControl 300)
-scsi3 : sata_nv
-ata4: SATA link down (SStatus 0 SControl 300)
-pata_amd 0000:00:06.0: version 0.2.7
-ata5: PATA max UDMA/133 cmd 0x1F0 ctl 0x3F6 bmdma 0xE800 irq 14
-ata6: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xE808 irq 15
-scsi4 : pata_amd
-ata5.00: ATA-6, max UDMA/100, 156301488 sectors: LBA 
-ata5.00: ata5: dev 0 multi count 16
-ata5.01: ATA-5, max UDMA/133, 78177792 sectors: LBA 
-ata5.01: ata5: dev 1 multi count 16
-ata5.00: configured for UDMA/100
-ata5.01: configured for UDMA/133
-scsi5 : pata_amd
-ata6.00: ATAPI, max UDMA/66
-ata6.01: ATAPI, max UDMA/33
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/33
-scsi 4:0:0:0: Direct-Access     ATA      WDC WD800JB-00FM 13.0 PQ: 0 ANSI: 5
-SCSI device sdb: 156301488 512-byte hdwr sectors (80026 MB)
-sdb: Write Protect is off
-sdb: Mode Sense: 00 3a 00 00
-SCSI device sdb: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-SCSI device sdb: 156301488 512-byte hdwr sectors (80026 MB)
-sdb: Write Protect is off
-sdb: Mode Sense: 00 3a 00 00
-SCSI device sdb: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sdb: sdb1 sdb2 < sdb5 sdb6 sdb7 sdb8 >
-sd 4:0:0:0: Attached scsi disk sdb
-sd 4:0:0:0: Attached scsi generic sg1 type 0
-scsi 4:0:1:0: Direct-Access     ATA      MAXTOR 6L040J2   A93. PQ: 0 ANSI: 5
-SCSI device sdc: 78177792 512-byte hdwr sectors (40027 MB)
-sdc: Write Protect is off
-sdc: Mode Sense: 00 3a 00 00
-SCSI device sdc: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-SCSI device sdc: 78177792 512-byte hdwr sectors (40027 MB)
-sdc: Write Protect is off
-sdc: Mode Sense: 00 3a 00 00
-SCSI device sdc: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sdc: sdc1
-sd 4:0:1:0: Attached scsi disk sdc
-sd 4:0:1:0: Attached scsi generic sg2 type 0
-scsi 5:0:0:0: CD-ROM            PIONEER  DVD-RW  DVR-111D 1.23 PQ: 0 ANSI: 5
-sr0: scsi3-mmc drive: 40x/40x writer cd/rw xa/form2 cdda tray
-Uniform CD-ROM driver Revision: 3.20
-sr 5:0:0:0: Attached scsi CD-ROM sr0
-sr 5:0:0:0: Attached scsi generic sg3 type 5
-scsi 5:0:1:0: CD-ROM            TOSHIBA  DVD-ROM SD-M1612 1806 PQ: 0 ANSI: 5
-sr1: scsi3-mmc drive: 40x/48x cd/rw xa/form2 cdda tray
-sr 5:0:1:0: Attached scsi CD-ROM sr1
-sr 5:0:1:0: Attached scsi generic sg4 type 5
-
-...
-
-ata6.01: qc timeout (cmd 0xa0)
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: (BMDMA stat 0x65)
-ata6.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0 cdb 0x28 data 16384 in
-res 51/51:03:00:00:00/00:00:00:00:00/b0 Emask 0x5 (timeout)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/33
-ata6: EH complete
-ata6.01: 8096 bytes trailing data
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: (BMDMA stat 0x65)
-ata6.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0 cdb 0x28 data 16384 in
-res 51/51:03:00:00:00/00:00:00:00:00/b0 Emask 0x3 (HSM violation)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/33
-ata6: EH complete
-ata6.01: qc timeout (cmd 0xa0)
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: (BMDMA stat 0x65)
-ata6.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0 cdb 0x28 data 16384 in
-res 51/51:03:00:00:00/00:00:00:00:00/b0 Emask 0x5 (timeout)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/33
-ata6: EH complete
-ata6.01: qc timeout (cmd 0xa0)
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: (BMDMA stat 0x65)
-ata6.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0 cdb 0x28 data 16384 in
-res 51/51:03:00:00:00/00:00:00:00:00/b0 Emask 0x5 (timeout)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/33
-sr 5:0:1:0: SCSI error: return code = 0x08000002
-sr1: Current [descriptor]: sense key=0x3
-ASC=0x13 ASCQ=0x0
-Descriptor sense data with sense descriptors (in hex):
-72 03 13 00 00 00 00 0e 09 0c 00 51 00 03 00 00 
-00 00 00 00 b0 51 
-end_request: I/O error, dev sr1, sector 0
-Buffer I/O error on device sr1, logical block 0
-Buffer I/O error on device sr1, logical block 1
-Buffer I/O error on device sr1, logical block 2
-Buffer I/O error on device sr1, logical block 3
-ata6: EH complete
-ata6.01: 8096 bytes trailing data
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: (BMDMA stat 0x65)
-ata6.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0 cdb 0x28 data 4096 in
-res 51/51:03:00:00:00/00:00:00:00:00/b0 Emask 0x3 (HSM violation)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/33
-ata6: EH complete
-ata6.01: qc timeout (cmd 0xa0)
-ata6.01: limiting speed to UDMA/25
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: (BMDMA stat 0x65)
-ata6.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0 cdb 0x28 data 4096 in
-res 51/51:03:00:00:00/00:00:00:00:00/b0 Emask 0x5 (timeout)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/25
-ata6: EH complete
-ata6.01: qc timeout (cmd 0xa0)
-ata6.01: limiting speed to UDMA/16
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: (BMDMA stat 0x65)
-ata6.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0 cdb 0x28 data 4096 in
-res 51/51:03:00:00:00/00:00:00:00:00/b0 Emask 0x5 (timeout)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/16
-ata6: EH complete
-ata6.01: 8096 bytes trailing data
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: (BMDMA stat 0x65)
-ata6.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0 cdb 0x28 data 4096 in
-res 51/51:03:00:00:00/00:00:00:00:00/b0 Emask 0x3 (HSM violation)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for UDMA/16
-sr 5:0:1:0: SCSI error: return code = 0x08000002
-sr1: Current [descriptor]: sense key=0x3
-ASC=0x13 ASCQ=0x0
-Descriptor sense data with sense descriptors (in hex):
-72 03 13 00 00 00 00 0e 09 0c 00 51 00 03 00 00 
-00 00 00 00 b0 51 
-end_request: I/O error, dev sr1, sector 0
-Buffer I/O error on device sr1, logical block 0
-ata6: EH complete
-ata6.01: limiting speed to PIO4
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: cmd a0/00:00:00:00:20/00:00:00:00:00/b0 tag 0 cdb 0x1b data 0 
-res 40/00:03:00:00:20/00:00:00:00:00/b0 Emask 0x4 (timeout)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for PIO4
-ata6: EH complete
-ata6.01: limiting speed to PIO3
-ata6.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata6.01: cmd a0/00:00:00:00:20/00:00:00:00:00/b0 tag 0 cdb 0x1b data 0 
-res 40/00:03:00:00:20/00:00:00:00:00/b0 Emask 0x4 (timeout)
-ata6: soft resetting port
-ata6.00: configured for UDMA/66
-ata6.01: configured for PIO3
-ata6: EH complete
-
---=-arOHUgStt+4x9mvIeQx/--
-
+-- 
+	Evgeniy Polyakov
