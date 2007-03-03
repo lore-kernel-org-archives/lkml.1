@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992761AbXCBXmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992767AbXCBXpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992761AbXCBXmk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 18:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992762AbXCBXmk
+	id S2992767AbXCBXpa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 18:45:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992765AbXCBXp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 18:42:40 -0500
-Received: from wr-out-0506.google.com ([64.233.184.232]:28138 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992761AbXCBXmj (ORCPT
+	Fri, 2 Mar 2007 18:45:29 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46138 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992767AbXCBXp3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 18:42:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OtsTmCw4zY+8/ym/+0ausUbzHwmm6lsIJg78rnRuyLtH4qAi8Rnsq7CGIDZnPWKEVAMgR0W/bXb1fcR+55pQnK9cBnk4WEuls+jnHiUf8L8vh6Rpna7Gi6F9i4kFo2oxSGOvtR5SxRm3d4gCopQlSQ4RUVMMi8Iohbi/t206Hhk=
-Message-ID: <6bffcb0e0703021542k4f882531r21807c7efdbd0ebc@mail.gmail.com>
-Date: Sat, 3 Mar 2007 00:42:33 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc2-mm1
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Fri, 2 Mar 2007 18:45:29 -0500
+Date: Sat, 3 Mar 2007 00:48:37 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] char/epca.c remove unused function (was: Re:
+ 2.6.21-rc2-mm1)
+Message-ID: <20070303004837.016ecdb9@lxorguk.ukuu.org.uk>
+In-Reply-To: <45E8ADB3.1010308@googlemail.com>
 References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+	<45E8ADB3.1010308@googlemail.com>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> Temporarily at
->
->   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
->
+On Sat, 03 Mar 2007 00:05:23 +0100
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-I have noticed some strange system behavior. When i try to build a
-kernel (medium load) - X, keyboard, mouse and sound hangs.
+> Andrew Morton napisał(a):
+> > Temporarily at
+> > 
+> >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+> > 
+> 
+> Please consider this patch for inclusion in >= 2.6.22.
+> 
+> "drivers/char/epca.c:2741: warning: 'get_termio' defined but not used"
 
-I can ping machine and I can use magic SysRq key, but that's all.
-
-2.6.20-mm2 was fine, 2.6.21-rc2 works well (over 800 patches since
-2.6.20-mm2 - great...)
-
-NIL (Nothing Interesting in Logs)
-
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+Acked-by: Alan Cox <alan@redhat.com>
