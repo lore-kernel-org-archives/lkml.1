@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751327AbXCCKVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbXCCKbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751327AbXCCKVK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 05:21:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbXCCKVJ
+	id S1751564AbXCCKbQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 05:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbXCCKbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 05:21:09 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37786 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751328AbXCCKVG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 05:21:06 -0500
-Date: Sat, 3 Mar 2007 02:21:00 -0800
-From: Paul Jackson <pj@sgi.com>
-To: vatsa@in.ibm.com
-Cc: menage@google.com, ebiederm@xmission.com, sam@vilain.net,
-       akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       containers@lists.osdl.org, winget@google.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] resource control file system - aka containers on
- top of nsproxy!
-Message-Id: <20070303022100.8cee6997.pj@sgi.com>
-In-Reply-To: <20070303093655.GA1028@in.ibm.com>
-References: <20070301133543.GK15509@in.ibm.com>
-	<20070301113900.a7dace47.pj@sgi.com>
-	<20070303093655.GA1028@in.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Sat, 3 Mar 2007 05:31:16 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:34398 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751495AbXCCKbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 05:31:15 -0500
+Date: Sat, 3 Mar 2007 13:27:45 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070303102744.GB22557@2ka.mipt.ru>
+References: <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz> <20070301094723.GJ7217@2ka.mipt.ru> <20070301101102.GE20171@elf.ucw.cz> <20070301111815.GB15709@2ka.mipt.ru> <20070302102714.GB27687@elf.ucw.cz> <20070302103713.GB28444@2ka.mipt.ru> <20070302105618.GA18377@elte.hu> <20070302110820.GA25908@2ka.mipt.ru> <Pine.LNX.4.64.0703020921430.1977@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703020921430.1977@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sat, 03 Mar 2007 13:28:26 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Regarding semantics, can you be more specific?
-
-Unfortunately not - sorry.
-
-I've been off in other areas, and not found the time
-to read through this current PATCH or think about it
-carefully enough to be really useful.
-
-Your reply seemed reasonable enough.
-
-> It should have the same perf overhead as the original container patches
-> (basically a double dereference - task->containers/nsproxy->cpuset -
-> required to get to the cpuset from a task). 
-
-There is just one spot that this might matter to cpusets.
-
-Except for one hook, cpusets uses the mems_allowed and cpus_allowed
-masks in the task struct to avoid having to look at the cpuset on hot
-code paths.
-
-There is one RCU guarded reference per memory allocation to
-	current->cpuset->mems_generation
-in the call to cpuset_update_task_memory_state(), for tasks that are in
-some cpuset -other- than the default top cpuset, on systems that have
-explicitly created additional (other than the top cpuset) cpusets after
-boot.
-
-If that RCU guarded reference turned into taking a global lock, or
-pulling in a cache line that was frequently off dirty in some other
-node, that would be unfortunate.
-
-But that's the key hook so far as cpuset performance impact is
-concerned.
-
-Perhaps you could summarize what becomes of this hook, in this
-brave new world of rcfs ...
+On Fri, Mar 02, 2007 at 09:28:10AM -0800, Davide Libenzi (davidel@xmailserver.org) wrote:
+> On Fri, 2 Mar 2007, Evgeniy Polyakov wrote:
+> 
+> > do we really want to have per process signalfs, timerfs and so on - each 
+> > simple structure must be bound to a file, which becomes too cost.
+> 
+> I may be old school, but if you ask me, and if you *really* want those 
+> events, yes. Reason? Unix's everything-is-a-file rule, and being able to 
+> use them with *existing* POSIX poll/select. Remember, not every app 
+> requires huge scalability efforts, so working with simpler and familiar 
+> APIs is always welcome.
+> The *only* thing that was not practical to have as fd, was block requests. 
+> But maybe threadlets/syslets will handle those just fine, and close the gap.
+ 
+That means that we bind very small object like timer or signal to the
+whoe file structure - yes, as I stated - it is doable, but do we really
+have to create a file each time create_timer() or signal() is called?
+Signals as a filesystem are limited in that regard that we need to
+create additional structures to have signal number<->private data
+relations.
+I designed kevent to be as small as possible, so I removed file binding
+idea first. I do not say it is wrong or epoll (and threadlets) are broken 
+(fsck, I hope people do understand that), but as is it can not handle
+that scenario, so it must be extended and/or a lot of other stuff
+written to be compatible with epoll design. Kevent has different design
+(which allows to work with old one though - there is a patch to
+implement epoll over kevent).
+ 
+> - Davide
+> 
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+	Evgeniy Polyakov
