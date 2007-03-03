@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXCCFe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbXCCFej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbXCCFe0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 00:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXCCFeZ
+	id S932733AbXCCFej (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 00:34:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXCCFei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 00:34:25 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:39370 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932403AbXCCFeY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 00:34:24 -0500
-Subject: Re: [linux-pm] [PATCH 2/2 -stable] libata: add missing CONFIG_PM
-	in LLDs
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Tejun Heo <htejun@gmail.com>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-ide@vger.kernel.org,
-       jgarzik@pobox.com, linux-pm@lists.osdl.org, stable@kernel.org,
-       Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <45E8E983.5030109@gmail.com>
-References: <20061122172841.0b90f042@localhost.localdomain>
-	 <Pine.LNX.4.60.0702262150460.5079@poirot.grange>
-	 <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
-	 <Pine.LNX.4.60.0703012305030.7351@poirot.grange>
-	 <20070302084530.GN20322@htj.dyndns.org>
-	 <20070302084649.GO20322@htj.dyndns.org>
-	 <1172881095.18544.108.camel@nigel.suspend2.net>
-	 <45E8E983.5030109@gmail.com>
-Content-Type: text/plain
-Date: Sat, 03 Mar 2007 16:34:25 +1100
-Message-Id: <1172900065.18544.119.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Mar 2007 00:34:38 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45462 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932733AbXCCFed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 00:34:33 -0500
+Date: Fri, 2 Mar 2007 21:33:42 -0800
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@osdl.org>, torvalds@osdl.org, stable@kernel.org
+Subject: Linux 2.6.19.7
+Message-ID: <20070303053342.GA28614@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+We (the -stable team) are announcing the release of the 2.6.19.7 kernel.
+It turns out that I forgot some patches that had already been submitted
+to me, hence the new release.
 
-On Sat, 2007-03-03 at 12:20 +0900, Tejun Heo wrote:
-> Hello, Nigel.
-> 
-> Nigel Cunningham wrote:
-> >> Index: work1/drivers/ata/ahci.c
-> >> ===================================================================
-> >> --- work1.orig/drivers/ata/ahci.c
-> >> +++ work1/drivers/ata/ahci.c
-> >> @@ -225,10 +225,12 @@ static void ahci_thaw(struct ata_port *a
-> >>  static void ahci_error_handler(struct ata_port *ap);
-> >>  static void ahci_vt8251_error_handler(struct ata_port *ap);
-> >>  static void ahci_post_internal_cmd(struct ata_queued_cmd *qc);
-> >> +#ifdef CONFIG_PM
-> >>  static int ahci_port_suspend(struct ata_port *ap, pm_message_t mesg);
-> >>  static int ahci_port_resume(struct ata_port *ap);
-> >>  static int ahci_pci_device_suspend(struct pci_dev *pdev, pm_message_t mesg);
-> >>  static int ahci_pci_device_resume(struct pci_dev *pdev);
-> > 
-> > Wouldn't it be simpler to add
-> > 
-> > #else
-> > #define ahci_port_suspend(port, message) (NULL)
-> > 
-> > etc (or something similar)?
-> 
-> ahci_port_suspend() is used to fill ata_port_ops vector, so it needs to
-> be a function.  If you're talking about defining NULL function, yeah,
-> that will remove half of CONFIG_PMs but would require dummy definitions
-> for all functions.  I think both are ugly.  :-)
+It contains some DVB bugfixes, so anyone who uses that subsystem is
+recommended to upgrade, otherwise 2.6.19.6 is fine.
 
-Yeah, I didn't look really carefully; an empty static function would
-have been what I'd have written if I'd paid more attention.
+Barring anything major, there will not be any more 2.6.19 releases.  If
+you disagree with this, please let the stable team know about the
+patches that you feel must be in a new release.  We need to move on to
+flushing out the very large backlog of 2.6.20-stable patches.
 
-> I'm working on a linker trick.  Please take a look at the following thread.
-> 
->   http://thread.gmane.org/gmane.linux.ide/16475
+The diffstat and short summary of the fixes are below.
 
-Not familiar with fancy things like that, so I'll just pipe down and
-leave you to it :).
+I'll also be replying to this message with a copy of the patch between
+2.6.19.6 and 2.6.19.7, as it is small enough to do so.
 
-Regards,
+The updated 2.6.19.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.19.y.git
+and can be browsed at the normal kernel.org git web browser:
+        www.kernel.org/git/
 
-Nigel
+thanks,
+
+greg k-h
+--------
+
+ Makefile                            |    2 +-
+ drivers/media/dvb/dvb-core/dvbdev.c |   13 +++++++++++++
+ drivers/media/dvb/dvb-usb/cxusb.c   |    4 ++--
+ drivers/media/dvb/dvb-usb/digitv.c  |    2 ++
+ 4 files changed, 18 insertions(+), 3 deletions(-)
+
+Summary of changes from v2.6.19.6 to v2.6.19.7
+==============================================
+
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.19.7
+
+Jin-Bong lee (1):
+      DVB: cxusb: fix firmware patch for big endian systems
+
+Marcel Siegert (1):
+      dvbdev: fix illegal re-usage of fileoperations struct
+
+Michael Krufky (1):
+      DVB: digitv: open nxt6000 i2c_gate for TDED4 tuner handling
 
