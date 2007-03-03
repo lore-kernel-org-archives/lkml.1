@@ -1,53 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030347AbXCCRTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030691AbXCCRbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030347AbXCCRTs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 12:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030344AbXCCRTs
+	id S1030691AbXCCRbz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 12:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030693AbXCCRbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 12:19:48 -0500
-Received: from dvhart.com ([64.146.134.43]:54757 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030347AbXCCRTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 12:19:47 -0500
-Message-ID: <45E9AD74.4060704@mbligh.org>
-Date: Sat, 03 Mar 2007 09:16:36 -0800
-From: "Martin J. Bligh" <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Sat, 3 Mar 2007 12:31:55 -0500
+Received: from colgate.yandex.ru ([213.180.200.34]:46841 "EHLO
+	colgate.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030691AbXCCRby (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 12:31:54 -0500
+Date: Sat, 3 Mar 2007 20:31:37 +0300 (MSK)
+From: "Mockern" <Mockern@yandex.ru>
+Message-Id: <45E9B0F9.000001.20831@colgate.yandex.ru>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@engr.sgi.com>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Bill Irwin <bill.irwin@oracle.com>,
-       Mel Gorman <mel@skynet.ie>, npiggin@suse.de, mingo@elte.hu,
-       jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-References: <20070302093501.34c6ef2a.akpm@linux-foundation.org> <45E8624E.2080001@redhat.com> <20070302100619.cec06d6a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com> <45E86BA0.50508@redhat.com> <20070302211207.GJ10643@holomorphy.com> <45E894D7.2040309@redhat.com> <20070302135243.ada51084.akpm@linux-foundation.org> <45E89F1E.8020803@redhat.com> <20070302142256.0127f5ac.akpm@linux-foundation.org> <20070303003319.GB23573@holomorphy.com> <Pine.LNX.4.64.0703021913030.31787@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0703021913030.31787@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Yamail [ http://yandex.ru ]
+To: linux-kernel@vger.kernel.org
+Subject: Question: work_queue or kthreads
+X-MsgDayCount: 5
+X-BornDate: 1134853200
+Reply-To: Mockern@yandex.ru
+X-Source-Ip: 84.185.232.70
+Content-Type: text/plain;
+  charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Fri, 2 Mar 2007, William Lee Irwin III wrote:
-> 
->> On Fri, Mar 02, 2007 at 02:22:56PM -0800, Andrew Morton wrote:
->>> Opterons seem to be particularly prone to lock starvation where a cacheline
->>> gets captured in a single package for ever.
->> AIUI that phenomenon is universal to NUMA. Maybe it's time we
->> reexamined our locking algorithms in the light of fairness
->> considerations.
-> 
-> This is a phenomenon that is usually addressed at the cache logic level. 
-> Its a hardware maturation issue. A certain package should not be allowed
-> to hold onto a cacheline forever and other packages must have a mininum 
-> time when they can operate on that cacheline.
+hi,
 
-That'd be nice. Unfortunately we're stuck in the real world with
-real hardware, and the situation is likely to remain thus for
-quite some time ...
+I need to use something like the work_queue to separate my ISR and long time sending data function in my driver. I noticed, that after using work_queue my driver became slow than it was before. Should I use kthreads to make it faster or something else? I can't use tasklet since tasklet can't sleep.
 
-M.
+thank you
