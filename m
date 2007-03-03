@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXCCVEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932641AbXCCVFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932478AbXCCVEQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 16:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932438AbXCCVEQ
+	id S932641AbXCCVFX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 16:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXCCVFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 16:04:16 -0500
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:48107 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932395AbXCCVEP (ORCPT
+	Sat, 3 Mar 2007 16:05:22 -0500
+Received: from email.authentidate.de ([213.61.157.66]:58752 "EHLO
+	email.authentidate.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932641AbXCCVFW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 16:04:15 -0500
-Message-ID: <45E9E2BD.9070106@lwfinger.net>
-Date: Sat, 03 Mar 2007 15:03:57 -0600
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
-MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: Sam Ravnborg <sam@ravnborg.org>, linux-wireless@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] bcm43xx: do not rebuild when kernel version changes
-References: <20070303190328.GA30463@uranus.ravnborg.org> <200703032121.43136.mb@bu3sch.de>
-In-Reply-To: <200703032121.43136.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Mar 2007 16:05:22 -0500
+Subject: Re: usbserial not working/oops on removal
+From: Andreas Laumann <al@authentidate.de>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Kevin Fenzi <kevin@scrye.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703032143.34664.oliver@neukum.org>
+References: <20070302193715.568098a6@ningauble.scrye.com>
+	 <200703031138.20582.oliver@neukum.org>
+	 <1172928441.3710.8.camel@justine.inexnet.de>
+	 <200703032143.34664.oliver@neukum.org>
+Content-Type: text/plain; charset=UTF-8
+Organization: AuthentiDate International AG
+Date: Sat, 03 Mar 2007 22:05:16 +0100
+Message-Id: <1172955916.5393.16.camel@justine.inexnet.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch wrote:
-> On Saturday 03 March 2007 20:03, Sam Ravnborg wrote:
->> Replacing use of UTS_RELEASE with utsname()->release
->> avoids that this module is rebuild each
->> time the kernel version changes.
->>
->> Compile tested only.
+Am Samstag, den 03.03.2007, 21:43 +0100 schrieb Oliver Neukum:
+> Am Samstag, 3. März 2007 14:27 schrieb Andreas Laumann:
+> > Unfortunately your fix  does not work.  The first one seems registered
+> > correctly, but after that it fails again for the next one.  
 > 
-> I vote to get rid of the whole bcm43xx_ethtool.c file, as it's useless.
-> It will vanish with the advent of d80211, anyway.
-> Larry?
+> Unfortunately the last patch I sent you introduced a race. Could you test
+> this alternative patch?
+> 
+> 	Regards
+> 		Oliver
+> 
+> --- a/drivers/usb/serial/usb-serial.c	2007-03-03 16:28:22.000000000 +0100
+> +++ b/drivers/usb/serial/usb-serial.c	2007-03-03 21:37:27.000000000 +0100
+> @@ -99,9 +99,12 @@
+>  			continue;
+>  
+>  		*minor = i;
+> +		j = 0;
+>  		dbg("%s - minor base = %d", __FUNCTION__, *minor);
+> -		for (i = *minor; (i < (*minor + num_ports)) && (i < SERIAL_TTY_MINORS); ++i)
+> +		for (i = *minor; (i < (*minor + num_ports)) && (i < SERIAL_TTY_MINORS); ++i) {
+>  			serial_table[i] = serial;
+> +			serial->port[j++]->number = i;
+> +		}
+>  		spin_unlock(&table_lock);
+>  		return serial;
+>  	}
+> @@ -847,7 +850,6 @@
+>  		port = kzalloc(sizeof(struct usb_serial_port), GFP_KERNEL);
+>  		if (!port)
+>  			goto probe_error;
+> -		port->number = i + serial->minor;
+>  		port->serial = serial;
+>  		spin_lock_init(&port->lock);
+>  		mutex_init(&port->mutex);
 
-Is bcm43xx_ethtool.c really useless? If so, I vote to remove it. I have never tried to use ethtool
-on bcm43xx. Similarly, it isn't very often that I recompile the kernel when bcm43xx hasn't changed
-and would not have noticed the bug that Sam reported.
+On top of the first patch ? Sure, I'll try it in a couple of minutes
 
-Larry
+Btw, I got rejects from the last patch (the racy one) you've sent and
+had to apply them manually.  Which version do you use ? 
+
+Regards
+	Andreas
+
 
