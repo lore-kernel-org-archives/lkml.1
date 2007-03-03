@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030305AbXCCPdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030381AbXCCPiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030305AbXCCPdX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 10:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030381AbXCCPdX
+	id S1030381AbXCCPiy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 10:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030406AbXCCPiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 10:33:23 -0500
-Received: from mo-p07-ob.rzone.de ([81.169.146.189]:58938 "EHLO
-	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030305AbXCCPdW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 10:33:22 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Andreas Laumann <al@authentidate.de>
-Subject: Re: usbserial not working/oops on removal
-Date: Sat, 3 Mar 2007 16:33:18 +0100
-User-Agent: KMail/1.9.1
-Cc: Kevin Fenzi <kevin@scrye.com>, linux-kernel@vger.kernel.org
-References: <20070302193715.568098a6@ningauble.scrye.com> <200703031138.20582.oliver@neukum.org> <1172928441.3710.8.camel@justine.inexnet.de>
-In-Reply-To: <1172928441.3710.8.camel@justine.inexnet.de>
+	Sat, 3 Mar 2007 10:38:54 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:42078 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030381AbXCCPix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 10:38:53 -0500
+Message-ID: <45E996A0.6070700@gmail.com>
+Date: Sat, 03 Mar 2007 16:39:12 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703031633.18597.oliver@neukum.org>
-X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GPE5pUNaoG1wTinqjVVl1GKJZKNFH43ejgwwk=
-X-RZG-CLASS-ID: mo07
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, 3. März 2007 14:27 schrieb Andreas Laumann:
-> Unfortunately your fix  does not work.  The first one seems registered
-> correctly, but after that it fails again for the next one.
+Andrew Morton napsal(a):
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
 
-Please try this additional patch on top of the first.
+Weird behaviour of numlock and capslock on USB keyboard in X. After pressing
+those keys, keyboard "hangs" -- no sysrq, no lock leds are flashing.
 
-	Regards
-		Oliver
+After plug; unplug of the keyboard, it works unless I press the keys
+again.
 
---- a/drivers/usb/serial/usb-serial.c	2007-03-03 16:28:22.000000000 +0100
-+++ b/drivers/usb/serial/usb-serial.c	2007-03-03 16:28:26.000000000 +0100
-@@ -847,7 +847,6 @@
- 		port = kzalloc(sizeof(struct usb_serial_port), GFP_KERNEL);
- 		if (!port)
- 			goto probe_error;
--		port->number = i + serial->minor;
- 		port->serial = serial;
- 		spin_lock_init(&port->lock);
- 		mutex_init(&port->mutex);
-@@ -982,6 +981,9 @@
- 	}
- 	serial->minor = minor;
- 
-+	for (i = 0; i < max_endpoints; ++i)
-+		serial->port[i]->number = i + serial->minor;
-+
- 	/* register all of the individual ports with the driver core */
- 	for (i = 0; i < num_ports; ++i) {
- 		port = serial->port[i];
+There is nothing in dmesg. X log says
+(II) evdev brain: Rescanning devices (3).
+(II) evdev brain: Rescanning devices (4).
+(II) evdev brain: Rescanning devices (5).
+(II) evdev brain: Rescanning devices (6).
+(II) evdev brain: Rescanning devices (7).
+(II) evdev brain: Rescanning devices (8).
+(II) evdev brain: Rescanning devices (9).
+(II) evdev brain: Rescanning devices (10).
+(II) evdev brain: Rescanning devices (11).
+(II) evdev brain: Rescanning devices (12).
+(II) evdev brain: Rescanning devices (13).
+(II) evdev brain: Rescanning devices (14).
+in this kernel, but I don't know if this is relevant.
+
+After booting back to .20-mm2 everything is OK.
+
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+
