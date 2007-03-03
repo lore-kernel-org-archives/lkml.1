@@ -1,106 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750850AbXCCXpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750923AbXCCXze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750850AbXCCXpy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 18:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXCCXpx
+	id S1750923AbXCCXze (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 18:55:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXCCXze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 18:45:53 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49558 "EHLO smtp.osdl.org"
+	Sat, 3 Mar 2007 18:55:34 -0500
+Received: from tapsys.com ([72.36.178.242]:35866 "EHLO tapsys.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750850AbXCCXpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 18:45:53 -0500
-Date: Sat, 3 Mar 2007 15:45:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: bert hubert <bert.hubert@netherlabs.nl>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: userspace pagecache management tool
-Message-Id: <20070303154541.70aed9df.akpm@linux-foundation.org>
-In-Reply-To: <20070303230155.GA475@outpost.ds9a.nl>
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-	<45E9DD4A.2060806@redhat.com>
-	<20070303131204.6706a95c.akpm@linux-foundation.org>
-	<45E9E910.2070804@redhat.com>
-	<20070303214108.GA28961@outpost.ds9a.nl>
-	<20070303141448.1ed70e6d.akpm@linux-foundation.org>
-	<45E9F454.2080600@redhat.com>
-	<20070303142609.d3bc9cc3.akpm@linux-foundation.org>
-	<20070303230155.GA475@outpost.ds9a.nl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1750882AbXCCXzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 18:55:33 -0500
+Message-ID: <45EA0AD3.9080104@madrabbit.org>
+Date: Sat, 03 Mar 2007 15:54:59 -0800
+From: Ray Lee <ray-lk@madrabbit.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Ihar `Philips` Filipau <thephilips@gmail.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+References: <efa6f5910703021120ia0b8d18ne0c806eb2e73da4c@mail.gmail.com>	 <20070303103427.GC22557@2ka.mipt.ru>	 <efa6f5910703030258ne76cd8as8a3900fc22456a91@mail.gmail.com>	 <2c0942db0703031312g15726e69gcce7a1d0b955ab76@mail.gmail.com> <efa6f5910703031414m7fa70bean4fa33609eb01b62@mail.gmail.com>
+In-Reply-To: <efa6f5910703031414m7fa70bean4fa33609eb01b62@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Mar 2007 00:01:55 +0100 bert hubert <bert.hubert@netherlabs.nl> wrote:
-
-> On Sat, Mar 03, 2007 at 02:26:09PM -0800, Andrew Morton wrote:
-> > > > It is *not* a global instruction.  It uses setenv, so the user's policy
-> > > > affects only the target process and its forked children.
-> > > 
-> > > ... and all other processes accessing the same file(s)!
-> > > 
-> > > Your library and the system calls may be limited to one process,
-> > > but the consequences are global.
-> > 
-> > Yes.  So what?  If the user wants to go and evict libc.so from pagecache
-> > then he can do so - the kernel has provided syscalls with which this can be
-> > done for at least seven years.  Bad user, shouldn't do that.
+Ihar `Philips` Filipau wrote:
+> On 3/3/07, Ray Lee <madrabbit@gmail.com> wrote:
+>> On 3/3/07, Ihar `Philips` Filipau <thephilips@gmail.com> wrote:
+>> > What I'm trying to get to: keep things simple. The proposed
+>> > optimization by Ingo does nothing else but allowing AIO to probe file
+>> > cache - if data there to go with fast path. So why not to implement
+>> > what the people want - probing of cache? Because it sounds bad? But
+>> > they are in fact proposing precisely that just masked with "fast
+>> > threads".
+>>
+>>
+>> Servers want to never, ever block. Not on a socket, not on a stat, not
+>> on anything. (I have an embedded server I wrote that has to fork
+>> internally just to watch the damn serial port signals in parallel with
+>> handling network I/O, audio, and child processes that handle H323.)
+>> There's a lot of things that can block out there, and it's not just
+>> disk I/O.
+>>
 > 
-> While I agree with your sentiments that userspace can have a good idea on
-> how to deal with the page cache, your program does more than it claims to
-> do - because of how linux implements posix_fadvise.
+> Why select/poll/epoll/friends do not work? I have programmed on both
+> sides - user-space network servers and in-kernel network protocols -
+> and "never blocking" thing was implemented in *nix in the times I was
+> walking under table.
 > 
-> I don't think anybody expects or desires your program to actually *evict*
-> the stuff from the cache you are trying access, which happens in case the
-> data was in the cache prior to starting your program.
-> 
-> What people expect is that a solution such as you wrote it simply won't
-> *add* anything to the cache. They don't expect it will actually globally
-> *remove* stuff from the cache.
-> 
-> Making a backup this way would hurt even worse than usual with your
-> pagecache management tool if the file being backupped was still being read.
-> 
-> This is not your fault, but in practice, it makes your program less useful
-> than it could be.
 
-yup.  As I said, it's a proof-of-concept.  It's a project.  And I have about one
-free femtosecond per fortnight :(
+Then you've never had to write something that watches serial port
+signals. Google on TIOCMIWAIT to see what I'm talking about. The only
+option for a userspace programmer to deal with that is to fork() or poll
+the signals every so many milliseconds. There are probably more easy
+examples, but that's the one off the top of my head that affected me.
 
-> One could conceivably fix that up using mincore and simply not fadvise if a
-> page was in core already.
+In short, this isn't just about network IO, this isn't just about file IO.
 
-Yes.  Let's flesh it out the backup program policy some more:
+> One can poll() more or less *any* device in system. With frigging
+> exception of - right - files.
 
-- Unconditionally invalidate output files
+The problem is the "more or less." Say you're right, and 95% of the
+system calls are either already asynchronous or non-blocking/poll()able.
+One of the questions on the table is how to extend it to the last 5%.
 
-- on entry to read(), probe pagecache, record which pages in the range are present
+> User-space-wise, check how squid (caching http proxy) does it: you
+> have several (forked) instances to serve network requests and you have
+> one/several disk I/O daemons. (So called "diskd storeio") Why? Because
+> you cannot poll() file descriptors, but you can poll unix socket
+> connected to diskd. If diskd blocks, squid still can serve requests.
+> How threadlets are better then pool of diskd instances? All nastiness
+> of shared memory set loose...
 
-- on entry to next read(), shoot down those pages from the previous read
-  which weren't in pagecache.
+Samba/lighttpd/git want to issue dozens of stats in parallel so that the
+kernel can have an opportunity to sort them better. Are you saying they
+should fork() a process per stat that they want to issue in parallel?
 
-- But we can do better!  LRU the page's files up to a certain number of pages.
+> What I'm trying to get to. Threadlets wouldn't help existing
+> single-threaded applications - what is about 95% of all applications.
 
-- Once that point is exceeded, we need to reclaim some pages.  Which
-  ones?  Well, we've been observing all reads, so we can record which pages
-  were referenced once, and which ones were referenced multiple times so we
-  can do arbitrarily complex page aging in there.
+Eh, I don't think that's right. Part of the reason threadlets and
+syslets are on the table because it may be a more efficient way to do
+AIO. And the differences between the syslet API and the current kernel
+Async IO API can be abstracted away by glibc, so that today's apps that
+do AIO would immediately benefit.
 
-- On close(), nuke all pages which weren't in core during open(), even if
-  this app referenced them multiple times.
+> What's more, as having some limited experience of kernel programming,
+> I fail to see what threadlets would simplify on kernel side.
 
-- If the backup program decided to read its input files with mmap we're
-  rather screwed.  We can't intercept pagefaults so the best we can do is
-  to restore the file's pagecache to its previous state on close().
+You can yank the entire separate AIO path, and just treat them as
+another blocking API that syslets makes nonblocking. Immediate reduction
+of code, and everybody is now using the same code paths, which means
+higher test coverage and reduced maintenance cost.
 
-  Or if it's really a problem, get control in there somehow and
-  periodically poll the pagecache occupancy via mincore(), use madvise()
-  then fadvise() to trim it back.
+This last point is really important. Even if no extra functionality
+eventually makes it to userspace, this last point would still be enough
+to make the powers that be consider inclusion.
 
-That all sounds reasonably doable.  It'd be pretty complex to do it
-in-kernel but we could do it there too.  Problem is if course that the
-above strategy is explicitly optimised for the backup program and if it's
-in-kernel it becomes applicable to all other workloads.
-
-
+Ray
