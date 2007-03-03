@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030413AbXCCTiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751116AbXCCT72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030413AbXCCTiR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 14:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030412AbXCCTiR
+	id S1751116AbXCCT72 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 14:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbXCCT72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 14:38:17 -0500
-Received: from h155.mvista.com ([63.81.120.155]:46304 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030404AbXCCTiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 14:38:16 -0500
-Message-ID: <45E9CE9D.9030807@ru.mvista.com>
-Date: Sat, 03 Mar 2007 22:38:05 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 3 Mar 2007 14:59:28 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:53531 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750839AbXCCT71 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 14:59:27 -0500
+X-Sasl-enc: KB8hn1C0EOQx/nm5G4hjdRP7uOWRXCZ9ZWkaz+yNeHjR 1172951966
+Message-ID: <45E9D3EB.7070909@imap.cc>
+Date: Sat, 03 Mar 2007 21:00:43 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, akpm@osdl.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_cmd640: CMD640 PCI support
-References: <20070302150306.368e24b9@lxorguk.ukuu.org.uk>	<45E8B28D.7030500@garzik.org>	<45E9AC6B.50701@ru.mvista.com> <20070303203339.6f605ac9@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070303203339.6f605ac9@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Christopher Meller <cmeller@innominate.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Question on tty line discipline
+References: <20070228134711.GA8631@innominate.com>
+In-Reply-To: <20070228134711.GA8631@innominate.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6DF406CBBD94BA3916E108EB"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>>>+    if (t.active > 16)
->>>>+        t.active = 16;
->>
->>    Erm, clamping active time is not a right thing to do. Right thing to do 
->>was to bail out. I didn't do it in the legacy driver rewrite though...
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6DF406CBBD94BA3916E108EB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> As far as I can work out its a "can't happen"
+Am 28.02.2007 14:47 schrieb Christopher Meller:
+> When the line discipline is set via ioctl from  user space to e.g. N_PP=
+P and the userspace program returns without resetting  the line disciplin=
+e back to N_TTY, the serial device cannot be used (ENODV) until an approp=
+riate  ioctl (to N_TTY) is performed. Is there any reason for the fact th=
+at the line discipline is not reset by the kernel , when closing the devi=
+ce.=20
 
->>>>+        pci_read_config_byte(pdev, ARTIM23, &reg);
+Is that really so? While testing a line discipline I have written
+myself (N_GIGASET_M101) I came to the opposite conclusion.
 
->>    It's not even expensive, it may be just unsafe.
+Specifically, when I set the line discipline on eg. /dev/ttyS1 to
+N_GIGASET_M101 from the user space daemon I have written for that
+purpose, and that user space daemon exits, my line discipline is
+removed, ie. its .close method is called. That is true even if I
+kill the user space daemon by sending it an uncaught signal.
 
-> You have to serialize the channels and idle both so its very expensive -
-> or is that what you meant by unsafe.
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
-    I meant that the address setup timing should always match that of a slower 
-device -- *no* switching.
 
->>>>+    /* CMD640 detected, commiserations */
->>>>+    pci_write_config_byte(pdev, 0x5C, 0x00);
+--------------enig6DF406CBBD94BA3916E108EB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
->>>magic number
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
->>   Indeed, completely undocumented. And I don't even see it in the legacy 
->>driver...
+iD8DBQFF6dPzMdB4Whm86/kRAt0hAJ44lnrmrvH8rsQltVqcMgdFZ3aL+QCfVoUN
+f9jhYjbYwSlYRFfuDy7x+ZM=
+=puh5
+-----END PGP SIGNATURE-----
 
-> Should be 0x5B which is still undocumented. Will fix that.
-
-    Ah, that's what became DRWTIM3 in the later chips?
-
->>    It's used to be a well known fact (soon after Intel put that chip on their 
->>motherboards :-) that PCI0640 may return bad data on command block reads if 
->>another channel has data port I/O going on. That's why the interrupts needed 
->>to be disabled during PIO in the legacy driver (and the channels serialized).
-
-> I was under the impression this was only the situation with the
-> FIFO/readahead logic enabled, as with the RZ1000 ?
-
-    Sorry, I mixed up with RZ1000 for the Intel's case -- memory fade. :-<
-
-> Can you clarify that at all ?
-
-    Yeah, it was happening with IDE prefetch of course...
-
-> Alan
-
-WBR, Sergei
+--------------enig6DF406CBBD94BA3916E108EB--
