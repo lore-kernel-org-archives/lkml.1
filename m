@@ -1,145 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992849AbXCCBMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992850AbXCCBOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992849AbXCCBMt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 20:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992851AbXCCBMt
+	id S2992850AbXCCBOD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 20:14:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992851AbXCCBOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 20:12:49 -0500
-Received: from mga06.intel.com ([134.134.136.21]:16176 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992849AbXCCBMs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 20:12:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,244,1170662400"; 
-   d="scan'208"; a="203493681:sNHT20683103"
-From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Organization: Intel Corporation
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Subject: Re: [patch 0/2] semaphores: add down_interruptible_timeout() and asm-generic/semaphore.h
-Date: Fri, 2 Mar 2007 17:17:02 -0800
-User-Agent: KMail/1.9.5
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, mingo@redhat.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-References: <20070227001338.344233745@sodium.jf.intel.com> <200702261757.11968.inaky@linux.intel.com> <200702272145.28803.ioe-lkml@rameria.de>
-In-Reply-To: <200702272145.28803.ioe-lkml@rameria.de>
+	Fri, 2 Mar 2007 20:14:03 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34014 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992850AbXCCBOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 20:14:00 -0500
+Date: Fri, 2 Mar 2007 17:13:08 -0800
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@osdl.org>, torvalds@osdl.org, stable@kernel.org
+Subject: Linux 2.6.19.6
+Message-ID: <20070303011308.GA6439@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703021717.03140.inaky@linux.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 February 2007 12:45, Ingo Oeser wrote:
-> Hi Inaky,
->
-> On Tuesday, 27. February 2007, Inaky Perez-Gonzalez wrote:
-> > On Monday 26 February 2007 18:18, Alan wrote:
-> > > > Yeah, I need semaphore. This is a hw register that says when the hw
-> > > > is ready to accept a new command. Code that wants to send commands
-> > > > has to down the semaphore and then send it. When hw is ready to get a
-> > > > new command, it sends and IRQ and the IRQ up()s the semaphore.
-> > >
-> > > So you need a mutex not a semaphore
-> >
-> > Theoretically I could use a mutex. Practically it would trigger ugly
-> > complications. Only the owner can unlock a mutex (for example), so
-> > I could not unlock from an IRQ handler -- not to mention that the
-> > semantic rules outlined in Documentation/mutex-design.txt explicitly
-> > forbid IRQ usage.
-> >
-> > And then, this is what semaphores where designed for, as gates :)
-> > for once that I get to use a semaphore properly...
->
-> But they are not required for that :-)
->
-> I would suggest to use an irq-safe spinlock for the hardware access
-> and a status indicator (ready for command), if this is really just a
-> command register. If the status indicator is updated (in IRQ) and read
-> under spinlock, that is safe.
+We (the -stable team) are announcing the release of the 2.6.19.6 kernel.
+It contains a number of bugfixes, and all 2.6.19 users are recommended
+to upgrade.
 
-I have that already. The registers are shared for the two flows of
-information, sending commands to the device and receiving notifications
-from them, so any access to the registers is protected by a IRQ spinlock.
+Barring anything major, there will not be any more 2.6.19 releases.  If
+you disagree with this, please let the stable team know about the
+patches that you feel must be in a new release.  We need to move on to
+flushing out the very large backlog of 2.6.20-stable patches.
 
-Now, it would be kind of pointless to do a busy poll for the command-ready
-indicator if I have an IRQ that notifies me of it, ergo there the need
-for a semaphore. I could use a waitqueue, as akpm suggested, but I still
-need something else that says 'its only me who has the command sending
-privilege now', and I'd still need to push a timeout something to detect
-broken hw.
+The diffstat and short summary of the fixes are below.
 
-So: 
-1 - to send a command I need to wait for !register.execute_command
-2 - to access 'register', I need to have an spinlock
-3 - when register.executing_command drops to zero, I get an IRQ
-4 - other code flows access register
+I'll also be replying to this message with a copy of the patch between
+2.6.19.5 and 2.6.19.6, as it is small enough to do so.
 
-If I didn't have to wait for register.execute_command(), we have the usual
-construct:
+The updated 2.6.19.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.19.y.git
+and can be browsed at the normal kernel.org git web browser:
+        www.kernel.org/git/
 
-execute_command(hw) {
-  ...
-  spin_lock_irqsave(hw->lock, flags);
-  prep_command_buffer;
-  writel(execute_command, register)
-  spin_unlock_irqrestore(hw->lock, flags);
-  ...
-}
+thanks,
 
-checking for 'register.execute_command == 0' inside the spinlock protected
-area, bailing out if busy and waiting for a while before retrying is another
-(fugly) option that I am not willing to implement. 
+greg k-h
+--------
 
-Another option is using a wait_event() mechanism that is woken up from the 
-IRQ that says register.execute_command is zero, but that's basically 
-a semaphore.
+ Makefile                           |    2 
+ drivers/input/mouse/psmouse-base.c |   28 +++
+ drivers/input/mouse/psmouse.h      |    1 
+ drivers/input/mouse/synaptics.c    |    1 
+ drivers/net/8139cp.c               |    6 
+ drivers/net/b44.c                  |    6 
+ drivers/net/forcedeth.c            |   11 -
+ drivers/net/skge.c                 |    5 
+ drivers/net/sky2.c                 |   51 +++--
+ drivers/net/sky2.h                 |    2 
+ drivers/usb/net/usbnet.c           |    7 
+ fs/bad_inode.c                     |  330 ++++++++++++++++++++++++++++++++-----
+ fs/cifs/sess.c                     |   13 -
+ fs/ext2/super.c                    |    4 
+ fs/ext3/super.c                    |    4 
+ fs/ext4/super.c                    |    4 
+ lib/swiotlb.c                      |    2 
+ sound/pci/hda/hda_intel.c          |    2 
+ sound/pci/hda/patch_si3054.c       |    3 
+ 19 files changed, 400 insertions(+), 82 deletions(-)
 
-A FIFO or queue is the most complex of the mechanisms, because now I have 
-to create all this support infrastructure to store the queued commands.
+Summary of changes from v2.6.19.5 to v2.6.19.6
+==============================================
 
-A semaphore simplifies everything -- I guess I have brain corruption, because
-I can't understand your objections.
+David Brownell (1):
+      USB: usbnet driver bugfix
 
-execute_command(hw) {
-  ...
-  down(hw->cmd_semaphore);
-  /* now it's only this thread who can send a command */
-  spin_lock_irqsave(hw->lock, flags);
-  prep_command_buffer;
-  writel(execute_command, register)
-  spin_unlock_irqrestore(hw->lock, flags);
-  ...
-}
+David Moore (1):
+      Missing critical phys_to_virt in lib/swiotlb.c
 
-irq_handler(hw) {
-  ...
-  spin_lock_irqsave(hw->lock, flags);
-  if (readl(irq_register & execute_command_cleared))
-	up(hw->cmd_sem);
-  ...
-  // touch command register here for other stuff
-  ...
-  spin_unlock_irqrestore(hw->lock, flags);
-  ...
-}
+Eric Sandeen (1):
+      fix memory corruption from misinterpreted bad_inode_ops return values (CVE-2006-5753)
 
-It's not a mutex or spinlock, is a gating or sequencing mechanism that
-allows just one guy at a time.
+Francois Romieu (1):
+      netpoll: drivers must not enable IRQ unconditionally in their NAPI handler
 
-> Timeout based locking mechanisms are flawed, because they introduce the
-> hard to find timing sensitive bugs.
+Greg Kroah-Hartman (1):
+      Linux 2.6.19.6
 
-The only reason why the timeout is added is to detect when the hw is dead
-so we can recover. This shouldn't create timing bugs because if it times
-out [in this case], the hw is broken and we are going to reset it.
+Hugh Dickins (1):
+      fix umask when noACL kernel meets extN tuned for ACLs
 
-> Semaphores aren't good "busy/ready flags", as you might have already
-> noticed.
+Stephen Hemminger (6):
+      sky2: pci config blocks phy power control
+      sky2: fix for NAPI with dual port boards
+      sky2: kfree_skb with IRQ with netconsole
+      sky2: transmit timeout deadlock
+      sky2: dont flush good pause frames
+      sky2: fix ram buffer allocation settings
 
-That's why I am not using them as a flag.
+Steve French (1):
+      Fix oops when Windows server sent bad domain name null terminator
 
--- Inaky
+Takashi Iwai (2):
+      hda-intel - Don't try to probe invalid codecs
+      hda-codec - Don't return error at initialization of modem codec
+
+Thomas Renninger (1):
+      Backport of psmouse suspend/shutdown cleanups
+
