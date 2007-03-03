@@ -1,71 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030698AbXCCRlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030699AbXCCRpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030698AbXCCRlo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 12:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030700AbXCCRlo
+	id S1030699AbXCCRpz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 12:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030695AbXCCRpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 12:41:44 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42029 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030698AbXCCRlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 12:41:44 -0500
-Date: Sat, 3 Mar 2007 09:41:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
-Message-Id: <20070303094125.838ce04d.akpm@linux-foundation.org>
-In-Reply-To: <45E99A45.9030506@gmail.com>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	<45E996A0.6070700@gmail.com>
-	<45E99A45.9030506@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 3 Mar 2007 12:45:55 -0500
+Received: from MAIL.13thfloor.at ([213.145.232.33]:47044 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030699AbXCCRpy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 12:45:54 -0500
+Date: Sat, 3 Mar 2007 18:45:53 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: Kirill Korotaev <dev@openvz.org>
+Cc: Paul Jackson <pj@sgi.com>, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
+       winget@google.com, containers@lists.osdl.org, menage@google.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070303174553.GB16051@MAIL.13thfloor.at>
+Mail-Followup-To: Kirill Korotaev <dev@openvz.org>,
+	Paul Jackson <pj@sgi.com>, ckrm-tech@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
+	winget@google.com, containers@lists.osdl.org, menage@google.com,
+	akpm@linux-foundation.org
+References: <20070301133543.GK15509@in.ibm.com> <20070301113900.a7dace47.pj@sgi.com> <45E84682.6040500@openvz.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E84682.6040500@openvz.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 03 Mar 2007 16:54:45 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+On Fri, Mar 02, 2007 at 06:45:06PM +0300, Kirill Korotaev wrote:
+> Paul,
+> 
+> >>I suspect we can make cpusets also work
+> >>on top of this very easily.
+> > 
+> > 
+> > I'm skeptical, and kinda worried.
+> > 
+> > ... can you show me the code that does this?
+> don't worry. we are not planning to commit any code breaking 
+> cpusets.. I will be the first one against it 
+> 
+> > Namespaces are not the same thing as actual resources
+> > (memory, cpu cycles, ...).  Namespaces are fluid mappings;
+> > Resources are scarce commodities.
+> hm... interesing comparison.
 
-> 
-> 
-> Jiri Slaby napsal(a):
-> > Andrew Morton napsal(a):
-> >> Temporarily at
-> >>
-> >>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
-> > 
-> > Weird behaviour of numlock and capslock on USB keyboard in X. After 
-> 
-> Hmm, it's not X related. Console behaves similarly.
-> 
-> > pressing
-> 
-> Or actually if some script tries to change LEDs (logout).
-> 
-> > those keys, keyboard "hangs" -- no sysrq, no lock leds are flashing.
-> > 
-> > After plug; unplug of the keyboard, it works unless I press the keys
-> > again.
-> > 
-> > There is nothing in dmesg. X log says
-> > (II) evdev brain: Rescanning devices (3).
-> > (II) evdev brain: Rescanning devices (4).
-> > (II) evdev brain: Rescanning devices (5).
-> > (II) evdev brain: Rescanning devices (6).
-> > (II) evdev brain: Rescanning devices (7).
-> > (II) evdev brain: Rescanning devices (8).
-> > (II) evdev brain: Rescanning devices (9).
-> > (II) evdev brain: Rescanning devices (10).
-> > (II) evdev brain: Rescanning devices (11).
-> > (II) evdev brain: Rescanning devices (12).
-> > (II) evdev brain: Rescanning devices (13).
-> > (II) evdev brain: Rescanning devices (14).
-> > in this kernel, but I don't know if this is relevant.
-> > 
-> > After booting back to .20-mm2 everything is OK.
-> 
+> as for me, I can't see much difference between virtualization
+> namespaces nd resource namespaces.
 
-Thanks.  Cc's added.
+I agree here, there is not much difference for the
+following aspects:
+
+ - resource accounting, limits and namespaces apply
+   to a group of processes
+ - they isolate those processes in some way from
+   other groups of processes
+ - they apply a virtual view and/or limitation to
+   those processes
+
+> Both have some impact on what the task in the namespace can do and
+> what can't. The only difference is that virtualization namespaces
+> usually also make one user to be invisible to another. 
+
+IMHO invisibility only applies to the pid space :)
+
+but as I said, the processes are isolated in some
+way, might it be pids, networking, ipc, uts or 
+filesystem, similar can be said for resource limits
+and resource accounting, where you are only focusing
+on a certain group of processes, applying an artifial
+limit and ideally virtualizing all kernel interfaces
+in such a way, that it looks like the artifical limit
+is a real physical limitation
+
+> That's the only difference imho.
+> 
+> Also if you take a look at IPC namespace you'll note that IPC
+> can also limit IPC resources in question.
+
+yes, but they do it in a way a normal Linux system
+would do, so no 'new' limits there, unless you
+disallow changing those limits from inside a space
+
+best,
+Herbert
+
+> So it is kinda of virtualization + resource namespace.
+> 
+> > I'm wagering you'll break either the semantics, and/or the
+> > performance, of cpusets doing this.
+> I like Paul's containers patch. It looks good and pretty well.
+> After some of the context issues are resolved it's fine.
+> Maybe it is even the best way of doing things.
+> 
+> Thanks,
+> Kirill
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/containers
