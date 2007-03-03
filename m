@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992787AbXCCAeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992807AbXCCAkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992787AbXCCAeN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 19:34:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992805AbXCCAeN
+	id S2992807AbXCCAkN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 19:40:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992808AbXCCAkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 19:34:13 -0500
-Received: from holomorphy.com ([66.93.40.71]:43136 "EHLO holomorphy.com"
+	Fri, 2 Mar 2007 19:40:13 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49978 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992787AbXCCAeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 19:34:13 -0500
-Date: Fri, 2 Mar 2007 16:33:19 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, Bill Irwin <bill.irwin@oracle.com>,
-       Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
-       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070303003319.GB23573@holomorphy.com>
-References: <20070302093501.34c6ef2a.akpm@linux-foundation.org> <45E8624E.2080001@redhat.com> <20070302100619.cec06d6a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com> <45E86BA0.50508@redhat.com> <20070302211207.GJ10643@holomorphy.com> <45E894D7.2040309@redhat.com> <20070302135243.ada51084.akpm@linux-foundation.org> <45E89F1E.8020803@redhat.com> <20070302142256.0127f5ac.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302142256.0127f5ac.akpm@linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S2992807AbXCCAkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 19:40:11 -0500
+Date: Fri, 2 Mar 2007 16:40:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm1
+Message-Id: <20070302164009.a2aa6cbc.akpm@linux-foundation.org>
+In-Reply-To: <6bffcb0e0703021542k4f882531r21807c7efdbd0ebc@mail.gmail.com>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+	<6bffcb0e0703021542k4f882531r21807c7efdbd0ebc@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 02:22:56PM -0800, Andrew Morton wrote:
-> Opterons seem to be particularly prone to lock starvation where a cacheline
-> gets captured in a single package for ever.
+On Sat, 3 Mar 2007 00:42:33 +0100
+"Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
 
-AIUI that phenomenon is universal to NUMA. Maybe it's time we
-reexamined our locking algorithms in the light of fairness
-considerations.
+> On 02/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > Temporarily at
+> >
+> >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+> >
+> 
+> I have noticed some strange system behavior. When i try to build a
+> kernel (medium load) - X, keyboard, mouse and sound hangs.
+> 
+> I can ping machine and I can use magic SysRq key, but that's all.
+> 
+> 2.6.20-mm2 was fine, 2.6.21-rc2 works well (over 800 patches since
+> 2.6.20-mm2 - great...)
+> 
+> NIL (Nothing Interesting in Logs)
+> 
 
-
--- wli
+Can we see the sysrq-T output please?
