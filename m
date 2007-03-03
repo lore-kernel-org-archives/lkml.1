@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030381AbXCCPiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030664AbXCCPjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030381AbXCCPiy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 10:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030406AbXCCPiy
+	id S1030664AbXCCPjU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 10:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030637AbXCCPjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 10:38:54 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:42078 "EHLO cacti.profiwh.com"
+	Sat, 3 Mar 2007 10:39:20 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:36825 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030381AbXCCPix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 10:38:53 -0500
-Message-ID: <45E996A0.6070700@gmail.com>
-Date: Sat, 03 Mar 2007 16:39:12 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1030434AbXCCPjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 10:39:19 -0500
+Date: Sat, 3 Mar 2007 10:39:17 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patch] libata build fix
+Message-ID: <20070303153917.GA8938@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
-> Temporarily at
-> 
->   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
 
-Weird behaviour of numlock and capslock on USB keyboard in X. After pressing
-those keys, keyboard "hangs" -- no sysrq, no lock leds are flashing.
+A merge mistake slipped upstream.
 
-After plug; unplug of the keyboard, it works unless I press the keys
-again.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-There is nothing in dmesg. X log says
-(II) evdev brain: Rescanning devices (3).
-(II) evdev brain: Rescanning devices (4).
-(II) evdev brain: Rescanning devices (5).
-(II) evdev brain: Rescanning devices (6).
-(II) evdev brain: Rescanning devices (7).
-(II) evdev brain: Rescanning devices (8).
-(II) evdev brain: Rescanning devices (9).
-(II) evdev brain: Rescanning devices (10).
-(II) evdev brain: Rescanning devices (11).
-(II) evdev brain: Rescanning devices (12).
-(II) evdev brain: Rescanning devices (13).
-(II) evdev brain: Rescanning devices (14).
-in this kernel, but I don't know if this is relevant.
+to receive the following updates:
 
-After booting back to .20-mm2 everything is OK.
+ drivers/ata/pata_jmicron.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Jeff Garzik (1):
+      [libata] pata_jmicron: build fix
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
-
+diff --git a/drivers/ata/pata_jmicron.c b/drivers/ata/pata_jmicron.c
+index 033319e..43763c9 100644
+--- a/drivers/ata/pata_jmicron.c
++++ b/drivers/ata/pata_jmicron.c
+@@ -244,7 +244,6 @@ static void __exit jmicron_exit(void)
+ {
+ 	pci_unregister_driver(&jmicron_pci_driver);
+ }
+-#endif
+ 
+ module_init(jmicron_init);
+ module_exit(jmicron_exit);
