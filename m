@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965071AbXCCNWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030241AbXCCN13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965071AbXCCNWx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 08:22:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030230AbXCCNWx
+	id S1030241AbXCCN13 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 08:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030242AbXCCN13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 08:22:53 -0500
-Received: from raven.upol.cz ([158.194.120.4]:34711 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965071AbXCCNWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 08:22:52 -0500
-Date: Sat, 3 Mar 2007 14:31:55 +0100
+	Sat, 3 Mar 2007 08:27:29 -0500
+Received: from email.authentidate.de ([213.61.157.66]:53975 "EHLO
+	email.authentidate.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030241AbXCCN12 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 08:27:28 -0500
+Subject: Re: usbserial not working/oops on removal
+From: Andreas Laumann <al@authentidate.de>
 To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-usb-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>,
-       Dale Martenson <dmartenson@multitech.com>,
-       Al Borchers <alborchers@steinerpoint.com>,
-       LKML <linux-kernel@vger.kernel.org>, mit-devel@lists.printk.net
-Subject: dlopen-like facility for conditional loading of symbols in modules (Re: Firmware for new ti_usb_3410_5052 devices)
-Message-ID: <20070303133155.GM16509@flower.upol.cz>
-References: <1172824155.45e7e05b7980e@my.visi.com> <20070303002707.GJ16509@flower.upol.cz> <20070303002957.GA1966@kroah.com> <200703030840.26982.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703030840.26982.oliver@neukum.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+Cc: Kevin Fenzi <kevin@scrye.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703031138.20582.oliver@neukum.org>
+References: <20070302193715.568098a6@ningauble.scrye.com>
+	 <200703030745.19547.oliver@neukum.org>
+	 <1172906384.26337.13.camel@justine.inexnet.de>
+	 <200703031138.20582.oliver@neukum.org>
+Content-Type: text/plain; charset=UTF-8
+Organization: AuthentiDate International AG
+Date: Sat, 03 Mar 2007 14:27:21 +0100
+Message-Id: <1172928441.3710.8.camel@justine.inexnet.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 03, 2007 at 08:40:26AM +0100, Oliver Neukum wrote:
-> Am Samstag, 3. M?rz 2007 01:29 schrieb Greg KH:
-> > On Sat, Mar 03, 2007 at 01:27:07AM +0100, Oleg Verych wrote:
+Am Samstag, den 03.03.2007, 11:38 +0100 schrieb Oliver Neukum:
+> Am Samstag, 3. März 2007 08:19 schrieb Andreas Laumann:
+> > Am Samstag, den 03.03.2007, 07:45 +0100 schrieb Oliver Neukum:
+> > > Am Samstag, 3. März 2007 03:37 schrieb Kevin Fenzi:
+> > > > I'm seeing some oddity with the latest fedora development kernel and a
+> > > > usbserial device. 
 > > > 
-> > > If you can proof that it doesn't influence kernel's control above system
-> > > hardware. Ironically such stuff in the userspace can give additional
-> > > intrusion way to the kernel.
+> > > Very interesting. Is this repeatable? Does unplugging have the same effect?
 > > 
-> > Do you know of any way to use the firmware interface to the kernel for
-> > intrusion?  If so, please let us know and we will fix it.
+> > I see it also on fedora rawhide using reinersct (cyberjack) scard
+> > readers and it repeatable.
+> > The first usbserial devices likes to register the line number 255 which
+> > indeed is invalid.
 > 
-> If you can determine firmware for a block device whose filesystem is
-> then mounted with suid allowed or whose files root runs, you've rooted
-> the box.
-> Firmware needs the same level of protection as kernel modules on disk. This
-> is a basic feature of the system and can't be avoided. If you are paranoid
-> enough to compile your kernel without module loading, you also have
-> to disable firmware loading for block (and net due to nfs/cifs) devices.
+> OK, please try this patch.
+> 
+> 	Regards
+> 		Oliver
+> 
+> --- linux-2.6.21-rc1/drivers/usb/serial/usb-serial.c.alt	2007-02-21 05:32:30.000000000 +0100
+> +++ linux-2.6.21-rc1/drivers/usb/serial/usb-serial.c	2007-02-26 15:32:50.000000000 +0100
+> @@ -826,7 +826,6 @@
+>  			num_ports = type->num_ports;
+>  	}
+>  
+> -	serial->minor = minor;
+>  	serial->num_ports = num_ports;
+>  	serial->num_bulk_in = num_bulk_in;
+>  	serial->num_bulk_out = num_bulk_out;
+> @@ -980,6 +979,7 @@
+>  		dev_err(&interface->dev, "No more free serial devices\n");
+>  		goto probe_error;
+>  	}
+> +	serial->minor = minor;
+>  
+>  	/* register all of the individual ports with the driver core */
+>  	for (i = 0; i < num_ports; ++i) {
 
-Maybe modules' dlopen() like facility would be better to handle static
-firmware or any other on-demand static data like ID tables etc.?
+Unfortunately your fix  does not work.  The first one seems registered
+correctly, but after that it fails again for the next one.  
 
-I.e. some additional flag for an exported symbol (in a module), that
-this symbol maybe dynamically requested and used. As far as i can see,
-depmod generates static map, unresolved symbols must be in the kernel
-(System.map).
 
-It will solve problem of having multiple unneeded firmware images if
-driver handles many devices and firmware is allowed to be in the
-kernel. No need in additional secure infrastructure.
+usbcore: registered new interface driver usbserial
+drivers/usb/serial/usb-serial.c: USB Serial support registered for generic
+usbcore: registered new interface driver usbserial_generic
+drivers/usb/serial/usb-serial.c: USB Serial Driver core
+drivers/usb/serial/usb-serial.c: USB Serial support registered for Reiner SCT Cyberjack USB card reader
+cyberjack 5-2.2:1.0: Reiner SCT Cyberjack USB card reader converter detected
+usb 5-2.2: Reiner SCT Cyberjack USB card reader converter now attached to ttyUSB0
+cyberjack 5-2.3:1.0: Reiner SCT Cyberjack USB card reader converter detected
+usb-serial ttyUSB0: Error registering port device, continuing
+usbcore: registered new interface driver cyberjack
+drivers/usb/serial/cyberjack.c: v1.01 Matthias Bruestle
+drivers/usb/serial/cyberjack.c: REINER SCT cyberJack pinpad/e-com USB Chipcard Reader Driver
 
-p.s. LKML, mit-devel added. Maybe this can be done easily and somebody
-     knows that.
-____
+
+
+Andreas
+
+
