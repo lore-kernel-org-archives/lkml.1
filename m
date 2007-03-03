@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030298AbXCCOha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030308AbXCCOhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030298AbXCCOha (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 09:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030305AbXCCOha
+	id S1030308AbXCCOhe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 09:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030291AbXCCOhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 09:37:30 -0500
-Received: from thing.hostingexpert.com ([67.15.235.34]:47381 "EHLO
+	Sat, 3 Mar 2007 09:37:34 -0500
+Received: from thing.hostingexpert.com ([67.15.235.34]:47375 "EHLO
 	thing.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030298AbXCCOhK (ORCPT
+	with ESMTP id S1030295AbXCCOhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 09:37:10 -0500
-Message-ID: <45E987DF.3060903@linuxtv.org>
-Date: Sat, 03 Mar 2007 09:36:15 -0500
+	Sat, 3 Mar 2007 09:37:08 -0500
+Message-ID: <45E987D9.9000808@linuxtv.org>
+Date: Sat, 03 Mar 2007 09:36:09 -0500
 From: Michael Krufky <mkrufky@linuxtv.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
 To: stable@kernel.org
 CC: v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [2.6.20.y PATCH 7/7] V4L: cx88-blackbird: allow usage of 376836 and
- 262144 sized firmware images
+Subject: [2.6.20.y PATCH 5/7] DVB: digitv: open nxt6000 i2c_gate for TDED4
+ tuner handling
 X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -35,73 +35,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Michael Krufky <mkrufky@linuxtv.org>
-Date: Sat, 3 Mar 2007 10:10:43 -0200
-Subject: [PATCH] V4L: cx88-blackbird: allow usage of 376836 and 262144 sized firmware images
+Date: Wed, 21 Feb 2007 21:47:15 -0300
+Subject: [PATCH] DVB: digitv: open nxt6000 i2c_gate for TDED4 tuner handling
 
-This updates the cx88-blackbird driver to be able to use the new cx23416
-firmware image released by Hauppauge Computer Works, while retaining
-compatibility with the older firmware images.
-cx2341x firmware can be downloaded at: http://dl.ivtvdriver.org/ivtv/firmware/
+dvb-pll normally opens the i2c gate before attempting to communicate with
+the pll, but the code for this device is not using dvb-pll.  This should
+be cleaned up in the future, but for now, just open the i2c gate at the
+appropriate place in order to fix this driver bug.
 
 Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-(cherry picked from commit af70dbd3346999570db73b3bc3d4f7b7c004f2ea)
+(cherry picked from commit 2fe22dcdc79b8dd34e61a3f1231caffd6180a626)
 ---
- drivers/media/video/cx88/cx88-blackbird.c |   14 +++++++++-----
- drivers/media/video/cx88/cx88.h           |    1 +
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ drivers/media/dvb/dvb-usb/digitv.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/media/video/cx88/cx88-blackbird.c b/drivers/media/video/cx88/cx88-blackbird.c
-index 0cf0360..1c04516 100644
---- a/drivers/media/video/cx88/cx88-blackbird.c
-+++ b/drivers/media/video/cx88/cx88-blackbird.c
-@@ -53,7 +53,8 @@ MODULE_PARM_DESC(debug,"enable debug messages [blackbird]");
+diff --git a/drivers/media/dvb/dvb-usb/digitv.c b/drivers/media/dvb/dvb-usb/digitv.c
+index 4a198d4..b5acb11 100644
+--- a/drivers/media/dvb/dvb-usb/digitv.c
++++ b/drivers/media/dvb/dvb-usb/digitv.c
+@@ -119,6 +119,8 @@ static int digitv_nxt6000_tuner_set_params(struct dvb_frontend *fe, struct dvb_f
+ 	struct dvb_usb_adapter *adap = fe->dvb->priv;
+ 	u8 b[5];
+ 	dvb_usb_tuner_calc_regs(fe,fep,b, 5);
++	if (fe->ops.i2c_gate_ctrl)
++		fe->ops.i2c_gate_ctrl(fe, 1);
+ 	return digitv_ctrl_msg(adap->dev, USB_WRITE_TUNER, 0, &b[1], 4, NULL, 0);
+ }
  
- /* ------------------------------------------------------------------ */
- 
--#define BLACKBIRD_FIRM_IMAGE_SIZE 256*1024
-+#define OLD_BLACKBIRD_FIRM_IMAGE_SIZE 262144
-+#define     BLACKBIRD_FIRM_IMAGE_SIZE 376836
- 
- /* defines below are from ivtv-driver.h */
- 
-@@ -401,7 +402,7 @@ static int blackbird_find_mailbox(struct cx8802_dev *dev)
- 	u32 value;
- 	int i;
- 
--	for (i = 0; i < BLACKBIRD_FIRM_IMAGE_SIZE; i++) {
-+	for (i = 0; i < dev->fw_size; i++) {
- 		memory_read(dev->core, i, &value);
- 		if (value == signature[signaturecnt])
- 			signaturecnt++;
-@@ -449,12 +450,15 @@ static int blackbird_load_firmware(struct cx8802_dev *dev)
- 		return -1;
- 	}
- 
--	if (firmware->size != BLACKBIRD_FIRM_IMAGE_SIZE) {
--		dprintk(0, "ERROR: Firmware size mismatch (have %zd, expected %d)\n",
--			firmware->size, BLACKBIRD_FIRM_IMAGE_SIZE);
-+	if ((firmware->size != BLACKBIRD_FIRM_IMAGE_SIZE) &&
-+	    (firmware->size != OLD_BLACKBIRD_FIRM_IMAGE_SIZE)) {
-+		dprintk(0, "ERROR: Firmware size mismatch (have %zd, expected %d or %d)\n",
-+			firmware->size, BLACKBIRD_FIRM_IMAGE_SIZE,
-+			OLD_BLACKBIRD_FIRM_IMAGE_SIZE);
- 		release_firmware(firmware);
- 		return -1;
- 	}
-+	dev->fw_size = firmware->size;
- 
- 	if (0 != memcmp(firmware->data, magic, 8)) {
- 		dprintk(0, "ERROR: Firmware magic mismatch, wrong file?\n");
-diff --git a/drivers/media/video/cx88/cx88.h b/drivers/media/video/cx88/cx88.h
-index a9575ad..e775b4b 100644
---- a/drivers/media/video/cx88/cx88.h
-+++ b/drivers/media/video/cx88/cx88.h
-@@ -459,6 +459,7 @@ struct cx8802_dev {
- 	u32                        mailbox;
- 	int                        width;
- 	int                        height;
-+	int                        fw_size;
- 
- 	/* for dvb only */
- 	struct videobuf_dvb        dvb;
