@@ -1,102 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030424AbXCCVOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750700AbXCCVWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030424AbXCCVOV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 16:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030429AbXCCVOV
+	id S1750700AbXCCVWv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 16:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932510AbXCCVWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 16:14:21 -0500
-Received: from mail.tmr.com ([64.65.253.246]:56762 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030424AbXCCVOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 16:14:20 -0500
-Message-ID: <45E9E58C.1060405@tmr.com>
-Date: Sat, 03 Mar 2007 16:15:56 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Uwe Bugla <uwe.bugla@gmx.de>
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: bugs in kernel 2.6.21 (both two release candidates) and kernel
- 2.6.20
-References: <20070303155536.65380@gmx.net>
-In-Reply-To: <20070303155536.65380@gmx.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 3 Mar 2007 16:22:51 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45440 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750700AbXCCVWu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 16:22:50 -0500
+Date: Sat, 3 Mar 2007 13:22:44 -0800
+From: Paul Jackson <pj@sgi.com>
+To: Herbert Poetzl <herbert@13thfloor.at>
+Cc: dev@openvz.org, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
+       winget@google.com, containers@lists.osdl.org, menage@google.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on
+ top of nsproxy!
+Message-Id: <20070303132244.80b5cb40.pj@sgi.com>
+In-Reply-To: <20070303174553.GB16051@MAIL.13thfloor.at>
+References: <20070301133543.GK15509@in.ibm.com>
+	<20070301113900.a7dace47.pj@sgi.com>
+	<45E84682.6040500@openvz.org>
+	<20070303174553.GB16051@MAIL.13thfloor.at>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uwe Bugla wrote:
-> Hi folks,
-> the floppy mount error I mentioned is gone now in 2.6.21-rc2, and my kernel is smaller. Good decision to rip out Stephane's stuff, Linus!
-> As I did not get a reply from Andrew I hope that the buggy stuff residing in 2.6.20-mm1 ( freezing my apache services
-> - I already mentioned the problem some days ago - mm2 I did not try yet ) will never be pushed into vanilla mainline.
-> I owe some old CDROM and CDRW devices manufactured by TEAC (bought somewhen in 1999): CDR 540 and CDRW 54.
-> Those old CD devices sometimes get confused with drive seek errors and status errors shown in dmesg.
-> The newer DVD devices (LG reading device and Yamakawa burning device) do not show those errors at all.
-> As I have finished an enourmous project 6 weeks ago (transforming some 500 Audio CDs to MP3 format
-> with kaudiocreator and lame 3.97 (320 kbit quality - preset insane) and then burning the material on DVDs)
-> those old devices were an incredible help in some cases where the newer DVD devices refused to read some audio
-> CDs without errors. That's why I do not want to kick them off at all. Never had those troubles with kernel 2.6.19 and former ones.
+Herbert wrote:
+> I agree here, there is not much difference for the
+> following aspects:
 
-Other than wanting to stay current, is there a reason why you need to go 
-to a newer kernel to do this process? Would it be an option just to run 
-on a kernel which works for the moment?
+Whether two somewhat similar needs should be met by one shared
+mechanism, or two distinct mechanisms, cannot really be decided by
+listing the similarities.
 
-Assuming that you don't want to use these drives unless you can't read a 
-CD any other way, would it be practical to (a) move these drives to 
-another machine and run and old kernel, (b) try a newer CD (not DVD) 
-reader, or (c) install one or both of these antiques in a USB external 
-enclosure which would allow you to reinsert the drive rather than reboot?
+One has to determine if there are any significant differences in
+needs that are too difficult for a shared mechanism to provide.
 
-It may take a while for this problem to be identified, I doubt there are 
-many around for developers to test. If I have one in the "old junk" 
-closet anyone is welcome to it, but I have donated a lot of built from 
-parts machines to various people and causes, so anything that old is 
-unlikely to be found.
+A couple of things you wrote in your second message might
+touch on such possible significant differences:
+ - resources must be hierarchically suballocated, and
+ - key resource management code hooks can't cause hot cache lines.
 
-> Dmesg 1 says on my AMD machine with a CDR540 as /dev/hdd during boot process:
-> hdd: media error (bad sector): status=0x51 { DriveReady SeekComplete Error }
-> hdd: media error (bad sector): error=0x34 { AbortedCommand LastFailedSense=0x03 }
-> ide: failed opcode was: unknown
-> ATAPI device hdd:
->   Error: Medium error -- (Sense key=0x03)
->   (reserved error code) -- (asc=0x02, ascq=0x00)
->   The failed "Read 10" packet command was:
->   "28 00 00 00 00 10 00 00 02 00 00 00 00 00 00 00 "
-> end_request: I/O error, dev hdd, sector 64
-> Buffer I/O error on device hdd, logical block 8
-> hdd: media error (bad sector): status=0x51 { DriveReady SeekComplete Error }
-> hdd: media error (bad sector): error=0x34 { AbortedCommand LastFailedSense=0x03 }
-> ide: failed opcode was: unknown
-> ATAPI device hdd:
->   Error: Medium error -- (Sense key=0x03)
->   (reserved error code) -- (asc=0x02, ascq=0x00)
->   The failed "Read 10" packet command was:
->   "28 00 00 00 00 10 00 00 02 00 00 00 00 00 00 00 "
-> end_request: I/O error, dev hdd, sector 64
-> Buffer I/O error on device hdd, logical block 8
+In a later message, Herbert wrote:
+> well, the thing is, as nsproxy is working now, you
+> will get a new one (with a changed subset of entries)
+> every time a task does a clone() with one of the 
+> space flags set, which means, that you will end up
+> with quite a lot of them, but resource limits have
+> to address a group of them, not a single nsproxy
+> (or act in a deeply hierarchical way which is not
+> there atm, and probably will never be, as it simply
+> adds too much overhead)
+
+I still can't claim to have my head around this, but what you write
+here, Herbert, writes here touches on what I suspect is a key
+difference between namespaces and resources that would make it
+impractical to accomplish both with a shared mechanism for aggregating
+tasks.
+
+It is a natural and desirable capability when managing resources, which
+are relatively scarce (that's why they're worth all this trouble)
+commodities of which we have some limited amount, to subdivide
+allowances of them.  Some group of tasks gets the right to use certain
+memory pages or cpu time slices, and in turn suballocates that allotment
+to some subgroup of itself.  This naturally leads to a hierarchy of
+allocated resources.
+
+There is no such necessary, hierarchy for name spaces. One name space
+might be derived from another at setup, by some arbitrary conventions,
+but once initialized, this way or that, they are separate name spaces,
+or at least naturally can (must?) be separate.
+
+The cpuset hierarchy is an important part of the API that cpusets
+presents to user space, where that hierarchy reflects the suballocation
+of resources.  If B is a child of A in the cpuset hierarchy, then
+the CPUs and Memory Nodes allowed to B -must- be a subset of those allowed
+to A.  That is the key semantic of the cpuset hierarchy.  This includes
+forcing the removal of a resource from B if for some reason it must
+be removed from A, in order to preserve the hierarchical suballocation,
+which requirement is causing a fair bit of hard work for the cpu hot
+unplug folks.
+
+I am quite willing to believe that name spaces has no need for such a
+hierarchy, and further that it probably never will have such ... "too
+much overhead" as you say.
+
+
+> > It should have the same perf overhead as the original
+> > container patches (basically a double dereference -
+> > task->containers/nsproxy->cpuset - required to get to the 
+> > cpuset from a task).
 > 
-> But even more crucial is this one:
-> Dmesg 2 says on the Intel machine with a TEAC CDRW54 as /dev/hdd:
-> hdd: status error: status=0x7f { DriveReady DeviceFault SeekComplete DataRequest CorrectedError Index Error }
-> hdd: status error: error=0x7f { IllegalLengthIndication EndOfMedia AbortedCommand MediaChangeRequested LastFailedSense=0x07 }
-> ide: failed opcode was: unknown
-> For about 1 second the whole system hangs while /dev/hdd is executing some kind of reinitialization, just like as if you unconnect
-> the data and the 12 V / 6V cable and reconnect them again while the machine is up and running.
-> For a DVB-S record f. ex. the breakdown of the recording can be one consequence.
-> Question: Can someone reading this please confirm these errors? Please take old CD devices to find out, not newer ones or even DVD devices!
-> I am using the standard IDE driver with the following chipsets: Intel ICH4 and SIS 5513. And please take time, as these crucial errors do not happen
-> immediately, but about 4 times in about 8 - 10 hours while the machine is up and running.
-> 
-> Yours sincerely and thanks for all your efforts
-> 
-> Uwe
-> P. S.: I do not think this is a hardware error as I did not have those problems with kernels <= 2.6.19.
-> 
+> on every limit accounting or check? I think that
+> is quite a lot of overhead ...
 
+Do either of these dereferences require locks?
+
+The two critical resources that cpusets manages, memory pages and
+time slices on a cpu, cannot afford such dereferences or locking
+in the key code paths (allocating a page or scheduling a cpu.)  The
+existing cpuset code is down to one RCU guarded dereference of
+current->cpuset in the page allocation code path (and then only on
+systems actively using cpusets), and no such dereferences at all in the
+scheduler path.
+
+It took a fair bit of hard work (for someone of my modest abilities)
+to get that far; I doubt we can accept much regression on this point.
+
+Most likely the other folks doing resource management will have similar
+concerns in many cases - memory pages and cpu slices are not the only
+resources we're trying to manage on critical code paths.
+
+In short - the issues seem to be:
+ - resources need to be hierarchical, name spaces don't (can't?), and
+ - no hot cache lines allowed by the resource hooks in key code paths.
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
