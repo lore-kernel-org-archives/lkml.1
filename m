@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992911AbXCCCje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992906AbXCCCjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992911AbXCCCje (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 21:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992920AbXCCCjU
+	id S2992906AbXCCCjN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 21:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992917AbXCCCjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 21:39:20 -0500
-Received: from [63.64.152.142] ([63.64.152.142]:1466 "EHLO gitlost.site"
+	Fri, 2 Mar 2007 21:39:13 -0500
+Received: from [63.64.152.142] ([63.64.152.142]:1460 "EHLO gitlost.site"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992912AbXCCCjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 21:39:12 -0500
+	id S2992906AbXCCCjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 21:39:10 -0500
 From: Chris Leech <christopher.leech@intel.com>
-Subject: [PATCH 9/9] I/OAT: fix I/OAT for kexec
-Date: Fri, 02 Mar 2007 18:24:34 -0800
+Subject: [PATCH 0/9] I/OAT fixes
+Date: Fri, 02 Mar 2007 18:22:38 -0800
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-Id: <20070303022434.31033.78320.stgit@gitlost.site>
-In-Reply-To: <20070303022238.31033.84558.stgit@gitlost.site>
-References: <20070303022238.31033.84558.stgit@gitlost.site>
+Message-Id: <20070303022238.31033.84558.stgit@gitlost.site>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Under kexec, I/OAT initialization breaks over busy resources because the
-previous kernel did not release them.
+Andrew Morton (1):
+     I/OAT: warning fix
 
-I'm not sure this fix can be considered a complete one but it works for me.
- I guess something similar to the *_remove method should occur there..
+Chris Leech (6):
+     ioatdma: Push pending transactions to hardware more frequently
+     ioatdma: Remove the wrappers around read(bwl)/write(bwl) in ioatdma
+     ioatdma: Remove the use of writeq from the ioatdma driver
+     I/OAT: Add documentation for the tcp_dma_copybreak sysctl
+     I/OAT: Add entries to MAINTAINERS for the DMA memcpy subsystem and ioatdma
+     I/OAT: Only offload copies for TCP when there will be a context switch
 
-Signed-off-by: Dan Aloni <da-x@monatomic.org>
-Signed-off-by: Chris Leech <christopher.leech@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+Dan Aloni (1):
+     I/OAT: fix I/OAT for kexec
 
- drivers/dma/ioatdma.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+Jeff Garzik (1):
+     drivers/dma: handle sysfs errors
 
-diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
-index cbf93ca..1d259e5 100644
---- a/drivers/dma/ioatdma.c
-+++ b/drivers/dma/ioatdma.c
-@@ -41,6 +41,7 @@
- 
- /* internal functions */
- static int __devinit ioat_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
-+static void ioat_shutdown(struct pci_dev *pdev);
- static void __devexit ioat_remove(struct pci_dev *pdev);
- 
- static int enumerate_dma_channels(struct ioat_device *device)
-@@ -557,6 +558,7 @@ static struct pci_driver ioat_pci_drv = {
- 	.name 	= "ioatdma",
- 	.id_table = ioat_pci_tbl,
- 	.probe	= ioat_probe,
-+	.shutdown = ioat_shutdown,
- 	.remove	= __devexit_p(ioat_remove),
- };
- 
-@@ -781,9 +783,20 @@ err_request_regions:
- err_set_dma_mask:
- 	pci_disable_device(pdev);
- err_enable_device:
-+
-+	printk(KERN_ERR "Intel(R) I/OAT DMA Engine initialization failed\n");
-+
- 	return err;
- }
- 
-+static void ioat_shutdown(struct pci_dev *pdev)
-+{
-+	struct ioat_device *device;
-+	device = pci_get_drvdata(pdev);
-+
-+	dma_async_device_unregister(&device->common);
-+}
-+
- static void __devexit ioat_remove(struct pci_dev *pdev)
- {
- 	struct ioat_device *device;
+ Documentation/networking/ip-sysctl.txt |    6 +
+ MAINTAINERS                            |   12 +++
+ drivers/dma/dmaengine.c                |   22 +++++-
+ drivers/dma/ioatdma.c                  |   81 ++++++++++++----------
+ drivers/dma/ioatdma_io.h               |  118 ---------------------------------
+ net/ipv4/tcp.c                         |   26 +++++--
+ 6 files changed, 100 insertions(+), 165 deletions(-)
 
+--
+Chris Leech <christopher.leech@intel.com>
+I/O Acceleration Technology Software Development
+LAN Access Division / Digital Enterprise Group 
