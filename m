@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751275AbXCCJCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751294AbXCCJhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751275AbXCCJCb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 04:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXCCJCa
+	id S1751294AbXCCJhv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 04:37:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXCCJhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 04:02:30 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:32829 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751275AbXCCJC3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 04:02:29 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 3 Mar 2007 01:02:24 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Nicholas Miell <nmiell@comcast.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <20070303071933.GA2241@elte.hu>
-Message-ID: <Pine.LNX.4.64.0703030026500.5290@alien.or.mcafeemobile.com>
-References: <20070302105713.GB15576@elte.hu> <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
- <20070302193941.GB8450@elte.hu> <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
- <20070302202931.GA5101@elte.hu> <Pine.LNX.4.64.0703021246380.2381@alien.or.mcafeemobile.com>
- <1172871820.2999.22.camel@entropy> <Pine.LNX.4.64.0703021615140.2381@alien.or.mcafeemobile.com>
- <1172885761.2999.32.camel@entropy> <Pine.LNX.4.64.0703021746060.2381@alien.or.mcafeemobile.com>
- <20070303071933.GA2241@elte.hu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 3 Mar 2007 04:37:51 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:58896 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751294AbXCCJhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 04:37:50 -0500
+Date: Sat, 3 Mar 2007 15:06:55 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: menage@google.com, ebiederm@xmission.com, sam@vilain.net,
+       akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       containers@lists.osdl.org, winget@google.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070303093655.GA1028@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070301133543.GK15509@in.ibm.com> <20070301113900.a7dace47.pj@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301113900.a7dace47.pj@sgi.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Mar 2007, Ingo Molnar wrote:
-
-> * Davide Libenzi <davidel@xmailserver.org> wrote:
+On Thu, Mar 01, 2007 at 11:39:00AM -0800, Paul Jackson wrote:
+> vatsa wrote:
+> > I suspect we can make cpusets also work
+> > on top of this very easily.
 > 
-> > [...] Status word and control bits should not be changed from 
-> > underneath userspace AFAIK. [...]
+> I'm skeptical, and kinda worried.
 > 
-> Note that the control bits do not just magically change during normal 
-> FPU use. It's a bit like sys_setsid()/iopl/etc., it makes little sense 
-> to change those per-thread anyway. This is a non-issue anyway - what is 
-> important is that the big bulk of 512 (or more) bytes of FPU state /are/ 
-> callee-saved (both on 32-bit and on 64-bit), hence there's no need to 
-> unlazy anything or to do expensive FPU state saves or other FPU juggling 
-> around threadlet (or even syslet) use.
+> ... can you show me the code that does this?
 
-Well, the unlazy/sync happen in any case later when we switch (given 
-TS_USEDFPU set). We'd avoid a copy of it given the above conditions true. 
-Wouldn't it makes sense to carry over only the status word and the control 
-bits eventually?
-Also, if the caller saves the whole context, and if we're scheduled while 
-inside a system call (not totally unfrequent case), can't we implement a 
-smarter unlazy_fpu that avoids fxsave during schedule-out and frstor after 
-schedule-in (do not do stts on this condition, so the newly scheduled 
-task don't get a fault at all)? If the above conditions are true (no need 
-context-copy for new head in async_exec), this should be possible too.
+In essense, the rcfs patch is same as the original containers
+patch. Instead of using task->containers->container[cpuset->hierarchy]
+to get to the cpuset structure for a task, it uses
+task->nsproxy->ctlr_data[cpuset->subsys_id].
 
+So if the original containers patches could implement cpusets on
+containers abstraction, I don't see why it is not possible to implement
+on top of nsproxy (which is essentialy same as container_group in Paul
+Menage's patches). Any way code speaks best and I will try to post
+something soon!
 
-- Davide
+> Namespaces are not the same thing as actual resources
+> (memory, cpu cycles, ...).  Namespaces are fluid mappings;
+> Resources are scarce commodities.
 
+Yes, perhaps this overloads nsproxy more than what it was intended for.
+But, then if we have to to support resource management of each
+container/vserver (or whatever group is represented by nsproxy), then nsproxy 
+seems the best place to store this resource control information for a container.
 
+> I'm wagering you'll break either the semantics, and/or the
+> performance, of cpusets doing this.
+
+It should have the same perf overhead as the original container patches
+(basically a double dereference - task->containers/nsproxy->cpuset -
+required to get to the cpuset from a task). 
+
+Regarding semantics, can you be more specific?
+
+In fact I think it will facilitate containers to use cpusets more
+easily. You can for example divide the system into two (exclusive)
+cpusets A and B, and have container C1 work inside A while C2 uses C2. 
+So c1's nsproxy->cpuset will point to A will c2's nsproxy->cpuset will
+point to B. If you dont want to split the cpus into cpusets like that,
+then all nsproxy's->cpuset will point to the top_cpuset.
+
+Basically the rcfs patches demonstrate that is possible to keep track of
+hierarchial relationship in resource objects using corresponding file system 
+objects itself (like dentries). Also if we are hooked to nsproxy, lot of
+hard work to mainain life-time of nsproxy's (ref count ) is already in place - 
+we just reuse that work. These should help us avoid the container
+structure abstraction in Paul Menage's patches (which was the main
+point of objection from last time).
+
+-- 
+Regards,
+vatsa
