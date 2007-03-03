@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030378AbXCCTDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030380AbXCCTJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030378AbXCCTDT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 14:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030379AbXCCTDT
+	id S1030380AbXCCTJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 14:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030382AbXCCTJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 14:03:19 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38059 "EHLO pasmtpA.tele.dk"
+	Sat, 3 Mar 2007 14:09:20 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41037 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030378AbXCCTDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 14:03:18 -0500
-Date: Sat, 3 Mar 2007 20:03:28 +0100
+	id S1030380AbXCCTJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 14:09:19 -0500
+Date: Sat, 3 Mar 2007 20:09:41 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] bcm43xx: do not rebuild when kernel version changes
-Message-ID: <20070303190328.GA30463@uranus.ravnborg.org>
+To: usb-storage@lists.one-eyed-alien.net, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] usb-storage: do not rebuild when kernel version changes
+Message-ID: <20070303190941.GB30463@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,32 +23,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Replacing use of UTS_RELEASE with utsname()->release
-avoids that this module is rebuild each
+avoids that the usb-storage driver is recompiled each
 time the kernel version changes.
 
 Compile tested only.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
-diff --git a/drivers/net/wireless/bcm43xx/bcm43xx_ethtool.c b/drivers/net/wireless/bcm43xx/bcm43xx_ethtool.c
-index c947025..d2df6a0 100644
---- a/drivers/net/wireless/bcm43xx/bcm43xx_ethtool.c
-+++ b/drivers/net/wireless/bcm43xx/bcm43xx_ethtool.c
-@@ -32,7 +32,7 @@
- #include <linux/netdevice.h>
- #include <linux/pci.h>
- #include <linux/string.h>
+diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
+index 7e7ec29..8e898e3 100644
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -55,7 +55,7 @@
+ #include <linux/slab.h>
+ #include <linux/kthread.h>
+ #include <linux/mutex.h>
 -#include <linux/utsrelease.h>
 +#include <linux/utsname.h>
  
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_cmnd.h>
+@@ -547,7 +547,7 @@ static int get_device_info(struct us_data *us, const struct usb_device_id *id)
+ 				idesc->bInterfaceSubClass,
+ 				idesc->bInterfaceProtocol,
+ 				msgs[msg],
+-				UTS_RELEASE);
++				utsname()->release);
+ 	}
  
- static void bcm43xx_get_drvinfo(struct net_device *dev, struct ethtool_drvinfo *info)
-@@ -40,7 +40,7 @@ static void bcm43xx_get_drvinfo(struct net_device *dev, struct ethtool_drvinfo *
- 	struct bcm43xx_private *bcm = bcm43xx_priv(dev);
- 
- 	strncpy(info->driver, KBUILD_MODNAME, sizeof(info->driver));
--	strncpy(info->version, UTS_RELEASE, sizeof(info->version));
-+	strncpy(info->version, utsname()->release, sizeof(info->version));
- 	strncpy(info->bus_info, pci_name(bcm->pci_dev), ETHTOOL_BUSINFO_LEN);
- }
- 
+ 	return 0;
