@@ -1,96 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbXCCMFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965194AbXCCMHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752193AbXCCMFU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 07:05:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXCCMFU
+	id S965194AbXCCMHK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 07:07:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965211AbXCCMHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 07:05:20 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:35045 "EHLO smtp.osdl.org"
+	Sat, 3 Mar 2007 07:07:10 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35091 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752193AbXCCMFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 07:05:18 -0500
-Date: Sat, 3 Mar 2007 03:57:42 -0800
+	id S965194AbXCCMHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 07:07:08 -0500
+Date: Sat, 3 Mar 2007 04:06:59 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>,
-       git@vger.kernel.org
-Subject: Re: [patch] KVM: T60 resume fix
-Message-Id: <20070303035742.72eed3df.akpm@linux-foundation.org>
-In-Reply-To: <45E93012.4000100@qumranet.com>
-References: <20070227103407.GA17819@elte.hu>
-	<20070227105922.GD2250@kernel.dk>
-	<20070227111515.GA4271@kernel.dk>
-	<20070301093450.GA8508@elte.hu>
-	<20070301104117.GA22788@elte.hu>
-	<20070301145204.GA25304@elte.hu>
-	<Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org>
-	<20070302072100.GB30634@elte.hu>
-	<20070302080441.GA12785@elte.hu>
-	<20070302102018.GA11549@elte.hu>
-	<20070302102216.GA13575@elte.hu>
-	<45E93012.4000100@qumranet.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm1
+Message-Id: <20070303040659.76765ad1.akpm@linux-foundation.org>
+In-Reply-To: <45E94933.4010206@googlemail.com>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+	<6bffcb0e0703021542k4f882531r21807c7efdbd0ebc@mail.gmail.com>
+	<20070302164009.a2aa6cbc.akpm@linux-foundation.org>
+	<45E8CDF3.7010406@googlemail.com>
+	<20070302174110.5740b09e.akpm@linux-foundation.org>
+	<45E94933.4010206@googlemail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 03 Mar 2007 10:21:38 +0200 Avi Kivity <avi@qumranet.com> wrote:
+On Sat, 03 Mar 2007 11:08:51 +0100 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-> Ingo Molnar wrote:
-> > Subject: [patch] KVM: T60 resume fix
-> > From: Ingo Molnar <mingo@elte.hu>
-> >
-> > my T60 laptop does not resume correctly due to KVM attempting to send an 
-> > IPI to a CPU that might be down (or not up yet). (Doing so also triggers 
-> > the send_IPI_mask_bitmask() warning in arch/i386/kernel/smp.c, line 
-> > 732.)
-> >
-> > with this fix applied my laptop does not hang during resume.
-> >
-> > [ KVM will have to disable/enable virtualization on the CPU itself that
-> >   goes down / comes up, not via an IPI sent from the requesting CPU. ]
-> >
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> >  drivers/kvm/kvm_main.c |    6 ------
-> >  1 file changed, 6 deletions(-)
-> >
-> > Index: linux/drivers/kvm/kvm_main.c
-> > ===================================================================
-> > --- linux.orig/drivers/kvm/kvm_main.c
-> > +++ linux/drivers/kvm/kvm_main.c
-> > @@ -2083,12 +2083,6 @@ static int kvm_cpu_hotplug(struct notifi
-> >  	case CPU_DEAD:
-> >  	case CPU_UP_CANCELED:
-> >  		decache_vcpus_on_cpu(cpu);
-> > -		smp_call_function_single(cpu, kvm_arch_ops->hardware_disable,
-> > -					 NULL, 0, 1);
-> > -		break;
-> > -	case CPU_UP_PREPARE:
-> > -		smp_call_function_single(cpu, kvm_arch_ops->hardware_enable,
-> > -					 NULL, 0, 1);
-> >  		break;
-> >  	}
-> >  	return NOTIFY_OK;
-> >   
+> Andrew Morton napisał(a):
+> > On Sat, 03 Mar 2007 02:22:59 +0100
+> > Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> > 
+> >> Andrew Morton napisa__(a):
+> >>> On Sat, 3 Mar 2007 00:42:33 +0100
+> >>> "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
+> >>>
+> >>>> On 02/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >>>>> Temporarily at
+> >>>>>
+> >>>>>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+> >>>>>
+> >>>> I have noticed some strange system behavior. When i try to build a
+> >>>> kernel (medium load) - X, keyboard, mouse and sound hangs.
+> >>>>
+> >>>> I can ping machine and I can use magic SysRq key, but that's all.
+> >>>>
+> >>>> 2.6.20-mm2 was fine, 2.6.21-rc2 works well (over 800 patches since
+> >>>> 2.6.20-mm2 - great...)
+> >>>>
+> >>>> NIL (Nothing Interesting in Logs)
+> >>>>
+> >>> Can we see the sysrq-T output please?
+> >>>
+> >> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-mm1/sys.log
+> >>
+> > 
+> > Well that's all very dull - everything's just sitting there asleep.
+> > 
+> > If it was just X then I'd suspect the psmouse changes (are you PS2 or USB?)
+> > 
+> > Or I'd suspect that the entire interrupt system has gone bust, but you're
+> > still able to do sysrq.
+> > 
+> > How are you doing sysrq, btw?   Serial console?  alt-F7 into a vgaconsole?
 > 
-> That is already CPU_ONLINE in my tree
+> alt + sysrq + key, but alt + fX doesn't work
+> 
+> > Are you able to log in from another machine via ssh?
+> 
+> Yes.
 
-I noticed ;)
+I mean - after the system has failed, you are still able to log in, get a
+shell, run commands?
 
-So this mean that Ingo's bug should already be fixed there.  And in rc2-mm1.
+If so, that's strange, because sshd is still running.
 
-> (and in the pull request sent to 
-> Linus a couple of days ago).
+What does `top' say in that case, when you re-run it.
 
-Resend, please.
+Generally, have a poke around, see if you can work out what the system it
+doing.
+
+> > 
+> > Is the CPU idle when it hangs, or is it busy?  If busy, what does sysrq-P
+> > say?
+> > 
+> > 
+> 
+> Pid: 3716, comm:          firefox-bin
+> EIP: 0073:[<b23bb9d1>] CPU: 0
+> EIP is at 0xb23bb9d1
+>  ESP: 007b:afdfd1d0 EFLAGS: 00000202    Not tainted  (2.6.21-rc2-mm1 #23)
+> EAX: 00000001 EBX: b25ee12c ECX: 00000018 EDX: 00000018
+> ESI: 0944e91c EDI: 0944e900 EBP: afdfd398 DS: 007b ES: 007b FS: 0000
+> CR0: 8005003b CR2: 40954000 CR3: 32bdc000 CR4: 000006d0
+>  [<c0105256>] show_trace_log_lvl+0x1a/0x2f
+>  [<c010597b>] show_trace+0x12/0x14
+>  [<c0102acf>] show_regs+0x181/0x188
+>  [<c0261010>] sysrq_handle_showregs+0x12/0x14
+>  [<c0260f47>] __handle_sysrq+0x8c/0x109
+>  [<c0261122>] handle_sysrq+0x1f/0x21
+>  [<c025bd6e>] kbd_event+0x2d8/0x4ee
+>  [<c02bcae2>] input_event+0x420/0x442
+>  [<c02c01b0>] atkbd_interrupt+0x448/0x514
+>  [<c02b986e>] serio_interrupt+0x49/0x7f
+>  [<c02ba6a8>] i8042_interrupt+0x226/0x239
+>  [<c0155642>] handle_IRQ_event+0x1a/0x46
+>  [<c015675a>] handle_edge_irq+0x10a/0x14e
+>  [<c0106c22>] do_IRQ+0xa3/0xbd
+>  [<c0104c52>] common_interrupt+0x2e/0x34
+
+That indicates that firefox is running in userspace
