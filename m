@@ -1,87 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030637AbXCCPrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030665AbXCCPrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030637AbXCCPrY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 10:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030665AbXCCPrY
+	id S1030665AbXCCPrj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 10:47:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030666AbXCCPrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 10:47:24 -0500
-Received: from wx-out-0506.google.com ([66.249.82.239]:33122 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030637AbXCCPrX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 10:47:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OnfDD2BkEDDJ7vfFC8FLbJskLmpyCILjFx+j2n/75WdMTAH0gKKeRKNTFTCwC9fuFOdJQiWdGtvRxwQtyxJx89WAfiZatAAHhlgWD+0+RimwU0lkw/xHnpQ9oJulEzFfybdJ9VWp893ttfg5bDCaxKjXlGdxVi/Lh7OWkDoFvlM=
-Message-ID: <4dfa50520703030747g3c887f5bxe25caefd1723c635@mail.gmail.com>
-Date: Sat, 3 Mar 2007 08:47:21 -0700
-From: "David Hubbard" <david.c.hubbard@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>, "Pavel Machek" <pavel@ucw.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
-       linux-acpi@vger.kernel.org, "Chuck Ebbert" <cebbert@redhat.com>,
-       Rudolf@atrpms.net
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-In-Reply-To: <20070303105316.d51e032d.khali@linux-fr.org>
+	Sat, 3 Mar 2007 10:47:39 -0500
+Received: from mail.gmx.net ([213.165.64.20]:40275 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030665AbXCCPri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 10:47:38 -0500
+Cc: akpm@linux-foundation.org, eranian@hpl.hp.com, bunk@stusta.de,
+       linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
+       jirislaby@gmail.com, torvalds@linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 03 Mar 2007 16:47:37 +0100
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <200703011831.26520.mws@linuxtv.org>
+Message-ID: <20070303154737.65380@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070301143407.29950@gmx.net> <200703011831.26520.mws@linuxtv.org>
+Subject: Re: [linux-dvb] 2.6.21-rc1-git2 is incompilable
+To: Marcel Siegert <mws@linuxtv.org>, linux-dvb@linuxtv.org
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1/yJ6UEDGjyo2wszRJBw2id1cgeN3YkfeB7kbWeJ4
+ WPpmhCE5EJoo8XW/EoRFlkfnksn+psnv8aTg== 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45D6DDCE.5050803@assembler.cz> <20070228213803.GA4877@ucw.cz>
-	 <20070301152655.f232db64.khali@linux-fr.org>
-	 <20070302114023.GD2163@elf.ucw.cz>
-	 <20070302114747.GB1212@srcf.ucam.org>
-	 <20070302151055.d2665d66.khali@linux-fr.org>
-	 <20070302141840.GA3441@srcf.ucam.org>
-	 <20070302220454.a0c66d04.khali@linux-fr.org>
-	 <20070302211251.GA10035@srcf.ucam.org>
-	 <20070303105316.d51e032d.khali@linux-fr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
 
-> Is there anything preventing us from doing such a walk and pre-allocate
-> all the I/O ranges? I am not familiar with the ACPI code at all, would
-> you possibly propose a patch doing that?
+-------- Original-Nachricht --------
+Datum: Thu, 1 Mar 2007 18:31:25 +0100
+Von: Marcel Siegert <mws@linuxtv.org>
+An: linux-dvb@linuxtv.org
+CC: "Uwe Bugla" <uwe.bugla@gmx.de>, torvalds@linux-foundation.org, Slaby <jirislaby@gmail.com>, venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org, bunk@stusta.de, Stephane Eranian <eranian@hpl.hp.com>, akpm@linux-foundation.org
+Betreff: Re: [linux-dvb] 2.6.21-rc1-git2 is incompilable
 
-Here's a random idea -- what do you think of it?
+> On Thursday 01 March 2007, Uwe Bugla wrote:
+> > Hi folks,
+> > trying to compile kernel 2.6.21-rc1-git2 is impossible. The broken
+> module where the compiler gives up is /arch/i386/kernel/io_apic.c.
+> > 
+> > Regards
+> > 
+> > Uwe
+> > 
+> > P. S.: Wouldn't it be a good idea to test at least error-free
+> compilation before stuff like this is being published?
+> > 
+> 
+> hi uwe,
+> 
+> according to kernel.org 
+> 2.6.21-rc2-git1 is an actual snapshot
+> 
+> but, those are iirc auto generated. thus not being able to compile can
+> happen.
+> it also depends on your special .config
+> 
+> best regards
+> marcel
+> 
+> p.s. wouldn't it be a good idea to check your mail recipients instead of
+> sending mails to e.g. linux-dvb that do 
+>       have no use with fixes of floppy drivers and or compile status in
+> io_apic? :)
+> 
+> dont take it too hard man...
+But I take it very hard as I want quality!
 
-ACPI already allocates some I/O ranges, which was a surprise to me:
+Ciao
 
-> My machine looks like this:
->
-> 1000-107f : 0000:00:1f.0
->  1000-1003 : ACPI PM1a_EVT_BLK
->  1004-1005 : ACPI PM1a_CNT_BLK
->  1008-100b : ACPI PM_TMR
->  1010-1015 : ACPI CPU throttle
->  1020-1020 : ACPI PM2_CNT_BLK
->  1028-102b : ACPI GPE0_BLK
->  102c-102f : ACPI GPE1_BLK
+Uwe
 
-For I/O and memory that ACPI accesses and has not reserved, the AML
-interpreter could allocate at run-time.
-
-I'm not sure how to implement exactly. For example, it would be bad to
-have a /proc/ioports that had a lot of single ports allocated, for
-example:
-1000-107f : 0000:00:1f.0
- 1000-1000 : ACPI PM1a_EVT_BLK
- 1001-1001 : ACPI PM1a_EVT_BLK
- 1002-1002 : ACPI PM1a_EVT_BLK
- 1003-1003 : ACPI PM1a_EVT_BLK
-
-Thus the AML interpreter would need to have some reasonable
-intelligence when allocating regions. Conflict resolution would also
-be more difficult, e.g. if a hwmon driver was loaded first and then
-acpi as a module, ACPI could not allocate the region. Maybe run-time
-allocating won't work.
-
-And then, how would ACPI release a region after it has used it? The
-easiest method would be to never release anything used even once.
-
-Thoughts?
-
-David
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: www.gmx.net/de/go/mailfooter/topmail-out
