@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751116AbXCCT72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721AbXCCUPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751116AbXCCT72 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 14:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbXCCT72
+	id S1751721AbXCCUPe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 15:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbXCCUPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 14:59:28 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:53531 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750839AbXCCT71 (ORCPT
+	Sat, 3 Mar 2007 15:15:34 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:30194 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbXCCUPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 14:59:27 -0500
-X-Sasl-enc: KB8hn1C0EOQx/nm5G4hjdRP7uOWRXCZ9ZWkaz+yNeHjR 1172951966
-Message-ID: <45E9D3EB.7070909@imap.cc>
-Date: Sat, 03 Mar 2007 21:00:43 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Sat, 3 Mar 2007 15:15:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=pPehXrz/O0ODYr4PcGlqbtbj9nMr4PmrjQaB39P+gYTlyZj71GYKA6X7M06tMesworR30FK/kQY/tpVPQPVf7+GZ33MWS0u/VuabawuJ7S+efxY0cKOQ6eC6jGzAgSM7kuw1sdjwQqJoYDC8cwJf2yfSNAs5lmiCWVHE59163kY=
+Date: Sat, 3 Mar 2007 21:15:41 +0100
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] pata_jmicron: remove spurious #endif
+Message-ID: <20070303201541.GA22621@dreamland.darkstar.lan>
 MIME-Version: 1.0
-To: Christopher Meller <cmeller@innominate.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Question on tty line discipline
-References: <20070228134711.GA8631@innominate.com>
-In-Reply-To: <20070228134711.GA8631@innominate.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6DF406CBBD94BA3916E108EB"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6DF406CBBD94BA3916E108EB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hello,
+commit 438ac6d5e3f8106a6bd1a5682c508d660294a85d causes a build failure:
 
-Am 28.02.2007 14:47 schrieb Christopher Meller:
-> When the line discipline is set via ioctl from  user space to e.g. N_PP=
-P and the userspace program returns without resetting  the line disciplin=
-e back to N_TTY, the serial device cannot be used (ENODV) until an approp=
-riate  ioctl (to N_TTY) is performed. Is there any reason for the fact th=
-at the line discipline is not reset by the kernel , when closing the devi=
-ce.=20
+  CC      drivers/ata/pata_jmicron.o
+  /home/kronos/src/linux-2.6.git/drivers/ata/pata_jmicron.c:247:2: error: #endif without #if
+  make[3]: *** [drivers/ata/pata_jmicron.o] Error 1
 
-Is that really so? While testing a line discipline I have written
-myself (N_GIGASET_M101) I came to the opposite conclusion.
+Remove a spurious #endif in pata_jmicron driver.
 
-Specifically, when I set the line discipline on eg. /dev/ttyS1 to
-N_GIGASET_M101 from the user space daemon I have written for that
-purpose, and that user space daemon exits, my line discipline is
-removed, ie. its .close method is called. That is true even if I
-kill the user space daemon by sending it an uncaught signal.
+Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
+---
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+ drivers/ata/pata_jmicron.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/ata/pata_jmicron.c b/drivers/ata/pata_jmicron.c
+index 033319e..43763c9 100644
+--- a/drivers/ata/pata_jmicron.c
++++ b/drivers/ata/pata_jmicron.c
+@@ -244,7 +244,6 @@ static void __exit jmicron_exit(void)
+ {
+ 	pci_unregister_driver(&jmicron_pci_driver);
+ }
+-#endif
+ 
+ module_init(jmicron_init);
+ module_exit(jmicron_exit);
 
 
---------------enig6DF406CBBD94BA3916E108EB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFF6dPzMdB4Whm86/kRAt0hAJ44lnrmrvH8rsQltVqcMgdFZ3aL+QCfVoUN
-f9jhYjbYwSlYRFfuDy7x+ZM=
-=puh5
------END PGP SIGNATURE-----
-
---------------enig6DF406CBBD94BA3916E108EB--
+Luca
+-- 
+You and me baby ain't nothin' but mammals
+So let's do it like they do on the Discovery Channel
