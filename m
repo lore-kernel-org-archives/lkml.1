@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbXCCVBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXCCVEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932353AbXCCVBK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 16:01:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932395AbXCCVBK
+	id S932478AbXCCVEQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 16:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932438AbXCCVEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 16:01:10 -0500
-Received: from mail.tmr.com ([64.65.253.246]:56745 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932353AbXCCVBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 16:01:09 -0500
-Message-ID: <45E9E27A.5010403@tmr.com>
-Date: Sat, 03 Mar 2007 16:02:50 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 3 Mar 2007 16:04:16 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:48107 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932395AbXCCVEP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 16:04:15 -0500
+Message-ID: <45E9E2BD.9070106@lwfinger.net>
+Date: Sat, 03 Mar 2007 15:03:57 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-To: Mockern@yandex.ru
-CC: hjk@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: Question: 20 microseconds delay
-References: <45E98415.000002.30135@webmail9.yandex.ru> <200703031533.42152.hjk@linutronix.de> <45E98A79.000001.09982@colgate.yandex.ru>
-In-Reply-To: <45E98A79.000001.09982@colgate.yandex.ru>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+To: Michael Buesch <mb@bu3sch.de>
+CC: Sam Ravnborg <sam@ravnborg.org>, linux-wireless@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] bcm43xx: do not rebuild when kernel version changes
+References: <20070303190328.GA30463@uranus.ravnborg.org> <200703032121.43136.mb@bu3sch.de>
+In-Reply-To: <200703032121.43136.mb@bu3sch.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mockern wrote:
-> The problem is that I need to use wait_event_timeout function 
+Michael Buesch wrote:
+> On Saturday 03 March 2007 20:03, Sam Ravnborg wrote:
+>> Replacing use of UTS_RELEASE with utsname()->release
+>> avoids that this module is rebuild each
+>> time the kernel version changes.
+>>
+>> Compile tested only.
+> 
+> I vote to get rid of the whole bcm43xx_ethtool.c file, as it's useless.
+> It will vanish with the advent of d80211, anyway.
+> Larry?
 
-AFAIK you can't do that, it's just not the right tool for the job. You 
-can always use a single jiffy and be sure you will wait at least 20us, 
-or use usleep.
+Is bcm43xx_ethtool.c really useless? If so, I vote to remove it. I have never tried to use ethtool
+on bcm43xx. Similarly, it isn't very often that I recompile the kernel when bcm43xx hasn't changed
+and would not have noticed the bug that Sam reported.
 
-No matter how much you "need to use" your snowblower, it won't mow your 
-lawn.
+Larry
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
