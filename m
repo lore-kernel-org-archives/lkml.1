@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750935AbXCCHxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751193AbXCCH6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750935AbXCCHxp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 02:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbXCCHxp
+	id S1751193AbXCCH6X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 02:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXCCH6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 02:53:45 -0500
-Received: from mail.kroah.org ([69.55.234.183]:36380 "EHLO perch.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750935AbXCCHxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 02:53:44 -0500
-Date: Fri, 2 Mar 2007 23:48:04 -0800
-From: Greg KH <gregkh@suse.de>
-To: Michael Krufky <mkrufky@linuxtv.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Chuck Ebbert <cebbert@redhat.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>
-Subject: Re: [patch 0/9] 2.6.19-stable review
-Message-ID: <20070303074804.GA13613@suse.de>
-References: <20070227000538.GA6283@kroah.com> <45E49329.5080509@linuxtv.org> <20070303012300.GD6496@suse.de> <45E8D406.7010008@linuxtv.org>
+	Sat, 3 Mar 2007 02:58:23 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:48269 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751193AbXCCH6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 02:58:23 -0500
+Message-ID: <45E92A9E.6030108@vmware.com>
+Date: Fri, 02 Mar 2007 23:58:22 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E8D406.7010008@linuxtv.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/9] Vmi fix highpte
+References: <200703020254.l222smBB009668@zach-dev.vmware.com> <45E79529.9000305@goop.org> <45E79C72.4000806@goop.org> <45E7C4DD.1040403@vmware.com> <45E7C80E.1020107@goop.org> <45E7F405.6020507@vmware.com> <45E8571F.1050509@goop.org> <45E920F6.7060806@vmware.com> <45E9273A.4040300@goop.org>
+In-Reply-To: <45E9273A.4040300@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 08:48:54PM -0500, Michael Krufky wrote:
-> 
-> The dvbdev patch is pretty important, fixes a horrible problem, although the case for
-> it to occur is rare.  The other two patches are of the "obviously correct - minimal change" 
-> type.
-> 
-> If it isnt too much trouble, then yes, it is worth it to push a new release because of the
-> dvbdev patch.
-> 
-> However, please chop the "backported from" and "cherry picked from" lines from those patches.
-> I cherry-picked them from Mauro's tree, but he wiped it out and re-pushed those changes in
-> before Linus merged them....  so, the actual changesets in Linus' tree have different hashes.
-> 
-> (i removed those old hashes from the patches that I posted on linuxtv.org)
+Jeremy Fitzhardinge wrote:
+>
+> I can deal with the change going into -git, but it does seem awkward
+> knowing that it is the wrong change and it will be replaced by something
+> else almost immediately.
+>   
 
-I picked up the new patches and did a new release.
+Well, it is not quite wrong - it is appropriate for -git.  That it will 
+be replaced soon is a minor thing, as long as we can work together to 
+make sure your patches are unaffected.
 
-> As for the 2.6.20.y patches, should I email those to you inline or can you just grab them from
-> the linuxtv.org www server?  ( http://linuxtv.org/~mkrufky/stable/2.6.20.y/ )
+> My main concern is that the Xen patch queue is complex enough as-is, and
+> I've been trying hard to remove dependencies on other uncommitted
+> patches.   It's doubly complex because I'm not really sure if I'm
+> targeting Andrew or Andi's tree as a base, though at the moment -git
+> seems to work either way.
+>
+>     J
+>   
 
-Email is usually better, as that's what my scripts are set up to handle.
+Believe me, I understand the complexities of dealing with -mm, -git, and 
+-i386 trees.  It's not just doubly complex, its triply so.  I believe 
+the best approach is to make it easiest on the maintainers.  So the 
+patch stream I am uploading through -mm, -i386, to -git does not 
+conflict with the Xen patch queue as long as we make sure the next 
+bundle to those same trees applies clean.  Again, I broke the Xen patch 
+queue in -mm, and for that I am sorry.  I will help you re-integrate 
+against the VMI patches I sent out, as I broke your code, I will help 
+fix it.  And we both have a tree to work off from, which makes it rather 
+easy to work together ;)
 
-thanks,
+Cheers,
 
-greg k-h
+Zach
+
+----
+
+Sutra I.2 - interruptah chittavritti nirodhah
