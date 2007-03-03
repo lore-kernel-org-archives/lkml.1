@@ -1,81 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030665AbXCCPrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030668AbXCCPvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030665AbXCCPrj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 10:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030666AbXCCPrj
+	id S1030668AbXCCPvQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 10:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030666AbXCCPvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 10:47:39 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40275 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1030665AbXCCPri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 10:47:38 -0500
-Cc: akpm@linux-foundation.org, eranian@hpl.hp.com, bunk@stusta.de,
-       linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       jirislaby@gmail.com, torvalds@linux-foundation.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 03 Mar 2007 16:47:37 +0100
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <200703011831.26520.mws@linuxtv.org>
-Message-ID: <20070303154737.65380@gmx.net>
+	Sat, 3 Mar 2007 10:51:16 -0500
+Received: from cavan.codon.org.uk ([217.147.92.49]:37462 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030320AbXCCPvP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 10:51:15 -0500
+Date: Sat, 3 Mar 2007 15:50:49 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: David Hubbard <david.c.hubbard@gmail.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
+       linux-acpi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
+       Rudolf@atrpms.net
+Message-ID: <20070303155048.GA22755@srcf.ucam.org>
+References: <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302114747.GB1212@srcf.ucam.org> <20070302151055.d2665d66.khali@linux-fr.org> <20070302141840.GA3441@srcf.ucam.org> <20070302220454.a0c66d04.khali@linux-fr.org> <20070302211251.GA10035@srcf.ucam.org> <20070303105316.d51e032d.khali@linux-fr.org> <4dfa50520703030747g3c887f5bxe25caefd1723c635@mail.gmail.com>
 MIME-Version: 1.0
-References: <20070301143407.29950@gmx.net> <200703011831.26520.mws@linuxtv.org>
-Subject: Re: [linux-dvb] 2.6.21-rc1-git2 is incompilable
-To: Marcel Siegert <mws@linuxtv.org>, linux-dvb@linuxtv.org
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/yJ6UEDGjyo2wszRJBw2id1cgeN3YkfeB7kbWeJ4
- WPpmhCE5EJoo8XW/EoRFlkfnksn+psnv8aTg== 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4dfa50520703030747g3c887f5bxe25caefd1723c635@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 03, 2007 at 08:47:21AM -0700, David Hubbard wrote:
 
--------- Original-Nachricht --------
-Datum: Thu, 1 Mar 2007 18:31:25 +0100
-Von: Marcel Siegert <mws@linuxtv.org>
-An: linux-dvb@linuxtv.org
-CC: "Uwe Bugla" <uwe.bugla@gmx.de>, torvalds@linux-foundation.org, Slaby <jirislaby@gmail.com>, venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org, bunk@stusta.de, Stephane Eranian <eranian@hpl.hp.com>, akpm@linux-foundation.org
-Betreff: Re: [linux-dvb] 2.6.21-rc1-git2 is incompilable
+> For I/O and memory that ACPI accesses and has not reserved, the AML
+> interpreter could allocate at run-time.
 
-> On Thursday 01 March 2007, Uwe Bugla wrote:
-> > Hi folks,
-> > trying to compile kernel 2.6.21-rc1-git2 is impossible. The broken
-> module where the compiler gives up is /arch/i386/kernel/io_apic.c.
-> > 
-> > Regards
-> > 
-> > Uwe
-> > 
-> > P. S.: Wouldn't it be a good idea to test at least error-free
-> compilation before stuff like this is being published?
-> > 
-> 
-> hi uwe,
-> 
-> according to kernel.org 
-> 2.6.21-rc2-git1 is an actual snapshot
-> 
-> but, those are iirc auto generated. thus not being able to compile can
-> happen.
-> it also depends on your special .config
-> 
-> best regards
-> marcel
-> 
-> p.s. wouldn't it be a good idea to check your mail recipients instead of
-> sending mails to e.g. linux-dvb that do 
->       have no use with fixes of floppy drivers and or compile status in
-> io_apic? :)
-> 
-> dont take it too hard man...
-But I take it very hard as I want quality!
-
-Ciao
-
-Uwe
+Not ideal. ACPI's already fiddling with ranges that have been reserved 
+by other drivers.
 
 -- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: www.gmx.net/de/go/mailfooter/topmail-out
+Matthew Garrett | mjg59@srcf.ucam.org
