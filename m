@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992862AbXCCCTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992904AbXCCCjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992862AbXCCCTs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 21:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992867AbXCCCTq
+	id S2992904AbXCCCjM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 21:39:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992914AbXCCCjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 21:19:46 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:3214 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992862AbXCCCTp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 21:19:45 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 2 Mar 2007 18:19:42 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nicholas Miell <nmiell@comcast.net>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <1172885761.2999.32.camel@entropy>
-Message-ID: <Pine.LNX.4.64.0703021746060.2381@alien.or.mcafeemobile.com>
-References: <20070301133018.GB30177@2ka.mipt.ru>  <200703011519.20001.dada1@cosmosbay.com>
- <20070301141637.GA20006@elte.hu>  <20070301145454.GB12684@2ka.mipt.ru>
- <20070301150942.GA26025@elte.hu>  <20070301153655.GB8217@2ka.mipt.ru>
- <20070302105713.GB15576@elte.hu>  <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
-  <20070302193941.GB8450@elte.hu>  <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
-  <20070302202931.GA5101@elte.hu>  <Pine.LNX.4.64.0703021246380.2381@alien.or.mcafeemobile.com>
-  <1172871820.2999.22.camel@entropy>  <Pine.LNX.4.64.0703021615140.2381@alien.or.mcafeemobile.com>
- <1172885761.2999.32.camel@entropy>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Mar 2007 21:39:11 -0500
+Received: from [63.64.152.142] ([63.64.152.142]:1458 "EHLO gitlost.site"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992904AbXCCCjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 21:39:10 -0500
+X-Greylist: delayed 1781 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Mar 2007 21:39:10 EST
+From: Chris Leech <christopher.leech@intel.com>
+Subject: [PATCH 4/9] ioatdma: Remove the use of writeq from the ioatdma driver
+Date: Fri, 02 Mar 2007 18:24:24 -0800
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-Id: <20070303022423.31033.52798.stgit@gitlost.site>
+In-Reply-To: <20070303022238.31033.84558.stgit@gitlost.site>
+References: <20070303022238.31033.84558.stgit@gitlost.site>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007, Nicholas Miell wrote:
+There's only one now anyway, and it's not in a performance path,
+so make it behave the same on 32-bit and 64-bit CPUs.
 
-> On Fri, 2007-03-02 at 16:52 -0800, Davide Libenzi wrote:
-> > On Fri, 2 Mar 2007, Nicholas Miell wrote:
-> > 
-> > > The point Ingo was making is that the x86 ABI already requires the FPU
-> > > context to be saved before *all* function calls.
-> > 
-> > I've not seen that among Ingo's points, but yeah some status is caller 
-> > saved. But, aren't things like status word and control bits callee saved? 
-> > If that's the case, it might require proper handling.
-> > 
-> 
-> Ingo mentioned it in one of the parts you cut out of your reply:
-> 
-> > and here is where thinking about threadlets as a function call and not 
-> > as an asynchronous context helps alot: the classic gcc convention for 
-> > FPU use & function calls should apply: gcc does not call an external 
-> > function with an in-use FPU stack/register, it always neatly unuses it, 
-> > as no FPU register is callee-saved, all are caller-saved.
-> 
-> The i386 psABI is ancient (i.e. it predates SSE, so no mention of the
-> XMM or MXCSR registers) and a bit vague (no mention at all of the FP
-> status word), but I'm fairly certain that Ingo is right.
+Signed-off-by: Chris Leech <christopher.leech@intel.com>
+---
 
-I'm not sure if that's the case. I'd be happy if it was, but I'm afraid 
-it's not. Status word and control bits should not be changed from 
-underneath userspace AFAIK. The ABI I remember tells me that those are 
-callee saved. A quick gcc asm test tells me that too.
-And assuming that's the case, why don't we have a smarter unlazy_fpu() 
-then, that avoid FPU context sync if we're scheduled while inside a 
-syscall (this is no different than an enter inside sys_async_exec - 
-userspace should have taken care of it)?
-IMO a syscall enter should not assume that userspace took care of saving 
-the whole FPU context.
+ drivers/dma/ioatdma.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-
-
-- Davide
-
+diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
+index ec11131..cbf93ca 100644
+--- a/drivers/dma/ioatdma.c
++++ b/drivers/dma/ioatdma.c
+@@ -608,13 +608,11 @@ static void ioat_start_null_desc(struct ioat_dma_chan *ioat_chan)
+ 	list_add_tail(&desc->node, &ioat_chan->used_desc);
+ 	spin_unlock_bh(&ioat_chan->desc_lock);
+ 
+-#if (BITS_PER_LONG == 64)
+-	writeq(desc->phys, ioat_chan->reg_base + IOAT_CHAINADDR_OFFSET);
+-#else
+-	writel((u32) desc->phys,
++	writel(((u64) desc->phys) & 0x00000000FFFFFFFF,
+ 	       ioat_chan->reg_base + IOAT_CHAINADDR_OFFSET_LOW);
+-	writel(0, ioat_chan->reg_base + IOAT_CHAINADDR_OFFSET_HIGH);
+-#endif
++	writel(((u64) desc->phys) >> 32,
++	       ioat_chan->reg_base + IOAT_CHAINADDR_OFFSET_HIGH);
++
+ 	writeb(IOAT_CHANCMD_START, ioat_chan->reg_base + IOAT_CHANCMD_OFFSET);
+ }
+ 
 
