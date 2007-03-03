@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbXCCWwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030624AbXCCW6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933134AbXCCWwb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 17:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933144AbXCCWwb
+	id S1030624AbXCCW6v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 17:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030626AbXCCW6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 17:52:31 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:48542 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933134AbXCCWwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 17:52:30 -0500
-Date: Sat, 3 Mar 2007 14:52:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org
+	Sat, 3 Mar 2007 17:58:51 -0500
+Received: from mu-out-0910.google.com ([209.85.134.188]:2845 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030624AbXCCW6u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 17:58:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BY6grTztbtdaAjarFbcqPyCOvmFYpkcNVLC3Pm9y1/TCWEqz6zpCW1F5G8pT8RU22sE9uzc/vOxSQef7SuqeHzwSsAKdHf+lb+UPqJQOCVdku11DV4HtILAZNIuSHIqbd6HeVOMGu9I6Fehmhmafof/X88mbJoPm071apFJzK/U=
+Message-ID: <2c0942db0703031458i540c496fib892240619faa9b2@mail.gmail.com>
+Date: Sat, 3 Mar 2007 14:58:48 -0800
+From: "Ray Lee" <madrabbit@gmail.com>
+Reply-To: ray-gmail@madrabbit.org
+To: "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: userspace pagecache management tool
-Message-Id: <20070303145221.2a42cc0f.akpm@linux-foundation.org>
-In-Reply-To: <45E9F5DA.2070708@redhat.com>
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-	<45E9DD4A.2060806@redhat.com>
-	<20070303131204.6706a95c.akpm@linux-foundation.org>
-	<45E9E910.2070804@redhat.com>
-	<20070303140744.b22699dd.akpm@linux-foundation.org>
-	<45E9F5DA.2070708@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070303122935.f1ab0067.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 03 Mar 2007 17:25:30 -0500 Rik van Riel <riel@redhat.com> wrote:
+On 3/3/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> It is to address the "waah, backups fill my memory with pagecache" and the
+> "waah, updatedb swapped everything out" and the "waah, copying a DVD
+> gobbled all my memory" problems.
 
-> backup program
+Is the updatedb problem really due to pagecache?
 
-A suitable policy for a backup program would probably be to invalidate any
-output file(s) and to invalidate those pages of the input files which were
-not in cache when the backup program first opened those files.  That way
-the backup program will have no effect on the cache state, except for the
-race situation where someone read an uncached file while the backup program
-was reading from it too.
+> When running
+>
+>         pagecache-management.sh dd if=100-mb-file of=foo
+>         or
+>         pagecache-management.sh cp -a /usr/src/linux-2.6.20 /usr/src/foo
+>
+> the amount of pagecache in the machine is pretty much unaltered.  Maybe a
+> megabyte of additional cache in the second case, because of ext3 indirect
+> blocks.
 
-This can be added in an hour or two with no kernel changes (use mincore).
+ray@phoenix:~/work/home/pagecache-management$ grep ext3_i
+/proc/slabinfo; ./pagecache-management.sh sudo updatedb; grep ext3_i
+/proc/slabinfo
+ext3_inode_cache   21024  23722   1584    2    1 : tunables   24   12
+  0 : slabdata  11861  11861      0
+ext3_inode_cache   41332  41332   1584    2    1 : tunables   24   12
+  0 : slabdata  20666  20666      0
+ray@phoenix:~/work/home/pagecache-management$ echo $(( 1584 * (41332-21024) ))
+32167872
 
+Or is there a /proc/sys/vm/* knob that can be tweaked for this
+before/after the updatedb?
+
+But yeah, I for one would happily submit patches to upstream authors
+to address this there. There's no reason code should be making the
+kernel guess its intention on these things.
+
+Ray
