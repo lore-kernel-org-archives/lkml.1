@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030293AbXCCOiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030294AbXCCOq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030293AbXCCOiq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 09:38:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030291AbXCCOhg
+	id S1030294AbXCCOq4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 09:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030303AbXCCOq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 09:37:36 -0500
-Received: from thing.hostingexpert.com ([67.15.235.34]:47374 "EHLO
-	thing.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030294AbXCCOhI (ORCPT
+	Sat, 3 Mar 2007 09:46:56 -0500
+Received: from webmail13.mail.yandex.net ([213.180.200.6]:41282 "EHLO
+	webmail13.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030294AbXCCOqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 09:37:08 -0500
-Message-ID: <45E987D5.8080200@linuxtv.org>
-Date: Sat, 03 Mar 2007 09:36:05 -0500
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+	Sat, 3 Mar 2007 09:46:55 -0500
+Date: Sat, 3 Mar 2007 17:46:37 +0300 (MSK)
+From: "Mockern" <Mockern@yandex.ru>
+Message-Id: <45E98A4D.000006.28746@webmail13.yandex.ru>
 MIME-Version: 1.0
-To: stable@kernel.org
-CC: v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [2.6.20.y PATCH 4/7] DVB: cxusb: fix firmware patch for big endian
- systems
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - thing.hostingexpert.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - linuxtv.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-Mailer: Yamail [ http://yandex.ru ]
+To: jirislaby@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Question: 20 microseconds delay
+X-MsgDayCount: 2
+X-BornDate: 1134853200
+In-Reply-To: <45E986E2.3010203@gmail.com>
+Reply-To: Mockern@yandex.ru
+References: <45E98415.000002.30135@webmail9.yandex.ru> <45E986E2.3010203@gmail.com>
+X-Source-Ip: 84.185.232.70
+Content-Type: text/plain;
+  charset="KOI8-R"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jin-Bong lee <jinbong.lee@samsung.com>
-Date: Tue, 20 Feb 2007 23:10:34 -0300
-Subject: [PATCH] DVB: cxusb: fix firmware patch for big endian systems
+The problem is that I need to use wait_event_timeout function.
 
-Without this patch, the device will not be detected after firmware download
-on big endian systems.
+>Mockern napsal(a):
+>> Hi,
+>> 
+>> I have a question.
+>> 
+>> I need to use 20 microsecond delay in my driver.
+>> What exact jiffies value I should define to get 20 microseconds?
+>
+>It's subjiffy delay unless you use 50000 HZ :). Use udelay.
+>
+>regards,
 
-Signed-off-by: Jin-Bong lee <jinbong.lee@samsung.com>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-(cherry picked from commit 1d1370a48ca285ebe197ecd3197a8d5f161bc291)
----
- drivers/media/dvb/dvb-usb/cxusb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/media/dvb/dvb-usb/cxusb.c b/drivers/media/dvb/dvb-usb/cxusb.c
-index 15d12fc..127a94b 100644
---- a/drivers/media/dvb/dvb-usb/cxusb.c
-+++ b/drivers/media/dvb/dvb-usb/cxusb.c
-@@ -469,9 +469,9 @@ static int bluebird_patch_dvico_firmware_download(struct usb_device *udev,
- 	    fw->data[BLUEBIRD_01_ID_OFFSET + 1] == USB_VID_DVICO >> 8) {
- 
- 		fw->data[BLUEBIRD_01_ID_OFFSET + 2] =
--			udev->descriptor.idProduct + 1;
-+			le16_to_cpu(udev->descriptor.idProduct) + 1;
- 		fw->data[BLUEBIRD_01_ID_OFFSET + 3] =
--			udev->descriptor.idProduct >> 8;
-+			le16_to_cpu(udev->descriptor.idProduct) >> 8;
- 
- 		return usb_cypress_load_firmware(udev, fw, CYPRESS_FX2);
- 	}
+-- 
+Яндекс.Почта: объем почтового ящика не ограничен! http://mail.yandex.ru/monitoring/
