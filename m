@@ -1,129 +1,391 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750700AbXCCVWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030432AbXCCVZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750700AbXCCVWv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 16:22:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932510AbXCCVWv
+	id S1030432AbXCCVZH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 16:25:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030429AbXCCVZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 16:22:51 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45440 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750700AbXCCVWu (ORCPT
+	Sat, 3 Mar 2007 16:25:07 -0500
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:4885 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932510AbXCCVZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 16:22:50 -0500
-Date: Sat, 3 Mar 2007 13:22:44 -0800
-From: Paul Jackson <pj@sgi.com>
-To: Herbert Poetzl <herbert@13thfloor.at>
-Cc: dev@openvz.org, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
-       winget@google.com, containers@lists.osdl.org, menage@google.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 0/2] resource control file system - aka containers on
- top of nsproxy!
-Message-Id: <20070303132244.80b5cb40.pj@sgi.com>
-In-Reply-To: <20070303174553.GB16051@MAIL.13thfloor.at>
-References: <20070301133543.GK15509@in.ibm.com>
-	<20070301113900.a7dace47.pj@sgi.com>
-	<45E84682.6040500@openvz.org>
-	<20070303174553.GB16051@MAIL.13thfloor.at>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Mar 2007 16:25:04 -0500
+X-Greylist: delayed 410 seconds by postgrey-1.27 at vger.kernel.org; Sat, 03 Mar 2007 16:25:04 EST
+To: linux-kernel@vger.kernel.org
+Subject: CONFIG_PREEMPT -> crash under load in 2.6.20?
+From: Nix <nix@esperi.org.uk>
+Emacs: if it payed rent for disk space, you'd be rich.
+Date: Sat, 03 Mar 2007 21:18:09 +0000
+Message-ID: <87d53qxbzi.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-DCC-WEiAPG-Metrics: hades 1072; Body=1 Fuz1=1 Fuz2=1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert wrote:
-> I agree here, there is not much difference for the
-> following aspects:
+Since upgrading to 2.6.20, my Athlon 4 has been locking up on a
+very-roughly-daily basis, generally in periods of some load (I've never
+seen it lock up when idle, but have seen it lock up with a load average
+of 0.5). I'm fairly sure this didn't happen with 2.6.19 and am certain
+that it didn't with 2.6.18.
 
-Whether two somewhat similar needs should be met by one shared
-mechanism, or two distinct mechanisms, cannot really be decided by
-listing the similarities.
+The lockups are almost total: network traffic ceases, the keyboard goes
+dead, nothing hits the disk. Once, however, it locked up while I was
+playing an ogg (emu10k1 / SB Live), and the sound did *not* die, but
+instead went into a ~1.5s-long tight loop. (Perhaps this was the card
+running on its own with no CPU assistance: I don't know enough about
+emu10k1 to know if that's plausible.)
 
-One has to determine if there are any significant differences in
-needs that are too difficult for a shared mechanism to provide.
-
-A couple of things you wrote in your second message might
-touch on such possible significant differences:
- - resources must be hierarchically suballocated, and
- - key resource management code hooks can't cause hot cache lines.
-
-In a later message, Herbert wrote:
-> well, the thing is, as nsproxy is working now, you
-> will get a new one (with a changed subset of entries)
-> every time a task does a clone() with one of the 
-> space flags set, which means, that you will end up
-> with quite a lot of them, but resource limits have
-> to address a group of them, not a single nsproxy
-> (or act in a deeply hierarchical way which is not
-> there atm, and probably will never be, as it simply
-> adds too much overhead)
-
-I still can't claim to have my head around this, but what you write
-here, Herbert, writes here touches on what I suspect is a key
-difference between namespaces and resources that would make it
-impractical to accomplish both with a shared mechanism for aggregating
-tasks.
-
-It is a natural and desirable capability when managing resources, which
-are relatively scarce (that's why they're worth all this trouble)
-commodities of which we have some limited amount, to subdivide
-allowances of them.  Some group of tasks gets the right to use certain
-memory pages or cpu time slices, and in turn suballocates that allotment
-to some subgroup of itself.  This naturally leads to a hierarchy of
-allocated resources.
-
-There is no such necessary, hierarchy for name spaces. One name space
-might be derived from another at setup, by some arbitrary conventions,
-but once initialized, this way or that, they are separate name spaces,
-or at least naturally can (must?) be separate.
-
-The cpuset hierarchy is an important part of the API that cpusets
-presents to user space, where that hierarchy reflects the suballocation
-of resources.  If B is a child of A in the cpuset hierarchy, then
-the CPUs and Memory Nodes allowed to B -must- be a subset of those allowed
-to A.  That is the key semantic of the cpuset hierarchy.  This includes
-forcing the removal of a resource from B if for some reason it must
-be removed from A, in order to preserve the hierarchical suballocation,
-which requirement is causing a fair bit of hard work for the cpu hot
-unplug folks.
-
-I am quite willing to believe that name spaces has no need for such a
-hierarchy, and further that it probably never will have such ... "too
-much overhead" as you say.
+I turned off CONFIG_PREEMPT and went to CONFIG_PREEMPT_VOLUNTARY, and
+the lockups ceased.
 
 
-> > It should have the same perf overhead as the original
-> > container patches (basically a double dereference -
-> > task->containers/nsproxy->cpuset - required to get to the 
-> > cpuset from a task).
-> 
-> on every limit accounting or check? I think that
-> is quite a lot of overhead ...
+I can't tell if magic sysrq dies, because as far as I know there's no
+way to get magic sysrq to do much visible when you're in X, and I can't
+get anything to go over the network kernel syslog because the network is
+dead.
 
-Do either of these dereferences require locks?
+I could begin a (really laborious, ~1 day per iteration) bisection to
+try to track this down, but before I start, has anyone seen this before? 
+Is its cause known?
 
-The two critical resources that cpusets manages, memory pages and
-time slices on a cpu, cannot afford such dereferences or locking
-in the key code paths (allocating a page or scheduling a cpu.)  The
-existing cpuset code is down to one RCU guarded dereference of
-current->cpuset in the page allocation code path (and then only on
-systems actively using cpusets), and no such dereferences at all in the
-scheduler path.
 
-It took a fair bit of hard work (for someone of my modest abilities)
-to get that far; I doubt we can accept much regression on this point.
+Crashing .config follows (non-crashing one identical but for
+CONFIG_PREEMPT, as above):
 
-Most likely the other folks doing resource management will have similar
-concerns in many cases - memory pages and cpu slices are not the only
-resources we're trying to manage on critical code paths.
-
-In short - the issues seem to be:
- - resources need to be hierarchical, name spaces don't (can't?), and
- - no hot cache lines allowed by the resource hooks in key code paths.
+CONFIG_X86_32=y
+CONFIG_GENERIC_TIME=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_SEMAPHORE_SLEEPERS=y
+CONFIG_X86=y
+CONFIG_MMU=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_DMI=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_RELAY=y
+CONFIG_INITRAMFS_SOURCE="usr/initramfs.hades"
+CONFIG_INITRAMFS_ROOT_UID=99
+CONFIG_INITRAMFS_ROOT_GID=101
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+CONFIG_SHMEM=y
+CONFIG_SLAB=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_KMOD=y
+CONFIG_BLOCK=y
+CONFIG_BLK_DEV_IO_TRACE=y
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=m
+CONFIG_IOSCHED_DEADLINE=m
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_CFQ=y
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_X86_PC=y
+CONFIG_MK7=y
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_XADD=y
+CONFIG_X86_L1_CACHE_SHIFT=6
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INVLPG=y
+CONFIG_X86_BSWAP=y
+CONFIG_X86_POPAD_OK=y
+CONFIG_X86_CMPXCHG64=y
+CONFIG_X86_GOOD_APIC=y
+CONFIG_X86_INTEL_USERCOPY=y
+CONFIG_X86_USE_PPRO_CHECKSUM=y
+CONFIG_X86_USE_3DNOW=y
+CONFIG_X86_TSC=y
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_PREEMPT=y
+CONFIG_X86_UP_APIC=y
+CONFIG_X86_UP_IOAPIC=y
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_NONFATAL=y
+CONFIG_VM86=y
+CONFIG_NOHIGHMEM=y
+CONFIG_PAGE_OFFSET=0xC0000000
+CONFIG_PROC_MM=y
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_SPARSEMEM_STATIC=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_MTRR=y
+CONFIG_HZ_1000=y
+CONFIG_HZ=1000
+CONFIG_PHYSICAL_START=0x100000
+CONFIG_PHYSICAL_ALIGN=0x100000
+CONFIG_PM=y
+CONFIG_PM_LEGACY=y
+CONFIG_PCI=y
+CONFIG_PCI_GOANY=y
+CONFIG_PCI_BIOS=y
+CONFIG_PCI_DIRECT=y
+CONFIG_ISA_DMA_API=y
+CONFIG_BINFMT_ELF=y
+CONFIG_BINFMT_MISC=y
+CONFIG_NET=y
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_FIB_HASH=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=m
+CONFIG_PARPORT=y
+CONFIG_PARPORT_PC=y
+CONFIG_PARPORT_1284=y
+CONFIG_BLK_DEV_FD=y
+CONFIG_BLK_DEV_LOOP=m
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_NBD=m
+CONFIG_CDROM_PKTCDVD=y
+CONFIG_CDROM_PKTCDVD_BUFFERS=16
+CONFIG_IDE=y
+CONFIG_BLK_DEV_IDE=y
+CONFIG_BLK_DEV_IDEDISK=y
+CONFIG_IDEDISK_MULTI_MODE=y
+CONFIG_BLK_DEV_IDECD=y
+CONFIG_IDE_GENERIC=y
+CONFIG_BLK_DEV_IDEPCI=y
+CONFIG_IDEPCI_SHARE_IRQ=y
+CONFIG_BLK_DEV_OFFBOARD=y
+CONFIG_BLK_DEV_GENERIC=y
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+CONFIG_IDEDMA_PCI_AUTO=y
+CONFIG_BLK_DEV_PDC202XX_NEW=y
+CONFIG_BLK_DEV_VIA82CXXX=y
+CONFIG_BLK_DEV_IDEDMA=y
+CONFIG_IDEDMA_AUTO=y
+CONFIG_SCSI=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_SCSI_SCAN_ASYNC=y
+CONFIG_MD=y
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_CRYPT=y
+CONFIG_DM_SNAPSHOT=y
+CONFIG_DM_MIRROR=y
+CONFIG_DM_ZERO=y
+CONFIG_NETDEVICES=y
+CONFIG_DUMMY=m
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+CONFIG_NET_VENDOR_3COM=y
+CONFIG_VORTEX=y
+CONFIG_INPUT=y
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+CONFIG_INPUT_JOYDEV=y
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+CONFIG_INPUT_MOUSE=y
+CONFIG_MOUSE_PS2=y
+CONFIG_INPUT_JOYSTICK=y
+CONFIG_JOYSTICK_ANALOG=y
+CONFIG_INPUT_MISC=y
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+CONFIG_SERIO_LIBPS2=y
+CONFIG_GAMEPORT=y
+CONFIG_GAMEPORT_EMU10K1=y
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+CONFIG_SERIAL_CORE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_PRINTER=y
+CONFIG_RTC=y
+CONFIG_AGP=y
+CONFIG_AGP_VIA=y
+CONFIG_DRM=m
+CONFIG_DRM_RADEON=m
+CONFIG_I2C=y
+CONFIG_I2C_CHARDEV=y
+CONFIG_I2C_ISA=y
+CONFIG_I2C_VIAPRO=y
+CONFIG_HWMON=y
+CONFIG_HWMON_VID=y
+CONFIG_SENSORS_W83627HF=y
+CONFIG_VGA_CONSOLE=y
+CONFIG_VIDEO_SELECT=y
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_SOUND=y
+CONFIG_SND=y
+CONFIG_SND_TIMER=y
+CONFIG_SND_PCM=y
+CONFIG_SND_HWDEP=y
+CONFIG_SND_RAWMIDI=y
+CONFIG_SND_SEQUENCER=y
+CONFIG_SND_SEQ_DUMMY=m
+CONFIG_SND_OSSEMUL=y
+CONFIG_SND_MIXER_OSS=y
+CONFIG_SND_PCM_OSS=y
+CONFIG_SND_PCM_OSS_PLUGINS=y
+CONFIG_SND_SEQUENCER_OSS=y
+CONFIG_SND_RTCTIMER=y
+CONFIG_SND_SEQ_RTCTIMER_DEFAULT=y
+CONFIG_SND_SUPPORT_OLD_API=y
+CONFIG_SND_VERBOSE_PROCFS=y
+CONFIG_SND_MPU401_UART=m
+CONFIG_SND_AC97_CODEC=y
+CONFIG_SND_MPU401=m
+CONFIG_SND_EMU10K1=y
+CONFIG_SND_INTEL8X0=y
+CONFIG_AC97_BUS=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_BANDWIDTH=y
+CONFIG_USB_DYNAMIC_MINORS=y
+CONFIG_USB_UHCI_HCD=y
+CONFIG_USB_PRINTER=y
+CONFIG_USB_STORAGE=y
+CONFIG_EXT2_FS=y
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT2_FS_POSIX_ACL=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_JBD=y
+CONFIG_FS_MBCACHE=y
+CONFIG_REISERFS_FS=y
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+CONFIG_FS_POSIX_ACL=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_QUOTA=y
+CONFIG_QFMT_V2=y
+CONFIG_QUOTACTL=y
+CONFIG_DNOTIFY=y
+CONFIG_FUSE_FS=y
+CONFIG_GENERIC_ACL=y
+CONFIG_ISO9660_FS=y
+CONFIG_JOLIET=y
+CONFIG_ZISOFS=y
+CONFIG_ZISOFS_FS=y
+CONFIG_UDF_FS=y
+CONFIG_UDF_NLS=y
+CONFIG_FAT_FS=y
+CONFIG_MSDOS_FS=y
+CONFIG_VFAT_FS=m
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+CONFIG_PROC_FS=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_TMPFS_POSIX_ACL=y
+CONFIG_HUGETLBFS=y
+CONFIG_HUGETLB_PAGE=y
+CONFIG_RAMFS=y
+CONFIG_CONFIGFS_FS=y
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_NFS_V3_ACL=y
+CONFIG_NFSD=y
+CONFIG_NFSD_V2_ACL=y
+CONFIG_NFSD_V3=y
+CONFIG_NFSD_V3_ACL=y
+CONFIG_NFSD_TCP=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_EXPORTFS=y
+CONFIG_NFS_ACL_SUPPORT=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_ASCII=m
+CONFIG_NLS_ISO8859_1=y
+CONFIG_NLS_ISO8859_15=m
+CONFIG_NLS_UTF8=m
+CONFIG_PROFILING=y
+CONFIG_OPROFILE=y
+CONFIG_KPROBES=y
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_DEBUG_FS=y
+CONFIG_LOG_BUF_SHIFT=14
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_X86_FIND_SMP_CONFIG=y
+CONFIG_X86_MPPARSE=y
+CONFIG_DOUBLEFAULT=y
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_ECB=m
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_TWOFISH_COMMON=m
+CONFIG_CRYPTO_TWOFISH_586=m
+CONFIG_BITREVERSE=y
+CONFIG_CRC32=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_PLIST=y
+CONFIG_IOMAP_COPY=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_X86_BIOS_REBOOT=y
+CONFIG_KTIME_SCALAR=y
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+`In the future, company names will be a 32-character hex string.'
+  --- Bruce Schneier on the shortage of company names
