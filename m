@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992807AbXCCAkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992814AbXCCAni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992807AbXCCAkN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 19:40:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992808AbXCCAkN
+	id S2992814AbXCCAni (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 19:43:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992812AbXCCAni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 19:40:13 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49978 "EHLO smtp.osdl.org"
+	Fri, 2 Mar 2007 19:43:38 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:55237 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992807AbXCCAkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 19:40:11 -0500
-Date: Fri, 2 Mar 2007 16:40:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm1
-Message-Id: <20070302164009.a2aa6cbc.akpm@linux-foundation.org>
-In-Reply-To: <6bffcb0e0703021542k4f882531r21807c7efdbd0ebc@mail.gmail.com>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	<6bffcb0e0703021542k4f882531r21807c7efdbd0ebc@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S2992809AbXCCAnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 19:43:37 -0500
+Message-ID: <45E8C4B6.4050302@garzik.org>
+Date: Fri, 02 Mar 2007 19:43:34 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Gary Zambrano <zambrano@broadcom.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] dma-mapping.h
+References: <1171651858.16919.14.camel@dhcp-10-7-81-58.broadcom.com>
+In-Reply-To: <1171651858.16919.14.camel@dhcp-10-7-81-58.broadcom.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Mar 2007 00:42:33 +0100
-"Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
+Gary Zambrano wrote:
+> Added dma_sync_single_range_for_cpu/device to dma-mapping.h in asm-arm &
+> asm-avr32 to call dma_sync_single_for_cpu/device. This patch enables b44
+> to compile on systems with these cpus.
+> This patch was created with the assumption that another method of
+> dma_sync_single_range_for_cpu/device does not exist on these
+> architectures.
+> 
+> 
+> Signed-off by: Gary Zambrano <zambrano@broadcom.com>
 
-> On 02/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > Temporarily at
-> >
-> >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
-> >
-> 
-> I have noticed some strange system behavior. When i try to build a
-> kernel (medium load) - X, keyboard, mouse and sound hangs.
-> 
-> I can ping machine and I can use magic SysRq key, but that's all.
-> 
-> 2.6.20-mm2 was fine, 2.6.21-rc2 works well (over 800 patches since
-> 2.6.20-mm2 - great...)
-> 
-> NIL (Nothing Interesting in Logs)
-> 
+this patch looks OK to me, but I'm not the one to apply it.  This should 
+go through Andrew or linux-arch
 
-Can we see the sysrq-T output please?
+	Jeff, passing the buck
+
+
+
