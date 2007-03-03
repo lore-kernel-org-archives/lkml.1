@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992950AbXCCE4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992966AbXCCE75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992950AbXCCE4U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 23:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992965AbXCCE4U
+	id S2992966AbXCCE75 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 23:59:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992967AbXCCE75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 23:56:20 -0500
-Received: from fgwmail2.fujitsu.co.jp ([164.71.1.135]:38193 "EHLO
-	fgwmail2.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992950AbXCCE4T (ORCPT
+	Fri, 2 Mar 2007 23:59:57 -0500
+Received: from mga06.intel.com ([134.134.136.21]:38355 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992966AbXCCE75 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 23:56:19 -0500
-Date: Sat, 3 Mar 2007 13:54:45 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: mel@skynet.ie (Mel Gorman)
-Cc: akpm@linux-foundation.org, npiggin@suse.de, clameter@engr.sgi.com,
-       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-Message-Id: <20070303135445.e2140ce2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070302163206.GA1555@skynet.ie>
-References: <20070301101249.GA29351@skynet.ie>
-	<20070301160915.6da876c5.akpm@linux-foundation.org>
-	<20070302163206.GA1555@skynet.ie>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Fri, 2 Mar 2007 23:59:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,244,1170662400"; 
+   d="scan'208"; a="203527275:sNHT18883326"
+Date: Fri, 2 Mar 2007 20:23:32 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: akpm@linux-foundation.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, npiggin@suse.de
+Subject: [patch] sched: optimize siblings status check logic in wake_idle()
+Message-ID: <20070302202331.B27368@unix-os.sc.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Mar 2007 16:32:07 +0000
-mel@skynet.ie (Mel Gorman) wrote:
+When a logical cpu 'x' already has more than one process running, then most likely
+the siblings of that cpu 'x' must be busy. Otherwise the idle siblings
+would have likely(in most of the scenarios) picked up the extra load making
+the load on 'x' atmost one.
 
-> The zone-based patches for memory partitioning should be providing what is
-> required for memory hot-remove of an entire DIMM or bank of memory (PPC64
-> also cares about removing smaller blocks of memory but zones are overkill
-> there and anti-fragmentation on its own is good enough).  Pages hot-added
-> to ZONE_MOVABLE will always be reclaimable or migratable in the case of
-> mlock(). Kamezawa Hiroyuki has indicated that his hot-remove patches also
-> do something like ZONE_MOVABLE. I would hope that his patches could be
-> easily based on top of my memory partitioning set of patches. The markup
-> of pages has been tested and the zone definitely works. I've added the
-> kamezawa.hiroyu@jp.fujitsu.com to the cc list so he can comment :)
+Use this logic to eliminate the siblings status check and minimize the cache
+misses encountered on a heavily loaded system.
 
-Thanks. As you wrote, I'm planning to write patch based on ZONE_MOVABLE.
-I'm now using my own one just because I can't handle too many patches.
-My version has a few just-for-cleanup patches. And it may be a bit different
-from yours. I'll add cc to you when I post.
-It's not ready to send yet...(found some panic at offlining memory ;)
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-> What I do not do in my patchset is hot-add to ZONE_MOVABLE because I couldn't
-> be certain it's what the hotplug people wanted. They will of course need to
-> hot-add to that zone if they want to be able to remove it later.
-> 
-I'm planing to make hot-added memory as ZONE_MOVABLE. I believe we can find and 
-move movable pages in ZONE_NOT_MOVABLE to ZONE_MOVABLE.(or kswapd/pageout will
-do this in slow way.) The reason is that my first purpose is removing hot-added-memory.
-
-I think I can add knob to choose a zone for hot-added-memory but I won't do it
-until someone wants it.
-
-> For node-based memory hot-add and hot-remove, the node would consist of just
-> one populated zone - ZONE_MOVABLE.
-> 
-yes.
-
-Note:
-We are considering to allocate well-known-structures like mem_map and pgdat
-from hot-added memory. We can remove it when a node is unplugged.
-But no plan/patches yet.
-
-
-> For the removal of DIMMs, anti-fragmentation has something additional
-> to offer. The later patches in the anti-fragmentation patchset bias the
-> placement of unmovable pages towards the lower PFNs. It's not very strict
-> about this because being strict would cost. A mechanism could be put in place
-> that enforced the placement of unmovables pages at low PFNS. Due to the cost,
-> it would need to be disabled by default and enabled on request. On the plus
-> side, the cost would only be incurred when splitting a MAX_ORDER block of
-> pages which is a rare event.
-
-And kernel on VM, IBM's uses 16MB sparsemem for memory-hotplug, can get
-enough benefit. While Xen's baloon driver can do memory-unplug, I heard
-it causes memory fragmentation. anti-frag patch will help this.
-
--Kame
-
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0dc7572..d1ecc56 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1368,7 +1368,16 @@ static int wake_idle(int cpu, struct task_struct *p)
+ 	struct sched_domain *sd;
+ 	int i;
+ 
+-	if (idle_cpu(cpu))
++	/*
++	 * If it is idle, then it is the best cpu to run this task.
++	 *
++	 * This cpu is also the best, if it has more than one task already.
++	 * Siblings must be also busy(in most cases) as they didn't already
++	 * pickup the extra load from this cpu and hence we need not check
++	 * sibling runqueue info. This will avoid the checks and cache miss
++	 * penalities associated with that.
++	 */
++	if (idle_cpu(cpu) || cpu_rq(cpu)->nr_running > 1)
+ 		return cpu;
+ 
+ 	for_each_domain(cpu, sd) {
