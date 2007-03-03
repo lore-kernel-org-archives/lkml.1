@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992831AbXCCBYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992874AbXCCBZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992831AbXCCBYn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 20:24:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992862AbXCCBYn
+	id S2992874AbXCCBZN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 20:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992877AbXCCBZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 20:24:43 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:22530 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992831AbXCCBYl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 20:24:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=XWUms2miivpfqRy6m87wMNhPfD6VbilEKZ4bst9vPvh4vV4BykC2gsOM28ZXRaRszwCub+yR6jkbwhJ1m2+Sxd7T51bMureyQNCIVosU6SL1G6yyQoRtagtozm8IowA0Eb0nG6Z0k56lz/ffT/m19FXgs6safBLeYQWchVorcpk=
-Message-ID: <45E8CDF3.7010406@googlemail.com>
-Date: Sat, 03 Mar 2007 02:22:59 +0100
+	Fri, 2 Mar 2007 20:25:12 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:55642 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992871AbXCCBZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 20:25:06 -0500
+Message-ID: <45E8CE6D.6000801@garzik.org>
+Date: Fri, 02 Mar 2007 20:25:01 -0500
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm1
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>	<6bffcb0e0703021542k4f882531r21807c7efdbd0ebc@mail.gmail.com> <20070302164009.a2aa6cbc.akpm@linux-foundation.org>
-In-Reply-To: <20070302164009.a2aa6cbc.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+CC: akpm@linux-foundation.org, netdev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH] schedule wext/rtnl for removal
+References: <20070301153105.GC5806@tuxdriver.com>
+In-Reply-To: <20070301153105.GC5806@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napisał(a):
-> On Sat, 3 Mar 2007 00:42:33 +0100
-> "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
+John W. Linville wrote:
+> From: Johannes Berg <johannes@sipsolutions.net>
 > 
->> On 02/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->>> Temporarily at
->>>
->>>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
->>>
->> I have noticed some strange system behavior. When i try to build a
->> kernel (medium load) - X, keyboard, mouse and sound hangs.
->>
->> I can ping machine and I can use magic SysRq key, but that's all.
->>
->> 2.6.20-mm2 was fine, 2.6.21-rc2 works well (over 800 patches since
->> 2.6.20-mm2 - great...)
->>
->> NIL (Nothing Interesting in Logs)
->>
+> Since wext is being replaced as fast as we can (it'll probably stick
+> around for legacy drivers though) and the wext/netlink stuff was never
+> really used, this schedules it for removal.
 > 
-> Can we see the sysrq-T output please?
+> The removal schedule is tight but there are no users of the code, the
+> main user of the wext user interface are the wireless-tools, they only
+> have an alpha version using the netlink interface and even that is
+> incomplete.
 > 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> ---
+> Which you consider applying this feature-removal-schedule.txt patch
+> in the current (i.e. pre-2.6.21) timeframe?
+> 
+>  Documentation/feature-removal-schedule.txt |   12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-mm1/sys.log
+When you send this sort of stuff, spam as many lists as reasonable.
 
-Regards,
-Michal
+The removal of a recently-added userspace ABI is an unusual event, and 
+IMO needs discussing.
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
