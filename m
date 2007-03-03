@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030275AbXCCObn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030280AbXCCOca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030275AbXCCObn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 09:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030278AbXCCObn
+	id S1030280AbXCCOca (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 09:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030279AbXCCOca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 09:31:43 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:44228 "EHLO cacti.profiwh.com"
+	Sat, 3 Mar 2007 09:32:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:37919 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030275AbXCCObn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 09:31:43 -0500
-Message-ID: <45E986E2.3010203@gmail.com>
-Date: Sat, 03 Mar 2007 15:32:02 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
-MIME-Version: 1.0
-To: Mockern@yandex.ru
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Question: 20 microseconds  delay
-References: <45E98415.000002.30135@webmail9.yandex.ru>
-In-Reply-To: <45E98415.000002.30135@webmail9.yandex.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1030284AbXCCOc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 09:32:29 -0500
+Date: Sat, 3 Mar 2007 06:32:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: devzero@web.de
+Cc: linux-kernel@vger.kernel.org, balbir@in.ibm.com, csturtiv@sgi.com,
+       daw@sgi.com, guillaume.thouvenin@bull.net, jlan@sgi.com,
+       nagar@watson.ibm.com, tee@sgi.com
+Subject: Re: [RFC] Documentation for io-accounting / reporting via procfs
+Message-Id: <20070303063204.656b321b.akpm@linux-foundation.org>
+In-Reply-To: <1661550864@web.de>
+References: <1661550864@web.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mockern napsal(a):
-> Hi,
+On Sat, 03 Mar 2007 15:19:02 +0100 devzero@web.de wrote:
+
+> I have tried to compile some docs for the new and very useful io-accounting feature, mostly by grabbing the existing information from lkml/sources.
 > 
-> I have a question.
+> Feel free to comment, modify, ignore - whatever.
 > 
-> I need to use 20 microsecond delay in my driver.
-> What exact jiffies value I should define to get 20 microseconds?
+> If you like it, maybe this can be merged into Documentation/filesystems/proc.txt  later !?
 
-It's subjiffy delay unless you use 50000 HZ :). Use udelay.
+yup. it looks OK, thanks.
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+> At it`s current implementation state, it's a bit racy on 32-bit machines: if process 
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+You have a funny backtick in there where single-quote was intended.  In fact no quote
+at all is needed there.
