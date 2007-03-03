@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXCCXFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750757AbXCCXbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750719AbXCCXFj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 18:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbXCCXFj
+	id S1750757AbXCCXbz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 18:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbXCCXbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 18:05:39 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:49922 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbXCCXFi convert rfc822-to-8bit (ORCPT
+	Sat, 3 Mar 2007 18:31:55 -0500
+Received: from wr-out-0506.google.com ([64.233.184.233]:18577 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbXCCXby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 18:05:38 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: bert hubert <bert.hubert@netherlabs.nl>
-Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
-Date: Sun, 4 Mar 2007 00:05:37 +0100
-User-Agent: KMail/1.9.6
-Cc: bryan.wu@analog.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <1172722480.5264.75.camel@roc-desktop> <200703032330.50116.arnd@arndb.de> <20070303225002.GB28961@outpost.ds9a.nl>
-In-Reply-To: <20070303225002.GB28961@outpost.ds9a.nl>
+	Sat, 3 Mar 2007 18:31:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=YlSGL9SVnWr5y5BihUrg5klx3Zl68QbtWsDUfrJzXnud4whWNmtTlgbhApEb/vSHguwpIE7xW8LlZdaVNI/Hv2I8kGAEUzuqQfTq6+knRlTjfkomMp5pD4zOcRLQvyOZ4aCwJmuTL8g9C9RWfeje9uwvtZzxHwFxUvzwXJ7ZjVM=
+Message-ID: <6bffcb0e0703031531h3f0a86c6sda2522c0ca504765@mail.gmail.com>
+Date: Sun, 4 Mar 2007 00:31:53 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump kernel)
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703040005.38189.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:bf0b512fe2ff06b96d9695102898be39
-X-Provags-ID2: V01U2FsdGVkX1/MgFKUI35l4Zu2REVGW4iiCiJa3wTTEoxoYU6
- HeK7TfMnzQqbdPczuuFMFuCtxcP5OpBBSXoUE1Y8WXorsh560u
- MXgQR9Q2Bm34ulIxrJ7VQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 March 2007 23:50:02 bert hubert wrote:
-> >       for (;;)
-> >               asm volatile ("idle");
->
-> This looks remarkably like relax_cpu()
+Hi,
 
-Actually not: cpu_relax() is defined as barrier(), it can't
-call idle because that might make it sleep for a indefinite
-amount of time (until the next interrupt, but only if they
-are enabled).
+I hit this bug again
+(http://www.ussg.iu.edu/hypermail/linux/kernel/0702.2/1643.html)
 
-Some nice architectures provide a hardware mechanism to do
-cpu_relax, like going to low-power mode for a few microseconds,
-but this one doesn't seem to have it.
+BUG: soft lockup detected on CPU#0!
+ [<c1604556>] show_trace_log_lvl+0x1a/0x2f
+ [<c1604c2c>] show_trace+0x12/0x14
+ [<c1604cde>] dump_stack+0x16/0x18
+ [<c16426e7>] softlockup_tick+0x97/0xa7
+ [<c161de38>] run_local_timers+0x12/0x14
+ [<c161e1ce>] update_process_times+0x3e/0x63
+ [<c162c44b>] tick_sched_timer+0x5d/0xa1
+ [<c1629715>] hrtimer_interrupt+0x11e/0x1b2
+ [<c160684e>] timer_interrupt+0xe/0x15
+ [<c164299e>] handle_IRQ_event+0x1a/0x46
+ [<c1643cfe>] handle_level_irq+0x81/0xcb
+ [<c1605dd8>] do_IRQ+0xb4/0xe0
 
-	Arnd <><
+This time it's a crash dump kernel without SMP.
+
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/kdump-dmesg
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/kdump-config
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
