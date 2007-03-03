@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992851AbXCCBQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992860AbXCCBRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992851AbXCCBQz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 20:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992856AbXCCBQz
+	id S2992860AbXCCBRV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 20:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992856AbXCCBRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 20:16:55 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:55525 "EHLO mail.dvmed.net"
+	Fri, 2 Mar 2007 20:17:21 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:55539 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992851AbXCCBQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 20:16:54 -0500
-Message-ID: <45E8CC85.4040309@garzik.org>
-Date: Fri, 02 Mar 2007 20:16:53 -0500
-From: Jeff Garzik <jeff@garzik.org>
+	id S2992861AbXCCBRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 20:17:19 -0500
+Message-ID: <45E8CC9C.3080607@pobox.com>
+Date: Fri, 02 Mar 2007 20:17:16 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: Fix mv643xx_eth compilation.
-References: <200702271559.l1RFxJXN013132@hera.kernel.org> <20070228204139.GA30657@redhat.com>
-In-Reply-To: <20070228204139.GA30657@redhat.com>
+To: Dale Farnsworth <dale@farnsworth.org>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH 1/2] mv643xx_eth: move mac_addr inside mv643xx_eth_platform_data
+References: <20070301233148.GA19550@xyzzy.farnsworth.org>
+In-Reply-To: <20070301233148.GA19550@xyzzy.farnsworth.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
@@ -28,11 +28,24 @@ X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> Commit 908b637fe793165b6aecdc875cdca67c4959a1ad removed ETH_DMA_ALIGN
-> but missed a usage of it in a macro, which broke the build.
+Dale Farnsworth wrote:
+> The information contained within platform_data should be self-contained.
+> Replace the pointer to a MAC address with the actual MAC address in
+> struct mv643xx_eth_platform_data.
 > 
-> Signed-off-by: Dave Jones <davej@redhat.com>
+> Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> 
+> ---
+> 
+> Replaced explicit mac address comparison with a call to is_valid_ether_addr(),
+> as suggested by Stephen Hemminger <shemminger@linux-foundation.org>.
+> 
+>  arch/mips/momentum/jaguar_atx/platform.c |   20 ++++----------------
+>  arch/mips/momentum/ocelot_3/platform.c   |   20 ++++----------------
+>  arch/mips/momentum/ocelot_c/platform.c   |   12 ++----------
+>  drivers/net/mv643xx_eth.c                |    2 +-
+>  include/linux/mv643xx.h                  |    2 +-
+>  5 files changed, 12 insertions(+), 44 deletions(-)
 
 applied
 
