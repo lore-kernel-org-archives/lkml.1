@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992966AbXCCE75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXCCFe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992966AbXCCE75 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 23:59:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992967AbXCCE75
+	id S932403AbXCCFe0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 00:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXCCFeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 23:59:57 -0500
-Received: from mga06.intel.com ([134.134.136.21]:38355 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992966AbXCCE75 (ORCPT
+	Sat, 3 Mar 2007 00:34:25 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:39370 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932403AbXCCFeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 23:59:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,244,1170662400"; 
-   d="scan'208"; a="203527275:sNHT18883326"
-Date: Fri, 2 Mar 2007 20:23:32 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: akpm@linux-foundation.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: [patch] sched: optimize siblings status check logic in wake_idle()
-Message-ID: <20070302202331.B27368@unix-os.sc.intel.com>
+	Sat, 3 Mar 2007 00:34:24 -0500
+Subject: Re: [linux-pm] [PATCH 2/2 -stable] libata: add missing CONFIG_PM
+	in LLDs
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Tejun Heo <htejun@gmail.com>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-ide@vger.kernel.org,
+       jgarzik@pobox.com, linux-pm@lists.osdl.org, stable@kernel.org,
+       Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <45E8E983.5030109@gmail.com>
+References: <20061122172841.0b90f042@localhost.localdomain>
+	 <Pine.LNX.4.60.0702262150460.5079@poirot.grange>
+	 <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
+	 <Pine.LNX.4.60.0703012305030.7351@poirot.grange>
+	 <20070302084530.GN20322@htj.dyndns.org>
+	 <20070302084649.GO20322@htj.dyndns.org>
+	 <1172881095.18544.108.camel@nigel.suspend2.net>
+	 <45E8E983.5030109@gmail.com>
+Content-Type: text/plain
+Date: Sat, 03 Mar 2007 16:34:25 +1100
+Message-Id: <1172900065.18544.119.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
+X-Mailer: Evolution 2.9.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a logical cpu 'x' already has more than one process running, then most likely
-the siblings of that cpu 'x' must be busy. Otherwise the idle siblings
-would have likely(in most of the scenarios) picked up the extra load making
-the load on 'x' atmost one.
+Hi.
 
-Use this logic to eliminate the siblings status check and minimize the cache
-misses encountered on a heavily loaded system.
+On Sat, 2007-03-03 at 12:20 +0900, Tejun Heo wrote:
+> Hello, Nigel.
+> 
+> Nigel Cunningham wrote:
+> >> Index: work1/drivers/ata/ahci.c
+> >> ===================================================================
+> >> --- work1.orig/drivers/ata/ahci.c
+> >> +++ work1/drivers/ata/ahci.c
+> >> @@ -225,10 +225,12 @@ static void ahci_thaw(struct ata_port *a
+> >>  static void ahci_error_handler(struct ata_port *ap);
+> >>  static void ahci_vt8251_error_handler(struct ata_port *ap);
+> >>  static void ahci_post_internal_cmd(struct ata_queued_cmd *qc);
+> >> +#ifdef CONFIG_PM
+> >>  static int ahci_port_suspend(struct ata_port *ap, pm_message_t mesg);
+> >>  static int ahci_port_resume(struct ata_port *ap);
+> >>  static int ahci_pci_device_suspend(struct pci_dev *pdev, pm_message_t mesg);
+> >>  static int ahci_pci_device_resume(struct pci_dev *pdev);
+> > 
+> > Wouldn't it be simpler to add
+> > 
+> > #else
+> > #define ahci_port_suspend(port, message) (NULL)
+> > 
+> > etc (or something similar)?
+> 
+> ahci_port_suspend() is used to fill ata_port_ops vector, so it needs to
+> be a function.  If you're talking about defining NULL function, yeah,
+> that will remove half of CONFIG_PMs but would require dummy definitions
+> for all functions.  I think both are ugly.  :-)
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+Yeah, I didn't look really carefully; an empty static function would
+have been what I'd have written if I'd paid more attention.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 0dc7572..d1ecc56 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1368,7 +1368,16 @@ static int wake_idle(int cpu, struct task_struct *p)
- 	struct sched_domain *sd;
- 	int i;
- 
--	if (idle_cpu(cpu))
-+	/*
-+	 * If it is idle, then it is the best cpu to run this task.
-+	 *
-+	 * This cpu is also the best, if it has more than one task already.
-+	 * Siblings must be also busy(in most cases) as they didn't already
-+	 * pickup the extra load from this cpu and hence we need not check
-+	 * sibling runqueue info. This will avoid the checks and cache miss
-+	 * penalities associated with that.
-+	 */
-+	if (idle_cpu(cpu) || cpu_rq(cpu)->nr_running > 1)
- 		return cpu;
- 
- 	for_each_domain(cpu, sd) {
+> I'm working on a linker trick.  Please take a look at the following thread.
+> 
+>   http://thread.gmane.org/gmane.linux.ide/16475
+
+Not familiar with fancy things like that, so I'll just pipe down and
+leave you to it :).
+
+Regards,
+
+Nigel
+
