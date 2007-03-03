@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750760AbXCCXfC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750767AbXCCXhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750760AbXCCXfC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 18:35:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbXCCXfB
+	id S1750767AbXCCXhz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 18:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbXCCXhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 18:35:01 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49414 "EHLO smtp.osdl.org"
+	Sat, 3 Mar 2007 18:37:54 -0500
+Received: from codepoet.org ([166.70.99.138]:48786 "EHLO codepoet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbXCCXfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 18:35:00 -0500
-Date: Sat, 3 Mar 2007 15:34:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ray-gmail@madrabbit.org
-Cc: "Ray Lee" <madrabbit@gmail.com>, linux-kernel@vger.kernel.org
+	id S1750767AbXCCXhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 18:37:54 -0500
+X-Greylist: delayed 1878 seconds by postgrey-1.27 at vger.kernel.org; Sat, 03 Mar 2007 18:37:54 EST
+Date: Sat, 3 Mar 2007 15:56:01 -0700
+From: Erik Andersen <andersen@codepoet.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, bert hubert <bert.hubert@netherlabs.nl>,
+       linux-kernel@vger.kernel.org
 Subject: Re: userspace pagecache management tool
-Message-Id: <20070303153454.6548e562.akpm@linux-foundation.org>
-In-Reply-To: <2c0942db0703031458i540c496fib892240619faa9b2@mail.gmail.com>
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-	<2c0942db0703031458i540c496fib892240619faa9b2@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070303225601.GA15579@codepoet.org>
+Reply-To: andersen@codepoet.org
+Mail-Followup-To: andersen@codepoet.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Rik van Riel <riel@redhat.com>,
+	bert hubert <bert.hubert@netherlabs.nl>,
+	linux-kernel@vger.kernel.org
+References: <20070303122935.f1ab0067.akpm@linux-foundation.org> <45E9DD4A.2060806@redhat.com> <20070303131204.6706a95c.akpm@linux-foundation.org> <45E9E910.2070804@redhat.com> <20070303214108.GA28961@outpost.ds9a.nl> <20070303141448.1ed70e6d.akpm@linux-foundation.org> <45E9F454.2080600@redhat.com> <20070303142609.d3bc9cc3.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070303142609.d3bc9cc3.akpm@linux-foundation.org>
+X-No-Junk-Mail: I do not want to get *any* junk mail.
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Mar 2007 14:58:48 -0800 "Ray Lee" <madrabbit@gmail.com> wrote:
-
-> On 3/3/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > It is to address the "waah, backups fill my memory with pagecache" and the
-> > "waah, updatedb swapped everything out" and the "waah, copying a DVD
-> > gobbled all my memory" problems.
+On Sat Mar 03, 2007 at 02:26:09PM -0800, Andrew Morton wrote:
+> On Sat, 03 Mar 2007 17:19:00 -0500 Rik van Riel <riel@redhat.com> wrote:
 > 
-> Is the updatedb problem really due to pagecache?
-
-It's a combination of pagecache, slab cache and of course contention for
-the disk.  In my experience the latter preponderates: the disk is sekeing
-like mad and I can't get its attention.  Others report lots of swapout,
-which will be a combination of slab and pagecache, varying degrees of each.
-
-> > When running
-> >
-> >         pagecache-management.sh dd if=100-mb-file of=foo
-> >         or
-> >         pagecache-management.sh cp -a /usr/src/linux-2.6.20 /usr/src/foo
-> >
-> > the amount of pagecache in the machine is pretty much unaltered.  Maybe a
-> > megabyte of additional cache in the second case, because of ext3 indirect
-> > blocks.
+> > > It is *not* a global instruction.  It uses setenv, so the user's policy
+> > > affects only the target process and its forked children.
+> > 
+> > ... and all other processes accessing the same file(s)!
+> > 
+> > Your library and the system calls may be limited to one process,
+> > but the consequences are global.
 > 
-> ray@phoenix:~/work/home/pagecache-management$ grep ext3_i
-> /proc/slabinfo; ./pagecache-management.sh sudo updatedb; grep ext3_i
-> /proc/slabinfo
-> ext3_inode_cache   21024  23722   1584    2    1 : tunables   24   12
->   0 : slabdata  11861  11861      0
-> ext3_inode_cache   41332  41332   1584    2    1 : tunables   24   12
->   0 : slabdata  20666  20666      0
-> ray@phoenix:~/work/home/pagecache-management$ echo $(( 1584 * (41332-21024) ))
-> 32167872
+> Yes.  So what?  If the user wants to go and evict libc.so from pagecache
+> then he can do so - the kernel has provided syscalls with which this can be
+> done for at least seven years.  Bad user, shouldn't do that.
 
-If 32 MB is the whole lot then by eliminating pagecache, we just solved the
-problem.  But perhaps you instantiated a lot more VFS cache and all you're
-seeing there is the leftovers.
+I think what Rik is pointing out is that as currently
+implemented, posix_fadvise is a much bigger hammer than is
+generally useful or desirable.
 
-> Or is there a /proc/sys/vm/* knob that can be tweaked for this
-> before/after the updatedb?
+Using posix_fadvise on the other hand says "immediately drop this
+stuff from the pagecache, consequences be damned".  If someone
+else happens to be using the specified data, well too bad, they
+suffer collateral damage.  Process A can, maliciously or
+ignorantly, deny service to process B.
 
-/proc/sys/vm/vfs_cache_pressure should help.  I don't recall anyone
-reporting its effects with updatedb.
+On the other hand, your old but super cool O_STREAMING patch took
+a kinder gentler approach, where applications could tell the
+kernel "please do not keep this file descriptor's data in cache
+on my account since I will not reuse it." If someone else however
+was using the same data, the kernel would keep things cached as
+usual and thereby avoid doing collateral damage.
 
-> But yeah, I for one would happily submit patches to upstream authors
-> to address this there. There's no reason code should be making the
-> kernel guess its intention on these things.
+ -Erik
 
-I think so.  We're dealing with super-special cases here and often trying
-to fix those in-kernel will degrade other, often more common cases.
-
-<wonders about sys_reclaim_dentry(const char *pathname)>
+--
+Erik B. Andersen             http://codepoet-consulting.com/
+--This message was written using 73% post-consumer electrons--
