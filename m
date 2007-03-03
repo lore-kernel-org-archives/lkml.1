@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbXCCUk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030341AbXCCUpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932331AbXCCUk6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 15:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXCCUk6
+	id S1030341AbXCCUpR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 15:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030400AbXCCUpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 15:40:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51756 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932331AbXCCUk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 15:40:57 -0500
-Message-ID: <45E9DD4A.2060806@redhat.com>
-Date: Sat, 03 Mar 2007 15:40:42 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Sat, 3 Mar 2007 15:45:17 -0500
+Received: from mo-p07-ob.rzone.de ([81.169.146.188]:53596 "EHLO
+	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030341AbXCCUpQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 15:45:16 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Andreas Laumann <al@authentidate.de>
+Subject: Re: usbserial not working/oops on removal
+Date: Sat, 3 Mar 2007 21:43:34 +0100
+User-Agent: KMail/1.9.1
+Cc: Kevin Fenzi <kevin@scrye.com>, linux-kernel@vger.kernel.org
+References: <20070302193715.568098a6@ningauble.scrye.com> <200703031138.20582.oliver@neukum.org> <1172928441.3710.8.camel@justine.inexnet.de>
+In-Reply-To: <1172928441.3710.8.camel@justine.inexnet.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: userspace pagecache management tool
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-In-Reply-To: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703032143.34664.oliver@neukum.org>
+X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GPE5pUNaoG1wTinqjVVl1GKJZKNFH43ejgwwk=
+X-RZG-CLASS-ID: mo07
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+Am Samstag, 3. März 2007 14:27 schrieb Andreas Laumann:
+> Unfortunately your fix  does not work.  The first one seems registered
+> correctly, but after that it fails again for the next one.  
 
-> It is to address the "waah, backups fill my memory with pagecache" and the
-> "waah, updatedb swapped everything out" and the "waah, copying a DVD
-> gobbled all my memory" problems.
+Unfortunately the last patch I sent you introduced a race. Could you test
+this alternative patch?
 
-By removing pressure from the page cache, you'll only allow updatedb
-to grow the inode and dentry caches larger than before.
+	Regards
+		Oliver
 
-I am sick and tired of the "this is hard, let userspace do it" attitude.
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+--- a/drivers/usb/serial/usb-serial.c	2007-03-03 16:28:22.000000000 +0100
++++ b/drivers/usb/serial/usb-serial.c	2007-03-03 21:37:27.000000000 +0100
+@@ -99,9 +99,12 @@
+ 			continue;
+ 
+ 		*minor = i;
++		j = 0;
+ 		dbg("%s - minor base = %d", __FUNCTION__, *minor);
+-		for (i = *minor; (i < (*minor + num_ports)) && (i < SERIAL_TTY_MINORS); ++i)
++		for (i = *minor; (i < (*minor + num_ports)) && (i < SERIAL_TTY_MINORS); ++i) {
+ 			serial_table[i] = serial;
++			serial->port[j++]->number = i;
++		}
+ 		spin_unlock(&table_lock);
+ 		return serial;
+ 	}
+@@ -847,7 +850,6 @@
+ 		port = kzalloc(sizeof(struct usb_serial_port), GFP_KERNEL);
+ 		if (!port)
+ 			goto probe_error;
+-		port->number = i + serial->minor;
+ 		port->serial = serial;
+ 		spin_lock_init(&port->lock);
+ 		mutex_init(&port->mutex);
