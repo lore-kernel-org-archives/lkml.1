@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932262AbXCCUiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbXCCUk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932262AbXCCUiv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 15:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXCCUiv
+	id S932331AbXCCUk6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 15:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXCCUk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 15:38:51 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:54868 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932262AbXCCUiu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 15:38:50 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
-Date: Sat, 3 Mar 2007 21:38:49 +0100
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <1172722480.5264.75.camel@roc-desktop>
-In-Reply-To: <1172722480.5264.75.camel@roc-desktop>
+	Sat, 3 Mar 2007 15:40:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51756 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932331AbXCCUk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 15:40:57 -0500
+Message-ID: <45E9DD4A.2060806@redhat.com>
+Date: Sat, 03 Mar 2007 15:40:42 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: userspace pagecache management tool
+References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
+In-Reply-To: <20070303122935.f1ab0067.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703032138.49308.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:bf0b512fe2ff06b96d9695102898be39
-X-Provags-ID2: V01U2FsdGVkX1/AgF4WvxHDlKVzVGZrKqa7ja3ru+3tGRz+Z3E
- uKCViSsf6IT7HEHOygSytBhUbZjvsDs9Ix9x4r7uWkcCb5ur6V
- xfO3Oj8X/9esfmHeYPpPA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 March 2007 05:14:40 Wu, Bryan wrote:
-> The whole patch is located at URL:
-> https://blackfin.uclinux.org/gf/download/frsrelease/39/2583/blackfin-arch.p
->atch The incremental patch is located at URL:
-> https://blackfin.uclinux.org/gf/download/frsrelease/39/2584/blackfin-arch-m
->m2-update.patch
+Andrew Morton wrote:
 
-I'm not sure if that was intentional, but the second patch does not apply
-on top of the -mm kernel but rather patch the the patch old itself.
-This basically makes it impossible to review just that part, so better
-provide the diff between the kernel with the old patch and the kernel
-with the new patch next time.
+> It is to address the "waah, backups fill my memory with pagecache" and the
+> "waah, updatedb swapped everything out" and the "waah, copying a DVD
+> gobbled all my memory" problems.
 
-OTOH, from what I could see from the contents, the changes themselves
-look pretty good, I'd probably add my 'Acked-by' if I could read that
-patch more easily ;-)
+By removing pressure from the page cache, you'll only allow updatedb
+to grow the inode and dentry caches larger than before.
 
-	Arnd <><
+I am sick and tired of the "this is hard, let userspace do it" attitude.
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
