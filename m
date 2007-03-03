@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992961AbXCCDUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992938AbXCCD4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992961AbXCCDUj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 22:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXCCDUj
+	id S2992938AbXCCD4d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 22:56:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992939AbXCCD4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 22:20:39 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:59651 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992961AbXCCDUh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 22:20:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Py6dS07ibU2Z8HemvSgllWTXj8BD9grrXPilCyPJaxhFXcibaDWfdliMtd19tmUgYENtVMdKJuLg7pkCHfPfmCc2y7ZjMslIsvfpuAvAMpFmHurBf2rrIyn5NraoarUKl/pz8FS/xFyKwt/m1w/I8WJ4KbKnauAUMxpIAljMUC8=
-Message-ID: <45E8E983.5030109@gmail.com>
-Date: Sat, 03 Mar 2007 12:20:35 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Fri, 2 Mar 2007 22:56:33 -0500
+Received: from holomorphy.com ([66.93.40.71]:45046 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992938AbXCCD4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 22:56:32 -0500
+Date: Fri, 2 Mar 2007 19:55:37 -0800
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, Bill Irwin <bill.irwin@oracle.com>,
+       Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070303035537.GD23573@holomorphy.com>
+References: <45E86BA0.50508@redhat.com> <20070302211207.GJ10643@holomorphy.com> <45E894D7.2040309@redhat.com> <20070302135243.ada51084.akpm@linux-foundation.org> <45E89F1E.8020803@redhat.com> <20070302142256.0127f5ac.akpm@linux-foundation.org> <45E8A677.7000205@redhat.com> <20070302145906.653d3b82.akpm@linux-foundation.org> <20070303014004.GC23573@holomorphy.com> <20070302175856.bb9de72d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: nigel@nigel.suspend2.net
-CC: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-ide@vger.kernel.org,
-       jgarzik@pobox.com, linux-pm@lists.osdl.org, stable@kernel.org,
-       Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [linux-pm] [PATCH 2/2 -stable] libata: add missing CONFIG_PM
- in LLDs
-References: <20061122172841.0b90f042@localhost.localdomain>	 <Pine.LNX.4.60.0702262150460.5079@poirot.grange>	 <Pine.LNX.4.60.0702282201250.8832@poirot.grange>	 <Pine.LNX.4.60.0703012305030.7351@poirot.grange>	 <20070302084530.GN20322@htj.dyndns.org>	 <20070302084649.GO20322@htj.dyndns.org> <1172881095.18544.108.camel@nigel.suspend2.net>
-In-Reply-To: <1172881095.18544.108.camel@nigel.suspend2.net>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070302175856.bb9de72d.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Nigel.
+On Fri, 2 Mar 2007 17:40:04 -0800 William Lee Irwin III <wli@holomorphy.com> wrote:
+>> My gut feeling is to agree, but I get nagging doubts when I try to
+>> think of how to boil things like [major benchmarks whose names are
+>> trademarked/copyrighted/etc. censored] down to simple testcases. Some
+>> other things are obvious but require vast resources, like zillions of
+>> disks fooling throttling/etc. heuristics of ancient downrev kernels.
 
-Nigel Cunningham wrote:
->> Index: work1/drivers/ata/ahci.c
->> ===================================================================
->> --- work1.orig/drivers/ata/ahci.c
->> +++ work1/drivers/ata/ahci.c
->> @@ -225,10 +225,12 @@ static void ahci_thaw(struct ata_port *a
->>  static void ahci_error_handler(struct ata_port *ap);
->>  static void ahci_vt8251_error_handler(struct ata_port *ap);
->>  static void ahci_post_internal_cmd(struct ata_queued_cmd *qc);
->> +#ifdef CONFIG_PM
->>  static int ahci_port_suspend(struct ata_port *ap, pm_message_t mesg);
->>  static int ahci_port_resume(struct ata_port *ap);
->>  static int ahci_pci_device_suspend(struct pci_dev *pdev, pm_message_t mesg);
->>  static int ahci_pci_device_resume(struct pci_dev *pdev);
-> 
-> Wouldn't it be simpler to add
-> 
-> #else
-> #define ahci_port_suspend(port, message) (NULL)
-> 
-> etc (or something similar)?
+On Fri, Mar 02, 2007 at 05:58:56PM -0800, Andrew Morton wrote:
+> noooooooooo.  You're approaching it from the wrong direction.
+> Step 1 is to understand what is happening on the affected production
+> system.  Completely.  Once that is fully understood then it is a relatively
+> simple matter to concoct a test case which triggers the same failure mode.
+> It is very hard to go the other way: to poke around with various stress
+> tests which you think are doing something similar to what you think the
+> application does in the hope that similar symptoms will trigger so you can
+> then work out what the kernel is doing.  yuk.
 
-ahci_port_suspend() is used to fill ata_port_ops vector, so it needs to
-be a function.  If you're talking about defining NULL function, yeah,
-that will remove half of CONFIG_PMs but would require dummy definitions
-for all functions.  I think both are ugly.  :-)
+Yeah, it's really great when it's possible to get debug info out of
+people e.g. they're willing to boot into a kernel instrumented with
+the appropriate printk's/etc. Most of the time it's all guesswork.
+People who post to lkml are much better about all this on average.
 
-I'm working on a linker trick.  Please take a look at the following thread.
+I never truly understood the point of kprobes/jprobes/dprobes (or
+whatever the probing letter is), crash dumps, and so on until I ran
+into this, not that I use personally them (though I may yet start).
+Most of the time I just read the code instead and smoke out what
+could be going on by something like the process of devising
+counterexamples. For instance, I told that colouroff patch guy about
+the possibility of getting the wrong page for the start of the buffer
+from virt_to_page() on a cache colored buffer pointer (clearly
+cache->gfporder >= 4 in such a case). Deriving the head page without
+__GFP_COMP might be considered to be ugly-looking, though.
 
-  http://thread.gmane.org/gmane.linux.ide/16475
 
--- 
-tejun
+-- wli
