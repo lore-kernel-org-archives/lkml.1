@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992926AbXCCCmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992920AbXCCCwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992926AbXCCCmO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 21:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992922AbXCCCmN
+	id S2992920AbXCCCwk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 21:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992922AbXCCCwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 21:42:13 -0500
-Received: from [63.64.152.142] ([63.64.152.142]:1464 "EHLO gitlost.site"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992910AbXCCCjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 21:39:12 -0500
-From: Chris Leech <christopher.leech@intel.com>
-Subject: [PATCH 8/9] I/OAT: warning fix
-Date: Fri, 02 Mar 2007 18:24:32 -0800
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-Id: <20070303022432.31033.19248.stgit@gitlost.site>
-In-Reply-To: <20070303022238.31033.84558.stgit@gitlost.site>
-References: <20070303022238.31033.84558.stgit@gitlost.site>
+	Fri, 2 Mar 2007 21:52:40 -0500
+Received: from mail.queued.net ([207.210.101.209]:1844 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992920AbXCCCwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 21:52:39 -0500
+Message-ID: <45E8E2F8.1030102@debian.org>
+Date: Fri, 02 Mar 2007 21:52:40 -0500
+From: Andres Salomon <dilinger@debian.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Marcelo Tosatti <marcelo@kvack.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] dynticks: don't unlock spinlock twice
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/mixed;
+ boundary="------------000600050007040205020408"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-net/ipv4/tcp.c: In function 'tcp_recvmsg':
-net/ipv4/tcp.c:1111: warning: unused variable 'available'
+This is a multi-part message in MIME format.
+--------------000600050007040205020408
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Chris Leech <christopher.leech@intel.com>
----
+During boot with dynticks enabled, we would sometimes get:
 
- net/ipv4/tcp.c |   26 ++++++++++++++++----------
- 1 files changed, 16 insertions(+), 10 deletions(-)
+[   35.271900] Switched to high resolution mode on CPU 0
+[   35.304468] BUG: spinlock already unlocked on CPU#0, swapper/1
+[   35.338099]  lock: c06428a0, .magic: dead4ead, .owner: <none>/-1,
+.owner_cpu:
+ -1
+[   35.373597]  [<c04d7cf0>] _raw_spin_unlock+0x28/0x67
+[   35.406647]  [<c05ba279>] _spin_unlock+0x5/0x23
+[   35.439369]  [<c04255f7>] tick_sched_timer+0x4e/0xa7
+[   35.472388]  [<c04255a9>] tick_sched_timer+0x0/0xa7
+[   35.504833]  [<c0422528>] hrtimer_run_queues+0x199/0x1ec
+[   35.537617]  [<c0416b72>] run_timer_softirq+0x12/0x166
+[   35.570019]  [<c04144d9>] __do_softirq+0x40/0x85
 
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 5ccd5e1..69c525d 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -1110,7 +1110,6 @@ int tcp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
- 	long timeo;
- 	struct task_struct *user_recv = NULL;
- 	int copied_early = 0;
--	int available = 0;
- 	struct sk_buff *skb;
+[   35.601542]  [<c0405494>] do_softirq+0x53/0xa9
+...
+
+This appears to be caused by run_hrtimer_queue() (called by
+hrtimer_run_queues) calling spin_unlock_irq(&cpu_base->lock) before
+calling timer->function(timer).  The callback function
+(tick_sched_timer) expects cpu_base->lock to be held when it is called,
+and attempts to unlock it.  Since it doesn't seem like anything within
+tick_sched_timer really needs to hold the lock (afaict), the attached
+patch simply removes the lock handling from tick_sched_timer.  Things
+called by tick_sched_timer may grab the base->lock, but that's fine (and
+their responsibility).  Let me know if there's some reason why the lock
+should be held, and I can rework this.
+
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+
+--------------000600050007040205020408
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 51556b9..b43bccb 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -422,13 +422,12 @@ static inline void tick_nohz_switch_to_nohz(void) { }
+ #ifdef CONFIG_HIGH_RES_TIMERS
+ /*
+  * We rearm the timer until we get disabled by the idle code
+- * Called with interrupts disabled and timer->base->cpu_base->lock held.
++ * Called with interrupts disabled and timer->base->cpu_base->lock *not* held.
+  */
+ static enum hrtimer_restart tick_sched_timer(struct hrtimer *timer)
+ {
+ 	struct tick_sched *ts =
+ 		container_of(timer, struct tick_sched, sched_timer);
+-	struct hrtimer_cpu_base *base = timer->base->cpu_base;
+ 	struct pt_regs *regs = get_irq_regs();
+ 	ktime_t now = ktime_get();
  
- 	lock_sock(sk);
-@@ -1139,15 +1138,22 @@ int tcp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
- 	tp->ucopy.dma_chan = NULL;
- 	preempt_disable();
- 	skb = skb_peek_tail(&sk->sk_receive_queue);
--	if (skb)
--		available = TCP_SKB_CB(skb)->seq + skb->len - (*seq);
--	if ((available < target) &&
--	    (len > sysctl_tcp_dma_copybreak) && !(flags & MSG_PEEK) &&
--	    !sysctl_tcp_low_latency && __get_cpu_var(softnet_data).net_dma) {
--		preempt_enable_no_resched();
--		tp->ucopy.pinned_list = dma_pin_iovec_pages(msg->msg_iov, len);
--	} else
--		preempt_enable_no_resched();
-+	{
-+		int available = 0;
-+
-+		if (skb)
-+			available = TCP_SKB_CB(skb)->seq + skb->len - (*seq);
-+		if ((available < target) &&
-+		    (len > sysctl_tcp_dma_copybreak) && !(flags & MSG_PEEK) &&
-+		    !sysctl_tcp_low_latency &&
-+		    __get_cpu_var(softnet_data).net_dma) {
-+			preempt_enable_no_resched();
-+			tp->ucopy.pinned_list =
-+					dma_pin_iovec_pages(msg->msg_iov, len);
-+		} else {
-+			preempt_enable_no_resched();
-+		}
-+	}
- #endif
+@@ -454,13 +453,12 @@ static enum hrtimer_restart tick_sched_timer(struct hrtimer *timer)
+ 		}
+ 		/*
+ 		 * update_process_times() might take tasklist_lock, hence
+-		 * drop the base lock. sched-tick hrtimers are per-CPU and
+-		 * never accessible by userspace APIs, so this is safe to do.
++		 * we don't attempt to grab the base lock here.
++		 * sched-tick hrtimers are per-CPU and never accessible by
++		 * userspace APIs, so this is safe to do.
+ 		 */
+-		spin_unlock(&base->lock);
+ 		update_process_times(user_mode(regs));
+ 		profile_tick(CPU_PROFILING);
+-		spin_lock(&base->lock);
+ 	}
  
- 	do {
+ 	/* Do not restart, when we are in the idle loop */
 
+--------------000600050007040205020408--
