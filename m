@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932327AbXCCU1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXCCU3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932327AbXCCU1m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 15:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXCCU1m
+	id S932203AbXCCU3i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 15:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932334AbXCCU3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 15:27:42 -0500
-Received: from mail.tmr.com ([64.65.253.246]:56730 "EHLO gaimboi.tmr.com"
+	Sat, 3 Mar 2007 15:29:38 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:45423 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932279AbXCCU1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 15:27:41 -0500
-Message-ID: <45E9DA80.2080109@tmr.com>
-Date: Sat, 03 Mar 2007 15:28:48 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jeff Garzik <jeff@garzik.org>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] libata: warn if speed limited due to 40-wire cable (v2)
-References: <45DA44B4.6000209@shaw.ca>	<45E8B42E.7010900@garzik.org> <20070303005433.714d75ad@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070303005433.714d75ad@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S932203AbXCCU3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 15:29:37 -0500
+Date: Sat, 3 Mar 2007 12:29:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: userspace pagecache management tool
+Message-Id: <20070303122935.f1ab0067.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> it seems broken to manipulate xfer_mask after returning from the 
->> driver's ->mode_filter hook.
->>
->> this patch is more than just a speed-limited warning printk, afaics
-> 
-> I actually suggested that order because the only way the printk can be
-> done correctly is for it to be the very last test made. Since the mode
-> filter is not told what mode will be used but just subtracts modes that
-> are not allowed this should be safe.
 
-Far better to have a drive which works slowly than one which works 
-unreliably.
+I've uploaded to http://userweb.kernel.org/~akpm/pagecache-management/ a
+little tool which permits the management of the pagecache usage of
+arbitrary applications.  Effectively it prevents the targetted application
+from using any pagecache at all.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+It is to address the "waah, backups fill my memory with pagecache" and the
+"waah, updatedb swapped everything out" and the "waah, copying a DVD
+gobbled all my memory" problems.
+
+
+Although it is little more than a proof-of-concept it seems to be fairly
+useful.  When running
+
+	pagecache-management.sh dd if=100-mb-file of=foo
+	or
+	pagecache-management.sh cp -a /usr/src/linux-2.6.20 /usr/src/foo
+
+the amount of pagecache in the machine is pretty much unaltered.  Maybe a
+megabyte of additional cache in the second case, because of ext3 indirect
+blocks.
+
+
+The tool uses an LD_PRELOAD hack to intercept glibc's read(), pread(),
+write(), pwrite(), close() and dup2() functions.  pagecache control is done
+via posix_fadvise() and sync_file_range().
+
+btw, for a while I was using fdatasync() on close(), but it was slow,
+because fdatasync() has to run an ext3 commit to commit the metadata. 
+sync_file_range() doesn't do that, and the copy-a-kernel-tree testcase sped
+up by a factor of five.  So sync_file_range() rocks, but the powerpc guys
+haven't wired it up yet.
+
+
+There is much more which could be done to make this code smarter, but I
+think the lesson here is that we can produce a far, far better result doing
+this work in userspace than we could ever hope to do with an in-kernel
+implementation.  There are some enhancement suggestions in the
+documentation file.
+
+
+It would be good if someone could turn this into a real product, get it fed
+into distros.  Once the design is settled we should look at moving all the
+functionality into glibc itself, IMO, and get rid of the LD_PRELOAD trick.
+
+It might help if the kernel offered APIs which permit userspace to query
+the number of resident pages in a file (well, actually it already does,
+kind-of: mincore()) and the ability to query the number of dirty pages in a
+file, etc.  I'd be reluctant to tie the kernel ABI too closely to the
+current pagecache implementation and data structures, but we can look at
+these things.
