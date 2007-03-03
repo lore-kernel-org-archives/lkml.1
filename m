@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750757AbXCCXbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750760AbXCCXfC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750757AbXCCXbz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 18:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbXCCXbz
+	id S1750760AbXCCXfC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 18:35:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbXCCXfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 18:31:55 -0500
-Received: from wr-out-0506.google.com ([64.233.184.233]:18577 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbXCCXby (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 18:31:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=YlSGL9SVnWr5y5BihUrg5klx3Zl68QbtWsDUfrJzXnud4whWNmtTlgbhApEb/vSHguwpIE7xW8LlZdaVNI/Hv2I8kGAEUzuqQfTq6+knRlTjfkomMp5pD4zOcRLQvyOZ4aCwJmuTL8g9C9RWfeje9uwvtZzxHwFxUvzwXJ7ZjVM=
-Message-ID: <6bffcb0e0703031531h3f0a86c6sda2522c0ca504765@mail.gmail.com>
-Date: Sun, 4 Mar 2007 00:31:53 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump kernel)
-Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 3 Mar 2007 18:35:01 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49414 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbXCCXfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 18:35:00 -0500
+Date: Sat, 3 Mar 2007 15:34:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ray-gmail@madrabbit.org
+Cc: "Ray Lee" <madrabbit@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: userspace pagecache management tool
+Message-Id: <20070303153454.6548e562.akpm@linux-foundation.org>
+In-Reply-To: <2c0942db0703031458i540c496fib892240619faa9b2@mail.gmail.com>
+References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
+	<2c0942db0703031458i540c496fib892240619faa9b2@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 3 Mar 2007 14:58:48 -0800 "Ray Lee" <madrabbit@gmail.com> wrote:
 
-I hit this bug again
-(http://www.ussg.iu.edu/hypermail/linux/kernel/0702.2/1643.html)
+> On 3/3/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > It is to address the "waah, backups fill my memory with pagecache" and the
+> > "waah, updatedb swapped everything out" and the "waah, copying a DVD
+> > gobbled all my memory" problems.
+> 
+> Is the updatedb problem really due to pagecache?
 
-BUG: soft lockup detected on CPU#0!
- [<c1604556>] show_trace_log_lvl+0x1a/0x2f
- [<c1604c2c>] show_trace+0x12/0x14
- [<c1604cde>] dump_stack+0x16/0x18
- [<c16426e7>] softlockup_tick+0x97/0xa7
- [<c161de38>] run_local_timers+0x12/0x14
- [<c161e1ce>] update_process_times+0x3e/0x63
- [<c162c44b>] tick_sched_timer+0x5d/0xa1
- [<c1629715>] hrtimer_interrupt+0x11e/0x1b2
- [<c160684e>] timer_interrupt+0xe/0x15
- [<c164299e>] handle_IRQ_event+0x1a/0x46
- [<c1643cfe>] handle_level_irq+0x81/0xcb
- [<c1605dd8>] do_IRQ+0xb4/0xe0
+It's a combination of pagecache, slab cache and of course contention for
+the disk.  In my experience the latter preponderates: the disk is sekeing
+like mad and I can't get its attention.  Others report lots of swapout,
+which will be a combination of slab and pagecache, varying degrees of each.
 
-This time it's a crash dump kernel without SMP.
+> > When running
+> >
+> >         pagecache-management.sh dd if=100-mb-file of=foo
+> >         or
+> >         pagecache-management.sh cp -a /usr/src/linux-2.6.20 /usr/src/foo
+> >
+> > the amount of pagecache in the machine is pretty much unaltered.  Maybe a
+> > megabyte of additional cache in the second case, because of ext3 indirect
+> > blocks.
+> 
+> ray@phoenix:~/work/home/pagecache-management$ grep ext3_i
+> /proc/slabinfo; ./pagecache-management.sh sudo updatedb; grep ext3_i
+> /proc/slabinfo
+> ext3_inode_cache   21024  23722   1584    2    1 : tunables   24   12
+>   0 : slabdata  11861  11861      0
+> ext3_inode_cache   41332  41332   1584    2    1 : tunables   24   12
+>   0 : slabdata  20666  20666      0
+> ray@phoenix:~/work/home/pagecache-management$ echo $(( 1584 * (41332-21024) ))
+> 32167872
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/kdump-dmesg
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/kdump-config
+If 32 MB is the whole lot then by eliminating pagecache, we just solved the
+problem.  But perhaps you instantiated a lot more VFS cache and all you're
+seeing there is the leftovers.
 
-Regards,
-Michal
+> Or is there a /proc/sys/vm/* knob that can be tweaked for this
+> before/after the updatedb?
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+/proc/sys/vm/vfs_cache_pressure should help.  I don't recall anyone
+reporting its effects with updatedb.
+
+> But yeah, I for one would happily submit patches to upstream authors
+> to address this there. There's no reason code should be making the
+> kernel guess its intention on these things.
+
+I think so.  We're dealing with super-special cases here and often trying
+to fix those in-kernel will degrade other, often more common cases.
+
+<wonders about sys_reclaim_dentry(const char *pathname)>
