@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030241AbXCCN13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030254AbXCCOK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030241AbXCCN13 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 08:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030242AbXCCN13
+	id S1030254AbXCCOK4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 09:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030257AbXCCOK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 08:27:29 -0500
-Received: from email.authentidate.de ([213.61.157.66]:53975 "EHLO
-	email.authentidate.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030241AbXCCN12 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 08:27:28 -0500
-Subject: Re: usbserial not working/oops on removal
-From: Andreas Laumann <al@authentidate.de>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Kevin Fenzi <kevin@scrye.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200703031138.20582.oliver@neukum.org>
-References: <20070302193715.568098a6@ningauble.scrye.com>
-	 <200703030745.19547.oliver@neukum.org>
-	 <1172906384.26337.13.camel@justine.inexnet.de>
-	 <200703031138.20582.oliver@neukum.org>
-Content-Type: text/plain; charset=UTF-8
-Organization: AuthentiDate International AG
-Date: Sat, 03 Mar 2007 14:27:21 +0100
-Message-Id: <1172928441.3710.8.camel@justine.inexnet.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 8BIT
+	Sat, 3 Mar 2007 09:10:56 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49992 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030254AbXCCOKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 09:10:55 -0500
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0703021646050.13167@blonde.wat.veritas.com> 
+References: <Pine.LNX.4.64.0703021646050.13167@blonde.wat.veritas.com>  <20070216165042.GB409@lnx-holt.americas.sgi.com> <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> <18817.1171656543@redhat.com> 
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Robin Holt <holt@sgi.com>,
+       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>, dhowells@redhat.com
+Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Sat, 03 Mar 2007 14:10:29 +0000
+Message-ID: <29317.1172931029@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, den 03.03.2007, 11:38 +0100 schrieb Oliver Neukum:
-> Am Samstag, 3. März 2007 08:19 schrieb Andreas Laumann:
-> > Am Samstag, den 03.03.2007, 07:45 +0100 schrieb Oliver Neukum:
-> > > Am Samstag, 3. März 2007 03:37 schrieb Kevin Fenzi:
-> > > > I'm seeing some oddity with the latest fedora development kernel and a
-> > > > usbserial device. 
-> > > 
-> > > Very interesting. Is this repeatable? Does unplugging have the same effect?
-> > 
-> > I see it also on fedora rawhide using reinersct (cyberjack) scard
-> > readers and it repeatable.
-> > The first usbserial devices likes to register the line number 255 which
-> > indeed is invalid.
+Hugh Dickins <hugh@veritas.com> wrote:
+
+> > VMAs are a shared resource under NOMMU conditions.
 > 
-> OK, please try this patch.
+> That's a disturbing remark.
+
+Why?  No-one complained when I first put up my rewrite patches three years ago.
+
+> Under precisely what NOMMU conditions?
+
+CONFIG_MMU=n.
+
+> I had thought Robin's suggestion very sensible; and throughout mm/
+> it has seemed pretty random whether we pass an "mm" argument down
+> in addition to "vma", or just take vma->vm_mm at whatever level needs.
 > 
-> 	Regards
-> 		Oliver
-> 
-> --- linux-2.6.21-rc1/drivers/usb/serial/usb-serial.c.alt	2007-02-21 05:32:30.000000000 +0100
-> +++ linux-2.6.21-rc1/drivers/usb/serial/usb-serial.c	2007-02-26 15:32:50.000000000 +0100
-> @@ -826,7 +826,6 @@
->  			num_ports = type->num_ports;
->  	}
->  
-> -	serial->minor = minor;
->  	serial->num_ports = num_ports;
->  	serial->num_bulk_in = num_bulk_in;
->  	serial->num_bulk_out = num_bulk_out;
-> @@ -980,6 +979,7 @@
->  		dev_err(&interface->dev, "No more free serial devices\n");
->  		goto probe_error;
->  	}
-> +	serial->minor = minor;
->  
->  	/* register all of the individual ports with the driver core */
->  	for (i = 0; i < num_ports; ++i) {
+> You seem to be suggesting vma->vm_mm is dangerous when CONFIG_NOMMU,
 
-Unfortunately your fix  does not work.  The first one seems registered
-correctly, but after that it fails again for the next one.  
+vm_mm is never set to anything other than NULL if CONFIG_MMU=n and it doesn't
+seem to be a problem.  I don't think anything in the mm/ directory is left that
+looks at vm_mm once MMU support is disabled (in fact I've just checked, and I
+can compile with vm_mm #ifdef'd out)
 
+> but we MMU people are scarily unaware of that.
 
-usbcore: registered new interface driver usbserial
-drivers/usb/serial/usb-serial.c: USB Serial support registered for generic
-usbcore: registered new interface driver usbserial_generic
-drivers/usb/serial/usb-serial.c: USB Serial Driver core
-drivers/usb/serial/usb-serial.c: USB Serial support registered for Reiner SCT Cyberjack USB card reader
-cyberjack 5-2.2:1.0: Reiner SCT Cyberjack USB card reader converter detected
-usb 5-2.2: Reiner SCT Cyberjack USB card reader converter now attached to ttyUSB0
-cyberjack 5-2.3:1.0: Reiner SCT Cyberjack USB card reader converter detected
-usb-serial ttyUSB0: Error registering port device, continuing
-usbcore: registered new interface driver cyberjack
-drivers/usb/serial/cyberjack.c: v1.01 Matthias Bruestle
-drivers/usb/serial/cyberjack.c: REINER SCT cyberJack pinpad/e-com USB Chipcard Reader Driver
+If you're worryied that you can't compile anything for NOMMU, an FRV compiler
+is available, and a suitable NOMMU default config can be provided.
+Alternatively, you can pick ARM, M68K, ...
 
+> Perhaps you need to put #ifndef CONFIG_NOMMU around vm_mm in struct
+> vm_area_struct?
 
+I can if it makes you happier.  It's not strictly necessary, but it does make
+the struct smaller which is good.
 
-Andreas
-
-
+David
