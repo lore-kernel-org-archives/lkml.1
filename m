@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030693AbXCCRdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030692AbXCCRiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030693AbXCCRdt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 12:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030695AbXCCRdt
+	id S1030692AbXCCRiw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 12:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030695AbXCCRiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 12:33:49 -0500
-Received: from mail.screens.ru ([213.234.233.54]:56524 "EHLO mail.screens.ru"
+	Sat, 3 Mar 2007 12:38:52 -0500
+Received: from mail.screens.ru ([213.234.233.54]:46733 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030693AbXCCRds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 12:33:48 -0500
-Date: Sat, 3 Mar 2007 20:32:40 +0300
+	id S1030692AbXCCRiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 12:38:51 -0500
+Date: Sat, 3 Mar 2007 20:38:34 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Anton Blanchard <anton@samba.org>,
-       Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Aneesh Kumar <aneesh.kumar@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread
-Message-ID: <20070303173240.GA249@tv-sign.ru>
-References: <200702260800.49603.rjw@sisk.pl> <200703011609.43804.rjw@sisk.pl> <20070301193826.GA14587@kryten> <200703012054.26940.rjw@sisk.pl> <20070302213549.GC2373@linux.vnet.ibm.com> <20070302233337.GA267@tv-sign.ru> <20070303005843.GG2373@linux.vnet.ibm.com>
+To: John Reiser <jreiser@BitWagon.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + fully-honor-vdso_enabled.patch added to -mm tree
+Message-ID: <20070303173834.GB249@tv-sign.ru>
+References: <20070301175207.GA849@tv-sign.ru> <20070302034800.GA12530@linux-sh.org> <20070302193219.GA87@tv-sign.ru> <45E894FA.2040103@BitWagon.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070303005843.GG2373@linux.vnet.ibm.com>
+In-Reply-To: <45E894FA.2040103@BitWagon.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/02, Paul E. McKenney wrote:
+On 03/02, John Reiser wrote:
 >
-> On Sat, Mar 03, 2007 at 02:33:37AM +0300, Oleg Nesterov wrote:
-> > On 03/02, Paul E. McKenney wrote:
-> > >
-> > > One way to embed try_to_freeze() into kthread_should_stop() might be
-> > > as follows:
-> > > 
-> > > 	int kthread_should_stop(void)
-> > > 	{
-> > > 		if (kthread_stop_info.k == current)
-> > > 			return 1;
-> > > 		try_to_freeze();
-> > > 		return 0;
-> > > 	}
-> > 
-> > I think this is dangerous. For example, worker_thread() will probably
-> > need some special actions after return from refrigerator. Also, a kernel
-> > thread may check kthread_should_stop() in the place where try_to_freeze()
-> > is not safe.
-> > 
-> > Perhaps we should introduce a new helper which does this.
+> Oleg Nesterov wrote:
 > 
-> Good point -- the return value from try_to_freeze() is lost if one uses
-> the above approach.  About one third of the calls to try_to_freeze()
-> in 2.6.20 pay attention to the return value.
+> > Still, I don't understand why we don't pass NEW_AUX_ENT(AT_SYSINFO) when
+> > vdso_enabled == 0. We don't need linux-gate.so to use __kernel_vsyscall,
+> > we have FIX_VDSO. In that case we should s/PAGE_KERNEL_RO/PAGE_READONLY/
+> > of course. I guess the reason is some magic in glibc.
 > 
-> One approach would be to have a kthread_should_stop_nofreeze() for those
-> cases, and let the default be to try to freeze.
+> In the past there were problems where user code could not single-step
+> (or even read the code of) such system calls.  Can these two operations
+> be performed today with what you propose, particularly if FIX_VDSO is
+> near 0xfffff000 ?
 
-I personally think we should do the opposite, add kthread_should_stop_check_freeze()
-or something. kthread_should_stop() is like signal_pending(), we can use
-it under spin_lock (and it is probably used this way by some out-of-tree
-driver). The new helper is obviously "might_sleep()".
+No, we can't COW the gate page, it lives in swapper_pg_dir. I am not sure
+why we could not read it, we have gate_vma for that.
+
+So, the reason is debugger. Thanks.
 
 Oleg.
 
