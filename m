@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992893AbXCCBlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992879AbXCCBmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992893AbXCCBlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Mar 2007 20:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992896AbXCCBlk
+	id S2992879AbXCCBmw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Mar 2007 20:42:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992895AbXCCBmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Mar 2007 20:41:40 -0500
-Received: from sccrmhc12.comcast.net ([63.240.77.82]:55860 "EHLO
-	sccrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992893AbXCCBlj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Mar 2007 20:41:39 -0500
-X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Mar 2007 20:41:39 EST
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-From: Nicholas Miell <nmiell@comcast.net>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703021615140.2381@alien.or.mcafeemobile.com>
-References: <20070301133018.GB30177@2ka.mipt.ru>
-	 <200703011519.20001.dada1@cosmosbay.com> <20070301141637.GA20006@elte.hu>
-	 <20070301145454.GB12684@2ka.mipt.ru> <20070301150942.GA26025@elte.hu>
-	 <20070301153655.GB8217@2ka.mipt.ru> <20070302105713.GB15576@elte.hu>
-	 <Pine.LNX.4.64.0703020928580.1977@alien.or.mcafeemobile.com>
-	 <20070302193941.GB8450@elte.hu>
-	 <Pine.LNX.4.64.0703021212140.2381@alien.or.mcafeemobile.com>
-	 <20070302202931.GA5101@elte.hu>
-	 <Pine.LNX.4.64.0703021246380.2381@alien.or.mcafeemobile.com>
-	 <1172871820.2999.22.camel@entropy>
-	 <Pine.LNX.4.64.0703021615140.2381@alien.or.mcafeemobile.com>
-Content-Type: text/plain
-Date: Fri, 02 Mar 2007 17:36:01 -0800
-Message-Id: <1172885761.2999.32.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.0.njm.1) 
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Mar 2007 20:42:52 -0500
+Received: from holomorphy.com ([66.93.40.71]:43637 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992879AbXCCBmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Mar 2007 20:42:51 -0500
+Date: Fri, 2 Mar 2007 17:40:04 -0800
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, Bill Irwin <bill.irwin@oracle.com>,
+       Christoph Lameter <clameter@engr.sgi.com>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070303014004.GC23573@holomorphy.com>
+References: <20070302100619.cec06d6a.akpm@linux-foundation.org> <Pine.LNX.4.64.0703021012170.17676@schroedinger.engr.sgi.com> <45E86BA0.50508@redhat.com> <20070302211207.GJ10643@holomorphy.com> <45E894D7.2040309@redhat.com> <20070302135243.ada51084.akpm@linux-foundation.org> <45E89F1E.8020803@redhat.com> <20070302142256.0127f5ac.akpm@linux-foundation.org> <45E8A677.7000205@redhat.com> <20070302145906.653d3b82.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070302145906.653d3b82.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-02 at 16:52 -0800, Davide Libenzi wrote:
-> On Fri, 2 Mar 2007, Nicholas Miell wrote:
-> 
-> > The point Ingo was making is that the x86 ABI already requires the FPU
-> > context to be saved before *all* function calls.
-> 
-> I've not seen that among Ingo's points, but yeah some status is caller 
-> saved. But, aren't things like status word and control bits callee saved? 
-> If that's the case, it might require proper handling.
-> 
+On Fri, Mar 02, 2007 at 02:59:06PM -0800, Andrew Morton wrote:
+> What is it with vendors finding MM problems and either not fixing them or
+> kludging around them and not telling the upstream maintainers about *any*
+> of it?
 
-Ingo mentioned it in one of the parts you cut out of your reply:
-
-> and here is where thinking about threadlets as a function call and not 
-> as an asynchronous context helps alot: the classic gcc convention for 
-> FPU use & function calls should apply: gcc does not call an external 
-> function with an in-use FPU stack/register, it always neatly unuses it, 
-> as no FPU register is callee-saved, all are caller-saved.
-
-The i386 psABI is ancient (i.e. it predates SSE, so no mention of the
-XMM or MXCSR registers) and a bit vague (no mention at all of the FP
-status word), but I'm fairly certain that Ingo is right.
+I'm not in the business of defending vendors, but a lot of times the
+base is so far downrev it's difficult to relate it to much of anything
+current. It may be best not to say precisely how far downrev things can
+get, since some of these things are so old even distro vendors won't
+touch them.
 
 
--- 
-Nicholas Miell <nmiell@comcast.net>
+On Fri, Mar 02, 2007 at 02:59:06PM -0800, Andrew Morton wrote:
+> Somehow I don't believe that a person or organisation which is incapable of
+> preparing even a simple testcase will be capable of fixing problems such as
+> this without breaking things.
 
+My gut feeling is to agree, but I get nagging doubts when I try to
+think of how to boil things like [major benchmarks whose names are
+trademarked/copyrighted/etc. censored] down to simple testcases. Some
+other things are obvious but require vast resources, like zillions of
+disks fooling throttling/etc. heuristics of ancient downrev kernels.
+I guess for those sorts of things the voodoo incantations, chicken
+blood, and carcasses of freshly slaughtered goats come out. Might as
+well throw in a Tarot reading and some tea leaves while I'm at it.
+
+My tack on basic stability was usually testbooting on several arches,
+which various people have an active disinterest in (suggesting, for
+example, that I throw out all of my sparc32 systems and replace them
+with Opterons, or that anything that goes wrong on ia64 is not only
+irrelevant but also that neither I nor anyone else should ever fix them;
+you know who you are). It's become clear to me that this is insufficient,
+and that I'll need to start using some sort of suite of regression tests,
+at the very least to save myself the embarrassment of acking a patch that
+oopses when exercised, but also to elevate the standard.
+
+
+-- wli
