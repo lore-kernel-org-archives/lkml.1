@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964978AbXCDB4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbXCDB70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964978AbXCDB4n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 20:56:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965010AbXCDB4n
+	id S965010AbXCDB70 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 20:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbXCDB70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 20:56:43 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59677 "EHLO mx1.redhat.com"
+	Sat, 3 Mar 2007 20:59:26 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60223 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964978AbXCDB4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 20:56:42 -0500
-Message-ID: <45EA274B.5090103@redhat.com>
-Date: Sat, 03 Mar 2007 20:56:27 -0500
+	id S932240AbXCDB7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 20:59:25 -0500
+Message-ID: <45EA27BD.7080909@redhat.com>
+Date: Sat, 03 Mar 2007 20:58:21 -0500
 From: Rik van Riel <riel@redhat.com>
 Organization: Red Hat, Inc
 User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: userspace pagecache management tool
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>	<45E9DD4A.2060806@redhat.com>	<20070303131204.6706a95c.akpm@linux-foundation.org>	<45E9E910.2070804@redhat.com>	<20070303140744.b22699dd.akpm@linux-foundation.org>	<45E9F5DA.2070708@redhat.com>	<20070303145221.2a42cc0f.akpm@linux-foundation.org>	<45EA0C3D.1010001@redhat.com>	<20070303170237.31d26382.akpm@linux-foundation.org>	<45EA1F7B.9060107@redhat.com> <20070303174927.2d314a71.akpm@linux-foundation.org>
-In-Reply-To: <20070303174927.2d314a71.akpm@linux-foundation.org>
+CC: Nick Piggin <npiggin@suse.de>, Christoph Lameter <clameter@engr.sgi.com>,
+       Mel Gorman <mel@skynet.ie>, mingo@elte.hu, jschopp@austin.ibm.com,
+       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+References: <20070302050625.GD15867@wotan.suse.de>	<Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com>	<20070302054944.GE15867@wotan.suse.de>	<Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>	<20070302060831.GF15867@wotan.suse.de>	<Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com>	<20070302062950.GG15867@wotan.suse.de>	<Pine.LNX.4.64.0703012236160.1979@schroedinger.engr.sgi.com>	<20070302071955.GA5557@wotan.suse.de>	<Pine.LNX.4.64.0703012335250.13224@schroedinger.engr.sgi.com>	<20070302081210.GD5557@wotan.suse.de>	<45EA2037.9060303@redhat.com> <20070303175158.00d867cb.akpm@linux-foundation.org>
+In-Reply-To: <20070303175158.00d867cb.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Andrew Morton wrote:
-
->>> Doing a refault thing would help a bit, but stops working at a certain point.
->> At what point does it stop working?
+> On Sat, 03 Mar 2007 20:26:15 -0500 Rik van Riel <riel@redhat.com> wrote:
+>> Nick Piggin wrote:
+>>
+>>> Different issue, isn't it? Rik wants to be smarter in figuring out which
+>>> pages to throw away. More work per page == worse for you.
+>> Being smarter about figuring out which pages to evict does
+>> not equate to spending more work.  One big component is
+>> sorting the pages beforehand, so we do not end up scanning
+>> through (and randomizing the LRU order of) anonymous pages
+>> when we do not want to, or cannot, evict them anyway.
+>>
 > 
-> We need to store that this-page-got-reclaimed info somewhere.  I don't know
-> how space-efficient that is.  Did anyone ever do an implementation?
+> My gut feel is that we could afford to expend a lot more cycles-per-page
+> doing stuff to avoid IO than we presently do.
 
-One 32 bit word per evicted page that we keep track of.
+In general, yes.
 
-> Of course, the pages need to be re-read again so there's a potential 100%
-> hit there, which is in fact not a huge amount in this context.  Depends how
-> often it occurs (all the time when refault is being useful?) versus what we
-> gain from it.
+In the specific "128GB RAM, 90GB anon/shm/... and 2GB swap" case, no :)
 
-At this point, when we see that a refaulted page is more
-active than the coldest page on the active list, we can
-also immediately shrink the active list.  That gives the
-next inactive page a better chance to get promoted before
-it gets evicted.
-
->> I am not asking this to be difficult, I just want to get Linux
->> a VM that does not need to be kludged up every time a distro
->> ships it to its customers.
+> At least, reclaim normally just doesn't figure in system CPU time, except
+> for when it's gone completely stupid.
 > 
-> We have a communication problem here.  Please please please work harder to
-> get these problems communicated to the MM developers.  The only vendor MM
-> kludge of which I'm aware is a thing which Andrea is working on to address
-> a large-shm-segment versus bulk-IO problem (yup, database).
-> 
-> If you have enough of an understanding of a problem to be able to develop
-> and productise a fix then share that info madly, asap.
+> It could well be that we sleep too much in there though.
 
-The problem is that most of the distro patches are
-kludges, which we would rather not see again in
-future kernels.  They tend to work around the problem,
-instead of being a proper fix, since reorganizing the
-VM in the middle of a release is not an option.
+It's all about minimizing IO, I suspect.
 
-However, incremental small-to-medium changes might
-be an option for the upstream kernel, if you are
-interested.
-
->> I believe one starting point would be a concept that people
->> cannot shoot holes in any more.  That is no guarantee, but
->> as long as the concept has known holes coding it up is likely
->> to be a waste of time since the code will need kludges to
->> deal with the problems later on and we'd be back to square
->> one.
-> 
-> You mean design it and review the design before coding it?  You'll find few
-> objections there.
-
-Few objections, but sadly also very few people interested in
-actually reviewing the design :(
-
-If you can find holes in http://linux-mm.org/PageReplacementDesign
-please let me know :)
+Not just the total amount of IO though, also the amount of
+pageout IO that's in flight at once, so we do not introduce
+stupidly high latencies.
 
 -- 
 Politics is the struggle between those who want to make their country
