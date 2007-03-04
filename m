@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+akpm=40zip.com.au-S1752233AbXC2Vj7@vger.kernel.org>
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752233AbXC2Vj7 (ORCPT <rfc822;akpm@zip.com.au>);
-	Thu, 29 Mar 2007 17:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422634AbXC2Vj7
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Mar 2007 17:39:59 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:51632 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233AbXC2Vj6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Mar 2007 17:39:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=p+RCl6Z6R25GZbW5ScPHxRWLl9yg5eDTW5THFmKrSKzei61baZhMSywtNyEnNDn2xcTdsnqMYqlVdcSpqpKaDaEHPXXoqmSLWhNVE1ISxvlwhVvJmXu9+LQDhIBMYHp8OXEeOM02d+vTN4ZyLewvkXCxFpVFOamxvAuzfobDzCQ=
-Message-ID: <e8f45b9e0703291439q505c6a06re003e91484a20354@mail.gmail.com>
-Date: Thu, 29 Mar 2007 23:39:52 +0200
-From: "Gerard Braad Jr." <me@gbraad.nl>
-To: linux-kernel@vger.kernel.org
-Subject: 
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S1752140AbXCDRju (ORCPT <rfc822;ralf@linux-mips.org>); Sun, 4 Mar 2007 12:39:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbXCDRju (ORCPT <rfc822;linux-kernel-outgoing>); Sun, 4 Mar 2007 12:39:50 -0500
+Received: from [213.9.221.101] ([213.9.221.101]:2977 "EHLO mailhost.cofares.es" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP id S1752140AbXCDRjt convert rfc822-to-8bit (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Sun, 4 Mar 2007 12:39:49 -0500
+X-Greylist: delayed 906 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Mar 2007 12:39:49 EST
+To: linux-kernel@vger.kernel.org, vgonzalez@cofares.es
+From: eTrust_Antivirus_Option_for_Lotus_Notes_Domino%COFARES@cofares.es
+Subject: Warning (Realtime Scanner): Infected attachment(s) was detected!
+X-Priority: 1 (High)
+Date: Sun, 4 Mar 2007 18:24:39 +0100
+Message-ID: <OF06447589.EB993B57-ONC1257294.005FA438@cofares.es>
+X-MIMETrack: Serialize by Router on sernotes/cofares(Release 6.5.5|November 30, 2005) at 04/03/2007 18:39:48
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: f66a3ec78630ff0f
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752140AbXCDRju@vger.kernel.org>
 
-unsubscribe linux-kernel gbraad@member.fsf.org
+eTrust Antivirus ha detectado un documento adjunto bloqueado/infectado =
+en
+un mensaje de correo electr=F3nico de [linux-kernel@vger.kernel.org] a
+[vgonzalez@cofares.es] con el asunto [ ].  Documentos adjuntos:
+[message.zip]  Estado:  Error en la desinfecci=F3n, archivo renombrado
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
