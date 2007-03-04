@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751610AbXCDMpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751616AbXCDMqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751610AbXCDMpn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 07:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbXCDMpn
+	id S1751616AbXCDMqL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 07:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbXCDMqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 07:45:43 -0500
-Received: from mail.queued.net ([207.210.101.209]:1942 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751607AbXCDMpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 07:45:42 -0500
-Message-ID: <45EABF71.3010106@debian.org>
-Date: Sun, 04 Mar 2007 07:45:37 -0500
-From: Andres Salomon <dilinger@debian.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Sun, 4 Mar 2007 07:46:11 -0500
+Received: from mail04.syd.optusnet.com.au ([211.29.132.185]:41842 "EHLO
+	mail04.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751616AbXCDMqK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 07:46:10 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu  scheduler
+Date: Sun, 4 Mar 2007 23:46:03 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>
+References: <200703041800.53360.kernel@kolivas.org> <200703042247.44196.kernel@kolivas.org> <200703040724.34321.gene.heskett@gmail.com>
+In-Reply-To: <200703040724.34321.gene.heskett@gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH] hrtimers: hrtimer_clock_base description typo
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------090609010506030409020208"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703042346.04051.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090609010506030409020208
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Sunday 04 March 2007 23:24, Gene Heskett wrote:
+> On Sunday 04 March 2007, Con Kolivas wrote:
+> >On Sunday 04 March 2007 22:08, Gene Heskett wrote:
+> >> On Sunday 04 March 2007, Con Kolivas wrote:
+> >> >This message is to announce the first general public release of the
+> >> > "Rotating Staircase DeadLine" cpu scheduler.
+> >>
+> >> I assume to test this, we select the deadline scheduler?
+> >
+> >No, only the "deadline" in the name is shared. This is a cpu process
+> > scheduler whereas the deadline scheduler you're thinking of is an I/O
+> > scheduler. To test this you just patch it in and it replaces the
+> > current mainline cpu scheduler (the same way the staircase cpu
+> > scheduler in -ck replaces it).
+>
+> Oh, then I tried to put the -ck1 patch on top of that, and blew the tree
+> up.  I'd built it the first time with the deadline scheduler as the
+> default while I was waiting on your reply.
 
-The description for the hrtimer_clock_base struct describes
-"hrtimer_base".  That should be hrtimer_clock_base.
+Yes, sorry. This is mutually exclusive with the -ck1 patch. It is a standalone 
+piece of code.
 
-(Resending; forgot to sign off)
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
-
---------------090609010506030409020208
-Content-Type: text/x-patch;
- name="hrtimer2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="hrtimer2.patch"
-
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 3bef961..3000539 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -139,7 +139,7 @@ struct hrtimer_sleeper {
- };
- 
- /**
-- * struct hrtimer_base - the timer base for a specific clock
-+ * struct hrtimer_clock_base - the timer base for a specific clock
-  * @cpu_base:		per cpu clock base
-  * @index:		clock type index for per_cpu support when moving a
-  *			timer to a base on another cpu.
-
---------------090609010506030409020208--
+-- 
+-ck
