@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932997AbXCDQJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933010AbXCDQUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932997AbXCDQJF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 11:09:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933003AbXCDQJF
+	id S933010AbXCDQUE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 11:20:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXCDQUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 11:09:05 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:50366 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932997AbXCDQJE (ORCPT
+	Sun, 4 Mar 2007 11:20:04 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:3258 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933010AbXCDQUB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 11:09:04 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Sun, 4 Mar 2007 10:09:13 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: trivial@kernel.org
-Subject: [PATCH] Kconfig:  Remove reference to external mqueue library.
-Message-ID: <Pine.LNX.4.64.0703041006560.28227@CPE00045a9c397f-CM001225dbafb6>
+	Sun, 4 Mar 2007 11:20:01 -0500
+X-IronPort-AV: i="4.14,246,1170651600"; 
+   d="scan'208"; a="23500083:sNHT24156993"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+Date: Sun, 4 Mar 2007 11:20:44 -0500
+User-Agent: KMail/1.9.5
+Cc: rmk@arm.linux.org.uk,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
+In-Reply-To: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703041120.45211.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 04 Mar 2007 16:19:53.0936 (UTC) FILETIME=[F1372D00:01C75E78]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu 1 Mar 2007 19:03, Mike Frysinger pondered:
+> the console= bootcmd allows for controlling of the initial state of
+> flow control by adding/omitting the 'r' suffix ... however, the
+> uart_startup() function in serial_core.c always calls down into the
+> serial driver with TIOCM_RTS:
+> static int uart_startup(...) {
+> ...
+>             /*
+>              * Setup the RTS and DTR signals once the
+>              * port is open and ready to respond.
+>              */
+>             if (info->tty->termios->c_cflag & CBAUD)
+>                 uart_set_mctrl(port, TIOCM_RTS | TIOCM_DTR);
+> ...
+>
+> shouldnt TIOCM_RTS be passed down only when the 'r' is appended to the
+> boot cmdline ?  perhaps like this:
+> uart_set_mctrl(port, (info->flags & UIF_CTS_FLOW ? TIOCM_RTS : 0) |
+> TIOCM_DTR); assuming too that TIOCM_DTR should always be set ...
 
-  Remove the reference to an external mqueue library since that was
-merged into glibc in 2004.
+This would help a similar problem I am having. Simply using a serial console 
+with Flow control enabled, turns flow control on. 
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+If the application wants the capability to turn Flow control on later, without 
+booting with it on, the current code does not allow this...
 
----
+Was this the intended use the the 'console=...r'?
 
-diff --git a/init/Kconfig b/init/Kconfig
-index f977086..ed2e0d3 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -139,9 +139,7 @@ config POSIX_MQUEUE
- 	  queues every message has a priority which decides about succession
- 	  of receiving it by a process. If you want to compile and run
- 	  programs written e.g. for Solaris with use of its POSIX message
--	  queues (functions mq_*) say Y here. To use this feature you will
--	  also need mqueue library, available from
--	  <http://www.mat.uni.torun.pl/~wrona/posix_ipc/>
-+	  queues (functions mq_*) say Y here.
-
- 	  POSIX message queues are visible as a filesystem called 'mqueue'
- 	  and can be mounted somewhere if you want to do filesystem
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Thanks
+-Robin
