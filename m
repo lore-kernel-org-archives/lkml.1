@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750755AbXCDU4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751850AbXCDVOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750755AbXCDU4k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 15:56:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbXCDU4k
+	id S1751850AbXCDVOc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 16:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbXCDVOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 15:56:40 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46028 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750755AbXCDU4j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 15:56:39 -0500
-Date: Sun, 4 Mar 2007 22:00:46 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][libata] pata_pdc202xx_old: fix data corruption and
- other problems
-Message-ID: <20070304220046.44ccd7b0@lxorguk.ukuu.org.uk>
-In-Reply-To: <200703040158.43471.bzolnier@gmail.com>
-References: <200703040158.43471.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Mar 2007 16:14:32 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49131 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751850AbXCDVOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 16:14:31 -0500
+Date: Sun, 4 Mar 2007 13:14:24 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Avi Kivity <avi@qumranet.com>
+cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL][RETRY] KVM updates for Linux 2.6.21-rc2
+In-Reply-To: <45EA8F9F.6010006@qumranet.com>
+Message-ID: <Pine.LNX.4.64.0703041308100.3953@woody.linux-foundation.org>
+References: <45EA8F9F.6010006@qumranet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Mar 2007 01:58:43 +0100
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
+
+On Sun, 4 Mar 2007, Avi Kivity wrote:
 > 
-> [PATCH] pata_pdc202xx_old: fix data corruption and other problems
-> 
-> Fix wrong "port" calculations in pdc202xx_configure_piomode()
-> and pdc202xx_set_dmamode(), it was horribly broken which resulted
-> in major havoc on all configurations except one (master device on
-> primary channel, no other devices) as code was writing PIO/DMA
-> timings and device settings to wrong registers (including
-> reserved ones),
+> The changes fall into three broad categories:
+> - initial kvm paravirtulization support
+> - the first batch of the stable userspace interface changes
+> - fixes, fixes, fixes
 
-Thanks
+This is the absolute last time I say this.
 
-Acked-by: Alan Cox <alan@redhat.com>
+WAY too late. You'd better get this in before -rc1 next time around. I 
+want *FIXES*ONLY* by now, and next time I see crap like this I'm going to 
+ignore it until you fix me a pull that contains fixes only, and I'm not 
+even going to pull during the next merge window because I'm not interested 
+in merging something that isn't maintained and doesn't get those "fixes 
+only" trees.
 
+So I pulled this now, but the fact is, I already ignored this once exactly 
+because it wasn't appropriate to pull at this point. Yes, I soemtimes miss 
+emails, but dammit, quite often it's also because I just judge the email 
+to be *CRAP* and simply not worth bothering with.
+
+750 new lines of code, with much of it apparently being new features, and 
+stupid cleanups and cosmetics that don't actually fix anything simply 
+isn't "post-rc2 material". I really *really* don't want to see this again!
+
+I'm really fed up with having to pull big changes after the merge window, 
+because it just doesn't seem to let up. I'm going to go postal on the next 
+maintainer who doesn't understand what "merge window" and "fixes only" 
+means.
+
+		Linus
