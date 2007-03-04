@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbXCDRsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbXCDRzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751713AbXCDRsa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 12:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXCDRsa
+	id S1751739AbXCDRzc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 12:55:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbXCDRzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 12:48:30 -0500
-Received: from smtpout.mac.com ([17.250.248.176]:60829 "EHLO smtpout.mac.com"
+	Sun, 4 Mar 2007 12:55:32 -0500
+Received: from rtr.ca ([64.26.128.89]:3159 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751713AbXCDRs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 12:48:29 -0500
-In-Reply-To: <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com>
-References: <20070301131118.GA30228@elte.hu> <20070301141637.GA20006@elte.hu> <20070301145454.GB12684@2ka.mipt.ru> <Pine.LNX.4.64.0703011123200.23932@alien.or.mcafeemobile.com> <20070302081047.GA27122@2ka.mipt.ru> <Pine.LNX.4.64.0703020840120.1977@alien.or.mcafeemobile.com> <20070303100625.GA22557@2ka.mipt.ru> <Pine.LNX.4.64.0703030945030.7075@alien.or.mcafeemobile.com> <20070303203140.GA756@2ka.mipt.ru> <Pine.LNX.4.64.0703031248450.7278@alien.or.mcafeemobile.com> <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <82AD23D8-E5BE-4B69-A602-1B474EC0C4EA@mac.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Pavel Machek <pavel@ucw.cz>,
-       Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
+	id S1751739AbXCDRzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 12:55:31 -0500
+Message-ID: <45EB0814.5030306@rtr.ca>
+Date: Sun, 04 Mar 2007 12:55:32 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       bluez-devel@lists.sourceforge.net, marcel@holtmann.org,
+       Andrew Morton <akpm@osdl.org>,
+       "David S. Miller" <davem@sunset.davemloft.net>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [Regression] Bluetooth RFComm:  using it locks up the machine
+References: <45EADD78.1030300@rtr.ca> <45EAE1D6.10900@rtr.ca>
+In-Reply-To: <45EAE1D6.10900@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Date: Sun, 4 Mar 2007 12:46:00 -0500
-To: Kirk Kuchov <kirk.kuchov@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 04, 2007, at 11:23:37, Kirk Kuchov wrote:
-> So here we are, 2007. epoll() works with files, pipes, sockets,  
-> inotify and anything pollable (file descriptors) but aio, timers,  
-> signals and user-defined event. Can we please get those working  
-> with epoll ? Something as simple as:
->
-> [code snipped]
->
-> Would this be acceptable? Can we finally move on?
+Mark Lord wrote:
+> Mark Lord wrote:
+>> Any attempt to open/use a bluetooth rfcomm device locks up
+>> scheduling completely on my machine.
+>>
+>> Interrupts (ping, alt-sysrq) seem to be alive, but nothing else.
+>>
+>> This was working fine in 2.6.20, broken now in 2.6.21-rc2-git*
+> 
+> Further info:  Reverting this change (below) fixes it:
+> 
+> | author    Marcel Holtmann <marcel@holtmann.org>
+> |      Sat, 17 Feb 2007 22:58:57 +0000 (23:58 +0100)
+> | committer    David S. Miller <davem@sunset.davemloft.net>
+> |      Mon, 26 Feb 2007 19:42:41 +0000 (11:42 -0800)
+> | commit    c1a3313698895d8ad4760f98642007bf236af2e8
+> | tree    337a876f727061362b6a169f8759849c105b8f7a    tree | snapshot
+> | parent    f5ffd4620aba9e55656483ae1ef5c79ba81f5403    commit | diff
+> | | [Bluetooth] Make use of device_move() for RFCOMM TTY devices
+> | | In the case of bound RFCOMM TTY devices the parent is not available
+> | before its usage. So when opening a RFCOMM TTY device, move it to
+> | the corresponding ACL device as a child. When closing the device,
+> | move it back to the virtual device tree.
+> | Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+..
 
-Well, even this far into 2.6, Linus' patch from 2003 still (mostly)  
-applies; the maintenance cost for this kind of code is virtually  
-zilch.  If it matters that much to you clean it up and make it apply;  
-add an alarmfd() syscall (another 100 lines of code at most?) and  
-make a "read" return an architecture-independent siginfo-like  
-structure and submit it for inclusion.  Adding epoll() support for  
-random objects is as simple as a 75-line object-filesystem and a 25- 
-line syscall to return an FD to a new inode.  Have fun!  Go wild!   
-Something this trivially simple could probably spend a week in -mm  
-and go to linus for 2.6.22.
+The lockup is happening inside the call to device_move(),
+specifically in sysfs_move_dir() it loops here forever:
 
-Cheers,
-Kyle Moffett
+...
+again:
+        mutex_lock(&old_parent_dentry->d_inode->i_mutex);
+        if (!mutex_trylock(&new_parent_dentry->d_inode->i_mutex)) {
+                mutex_unlock(&old_parent_dentry->d_inode->i_mutex);
+                goto again;
+        }
+...
+
+Screen-shot (photograph) from alt-sysrq-P is here:
+    http://rtr.ca/recent/rfcomm_pc.jpg
+
+Cheers
 
