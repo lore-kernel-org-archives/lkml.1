@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbXCDS0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752244AbXCDSdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbXCDS0t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 13:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXCDS0t
+	id S1752244AbXCDSdJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 13:33:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbXCDSdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 13:26:49 -0500
-Received: from rtr.ca ([64.26.128.89]:4963 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbXCDS0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 13:26:48 -0500
-Message-ID: <45EB0F69.5070002@rtr.ca>
-Date: Sun, 04 Mar 2007 13:26:49 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Sun, 4 Mar 2007 13:33:09 -0500
+Received: from wx-out-0506.google.com ([66.249.82.226]:11017 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbXCDSdH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 13:33:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=mM+EDC3OJpM76l7ygC2q6a7KsTVUM02OVwjNiyRhOwEDn0bZStR+IDVm/HVt46B2VUdzdPndxcrv2nAfTmAIdQ2qVzXKZUoWuYS58iBnaJDXVpcq5tBG+RvnNfyzmJfYOd300jUrXvTR91YT3k2ic15ChOWpMtCVcduqg7fJE/8=
+Message-ID: <3d8471ca0703041033v689b51dfuba0b09fc979d7698@mail.gmail.com>
+Date: Sun, 4 Mar 2007 19:33:06 +0100
+From: "Guillaume Chazarain" <guichaz@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [1/3] Bugfix: Don't use the TSC in sched_clock if unstable
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703041825.39361.ak@suse.de>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       bluez-devel@lists.sourceforge.net, marcel@holtmann.org,
-       Andrew Morton <akpm@osdl.org>,
-       "David S. Miller" <davem@sunset.davemloft.net>
-Subject: [PATCH] Fix 2.6.21 rfcomm lockups (2.6.21 regression)
-References: <45EADD78.1030300@rtr.ca> <45EAE1D6.10900@rtr.ca> <45EB0814.5030306@rtr.ca>
-In-Reply-To: <45EB0814.5030306@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_118976_19025661.1173033186790"
+References: <3d8471ca0703031341l1768fe7rccf40712e452ea09@mail.gmail.com>
+	 <200703041537.27581.ak@suse.de>
+	 <3d8471ca0703040741h4eff73a3wd67d648d52497e34@mail.gmail.com>
+	 <200703041825.39361.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Any attempt to open/use a bluetooth rfcomm device locks up
-> scheduling completely on my machine.
->
-> Interrupts (ping, alt-sysrq) seem to be alive, but nothing else.
->
-> This was working fine in 2.6.20, broken now in 2.6.21-rc2-git*
+------=_Part_118976_19025661.1173033186790
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Further info:  Reverting this change (below) fixes it:
+2007/3/4, Andi Kleen <ak@suse.de>:
 
-| author    Marcel Holtmann <marcel@holtmann.org>
-|      Sat, 17 Feb 2007 22:58:57 +0000 (23:58 +0100)
-| committer    David S. Miller <davem@sunset.davemloft.net>
-|      Mon, 26 Feb 2007 19:42:41 +0000 (11:42 -0800)
-| commit    c1a3313698895d8ad4760f98642007bf236af2e8
-| tree    337a876f727061362b6a169f8759849c105b8f7a    tree | snapshot
-| parent    f5ffd4620aba9e55656483ae1ef5c79ba81f5403    commit | diff
-| | [Bluetooth] Make use of device_move() for RFCOMM TTY devices
-| | In the case of bound RFCOMM TTY devices the parent is not available
-| before its usage. So when opening a RFCOMM TTY device, move it to
-| the corresponding ACL device as a child. When closing the device,
-| move it back to the virtual device tree.
-| Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+> On what hardware?
 
-The simplest fix for this bug is to prevent sysfs_move_dir()
-from self-deadlocking when (old_parent == new_parent).
+Pentium M 798 MHz -> 2GHz
 
-This patch prevents total system lockup when using rfcomm devices.
+> And how many frequency transitions do you have per second?
 
-Signed-off-by:  Mark Lord <mlord@pobox.com>
----
---- 2.6.21/fs/sysfs/dir.c	2007-03-04 13:19:00.000000000 -0500
-+++ linux/fs/sysfs/dir.c	2007-03-04 13:20:45.000000000 -0500
-@@ -431,6 +431,8 @@
- 	new_parent_dentry = new_parent ?
- 		new_parent->dentry : sysfs_mount->mnt_sb->s_root;
- 
-+	if (old_parent_dentry->d_inode == new_parent_dentry->d_inode)
-+		return 0;	/* nothing to move */
- again:
- 	mutex_lock(&old_parent_dentry->d_inode->i_mutex);
- 	if (!mutex_trylock(&new_parent_dentry->d_inode->i_mutex)) {
+10 in a kernel compile exhibiting audio skips.
+
+Anyway, the "Clocksource tsc unstable (delta = -263211549 ns)" line
+in the dmesg I attached to the previous mail confirms IMHO that my
+TSC is too unstable for scheduling purpose.
+
+15 minutes after booting, including a kernel compile halted on the
+first audio skip, I have this in
+/sys/devices/system/cpu/cpu0/cpufreq/stats/trans_table
+
+   From  :    To
+         :   1995000   1596000   1330000   1064000    798000
+  1995000:         0        67       101       128       367
+  1596000:        20         0         3         3        41
+  1330000:        21         0         0        10        73
+  1064000:        30         0         0         0       111
+   798000:       592         0         0         0         0
+
+Nothing alarming I presume.
+
+Thanks.
+
+-- 
+Guillaume
+
+------=_Part_118976_19025661.1173033186790
+Content-Type: application/octet-stream; name=cpuinfo
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_eyvtlc6y
+Content-Disposition: attachment; filename="cpuinfo"
+
+cHJvY2Vzc29yCTogMAp2ZW5kb3JfaWQJOiBHZW51aW5lSW50ZWwKY3B1IGZhbWlseQk6IDYKbW9k
+ZWwJCTogMTMKbW9kZWwgbmFtZQk6IEludGVsKFIpIFBlbnRpdW0oUikgTSBwcm9jZXNzb3IgMi4w
+MEdIegpzdGVwcGluZwk6IDgKY3B1IE1IegkJOiA3OTguMDAwCmNhY2hlIHNpemUJOiAyMDQ4IEtC
+CmZkaXZfYnVnCTogbm8KaGx0X2J1ZwkJOiBubwpmMDBmX2J1Zwk6IG5vCmNvbWFfYnVnCTogbm8K
+ZnB1CQk6IHllcwpmcHVfZXhjZXB0aW9uCTogeWVzCmNwdWlkIGxldmVsCTogMgp3cAkJOiB5ZXMK
+ZmxhZ3MJCTogZnB1IHZtZSBkZSBwc2UgdHNjIG1zciBwYWUgbWNlIGN4OCBhcGljIHNlcCBtdHJy
+IHBnZSBtY2EgY21vdiBwYXQgY2xmbHVzaCBkdHMgYWNwaSBtbXggZnhzciBzc2Ugc3NlMiBzcyB0
+bSBwYmUgZXN0IHRtMgpib2dvbWlwcwk6IDE1OTYuNjIKY2xmbHVzaCBzaXplCTogNjQKCg==
+------=_Part_118976_19025661.1173033186790--
