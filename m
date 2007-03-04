@@ -1,142 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbXCDUGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXCDULu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751549AbXCDUGi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 15:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXCDUGh
+	id S1752463AbXCDULu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 15:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbXCDULu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 15:06:37 -0500
-Received: from wr-out-0506.google.com ([64.233.184.230]:52862 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbXCDUGh convert rfc822-to-8bit (ORCPT
+	Sun, 4 Mar 2007 15:11:50 -0500
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:50787 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460AbXCDULt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 15:06:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Hc/KoJf8j0LuVa/0o0DsKE8e5j6xmuMO7ikaOwPNjBTccuyL2RH90UCSZ+SIfmO94XAabPEF39zhKObblxvqA0VbRmTUBBOeTvIvWKAPVxkiLk0KM3oLGoNEuZjc3PN1ifCdC4etl/yh9+4LXpF44FNuOTKd9OHpvacOEhEpQeg=
-Message-ID: <f24d23310703041206u6fcb360ay69d61c56b6299fd4@mail.gmail.com>
-Date: Mon, 5 Mar 2007 01:36:35 +0530
-From: "debian developer" <debiandev@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] BadRAM still not ready for inclusion ? (was: Re: Free Linux Driver Development!)
-In-Reply-To: <f24d23310703041204r2e729cc4ke93a9cbb70ef2e85@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <1663310550@web.de>
-	 <f24d23310703041204r2e729cc4ke93a9cbb70ef2e85@mail.gmail.com>
+	Sun, 4 Mar 2007 15:11:49 -0500
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <200703032345.33137.arnd@arndb.de>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com,
+       Ulrich Drepper <drepper@redhat.com>
+Content-Transfer-Encoding: 7bit
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Date: Sun, 4 Mar 2007 20:11:17 +0000
+To: Arnd Bergmann <arnd@arndb.de>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The feature is not supported most prolly cos of lack of volunteers
-pushing it into mainline, or it might be deprecated(is it??).
-You are right in pointing out tht this could really save some ppl lots
-of trouble.
-am ready to help. pls contact for further queries
+On 3 Mar 2007, at 22:45, Arnd Bergmann wrote:
+> On Friday 02 March 2007 00:38:19 Christoph Hellwig wrote:
+>>> Forgive me if I haven't put enough thought into it, but would it be
+>>> useful to create a generic_fallocate() that writes zeroed pages  
+>>> for any
+>>> non-existent pages in the range?  I don't know how glibc currently
+>>> implements posix_fallocate(), but maybe the kernel could do it more
+>>> efficiently, even in generic code.  Maybe we don't care, since  
+>>> the major
+>>> file systems can probably do something better in their own code.
+>>
+>> I'd be more happy to have the write out zeroes loop in glibc.  And
+>> glibc needs to have it anyway, for older kernels.
 >
+> A generic_fallocate makes sense to me iff we can do it in the kernel
+> more significantly more efficiently than in glibc, e.g. by using only
+> a single page in page cache instead of one for each page to be  
+> preallocated.
 >
->
-> On 3/5/07, devzero@web.de <devzero@web.de> wrote:
-> >  Hello !
-> >
-> > There's some really nice feature-patch named BadRAM at http://rick.vanrein.org/linux/badram/index.html for years now, being announced around 2000 on this list, voted for inclusion in  2.3.99.
-> >
-> > BadRAM let's you tell the kernel to skip certain regions of ram, so you can continue using defective modules. Some older article describing BadRAM in more detail is at  http://www.linuxjournal.com/article/4489
-> >
-> > Some may tell "better buy some new ram" , but think of scenarios where ram being soldered onboard, modules not being available anymore due to special format - or people not having the money to buy new modules. Furthermore, this is good stuff for propaganda "Linux even works on machines with broken ram - no other operating system can do that!"
-> >
-> > It seems, that BadRAM is not being maintained very actively and the original author doesn`t seem to have the time pushing it into mainline, but i know it's actively being used by more then just a handful of people. Unfortunately there is no mailinglist to approve this and some "central point of communication" besides Rick van Rein doesn't seem to exist. There is a fork named BadMEM at  http://sourceforge.net/projects/badmem, Memtest86 also supporting BadRAM and i have seen LOTs of discussion about BadRAM on the net. Most of that discussion was due to problems getting it run with Kernel XYZ.
-> >
-> > Basically, this feature is a matter of adding/modifying 200 lines of code, so iŽm even more wondering, why it exists for more than 7 years and nothing happening here. I don`t know of any kernel patch which is comparable to this.
-> >
-> > This patch is real a ressource-saver - if being a standard Linux feature, it will save even more ressources: Saving user's time (because they are pulling their hair out to get this run with kernel XYZ) and also saving CPU time  (no compile orgies anymore), and thus waste of energy.
-> >
-> > Please comment if someone sees chances of getting this (after years of existance) into mainline and also please jump in to make the good thing happen !
-> >
-> > Historical patch collection at:
-> >  http://rick.vanrein.org/linux/badram/download.html
-> >
-> > Most recent version of BadRAM should be:
-> > http://rick.vanrein.org/linux/badram/software/BadRAM-2.6.19.1.patch
-> >
-> > Sorry for being a little bit "noisy" here, but I think BadRAM is a great feature and Linux could really benefit from that.
-> >
-> > regards
-> > Roland K.
-> > Sysadmin
-> >
-> >
-> > List:       linux-kernel
-> >  Subject:    Re: Free Linux Driver Development!
-> > From:       devzero () web ! de
-> > Date:       2007-02-04 21:37:33
-> > Message-ID: 1605445807 () web ! de
-> > [Download message RAW]
-> >
-> > First off, compliments to this announcement, I liked it very much!
-> >
-> > Some comment regarding those "volunteers, waiting to get some real work" :)
-> >
-> > > > OK, but why isn't your army of volunteers fixing them?
-> >
-> > > They don't know about them, or they don't have the hardware to test?
-> > > Seriously, let the kernel-janitor's project know about any issues you
-> > > have and they will be glad to jump on it.  Those people are just
-> > > chomping a the bit to do something a bit bigger than "compiler warning
-> > > cleanups" :)
-> >
-> > So many times i have seen good ideas brought up, kernel patches being written, posted \
-> > to lkml, being developed outside mainline for a while and then being forgotten some \
-> > time later due to lack of energy of some individual to get this into mainline.
-> >
-> > If there is an noticeably number of talented programmers (unfortunately, i`m not) , \
-> > so why not "feeding" them the right way ? Where is those public and transparent and \
-> > moderated Linux-Kernel "ToDo"- or "Keep an eye on"-list, sorted by priorities, with \
-> > sort of a "vote for this feature"-button, so those guys have something they can pick \
-> > up? There is so much great stuff and ideas out there where they could put their work \
-> > onto or getting involved, it just needs to be found or sort of being "managed" a \
-> > little bit better.
-> >
-> > For myself, i`m waiting for so quite some things to get "one step further", but they \
-> > are more or less tied to some single individuals, for which you just cannot send some \
-> >  "hey, what`s up with your project"-message every second day. The interest in many \
-> > nice projects often is quite low and evolution quite slow, but not only because of \
-> > the fact that they aren`t great, but more because of not getting widely known. It`s \
-> > not always missing specs, it`s also some missing noise/feedback for different \
-> > features or missing of some "driving force" to bring things forward. How should one \
-> > developer know that somebody needs a feature if those who could probably need it \
-> > don`t request it? Maybe just because of the fact that they even imagine that such \
-> > feature would be possible ?
-> >
-> > Where is those efforts for fixing/integrating fantastic cowloop?
-> > What about badram/badmem patch ?
-> > Compressed Ccaching ?
-> > Somebody helping with development of dm-loop or extend loop.c to support more than \
-> > 256 devices ? Replacement of proprietary, unstable and unelegant vmware-lopp for \
-> > being able to mount vmware .vmdk files ? Internal Spec for this is open, dm-userspace \
-> > could be some infrastructure for this, but the author seems to have other \
-> > priorities.... dm-cow, zfs-fuse - anybody ?
-> > Kernel based target for AoE (Ata over Ethernet) ?  (there are two independent \
-> > implementations, but both got stuck at some early experimental stage)
-> >
-> > Just my 2 cents.
-> >
-> > Roland K.
-> > Sysadmin
-> >
-> > ps:
-> > This isn`t meant to criticise any of you kernel developers since you`re doing \
-> > fantastic work!
-> > _______________________________________________________________________
-> > Viren-Scan für Ihren PC! Jetzt für jeden. Sofort, online und kostenlos.
-> > Gleich testen! http://www.pc-sicherheit.web.de/freescan/?mc=022222
-> >
-> > -
-> >  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at   http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
->
->
+> If  glibc is smart enough to do an optimal implementation, I fully  
+> agree
+> with you.
+
+glibc cannot ever be smart enough because a file system driver will  
+always know better and be able to do things in a much more optimized  
+way.
+
+For example on NTFS fallocate() only needs to involve the setting of  
+a few bits in the volume block allocation bitmap (one bit for each  
+logical block being allocated) and update the extent map in the on- 
+disk inode to reflect that those blocks are now allocated to the  
+inode.  Then it just needs to update the allocated size and  
+optionally the data size (if fallocate wants to increase the file  
+size rather than just the allocated size).  And that is it.  No  
+zeroing needs to happen at all because we have not updated the  
+initialized size of the inode!
+
+glibc can only dream of an implementation like this.  (-;
+
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
+
