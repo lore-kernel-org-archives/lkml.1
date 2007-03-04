@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751156AbXCDKOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751560AbXCDKbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751156AbXCDKOg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 05:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXCDKOg
+	id S1751560AbXCDKbl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 05:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbXCDKbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 05:14:36 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:45915 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbXCDKOf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 05:14:35 -0500
-Message-ID: <45EA9BFA.70401@cosmosbay.com>
-Date: Sun, 04 Mar 2007 11:14:18 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sun, 4 Mar 2007 05:31:41 -0500
+Received: from mga09.intel.com ([134.134.136.24]:13422 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751364AbXCDKbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 05:31:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,246,1170662400"; 
+   d="scan'208"; a="52849529:sNHT18714348"
+Message-ID: <45EAA003.7020504@linux.intel.com>
+Date: Sun, 04 Mar 2007 13:31:31 +0300
+From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-To: David Lang <david.lang@digitalinsight.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: dynamic linking files slow fork down significantly
-References: <Pine.LNX.4.63.0703021647070.24792@qynat.qvtvafvgr.pbz> <45E92837.3030807@cosmosbay.com> <Pine.LNX.4.63.0703040012070.26326@qynat.qvtvafvgr.pbz>
-In-Reply-To: <Pine.LNX.4.63.0703040012070.26326@qynat.qvtvafvgr.pbz>
+To: Meelis Roos <mroos@linux.ee>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.21-rc1: more ACPI errors (EC__)
+References: <Pine.SOC.4.64.0702260842260.9705@math>
+In-Reply-To: <Pine.SOC.4.64.0702260842260.9705@math>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 04 Mar 2007 11:14:28 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Lang a écrit :
-> On Sat, 3 Mar 2007, Eric Dumazet wrote:
->>
->> # time ldd -r ./groff
->>        libstdc++.so.5 => /usr/lib/libstdc++.so.5 (0xf7e8f000)
->>        libm.so.6 => /lib/tls/libm.so.6 (0xf7e6d000)
->>        libgcc_s.so.1 => /lib/libgcc_s.so.1 (0xf7e62000)
->>        libc.so.6 => /lib/tls/libc.so.6 (0x42000000)
->>        /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0xf7f4c000)
->> 0.00user 0.00system 0:00.00elapsed 50%CPU (0avgtext+0avgdata 
->> 0maxresident)k
->> 0inputs+0outputs (0major+777minor)pagefaults 0swaps
->>
->> You can see 777 pagefaults instead of 696 on this example.
-> 
-> the version of time on my system (debian 3.1) doesn't give me the cpu or 
-> pagefault info, just the times. where should I get the version that 
-> gives more info? (although I don't think I can apply it directly to my 
-> troubleshooting as the work is all being done in child processes).
+Meelis Roos wrote:
+> I tested 2.6.21-rc1 on my laptop (IBM X20 with 440BX) and found two 
+> problems:
+>
+> First, a seemingly harmless one - ACPI error messages during bootup:
+>
+> ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for [EmbeddedControl] [20070126]
+> ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands for [OpcodeName unavailable] [20070126]
+> ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.ISA_.EC__.BAT0._STA] (Node d3c435e0), AE_NOT_FOUND
+> ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for [EmbeddedControl] [20070126]
+> ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.ISA_.EC__.AC__._PSR] (Node d3c43540), AE_NOT_FOUND
+> ACPI Exception (ac-0095): AE_NOT_FOUND, Error reading AC Adapter state [20070126]
+>
+> And second, there were ACPI error messages about EC__ during shutdown. 
+> These messages appeared, then the "acpi_power_off called" message 
+> appeared, then it waited for about 5 seconds (this does not happen 
+> normally) and then it succeeded shutting down. Captured a screenshot of 
+> these messages, temporarily available at 
+> http://www.cs.ut.ee/~mroos/x20-shutdown-acpi-errors.jpg
+>
+>   
+please take a look at 8066 bug and patches there.
 
-time is a shell builtin.
-But there is normally an /usr/bin/time standalone program.
-
-# type time
-time is a shell keyword
-# time date
-Sun Mar  4 12:15:54 CET 2007
-
-real    0m0.003s
-user    0m0.000s
-sys     0m0.000s
-
-# /usr/bin/time date
-Sun Mar  4 12:15:56 CET 2007
-0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (0major+192minor)pagefaults 0swaps
+regards,
+    alex
