@@ -1,78 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751835AbXCDXZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbXCDX2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751835AbXCDXZs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 18:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXCDXZs
+	id S1752004AbXCDX2k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 18:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbXCDX2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 18:25:48 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:52528 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbXCDXZr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 18:25:47 -0500
-Date: Sun, 04 Mar 2007 17:25:16 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: CK804 SATA Errors (still got them)
-In-reply-to: <200703021547.09121.s0348365@sms.ed.ac.uk>
-To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Message-id: <45EB555C.9050606@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <200703011339.52895.s0348365@sms.ed.ac.uk>
- <200703020120.52879.s0348365@sms.ed.ac.uk> <45E78E8A.2090202@shaw.ca>
- <200703021547.09121.s0348365@sms.ed.ac.uk>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sun, 4 Mar 2007 18:28:40 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:44334 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752004AbXCDX2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 18:28:39 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Guillaume Chazarain" <guichaz@gmail.com>
+Subject: Re: [1/3] Bugfix: Don't use the TSC in sched_clock if unstable
+Date: Mon, 5 Mar 2007 00:28:24 +0100
+User-Agent: KMail/1.9.5
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <3d8471ca0703031341l1768fe7rccf40712e452ea09@mail.gmail.com> <200703041825.39361.ak@suse.de> <3d8471ca0703041033v689b51dfuba0b09fc979d7698@mail.gmail.com>
+In-Reply-To: <3d8471ca0703041033v689b51dfuba0b09fc979d7698@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703050028.25209.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan wrote:
->> Can you try reverting commit 721449bf0d51213fe3abf0ac3e3561ef9ea7827a
->> (link below) and see what effect that has?
->>
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h
->> =721449bf0d51213fe3abf0ac3e3561ef9ea7827a
+On Sunday 04 March 2007 19:33, Guillaume Chazarain wrote:
+> 2007/3/4, Andi Kleen <ak@suse.de>:
 > 
-> Obviously, I'll let you know if it happens again, but I've reverted this 
-> commit and transferred 22.5GB over 45 minutes onto a RAID5 with 4 HDs on an 
-> NVIDIA sata controller, and this error hasn't appeared.
+> > On what hardware?
 > 
-> So I'm inclined to (very unscientifically) say that this brings it back to 
-> 2.6.20's level of stability.
+> Pentium M 798 MHz -> 2GHz
 
-Interesting. Can you try un-reverting that patch, and applying this one?
+An older one (Banias) I assume? (please post /proc/cpuinfo) 
 
-The reading of the status register is something that was part of the original
-NVidia code, which I'm not really sure why is there. Given that reading
-the status register clears the drive's interrupt status, that might be
-causing some wierd interaction with the ADMA controller. Also, I added in
-a printk for cases where notifiers are triggered but the command doesn't
-indicate completion - if you still get problems, let me know if you see
-that message.
+Assuming that:
 
---- linux-2.6.21-rc2-git3/drivers/ata/sata_nv.c	2007-03-04 14:44:05.000000000 -0600
-+++ linux-2.6.21-rc2-git3edit/drivers/ata/sata_nv.c	2007-03-04 17:09:06.000000000 -0600
-@@ -745,10 +745,10 @@
- 			/* Grab the ATA port status for non-NCQ commands.
- 			   For NCQ commands the current status may have nothing to do with
- 			   the command just completed. */
--			if (qc->tf.protocol != ATA_PROT_NCQ) {
-+/*			if (qc->tf.protocol != ATA_PROT_NCQ) {
- 				u8 ata_status = readb(pp->ctl_block + (ATA_REG_STATUS * 4));
- 				qc->err_mask |= ac_err_mask(ata_status);
--			}
-+			}*/
- 			DPRINTK("Completing qc from tag %d with err_mask %u\n",cpb_num,
- 				qc->err_mask);
- 			ata_qc_complete(qc);
-@@ -764,6 +764,9 @@
- 			ata_port_freeze(ap);
- 			return 1;
- 		}
-+	} else {
-+		ata_port_printk(ap, KERN_WARNING, "notifier for tag %d but not complete?\n",
-+			cpb_num);
- 	}
- 	return 0;
+> > And how many frequency transitions do you have per second?
+> 
+> 10 in a kernel compile exhibiting audio skips.
+> 
+> Anyway, the "Clocksource tsc unstable (delta = -263211549 ns)" line
+
+That's because the new clocksource code doesn't correctly update
+its state on cpufrequency scaling. That's another problem, but independent
+of this. sched_clock doesn't rely on the clock source state for this,
+but uses its own conversion functions.
+
+> in the dmesg I attached to the previous mail confirms IMHO that my
+> TSC is too unstable for scheduling purpose.
+
+No it shouldn't be.  Must be a bug somewhere.
+
+Your CPU doesn't have p state invariant TSC, but we should be able 
+to generate nano seconds from TSC using the known frequency at any point 
+of time using the frequency updated in arch/i386/kernel/tsc.c:time_cpufreq_notifier(). 
+
+Can you run with this debug patch and send me the output? If it stops
+logging before you see the problem increase MAX in the patch.
+
+-Andi
+
+Index: linux/arch/i386/kernel/tsc.c
+===================================================================
+--- linux.orig/arch/i386/kernel/tsc.c
++++ linux/arch/i386/kernel/tsc.c
+@@ -85,9 +85,20 @@ static unsigned long cyc2ns_scale __read
+ 
+ #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+ 
++enum {
++	MAX = 500,
++}; 
++
++static int cnt;
++
+ static inline void set_cyc2ns_scale(unsigned long cpu_khz)
+ {
+-	cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
++	long new = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
++	if (cnt < MAX) {
++		printk("cyc2ns_scale %lx -> %lx\n", cyc2ns_scale, new); 
++		cnt++;
++	}
++	cyc2ns_scale = new;
  }
+ 
+ static inline unsigned long long cycles_2_ns(unsigned long long cyc)
+@@ -101,6 +112,8 @@ static inline unsigned long long cycles_
+ unsigned long long sched_clock(void)
+ {
+ 	unsigned long long this_offset;
++	static u64 last_offset;
++	static long last_conv;
+ 
+ 	if (unlikely(custom_sched_clock))
+ 		return (*custom_sched_clock)();
+@@ -116,7 +129,17 @@ unsigned long long sched_clock(void)
+ 	rdtscll(this_offset);
+ 
+ 	/* return the value in ns */
+-	return cycles_2_ns(this_offset);
++	this_offset = cycles_2_ns(this_offset);
++
++	if (cnt < MAX && this_offset <= last_offset) {
++		printk("sched_clock backward %llx(%lx)->%llx(%lx)\n",
++			last_offset, last_conv, this_offset, cyc2ns_scale);
++		cnt++;
++	} 
++	last_offset = this_offset;
++	last_conv = cyc2ns_scale;
++
++	return this_offset;
+ }
+ 
+ static unsigned long calculate_cpu_khz(void)
+
