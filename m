@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751818AbXCDQre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856AbXCDQsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751818AbXCDQre (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 11:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXCDQre
+	id S1751856AbXCDQsM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 11:48:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbXCDQsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 11:47:34 -0500
-Received: from wr-out-0506.google.com ([64.233.184.226]:50350 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbXCDQrd (ORCPT
+	Sun, 4 Mar 2007 11:48:12 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:58239 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751854AbXCDQsK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 11:47:33 -0500
+	Sun, 4 Mar 2007 11:48:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZqIFWHBfB7QC+vGnveuquPaWCrLGNzSyFb5XQhH6d1x6ywKccabu8HAoDe6m5ryjpE7OzfpFoRGc77x9jRRORTdtr2byMDUHeM+1D1Qj/dSrv3/MPefyl998saXOCGTdQ0KpVdDeXLBpOviT5F6EcXuraUeTlX4bAaTwr0T3Q7w=
-Message-ID: <6bffcb0e0703040847g1c04940bm4c22895ec2540bd1@mail.gmail.com>
-Date: Sun, 4 Mar 2007 17:47:32 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump kernel)
-Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1173026442.24738.143.camel@localhost.localdomain>
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BJiIloeRRJaSmxn52rTDstj+aCCwXDrReCZ4TofrPjgzSBIUfUBcajo54UnGiwFC3a8n1J1Tsu7cSuYNGJjStTrDHsUiVpf+oCPMX3CnAL0YtBGEZpW2386Rig1nQvF8OFgn69Y4oAlwAoipDoHH21UvTUACcw6kximzcxmBb2U=
+Message-ID: <8d158e1f0703040848l48064204pe5f994ba4663cd0c@mail.gmail.com>
+Date: Sun, 4 Mar 2007 16:48:08 +0000
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [IPW3945] Can't load microcode
+In-Reply-To: <8d158e1f0703040841m634b37d4r9f2d4135f5f4dfd6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <6bffcb0e0703031531h3f0a86c6sda2522c0ca504765@mail.gmail.com>
-	 <1173018209.24738.135.camel@localhost.localdomain>
-	 <6bffcb0e0703040636q5a4ed3ekf5a0461052e8e018@mail.gmail.com>
-	 <1173022668.24738.141.camel@localhost.localdomain>
-	 <6bffcb0e0703040828j46a339c2ofabf7c0e20f6ae09@mail.gmail.com>
-	 <1173026442.24738.143.camel@localhost.localdomain>
+References: <8d158e1f0703040841m634b37d4r9f2d4135f5f4dfd6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Sun, 2007-03-04 at 17:28 +0100, Michal Piotrowski wrote:
-> > > Can you please add "initcall_debug" and "ignore_loglevel" to the kernel
-> > > command line ?
-> >
-> > Here is a full serial console log
-> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/log.txt
+On 3/4/07, Patrick Ale <patrick.ale@gmail.com> wrote:
+> Hi,
 >
-> sk98lin: driver has been replaced by the skge driver and is scheduled for removal
->
-> Can you try without that one or with the skge driver instead ?
->
+> I just downloaded the latest kernel drivers, daemon and microcode for
+> my Intel Wireless card. everything built correctly, the microcode is
+> placed in /lib/firmware and when running /etc/init.d/ipw3945d-start I
+> get the following dmesg
 
-Unfortunately the bug still appears.
+Extra info:
 
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+When doing a /sbin/ipw3945d --kill && /sbin/ipw3945d I get:
+ipw3945: Detected Intel PRO/Wireless 3945ABG Network Connection
+ipw3945: uCode verification failed at addr 0x00003800+0 (of 2396)
+ipw3945: Unable to load firmware: -5
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to load firmware: -5
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to load firmware: -5
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to load firmware: -5
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to load firmware: -5
+ipw3945: MAC is in deep sleep!
+ipw3945: MAC is in deep sleep!
+ipw3945: MAC is in deep sleep!
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to initialize device after 5 attempts.
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to int nic
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to int nic
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to int nic
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to int nic
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to int nic
+ipw3945: MAC is in deep sleep!
+ipw3945: Unable to int nic
