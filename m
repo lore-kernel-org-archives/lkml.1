@@ -1,95 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbXCDRVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbXCDRZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751922AbXCDRVA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 12:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbXCDRVA
+	id S1751978AbXCDRZr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 12:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXCDRZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 12:21:00 -0500
-Received: from wr-out-0506.google.com ([64.233.184.237]:61535 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbXCDRU7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 12:20:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VX4rutPXlhPgwHusKU4Xbet2Ipfi0VKhsdBPgfZgzs8uRV2oZV+lAoKJ6OIBgxWLS8nofvtnWYKsCEzPJfHvRK1C5E993JD/OyNUULNftZ1llsH4axHgffRnqOadNtyvN+xCIONCWIy8b8+NVsPUrGdH0PZUlyUWEL0avXbqTIw=
-Message-ID: <6bffcb0e0703040920i1b3cff56t246551d199189a02@mail.gmail.com>
-Date: Sun, 4 Mar 2007 18:20:57 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>
-Subject: Re: 2.6.21-rc2-mm1
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <6bffcb0e0703040913g5e9131f1gf8036207a1b78203@mail.gmail.com>
+	Sun, 4 Mar 2007 12:25:47 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56146 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751978AbXCDRZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 12:25:46 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Guillaume Chazarain" <guichaz@gmail.com>
+Subject: Re: [1/3] Bugfix: Don't use the TSC in sched_clock if unstable
+Date: Sun, 4 Mar 2007 18:25:38 +0100
+User-Agent: KMail/1.9.5
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <3d8471ca0703031341l1768fe7rccf40712e452ea09@mail.gmail.com> <200703041537.27581.ak@suse.de> <3d8471ca0703040741h4eff73a3wd67d648d52497e34@mail.gmail.com>
+In-Reply-To: <3d8471ca0703040741h4eff73a3wd67d648d52497e34@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	 <20070304033445.cff1148f.akpm@linux-foundation.org>
-	 <200703041301.09121.m.kozlowski@tuxland.pl>
-	 <200703041806.01621.m.kozlowski@tuxland.pl>
-	 <6bffcb0e0703040913g5e9131f1gf8036207a1b78203@mail.gmail.com>
+Message-Id: <200703041825.39361.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> On 04/03/07, Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> > > I'll dig some more and try to catch some data.
-> >
-> > Ok. I started the system and it froze after approx. 5 min. of uptime.
-> >
-> > Scenario:
-> >
-> > - I logged into kde
-> > - started aterm
-> > - insmod netconsole ... blah blah
-> > - started azureus (downloading 1 torrent)
-> > - started firefox (pandora.com -> flash playing music)
-> > - started aterm
-> > - started kmail
-> >
-> > -> fool around a bit and ... whoops -> system is frozen
-> >
-> > Symptoms:
-> > - I left the computer running frozen for 5~10 minutes just in case it suddenly 'regain consciousness'
-> > - num lock, caps lock do not make the leds on/off (looks like dead keyboard)
-> > - unable to switch to console
-> > - I issued sysrq-p, sysrq-t, the computer still looks dead but surprise! netconsole worked and I managed
-> >   to capture some data, no oops though
-> > - sysrq-s does not work -> only "SysRq : Emergency Sync" gets printed ("Emergency Sync complete" does
-> >   not appear)
-> > - hard drive I/O is dead (led not blinking when sysrq-s or whatever)
-> > - computer is totaly unresponsive and issuing sysrq looks like playing with dead computer
-> > - the only thing to at this stage is is hard reset
-> >
-> > Almost each time the frozen system looks a bit different. So not sure where to look exactly. Sometimes
-> > the keyboard 'works' and I can switch to console, sometimes the box looks totally dead, sometimes it
-> > loops some short fragment of music and makes weird sounds, sometimes azureus still works (wifi traffic led
-> > is blinking), sometimes CPU is eaten up, sometimes not. The common denominator could be no hard drive I/O
-> > activity.
-> >
-> > I read Michal P. report and it might be that we hit the same bug here.
-> >
-> > Below you'll find the output and current config attached.
-> >
-> > --------
-> >
-> > Loglevel set to 7
-> > SysRq : Show Regs
-> >
-> > Pid: 12322, comm:          firefox-bin
->
-> It looks familiar.
+On Sunday 04 March 2007 16:41, Guillaume Chazarain wrote:
+> 2007/3/4, Andi Kleen <ak@suse.de>:
+> > What weirdnesses?
+> 
+> Audio playback skipping (with no xrun), mouse stalls. Total freeze for
+> 0.1~0.5 seconds.
+> Note that I use the ondemand governor, but I reproduced the audio
+> skipping even with
+> the performance governor.
 
-BTW. I think that this might be a problem with 2.6.21-rc2-mm1 and flashplayer9.
+On what hardware?  And how many frequency transitions do you have per second?
 
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+-Andi
