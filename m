@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751678AbXCDNZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbXCDNgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751678AbXCDNZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 08:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXCDNZ4
+	id S1751707AbXCDNgK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 08:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbXCDNgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 08:25:56 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:42516 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751674AbXCDNZz (ORCPT
+	Sun, 4 Mar 2007 08:36:10 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:47812 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbXCDNgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 08:25:55 -0500
-Date: Sun, 04 Mar 2007 08:25:41 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
- scheduler
-In-reply-to: <200703042346.04051.kernel@kolivas.org>
-To: linux-kernel@vger.kernel.org
-Cc: Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>
-Message-id: <200703040825.42047.gene.heskett@gmail.com>
-Organization: very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703041800.53360.kernel@kolivas.org>
- <200703040724.34321.gene.heskett@gmail.com>
- <200703042346.04051.kernel@kolivas.org>
-User-Agent: KMail/1.9.6
+	Sun, 4 Mar 2007 08:36:09 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sun, 4 Mar 2007 08:17:33 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: trivial@kernel.org
+Subject: [PATCH] Kconfig:  A couple of grammatical fixes in arch/i386/Kconfig.
+Message-ID: <Pine.LNX.4.64.0703040814430.27756@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 March 2007, Con Kolivas wrote:
->On Sunday 04 March 2007 23:24, Gene Heskett wrote:
->> On Sunday 04 March 2007, Con Kolivas wrote:
->> >On Sunday 04 March 2007 22:08, Gene Heskett wrote:
->> >> On Sunday 04 March 2007, Con Kolivas wrote:
->> >> >This message is to announce the first general public release of
->> >> > the "Rotating Staircase DeadLine" cpu scheduler.
->> >>
->> >> I assume to test this, we select the deadline scheduler?
->> >
->> >No, only the "deadline" in the name is shared. This is a cpu process
->> > scheduler whereas the deadline scheduler you're thinking of is an
->> > I/O scheduler. To test this you just patch it in and it replaces the
->> > current mainline cpu scheduler (the same way the staircase cpu
->> > scheduler in -ck replaces it).
->>
->> Oh, then I tried to put the -ck1 patch on top of that, and blew the
->> tree up.  I'd built it the first time with the deadline scheduler as
->> the default while I was waiting on your reply.
->
->Yes, sorry. This is mutually exclusive with the -ck1 patch. It is a
-> standalone piece of code.
 
-I just this instant got it booted, what with building a driver for nvidia 
-and all.  I'll let you know what I think in a few hours after I've gotten 
-a feel for it.
+  Fix a couple grammatical errors in arch/i386/Kconfig.
 
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
+index 2f76725..b7a3b2f 100644
+--- a/arch/i386/Kconfig
++++ b/arch/i386/Kconfig
+@@ -850,9 +850,9 @@ config RELOCATABLE
+ 	bool "Build a relocatable kernel(EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+ 	help
+-	  This build a kernel image that retains relocation information
++	  This builds a kernel image that retains relocation information
+           so it can be loaded someplace besides the default 1MB.
+-	  The relocations tend to the kernel binary about 10% larger,
++	  The relocations tend to make the kernel binary about 10% larger,
+           but are discarded at runtime.
+
+ 	  One use is for the kexec on panic case where the recovery kernel
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
