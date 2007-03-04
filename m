@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbXCDXuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbXCDXuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752177AbXCDXuL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 18:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbXCDXuL
+	id S1752543AbXCDXuZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 18:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbXCDXuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 18:50:11 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:39109 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752177AbXCDXuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 18:50:09 -0500
-Message-ID: <45EB5B2F.3020505@garzik.org>
-Date: Sun, 04 Mar 2007 18:50:07 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Sun, 4 Mar 2007 18:50:24 -0500
+Received: from smtpauth02.prod.mesa1.secureserver.net ([64.202.165.182]:56394
+	"HELO smtpauth02.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752542AbXCDXuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 18:50:21 -0500
+Message-ID: <45EB5B3A.2040009@seclark.us>
+Date: Sun, 04 Mar 2007 18:50:18 -0500
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: CK804 SATA Errors (still got them)
-References: <200703011339.52895.s0348365@sms.ed.ac.uk> <200703021547.09121.s0348365@sms.ed.ac.uk> <45EB555C.9050606@shaw.ca> <200703042341.38431.s0348365@sms.ed.ac.uk>
-In-Reply-To: <200703042341.38431.s0348365@sms.ed.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] libata: warn if speed limited due to 40-wire cable (v2)
+References: <45DA44B4.6000209@shaw.ca>	<45E8B42E.7010900@garzik.org> <20070303005433.714d75ad@lxorguk.ukuu.org.uk> <45E9DA80.2080109@tmr.com> <45EB0C95.1070505@seclark.us> <45EB4FA1.7020305@tmr.com>
+In-Reply-To: <45EB4FA1.7020305@tmr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan wrote:
-> On Sunday 04 March 2007 23:25, Robert Hancock wrote:
->> Alistair John Strachan wrote:
->>>> Can you try reverting commit 721449bf0d51213fe3abf0ac3e3561ef9ea7827a
->>>> (link below) and see what effect that has?
->>>>
->>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
->>>> t;h =721449bf0d51213fe3abf0ac3e3561ef9ea7827a
->>> Obviously, I'll let you know if it happens again, but I've reverted this
->>> commit and transferred 22.5GB over 45 minutes onto a RAID5 with 4 HDs on
->>> an NVIDIA sata controller, and this error hasn't appeared.
+Bill Davidsen wrote:
+
+>Stephen Clark wrote:
+>  
+>
+>>Bill Davidsen wrote:
+>>
+>>    
+>>
+>>>Alan Cox wrote:
+>>> 
 >>>
->>> So I'm inclined to (very unscientifically) say that this brings it back
->>> to 2.6.20's level of stability.
->> Interesting. Can you try un-reverting that patch, and applying this one?
-> 
-> Sorry for the newbie question, but is it adequate to do a:
-> 
-> 	git reset --hard v2.6.21-rc2
-> 
-> To ensure a patch is "unreverted" (I reverted it with "git revert"), before 
-> applying your patch?
-> 
-> I've done so now, assuming this _will_ work. The reason I ask is that your 
-> diff was offset by 12 lines versus -rc2.
+>>>      
+>>>
+>>>>>it seems broken to manipulate xfer_mask after returning from the 
+>>>>>driver's ->mode_filter hook.
+>>>>>
+>>>>>this patch is more than just a speed-limited warning printk, afaics
+>>>>>    
+>>>>>          
+>>>>>
+>>>>I actually suggested that order because the only way the printk can be
+>>>>done correctly is for it to be the very last test made. Since the mode
+>>>>filter is not told what mode will be used but just subtracts modes that
+>>>>are not allowed this should be safe.
+>>>>  
+>>>>        
+>>>>
+>>>Far better to have a drive which works slowly than one which works 
+>>>unreliably.
+>>>
+>>> 
+>>>
+>>>      
+>>>
+>>That would be true if the 40 wire detection was 100% accurate!
+>>    
+>>
+>The statement is completely correct, even though the detection may not 
+>be. ;-)
+>
+>With the current set(s) of patches to do better detection, cable 
+>evaluation should be better. But even if not, a slow system is more 
+>useful than one which doesn't work, crashes because of swap i/o errors, etc.
+>
+>  
+>
+I have had problems with cable detection on my previous laptop and my 
+current laptop. It almost made
+my systems unusable. On my current laptop I was getting a thruput of a 
+little over 1 mbps instead
+of the 44 mbps I get with udma set to the correct value. It took hours 
+to upgrade my laptop from
+fc5 to fc6 because of this mis detection.
 
-If you committed the revert to the repository, it's probably to blow it 
-away and re-clone.  Generally, with git, you want to keep a pristine, 
-never-touched-except-for-pulling kernel repository around, and then when 
-doing compiles and experiments and such, run
+-- 
 
-	git-clone --reference my-vanilla-2.6-repo $URL
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
 
-The --reference argument will ensure that you don't haul around multiple 
-copies of the repository objects, with each clone.
-
-
-Otherwise, if you have committed nothing to the repository, this will 
-undo all your not-committed changes:
-
-	git checkout -f
-
-Regards,
-
-	Jeff
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
 
 
 
