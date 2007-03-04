@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751411AbXCDE1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751416AbXCDEgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751411AbXCDE1q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 23:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXCDE1q
+	id S1751416AbXCDEgA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 23:36:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbXCDEgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 23:27:46 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:51895 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbXCDE1q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 23:27:46 -0500
-Date: Sun, 4 Mar 2007 03:03:39 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: "remi.chateauneu@gmail.com" <remi.chateauneu@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: asm/atomic.h and user code
-Message-ID: <20070304030339.GA5921@linux-mips.org>
-References: <1172958807.453840.180700@30g2000cwc.googlegroups.com> <45EA2A6B.9090404@shaw.ca>
+	Sat, 3 Mar 2007 23:36:00 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53765 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751416AbXCDEf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 23:35:59 -0500
+Date: Sat, 3 Mar 2007 20:35:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: userspace pagecache management tool
+Message-Id: <20070303203556.8648c9a2.akpm@linux-foundation.org>
+In-Reply-To: <75b66ecd0703031835j5ff2846fpd4761a89f67fc2f1@mail.gmail.com>
+References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
+	<75b66ecd0703031716k5b9fd96br9ecd93f1fc3a6032@mail.gmail.com>
+	<20070303173933.9f46459c.akpm@linux-foundation.org>
+	<75b66ecd0703031835j5ff2846fpd4761a89f67fc2f1@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45EA2A6B.9090404@shaw.ca>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 03, 2007 at 08:09:47PM -0600, Robert Hancock wrote:
-> Date:	Sat, 03 Mar 2007 20:09:47 -0600
-> From:	Robert Hancock <hancockr@shaw.ca>
-> Subject: Re: asm/atomic.h and user code
-> To:	"remi.chateauneu@gmail.com" <remi.chateauneu@gmail.com>,
-> 	linux-kernel <linux-kernel@vger.kernel.org>
-> Content-type: text/plain; charset=ISO-8859-1; format=flowed
+On Sat, 3 Mar 2007 21:35:59 -0500 "Lee Revell" <rlrevell@joe-job.com> wrote:
+
+> On 3/3/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > But yes, updatedb's pagecache usage will be mainly metadata, and this tool
+> > doesn't address metadata pagecache, although it could do so.
+> >
 > 
-> remi.chateauneu@gmail.com wrote:
-> >Is it me or it seems it is not possible anymore to use asm/atomic.h in
-> >non-kernel code ? Thanks.
+> With no kernel changes?  How?  I can't find an equivalent API to
+> posix_fadvise() for metadata.
 > 
-> The atomic functions, as with any internal kernel data structures, were 
-> never intended to be used in userspace. In particular, the atomic 
-> functions depend on config settings like CONFIG_SMP in order to actually 
-> be atomic, and that's not guaranteed in userspace.
 
-Some of the atomic headers use constructs such as disabling interrupts
-which are not permitted in user space and if they were, would _silently_
-fail.  Other atomic operations such as <asm/bitops.h>, <asm/spinlock.h>
-and xchg() <asm/system.h> have the same restriction.
+We can use mincore and fadvise against /dev/sda1, too.
 
-Another trap is that in userspace PIC code may be used while in the kernel
-it generally is not used and therefore much of the inline assembler code in
-the kernel might fail.
+mincore's linear search would hurt but you could just run fadvise
+regularly.  A lot of the blockdev pagecache is pretty useless anyway: we've
+already copied it much of it into dentries and inodes, and some of ext2/3/4's
+pagecache is already pinned by the fs.
 
-In short, the kernel is a different universe :-)
-
-  Ralf
