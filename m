@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbXCDNMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751678AbXCDNZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751657AbXCDNMU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 08:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXCDNMT
+	id S1751678AbXCDNZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 08:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXCDNZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 08:12:19 -0500
-Received: from mail.queued.net ([207.210.101.209]:4111 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751649AbXCDNMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 08:12:19 -0500
-Message-ID: <45EAC5B1.2060306@debian.org>
-Date: Sun, 04 Mar 2007 08:12:17 -0500
-From: Andres Salomon <dilinger@debian.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
-MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] highres: Do not run the TIMER_SOFTIRQ after switching
- to	highres mode
-References: <45E8E2F8.1030102@debian.org>	 <1172912540.24738.108.camel@localhost.localdomain>	 <45EAAA21.4040803@debian.org> <1173013794.24738.130.camel@localhost.localdomain>
-In-Reply-To: <1173013794.24738.130.camel@localhost.localdomain>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------060204000604000405020800"
+	Sun, 4 Mar 2007 08:25:56 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:42516 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751674AbXCDNZz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 08:25:55 -0500
+Date: Sun, 04 Mar 2007 08:25:41 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+ scheduler
+In-reply-to: <200703042346.04051.kernel@kolivas.org>
+To: linux-kernel@vger.kernel.org
+Cc: Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>
+Message-id: <200703040825.42047.gene.heskett@gmail.com>
+Organization: very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703041800.53360.kernel@kolivas.org>
+ <200703040724.34321.gene.heskett@gmail.com>
+ <200703042346.04051.kernel@kolivas.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060204000604000405020800
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Sunday 04 March 2007, Con Kolivas wrote:
+>On Sunday 04 March 2007 23:24, Gene Heskett wrote:
+>> On Sunday 04 March 2007, Con Kolivas wrote:
+>> >On Sunday 04 March 2007 22:08, Gene Heskett wrote:
+>> >> On Sunday 04 March 2007, Con Kolivas wrote:
+>> >> >This message is to announce the first general public release of
+>> >> > the "Rotating Staircase DeadLine" cpu scheduler.
+>> >>
+>> >> I assume to test this, we select the deadline scheduler?
+>> >
+>> >No, only the "deadline" in the name is shared. This is a cpu process
+>> > scheduler whereas the deadline scheduler you're thinking of is an
+>> > I/O scheduler. To test this you just patch it in and it replaces the
+>> > current mainline cpu scheduler (the same way the staircase cpu
+>> > scheduler in -ck replaces it).
+>>
+>> Oh, then I tried to put the -ck1 patch on top of that, and blew the
+>> tree up.  I'd built it the first time with the deadline scheduler as
+>> the default while I was waiting on your reply.
+>
+>Yes, sorry. This is mutually exclusive with the -ck1 patch. It is a
+> standalone piece of code.
 
-Thomas Gleixner wrote:
->>> The question is, how the tick timer gets enqueued in the softirq queue.
->>> Can you isolate the codepath, where this happens ?
-> 
-> The TIMER_SOFTIRQ runs the hrtimers during bootup until a usable
-> clocksource and clock event sources are registered. The switch to high
-> resolution mode happens inside of the TIMER_SOFTIRQ, but runs the
-> softirq afterwards. That way the tick emulation timer, which was set up
-> in the switch to highres might be executed in the softirq context, which
-> is a BUG. The rbtree has not to be touched by the softirq after the
-> highres switch.
-> 
+I just this instant got it booted, what with building a driver for nvidia 
+and all.  I'll let you know what I think in a few hours after I've gotten 
+a feel for it.
 
-And an additional request, just to make it explicit that we should not
-have any NO_SOFTIRQ callbacks in the tree; BUG out if we encounter such
-a thing.
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
-
---------------060204000604000405020800
-Content-Type: text/x-patch;
- name="hrtimer4.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="hrtimer4.patch"
-
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 476cb0c..4dcdd09 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1130,6 +1130,7 @@ static inline void run_hrtimer_queue(struct hrtimer_cpu_base *cpu_base,
- 		if (base->softirq_time.tv64 <= timer->expires.tv64)
- 			break;
- 
-+		BUG_ON(timer->cb_mode == HRTIMER_CB_IRQSAFE_NO_SOFTIRQ);
- 		timer_stats_account_hrtimer(timer);
- 
- 		fn = timer->function;
-
---------------060204000604000405020800--
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
