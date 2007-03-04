@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbXCDQ2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbXCDQeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbXCDQ2w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 11:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXCDQ2a
+	id S1751799AbXCDQeY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 11:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXCDQeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 11:28:30 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:42555 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbXCDQ22 (ORCPT
+	Sun, 4 Mar 2007 11:34:24 -0500
+Received: from coyote.holtmann.net ([217.160.111.169]:59680 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbXCDQeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 11:28:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=T/1gCkhMKScm3gNZTF5gRPPu/+FUA31gYRg0v4qY+Xq+0Xb6ptRo7DzAbOzvhT/sYLrCW/9b8dqKg8B2Vu3IMD97D33ZnXTr7OjkuH8zB/Wc8rJHPrzGYGu7VnS6DFiQVVSNjkHYnjYpq2CCqoyCMMoPUaXDHqLF09jmlXmfJ5Y=
-Subject: HR timers soft lockup on resume from suspend to ram
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= RISS <frederic.riss@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+	Sun, 4 Mar 2007 11:34:23 -0500
+Subject: Re: [Regression] Bluetooth RFComm:  using it locks up the machine
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       bluez-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       "David S. Miller" <davem@sunset.davemloft.net>
+In-Reply-To: <45EAE1D6.10900@rtr.ca>
+References: <45EADD78.1030300@rtr.ca>  <45EAE1D6.10900@rtr.ca>
 Content-Type: text/plain
-Date: Sun, 04 Mar 2007 17:28:24 +0100
-Message-Id: <1173025704.11244.22.camel@funkylaptop>
+Date: Sun, 04 Mar 2007 18:33:36 +0100
+Message-Id: <1173029616.5752.9.camel@aeonflux.holtmann.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.9.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Mark,
 
-With recent git versions, my system won't resume from suspend to ram. At
-resume time, the kernel hangs just after printing "Enabling non-boot
-CPUs ...". This is on a Core Duo system (Mac Mini). Looking at the BUG,
-it looks related to hrtimers.
+> > Any attempt to open/use a bluetooth rfcomm device locks up
+> > scheduling completely on my machine.
+> > 
+> > Interrupts (ping, alt-sysrq) seem to be alive, but nothing else.
+> > 
+> > This was working fine in 2.6.20, broken now in 2.6.21-rc2-git*
+> 
+> Further info:  Reverting this change (below) fixes it:
+> 
+> | author	Marcel Holtmann <marcel@holtmann.org>
+> | 	 Sat, 17 Feb 2007 22:58:57 +0000 (23:58 +0100)
+> | committer	David S. Miller <davem@sunset.davemloft.net>
+> | 	 Mon, 26 Feb 2007 19:42:41 +0000 (11:42 -0800)
+> | commit	c1a3313698895d8ad4760f98642007bf236af2e8
+> | tree	337a876f727061362b6a169f8759849c105b8f7a	tree | snapshot
+> | parent	f5ffd4620aba9e55656483ae1ef5c79ba81f5403	commit | diff
+> | 
+> | [Bluetooth] Make use of device_move() for RFCOMM TTY devices
+> | 
+> | In the case of bound RFCOMM TTY devices the parent is not available
+> | before its usage. So when opening a RFCOMM TTY device, move it to
+> | the corresponding ACL device as a child. When closing the device,
+> | move it back to the virtual device tree.
+> | Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+> 
+> Specifically, I reverted these changes, below, to fix it:
 
-When the system is hung, and I press on the power button, I get this
-backtrace (copied from the screen, netconsole won't allow to capture
-it): 
+please post these information to the Linux kernel mailing list, because
+I think that must be an issue with the device_move() API. I tested this
+successfully with a Quad G5 and it was working as expected.
 
-BUG: soft lockup detected on CPU#0!
-  [<c0155c88>] softlockup_tick+0xa8/0x110
-  [<c0130283>] update_process_times+0x33/0x80
-  [<c014215b>] tick_sched_timer+0x5b/0xc0
-  [<c013e3f3>] hrtimer_interrupt+0x143/0x1d0
-  [<c01172e0>] smp_apic_timer_interrupt+0x50/0x80
-  [<c0104e4c>] apic_timer_interrupt+0x28/0x30
-  [<c0372926>] _spin_unlock_irq+0x6/0x30
-  [<c0370488>] __sched_text_start+0x308/0x880
-  [<c0372909>] _spin_unlock_irqrestore+0x19/0x30
-  [<c01378ee>] worker_thread+0x12e/0x170
-  [<c0120a50>] default_wake_function+0x0/0x10
-  [<c01377c0>] worker_thread+0x0/0x170
-  [<c013a88a>] kthread+0xba/0xf0
-  [<c013a7d0>] kthread+0x0/0xf0
-  [<c0104fb3>] kernel_thread_helper+0x7/0x14
-  ======================
+Regards
 
-I get it every time I press on the power button.
+Marcel
 
-Fred.
 
