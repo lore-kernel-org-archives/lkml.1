@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbXCDQ23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbXCDQ2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751766AbXCDQ23 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 11:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXCDQ23
+	id S1751823AbXCDQ2w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 11:28:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXCDQ2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 11:28:29 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:42934 "EHLO
+	Sun, 4 Mar 2007 11:28:30 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:42555 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751766AbXCDQ21 (ORCPT
+	with ESMTP id S1751692AbXCDQ22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 11:28:27 -0500
+	Sun, 4 Mar 2007 11:28:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kUEbc1fD+tU45fufFJE0jL9dXzk4Tm7Rl729h3vAXQuObpz6t8l1AyriQU+SPb+f12kpgVRbV6IIp3CF57Dv1yp64/99MTEXdrDct532/Tz6lcInkouoPBwfQrKBFkM/yxD07QLbdVpzbp36DNIVPOAkHdhiBwiLabFGkAg2XC4=
-Message-ID: <6bffcb0e0703040828j46a339c2ofabf7c0e20f6ae09@mail.gmail.com>
-Date: Sun, 4 Mar 2007 17:28:25 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump kernel)
-Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1173022668.24738.141.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=T/1gCkhMKScm3gNZTF5gRPPu/+FUA31gYRg0v4qY+Xq+0Xb6ptRo7DzAbOzvhT/sYLrCW/9b8dqKg8B2Vu3IMD97D33ZnXTr7OjkuH8zB/Wc8rJHPrzGYGu7VnS6DFiQVVSNjkHYnjYpq2CCqoyCMMoPUaXDHqLF09jmlXmfJ5Y=
+Subject: HR timers soft lockup on resume from suspend to ram
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= RISS <frederic.riss@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 04 Mar 2007 17:28:24 +0100
+Message-Id: <1173025704.11244.22.camel@funkylaptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6bffcb0e0703031531h3f0a86c6sda2522c0ca504765@mail.gmail.com>
-	 <1173018209.24738.135.camel@localhost.localdomain>
-	 <6bffcb0e0703040636q5a4ed3ekf5a0461052e8e018@mail.gmail.com>
-	 <1173022668.24738.141.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Sun, 2007-03-04 at 15:36 +0100, Michal Piotrowski wrote:
-> > > > BUG: soft lockup detected on CPU#0!
-> > > >  [<c1604556>] show_trace_log_lvl+0x1a/0x2f
-> > > >  [<c1604c2c>] show_trace+0x12/0x14
-> > > >  [<c1604cde>] dump_stack+0x16/0x18
-> > > >  [<c16426e7>] softlockup_tick+0x97/0xa7
-> > > >  [<c161de38>] run_local_timers+0x12/0x14
-> > > >  [<c161e1ce>] update_process_times+0x3e/0x63
-> > > >  [<c162c44b>] tick_sched_timer+0x5d/0xa1
-> > > >  [<c1629715>] hrtimer_interrupt+0x11e/0x1b2
-> > > >  [<c160684e>] timer_interrupt+0xe/0x15
-> > > >  [<c164299e>] handle_IRQ_event+0x1a/0x46
-> > > >  [<c1643cfe>] handle_level_irq+0x81/0xcb
-> > > >  [<c1605dd8>] do_IRQ+0xb4/0xe0
-> > > >
-> > > > This time it's a crash dump kernel without SMP.
-> > >
-> > > Is the box stuck, or do you just get those softlockup messages from time
-> > > to time ?
-> >
-> > The box stuck on it.
-> >
-> > I can reproduce this on 2.6.21-rc2-git3 and 2.6.20.1.
->
-> Ahh. That's something different, i.e. unrelated to highres/dynticks.
-> 2.6.20.1 does not have them.
->
-> Can you please add "initcall_debug" and "ignore_loglevel" to the kernel
-> command line ?
+Hi,
 
-Here is a full serial console log
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/log.txt
+With recent git versions, my system won't resume from suspend to ram. At
+resume time, the kernel hangs just after printing "Enabling non-boot
+CPUs ...". This is on a Core Duo system (Mac Mini). Looking at the BUG,
+it looks related to hrtimers.
 
-Regards,
-Michal
+When the system is hung, and I press on the power button, I get this
+backtrace (copied from the screen, netconsole won't allow to capture
+it): 
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+BUG: soft lockup detected on CPU#0!
+  [<c0155c88>] softlockup_tick+0xa8/0x110
+  [<c0130283>] update_process_times+0x33/0x80
+  [<c014215b>] tick_sched_timer+0x5b/0xc0
+  [<c013e3f3>] hrtimer_interrupt+0x143/0x1d0
+  [<c01172e0>] smp_apic_timer_interrupt+0x50/0x80
+  [<c0104e4c>] apic_timer_interrupt+0x28/0x30
+  [<c0372926>] _spin_unlock_irq+0x6/0x30
+  [<c0370488>] __sched_text_start+0x308/0x880
+  [<c0372909>] _spin_unlock_irqrestore+0x19/0x30
+  [<c01378ee>] worker_thread+0x12e/0x170
+  [<c0120a50>] default_wake_function+0x0/0x10
+  [<c01377c0>] worker_thread+0x0/0x170
+  [<c013a88a>] kthread+0xba/0xf0
+  [<c013a7d0>] kthread+0x0/0xf0
+  [<c0104fb3>] kernel_thread_helper+0x7/0x14
+  ======================
+
+I get it every time I press on the power button.
+
+Fred.
+
