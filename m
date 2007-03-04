@@ -1,72 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750895AbXCDXNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751615AbXCDXWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750895AbXCDXNZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 18:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXCDXNZ
+	id S1751615AbXCDXWS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 18:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbXCDXWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 18:13:25 -0500
-Received: from 1wt.eu ([62.212.114.60]:4945 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbXCDXNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 18:13:24 -0500
-Date: Mon, 5 Mar 2007 00:13:12 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Al Boldi <a1426z@gawab.com>, ck list <ck@vds.kolivas.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Message-ID: <20070304231312.GA2268@1wt.eu>
-References: <200703042335.26785.a1426z@gawab.com> <200703050849.29674.kernel@kolivas.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703050849.29674.kernel@kolivas.org>
-User-Agent: Mutt/1.5.11
+	Sun, 4 Mar 2007 18:22:17 -0500
+Received: from ppsw-3.csi.cam.ac.uk ([131.111.8.133]:44845 "EHLO
+	ppsw-3.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbXCDXWQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 18:22:16 -0500
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <45EB4A55.3060908@redhat.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8A8B28AA-3481-4CFF-AEAA-0CB4CCDFF9F9@cam.ac.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com
+Content-Transfer-Encoding: 7bit
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Date: Sun, 4 Mar 2007 23:22:06 +0000
+To: Ulrich Drepper <drepper@redhat.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 08:49:29AM +1100, Con Kolivas wrote:
-(...)
-> > That's just what it did, but when you "nice make -j4", things (gears) start
-> > to stutter.  Is that due to the staircase?
-> 
-> gears isn't an interactive task. Apart from using it as a background load to 
-> check for starvation because it loads up the cpu fully (which a gpu intensive 
-> but otherwise simple app like this should _not_ do) graphics card drivers and 
-> interrupts and so on, I wouldn't put much credence on gears as anything else. 
-> However I suspect that gears will still get a fair share of the cpu on RSDL 
-> which almost never happens on any other scheduler.
+Hi,
 
-Con,
+On 4 Mar 2007, at 22:38, Ulrich Drepper wrote:
+> Anton Altaparmakov wrote:
+>> And that is it.  No zeroing needs to happen at all because we
+>> have not updated the initialized size of the inode!
+>
+> When you do it like this, who can the kernel/filesystem *guarantee*  
+> that
+> when the data is written there actually is room on the harddrive?
 
-I've now given it a try with HZ=250 on my dual-athlon. It works beautifully.
-I also quickly checked that playing mp3 doesn't skip during make -j4, and
-that gears runs fairly smoothly, since those are the references people often
-use.
+The blocks are allocated so of course it is guaranteed.  Subsequent  
+writes to this file will not generate any allocations thus  
+allocations cannot fail.  (-:
 
-But with real work, it's excellent too. When I saturate my CPUs by injecting
-HTTP traffic on haproxy, the load is stable and the command line perfectly
-responsive, while in the past the load would oscillate and the command line
-sometimes stopped to respond for a few seconds.
+> What you described seems like using truncate/ftruncate to increase the
+> file's size.  That is not at all what posix_fallocate is for.
+> posix_fallocate must make sure that the requested blocks on the  
+> disk are
+> reserved (allocated) for the file's use and that at no point in the
+> future will, say, a msync() fail because a mmap(MAP_SHARED) page has
+> been written to.
 
-I've also launched my scheddos program (you may remember, the one we did a
-few experiments with). I could not cause any freeze at all. Plain 2.6.20 had
-already improved a lot in this area, but above 4 processes/CPU, occasional
-short freezes did still occur. This time, even at 100 processes, the system
-was rather slow (of course!) but just as expected, and nothing more.
+No that is different.  I described performing the allocations in the  
+volume bitmap, i.e. for each allocated block the corresponding "in  
+use" bit is set in the bitmap (NTFS uses a linear bitmap where byte  
+0, bit 0 == physical block 0 of volume, byte 0, bit 1 == physical  
+block 1 of volume, ... byte 1, bit 0 == block 8 of volume, ...).
 
-I also tried the good old "dd if=/dev/zero bs=1|...|dd bs=1 of=/dev/null" and
-it did not cause any trouble.
+Also I described updating the extent map of the inode such that it  
+describes the physical blocks as belonging to the file, thus you  
+would have "logical file block X corresponds to physical block Y on  
+volume" entries entered into the extent map of the inode and they  
+would describe the just allocated blocks.
 
-I will boot 2.6 slightly more often to test the code under various conditions,
-and I will recommend it to a few people I know who tend to switch back to 2.4
-after one day full of 2.6 jerkiness.
+Finally I described updating the allocated size in the inode which  
+basically says "there are that many bytes worth of blocks allocated  
+to this inode".
 
-Overall, you have done a great job !
+And optionally I described updating the data size in the inode which  
+basically says "this file has size Z bytes".
 
-I hope that more people will give it a try, first to help find possible
-remaining bugs, and to pronounce in favour of its inclusion in mainline.
+And I specifically did NOT update the initialized size in the inode  
+thus it will remain at its old value thus all new allocated blocks  
+will be considered as present but not initialized thus a read will  
+always return zero whilst a write will do the right thing and pad  
+with zeroes as necessary (if the write is smaller than the block  
+size, etc).
 
-Cheers,
-Willy
+Note that you are right that this is like truncate in NTFS for non- 
+sparse enabled inodes/volumes.
+
+But for sparse ones, instead of doing any allocations in the bitmap  
+and entering them in the extent map, you would simply add a single  
+entry to the extent map that says "X blocks allocated starting at  
+logical block Y corresponding to no physical blocks, i.e. they are  
+sparse".  You would then also update the allocated size and data size  
+as above and now you can even (but do not have to) update the  
+initialized size to be equal to the data size as the file can be  
+considered fully initialized because it is sparse.  As an  
+implementation detail this truncate operation would not modify the  
+compressed size of the inode (i.e. the really used on-disk space,  
+i.e. what you get from running "du" as that does not change when you  
+add sparse blocks) whilst the fallocate described above would update  
+the compressed size (if the file is sparse or compressed - there is  
+no compressed size in the inode if the inode is not sparse/ 
+compressed) because the file now occupies more blocks on disk even if  
+they are actually not initialized.
+
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
 
