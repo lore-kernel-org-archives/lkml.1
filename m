@@ -1,87 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbXCDShe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752351AbXCDSj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752350AbXCDShe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 13:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbXCDShe
+	id S1752351AbXCDSj6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 13:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbXCDSj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 13:37:34 -0500
-Received: from nn7.de ([85.214.94.156]:53441 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbXCDShd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 13:37:33 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Mar 2007 13:37:33 EST
-Subject: macbook pro suspend to ram broken in linux-2.6.git HEAD
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 04 Mar 2007 19:30:49 +0100
-Message-Id: <1173033049.4094.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	Sun, 4 Mar 2007 13:39:58 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:52878 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752207AbXCDSj5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 13:39:57 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sun, 4 Mar 2007 12:19:50 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Add some extra info regarding the kernel localversion.
+Message-ID: <Pine.LNX.4.64.0703041216510.23459@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_GX 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-a rather long git bisect session between v2.6.20 and HEAD identified the
-commit below this as the cause. please note that the machine does not
-return from resume and although all PM debug was turned on there is
-nothing in the logs. happens with a minimalistic setup (console only no
-audio/network etc) without SMP and CONFIG_HPET_TIMER  but PREEMPT on and
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-CONFIG_ACPI_SLEEP_PROC_FS=y
-CONFIG_ACPI_AC=y
-CONFIG_ACPI_BATTERY=y
-CONFIG_ACPI_BUTTON=y
-CONFIG_ACPI_VIDEO=y
-CONFIG_ACPI_FAN=y
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_THERMAL=y
-CONFIG_ACPI_BLACKLIST_YEAR=0
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
 
-Any ideas on that issue ?
-Soeren
+  Some formatting fixes, add a few lines describing the origin of the
+git-based localversion string, and remove the last couple of lines
+that erroneously claim that "git" isn't required for this, and that
+Perl is.
 
-e9e2cdb412412326c4827fc78ba27f410d837e6e is first bad commit
-commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Fri Feb 16 01:28:04 2007 -0800
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-    [PATCH] clockevents: i386 drivers
-    
-    Add clockevent drivers for i386: lapic (local) and PIT/HPET (global).  Update
-    the timer IRQ to call into the PIT/HPET driver's event handler and the
-    lapic-timer IRQ to call into the lapic clockevent driver.  The assignement of
-    timer functionality is delegated to the core framework code and replaces the
-    compile and runtime evalution in do_timer_interrupt_hook()
-    
-    Use the clockevents broadcast support and implement the lapic_broadcast
-    function for ACPI.
-    
-    No changes to existing functionality.
-    
-    [ kdump fix from Vivek Goyal <vgoyal@in.ibm.com> ]
-    [ fixes based on review feedback from Arjan van de Ven <arjan@infradead.org> ]
-    Cleanups-from: Adrian Bunk <bunk@stusta.de>
-    Build-fixes-from: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Cc: john stultz <johnstul@us.ibm.com>
-    Cc: Roman Zippel <zippel@linux-m68k.org>
-    Cc: Andi Kleen <ak@suse.de>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
 
-:040000 040000 8cd88ef4dc6e976c589deda1c558e19ed8dcafde 88ed93cefb145aa545ff4561636cc9342fc7bb42 M      arch
-:040000 040000 5a1342027bc77019bb3ca9295d02bf483410e3d4 3de4aedc5bb5d86287b7a5bad4b673e8ffbc1e44 M      drivers
-:040000 040000 88ade982261c3ce0590c939694994796f02d2e73 d7221468ac776ccc7804f9a46d6d53fa7c294d43 M      include
+diff --git a/init/Kconfig b/init/Kconfig
+index f977086..19eefe4 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -80,16 +80,20 @@ config LOCALVERSION_AUTO
+ 	default y
+ 	help
+ 	  This will try to automatically determine if the current tree is a
+-	  release tree by looking for git tags that
+-	  belong to the current top of tree revision.
++	  release tree by looking for git tags that belong to the current
++	  top of tree revision.
+
+ 	  A string of the format -gxxxxxxxx will be added to the localversion
+-	  if a git based tree is found.  The string generated by this will be
++	  if a git-based tree is found.  The string generated by this will be
+ 	  appended after any matching localversion* files, and after the value
+-	  set in CONFIG_LOCALVERSION
++	  set in CONFIG_LOCALVERSION.
+
+-	  Note: This requires Perl, and a git repository, but not necessarily
+-	  the git or cogito tools to be installed.
++	  (The actual string used here is the first eight characters produced
++	  by running the command:
++
++	    $ git rev-parse --verify HEAD
++
++	  which is done within the script "scripts/setlocalversion".)
+
+ config SWAP
+ 	bool "Support for paging of anonymous memory (swap)"
 
 -- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
