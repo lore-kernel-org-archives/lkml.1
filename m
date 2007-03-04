@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbXCDB1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932598AbXCDBjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbXCDB1E (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 20:27:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932598AbXCDB1E
+	id S932598AbXCDBjg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 20:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932610AbXCDBjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 20:27:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53919 "EHLO mx1.redhat.com"
+	Sat, 3 Mar 2007 20:39:36 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:51371 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932560AbXCDB1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 20:27:02 -0500
-Message-ID: <45EA2037.9060303@redhat.com>
-Date: Sat, 03 Mar 2007 20:26:15 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Christoph Lameter <clameter@engr.sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       mingo@elte.hu, jschopp@austin.ibm.com, arjan@infradead.org,
-       torvalds@linux-foundation.org, mbligh@mbligh.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-References: <20070302050625.GD15867@wotan.suse.de> <Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com> <20070302054944.GE15867@wotan.suse.de> <Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com> <20070302060831.GF15867@wotan.suse.de> <Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com> <20070302062950.GG15867@wotan.suse.de> <Pine.LNX.4.64.0703012236160.1979@schroedinger.engr.sgi.com> <20070302071955.GA5557@wotan.suse.de> <Pine.LNX.4.64.0703012335250.13224@schroedinger.engr.sgi.com> <20070302081210.GD5557@wotan.suse.de>
-In-Reply-To: <20070302081210.GD5557@wotan.suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S932598AbXCDBjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 20:39:35 -0500
+Date: Sat, 3 Mar 2007 17:39:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: userspace pagecache management tool
+Message-Id: <20070303173933.9f46459c.akpm@linux-foundation.org>
+In-Reply-To: <75b66ecd0703031716k5b9fd96br9ecd93f1fc3a6032@mail.gmail.com>
+References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
+	<75b66ecd0703031716k5b9fd96br9ecd93f1fc3a6032@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
+On Sat, 3 Mar 2007 20:16:09 -0500 "Lee Revell" <rlrevell@joe-job.com> wrote:
 
-> Different issue, isn't it? Rik wants to be smarter in figuring out which
-> pages to throw away. More work per page == worse for you.
+> On 3/3/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > The tool uses an LD_PRELOAD hack to intercept glibc's read(), pread(),
+> > write(), pwrite(), close() and dup2() functions.  pagecache control is done
+> > via posix_fadvise() and sync_file_range().
+> >
+> 
+> How could this have any effect on the updatedb problem?  updatedb does
+> not read() anything, it just open()s and stat()s every file on the
+> disk.
+> 
 
-Being smarter about figuring out which pages to evict does
-not equate to spending more work.  One big component is
-sorting the pages beforehand, so we do not end up scanning
-through (and randomizing the LRU order of) anonymous pages
-when we do not want to, or cannot, evict them anyway.
+err, good point.  _one_ of those dang things which goes off when you've
+stayed up too late does a lot of pagecache IO, not sure which one.  Maybe
+rpmq?  But I'd expect that to be doing direct-io.
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+But yes, updatedb's pagecache usage will be mainly metadata, and this tool
+doesn't address metadata pagecache, although it could do so.
+
+<does an updatedb on a modest system>
+
+It instantiated 5MB of pagecache and 20MB of slab, took about one minute.
+
+<runs all the other things in /etc/cron.daily>
+
+rpm uses rather a lot of pagecache.
+
+So yes, it looks like updatedb is a slab problem.
