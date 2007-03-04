@@ -1,66 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbXCDB70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751388AbXCDCL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965010AbXCDB70 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 20:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbXCDB70
+	id S1751388AbXCDCL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 21:11:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbXCDCL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 20:59:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60223 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932240AbXCDB7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 20:59:25 -0500
-Message-ID: <45EA27BD.7080909@redhat.com>
-Date: Sat, 03 Mar 2007 20:58:21 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Nick Piggin <npiggin@suse.de>, Christoph Lameter <clameter@engr.sgi.com>,
-       Mel Gorman <mel@skynet.ie>, mingo@elte.hu, jschopp@austin.ibm.com,
-       arjan@infradead.org, torvalds@linux-foundation.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-References: <20070302050625.GD15867@wotan.suse.de>	<Pine.LNX.4.64.0703012137580.1768@schroedinger.engr.sgi.com>	<20070302054944.GE15867@wotan.suse.de>	<Pine.LNX.4.64.0703012150290.1768@schroedinger.engr.sgi.com>	<20070302060831.GF15867@wotan.suse.de>	<Pine.LNX.4.64.0703012213130.1917@schroedinger.engr.sgi.com>	<20070302062950.GG15867@wotan.suse.de>	<Pine.LNX.4.64.0703012236160.1979@schroedinger.engr.sgi.com>	<20070302071955.GA5557@wotan.suse.de>	<Pine.LNX.4.64.0703012335250.13224@schroedinger.engr.sgi.com>	<20070302081210.GD5557@wotan.suse.de>	<45EA2037.9060303@redhat.com> <20070303175158.00d867cb.akpm@linux-foundation.org>
-In-Reply-To: <20070303175158.00d867cb.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Mar 2007 21:11:26 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:57074 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbXCDCL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 21:11:26 -0500
+Date: Sat, 03 Mar 2007 20:09:47 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: asm/atomic.h and user code
+In-reply-to: <1172958807.453840.180700@30g2000cwc.googlegroups.com>
+To: "remi.chateauneu@gmail.com" <remi.chateauneu@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <45EA2A6B.9090404@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <1172958807.453840.180700@30g2000cwc.googlegroups.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 03 Mar 2007 20:26:15 -0500 Rik van Riel <riel@redhat.com> wrote:
->> Nick Piggin wrote:
->>
->>> Different issue, isn't it? Rik wants to be smarter in figuring out which
->>> pages to throw away. More work per page == worse for you.
->> Being smarter about figuring out which pages to evict does
->> not equate to spending more work.  One big component is
->> sorting the pages beforehand, so we do not end up scanning
->> through (and randomizing the LRU order of) anonymous pages
->> when we do not want to, or cannot, evict them anyway.
->>
-> 
-> My gut feel is that we could afford to expend a lot more cycles-per-page
-> doing stuff to avoid IO than we presently do.
+remi.chateauneu@gmail.com wrote:
+> Is it me or it seems it is not possible anymore to use asm/atomic.h in
+> non-kernel code ? Thanks.
 
-In general, yes.
-
-In the specific "128GB RAM, 90GB anon/shm/... and 2GB swap" case, no :)
-
-> At least, reclaim normally just doesn't figure in system CPU time, except
-> for when it's gone completely stupid.
-> 
-> It could well be that we sleep too much in there though.
-
-It's all about minimizing IO, I suspect.
-
-Not just the total amount of IO though, also the amount of
-pageout IO that's in flight at once, so we do not introduce
-stupidly high latencies.
+The atomic functions, as with any internal kernel data structures, were 
+never intended to be used in userspace. In particular, the atomic 
+functions depend on config settings like CONFIG_SMP in order to actually 
+be atomic, and that's not guaranteed in userspace.
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
