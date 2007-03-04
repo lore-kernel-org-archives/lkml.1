@@ -1,40 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752034AbXCDR3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXCDRdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752034AbXCDR3W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 12:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXCDR3W
+	id S1752064AbXCDRdj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 12:33:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXCDRdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 12:29:22 -0500
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:56686 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbXCDR3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 12:29:21 -0500
-Date: Sun, 4 Mar 2007 12:28:42 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Mockern <Mockern@yandex.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel threads locking data
-Message-ID: <20070304172842.GA29277@athena.road.mcmartin.ca>
-References: <45EAFC30.000004.20012@webmail14.yandex.ru>
+	Sun, 4 Mar 2007 12:33:39 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:38277 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752064AbXCDRdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 12:33:39 -0500
+Date: Sun, 4 Mar 2007 18:33:22 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Marc Perkel <mperkel@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Raid 10 Problems?
+In-Reply-To: <742277.25048.qm@web52514.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.61.0703041832180.23714@yvahk01.tjqt.qr>
+References: <742277.25048.qm@web52514.mail.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45EAFC30.000004.20012@webmail14.yandex.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 04, 2007 at 08:04:48PM +0300, Mockern wrote:
-> hi,
-> 
-> how is better to lock data (a buffer) which is used by 2 kernel threads?
-> 
 
-if it's only used by the threads, and not by anything running in interrupt
-context, use a mutex.
+On Mar 4 2007 08:25, Marc Perkel wrote:
+>I'm running the latest OpenVZ kernel 2.6.18. I'm not
+>sure if this is a factor or not as the problem occurs
+>without starting any VEs.
+>
+>I've never used raid 10 before (stripes on top of 2
+>mirrors) so I don't have anything to compare this
+>with. I'm just wondering if I'm doing something wrong.
 
-Documentation/mutex-design.txt has most of the info you'd need.
+Are you using raid1+0 (3 md devices) or raid10 (1 raid device)?
+Depending on which, you might want to try the other.
 
-Cheers,
-	Kyle
+
+Jan
+-- 
