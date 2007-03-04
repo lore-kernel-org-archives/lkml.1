@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932799AbXCDOfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXCDOgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932799AbXCDOfp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 09:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932807AbXCDOfp
+	id S932819AbXCDOgU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 09:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXCDOgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 09:35:45 -0500
-Received: from amsfep17-int.chello.nl ([62.179.120.12]:19572 "EHLO
-	amsfep17-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932799AbXCDOfo (ORCPT
+	Sun, 4 Mar 2007 09:36:20 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:5545 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932819AbXCDOgT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 09:35:44 -0500
-Subject: Re: userspace pagecache management tool
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070304040742.e56fc57f.akpm@linux-foundation.org>
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-	 <45E9DD4A.2060806@redhat.com>
-	 <20070303131204.6706a95c.akpm@linux-foundation.org>
-	 <45E9E910.2070804@redhat.com>
-	 <20070303140744.b22699dd.akpm@linux-foundation.org>
-	 <45E9F5DA.2070708@redhat.com>
-	 <20070303145221.2a42cc0f.akpm@linux-foundation.org>
-	 <45EA0C3D.1010001@redhat.com>
-	 <20070303170237.31d26382.akpm@linux-foundation.org>
-	 <45EA1F7B.9060107@redhat.com>
-	 <20070303174927.2d314a71.akpm@linux-foundation.org>
-	 <45EA274B.5090103@redhat.com>
-	 <20070304040742.e56fc57f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=utf-8
-Date: Sun, 04 Mar 2007 15:35:30 +0100
-Message-Id: <1173018930.4845.11.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8bit
+	Sun, 4 Mar 2007 09:36:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ikE0Qk7bo7QocCJ720vM5qbU03CKWJuS6dyUgDYJVU3oqEpQdxle2ksVQx/TXboayeaPAJIGsPQicosPH7/bDC8fHlNKLIn1uagpkth5hNqVCexvomy3b2MHoq2HKRchoHE4YX75A+gWqpNTWs2s1aSlInAzOIffLLerJJjYqQ4=
+Message-ID: <6bffcb0e0703040636q5a4ed3ekf5a0461052e8e018@mail.gmail.com>
+Date: Sun, 4 Mar 2007 15:36:17 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: tglx@linutronix.de
+Subject: Re: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump kernel)
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1173018209.24738.135.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6bffcb0e0703031531h3f0a86c6sda2522c0ca504765@mail.gmail.com>
+	 <1173018209.24738.135.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-04 at 04:07 -0800, Andrew Morton wrote:
-> On Sat, 03 Mar 2007 20:56:27 -0500 Rik van Riel <riel@redhat.com> wrote:
-> 
-> > Andrew Morton wrote:
-> > 
-> > >>> Doing a refault thing would help a bit, but stops working at a certain point.
-> > >> At what point does it stop working?
-> > > 
-> > > We need to store that this-page-got-reclaimed info somewhere.  I don't know
-> > > how space-efficient that is.  Did anyone ever do an implementation?
-> > 
-> > One 32 bit word per evicted page that we keep track of.
-> 
-> ok...
-> 
-> I wonder if we really need a new data structure to track that.  I mean,
-> once a file-backed (or indeed swapcache) page has been reclaimed, its
-> radix-tree slot is just sitting there with zeroes in it, asking us to reuse
-> that space for something interesting, no?
-> 
-> Of course, if all 64 pages in a radix-tree node get removed, we'll
-> currently free the node itself.  We could stop doing that, but the effects
-> of that might be pretty bad sometimes.  Instead, it sounds sensible to
-> populate the now-null slot in the parent radix-tree node with an
-> average/max/min/per-child-bitmap/whatever of the metrics for the 64
-> non-resident pages which that non-leaf slot represents.  So as the period
-> since a single page got evicted increases and increases, our information
-> about its state becomes less and less accurate.
-> 
-> If that inaccuracy is a problem then perhaps we could defer the collapsing
-> of a now-empty node into its parent in some manner.
+On 04/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Sun, 2007-03-04 at 00:31 +0100, Michal Piotrowski wrote:
+> > Hi,
+> >
+> > I hit this bug again
+> > (http://www.ussg.iu.edu/hypermail/linux/kernel/0702.2/1643.html)
+> >
+> > BUG: soft lockup detected on CPU#0!
+> >  [<c1604556>] show_trace_log_lvl+0x1a/0x2f
+> >  [<c1604c2c>] show_trace+0x12/0x14
+> >  [<c1604cde>] dump_stack+0x16/0x18
+> >  [<c16426e7>] softlockup_tick+0x97/0xa7
+> >  [<c161de38>] run_local_timers+0x12/0x14
+> >  [<c161e1ce>] update_process_times+0x3e/0x63
+> >  [<c162c44b>] tick_sched_timer+0x5d/0xa1
+> >  [<c1629715>] hrtimer_interrupt+0x11e/0x1b2
+> >  [<c160684e>] timer_interrupt+0xe/0x15
+> >  [<c164299e>] handle_IRQ_event+0x1a/0x46
+> >  [<c1643cfe>] handle_level_irq+0x81/0xcb
+> >  [<c1605dd8>] do_IRQ+0xb4/0xe0
+> >
+> > This time it's a crash dump kernel without SMP.
+>
+> Is the box stuck, or do you just get those softlockup messages from time
+> to time ?
 
-Getting the refault distance out of such a radix tree would be tricky.
-One solution I can think of would entail keeping a global fault count
-and storing the current fault count in the radix node and on refault
-subtract from the global count. The downside however is this global
-thing, perhaps we could do some smart percpu count aggregate to fix it.
+The box stuck on it.
 
-The other point you mention is when to we reap these radix tree nodes,
-normally nonresident information gets dropped once the distance is
-further than our memory is big, but these nodes don´t have explicit
-order.
+I can reproduce this on 2.6.21-rc2-git3 and 2.6.20.1.
 
-The collapsing idea is interesting, esp. if we could delay the collapse
-so that the avg refault distance would be in some relation to the error.
+Regards,
+Michal
 
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
