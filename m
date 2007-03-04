@@ -1,38 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbXCDVlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbXCDVtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbXCDVlx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 16:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbXCDVlx
+	id S1752505AbXCDVtj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 16:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbXCDVti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 16:41:53 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39244 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752500AbXCDVlw (ORCPT
+	Sun, 4 Mar 2007 16:49:38 -0500
+Received: from mail06.syd.optusnet.com.au ([211.29.132.187]:55106 "EHLO
+	mail06.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752505AbXCDVti (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 16:41:52 -0500
-Date: Sun, 4 Mar 2007 22:43:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: linux-hams@vger.kernel.org, sailer@ife.ee.ethz.ch, henk.termeer@gmail.com,
-       udovdh@xs4all.nl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] baycom_ser_fdx: also allow i/o ports >= 0x1000 and
- enhanced failure logging
-Message-ID: <20070304224355.19308ec0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070304213034.GU10782@vanheusden.com>
-References: <20070304213034.GU10782@vanheusden.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 4 Mar 2007 16:49:38 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Al Boldi <a1426z@gawab.com>, ck list <ck@vds.kolivas.org>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Date: Mon, 5 Mar 2007 08:49:29 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com>
+In-Reply-To: <200703042335.26785.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703050849.29674.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The baycom_ser_fdx driver did not allow i/o ports >= 0x1000. Now that
-> there are pci cards (with rs232 ports) which use for example 0xb800 this
-> limit should not exists.
+On Monday 05 March 2007 07:35, Al Boldi wrote:
+> Con Kolivas wrote:
+> > > >> >> >This message is to announce the first general public release of
+> > > >> >> > the "Rotating Staircase DeadLine" cpu scheduler.
+>
+> Thanks a lot!
 
-The IRQ test is also wrong for PCI systems the moment an APIC is present.
-NR_IRQS is the define to use.
+You're welcome.
+>
+> > Just to make it clear. The purpose of this scheduler is at all costs to
+> > maintain absolute fairness no matter what type of load it is put under.
+>
+> Great!
+>
+> > This means that if you heavily load up your machine without the use of
+> > 'nice' then your interactive tasks _will_ slow down proportionately to
+> > the amount of cpu you use. So doing make -j4 for example will make any
+> > other task started in taht presence run precisely 1/5th speed, but they
+> > will still be responsive, have low latency (and audio shouldn't skip for
+> > example).
+>
+> That's just what it did, but when you "nice make -j4", things (gears) start
+> to stutter.  Is that due to the staircase?
 
-> Also, for non kernel coders find the cause of problems was challenging
-> so I added extra logging.
+gears isn't an interactive task. Apart from using it as a background load to 
+check for starvation because it loads up the cpu fully (which a gpu intensive 
+but otherwise simple app like this should _not_ do) graphics card drivers and 
+interrupts and so on, I wouldn't put much credence on gears as anything else. 
+However I suspect that gears will still get a fair share of the cpu on RSDL 
+which almost never happens on any other scheduler.
+
+P.S. Al, please don't drop ccs from the original thread.
+
+-- 
+-ck
