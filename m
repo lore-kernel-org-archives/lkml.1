@@ -1,99 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbXCDROO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbXCDRPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbXCDROO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 12:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbXCDROO
+	id S1751958AbXCDRPq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 12:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXCDRPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 12:14:14 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:52512 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbXCDRON (ORCPT
+	Sun, 4 Mar 2007 12:15:46 -0500
+Received: from wr-out-0506.google.com ([64.233.184.226]:59901 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbXCDRPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 12:14:13 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Sun, 4 Mar 2007 12:10:18 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>, trivial@kernel.org
-Subject: Re: [PATCH] KCONFIG: Add some extra info regarding the kernel
- localversion.
-In-Reply-To: <20070304085924.b1a209f5.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0703041205530.21954@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0703040557200.15926@CPE00045a9c397f-CM001225dbafb6>
- <20070304085924.b1a209f5.randy.dunlap@oracle.com>
+	Sun, 4 Mar 2007 12:15:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=b0ABY4EvOtvpHE8LC4lT8lgj+2cgPrLg0L2SozV5+dEazhW8zaxcijma7EBAWy4PwEDxSVvgJj/h5cALWj5WMiaT4CPSn+ikP0atELAaSl8FP+bxlNzJhWd2yM4rqRm4vhcGb1XfbJopyYW5Mu+j8AH4l9U7dD8h/NNDx1oYi2o=
+Message-ID: <6bffcb0e0703040915h442b4d6cq8bb47cd961165916@mail.gmail.com>
+Date: Sun, 4 Mar 2007 18:15:43 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: tglx@linutronix.de
+Subject: Re: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump kernel)
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1173027823.24738.156.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, TW_GX 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6bffcb0e0703031531h3f0a86c6sda2522c0ca504765@mail.gmail.com>
+	 <1173018209.24738.135.camel@localhost.localdomain>
+	 <6bffcb0e0703040636q5a4ed3ekf5a0461052e8e018@mail.gmail.com>
+	 <1173022668.24738.141.camel@localhost.localdomain>
+	 <6bffcb0e0703040828j46a339c2ofabf7c0e20f6ae09@mail.gmail.com>
+	 <1173026442.24738.143.camel@localhost.localdomain>
+	 <6bffcb0e0703040847g1c04940bm4c22895ec2540bd1@mail.gmail.com>
+	 <1173027823.24738.156.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Mar 2007, Randy Dunlap wrote:
-
-> On Sun, 4 Mar 2007 06:01:17 -0500 (EST) Robert P. J. Day wrote:
+On 04/03/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Sun, 2007-03-04 at 17:47 +0100, Michal Piotrowski wrote:
+> > > sk98lin: driver has been replaced by the skge driver and is scheduled for removal
+> > >
+> > > Can you try without that one or with the skge driver instead ?
+> > >
+> >
+> > Unfortunately the bug still appears.
 >
-> >
-> >   A small formatting fix, and add a few lines describing the origin of
-> > the git-based "localversion" string for the kernel version.
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> >
-> > ---
-> >
-> > diff --git a/init/Kconfig b/init/Kconfig
-> > index f977086..4d5aef6 100644
-> > --- a/init/Kconfig
-> > +++ b/init/Kconfig
-> > @@ -80,13 +80,19 @@ config LOCALVERSION_AUTO
-> >  	default y
-> >  	help
-> >  	  This will try to automatically determine if the current tree is a
-> > -	  release tree by looking for git tags that
-> > -	  belong to the current top of tree revision.
-> > +	  release tree by looking for git tags that belong to the current
-> > +	  top of tree revision.
-> >
-> >  	  A string of the format -gxxxxxxxx will be added to the localversion
-> > -	  if a git based tree is found.  The string generated by this will be
-> > +	  if a git-based tree is found.  The string generated by this will be
-> >  	  appended after any matching localversion* files, and after the value
-> > -	  set in CONFIG_LOCALVERSION
-> > +	  set in CONFIG_LOCALVERSION.  (The actual string is the first eight
-> > +	  characters produced by running the command:
-> > +
-> > +	    $ git rev-parse --verify HEAD
-> > +
-> > +	  which is done within the script "scripts/setlocalversion", in case
-> > +	  you were interested.)
+> Would have been too easy :)
 >
-> Please omit ", in case you were interested".
-
-ok, will resubmit.
-
-> >
-> >  	  Note: This requires Perl, and a git repository, but not necessarily
-> >  	  the git or cogito tools to be installed.
+> sysrq-T and sysrq-Q might give use some useful info.
 >
-> How can this be the case since a 'git' command is used, according to
-> your new documentation?
 
-i have no idea why that last part says that -- that's not part of my
-addition, it's the original text.  in fact, there's nothing about
-scripts/setlocalversion that seems to require perl, so that last part
-is *doubly* odd.
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/log2.txt
 
-rday
+Regards,
+Michal
+
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
