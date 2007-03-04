@@ -1,164 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030576AbXCDDle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750810AbXCDEHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030576AbXCDDle (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 22:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030574AbXCDDle
+	id S1750810AbXCDEHX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 23:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbXCDEHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 22:41:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:20714 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030274AbXCDDlc (ORCPT
+	Sat, 3 Mar 2007 23:07:23 -0500
+Received: from mcr-smtp-002.bulldogdsl.com ([212.158.248.8]:1465 "EHLO
+	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750810AbXCDEHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 22:41:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=mo9YPvUoY3zMC4mVKA0nZ1BkFR6Qzsj9fPo0M+mEb4crZ+HWV/mfvzOrP/S4Zl4N2UOBC8+hmrKioc1gXg3kiEy3wcf6EhztHFy7hHycnQIEq1Ru4k767hA6yUaoMK3KFrg6VPqu2CZgI45NMl7e07UIbZ5+p0rJz9KA5QSM8WI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH][libata] pata_pdc202xx_old: fix data corruption and other problems
-Date: Sun, 4 Mar 2007 04:48:08 +0100
-User-Agent: KMail/1.9.6
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200703040158.43471.bzolnier@gmail.com>
-In-Reply-To: <200703040158.43471.bzolnier@gmail.com>
+	Sat, 3 Mar 2007 23:07:22 -0500
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.20, Java, unresponsive userspace
+Date: Sun, 4 Mar 2007 04:07:07 +0000
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703040448.08578.bzolnier@gmail.com>
+Message-Id: <200703040407.07234.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 Hi,
 
-This version has improved patch description
-(on the second thought the original patch description was too vague).
+I've had some problems with 2.6.20 (but also with earlier kernels, like 
+Debian's 2.6.18) where one of the users on our system, running a Java6 
+application, is somehow able to make the userspace on the machine totally 
+unresponsive, denying all remote _and_ local access to the machine.
 
-Bart
+- The AMD64 port of Linux and Java are in use
+- The process runs as an unprivileged user
+- The OOM killer doesn't kick in
+- No swap is enabled on the machine
+- I'm told that the program doesn't fork bomb
+  (but I've not got a reproducible test case yet)
+- The program is able to deny service even to a getty login.
 
-[PATCH] pata_pdc202xx_old: fix possible data corruption and other problems
+If I SAK the machine, init respawns getty and everything is fine again.
 
-Fix wrong "port" calculations in pdc202xx_{configure_piomode,set_dmamode}()
-They were broken for all configurations except one (master device on primary
-channel, no other devices) and as a result device settings + PIO/DMA timings
-were being programmed into the wrong PCI registers.  This could result in
-a large variety of problems including data corruption, hangs etc. (depending
-on devices used and your luck :-).
+alistair@clarent:~$ ulimit -a
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+max nice                        (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) unlimited
+max locked memory       (kbytes, -l) 1000
+max memory size         (kbytes, -m) 1000
+open files                      (-n) 1024
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) unlimited
+max rt priority                 (-r) 0
+stack size              (kbytes, -s) 2048
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 100
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
 
-  ap->port_no   ap->devno   used PCI registers   correct PCI registers
-            0           0            0x60-0x62               0x60-0x62
-            0           1            0x62-0x64               0x64-0x66
-            1           0            0x64-0x66               0x68-0x6a
-            1           1            0x66-0x68               0x6c-0x6e
+Any ideas with how to proceed for debugging this issue?
 
-Also forward port recent fixes from drivers/ide pdc202xx_old driver:
+-- 
+Cheers,
+Alistair.
 
-* fix XFER_MW_DMA0 timings (they were overclocked, use the official ones)
-
-* fix bitmasks for clearing bits of register B:
-
-  - when programming DMA mode bit 0x10 of register B was cleared which
-    resulted in overclocked PIO timing setting (iff PIO0 was used)
-
-  - when programming PIO mode bits 0x18 weren't cleared so suboptimal
-    timings were used for PIO1-4 if PIO0 was previously set (bit 0x10)
-    and for PIO0/3/4 if PIO1/2 was previously set (bit 0x08)
-
-and finally bump driver version.
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-
- drivers/ata/pata_pdc202xx_old.c |   22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
-
-Index: b/drivers/ata/pata_pdc202xx_old.c
-===================================================================
---- a/drivers/ata/pata_pdc202xx_old.c
-+++ b/drivers/ata/pata_pdc202xx_old.c
-@@ -2,13 +2,14 @@
-  * pata_pdc202xx_old.c 	- Promise PDC202xx PATA for new ATA layer
-  *			  (C) 2005 Red Hat Inc
-  *			  Alan Cox <alan@redhat.com>
-+ *			  (C) 2007 Bartlomiej Zolnierkiewicz
-  *
-  * Based in part on linux/drivers/ide/pci/pdc202xx_old.c
-  *
-  * First cut with LBA48/ATAPI
-  *
-  * TODO:
-- *	Channel interlock/reset on both required ?
-+ *	Channel interlock/reset on both required
-  */
- 
- #include <linux/kernel.h>
-@@ -21,7 +22,7 @@
- #include <linux/libata.h>
- 
- #define DRV_NAME "pata_pdc202xx_old"
--#define DRV_VERSION "0.3.0"
-+#define DRV_VERSION "0.4.0"
- 
- /**
-  *	pdc2024x_pre_reset		-	probe begin
-@@ -76,7 +77,7 @@ static void pdc2026x_error_handler(struc
- static void pdc202xx_configure_piomode(struct ata_port *ap, struct ata_device *adev, int pio)
- {
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--	int port = 0x60 + 4 * ap->port_no + 2 * adev->devno;
-+	int port = 0x60 + 8 * ap->port_no + 4 * adev->devno;
- 	static u16 pio_timing[5] = {
- 		0x0913, 0x050C , 0x0308, 0x0206, 0x0104
- 	};
-@@ -85,7 +86,7 @@ static void pdc202xx_configure_piomode(s
- 	pci_read_config_byte(pdev, port, &r_ap);
- 	pci_read_config_byte(pdev, port + 1, &r_bp);
- 	r_ap &= ~0x3F;	/* Preserve ERRDY_EN, SYNC_IN */
--	r_bp &= ~0x07;
-+	r_bp &= ~0x1F;
- 	r_ap |= (pio_timing[pio] >> 8);
- 	r_bp |= (pio_timing[pio] & 0xFF);
- 
-@@ -123,7 +124,7 @@ static void pdc202xx_set_piomode(struct 
- static void pdc202xx_set_dmamode(struct ata_port *ap, struct ata_device *adev)
- {
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--	int port = 0x60 + 4 * ap->port_no + 2 * adev->devno;
-+	int port = 0x60 + 8 * ap->port_no + 4 * adev->devno;
- 	static u8 udma_timing[6][2] = {
- 		{ 0x60, 0x03 },	/* 33 Mhz Clock */
- 		{ 0x40, 0x02 },
-@@ -132,12 +133,17 @@ static void pdc202xx_set_dmamode(struct 
- 		{ 0x20, 0x01 },
- 		{ 0x20, 0x01 }
- 	};
-+	static u8 mdma_timing[3][2] = {
-+		{ 0x60, 0x03 },
-+		{ 0x60, 0x04 },
-+		{ 0xe0, 0x0f },
-+	};
- 	u8 r_bp, r_cp;
- 
- 	pci_read_config_byte(pdev, port + 1, &r_bp);
- 	pci_read_config_byte(pdev, port + 2, &r_cp);
- 
--	r_bp &= ~0xF0;
-+	r_bp &= ~0xE0;
- 	r_cp &= ~0x0F;
- 
- 	if (adev->dma_mode >= XFER_UDMA_0) {
-@@ -147,8 +153,8 @@ static void pdc202xx_set_dmamode(struct 
- 
- 	} else {
- 		int speed = adev->dma_mode - XFER_MW_DMA_0;
--		r_bp |= 0x60;
--		r_cp |= (5 - speed);
-+		r_bp |= mdma_timing[speed][0];
-+		r_cp |= mdma_timing[speed][1];
- 	}
- 	pci_write_config_byte(pdev, port + 1, r_bp);
- 	pci_write_config_byte(pdev, port + 2, r_cp);
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
