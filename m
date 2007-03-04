@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXCDCqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030197AbXCDDAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932780AbXCDCqh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 21:46:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932798AbXCDCqh
+	id S1030197AbXCDDAR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 22:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030236AbXCDDAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 21:46:37 -0500
-Received: from 206-72-67-168.dsl.dock.net ([206.72.67.168]:41502 "EHLO
-	elektro.pacujo.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932780AbXCDCqg (ORCPT
+	Sat, 3 Mar 2007 22:00:17 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:42149 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030197AbXCDDAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 21:46:36 -0500
-To: tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Is the clockevent resolution fine-grained enough?
-References: <m3649kweyj.fsf@elektro.pacujo.net>
-	<1172851546.24738.62.camel@localhost.localdomain>
-	<m3k5xzy2w3.fsf@elektro.pacujo.net>
-	<1172912070.24738.99.camel@localhost.localdomain>
-Date: 03 Mar 2007 18:46:35 -0800
-In-Reply-To: <1172912070.24738.99.camel@localhost.localdomain>
-Message-ID: <m3fy8lybck.fsf@elektro.pacujo.net>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Sat, 3 Mar 2007 22:00:16 -0500
+Message-ID: <45EA3447.2080504@zytor.com>
+Date: Sat, 03 Mar 2007 18:51:51 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Delivery-Agent: TMDA/1.0.3 (Seattle Slew)
-From: Marko Rauhamaa <marko@pacujo.net>
+To: Oleg Verych <olecom@flower.upol.cz>
+CC: Oliver Neukum <oliver@neukum.org>, linux-usb-devel@lists.sourceforge.net,
+       Greg KH <greg@kroah.com>, Dale Martenson <dmartenson@multitech.com>,
+       Al Borchers <alborchers@steinerpoint.com>,
+       LKML <linux-kernel@vger.kernel.org>, mit-devel@lists.printk.net
+Subject: Re: dlopen-like facility for conditional loading of symbols in modules
+ (Re: Firmware for new ti_usb_3410_5052 devices)
+References: <1172824155.45e7e05b7980e@my.visi.com> <20070303002707.GJ16509@flower.upol.cz> <20070303002957.GA1966@kroah.com> <200703030840.26982.oliver@neukum.org> <20070303133155.GM16509@flower.upol.cz>
+In-Reply-To: <20070303133155.GM16509@flower.upol.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de>:
-
-> 100khz on a stock kernel with real world hardware:
+Oleg Verych wrote:
 > 
-> ROTFL, You made my day. 
-
-I don't know why you find that rate unbelievable.
-
-> Sorry man. Did you actually read what I wrote ? 
+> Maybe modules' dlopen() like facility would be better to handle static
+> firmware or any other on-demand static data like ID tables etc.?
 > 
-> > The clockevent subsystem operates on absolute time, so there is no
-> > cummulative error
-
-You are right. I misunderstood what you meant by "absolute time".
-
-> timer_function()
-> {
-> 	do_whatever_you_need_to_do();
+> I.e. some additional flag for an exported symbol (in a module), that
+> this symbol maybe dynamically requested and used. As far as i can see,
+> depmod generates static map, unresolved symbols must be in the kernel
+> (System.map).
 > 
-> 	next_event += interval;
-> 	set_next_event(yokto_seconds_to_nsec(next_event), ABSOLUTE);
-> }
+
+You can do this with request_module() and having your module overwrite a 
+hook.
+
+> It will solve problem of having multiple unneeded firmware images if
+> driver handles many devices and firmware is allowed to be in the
+> kernel. No need in additional secure infrastructure.
 > 
-> Please read _AND_ understand the clockevents code. Your uber_clockevents
-> patch is solving PEBKAC.
 
-I tried to quickly reconstruct the API from a recent clockevent patch I
-found with google (<URL:
-http://www.mail-archive.com/mm-commits@vger.kernel.org/msg09566.html>).
-I saw the enum "CLOCK_EVT_MODE_PERIODIC" and automatically thought of
-using that since my application is periodic. I imagined you wouldn't
-have to keep on ordering the notification again in every callback. It's
-also difficult to estimate how expensive an operation the explicit
-rearming would be in the clock event device (the periodic notifications
-can probably be optimized effectively).
+This seems like a hacky way to accomplish what request_firmware() does 
+clearer!
 
-You are right. By calling set_next_event() in every callback I can
-implement what I want (provided that the API guarantees that the
-absolute time can be in the past).
-
-
-Marko
-
--- 
-Marko Rauhamaa      mailto:marko@pacujo.net     http://pacujo.net/marko/
+	-hpa
