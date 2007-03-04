@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751593AbXCDMOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751594AbXCDMYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751593AbXCDMOw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 07:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbXCDMOw
+	id S1751594AbXCDMYh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 07:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXCDMYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 07:14:52 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:35399 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751589AbXCDMOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 07:14:51 -0500
-Date: Sun, 4 Mar 2007 04:11:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [Re: 2.6.21-rc2-mm1] #error no ROMFS backing store interface
- configured
-Message-Id: <20070304041111.1d2774e7.akpm@linux-foundation.org>
-In-Reply-To: <45EAB46F.1030709@gmail.com>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	<20070302030405.22f78999.akpm@linux-foundation.org>
-	<45EAB46F.1030709@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 4 Mar 2007 07:24:36 -0500
+Received: from vms042pub.verizon.net ([206.46.252.42]:64129 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751582AbXCDMYg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 07:24:36 -0500
+Date: Sun, 04 Mar 2007 07:24:33 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+ scheduler
+In-reply-to: <200703042247.44196.kernel@kolivas.org>
+To: linux-kernel@vger.kernel.org
+Cc: Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>
+Message-id: <200703040724.34321.gene.heskett@gmail.com>
+Organization: very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703041800.53360.kernel@kolivas.org>
+ <200703040608.53336.gene.heskett@gmail.com>
+ <200703042247.44196.kernel@kolivas.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 04 Mar 2007 12:58:39 +0100 Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
+On Sunday 04 March 2007, Con Kolivas wrote:
+>On Sunday 04 March 2007 22:08, Gene Heskett wrote:
+>> On Sunday 04 March 2007, Con Kolivas wrote:
+>> >This message is to announce the first general public release of the
+>> > "Rotating Staircase DeadLine" cpu scheduler.
+>>
+>> I assume to test this, we select the deadline scheduler?
+>
+>No, only the "deadline" in the name is shared. This is a cpu process
+> scheduler whereas the deadline scheduler you're thinking of is an I/O
+> scheduler. To test this you just patch it in and it replaces the
+> current mainline cpu scheduler (the same way the staircase cpu
+> scheduler in -ck replaces it).
 
-> CC [M]  fs/romfs/storage.o
-> fs/romfs/storage.c:18:2: error: #error no ROMFS backing store interface
-> configured
-> make[3]: *** [fs/romfs/storage.o] Błąd 1
-> make[2]: *** [fs/romfs] Błąd 2
-> make[1]: *** [fs] Błąd 2
-> make[1]: Opuszczenie katalogu `/usr/src/linux-mm'
-> make: *** [debian/stamp-build-kernel] Błąd 2
-> 
+Oh, then I tried to put the -ck1 patch on top of that, and blew the tree 
+up.  I'd built it the first time with the deadline scheduler as the 
+default while I was waiting on your reply.
 
-+config ROMFS_ON_BLOCK
-+	bool "Block device-backed ROM file system support"
-+	depends on ROMFS_FS && BLOCK
-+	help
-+	  This permits ROMFS to use block devices buffered through the page
-+	  cache as the medium from which to retrieve data.  It does not allow
-+	  direct mapping of the medium.
-+
-+	  If unsure, answer Y.
-+
-+config ROMFS_ON_MTD
-+	bool "MTD-backed ROM file system support"
-+	depends on ROMFS_FS && MTD
-+	help
-+	  This permits ROMFS to use MTD based devices directly, without the
-+	  intercession of the block layer (which may have been disabled).  It
-+	  also allows direct mapping of MTD devices through romfs files under
-+	  NOMMU conditions if the underlying device is directly addressable by
-+	  the CPU.
-+
-
-So we require that one of these be enabled if ROMFS.
-
-There's a way of doing that, but I forget what it is.  iirc Adrian has done
-this in the past and can perhaps point us at an example?
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
