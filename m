@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXCDULu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbXCDUha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbXCDULu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 15:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbXCDULu
+	id S1752475AbXCDUha (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 15:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXCDUha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 15:11:50 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:50787 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbXCDULt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 15:11:49 -0500
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <200703032345.33137.arnd@arndb.de>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-       alex@clusterfs.com, suzuki@in.ibm.com,
-       Ulrich Drepper <drepper@redhat.com>
+	Sun, 4 Mar 2007 15:37:30 -0500
+Received: from [212.33.180.85] ([212.33.180.85]:32935 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752475AbXCDUh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 15:37:29 -0500
+X-Greylist: delayed 311 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Mar 2007 15:37:28 EST
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Date: Sun, 4 Mar 2007 23:35:26 +0300
+User-Agent: KMail/1.5
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Date: Sun, 4 Mar 2007 20:11:17 +0000
-To: Arnd Bergmann <arnd@arndb.de>
-X-Mailer: Apple Mail (2.752.3)
+Message-Id: <200703042335.26785.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3 Mar 2007, at 22:45, Arnd Bergmann wrote:
-> On Friday 02 March 2007 00:38:19 Christoph Hellwig wrote:
->>> Forgive me if I haven't put enough thought into it, but would it be
->>> useful to create a generic_fallocate() that writes zeroed pages  
->>> for any
->>> non-existent pages in the range?  I don't know how glibc currently
->>> implements posix_fallocate(), but maybe the kernel could do it more
->>> efficiently, even in generic code.  Maybe we don't care, since  
->>> the major
->>> file systems can probably do something better in their own code.
->>
->> I'd be more happy to have the write out zeroes loop in glibc.  And
->> glibc needs to have it anyway, for older kernels.
->
-> A generic_fallocate makes sense to me iff we can do it in the kernel
-> more significantly more efficiently than in glibc, e.g. by using only
-> a single page in page cache instead of one for each page to be  
-> preallocated.
->
-> If  glibc is smart enough to do an optimal implementation, I fully  
-> agree
-> with you.
+Con Kolivas wrote:
+> > >> >> >This message is to announce the first general public release of
+> > >> >> > the "Rotating Staircase DeadLine" cpu scheduler.
 
-glibc cannot ever be smart enough because a file system driver will  
-always know better and be able to do things in a much more optimized  
-way.
+Thanks a lot!
 
-For example on NTFS fallocate() only needs to involve the setting of  
-a few bits in the volume block allocation bitmap (one bit for each  
-logical block being allocated) and update the extent map in the on- 
-disk inode to reflect that those blocks are now allocated to the  
-inode.  Then it just needs to update the allocated size and  
-optionally the data size (if fallocate wants to increase the file  
-size rather than just the allocated size).  And that is it.  No  
-zeroing needs to happen at all because we have not updated the  
-initialized size of the inode!
+> Just to make it clear. The purpose of this scheduler is at all costs to
+> maintain absolute fairness no matter what type of load it is put under.
 
-glibc can only dream of an implementation like this.  (-;
+Great!
 
-Best regards,
+> This means that if you heavily load up your machine without the use of
+> 'nice' then your interactive tasks _will_ slow down proportionately to the
+> amount of cpu you use. So doing make -j4 for example will make any other
+> task started in taht presence run precisely 1/5th speed, but they will
+> still be responsive, have low latency (and audio shouldn't skip for
+> example).
 
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+That's just what it did, but when you "nice make -j4", things (gears) start 
+to stutter.  Is that due to the staircase?
 
+
+Thanks!
+
+--
+Al
 
