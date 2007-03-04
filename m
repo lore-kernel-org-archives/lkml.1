@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751147AbXCDHfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbXCDHpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751147AbXCDHfU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 02:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXCDHfU
+	id S1751467AbXCDHpK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 02:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbXCDHpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 02:35:20 -0500
-Received: from em.volia.net ([82.144.192.9]:62197 "EHLO em.volia.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147AbXCDHfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 02:35:19 -0500
-X-Greylist: delayed 64735 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Mar 2007 02:35:19 EST
-From: Nick Shaforostoff <shafff@ukr.net>
-Organization: National Technical University of Ukraine
-To: linux-kernel@vger.kernel.org
-Subject: usbnet bug in 2.6.20.1
-Date: Sat, 3 Mar 2007 15:36:40 +0200
+	Sun, 4 Mar 2007 02:45:09 -0500
+Received: from mail14.syd.optusnet.com.au ([211.29.132.195]:59622 "EHLO
+	mail14.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751467AbXCDHpI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 02:45:08 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: ck@vds.kolivas.org
+Subject: Re: [ck] [ANNOUNCE] RSDL completely fair starvation free interactive  cpu scheduler
+Date: Sun, 4 Mar 2007 18:45:04 +1100
 User-Agent: KMail/1.9.5
-X-Face: russian
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>
+References: <200703041800.53360.kernel@kolivas.org>
+In-Reply-To: <200703041800.53360.kernel@kolivas.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="koi8-u"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703031536.41877.shafff@ukr.net>
+Message-Id: <200703041845.04560.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-after upgrading from 2.6.15 to 2.6.20.1 i got problem with my usb modem (terayon).
-kern.log it said:
-usb 3-1: new full speed USB device using ohci_hcd and address 2
-usb 3-1: no configuration chosen from 1 choice
+On Sunday 04 March 2007 18:00, Con Kolivas wrote:
+> This message is to announce the first general public release of the
+> "Rotating Staircase DeadLine" cpu scheduler.
+>
+> Based on previous work from the staircase cpu scheduler I set out to
+> design, from scratch, a new scheduling policy design which satisfies every
+> requirement for SCHED_NORMAL (otherwise known as SCHED_OTHER) task
+> management.
+>
+> Available for download are:
+>
+>  A full rollup of the patch for 2.6.20:
+> http://ck.kolivas.org/patches/staircase-deadline/sched-rsdl-0.26.patch
 
-
-my solution was to 
-replace
-#ifndef CONFIG_USB_NET_RNDIS_HOST
-with 
-#ifndef CONFIG_USB_NET_RNDIS_HOST_MODULE
-in drivers/usb/core/generic.c
-
-
+It's probably worth mentioning that this scheduler shows a not insignificant 
+improvement in the mysql test case that recently received a lot of publicity. 
+Why exactly that's the case I'm not sure but it may help track down what is 
+actually responsible for the performance drop off as well. Note that the SMP 
+balancing of this cpu scheduler is essentially unchanged from the mainline 
+one.
 
 -- 
-Some men see things as they are and say, "Why?" I dream of things that never were and say, "Why not?"
- --George Bernard Shaw
+-ck
