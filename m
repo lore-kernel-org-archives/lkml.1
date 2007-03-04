@@ -1,43 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXCDCgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXCDCqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030190AbXCDCgB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 21:36:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932774AbXCDCgB
+	id S932780AbXCDCqh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 21:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932798AbXCDCqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 21:36:01 -0500
-Received: from wr-out-0506.google.com ([64.233.184.228]:5591 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932745AbXCDCgA (ORCPT
+	Sat, 3 Mar 2007 21:46:37 -0500
+Received: from 206-72-67-168.dsl.dock.net ([206.72.67.168]:41502 "EHLO
+	elektro.pacujo.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932780AbXCDCqg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 21:36:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=VIBs2+t28eCl6xBF63gGlRi1efgdxk+qVTZdybXcoleQP8XBezw8KJ3v8r0SnxiF49JE+eYkYFdAdGL07dRUmnJXGXm37iap59awDtwz8f7nbnYEyASaAT1nxuWYX0A/8JP33uhb3VnUg5fg7fWVh11rBMrcs8v3e3R/6KH66v0=
-Message-ID: <75b66ecd0703031835j5ff2846fpd4761a89f67fc2f1@mail.gmail.com>
-Date: Sat, 3 Mar 2007 21:35:59 -0500
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: userspace pagecache management tool
+	Sat, 3 Mar 2007 21:46:36 -0500
+To: tglx@linutronix.de
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070303173933.9f46459c.akpm@linux-foundation.org>
+Subject: Re: Is the clockevent resolution fine-grained enough?
+References: <m3649kweyj.fsf@elektro.pacujo.net>
+	<1172851546.24738.62.camel@localhost.localdomain>
+	<m3k5xzy2w3.fsf@elektro.pacujo.net>
+	<1172912070.24738.99.camel@localhost.localdomain>
+Date: 03 Mar 2007 18:46:35 -0800
+In-Reply-To: <1172912070.24738.99.camel@localhost.localdomain>
+Message-ID: <m3fy8lybck.fsf@elektro.pacujo.net>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-	 <75b66ecd0703031716k5b9fd96br9ecd93f1fc3a6032@mail.gmail.com>
-	 <20070303173933.9f46459c.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 4dfd9140401792bd
+Content-Type: text/plain; charset=us-ascii
+X-Delivery-Agent: TMDA/1.0.3 (Seattle Slew)
+From: Marko Rauhamaa <marko@pacujo.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/3/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> But yes, updatedb's pagecache usage will be mainly metadata, and this tool
-> doesn't address metadata pagecache, although it could do so.
->
+Thomas Gleixner <tglx@linutronix.de>:
 
-With no kernel changes?  How?  I can't find an equivalent API to
-posix_fadvise() for metadata.
+> 100khz on a stock kernel with real world hardware:
+> 
+> ROTFL, You made my day. 
 
-Lee
+I don't know why you find that rate unbelievable.
+
+> Sorry man. Did you actually read what I wrote ? 
+> 
+> > The clockevent subsystem operates on absolute time, so there is no
+> > cummulative error
+
+You are right. I misunderstood what you meant by "absolute time".
+
+> timer_function()
+> {
+> 	do_whatever_you_need_to_do();
+> 
+> 	next_event += interval;
+> 	set_next_event(yokto_seconds_to_nsec(next_event), ABSOLUTE);
+> }
+> 
+> Please read _AND_ understand the clockevents code. Your uber_clockevents
+> patch is solving PEBKAC.
+
+I tried to quickly reconstruct the API from a recent clockevent patch I
+found with google (<URL:
+http://www.mail-archive.com/mm-commits@vger.kernel.org/msg09566.html>).
+I saw the enum "CLOCK_EVT_MODE_PERIODIC" and automatically thought of
+using that since my application is periodic. I imagined you wouldn't
+have to keep on ordering the notification again in every callback. It's
+also difficult to estimate how expensive an operation the explicit
+rearming would be in the clock event device (the periodic notifications
+can probably be optimized effectively).
+
+You are right. By calling set_next_event() in every callback I can
+implement what I want (provided that the API guarantees that the
+absolute time can be in the past).
+
+
+Marko
+
+-- 
+Marko Rauhamaa      mailto:marko@pacujo.net     http://pacujo.net/marko/
