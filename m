@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932699AbXCDBtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932663AbXCDBuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932699AbXCDBtn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Mar 2007 20:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932745AbXCDBtm
+	id S932663AbXCDBuz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Mar 2007 20:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932694AbXCDBuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Mar 2007 20:49:42 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51514 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932699AbXCDBtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Mar 2007 20:49:41 -0500
-Date: Sat, 3 Mar 2007 17:49:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: userspace pagecache management tool
-Message-Id: <20070303174927.2d314a71.akpm@linux-foundation.org>
-In-Reply-To: <45EA1F7B.9060107@redhat.com>
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-	<45E9DD4A.2060806@redhat.com>
-	<20070303131204.6706a95c.akpm@linux-foundation.org>
-	<45E9E910.2070804@redhat.com>
-	<20070303140744.b22699dd.akpm@linux-foundation.org>
-	<45E9F5DA.2070708@redhat.com>
-	<20070303145221.2a42cc0f.akpm@linux-foundation.org>
-	<45EA0C3D.1010001@redhat.com>
-	<20070303170237.31d26382.akpm@linux-foundation.org>
-	<45EA1F7B.9060107@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Mar 2007 20:50:55 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:31448 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932663AbXCDBuy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Mar 2007 20:50:54 -0500
+Date: Sat, 3 Mar 2007 17:50:31 -0800
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Wanted: simple, safe x86 stack overflow detection
+Message-ID: <20070304015031.GA4224@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Andi Kleen <andi@firstfloor.org>, Chuck Ebbert <cebbert@redhat.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <45E5913D.3080505@redhat.com> <20070228204144.GA32316@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070228204144.GA32316@one.firstfloor.org>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 03 Mar 2007 20:23:07 -0500 Rik van Riel <riel@redhat.com> wrote:
+On Wed, Feb 28, 2007 at 09:41:44PM +0100, Andi Kleen wrote:
+> I suppose one could have a CONFIG_DEBUG_STACK_OVERFLOW that gets
+> the stacks from vmalloc which would catch any overflow with its
+> guard pages. This is you would need to change __pa() to handle
+> that too because there might be still some drivers that do
+> DMA on stack addresses.  Would be somewhat ugly but doable.
+> But I have my doubts it is worth it again -- in my experience static
+> analysis works well enough to trace them down and 
+> there are not that many anyways.
 
-> Andrew Morton wrote:
-> > On Sat, 03 Mar 2007 19:01:01 -0500 Rik van Riel <riel@redhat.com> wrote:
-> 
-> >> The use-once policy we have in the kernel should work
-> >> perfectly fine for backups.  All we need to do is
-> >> actually honor the accessed bit on active page cache
-> >> pages, instead of flushing them onto the inactive
-> >> list.
-> >>
-> >> What am I overlooking?
-> > 
-> > That'll improve backups but will break other things.
-> > 
-> > To do this effectively we'd need to change the policy so that new pagecache
-> > allocations cause no scanning of used-twice pages at all.  So that even
-> > after many gigs of backing up, the working set is still there.
-> > 
-> > Problem is, (for example) what about the person who has 80% of memory in
-> > used-twice state and who then reads a file or files which are 20% or more of
-> > the size of memory, two or more times.  It'll be 100% cache misses, every time.
-> > This will happen quite a lot.  IOW, once those pages are in used-twice state,
-> > how does further pagecache activity ever get them _out_ of that state?  Only
-> > by joining the used-twice page set, and that can't happen if the used-once-so-far
-> > pages got reclaimed.
-> > 
-> > Doing a refault thing would help a bit, but stops working at a certain point.
-> 
-> At what point does it stop working?
+In case anyone wants them, patches against v2.6.21-rc2-116-gbb648a0
+for this are available from http://oss.oracle.com/~wli/stack_paranoia/
 
-We need to store that this-page-got-reclaimed info somewhere.  I don't know
-how space-efficient that is.  Did anyone ever do an implementation?
+I only did arch/i386/ as per the Linux tradition, though I could
+arrange for other arches easily enough, barring those for which I lack
+target platforms. Testbooted on qemu -smp 4 with 64KB vmalloc()'d
+stacks and IRQ stacks, compiletested in a couple of other configs.
+Translation: very light testing. For me this was about reestablishing
+reconnoiter of current mainline and familiarizing myself with qemu.
 
-Of course, the pages need to be re-read again so there's a potential 100%
-hit there, which is in fact not a huge amount in this context.  Depends how
-often it occurs (all the time when refault is being useful?) versus what we
-gain from it.
+The patch series goes something like:
+$ quilt series | xargs -i grep -nH '^Subj' patches/\{\} | cut -f2 -d/ |
+cut -f 4 -d: | cat -n
+     1   make stack size configurable
+     2   add config option to vmalloc stacks
+     3   make IRQ stacks independently configurable
+     4   go BUG on vmallocspace in __pa()
+     5   dynamically allocate IRQ stacks
+     6   arrange for a guard page on cpu 0's IRQ stack
 
-> I am not asking this to be difficult, I just want to get Linux
-> a VM that does not need to be kludged up every time a distro
-> ships it to its customers.
+Chuck, is any of this of any use to you?
 
-We have a communication problem here.  Please please please work harder to
-get these problems communicated to the MM developers.  The only vendor MM
-kludge of which I'm aware is a thing which Andrea is working on to address
-a large-shm-segment versus bulk-IO problem (yup, database).
 
-If you have enough of an understanding of a problem to be able to develop
-and productise a fix then share that info madly, asap.
-
-otoh, rhel-on-the-desktop-or-smaller probably isn't a huge priority, which
-can be taken advantage of.
-
-> I believe one starting point would be a concept that people
-> cannot shoot holes in any more.  That is no guarantee, but
-> as long as the concept has known holes coding it up is likely
-> to be a waste of time since the code will need kludges to
-> deal with the problems later on and we'd be back to square
-> one.
-
-You mean design it and review the design before coding it?  You'll find few
-objections there.
-
+-- wli
