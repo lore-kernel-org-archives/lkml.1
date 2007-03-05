@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933554AbXCEPuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbXCEPyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933554AbXCEPuY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:50:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbXCEPuX
+	id S933533AbXCEPyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933555AbXCEPyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:50:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35239 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933553AbXCEPuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:50:20 -0500
-Message-ID: <45EC3BD9.2090604@redhat.com>
-Date: Mon, 05 Mar 2007 07:48:41 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@lazybastard.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-       alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <45EB4A55.3060908@redhat.com> <20070305001621.GB18691@lazybastard.org> <200703050136.37181.arnd@arndb.de> <20070305114109.GA454@lazybastard.org> <45EC3253.2030206@redhat.com> <20070305153326.GA1469@lazybastard.org>
-In-Reply-To: <20070305153326.GA1469@lazybastard.org>
-X-Enigmail-Version: 0.94.1.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig77CA57063B64602467E123E3"
+	Mon, 5 Mar 2007 10:54:20 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:40589 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933533AbXCEPyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:54:19 -0500
+Date: Mon, 5 Mar 2007 07:50:53 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: "Miles Lane" <miles.lane@gmail.com>, "Andrew Morton" <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       "Michael Buesch" <mbuesch@freenet.de>
+Subject: Re: 2.6.21-rc2-mm1 -- WARNING:
+ "pcmcia_access_configuration_register" [drivers/ssb/ssb.ko] undefined!
+Message-Id: <20070305075053.82cff690.randy.dunlap@oracle.com>
+In-Reply-To: <200703051111.30374.mb@bu3sch.de>
+References: <a44ae5cd0703042021o434e42b1vea6fd90376824917@mail.gmail.com>
+	<200703051111.30374.mb@bu3sch.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig77CA57063B64602467E123E3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, 5 Mar 2007 11:11:29 +0100 Michael Buesch wrote:
 
-J=C3=B6rn Engel wrote:
->> Of course.  You call posix_fallocate once for the lifetime of the file=
+> On Monday 05 March 2007 05:21, Miles Lane wrote:
+> > WARNING: "pcmcia_access_configuration_register" [drivers/ssb/ssb.ko] undefined!
+> > WARNING: "pccard_parse_tuple"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pcmcia_register_driver"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pccard_get_tuple_data"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pcmcia_request_configuration"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pcmcia_request_window"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pccard_get_first_tuple"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pcmcia_release_window"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pcmcia_map_mem_page"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pcmcia_unregister_driver"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > WARNING: "pcmcia_disable_device"
+> > [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > 
+> > #
+> > # PCCARD (PCMCIA/CardBus) support
+> > #
+> > # CONFIG_PCCARD is not set
+> > 
+> > CONFIG_BCM43XX_MAC80211=m
+> > CONFIG_BCM43XX_MAC80211_PCI=y
+> > CONFIG_BCM43XX_MAC80211_PCMCIA=y
+> 
+> This SELECTs SSB_PCMCIAHOST and that DEPENDS ON
+> PCMCIA. So dependencies don't seem to work through SELECT.
 
->> when it is created to ensure that all future uses will work.
->=20
-> That part is not quite clear from the manpage but I trust most people
-> would assume the same.
+just confirming that last sentence:  SELECT does not enforce
+any "upstream" dependencies.  (known "problem")
 
-Not only that, it is what this function is for.  In the POSIX committee
-we've looked at the functions in detail before adding them, even if some
-information is not in the man page but instead in the Rationale.
+> I'll fix that in my tree, so it will pushed through linville to mm.
 
 
-> Still, it is quite obvious that noone designing this interface has lost=
-
-> much thought to compressing filesystems.
-
-You already have problems with supporting the functionality
-posix_fallocate is supporting.  You cannot reliably support MAP_SHARED
-files if all of a sudden the compression causes and expansion of a block
-and that causes a ENOSPC error.  So, don't expect pity.  This is a
-function in support of a real and reliable implementation of memory
-mapped files.  You don't use MAP_SHARED on such filesystems, it'll eat
-your kittens sooner or later anyway.
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
-
-
---------------enig77CA57063B64602467E123E3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFF7DvZ2ijCOnn/RHQRAiQUAJ9B+efQ+xd3MrgwsG42Uitd2c6RSgCcCdA7
-g0s1HK7Izt51Trru9/W9KY0=
-=ezJL
------END PGP SIGNATURE-----
-
---------------enig77CA57063B64602467E123E3--
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
