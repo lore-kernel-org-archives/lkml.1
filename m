@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933505AbXCEPI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751161AbXCEPTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933505AbXCEPI4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933507AbXCEPI4
+	id S1751161AbXCEPTM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbXCEPTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:08:56 -0500
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:49819 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933505AbXCEPIz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:08:55 -0500
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070305143703.GF26781@thunk.org>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com> <8A8B28AA-3481-4CFF-AEAA-0CB4CCDFF9F9@cam.ac.uk> <20070305143703.GF26781@thunk.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <13E89496-3752-42ED-AE23-F1EF6DE23029@cam.ac.uk>
-Cc: Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Mon, 5 Mar 2007 10:19:12 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:46669 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbXCEPTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:19:11 -0500
+Message-ID: <45EC352C.4070508@drzeus.cx>
+Date: Mon, 05 Mar 2007 16:20:12 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Mark Lord <lkml@rtr.ca>
+CC: sdhci-devel@list.drzeus.cx, Adrian Bunk <bunk@stusta.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-       alex@clusterfs.com, suzuki@in.ibm.com
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] sdhci regression in 2.6.21-rc2
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de> <45EB9DC6.8010403@rtr.ca> <45EB9E72.6040107@rtr.ca> <45EBAC73.7010600@drzeus.cx> <45EC2851.7020905@rtr.ca>
+In-Reply-To: <45EC2851.7020905@rtr.ca>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Date: Mon, 5 Mar 2007 15:07:26 +0000
-To: Theodore Tso <tytso@mit.edu>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5 Mar 2007, at 14:37, Theodore Tso wrote:
-> On Sun, Mar 04, 2007 at 11:22:06PM +0000, Anton Altaparmakov wrote:
->> And I specifically did NOT update the initialized size in the inode
->> thus it will remain at its old value thus all new allocated blocks
->> will be considered as present but not initialized thus a read will
->> always return zero whilst a write will do the right thing and pad
->> with zeroes as necessary (if the write is smaller than the block
->> size, etc).
+Mark Lord wrote:
 >
-> 	You're describing a method of doing in-advance preallocation
-> where the filesystem format explicitly has support for this kind of
-> feature in a way that doesn't require pre-zeroing the data blocks in
-> question.
+> But.. in the middle of all of this, we now see the SHDCI code
+> trying to talk to its as-yet-not-restored device, and being rather
+> noisy about it all:
+>
 
-Indeed.
+Not quite. I'd say it's the kernel calling the interrupt handler of a
+currently sleeping device. Since we're seeing this problem I assume the
+kernel's interrupt code isn't aware of PM states?
 
-> 	The question which this subthread was concerned about was
-> whether the kernel should get involved in initializing datablocks in
-> the case where the filesystem format does not have this support, or
-> whether this functionality should continue to be done in userspace.
-> Given that glibc already has to support this for older kernels, I
-> would argue that there's no point putting in generic support for
-> filesystem that can't support a more advanced way of doing things.
+Rgds
 
-Yes, I understood that after I had sent my post...  And yes, I would  
-agree.  If glibc already does this there does not appear to be any  
-value in just moving existing functionality into the kernel.  Simply  
-let "dumb" file systems return ENOSYS and let glibc do it...  And any  
-FS which can do it better can implement the function and then glibc  
-should not go anywhere near it.
-
-Best regards,
-
-	Anton
 -- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
