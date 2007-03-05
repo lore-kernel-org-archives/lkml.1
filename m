@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751259AbXCECHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750946AbXCECN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751259AbXCECHc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 21:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbXCECHb
+	id S1750946AbXCECN0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 21:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbXCECNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 21:07:31 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52914
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751099AbXCECH2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 21:07:28 -0500
-Date: Sun, 04 Mar 2007 18:07:25 -0800 (PST)
-Message-Id: <20070304.180725.126592830.davem@davemloft.net>
-To: bunk@stusta.de
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, vonbrand@inf.utfsm.cl,
-       davem@sunset.davemloft.net, sparclinux@vger.kernel.org, pavel@ucw.cz,
-       oneukum@suse.de, gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
-       craig@codefountain.com, rol@as2917.net, rjw@sisk.pl,
-       david-b@pacbell.net, a.zummo@towertech.it, rtc-linux@googlegroups.com
-Subject: Re: [6/6] 2.6.21-rc2: known regressions
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070305015045.GK3441@stusta.de>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	<20070305015045.GK3441@stusta.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Mar 2007 21:13:25 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:56907 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750946AbXCECNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 21:13:25 -0500
+Date: Mon, 5 Mar 2007 03:13:05 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Marc Perkel <mperkel@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Raid 10 Problems?
+In-Reply-To: <362890.42714.qm@web52503.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.61.0703050312050.23714@yvahk01.tjqt.qr>
+References: <362890.42714.qm@web52503.mail.yahoo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@stusta.de>
-Date: Mon, 5 Mar 2007 02:50:45 +0100
 
-> Subject    : sparc64 compile error due to GENERIC_ISA_DMA removal
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=8097
-> Submitter  : Horst H. von Brand <vonbrand@inf.utfsm.cl>
-> Caused-By  : David S. Miller <davem@sunset.davemloft.net>
->              commit 1b51d3a08b6c80a1e47d4c579c41abbe56cd3c44
-> Status     : unknown
+On Mar 4 2007 15:10, Marc Perkel wrote:
+>> On Mar 4 2007 08:25, Marc Perkel wrote:
+>> >I'm running the latest OpenVZ kernel 2.6.18. I'm
+>> not
+>> >sure if this is a factor or not as the problem
+>> occurs
+>> >without starting any VEs.
+>> >
+>> >I've never used raid 10 before (stripes on top of 2
+>> >mirrors) so I don't have anything to compare this
+>> >with. I'm just wondering if I'm doing something
+>> wrong.
+>> 
+>> Are you using raid1+0 (3 md devices) or raid10 (1
+>> raid device)?
+>> Depending on which, you might want to try the other.
+>
+>
+>I'm using 3 devices. Can you use just one? If so -
+>how?
+>How do I create a raid 10 using mdadm?
 
-Fixed in current GIT.
+mdadm -C /dev/md0 -N nicearray -b internal -e 1.0 -l 10 -n 4 /dev/sd[abcd]1
 
-commit 74bd7d093b8e87f35eaf3b14459b96a0e20d1d10
-Author: David S. Miller <davem@sunset.davemloft.net>
-Date:   Wed Feb 28 13:09:34 2007 -0800
+for example. (See the manpage for details.)
 
-    [SPARC64]: Fix parport_pc build.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
 
+Jan
+-- 
