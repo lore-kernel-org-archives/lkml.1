@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbXCEWGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751345AbXCEWHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751380AbXCEWGt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbXCEWGt
+	id S1751345AbXCEWHU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:07:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbXCEWHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:06:49 -0500
-Received: from mail09.syd.optusnet.com.au ([211.29.132.190]:50900 "EHLO
-	mail09.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750773AbXCEWGr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:06:47 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive  cpu scheduler
-Date: Tue, 6 Mar 2007 08:52:06 +1100
-User-Agent: KMail/1.9.5
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200703041800.53360.kernel@kolivas.org>
-In-Reply-To: <200703041800.53360.kernel@kolivas.org>
+	Mon, 5 Mar 2007 17:07:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42569 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751345AbXCEWHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 17:07:14 -0500
+Message-ID: <45EC92E6.3030503@redhat.com>
+Date: Mon, 05 Mar 2007 16:00:06 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703060852.06729.kernel@kolivas.org>
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@lazybastard.org>
+CC: Arnd Bergmann <arnd@arndb.de>, Ulrich Drepper <drepper@redhat.com>,
+       Anton Altaparmakov <aia21@cam.ac.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <45EB4A55.3060908@redhat.com> <20070305001621.GB18691@lazybastard.org> <200703050136.37181.arnd@arndb.de> <20070305114109.GA454@lazybastard.org>
+In-Reply-To: <20070305114109.GA454@lazybastard.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 March 2007 18:00, Con Kolivas wrote:
-> This message is to announce the first general public release of the
-> "Rotating Staircase DeadLine" cpu scheduler.
+Jörn Engel wrote:
+> Does the allocation have to be persistent beyond lifetime of the file
+> descriptor?  It would be fairly simple to support the write guarantee
+> while the file is open (or rather the inode remains cached) and drop it
+> afterwards.
 
->  A full rollup of the patch for 2.6.20:
-> http://ck.kolivas.org/patches/staircase-deadline/sched-rsdl-0.26.patch
+"The posix_fallocate() function shall ensure that any required storage
+for regular file data starting at offset and continuing for len bytes is
+allocated on the file system storage media."
 
-This patch has been queued at test.kernel.org (thanks Andy Whitcroft).
+I interpret "on the storage media" to mean that it is persistent.
 
-Here is a summary of the first few benchmarks from those tests rsdl 0.26 vs 
-mainline 2.6.20 (However much it is that you value these particular 
-benchmarks...) on amd64 4x:
-
-
-Kernbench (lower elapsed is better);
-=========
-2.6.20:
-Elapsed: 103.058s User: 351.974s System: 36.474s CPU: 376.6%
-2.6.20-rsdl:
-Elapsed: 102.848s User: 359.186s System: 36.666s CPU: 384.6%
-
-
-tbench (higher is better):
-======
-2.6.20:
-Throughput 165.5 MB/sec 1 procs
-2.6.20-rsdl:
-Throughput 261.418 MB/sec 1 procs
-
-
-reaim (higher is better):
-=====
-2.6.20:
-Max Jobs per Minute 500727.27
-2.6.20-rsdl:
-Max Jobs per Minute 612000.00
-
--- 
--ck
+-Eric
