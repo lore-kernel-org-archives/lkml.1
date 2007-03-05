@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751806AbXCECpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbXCEC5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751806AbXCECpQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 21:45:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbXCECpP
+	id S1752605AbXCEC5a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 21:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXCEC53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 21:45:15 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45439 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbXCECpO (ORCPT
+	Sun, 4 Mar 2007 21:57:29 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:46208 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752605AbXCEC53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 21:45:14 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 5 Mar 2007 03:44:52 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] ieee1394: ohci1394: add reg_flush, remove bogus barriers
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.d79e708fd3f5b582@s5r6.in-berlin.de>
-Message-ID: <tkrat.c70ebf03a060487a@s5r6.in-berlin.de>
-References: <tkrat.d79e708fd3f5b582@s5r6.in-berlin.de>
+	Sun, 4 Mar 2007 21:57:29 -0500
+Message-ID: <45EB8718.6050008@vmware.com>
+Date: Sun, 04 Mar 2007 18:57:28 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] arch/i386/kernel/vmi.c must #include <asm/kmap_types.h>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <20070305014733.GO3441@stusta.de>
+In-Reply-To: <20070305014733.GO3441@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> @@ -1521,7 +1513,7 @@ static int ohci_iso_recv_start(struct hp
->  
->  	if (sync != -1) {
->  		/* set sync flag on first DMA descriptor */
-> -		struct dma_cmd *cmd = &recv->block[recv->block_dma];
-> + 		struct dma_cmd *cmd = &recv->block[recv->block_dma];
->  		cmd->control |= cpu_to_le32(DMA_CTL_WAIT);
->  
->  		/* match sync field */
+Adrian Bunk wrote:
+> On Fri, Mar 02, 2007 at 03:00:26AM -0800, Andrew Morton wrote:
+>   
+>> ...
+>> Changes since 2.6.20-mm2:
+>> ...
+>> +vmi-fix-highpte.patch
+>> ...
+>>  2.6.21 queue
+>> ...
+>>     
+>
+> This patch fixes the following compile error:
+>
+>   
 
-Ignore this hunk.
--- 
-Stefan Richter
--=====-=-=== --== --=-=
-http://arcgraph.de/sr/
+Includes changed, perhaps?  No idea why this broke, but fix looks good.
 
+Acked-by: Zachary Amsden <zach@vmware.com>
