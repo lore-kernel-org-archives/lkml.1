@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933529AbXCEPhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933530AbXCEPiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933529AbXCEPhr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933528AbXCEPhr
+	id S933530AbXCEPiG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:38:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933525AbXCEPiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:37:47 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40196 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933529AbXCEPhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:37:46 -0500
-Subject: Re: 2.6.21-rc2-git3 Unstable for me
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Will Trives <will@trivescon.com.au>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <45EC3058.2010903@redhat.com>
-References: <20070305150317.57e62d70@disher.kickcrew>
-	 <45EC3058.2010903@redhat.com>
-Content-Type: text/plain
-Date: Mon, 05 Mar 2007 09:36:25 -0600
-Message-Id: <1173108985.9109.11.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 10:38:06 -0500
+Received: from dev.mellanox.co.il ([194.90.237.44]:35991 "EHLO
+	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933530AbXCEPiF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:38:05 -0500
+Date: Mon, 5 Mar 2007 17:34:44 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Message-ID: <20070305153429.GA4783@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070301093450.GA8508@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 09:59 -0500, Chuck Ebbert wrote:
-> Will Trives wrote:
+> Quoting Ingo Molnar <mingo@elte.hu>:
+> Subject: Re: 2.6.21-rc1: known regressions (part 2)
 > 
-> [adding JFS maintainer to cc:]
+> 
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, [...]
+> 
+> update: f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me too, and 
+> 01363220f5d23ef68276db8974e46a502e43d01d is broken. I too will attempt 
+> to bisect this.
 
-Thanks for adding me to the thread.
+f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, too.
 
-> Some kind of JFS problem?
-
-I don' t know yet.  I was notified of the problem through bugzilla:
-http://bugzilla.kernel.org/show_bug.cgi?id=8128
-
-The problem appears that a non-uptodate page has been marked dirty.  I
-haven't found much in the way of changes between 2.6.20 and the current
-git tree to explain this.  There's this one:
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=22c8ca78f20724676b6006232bf06cc3e9299539
-
-I'm looking for for a caller to ->prepare_write() which marks the page
-dirty without calling ->commit_write().
-
-Will, could you try reverting that patch?  If that fails, narrowing the
-problem down with git-bisect would be helpful, if you have the time.
-
-Thanks,
-Shaggy
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+MST
