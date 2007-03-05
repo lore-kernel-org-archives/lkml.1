@@ -1,133 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbXCERuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbXCER4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752418AbXCERuk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 12:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbXCERuk
+	id S1752827AbXCER4O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 12:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXCER4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 12:50:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53171 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbXCERuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 12:50:39 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] disable NMI watchdog by default
-Date: Mon, 5 Mar 2007 12:42:45 -0500
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@stusta.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20070305122011.GA16133@elte.hu>
-In-Reply-To: <20070305122011.GA16133@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 12:56:14 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3895 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752827AbXCER4N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 12:56:13 -0500
+Date: Mon, 5 Mar 2007 17:56:04 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org, Robin Getz <rgetz@blackfin.uclinux.org>
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+Message-ID: <20070305175604.GB18548@flint.arm.linux.org.uk>
+Mail-Followup-To: Mike Frysinger <vapier.adi@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-serial@vger.kernel.org,
+	Robin Getz <rgetz@blackfin.uclinux.org>
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com> <20070304194632.GC30345@flint.arm.linux.org.uk> <8bd0f97a0703050909n18386114kd2c0b2a108591641@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703051242.45635.lenb@kernel.org>
+In-Reply-To: <8bd0f97a0703050909n18386114kd2c0b2a108591641@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 March 2007 07:20, Ingo Molnar wrote:
+On Mon, Mar 05, 2007 at 12:09:20PM -0500, Mike Frysinger wrote:
+> On 3/4/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> >On Thu, Mar 01, 2007 at 07:03:02PM -0500, Mike Frysinger wrote:
+> >> the console= bootcmd allows for controlling of the initial state of
+> >> flow control by adding/omitting the 'r' suffix ...
+> >
+> >The console command *only* sets the state for the kernel's use of one
+> >serial port.  It does not affect any other serial port, so tying
+> >random RTS behaviours into that command line option is absolutely
+> >silly.
 > 
-> Linus,
-> 
-> Andrew sent the patch below (which is now months old and has been in -mm 
-> for some time) towards Andi's tree 4 weeks ago, but apparently it fell 
-> into a black hole there - the patch is still not upstream!
-> 
-> This is a must-have for v2.6.21
+> true ... so ignoring the original motivation for change i posted, is
+> it really correct for the serial core to be forcing TIOCM_RTS at uart
+> startup even though the uart doesnt have CTSRTS flow control enabled ?
+> in other words, my change is agnostic of the console, and is done for
+> all uarts ... it should prob have a similar change in uart_shutdown()
+> though ...
 
-I agree.
-There are multiple machines not booting because of nmi_watchdog.
-Some of them are documented here:
-http://bugzilla.kernel.org/show_bug.cgi?id=7839
+No idea - it's something that Linux has always done.  Neither do I have
+any idea if changing it will break anyones setup.  However, since I don't
+maintain serial anymore, I'm not about to start playing about with this
+trying to find out.
 
-We used to think this was the "nolapic" bug,
-but it is actually the "nmi_watchdog=0" bug.
+Feel free to submit a patch to akpm to leave RTS alone when CRTSCTS is
+not set.  I'd recommend that it sits in -mm for about 6 months to really
+get an idea if it breaks anything.
 
--Len
-
-> Frankly, i find it ridiculous that i had to write more than 10 emails 
-> about this stupid topic already, while i'm the original author of this 
-> feature to begin with. The "do not enable by default debug features that 
-> break certain systems" concept is obvious to me.
-> 
-> This category of regressions has been introduced by Andi when he made 
-> the NMI watchdog the default in certain scenarios at around v2.6.18 - 
-> over my repeated objections. Andi Cc:-ed :-)
-> 
-> 	Ingo
-> 
-> ----- Forwarded message from Ingo Molnar <mingo@elte.hu> -----
-> 
-> From: Ingo Molnar <mingo@elte.hu>
-> Subject: [patch] disable NMI watchdog by default
-> 
-> there's a new NMI watchdog related problem: KVM crashes on certain 
-> bzImages because ... we enable the NMI watchdog by default (even if the 
-> user does not ask for it) , and no other OS on this planet does that so 
-> KVM doesnt have emulation for that yet. So KVM injects a #GP, which 
-> crashes the Linux guest:
-> 
->  general protection fault: 0000 [#1]
->  PREEMPT SMP
->  Modules linked in:
->  CPU:    0
->  EIP:    0060:[<c011a8ae>]    Not tainted VLI
->  EFLAGS: 00000246   (2.6.20-rc5-rt0 #3)
->  EIP is at setup_apic_nmi_watchdog+0x26d/0x3d3
-> 
-> and no, i did /not/ request an nmi_watchdog on the boot command line!
-> 
-> Solution: turn off that darn thing! It's a debug tool, not a 'make life 
-> harder' tool!!
-> 
-> with this patch the KVM guest boots up just fine.
-> 
-> And with this my laptop (Lenovo T60) also stopped its sporadic hard 
-> hanging (sometimes in acpi_init(), sometimes later during bootup, 
-> sometimes much later during actual use) as well. It hung with both 
-> nmi_watchdog=1 and nmi_watchdog=2, so it's generally the fact of NMI 
-> injection that is causing problems, not the NMI watchdog variant, nor 
-> any particular bootup code.
-> 
-> The patch is unintrusive.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> Index: linux/include/asm-i386/nmi.h
-> ===================================================================
-> --- linux.orig/include/asm-i386/nmi.h
-> +++ linux/include/asm-i386/nmi.h
-> @@ -33,7 +33,7 @@ extern int nmi_watchdog_tick (struct pt_
->  
->  extern atomic_t nmi_active;
->  extern unsigned int nmi_watchdog;
-> -#define NMI_DEFAULT     -1
-> +#define NMI_DEFAULT     0
->  #define NMI_NONE	0
->  #define NMI_IO_APIC	1
->  #define NMI_LOCAL_APIC	2
-> Index: linux/include/asm-x86_64/nmi.h
-> ===================================================================
-> --- linux.orig/include/asm-x86_64/nmi.h
-> +++ linux/include/asm-x86_64/nmi.h
-> @@ -63,7 +63,7 @@ extern int setup_nmi_watchdog(char *);
->  
->  extern atomic_t nmi_active;
->  extern unsigned int nmi_watchdog;
-> -#define NMI_DEFAULT	-1
-> +#define NMI_DEFAULT	0
->  #define NMI_NONE	0
->  #define NMI_IO_APIC	1
->  #define NMI_LOCAL_APIC	2
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
