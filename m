@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbXCESzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932210AbXCES5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932223AbXCESzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 13:55:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932213AbXCESzj
+	id S932210AbXCES5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 13:57:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932213AbXCES5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 13:55:39 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:33118 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932211AbXCESzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 13:55:38 -0500
-From: Olaf Kirch <olaf.kirch@oracle.com>
-To: nfs@lists.sourceforge.net
-Subject: Re: [NFS] [PATCH 001 of 3] knfsd: Use recv_msg to get peer address for NFSD instead of code-copying
-Date: Mon, 5 Mar 2007 19:53:23 +0100
-User-Agent: KMail/1.9.1
-Cc: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070302151748.5226.patches@notabene> <1070302042825.5760@suse.de>
-In-Reply-To: <1070302042825.5760@suse.de>
-Organization: Oracle
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 5 Mar 2007 13:57:22 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:41674 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932210AbXCES5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 13:57:21 -0500
+Subject: Re: [PATCH] fix vsyscall settimeofday
+From: john stultz <johnstul@us.ibm.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070305165648.518964015@mvista.com>
+References: <20070305165648.518964015@mvista.com>
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 10:57:18 -0800
+Message-Id: <1173121038.31232.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703051953.24900.olaf.kirch@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 March 2007 05:28, NeilBrown wrote:
-> The sunrpc server code needs to know the source and destination address
-> for UDP packets so it can reply properly.
-> It currently copies code out of the network stack to pick the pieces out
-> of the skb.
-> This is ugly and causes compile problems with the IPv6 stuff.
+On Mon, 2007-03-05 at 08:56 -0800, Daniel Walker wrote:
+> I've only seen this on x86_64 .
+> 
+> The vsyscall state only gets updated when a timer interrupts comes in . So
+> if the time is set long before the next timer, there will be a period when
+> a gettimeofday() won't reflect the correct time.
+> 
+> I added an explicit update_vsyscall() during the settimeofday(), that way
+> the vsyscall state doesn't get stale.
+> 
+> Any thought John?
 
-... and this IPv6 code could never have worked anyway:
+Oh! Yes, very good catch, Daniel!
+
+Thanks so much!
+-john
 
 
->  	case AF_INET6: {
-...
-> -			rqstp->rq_addrlen = sizeof(struct sockaddr_in);
-... this should have been sizeof(sockaddr_in6)...
+> Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
-> -			/* Remember which interface received this request */
-> -			ipv6_addr_copy(&rqstp->rq_daddr.addr6,
-> -							&skb->nh.ipv6h->saddr);
-.... and this should have copied from daddr, not saddr.
+Acked-by: John Stultz <johnstul@us.ibm.com>
 
-But I find using recvmsg just for getting at the addresses
-a little awkward too. And I think to be on the safe side, you
-should check that you're really looking at a PKTINFO cmsg
-rather than something else.
 
-Olaf
--- 
-Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
-okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
+> ---
+>  kernel/timer.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6.20/kernel/timer.c
+> ===================================================================
+> --- linux-2.6.20.orig/kernel/timer.c
+> +++ linux-2.6.20/kernel/timer.c
+> @@ -861,6 +861,8 @@ int do_settimeofday(struct timespec *tv)
+>  	clock->error = 0;
+>  	ntp_clear();
+> 
+> +	update_vsyscall(&xtime, clock);
+> +
+>  	write_sequnlock_irqrestore(&xtime_lock, flags);
+> 
+>  	/* signal hrtimers about time change */
+
