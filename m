@@ -1,168 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbXCEUvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbXCEUvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932225AbXCEUvT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 15:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbXCEUvT
+	id S932375AbXCEUvo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 15:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbXCEUvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 15:51:19 -0500
-Received: from h155.mvista.com ([63.81.120.155]:62091 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751901AbXCEUvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 15:51:18 -0500
-Message-ID: <45EC82BB.8000709@ru.mvista.com>
-Date: Mon, 05 Mar 2007 23:51:07 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][pata-2.6 tree] pdc202xx_old: rewrite mode programming
- code
-References: <200703040149.46186.bzolnier@gmail.com> <45EC53AE.30808@ru.mvista.com> <200703052138.28508.bzolnier@gmail.com>
-In-Reply-To: <200703052138.28508.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 15:51:44 -0500
+Received: from waste.org ([66.93.16.53]:48441 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932375AbXCEUvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 15:51:43 -0500
+Date: Mon, 5 Mar 2007 14:38:57 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>
+Subject: Re: [PATCH] [RSDL 5/6] sched: implement rsdl cpu scheduler
+Message-ID: <20070305203857.GQ16722@waste.org>
+References: <200703041806.22965.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703041806.22965.kernel@kolivas.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sun, Mar 04, 2007 at 06:06:22PM +1100, Con Kolivas wrote:
+> + * This is the time all tasks within the same priority round robin.
+> + * Set to a minimum of 6ms.
+>   */
+> +#define RR_INTERVAL		((6 * HZ / 1001) + 1)
 
-Bartlomiej Zolnierkiewicz wrote:
+What happens with small HZ? Like 100? I suppose 10ms is a reasonable
+number here. But in general, how well does this scheduler do without a
+time source other than jiffies?
 
->>>[PATCH] pdc202xx_old: rewrite mode programming code
-
->>>This patch is based on the documentation (I would like to thank Promise
->>>for it) and also partially on the older vendor driver.
-
->>>Rewrite mode programming code:
-
->>>* fix XFER_MW_DMA0 timings (they were overclocked, use the official ones)
-
-> official == same as in the docs and vendor driver :-)
-
->>    Erm, those look a bit doubtful...
-
-> I believe that they are correct - please see explanations below.
-
-    Yeah, sorry about that. Only SWDMA timings are suspicious.
-
->>>Index: b/drivers/ide/pci/pdc202xx_old.c
->>>===================================================================
->>>--- a/drivers/ide/pci/pdc202xx_old.c
->>>+++ b/drivers/ide/pci/pdc202xx_old.c
->>[...]
->>>@@ -107,52 +70,23 @@ static int pdc202xx_tune_chipset (ide_dr
->>> 	u8 drive_pci		= 0x60 + (drive->dn << 2);
->>> 	u8 speed		= ide_rate_filter(drive, xferspeed);
-
->>>-	u32			drive_conf;
->>>-	u8			AP, BP, CP, DP;
->>>+	u32			drive_conf = 0;
->>>+	u8			AP = 0, BP = 0, CP = 0;
->>> 	u8			TA = 0, TB = 0, TC = 0;
-
->>>-	if (drive->media != ide_disk &&
->>>-		drive->media != ide_cdrom && speed < XFER_SW_DMA_0)
->>>-		return -1;
->>>+	/*
->>>+	 * TODO: do this once per channel
->>>+	 */
->>>+	if (dev->device != PCI_DEVICE_ID_PROMISE_20246)
->>>+		pdc_old_disable_66MHz_clock(hwif);
-
->>> 	pci_read_config_dword(dev, drive_pci, &drive_conf);
-
->>    This function never uses it as u32 entity, I wonder why read it? Just to 
->>hush a warning? :-)
-
-> It is used for debugging purposes by PDC202XX_DEBUG_DRIVE_INFO
-> (it prints old/new content of drive configuration registers).
-
-    Ah, indeed. That printk() didn't look obvious... :-)
-
-> I think that I'll cover it by #if PDC202XX_DEBUG_DRIVE_INFO to make
-> the aforementioned fact clear and to optimize non-debug case a bit...
-
->>> 	switch(speed) {
->>>-		case XFER_UDMA_6:	speed = XFER_UDMA_5;
->>> 		case XFER_UDMA_5:
->>> 		case XFER_UDMA_4:	TB = 0x20; TC = 0x01; break;
-
->>    The same clocks for UDMA4/5... I wonder if PDC20265/7 indeed supported 
->>UDMA5 (as I'm not seeing any extra clock switching for this mode)?
-
-> Probably chipset snoops WIN_SETFEATURES (w/ SETFEATURES_XFER subcommand)
-> and sets the appropriate timings internally.  It might be possible to drop
-> the timing setup completely for UDMA modes but the vendor driver actually
-> does it so I left it alone for now.
-
-    Actually, their BIOSes also do it and even do some fixups to the table 
-with timings (I forgot on which condition), sooo.. snooping doesn't seem 
-likely (although possible, judging on the UDMA/MWDMA issue).
-
->>> 		case XFER_UDMA_2:	TB = 0x20; TC = 0x01; break;
->>>@@ -161,7 +95,7 @@ static int pdc202xx_tune_chipset (ide_dr
->>> 		case XFER_UDMA_0:
->>> 		case XFER_MW_DMA_2:	TB = 0x60; TC = 0x03; break;
->>> 		case XFER_MW_DMA_1:	TB = 0x60; TC = 0x04; break;
->>>-		case XFER_MW_DMA_0:
->>>+		case XFER_MW_DMA_0:	TB = 0xE0; TC = 0x0F; break;
-
->>    This seems even slower than SWDMA0!
->>    Let's assume that means 7 active cycles and 15 recovery cycles (MWDMA1/2 
->>settings seem to confirm this hypothesis) -- this would give us 720 ns vs the 
->>specified 480. Could you shed some light on what these fields mean? :-/
-
-> The calculations are done in a different way so we get the correct timings:
-
->  7 cycles (== 210 ns) are used for active time
-> 16 cycles (== 480 ns) are used for cycle time
-
-    Ah, indeed, I've erred in MWDMA1/2 calculations. This makes sense then.
-
-> These timings are the maximum possible ones using MB[2:0] and MC[3:0]
-> (please refer to the comments in the code to see how MB/MC map to TB/TC).
-
-    Yeah, I've taken that into account of course.
-
->>> 		case XFER_SW_DMA_2:	TB = 0x60; TC = 0x05; break;
-
->>    Well, this don't look right to me -- we need longer active time (given 
->>that my hypothesis is true)
-
-> MB[2:0] and MC[3:0] are for MWDMA/UDMA timings only
-> (it is impossible to set SWDMA0/1 timings using them).
-
-    That only strenghtens my belief that SWDMA was never intended to be 
-working on these chips, and should just be dropped (or only SWDMA2 supported).
-
-> I suppose that PA[3:0] and PB[4:0] (PIO timings) should be used for SWDMA.
-
-    This seems doubtful bit of course you can never predict what the broken- 
-minded chip designers could come up with... :-)
-
->>> 		case XFER_SW_DMA_1:	TB = 0x80; TC = 0x06; break;
-
->>    This looks more fitting for SWDMA1 -- however, the recovery time seems to 
->>be overly long. It certainly doesn't look like SWDMA1 unless the 
->>active/recover times are not in clock cycles (should be 8 cycles, not 4 or 6).
-
->>> 		case XFER_SW_DMA_0:	TB = 0xC0; TC = 0x0B; break;
->>
->>    Same here -- should be 16 cycles both for active and recovery...
-
-> Fixing SWDMA was not a goal of my changes (my patch is already quite
-> overloaded) but I would happily welcome the incremental patch doing it.
-
-> [ I'm also aware that it may difficult without docs so it still on my
->   personal TODO if nobody beats my to it earlier. ]
-
-    I'd need to find time and get to the real hardware as a mimumum (which I 
-haven't been able to do in the past months... :-)
-
-> Thanks,
-> Bart
-
-MBR, Sergei
+-- 
+Mathematics is the supreme nostalgia of our time.
