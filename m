@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbXCEJyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbXCEJyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932991AbXCEJyt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 04:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXCEJyt
+	id S932800AbXCEJyy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 04:54:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXCEJyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 04:54:49 -0500
-Received: from tag.witbe.net ([81.88.96.48]:58476 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932812AbXCEJyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 04:54:47 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Tejun Heo'" <htejun@gmail.com>
-Cc: "'Jeff Garzik'" <jeff@garzik.org>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       <linux-ide@vger.kernel.org>, "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Eric D. Mudama'" <edmudama@gmail.com>
-Subject: RE: [git patches] libata fixes
-Date: Mon, 5 Mar 2007 10:54:30 +0100
-Organization: AS2917.net
-Message-ID: <00a001c75f0c$47f19750$4b00a8c0@donald>
+	Mon, 5 Mar 2007 04:54:54 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:39274 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932800AbXCEJyw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 04:54:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aPubOgvwgZPFY1QqpPc2s6dNYeZYmE7rW79NcZzLF9M2x7mMY1xTD1UZThXpTXUN+FNZ4iD9lQFkXWiK3FX5LIsx8u9btXazcEGPpQsldXk9U509Lt4h8U5Jk4gJoaz7QAjp4EN96xA9XTZikjv78lUuAyyyKEwXQdHNUSMLBVU=
+Message-ID: <8d158e1f0703050154u3fe576bdpbaab0cfa4ded968f@mail.gmail.com>
+Date: Mon, 5 Mar 2007 09:54:50 +0000
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Subject: Re: [IPW3945] Can't load microcode
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <75b66ecd0703042034l4e50c88fueb31cfa508cf672f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <45EBA6E6.10907@gmail.com>
-Thread-Index: Acde5QPx9/vf518JRze78q69awI9XwAJx2HQ
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Content-Disposition: inline
+References: <8d158e1f0703040841m634b37d4r9f2d4135f5f4dfd6@mail.gmail.com>
+	 <75b66ecd0703042034l4e50c88fueb31cfa508cf672f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 3/5/07, Lee Revell <rlrevell@joe-job.com> wrote:
 
-> Your drive has some issues with NCQ and is scheduled to be blacklisted
-> such that it isn't enabled.  libata used to ignore the 
-> condition but now
-> considers it NCQ protocol violation and fails all pending commands.
+Hi all,
 
-OK, do you need an hdparm report to fully identify the disk ?
- 
-> libata EH should turn NCQ off automatically after a few of the above
-> errors.  I'd love to see how that actually works in the field (full
-> dmesg please).  If it doesn't, it needs fixing.
+Sorry for the confusion :)
+I saw an email from an Intel guy here on this list a couple of weeks
+ago if I recall correctly regarding the Interl drivers for this
+specific card, with a URL, thats why I assumed this was the place to
+look for.
 
-I'll get you one tonite, I don't have access to the machine right now.
+I didnt even know that 2.6.21-rc1/2 had in-tree drivers for this
+network card, which config option is that?
 
-Regards,
-Paul
 
+Oh and like always, thanks for your help :)
+
+Patrick
