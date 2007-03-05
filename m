@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbXCEMlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbXCEMtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932332AbXCEMlt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 07:41:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXCEMlt
+	id S1752776AbXCEMtY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 07:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbXCEMtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 07:41:49 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:55410 "EHLO smtp.ocgnet.org"
+	Mon, 5 Mar 2007 07:49:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45785 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752769AbXCEMls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 07:41:48 -0500
-Date: Mon, 5 Mar 2007 21:39:10 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Bernd Schmidt <bernds_cb1@t-online.de>
-Cc: "Wu, Bryan" <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
-Message-ID: <20070305123910.GA13684@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Bernd Schmidt <bernds_cb1@t-online.de>,
-	"Wu, Bryan" <bryan.wu@analog.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <1172722480.5264.75.camel@roc-desktop> <20070305092346.GB11664@linux-sh.org> <45EC0DC7.8080504@t-online.de>
-MIME-Version: 1.0
+	id S1752773AbXCEMtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 07:49:23 -0500
+Date: Mon, 5 Mar 2007 13:40:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Andi Kleen <ak@suse.de>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch] paravirt: VDSO page is essential
+Message-ID: <20070305124024.GA19338@elte.hu>
+References: <20070305120631.GA14105@elte.hu> <45EC0EB7.7080300@qumranet.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45EC0DC7.8080504@t-online.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <45EC0EB7.7080300@qumranet.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 01:32:07PM +0100, Bernd Schmidt wrote:
-> Paul Mundt wrote:
-> >>+comment "Memory Optimizations"
-> >>+
-> >>+config I_ENTRY_L1
-> >>+	bool "Locate interrupt entry code in L1 Memory"
-> >>+	default y
-> >>+	help
-> >>+	  If enabled interrupt entry code (STORE/RESTORE CONTEXT) is linked
-> >>+	  into L1 instruction memory.(less latency)
-> >>+
-> >Wow, this is really crying out for a special linker section with slightly
-> >more intelligent relocation logic. You should flag the performance
-> >critical parts to be located in L1 memory directly with a section
-> >attribute, rather than making everything selectable. If you overflow you
-> >can simply spill in to main memory.
-> 
-> This is done intentionally, because it's also possible for user code to 
-> be loaded into L1 memory.  We want to give users the option to avoid 
-> filling it all up with kernel code.
-> 
-So then why not make the userspace component of it optional and allow a size
-cap for kernel usage that's configurable if it's enabled? This degree of
-abstraction is almost worse than no abstraction.
+
+* Avi Kivity <avi@qumranet.com> wrote:
+
+> >-#ifdef CONFIG_PARAVIRT
+> >-unsigned int __read_mostly vdso_enabled = 0;
+> >-#else
+> > unsigned int __read_mostly vdso_enabled = 1;
+> >-#endif
+
+> Can't paravirt patch the syscall instruction like it does the rest of 
+> the kernel?
+
+we want to keep the guest as simple and unmodified as possible. And all 
+this #ifdef jungle /will/ bite back. Especially if the change goes in 
+with zero explanation like it did:
+
+    [PATCH] paravirt: Disable vdso by default when CONFIG_PARAVIRT is enabled
+
+    They don't work together and this way even glibc still works.
+
+i rather want an experimental feature (CONFIG_PARAVIRT) broken on some 
+hypervisors for a bit than an entire body of guest OSs getting used to 
+the "you dont have to deal with this VDSO annoyance by default" quirk 
+forever ...
+
+but yes, i agree that the hypervisor should have the ability to patch 
+the syscall instruction of both the hypervisor interface and of the VDSO 
+interface. But this wasnt implemented like that, and the #ifdef quirk 
+just /prevents/ a sane solution like that from ever getting done the 
+right way.
+
+	Ingo
