@@ -1,63 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933544AbXCEQns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933589AbXCEQoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933544AbXCEQns (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 11:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbXCEQnr
+	id S933589AbXCEQoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 11:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933585AbXCEQoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 11:43:47 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:65320 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933544AbXCEQnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 11:43:46 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
-Date: Mon, 5 Mar 2007 17:43:21 +0100
-User-Agent: KMail/1.9.6
-Cc: Aubrey Li <aubreylee@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <1172722480.5264.75.camel@roc-desktop> <200703050947.10379.arnd@arndb.de> <1173086398.5264.194.camel@roc-desktop>
-In-Reply-To: <1173086398.5264.194.camel@roc-desktop>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 11:44:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50537 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933556AbXCEQoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 11:44:18 -0500
+Date: Mon, 5 Mar 2007 17:41:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>,
+       git@vger.kernel.org
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Message-ID: <20070305164133.GA2441@elte.hu>
+References: <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070305161450.GA4972@mellanox.co.il>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703051743.22095.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX1+X3mPW7xHjO+y9mrOSJVx72W+1UghrUG8fjDR
- AScChy0kufv5XHmDZIW3GkrvInIosqgHNc98w5ti3wBl8xRk22
- lK840591oZCaJ5kO8Nmaw==
+In-Reply-To: <20070305161450.GA4972@mellanox.co.il>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 March 2007, Wu, Bryan wrote:
-> Maybe NUMA is a solution, but it is not a wonderful solution.
 
-NUMA doesn't help you. Linux only runs on cache-coherent NUMA,
-which this isn't.
+* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
 
-> In some application product, BF561 core A is running Linux kernel
-> +Applications while BF561 core B is just for some complicated
-> video/audio codec algorithm.
+> > Quoting Ingo Molnar <mingo@elte.hu>:
+> >  git-bisect good      0539771d7236b425f285652f6f297cc7939c8f9a
+> > 
+> >  81450b73dde07f473a4a7208b209b4c8b7251d90 is first bad commit
 > 
-> Any Linux multicore solution in BF561 situation is highly welcome.
+> I have confirmed these two on my system.
 
-You definitely can't use the cache mode in this case, but one idea
-that should make atomic instructions work is to always do these
-on one of the two cores, and use cross-core interrupts to trigger
-an update. It's probably pretty inefficient and you also need to
-do something about atomic updates (spinlock_t and atomic_t) when
-interrupts are disabled.
+you could probably get quite a bit further in bisecting the other 
+breakage, by using the following method:
+
+manully apply the patch below to 81450b73dde and retest. It will most 
+likely work. Then FIRST unapply the patch and mark the tree via 
+'git-bisect good' and continue the bisection. Then try to apply the 
+patch again. If it's already included - ignore the rejected patch. 
+Whenever git-bisect offers you a new commit, just try to apply the 
+patch. Ok? This way you'll be able to avoid the known ACPI breakage, and 
+zoom in on the unknown breakage.
+
+	Ingo
+
+---------------->
+commit f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38
+Author: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Date:   Tue Feb 13 02:35:50 2007 -0500
+
+    ACPI: Disable wake GPEs only once.
+    
+    fixes Suspend/Resume regressions due to recent ACPICA update.
+    
+    Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+diff --git a/drivers/acpi/events/evgpe.c b/drivers/acpi/events/evgpe.c
+index dfac3ec..635ba44 100644
+--- a/drivers/acpi/events/evgpe.c
++++ b/drivers/acpi/events/evgpe.c
+@@ -636,17 +636,6 @@ acpi_ev_gpe_dispatch(struct acpi_gpe_event_info *gpe_event_info, u32 gpe_number)
+ 		}
+ 	}
  
-> Another question: when is the merge point from -mm to linus mainline, is
-> it the same as the merge window after 2.6.21 released?
-
-It's the same.
-
-	Arnd <><
+-	if (!acpi_gbl_system_awake_and_running) {
+-		/*
+-		 * We just woke up because of a wake GPE. Disable any further GPEs
+-		 * until we are fully up and running (Only wake GPEs should be enabled
+-		 * at this time, but we just brute-force disable them all.)
+-		 * 1) We must disable this particular wake GPE so it won't fire again
+-		 * 2) We want to disable all wake GPEs, since we are now awake
+-		 */
+-		(void)acpi_hw_disable_all_gpes();
+-	}
+-
+ 	/*
+ 	 * Dispatch the GPE to either an installed handler, or the control method
+ 	 * associated with this GPE (_Lxx or _Exx). If a handler exists, we invoke
