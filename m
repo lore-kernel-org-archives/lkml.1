@@ -1,58 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933465AbXCENS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933470AbXCENXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933465AbXCENS7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 08:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933467AbXCENS6
+	id S933470AbXCENXG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 08:23:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933472AbXCENXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 08:18:58 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47047 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933461AbXCENS5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 08:18:57 -0500
-Date: Mon, 5 Mar 2007 13:18:42 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-       alex@clusterfs.com, suzuki@in.ibm.com,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070305131842.GC1312@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-	alex@clusterfs.com, suzuki@in.ibm.com,
-	Ulrich Drepper <drepper@redhat.com>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Mar 2007 08:23:06 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:38953 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933470AbXCENXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 08:23:04 -0500
+Date: Mon, 5 Mar 2007 14:23:31 +0100
+From: Lukas Hejtmanek <xhejtman@mail.muni.cz>
+To: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: Suspend to disk bug 2.6.21-rc2-git1
+Message-ID: <20070305132331.GF3693@mail.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <200703032345.33137.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Muni-Spam-TestIP: 81.248.27.59
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 05 Mar 2007 14:22:57 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 03, 2007 at 11:45:32PM +0100, Arnd Bergmann wrote:
-> > I'd be more happy to have the write out zeroes loop in glibc. ?And
-> > glibc needs to have it anyway, for older kernels.
-> 
-> A generic_fallocate makes sense to me iff we can do it in the kernel
-> more significantly more efficiently than in glibc, e.g. by using only
-> a single page in page cache instead of one for each page to be preallocated.
+Hello, 
 
-We can't do that with the current page cache interfaces.  But what
-might make sense is to have a block_dump_prealloc that takes a get_block
-callback to do what you propose.  It still wouldn't be entirely generic,
-but would allow block based filesystems to do a not entirely dumb
-implementation.
+I'm not sure what version did exacly caused susped to disk problems but
+anyway, in 2.6.21-rc2-git1, suspend to disk breaks ACPI. ACPI events do not
+even emit ACPI interrupts. Suspend to ram works nicely.
+
+-- 
+Luká¹ Hejtmánek
