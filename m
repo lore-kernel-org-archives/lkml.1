@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbXCEC0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbXCEC3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752594AbXCEC0f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 21:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbXCEC0f
+	id S1752587AbXCEC3h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 21:29:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbXCEC3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 21:26:35 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42174 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596AbXCEC0d convert rfc822-to-8bit (ORCPT
+	Sun, 4 Mar 2007 21:29:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39048
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750937AbXCEC3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 21:26:33 -0500
-From: Neil Brown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 5 Mar 2007 13:25:18 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <17899.32654.441273.208962@notabene.brown>
-Cc: <jamagallon@ono.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm1
-In-Reply-To: message from Andrew Morton on Sunday March 4
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	<20070305011133.570a9ba8@werewolf-wl>
-	<20070304171737.42c14570.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	Sun, 4 Mar 2007 21:29:36 -0500
+Date: Sun, 04 Mar 2007 18:29:35 -0800 (PST)
+Message-Id: <20070304.182935.74729828.davem@davemloft.net>
+To: bunk@stusta.de
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, vonbrand@inf.utfsm.cl,
+       davem@sunset.davemloft.net, sparclinux@vger.kernel.org
+Subject: Re: [6/6] 2.6.21-rc2: known regressions
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070305022602.GL3441@stusta.de>
+References: <20070305015045.GK3441@stusta.de>
+	<20070304.180725.126592830.davem@davemloft.net>
+	<20070305022602.GL3441@stusta.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday March 4, akpm@linux-foundation.org wrote:
-> On Mon, 5 Mar 2007 01:11:33 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
+From: Adrian Bunk <bunk@stusta.de>
+Date: Mon, 5 Mar 2007 03:26:02 +0100
+
+> On Sun, Mar 04, 2007 at 06:07:25PM -0800, David Miller wrote:
+> > From: Adrian Bunk <bunk@stusta.de>
+> > Date: Mon, 5 Mar 2007 02:50:45 +0100
+> > 
+> > > Subject    : sparc64 compile error due to GENERIC_ISA_DMA removal
+> > > References : http://bugzilla.kernel.org/show_bug.cgi?id=8097
+> > > Submitter  : Horst H. von Brand <vonbrand@inf.utfsm.cl>
+> > > Caused-By  : David S. Miller <davem@sunset.davemloft.net>
+> > >              commit 1b51d3a08b6c80a1e47d4c579c41abbe56cd3c44
+> > > Status     : unknown
+> > 
+> > Fixed in current GIT.
+> > 
+> > commit 74bd7d093b8e87f35eaf3b14459b96a0e20d1d10
+> > Author: David S. Miller <davem@sunset.davemloft.net>
+> > Date:   Wed Feb 28 13:09:34 2007 -0800
+> > 
+> >     [SPARC64]: Fix parport_pc build.
+> >     
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
 > 
-> > On Fri, 2 Mar 2007 03:00:26 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > 
-> > > Temporarily at
-> > > 
-> > >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
-> > > 
-> > > Will appear later at
-> > > 
-> > >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
-> > > 
-> > 
-> > nfs blocks shutdown and reboot.
-> > If I try to do 'service nfs stop', the box hangs, no login, no SysRQ-T or P,
-> > S-U-B works at least.
-> > 
-> 
-> The bug was added by
-> knfsd-use-recv_msg-to-get-peer-address-for-nfsd-instead-of-code-copying.patch.
+> Horst's problem is with the floppy driver and 
+> claim_dma_lock/release_dma_lock in include/asm-sparc64/dma.h .
 
-Bother.......
-Looks like a need a MSG_DONTWAIT in there, don't I.
+Thanks for the clarification, I was thinking of the parport
+problem reported by Meelis Roos.
 
-I'll resend.
-
-Thanks,
-NeilBrown
+I'll look into this.
