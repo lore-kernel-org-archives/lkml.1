@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbXCEJGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbXCEJMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbXCEJGv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 04:06:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbXCEJGv
+	id S1752756AbXCEJMX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 04:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbXCEJMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 04:06:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41926 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752754AbXCEJGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 04:06:50 -0500
-Date: Mon, 5 Mar 2007 09:57:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [patch] KVM: T60 resume fix
-Message-ID: <20070305085718.GA2513@elte.hu>
-References: <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu> <45EBD9BC.4030801@qumranet.com> <20070305084449.GA1706@elte.hu>
+	Mon, 5 Mar 2007 04:12:22 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42652
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752756AbXCEJMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 04:12:22 -0500
+Date: Mon, 05 Mar 2007 01:12:20 -0800 (PST)
+Message-Id: <20070305.011220.112620254.davem@davemloft.net>
+To: lorenzo.milesi@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problem with skbuff.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <29c147bd0703050052x7c8dca4esfc51b66c67b01cb1@mail.gmail.com>
+References: <29c147bd0703050032k71a06603p89d541071be5d656@mail.gmail.com>
+	<20070305.004436.41635733.davem@davemloft.net>
+	<29c147bd0703050052x7c8dca4esfc51b66c67b01cb1@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070305084449.GA1706@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "Lorenzo Milesi" <lorenzo.milesi@gmail.com>
+Date: Mon, 5 Mar 2007 09:52:34 +0100
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Mainline now has DOWN_PREPARE and UP_CANCELED calling 
-> > ->hardware_disable(), and ONLINE calling ->hardware_enabled().  What 
-> > tree are you looking at?
+> That patch applies "fine" to 2.6.20.1:
 > 
-> oh, i just hand-fixed it. I'll check current-git now.
+> linux-2.6.20.1 # patch -p1 --dry-run < /home/maxxer/kerpatch.txt
+> patching file net/ipv6/ndisc.c
+> Hunk #2 succeeded at 559 (offset 2 lines).
+> Hunk #3 succeeded at 638 (offset 4 lines).
+> Hunk #4 succeeded at 1390 (offset 7 lines).
+> 
+> If this is not the correct fix for that bug I have some other problem,
+> because this seems to have fixed for me! ;)
 
-suspend/resume works fine now and there are no warning messages 
-whatsoever (with suspend simulation). Thanks Avi!
-
-	Ingo
+It just means there is a miscalculation somewhere else,
+because the bug that patch was meant to fix was cured
+by a different fix.
