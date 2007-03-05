@@ -1,97 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751699AbXCEPav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbXCEPeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751699AbXCEPav (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbXCEPav
+	id S1752318AbXCEPeh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbXCEPeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:30:51 -0500
-Received: from mail.tmr.com ([64.65.253.246]:58267 "EHLO gaimboi.tmr.com"
+	Mon, 5 Mar 2007 10:34:37 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:48165 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbXCEPau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:30:50 -0500
-Message-ID: <45EC3806.90509@tmr.com>
-Date: Mon, 05 Mar 2007 10:32:22 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1752316AbXCEPeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:34:36 -0500
+Date: Mon, 5 Mar 2007 16:33:51 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Mark Lord <lkml@rtr.ca>
+cc: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       bluez-devel@lists.sourceforge.net, marcel@holtmann.org,
+       Andrew Morton <akpm@osdl.org>,
+       "David S. Miller" <davem@sunset.davemloft.net>
+Subject: Re: [PATCH] Fix 2.6.21 rfcomm lockups (2.6.21 regression)
+In-Reply-To: <45EB0F69.5070002@rtr.ca>
+Message-ID: <Pine.LNX.4.64.0703051619540.17096@twin.jikos.cz>
+References: <45EADD78.1030300@rtr.ca> <45EAE1D6.10900@rtr.ca> <45EB0814.5030306@rtr.ca>
+ <45EB0F69.5070002@rtr.ca>
 MIME-Version: 1.0
-To: Stephen.Clark@seclark.us
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] libata: warn if speed limited due to 40-wire cable (v2)
-References: <45DA44B4.6000209@shaw.ca>	<45E8B42E.7010900@garzik.org> <20070303005433.714d75ad@lxorguk.ukuu.org.uk> <45E9DA80.2080109@tmr.com> <45EB0C95.1070505@seclark.us> <45EB4FA1.7020305@tmr.com> <45EB5B3A.2040009@seclark.us>
-In-Reply-To: <45EB5B3A.2040009@seclark.us>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Clark wrote:
-> Bill Davidsen wrote:
->
->> Stephen Clark wrote:
->>  
->>
->>> Bill Davidsen wrote:
->>>
->>>   
->>>> Alan Cox wrote:
->>>>
->>>>
->>>>     
->>>>>> it seems broken to manipulate xfer_mask after returning from the 
->>>>>> driver's ->mode_filter hook.
->>>>>>
->>>>>> this patch is more than just a speed-limited warning printk, afaics
->>>>>>            
->>>>> I actually suggested that order because the only way the printk 
->>>>> can be
->>>>> done correctly is for it to be the very last test made. Since the 
->>>>> mode
->>>>> filter is not told what mode will be used but just subtracts modes 
->>>>> that
->>>>> are not allowed this should be safe.
->>>>>  
->>>>>       
->>>> Far better to have a drive which works slowly than one which works 
->>>> unreliably.
->>>>
->>>>
->>>>
->>>>     
->>> That would be true if the 40 wire detection was 100% accurate!
->>>   
->> The statement is completely correct, even though the detection may 
->> not be. ;-)
->>
->> With the current set(s) of patches to do better detection, cable 
->> evaluation should be better. But even if not, a slow system is more 
->> useful than one which doesn't work, crashes because of swap i/o 
->> errors, etc.
->>
->>  
->>
-> I have had problems with cable detection on my previous laptop and my 
-> current laptop. It almost made
-> my systems unusable. On my current laptop I was getting a thruput of a 
-> little over 1 mbps instead
-> of the 44 mbps I get with udma set to the correct value. It took hours 
-> to upgrade my laptop from
-> fc5 to fc6 because of this mis detection.
->
-As far as I can see, if you are getting that low a speed, you have other 
-problems. I have a system with old slow drives which are really on a 40 
-pin cable, and they run at UDMA(33). One of the experts in this can 
-undoubtedly tell us more, but your system should run faster than that, 
-mine does, and I really HAVE a 40 pin cable (and drive).
+On Sun, 4 Mar 2007, Mark Lord wrote:
 
-If your system drops to PIO modes, I doubt cable is the only issue, I 
-think there are other issues (acpi comes to mind).
+> This patch prevents total system lockup when using rfcomm devices.
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+I acknowledge that this patch fixes lockup for me too.
+
+When debugging this, I also came across a different bug (spotted by 
+lockdep). Is the patch below applicable?
+
+
+
+From: Jiri Kosina <jkosina@suse.cz>
+
+[Bluetooth] Fix socket locking in hci_sock_dev_event()
+
+hci_sock_dev_event() uses bh_lock_sock() to lock the socket lock.
+This is not deadlock-safe against locking of the same socket lock in
+l2cap_connect_cfm() from softirq context. In addition to that,
+hci_sock_dev_event() doesn't seem to be called from softirq context,
+so it is safe to use lock_sock()/release_sock() instead.
+
+The lockdep warning can be triggered on my T42p simply by switching
+the Bluetooth off by the keyboard button.
+
+=================================
+[ INFO: inconsistent lock state ]
+2.6.21-rc2 #4
+---------------------------------
+inconsistent {in-softirq-W} -> {softirq-on-W} usage.
+khubd/156 [HC0[0]:SC0[0]:HE1:SE1] takes:
+ (slock-AF_BLUETOOTH){-+..}, at: [<e0ca5520>] hci_sock_dev_event+0xa8/0xc5 [bluetooth]
+{in-softirq-W} state was registered at:
+  [<c012d1db>] mark_lock+0x59/0x414
+  [<e0cef688>] l2cap_connect_cfm+0x4e/0x11f [l2cap]
+  [<c012dfd7>] __lock_acquire+0x3e5/0xb99
+  [<e0cef688>] l2cap_connect_cfm+0x4e/0x11f [l2cap]
+  [<c012e7f2>] lock_acquire+0x67/0x81
+  [<e0cef688>] l2cap_connect_cfm+0x4e/0x11f [l2cap]
+  [<c036ee72>] _spin_lock+0x29/0x34
+  [<e0cef688>] l2cap_connect_cfm+0x4e/0x11f [l2cap]
+  [<e0cef688>] l2cap_connect_cfm+0x4e/0x11f [l2cap]
+  [<e0ca17c3>] hci_send_cmd+0x126/0x14f [bluetooth]
+  [<e0ca4ce4>] hci_event_packet+0x729/0xebd [bluetooth]
+  [<e0ca205b>] hci_rx_task+0x2a/0x20f [bluetooth]
+  [<e0ca209d>] hci_rx_task+0x6c/0x20f [bluetooth]
+  [<c012d7be>] trace_hardirqs_on+0x10d/0x14e
+  [<c011ac85>] tasklet_action+0x3d/0x68
+  [<c011abba>] __do_softirq+0x41/0x92
+  [<c011ac32>] do_softirq+0x27/0x3d
+  [<c0105134>] do_IRQ+0x7b/0x8f
+  [<c0103dec>] common_interrupt+0x24/0x34
+  [<c0103df6>] common_interrupt+0x2e/0x34
+  [<c0248e65>] acpi_processor_idle+0x1b3/0x34a
+  [<c0248e68>] acpi_processor_idle+0x1b6/0x34a
+  [<c010232b>] cpu_idle+0x39/0x4e
+  [<c04bab0c>] start_kernel+0x372/0x37a
+  [<c04ba42b>] unknown_bootoption+0x0/0x202
+  [<ffffffff>] 0xffffffff
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
+ net/bluetooth/hci_sock.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
+index f928d2b..71f5cfb 100644
+--- a/net/bluetooth/hci_sock.c
++++ b/net/bluetooth/hci_sock.c
+@@ -656,7 +656,7 @@ static int hci_sock_dev_event(struct not
+ 		/* Detach sockets from device */
+ 		read_lock(&hci_sk_list.lock);
+ 		sk_for_each(sk, node, &hci_sk_list.head) {
+-			bh_lock_sock(sk);
++			lock_sock(sk);
+ 			if (hci_pi(sk)->hdev == hdev) {
+ 				hci_pi(sk)->hdev = NULL;
+ 				sk->sk_err = EPIPE;
+@@ -665,7 +665,7 @@ static int hci_sock_dev_event(struct not
+ 
+ 				hci_dev_put(hdev);
+ 			}
+-			bh_unlock_sock(sk);
++			release_sock(sk);
+ 		}
+ 		read_unlock(&hci_sk_list.lock);
+ 	}
+
 
