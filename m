@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751153AbXCEWYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751552AbXCEW0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751153AbXCEWYz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbXCEWYz
+	id S1751552AbXCEW0B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:26:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXCEW0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:24:55 -0500
-Received: from mail14.syd.optusnet.com.au ([211.29.132.195]:51733 "EHLO
-	mail14.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751153AbXCEWYy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:24:54 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Al Boldi <a1426z@gawab.com>
-Subject: Re: [ck] Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Date: Tue, 6 Mar 2007 09:10:06 +1100
-User-Agent: KMail/1.9.5
-Cc: Markus =?iso-8859-1?q?T=F6rnqvist?= <mjt@nysv.org>,
-       ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
-References: <200703042335.26785.a1426z@gawab.com> <200703052329.45217.kernel@kolivas.org> <200703052123.01095.a1426z@gawab.com>
-In-Reply-To: <200703052123.01095.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 17:26:01 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2485 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751552AbXCEWZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 17:25:59 -0500
+Date: Mon, 5 Mar 2007 22:25:48 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-ID: <20070305222548.GA4946@ucw.cz>
+References: <20070218183805.5a4fd813.khali@linux-fr.org> <20070228213803.GA4877@ucw.cz> <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302114747.GB1212@srcf.ucam.org> <20070302151055.d2665d66.khali@linux-fr.org> <20070302141840.GA3441@srcf.ucam.org> <20070302220454.a0c66d04.khali@linux-fr.org> <20070302211251.GA10035@srcf.ucam.org> <20070303105316.d51e032d.khali@linux-fr.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703060910.06343.kernel@kolivas.org>
+In-Reply-To: <20070303105316.d51e032d.khali@linux-fr.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 March 2007 05:23, Al Boldi wrote:
-> Con Kolivas wrote:
-> > Gears just isn't an interactive task and just about anything but gears
-> > would be a better test case since its behaviour varies wildly under
-> > different combinations of graphics cards, memory bandwidth, cpu and so
-> > on.
->
-> What about reflect?  It has the same problem.
->
-> > I'm not even sure what you're trying to prove with gears.
->
-> RSDL fairness.
->
-> Ok, try this:
-> # gears & gears &
-> Both run smoothly.
-> # nice gears & nice gears &
-> Both run smoothly.
->
-> Now:
-> # gears & nice -10 gears &
-> Both stutter.
->
-> But:
-> # gears & nice --10 gears &
-> Both run smoothly.
->
-> Something looks fishy with nice levels.
+Hi!
 
-Hah I just wish gears would go away. If I get hardware where it runs at just 
-the right speed it looks like it doesn't move at all. On other hardware the 
-wheels go backwards and forwards where the screen refresh rate is just 
-perfectly a factor of the frames per second (or something like that). 
+> > > Why would we end up with an overestimation if we check the I/O ports at
+> > > boot time? Do you have concrete cases in mind?
+> > 
+> > ACPI will often describe large operation regions, but won't necessarily 
+> > touch all of them. Effectively, every codepath would have to be walked 
+> > through at boot time and checked for io access.
+> 
+> Is there anything preventing us from doing such a walk and pre-allocate
+> all the I/O ranges? I am not familiar with the ACPI code at all, would
+> you possibly propose a patch doing that?
 
-This is not a cpu scheduler test and you're inferring that there are cpu 
-scheduling artefacts based on an application that has bottlenecks at 
-different places depending on the hardware combination. 
+ACPI AML is probably turing-complete: I'm afraid you are trying to
+solve the halting problem (-> impossible).
+						Pavel
 
-To imply something is fishy with nice levels, do a test that _only_ uses cpu 
-(and not the bus, memory bandwidth, the gpu and has driver interactions) and 
-prove that there is something wrong. What happens to other resources on the 
-machine the cpu scheduler has no control over. The -rt tree tries to address 
-these factors for example but it's a huge - some would say insurmountable - 
-thing to try and manage at all levels on a general purpose operating system. 
-The cpu is proportioned out very fairly with rsdl on both quota and latency 
-according to nice vs cpu usage. When something is fully cpu bound on rsdl its 
-average and maximum latency will be greater than something that only 
-intermittently uses cpu. The (somewhat lengthy and not easily digestible) 
-docs describe how you can model what these latencies will be.
-
-> Otherwise, your scheduler looks great!
-
-Thanks!
+> 
+> If we can't do that, the overestimation approach might still work. I
+> wonder if it would cause problems in practice. If it does, we're back
+> to Pavel's AML lock.
+> 
+> -- 
+> Jean Delvare
 
 -- 
--ck
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
