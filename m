@@ -1,72 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933489AbXCEOh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbXCEOjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933489AbXCEOh7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 09:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933484AbXCEOh7
+	id S932439AbXCEOjy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 09:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932882AbXCEOjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 09:37:59 -0500
-Received: from thunk.org ([69.25.196.29]:56045 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932744AbXCEOh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 09:37:57 -0500
-Date: Mon, 5 Mar 2007 09:37:03 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-Cc: Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-       alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070305143703.GF26781@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Anton Altaparmakov <aia21@cam.ac.uk>,
-	Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Christoph Hellwig <hch@infradead.org>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-	alex@clusterfs.com, suzuki@in.ibm.com
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com> <8A8B28AA-3481-4CFF-AEAA-0CB4CCDFF9F9@cam.ac.uk>
+	Mon, 5 Mar 2007 09:39:54 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:33574 "EHLO
+	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932439AbXCEOjx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 09:39:53 -0500
+X-BigFish: VP
+X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
+Date: Mon, 5 Mar 2007 15:39:11 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: discuss@x86-64.org
+cc: "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] x86_64: add reporting of SVM flags to /proc/cpuinfo
+Message-ID: <20070305143911.GG30318@amd.com>
+References: <20070305143601.GF30318@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070305143601.GF30318@amd.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 05 Mar 2007 14:39:12.0420 (UTC)
+ FILETIME=[0A9ABE40:01C75F34]
+X-WSS-ID: 69F2F4192X01975720-01-01
+Content-Type: multipart/mixed;
+ boundary="lrZ03NoBR/3+SXJZ"
 Content-Disposition: inline
-In-Reply-To: <8A8B28AA-3481-4CFF-AEAA-0CB4CCDFF9F9@cam.ac.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 04, 2007 at 11:22:06PM +0000, Anton Altaparmakov wrote:
-> And I specifically did NOT update the initialized size in the inode  
-> thus it will remain at its old value thus all new allocated blocks  
-> will be considered as present but not initialized thus a read will  
-> always return zero whilst a write will do the right thing and pad  
-> with zeroes as necessary (if the write is smaller than the block  
-> size, etc).
 
-Anton,
+--lrZ03NoBR/3+SXJZ
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-	You're describing a method of doing in-advance preallocation
-where the filesystem format explicitly has support for this kind of
-feature in a way that doesn't require pre-zeroing the data blocks in
-question.
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-	The question which this subthread was concerned about was
-whether the kernel should get involved in initializing datablocks in
-the case where the filesystem format does not have this support, or
-whether this functionality should continue to be done in userspace.
-Given that glibc already has to support this for older kernels, I
-would argue that there's no point putting in generic support for
-filesystem that can't support a more advanced way of doing things.
+This patch adds the advanced SVM reporting to /proc/cpuinfo on the x86_64
+architecture.
 
-	Regards,
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-						- Ted
+-- 
+Joerg Roedel
+Operating System Research Center
+AMD Saxony LLC & Co. KG
+
+--lrZ03NoBR/3+SXJZ
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: attachment;
+ filename=x86_64-report-svm-features.patch
+Content-Transfer-Encoding: 7bit
+
+diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
+index 3d98b69..4bd06a6 100644
+--- a/arch/x86_64/kernel/setup.c
++++ b/arch/x86_64/kernel/setup.c
+@@ -612,6 +612,13 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ 
+ 	/* RDTSC can be speculated around */
+ 	clear_bit(X86_FEATURE_SYNC_RDTSC, &c->x86_capability);
++
++	/* SVM specific flags and information */
++	if (cpu_has(c, X86_FEATURE_SVM)) {
++		c->svm.svm_rev = (__u8)(cpuid_eax(0x8000000a) & 0xff);
++		c->svm.svm_asids = cpuid_ebx(0x8000000a);
++		c->svm.svm_flags = cpuid_edx(0x8000000a);
++	}
+ }
+ 
+ static void __cpuinit detect_ht(struct cpuinfo_x86 *c)
+@@ -992,6 +999,11 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		/* nothing */	/* constant_tsc - moved to flags */
+ 	};
+ 
++	static char *x86_svm_flags[] = {
++		"npt",
++		"lbrv",
++		"svmlock",
++	};
+ 
+ #ifdef CONFIG_SMP
+ 	if (!cpu_online(c-cpu_data))
+@@ -1076,9 +1088,27 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 				else
+ 					seq_printf(m, " [%d]", i);
+ 			}
++		seq_printf(m, "\n");
++	}
++
++	if (cpu_has(c, X86_FEATURE_SVM)) {
++		unsigned i, first=1;
++		seq_printf(m, "SVM features\t: rev=%hd #asids=%u flags=(",
++				c->svm.svm_rev, c->svm.svm_asids);
++		for (i=0;i<ARRAY_SIZE(x86_svm_flags);++i) {
++			if (c->svm.svm_flags & (1 << i)) {
++				seq_printf(m,"%s", first ? "" : " ");
++				first = 0;
++				if (x86_svm_flags[i])
++					seq_printf(m, "%s", x86_svm_flags[i]);
++				else
++					seq_printf(m, "[%d]", i);
++			}
++		}
++		seq_printf(m, ")\n");
+ 	}
+ 
+-	seq_printf(m, "\n\n");
++	seq_printf(m, "\n");
+ 
+ 	return 0;
+ }
+diff --git a/include/asm-x86_64/cpufeature.h b/include/asm-x86_64/cpufeature.h
+index 0b3c686..869d8a5 100644
+--- a/include/asm-x86_64/cpufeature.h
++++ b/include/asm-x86_64/cpufeature.h
+@@ -90,6 +90,7 @@
+ /* More extended AMD flags: CPUID level 0x80000001, ecx, word 6 */
+ #define X86_FEATURE_LAHF_LM	(6*32+ 0) /* LAHF/SAHF in long mode */
+ #define X86_FEATURE_CMP_LEGACY	(6*32+ 1) /* If yes HyperThreading not valid */
++#define X86_FEATURE_SVM         (6*32+ 2) /* Secure Virtual Machine */
+ 
+ #define cpu_has(c, bit)                test_bit(bit, (c)->x86_capability)
+ #define boot_cpu_has(bit)      test_bit(bit, boot_cpu_data.x86_capability)
+diff --git a/include/asm-x86_64/processor.h b/include/asm-x86_64/processor.h
+index 76552d7..514520b 100644
+--- a/include/asm-x86_64/processor.h
++++ b/include/asm-x86_64/processor.h
+@@ -43,6 +43,15 @@
+  */
+ #define current_text_addr() ({ void *pc; asm volatile("leaq 1f(%%rip),%0\n1:":"=r"(pc)); pc; })
+ 
++ /*
++  * SVM flags subtype - used in struct cpuinfo_x86
++  */
++struct cpu_svm_info {
++	__u8 svm_rev;
++	__u32 svm_asids;
++	__u32 svm_flags;
++};
++
+ /*
+  *  CPU type and hardware bug flags. Kept separately for each CPU.
+  */
+@@ -73,6 +82,8 @@ struct cpuinfo_x86 {
+ 	__u8	booted_cores;	/* number of cores as seen by OS */
+ 	__u8	phys_proc_id;	/* Physical Processor id. */
+ 	__u8	cpu_core_id;	/* Core id. */
++
++	struct cpu_svm_info svm; /* SVM specific feature flags */
+ #endif
+ } ____cacheline_aligned;
+ 
+
+--lrZ03NoBR/3+SXJZ--
+
+
