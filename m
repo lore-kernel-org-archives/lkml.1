@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752362AbXCECA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbXCECBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752362AbXCECA7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 21:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbXCECA4
+	id S1752562AbXCECBB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 21:01:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbXCEBto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 21:00:56 -0500
-Received: from lazybastard.de ([212.112.238.170]:55151 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752259AbXCEBzF (ORCPT
+	Sun, 4 Mar 2007 20:49:44 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49945 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751964AbXCEBtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:55:05 -0500
-Date: Mon, 5 Mar 2007 00:16:21 +0000
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Anton Altaparmakov <aia21@cam.ac.uk>, Arnd Bergmann <arnd@arndb.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-       alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070305001621.GB18691@lazybastard.org>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com>
-Mime-Version: 1.0
+	Sun, 4 Mar 2007 20:49:31 -0500
+Date: Mon, 5 Mar 2007 02:49:32 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>, adaplas@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] make fb_deferred_io_mkwrite() static
+Message-ID: <20070305014932.GA3441@stusta.de>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45EB4A55.3060908@redhat.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 March 2007 14:38:13 -0800, Ulrich Drepper wrote:
-> 
-> When you do it like this, who can the kernel/filesystem *guarantee* that
-> when the data is written there actually is room on the harddrive?
-> 
-> What you described seems like using truncate/ftruncate to increase the
-> file's size.  That is not at all what posix_fallocate is for.
-> posix_fallocate must make sure that the requested blocks on the disk are
-> reserved (allocated) for the file's use and that at no point in the
-> future will, say, a msync() fail because a mmap(MAP_SHARED) page has
-> been written to.
+On Fri, Mar 02, 2007 at 03:00:26AM -0800, Andrew Morton wrote:
+>...
+> Changes since 2.6.20-mm2:
+>...
+> +fbdev-mm-deferred-io-support.patch
+>...
+>  fbdev updates
+>...
 
-That actually causes an interesting problem for compressing filesystems.
-The space consumed by blocks depends on their contents and how well it
-compresses.  At the moment, the only option I see to support
-posix_fallocate for LogFS is to set an inode flag disabling compression,
-then allocate the blocks.
 
-But if the file already contains large amounts of compressed data, I
-have a problem.  Disabling compression for a range within a file is not
-supported, so I can only return an error.  But which one?
+This patch makes the needlessly global fb_deferred_io_mkwrite() static.
 
-Jörn
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
--- 
-A surrounded army must be given a way out.
--- Sun Tzu
+---
+--- linux-2.6.21-rc2-mm1/drivers/video/fb_defio.c.old	2007-03-04 21:55:57.000000000 +0100
++++ linux-2.6.21-rc2-mm1/drivers/video/fb_defio.c	2007-03-04 21:56:07.000000000 +0100
+@@ -48,8 +48,8 @@
+ }
+ 
+ /* vm_ops->page_mkwrite handler */
+-int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+-					struct page *page)
++static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
++				  struct page *page)
+ {
+ 	struct fb_info *info = vma->vm_private_data;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+
