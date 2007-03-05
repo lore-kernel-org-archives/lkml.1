@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933473AbXCENYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965072AbXCENYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933473AbXCENYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 08:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933482AbXCENYS
+	id S965072AbXCENYh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 08:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965257AbXCENYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 08:24:18 -0500
-Received: from nz-out-0506.google.com ([64.233.162.229]:1969 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933473AbXCENYR (ORCPT
+	Mon, 5 Mar 2007 08:24:37 -0500
+Received: from lazybastard.de ([212.112.238.170]:34231 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965153AbXCENYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 08:24:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NQB832jPcDpdvOmeuvH7PRiCKyhYr3L8tou//JqzNQfKLXHoc/ZmaXy9Qk50uvRB1XCeikOgRpwKCKOClhLnDgyg2CL3u90CqbSXdiFEbPOoEFkr8M2MYGk6u+kjQ86qBxwFdbsJeMmBGjjrTLgleWNLjX45Q5D9jy69CwW6oAA=
-Message-ID: <8d158e1f0703050524w6e376cd3hffda0b05da9c78af@mail.gmail.com>
-Date: Mon, 5 Mar 2007 13:24:16 +0000
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: sata_sil problems with recent kernels
-Cc: "Dale Blount" <linux-kernel@dale.us>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <45EB98E4.9070307@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 08:24:35 -0500
+Date: Mon, 5 Mar 2007 12:49:45 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-ID: <20070305114945.GB454@lazybastard.org>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com> <20070305001621.GB18691@lazybastard.org> <CDA7A0DF-D744-416F-83B1-76C148B46A5F@cam.ac.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <1172250027.15179.16.camel@dale.velocity.net>
-	 <1172602444.5420.17.camel@dale.velocity.net>
-	 <1172698758.30931.18.camel@dale.velocity.net>
-	 <45EB98E4.9070307@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CDA7A0DF-D744-416F-83B1-76C148B46A5F@cam.ac.uk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/5/07, Tejun Heo <htejun@gmail.com> wrote:
-> Dale Blount wrote:
+On Mon, 5 March 2007 00:32:14 +0000, Anton Altaparmakov wrote:
+> 
+> I don't know how your compression algorithm works [...]
 
->
-> This will probably included in the next -stable iteration.  Thanks.
->
-> --
-> tejun
+LogFS is designed for flash media, so it does not have to worry much
+about reducing disk seeks.  It is log-structured, which simplifies
+compression further.
 
+When writing a block, it basically compresses it and appends it to the
+log.  Writes only have to be byte-aligned, so no space is lost for
+padding.
 
-I can confirm that sata_sil is working great under 2.6.21-rc1.
-I have an onboard Silicon Image SATA RAID controller and a PCI Add-on
-card, also with silicon image chipset.
+The bad news for posix_fallocate() is that even if libc is smart enough
+to write random data, mmap() can still cause problems.  If the VM
+decides to write a given page twice, the second write compresses better
+and the medium has filled up between the two writes, the users will have
+fun.
 
-2x500GB Samsung
-1x400GB Samsung
+Jörn
 
-I am getting maximum troughput and no errors of any kind.
-
-
-Patrick
+-- 
+Joern's library part 9:
+http://www.scl.ameslab.gov/Publications/Gus/TwelveWays.html
