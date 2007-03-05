@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752009AbXCEW4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbXCEW6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752009AbXCEW4c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXCEW4c
+	id S1752068AbXCEW6d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXCEW6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:56:32 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52877
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752009AbXCEW4b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:56:31 -0500
-Date: Mon, 05 Mar 2007 14:56:29 -0800 (PST)
-Message-Id: <20070305.145629.28789919.davem@davemloft.net>
-To: schwidefsky@de.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       heiko.carstens@de.ibm.com
-Subject: Re: [S390] Use generic bug.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070305224354.GN22630@skybase>
-References: <20070305224354.GN22630@skybase>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 5 Mar 2007 17:58:33 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:23937 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752068AbXCEW6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 17:58:32 -0500
+Message-ID: <45ECA092.8080605@tls.msk.ru>
+Date: Tue, 06 Mar 2007 01:58:26 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Christopher.Prest@rogers.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: (trivia) remove useless typecast around `jif' variable
+References: <20070305161251.AE2C97FAA@paltus.tls.msk.ru> <663650480-1173118082-cardhu_blackberry.rim.net-718749525-@bxe041-cell01.bisx.prod.on.blackberry>
+In-Reply-To: <663650480-1173118082-cardhu_blackberry.rim.net-718749525-@bxe041-cell01.bisx.prod.on.blackberry>
+X-Enigmail-Version: 0.94.1.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Date: Mon, 5 Mar 2007 23:43:54 +0100
+Christopher.Prest@rogers.com wrote:
+> Yes sounds correct.  How many other places are being casted as well?
 
-> +	if (__builtin_constant_p(__ret_warn_on)) {	\
-> +		if (__ret_warn_on)			\
-> +			__EMIT_BUG(BUGFLAG_WARNING);	\
+Care to find them? :)
 
-I see we'll have this construct on powerpc, parisc and now s390.
+This one took my attention by a chance.  I looked at various other files,
+at least in fs/proc/, but don't see any other places like this.
 
-But if it's going to trigger essentially at compile time, I
-think it's much better to BUILD_BUG_ON() in this case instead
-of counting on the code path to actually run and the user to
-notice and report the kernel log message.
+/mjt
