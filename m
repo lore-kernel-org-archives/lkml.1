@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbXCEIwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbXCEIyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752149AbXCEIwi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 03:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXCEIwh
+	id S1752184AbXCEIyD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 03:54:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXCEIyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 03:52:37 -0500
-Received: from ik-out-1112.google.com ([66.249.90.180]:35395 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbXCEIwh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 03:52:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VwhKsSHyuIqDb6Mz3Ws3Z/WtjAQcltDljgRvsk42qAoin64kxWIfkQ/2laszRI+3We9mc91a8OW2KBFa0lot6ZwP2wLx7jiG+3fsIRVMrtb4JtW4pTBBODKlOhHCoBiT/7ZRLrHKj9D/CLjJyoVWjPGaofzAYeARzPaxLLWd/zo=
-Message-ID: <29c147bd0703050052x7c8dca4esfc51b66c67b01cb1@mail.gmail.com>
-Date: Mon, 5 Mar 2007 09:52:34 +0100
-From: "Lorenzo Milesi" <lorenzo.milesi@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: Problem with skbuff.c
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070305.004436.41635733.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 03:54:02 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53300 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752151AbXCEIyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 03:54:01 -0500
+Date: Mon, 5 Mar 2007 09:44:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [patch] KVM: T60 resume fix
+Message-ID: <20070305084449.GA1706@elte.hu>
+References: <20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu> <45EBD9BC.4030801@qumranet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <29c147bd0703050032k71a06603p89d541071be5d656@mail.gmail.com>
-	 <20070305.004436.41635733.davem@davemloft.net>
+In-Reply-To: <45EBD9BC.4030801@qumranet.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The fix for that bug was put into the kernel long before
-> 2.6.20, so 2.6.20 all by itself should work just fine.
 
-That patch applies "fine" to 2.6.20.1:
+* Avi Kivity <avi@qumranet.com> wrote:
 
-linux-2.6.20.1 # patch -p1 --dry-run < /home/maxxer/kerpatch.txt
-patching file net/ipv6/ndisc.c
-Hunk #2 succeeded at 559 (offset 2 lines).
-Hunk #3 succeeded at 638 (offset 4 lines).
-Hunk #4 succeeded at 1390 (offset 7 lines).
+> >> That is already CPU_ONLINE in my tree (and in the pull request sent 
+> >> to Linus a couple of days ago).
+> >
+> > that solves the resume problem - but doesnt solve the CPU_DEAD issue 
+> > of sending an IPI to an already offline CPU. Might be a better idea 
+> > to do it in CPU_DOWN_PREPARE? (and then to also add a 
+> > CPU_DOWN_FAILED branch?)
+> 
+> Mainline now has DOWN_PREPARE and UP_CANCELED calling 
+> ->hardware_disable(), and ONLINE calling ->hardware_enabled().  What 
+> tree are you looking at?
 
-If this is not the correct fix for that bug I have some other problem,
-because this seems to have fixed for me! ;)
+oh, i just hand-fixed it. I'll check current-git now.
 
-Thanks
+> [but I do see the need for DOWN_FAILED now. Off to find a resumable 
+> machine...]
 
-Maxxer
+yeah, both DOWN_FAILED and UP_FAILED might trigger when some other bug 
+prevents a resume.
+
+	Ingo
