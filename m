@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXCEUwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXCEU6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932078AbXCEUwn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 15:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932390AbXCEUwn
+	id S932409AbXCEU6K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 15:58:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933200AbXCEU6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 15:52:43 -0500
-Received: from mailin1.k-net.dk ([82.211.192.11]:3980 "EHLO mailin1.k-net.dk"
+	Mon, 5 Mar 2007 15:58:09 -0500
+Received: from mbox.ssc.unict.it ([151.97.230.9]:46851 "EHLO ssc.unict.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932401AbXCEUwl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 15:52:41 -0500
-Subject: Re: PROBLEM: "BUG:" when resuming from suspend-to-ram
-From: Kristian =?ISO-8859-1?Q?Gr=F8nfeldt_S=F8rensen?= <kriller@vkr.dk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-In-Reply-To: <200703051932.29996.rjw@sisk.pl>
-References: <1172601905.5428.28.camel@localhost.localdomain>
-	 <1172781250.5042.1.camel@localhost.localdomain>
-	 <d120d5000703050644x741564v625f0aa7a58c60ad@mail.gmail.com>
-	 <200703051932.29996.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Date: Mon, 05 Mar 2007 21:51:38 +0100
-Message-Id: <1173127898.10294.1.camel@miraculinux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1.1 
+	id S932409AbXCEU6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 15:58:08 -0500
+From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Subject: [PATCH 10/11] uml - activate_fd: return ENOMEM only when appropriate
+Date: Mon, 05 Mar 2007 21:49:09 +0100
+To: Andrew Morton <akpm@osdl.org>
+Cc: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Message-Id: <20070305204909.9072.33957.stgit@americanbeauty.home.lan>
+In-Reply-To: <20070305204229.9072.17032.stgit@americanbeauty.home.lan>
+References: <20070305204229.9072.17032.stgit@americanbeauty.home.lan>
+Content-Type: text/plain; charset=utf-8; format=fixed
+User-Agent: StGIT/0.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from quoted-printable to 8bit by alpha.home.local id l25KwZZJ008274
 
-On Mon, 2007-03-05 at 19:32 +0100, Rafael J. Wysocki wrote:
-> On Monday, 5 March 2007 15:44, Dmitry Torokhov wrote:
-> > On 3/1/07, Kristian Grønfeldt Sørensen <kriller@vkr.dk> wrote:
-> > > On Thu, 2007-03-01 at 15:25 -0500, Dmitry Torokhov wrote:
-> > > > On 3/1/07, Kristian Grønfeldt Sørensen <kriller@vkr.dk> wrote:
-> > > > >
-> > > > > Hmmm.
-> > > > >
-> > > > > Now i get this BUG:
-> > > > >
-> > > >
-> > > > Does it die the same way if you just unload the button driver without
-> > > > suspending?
-> > > >
-> > >
-> > > No. Tried unloading and loading 30 times after each other. No problems
-> > > at all.
-> > >
-> > 
-> > I wonder what causes unloading of the ACPI button driver during resume...
-> 
-> Let me guess: pm-utils in OpenSUSE 10.2.
-> 
-Nope. acpi-support for Debian unstable.
+From: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
 
-/Kristian
+Avoid returning ENOMEM in case of a duplicate IRQ - ENOMEM was saved into err
+earlier.
+
+Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+---
+
+ arch/um/kernel/irq.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/um/kernel/irq.c b/arch/um/kernel/irq.c
+index 50a288b..dbf2f5b 100644
+--- a/arch/um/kernel/irq.c
++++ b/arch/um/kernel/irq.c
+@@ -142,6 +142,7 @@ int activate_fd(int irq, int fd, int type, void *dev_id)
+ 				     .events 		= events,
+ 				     .current_events 	= 0 } );
+ 
++	err = -EBUSY;
+ 	spin_lock_irqsave(&irq_lock, flags);
+ 	for (irq_fd = active_fds; irq_fd != NULL; irq_fd = irq_fd->next) {
+ 		if ((irq_fd->fd == fd) && (irq_fd->type == type)) {
 
 
