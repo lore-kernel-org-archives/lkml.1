@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751555AbXCEPT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbXCEPUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751555AbXCEPT7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:19:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXCEPT7
+	id S1752202AbXCEPUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXCEPUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:19:59 -0500
-Received: from rtr.ca ([64.26.128.89]:3957 "EHLO mail.rtr.ca"
+	Mon, 5 Mar 2007 10:20:22 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:52471 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbXCEPT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:19:58 -0500
-Message-ID: <45EC351B.2020206@rtr.ca>
-Date: Mon, 05 Mar 2007 10:19:55 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	id S1751346AbXCEPUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:20:20 -0500
+Message-ID: <45EC352A.7060802@austin.ibm.com>
+Date: Mon, 05 Mar 2007 09:20:10 -0600
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: sdhci-devel@list.drzeus.cx, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] sdhci regression in 2.6.21-rc2
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de> <45EB9DC6.8010403@rtr.ca> <45EB9E72.6040107@rtr.ca> <45EBAC73.7010600@drzeus.cx> <45EC2851.7020905@rtr.ca>
-In-Reply-To: <45EC2851.7020905@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Nick Piggin <npiggin@suse.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       clameter@engr.sgi.com, mingo@elte.hu, arjan@infradead.org,
+       mbligh@mbligh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E8594B.6020904@austin.ibm.com> <20070305032116.GA29678@wotan.suse.de>
+In-Reply-To: <20070305032116.GA29678@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Pierre Ossman wrote:
->> Mark Lord wrote:
->>> Another regression, for Pierre Ossman this time.
->>>
->>> My syslog gets spammed like this (below) on suspend/resume (to RAM) 
->>> cycles.
->>> Worked fine, without all of the noise, in all previous kernels up to
->>> 2.6.20+.
->>>
->>
->> This looks like a PCI configuration issue.
+> But if you don't require a lot of higher order allocations anyway, then
+> guest fragmentation caused by ballooning doesn't seem like much problem.
+
+If you only need to allocate 1 page size and smaller allocations then no it's not a 
+problem.  As soon as you go above that it will be.  You don't need to go all the way 
+up to MAX_ORDER size to see an impact, it's just increasingly more severe as you get 
+away from 1 page and towards MAX_ORDER.
+
 > 
-> To me, it looks like a buggy driver "resume" sequence.
-> The low-level SDHCI driver is trying to use the device
-> before the PM/PCI stuff has restored the pre-suspend state.
-...
+> If you need higher order allocations, then ballooning is bad because of
+> fragmentation, so you need memory unplug, so you need higher order
+> allocations. Goto 1.
 
-I've dug a bit deeper, instrumenting the driver,
-and found/fixed the problem.
+Yes, it's a closed loop.  But hotplug isn't the only one that needs higher order 
+allocations.  In fact it's pretty far down the list.  I look at it like this, a lot 
+of users need high order allocations for better performance and things like on-demand 
+hugepages.  As a bonus you get memory hot-remove.
 
-The interrupt is shared with another device, which resumes
-earlier than the sdhci controller, and generates an interrupt.
+> Balooning probably does skew memory management stats and watermarks, but
+> that's just because it is implemented as a module. A couple of hooks
+> should be enough to allow things to be adjusted?
 
-The sdhci interrupt handler runs, sees 0xffffffff in its own
-device's interrupt status, and tries to handle it..
-The reason for the 0xffffffff is that the device is still
-suspended, and *all* regs are reading back 0xffffffff.
+That is a good idea independent of the current discussion.
 
-So.. the suspend routine should de-register the irq handler,
-and the resume routine should re-register it again.
-
-Or perhaps a simpler kludge like this one, which fixes it for me:
-
-Signed-off-by:  Mark Lord <mlord@pobox.com>
----
---- linux/drivers/mmc/sdhci.c.orig	2007-03-02 15:06:31.000000000 -0500
-+++ linux/drivers/mmc/sdhci.c	2007-03-05 10:13:51.000000000 -0500
-@@ -994,7 +994,7 @@
- 
- 	intmask = readl(host->ioaddr + SDHCI_INT_STATUS);
- 
--	if (!intmask) {
-+	if (!intmask || intmask == 0xffffffff) {
- 		result = IRQ_NONE;
- 		goto out;
- 	}
