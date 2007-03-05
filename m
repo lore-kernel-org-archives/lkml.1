@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbXCEKfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbXCEKip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933054AbXCEKfm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 05:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbXCEKfm
+	id S933055AbXCEKip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 05:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933057AbXCEKip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 05:35:42 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33979 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933054AbXCEKfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 05:35:41 -0500
-Message-ID: <45EBF1E3.4030003@qumranet.com>
-Date: Mon, 05 Mar 2007 12:33:07 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Mon, 5 Mar 2007 05:38:45 -0500
+Received: from ip-svs-1.Informatik.Uni-Oldenburg.DE ([134.106.12.126]:47927
+	"EHLO schlidder.svs.informatik.uni-oldenburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933051AbXCEKin (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 05:38:43 -0500
+Date: Mon, 5 Mar 2007 11:38:40 +0100
+From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATA] Failed to set xfermode on LITE-ON LTR-48246S
+Message-ID: <20070305103840.GA4381@titan.lahn.de>
+Mail-Followup-To: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070227135838.GA4328@titan.lahn.de> <45EB9822.40300@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [patch] KVM: T60 resume fix
-References: <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu> <45EBD9BC.4030801@qumranet.com> <20070305084449.GA1706@elte.hu> <20070305085718.GA2513@elte.hu> <45EBE288.8010101@qumranet.com> <20070305100537.GA9175@elte.hu>
-In-Reply-To: <20070305100537.GA9175@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EB9822.40300@gmail.com>
+Organization: UUCP-Freunde Lahn e.V.
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Avi Kivity <avi@qumranet.com> wrote:
->
->   
->>> suspend/resume works fine now and there are no warning messages 
->>> whatsoever (with suspend simulation). Thanks Avi!
->>>       
->> Where do I find this suspend simulation?  Sounds like a great suspend 
->> debugging tool.
->>     
->
-> it's just the simple hack below.
->
->
->   
+Helo Tejun!
 
-Thanks, I'll put it to good use.  Are you planning to upstream it?  Not 
-for 2.6.21, presumably ;)
+On Mon, Mar 05, 2007 at 01:10:10PM +0900, Tejun Heo wrote:
+> Philipp Matthias Hahn wrote:
+> > As reported by John Williams and others like in
+> > http://www.mail-archive.com/linux-ide@vger.kernel.org/msg03088.html
+> > I too have a problem with 2.6.20.1 using ata_piix not detecting the
+> > CD-ROM any more. Applying the patch from
+> > http://lkml.org/lkml/2007/2/12/24 did not help, but additionally
+> > applying
+> > http://readlist.com/lists/vger.kernel.org/linux-kernel/45/228948.html
+> > made it work. Here's the relevant extra debugging output:
+> 
+> * Did it work with previous kernels?
 
+Previously I was using the old IDE modules just fine, it was only with
+2.6.20 that I did the switch to libata and encountered the problem.
 
+> * Does applying the attached patch over unpatched 2.6.20.1 fix the problem?
 
+Yes, it seems to fix it. (testes on top of the first patch mentioned
+above, but witheout the second one.).
+If I should test it as the sole patche, just mail me again please.
+
+BYtE
+Philipp
 -- 
-error compiling committee.c: too many arguments to function
-
+  / /  (_)__  __ ____  __ Philipp Hahn
+ / /__/ / _ \/ // /\ \/ /
+/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
