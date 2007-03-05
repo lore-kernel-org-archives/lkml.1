@@ -1,79 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbXCEDQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbXCEDRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752611AbXCEDQm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 22:16:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbXCEDQm
+	id S1752616AbXCEDRO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 22:17:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbXCEDRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 22:16:42 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:62030 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752611AbXCEDQl (ORCPT
+	Sun, 4 Mar 2007 22:17:14 -0500
+Received: from fed1rmmtao104.cox.net ([68.230.241.42]:48957 "EHLO
+	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752607AbXCEDRN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 22:16:41 -0500
-Date: Sun, 04 Mar 2007 22:16:29 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
- scheduler
-In-reply-to: <Pine.LNX.4.64.0703041831010.1190@montezuma.windriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: Zwane Mwaikambo <zwane@infradead.org>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>
-Message-id: <200703042216.29618.gene.heskett@gmail.com>
-Organization: very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703041800.53360.kernel@kolivas.org>
- <200703040911.16845.gene.heskett@gmail.com>
- <Pine.LNX.4.64.0703041831010.1190@montezuma.windriver.com>
-User-Agent: KMail/1.9.6
+	Sun, 4 Mar 2007 22:17:13 -0500
+From: Junio C Hamano <junkio@cox.net>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.0.3
+References: <7vwt2ec32p.fsf@assigned-by-dhcp.cox.net>
+	<7vabz0j7td.fsf@assigned-by-dhcp.cox.net>
+cc: linux-kernel@vger.kernel.org
+Date: Sun, 04 Mar 2007 19:17:11 -0800
+In-Reply-To: <7vabz0j7td.fsf@assigned-by-dhcp.cox.net> (Junio C. Hamano's
+	message of "Tue, 27 Feb 2007 00:58:22 -0800")
+Message-ID: <7vlkic2xc8.fsf_-_@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 March 2007, Zwane Mwaikambo wrote:
->On Sun, 4 Mar 2007, Gene Heskett wrote:
->> >There will be times when the mainline scheduler feels more
->> > interactive than this scheduler, and that is because it has
->> > significant unfairness granted towards interactive tasks. This
->> > degree of unfairness in an effort to maintain interactivity has been
->> > criticised and causes problems in certain environments with both
->> > loss of fairness, relative starvation and is not entirely
->> > predictable.
->>
->> Well, in 20 minutes of playing, I am so far VERY impressed, the kmail
->> composer is typing to the screen in unison to my keystrokes, where
->> with the older version it often went away for 10 or more seconds at a
->> time, then displayed the last sentence I had typed in one (or 2
->> sometimes) swell foop.  Now I can back up and correct a typo in real
->> time whereas before, it was often faster if the typo was half a line
->> back, and the key repeat so darned slow it was often over a second per
->> character cell moved, to go grab the mouse, position the cursor on the
->> typo, click, wait for the indicator to move, and then fix it.  Typing
->> is now pleasurable again.  Key repeats seem to remain at the set in
->> the bios key repeat speed.  Amazing.  I do believe you have given me
->> back my machine.
->
->What are the specs on your hardware?
+The latest maintenance release GIT 1.5.0.3 is available at the
+usual places:
 
-XP-2800 Athlon on a biostar board whose model number I've forgotten. 1 GB 
-of dual channel 400 mhz ram running at 333 because this athlon falls over 
-at 400mhz fsb settings.  480GB of drives in 3 pieces.
+  http://www.kernel.org/pub/software/scm/git/
 
-Running a jaton 3dForce 6200-256 video card with nvidia driver, which does 
-the opengl stuff better than the ati 9200se I took out a week ago, but 
-this nvidia card is several times harder on the cpu when tvtime is 
-running than the ati was.  There are other cards in this box, 1394, nic, 
-usb expander, but that is the main list of power burners.
+  git-1.5.0.3.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.0.3.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.0.3.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.0.3-1.$arch.rpm	(RPM)
 
-Its dmesg clock is just short of 2100. and:
-Calibrating delay using timer specific routine.. 4177.82 BogoMIPS 
-(lpj=2088910)
+GIT v1.5.0.3 Release Notes
+==========================
 
-In comparison to an XP-1400 I had before, this is nowhere near 2x faster.
+Fixes since v1.5.0.2
+--------------------
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
+* Bugfixes
+
+  - 'git.el' honors the commit coding system from the configuration.
+
+  - 'blameview' in contrib/ correctly digs deeper when a line is
+    clicked.
+
+  - 'http-push' correctly makes sure the remote side has leading
+    path.  Earlier it started in the middle of the path, and
+    incorrectly.
+
+  - 'git-merge' did not exit with non-zero status when the
+    working tree was dirty and cannot fast forward.  It does
+    now.
+
+  - 'cvsexportcommit' does not lose yet-to-be-used message file.
+
+  - int-vs-size_t typefix when running combined diff on files
+    over 2GB long.
+
+  - 'git apply --whitespace=strip' should not touch unmodified
+    lines.
+
+  - 'git-mailinfo' choke when a logical header line was too long.
+
+  - 'git show A..B' did not error out.  Negative ref ("not A" in
+    this example) does not make sense for the purpose of the
+    command, so now it errors out.
+
+  - 'git fmt-merge-msg --file' without file parameter did not
+    correctly error out.
+
+  - 'git archimport' barfed upon encountering a commit without
+    summary.
+
+  - 'git index-pack' did not protect itself from getting a short
+    read out of pread(2).
+
+  - 'git http-push' had a few buffer overruns.
+
+  - Build dependency fixes to rebuild fetch.o when other headers
+    change.
+
+* Documentation updates
+
+  - user-manual updates.
+
+  - Options to 'git remote add' were described insufficiently.
+
+  - Configuration format.suffix was not documented.
+
+  - Other formatting and spelling fixes.
+
+
+----------------------------------------------------------------
+
+Shortlog since v1.5.0.2
+-----------------------
+
+Alexandre Julliard (1):
+      git.el: Set the default commit coding system from the repository config.
+
+Aneesh Kumar K.V (1):
+      blameview: Fix the browse behavior in blameview
+
+Christian Schlotter (1):
+      Documentation: Correct minor typo in git-add documentation.
+
+Eygene Ryabinkin (2):
+      http-push.c::lock_remote(): validate all remote refs.
+      Another memory overrun in http-push.c
+
+Gerrit Pape (2):
+      git-cvsexportcommit: don't cleanup .msg if not yet committed to cvs.
+      Fix quoting in update hook template
+
+J. Bruce Fields (6):
+      Documentation: mention module option to git-cvsimport
+      user-manual: reset to ORIG_HEAD not HEAD to undo merge
+      user-manual: ensure generated manual references stylesheet
+      user-manual: insert earlier of mention content-addressable architecture
+      user-manual: how to replace commits older than most recent
+      user-manual: more detailed merge discussion
+
+Jim Meyering (1):
+      diff --cc: integer overflow given a 2GB-or-larger file
+
+Johannes Schindelin (3):
+      fetch.o depends on the headers, too.
+      builtin-archive: use RUN_SETUP
+      Document the config variable format.suffix
+
+Junio C Hamano (5):
+      git-apply: do not fix whitespaces on context lines.
+      Documentation: git-remote add [-t <branch>] [-m <branch>] [-f] name url
+      Start preparing Release Notes for 1.5.0.3
+      git-merge: fail correctly when we cannot fast forward.
+      GIT 1.5.0.3
+
+Linus Torvalds (2):
+      mailinfo: do not get confused with logical lines that are too long.
+      git-show: Reject native ref
+
+Matthias Kestenholz (1):
+      Fix git-gc usage note
+
+Michael Coleman (2):
+      Fix minor typos/grammar in user-manual.txt
+      builtin-fmt-merge-msg: fix bugs in --file option
+
+Michael Poole (1):
+      Correct ordering in git-cvsimport's option documentation
+
+Paolo Bonzini (1):
+      git-archimport: support empty summaries, put summary on a single line.
+
+Ramsay Allan Jones (5):
+      Fix a "label defined but unreferenced" warning.
+      Fix an "implicit function definition" warning.
+      Fix some "comparison is always true/false" warnings.
+      Fix a "pointer type missmatch" warning.
+      Unset NO_C99_FORMAT on Cygwin.
+
+Sergey Vlasov (3):
+      Documentation/build-docdep.perl: Fix dependencies for included asciidoc files
+      Documentation/git-quiltimport.txt: Fix labeled list formatting
+      Documentation/git-send-email.txt: Fix labeled list formatting
+
+Shawn O. Pearce (1):
+      index-pack: Loop over pread until data loading is complete.
+
+Theodore Ts'o (1):
+      Fix git-show man page formatting in the EXAMPLES section
+
+Uwe Kleine-König (1):
+      Include config.mak in doc/Makefile
+
+Yasushi SHOJI (1):
+      glossary: Add definitions for dangling and unreachable objects
+
+
