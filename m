@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751654AbXCEUDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751755AbXCEUFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751654AbXCEUDL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 15:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbXCEUDK
+	id S1751755AbXCEUFr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 15:05:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXCEUFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 15:03:10 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:39488 "EHLO e4.ny.us.ibm.com"
+	Mon, 5 Mar 2007 15:05:46 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:62416 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbXCEUDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 15:03:06 -0500
-Message-ID: <45EC7773.7020603@us.ibm.com>
-Date: Mon, 05 Mar 2007 12:02:59 -0800
-From: Mingming Cao <cmm@us.ibm.com>
-User-Agent: Mozilla Thunderbird 1.0.8-1.4.1 (X11/20060420)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, nscott@aconex.com,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [RFC] Heads up on sys_fallocate()
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com> <20070305122742.GA11486@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20070305122742.GA11486@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751551AbXCEUFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 15:05:45 -0500
+Date: Mon, 5 Mar 2007 12:05:23 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       akpm@linux-foundation.org, tony.luck@intel.com
+Subject: Re: debug registers and fork
+Message-ID: <20070305200523.GB9468@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070226235154.GB19630@frankl.hpl.hp.com> <200703051825.16473.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703051825.16473.ak@suse.de>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
->>>On Fri, 02 Mar 2007 09:40:54 +1100
->>>Nathan Scott <nscott@aconex.com> wrote:
->>>
->>>
->>>
->>>>On Thu, 2007-03-01 at 14:25 -0800, Andrew Morton wrote:
->>>>
->>>>
->>>>>On Fri, 2 Mar 2007 00:04:45 +0530
->>>>>"Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
->>>>>
->>>>>
->>>>>
->>>>>>This is to give a heads up on few patches that we will be soon coming up
->>>>>>with. These patches implement a new system call sys_fallocate() and a
->>>>>>new inode operation "fallocate", for persistent preallocation. The new
->>>>>>system call, as Andrew suggested, will look like:
->>>>>>
->>>>>>asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len);
->>>>>
->>>>>...
->>>>>
->>>>>I'd agree with Eric on the "command" flag extension.
->>>>
->>>>Seems like a separate syscall would be better, "command" sounds
->>>>a bit ioctl like, especially if that command is passed into the
->>>>filesystems..
->>>>
->>>
->>>
->>>madvise, fadvise, lseek, etc seem to work OK.
->>>
->>>I get repeatedly traumatised by patch rejects whenever a new syscall gets
->>>added, so I'm biased.
->>>
->>>The advantage of a command flag is that we can add new modes in the future
->>>without causing lots of churn, waiting for arch maintainers to catch up,
->>>potentially adding new compat code, etc.
->>>
->>>Rename it to "mode"? ;)
->>>
->>
->>I am wondering if it is useful to add another mode to advise block 
->>allocation policy? Something like indicating which physical block/block 
->>group to allocate from (goal), and whether ask for strict contigous 
->>blocks. This will help preallocation or reservation to choose the right 
->>blocks for the file.
-> 
->   Yes, I also think this would be useful so you can "guide"
-> preallocation for things like defragmentation (e.g. preallocate space
-> for the file being defragmented and move the file to it).
-> 
-> 									Honza
-Yep, I think it makes sense to use preallocation for defragmentation.
-After all both preallocation and defragmentation shall call underlying 
-filesystem multiple block allocator to try to allocate a chunk of 
-contiguous blocks on disk. ext4 online defrag implementation by Takashi 
-already support to choose a "goal" allocation block to guide the ext4 
-block allocator to place the defraged file is a specific location.
+Andi,
 
-Passing a little bit more hint to sys_fallocate() (i.e, goal block, 
-and/or whether the goal block is important over the size of prealloc 
-extent), might make it more useful for the orginial goal (get contigous 
-and guranteed blocks) and for defragmentation.
+On Mon, Mar 05, 2007 at 06:25:16PM +0100, Andi Kleen wrote:
+> On Tuesday 27 February 2007 00:51, Stephane Eranian wrote:
+> > 
+> > I have come across an issue with a monitoring using the
+> > hardware debug registers on ia64/i386/x86-64.
+> > 
+> > It seems that the way debug registers are inherited across fork
+> > differs between ia-64 and i386/x86-64. On ia-64, the debug registers
+> > are NEVER inherited in the child. The copy_thread() routine clears
+> > the necessary thread flags to avoid reloading the debug registers in
+> > the child.
+> > 
+> > Now, on x86-64, it appears that the TIF_DEBUG flag is inherited via
+> > setup_thread_stack(). By virtue of dup_task_struct() the debug registers
+> > get copied into the child task on fork. So the child has active breakpoints,
+> > unless I am mistaken somewhere.
+> > 
+> > Given the way the ptrace() interface works, I would tend to
+> > think that the ia-64 way is the correct one. Any comment?
+> 
+> IA64 is probably correct, but changing this might break existing programs.
 
-Regards,
-Mingming
+This could only break programs using the hardware debug registers and following
+across clone.
+
+> Would that be worth the change? What advantage would you have from it.
+> 
+It would be nice to have a uniform behavior across architectures on this.
+this is purely on OS policy descision. As I said, there is enough support
+in ptrace (and probably in utrace) to catch the clone event and setup the
+breakpoints in the new task if requested.
+
+The reason I detected this is because the pfmon tool was entering some
+infinite loop on SIGTRAP searching for breakpoints it had not set on a
+child process. The pfmon tool was designed on IA-64, so it did not assume
+breakpoints were systematically inherited quite the contrary as it provides
+an option to explicitely inherit them.
+
+> > Furthermore, on i386/x86-64, when switching out from a task with TIF_DEBUG
+> > enabled to another which does not, it seems we do not clear the debug
+> > registers (at least dr7) so they become inactive.
+> 
+> You mean they leak? Perhaps they should be cleared.
+> 
+Well, a ptrace expert pointed out to me that there is a controlled
+leak to the next thread. That leak is terminated in traps.c by noticing
+that you get a breakpoint trap but in a task which has debugreg[7]=0.
+In that case, the kernel simply clears dr7 to shut down any subsequent
+breakpoint traps. That kind of lazy stop, saves having to clear dr7 in
+__switch_to() when switching from a task using the debug registers to
+one which does not. i still have to convince myself this works in all cases,
+especially if that task suddenly starts using the debug registers and program
+the other debug registers BEFORE dr7 (assuming it was zero).
+
+-- 
+-Stephane
