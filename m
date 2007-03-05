@@ -1,56 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750946AbXCECN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750951AbXCECNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750946AbXCECN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 21:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbXCECNZ
+	id S1750951AbXCECNv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 21:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbXCECNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 21:13:25 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:56907 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750946AbXCECNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 21:13:25 -0500
-Date: Mon, 5 Mar 2007 03:13:05 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Marc Perkel <mperkel@yahoo.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Raid 10 Problems?
-In-Reply-To: <362890.42714.qm@web52503.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.61.0703050312050.23714@yvahk01.tjqt.qr>
-References: <362890.42714.qm@web52503.mail.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Sun, 4 Mar 2007 21:13:51 -0500
+Received: from mail.clusterfs.com ([206.168.112.78]:33609 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbXCECNu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 21:13:50 -0500
+Date: Mon, 5 Mar 2007 10:13:44 +0800
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Dmitriy Monakhov <dmonakhov@sw.ru>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] ext3: dirindex error pointer issues
+Message-ID: <20070305021344.GO6662@schatzie.adilger.int>
+Mail-Followup-To: Dmitriy Monakhov <dmonakhov@sw.ru>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+References: <87lkidf5y0.fsf@sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87lkidf5y0.fsf@sw.ru>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mar 04, 2007  17:18 +0300, Dmitriy Monakhov wrote:
+>  - ext3_dx_find_entry() exit with out setting proper error pointer
+>  - do_split() exit with out setting proper error pointer
+>    it is realy painful because many callers contain folowing code:
+>            de = do_split(handle,dir, &bh, frame, &hinfo, &retval);
+>            if (!(de))
+>                         return retval;
+>            <<< WOW retval wasn't changed by do_split(), so caller failed
+>            <<< but return SUCCESS :)
+>  - Rearrange do_split() error path. Current error path is realy ugly, all
+>    this up and down jump stuff doesn't make code easy to understand.
+> 
+> Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+> ---
+>  fs/ext3/namei.c |   26 +++++++++++++++-----------
+>  fs/ext4/namei.c |   26 +++++++++++++++-----------
+>  2 files changed, 30 insertions(+), 22 deletions(-)
+> 
+> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+> index 49159f1..1a52586 100644
+> --- a/fs/ext3/namei.c
+> +++ b/fs/ext3/namei.c
+> @@ -969,6 +969,7 @@ static struct buffer_head * ext3_dx_find_entry(struct dentry *dentry,
+>  				  (block<<EXT3_BLOCK_SIZE_BITS(sb))
+>  					  +((char *)de - bh->b_data))) {
+>  				brelse (bh);
+> +				*err = ERR_BAD_DX_DIR;
+>  				goto errout;
+>  			}
+>  			*res_dir = de;
 
-On Mar 4 2007 15:10, Marc Perkel wrote:
->> On Mar 4 2007 08:25, Marc Perkel wrote:
->> >I'm running the latest OpenVZ kernel 2.6.18. I'm
->> not
->> >sure if this is a factor or not as the problem
->> occurs
->> >without starting any VEs.
->> >
->> >I've never used raid 10 before (stripes on top of 2
->> >mirrors) so I don't have anything to compare this
->> >with. I'm just wondering if I'm doing something
->> wrong.
->> 
->> Are you using raid1+0 (3 md devices) or raid10 (1
->> raid device)?
->> Depending on which, you might want to try the other.
->
->
->I'm using 3 devices. Can you use just one? If so -
->how?
->How do I create a raid 10 using mdadm?
+I have no objection to this change (by principle of least surprise) but
+I don't know if it fixes a real problem.  The one caller of this function
+treats ERR_BAD_DX_DIR the same as bh == NULL.
 
-mdadm -C /dev/md0 -N nicearray -b internal -e 1.0 -l 10 -n 4 /dev/sd[abcd]1
+> @@ -1134,9 +1135,9 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+>  	char *data1 = (*bh)->b_data, *data2;
+>  	unsigned split;
+>  	struct ext3_dir_entry_2 *de = NULL, *de2;
+> -	int	err;
+> +	int	err = 0;
+>  
+> -	bh2 = ext3_append (handle, dir, &newblock, error);
+> +	bh2 = ext3_append (handle, dir, &newblock, &err);
 
-for example. (See the manpage for details.)
+Why don't we just remove "err" entirely and use *error to avoid any risk
+of setting err and not returning it in error?  Also reduces stack usage
+that tiny little bit.
 
 
-Jan
--- 
+In ext3_dx_add_entry() it appears like we should "goto journal_error"
+to report an error after the failed call to do_split(), instead of just
+"goto cleanup" so that we report an error in the filesystem.  Not 100%
+sure of this.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
