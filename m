@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbXCEQBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbXCEQBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933578AbXCEQBF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 11:01:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933582AbXCEQBA
+	id S933590AbXCEQBo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 11:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933593AbXCEQBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 11:01:00 -0500
-Received: from mail.tmr.com ([64.65.253.246]:58295 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933578AbXCEQAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 11:00:49 -0500
-Message-ID: <45EC3F25.5060308@tmr.com>
-Date: Mon, 05 Mar 2007 11:02:45 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Mon, 5 Mar 2007 11:01:43 -0500
+Received: from tcsfw4.tcs-sec.com ([65.127.223.133]:49057 "EHLO
+	tcsfw4.tcs-sec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933587AbXCEQBH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 11:01:07 -0500
+Reply-To: <vyekkirala@trustedcs.com>
+From: "Venkat Yekkirala" <vyekkirala@trustedcs.com>
+To: "'Eric Paris'" <eparis@parisplace.org>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Cc: <davem@davemloft.net>, <jmorris@namei.org>,
+       "Venkat Yekkirala" <vyekkirala@tcsfw4.tcs-sec.com>,
+       <cxzhang@watson.ibm.com>, <sds@tycho.nsa.gov>
+Subject: RE: [PATCH] xfrm audit hook misplaced in pfkey_delete and xfrm_del_sa
+Date: Mon, 5 Mar 2007 10:00:51 -0600
+Message-ID: <001701c75f3f$73937350$cc0a010a@tcssec.com>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] disable NMI watchdog by default
-References: <20070114092926.GA14465@elte.hu>
-In-Reply-To: <20070114092926.GA14465@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook CWS, Build 9.0.2416 (9.0.2911.0)
+Importance: Normal
+In-Reply-To: <1172866536.31047.32.camel@localhost.localdomain>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1441
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Subject: [patch] disable NMI watchdog by default
-> 
-> there's a new NMI watchdog related problem: KVM crashes on certain 
-> bzImages because ... we enable the NMI watchdog by default (even if the 
-> user does not ask for it) , and no other OS on this planet does that so 
-> KVM doesnt have emulation for that yet. So KVM injects a #GP, which 
-> crashes the Linux guest:
-> 
->  general protection fault: 0000 [#1]
->  PREEMPT SMP
->  Modules linked in:
->  CPU:    0
->  EIP:    0060:[<c011a8ae>]    Not tainted VLI
->  EFLAGS: 00000246   (2.6.20-rc5-rt0 #3)
->  EIP is at setup_apic_nmi_watchdog+0x26d/0x3d3
-> 
-> and no, i did /not/ request an nmi_watchdog on the boot command line!
-> 
-> Solution: turn off that darn thing! It's a debug tool, not a 'make life 
-> harder' tool!!
-> 
-> with this patch the KVM guest boots up just fine.
-> 
-> And with this my laptop (Lenovo T60) also stops its sporadic hard 
-> hanging (sometimes in acpi_init(), sometimes later during bootup, 
-> sometimes much later during actual use) as well. It hung with both 
-> nmi_watchdog=1 and nmi_watchdog=2, so it's generally the fact of NMI 
-> injection that is causing problems, not the NMI watchdog variant, nor 
-> any particular bootup code.
-> 
-> The patch is unintrusive.
+> Inside pfkey_delete and xfrm_del_sa the audit hooks were not called if
+> there was any permission/security failures in attempting to do the del
+> operation (such as permission denied from security_xfrm_state_delete).
+> This patch moves the audit hook to the exit path such that 
+> all failures
+> (and successes) will actually get audited.
 
-I'm missing something, what limits this to systems running under kvm?
+Not sure ALL failures are being audited this way elsewhere, but I guess
+they would catchup in course of time.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+Acked-by: Venkat Yekkirala <vyekkirala@trustedcs.com> 
