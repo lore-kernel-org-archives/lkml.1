@@ -1,210 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569AbXCEA3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbXCEA3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569AbXCEA3Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 19:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXCEA3Z
+	id S1752579AbXCEA3u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 19:29:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXCEA30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 19:29:25 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:57470 "EHLO
+	Sun, 4 Mar 2007 19:29:26 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:62124 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbXCEA3X (ORCPT
+	with ESMTP id S1752570AbXCEA3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 19:29:23 -0500
-Message-Id: <20070305002632.960582899@arndb.de>
+	Sun, 4 Mar 2007 19:29:24 -0500
+Message-Id: <20070305002632.836555844@arndb.de>
 References: <20070305002024.875968120@arndb.de>
 User-Agent: quilt/0.45-1
-Date: Mon, 05 Mar 2007 01:20:26 +0100
+Date: Mon, 05 Mar 2007 01:20:25 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-kernel@vger.kernel.org
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Subject: [RFC PATCH 2/3] use hrtimer in select and pselect
-Content-Disposition: inline; filename=implement-select-using-hrtimer.patch
+Subject: [RFC PATCH 1/3] introduce schedule_timeout_hr
+Content-Disposition: inline; filename=add-schedule-timeout-hr.diff
 X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX1/ZqxcmlqX5y2ET/wyPQkmIZUypGxLIib9AoSC
- xmlp4pQdhHA8TgSamD5AOVa8MdDfs+PzPzFx+xvCwX00pdXnfR
- KV6yNCFDJo92Gx4HuZzSg==
+X-Provags-ID2: V01U2FsdGVkX18GD6gPpDXN6/GcOs+XUZpRHRnqBPo9WL72fnP
+ ySja5jMFkSS9W0GKRJRrrIlsjQC1ED5AXvpFrujed4CTUXt6Fl
+ SEotdUZ5ei0UmKoBlL+gg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This changes the select and pselect system calls to use the
-new schedule_timeout_hr function. Since many applications
-use the select function instead of nanosleep, this provides
-a higher resolution sleep to them.
-
-BUG: the same needs to be done for the compat syscalls, the
-current patch breaks building on 64 bit machines.
+The new schedule_timeout_hr function is a variant of schedule_timeout
+that uses hrtimers internally. Consequently, its argument and
+return value are ktime_t.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Index: linux-cg/fs/select.c
+Index: linux-cg/include/linux/sched.h
 ===================================================================
---- linux-cg.orig/fs/select.c
-+++ linux-cg/fs/select.c
-@@ -189,7 +189,7 @@ get_max:
- #define POLLOUT_SET (POLLWRBAND | POLLWRNORM | POLLOUT | POLLERR)
- #define POLLEX_SET (POLLPRI)
+--- linux-cg.orig/include/linux/sched.h
++++ linux-cg/include/linux/sched.h
+@@ -246,6 +246,8 @@ extern int in_sched_functions(unsigned l
  
--int do_select(int n, fd_set_bits *fds, s64 *timeout)
-+int do_select(int n, fd_set_bits *fds, ktime_t *timeout)
- {
- 	struct poll_wqueues table;
- 	poll_table *wait;
-@@ -205,12 +205,11 @@ int do_select(int n, fd_set_bits *fds, s
- 
- 	poll_initwait(&table);
- 	wait = &table.pt;
--	if (!*timeout)
-+	if (timeout && !timeout->tv64)
- 		wait = NULL;
- 	retval = 0;
- 	for (;;) {
- 		unsigned long *rinp, *routp, *rexp, *inp, *outp, *exp;
--		long __timeout;
- 
- 		set_current_state(TASK_INTERRUPTIBLE);
- 
-@@ -266,27 +265,19 @@ int do_select(int n, fd_set_bits *fds, s
- 				*rexp = res_ex;
- 		}
- 		wait = NULL;
--		if (retval || !*timeout || signal_pending(current))
-+		if (retval || (timeout && !timeout->tv64)
-+		    || signal_pending(current))
- 			break;
- 		if(table.error) {
- 			retval = table.error;
- 			break;
- 		}
- 
--		if (*timeout < 0) {
-+		if (!timeout || timeout->tv64 < 0)
- 			/* Wait indefinitely */
--			__timeout = MAX_SCHEDULE_TIMEOUT;
--		} else if (unlikely(*timeout >= (s64)MAX_SCHEDULE_TIMEOUT - 1)) {
--			/* Wait for longer than MAX_SCHEDULE_TIMEOUT. Do it in a loop */
--			__timeout = MAX_SCHEDULE_TIMEOUT - 1;
--			*timeout -= __timeout;
--		} else {
--			__timeout = *timeout;
--			*timeout = 0;
--		}
--		__timeout = schedule_timeout(__timeout);
--		if (*timeout >= 0)
--			*timeout += __timeout;
-+			schedule();
-+		else
-+			*timeout = schedule_timeout_hr(*timeout);
- 	}
- 	__set_current_state(TASK_RUNNING);
- 
-@@ -307,7 +298,7 @@ int do_select(int n, fd_set_bits *fds, s
- 	((unsigned long) (MAX_SCHEDULE_TIMEOUT / HZ)-1)
- 
- static int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
--			   fd_set __user *exp, s64 *timeout)
-+			   fd_set __user *exp, ktime_t *timeout)
- {
- 	fd_set_bits fds;
- 	void *bits;
-@@ -384,7 +375,7 @@ out_nofds:
- asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
- 			fd_set __user *exp, struct timeval __user *tvp)
- {
--	s64 timeout = -1;
-+	ktime_t timeout, *timeoutp = NULL;
- 	struct timeval tv;
- 	int ret;
- 
-@@ -395,24 +386,20 @@ asmlinkage long sys_select(int n, fd_set
- 		if (tv.tv_sec < 0 || tv.tv_usec < 0)
- 			return -EINVAL;
- 
-+		timeout = timeval_to_ktime(tv);
- 		/* Cast to u64 to make GCC stop complaining */
--		if ((u64)tv.tv_sec >= (u64)MAX_INT64_SECONDS)
--			timeout = -1;	/* infinite */
--		else {
--			timeout = ROUND_UP(tv.tv_usec, USEC_PER_SEC/HZ);
--			timeout += tv.tv_sec * HZ;
--		}
-+		if ((u64)tv.tv_sec < (u64)MAX_INT64_SECONDS)
-+			timeoutp = &timeout;
- 	}
- 
--	ret = core_sys_select(n, inp, outp, exp, &timeout);
-+	ret = core_sys_select(n, inp, outp, exp, timeoutp);
- 
- 	if (tvp) {
- 		struct timeval rtv;
- 
- 		if (current->personality & STICKY_TIMEOUTS)
- 			goto sticky;
--		rtv.tv_usec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ));
--		rtv.tv_sec = timeout;
-+		rtv = ktime_to_timeval(timeout);
- 		if (timeval_compare(&rtv, &tv) >= 0)
- 			rtv = tv;
- 		if (copy_to_user(tvp, &rtv, sizeof(rtv))) {
-@@ -438,7 +425,7 @@ asmlinkage long sys_pselect7(int n, fd_s
- 		fd_set __user *exp, struct timespec __user *tsp,
- 		const sigset_t __user *sigmask, size_t sigsetsize)
- {
--	s64 timeout = MAX_SCHEDULE_TIMEOUT;
-+	ktime_t timeout, *timeoutp = NULL;
- 	sigset_t ksigmask, sigsaved;
- 	struct timespec ts;
- 	int ret;
-@@ -450,13 +437,11 @@ asmlinkage long sys_pselect7(int n, fd_s
- 		if (ts.tv_sec < 0 || ts.tv_nsec < 0)
- 			return -EINVAL;
- 
-+		timeout = timespec_to_ktime(ts);
+ #define	MAX_SCHEDULE_TIMEOUT	LONG_MAX
+ extern signed long FASTCALL(schedule_timeout(signed long timeout));
++extern ktime_t FASTCALL(schedule_timeout_hr(ktime_t timeout));
 +
- 		/* Cast to u64 to make GCC stop complaining */
--		if ((u64)ts.tv_sec >= (u64)MAX_INT64_SECONDS)
--			timeout = -1;	/* infinite */
--		else {
--			timeout = ROUND_UP(ts.tv_nsec, NSEC_PER_SEC/HZ);
--			timeout += ts.tv_sec * HZ;
--		}
-+		if ((u64)ts.tv_sec < (u64)MAX_INT64_SECONDS)
-+			timeoutp = &timeout;
- 	}
- 
- 	if (sigmask) {
-@@ -470,16 +455,15 @@ asmlinkage long sys_pselect7(int n, fd_s
- 		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
- 	}
- 
--	ret = core_sys_select(n, inp, outp, exp, &timeout);
-+	ret = core_sys_select(n, inp, outp, exp, timeoutp);
- 
- 	if (tsp) {
- 		struct timespec rts;
- 
- 		if (current->personality & STICKY_TIMEOUTS)
- 			goto sticky;
--		rts.tv_nsec = jiffies_to_usecs(do_div((*(u64*)&timeout), HZ)) *
--						1000;
--		rts.tv_sec = timeout;
-+
-+		rts = ktime_to_timespec(timeout);
- 		if (timespec_compare(&rts, &ts) >= 0)
- 			rts = ts;
- 		if (copy_to_user(tsp, &rts, sizeof(rts))) {
-Index: linux-cg/include/linux/poll.h
+ extern signed long schedule_timeout_interruptible(signed long timeout);
+ extern signed long schedule_timeout_uninterruptible(signed long timeout);
+ asmlinkage void schedule(void);
+Index: linux-cg/kernel/hrtimer.c
 ===================================================================
---- linux-cg.orig/include/linux/poll.h
-+++ linux-cg/include/linux/poll.h
-@@ -112,7 +112,7 @@ void zero_fd_set(unsigned long nr, unsig
+--- linux-cg.orig/kernel/hrtimer.c
++++ linux-cg/kernel/hrtimer.c
+@@ -1206,6 +1206,54 @@ void hrtimer_init_sleeper(struct hrtimer
+ #endif
+ }
  
- #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
- 
--extern int do_select(int n, fd_set_bits *fds, s64 *timeout);
-+extern int do_select(int n, fd_set_bits *fds, ktime_t *timeout);
- extern int do_sys_poll(struct pollfd __user * ufds, unsigned int nfds,
- 		       s64 *timeout);
- 
++/**
++ * schedule_timeout_hr - sleep until timeout
++ * @timeout: timeout value
++ *
++ * Make the current task sleep until @timeout has elapsed.
++ * The routine will return immediately unless the current task
++ * state has been set (see set_current_state()).
++ *
++ * You can set the task state as follows -
++ *
++ * %TASK_UNINTERRUPTIBLE - at least @timeout is guaranteed to
++ * pass before the routine returns. The routine will return 0
++ *
++ * %TASK_INTERRUPTIBLE - the routine may return early if a signal is
++ * delivered to the current task. In this case the remaining time
++ * in jiffies will be returned, or 0 if the timer expired in time
++ *
++ * The current task state is guaranteed to be TASK_RUNNING when this
++ * routine returns.
++ *
++ * In all cases the return value is guaranteed to be a non-negative
++ * time value.
++ */
++static ktime_t __sched __schedule_timeout_hr(ktime_t time, void *addr)
++{
++	struct hrtimer_sleeper t;
++	ktime_t remain;
++
++	hrtimer_init(&t.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++	hrtimer_init_sleeper(&t, current);
++	__timer_stats_hrtimer_set_start_info(&t.timer, addr);
++	hrtimer_start(&t.timer, time, HRTIMER_MODE_REL);
++	schedule();
++	hrtimer_cancel(&t.timer);
++	remain = hrtimer_get_remaining(&t.timer);
++
++	if (ktime_to_ns(remain) < 0)
++		return ktime_set(0, 0);
++	else
++		return remain;
++}
++
++fastcall ktime_t __sched schedule_timeout_hr(ktime_t time)
++{
++	return __schedule_timeout_hr(time, __builtin_return_address(0));
++}
++EXPORT_SYMBOL_GPL(schedule_timeout_hr);
++
+ static int __sched do_nanosleep(struct hrtimer_sleeper *t, enum hrtimer_mode mode)
+ {
+ 	hrtimer_init_sleeper(t, current);
 
 --
 
