@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933593AbXCEVbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933601AbXCEVca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933593AbXCEVbG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 16:31:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933601AbXCEVbF
+	id S933601AbXCEVca (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 16:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933621AbXCEVca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 16:31:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40830
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933593AbXCEVbD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 16:31:03 -0500
-Date: Mon, 05 Mar 2007 13:30:59 -0800 (PST)
-Message-Id: <20070305.133059.08323813.davem@davemloft.net>
-To: jan.altenberg@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix compile error in latest git
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1173092888.3417.11.camel@bender.tec.linutronix.de>
-References: <1173092888.3417.11.camel@bender.tec.linutronix.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 5 Mar 2007 16:32:30 -0500
+Received: from mx.laposte.net ([81.255.54.11]:61282 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933601AbXCEVc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 16:32:29 -0500
+Subject: Re: [PATCH] usb/hid:The HID Simple Driver Patches 0.5.0
+	(all-in-one)
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: raise.sail@gmail.com, linux-usb-devel@lists.sourceforge.net
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zu1XUb+sHpn9vSs2V8dn"
+Organization: Adresse perso
+Date: Mon, 05 Mar 2007 22:30:58 +0100
+Message-Id: <1173130258.3551.5.camel@rousalka.dyndns.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.9.92 (2.9.92-1.fc7.1) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Altenberg <jan.altenberg@linutronix.de>
-Date: Mon, 05 Mar 2007 12:08:08 +0100
 
-> I recognized a compile error in latest git:
-> 
-> /here/workdir/git/drivers/net/gianfar.c: In function `gfar_vlan_rx_kill_vid':
-> /here/workdir/git/drivers/net/gianfar.c:1135: error: structure has no member named `vgrp'
- ...
-> Patch is attached.
-> 
-> Signed-off-by: Jan Altenberg <jan@linutronix.de>
+--=-zu1XUb+sHpn9vSs2V8dn
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the fix, patch applied.
+Hi Li Yu
 
-I did do an allmodconfig build to try and avoid breakage like
-that, but alas gianfar only is offered on certain powerpc
-systems in the kernel config :-/
+The key codes seems to have changed since 0.4.0, and the GNOME
+multimedia key applet does not report anything for the 1-2-3-4-5-star
+shortcut keys, but the rest works fine.
 
-Thanks again.
+Regards,
+
+--=20
+Nicolas Mailhot
+
+--=-zu1XUb+sHpn9vSs2V8dn
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iEYEABECAAYFAkXsjBIACgkQI2bVKDsp8g0RHACgtdSEWAqHtU8KGwlfV3/BJv0C
+Mm8AoKfQyEgyVnDm149dvXy6ju3eIMlQ
+=1xZs
+-----END PGP SIGNATURE-----
+
+--=-zu1XUb+sHpn9vSs2V8dn--
