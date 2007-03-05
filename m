@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933583AbXCEQAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933573AbXCEQAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933583AbXCEQAL (ORCPT <rfc822;w@1wt.eu>);
+	id S933573AbXCEQAL (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 5 Mar 2007 11:00:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933573AbXCEQAI
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933582AbXCEQAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 11:00:08 -0500
-Received: from web52513.mail.yahoo.com ([206.190.48.196]:25126 "HELO
-	web52513.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933575AbXCEP7q (ORCPT
+	Mon, 5 Mar 2007 11:00:06 -0500
+Received: from aa012msr.fastwebnet.it ([85.18.95.72]:51215 "EHLO
+	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933580AbXCEP77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:59:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=pepAd0tzMIftSvU640+wh/YiYMovm6vnlD1xgnJgjAct5Xtd8Edq11+V4NbHssJEZzVAXI4xkZagrOCtekRczGdrYyv/3O5lQioIaUa2feowF/5clpYNwXiP0bkc4NVmvKxRmjji8EpLfqmBvvkDT8ZVL5QBtXXdwHzNyyJa8nI=;
-X-YMail-OSG: VwlX6A0VM1k1QpWgDjuOwPrMXxzpivCcPks6PXRmNbcKVcJ9w_vXONDcVFOW1dNu7vQf9RnQL0UD1M9tDkF1sVjWnAoGgnhEkFIztT8DDoiX2Ej.fyT.MSPQXSMqAhEejQ2BT3s54b0DWXqlESSUyyNFnA--
-Date: Mon, 5 Mar 2007 07:59:44 -0800 (PST)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Raid 10 Problems?
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.61.0703051328240.23714@yvahk01.tjqt.qr>
+	Mon, 5 Mar 2007 10:59:59 -0500
+From: francesco foresti <frafore@tiscali.it>
+To: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: 2.6.20-1 not working on ibook g4 (BUG/Oops)
+Date: Mon, 5 Mar 2007 16:59:35 +0100
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <708349.8753.qm@web52513.mail.yahoo.com>
+Content-Type: multipart/signed;
+  boundary="nextPart24963671.6jiMtUmKTa";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703051659.56245.frafore@tiscali.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart24963671.6jiMtUmKTa
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
---- Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+Hi,
+I have to correct myself:
+2.6.19-7 just freezes randomly. At this point, the last surely working kern=
+el=20
+i am aware of is 2.6.18, built from debian sources. Actually i'm trying=20
+(for the very first time) to git-bisect Linus' tree, to see if i can figure=
+=20
+out something, but i feel my chances are extremely low..=20
 
-> 
-> On Mar 4 2007 19:37, Marc Perkel wrote:
-> >> 
-> >>   -b internal -- seems like a good idea to speed
-> up
-> >>   resynchronization.
-> >
-> >I'm trying to figure out what the default is. 
-> 
-> -b none, meaning the whole drive will be
-> resynchronized when the
-> even counters don't match.
-> 
->
-http://gentoo-wiki.com/HOWTO_Install_on_Software_RAID#Write-intent_bitmap
-> 
-> 
+Best
+=2D-=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=46rancesco Foresti
+Registered Linux User #332599
+key fingerprint =3D 59D5 1E61 6631 5DEF DC88 C64C 7F53 2F45 99FB CD21
 
-That information has been extremely useful. Thanks a
-lot. I fund a command to do the bitmap internal after
-the array was made so I added that. Seems like some of
-these features should be default. Maybe it's time for
-the raid folks to update what is default?
+--nextPart24963671.6jiMtUmKTa
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQBF7D58f1MvRZn7zSERAgXwAJ0bKe52kecpK4jCszgzJAVvFAR8ywCcC3ea
+S+xt9INV3dBDbYSNZo/r/b0=
+=HOKV
+-----END PGP SIGNATURE-----
 
- 
-____________________________________________________________________________________
-8:00? 8:25? 8:40? Find a flick in no time 
-with the Yahoo! Search movie showtime shortcut.
-http://tools.search.yahoo.com/shortcuts/#news
+--nextPart24963671.6jiMtUmKTa--
