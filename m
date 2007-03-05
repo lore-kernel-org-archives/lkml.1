@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbXCERlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbXCERoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbXCERlF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 12:41:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbXCERlE
+	id S1752823AbXCERoi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 12:44:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXCERoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 12:41:04 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:55949 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbXCERlD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 12:41:03 -0500
-Date: Mon, 5 Mar 2007 23:17:50 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: Herbert Poetzl <herbert@13thfloor.at>, dev@openvz.org,
-       ebiederm@xmission.com, winget@google.com, containers@lists.osdl.org,
-       menage@google.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070305174750.GA14507@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070301133543.GK15509@in.ibm.com> <20070301113900.a7dace47.pj@sgi.com> <45E84682.6040500@openvz.org> <20070303174553.GB16051@MAIL.13thfloor.at> <20070303132244.80b5cb40.pj@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Mar 2007 12:44:38 -0500
+Received: from max.feld.cvut.cz ([147.32.192.36]:57238 "EHLO max.feld.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752823AbXCERoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 12:44:37 -0500
+From: CIJOML <cijoml@volny.cz>
+To: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: Marco's Opera driver fails load firmware
+Date: Mon, 5 Mar 2007 18:44:15 +0100
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070303132244.80b5cb40.pj@sgi.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703051844.15981.cijoml@volny.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 03, 2007 at 01:22:44PM -0800, Paul Jackson wrote:
-> I still can't claim to have my head around this, but what you write
-> here, Herbert, writes here touches on what I suspect is a key
-> difference between namespaces and resources that would make it
-> impractical to accomplish both with a shared mechanism for aggregating
-> tasks.
+Hi Marco,
 
-The way nsproxy is structured, its all pointers to actual namespace (or
-in case of rcfs patch) resource objects.  This lets namespaces objects be in a 
-flat hierarchy while resource objects are in tree-like hierarchy.
-nsproxy itself doesnt decide any hierarchy. Its those objects pointed to
-by nsproxy which can form different hierarchies. In fact the rcfs
-patches allows such a combination afaics.
+I just tested your driver you have posted to the linux-dvb mailing list.
+I have problem load firmware into device:
 
-> > on every limit accounting or check? I think that
-> > is quite a lot of overhead ...
-> 
-> Do either of these dereferences require locks?
+usb 5-3: new high speed USB device using ehci_hcd and address 4
+usb 5-3: configuration #1 chosen from 1 choice
+dvb-usb: found a 'Opera1 DVB-S USB2.0' in cold state, will try to load a 
+firmware
+dvb-usb: downloading firmware from file 'opera1.fw'
+dvb-usb: firmware download failed at 9418 with -22
+opera1: probe of 5-3:1.0 failed with error -22
+usbcore: registered new interface driver opera1
 
-A rcu_read_lock() should be required, which is not that expensive.
+My firmware files are:
 
--- 
-Regards,
-vatsa
+-rw-r--r-- 1 root root  8300 2006-04-05 21:23 opera1-2.fw
+-rw-r--r-- 1 root root 55894 2006-04-05 21:23 opera1-fpga.fw
+-rw-r--r-- 1 root root  9432 2006-04-05 21:22 opera1.fw
+
+60aa3e8a540de75d0f456d3979408d7d  /usr/lib/hotplug/firmware/opera1-2.fw
+2b48b0923de2fdfcb160d9cce3d3529d  /usr/lib/hotplug/firmware/opera1-fpga.fw
+95032d7201b25e0f8ee802c5b292aa69  /usr/lib/hotplug/firmware/opera1.fw
+
+I have created wish in kernel's bugzilla before, so we can track it there:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=7574
+
+Thanks for help.
+
+Michal
