@@ -1,148 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbXCEHdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbXCEHdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752714AbXCEHdr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 02:33:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbXCEHdq
+	id S1752716AbXCEHdt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 02:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXCEHds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 02:33:46 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:45735 "EHLO relay.sw.ru"
+	Mon, 5 Mar 2007 02:33:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41166 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752716AbXCEHdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 02:33:45 -0500
-To: Dmitriy Monakhov <dmonakhov@sw.ru>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] ext3: dirindex error pointer issues
-References: <87lkidf5y0.fsf@sw.ru>
-	<20070305021344.GO6662@schatzie.adilger.int>
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Mon, 05 Mar 2007 10:34:08 +0300
-In-Reply-To: <20070305021344.GO6662@schatzie.adilger.int> (Andreas Dilger's message of "Mon, 5 Mar 2007 10:13:44 +0800")
-Message-ID: <87k5xwkutr.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	id S1752719AbXCEHdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 02:33:47 -0500
+Date: Mon, 5 Mar 2007 08:25:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andres Salomon <dilinger@debian.org>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] highres: Do not run the TIMER_SOFTIRQ after switching to	highres mode
+Message-ID: <20070305072518.GB14993@elte.hu>
+References: <45E8E2F8.1030102@debian.org> <1172912540.24738.108.camel@localhost.localdomain> <45EAAA21.4040803@debian.org> <1173013794.24738.130.camel@localhost.localdomain> <45EAC5B1.2060306@debian.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EAC5B1.2060306@debian.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Dilger <adilger@clusterfs.com> writes:
 
-> On Mar 04, 2007  17:18 +0300, Dmitriy Monakhov wrote:
->>  - ext3_dx_find_entry() exit with out setting proper error pointer
->>  - do_split() exit with out setting proper error pointer
->>    it is realy painful because many callers contain folowing code:
->>            de = do_split(handle,dir, &bh, frame, &hinfo, &retval);
->>            if (!(de))
->>                         return retval;
->>            <<< WOW retval wasn't changed by do_split(), so caller failed
->>            <<< but return SUCCESS :)
->>  - Rearrange do_split() error path. Current error path is realy ugly, all
->>    this up and down jump stuff doesn't make code easy to understand.
->> 
->> Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
->> ---
->>  fs/ext3/namei.c |   26 +++++++++++++++-----------
->>  fs/ext4/namei.c |   26 +++++++++++++++-----------
->>  2 files changed, 30 insertions(+), 22 deletions(-)
->> 
->> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
->> index 49159f1..1a52586 100644
->> --- a/fs/ext3/namei.c
->> +++ b/fs/ext3/namei.c
->> @@ -969,6 +969,7 @@ static struct buffer_head * ext3_dx_find_entry(struct dentry *dentry,
->>  				  (block<<EXT3_BLOCK_SIZE_BITS(sb))
->>  					  +((char *)de - bh->b_data))) {
->>  				brelse (bh);
->> +				*err = ERR_BAD_DX_DIR;
->>  				goto errout;
->>  			}
->>  			*res_dir = de;
->
-> I have no objection to this change (by principle of least surprise) but
-> I don't know if it fixes a real problem.  The one caller of this function
-> treats ERR_BAD_DX_DIR the same as bh == NULL.
-  Execly  ERR_BAD_DX_DIR treats  the same as bh == NULL and let's look at
-  callers code: 
-  struct buffer_head * ext3_find_entry(......)
-  {
-  .......
-              bh = ext3_dx_find_entry(dentry, res_dir, &err);
-                /*
-                 * On success, or if the error was file not found,
-                 * return.  Otherwise, fall back to doing a search the
-                 * old fashioned way.
-                 */
-                if (bh || (err != ERR_BAD_DX_DIR))
-  <<<<< after ext3_dx_find_entry() has failed , but don't set err pointer 
-  <<<<< we get  (bh == NULL, err == 0) , and then just return NULL.
-                        return bh;
- .......
- }
+* Andres Salomon <dilinger@debian.org> wrote:
 
->
->> @@ -1134,9 +1135,9 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
->>  	char *data1 = (*bh)->b_data, *data2;
->>  	unsigned split;
->>  	struct ext3_dir_entry_2 *de = NULL, *de2;
->> -	int	err;
->> +	int	err = 0;
->>  
->> -	bh2 = ext3_append (handle, dir, &newblock, error);
->> +	bh2 = ext3_append (handle, dir, &newblock, &err);
->
-> Why don't we just remove "err" entirely and use *error to avoid any risk
-> of setting err and not returning it in error?  Also reduces stack usage
-> that tiny little bit.
-I've chosen this approuch becouse of:
-1) this approuch was used in block allocation code.
-2) this approuch prevent  folowing errors:
-  *error = do_some_function(.....)
-  ........ /* some code*/
-  if(error) 
- we do this checking as we do it thousands times before, but forget
- what error it pointer here. And compiler can't warn us here because 
- it is absolutely legal operation. At least it is better to rename 
- error to errorp.
+> Thomas Gleixner wrote:
+> >>> The question is, how the tick timer gets enqueued in the softirq queue.
+> >>> Can you isolate the codepath, where this happens ?
+> > 
+> > The TIMER_SOFTIRQ runs the hrtimers during bootup until a usable
+> > clocksource and clock event sources are registered. The switch to high
+> > resolution mode happens inside of the TIMER_SOFTIRQ, but runs the
+> > softirq afterwards. That way the tick emulation timer, which was set up
+> > in the switch to highres might be executed in the softirq context, which
+> > is a BUG. The rbtree has not to be touched by the softirq after the
+> > highres switch.
+> > 
+> 
+> And an additional request, just to make it explicit that we should not 
+> have any NO_SOFTIRQ callbacks in the tree; BUG out if we encounter 
+> such a thing.
 
-Btw: I've thought about adding assertations to error path witch may check
-what errp pointer was properly initialized after error happends.
-folowing code is draft only:
---- a/fs/ext3/namei.c
-+++ b/fs/ext3/namei.c
-@@ -63,6 +63,7 @@ static struct buffer_head *ext3_append(handle_t *handle,
- 		EXT3_I(inode)->i_disksize = inode->i_size;
- 		ext3_journal_get_write_access(handle,bh);
- 	}
-+	assert(bh || *err);
- 	return bh;
- }
- 
-@@ -433,6 +434,7 @@ fail2:
- 		frame--;
- 	}
- fail:
-+	assert(*err != 0);
- 	return NULL;
- }
+please change it to WARN_ON_ONCE()...
 
->
->
-> In ext3_dx_add_entry() it appears like we should "goto journal_error"
-> to report an error after the failed call to do_split(), instead of just
-> "goto cleanup" so that we report an error in the filesystem.  Not 100%
-> sure of this.
-do_split() already invoked ext3_std_error() on it's "journal_error" path.
+'bug out' might mean: 'dead box'/'no resume'/'no bootup'.
 
->
-> Cheers, Andreas
-> --
-> Andreas Dilger
-> Principal Software Engineer
-> Cluster File Systems, Inc.
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+	Ingo
