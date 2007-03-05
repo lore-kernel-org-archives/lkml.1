@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933430AbXCENAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933439AbXCENAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933430AbXCENAF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 08:00:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933429AbXCENAF
+	id S933439AbXCENAM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 08:00:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933449AbXCENAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 08:00:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51610 "EHLO mx2.mail.elte.hu"
+	Mon, 5 Mar 2007 08:00:12 -0500
+Received: from thunk.org ([69.25.196.29]:51558 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933426AbXCENAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 08:00:01 -0500
-Date: Mon, 5 Mar 2007 13:50:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Avi Kivity <avi@qumranet.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [patch] KVM: T60 resume fix
-Message-ID: <20070305125008.GA21735@elte.hu>
-References: <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu> <45EBD9BC.4030801@qumranet.com> <20070305084449.GA1706@elte.hu> <20070305085718.GA2513@elte.hu> <20070305125425.GA4350@mellanox.co.il>
-Mime-Version: 1.0
+	id S933429AbXCENAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 08:00:09 -0500
+Date: Mon, 5 Mar 2007 07:59:50 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Greg KH <greg@kroah.com>
+Cc: Matt Mackall <mpm@selenic.com>, Johannes Berg <johannes@sipsolutions.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, yi.zhu@intel.com,
+       jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
+Message-ID: <20070305125950.GC26781@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+	Matt Mackall <mpm@selenic.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	yi.zhu@intel.com, jketreno@linux.intel.com,
+	linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org> <20070305011729.GB7681@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070305125425.GA4350@mellanox.co.il>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070305011729.GB7681@kroah.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Mar 04, 2007 at 05:17:29PM -0800, Greg KH wrote:
+> I should not have broken any userspace if CONFIG_SYSFS_DEPRECATED is
+> enabled with that patch.  If that is enabled, and that patch still
+> causes problems, please let me know.
 
-* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+But we still need to update the help text for CONFIG_SYS_DEPRECATED to
+make it clear that its deprecation schedule still needs to be 2009 to
+2011 (depending on whether we want to accomodate Debian's glacial
+release schedule).  Certainly the 2006 date which is currently there
+simply isn't accurate.
 
-> > suspend/resume works fine now and there are no warning messages 
-> > whatsoever (with suspend simulation). Thanks Avi!
-> 
-> I just tried Ingo's .config and it hangs on resume for me (with 
-> suspend to memory).
-
-could you try 's2ram' from http://suspend.sf.net ? It's basically 
-equivalent to 'echo mem > /sys/power/state', but you can usually also 
-see the reason why it doesnt resume, on the vga console. (by default the 
-kernel doesnt resume the t60's vga properly)
-
-on my box resume works, but it's incredibly slow. Takes a few minutes to 
-have total effect.
-
-	Ingo
+						- Ted
