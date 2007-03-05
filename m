@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbXCEBRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbXCEBSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbXCEBRs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 20:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXCEBRs
+	id S1751624AbXCEBSN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 20:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXCEBSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 20:17:48 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:54768 "EHLO smtp.osdl.org"
+	Sun, 4 Mar 2007 20:18:13 -0500
+Received: from mx1.suse.de ([195.135.220.2]:39497 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751353AbXCEBRr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:17:47 -0500
-Date: Sun, 4 Mar 2007 17:17:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "J.A. =?ISO-8859-1?B?TWFnYWxs824i?= <jamagallon@ono.com>"@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.21-rc2-mm1
-Message-Id: <20070304171737.42c14570.akpm@linux-foundation.org>
-In-Reply-To: <20070305011133.570a9ba8@werewolf-wl>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	<20070305011133.570a9ba8@werewolf-wl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1751624AbXCEBSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 20:18:10 -0500
+Date: Sun, 4 Mar 2007 17:17:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
+Message-ID: <20070305011729.GB7681@kroah.com>
+References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070305002550.GI23311@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Mar 2007 01:11:33 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
+On Sun, Mar 04, 2007 at 06:25:50PM -0600, Matt Mackall wrote:
+> On Mon, Mar 05, 2007 at 12:39:24AM +0100, Johannes Berg wrote:
+> > [adding linux-wireless to CC]
+> > 
+> > On Sun, 2007-03-04 at 16:08 -0600, Matt Mackall wrote:
+> > > Recent kernels are having troubles with wireless for me. Two seemingly
+> > > related problems:
+> > 
+> > I don't think they are related actually.
+> > 
+> > > a) NetworkManager seems oblivious to the existence of my IPW2200
+> > 
+> > This is due to the recent sysfs restructuring I think. IIRC the fix is
+> > to upgrade hal to a current git version.
+> 
+> If that's the cause, the fix is to back out whatever was done to break
+> userspace. Breaking userspace is not ok. Upgrading from 2.6.x to
+> 2.6.x+1 should not entail replacing substantial parts of userspace,
+> especially with NOT-EVEN-FRAKKING-RELEASED-YET CODE. 
 
-> On Fri, 2 Mar 2007 03:00:26 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > 
-> > Temporarily at
-> > 
-> >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
-> > 
-> > Will appear later at
-> > 
-> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
-> > 
-> 
-> nfs blocks shutdown and reboot.
-> If I try to do 'service nfs stop', the box hangs, no login, no SysRQ-T or P,
-> S-U-B works at least.
-> 
+I should not have broken any userspace if CONFIG_SYSFS_DEPRECATED is
+enabled with that patch.  If that is enabled, and that patch still
+causes problems, please let me know.
 
-The bug was added by
-knfsd-use-recv_msg-to-get-peer-address-for-nfsd-instead-of-code-copying.patch.
+thanks,
+
+greg k-h
