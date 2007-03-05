@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbXCEUN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbXCEURz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbXCEUN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 15:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXCEUN3
+	id S1752850AbXCEURz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 15:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXCEURy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 15:13:29 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:50869 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752847AbXCEUN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 15:13:28 -0500
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Greg KH <greg@kroah.com>
-Subject: Re: [patch 00/18] 2.6.18-stable review
-Date: Mon, 5 Mar 2007 22:13:20 +0200
-User-Agent: KMail/1.9.6
-Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-References: <20070221014927.GA3684@kroah.com> <200703051544.24041.caglar@pardus.org.tr> <20070305192622.GA2768@kroah.com>
-In-Reply-To: <20070305192622.GA2768@kroah.com>
+	Mon, 5 Mar 2007 15:17:54 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50074 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752850AbXCEURy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 15:17:54 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Zachary Amsden <zach@vmware.com>
+Subject: Re: [patch] paravirt: VDSO page is essential
+Date: Mon, 5 Mar 2007 21:16:42 +0100
+User-Agent: KMail/1.9.5
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       virtualization <virtualization@lists.osdl.org>
+References: <20070305120631.GA14105@elte.hu> <20070305143437.GF22829@bingen.suse.de> <45EC796D.5050705@vmware.com>
+In-Reply-To: <45EC796D.5050705@vmware.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2313152.XGaZYuW2Em";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200703052213.22146.caglar@pardus.org.tr>
+Content-Disposition: inline
+Message-Id: <200703052116.42807.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2313152.XGaZYuW2Em
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+ We are not concerned so much 
+> with supporting legacy user land deployments,
 
-05 Mar 2007 Pts tarihinde, Greg KH =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=C4=
-=B1:=20
-> > So maybe 2.6.18 deserves another stable release :) ?
->
-> Why?  Does anyone really use it now that 2.6.19 and 2.6.20 is out?
->
-> I don't want to do a new release as we need to catch up on the 2.6.20
-> issues...
->
-> And also remember, the point of the -stable tree was that we would drop
-> older releases after the next release came out.
+I am concerned about that. I won't merge any patches that break compatibility
+by default.
 
-I know, i just referred your "Barring anything extremely serious, this will=
- be=20
-the last 2.6.18 based release." sentence from last stable release=20
-announcement and some security regressions seems something to me and just=20
-want to ping :) and of course i clearly understand your point of -stable tr=
-ee=20
-maintanence with much more up2date kernel and drop olders view.
+> > What would probably work is to somehow decide at runtime if a hypervisor
+> > is there or not and then set vdso default based on that. I guess that
+> > detection would be hypervisor specific though and probably would
+> > need paravirt ops extensions.
+> >   
+> 
+> What we really need to do is to be able to detect an old user land and 
+> drop VDSO support when that is found.  
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+Rusty implemented that, but it was widely considered too ugly
+(and it was not 100% reliable e.g. with chroots) 
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
+> But since we can't do that, the  
+> next best thing is to allow the hypervisor to choose whatever workaround 
+> it wants when it moves the fixmap and compat_vdso was enabled.  In our 
+> case, the workaround we will want is a boot option to disable VDSO for 
+> old user land,
 
---nextPart2313152.XGaZYuW2Em
-Content-Type: application/pgp-signature
+The boot option is already there, but boot options for is not my
+idea of user friendly binary compatibility.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
+> and a printk warning if you take #GPs and kill the init  
+> proc, because for us, this is not an expected support scenario.  We 
+> would much rather support the VDSO by default in paravirt kernels even 
+> with COMPAT_VDSO turned on.
 
-iD8DBQBF7Hniy7E6i0LKo6YRAjxqAJ0Sc0lfkbXknnf2dIVlLVVtdBMpswCfbwnh
-v8BRhMZrbF7vmBcYi05gzJQ=
-=gFib
------END PGP SIGNATURE-----
+But you can't have it at the compatible fixed address, right?
 
---nextPart2313152.XGaZYuW2Em--
+-Andi
