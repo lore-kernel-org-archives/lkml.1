@@ -1,114 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbXCEEml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbXCEEnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752649AbXCEEml (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 23:42:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXCEEmk
+	id S1752645AbXCEEnB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 23:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXCEEnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 23:42:40 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57928
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752649AbXCEEmj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 23:42:39 -0500
-Date: Sun, 04 Mar 2007 20:42:38 -0800 (PST)
-Message-Id: <20070304.204238.79050191.davem@davemloft.net>
-To: bunk@stusta.de
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, vonbrand@inf.utfsm.cl,
-       davem@sunset.davemloft.net, sparclinux@vger.kernel.org
-Subject: Re: [6/6] 2.6.21-rc2: known regressions
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070305022602.GL3441@stusta.de>
-References: <20070305015045.GK3441@stusta.de>
-	<20070304.180725.126592830.davem@davemloft.net>
-	<20070305022602.GL3441@stusta.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 4 Mar 2007 23:43:01 -0500
+Received: from rtr.ca ([64.26.128.89]:3438 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752645AbXCEEnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 23:43:00 -0500
+Message-ID: <45EB9FD6.9080403@rtr.ca>
+Date: Sun, 04 Mar 2007 23:43:02 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG} usb regression in 2.6.21-rc2-git3
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de> <45EB9DC6.8010403@rtr.ca>
+In-Reply-To: <45EB9DC6.8010403@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@stusta.de>
-Date: Mon, 5 Mar 2007 03:26:02 +0100
-
-> On Sun, Mar 04, 2007 at 06:07:25PM -0800, David Miller wrote:
-> > From: Adrian Bunk <bunk@stusta.de>
-> > Date: Mon, 5 Mar 2007 02:50:45 +0100
-> > 
-> > > Subject    : sparc64 compile error due to GENERIC_ISA_DMA removal
-> > > References : http://bugzilla.kernel.org/show_bug.cgi?id=8097
-> > > Submitter  : Horst H. von Brand <vonbrand@inf.utfsm.cl>
-> > > Caused-By  : David S. Miller <davem@sunset.davemloft.net>
-> > >              commit 1b51d3a08b6c80a1e47d4c579c41abbe56cd3c44
-> > > Status     : unknown
-> > 
-> > Fixed in current GIT.
-> > 
-> > commit 74bd7d093b8e87f35eaf3b14459b96a0e20d1d10
-> > Author: David S. Miller <davem@sunset.davemloft.net>
-> > Date:   Wed Feb 28 13:09:34 2007 -0800
-> > 
-> >     [SPARC64]: Fix parport_pc build.
-> >     
-> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+Mark Lord wrote:
+>
+> Here's another one for Greg:
 > 
-> Horst's problem is with the floppy driver and 
-> claim_dma_lock/release_dma_lock in include/asm-sparc64/dma.h .
+> I have a Targus USB 1.1 "dock", basically a hub with built-in
+> serial, parallel, PS/2 KB, PS/2 Mouse, and extra USB ports.
+> 
+> Simply connecting, and then disconnecting it causes an oops with 
+> 2.6.21-rc2:
+..
 
-Here is the fix I will send to Linus for this, thanks:
+Same behaviour with a second, different USB 1.1 "dock" here as well:
 
-commit 08414aa2516da65ae7a522c6834b8ea576f38c4b
-Author: David S. Miller <davem@sunset.davemloft.net>
-Date:   Sun Mar 4 20:36:18 2007 -0800
-
-    [SPARC64]: Fix floppy build failure.
-    
-    Just define a local {claim,release}_dma_lock() implementation
-    for the floppy driver to use so we don't need to define and
-    export to modules the silly dma_spin_lock.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/asm-sparc64/dma.h b/include/asm-sparc64/dma.h
-index 1bf4f7a..a9fd061 100644
---- a/include/asm-sparc64/dma.h
-+++ b/include/asm-sparc64/dma.h
-@@ -15,17 +15,6 @@
- #include <asm/delay.h>
- #include <asm/oplib.h>
- 
--extern spinlock_t  dma_spin_lock;
--
--#define claim_dma_lock() \
--({	unsigned long flags; \
--	spin_lock_irqsave(&dma_spin_lock, flags); \
--	flags; \
--})
--
--#define release_dma_lock(__flags) \
--	spin_unlock_irqrestore(&dma_spin_lock, __flags);
--
- /* These are irrelevant for Sparc DMA, but we leave it in so that
-  * things can compile.
-  */
-diff --git a/include/asm-sparc64/floppy.h b/include/asm-sparc64/floppy.h
-index dbe033e..331013a 100644
---- a/include/asm-sparc64/floppy.h
-+++ b/include/asm-sparc64/floppy.h
-@@ -854,4 +854,15 @@ static unsigned long __init sun_floppy_init(void)
- 
- #define EXTRA_FLOPPY_PARAMS
- 
-+static DEFINE_SPINLOCK(dma_spin_lock);
-+
-+#define claim_dma_lock() \
-+({	unsigned long flags; \
-+	spin_lock_irqsave(&dma_spin_lock, flags); \
-+	flags; \
-+})
-+
-+#define release_dma_lock(__flags) \
-+	spin_unlock_irqrestore(&dma_spin_lock, __flags);
-+
- #endif /* !(__ASM_SPARC64_FLOPPY_H) */
+Mar  4 23:40:16 silvy kernel: usb 5-8: new high speed USB device using ehci_hcd and address 5
+Mar  4 23:40:16 silvy kernel: usb 5-8: configuration #1 chosen from 1 choice
+Mar  4 23:40:16 silvy kernel: hub 5-8:1.0: USB hub found
+Mar  4 23:40:16 silvy kernel: hub 5-8:1.0: 4 ports detected
+Mar  4 23:40:16 silvy kernel: usb 5-8.4: new full speed USB device using ehci_hcd and address 6
+Mar  4 23:40:17 silvy kernel: usb 5-8.4: configuration #1 chosen from 1 choice
+Mar  4 23:40:17 silvy kernel: hub 5-8.4:1.0: USB hub found
+Mar  4 23:40:17 silvy kernel: hub 5-8.4:1.0: 4 ports detected
+Mar  4 23:40:17 silvy kernel: usb 5-8.4.1: new full speed USB device using ehci_hcd and address 7
+Mar  4 23:40:17 silvy kernel: usb 5-8.4.1: configuration #1 chosen from 1 choice
+Mar  4 23:40:17 silvy kernel: usb 5-8.4.3: new low speed USB device using ehci_hcd and address 8
+Mar  4 23:40:17 silvy kernel: usb 5-8.4.3: configuration #1 chosen from 1 choice
+Mar  4 23:40:17 silvy kernel: input: Composite USB PS2 Converter USB to PS2 Adaptor  v1.12 as /class/input/input8
+Mar  4 23:40:17 silvy kernel: input: USB HID v1.10 Keyboard [Composite USB PS2 Converter USB to PS2 Adaptor  v1.12] on usb-0000:00:1d.7-8.4.3
+Mar  4 23:40:17 silvy kernel: input: Composite USB PS2 Converter USB to PS2 Adaptor  v1.12 as /class/input/input9
+Mar  4 23:40:17 silvy kernel: input: USB HID v1.10 Mouse [Composite USB PS2 Converter USB to PS2 Adaptor  v1.12] on usb-0000:00:1d.7-8.4.3
+Mar  4 23:40:17 silvy kernel: usb 5-8.4.4: new full speed USB device using ehci_hcd and address 9
+Mar  4 23:40:17 silvy kernel: usb 5-8.4.4: configuration #1 chosen from 1 choice
+Mar  4 23:40:17 silvy kernel: pl2303 5-8.4.4:1.0: pl2303 converter detected
+Mar  4 23:40:17 silvy kernel: usb-serial ttyUSB0: Error registering port device, continuing
+Mar  4 23:40:17 silvy kernel: drivers/usb/class/usblp.c: usblp0: USB Bidirectional printer dev 7 if 0 alt 1 proto 2 vid 0x0B39 pid 0x0801
+Mar  4 23:40:17 silvy kernel: usbcore: registered new interface driver usblp
+Mar  4 23:40:17 silvy kernel: drivers/usb/class/usblp.c: v0.13: USB Printer Device Class driver
+Mar  4 23:41:05 silvy kernel: usb 5-8: USB disconnect, address 5
+Mar  4 23:41:05 silvy kernel: usb 5-8.4: USB disconnect, address 6
+Mar  4 23:41:05 silvy kernel: usb 5-8.4.1: USB disconnect, address 7
+Mar  4 23:41:05 silvy kernel: drivers/usb/class/usblp.c: usblp0: removed
+Mar  4 23:41:05 silvy kernel: usb 5-8.4.3: USB disconnect, address 8
+Mar  4 23:41:05 silvy kernel: usb 5-8.4.4: USB disconnect, address 9
+Mar  4 23:41:05 silvy kernel: BUG: unable to handle kernel NULL pointer dereference at virtual address 0000000c
+Mar  4 23:41:05 silvy kernel:  printing eip:
+Mar  4 23:41:05 silvy kernel: c027c251
+Mar  4 23:41:05 silvy kernel: *pde = 00000000
+Mar  4 23:41:05 silvy kernel: Oops: 0000 [#1]
+Mar  4 23:41:05 silvy kernel: PREEMPT 
+Mar  4 23:41:05 silvy kernel: Modules linked in: usblp radeon drm nfsd exportfs lockd nfs_acl sunrpc acpi_cpufreq cpufreq_ondemand cpufreq_powersave cpufreq_userspace cpufreq_stats freq_table cpufreq_conservative ac fan button thermal video battery container processor rfcomm l2cap bluetooth cfq_iosched deflate zlib_deflate twofish twofish_common serpent blowfish des cbc ecb blkcipher aes xcbc sha256 sha1 crypto_null af_key af_packet sbp2 usbhid hid pl2303 usbserial mousedev pcmcia snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd soundcore ipw2200 ahci psmouse serio_raw pcspkr ieee80211 ieee80211_crypt sdhci mmc_core snd_page_alloc yenta_socket rsrc_nonstatic firmware_class ohci1394 ieee1394 b44 mii pcmcia_core intel_agp ehci_hcd uhci_hcd usbcore agpgart sg sr_mod cdrom unix
+Mar  4 23:41:05 silvy kernel: CPU:    0
+Mar  4 23:41:05 silvy kernel: EIP:    0060:[klist_del+6/69]    Not tainted VLI
+Mar  4 23:41:05 silvy kernel: EFLAGS: 00010286   (2.6.21-rc2-git3 #5)
+Mar  4 23:41:05 silvy kernel: EIP is at klist_del+0x6/0x45
+Mar  4 23:41:05 silvy kernel: eax: 00000000   ebx: f6730a78   ecx: 00000001   edx: f63f5248
+Mar  4 23:41:05 silvy kernel: esi: f6730a88   edi: f63f5240   ebp: f6706618   esp: f7ba7e00
+Mar  4 23:41:05 silvy kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+Mar  4 23:41:05 silvy kernel: Process khubd (pid: 1925, ti=f7ba6000 task=f7c275e0 task.ti=f7ba6000)
+Mar  4 23:41:05 silvy kernel: Stack: f6730a78 00000001 c01fb571 f6730a78 00000001 f63f5240 00000000 c01fb6f2 
+Mar  4 23:41:05 silvy kernel:        f63f5240 f89ffd0e fffffffe f6c62a40 f63f5240 f63f5240 f63f5274 f89ffc8e 
+Mar  4 23:41:05 silvy kernel:        f63f5240 f6706618 c01aafd5 00000202 00000000 f6730a00 f63f5240 f6730a00 
+Mar  4 23:41:05 silvy kernel: Call Trace:
+Mar  4 23:41:05 silvy kernel:  [device_del+21/398] device_del+0x15/0x18e
+Mar  4 23:41:05 silvy kernel:  [device_unregister+8/16] device_unregister+0x8/0x10
+Mar  4 23:41:05 silvy kernel:  [<f89ffd0e>] destroy_serial+0x80/0xcc [usbserial]
+Mar  4 23:41:05 silvy kernel:  [<f89ffc8e>] destroy_serial+0x0/0xcc [usbserial]
+Mar  4 23:41:05 silvy kernel:  [kref_put+95/110] kref_put+0x5f/0x6e
+Mar  4 23:41:05 silvy kernel:  [<f89ff7f7>] usb_serial_disconnect+0x81/0xaa [usbserial]
+Mar  4 23:41:05 silvy kernel:  [kref_put+95/110] kref_put+0x5f/0x6e
+Mar  4 23:41:05 silvy kernel:  [<f887fcc8>] usb_unbind_interface+0x2a/0x59 [usbcore]
+Mar  4 23:41:05 silvy kernel:  [__device_release_driver+110/139] __device_release_driver+0x6e/0x8b
+Mar  4 23:41:05 silvy kernel:  [device_release_driver+29/50] device_release_driver+0x1d/0x32
+Mar  4 23:41:05 silvy kernel:  [bus_remove_device+113/129] bus_remove_device+0x71/0x81
+Mar  4 23:41:05 silvy kernel:  [device_del+308/398] device_del+0x134/0x18e
+Mar  4 23:41:05 silvy kernel:  [<f887e54c>] usb_disable_device+0x5c/0xbb [usbcore]
+Mar  4 23:41:05 silvy kernel:  [<f887afdb>] usb_disconnect+0x82/0x104 [usbcore]
+Mar  4 23:41:05 silvy kernel:  [<f887afc9>] usb_disconnect+0x70/0x104 [usbcore]
+Mar  4 23:41:05 silvy kernel:  [<f887afc9>] usb_disconnect+0x70/0x104 [usbcore]
+Mar  4 23:41:05 silvy kernel:  [<f887b9c8>] hub_thread+0x30b/0x9db [usbcore]
+Mar  4 23:41:05 silvy kernel:  [__activate_task+28/40] __activate_task+0x1c/0x28
+Mar  4 23:41:05 silvy kernel:  [autoremove_wake_function+0/51] autoremove_wake_function+0x0/0x33
+Mar  4 23:41:05 silvy kernel:  [<f887b6bd>] hub_thread+0x0/0x9db [usbcore]
+Mar  4 23:41:05 silvy kernel:  [kthread+155/191] kthread+0x9b/0xbf
+Mar  4 23:41:05 silvy kernel:  [kthread+0/191] kthread+0x0/0xbf
+Mar  4 23:41:05 silvy kernel:  [kernel_thread_helper+7/16] kernel_thread_helper+0x7/0x10
+Mar  4 23:41:05 silvy kernel:  =======================
+Mar  4 23:41:05 silvy kernel: Code: 8b 4b 04 8d 46 04 89 43 04 89 5e 04 89 48 04 89 01 ff 4a 14 8b 42 08 a8 08 74 07 5b 5e e9 83 09 00 00 5b 5e c3 56 89 c6 53 8b 00 <8b> 58 0c 89 e0 25 00 e0 ff ff ff 40 14 89 f0 e8 f5 fe ff ff 85 
+Mar  4 23:41:05 silvy kernel: EIP: [klist_del+6/69] klist_del+0x6/0x45 SS:ESP 0068:f7ba7e00
