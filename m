@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932954AbXCEPGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933509AbXCEPHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932954AbXCEPGp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:06:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933505AbXCEPGo
+	id S933509AbXCEPHF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933507AbXCEPHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:06:44 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:55969 "EHLO
-	outbound3-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932954AbXCEPGo (ORCPT
+	Mon, 5 Mar 2007 10:07:05 -0500
+Received: from mxout-03.mxes.net ([216.86.168.178]:1557 "EHLO
+	mxout-03.mxes.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933509AbXCEPHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:06:44 -0500
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Mon, 5 Mar 2007 16:06:25 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Michael Tokarev" <mjt@tls.msk.ru>
-cc: discuss@x86-64.org, "Andi Kleen" <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] x86_64: add reporting of SVM flags to
- /proc/cpuinfo
-Message-ID: <20070305150625.GJ30318@amd.com>
-References: <20070305143601.GF30318@amd.com>
- <20070305143911.GG30318@amd.com> <45EC2D43.8010108@tls.msk.ru>
+	Mon, 5 Mar 2007 10:07:03 -0500
+Message-ID: <34036.86.7.220.119.1173107218.squirrel@wmbeta.mxes.net>
+In-Reply-To: <1173090919.6782.13.camel@daplas>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> 
+    <20070305015039.GI3441@stusta.de> <1173090919.6782.13.camel@daplas>
+Date: Mon, 5 Mar 2007 15:06:58 -0000 (GMT)
+Subject: Re: [4/6] 2.6.21-rc2: known regressions
+From: "Andrew" <andrew@nelless.net>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Reply-To: "Andrew" <andrew@nelless.net>
+User-Agent: SquirrelMail/1.5.1
 MIME-Version: 1.0
-In-Reply-To: <45EC2D43.8010108@tls.msk.ru>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 05 Mar 2007 15:06:26.0719 (UTC)
- FILETIME=[D8B8FAF0:01C75F37]
-X-WSS-ID: 69F2EE7C2EW95236-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 05:46:27PM +0300, Michael Tokarev wrote:
-> Joerg Roedel wrote:
-> > +++ b/arch/x86_64/kernel/setup.c
-> > +	static char *x86_svm_flags[] = {
-> > +		"npt",
-> > +		"lbrv",
-> > +		"svmlock",
-> > +	};
-> 
-> A nitpick:
-> 
-> static const char *const x86_svm_flags[] = ... ?
+On Mon, March 5, 2007 10:35 am, Antonino A. Daplas wrote:
+>
+> This is not a framebuffer nor console problem.
+>
+>
+> I think Andrew Nelless confirmed that the cause is from the above
+> commit. How to fix it, I don't know.  Perhaps the acpi_skip_timer_override boot option has to
+> be used.
+>
+> Tony
+>
 
-Right. Its better to mark the array as const. Will wait
-for more comments and send an updated patch soon.
+Yes, apologies for taking so long with this.
+I tried the acpi_skip_timer_override boot option last night,
+after Tony pointed it out, and this also works around the
+problem.
 
-Thanks,
-Joerg
+To summarize the cause is the changes made to early-quirks.c
+in the mentioned commit and when this is reverted the problem
+goes away.
 
--- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
+There doesn't seem to be any sign of a living HPET on this
+board or any way of enabling it in the current BIOS revision
+but it seems on intermittent boots the check in early-quirks.c
+returns, the timer override doesn't happen, and the kernel
+fails to boot properly.
 
+Btw, this is the Asus A8N-VM *CSM* main board, the non-CSM
+variety actually has a nForce 410 rather than an
+nForce 430 chip. I don't know whether they behave any
+differently but the two boards actually have different BIOS
+releases.
+
+If reverting the commit would disable the HPET on boards
+that do actually support it I personally don't mind using
+the acpi_skip_timer_override workaround.
+
+-
+  Andrew
 
