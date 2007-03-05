@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXCEHie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbXCEHu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932097AbXCEHie (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 02:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXCEHie
+	id S1752717AbXCEHu2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 02:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXCEHu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 02:38:34 -0500
-Received: from mx1.suse.de ([195.135.220.2]:55700 "EHLO mx1.suse.de"
+	Mon, 5 Mar 2007 02:50:28 -0500
+Received: from mail.queued.net ([207.210.101.209]:4033 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932097AbXCEHid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 02:38:33 -0500
-Message-ID: <45EBC8F2.4040501@suse.de>
-Date: Mon, 05 Mar 2007 08:38:26 +0100
-From: Gerd Hoffmann <kraxel@suse.de>
-Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
- =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	id S1752717AbXCEHu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 02:50:27 -0500
+Message-ID: <45EBCBBE.6000001@debian.org>
+Date: Mon, 05 Mar 2007 02:50:22 -0500
+From: Andres Salomon <dilinger@debian.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, benh@kernel.crashing.org
-Subject: Re: [patch] Fixes and cleanups for earlyprintk aka boot console.
-References: <45DADD15.7070809@suse.de> <17899.39250.247475.777798@cargo.ozlabs.ibm.com>
-In-Reply-To: <17899.39250.247475.777798@cargo.ozlabs.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] highres: Do not run the TIMER_SOFTIRQ after switching
+ to	highres mode
+References: <45E8E2F8.1030102@debian.org> <1172912540.24738.108.camel@localhost.localdomain> <45EAAA21.4040803@debian.org> <1173013794.24738.130.camel@localhost.localdomain> <45EAC5B1.2060306@debian.org> <20070305072518.GB14993@elte.hu>
+In-Reply-To: <20070305072518.GB14993@elte.hu>
+X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Gerd Hoffmann writes:
+Ingo Molnar wrote:
+> * Andres Salomon <dilinger@debian.org> wrote:
 > 
->> This patch fixes the console selection code to *not* consider a boot
->> console a full-featured one, so the first non-boot console registering
->> will become the default console instead.  This way the unregister call
->> for the boot console in the register_console() function actually
->> triggers and the handover from the boot console to the real console
->> device works smoothly.  Added a printk for the handover, so you know
->> which console device the output goes to when the boot console stops
->> printing messages.
+>> Thomas Gleixner wrote:
+>>>>> The question is, how the tick timer gets enqueued in the softirq queue.
+>>>>> Can you isolate the codepath, where this happens ?
+>>> The TIMER_SOFTIRQ runs the hrtimers during bootup until a usable
+>>> clocksource and clock event sources are registered. The switch to high
+>>> resolution mode happens inside of the TIMER_SOFTIRQ, but runs the
+>>> softirq afterwards. That way the tick emulation timer, which was set up
+>>> in the switch to highres might be executed in the softirq context, which
+>>> is a BUG. The rbtree has not to be touched by the softirq after the
+>>> highres switch.
+>>>
+>> And an additional request, just to make it explicit that we should not 
+>> have any NO_SOFTIRQ callbacks in the tree; BUG out if we encounter 
+>> such a thing.
 > 
-> You have removed functionality that is useful for debugging, that 3
-> architectures had, namely a way to keep using the early boot console
-> and not replace it with a console that comes later, using a kernel
-> command line option.  Perhaps you could provide a way to do that in
-> your patch.
+> please change it to WARN_ON_ONCE()...
+> 
+> 'bug out' might mean: 'dead box'/'no resume'/'no bootup'.
+> 
+> 	Ingo
 
---verbose please.  I don't think I broke that.
 
-I've seen code for that in i386/x86_64 and one of the other archs (via
-earlyprintk=foo,keep).  The code clears now the CON_BOOT flag in case
-keep is present, which has the wanted effect:  The earlyprintk console
-will not be replaced.
+Certainly; note that hrtimers.c has quite a few BUG calls which could
+render a box dead, though.
 
-cheers,
-  Gerd
+Patch to follow..
 
--- 
-Gerd Hoffmann <kraxel@suse.de>
