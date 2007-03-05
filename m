@@ -1,62 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752150AbXCEXEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752250AbXCEXG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752150AbXCEXEy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 18:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbXCEXEy
+	id S1752250AbXCEXG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 18:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbXCEXG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 18:04:54 -0500
-Received: from mail.tmr.com ([64.65.253.246]:58515 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbXCEXEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 18:04:50 -0500
-Message-ID: <45ECA239.5000306@tmr.com>
-Date: Mon, 05 Mar 2007 18:05:29 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Mon, 5 Mar 2007 18:06:27 -0500
+Received: from reserv6.univ-lille1.fr ([193.49.225.20]:46311 "EHLO
+	reserv6.univ-lille1.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752141AbXCEXG0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 18:06:26 -0500
+Message-ID: <45ECA23A.5010503@tremplin-utc.net>
+Date: Tue, 06 Mar 2007 00:05:30 +0100
+From: Eric Piel <Eric.Piel@tremplin-utc.net>
+User-Agent: Thunderbird 2.0b2 (X11/20070215)
 MIME-Version: 1.0
-To: jos poortvliet <jos@mijnkamer.nl>
-CC: ck@vds.kolivas.org, Gene Heskett <gene.heskett@gmail.com>,
-       Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free   interactive
- cpu scheduler
-References: <200703041800.53360.kernel@kolivas.org>	<200703050049.50149.kernel@kolivas.org> <20070304143638.GG943@1wt.eu> <200703041708.54953.jos@mijnkamer.nl>
-In-Reply-To: <200703041708.54953.jos@mijnkamer.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: dmitry.torokhov@gmail.com
+CC: mitr@volny.cz, otauber@web.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] Wistron button support for TravelMate 610
+Content-Type: multipart/mixed;
+ boundary="------------080805080306090406040705"
+X-Greylist: Sender DNS name whitelisted, not delayed by milter-greylist-2.0.2 (reserv6.univ-lille1.fr [193.49.225.20]); Tue, 06 Mar 2007 00:05:36 +0100 (CET)
+X-USTL-MailScanner-Information: Please contact the ISP for more information
+X-USTL-MailScanner: Found to be clean
+X-USTL-MailScanner-From: eric.piel@tremplin-utc.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jos poortvliet wrote:
-> Op Sunday 04 March 2007, schreef Willy Tarreau:
->> Hi Con !
->>> This was designed to be robust for any application since linux demands a
->>> general purpose scheduler design, while preserving interactivity, instead
->>> of optimising for one particular end use.
->> Well, I haven't tested it yet, but your design choices please me. As you
->> know, I've been one of those encountering big starvation problems with
->> the original scheduler, making 2.6 unusable for me in many situations. I
->> welcome your work and want to thank you for the time you spend trying to
->> fix it.
->>
->> Keep up the good work,
->> Willy
->>
->> PS: I've looked at your graphs, I hope you're on the way to something
->> really better than the 21 first 2.6 releases !
-> Well, imho his current staircase scheduler already does a better job compared 
-> to mainline, but it won't make it in (or at least, it's not likely). So we 
-> can hope this WILL make it into mainline, but I wouldn't count on it.
-> 
-Wrong problem, what is really needed is to get CPU scheduler choice into 
-mainline, just as i/o scheduler finally did. Con has noted that for some 
-loads this will present suboptimal performance, as will his -ck patches, 
-as will the default scheduler. Instead of trying to make ANY one size 
-fit all, we should have a means to select, at runtime, between any of 
-the schedulers, and preferably to define an interface by which a user 
-can insert a new scheduler in the kernel (compile in, I don't mean 
-plugable) with clear and well defined rules for how that can be done.
+This is a multi-part message in MIME format.
+--------------080805080306090406040705
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Hello,
+
+Here is a patch adding support to wistron button for Acer TravelMate 
+610. This is tested and works fine with the exception of the leds which 
+cannot be controlled (yet, that would require writing a led interface 
+for them when I've got time ;-) )
+
+I'm sending just this one for now (as I can test it) but if you like it, 
+I would like to try to add all the database of keyboards available in 
+acerhk (that Olaf has written).
+
+See you,
+Eric
+
+---
+From: Eric Piel <eric.piel@tremplin-utc.net>
+
+TM610 support for wistron_btns.
+
+Adds support for Acer TravelMate 610 to wistron_btns, coming from info 
+of acer_hk. All special keys are detected, but the 2 leds are not 
+handled (yet).
+
+Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
+---
+
+
+--------------080805080306090406040705
+Content-Type: text/x-patch;
+ name="wistron_btns-tm610-from-acerhk-2.6.21.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="wistron_btns-tm610-from-acerhk-2.6.21.patch"
+
+diff -urpN -X linux-2.6.21/Documentation/dontdiff linux-2.6.21-rc2.bak/drivers/input/misc/wistron_btns.c linux-2.6.21/drivers/input/misc/wistron_btns.c
+--- linux-2.6.21-rc2.bak/drivers/input/misc/wistron_btns.c	2007-03-03 12:33:41.000000000 +0100
++++ linux-2.6.21/drivers/input/misc/wistron_btns.c	2007-03-03 12:35:53.000000000 +0100
+@@ -324,6 +324,21 @@ static struct key_entry keymap_acer_trav
+ 	{ KE_END, 0 }
+ };
+ 
++/* Wifi subsystem only activate the led. Therefore we need to pass
++ * wifi event as a normal key, then userspace can really change the wifi state.
++ * TODO we need to export led state to userspace (wifi and mail) */
++static struct key_entry keymap_acer_travelmate_610[] = {
++	{ KE_KEY, 0x01, KEY_HELP },
++	{ KE_KEY, 0x02, KEY_CONFIG },
++	{ KE_KEY, 0x11, KEY_PROG1 },
++	{ KE_KEY, 0x12, KEY_PROG2 },
++	{ KE_KEY, 0x13, KEY_PROG3 },
++	{ KE_KEY, 0x14, KEY_MAIL },
++	{ KE_KEY, 0x15, KEY_WWW },
++	{ KE_KEY, 0x40, KEY_XFER }, /* Wifi */
++	{ KE_END, 0 }
++};
++
+ static struct key_entry keymap_aopen_1559as[] = {
+ 	{ KE_KEY,  0x01, KEY_HELP },
+ 	{ KE_KEY,  0x06, KEY_PROG3 },
+@@ -408,6 +423,15 @@ static struct dmi_system_id dmi_ids[] __
+ 	},
+ 	{
+ 		.callback = dmi_matched,
++		.ident = "Acer TravelMate 610",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "ACER"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 610"),
++		},
++		.driver_data = keymap_acer_travelmate_610
++	},
++	{
++		.callback = dmi_matched,
+ 		.ident = "AOpen 1559AS",
+ 		.matches = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "E2U"),
+
+--------------080805080306090406040705--
