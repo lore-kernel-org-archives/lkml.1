@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXCEWlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932500AbXCEWlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932486AbXCEWlN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXCEWlL
+	id S932500AbXCEWlS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932495AbXCEWlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:41:11 -0500
-Received: from ns2.suse.de ([195.135.220.15]:58539 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932473AbXCEWku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:40:50 -0500
-Date: Mon, 5 Mar 2007 14:39:00 -0800
-From: Greg KH <greg@kroah.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Theodore Tso <tytso@mit.edu>, Johannes Berg <johannes@sipsolutions.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, yi.zhu@intel.com,
-       jketreno@linux.intel.com,
-       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
-Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
-Message-ID: <20070305223900.GA7676@kroah.com>
-References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org> <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org> <20070305185813.GA31465@kroah.com> <20070305195530.GM23311@waste.org>
+	Mon, 5 Mar 2007 17:41:09 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:7680 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932486AbXCEWkz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 17:40:55 -0500
+Date: Mon, 5 Mar 2007 23:40:55 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] check_bugs() should be inline.
+Message-ID: <20070305224055.GF22630@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070305195530.GM23311@waste.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 01:55:30PM -0600, Matt Mackall wrote:
-> On Mon, Mar 05, 2007 at 10:58:13AM -0800, Greg KH wrote:
-> > Ok, how about the following patch.  Is it acceptable to everyone?
-> > 
-> > -	  If you are using a distro that was released in 2006 or later,
-> > -	  it should be safe to say N here.
-> > +	  If you are using an OpenSuSE, Gentoo, Ubuntu, or Fedora
-> > +	  release from 2007 or later, it should be safe to say N here.
-> > +
-> > +	  If you are using Debian or other distros that are slow to
-> > +	  update HAL, please say Y here.
-> 
-> What HAL version do you think Debian ought to have, pray tell? And
-> what the hell version do those other distros have?
-> 
-> The last HAL release was 0.5.8 on 11-Sep-2006. It showed up in
-> Debian/unstable on 2-Oct. There have been six Debian bugfix releases,
-> the most recent on 12-Feb.
-> 
-> http://people.freedesktop.org/~david/dist/
-> http://packages.debian.org/changelogs/pool/main/h/hal/hal_0.5.8.1-6.1/changelog
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Ok, I only named HAL as that is what people have told me the problem is.
-I have been running this change on my boxs, without
-CONFIG_SYSFS_DEPRECATED since last July or so.
+[S390] check_bugs() should be inline.
 
-But I don't use NetworkManager here for the most part, but I have tried
-this in the OpenSuse10.3 alpha releases and it seems to work just fine
-with whatever version of NetworkManager it uses.
+Don't have functions in header files unless they are inline.
 
-So perhaps it's some wrapper scripts somewhere?  I think SuSE had some
-odd things hard coded somewhere that prevented 10.1 from working
-properly with this change.
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-Ok, so I'll drop the HAL wording above, what should I say instead?
+ include/asm-s390/bugs.h |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-thanks,
-
-greg k-h
+diff -urpN linux-2.6/include/asm-s390/bugs.h linux-2.6-patched/include/asm-s390/bugs.h
+--- linux-2.6/include/asm-s390/bugs.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/bugs.h	2007-03-05 22:51:52.000000000 +0100
+@@ -16,7 +16,7 @@
+  *      void check_bugs(void);
+  */
+ 
+-static void __init check_bugs(void)
++static inline void check_bugs(void)
+ {
+   /* s390 has no bugs ... */
+ }
