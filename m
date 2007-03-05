@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933281AbXCEX5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933336AbXCEX7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933281AbXCEX5b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 18:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933267AbXCEX5b
+	id S933336AbXCEX7e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 18:59:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933339AbXCEX7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 18:57:31 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42067 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933115AbXCEX53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 18:57:29 -0500
-Date: Mon, 5 Mar 2007 15:57:14 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support
-Message-ID: <20070305155714.3abe1b5e@freekitty>
-In-Reply-To: <p73slcnawh3.fsf@bingen.suse.de>
-References: <20070223170527.4ca695b2@freekitty>
-	<Pine.LNX.4.61.0702262108010.23355@yvahk01.tjqt.qr>
-	<20070226143127.5c74bec9@freekitty>
-	<p73slcnawh3.fsf@bingen.suse.de>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 18:59:33 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:52738 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933336AbXCEX7d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 18:59:33 -0500
+Message-ID: <45ECAEDC.1090009@cosmosbay.com>
+Date: Tue, 06 Mar 2007 00:59:24 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: David Brown <dmlb2000@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PAGE_SIZE Availability Inconsistency
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
+In-Reply-To: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 06 Mar 2007 00:59:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03 Mar 2007 03:31:52 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> Stephen Hemminger <shemminger@linux-foundation.org> writes:
+David Brown a écrit :
+> I was rtfc'ing the code one day and noticed somethings about the
+> PAGE_SIZE define that is kinda inconsistent around its relative
+> location to the __KERNEL__ define.
 > 
-> > Here is another way to handle the 64 bit divide case.
-> > It allows full 64 bit divide by adding the support routine
-> > GCC needs.
+> On some architectures the PAGE_SIZE is outside the __KERNEL__ define
+> (i386 and x86_64) and on others its inside the define (ia64 and
+> powerpc).  I was wondering if this is because the powerpc and ia64
+> architectures have dynamic page sizes so that's why they can't export
+> PAGE_SIZE outside __KERNEL__.
 > 
-> Not supplying that was intentional by Linus so that people
-> think twice (or more often) before they using such expensive
-> operations. A plain / looks too innocent.
-> 
-> Is it really needed by CUBIC anyways?  It uses it for getting
-> the cubic root, but the algorithm recommended by Hacker's Delight
-> (great book) doesn't use any divisions at all. Probably better 
-> to use a better algorithm without divisions.
-> 
+> I'm kinda wondering how I'm supposed to write portable user-space code
+> if I want to use the PAGE_SIZE define on different architectures.
 
-I tried the code from Hacker's Delight.
-It is cool, but performance is CPU (and data) dependent:
+The real question is : why do you need PAGE_SIZE from user-space code ?
 
-Average # of usecs per operation:
+If it's for mmap() use, you should use getpagesize()
 
-		Hacker		Newton
-Pentium 3	68.6	<	90.4
-T2050		98.6	>	92.0
-U1400		450	>	415
-Xeon		70 	<	90
-Xeon (newer)	71	<	78
-
-EM64T		21.8	<	24.6
-AMD64		23.4	<	32.0
-
-It might be worth the change for code size reduction though.
-
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
