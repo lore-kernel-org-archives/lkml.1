@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752067AbXCEBtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbXCEBuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752067AbXCEBtr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 20:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXCEBtY
+	id S1752041AbXCEBuL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 20:50:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXCEBtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 20:49:24 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:49931 "EHLO
+	Sun, 4 Mar 2007 20:49:53 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:49950 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751747AbXCEBtU (ORCPT
+	with ESMTP id S1752048AbXCEBtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:49:20 -0500
-Date: Mon, 5 Mar 2007 02:49:21 +0100
+	Sun, 4 Mar 2007 20:49:45 -0500
+Date: Mon, 5 Mar 2007 02:49:45 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, ctindel@users.sourceforge.net,
-       fubar@us.ibm.com
-Cc: linux-kernel@vger.kernel.org, bonding-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>
-Subject: [-mm patch] drivers/net/bonding/bond_main.c:make 3 functions static
-Message-ID: <20070305014921.GW3441@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Antonino Daplas <adaplas@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] drivers/video/hecubafb.c: make 4 functions static
+Message-ID: <20070305014945.GB3441@stusta.de>
 References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -27,63 +27,65 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 02, 2007 at 03:00:26AM -0800, Andrew Morton wrote:
+>...
+> Changes since 2.6.20-mm2:
+>...
+> +fbdev-hecuba-framebuffer-driver.patch
+>...
+>  fbdev updates
+>...
+
+
 This patch makes the following needlessly global functions static:
-- bond_mode_name()
-- bond_sethwaddr()
-- bond_mii_monitor()
+- hcb_wait_for_ack()
+- hcb_wait_for_ack_clear()
+- apollo_send_data()
+- apollo_send_command()
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/net/bonding/bond_main.c |    7 ++++---
- drivers/net/bonding/bonding.h   |    3 ---
- 2 files changed, 4 insertions(+), 6 deletions(-)
+ drivers/video/hecubafb.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6.21-rc2-mm1/drivers/net/bonding/bonding.h.old	2007-03-04 21:33:14.000000000 +0100
-+++ linux-2.6.21-rc2-mm1/drivers/net/bonding/bonding.h	2007-03-04 21:34:46.000000000 +0100
-@@ -301,13 +301,10 @@
- void bond_destroy_slave_symlinks(struct net_device *master, struct net_device *slave);
- int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev);
- int bond_release(struct net_device *bond_dev, struct net_device *slave_dev);
--int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev);
--void bond_mii_monitor(struct work_struct *work);
- void bond_loadbalance_arp_mon(struct work_struct *work);
- void bond_activebackup_arp_mon(struct work_struct *work);
- void bond_set_mode_ops(struct bonding *bond, int mode);
- int bond_parse_parm(char *mode_arg, struct bond_parm_tbl *tbl);
--const char *bond_mode_name(int mode);
- void bond_select_active_slave(struct bonding *bond);
- void bond_change_active_slave(struct bonding *bond, struct slave *new_active);
- void bond_register_arp(struct bonding *);
---- linux-2.6.21-rc2-mm1/drivers/net/bonding/bond_main.c.old	2007-03-04 21:33:29.000000000 +0100
-+++ linux-2.6.21-rc2-mm1/drivers/net/bonding/bond_main.c	2007-03-04 21:34:56.000000000 +0100
-@@ -187,7 +187,7 @@
+--- linux-2.6.21-rc2-mm1/drivers/video/hecubafb.c.old	2007-03-04 21:57:45.000000000 +0100
++++ linux-2.6.21-rc2-mm1/drivers/video/hecubafb.c	2007-03-04 21:58:30.000000000 +0100
+@@ -145,7 +145,7 @@
+ 	return 0;
+ }
  
- /*---------------------------- General routines -----------------------------*/
- 
--const char *bond_mode_name(int mode)
-+static const char *bond_mode_name(int mode)
+-void hcb_wait_for_ack(struct hecubafb_par *par)
++static void hcb_wait_for_ack(struct hecubafb_par *par)
  {
- 	switch (mode) {
- 	case BOND_MODE_ROUNDROBIN :
-@@ -1200,7 +1200,8 @@
  
- /*---------------------------------- IOCTL ----------------------------------*/
+ 	int timeout;
+@@ -161,7 +161,7 @@
+ 	printk(KERN_ERR "timed out waiting for ack\n");
+ }
  
--int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev)
-+static int bond_sethwaddr(struct net_device *bond_dev,
-+			  struct net_device *slave_dev)
+-void hcb_wait_for_ack_clear(struct hecubafb_par *par)
++static void hcb_wait_for_ack_clear(struct hecubafb_par *par)
  {
- 	dprintk("bond_dev=%p\n", bond_dev);
- 	dprintk("slave_dev=%p\n", slave_dev);
-@@ -2014,7 +2015,7 @@
- /*-------------------------------- Monitoring -------------------------------*/
  
- /* this function is called regularly to monitor each slave's link. */
--void bond_mii_monitor(struct work_struct *work)
-+static void bond_mii_monitor(struct work_struct *work)
+ 	int timeout;
+@@ -177,7 +177,7 @@
+ 	printk(KERN_ERR "timed out waiting for clear\n");
+ }
+ 
+-void apollo_send_data(struct hecubafb_par *par, unsigned char data)
++static void apollo_send_data(struct hecubafb_par *par, unsigned char data)
  {
- 	struct bonding *bond = container_of(work, struct bonding, mii_work.work);
- 	struct net_device *bond_dev = bond->dev;
+ 	/* set data */
+ 	hcb_set_data(par, data);
+@@ -195,7 +195,7 @@
+ 	hcb_wait_for_ack_clear(par);
+ }
+ 
+-void apollo_send_command(struct hecubafb_par *par, unsigned char data)
++static void apollo_send_command(struct hecubafb_par *par, unsigned char data)
+ {
+ 	/* command so set CD to high */
+ 	par->ctl &= ~(HCB_NCD_BIT);
 
