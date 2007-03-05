@@ -1,45 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbXCEWvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbXCEWvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752044AbXCEWvO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXCEWu7
+	id S1752144AbXCEWvj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXCEWvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:50:59 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:49607 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbXCEWuo (ORCPT
+	Mon, 5 Mar 2007 17:51:16 -0500
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:11208 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbXCEWvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:50:44 -0500
-Message-Id: <200703052241.l25MfL46008440@ccure.user-mode-linux.org>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.0.4
-To: akpm@osdl.org
-cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH 4/4] UML - Comment the initialization of a global
-Mime-Version: 1.0
+	Mon, 5 Mar 2007 17:51:05 -0500
+Date: Mon, 5 Mar 2007 23:44:11 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] cio/ipl: Clean interface between cio and ipl code.
+Message-ID: <20070305224411.GO22630@skybase>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Mon, 05 Mar 2007 17:41:21 -0500
-From: Jeff Dike <jdike@addtoit.com>
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comment the fact that sig_info is initialized early in boot, and thus doesn't
-need any locking.
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/os-Linux/trap.c |    1 +
- 1 file changed, 1 insertion(+)
+[S390] cio/ipl: Clean interface between cio and ipl code.
 
-Index: linux-2.6.18-mm/arch/um/os-Linux/trap.c
-===================================================================
---- linux-2.6.18-mm.orig/arch/um/os-Linux/trap.c	2006-12-30 04:20:14.000000000 +1100
-+++ linux-2.6.18-mm/arch/um/os-Linux/trap.c	2007-01-16 10:38:21.000000000 +1100
-@@ -16,6 +16,7 @@ void usr2_handler(int sig, union uml_pt_
- 	CHOOSE_MODE(syscall_handler_tt(sig, regs), (void) 0);
+Clean interface between cio and ipl code, so Peter stops complaining.
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ arch/s390/kernel/ipl.c |   23 ++++++++++++++++++++++-
+ drivers/s390/cio/cio.c |   38 ++++++++++----------------------------
+ include/asm-s390/cio.h |    7 +++++++
+ include/asm-s390/ipl.h |    3 +--
+ 4 files changed, 40 insertions(+), 31 deletions(-)
+
+diff -urpN linux-2.6/arch/s390/kernel/ipl.c linux-2.6-patched/arch/s390/kernel/ipl.c
+--- linux-2.6/arch/s390/kernel/ipl.c	2007-03-05 22:51:50.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/ipl.c	2007-03-05 22:52:03.000000000 +0100
+@@ -47,7 +47,7 @@ enum ipl_type {
+  * Must be in data section since the bss section
+  * is not cleared when these are accessed.
+  */
+-u16 ipl_devno __attribute__((__section__(".data"))) = 0;
++static u16 ipl_devno __attribute__((__section__(".data"))) = 0;
+ u32 ipl_flags __attribute__((__section__(".data"))) = 0;
+ 
+ static char *ipl_type_str(enum ipl_type type)
+@@ -1039,6 +1039,27 @@ static int __init s390_ipl_init(void)
+ 
+ __initcall(s390_ipl_init);
+ 
++void __init ipl_save_parameters(void)
++{
++	struct cio_iplinfo iplinfo;
++	unsigned int *ipl_ptr;
++	void *src, *dst;
++
++	if (cio_get_iplinfo(&iplinfo))
++		return;
++
++	ipl_devno = iplinfo.devno;
++	ipl_flags |= IPL_DEVNO_VALID;
++	if (!iplinfo.is_qdio)
++		return;
++	ipl_flags |= IPL_PARMBLOCK_VALID;
++	ipl_ptr = (unsigned int *)__LC_IPL_PARMBLOCK_PTR;
++	src = (void *)(unsigned long)*ipl_ptr;
++	dst = (void *)IPL_PARMBLOCK_ORIGIN;
++	memmove(dst, src, PAGE_SIZE);
++	*ipl_ptr = IPL_PARMBLOCK_ORIGIN;
++}
++
+ static LIST_HEAD(rcall);
+ static DEFINE_MUTEX(rcall_mutex);
+ 
+diff -urpN linux-2.6/drivers/s390/cio/cio.c linux-2.6-patched/drivers/s390/cio/cio.c
+--- linux-2.6/drivers/s390/cio/cio.c	2007-03-05 22:51:36.000000000 +0100
++++ linux-2.6-patched/drivers/s390/cio/cio.c	2007-03-05 22:52:03.000000000 +0100
+@@ -1048,37 +1048,19 @@ void reipl_ccw_dev(struct ccw_dev_id *de
+ 	do_reipl_asm(*((__u32*)&schid));
  }
  
-+/* Initialized from linux_main() */
- void (*sig_info[NSIG])(int, union uml_pt_regs *);
+-static struct schib __initdata ipl_schib;
+-
+-/*
+- * ipl_save_parameters gets called very early. It is not allowed to access
+- * anything in the bss section at all. The bss section is not cleared yet,
+- * but may contain some ipl parameters written by the firmware.
+- * These parameters (if present) are copied to 0x2000.
+- * To avoid corruption of the ipl parameters, all variables used by this
+- * function must reside on the stack or in the data section.
+- */
+-void ipl_save_parameters(void)
++int __init cio_get_iplinfo(struct cio_iplinfo *iplinfo)
+ {
+ 	struct subchannel_id schid;
+-	unsigned int *ipl_ptr;
+-	void *src, *dst;
++	struct schib schib;
  
- void os_fill_handlinfo(struct kern_handlers h)
-
+ 	schid = *(struct subchannel_id *)__LC_SUBCHANNEL_ID;
+ 	if (!schid.one)
+-		return;
+-	if (stsch(schid, &ipl_schib))
+-		return;
+-	if (!ipl_schib.pmcw.dnv)
+-		return;
+-	ipl_devno = ipl_schib.pmcw.dev;
+-	ipl_flags |= IPL_DEVNO_VALID;
+-	if (!ipl_schib.pmcw.qf)
+-		return;
+-	ipl_flags |= IPL_PARMBLOCK_VALID;
+-	ipl_ptr = (unsigned int *)__LC_IPL_PARMBLOCK_PTR;
+-	src = (void *)(unsigned long)*ipl_ptr;
+-	dst = (void *)IPL_PARMBLOCK_ORIGIN;
+-	memmove(dst, src, PAGE_SIZE);
+-	*ipl_ptr = IPL_PARMBLOCK_ORIGIN;
++		return -ENODEV;
++	if (stsch(schid, &schib))
++		return -ENODEV;
++	if (!schib.pmcw.dnv)
++		return -ENODEV;
++	iplinfo->devno = schib.pmcw.dev;
++	iplinfo->is_qdio = schib.pmcw.qf;
++	return 0;
+ }
+diff -urpN linux-2.6/include/asm-s390/cio.h linux-2.6-patched/include/asm-s390/cio.h
+--- linux-2.6/include/asm-s390/cio.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/cio.h	2007-03-05 22:52:03.000000000 +0100
+@@ -292,6 +292,13 @@ extern void css_schedule_reprobe(void);
+ 
+ extern void reipl_ccw_dev(struct ccw_dev_id *id);
+ 
++struct cio_iplinfo {
++	u16 devno;
++	int is_qdio;
++};
++
++extern int cio_get_iplinfo(struct cio_iplinfo *iplinfo);
++
+ #endif
+ 
+ #endif
+diff -urpN linux-2.6/include/asm-s390/ipl.h linux-2.6-patched/include/asm-s390/ipl.h
+--- linux-2.6/include/asm-s390/ipl.h	2007-03-05 22:51:50.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/ipl.h	2007-03-05 22:52:03.000000000 +0100
+@@ -69,10 +69,9 @@ struct ipl_parameter_block {
+ } __attribute__((packed));
+ 
+ /*
+- * IPL validity flags and parameters as detected in head.S
++ * IPL validity flags
+  */
+ extern u32 ipl_flags;
+-extern u16 ipl_devno;
+ 
+ extern u32 dump_prefix_page;
+ extern void do_reipl(void);
