@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750909AbXCEQbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbXCEQbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750909AbXCEQbg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 11:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbXCEQbg
+	id S1752801AbXCEQbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 11:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXCEQbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 11:31:36 -0500
-Received: from smtpout.mac.com ([17.250.248.176]:62831 "EHLO smtpout.mac.com"
+	Mon, 5 Mar 2007 11:31:43 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52746 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909AbXCEQbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 11:31:35 -0500
-In-Reply-To: <20070301144138.57d6d8c7.akpm@linux-foundation.org>
-References: <45E33EBD.6020603@google.com> <20070228220349.b42bf571.akpm@linux-foundation.org> <20070301103451.2618cc35@dhcp-252-105.norway.atmel.com> <20070301014523.e45c3cc5.akpm@linux-foundation.org> <45E7308B.3050106@google.com> <20070301144138.57d6d8c7.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1ED05FB5-17F7-42B2-BEAA-446F7DADAE46@mac.com>
-Cc: Mathieu Desnoyers <compudj@google.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       linux-kernel@vger.kernel.org
+	id S1752801AbXCEQbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 11:31:42 -0500
+Message-ID: <45EC45E1.3090606@redhat.com>
+Date: Mon, 05 Mar 2007 11:31:29 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+MIME-Version: 1.0
+To: Andy Chittenden <andyc@bluearc.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Nfs over tcp retries
+References: <0F10A59FDFFDFD4E9BEBD7365DE672559C654F@uk-email.terastack.bluearc.com>
+In-Reply-To: <0F10A59FDFFDFD4E9BEBD7365DE672559C654F@uk-email.terastack.bluearc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Thread flags modified without set_thread_flag() (non atomically)
-Date: Mon, 5 Mar 2007 11:30:49 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 01, 2007, at 17:41:38, Andrew Morton wrote:
-> Well, it's unusual for code to want to test multiple bitflags in  
-> the same operation.  Perhaps thread_info.flags is unusual in that  
-> regard.
+Andy Chittenden wrote:
+> Here's a sequence of packets captured at the end of a NFS connection and
+> the start of the next for a RH Fedora Core 6 client:
 >
-> But one can still do
+> # cat ~/tmp/28852a.txt
+> ...
 >
-> 	if (foo->flags & (1<<bar)|(1<<zot))
+> As you can see in packet 3, the nfs server's sent a FIN-ACK which is
+> acknowledged in packet 6 by the client. So by packet 8, the connection's
+> closed. The client attempts to reconnect to the server in packet 8 which
+> is refused by the server in packet 9 as the client is using the same
+> port number as the previous session: the server's in TIME WAIT from the
+> previous connection and the initial send sequence number of this new
+> connection is below the highest sequence number of the previous
+> connection. The client's attempts to reconnect continue unsuccessfully
+> until 2MSL is exceeded.
 >
-> Which can get to be a pain if it happens in a lot of places.  But  
-> if it only happens in a few places, this seems a reasonable price  
-> to pay, given the safety gains.
+> So, a few questions:
 >
-> Plus I'm _forever_ having to go into the header file to remember  
-> whether REQ_RW is the bitmask or the bit offset.
+> * why does the NFS client reuse the same source port number (894 in the
+> example above)?
+> * if the socket's being reused, why is the ISS being chosen such that
+> it's within the same range as the last successful connection?
+> * why does the ISS seem to go up by only 3 since the last attempt to
+> connect?
+>
+> If the linux NFS client had used a different source port number or
+> chosen an out-of-range ISS, then its reconnection attempts would have
+> been successful in a more timely manner.
 
-Hey Andrew, I think you just fell victim to an order-of-operations  
-bug;  '&' has a higher priority than '|' does, so:
+I suspect that the NFS client attempts to reuse the same port number
+for the new connection so that it does not invalidate the duplicate
+request cache on the server.  NFS servers typically use the entire
+IP address of the client, including the port number, when performing
+the tests to check to see if the current request is the duplicate of
+a previous request.
 
-   if ( (foo->flags & (1<<bar)) | (1<<zot))
-
-Or:
-
-   if ( dynamic_value | always_true_constant )
-
-And as such this if statement is always true.  You'd need an extra  
-pair of parentheses to make it correct.
-
-Cheers,
-Kyle Moffett
-
+       ps
