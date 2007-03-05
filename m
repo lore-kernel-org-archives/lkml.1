@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752077AbXCEBvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751677AbXCEBx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752077AbXCEBvG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 20:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXCEBuf
+	id S1751677AbXCEBx6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 20:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbXCEBtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 20:50:35 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:49975 "EHLO
+	Sun, 4 Mar 2007 20:49:50 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:49935 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751677AbXCEBua (ORCPT
+	with ESMTP id S1751783AbXCEBt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:50:30 -0500
-Date: Mon, 5 Mar 2007 02:50:31 +0100
+	Sun, 4 Mar 2007 20:49:26 -0500
+Date: Mon, 5 Mar 2007 02:49:27 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org,
-       maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
-       Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Albert Hopkins <kernel@marduk.letterboxes.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-Subject: [1/6] 2.6.21-rc2: known regressions
-Message-ID: <20070305015031.GF3441@stusta.de>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+To: linux-driver@qlogic.com, Ron Mercer <ron.mercer@qlogic.com>
+Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/net/qla3xxx.c: make 2 functions static
+Message-ID: <20070305014927.GY3441@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email lists some known regressions in 2.6.21-rc2 compared to 2.6.20
-that are not yet fixed in Linus' tree.
+This patch makes two needlessly global functions static.
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way 
-possibly involved with one or more of these issues.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Due to the huge amount of recipients, please trim the Cc when answering.
-
-
-Subject    : kwin dies silently
-References : http://lkml.org/lkml/2007/2/28/112
-Submitter  : Sid Boyce <g3vbv@blueyonder.co.uk>
-Status     : unknown
-
-
-Subject    : resume: slab error in verify_redzone_free(): cache `size-512':
-                     memory outside object was overwritten
-References : http://lkml.org/lkml/2007/2/24/41
-Submitter  : Pavel Machek <pavel@ucw.cz>
-Handled-By : Marcel Holtmann <marcel@holtmann.org>
-Status     : unknown
-
-
-Subject    : bluetooth hardlocks
-References : http://lkml.org/lkml/2007/3/2/85
-Submitter  : Pavel Machek <pavel@ucw.cz>
-Status     : unknown
-
-
-Subject    : Bluetooth RFComm locks up the machine  (device_move() related)
-References : http://lkml.org/lkml/2007/3/4/64
-Submitter  : Mark Lord <lkml@rtr.ca>
-Caused-By  : Marcel Holtmann <marcel@holtmann.org>
-             commit c1a3313698895d8ad4760f98642007bf236af2e8
-Status     : unknown
-
-
-Subject    : kref refcounting breakage
-References : http://lkml.org/lkml/2007/3/2/67
-Submitter  : Andrew Morton <akpm@linux-foundation.org>
-Handled-By : Greg KH <greg@kroah.com>
-Status     : unknown
-
-
-Subject    : wireless breakage (ipw2200, iwconfig, NetworkManager)
-References : http://lkml.org/lkml/2007/3/4/135
-Submitter  : Matt Mackall <mpm@selenic.com>
-Caused-By  : Greg Kroah-Hartman <gregkh@suse.de> (?)
-             commit 43cb76d91ee85f579a69d42bc8efc08bac560278 (?)
-Handled-By : Johannes Berg <johannes@sipsolutions.net>
-Status     : unknown
-
-
-Subject    : forcedeth: skb_over_panic
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
-Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
-Status     : unknown
+---
+--- linux-2.6.21-rc2-mm1/drivers/net/qla3xxx.c.old	2007-03-04 21:41:27.000000000 +0100
++++ linux-2.6.21-rc2-mm1/drivers/net/qla3xxx.c	2007-03-04 21:41:39.000000000 +0100
+@@ -1797,14 +1797,14 @@
+ 	atomic_inc(&qdev->tx_count);
+ }
+ 
+-void ql_get_sbuf(struct ql3_adapter *qdev)
++static void ql_get_sbuf(struct ql3_adapter *qdev)
+ {
+ 	if (++qdev->small_buf_index == NUM_SMALL_BUFFERS)
+ 		qdev->small_buf_index = 0;
+ 	qdev->small_buf_release_cnt++;
+ }
+ 
+-struct ql_rcv_buf_cb *ql_get_lbuf(struct ql3_adapter *qdev)
++static struct ql_rcv_buf_cb *ql_get_lbuf(struct ql3_adapter *qdev)
+ {
+ 	struct ql_rcv_buf_cb *lrg_buf_cb = NULL;
+ 	lrg_buf_cb = &qdev->lrg_buf[qdev->lrg_buf_index];
 
