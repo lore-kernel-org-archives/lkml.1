@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbXCERoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752027AbXCERtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbXCERoi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 12:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXCERoi
+	id S1752027AbXCERtf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 12:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbXCERtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 12:44:38 -0500
-Received: from max.feld.cvut.cz ([147.32.192.36]:57238 "EHLO max.feld.cvut.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752823AbXCERoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 12:44:37 -0500
-From: CIJOML <cijoml@volny.cz>
-To: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: Marco's Opera driver fails load firmware
-Date: Mon, 5 Mar 2007 18:44:15 +0100
-User-Agent: KMail/1.9.5
+	Mon, 5 Mar 2007 12:49:35 -0500
+Received: from thccv19.oz.nthu.edu.tw ([140.114.63.219]:45230 "EHLO
+	thccv19.oz.nthu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbXCERte (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 12:49:34 -0500
+From: "Yu-Chen Wu" <g944370@oz.nthu.edu.tw>
+To: <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>
+Subject: How to copy a page to another page completely?
+Date: Tue, 6 Mar 2007 01:49:29 +0800
+Message-ID: <000001c75f4e$a0674a00$0100a8c0@sslabmayasky>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703051844.15981.cijoml@volny.cz>
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: AcdfTp86sZmFcwrfQ3yL6EQQ7KYrKQ==
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marco,
+Hi all,
+I tried "memcpy","__copy_to_user",and "__copy_to_user_inatomic",etc.
+The destination is BIO's bio_vec->page (the page should be in userspace),
+the source is a page of my modules; 
+I get the addresses of the both pages from kmap() or kmap_atomic() then pass
+to "memcpy" or "__copy_to_user" or "__copy_to_user_inatomic".
+If the method can work, the buffer of userspace process will have the
+context of the page of my module.
+There is a problem that the context of buffer is incomplete when first run,
+and the problem will disappear when run more time.
+How to copy a page to another page completely?
 
-I just tested your driver you have posted to the linux-dvb mailing list.
-I have problem load firmware into device:
+THX
 
-usb 5-3: new high speed USB device using ehci_hcd and address 4
-usb 5-3: configuration #1 chosen from 1 choice
-dvb-usb: found a 'Opera1 DVB-S USB2.0' in cold state, will try to load a 
-firmware
-dvb-usb: downloading firmware from file 'opera1.fw'
-dvb-usb: firmware download failed at 9418 with -22
-opera1: probe of 5-3:1.0 failed with error -22
-usbcore: registered new interface driver opera1
-
-My firmware files are:
-
--rw-r--r-- 1 root root  8300 2006-04-05 21:23 opera1-2.fw
--rw-r--r-- 1 root root 55894 2006-04-05 21:23 opera1-fpga.fw
--rw-r--r-- 1 root root  9432 2006-04-05 21:22 opera1.fw
-
-60aa3e8a540de75d0f456d3979408d7d  /usr/lib/hotplug/firmware/opera1-2.fw
-2b48b0923de2fdfcb160d9cce3d3529d  /usr/lib/hotplug/firmware/opera1-fpga.fw
-95032d7201b25e0f8ee802c5b292aa69  /usr/lib/hotplug/firmware/opera1.fw
-
-I have created wish in kernel's bugzilla before, so we can track it there:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=7574
-
-Thanks for help.
-
-Michal
