@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbXCEXKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbXCEXL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752462AbXCEXKU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 18:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbXCEXKU
+	id S1752254AbXCEXL0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 18:11:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXCEXL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 18:10:20 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:57259 "EHLO e6.ny.us.ibm.com"
+	Mon, 5 Mar 2007 18:11:26 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:40618 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752262AbXCEXKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 18:10:17 -0500
-Subject: Re: [PATCH] fs: nobh_truncate_page() fix
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Will Trives <will@trivescon.com.au>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Chuck Ebbert <cebbert@redhat.com>
-In-Reply-To: <20070305145753.1180a1d4.akpm@linux-foundation.org>
-References: <20070305150317.57e62d70@disher.kickcrew>
-	 <45EC3058.2010903@redhat.com>
-	 <1173108985.9109.11.camel@kleikamp.austin.ibm.com>
-	 <1173109811.9109.17.camel@kleikamp.austin.ibm.com>
-	 <1173128289.9109.36.camel@kleikamp.austin.ibm.com>
-	 <Pine.LNX.4.64.0703051333140.3998@woody.linux-foundation.org>
-	 <20070305145753.1180a1d4.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 05 Mar 2007 17:10:11 -0600
-Message-Id: <1173136211.9109.81.camel@kleikamp.austin.ibm.com>
+	id S1752256AbXCEXLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 18:11:25 -0500
+Date: Mon, 5 Mar 2007 15:11:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "J.A. =?ISO-8859-1?Q?Magall=F3n" ?= <jamagallon@ono.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm1
+Message-Id: <20070305151120.e5eab328.akpm@linux-foundation.org>
+In-Reply-To: <20070305232058.6eeeb254@werewolf-wl>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+	<20070305232058.6eeeb254@werewolf-wl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 14:57 -0800, Andrew Morton wrote:
-> Is OK, I think.  nobh_prepare_write() brings the outside-from-and-to
-> sections of the page uptodate and memset in nobh_truncate_page() brings the
-> rest of the page uptodate.
+On Mon, 5 Mar 2007 23:20:58 +0100
+"J.A. Magall__n" <jamagallon@ono.com> wrote:
+
+> On Fri, 2 Mar 2007 03:00:26 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> We bring the to->PAGE_CACHE_SIZE section uptodate twice, which could be
-> optimised.
+> > 
+> > Temporarily at
+> > 
+> >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+> > 
+> > Will appear later at
+> > 
+> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
+> > 
+> > 
+> 
+> I'm also noticing very bad behaviour wrt scheduling, I think. When I launch my
+> parallel cpu burning code, the system _really_ stalls, the mouse in X11 is not
+> jerky, it is _stuck_ for a couple or three seconds...
+> 
+> The only diffrecence is that, trying to solve nVidia driver problems, I disabled
+> BKL preemption:
+> 
+> werewolf:/usr/src/linux# grep PREEMPT .config
+> # CONFIG_PREEMPT_RCU is not set
+> # CONFIG_PREEMPT_NONE is not set
+> # CONFIG_PREEMPT_VOLUNTARY is not set
+> CONFIG_PREEMPT=y
+> # CONFIG_PREEMPT_BKL is not set
 
-Why not have nobh_truncate_page() call prepare_write() with to =
-PAGE_CACHE_SIZE?  I don't really grok:
+Do you think that is a problem which is introduced by -rc1-mm1?
 
-to = (offset + blocksize) & ~(blocksize - 1);
--- 
-David Kleikamp
-IBM Linux Technology Center
+It'd be good if you can capture the `top' output while this is happening -
+it could be the longstanding problem where an app's sleep/run pattern
+permits it to get a lot of dynamic priority boosting, even though it is
+CPU-intensive.
 
