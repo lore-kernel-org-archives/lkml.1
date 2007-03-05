@@ -1,38 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbXCEW6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752133AbXCEW7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752068AbXCEW6d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXCEW6d
+	id S1752133AbXCEW7L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXCEW7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:58:33 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:23937 "EHLO hobbit.corpit.ru"
+	Mon, 5 Mar 2007 17:59:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59929 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752068AbXCEW6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:58:32 -0500
-Message-ID: <45ECA092.8080605@tls.msk.ru>
-Date: Tue, 06 Mar 2007 01:58:26 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	id S1752133AbXCEW7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 17:59:08 -0500
 MIME-Version: 1.0
-To: Christopher.Prest@rogers.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: (trivia) remove useless typecast around `jif' variable
-References: <20070305161251.AE2C97FAA@paltus.tls.msk.ru> <663650480-1173118082-cardhu_blackberry.rim.net-718749525-@bxe041-cell01.bisx.prod.on.blackberry>
-In-Reply-To: <663650480-1173118082-cardhu_blackberry.rim.net-718749525-@bxe041-cell01.bisx.prod.on.blackberry>
-X-Enigmail-Version: 0.94.1.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=KOI8-R
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+X-Fcc: ~/Mail/linus
+Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [patch] paravirt: VDSO page is essential
+In-Reply-To: Jeremy Fitzhardinge's message of  Monday, 5 March 2007 14:01:43 -0800 <45EC9347.9030009@goop.org>
+Emacs: there's a reason it comes with a built-in psychotherapist.
+Message-Id: <20070305225859.236021800E5@magilla.sf.frob.com>
+Date: Mon,  5 Mar 2007 14:58:59 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christopher.Prest@rogers.com wrote:
-> Yes sounds correct.  How many other places are being casted as well?
+> Jan Beulich just posted a patch to do just this - relocate the vdso's
+> ELF header.  If that's all that's really required to keep COMPAT_VDSO
+> viable under PARAVIRT, then it seems like the way to go.
 
-Care to find them? :)
+I found http://marc.theaimsgroup.com/?l=xen-devel&m=117309332600075&w=2 and
+that must be the one you meant.  The ELF-grokking form of that is exactly
+what I had in mind.  The "find relocs with cmp" scheme is pretty silly, but
+also works fine.  It trades tweaky ELF knowledge with tweaky fragile build
+methods, but it's all about the same to me.  
 
-This one took my attention by a chance.  I looked at various other files,
-at least in fs/proc/, but don't see any other places like this.
 
-/mjt
+Thanks,
+Roland
