@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933133AbXCELFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933082AbXCELIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933133AbXCELFb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 06:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933082AbXCELFb
+	id S933082AbXCELIQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 06:08:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933144AbXCELIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 06:05:31 -0500
-Received: from mail.station1.mxsweep.com ([212.147.136.149]:3344 "EHLO
-	SCMF01.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933133AbXCELFa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 06:05:30 -0500
-Message-ID: <45EBF8D3.1020609@draigBrady.com>
-Date: Mon, 05 Mar 2007 11:02:43 +0000
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20061116)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: userspace pagecache management tool
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-In-Reply-To: <20070303122935.f1ab0067.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Mlf-Version: 5.0.2.8415
-X-Mlf-UniqueId: o200703051108050216593
+	Mon, 5 Mar 2007 06:08:16 -0500
+Received: from www.osadl.org ([213.239.205.134]:49696 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933082AbXCELIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 06:08:15 -0500
+Subject: [PATCH] Fix compile error in latest git
+From: Jan Altenberg <jan.altenberg@linutronix.de>
+To: davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 12:08:08 +0100
+Message-Id: <1173092888.3417.11.camel@bender.tec.linutronix.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I've uploaded to http://userweb.kernel.org/~akpm/pagecache-management/ a
-> little tool which permits the management of the pagecache usage of
-> arbitrary applications.  Effectively it prevents the targetted application
-> from using any pagecache at all.
+Hi,
 
-Cool, Kinda like noca?
-http://kernel.umbrella.ro/vm/
-Though I could easily read your code,
-but couldn't immediately figure out what noca was doing.
+I recognized a compile error in latest git:
 
-I used posix_fadvise in an app I did recently:
-http://www.pixelbeat.org/programs/dvd-vr/
-There is a stream_data() func there that does:
+/here/workdir/git/drivers/net/gianfar.c: In function `gfar_vlan_rx_kill_vid':
+/here/workdir/git/drivers/net/gianfar.c:1135: error: structure has no member named `vgrp'
 
-read(src)
-write(dst)
-posix_fadvise(src)
-posix_fadvise(dst)
+This error was introduced in commit:
 
-for performance I found I needed to do it in that order
-so that any readahead done with the read(src)
-was not thrown away by the posix_fadvise(src).
-In addition to the order, one must be careful
-to throw away only what you've actually written.
+commit 6d04e3b04b6ab569cabeb5ca28ad1be11777e895
+Merge: 4227003... 5c15bde...
+Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+Date:   Sun Mar 4 13:16:49 2007 -0800
 
-I'm not sure your lib gives enough control over this,
-as you essentially do:
+    Merge master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
+    
+    * master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6:
+      [VLAN]: Avoid a 4-order allocation.
+      [HDLC] Fix dev->header_cache_update having a random value.
+      [NetLabel]: Verify sensitivity level has a valid CIPSO mapping
+      [PPPOE]: Key connections properly on local device.
+      [AF_UNIX]: Test against sk_max_ack_backlog properly.
+      [NET]: Fix bugs in "Whether sock accept queue is full" checking
 
-posix_fadvise(src)
-read(src)
-posix_fadvise(dst)
-write(dst)
+Patch is attached.
 
-cheers,
-Pádraig.
+Signed-off-by: Jan Altenberg <jan@linutronix.de>
+
+---
+ drivers/net/gianfar.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/net/gianfar.c
+===================================================================
+--- linux-2.6.orig/drivers/net/gianfar.c
++++ linux-2.6/drivers/net/gianfar.c
+@@ -1132,7 +1132,7 @@ static void gfar_vlan_rx_kill_vid(struct
+ 
+ 	spin_lock_irqsave(&priv->rxlock, flags);
+ 
+-	vlan_group_set_device(priv->vgrp, vid, NULL);
++	vlan_group_set_device(priv->vlgrp, vid, NULL);
+ 
+ 	spin_unlock_irqrestore(&priv->rxlock, flags);
+ }
+
+
