@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933188AbXCELra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbXCEL6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933188AbXCELra (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 06:47:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933193AbXCELr3
+	id S933190AbXCEL6N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 06:58:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933194AbXCEL6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 06:47:29 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:53070 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933188AbXCELr3 (ORCPT
+	Mon, 5 Mar 2007 06:58:13 -0500
+Received: from [212.12.190.39] ([212.12.190.39]:32882 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933190AbXCEL6M convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 06:47:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TGQbznmFOOiy2lfINA8YNhRPY9yKtJBAmk2yrZh/eJ4XuSsN5UrtA0j4dPoBbilTDmTv9wiIZ566PYRPs3DqjT8Q2zR+DDMTIrNuSMIIwR2azf1a2lIs6NA1oX39ZplyClxnyiwmKcm7LTN/bf4Qls8bupfRGItU3HoI8KS31KE=
-Message-ID: <6bffcb0e0703050347j5169c672g19996d5c76707123@mail.gmail.com>
-Date: Mon, 5 Mar 2007 12:47:26 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump kernel)
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070305103141.GA18404@elte.hu>
+	Mon, 5 Mar 2007 06:58:12 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: mjt@nysv.org (Markus =?iso-8859-1?q?T=F6rnqvist?=)
+Subject: Re: [ck] Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Date: Mon, 5 Mar 2007 14:59:44 +0300
+User-Agent: KMail/1.5
+Cc: Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703050834.45712.a1426z@gawab.com> <20070305060732.GQ30401@nysv.org>
+In-Reply-To: <20070305060732.GQ30401@nysv.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1173018209.24738.135.camel@localhost.localdomain>
-	 <1173022668.24738.141.camel@localhost.localdomain>
-	 <6bffcb0e0703040828j46a339c2ofabf7c0e20f6ae09@mail.gmail.com>
-	 <1173026442.24738.143.camel@localhost.localdomain>
-	 <6bffcb0e0703040847g1c04940bm4c22895ec2540bd1@mail.gmail.com>
-	 <1173027823.24738.156.camel@localhost.localdomain>
-	 <6bffcb0e0703040915h442b4d6cq8bb47cd961165916@mail.gmail.com>
-	 <20070305080824.GA20583@elte.hu>
-	 <1173090869.24738.198.camel@localhost.localdomain>
-	 <20070305103141.GA18404@elte.hu>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200703051459.44206.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/03/07, Ingo Molnar <mingo@elte.hu> wrote:
+Markus Törnqvist wrote:
+> On Mon, Mar 05, 2007 at 08:34:45AM +0300, Al Boldi wrote:
+> >Ok, gears is smooth when you run "make -j4", but with "nice make -j4",
+> > gears becomes bursty.  This looks like a problem with nice-levels.  In
+> > general, looking subjectively at top d.1, procs appear to show jerkiness
+> > when nice'd.
 >
-> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> Don't use glxgears, please. Ever. Unless you want meaningless gears.
 >
-> > > shouldnt that be 'R' instead of the question mark?
-> >
-> > ? are dead ones,
->
-> ok.
->
-> > The interesting part is here:
-> >
-> > 1 lock held by udevd/918:
-> >  #0:  (&mm->mmap_sem){----}, at: [<c161135b>] do_page_fault+0x150/0x50d
-> >
-> > But udevd/918 is nowhere in the sysrq-t output.
->
-> also below is a softlockup-debug patch that might be useful, which adds
-> a tick/tock output so it spams the console once per second but can show
-> the dynamics of lockups (and other delays).
+> It displays totally erratic behaviour anyway, and does sched_yield (strace
+> tells us this) which means IT GIVES UP ITS TIME TO RUN, ie yields the
+> cpu to someone else.
 
-I have applied this patch
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/log3.txt
+I just strace'd it here.  It doesn't show any yield in the mesa-5.0 version.  
+Which version are you using?
 
-Regards,
-Michal
+> >Do you have an objective test-case that can show the even-ness of RSDL in
+> >both nice'd and normal scenarios?
+>
+> A big movie, like DVD-quality, full resolution should do the trick.
+> That's what I used ;)
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+The problem with audio/video is that they usually do buffering, which hides 
+scheduler anomalies.
+
+> Debian and Ubuntu at least ship "stress" which I also used and reniced
+> in-flight with excellent results, but do note to start off with small
+> settings and work up or you might overcommit your box, in a way which
+> no scheduler can handle.
+
+Can you give a link?
+
+
+Thanks!
+
+--
+Al
+
