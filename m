@@ -1,97 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750948AbXCEQuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752137AbXCEQx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750948AbXCEQuJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 11:50:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbXCEQuJ
+	id S1752137AbXCEQx0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 11:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXCEQx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 11:50:09 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:19541 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbXCEQuH (ORCPT
+	Mon, 5 Mar 2007 11:53:26 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58422 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbXCEQxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 11:50:07 -0500
-Date: Mon, 5 Mar 2007 08:47:27 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "FN" <zzzz444@ml1.net>
-Cc: "Oleg Verych" <olecom@flower.upol.cz>, linux-kernel@vger.kernel.org
-Subject: Re: module builds need improvement / top Makefile not good enough
-Message-Id: <20070305084727.102b51f5.randy.dunlap@oracle.com>
-In-Reply-To: <1173102794.12256.1177759349@webmail.messagingengine.com>
-References: <1172855662.23830.1177403935@webmail.messagingengine.com>
-	<E1HNyYT-00086z-27@flower>
-	<1173102794.12256.1177759349@webmail.messagingengine.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 5 Mar 2007 11:53:25 -0500
+Date: Mon, 5 Mar 2007 16:49:51 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Christoph Hellwig <hch@infradead.org>, Roland McGrath <roland@redhat.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       5B 5B Kernel development list 
+	<linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+Message-ID: <20070305164951.GA2909@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Roland McGrath <roland@redhat.com>,
+	Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+	5B 5B Kernel development list <linux-kernel@vger.kernel.org>
+References: <20070305133639.GA6490@infradead.org> <Pine.LNX.4.44L0.0703051113350.3401-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0703051113350.3401-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Mar 2007 05:53:14 -0800 FN wrote:
-
-> That's not for you to decide.
-> Just pass down all variables that may be relevant to my module builds 
-> and let me take it from there, for example
-> chdir $(M)
-> $(MYMAKE) CC="..." LD="..." AR="..." CFLAGS="..." MODFLAGS="..."
-> INCL="..."
->           WHATHAVE_YOU="whatever"  modules
+On Mon, Mar 05, 2007 at 11:16:48AM -0500, Alan Stern wrote:
+> > Making this unconditional is pointless and just makes things harder to
+> > read, so please don't do it.  (The same is true for utrace, but Roland
+> > has unfortunately still not replied to my mail mentioning it :P)
 > 
-> Currently I face the following situation -- I try to build 2 drivers
-> from the same Makefile
-> -----------
-> CWD := $(shell pwd)
-> obj-m := driver1.o driver2.o
-> driver1-y := d1/d2/d3/f1.o d1/d2/f2.o
-> driver2-y := d1/d5/file1.o d1/d6/file2.o
-> # ill conceived kbuild framework doesn't allow me to reduce granularity
-> # of EXTRA_FLAGS
-> $(addprefix $(CWD)/,d1/d2/d3/f1.o d1/d5/file1.o: EXTRA_CFLAGS :=
-> -DMASK=0x123
-> $(addprefix $(CWD)/,d1/d2/f2.o d1/d6/file2.o) : EXTRA_CFLAGS :=
-> -DMASK=0x456
-> # fine grained scope for EXTRA_CFLAGS (supported by gnu make) doesn't
-> work
-> ----------
-> There are 2 problems here
-> 1) kbuild is forcing me to declare EXTRA_CFLAGS in global scope and 
->    I can't build my drivers properly because the MASKs are incompatible. 
-> 2) assuming that modules are buildable, if I do "make clean" there is
-> leftover
->    junk in all of these places d1/d2/d3 d1/d5 d1/d2 d1/d6.
->    There is a danger associated with that junk (or state), dependency
->    generation
->    may be broken which it provably is in some cases (remember -Iinc_dir1
->    -Iinc_dir2
->    vs. -Iinc_dir2 -Iinc_dir1 example I gave earlier) and I can't rely on
->    it.
->    So then I need to be able to clean all, but the "clean:" target can't
->    clean
->    inexpensively in multiple directorie, i.e. must do recursive
->    traversal to clean.
+> Sorry, I don't understand what you're saying.  I would think that making
+> it _conditional_ would make things harder to read, because of all the
+> extra "#ifdef" and "#endif" lines plus the need to keep two different
+> versions of the code in mind.
 > 
-> No, you can't send me off to some little kbuild mailing list.
-> I've raised concerns that probably affects hundreds of module builders.
-> kbuild works well only in the simplest of build scenarios but doesn't
-> scale and that's a deficiency that should be urgently addressed.
-> The leadership of the linux kernel is going to have to make
-> a decision and possibly hire a competent contractor to fix these
-> problems.
-> Are you guys perfectionists or what?
+> Did you mean to say "conditional" instead of "unconditional"?
 
-Not at all.
+Yes, I did mean that.  Sorry for the confusion :)
 
-I think you'll need to convince/show us that there is a real
-problem that cannot be solved by current Kbuild.
+> Incidentally, I do believe that for certain applications (embedded
+> devices, for instance) it makes sense to avoid including all this code.  
+> The cleanest way to do that would be to make both PTRACE and UTRACE
+> configurable.
 
-E.g., instead of building 2 drivers from the same Makefile
-where you cannot reduce granularity of EXTRA_FLAGS, can it be done
-with 2 makefiles?  and if not, why not?
+PTRACE configurable makes a lot of sense, especially as we want to get
+rid of it very long term.  Making UTRACE configurable aswel as all
+these tracehooks wrappers just make the code utterly unreadable.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
