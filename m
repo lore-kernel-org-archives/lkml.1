@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932371AbXCEUot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751236AbXCEUpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932371AbXCEUot (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 15:44:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932375AbXCEUot
+	id S1751236AbXCEUpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 15:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXCEUpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 15:44:49 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:35766 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932371AbXCEUos (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 15:44:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=NxqOveZg8VOUq3oYplXxEeiFsvQdD6EsYsyT6nBxfjHqaWJCBtVzuaSOqChQF7ElqW++ajAXz2faVnzkAyrnBGgSAhrflxZ6lRuMHzQ0G1ud7PioSkvqOCi07JkCsKb6TDCDqpQCjZfqnbv2z9enWuxhu6mETRUL7jxsZG2Sft8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jon Wikne <wikne@cheetah.uio.no>
-Subject: Re: piix.c - previously available patch not implemented
-Date: Mon, 5 Mar 2007 21:51:29 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <45EC654F.7030209@cheetah.uio.no>
-In-Reply-To: <45EC654F.7030209@cheetah.uio.no>
+	Mon, 5 Mar 2007 15:45:43 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36074 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751686AbXCEUpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 15:45:41 -0500
+Date: Mon, 5 Mar 2007 12:40:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andi Kleen <ak@suse.de>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@stusta.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch] disable NMI watchdog by default
+In-Reply-To: <20070305202648.GA2184@elte.hu>
+Message-ID: <Pine.LNX.4.64.0703051236450.3998@woody.linux-foundation.org>
+References: <20070305122011.GA16133@elte.hu> <200703051242.45635.lenb@kernel.org>
+ <200703052054.45292.ak@suse.de> <20070305202648.GA2184@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703052151.29312.bzolnier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
 
-On Monday 05 March 2007, Jon Wikne wrote:
-> Hi list,
+On Mon, 5 Mar 2007, Ingo Molnar wrote:
 > 
-> Last year, around 2.6.16.*, there was a patch around that helped
-> me get the PIIX driver to run with the Intel 82801FBM (ICH6M) chip
-> on my Toshiba Tecra A3 laptop.
-> 
-> Now, compiling the 2.6.21_rc2 kernel on this machine, to my
-> astonishment I find that this patch has still not reached the
-> mainstream kernel.
-> 
-> I do not know whether there might be a good reason for this,
-> but this patch is essential for me, and most likely others as
-> well. I include the patch that works for me below, ported and
-> relative to piix.c version 0.46 taken from the 2.6.21_rc2.
+> Maybe we could take only the 32-bit side of my patch, because that's 
+> what is most affected by legacies. Although i suspect Windows still 
+> doesnt inject NMIs in 64-bit mode either, so i dont think there's any 
+> fundamental difference in terms of breakage in the future, it's just 
+> that 64-bit systems and 64-bit testing is 1:5 - 1:10 rarer than 32-bit 
+> testing.
 
-[ ... ]
+I really don't see the point of having NMI on by default. Debugging that 
+can cause problems should be disabled. I thought we disabled this a long 
+time ago -  but anyway, now it *really* is (ie I applied your patch).
 
-> +#define PCI_DEVICE_ID_INTEL_ICH6_5      0x2653
+Anybody who thinks that debugging code is always good is deluded. 
+Debugging is only good if it has zero downsides and doesn't introduce 
+problems of its own. And the NMI watchdog clearly isn't in that camp.
 
-[ ... ]
+If you *actively* debug stuff and/or have actually seen lockups, use the 
+NMI watchdog. But last I saw, if the machine was running X, the NMI 
+watchdog wouldn't help *anyway*, so enabling it by default
 
-This is SATA controller and has always been handled by ata_piix driver.
-It is considered superior over piix for SATA hardware. [ at least ATM :-P ]
+ - has almost zero upsides in the wild _anyway_
 
-PS please _always_ cc: linux-ide@vger.kernel.org on Linux ATA issues
+ - clearly has risks.
 
-Thanks,
-Bart
+so this was a no-brainer. I don't understand why it's even discussed, or 
+why I hadn't gotten the patch the last time this was discussed.
+
+		Linus
