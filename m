@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXCEJ1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbXCEJfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932081AbXCEJ1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 04:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbXCEJ1o
+	id S932536AbXCEJfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 04:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbXCEJfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 04:27:44 -0500
-Received: from mis011-2.exch011.intermedia.net ([64.78.21.129]:5022 "EHLO
-	mis011-2.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932081AbXCEJ1n (ORCPT
+	Mon, 5 Mar 2007 04:35:38 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48942
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932536AbXCEJfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 04:27:43 -0500
-Message-ID: <45EBE288.8010101@qumranet.com>
-Date: Mon, 05 Mar 2007 11:27:36 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [patch] KVM: T60 resume fix
-References: <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu> <45EBD9BC.4030801@qumranet.com> <20070305084449.GA1706@elte.hu> <20070305085718.GA2513@elte.hu>
-In-Reply-To: <20070305085718.GA2513@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 5 Mar 2007 04:35:37 -0500
+Date: Mon, 05 Mar 2007 01:35:36 -0800 (PST)
+Message-Id: <20070305.013536.115912904.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+CC: torvalds@linux-foundation.org
+Subject: [PATCH]: Fix driver bogus delay loop
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Mar 2007 09:27:42.0453 (UTC) FILETIME=[86841A50:01C75F08]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> suspend/resume works fine now and there are no warning messages 
-> whatsoever (with suspend simulation). Thanks Avi!
->
->   
 
-Where do I find this suspend simulation?  Sounds like a great suspend 
-debugging tool.
+CT based mach64 cards were reported to hang on sparc64 boxes when
+compiled with gcc-4.1.x and later.
 
+Looking at this piece of code, it's no surprise.  A critical
+delay was implemented as an empty for() loop, and gcc 4.0.x
+and previous did not optimize it away, so we did get a delay.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+But gcc-4.1.x and later can optimize it away, and we get crashes.
 
+Use a real udelay() to fix this.  Fix verified on SunBlade100.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/video/aty/mach64_ct.c b/drivers/video/aty/mach64_ct.c
+index f3b487b..1fdcfdb 100644
+--- a/drivers/video/aty/mach64_ct.c
++++ b/drivers/video/aty/mach64_ct.c
+@@ -598,7 +598,6 @@ static void aty_resume_pll_ct(const struct fb_info *info,
+ 	struct atyfb_par *par = info->par;
+ 
+ 	if (par->mclk_per != par->xclk_per) {
+-		int i;
+ 		/*
+ 		* This disables the sclk, crashes the computer as reported:
+ 		* aty_st_pll_ct(SPLL_CNTL2, 3, info);
+@@ -614,7 +613,7 @@ static void aty_resume_pll_ct(const struct fb_info *info,
+ 		 * helps for Rage Mobilities that sometimes crash when
+ 		 * we switch to sclk. (Daniel Mantione, 13-05-2003)
+ 		 */
+-		for (i=0;i<=0x1ffff;i++);
++		udelay(500);
+ 	}
+ 
+ 	aty_st_pll_ct(PLL_REF_DIV, pll->ct.pll_ref_div, par);
