@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbXCESyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbXCESzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932205AbXCESyr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 13:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932210AbXCESyr
+	id S932223AbXCESzk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 13:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932213AbXCESzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 13:54:47 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54692 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932205AbXCESyo (ORCPT
+	Mon, 5 Mar 2007 13:55:39 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:33118 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932211AbXCESzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 13:54:44 -0500
-Date: Mon, 5 Mar 2007 10:54:43 -0800 (PST)
-From: Christoph Lameter <clameter@engr.sgi.com>
-To: linux-mm@kvack.org
-cc: linux-kernel@vger.kernel.org
-Subject: Merged Zone / Node in order to do containers etc easily?
-Message-ID: <Pine.LNX.4.64.0703051046510.6913@schroedinger.engr.sgi.com>
+	Mon, 5 Mar 2007 13:55:38 -0500
+From: Olaf Kirch <olaf.kirch@oracle.com>
+To: nfs@lists.sourceforge.net
+Subject: Re: [NFS] [PATCH 001 of 3] knfsd: Use recv_msg to get peer address for NFSD instead of code-copying
+Date: Mon, 5 Mar 2007 19:53:23 +0100
+User-Agent: KMail/1.9.1
+Cc: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070302151748.5226.patches@notabene> <1070302042825.5760@suse.de>
+In-Reply-To: <1070302042825.5760@suse.de>
+Organization: Oracle
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703051953.24900.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have talked a bit in the last days about eventually getting rid of 
-either nodes or zones.
+On Friday 02 March 2007 05:28, NeilBrown wrote:
+> The sunrpc server code needs to know the source and destination address
+> for UDP packets so it can reply properly.
+> It currently copies code out of the network stack to pick the pieces out
+> of the skb.
+> This is ugly and causes compile problems with the IPv6 stuff.
 
-If one would merge the nodes and the zones struct this would be possible. 
-Actually the current kernel supports something like it if the 
-following config options are not set
+... and this IPv6 code could never have worked anyway:
 
-CONFIG_ZONE_DMA
-CONFIG_ZONE_DMA32
-CONFIG_HIGHMEM
 
-In that case we only have a single zone per node but no support anymore 
-for DMA zones or highmem. We save the bits in the page->flags that are 
-usually used to identify the zone. For simplicities sake lets just call 
-these node / zone entities "zone".
+>  	case AF_INET6: {
+...
+> -			rqstp->rq_addrlen = sizeof(struct sockaddr_in);
+... this should have been sizeof(sockaddr_in6)...
 
-Let say we have also CONFIG_NUMA set. Then
+> -			/* Remember which interface received this request */
+> -			ipv6_addr_copy(&rqstp->rq_daddr.addr6,
+> -							&skb->nh.ipv6h->saddr);
+.... and this should have copied from daddr, not saddr.
 
-A. We could add more "zones" via node hotplug.
-B. We can identify the zones via a node number from user space and direct 
-   allocations to a specfic "zone".
-C. We can migrate memory between "zones"
-D. We have an indication how favorably these "zones" are to be used given
-   their SLIT distance.
+But I find using recvmsg just for getting at the addresses
+a little awkward too. And I think to be on the safe side, you
+should check that you're really looking at a PKTINFO cmsg
+rather than something else.
 
-Lets call these "zones" that were generated during bootup "base zones".
-
-Now we need some additional functionality. In particular we want to be 
-able to put some memory dynamically into containers and we need to find a 
-replacement for the DMA zones.
-
-Lets create a new type of zones called "derived zones". These are based on 
-base zone. An arbitrary number of MAX_ORDER blocks can be moved to these 
-and then they function like a regular "zone". They can be dynamically 
-created and deleted via the node hotplug interfaces.
-
-So if we create a new container then we create a new zone and extract a 
-number of MAX_ORDER blocks from a base zone. The zone functions like a 
-base zone for the time that it exists and thus we have all the usual 
-accounting for the zone and do not need to add them separately. Reclaim 
-will work as for base zones etc etc. (this only works if we have MAX_ORDER 
-blocks available, thus we would need Mel's defrag patches). Applications 
-can be restricted to a container or containers by the cpuset 
-functionality. The build in process migration in cpusets can move 
-applications. Processes can be manually moved through page migration.
-
-If we need some DMA zones for a particular device then we can also create 
-a new zone and extract pages in a certain range from the base zone. This 
-could occur dynamically (but early during boot so that the low end pages 
-in a zone have not been used yet) if we discover that devices exist that 
-need restricted memory pools. Moreover these zones could be custom sized 
-for the devices that are challenged in a particular way. For example we 
-could dynamically create a pool for a 2GB pool for the strange SCSI device 
-that can only reliable do DMA using a 31 bit address.
-
-That leaves the HIGHMEM out cold so far but HIGHMEM is not needed on 64 
-bit platforms as far as I can tell. Maybe HIGHMEM could also be some sort 
-of derived zone with memory taken from the base zone used as the memmap 
-and as bounce buffers etc?
+Olaf
+-- 
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
