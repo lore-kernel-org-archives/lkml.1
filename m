@@ -1,120 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965680AbXCEN3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965267AbXCENbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965680AbXCEN3S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 08:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965666AbXCEN3S
+	id S965267AbXCENbZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 08:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965268AbXCENbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 08:29:18 -0500
-Received: from ozlabs.org ([203.10.76.45]:41724 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965677AbXCEN3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 08:29:16 -0500
-Subject: Re: [patch] paravirt: VDSO page is essential
-From: Rusty Russell <rusty@rustcorp.com.au>
+	Mon, 5 Mar 2007 08:31:24 -0500
+Received: from dev.mellanox.co.il ([194.90.237.44]:35955 "EHLO
+	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965267AbXCENbX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 08:31:23 -0500
+Date: Mon, 5 Mar 2007 15:26:25 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>, Andi Kleen <ak@suse.de>,
-       virtualization <virtualization@lists.osdl.org>
-In-Reply-To: <20070305120631.GA14105@elte.hu>
-References: <20070305120631.GA14105@elte.hu>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 00:28:17 +1100
-Message-Id: <1173101297.26165.39.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Cc: Avi Kivity <avi@qumranet.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [patch] KVM: T60 resume fix
+Message-ID: <20070305132625.GA5311@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu> <45EBD9BC.4030801@qumranet.com> <20070305084449.GA1706@elte.hu> <20070305085718.GA2513@elte.hu> <20070305125425.GA4350@mellanox.co.il> <20070305125008.GA21735@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070305125008.GA21735@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 13:06 +0100, Ingo Molnar wrote:
-> Subject: [patch] paravirt: VDSO page is essential
-> From: Ingo Molnar <mingo@elte.hu>
+> Quoting Ingo Molnar <mingo@elte.hu>:
+> Subject: Re: [patch] KVM: T60 resume fix
 > 
-> commit 3bbf54725467d604698721384d858b5983b87e8f disables the VDSO for 
-> CONFIG_PARAVIRT kernels. This #ifdeffery was a bad change: the VDSO is 
-> an essential component of Linux, and this change forces all of them to 
-> use int $0x80 - including sane ones like KVM. (If a hypervisor does not 
-> handle the VDSO properly then it can work things around via the vdso=0 
-> boot option. Or CONFIG_PARAVIRT should not have been merged. But in any 
-> case, it is a basic taste issue: we DO NOT #ifdef around core features 
-> like this!)
+> 
+> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+> 
+> > > suspend/resume works fine now and there are no warning messages 
+> > > whatsoever (with suspend simulation). Thanks Avi!
+> > 
+> > I just tried Ingo's .config and it hangs on resume for me (with 
+> > suspend to memory).
+> 
+> could you try 's2ram' from http://suspend.sf.net ? It's basically 
+> equivalent to 'echo mem > /sys/power/state', but you can usually also 
+> see the reason why it doesnt resume, on the vga console. (by default the 
+> kernel doesnt resume the t60's vga properly)
 
-I agree with the criticism, dislike the snarly comments, and disagree
-with this patch.
+OK, I'll give it a try. Do I have to shut down X or is it enough to
+switch to another VT?
 
-VDSO is only a problem if (1) the hypervisor wants to reserve the top
-virtual address space (CONFIG_PARAVIRT=y), and (2) the glibc is old and
-can't handle a VDSO mapped anywhere but 0xFFFFE000
-(CONFIG_COMPAT_VDSO=y).
+> on my box resume works, but it's incredibly slow.
 
-Now, KVM wants to use CONFIG_PARAVIRT=y but not reserve_top_address(),
-so we should split the config option.  Let's not get too excited because
-we kept it simple.  Patch (untested, but fairly simple) below.
+I guess it is possible that what I mistook for a hang was actually an incredibly
+slow system, and that it would resume, eventually. I waited for 5 min and gave
+up.
 
-BTW, I had a patch to do a runtime test (old glibc causes init to
-assert, then disable vdso and try again): everyone hated it.
+> Takes a few minutes to have total effect.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+I have same here with my old .config (2-3 min).
 
-diff -r f75715e64a3b arch/i386/Kconfig
---- a/arch/i386/Kconfig	Tue Mar 06 00:04:50 2007 +1100
-+++ b/arch/i386/Kconfig	Tue Mar 06 00:20:44 2007 +1100
-@@ -218,9 +218,18 @@ config PARAVIRT
- 	  However, when run without a hypervisor the kernel is
- 	  theoretically slower.  If in doubt, say N.
- 
-+config RESERVE_TOP
-+	bool
-+	help
-+	  Many hypervisors want to reserve some amount of the top of
-+	  virtual address space.  Unfortunately, old glibc needs the
-+	  vdso page there, so we must disable vdso if COMPAT_VDSO is
-+	  enabled as well as this option.
-+
- config VMI
- 	bool "VMI Paravirt-ops support"
- 	depends on PARAVIRT && !NO_HZ
-+	select RESERVE_TOP
- 	default y
- 	help
- 	  VMI provides a paravirtualized interface to multiple hypervisors
-@@ -893,9 +902,10 @@ config COMPAT_VDSO
- config COMPAT_VDSO
- 	bool "Compat VDSO support"
- 	default y
--	depends on !PARAVIRT
--	help
--	  Map the VDSO to the predictable old-style address too.
-+	help
-+	  Map the VDSO to the predictable old-style address too, or
-+	  in the case of a VMI/Xen/lguest virtualized guest, don't create
-+	  the VDSO at all.
- 	---help---
- 	  Say N here if you are running a sufficiently recent glibc
- 	  version (2.3.3 or later), to remove the high-mapped
-diff -r f75715e64a3b arch/i386/kernel/sysenter.c
---- a/arch/i386/kernel/sysenter.c	Tue Mar 06 00:04:50 2007 +1100
-+++ b/arch/i386/kernel/sysenter.c	Tue Mar 06 00:21:42 2007 +1100
-@@ -27,7 +27,7 @@
-  * Should the kernel map a VDSO page into processes and pass its
-  * address down to glibc upon exec()?
-  */
--#ifdef CONFIG_PARAVIRT
-+#if defined(CONFIG_COMPAT_VDSO) && defined(CONFIG_RESERVE_TOP)
- unsigned int __read_mostly vdso_enabled = 0;
- #else
- unsigned int __read_mostly vdso_enabled = 1;
-diff -r f75715e64a3b arch/i386/mm/pgtable.c
---- a/arch/i386/mm/pgtable.c	Tue Mar 06 00:04:50 2007 +1100
-+++ b/arch/i386/mm/pgtable.c	Tue Mar 06 00:06:00 2007 +1100
-@@ -173,7 +173,7 @@ void reserve_top_address(unsigned long r
- 	BUG_ON(fixmaps > 0);
- 	printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
- 	       (int)-reserve);
--#ifdef CONFIG_COMPAT_VDSO
-+#ifndef CONFIG_RESERVE_TOP
- 	BUG_ON(reserve != 0);
- #else
- 	__FIXADDR_TOP = -reserve - PAGE_SIZE;
+However, after resume was completed, system would hang on the *next* suspend to
+ram.
 
+Ingo, do you see this behaviour, or can you suspend/resume any number of times?
 
+-- 
+MST
