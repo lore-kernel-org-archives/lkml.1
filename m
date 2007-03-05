@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbXCES3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbXCES36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbXCES3K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 13:29:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXCES3K
+	id S932183AbXCES36 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 13:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCES36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 13:29:10 -0500
-Received: from proxima.lp0.eu ([85.158.45.36]:58171 "EHLO proxima.lp0.eu"
+	Mon, 5 Mar 2007 13:29:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37914 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752839AbXCES3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 13:29:09 -0500
-Message-ID: <45EC616F.6090809@simon.arlott.org.uk>
-Date: Mon, 05 Mar 2007 18:29:03 +0000
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	id S932183AbXCES35 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 13:29:57 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: PROBLEM: "BUG:" when resuming from suspend-to-ram
+Date: Mon, 5 Mar 2007 19:32:29 +0100
+User-Agent: KMail/1.9.5
+Cc: "Kristian =?iso-8859-1?q?Gr=F8nfeldt?= =?iso-8859-1?q?_S=F8rensen?=" 
+	<kriller@vkr.dk>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>
+References: <1172601905.5428.28.camel@localhost.localdomain> <1172781250.5042.1.camel@localhost.localdomain> <d120d5000703050644x741564v625f0aa7a58c60ad@mail.gmail.com>
+In-Reply-To: <d120d5000703050644x741564v625f0aa7a58c60ad@mail.gmail.com>
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
-  scheduler
-References: <200703042335.26785.a1426z@gawab.com> <200703050849.29674.kernel@kolivas.org> <45EB45F7.3050208@simon.arlott.org.uk> <200703050927.52563.kernel@kolivas.org>
-In-Reply-To: <200703050927.52563.kernel@kolivas.org>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703051932.29996.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/07 22:27, Con Kolivas wrote:
-> On Monday 05 March 2007 09:19, Simon Arlott wrote:
->> If I run glxgears, thunderbird/firefox become really slow to
->> respond/display and cpu usage isn't even at 100%. I had thunderbird lagging
->> on keyboard character repeat earlier but can't reproduce that now even with
->> glxgears - however firefox lags really badly on keyboard input with
->> glxgears running.
+On Monday, 5 March 2007 15:44, Dmitry Torokhov wrote:
+> On 3/1/07, Kristian Grønfeldt Sørensen <kriller@vkr.dk> wrote:
+> > On Thu, 2007-03-01 at 15:25 -0500, Dmitry Torokhov wrote:
+> > > On 3/1/07, Kristian Grønfeldt Sørensen <kriller@vkr.dk> wrote:
+> > > >
+> > > > Hmmm.
+> > > >
+> > > > Now i get this BUG:
+> > > >
+> > >
+> > > Does it die the same way if you just unload the button driver without
+> > > suspending?
+> > >
+> >
+> > No. Tried unloading and loading 30 times after each other. No problems
+> > at all.
+> >
 > 
-> Hi Simon
-> 
-> You're hitting a nasty udev bug here that is unrelated to the cpu scheduler 
-Yes, I've already reported this.
+> I wonder what causes unloading of the ACPI button driver during resume...
 
-> and almost certainly responsible for your bad behaviour. 
-What? How do you make the leap from lockdep output on boot to my experience of 
-slow interactive response?
-
-> Also this patch was actually for 2.6.20 and you seem to have applied it to 
-> 2.6.21-rc2. I haven't even checked that it cleanly applies to that kernel.
-
-It doesn't, a one line fix from Ingo conflicts (and a comment that was changed).
-7355690ead6d61f6344072ae61060f985060da29 [PATCH] sched: fix SMT scheduler bug
-72fd4a35a824331d7a0f4168d7576502d95d34b3 [PATCH] Numerous fixes to kernel-doc info in source files.
-
-I have reverted your patch and the laggy behaviour remains when running 
-glxgears (in fact it seems a bit worse), I don't know about the thunderbird 
-lag while typing since I can't easily reproduce it but I don't recall it ever 
-happening before. So, your patch isn't the cause of a serious slowdown when 
-running glxgears in the background (although it doesn't improve the situation 
-much). It looks like it just slows down X in general rather than using much 
-CPU.
-
--- 
-Simon Arlott
-
+Let me guess: pm-utils in OpenSUSE 10.2.
