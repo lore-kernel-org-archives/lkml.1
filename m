@@ -1,65 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbXCEIyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbXCEJEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbXCEIyD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 03:54:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXCEIyC
+	id S1752755AbXCEJEl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 04:04:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbXCEJEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 03:54:02 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53300 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752151AbXCEIyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 03:54:01 -0500
-Date: Mon, 5 Mar 2007 09:44:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [patch] KVM: T60 resume fix
-Message-ID: <20070305084449.GA1706@elte.hu>
-References: <20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu> <45EBD9BC.4030801@qumranet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Mar 2007 04:04:41 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:52593 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752755AbXCEJEj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 04:04:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=X5Rl4U8H8y8FKmeA/XL03GgEPE92sNn3L5hnMCqa9y1pLdPmzG/pAsyKGkvAcciIMdHQgDp0eAbamn+480Qs8Q/p2hAKdTGXttijJ/6BQyVd52dgidpjrOWfyKhTQr8jRhltwZPA1D36E1me7t1ARQt+g+Hfvm3enZltv5w0lHo=
+Message-ID: <a8e1da0703050104g74d45e4ay79846e81a970ec00@mail.gmail.com>
+Date: Mon, 5 Mar 2007 09:04:38 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: linux-2.6.21-rc2 compile warnings
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45EBD9BC.4030801@qumranet.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+As I compile the linux-2.6.21-rc2  (gcc version 3.4.6), there's some
+warning  messages:
 
-* Avi Kivity <avi@qumranet.com> wrote:
+drivers/video/Kconfig:1622:warning: 'select' used by config symbol
+'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
 
-> >> That is already CPU_ONLINE in my tree (and in the pull request sent 
-> >> to Linus a couple of days ago).
-> >
-> > that solves the resume problem - but doesnt solve the CPU_DEAD issue 
-> > of sending an IPI to an already offline CPU. Might be a better idea 
-> > to do it in CPU_DOWN_PREPARE? (and then to also add a 
-> > CPU_DOWN_FAILED branch?)
-> 
-> Mainline now has DOWN_PREPARE and UP_CANCELED calling 
-> ->hardware_disable(), and ONLINE calling ->hardware_enabled().  What 
-> tree are you looking at?
+fs/partitions/check.c: In function `add_partition':
+fs/partitions/check.c:388: warning: ignoring return value of
+`kobject_add', declared with attribute warn_unused_result
+fs/partitions/check.c:391: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+fs/partitions/check.c:399: warning: ignoring return value of
+`sysfs_create_file', declared with attribute warn_unused_result
 
-oh, i just hand-fixed it. I'll check current-git now.
+drivers/ata/libata-sff.c: In function `ata_pci_init_one':
+drivers/ata/libata-sff.c:820: warning: ignoring return value of
+`pci_request_region', declared with attribute warn_unused_result
+drivers/ata/libata-sff.c:822: warning: ignoring return value of
+`pci_request_region', declared with attribute warn_unused_result
+drivers/ata/libata-sff.c:824: warning: ignoring return value of
+`pci_request_region', declared with attribute warn_unused_result
 
-> [but I do see the need for DOWN_FAILED now. Off to find a resumable 
-> machine...]
+drivers/base/core.c: In function `device_add':
+drivers/base/core.c:580: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c:585: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c:589: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c:594: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c: In function `device_rename':
+drivers/base/core.c:1039: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c:1049: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
 
-yeah, both DOWN_FAILED and UP_FAILED might trigger when some other bug 
-prevents a resume.
+drivers/block/floppy.c: In function `floppy_init':
+drivers/block/floppy.c:4337: warning: ignoring return value of
+`device_create_file', declared with attribute warn_unused_result
+drivers/cpufreq/cpufreq.c: In function `cpufreq_add_dev':
+drivers/cpufreq/cpufreq.c:826: warning: ignoring return value of
+`sysfs_create_file', declared with attribute warn_unused_result
+drivers/cpufreq/cpufreq.c:830: warning: ignoring return value of
+`sysfs_create_file', declared with attribute warn_unused_result
+drivers/cpufreq/cpufreq.c:832: warning: ignoring return value of
+`sysfs_create_file', declared with attribute warn_unused_result
 
-	Ingo
+drivers/ide/pci/cs5530.c: In function `init_chipset_cs5530':
+drivers/ide/pci/cs5530.c:244: warning: ignoring return value of
+`pci_set_mwi', declared with attribute warn_unused_result
+
+drivers/ide/pci/sc1200.c: In function `sc1200_resume':
+drivers/ide/pci/sc1200.c:397: warning: ignoring return value of
+`pci_enable_device', declared with attribute warn_unused_result
+
+drivers/ide/setup-pci.c: In function `ide_scan_pcibus':
+drivers/ide/setup-pci.c:866: warning: ignoring return value of
+`__pci_register_driver', declared with attribute warn_unused_result
+
+drivers/input/mousedev.c: In function `mousedev_connect':
+drivers/input/mousedev.c:664: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+
+drivers/input/joydev.c: In function `joydev_connect':
+drivers/input/joydev.c:542: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+
+
+drivers/input/evdev.c: In function `evdev_connect':
+drivers/input/evdev.c:653: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/message/i2o/device.c: In function `i2o_device_add':
+drivers/message/i2o/device.c:247: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/message/i2o/device.c:254: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/message/i2o/device.c:260: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+drivers/message/i2o/device.c:267: warning: ignoring return value of
+`sysfs_create_link', declared with attribute warn_unused_result
+  CC      drivers/message/i2o/debug.
+
+drivers/net/sk98lin/skge.c: In function `skge_resume':
+drivers/net/sk98lin/skge.c:5128: warning: ignoring return value of
+`pci_enable_device', declared with attribute warn_unused_result
+drivers/net/tulip/xircom_tulip_cb.c: In function `outl_CSR6':
+drivers/net/tulip/xircom_tulip_cb.c:348: warning: `save_flags' is
+deprecated (declared at include/linux/interrupt.h:214)
+drivers/net/tulip/xircom_tulip_cb.c:349: warning: `cli' is deprecated
+(declared at include/linux/interrupt.h:206)
+drivers/net/tulip/xircom_tulip_cb.c:358: warning: `restore_flags' is
+deprecated (declared at include/linux/interrupt.h:219)
+drivers/net/tulip/xircom_tulip_cb.c:376: warning: `restore_flags' is
+deprecated (declared at include/linux/interrupt.h:219)
+drivers/net/tulip/xircom_tulip_cb.c:384: warning: `restore_flags' is
+deprecated (declared at include/linux/interrupt.h:219)
+drivers/net/tulip/xircom_tulip_cb.c: In function `xircom_ioctl':
+drivers/net/tulip/xircom_tulip_cb.c:1456: warning: `save_flags' is
+deprecated (declared at include/linux/interrupt.h:214)
+drivers/net/tulip/xircom_tulip_cb.c:1457: warning: `cli' is deprecated
+(declared at include/linux/interrupt.h:206)
+drivers/net/tulip/xircom_tulip_cb.c:1459: warning: `restore_flags' is
+deprecated (declared at include/linux/interrupt.h:219)
+drivers/net/tulip/xircom_tulip_cb.c:1464: warning: `save_flags' is
+deprecated (declared at include/linux/interrupt.h:214)
+drivers/net/tulip/xircom_tulip_cb.c:1465: warning: `cli' is deprecated
+(declared at include/linux/interrupt.h:206)
+drivers/net/tulip/xircom_tulip_cb.c:1485: warning: `restore_flags' is
+deprecated (declared at include/linux/interrupt.h:219)
+drivers/net/tulip/xircom_tulip_cb.c: In function `set_rx_mode':
+drivers/net/tulip/xircom_tulip_cb.c:1593: warning: `save_flags' is
+deprecated (declared at include/linux/interrupt.h:214)
+drivers/net/tulip/xircom_tulip_cb.c:1593: warning: `cli' is deprecated
+(declared at include/linux/interrupt.h:206)
+drivers/net/tulip/xircom_tulip_cb.c:1620: warning: `restore_flags' is
+deprecated (declared at include/linux/interrupt.h:219)
+drivers/net/tulip/xircom_tulip_cb.c: In function `xircom_resume':
+drivers/net/tulip/xircom_tulip_cb.c:1661: warning: ignoring return
+value of `pci_enable_device', declared with attribute
+warn_unused_result
+drivers/net/cassini.c: In function `cas_init_one':
+drivers/net/cassini.c:4925: warning: ignoring return value of
+`pci_set_mwi', declared with attribute warn_unused_result
+
+
+drivers/net/3c59x.c: In function `vortex_resume':
+drivers/net/3c59x.c:829: warning: ignoring return value of
+`pci_enable_device', declared with attribute warn_unused_result
+drivers/net/3c59x.c: In function `vortex_up':
+drivers/net/3c59x.c:1495: warning: ignoring return value of
+`pci_enable_device', declared with attribute warn_unused_result
+
+
+drivers/net/ne2k-pci.c: In function `ne2k_pci_resume':
+drivers/net/ne2k-pci.c:676: warning: ignoring return value of
+`pci_enable_device', declared with attribute warn_unused_result
+
+drivers/net/eepro100.c: In function `eepro100_resume':
+drivers/net/eepro100.c:2298: warning: ignoring return value of
+`pci_enable_device', declared with attribute warn_unused_result
+
+include/linux/pci.h: In function `tlan_probe':
+drivers/net/tlan.c:486: warning: ignoring return value of
+`pci_register_driver', declared with attribute warn_unused_result
+
+drivers/net/natsemi.c: In function `natsemi_resume':
+drivers/net/natsemi.c:3237: warning: ignoring return value of
+`pci_enable_device', declared with attribute warn_unused_result
+drivers/net/starfire.c: In function `starfire_init_one':
+drivers/net/starfire.c:744: warning: ignoring return value of
+`pci_set_mwi', declared with attribute warn_unused_result
+In file included from drivers/net/at1700.c:41:
+include/linux/mca-legacy.h:12:2: warning: #warning "MCA legacy -
+please move your driver to the new sysfs api"
+In file included from drivers/net/eexpress.c:115:
+include/linux/mca-legacy.h:12:2: warning: #warning "MCA legacy -
+please move your driver to the new sysfs api"
+drivers/net/cs89x0.c:198: warning: 'netcard_portlist' defined but not used
+drivers/pci/search.c: In function `pci_find_slot':
+drivers/pci/search.c:100: warning: `pci_find_device' is deprecated
+(declared at include/linux/pci.h:475)
+drivers/pci/search.c: At top level:
+drivers/pci/search.c:434: warning: `pci_find_device' is deprecated
+(declared at drivers/pci/search.c:242)
+drivers/pci/search.c:434: warning: `pci_find_device' is deprecated
+(declared at drivers/pci/search.c:242)
+drivers/serial/8250_pci.c: In function `pciserial_resume_one':
+drivers/serial/8250_pci.c:1826: warning: ignoring return value of
+`pci_enable_device', declared with attribute warn_unused_result
+drivers/video/aty/radeon_base.c: In function `radeonfb_pci_register':
+drivers/video/aty/radeon_base.c:2317: warning: ignoring return value
+of `sysfs_create_bin_file', declared with attribute warn_unused_result
+drivers/video/aty/radeon_base.c:2319: warning: ignoring return value
+of `sysfs_create_bin_file', declared with attribute warn_unused_result
+WARNING: drivers/net/sis900.o - Section mismatch: reference to
+.init.text:sis900_mii_probe from .text between 'sis900_probe' (at
+offset 0x4e2) and 'sis900_default_phy'
+WARNING: drivers/net/sunhme.o - Section mismatch: reference to
+.init.text: from .text between 'happy_meal_pci_probe' (at offset
+0x3129) and 'happy_meal_pci_remove'
+WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to
+.init.text: from .text between 'de_init_one' (at offset 0x25ec) and
+'de_remove_one'
+WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to
+.init.text: from .text between 'de_init_one' (at offset 0x26bb) and
+'de_remove_one'
+WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to
+.init.text: from .text between 'de_init_one' (at offset 0x26c2) and
+'de_remove_one'
+
+
+regards
+dave
