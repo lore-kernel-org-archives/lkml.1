@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbXCEKCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbXCEKMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932162AbXCEKCR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 05:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXCEKCR
+	id S1752654AbXCEKMb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 05:12:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932192AbXCEKMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 05:02:17 -0500
-Received: from mail.queued.net ([207.210.101.209]:1045 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932162AbXCEKCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 05:02:16 -0500
-Message-ID: <45EBEA9F.9070109@debian.org>
-Date: Mon, 05 Mar 2007 05:02:07 -0500
-From: Andres Salomon <dilinger@debian.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Mon, 5 Mar 2007 05:12:30 -0500
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:59835
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbXCEKM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 05:12:29 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "Miles Lane" <miles.lane@gmail.com>
+Subject: Re: 2.6.21-rc2-mm1 -- WARNING: "pcmcia_access_configuration_register" [drivers/ssb/ssb.ko] undefined!
+Date: Mon, 5 Mar 2007 11:11:29 +0100
+User-Agent: KMail/1.9.5
+Cc: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, "Michael Buesch" <mbuesch@freenet.de>
+References: <a44ae5cd0703042021o434e42b1vea6fd90376824917@mail.gmail.com>
+In-Reply-To: <a44ae5cd0703042021o434e42b1vea6fd90376824917@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] highres: warn on softirq handling an unsafe callback
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------010503070102030508010304"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703051111.30374.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010503070102030508010304
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Monday 05 March 2007 05:21, Miles Lane wrote:
+> WARNING: "pcmcia_access_configuration_register" [drivers/ssb/ssb.ko] undefined!
+> WARNING: "pccard_parse_tuple"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pcmcia_register_driver"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pccard_get_tuple_data"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pcmcia_request_configuration"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pcmcia_request_window"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pccard_get_first_tuple"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pcmcia_release_window"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pcmcia_map_mem_page"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pcmcia_unregister_driver"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> WARNING: "pcmcia_disable_device"
+> [drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> 
+> #
+> # PCCARD (PCMCIA/CardBus) support
+> #
+> # CONFIG_PCCARD is not set
+> 
+> CONFIG_BCM43XX_MAC80211=m
+> CONFIG_BCM43XX_MAC80211_PCI=y
+> CONFIG_BCM43XX_MAC80211_PCMCIA=y
 
-run_hrtimer_queue is called from a softirq context, and should never run
-a callback that is classified as HRTIMER_CB_IRQSAFE_NO_SOFTIRQ.  A bug
-in unrelated code had managed to trigger that bug, so let's add an
-explicit warning to this function.
+This SELECTs SSB_PCMCIAHOST and that DEPENDS ON
+PCMCIA. So dependencies don't seem to work through SELECT.
+I'll fix that in my tree, so it will pushed through linville to mm.
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
-
---------------010503070102030508010304
-Content-Type: text/x-patch;
- name="hrtimer5.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="hrtimer5.patch"
-
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 476cb0c..167c296 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1130,6 +1130,7 @@ static inline void run_hrtimer_queue(struct hrtimer_cpu_base *cpu_base,
- 		if (base->softirq_time.tv64 <= timer->expires.tv64)
- 			break;
- 
-+		WARN_ON_ONCE(timer->cb_mode == HRTIMER_CB_IRQSAFE_NO_SOFTIRQ);
- 		timer_stats_account_hrtimer(timer);
- 
- 		fn = timer->function;
-
---------------010503070102030508010304--
+-- 
+Greetings Michael.
