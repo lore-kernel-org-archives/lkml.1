@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932454AbXCEWjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbXCEWjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932454AbXCEWjP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:39:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932446AbXCEWjP
+	id S932457AbXCEWjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbXCEWji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:39:15 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:1328 "EHLO
+	Mon, 5 Mar 2007 17:39:38 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:1330 "EHLO
 	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932330AbXCEWjO (ORCPT
+	with ESMTP id S932450AbXCEWjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:39:14 -0500
-Date: Mon, 5 Mar 2007 23:39:11 +0100
+	Mon, 5 Mar 2007 17:39:37 -0500
+Date: Mon, 5 Mar 2007 23:39:37 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [S390] kprobes breaks BUG_ON
-Message-ID: <20070305223910.GA22630@skybase>
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] smp: disable preemption in smp_call_function/smp_call_function_on
+Message-ID: <20070305223937.GB22630@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -22,53 +23,76 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-[S390] kprobes breaks BUG_ON
+[S390] smp: disable preemption in smp_call_function/smp_call_function_on
 
-The illegal operation handler calls the die notifier with DIE_BPT to
-let kprobes pick up its breakpoint. If kprobes does not find its
-breakpoint it returns NOTIFY_STOP instead of NOTIFY_DONE.
-Since we use stop_machine_run on s390 to arm/disarm the kprobes
-breakpoints the race that kprobe_handler tries to solve by checking
-for the kprobes breakpoints does not exist. Removing the check makes
-BUG_ON working again.
+Avoid sprinkling a _lot_ of preempt_disable/preempt_enable pairs.
+This would be necessary for e.g. the iucv driver. Also this way we
+are more consistent with other architectures which disable
+preemption at least for smp_call_function.
 
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/kprobes.c |   21 +++++++--------------
- 1 files changed, 7 insertions(+), 14 deletions(-)
+ arch/s390/kernel/smp.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-diff -urpN linux-2.6/arch/s390/kernel/kprobes.c linux-2.6-patched/arch/s390/kernel/kprobes.c
---- linux-2.6/arch/s390/kernel/kprobes.c	2007-03-05 22:51:29.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/kprobes.c	2007-03-05 22:51:47.000000000 +0100
-@@ -337,21 +337,14 @@ static int __kprobes kprobe_handler(stru
- 	}
+diff -urpN linux-2.6/arch/s390/kernel/smp.c linux-2.6-patched/arch/s390/kernel/smp.c
+--- linux-2.6/arch/s390/kernel/smp.c	2007-03-05 22:51:29.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/smp.c	2007-03-05 22:51:48.000000000 +0100
+@@ -94,10 +94,9 @@ static void __smp_call_function_map(void
+ 	int cpu, local = 0;
  
- 	p = get_kprobe(addr);
--	if (!p) {
--		if (*addr != BREAKPOINT_INSTRUCTION) {
--			/*
--			 * The breakpoint instruction was removed right
--			 * after we hit it.  Another cpu has removed
--			 * either a probepoint or a debugger breakpoint
--			 * at this address.  In either case, no further
--			 * handling of this interrupt is appropriate.
--			 *
--			 */
--			ret = 1;
--		}
--		/* Not one of ours: let kernel handle it */
-+	if (!p)
-+		/*
-+		 * No kprobe at this address. The fault has not been
-+		 * caused by a kprobe breakpoint. The race of breakpoint
-+		 * vs. kprobe remove does not exist because on s390 we
-+		 * use stop_machine_run to arm/disarm the breakpoints.
-+		 */
- 		goto no_kprobe;
--	}
+ 	/*
+-	 * Can deadlock when interrupts are disabled or if in wrong context,
+-	 * caller must disable preemption
++	 * Can deadlock when interrupts are disabled or if in wrong context.
+ 	 */
+-	WARN_ON(irqs_disabled() || in_irq() || preemptible());
++	WARN_ON(irqs_disabled() || in_irq());
  
- 	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
- 	set_current_kprobe(p, regs, kcb);
+ 	/*
+ 	 * Check for local function call. We have to have the same call order
+@@ -152,17 +151,18 @@ out:
+  * Run a function on all other CPUs.
+  *
+  * You must not call this function with disabled interrupts or from a
+- * hardware interrupt handler. Must be called with preemption disabled.
+- * You may call it from a bottom half.
++ * hardware interrupt handler. You may call it from a bottom half.
+  */
+ int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+ 		      int wait)
+ {
+ 	cpumask_t map;
+ 
++	preempt_disable();
+ 	map = cpu_online_map;
+ 	cpu_clear(smp_processor_id(), map);
+ 	__smp_call_function_map(func, info, nonatomic, wait, map);
++	preempt_enable();
+ 	return 0;
+ }
+ EXPORT_SYMBOL(smp_call_function);
+@@ -178,16 +178,17 @@ EXPORT_SYMBOL(smp_call_function);
+  * Run a function on one processor.
+  *
+  * You must not call this function with disabled interrupts or from a
+- * hardware interrupt handler. Must be called with preemption disabled.
+- * You may call it from a bottom half.
++ * hardware interrupt handler. You may call it from a bottom half.
+  */
+ int smp_call_function_on(void (*func) (void *info), void *info, int nonatomic,
+ 			  int wait, int cpu)
+ {
+ 	cpumask_t map = CPU_MASK_NONE;
+ 
++	preempt_disable();
+ 	cpu_set(cpu, map);
+ 	__smp_call_function_map(func, info, nonatomic, wait, map);
++	preempt_enable();
+ 	return 0;
+ }
+ EXPORT_SYMBOL(smp_call_function_on);
