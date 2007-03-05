@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbXCEXVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbXCEXXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbXCEXVc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 18:21:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbXCEXVb
+	id S1752052AbXCEXXg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 18:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbXCEXXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 18:21:31 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47912
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752262AbXCEXVb (ORCPT
+	Mon, 5 Mar 2007 18:23:36 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:49802 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbXCEXXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 18:21:31 -0500
-Date: Mon, 05 Mar 2007 15:21:29 -0800 (PST)
-Message-Id: <20070305.152129.112853008.davem@davemloft.net>
-To: rolandd@cisco.com, swise@opengridcomputing.com
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH]: CXGB3 infiniband build fix
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 5 Mar 2007 18:23:36 -0500
+Date: Mon, 5 Mar 2007 18:14:54 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: mrkiko <mrkiko.rs@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: BUG: problems compiling UML
+Message-ID: <20070305231454.GC9525@ccure.user-mode-linux.org>
+References: <elmo11730948321025164440876@mmx>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <elmo11730948321025164440876@mmx>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 05, 2007 at 12:40:32PM +0100, mrkiko wrote:
+> Problem:
+> make all ARCH=um fails always on linking: it seems that a -llibname is 
+> missing.  If this report is too stupid, sorry!
 
-Uses dma_alloc_coherent() et al. thus needs linux/dma-mapping.h
-include in order to build reliably.
+It's not too stupid - it's too short on details.
 
-Noticed on sparc64.
+Show us the relevant portion of the build output.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+				Jeff
 
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.c b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-index d737c73..818cf1a 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
-+++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-@@ -36,6 +36,7 @@
- #include <linux/sched.h>
- #include <linux/spinlock.h>
- #include <linux/pci.h>
-+#include <linux/dma-mapping.h>
- 
- #include "cxio_resource.h"
- #include "cxio_hal.h"
+-- 
+Work email - jdike at linux dot intel dot com
