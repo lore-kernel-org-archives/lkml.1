@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbXCEB4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbXCEBys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbXCEB4H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 20:56:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXCEBzu
+	id S1752306AbXCEBys (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 20:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbXCEByo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 20:55:50 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:38373 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbXCEBzW (ORCPT
+	Sun, 4 Mar 2007 20:54:44 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49953 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751964AbXCEBtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:55:22 -0500
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 02/13] fs/unionfs/: Fix a memory leak in unionfs_read_super
-Date: Sun,  4 Mar 2007 20:54:52 -0500
-Message-Id: <1173059704786-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.0.2.260.g2eb065
-In-Reply-To: <11730597033857-git-send-email-jsipek@cs.sunysb.edu>
-References: <11730597033857-git-send-email-jsipek@cs.sunysb.edu>
+	Sun, 4 Mar 2007 20:49:47 -0500
+Date: Mon, 5 Mar 2007 02:49:48 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Eric Van Hensbergen <ericvh@gmail.com>, rminnich@lanl.gov,
+       lucho@ionkov.net
+Cc: v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [-mm patch] make struct v9fs_cached_file_operations static
+Message-ID: <20070305014948.GC3441@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Erez Zadok <ezk@cs.sunysb.edu>
+This patch makes te needlessly global struct v9fs_cached_file_operations 
+static.
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
 ---
- fs/unionfs/main.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
-index ca7ee26..bd64242 100644
---- a/fs/unionfs/main.c
-+++ b/fs/unionfs/main.c
-@@ -584,10 +584,11 @@ static int unionfs_read_super(struct super_block *sb, void *raw_data,
- 	atomic_set(&UNIONFS_D(sb->s_root)->generation, 1);
+ fs/9p/v9fs_vfs.h |    1 -
+ fs/9p/vfs_file.c |    4 +++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+--- linux-2.6.21-rc2-mm1/fs/9p/v9fs_vfs.h.old	2007-03-04 22:02:54.000000000 +0100
++++ linux-2.6.21-rc2-mm1/fs/9p/v9fs_vfs.h	2007-03-04 22:03:00.000000000 +0100
+@@ -40,7 +40,6 @@
+ extern struct file_system_type v9fs_fs_type;
+ extern const struct address_space_operations v9fs_addr_operations;
+ extern const struct file_operations v9fs_file_operations;
+-extern const struct file_operations v9fs_cached_file_operations;
+ extern const struct file_operations v9fs_dir_operations;
+ extern struct dentry_operations v9fs_dentry_operations;
+ extern struct dentry_operations v9fs_cached_dentry_operations;
+--- linux-2.6.21-rc2-mm1/fs/9p/vfs_file.c.old	2007-03-04 22:03:07.000000000 +0100
++++ linux-2.6.21-rc2-mm1/fs/9p/vfs_file.c	2007-03-04 22:03:57.000000000 +0100
+@@ -42,6 +42,8 @@
+ #include "v9fs_vfs.h"
+ #include "fid.h"
  
- 	/* call interpose to create the upper level inode */
--	if ((err = unionfs_interpose(sb->s_root, sb, 0)))
--		goto out_freedpd;
-+	err = unionfs_interpose(sb->s_root, sb, 0);
- 	unionfs_unlock_dentry(sb->s_root);
--	goto out;
-+	if (!err)
-+		goto out;
-+	/* else fall through */
++static const struct file_operations v9fs_cached_file_operations;
++
+ /**
+  * v9fs_file_open - open a file (or directory)
+  * @inode: inode to be opened
+@@ -245,7 +247,7 @@
+ 	return total;
+ }
  
- out_freedpd:
- 	if (UNIONFS_D(sb->s_root)) {
--- 
-1.5.0.2.260.g2eb065
+-const struct file_operations v9fs_cached_file_operations = {
++static const struct file_operations v9fs_cached_file_operations = {
+ 	.llseek = generic_file_llseek,
+ 	.read = do_sync_read,
+ 	.aio_read = generic_file_aio_read,
 
