@@ -1,100 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbXCETUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932989AbXCETVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932270AbXCETUd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 14:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932283AbXCETUd
+	id S932989AbXCETVX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 14:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXCETVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 14:20:33 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:59707 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932270AbXCETUc (ORCPT
+	Mon, 5 Mar 2007 14:21:23 -0500
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:38325 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932989AbXCETVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 14:20:32 -0500
-Date: Mon, 05 Mar 2007 14:19:25 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
- scheduler
-In-reply-to: <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Lee Revell" <rlrevell@joe-job.com>,
-       "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
-Message-id: <200703051419.25814.gene.heskett@gmail.com>
-Organization: very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org>
- <200703050453.08154.gene.heskett@gmail.com>
- <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com>
-User-Agent: KMail/1.9.6
+	Mon, 5 Mar 2007 14:21:22 -0500
+Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
+From: Amedee Van Gasse <amedee@amedee.be>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2ZT4fozuZKpi/pNdd+wj"
+Date: Mon, 05 Mar 2007 20:19:12 +0100
+Message-Id: <1173122352.19761.33.camel@saruman>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 March 2007, Lee Revell wrote:
->On 3/5/07, Gene Heskett <gene.heskett@gmail.com> wrote:
->> On Monday 05 March 2007, Nicolas Mailhot wrote:
->> >This looks like -mm stuff if you want it in 2.6.22
->>
->> This needs to get to 2.6.21, it really is that big an improvement.
->
->You can probably speed things up by regression testing against a wide
->range of non-desktop workloads and posting your numbers...
->
->Lee
 
-I'm not THAT much of a tester other than seeing how it does my personal 
-workload, such as working over an image in Gimp, and then printing it, 
-while I'm reading and reply to email, browsing the web or playing 
-solitaire.  At all of this is marches along rather nicely, and generally 
-unaffected by the fetchmail/procmail/spamc loop every 90 seconds in the 
-background.  glxgears runs about 1190 fps here, and loses maybe 4 or 5 
-frames when the system beeps at me to indicate a new mail has arrived.  
-Strangely, the wah wah wah wah it plays for a spam sent to trash doesn't 
-bother glxgears any more then the 1/3 second beep.
+--=-2ZT4fozuZKpi/pNdd+wj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I might add that its a bit puzzling to me, that when these pregnant pauses 
-occur without the patch, gkrellm cpu usage, at an update frequency of 1 
-second granularity, doesn't show ANY change, or so little it can't 
-possibly explain why I'm sitting here for 10 seconds or more, waiting for 
-what I've typed to actually show up on screen.  I should see a spike in 
-one of the three cpu usage windows, but the whole thing is sitting at 2% 
-total cpu while my application is starved and frozen for 10+ seconds at a 
-time. 
+On Tue, 27 Feb 2007 16:54:27 +0100 (CET), Jiri Kosina <> wrote:
+>=20
+> What puzzles me a bit is a fact that both the bugreporters seem to
+> state pretty clearly that this started happening after some update, am
+> I right?
+>=20
+> Or did the hardware before work all the time in the HID mode, without
+> even being attempted to switch to HCI (which seems to cause the bug)?
 
-That in itself tells this unwashed user that the scheduler is spinning its 
-wheel somewhere as it exists today without this patch.  With this patch, 
-those pauses are very small fractions of a second.  Just barely 
-detectable.  And, system or user activity now properly registers in the 
-gkrellm display, going up to about 15% user if I stand on the left arrow 
-to backspace the cursor here in kmails composer screen.
+It _appears_ that the bug reports started after an update of
+bluez-utils, but this remains to be confirmed. It could be
+coincidence/temporal correlation (which does not imply causation).
 
-To me, this plays great in Peoria, put it in ASAP and the users will bow 
-at your feet to pay homage to Con for submitting it.
+As for myself, I have a Logitech MX5000 keyboard/mouse with usb dongle,
+and I can confirm that the keyboard/mouse have always worked in HID.
+But in HID mode, no other bluetooth functions are possible (like pairing
+with a smartphone).
+It's possible to switch from HID to HCI and have a working mouse
++bluetooth receiver, but in that case the keyboard can't pair.
 
-I am having a hard time figuring out why Con has thrown patches that might 
-have helped over the fence only to have them go splat in the night.  When 
-Con gets frustrated enough to post about it, everybody seems to turn a 
-deaf ear, like he's committed some cardinal sin and I don't understand 
-why or what.
+I used this script to get functional bluetooth (and unresponsive
+keyboard):
 
-This list is about development, supposedly in an orderly fashion, but 
-occasionally a patch comes along that's so obviously correct it deserves 
-to be fast tracked, and this is one of those.  To me this is as important 
-as the filesystem corruption that was chased all the way thru from around 
-2.6.17 to the middle of the 20-rc stuff.  Nobody wasted any time getting 
-that into the next rc when it was finally found.  Fortunately I didn't 
-get bit, possibly due to my habit of restarting azureas to seed, and I've 
-seen it re-suck a few pieces to correct itself more than once.
+hid2hci --tohci
+sleep 1
+/etc/init.d/bluetooth restart
+sleep 1
+# connect with the mouse
+hidd -i hci0 --connect 00:07:61:48:71:DE
+# connect with the keyboard
+hidd -i hci0 --connect 00:07:61:3F:DA:41
 
-Andrew, please, get this one in ASAP, but promise me an -mm won't trash 
-half my filesystems like one I tried 2-3 years ago did.  Its a shame when 
-Con submits a patch, and only 2 people post their experiences from using 
-it.
+I think the "-i hci0" isn't even needed, but it can't hurt.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
+This triggers a lot of occurences of the following in my logs:
+
+BUG: at drivers/hid/hid-core.c:785 implement()
+ [<f8d59608>] hid_output_report+0x288/0x300 [hid]
+ [<f8d7d4c8>] hid_submit_ctrl+0x58/0x200 [usbhid]
+ [schedule_timeout+83/208] schedule_timeout+0x53/0xd0
+ [finish_wait+45/112] finish_wait+0x2d/0x70
+ [<f8d7d78b>] usbhid_submit_report+0x11b/0x1b0 [usbhid]
+ [autoremove_wake_function+0/80] autoremove_wake_function+0x0/0x50
+ [<f8d7f9d6>] hiddev_ioctl+0x446/0xb40 [usbhid]
+ [filemap_nopage+753/928] filemap_nopage+0x2f1/0x3a0
+ [kmap_atomic+134/160] kmap_atomic+0x86/0xa0
+ [kunmap_atomic+107/112] kunmap_atomic+0x6b/0x70
+ [__handle_mm_fault+633/2624] __handle_mm_fault+0x279/0xa40
+ [nameidata_to_filp+53/64] nameidata_to_filp+0x35/0x40
+ [do_ioctl+120/144] do_ioctl+0x78/0x90
+ [vfs_ioctl+92/672] vfs_ioctl+0x5c/0x2a0
+ [sys_ioctl+114/144] sys_ioctl+0x72/0x90
+ [sysenter_past_esp+105/169] sysenter_past_esp+0x69/0xa9
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+There are a few Ubuntu bug reports that describe the problem, with some
+log files and other useful info:
+https://bugs.launchpad.net/ubuntu/+source/bluez-utils/+bug/32415
+https://launchpad.net/ubuntu/+source/bluez-utils/+bug/66884/
+I have found similar descriptions in other distros.
+
+I have exactly the same experience as Vincent Fortier described
+(keyboard working at boot, some keys repeating sometimes, keyboard
+unresponsive when bluetooth comes up, keyboard works again after dongle
+unplug/replug, but no bluetooth)
+
+Anyway, is this a kernel problem or is bluez-utils to blame?
+
+
+PS: I bumped into this topic when googling for "046d:c70e". I'm not a
+developer (I'm what they call "a user"), but I'm not afraid to get my
+hands dirty. If you want me to run debug versions or patched kernels, I
+can do that. After all, I have the hardware and I might give you
+valuable information (even if I wouldn't recognise it when it spat me in
+the face).
+
+--=20
+Amedee Van Gasse
+amedee@amedee.be
+
+--=-2ZT4fozuZKpi/pNdd+wj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBF7G0wLx1bbS7O0EYRAj+1AJwPV/DgXQthCvsswMqpooFqW2fubgCcDvwM
+tNMRzZS8/fxGMJZZvpkJNOg=
+=En5V
+-----END PGP SIGNATURE-----
+
+--=-2ZT4fozuZKpi/pNdd+wj--
+
