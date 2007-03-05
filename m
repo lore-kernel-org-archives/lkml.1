@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbXCEBtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752067AbXCEBtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbXCEBtU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 20:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbXCEBtB
+	id S1752067AbXCEBtr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 20:49:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXCEBtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 20:49:01 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:49920 "EHLO
+	Sun, 4 Mar 2007 20:49:24 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:49931 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751910AbXCEBsz (ORCPT
+	with ESMTP id S1751747AbXCEBtU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:48:55 -0500
-Date: Mon, 5 Mar 2007 02:48:55 +0100
+	Sun, 4 Mar 2007 20:49:20 -0500
+Date: Mon, 5 Mar 2007 02:49:21 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Karsten Keil <kkeil@suse.de>
-Cc: kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
-       linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make drivers/isdn/capi/capiutil.c:cdebbuf_alloc()
-Message-ID: <20070305014854.GU3441@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, ctindel@users.sourceforge.net,
+       fubar@us.ibm.com
+Cc: linux-kernel@vger.kernel.org, bonding-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>
+Subject: [-mm patch] drivers/net/bonding/bond_main.c:make 3 functions static
+Message-ID: <20070305014921.GW3441@stusta.de>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global cdebbuf_alloc() static.
+This patch makes the following needlessly global functions static:
+- bond_mode_name()
+- bond_sethwaddr()
+- bond_mii_monitor()
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/isdn/capi/capiutil.c  |    8 +-------
- include/linux/isdn/capiutil.h |    1 -
- 2 files changed, 1 insertion(+), 8 deletions(-)
+ drivers/net/bonding/bond_main.c |    7 ++++---
+ drivers/net/bonding/bonding.h   |    3 ---
+ 2 files changed, 4 insertions(+), 6 deletions(-)
 
---- linux-2.6.21-rc2-mm1/include/linux/isdn/capiutil.h.old	2007-03-04 20:49:17.000000000 +0100
-+++ linux-2.6.21-rc2-mm1/include/linux/isdn/capiutil.h	2007-03-04 20:49:25.000000000 +0100
-@@ -187,7 +187,6 @@
- #define	CDEBUG_SIZE	1024
- #define	CDEBUG_GSIZE	4096
+--- linux-2.6.21-rc2-mm1/drivers/net/bonding/bonding.h.old	2007-03-04 21:33:14.000000000 +0100
++++ linux-2.6.21-rc2-mm1/drivers/net/bonding/bonding.h	2007-03-04 21:34:46.000000000 +0100
+@@ -301,13 +301,10 @@
+ void bond_destroy_slave_symlinks(struct net_device *master, struct net_device *slave);
+ int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev);
+ int bond_release(struct net_device *bond_dev, struct net_device *slave_dev);
+-int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev);
+-void bond_mii_monitor(struct work_struct *work);
+ void bond_loadbalance_arp_mon(struct work_struct *work);
+ void bond_activebackup_arp_mon(struct work_struct *work);
+ void bond_set_mode_ops(struct bonding *bond, int mode);
+ int bond_parse_parm(char *mode_arg, struct bond_parm_tbl *tbl);
+-const char *bond_mode_name(int mode);
+ void bond_select_active_slave(struct bonding *bond);
+ void bond_change_active_slave(struct bonding *bond, struct slave *new_active);
+ void bond_register_arp(struct bonding *);
+--- linux-2.6.21-rc2-mm1/drivers/net/bonding/bond_main.c.old	2007-03-04 21:33:29.000000000 +0100
++++ linux-2.6.21-rc2-mm1/drivers/net/bonding/bond_main.c	2007-03-04 21:34:56.000000000 +0100
+@@ -187,7 +187,7 @@
  
--_cdebbuf *cdebbuf_alloc(void);
- void cdebbuf_free(_cdebbuf *cdb);
- int cdebug_init(void);
- void cdebug_exit(void);
---- linux-2.6.21-rc2-mm1/drivers/isdn/capi/capiutil.c.old	2007-03-04 20:49:33.000000000 +0100
-+++ linux-2.6.21-rc2-mm1/drivers/isdn/capi/capiutil.c	2007-03-04 20:50:19.000000000 +0100
-@@ -855,7 +855,7 @@
- static u_long g_debbuf_lock;
- static _cmsg *g_cmsg;
+ /*---------------------------- General routines -----------------------------*/
  
--_cdebbuf *cdebbuf_alloc(void)
-+static _cdebbuf *cdebbuf_alloc(void)
+-const char *bond_mode_name(int mode)
++static const char *bond_mode_name(int mode)
  {
- 	_cdebbuf *cdb;
+ 	switch (mode) {
+ 	case BOND_MODE_ROUNDROBIN :
+@@ -1200,7 +1200,8 @@
  
-@@ -989,11 +989,6 @@
- 	return &g_debbuf;
- }
+ /*---------------------------------- IOCTL ----------------------------------*/
  
--_cdebbuf *cdebbuf_alloc(void)
--{
--	return &g_debbuf;
--}
--
- void cdebbuf_free(_cdebbuf *cdb)
+-int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev)
++static int bond_sethwaddr(struct net_device *bond_dev,
++			  struct net_device *slave_dev)
  {
- }
-@@ -1009,7 +1004,6 @@
+ 	dprintk("bond_dev=%p\n", bond_dev);
+ 	dprintk("slave_dev=%p\n", slave_dev);
+@@ -2014,7 +2015,7 @@
+ /*-------------------------------- Monitoring -------------------------------*/
  
- #endif
- 
--EXPORT_SYMBOL(cdebbuf_alloc);
- EXPORT_SYMBOL(cdebbuf_free);
- EXPORT_SYMBOL(capi_cmsg2message);
- EXPORT_SYMBOL(capi_message2cmsg);
+ /* this function is called regularly to monitor each slave's link. */
+-void bond_mii_monitor(struct work_struct *work)
++static void bond_mii_monitor(struct work_struct *work)
+ {
+ 	struct bonding *bond = container_of(work, struct bonding, mii_work.work);
+ 	struct net_device *bond_dev = bond->dev;
 
