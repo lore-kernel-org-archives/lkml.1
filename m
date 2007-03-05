@@ -1,274 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbXCEHch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbXCEHdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752059AbXCEHch (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 02:32:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbXCEHch
+	id S1752714AbXCEHdr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 02:33:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbXCEHdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 02:32:37 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:62847 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752059AbXCEHcV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 02:32:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=uo78rfP2gEgoGFmvKFjKUmTDaqevxvy8vgeYFXU7k3juPdrhqPJC5nGlw7XuGBwLInfX3mRWcZ1MUC8C7yLpuYKH8BYQuNI4WUq7tfeNgl5MXgZZd/dPs52gPiQuUvC9/bRFy6Do0yBBDz4uWfAp3rYLojl4577LSu/psny3D54=
-Date: Mon, 5 Mar 2007 15:32:15 +0800
-From: "Li Yu" <raise.sail@gmail.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "Greg Kroah Hartman" <greg@kroah.com>,
-       "linux-usb-devel" <linux-usb-devel@lists.sourceforge.net>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Vincent Legoll" <vincentlegoll@gmail.com>,
-       "Zephaniah E. Hull" <warp@aehallh.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Harold Sargeant" <harold-sargeant@ntlworld.com>
-Cc: "liyu" <liyu@ccoss.com.cn>
-Subject: [DOC] The documentation for HID Simple Driver Interface 0.5.0
-Message-ID: <200703051532096508636@gmail.com>
-X-mailer: Foxmail 6, 5, 104, 21 [cn]
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 02:33:46 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:45735 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752716AbXCEHdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 02:33:45 -0500
+To: Dmitriy Monakhov <dmonakhov@sw.ru>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] ext3: dirindex error pointer issues
+References: <87lkidf5y0.fsf@sw.ru>
+	<20070305021344.GO6662@schatzie.adilger.int>
+From: Dmitriy Monakhov <dmonakhov@sw.ru>
+Date: Mon, 05 Mar 2007 10:34:08 +0300
+In-Reply-To: <20070305021344.GO6662@schatzie.adilger.int> (Andreas Dilger's message of "Mon, 5 Mar 2007 10:13:44 +0800")
+Message-ID: <87k5xwkutr.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-==================================
-HID device simple driver interface
-==================================
+Andreas Dilger <adilger@clusterfs.com> writes:
 
-------------------------
-Note
-------------------------
+> On Mar 04, 2007  17:18 +0300, Dmitriy Monakhov wrote:
+>>  - ext3_dx_find_entry() exit with out setting proper error pointer
+>>  - do_split() exit with out setting proper error pointer
+>>    it is realy painful because many callers contain folowing code:
+>>            de = do_split(handle,dir, &bh, frame, &hinfo, &retval);
+>>            if (!(de))
+>>                         return retval;
+>>            <<< WOW retval wasn't changed by do_split(), so caller failed
+>>            <<< but return SUCCESS :)
+>>  - Rearrange do_split() error path. Current error path is realy ugly, all
+>>    this up and down jump stuff doesn't make code easy to understand.
+>> 
+>> Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+>> ---
+>>  fs/ext3/namei.c |   26 +++++++++++++++-----------
+>>  fs/ext4/namei.c |   26 +++++++++++++++-----------
+>>  2 files changed, 30 insertions(+), 22 deletions(-)
+>> 
+>> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+>> index 49159f1..1a52586 100644
+>> --- a/fs/ext3/namei.c
+>> +++ b/fs/ext3/namei.c
+>> @@ -969,6 +969,7 @@ static struct buffer_head * ext3_dx_find_entry(struct dentry *dentry,
+>>  				  (block<<EXT3_BLOCK_SIZE_BITS(sb))
+>>  					  +((char *)de - bh->b_data))) {
+>>  				brelse (bh);
+>> +				*err = ERR_BAD_DX_DIR;
+>>  				goto errout;
+>>  			}
+>>  			*res_dir = de;
+>
+> I have no objection to this change (by principle of least surprise) but
+> I don't know if it fixes a real problem.  The one caller of this function
+> treats ERR_BAD_DX_DIR the same as bh == NULL.
+  Execly  ERR_BAD_DX_DIR treats  the same as bh == NULL and let's look at
+  callers code: 
+  struct buffer_head * ext3_find_entry(......)
+  {
+  .......
+              bh = ext3_dx_find_entry(dentry, res_dir, &err);
+                /*
+                 * On success, or if the error was file not found,
+                 * return.  Otherwise, fall back to doing a search the
+                 * old fashioned way.
+                 */
+                if (bh || (err != ERR_BAD_DX_DIR))
+  <<<<< after ext3_dx_find_entry() has failed , but don't set err pointer 
+  <<<<< we get  (bh == NULL, err == 0) , and then just return NULL.
+                        return bh;
+ .......
+ }
 
- If you just begin to study from writing input device driver, please see the
-input-programming.txt, I am afraid this is not you want, do not confuse with the
-"simple" in this name.
+>
+>> @@ -1134,9 +1135,9 @@ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+>>  	char *data1 = (*bh)->b_data, *data2;
+>>  	unsigned split;
+>>  	struct ext3_dir_entry_2 *de = NULL, *de2;
+>> -	int	err;
+>> +	int	err = 0;
+>>  
+>> -	bh2 = ext3_append (handle, dir, &newblock, error);
+>> +	bh2 = ext3_append (handle, dir, &newblock, &err);
+>
+> Why don't we just remove "err" entirely and use *error to avoid any risk
+> of setting err and not returning it in error?  Also reduces stack usage
+> that tiny little bit.
+I've chosen this approuch becouse of:
+1) this approuch was used in block allocation code.
+2) this approuch prevent  folowing errors:
+  *error = do_some_function(.....)
+  ........ /* some code*/
+  if(error) 
+ we do this checking as we do it thousands times before, but forget
+ what error it pointer here. And compiler can't warn us here because 
+ it is absolutely legal operation. At least it is better to rename 
+ error to errorp.
 
-------------------------
-Version
-------------------------
-
- This is used for the version 0.5.0
-
---------------------------
-Overview
---------------------------
-
- Under standard HID device driver development means, we need to write
-one interrupt handler for each new HID device to report event to
-input subsystem. However, although the most of they can not merge into
-mainstream kernel tree, they have only some extended keys, e.g. many
-remote controllers. I think it seem break a fly on the wheel, which
-write one new interrupt handler for this reason.
-
- The basic idea is reuse the interrupt handler in hid-core.c. so writing
-driver for new simple HID device will be more easier, quickly, and do not
-need touch hid core.
-
- In essence, this interface just is some hooks in HID core.
-
- The hid-simple.h include this API. But, defore use this interface, you must
-include hid.h first.
-
-------------------------
-What's you will get from this interface.
-------------------------
-
- Use me, you can:
-
- 1. Write the driver of USB input device without write code take care of
- details of setup and clear usage.
- 2. A driver use this interface can be as a HID device input filter.
-
- This interface can not support the more drivers handle one device at same time
-yet. I can not sure if we really need this feature.
-
--------------------------
-Prepare
--------------------------
-
- Before use this interface, you must turn on these kernel configuration
-items:
-
- CONFIG_HID_SIMPLE : HID simple driver interface
-
---------------------------
-Register and unregister
---------------------------
-
-1. Register a simple driver.
-
- int hidinput_register_simple_driver(struct hidinput_simple_driver *simple)
-
- Like any driver register function, it register your driver to kernel,
-when the chance that match device come, your driver can probe it. At least, you
-must fill the member of parameter simple : name.
- Return 0 mean register successfully. elsewise mean there have some
-failures in register process.
- So far, this function only can return 0 and -EINVAL.
- When you driver matched one device, it will reregister it into input
-subsystem (see the function hidinput_reconnect_core(), if you want).
- This function generally is used in HID sublayer.
-
-2. Unregister a simple driver.
-
- void hidinput_unregister_simple_driver(struct hidinput_simple_driver *simple)
-
- Like any driver register function, it clean your driver from kernel, and
-in this process, your driver will disconnect any device which it matched. However,
-it do not free your memory of driver structure, that's your task.
- This may reregister the device into input subsystem (see the function
-hidinput_reconnect_core(), if you want).
- This function generally is used in HID sublayer.
-
-3. USB device driver.
+Btw: I've thought about adding assertations to error path witch may check
+what errp pointer was properly initialized after error happends.
+folowing code is draft only:
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -63,6 +63,7 @@ static struct buffer_head *ext3_append(handle_t *handle,
+ 		EXT3_I(inode)->i_disksize = inode->i_size;
+ 		ext3_journal_get_write_access(handle,bh);
+ 	}
++	assert(bh || *err);
+ 	return bh;
+ }
  
- You should use follow functions for USB device. the usage of these functions is 
-same with aboves.
+@@ -433,6 +434,7 @@ fail2:
+ 		frame--;
+ 	}
+ fail:
++	assert(*err != 0);
+ 	return NULL;
+ }
 
-int hidinput_register_simple_usb_driver(struct hidinput_simple_driver *simple)
-void hidinput_unregister_simple_usb_driver(struct hidinput_simple_driver *simple)
+>
+>
+> In ext3_dx_add_entry() it appears like we should "goto journal_error"
+> to report an error after the failed call to do_split(), instead of just
+> "goto cleanup" so that we report an error in the filesystem.  Not 100%
+> sure of this.
+do_split() already invoked ext3_std_error() on it's "journal_error" path.
 
- Both functions is used in driver. 
-
-----------------------------------
-Usage
-----------------------------------
-
- Each simple driver have one data structure hidinput_simple_driver:
-
-struct hidinput_simple_driver {
- /*
- * The members for implement only are ignored here,
- * please do not depend on them
- */
- /* public for HID sublayer. */
- int (*match_device)(struct hidinput_simple_driver *drv,
-                               struct matched_device *dev);
-
- /* public for drivers */
- struct module *owner;
- char *name;
- int (*connect)(struct hid_device *, struct hid_input *);
- void (*disconnect)(struct hid_device *, struct hid_input *);
- void (*setup_usage)(struct hid_field *, struct hid_usage *);
- void (*clear_usage)(struct hid_field *, struct hid_usage *);
- int (*pre_event)(const struct hid_device *, const struct hid_field *,
-				 const struct hid_usage *, const __s32);
- int (*post_event)(const struct hid_device *, const struct hid_field *,
-				 const struct hid_usage *, const __s32);
- int (*open)(struct input_dev *dev);
- void (*close)(struct input_dev *dev);
-
- void *private;
- struct usb_device_id *id_table;
- struct usage_page_block *usage_page_table;
-};
-
-The data member description:
-
- struct module *owner;
-
- In most cases, set this member to THIS_MODULE is your want to.
-
- char *name;
-
- The name of your driver. you must fill this member before register it.
-
- void *private;
-
- You can save the data that your driver use only here. HID simple driver
-core do not take care of this.
-
- struct usb_device_id *id_table;
-
- As same with other USB device driver, this is used by matching device,
-if so, then call probe()/connect() methods of your driver.
- In general, you always want to fill this member with something.
-
- struct usage_page_block *usage_page_table;
-
- Totally, there are three means you can complete setup and clean HID usage work,
-which use this member is one of them. Moreover, this means is the most simplest one.
-By fill this member, kernel will complete setup and clean usage work automatically.
- It will spend many words to explain details, I think the best documentation
-of this is the example, you can find them in usbnek4k.c and btp2118.c. I believe
-you have enough intelligence to understand them, but if you had familiar
-with HID first.  :)  When you read these examples, you also will find out some other
-related data structures ,however, don't worry, they are too simple to not discuss
-them.
-
---------------------------------
-Generic Methods
---------------------------------
-
-The simple driver methods description:
-
- Although this simple driver have not direct relation with Linux
-device driver architecture, but I still make its API like it on purpose.
-The simple driver have follow methods:
-
-1. int (*connect)(struct hid_device *, struct hid_input *);
-2. void (*disconnect)(struct hid_device *, struct hid_input *);
-
- When you simple driver is to bind with one real HID device, we will
-call connect() method first. To return 0 flag that it complete its mission
-successfully, so we can continue, return any other value is looked as
-error, any processing do not come.
- When the device which your simple driver connect with is down, or
-this simple driver is unregistered, we will call disconnect() method first.
-
-3. void (*setup_usage)(struct hid_field *, struct hid_usage *);
-4. void (*clear_usage)(struct hid_field *, struct hid_usage *);
-
- The setup_usage() method like hidinput_configure_usage() in
-hid_input.c. You also can setup input_dev here. I think
-you should be fill the pointer slot for this method, or fill usage_page_table
-member of hidinput_simple_driver, elsewise the event() method do not work for
-you at all. Please see example in "MS Natural Ergonomic Keyboard 4000" driver.
- The clear_usage() method is used to clear side-effect that came from
-setup_usage() method when one driver disconnect one device.
- Of course, you can do same things in connect/disconnect() method, but
-these method can make your life more simpler.
- At last, you can use these two methods and usage_page_table member
-at same time. These two methods always will be called after kernel process
-usage_page_table.
-
-6. int (*pre_event)(const struct hid_device *, const struct hid_field*,
-					const struct hid_usage *, const __s32);
-
- First, you can use this method send event to input subsystem,
-moreover, you can use this as one usage code filter: this method is called
-before all other event handling. If it return non-zero , any other event
-handling do not be processed, even the hid-input itself. If this method
-return zero, the normally event handling process will continue.
- See the note [1].
-
-7. void (*post_event)(const struct hid_device *, const struct hid_field *,
-					const struct hid_usage *, const __s32);
-
- This is called after all other event handling. So if the pre_event() method
-return non-zero value, this method also do not called at all.
- See the note [1].
-
-8. int (*open)(struct input_dev *dev);
-9. void (*close)(struct input_dev *dev);
-
- They are same with corresponding methods of struct input_dev. I assume
-you already familiar with them.
-
-10. int (*match_device)(struct hidinput_simple_driver *drv, struct matched_device *dev);
-
- Return non-zero mean drv is matched for dev. An example of its implementation can be 
-found in drivers/usb/input/hid-core.c
-
-=================================================================================
-
-NOTE:
-
-[1] If you do not configure usage correctly, this method do not work as
- you want.
+>
+> Cheers, Andreas
+> --
+> Andreas Dilger
+> Principal Software Engineer
+> Cluster File Systems, Inc.
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
