@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXCEWlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXCEWlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932461AbXCEWlI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932495AbXCEWlH
+	id S932486AbXCEWlN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:41:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXCEWlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:41:07 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:39909 "EHLO smtp.osdl.org"
+	Mon, 5 Mar 2007 17:41:11 -0500
+Received: from ns2.suse.de ([195.135.220.15]:58539 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932487AbXCEWk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:40:58 -0500
-Date: Mon, 5 Mar 2007 14:40:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Lee Revell" <rlrevell@joe-job.com>,
-       "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
- scheduler
-Message-Id: <20070305144052.82a67511.akpm@linux-foundation.org>
-In-Reply-To: <200703051419.25814.gene.heskett@gmail.com>
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org>
-	<200703050453.08154.gene.heskett@gmail.com>
-	<75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com>
-	<200703051419.25814.gene.heskett@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S932473AbXCEWku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 17:40:50 -0500
+Date: Mon, 5 Mar 2007 14:39:00 -0800
+From: Greg KH <greg@kroah.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Theodore Tso <tytso@mit.edu>, Johannes Berg <johannes@sipsolutions.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, yi.zhu@intel.com,
+       jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
+Message-ID: <20070305223900.GA7676@kroah.com>
+References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org> <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org> <20070305185813.GA31465@kroah.com> <20070305195530.GM23311@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070305195530.GM23311@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Mar 2007 14:19:25 -0500
-Gene Heskett <gene.heskett@gmail.com> wrote:
+On Mon, Mar 05, 2007 at 01:55:30PM -0600, Matt Mackall wrote:
+> On Mon, Mar 05, 2007 at 10:58:13AM -0800, Greg KH wrote:
+> > Ok, how about the following patch.  Is it acceptable to everyone?
+> > 
+> > -	  If you are using a distro that was released in 2006 or later,
+> > -	  it should be safe to say N here.
+> > +	  If you are using an OpenSuSE, Gentoo, Ubuntu, or Fedora
+> > +	  release from 2007 or later, it should be safe to say N here.
+> > +
+> > +	  If you are using Debian or other distros that are slow to
+> > +	  update HAL, please say Y here.
+> 
+> What HAL version do you think Debian ought to have, pray tell? And
+> what the hell version do those other distros have?
+> 
+> The last HAL release was 0.5.8 on 11-Sep-2006. It showed up in
+> Debian/unstable on 2-Oct. There have been six Debian bugfix releases,
+> the most recent on 12-Feb.
+> 
+> http://people.freedesktop.org/~david/dist/
+> http://packages.debian.org/changelogs/pool/main/h/hal/hal_0.5.8.1-6.1/changelog
 
-> Andrew, please, get this one in ASAP,
+Ok, I only named HAL as that is what people have told me the problem is.
+I have been running this change on my boxs, without
+CONFIG_SYSFS_DEPRECATED since last July or so.
 
-I'm presently nearly 1000 messages behind on my lkml reading.  We'll get
-there.
+But I don't use NetworkManager here for the most part, but I have tried
+this in the OpenSuse10.3 alpha releases and it seems to work just fine
+with whatever version of NetworkManager it uses.
 
-> but promise me an -mm won't trash 
-> half my filesystems like one I tried 2-3 years ago did.
+So perhaps it's some wrapper scripts somewhere?  I think SuSE had some
+odd things hard coded somewhere that prevented 10.1 from working
+properly with this change.
 
-I can't.  -mm is crap at present.  Well.  Mainline is crap at present, and
--mm is crap^2.  I think I might be about to throw vast amounts of code
-overboard.
+Ok, so I'll drop the HAL wording above, what should I say instead?
 
+thanks,
 
+greg k-h
