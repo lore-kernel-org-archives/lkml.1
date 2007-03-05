@@ -1,39 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbXCEUvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXCEUwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932375AbXCEUvo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 15:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbXCEUvo
+	id S932078AbXCEUwn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 15:52:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932390AbXCEUwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 15:51:44 -0500
-Received: from waste.org ([66.93.16.53]:48441 "EHLO waste.org"
+	Mon, 5 Mar 2007 15:52:43 -0500
+Received: from mailin1.k-net.dk ([82.211.192.11]:3980 "EHLO mailin1.k-net.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932375AbXCEUvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 15:51:43 -0500
-Date: Mon, 5 Mar 2007 14:38:57 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-Subject: Re: [PATCH] [RSDL 5/6] sched: implement rsdl cpu scheduler
-Message-ID: <20070305203857.GQ16722@waste.org>
-References: <200703041806.22965.kernel@kolivas.org>
+	id S932401AbXCEUwl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 15:52:41 -0500
+Subject: Re: PROBLEM: "BUG:" when resuming from suspend-to-ram
+From: Kristian =?ISO-8859-1?Q?Gr=F8nfeldt_S=F8rensen?= <kriller@vkr.dk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+In-Reply-To: <200703051932.29996.rjw@sisk.pl>
+References: <1172601905.5428.28.camel@localhost.localdomain>
+	 <1172781250.5042.1.camel@localhost.localdomain>
+	 <d120d5000703050644x741564v625f0aa7a58c60ad@mail.gmail.com>
+	 <200703051932.29996.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+Date: Mon, 05 Mar 2007 21:51:38 +0100
+Message-Id: <1173127898.10294.1.camel@miraculinux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703041806.22965.kernel@kolivas.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 04, 2007 at 06:06:22PM +1100, Con Kolivas wrote:
-> + * This is the time all tasks within the same priority round robin.
-> + * Set to a minimum of 6ms.
->   */
-> +#define RR_INTERVAL		((6 * HZ / 1001) + 1)
+On Mon, 2007-03-05 at 19:32 +0100, Rafael J. Wysocki wrote:
+> On Monday, 5 March 2007 15:44, Dmitry Torokhov wrote:
+> > On 3/1/07, Kristian Grønfeldt Sørensen <kriller@vkr.dk> wrote:
+> > > On Thu, 2007-03-01 at 15:25 -0500, Dmitry Torokhov wrote:
+> > > > On 3/1/07, Kristian Grønfeldt Sørensen <kriller@vkr.dk> wrote:
+> > > > >
+> > > > > Hmmm.
+> > > > >
+> > > > > Now i get this BUG:
+> > > > >
+> > > >
+> > > > Does it die the same way if you just unload the button driver without
+> > > > suspending?
+> > > >
+> > >
+> > > No. Tried unloading and loading 30 times after each other. No problems
+> > > at all.
+> > >
+> > 
+> > I wonder what causes unloading of the ACPI button driver during resume...
+> 
+> Let me guess: pm-utils in OpenSUSE 10.2.
+> 
+Nope. acpi-support for Debian unstable.
 
-What happens with small HZ? Like 100? I suppose 10ms is a reasonable
-number here. But in general, how well does this scheduler do without a
-time source other than jiffies?
+/Kristian
 
--- 
-Mathematics is the supreme nostalgia of our time.
+
