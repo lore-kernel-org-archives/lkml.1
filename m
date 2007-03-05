@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969AbXCEWn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932473AbXCEWoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751969AbXCEWn4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXCEWng
+	id S932473AbXCEWoA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbXCEWn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:43:36 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:26194 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbXCEWnX (ORCPT
+	Mon, 5 Mar 2007 17:43:59 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:20248 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbXCEWni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:43:23 -0500
-Date: Mon, 5 Mar 2007 23:43:20 +0100
+	Mon, 5 Mar 2007 17:43:38 -0500
+Date: Mon, 5 Mar 2007 23:43:35 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [S390] system call cleanup.
-Message-ID: <20070305224320.GL22630@skybase>
+Subject: [S390] improved oops output.
+Message-ID: <20070305224335.GM22630@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,611 +24,1418 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-[S390] system call cleanup.
+[S390] improved oops output.
 
-Remove system call glue for sys_clone, sys_fork, sys_vfork, sys_execve,
-sys_sigreturn, sys_rt_sigreturn and sys_sigaltstack. Call do_execve from
-kernel_execve directly, move pt_regs to the right place and branch to
-sysc_return to start the user space program. This removes the last
-in-kernel system call.
+This patch adds two improvements to the oops output. First it adds an
+additional line after the PSW which decodes the different fields of it.
+Second a disassembler is added that decodes the instructions surrounding
+the faulting PSW. The output of a test oops now looks like this:
+
+kernel BUG at init/main.c:419
+illegal operation: 0001 [#1]
+CPU:    0    Not tainted
+Process swapper (pid: 0, task: 0000000000464968, ksp: 00000000004be000)
+Krnl PSW : 0700000180000000 00000000000120b6 (rest_init+0x36/0x38)
+           R:0 T:1 IO:1 EX:1 Key:0 M:0 W:0 P:0 AS:0 CC:0 PM:0 EA:3
+Krnl GPRS: 0000000000000003 00000000004ba017 0000000000000022 0000000000000001
+           000000000003a5f6 0000000000000000 00000000004be6a8 0000000000000000
+           0000000000000000 00000000004b8200 0000000000003a50 0000000000008000
+           0000000000516368 000000000033d008 00000000000120b2 00000000004bdee0
+Krnl Code: 00000000000120a6: e3e0f0980024       stg     %r14,152(%r15)
+           00000000000120ac: c0e500014296       brasl   %r14,3a5d8
+           00000000000120b2: a7f40001           brc     15,120b4
+          >00000000000120b6: 0707               bcr     0,%r7
+           00000000000120b8: eb7ff0500024       stmg    %r7,%r15,80(%r15)
+           00000000000120be: c0d000195825       larl    %r13,33d108
+           00000000000120c4: a7f13f00           tmll    %r15,16128
+           00000000000120c8: a7840001           brc     8,120ca
+Call Trace:
+([<00000000000120b2>] rest_init+0x32/0x38)
+ [<00000000004be614>] start_kernel+0x37c/0x410
+ [<0000000000012020>] _ehead+0x20/0x80
 
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/compat_linux.c  |   56 ++++++++++++---------
- arch/s390/kernel/compat_signal.c |   10 ++-
- arch/s390/kernel/entry.S         |   87 ++++++++++++---------------------
- arch/s390/kernel/entry64.S       |  100 ++++++++++-----------------------------
- arch/s390/kernel/process.c       |   76 +++++++++++++++++------------
- arch/s390/kernel/signal.c        |   10 ++-
- arch/s390/kernel/sys_s390.c      |   20 -------
- arch/s390/kernel/syscalls.S      |   14 ++---
- 8 files changed, 155 insertions(+), 218 deletions(-)
+ arch/s390/kernel/Makefile    |    2 
+ arch/s390/kernel/dis.c       | 1268 +++++++++++++++++++++++++++++++++++++++++++
+ arch/s390/kernel/traps.c     |   55 -
+ include/asm-s390/processor.h |    1 
+ 4 files changed, 1287 insertions(+), 39 deletions(-)
 
-diff -urpN linux-2.6/arch/s390/kernel/compat_linux.c linux-2.6-patched/arch/s390/kernel/compat_linux.c
---- linux-2.6/arch/s390/kernel/compat_linux.c	2007-03-05 22:51:29.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/compat_linux.c	2007-03-05 22:51:59.000000000 +0100
-@@ -495,29 +495,34 @@ sys32_rt_sigqueueinfo(int pid, int sig, 
-  * sys32_execve() executes a new program after the asm stub has set
-  * things up for us.  This should basically do what I want it to.
-  */
--asmlinkage long
--sys32_execve(struct pt_regs regs)
-+asmlinkage long sys32_execve(void)
- {
--        int error;
--        char * filename;
--
--        filename = getname(compat_ptr(regs.orig_gpr2));
--        error = PTR_ERR(filename);
--        if (IS_ERR(filename))
-+	struct pt_regs *regs = task_pt_regs(current);
-+	char *filename;
-+	unsigned long result;
-+	int rc;
+diff -urpN linux-2.6/arch/s390/kernel/dis.c linux-2.6-patched/arch/s390/kernel/dis.c
+--- linux-2.6/arch/s390/kernel/dis.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/dis.c	2007-03-05 22:52:00.000000000 +0100
+@@ -0,0 +1,1268 @@
++/*
++ * arch/s390/kernel/dis.c
++ *
++ * Disassemble s390 instructions.
++ *
++ * Copyright IBM Corp. 2007
++ * Author(s): Martin Schwidefsky (schwidefsky@de.ibm.com),
++ */
 +
-+	filename = getname(compat_ptr(regs->orig_gpr2));
-+	if (IS_ERR(filename)) {
-+		result = PTR_ERR(filename);
-                 goto out;
--        error = compat_do_execve(filename, compat_ptr(regs.gprs[3]),
--				 compat_ptr(regs.gprs[4]), &regs);
--	if (error == 0)
--	{
--		task_lock(current);
--		current->ptrace &= ~PT_DTRACE;
--		task_unlock(current);
--		current->thread.fp_regs.fpc=0;
--		asm volatile("sfpc %0,0" : : "d" (0));
- 	}
-+	rc = compat_do_execve(filename, compat_ptr(regs->gprs[3]),
-+			      compat_ptr(regs->gprs[4]), regs);
-+	if (rc) {
-+		result = rc;
-+		goto out_putname;
-+	}
-+	task_lock(current);
-+	current->ptrace &= ~PT_DTRACE;
-+	task_unlock(current);
-+	current->thread.fp_regs.fpc=0;
-+	asm volatile("sfpc %0,0" : : "d" (0));
-+	result = regs->gprs[2];
-+out_putname:
-         putname(filename);
- out:
--        return error;
-+	return result;
- }
- 
- 
-@@ -918,19 +923,20 @@ asmlinkage long sys32_write(unsigned int
- 	return sys_write(fd, buf, count);
- }
- 
--asmlinkage long sys32_clone(struct pt_regs regs)
-+asmlinkage long sys32_clone(void)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
-         unsigned long clone_flags;
-         unsigned long newsp;
- 	int __user *parent_tidptr, *child_tidptr;
- 
--        clone_flags = regs.gprs[3] & 0xffffffffUL;
--        newsp = regs.orig_gpr2 & 0x7fffffffUL;
--	parent_tidptr = compat_ptr(regs.gprs[4]);
--	child_tidptr = compat_ptr(regs.gprs[5]);
-+	clone_flags = regs->gprs[3] & 0xffffffffUL;
-+	newsp = regs->orig_gpr2 & 0x7fffffffUL;
-+	parent_tidptr = compat_ptr(regs->gprs[4]);
-+	child_tidptr = compat_ptr(regs->gprs[5]);
-         if (!newsp)
--                newsp = regs.gprs[15];
--        return do_fork(clone_flags, newsp, &regs, 0,
-+		newsp = regs->gprs[15];
-+	return do_fork(clone_flags, newsp, regs, 0,
- 		       parent_tidptr, child_tidptr);
- }
- 
-diff -urpN linux-2.6/arch/s390/kernel/compat_signal.c linux-2.6-patched/arch/s390/kernel/compat_signal.c
---- linux-2.6/arch/s390/kernel/compat_signal.c	2007-03-05 22:51:29.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/compat_signal.c	2007-03-05 22:51:59.000000000 +0100
-@@ -255,9 +255,9 @@ sys32_rt_sigaction(int sig, const struct
- }
- 
- asmlinkage long
--sys32_sigaltstack(const stack_t32 __user *uss, stack_t32 __user *uoss,
--							struct pt_regs *regs)
-+sys32_sigaltstack(const stack_t32 __user *uss, stack_t32 __user *uoss)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
- 	stack_t kss, koss;
- 	unsigned long ss_sp;
- 	int ret, err = 0;
-@@ -344,8 +344,9 @@ static int restore_sigregs32(struct pt_r
- 	return 0;
- }
- 
--asmlinkage long sys32_sigreturn(struct pt_regs *regs)
-+asmlinkage long sys32_sigreturn(void)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
- 	sigframe32 __user *frame = (sigframe32 __user *)regs->gprs[15];
- 	sigset_t set;
- 
-@@ -370,8 +371,9 @@ badframe:
- 	return 0;
- }
- 
--asmlinkage long sys32_rt_sigreturn(struct pt_regs *regs)
-+asmlinkage long sys32_rt_sigreturn(void)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
- 	rt_sigframe32 __user *frame = (rt_sigframe32 __user *)regs->gprs[15];
- 	sigset_t set;
- 	stack_t st;
-diff -urpN linux-2.6/arch/s390/kernel/entry64.S linux-2.6-patched/arch/s390/kernel/entry64.S
---- linux-2.6/arch/s390/kernel/entry64.S	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/entry64.S	2007-03-05 22:51:59.000000000 +0100
-@@ -244,8 +244,6 @@ sysc_noemu:
- 	jnz	sysc_tracesys
- 	basr	%r14,%r8	# call sys_xxxx
- 	stg	%r2,SP_R2(%r15) # store return value (change R2 on stack)
--				# ATTENTION: check sys_execve_glue before
--				# changing anything here !!
- 
- sysc_return:
- 	tm	SP_PSW+1(%r15),0x01	# returning to user ?
-@@ -371,77 +369,35 @@ ret_from_fork:
- 	j	sysc_return
- 
- #
--# clone, fork, vfork, exec and sigreturn need glue,
--# because they all expect pt_regs as parameter,
--# but are called with different parameter.
--# return-address is set up above
-+# kernel_execve function needs to deal with pt_regs that is not
-+# at the usual place
- #
--sys_clone_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	jg	sys_clone		# branch to sys_clone
--
--#ifdef CONFIG_COMPAT
--sys32_clone_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	jg	sys32_clone		# branch to sys32_clone
--#endif
--
--sys_fork_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	jg	sys_fork		# branch to sys_fork
--
--sys_vfork_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	jg	sys_vfork		# branch to sys_vfork
--
--sys_execve_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	lgr	%r12,%r14		# save return address
--	brasl	%r14,sys_execve 	# call sys_execve
--	ltgr	%r2,%r2 		# check if execve failed
--	bnz	0(%r12) 		# it did fail -> store result in gpr2
--	b	6(%r12) 		# SKIP STG 2,SP_R2(15) in
--					# system_call/sysc_tracesys
--#ifdef CONFIG_COMPAT
--sys32_execve_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	lgr	%r12,%r14		# save return address
--	brasl	%r14,sys32_execve	# call sys32_execve
--	ltgr	%r2,%r2 		# check if execve failed
--	bnz	0(%r12) 		# it did fail -> store result in gpr2
--	b	6(%r12) 		# SKIP STG 2,SP_R2(15) in
--					# system_call/sysc_tracesys
--#endif
--
--sys_sigreturn_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs as parameter
--	jg	sys_sigreturn		# branch to sys_sigreturn
--
--#ifdef CONFIG_COMPAT
--sys32_sigreturn_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs as parameter
--	jg	sys32_sigreturn 	# branch to sys32_sigreturn
--#endif
--
--sys_rt_sigreturn_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs as parameter
--	jg	sys_rt_sigreturn	# branch to sys_sigreturn
--
--#ifdef CONFIG_COMPAT
--sys32_rt_sigreturn_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs as parameter
--	jg	sys32_rt_sigreturn	# branch to sys32_sigreturn
--#endif
--
--sys_sigaltstack_glue:
--	la	%r4,SP_PTREGS(%r15)	# load pt_regs as parameter
--	jg	sys_sigaltstack 	# branch to sys_sigreturn
--
--#ifdef CONFIG_COMPAT
--sys32_sigaltstack_glue:
--	la	%r4,SP_PTREGS(%r15)	# load pt_regs as parameter
--	jg	sys32_sigaltstack_wrapper # branch to sys_sigreturn
--#endif
-+	.globl	kernel_execve
-+kernel_execve:
-+	stmg	%r12,%r15,96(%r15)
-+	lgr	%r14,%r15
-+	aghi	%r15,-SP_SIZE
-+	stg	%r14,__SF_BACKCHAIN(%r15)
-+	la	%r12,SP_PTREGS(%r15)
-+	xc	0(__PT_SIZE,%r12),0(%r12)
-+	lgr	%r5,%r12
-+	brasl	%r14,do_execve
-+	ltgfr	%r2,%r2
-+	je	0f
-+	aghi	%r15,SP_SIZE
-+	lmg	%r12,%r15,96(%r15)
-+	br	%r14
-+	# execve succeeded.
-+0:	stnsm	__SF_EMPTY(%r15),0xfc	# disable interrupts
-+	lg	%r15,__LC_KERNEL_STACK	# load ksp
-+	aghi	%r15,-SP_SIZE		# make room for registers & psw
-+	lg	%r13,__LC_SVC_NEW_PSW+8
-+	lg	%r9,__LC_THREAD_INFO
-+	mvc	SP_PTREGS(__PT_SIZE,%r15),0(%r12)	# copy pt_regs
-+	xc	__SF_BACKCHAIN(8,%r15),__SF_BACKCHAIN(%r15)
-+	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
-+	brasl	%r14,execve_tail
-+	j	sysc_return
- 
- /*
-  * Program check handler routine
-diff -urpN linux-2.6/arch/s390/kernel/entry.S linux-2.6-patched/arch/s390/kernel/entry.S
---- linux-2.6/arch/s390/kernel/entry.S	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/entry.S	2007-03-05 22:51:59.000000000 +0100
-@@ -249,8 +249,6 @@ sysc_do_restart:
- 	bnz	BASED(sysc_tracesys)
- 	basr	%r14,%r8	  # call sys_xxxx
- 	st	%r2,SP_R2(%r15)   # store return value (change R2 on stack)
--				  # ATTENTION: check sys_execve_glue before
--				  # changing anything here !!
- 
- sysc_return:
- 	tm	SP_PSW+1(%r15),0x01	# returning to user ?
-@@ -381,50 +379,37 @@ ret_from_fork:
- 	b	BASED(sysc_return)
- 
- #
--# clone, fork, vfork, exec and sigreturn need glue,
--# because they all expect pt_regs as parameter,
--# but are called with different parameter.
--# return-address is set up above
-+# kernel_execve function needs to deal with pt_regs that is not
-+# at the usual place
- #
--sys_clone_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	l	%r1,BASED(.Lclone)
--	br	%r1			# branch to sys_clone
--
--sys_fork_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	l	%r1,BASED(.Lfork)
--	br	%r1			# branch to sys_fork
--
--sys_vfork_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	l	%r1,BASED(.Lvfork)
--	br	%r1			# branch to sys_vfork
--
--sys_execve_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs
--	l	%r1,BASED(.Lexecve)
--	lr	%r12,%r14		# save return address
--	basr	%r14,%r1		# call sys_execve
--	ltr	%r2,%r2			# check if execve failed
--	bnz	0(%r12)			# it did fail -> store result in gpr2
--	b	4(%r12)			# SKIP ST 2,SP_R2(15) after BASR 14,8
--					# in system_call/sysc_tracesys
--
--sys_sigreturn_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs as parameter
--	l	%r1,BASED(.Lsigreturn)
--	br	%r1			# branch to sys_sigreturn
--
--sys_rt_sigreturn_glue:
--	la	%r2,SP_PTREGS(%r15)	# load pt_regs as parameter
--	l	%r1,BASED(.Lrt_sigreturn)
--	br	%r1			# branch to sys_sigreturn
--
--sys_sigaltstack_glue:
--	la	%r4,SP_PTREGS(%r15)	# load pt_regs as parameter
--	l	%r1,BASED(.Lsigaltstack)
--	br	%r1			# branch to sys_sigreturn
-+	.globl	kernel_execve
-+kernel_execve:
-+	stm	%r12,%r15,48(%r15)
-+	lr	%r14,%r15
-+	l	%r13,__LC_SVC_NEW_PSW+4
-+	s	%r15,BASED(.Lc_spsize)
-+	st	%r14,__SF_BACKCHAIN(%r15)
-+	la	%r12,SP_PTREGS(%r15)
-+	xc	0(__PT_SIZE,%r12),0(%r12)
-+	l	%r1,BASED(.Ldo_execve)
-+	lr	%r5,%r12
-+	basr	%r14,%r1
-+	ltr	%r2,%r2
-+	be	BASED(0f)
-+	a	%r15,BASED(.Lc_spsize)
-+	lm	%r12,%r15,48(%r15)
-+	br	%r14
-+	# execve succeeded.
-+0:	stnsm	__SF_EMPTY(%r15),0xfc	# disable interrupts
-+	l	%r15,__LC_KERNEL_STACK	# load ksp
-+	s	%r15,BASED(.Lc_spsize)	# make room for registers & psw
-+	l	%r9,__LC_THREAD_INFO
-+	mvc	SP_PTREGS(__PT_SIZE,%r15),0(%r12)	# copy pt_regs
-+	xc	__SF_BACKCHAIN(4,%r15),__SF_BACKCHAIN(%r15)
-+	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
-+	l	%r1,BASED(.Lexecve_tail)
-+	basr	%r14,%r1
-+	b	BASED(sysc_return)
- 
- /*
-  * Program check handler routine
-@@ -1031,19 +1016,11 @@ cleanup_io_leave_insn:
- .Ldo_extint:	.long	do_extint
- .Ldo_signal:	.long	do_signal
- .Lhandle_per:	.long	do_single_step
-+.Ldo_execve:	.long	do_execve
-+.Lexecve_tail:	.long	execve_tail
- .Ljump_table:	.long	pgm_check_table
- .Lschedule:	.long	schedule
--.Lclone:	.long	sys_clone
--.Lexecve:	.long	sys_execve
--.Lfork: 	.long	sys_fork
--.Lrt_sigreturn: .long	sys_rt_sigreturn
--.Lrt_sigsuspend:
--		.long	sys_rt_sigsuspend
--.Lsigreturn:	.long	sys_sigreturn
--.Lsigsuspend:	.long	sys_sigsuspend
--.Lsigaltstack:	.long	sys_sigaltstack
- .Ltrace:	.long	syscall_trace
--.Lvfork:	.long	sys_vfork
- .Lschedtail:	.long	schedule_tail
- .Lsysc_table:	.long	sys_call_table
- #ifdef CONFIG_TRACE_IRQFLAGS
-diff -urpN linux-2.6/arch/s390/kernel/process.c linux-2.6-patched/arch/s390/kernel/process.c
---- linux-2.6/arch/s390/kernel/process.c	2007-03-05 22:51:29.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/process.c	2007-03-05 22:51:59.000000000 +0100
-@@ -280,24 +280,26 @@ int copy_thread(int nr, unsigned long cl
-         return 0;
- }
- 
--asmlinkage long sys_fork(struct pt_regs regs)
-+asmlinkage long sys_fork(void)
- {
--	return do_fork(SIGCHLD, regs.gprs[15], &regs, 0, NULL, NULL);
-+	struct pt_regs *regs = task_pt_regs(current);
-+	return do_fork(SIGCHLD, regs->gprs[15], regs, 0, NULL, NULL);
- }
- 
--asmlinkage long sys_clone(struct pt_regs regs)
-+asmlinkage long sys_clone(void)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
-         unsigned long clone_flags;
-         unsigned long newsp;
- 	int __user *parent_tidptr, *child_tidptr;
- 
--        clone_flags = regs.gprs[3];
--        newsp = regs.orig_gpr2;
--	parent_tidptr = (int __user *) regs.gprs[4];
--	child_tidptr = (int __user *) regs.gprs[5];
-+	clone_flags = regs->gprs[3];
-+	newsp = regs->orig_gpr2;
-+	parent_tidptr = (int __user *) regs->gprs[4];
-+	child_tidptr = (int __user *) regs->gprs[5];
-         if (!newsp)
--                newsp = regs.gprs[15];
--        return do_fork(clone_flags, newsp, &regs, 0,
-+		newsp = regs->gprs[15];
-+	return do_fork(clone_flags, newsp, regs, 0,
- 		       parent_tidptr, child_tidptr);
- }
- 
-@@ -311,40 +313,52 @@ asmlinkage long sys_clone(struct pt_regs
-  * do not have enough call-clobbered registers to hold all
-  * the information you need.
-  */
--asmlinkage long sys_vfork(struct pt_regs regs)
-+asmlinkage long sys_vfork(void)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
- 	return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD,
--		       regs.gprs[15], &regs, 0, NULL, NULL);
-+		       regs->gprs[15], regs, 0, NULL, NULL);
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/errno.h>
++#include <linux/ptrace.h>
++#include <linux/timer.h>
++#include <linux/mm.h>
++#include <linux/smp.h>
++#include <linux/smp_lock.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++#include <linux/module.h>
++#include <linux/kallsyms.h>
++#include <linux/reboot.h>
++#include <linux/kprobes.h>
++
++#include <asm/system.h>
++#include <asm/uaccess.h>
++#include <asm/io.h>
++#include <asm/atomic.h>
++#include <asm/mathemu.h>
++#include <asm/cpcmd.h>
++#include <asm/s390_ext.h>
++#include <asm/lowcore.h>
++#include <asm/debug.h>
++#include <asm/kdebug.h>
++
++#ifndef CONFIG_64BIT
++#define ONELONG "%08lx: "
++#else /* CONFIG_64BIT */
++#define ONELONG "%016lx: "
++#endif /* CONFIG_64BIT */
++
++#define OPERAND_GPR	0x1	/* Operand printed as %rx */
++#define OPERAND_FPR	0x2	/* Operand printed as %fx */
++#define OPERAND_AR	0x4	/* Operand printed as %ax */
++#define OPERAND_CR	0x8	/* Operand printed as %cx */
++#define OPERAND_DISP	0x10	/* Operand printed as displacement */
++#define OPERAND_BASE	0x20	/* Operand printed as base register */
++#define OPERAND_INDEX	0x40	/* Operand printed as index register */
++#define OPERAND_PCREL	0x80	/* Operand printed as pc-relative symbol */
++#define OPERAND_SIGNED	0x100	/* Operand printed as signed value */
++#define OPERAND_LENGTH	0x200	/* Operand printed as length (+1) */
++
++enum {
++	UNUSED,	/* Indicates the end of the operand list */
++	R_8,	/* GPR starting at position 8 */
++	R_12,	/* GPR starting at position 12 */
++	R_16,	/* GPR starting at position 16 */
++	R_20,	/* GPR starting at position 20 */
++	R_24,	/* GPR starting at position 24 */
++	R_28,	/* GPR starting at position 28 */
++	R_32,	/* GPR starting at position 32 */
++	F_8,	/* FPR starting at position 8 */
++	F_12,	/* FPR starting at position 12 */
++	F_16,	/* FPR starting at position 16 */
++	F_20,	/* FPR starting at position 16 */
++	F_24,	/* FPR starting at position 24 */
++	F_28,	/* FPR starting at position 28 */
++	F_32,	/* FPR starting at position 32 */
++	A_8,	/* Access reg. starting at position 8 */
++	A_12,	/* Access reg. starting at position 12 */
++	A_24,	/* Access reg. starting at position 24 */
++	A_28,	/* Access reg. starting at position 28 */
++	C_8,	/* Control reg. starting at position 8 */
++	C_12,	/* Control reg. starting at position 12 */
++	B_16,	/* Base register starting at position 16 */
++	B_32,	/* Base register starting at position 32 */
++	X_12,	/* Index register starting at position 12 */
++	D_20,	/* Displacement starting at position 20 */
++	D_36,	/* Displacement starting at position 36 */
++	D20_20,	/* 20 bit displacement starting at 20 */
++	L4_8,	/* 4 bit length starting at position 8 */
++	L4_12,	/* 4 bit length starting at position 12 */
++	L8_8,	/* 8 bit length starting at position 8 */
++	U4_8,	/* 4 bit unsigned value starting at 8 */
++	U4_12,	/* 4 bit unsigned value starting at 12 */
++	U4_16,	/* 4 bit unsigned value starting at 16 */
++	U4_20,	/* 4 bit unsigned value starting at 20 */
++	U8_8,	/* 8 bit unsigned value starting at 8 */
++	U8_16,	/* 8 bit unsigned value starting at 16 */
++	I16_16,	/* 16 bit signed value starting at 16 */
++	U16_16,	/* 16 bit unsigned value starting at 16 */
++	J16_16,	/* PC relative jump offset at 16 */
++	J32_16,	/* PC relative long offset at 16 */
++	I32_16,	/* 32 bit signed value starting at 16 */
++	U32_16,	/* 32 bit unsigned value starting at 16 */
++	M_16,	/* 4 bit optional mask starting at 16 */
++	RO_28,	/* optional GPR starting at position 28 */
++};
++
++/*
++ * Enumeration of the different instruction formats.
++ * For details consult the principles of operation.
++ */
++enum {
++	INSTR_INVALID,
++	INSTR_E, INSTR_RIE_RRP, INSTR_RIL_RI, INSTR_RIL_RP, INSTR_RIL_RU,
++	INSTR_RIL_UP, INSTR_RI_RI, INSTR_RI_RP, INSTR_RI_RU, INSTR_RI_UP,
++	INSTR_RRE_00, INSTR_RRE_0R, INSTR_RRE_AA, INSTR_RRE_AR, INSTR_RRE_F0,
++	INSTR_RRE_FF, INSTR_RRE_R0, INSTR_RRE_RA, INSTR_RRE_RF, INSTR_RRE_RR,
++	INSTR_RRE_RR_OPT, INSTR_RRF_F0FF, INSTR_RRF_FUFF, INSTR_RRF_M0RR,
++	INSTR_RRF_R0RR, INSTR_RRF_RURR, INSTR_RRF_U0FF, INSTR_RRF_U0RF,
++	INSTR_RR_FF, INSTR_RR_R0, INSTR_RR_RR, INSTR_RR_U0, INSTR_RR_UR,
++	INSTR_RSE_CCRD, INSTR_RSE_RRRD, INSTR_RSE_RURD, INSTR_RSI_RRP,
++	INSTR_RSL_R0RD, INSTR_RSY_AARD, INSTR_RSY_CCRD, INSTR_RSY_RRRD,
++	INSTR_RSY_RURD, INSTR_RS_AARD, INSTR_RS_CCRD, INSTR_RS_R0RD,
++	INSTR_RS_RRRD, INSTR_RS_RURD, INSTR_RXE_FRRD, INSTR_RXE_RRRD,
++	INSTR_RXF_FRRDF, INSTR_RXY_FRRD, INSTR_RXY_RRRD, INSTR_RX_FRRD,
++	INSTR_RX_RRRD, INSTR_RX_URRD, INSTR_SIY_URD, INSTR_SI_URD,
++	INSTR_SSE_RDRD, INSTR_SSF_RRDRD, INSTR_SS_L0RDRD, INSTR_SS_LIRDRD,
++	INSTR_SS_LLRDRD, INSTR_SS_RRRDRD, INSTR_SS_RRRDRD2, INSTR_SS_RRRDRD3,
++	INSTR_S_00, INSTR_S_RD,
++};
++
++struct operand {
++	int bits;		/* The number of bits in the operand. */
++	int shift;		/* The number of bits to shift. */
++	int flags;		/* One bit syntax flags. */
++};
++
++struct insn {
++	const char name[5];
++	unsigned char opfrag;
++	unsigned char opmask;
++	unsigned char format;
++};
++
++static const struct operand operands[] =
++{
++	[UNUSED]  = { 0, 0, 0 },
++	[R_8]	 = {  4,  8, OPERAND_GPR },
++	[R_12]	 = {  4, 12, OPERAND_GPR },
++	[R_16]	 = {  4, 16, OPERAND_GPR },
++	[R_20]	 = {  4, 20, OPERAND_GPR },
++	[R_24]	 = {  4, 24, OPERAND_GPR },
++	[R_28]	 = {  4, 28, OPERAND_GPR },
++	[R_32]	 = {  4, 32, OPERAND_GPR },
++	[F_8]	 = {  4,  8, OPERAND_FPR },
++	[F_12]	 = {  4, 12, OPERAND_FPR },
++	[F_16]	 = {  4, 16, OPERAND_FPR },
++	[F_20]	 = {  4, 16, OPERAND_FPR },
++	[F_24]	 = {  4, 24, OPERAND_FPR },
++	[F_28]	 = {  4, 28, OPERAND_FPR },
++	[F_32]	 = {  4, 32, OPERAND_FPR },
++	[A_8]	 = {  4,  8, OPERAND_AR },
++	[A_12]	 = {  4, 12, OPERAND_AR },
++	[A_24]	 = {  4, 24, OPERAND_AR },
++	[A_28]	 = {  4, 28, OPERAND_AR },
++	[C_8]	 = {  4,  8, OPERAND_CR },
++	[C_12]	 = {  4, 12, OPERAND_CR },
++	[B_16]	 = {  4, 16, OPERAND_BASE | OPERAND_GPR },
++	[B_32]	 = {  4, 32, OPERAND_BASE | OPERAND_GPR },
++	[X_12]	 = {  4, 12, OPERAND_INDEX | OPERAND_GPR },
++	[D_20]	 = { 12, 20, OPERAND_DISP },
++	[D_36]	 = { 12, 36, OPERAND_DISP },
++	[D20_20] = { 20, 20, OPERAND_DISP | OPERAND_SIGNED },
++	[L4_8]	 = {  4,  8, OPERAND_LENGTH },
++	[L4_12]  = {  4, 12, OPERAND_LENGTH },
++	[L8_8]	 = {  8,  8, OPERAND_LENGTH },
++	[U4_8]	 = {  4,  8, 0 },
++	[U4_12]  = {  4, 12, 0 },
++	[U4_16]  = {  4, 16, 0 },
++	[U4_20]  = {  4, 20, 0 },
++	[U8_8]	 = {  8,  8, 0 },
++	[U8_16]  = {  8, 16, 0 },
++	[I16_16] = { 16, 16, OPERAND_SIGNED },
++	[U16_16] = { 16, 16, 0 },
++	[J16_16] = { 16, 16, OPERAND_PCREL },
++	[J32_16] = { 32, 16, OPERAND_PCREL },
++	[I32_16] = { 32, 16, OPERAND_SIGNED },
++	[U32_16] = { 32, 16, 0 },
++	[M_16]	 = {  4, 16, 0 },
++	[RO_28]  = {  4, 28, OPERAND_GPR }
++};
++
++static const unsigned char formats[][6] = {
++	[INSTR_E]	  = { 0,0,0,0,0,0 },		       /* e.g. pr    */
++	[INSTR_RIE_RRP]	  = { R_8,R_12,J16_16,0,0,0 },	       /* e.g. brxhg */
++	[INSTR_RIL_RP]	  = { R_8,J32_16,0,0,0,0 },	       /* e.g. brasl */
++	[INSTR_RIL_UP]	  = { U4_8,J32_16,0,0,0,0 },	       /* e.g. brcl  */
++	[INSTR_RIL_RI]	  = { R_8,I32_16,0,0,0,0 },	       /* e.g. afi   */
++	[INSTR_RIL_RU]	  = { R_8,U32_16,0,0,0,0 },	       /* e.g. alfi  */
++	[INSTR_RI_RI]	  = { R_8,I16_16,0,0,0,0 },	       /* e.g. ahi   */
++	[INSTR_RI_RP]	  = { R_8,J16_16,0,0,0,0 },	       /* e.g. brct  */
++	[INSTR_RI_RU]	  = { R_8,U16_16,0,0,0,0 },	       /* e.g. tml   */
++	[INSTR_RI_UP]	  = { U4_8,J16_16,0,0,0,0 },	       /* e.g. brc   */
++	[INSTR_RRE_00]	  = { 0,0,0,0,0,0 },		       /* e.g. palb  */
++	[INSTR_RRE_0R]	  = { R_28,0,0,0,0,0 }, 	       /* e.g. tb    */
++	[INSTR_RRE_AA]	  = { A_24,A_28,0,0,0,0 },	       /* e.g. cpya  */
++	[INSTR_RRE_AR]	  = { A_24,R_28,0,0,0,0 },	       /* e.g. sar   */
++	[INSTR_RRE_F0]	  = { F_24,0,0,0,0,0 }, 	       /* e.g. sqer  */
++	[INSTR_RRE_FF]	  = { F_24,F_28,0,0,0,0 },	       /* e.g. debr  */
++	[INSTR_RRE_R0]	  = { R_24,0,0,0,0,0 }, 	       /* e.g. ipm   */
++	[INSTR_RRE_RA]	  = { R_24,A_28,0,0,0,0 },	       /* e.g. ear   */
++	[INSTR_RRE_RF]	  = { R_24,F_28,0,0,0,0 },	       /* e.g. cefbr */
++	[INSTR_RRE_RR]	  = { R_24,R_28,0,0,0,0 },	       /* e.g. lura  */
++	[INSTR_RRE_RR_OPT]= { R_24,RO_28,0,0,0,0 },	       /* efpc, sfpc */
++	[INSTR_RRF_F0FF]  = { F_16,F_24,F_28,0,0,0 },	       /* e.g. madbr */
++	[INSTR_RRF_FUFF]  = { F_24,F_16,F_28,U4_20,0,0 },      /* e.g. didbr */
++	[INSTR_RRF_RURR]  = { R_24,R_28,R_16,U4_20,0,0 },      /* e.g. .insn */
++	[INSTR_RRF_R0RR]  = { R_24,R_28,R_16,0,0,0 },	       /* e.g. idte  */
++	[INSTR_RRF_U0FF]  = { F_24,U4_16,F_28,0,0,0 },	       /* e.g. fixr  */
++	[INSTR_RRF_U0RF]  = { R_24,U4_16,F_28,0,0,0 },	       /* e.g. cfebr */
++	[INSTR_RRF_M0RR]  = { R_24,R_28,M_16,0,0,0 },	       /* e.g. sske  */
++	[INSTR_RR_FF]	  = { F_8,F_12,0,0,0,0 },	       /* e.g. adr   */
++	[INSTR_RR_R0]	  = { R_8, 0,0,0,0,0 }, 	       /* e.g. spm   */
++	[INSTR_RR_RR]	  = { R_8,R_12,0,0,0,0 },	       /* e.g. lr    */
++	[INSTR_RR_U0]	  = { U8_8, 0,0,0,0,0 },	       /* e.g. svc   */
++	[INSTR_RR_UR]	  = { U4_8,R_12,0,0,0,0 },	       /* e.g. bcr   */
++	[INSTR_RSE_RRRD]  = { R_8,R_12,D_20,B_16,0,0 },        /* e.g. lmh   */
++	[INSTR_RSE_CCRD]  = { C_8,C_12,D_20,B_16,0,0 },        /* e.g. lmh   */
++	[INSTR_RSE_RURD]  = { R_8,U4_12,D_20,B_16,0,0 },       /* e.g. icmh  */
++	[INSTR_RSL_R0RD]  = { R_8,D_20,B_16,0,0,0 },	       /* e.g. tp    */
++	[INSTR_RSI_RRP]	  = { R_8,R_12,J16_16,0,0,0 },	       /* e.g. brxh  */
++	[INSTR_RSY_RRRD]  = { R_8,R_12,D20_20,B_16,0,0 },      /* e.g. stmy  */
++	[INSTR_RSY_RURD]  = { R_8,U4_12,D20_20,B_16,0,0 },     /* e.g. icmh  */
++	[INSTR_RSY_AARD]  = { A_8,A_12,D20_20,B_16,0,0 },      /* e.g. lamy  */
++	[INSTR_RSY_CCRD]  = { C_8,C_12,D20_20,B_16,0,0 },      /* e.g. lamy  */
++	[INSTR_RS_AARD]	  = { A_8,A_12,D_20,B_16,0,0 },        /* e.g. lam   */
++	[INSTR_RS_CCRD]	  = { C_8,C_12,D_20,B_16,0,0 },        /* e.g. lctl  */
++	[INSTR_RS_R0RD]	  = { R_8,D_20,B_16,0,0,0 },	       /* e.g. sll   */
++	[INSTR_RS_RRRD]	  = { R_8,R_12,D_20,B_16,0,0 },        /* e.g. cs    */
++	[INSTR_RS_RURD]	  = { R_8,U4_12,D_20,B_16,0,0 },       /* e.g. icm   */
++	[INSTR_RXE_FRRD]  = { F_8,D_20,X_12,B_16,0,0 },        /* e.g. axbr  */
++	[INSTR_RXE_RRRD]  = { R_8,D_20,X_12,B_16,0,0 },        /* e.g. lg    */
++	[INSTR_RXF_FRRDF] = { F_32,F_8,D_20,X_12,B_16,0 },     /* e.g. madb  */
++	[INSTR_RXY_RRRD]  = { R_8,D20_20,X_12,B_16,0,0 },      /* e.g. ly    */
++	[INSTR_RXY_FRRD]  = { F_8,D20_20,X_12,B_16,0,0 },      /* e.g. ley   */
++	[INSTR_RX_FRRD]	  = { F_8,D_20,X_12,B_16,0,0 },        /* e.g. ae    */
++	[INSTR_RX_RRRD]	  = { R_8,D_20,X_12,B_16,0,0 },        /* e.g. l     */
++	[INSTR_RX_URRD]	  = { U4_8,D_20,X_12,B_16,0,0 },       /* e.g. bc    */
++	[INSTR_SI_URD]	  = { D_20,B_16,U8_8,0,0,0 },	       /* e.g. cli   */
++	[INSTR_SIY_URD]	  = { D20_20,B_16,U8_8,0,0,0 },        /* e.g. tmy   */
++	[INSTR_SSE_RDRD]  = { D_20,B_16,D_36,B_32,0,0 },       /* e.g. mvsdk */
++	[INSTR_SS_L0RDRD] = { D_20,L8_8,B_16,D_36,B_32,0 },    /* e.g. mvc   */
++	[INSTR_SS_LIRDRD] = { D_20,L4_8,B_16,D_36,B_32,U4_12 },/* e.g. srp   */
++	[INSTR_SS_LLRDRD] = { D_20,L4_8,B_16,D_36,L4_12,B_32 },/* e.g. pack  */
++	[INSTR_SS_RRRDRD] = { D_20,R_8,B_16,D_36,B_32,R_12 },  /* e.g. mvck  */
++	[INSTR_SS_RRRDRD2]= { R_8,D_20,B_16,R_12,D_36,B_32 },  /* e.g. plo   */
++	[INSTR_SS_RRRDRD3]= { R_8,R_12,D_20,B_16,D_36,B_32 },  /* e.g. lmd   */
++	[INSTR_S_00]	  = { 0,0,0,0,0,0 },		       /* e.g. hsch  */
++	[INSTR_S_RD]	  = { D_20,B_16,0,0,0,0 },	       /* e.g. lpsw  */
++	[INSTR_SSF_RRDRD] = { D_20,B_16,D_36,B_32,R_8,0 },     /* e.g. mvcos */
++};
++
++static struct insn opcode[] = {
++#ifdef CONFIG_64BIT
++	{ "lmd", 0xef, 0xff, INSTR_SS_RRRDRD3 },
++#endif
++	{ "spm", 0x04, 0xff, INSTR_RR_R0 },
++	{ "balr", 0x05, 0xff, INSTR_RR_RR },
++	{ "bctr", 0x06, 0xff, INSTR_RR_RR },
++	{ "bcr", 0x07, 0xff, INSTR_RR_UR },
++	{ "svc", 0x0a, 0xff, INSTR_RR_U0 },
++	{ "bsm", 0x0b, 0xff, INSTR_RR_RR },
++	{ "bassm", 0x0c, 0xff, INSTR_RR_RR },
++	{ "basr", 0x0d, 0xff, INSTR_RR_RR },
++	{ "mvcl", 0x0e, 0xff, INSTR_RR_RR },
++	{ "clcl", 0x0f, 0xff, INSTR_RR_RR },
++	{ "lpr", 0x10, 0xff, INSTR_RR_RR },
++	{ "lnr", 0x11, 0xff, INSTR_RR_RR },
++	{ "ltr", 0x12, 0xff, INSTR_RR_RR },
++	{ "lcr", 0x13, 0xff, INSTR_RR_RR },
++	{ "nr", 0x14, 0xff, INSTR_RR_RR },
++	{ "clr", 0x15, 0xff, INSTR_RR_RR },
++	{ "or", 0x16, 0xff, INSTR_RR_RR },
++	{ "xr", 0x17, 0xff, INSTR_RR_RR },
++	{ "lr", 0x18, 0xff, INSTR_RR_RR },
++	{ "cr", 0x19, 0xff, INSTR_RR_RR },
++	{ "ar", 0x1a, 0xff, INSTR_RR_RR },
++	{ "sr", 0x1b, 0xff, INSTR_RR_RR },
++	{ "mr", 0x1c, 0xff, INSTR_RR_RR },
++	{ "dr", 0x1d, 0xff, INSTR_RR_RR },
++	{ "alr", 0x1e, 0xff, INSTR_RR_RR },
++	{ "slr", 0x1f, 0xff, INSTR_RR_RR },
++	{ "lpdr", 0x20, 0xff, INSTR_RR_FF },
++	{ "lndr", 0x21, 0xff, INSTR_RR_FF },
++	{ "ltdr", 0x22, 0xff, INSTR_RR_FF },
++	{ "lcdr", 0x23, 0xff, INSTR_RR_FF },
++	{ "hdr", 0x24, 0xff, INSTR_RR_FF },
++	{ "ldxr", 0x25, 0xff, INSTR_RR_FF },
++	{ "lrdr", 0x25, 0xff, INSTR_RR_FF },
++	{ "mxr", 0x26, 0xff, INSTR_RR_FF },
++	{ "mxdr", 0x27, 0xff, INSTR_RR_FF },
++	{ "ldr", 0x28, 0xff, INSTR_RR_FF },
++	{ "cdr", 0x29, 0xff, INSTR_RR_FF },
++	{ "adr", 0x2a, 0xff, INSTR_RR_FF },
++	{ "sdr", 0x2b, 0xff, INSTR_RR_FF },
++	{ "mdr", 0x2c, 0xff, INSTR_RR_FF },
++	{ "ddr", 0x2d, 0xff, INSTR_RR_FF },
++	{ "awr", 0x2e, 0xff, INSTR_RR_FF },
++	{ "swr", 0x2f, 0xff, INSTR_RR_FF },
++	{ "lper", 0x30, 0xff, INSTR_RR_FF },
++	{ "lner", 0x31, 0xff, INSTR_RR_FF },
++	{ "lter", 0x32, 0xff, INSTR_RR_FF },
++	{ "lcer", 0x33, 0xff, INSTR_RR_FF },
++	{ "her", 0x34, 0xff, INSTR_RR_FF },
++	{ "ledr", 0x35, 0xff, INSTR_RR_FF },
++	{ "lrer", 0x35, 0xff, INSTR_RR_FF },
++	{ "axr", 0x36, 0xff, INSTR_RR_FF },
++	{ "sxr", 0x37, 0xff, INSTR_RR_FF },
++	{ "ler", 0x38, 0xff, INSTR_RR_FF },
++	{ "cer", 0x39, 0xff, INSTR_RR_FF },
++	{ "aer", 0x3a, 0xff, INSTR_RR_FF },
++	{ "ser", 0x3b, 0xff, INSTR_RR_FF },
++	{ "mder", 0x3c, 0xff, INSTR_RR_FF },
++	{ "mer", 0x3c, 0xff, INSTR_RR_FF },
++	{ "der", 0x3d, 0xff, INSTR_RR_FF },
++	{ "aur", 0x3e, 0xff, INSTR_RR_FF },
++	{ "sur", 0x3f, 0xff, INSTR_RR_FF },
++	{ "sth", 0x40, 0xff, INSTR_RX_RRRD },
++	{ "la", 0x41, 0xff, INSTR_RX_RRRD },
++	{ "stc", 0x42, 0xff, INSTR_RX_RRRD },
++	{ "ic", 0x43, 0xff, INSTR_RX_RRRD },
++	{ "ex", 0x44, 0xff, INSTR_RX_RRRD },
++	{ "bal", 0x45, 0xff, INSTR_RX_RRRD },
++	{ "bct", 0x46, 0xff, INSTR_RX_RRRD },
++	{ "bc", 0x47, 0xff, INSTR_RX_URRD },
++	{ "lh", 0x48, 0xff, INSTR_RX_RRRD },
++	{ "ch", 0x49, 0xff, INSTR_RX_RRRD },
++	{ "ah", 0x4a, 0xff, INSTR_RX_RRRD },
++	{ "sh", 0x4b, 0xff, INSTR_RX_RRRD },
++	{ "mh", 0x4c, 0xff, INSTR_RX_RRRD },
++	{ "bas", 0x4d, 0xff, INSTR_RX_RRRD },
++	{ "cvd", 0x4e, 0xff, INSTR_RX_RRRD },
++	{ "cvb", 0x4f, 0xff, INSTR_RX_RRRD },
++	{ "st", 0x50, 0xff, INSTR_RX_RRRD },
++	{ "lae", 0x51, 0xff, INSTR_RX_RRRD },
++	{ "n", 0x54, 0xff, INSTR_RX_RRRD },
++	{ "cl", 0x55, 0xff, INSTR_RX_RRRD },
++	{ "o", 0x56, 0xff, INSTR_RX_RRRD },
++	{ "x", 0x57, 0xff, INSTR_RX_RRRD },
++	{ "l", 0x58, 0xff, INSTR_RX_RRRD },
++	{ "c", 0x59, 0xff, INSTR_RX_RRRD },
++	{ "a", 0x5a, 0xff, INSTR_RX_RRRD },
++	{ "s", 0x5b, 0xff, INSTR_RX_RRRD },
++	{ "m", 0x5c, 0xff, INSTR_RX_RRRD },
++	{ "d", 0x5d, 0xff, INSTR_RX_RRRD },
++	{ "al", 0x5e, 0xff, INSTR_RX_RRRD },
++	{ "sl", 0x5f, 0xff, INSTR_RX_RRRD },
++	{ "std", 0x60, 0xff, INSTR_RX_FRRD },
++	{ "mxd", 0x67, 0xff, INSTR_RX_FRRD },
++	{ "ld", 0x68, 0xff, INSTR_RX_FRRD },
++	{ "cd", 0x69, 0xff, INSTR_RX_FRRD },
++	{ "ad", 0x6a, 0xff, INSTR_RX_FRRD },
++	{ "sd", 0x6b, 0xff, INSTR_RX_FRRD },
++	{ "md", 0x6c, 0xff, INSTR_RX_FRRD },
++	{ "dd", 0x6d, 0xff, INSTR_RX_FRRD },
++	{ "aw", 0x6e, 0xff, INSTR_RX_FRRD },
++	{ "sw", 0x6f, 0xff, INSTR_RX_FRRD },
++	{ "ste", 0x70, 0xff, INSTR_RX_FRRD },
++	{ "ms", 0x71, 0xff, INSTR_RX_RRRD },
++	{ "le", 0x78, 0xff, INSTR_RX_FRRD },
++	{ "ce", 0x79, 0xff, INSTR_RX_FRRD },
++	{ "ae", 0x7a, 0xff, INSTR_RX_FRRD },
++	{ "se", 0x7b, 0xff, INSTR_RX_FRRD },
++	{ "mde", 0x7c, 0xff, INSTR_RX_FRRD },
++	{ "me", 0x7c, 0xff, INSTR_RX_FRRD },
++	{ "de", 0x7d, 0xff, INSTR_RX_FRRD },
++	{ "au", 0x7e, 0xff, INSTR_RX_FRRD },
++	{ "su", 0x7f, 0xff, INSTR_RX_FRRD },
++	{ "ssm", 0x80, 0xff, INSTR_S_RD },
++	{ "lpsw", 0x82, 0xff, INSTR_S_RD },
++	{ "diag", 0x83, 0xff, INSTR_RS_RRRD },
++	{ "brxh", 0x84, 0xff, INSTR_RSI_RRP },
++	{ "brxle", 0x85, 0xff, INSTR_RSI_RRP },
++	{ "bxh", 0x86, 0xff, INSTR_RS_RRRD },
++	{ "bxle", 0x87, 0xff, INSTR_RS_RRRD },
++	{ "srl", 0x88, 0xff, INSTR_RS_R0RD },
++	{ "sll", 0x89, 0xff, INSTR_RS_R0RD },
++	{ "sra", 0x8a, 0xff, INSTR_RS_R0RD },
++	{ "sla", 0x8b, 0xff, INSTR_RS_R0RD },
++	{ "srdl", 0x8c, 0xff, INSTR_RS_R0RD },
++	{ "sldl", 0x8d, 0xff, INSTR_RS_R0RD },
++	{ "srda", 0x8e, 0xff, INSTR_RS_R0RD },
++	{ "slda", 0x8f, 0xff, INSTR_RS_R0RD },
++	{ "stm", 0x90, 0xff, INSTR_RS_RRRD },
++	{ "tm", 0x91, 0xff, INSTR_SI_URD },
++	{ "mvi", 0x92, 0xff, INSTR_SI_URD },
++	{ "ts", 0x93, 0xff, INSTR_S_RD },
++	{ "ni", 0x94, 0xff, INSTR_SI_URD },
++	{ "cli", 0x95, 0xff, INSTR_SI_URD },
++	{ "oi", 0x96, 0xff, INSTR_SI_URD },
++	{ "xi", 0x97, 0xff, INSTR_SI_URD },
++	{ "lm", 0x98, 0xff, INSTR_RS_RRRD },
++	{ "trace", 0x99, 0xff, INSTR_RS_RRRD },
++	{ "lam", 0x9a, 0xff, INSTR_RS_AARD },
++	{ "stam", 0x9b, 0xff, INSTR_RS_AARD },
++	{ "mvcle", 0xa8, 0xff, INSTR_RS_RRRD },
++	{ "clcle", 0xa9, 0xff, INSTR_RS_RRRD },
++	{ "stnsm", 0xac, 0xff, INSTR_SI_URD },
++	{ "stosm", 0xad, 0xff, INSTR_SI_URD },
++	{ "sigp", 0xae, 0xff, INSTR_RS_RRRD },
++	{ "mc", 0xaf, 0xff, INSTR_SI_URD },
++	{ "lra", 0xb1, 0xff, INSTR_RX_RRRD },
++	{ "stctl", 0xb6, 0xff, INSTR_RS_CCRD },
++	{ "lctl", 0xb7, 0xff, INSTR_RS_CCRD },
++	{ "cs", 0xba, 0xff, INSTR_RS_RRRD },
++	{ "cds", 0xbb, 0xff, INSTR_RS_RRRD },
++	{ "clm", 0xbd, 0xff, INSTR_RS_RURD },
++	{ "stcm", 0xbe, 0xff, INSTR_RS_RURD },
++	{ "icm", 0xbf, 0xff, INSTR_RS_RURD },
++	{ "mvn", 0xd1, 0xff, INSTR_SS_L0RDRD },
++	{ "mvc", 0xd2, 0xff, INSTR_SS_L0RDRD },
++	{ "mvz", 0xd3, 0xff, INSTR_SS_L0RDRD },
++	{ "nc", 0xd4, 0xff, INSTR_SS_L0RDRD },
++	{ "clc", 0xd5, 0xff, INSTR_SS_L0RDRD },
++	{ "oc", 0xd6, 0xff, INSTR_SS_L0RDRD },
++	{ "xc", 0xd7, 0xff, INSTR_SS_L0RDRD },
++	{ "mvck", 0xd9, 0xff, INSTR_SS_RRRDRD },
++	{ "mvcp", 0xda, 0xff, INSTR_SS_RRRDRD },
++	{ "mvcs", 0xdb, 0xff, INSTR_SS_RRRDRD },
++	{ "tr", 0xdc, 0xff, INSTR_SS_L0RDRD },
++	{ "trt", 0xdd, 0xff, INSTR_SS_L0RDRD },
++	{ "ed", 0xde, 0xff, INSTR_SS_L0RDRD },
++	{ "edmk", 0xdf, 0xff, INSTR_SS_L0RDRD },
++	{ "pku", 0xe1, 0xff, INSTR_SS_L0RDRD },
++	{ "unpku", 0xe2, 0xff, INSTR_SS_L0RDRD },
++	{ "mvcin", 0xe8, 0xff, INSTR_SS_L0RDRD },
++	{ "pka", 0xe9, 0xff, INSTR_SS_L0RDRD },
++	{ "unpka", 0xea, 0xff, INSTR_SS_L0RDRD },
++	{ "plo", 0xee, 0xff, INSTR_SS_RRRDRD2 },
++	{ "srp", 0xf0, 0xff, INSTR_SS_LIRDRD },
++	{ "mvo", 0xf1, 0xff, INSTR_SS_LLRDRD },
++	{ "pack", 0xf2, 0xff, INSTR_SS_LLRDRD },
++	{ "unpk", 0xf3, 0xff, INSTR_SS_LLRDRD },
++	{ "zap", 0xf8, 0xff, INSTR_SS_LLRDRD },
++	{ "cp", 0xf9, 0xff, INSTR_SS_LLRDRD },
++	{ "ap", 0xfa, 0xff, INSTR_SS_LLRDRD },
++	{ "sp", 0xfb, 0xff, INSTR_SS_LLRDRD },
++	{ "mp", 0xfc, 0xff, INSTR_SS_LLRDRD },
++	{ "dp", 0xfd, 0xff, INSTR_SS_LLRDRD },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_01[] = {
++#ifdef CONFIG_64BIT
++	{ "sam64", 0x0e, 0xff, INSTR_E },
++#endif
++	{ "pr", 0x01, 0xff, INSTR_E },
++	{ "upt", 0x02, 0xff, INSTR_E },
++	{ "sckpf", 0x07, 0xff, INSTR_E },
++	{ "tam", 0x0b, 0xff, INSTR_E },
++	{ "sam24", 0x0c, 0xff, INSTR_E },
++	{ "sam31", 0x0d, 0xff, INSTR_E },
++	{ "trap2", 0xff, 0xff, INSTR_E },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_a5[] = {
++#ifdef CONFIG_64BIT
++	{ "iihh", 0x00, 0x0f, INSTR_RI_RU },
++	{ "iihl", 0x01, 0x0f, INSTR_RI_RU },
++	{ "iilh", 0x02, 0x0f, INSTR_RI_RU },
++	{ "iill", 0x03, 0x0f, INSTR_RI_RU },
++	{ "nihh", 0x04, 0x0f, INSTR_RI_RU },
++	{ "nihl", 0x05, 0x0f, INSTR_RI_RU },
++	{ "nilh", 0x06, 0x0f, INSTR_RI_RU },
++	{ "nill", 0x07, 0x0f, INSTR_RI_RU },
++	{ "oihh", 0x08, 0x0f, INSTR_RI_RU },
++	{ "oihl", 0x09, 0x0f, INSTR_RI_RU },
++	{ "oilh", 0x0a, 0x0f, INSTR_RI_RU },
++	{ "oill", 0x0b, 0x0f, INSTR_RI_RU },
++	{ "llihh", 0x0c, 0x0f, INSTR_RI_RU },
++	{ "llihl", 0x0d, 0x0f, INSTR_RI_RU },
++	{ "llilh", 0x0e, 0x0f, INSTR_RI_RU },
++	{ "llill", 0x0f, 0x0f, INSTR_RI_RU },
++#endif
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_a7[] = {
++#ifdef CONFIG_64BIT
++	{ "tmhh", 0x02, 0x0f, INSTR_RI_RU },
++	{ "tmhl", 0x03, 0x0f, INSTR_RI_RU },
++	{ "brctg", 0x07, 0x0f, INSTR_RI_RP },
++	{ "lghi", 0x09, 0x0f, INSTR_RI_RI },
++	{ "aghi", 0x0b, 0x0f, INSTR_RI_RI },
++	{ "mghi", 0x0d, 0x0f, INSTR_RI_RI },
++	{ "cghi", 0x0f, 0x0f, INSTR_RI_RI },
++#endif
++	{ "tmlh", 0x00, 0x0f, INSTR_RI_RU },
++	{ "tmll", 0x01, 0x0f, INSTR_RI_RU },
++	{ "brc", 0x04, 0x0f, INSTR_RI_UP },
++	{ "bras", 0x05, 0x0f, INSTR_RI_RP },
++	{ "brct", 0x06, 0x0f, INSTR_RI_RP },
++	{ "lhi", 0x08, 0x0f, INSTR_RI_RI },
++	{ "ahi", 0x0a, 0x0f, INSTR_RI_RI },
++	{ "mhi", 0x0c, 0x0f, INSTR_RI_RI },
++	{ "chi", 0x0e, 0x0f, INSTR_RI_RI },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_b2[] = {
++#ifdef CONFIG_64BIT
++	{ "sske", 0x2b, 0xff, INSTR_RRF_M0RR },
++	{ "stckf", 0x7c, 0xff, INSTR_S_RD },
++	{ "cu21", 0xa6, 0xff, INSTR_RRF_M0RR },
++	{ "cuutf", 0xa6, 0xff, INSTR_RRF_M0RR },
++	{ "cu12", 0xa7, 0xff, INSTR_RRF_M0RR },
++	{ "cutfu", 0xa7, 0xff, INSTR_RRF_M0RR },
++	{ "stfle", 0xb0, 0xff, INSTR_S_RD },
++	{ "lpswe", 0xb2, 0xff, INSTR_S_RD },
++#endif
++	{ "stidp", 0x02, 0xff, INSTR_S_RD },
++	{ "sck", 0x04, 0xff, INSTR_S_RD },
++	{ "stck", 0x05, 0xff, INSTR_S_RD },
++	{ "sckc", 0x06, 0xff, INSTR_S_RD },
++	{ "stckc", 0x07, 0xff, INSTR_S_RD },
++	{ "spt", 0x08, 0xff, INSTR_S_RD },
++	{ "stpt", 0x09, 0xff, INSTR_S_RD },
++	{ "spka", 0x0a, 0xff, INSTR_S_RD },
++	{ "ipk", 0x0b, 0xff, INSTR_S_00 },
++	{ "ptlb", 0x0d, 0xff, INSTR_S_00 },
++	{ "spx", 0x10, 0xff, INSTR_S_RD },
++	{ "stpx", 0x11, 0xff, INSTR_S_RD },
++	{ "stap", 0x12, 0xff, INSTR_S_RD },
++	{ "sie", 0x14, 0xff, INSTR_S_RD },
++	{ "pc", 0x18, 0xff, INSTR_S_RD },
++	{ "sac", 0x19, 0xff, INSTR_S_RD },
++	{ "cfc", 0x1a, 0xff, INSTR_S_RD },
++	{ "ipte", 0x21, 0xff, INSTR_RRE_RR },
++	{ "ipm", 0x22, 0xff, INSTR_RRE_R0 },
++	{ "ivsk", 0x23, 0xff, INSTR_RRE_RR },
++	{ "iac", 0x24, 0xff, INSTR_RRE_R0 },
++	{ "ssar", 0x25, 0xff, INSTR_RRE_R0 },
++	{ "epar", 0x26, 0xff, INSTR_RRE_R0 },
++	{ "esar", 0x27, 0xff, INSTR_RRE_R0 },
++	{ "pt", 0x28, 0xff, INSTR_RRE_RR },
++	{ "iske", 0x29, 0xff, INSTR_RRE_RR },
++	{ "rrbe", 0x2a, 0xff, INSTR_RRE_RR },
++	{ "sske", 0x2b, 0xff, INSTR_RRE_RR },
++	{ "tb", 0x2c, 0xff, INSTR_RRE_0R },
++	{ "dxr", 0x2d, 0xff, INSTR_RRE_F0 },
++	{ "pgin", 0x2e, 0xff, INSTR_RRE_RR },
++	{ "pgout", 0x2f, 0xff, INSTR_RRE_RR },
++	{ "csch", 0x30, 0xff, INSTR_S_00 },
++	{ "hsch", 0x31, 0xff, INSTR_S_00 },
++	{ "msch", 0x32, 0xff, INSTR_S_RD },
++	{ "ssch", 0x33, 0xff, INSTR_S_RD },
++	{ "stsch", 0x34, 0xff, INSTR_S_RD },
++	{ "tsch", 0x35, 0xff, INSTR_S_RD },
++	{ "tpi", 0x36, 0xff, INSTR_S_RD },
++	{ "sal", 0x37, 0xff, INSTR_S_00 },
++	{ "rsch", 0x38, 0xff, INSTR_S_00 },
++	{ "stcrw", 0x39, 0xff, INSTR_S_RD },
++	{ "stcps", 0x3a, 0xff, INSTR_S_RD },
++	{ "rchp", 0x3b, 0xff, INSTR_S_00 },
++	{ "schm", 0x3c, 0xff, INSTR_S_00 },
++	{ "bakr", 0x40, 0xff, INSTR_RRE_RR },
++	{ "cksm", 0x41, 0xff, INSTR_RRE_RR },
++	{ "sqdr", 0x44, 0xff, INSTR_RRE_F0 },
++	{ "sqer", 0x45, 0xff, INSTR_RRE_F0 },
++	{ "stura", 0x46, 0xff, INSTR_RRE_RR },
++	{ "msta", 0x47, 0xff, INSTR_RRE_R0 },
++	{ "palb", 0x48, 0xff, INSTR_RRE_00 },
++	{ "ereg", 0x49, 0xff, INSTR_RRE_RR },
++	{ "esta", 0x4a, 0xff, INSTR_RRE_RR },
++	{ "lura", 0x4b, 0xff, INSTR_RRE_RR },
++	{ "tar", 0x4c, 0xff, INSTR_RRE_AR },
++	{ "cpya", 0x4d, 0xff, INSTR_RRE_AA },
++	{ "sar", 0x4e, 0xff, INSTR_RRE_AR },
++	{ "ear", 0x4f, 0xff, INSTR_RRE_RA },
++	{ "csp", 0x50, 0xff, INSTR_RRE_RR },
++	{ "msr", 0x52, 0xff, INSTR_RRE_RR },
++	{ "mvpg", 0x54, 0xff, INSTR_RRE_RR },
++	{ "mvst", 0x55, 0xff, INSTR_RRE_RR },
++	{ "cuse", 0x57, 0xff, INSTR_RRE_RR },
++	{ "bsg", 0x58, 0xff, INSTR_RRE_RR },
++	{ "bsa", 0x5a, 0xff, INSTR_RRE_RR },
++	{ "clst", 0x5d, 0xff, INSTR_RRE_RR },
++	{ "srst", 0x5e, 0xff, INSTR_RRE_RR },
++	{ "cmpsc", 0x63, 0xff, INSTR_RRE_RR },
++	{ "cmpsc", 0x63, 0xff, INSTR_RRE_RR },
++	{ "siga", 0x74, 0xff, INSTR_S_RD },
++	{ "xsch", 0x76, 0xff, INSTR_S_00 },
++	{ "rp", 0x77, 0xff, INSTR_S_RD },
++	{ "stcke", 0x78, 0xff, INSTR_S_RD },
++	{ "sacf", 0x79, 0xff, INSTR_S_RD },
++	{ "stsi", 0x7d, 0xff, INSTR_S_RD },
++	{ "srnm", 0x99, 0xff, INSTR_S_RD },
++	{ "stfpc", 0x9c, 0xff, INSTR_S_RD },
++	{ "lfpc", 0x9d, 0xff, INSTR_S_RD },
++	{ "tre", 0xa5, 0xff, INSTR_RRE_RR },
++	{ "cuutf", 0xa6, 0xff, INSTR_RRE_RR },
++	{ "cutfu", 0xa7, 0xff, INSTR_RRE_RR },
++	{ "stfl", 0xb1, 0xff, INSTR_S_RD },
++	{ "trap4", 0xff, 0xff, INSTR_S_RD },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_b3[] = {
++#ifdef CONFIG_64BIT
++	{ "maylr", 0x38, 0xff, INSTR_RRF_F0FF },
++	{ "mylr", 0x39, 0xff, INSTR_RRF_F0FF },
++	{ "mayr", 0x3a, 0xff, INSTR_RRF_F0FF },
++	{ "myr", 0x3b, 0xff, INSTR_RRF_F0FF },
++	{ "mayhr", 0x3c, 0xff, INSTR_RRF_F0FF },
++	{ "myhr", 0x3d, 0xff, INSTR_RRF_F0FF },
++	{ "cegbr", 0xa4, 0xff, INSTR_RRE_RR },
++	{ "cdgbr", 0xa5, 0xff, INSTR_RRE_RR },
++	{ "cxgbr", 0xa6, 0xff, INSTR_RRE_RR },
++	{ "cgebr", 0xa8, 0xff, INSTR_RRF_U0RF },
++	{ "cgdbr", 0xa9, 0xff, INSTR_RRF_U0RF },
++	{ "cgxbr", 0xaa, 0xff, INSTR_RRF_U0RF },
++	{ "cfer", 0xb8, 0xff, INSTR_RRF_U0RF },
++	{ "cfdr", 0xb9, 0xff, INSTR_RRF_U0RF },
++	{ "cfxr", 0xba, 0xff, INSTR_RRF_U0RF },
++	{ "cegr", 0xc4, 0xff, INSTR_RRE_RR },
++	{ "cdgr", 0xc5, 0xff, INSTR_RRE_RR },
++	{ "cxgr", 0xc6, 0xff, INSTR_RRE_RR },
++	{ "cger", 0xc8, 0xff, INSTR_RRF_U0RF },
++	{ "cgdr", 0xc9, 0xff, INSTR_RRF_U0RF },
++	{ "cgxr", 0xca, 0xff, INSTR_RRF_U0RF },
++#endif
++	{ "lpebr", 0x00, 0xff, INSTR_RRE_FF },
++	{ "lnebr", 0x01, 0xff, INSTR_RRE_FF },
++	{ "ltebr", 0x02, 0xff, INSTR_RRE_FF },
++	{ "lcebr", 0x03, 0xff, INSTR_RRE_FF },
++	{ "ldebr", 0x04, 0xff, INSTR_RRE_FF },
++	{ "lxdbr", 0x05, 0xff, INSTR_RRE_FF },
++	{ "lxebr", 0x06, 0xff, INSTR_RRE_FF },
++	{ "mxdbr", 0x07, 0xff, INSTR_RRE_FF },
++	{ "kebr", 0x08, 0xff, INSTR_RRE_FF },
++	{ "cebr", 0x09, 0xff, INSTR_RRE_FF },
++	{ "aebr", 0x0a, 0xff, INSTR_RRE_FF },
++	{ "sebr", 0x0b, 0xff, INSTR_RRE_FF },
++	{ "mdebr", 0x0c, 0xff, INSTR_RRE_FF },
++	{ "debr", 0x0d, 0xff, INSTR_RRE_FF },
++	{ "maebr", 0x0e, 0xff, INSTR_RRF_F0FF },
++	{ "msebr", 0x0f, 0xff, INSTR_RRF_F0FF },
++	{ "lpdbr", 0x10, 0xff, INSTR_RRE_FF },
++	{ "lndbr", 0x11, 0xff, INSTR_RRE_FF },
++	{ "ltdbr", 0x12, 0xff, INSTR_RRE_FF },
++	{ "lcdbr", 0x13, 0xff, INSTR_RRE_FF },
++	{ "sqebr", 0x14, 0xff, INSTR_RRE_FF },
++	{ "sqdbr", 0x15, 0xff, INSTR_RRE_FF },
++	{ "sqxbr", 0x16, 0xff, INSTR_RRE_FF },
++	{ "meebr", 0x17, 0xff, INSTR_RRE_FF },
++	{ "kdbr", 0x18, 0xff, INSTR_RRE_FF },
++	{ "cdbr", 0x19, 0xff, INSTR_RRE_FF },
++	{ "adbr", 0x1a, 0xff, INSTR_RRE_FF },
++	{ "sdbr", 0x1b, 0xff, INSTR_RRE_FF },
++	{ "mdbr", 0x1c, 0xff, INSTR_RRE_FF },
++	{ "ddbr", 0x1d, 0xff, INSTR_RRE_FF },
++	{ "madbr", 0x1e, 0xff, INSTR_RRF_F0FF },
++	{ "msdbr", 0x1f, 0xff, INSTR_RRF_F0FF },
++	{ "lder", 0x24, 0xff, INSTR_RRE_FF },
++	{ "lxdr", 0x25, 0xff, INSTR_RRE_FF },
++	{ "lxer", 0x26, 0xff, INSTR_RRE_FF },
++	{ "maer", 0x2e, 0xff, INSTR_RRF_F0FF },
++	{ "mser", 0x2f, 0xff, INSTR_RRF_F0FF },
++	{ "sqxr", 0x36, 0xff, INSTR_RRE_FF },
++	{ "meer", 0x37, 0xff, INSTR_RRE_FF },
++	{ "madr", 0x3e, 0xff, INSTR_RRF_F0FF },
++	{ "msdr", 0x3f, 0xff, INSTR_RRF_F0FF },
++	{ "lpxbr", 0x40, 0xff, INSTR_RRE_FF },
++	{ "lnxbr", 0x41, 0xff, INSTR_RRE_FF },
++	{ "ltxbr", 0x42, 0xff, INSTR_RRE_FF },
++	{ "lcxbr", 0x43, 0xff, INSTR_RRE_FF },
++	{ "ledbr", 0x44, 0xff, INSTR_RRE_FF },
++	{ "ldxbr", 0x45, 0xff, INSTR_RRE_FF },
++	{ "lexbr", 0x46, 0xff, INSTR_RRE_FF },
++	{ "fixbr", 0x47, 0xff, INSTR_RRF_U0FF },
++	{ "kxbr", 0x48, 0xff, INSTR_RRE_FF },
++	{ "cxbr", 0x49, 0xff, INSTR_RRE_FF },
++	{ "axbr", 0x4a, 0xff, INSTR_RRE_FF },
++	{ "sxbr", 0x4b, 0xff, INSTR_RRE_FF },
++	{ "mxbr", 0x4c, 0xff, INSTR_RRE_FF },
++	{ "dxbr", 0x4d, 0xff, INSTR_RRE_FF },
++	{ "tbedr", 0x50, 0xff, INSTR_RRF_U0FF },
++	{ "tbdr", 0x51, 0xff, INSTR_RRF_U0FF },
++	{ "diebr", 0x53, 0xff, INSTR_RRF_FUFF },
++	{ "fiebr", 0x57, 0xff, INSTR_RRF_U0FF },
++	{ "thder", 0x58, 0xff, INSTR_RRE_RR },
++	{ "thdr", 0x59, 0xff, INSTR_RRE_RR },
++	{ "didbr", 0x5b, 0xff, INSTR_RRF_FUFF },
++	{ "fidbr", 0x5f, 0xff, INSTR_RRF_U0FF },
++	{ "lpxr", 0x60, 0xff, INSTR_RRE_FF },
++	{ "lnxr", 0x61, 0xff, INSTR_RRE_FF },
++	{ "ltxr", 0x62, 0xff, INSTR_RRE_FF },
++	{ "lcxr", 0x63, 0xff, INSTR_RRE_FF },
++	{ "lxr", 0x65, 0xff, INSTR_RRE_RR },
++	{ "lexr", 0x66, 0xff, INSTR_RRE_FF },
++	{ "fixr", 0x67, 0xff, INSTR_RRF_U0FF },
++	{ "cxr", 0x69, 0xff, INSTR_RRE_FF },
++	{ "lzer", 0x74, 0xff, INSTR_RRE_R0 },
++	{ "lzdr", 0x75, 0xff, INSTR_RRE_R0 },
++	{ "lzxr", 0x76, 0xff, INSTR_RRE_R0 },
++	{ "fier", 0x77, 0xff, INSTR_RRF_U0FF },
++	{ "fidr", 0x7f, 0xff, INSTR_RRF_U0FF },
++	{ "sfpc", 0x84, 0xff, INSTR_RRE_RR_OPT },
++	{ "efpc", 0x8c, 0xff, INSTR_RRE_RR_OPT },
++	{ "cefbr", 0x94, 0xff, INSTR_RRE_RF },
++	{ "cdfbr", 0x95, 0xff, INSTR_RRE_RF },
++	{ "cxfbr", 0x96, 0xff, INSTR_RRE_RF },
++	{ "cfebr", 0x98, 0xff, INSTR_RRF_U0RF },
++	{ "cfdbr", 0x99, 0xff, INSTR_RRF_U0RF },
++	{ "cfxbr", 0x9a, 0xff, INSTR_RRF_U0RF },
++	{ "cefr", 0xb4, 0xff, INSTR_RRE_RF },
++	{ "cdfr", 0xb5, 0xff, INSTR_RRE_RF },
++	{ "cxfr", 0xb6, 0xff, INSTR_RRE_RF },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_b9[] = {
++#ifdef CONFIG_64BIT
++	{ "lpgr", 0x00, 0xff, INSTR_RRE_RR },
++	{ "lngr", 0x01, 0xff, INSTR_RRE_RR },
++	{ "ltgr", 0x02, 0xff, INSTR_RRE_RR },
++	{ "lcgr", 0x03, 0xff, INSTR_RRE_RR },
++	{ "lgr", 0x04, 0xff, INSTR_RRE_RR },
++	{ "lurag", 0x05, 0xff, INSTR_RRE_RR },
++	{ "lgbr", 0x06, 0xff, INSTR_RRE_RR },
++	{ "lghr", 0x07, 0xff, INSTR_RRE_RR },
++	{ "agr", 0x08, 0xff, INSTR_RRE_RR },
++	{ "sgr", 0x09, 0xff, INSTR_RRE_RR },
++	{ "algr", 0x0a, 0xff, INSTR_RRE_RR },
++	{ "slgr", 0x0b, 0xff, INSTR_RRE_RR },
++	{ "msgr", 0x0c, 0xff, INSTR_RRE_RR },
++	{ "dsgr", 0x0d, 0xff, INSTR_RRE_RR },
++	{ "eregg", 0x0e, 0xff, INSTR_RRE_RR },
++	{ "lrvgr", 0x0f, 0xff, INSTR_RRE_RR },
++	{ "lpgfr", 0x10, 0xff, INSTR_RRE_RR },
++	{ "lngfr", 0x11, 0xff, INSTR_RRE_RR },
++	{ "ltgfr", 0x12, 0xff, INSTR_RRE_RR },
++	{ "lcgfr", 0x13, 0xff, INSTR_RRE_RR },
++	{ "lgfr", 0x14, 0xff, INSTR_RRE_RR },
++	{ "llgfr", 0x16, 0xff, INSTR_RRE_RR },
++	{ "llgtr", 0x17, 0xff, INSTR_RRE_RR },
++	{ "agfr", 0x18, 0xff, INSTR_RRE_RR },
++	{ "sgfr", 0x19, 0xff, INSTR_RRE_RR },
++	{ "algfr", 0x1a, 0xff, INSTR_RRE_RR },
++	{ "slgfr", 0x1b, 0xff, INSTR_RRE_RR },
++	{ "msgfr", 0x1c, 0xff, INSTR_RRE_RR },
++	{ "dsgfr", 0x1d, 0xff, INSTR_RRE_RR },
++	{ "cgr", 0x20, 0xff, INSTR_RRE_RR },
++	{ "clgr", 0x21, 0xff, INSTR_RRE_RR },
++	{ "sturg", 0x25, 0xff, INSTR_RRE_RR },
++	{ "lbr", 0x26, 0xff, INSTR_RRE_RR },
++	{ "lhr", 0x27, 0xff, INSTR_RRE_RR },
++	{ "cgfr", 0x30, 0xff, INSTR_RRE_RR },
++	{ "clgfr", 0x31, 0xff, INSTR_RRE_RR },
++	{ "bctgr", 0x46, 0xff, INSTR_RRE_RR },
++	{ "ngr", 0x80, 0xff, INSTR_RRE_RR },
++	{ "ogr", 0x81, 0xff, INSTR_RRE_RR },
++	{ "xgr", 0x82, 0xff, INSTR_RRE_RR },
++	{ "flogr", 0x83, 0xff, INSTR_RRE_RR },
++	{ "llgcr", 0x84, 0xff, INSTR_RRE_RR },
++	{ "llghr", 0x85, 0xff, INSTR_RRE_RR },
++	{ "mlgr", 0x86, 0xff, INSTR_RRE_RR },
++	{ "dlgr", 0x87, 0xff, INSTR_RRE_RR },
++	{ "alcgr", 0x88, 0xff, INSTR_RRE_RR },
++	{ "slbgr", 0x89, 0xff, INSTR_RRE_RR },
++	{ "cspg", 0x8a, 0xff, INSTR_RRE_RR },
++	{ "idte", 0x8e, 0xff, INSTR_RRF_R0RR },
++	{ "llcr", 0x94, 0xff, INSTR_RRE_RR },
++	{ "llhr", 0x95, 0xff, INSTR_RRE_RR },
++	{ "esea", 0x9d, 0xff, INSTR_RRE_R0 },
++	{ "lptea", 0xaa, 0xff, INSTR_RRF_RURR },
++	{ "cu14", 0xb0, 0xff, INSTR_RRF_M0RR },
++	{ "cu24", 0xb1, 0xff, INSTR_RRF_M0RR },
++	{ "cu41", 0xb2, 0xff, INSTR_RRF_M0RR },
++	{ "cu42", 0xb3, 0xff, INSTR_RRF_M0RR },
++#endif
++	{ "kmac", 0x1e, 0xff, INSTR_RRE_RR },
++	{ "lrvr", 0x1f, 0xff, INSTR_RRE_RR },
++	{ "km", 0x2e, 0xff, INSTR_RRE_RR },
++	{ "kmc", 0x2f, 0xff, INSTR_RRE_RR },
++	{ "kimd", 0x3e, 0xff, INSTR_RRE_RR },
++	{ "klmd", 0x3f, 0xff, INSTR_RRE_RR },
++	{ "epsw", 0x8d, 0xff, INSTR_RRE_RR },
++	{ "trtt", 0x90, 0xff, INSTR_RRE_RR },
++	{ "trtt", 0x90, 0xff, INSTR_RRF_M0RR },
++	{ "trto", 0x91, 0xff, INSTR_RRE_RR },
++	{ "trto", 0x91, 0xff, INSTR_RRF_M0RR },
++	{ "trot", 0x92, 0xff, INSTR_RRE_RR },
++	{ "trot", 0x92, 0xff, INSTR_RRF_M0RR },
++	{ "troo", 0x93, 0xff, INSTR_RRE_RR },
++	{ "troo", 0x93, 0xff, INSTR_RRF_M0RR },
++	{ "mlr", 0x96, 0xff, INSTR_RRE_RR },
++	{ "dlr", 0x97, 0xff, INSTR_RRE_RR },
++	{ "alcr", 0x98, 0xff, INSTR_RRE_RR },
++	{ "slbr", 0x99, 0xff, INSTR_RRE_RR },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_c0[] = {
++#ifdef CONFIG_64BIT
++	{ "lgfi", 0x01, 0x0f, INSTR_RIL_RI },
++	{ "xihf", 0x06, 0x0f, INSTR_RIL_RU },
++	{ "xilf", 0x07, 0x0f, INSTR_RIL_RU },
++	{ "iihf", 0x08, 0x0f, INSTR_RIL_RU },
++	{ "iilf", 0x09, 0x0f, INSTR_RIL_RU },
++	{ "nihf", 0x0a, 0x0f, INSTR_RIL_RU },
++	{ "nilf", 0x0b, 0x0f, INSTR_RIL_RU },
++	{ "oihf", 0x0c, 0x0f, INSTR_RIL_RU },
++	{ "oilf", 0x0d, 0x0f, INSTR_RIL_RU },
++	{ "llihf", 0x0e, 0x0f, INSTR_RIL_RU },
++	{ "llilf", 0x0f, 0x0f, INSTR_RIL_RU },
++#endif
++	{ "larl", 0x00, 0x0f, INSTR_RIL_RP },
++	{ "brcl", 0x04, 0x0f, INSTR_RIL_UP },
++	{ "brasl", 0x05, 0x0f, INSTR_RIL_RP },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_c2[] = {
++#ifdef CONFIG_64BIT
++	{ "slgfi", 0x04, 0x0f, INSTR_RIL_RU },
++	{ "slfi", 0x05, 0x0f, INSTR_RIL_RU },
++	{ "agfi", 0x08, 0x0f, INSTR_RIL_RI },
++	{ "afi", 0x09, 0x0f, INSTR_RIL_RI },
++	{ "algfi", 0x0a, 0x0f, INSTR_RIL_RU },
++	{ "alfi", 0x0b, 0x0f, INSTR_RIL_RU },
++	{ "cgfi", 0x0c, 0x0f, INSTR_RIL_RI },
++	{ "cfi", 0x0d, 0x0f, INSTR_RIL_RI },
++	{ "clgfi", 0x0e, 0x0f, INSTR_RIL_RU },
++	{ "clfi", 0x0f, 0x0f, INSTR_RIL_RU },
++#endif
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_c8[] = {
++#ifdef CONFIG_64BIT
++	{ "mvcos", 0x00, 0xff, INSTR_SSF_RRDRD },
++#endif
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_e3[] = {
++#ifdef CONFIG_64BIT
++	{ "ltg", 0x02, 0xff, INSTR_RXY_RRRD },
++	{ "lrag", 0x03, 0xff, INSTR_RXY_RRRD },
++	{ "lg", 0x04, 0xff, INSTR_RXY_RRRD },
++	{ "cvby", 0x06, 0xff, INSTR_RXY_RRRD },
++	{ "ag", 0x08, 0xff, INSTR_RXY_RRRD },
++	{ "sg", 0x09, 0xff, INSTR_RXY_RRRD },
++	{ "alg", 0x0a, 0xff, INSTR_RXY_RRRD },
++	{ "slg", 0x0b, 0xff, INSTR_RXY_RRRD },
++	{ "msg", 0x0c, 0xff, INSTR_RXY_RRRD },
++	{ "dsg", 0x0d, 0xff, INSTR_RXY_RRRD },
++	{ "cvbg", 0x0e, 0xff, INSTR_RXY_RRRD },
++	{ "lrvg", 0x0f, 0xff, INSTR_RXY_RRRD },
++	{ "lt", 0x12, 0xff, INSTR_RXY_RRRD },
++	{ "lray", 0x13, 0xff, INSTR_RXY_RRRD },
++	{ "lgf", 0x14, 0xff, INSTR_RXY_RRRD },
++	{ "lgh", 0x15, 0xff, INSTR_RXY_RRRD },
++	{ "llgf", 0x16, 0xff, INSTR_RXY_RRRD },
++	{ "llgt", 0x17, 0xff, INSTR_RXY_RRRD },
++	{ "agf", 0x18, 0xff, INSTR_RXY_RRRD },
++	{ "sgf", 0x19, 0xff, INSTR_RXY_RRRD },
++	{ "algf", 0x1a, 0xff, INSTR_RXY_RRRD },
++	{ "slgf", 0x1b, 0xff, INSTR_RXY_RRRD },
++	{ "msgf", 0x1c, 0xff, INSTR_RXY_RRRD },
++	{ "dsgf", 0x1d, 0xff, INSTR_RXY_RRRD },
++	{ "cg", 0x20, 0xff, INSTR_RXY_RRRD },
++	{ "clg", 0x21, 0xff, INSTR_RXY_RRRD },
++	{ "stg", 0x24, 0xff, INSTR_RXY_RRRD },
++	{ "cvdy", 0x26, 0xff, INSTR_RXY_RRRD },
++	{ "cvdg", 0x2e, 0xff, INSTR_RXY_RRRD },
++	{ "strvg", 0x2f, 0xff, INSTR_RXY_RRRD },
++	{ "cgf", 0x30, 0xff, INSTR_RXY_RRRD },
++	{ "clgf", 0x31, 0xff, INSTR_RXY_RRRD },
++	{ "strvh", 0x3f, 0xff, INSTR_RXY_RRRD },
++	{ "bctg", 0x46, 0xff, INSTR_RXY_RRRD },
++	{ "sty", 0x50, 0xff, INSTR_RXY_RRRD },
++	{ "msy", 0x51, 0xff, INSTR_RXY_RRRD },
++	{ "ny", 0x54, 0xff, INSTR_RXY_RRRD },
++	{ "cly", 0x55, 0xff, INSTR_RXY_RRRD },
++	{ "oy", 0x56, 0xff, INSTR_RXY_RRRD },
++	{ "xy", 0x57, 0xff, INSTR_RXY_RRRD },
++	{ "ly", 0x58, 0xff, INSTR_RXY_RRRD },
++	{ "cy", 0x59, 0xff, INSTR_RXY_RRRD },
++	{ "ay", 0x5a, 0xff, INSTR_RXY_RRRD },
++	{ "sy", 0x5b, 0xff, INSTR_RXY_RRRD },
++	{ "aly", 0x5e, 0xff, INSTR_RXY_RRRD },
++	{ "sly", 0x5f, 0xff, INSTR_RXY_RRRD },
++	{ "sthy", 0x70, 0xff, INSTR_RXY_RRRD },
++	{ "lay", 0x71, 0xff, INSTR_RXY_RRRD },
++	{ "stcy", 0x72, 0xff, INSTR_RXY_RRRD },
++	{ "icy", 0x73, 0xff, INSTR_RXY_RRRD },
++	{ "lb", 0x76, 0xff, INSTR_RXY_RRRD },
++	{ "lgb", 0x77, 0xff, INSTR_RXY_RRRD },
++	{ "lhy", 0x78, 0xff, INSTR_RXY_RRRD },
++	{ "chy", 0x79, 0xff, INSTR_RXY_RRRD },
++	{ "ahy", 0x7a, 0xff, INSTR_RXY_RRRD },
++	{ "shy", 0x7b, 0xff, INSTR_RXY_RRRD },
++	{ "ng", 0x80, 0xff, INSTR_RXY_RRRD },
++	{ "og", 0x81, 0xff, INSTR_RXY_RRRD },
++	{ "xg", 0x82, 0xff, INSTR_RXY_RRRD },
++	{ "mlg", 0x86, 0xff, INSTR_RXY_RRRD },
++	{ "dlg", 0x87, 0xff, INSTR_RXY_RRRD },
++	{ "alcg", 0x88, 0xff, INSTR_RXY_RRRD },
++	{ "slbg", 0x89, 0xff, INSTR_RXY_RRRD },
++	{ "stpq", 0x8e, 0xff, INSTR_RXY_RRRD },
++	{ "lpq", 0x8f, 0xff, INSTR_RXY_RRRD },
++	{ "llgc", 0x90, 0xff, INSTR_RXY_RRRD },
++	{ "llgh", 0x91, 0xff, INSTR_RXY_RRRD },
++	{ "llc", 0x94, 0xff, INSTR_RXY_RRRD },
++	{ "llh", 0x95, 0xff, INSTR_RXY_RRRD },
++#endif
++	{ "lrv", 0x1e, 0xff, INSTR_RXY_RRRD },
++	{ "lrvh", 0x1f, 0xff, INSTR_RXY_RRRD },
++	{ "strv", 0x3e, 0xff, INSTR_RXY_RRRD },
++	{ "ml", 0x96, 0xff, INSTR_RXY_RRRD },
++	{ "dl", 0x97, 0xff, INSTR_RXY_RRRD },
++	{ "alc", 0x98, 0xff, INSTR_RXY_RRRD },
++	{ "slb", 0x99, 0xff, INSTR_RXY_RRRD },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_e5[] = {
++#ifdef CONFIG_64BIT
++	{ "strag", 0x02, 0xff, INSTR_SSE_RDRD },
++#endif
++	{ "lasp", 0x00, 0xff, INSTR_SSE_RDRD },
++	{ "tprot", 0x01, 0xff, INSTR_SSE_RDRD },
++	{ "mvcsk", 0x0e, 0xff, INSTR_SSE_RDRD },
++	{ "mvcdk", 0x0f, 0xff, INSTR_SSE_RDRD },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_eb[] = {
++#ifdef CONFIG_64BIT
++	{ "lmg", 0x04, 0xff, INSTR_RSY_RRRD },
++	{ "srag", 0x0a, 0xff, INSTR_RSY_RRRD },
++	{ "slag", 0x0b, 0xff, INSTR_RSY_RRRD },
++	{ "srlg", 0x0c, 0xff, INSTR_RSY_RRRD },
++	{ "sllg", 0x0d, 0xff, INSTR_RSY_RRRD },
++	{ "tracg", 0x0f, 0xff, INSTR_RSY_RRRD },
++	{ "csy", 0x14, 0xff, INSTR_RSY_RRRD },
++	{ "rllg", 0x1c, 0xff, INSTR_RSY_RRRD },
++	{ "clmh", 0x20, 0xff, INSTR_RSY_RURD },
++	{ "clmy", 0x21, 0xff, INSTR_RSY_RURD },
++	{ "stmg", 0x24, 0xff, INSTR_RSY_RRRD },
++	{ "stctg", 0x25, 0xff, INSTR_RSY_CCRD },
++	{ "stmh", 0x26, 0xff, INSTR_RSY_RRRD },
++	{ "stcmh", 0x2c, 0xff, INSTR_RSY_RURD },
++	{ "stcmy", 0x2d, 0xff, INSTR_RSY_RURD },
++	{ "lctlg", 0x2f, 0xff, INSTR_RSY_CCRD },
++	{ "csg", 0x30, 0xff, INSTR_RSY_RRRD },
++	{ "cdsy", 0x31, 0xff, INSTR_RSY_RRRD },
++	{ "cdsg", 0x3e, 0xff, INSTR_RSY_RRRD },
++	{ "bxhg", 0x44, 0xff, INSTR_RSY_RRRD },
++	{ "bxleg", 0x45, 0xff, INSTR_RSY_RRRD },
++	{ "tmy", 0x51, 0xff, INSTR_SIY_URD },
++	{ "mviy", 0x52, 0xff, INSTR_SIY_URD },
++	{ "niy", 0x54, 0xff, INSTR_SIY_URD },
++	{ "cliy", 0x55, 0xff, INSTR_SIY_URD },
++	{ "oiy", 0x56, 0xff, INSTR_SIY_URD },
++	{ "xiy", 0x57, 0xff, INSTR_SIY_URD },
++	{ "icmh", 0x80, 0xff, INSTR_RSE_RURD },
++	{ "icmh", 0x80, 0xff, INSTR_RSY_RURD },
++	{ "icmy", 0x81, 0xff, INSTR_RSY_RURD },
++	{ "clclu", 0x8f, 0xff, INSTR_RSY_RRRD },
++	{ "stmy", 0x90, 0xff, INSTR_RSY_RRRD },
++	{ "lmh", 0x96, 0xff, INSTR_RSY_RRRD },
++	{ "lmy", 0x98, 0xff, INSTR_RSY_RRRD },
++	{ "lamy", 0x9a, 0xff, INSTR_RSY_AARD },
++	{ "stamy", 0x9b, 0xff, INSTR_RSY_AARD },
++#endif
++	{ "rll", 0x1d, 0xff, INSTR_RSY_RRRD },
++	{ "mvclu", 0x8e, 0xff, INSTR_RSY_RRRD },
++	{ "tp", 0xc0, 0xff, INSTR_RSL_R0RD },
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_ec[] = {
++#ifdef CONFIG_64BIT
++	{ "brxhg", 0x44, 0x0f, INSTR_RIE_RRP },
++	{ "brxlg", 0x45, 0x0f, INSTR_RIE_RRP },
++#endif
++	{ "", 0, 0, INSTR_INVALID }
++};
++
++static struct insn opcode_ed[] = {
++#ifdef CONFIG_64BIT
++	{ "mayl", 0x38, 0xff, INSTR_RXF_FRRDF },
++	{ "myl", 0x39, 0xff, INSTR_RXF_FRRDF },
++	{ "may", 0x3a, 0xff, INSTR_RXF_FRRDF },
++	{ "my", 0x3b, 0xff, INSTR_RXF_FRRDF },
++	{ "mayh", 0x3c, 0xff, INSTR_RXF_FRRDF },
++	{ "myh", 0x3d, 0xff, INSTR_RXF_FRRDF },
++	{ "ley", 0x64, 0xff, INSTR_RXY_FRRD },
++	{ "ldy", 0x65, 0xff, INSTR_RXY_FRRD },
++	{ "stey", 0x66, 0xff, INSTR_RXY_FRRD },
++	{ "stdy", 0x67, 0xff, INSTR_RXY_FRRD },
++#endif
++	{ "ldeb", 0x04, 0xff, INSTR_RXE_FRRD },
++	{ "lxdb", 0x05, 0xff, INSTR_RXE_FRRD },
++	{ "lxeb", 0x06, 0xff, INSTR_RXE_FRRD },
++	{ "mxdb", 0x07, 0xff, INSTR_RXE_FRRD },
++	{ "keb", 0x08, 0xff, INSTR_RXE_FRRD },
++	{ "ceb", 0x09, 0xff, INSTR_RXE_FRRD },
++	{ "aeb", 0x0a, 0xff, INSTR_RXE_FRRD },
++	{ "seb", 0x0b, 0xff, INSTR_RXE_FRRD },
++	{ "mdeb", 0x0c, 0xff, INSTR_RXE_FRRD },
++	{ "deb", 0x0d, 0xff, INSTR_RXE_FRRD },
++	{ "maeb", 0x0e, 0xff, INSTR_RXF_FRRDF },
++	{ "mseb", 0x0f, 0xff, INSTR_RXF_FRRDF },
++	{ "tceb", 0x10, 0xff, INSTR_RXE_FRRD },
++	{ "tcdb", 0x11, 0xff, INSTR_RXE_FRRD },
++	{ "tcxb", 0x12, 0xff, INSTR_RXE_FRRD },
++	{ "sqeb", 0x14, 0xff, INSTR_RXE_FRRD },
++	{ "sqdb", 0x15, 0xff, INSTR_RXE_FRRD },
++	{ "meeb", 0x17, 0xff, INSTR_RXE_FRRD },
++	{ "kdb", 0x18, 0xff, INSTR_RXE_FRRD },
++	{ "cdb", 0x19, 0xff, INSTR_RXE_FRRD },
++	{ "adb", 0x1a, 0xff, INSTR_RXE_FRRD },
++	{ "sdb", 0x1b, 0xff, INSTR_RXE_FRRD },
++	{ "mdb", 0x1c, 0xff, INSTR_RXE_FRRD },
++	{ "ddb", 0x1d, 0xff, INSTR_RXE_FRRD },
++	{ "madb", 0x1e, 0xff, INSTR_RXF_FRRDF },
++	{ "msdb", 0x1f, 0xff, INSTR_RXF_FRRDF },
++	{ "lde", 0x24, 0xff, INSTR_RXE_FRRD },
++	{ "lxd", 0x25, 0xff, INSTR_RXE_FRRD },
++	{ "lxe", 0x26, 0xff, INSTR_RXE_FRRD },
++	{ "mae", 0x2e, 0xff, INSTR_RXF_FRRDF },
++	{ "mse", 0x2f, 0xff, INSTR_RXF_FRRDF },
++	{ "sqe", 0x34, 0xff, INSTR_RXE_FRRD },
++	{ "mee", 0x37, 0xff, INSTR_RXE_FRRD },
++	{ "mad", 0x3e, 0xff, INSTR_RXF_FRRDF },
++	{ "msd", 0x3f, 0xff, INSTR_RXF_FRRDF },
++	{ "", 0, INSTR_INVALID }
++};
++
++/* Extracts an operand value from an instruction.  */
++static unsigned int extract_operand(unsigned char *code,
++				    const struct operand *operand)
++{
++	unsigned int val;
++	int bits;
++
++	/* Extract fragments of the operand byte for byte.  */
++	code += operand->shift / 8;
++	bits = (operand->shift & 7) + operand->bits;
++	val = 0;
++	do {
++		val <<= 8;
++		val |= (unsigned int) *code++;
++		bits -= 8;
++	} while (bits > 0);
++	val >>= -bits;
++	val &= ((1U << (operand->bits - 1)) << 1) - 1;
++
++	/* Check for special long displacement case.  */
++	if (operand->bits == 20 && operand->shift == 20)
++		val = (val & 0xff) << 12 | (val & 0xfff00) >> 8;
++
++	/* Sign extend value if the operand is signed or pc relative.  */
++	if ((operand->flags & (OPERAND_SIGNED | OPERAND_PCREL)) &&
++	    (val & (1U << (operand->bits - 1))))
++		val |= (-1U << (operand->bits - 1)) << 1;
++
++	/* Double value if the operand is pc relative.	*/
++	if (operand->flags & OPERAND_PCREL)
++		val <<= 1;
++
++	/* Length x in an instructions has real length x + 1.  */
++	if (operand->flags & OPERAND_LENGTH)
++		val++;
++	return val;
 +}
 +
-+asmlinkage void execve_tail(void)
++static inline int insn_length(unsigned char code)
 +{
-+	task_lock(current);
-+	current->ptrace &= ~PT_DTRACE;
-+	task_unlock(current);
-+	current->thread.fp_regs.fpc = 0;
-+	if (MACHINE_HAS_IEEE)
-+		asm volatile("sfpc %0,%0" : : "d" (0));
- }
- 
- /*
-  * sys_execve() executes a new program.
-  */
--asmlinkage long sys_execve(struct pt_regs regs)
-+asmlinkage long sys_execve(void)
- {
--        int error;
--        char * filename;
--
--        filename = getname((char __user *) regs.orig_gpr2);
--        error = PTR_ERR(filename);
--        if (IS_ERR(filename))
--                goto out;
--        error = do_execve(filename, (char __user * __user *) regs.gprs[3],
--			  (char __user * __user *) regs.gprs[4], &regs);
--	if (error == 0) {
--		task_lock(current);
--		current->ptrace &= ~PT_DTRACE;
--		task_unlock(current);
--		current->thread.fp_regs.fpc = 0;
--		if (MACHINE_HAS_IEEE)
--			asm volatile("sfpc %0,%0" : : "d" (0));
-+	struct pt_regs *regs = task_pt_regs(current);
-+	char *filename;
-+	unsigned long result;
-+	int rc;
++	return ((((int) code + 64) >> 7) + 1) << 1;
++}
 +
-+	filename = getname((char __user *) regs->orig_gpr2);
-+	if (IS_ERR(filename)) {
-+		result = PTR_ERR(filename);
-+		goto out;
++static struct insn *find_insn(unsigned char *code)
++{
++	unsigned char opfrag = code[1];
++	struct insn *table;
++
++	switch (code[0]) {
++	case 0x01:
++		table = opcode_01;
++		break;
++	case 0xa5:
++		table = opcode_a5;
++		break;
++	case 0xa7:
++		table = opcode_a7;
++		break;
++	case 0xb2:
++		table = opcode_b2;
++		break;
++	case 0xb3:
++		table = opcode_b3;
++		break;
++	case 0xb9:
++		table = opcode_b9;
++		break;
++	case 0xc0:
++		table = opcode_c0;
++		break;
++	case 0xc2:
++		table = opcode_c2;
++		break;
++	case 0xc8:
++		table = opcode_c8;
++		break;
++	case 0xe3:
++		table = opcode_e3;
++		opfrag = code[5];
++		break;
++	case 0xe5:
++		table = opcode_e5;
++		break;
++	case 0xeb:
++		table = opcode_eb;
++		opfrag = code[5];
++		break;
++	case 0xec:
++		table = opcode_ec;
++		opfrag = code[5];
++		break;
++	case 0xed:
++		table = opcode_ed;
++		opfrag = code[5];
++		break;
++	default:
++		table = opcode;
++		opfrag = code[0];
++		break;
 +	}
-+	rc = do_execve(filename, (char __user * __user *) regs->gprs[3],
-+		       (char __user * __user *) regs->gprs[4], regs);
-+	if (rc) {
-+		result = rc;
-+		goto out_putname;
- 	}
--        putname(filename);
-+	execve_tail();
-+	result = regs->gprs[2];
-+out_putname:
-+	putname(filename);
- out:
--        return error;
-+	return result;
- }
++	while (table->format != INSTR_INVALID) {
++		if (table->opfrag == (opfrag & table->opmask))
++			return table;
++		table++;
++	}
++	return NULL;
++}
++
++static int print_insn(char *buffer, unsigned char *code, unsigned long addr)
++{
++	struct insn *insn;
++	const unsigned char *ops;
++	const struct operand *operand;
++	unsigned int value;
++	char separator;
++	char *ptr;
++
++	ptr = buffer;
++	insn = find_insn(code);
++	if (insn) {
++		ptr += sprintf(ptr, "%.5s\t", insn->name);
++		/* Extract the operands. */
++		separator = 0;
++		for (ops = formats[insn->format]; *ops != 0; ops++) {
++			operand = operands + *ops;
++			value = extract_operand(code, operand);
++			if ((operand->flags & OPERAND_INDEX)  && value == 0)
++				continue;
++			if ((operand->flags & OPERAND_BASE) &&
++			    value == 0 && separator == '(') {
++				separator = ',';
++				continue;
++			}
++			if (separator)
++				ptr += sprintf(ptr, "%c", separator);
++			if (operand->flags & OPERAND_GPR)
++				ptr += sprintf(ptr, "%%r%i", value);
++			else if (operand->flags & OPERAND_FPR)
++				ptr += sprintf(ptr, "%%f%i", value);
++			else if (operand->flags & OPERAND_AR)
++				ptr += sprintf(ptr, "%%a%i", value);
++			else if (operand->flags & OPERAND_CR)
++				ptr += sprintf(ptr, "%%c%i", value);
++			else if (operand->flags & OPERAND_PCREL)
++				ptr += sprintf(ptr, "%lx", value + addr);
++			else if (operand->flags & OPERAND_SIGNED)
++				ptr += sprintf(ptr, "%i", value);
++			else
++				ptr += sprintf(ptr, "%u", value);
++			if (operand->flags & OPERAND_DISP)
++				separator = '(';
++			else if (operand->flags & OPERAND_BASE) {
++				ptr += sprintf(ptr, ")");
++				separator = ',';
++			} else
++				separator = ',';
++		}
++	} else
++		ptr += sprintf(ptr, "unknown");
++	return (int) (ptr - buffer);
++}
++
++void show_code(struct pt_regs *regs)
++{
++	char *mode = (regs->psw.mask & PSW_MASK_PSTATE) ? "User" : "Krnl";
++	unsigned char code[64];
++	char buffer[64], *ptr;
++	mm_segment_t old_fs;
++	unsigned long addr;
++	int start, end, opsize, hops, i;
++
++	/* Get a snapshot of the 64 bytes surrounding the fault address. */
++	old_fs = get_fs();
++	set_fs((regs->psw.mask & PSW_MASK_PSTATE) ? USER_DS : KERNEL_DS);
++	for (start = 32; start && regs->psw.addr >= 34 - start; start -= 2) {
++		addr = regs->psw.addr - 34 + start;
++		if (__copy_from_user(code + start - 2,
++				     (char __user *) addr, 2))
++			break;
++	}
++	for (end = 32; end < 64; end += 2) {
++		addr = regs->psw.addr + end - 32;
++		if (__copy_from_user(code + end,
++				     (char __user *) addr, 2))
++			break;
++	}
++	set_fs(old_fs);
++	/* Code snapshot useable ? */
++	if ((regs->psw.addr & 1) || start >= end) {
++		printk("%s Code: Bad PSW.\n", mode);
++		return;
++	}
++	/* Find a starting point for the disassembly. */
++	while (start < 32) {
++		hops = 0;
++		for (i = 0, hops = 0; start + i < 32 && hops < 3; hops++) {
++			if (!find_insn(code + start + i))
++				break;
++			i += insn_length(code[start + i]);
++		}
++		if (start + i == 32)
++			/* Looks good, sequence ends at PSW. */
++			break;
++		start += 2;
++	}
++	/* Decode the instructions. */
++	ptr = buffer;
++	ptr += sprintf(ptr, "%s Code:", mode);
++	hops = 0;
++	while (start < end && hops < 8) {
++		*ptr++ = (start == 32) ? '>' : ' ';
++		addr = regs->psw.addr + start - 32;
++		ptr += sprintf(ptr, ONELONG, addr);
++		opsize = insn_length(code[start]);
++		if (start + opsize >= end)
++			break;
++		for (i = 0; i < opsize; i++)
++			ptr += sprintf(ptr, "%02x", code[start + i]);
++		*ptr++ = '\t';
++		if (i < 6)
++			*ptr++ = '\t';
++		ptr += print_insn(ptr, code + start, addr);
++		start += opsize;
++		printk(buffer);
++		ptr = buffer;
++		ptr += sprintf(ptr, "\n          ");
++		hops++;
++	}
++	printk("\n");
++}
+diff -urpN linux-2.6/arch/s390/kernel/Makefile linux-2.6-patched/arch/s390/kernel/Makefile
+--- linux-2.6/arch/s390/kernel/Makefile	2007-03-05 22:51:29.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/Makefile	2007-03-05 22:52:00.000000000 +0100
+@@ -6,7 +6,7 @@ EXTRA_AFLAGS	:= -traditional
  
+ obj-y	:=  bitmap.o traps.o time.o process.o base.o early.o \
+             setup.o sys_s390.o ptrace.o signal.o cpcmd.o ebcdic.o \
+-	    semaphore.o s390_ext.o debug.o irq.o ipl.o
++	    semaphore.o s390_ext.o debug.o irq.o ipl.o dis.o
+ 
+ obj-y	+= $(if $(CONFIG_64BIT),entry64.o,entry.o)
+ obj-y	+= $(if $(CONFIG_64BIT),reipl64.o,reipl.o)
+diff -urpN linux-2.6/arch/s390/kernel/traps.c linux-2.6-patched/arch/s390/kernel/traps.c
+--- linux-2.6/arch/s390/kernel/traps.c	2007-03-05 22:51:29.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/traps.c	2007-03-05 22:52:00.000000000 +0100
+@@ -188,18 +188,31 @@ void dump_stack(void)
+ 
+ EXPORT_SYMBOL(dump_stack);
+ 
++static inline int mask_bits(struct pt_regs *regs, unsigned long bits)
++{
++	return (regs->psw.mask & bits) / ((~bits + 1) & bits);
++}
++
+ void show_registers(struct pt_regs *regs)
+ {
+-	mm_segment_t old_fs;
+ 	char *mode;
+-	int i;
+ 
+ 	mode = (regs->psw.mask & PSW_MASK_PSTATE) ? "User" : "Krnl";
+ 	printk("%s PSW : %p %p",
+ 	       mode, (void *) regs->psw.mask,
+ 	       (void *) regs->psw.addr);
+ 	print_symbol(" (%s)\n", regs->psw.addr & PSW_ADDR_INSN);
+-	printk("%s GPRS: " FOURLONG, mode,
++	printk("           R:%x T:%x IO:%x EX:%x Key:%x M:%x W:%x "
++	       "P:%x AS:%x CC:%x PM:%x", mask_bits(regs, PSW_MASK_PER),
++	       mask_bits(regs, PSW_MASK_DAT), mask_bits(regs, PSW_MASK_IO),
++	       mask_bits(regs, PSW_MASK_EXT), mask_bits(regs, PSW_MASK_KEY),
++	       mask_bits(regs, PSW_MASK_MCHECK), mask_bits(regs, PSW_MASK_WAIT),
++	       mask_bits(regs, PSW_MASK_PSTATE), mask_bits(regs, PSW_MASK_ASC),
++	       mask_bits(regs, PSW_MASK_CC), mask_bits(regs, PSW_MASK_PM));
++#ifdef CONFIG_64BIT
++	printk(" EA:%x", mask_bits(regs, PSW_BASE_BITS));
++#endif
++	printk("\n%s GPRS: " FOURLONG, mode,
+ 	       regs->gprs[0], regs->gprs[1], regs->gprs[2], regs->gprs[3]);
+ 	printk("           " FOURLONG,
+ 	       regs->gprs[4], regs->gprs[5], regs->gprs[6], regs->gprs[7]);
+@@ -208,41 +221,7 @@ void show_registers(struct pt_regs *regs
+ 	printk("           " FOURLONG,
+ 	       regs->gprs[12], regs->gprs[13], regs->gprs[14], regs->gprs[15]);
+ 
+-#if 0
+-	/* FIXME: this isn't needed any more but it changes the ksymoops
+-	 * input. To remove or not to remove ... */
+-	save_access_regs(regs->acrs);
+-	printk("%s ACRS: %08x %08x %08x %08x\n", mode,
+-	       regs->acrs[0], regs->acrs[1], regs->acrs[2], regs->acrs[3]);
+-	printk("           %08x %08x %08x %08x\n",
+-	       regs->acrs[4], regs->acrs[5], regs->acrs[6], regs->acrs[7]);
+-	printk("           %08x %08x %08x %08x\n",
+-	       regs->acrs[8], regs->acrs[9], regs->acrs[10], regs->acrs[11]);
+-	printk("           %08x %08x %08x %08x\n",
+-	       regs->acrs[12], regs->acrs[13], regs->acrs[14], regs->acrs[15]);
+-#endif
 -
- /*
-  * fill in the FPU structure for a core dump.
-  */
-diff -urpN linux-2.6/arch/s390/kernel/signal.c linux-2.6-patched/arch/s390/kernel/signal.c
---- linux-2.6/arch/s390/kernel/signal.c	2007-03-05 22:51:29.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/signal.c	2007-03-05 22:51:59.000000000 +0100
-@@ -102,9 +102,9 @@ sys_sigaction(int sig, const struct old_
- }
- 
- asmlinkage long
--sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
--					struct pt_regs *regs)
-+sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
- 	return do_sigaltstack(uss, uoss, regs->gprs[15]);
- }
- 
-@@ -163,8 +163,9 @@ static int restore_sigregs(struct pt_reg
- 	return 0;
- }
- 
--asmlinkage long sys_sigreturn(struct pt_regs *regs)
-+asmlinkage long sys_sigreturn(void)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
- 	sigframe __user *frame = (sigframe __user *)regs->gprs[15];
- 	sigset_t set;
- 
-@@ -189,8 +190,9 @@ badframe:
- 	return 0;
- }
- 
--asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
-+asmlinkage long sys_rt_sigreturn(void)
- {
-+	struct pt_regs *regs = task_pt_regs(current);
- 	rt_sigframe __user *frame = (rt_sigframe __user *)regs->gprs[15];
- 	sigset_t set;
- 
-diff -urpN linux-2.6/arch/s390/kernel/syscalls.S linux-2.6-patched/arch/s390/kernel/syscalls.S
---- linux-2.6/arch/s390/kernel/syscalls.S	2007-03-05 22:51:29.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/syscalls.S	2007-03-05 22:51:59.000000000 +0100
-@@ -10,7 +10,7 @@
- 
- NI_SYSCALL							/* 0 */
- SYSCALL(sys_exit,sys_exit,sys32_exit_wrapper)
--SYSCALL(sys_fork_glue,sys_fork_glue,sys_fork_glue)
-+SYSCALL(sys_fork,sys_fork,sys_fork)
- SYSCALL(sys_read,sys_read,sys32_read_wrapper)
- SYSCALL(sys_write,sys_write,sys32_write_wrapper)
- SYSCALL(sys_open,sys_open,sys32_open_wrapper)			/* 5 */
-@@ -19,7 +19,7 @@ SYSCALL(sys_restart_syscall,sys_restart_
- SYSCALL(sys_creat,sys_creat,sys32_creat_wrapper)
- SYSCALL(sys_link,sys_link,sys32_link_wrapper)
- SYSCALL(sys_unlink,sys_unlink,sys32_unlink_wrapper)		/* 10 */
--SYSCALL(sys_execve_glue,sys_execve_glue,sys32_execve_glue)
-+SYSCALL(sys_execve,sys_execve,sys32_execve)
- SYSCALL(sys_chdir,sys_chdir,sys32_chdir_wrapper)
- SYSCALL(sys_time,sys_ni_syscall,sys32_time_wrapper)		/* old time syscall */
- SYSCALL(sys_mknod,sys_mknod,sys32_mknod_wrapper)
-@@ -127,8 +127,8 @@ SYSCALL(sys_swapoff,sys_swapoff,sys32_sw
- SYSCALL(sys_sysinfo,sys_sysinfo,compat_sys_sysinfo_wrapper)
- SYSCALL(sys_ipc,sys_ipc,sys32_ipc_wrapper)
- SYSCALL(sys_fsync,sys_fsync,sys32_fsync_wrapper)
--SYSCALL(sys_sigreturn_glue,sys_sigreturn_glue,sys32_sigreturn_glue)
--SYSCALL(sys_clone_glue,sys_clone_glue,sys32_clone_glue)		/* 120 */
-+SYSCALL(sys_sigreturn,sys_sigreturn,sys32_sigreturn)
-+SYSCALL(sys_clone,sys_clone,sys32_clone)			/* 120 */
- SYSCALL(sys_setdomainname,sys_setdomainname,sys32_setdomainname_wrapper)
- SYSCALL(sys_newuname,s390x_newuname,sys32_newuname_wrapper)
- NI_SYSCALL							/* modify_ldt for i386 */
-@@ -181,7 +181,7 @@ SYSCALL(sys_nfsservctl,sys_nfsservctl,co
- SYSCALL(sys_setresgid16,sys_ni_syscall,sys32_setresgid16_wrapper)	/* 170 old setresgid16 syscall */
- SYSCALL(sys_getresgid16,sys_ni_syscall,sys32_getresgid16_wrapper)	/* old getresgid16 syscall */
- SYSCALL(sys_prctl,sys_prctl,sys32_prctl_wrapper)
--SYSCALL(sys_rt_sigreturn_glue,sys_rt_sigreturn_glue,sys32_rt_sigreturn_glue)
-+SYSCALL(sys_rt_sigreturn,sys_rt_sigreturn,sys32_rt_sigreturn)
- SYSCALL(sys_rt_sigaction,sys_rt_sigaction,sys32_rt_sigaction_wrapper)
- SYSCALL(sys_rt_sigprocmask,sys_rt_sigprocmask,sys32_rt_sigprocmask_wrapper)	/* 175 */
- SYSCALL(sys_rt_sigpending,sys_rt_sigpending,sys32_rt_sigpending_wrapper)
-@@ -194,11 +194,11 @@ SYSCALL(sys_chown16,sys_ni_syscall,sys32
- SYSCALL(sys_getcwd,sys_getcwd,sys32_getcwd_wrapper)
- SYSCALL(sys_capget,sys_capget,sys32_capget_wrapper)
- SYSCALL(sys_capset,sys_capset,sys32_capset_wrapper)		/* 185 */
--SYSCALL(sys_sigaltstack_glue,sys_sigaltstack_glue,sys32_sigaltstack_glue)
-+SYSCALL(sys_sigaltstack,sys_sigaltstack,sys32_sigaltstack)
- SYSCALL(sys_sendfile,sys_sendfile64,sys32_sendfile_wrapper)
- NI_SYSCALL							/* streams1 */
- NI_SYSCALL							/* streams2 */
--SYSCALL(sys_vfork_glue,sys_vfork_glue,sys_vfork_glue)		/* 190 */
-+SYSCALL(sys_vfork,sys_vfork,sys_vfork)				/* 190 */
- SYSCALL(sys_getrlimit,sys_getrlimit,compat_sys_getrlimit_wrapper)
- SYSCALL(sys_mmap2,sys_mmap2,sys32_mmap2_wrapper)
- SYSCALL(sys_truncate64,sys_ni_syscall,sys32_truncate64_wrapper)
-diff -urpN linux-2.6/arch/s390/kernel/sys_s390.c linux-2.6-patched/arch/s390/kernel/sys_s390.c
---- linux-2.6/arch/s390/kernel/sys_s390.c	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/sys_s390.c	2007-03-05 22:51:59.000000000 +0100
-@@ -266,23 +266,3 @@ s390_fadvise64_64(struct fadvise64_64_ar
- 		return -EFAULT;
- 	return sys_fadvise64_64(a.fd, a.offset, a.len, a.advice);
- }
+-	/*
+-	 * Print the first 20 byte of the instruction stream at the
+-	 * time of the fault.
+-	 */
+-	old_fs = get_fs();
+-	if (regs->psw.mask & PSW_MASK_PSTATE)
+-		set_fs(USER_DS);
+-	else
+-		set_fs(KERNEL_DS);
+-	printk("%s Code: ", mode);
+-	for (i = 0; i < 20; i++) {
+-		unsigned char c;
+-		if (__get_user(c, (char __user *)(regs->psw.addr + i))) {
+-			printk(" Bad PSW.");
+-			break;
+-		}
+-		printk("%02x ", c);
+-	}
+-	set_fs(old_fs);
 -
--/*
-- * Do a system call from kernel instead of calling sys_execve so we
-- * end up with proper pt_regs.
-- */
--int kernel_execve(const char *filename, char *const argv[], char *const envp[])
--{
--	register const char *__arg1 asm("2") = filename;
--	register char *const*__arg2 asm("3") = argv;
--	register char *const*__arg3 asm("4") = envp;
--	register long __svcres asm("2");
--	asm volatile(
--		"svc %b1"
--		: "=d" (__svcres)
--		: "i" (__NR_execve),
--		  "0" (__arg1),
--		  "d" (__arg2),
--		  "d" (__arg3) : "memory");
--	return __svcres;
--}
+-	printk("\n");
++	show_code(regs);
+ }	
+ 
+ /* This is called from fs/proc/array.c */
+diff -urpN linux-2.6/include/asm-s390/processor.h linux-2.6-patched/include/asm-s390/processor.h
+--- linux-2.6/include/asm-s390/processor.h	2007-03-05 22:51:39.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/processor.h	2007-03-05 22:52:00.000000000 +0100
+@@ -196,6 +196,7 @@ extern unsigned long thread_saved_pc(str
+ extern char *task_show_regs(struct task_struct *task, char *buffer);
+ 
+ extern void show_registers(struct pt_regs *regs);
++extern void show_code(struct pt_regs *regs);
+ extern void show_trace(struct task_struct *task, unsigned long *sp);
+ 
+ unsigned long get_wchan(struct task_struct *p);
