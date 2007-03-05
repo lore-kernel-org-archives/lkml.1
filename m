@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933527AbXCEPh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933529AbXCEPhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933527AbXCEPh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933525AbXCEPh1
+	id S933529AbXCEPhr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933528AbXCEPhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:37:27 -0500
-Received: from lazybastard.de ([212.112.238.170]:53434 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932963AbXCEPh0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:37:26 -0500
-Date: Mon, 5 Mar 2007 16:33:27 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-       alex@clusterfs.com, suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070305153326.GA1469@lazybastard.org>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <45EB4A55.3060908@redhat.com> <20070305001621.GB18691@lazybastard.org> <200703050136.37181.arnd@arndb.de> <20070305114109.GA454@lazybastard.org> <45EC3253.2030206@redhat.com>
+	Mon, 5 Mar 2007 10:37:47 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40196 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933529AbXCEPhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:37:46 -0500
+Subject: Re: 2.6.21-rc2-git3 Unstable for me
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Will Trives <will@trivescon.com.au>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <45EC3058.2010903@redhat.com>
+References: <20070305150317.57e62d70@disher.kickcrew>
+	 <45EC3058.2010903@redhat.com>
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 09:36:25 -0600
+Message-Id: <1173108985.9109.11.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45EC3253.2030206@redhat.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 March 2007 07:08:03 -0800, Ulrich Drepper wrote:
-> Jörn Engel wrote:
-> > Does the allocation have to be persistent beyond lifetime of the file
-> > descriptor?
+On Mon, 2007-03-05 at 09:59 -0500, Chuck Ebbert wrote:
+> Will Trives wrote:
 > 
-> Of course.  You call posix_fallocate once for the lifetime of the file
-> when it is created to ensure that all future uses will work.
+> [adding JFS maintainer to cc:]
 
-That part is not quite clear from the manpage but I trust most people
-would assume the same.
+Thanks for adding me to the thread.
 
-> It seems your filesystem will not be able to support this unless
-> compression is turned off.
+> Some kind of JFS problem?
 
-Correct.  Compression needs to be turned off for a file, if
-posix_fallocate(3) is to succeed.  What I could do is disable
-compression (meaning that no data written in the future will be
-compressed) and rewrite all blocks within the given range.
+I don' t know yet.  I was notified of the problem through bugzilla:
+http://bugzilla.kernel.org/show_bug.cgi?id=8128
 
-Still, it is quite obvious that noone designing this interface has lost
-much thought to compressing filesystems.  Whatever I can come up with
-will either be incompatible or some sort of hack.  :(
+The problem appears that a non-uptodate page has been marked dirty.  I
+haven't found much in the way of changes between 2.6.20 and the current
+git tree to explain this.  There's this one:
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=22c8ca78f20724676b6006232bf06cc3e9299539
 
-Jörn
+I'm looking for for a caller to ->prepare_write() which marks the page
+dirty without calling ->commit_write().
 
+Will, could you try reverting that patch?  If that fails, narrowing the
+problem down with git-bisect would be helpful, if you have the time.
+
+Thanks,
+Shaggy
 -- 
-Courage is not the absence of fear, but rather the judgement that
-something else is more important than fear.
--- Ambrose Redmoon
+David Kleikamp
+IBM Linux Technology Center
+
