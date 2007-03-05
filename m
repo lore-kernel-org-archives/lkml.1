@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbXCEAcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750833AbXCEAft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbXCEAcc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 19:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXCEAcb
+	id S1750833AbXCEAft (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 19:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXCEAfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 19:32:31 -0500
-Received: from ppsw-3.csi.cam.ac.uk ([131.111.8.133]:34221 "EHLO
+	Sun, 4 Mar 2007 19:35:48 -0500
+Received: from ppsw-3.csi.cam.ac.uk ([131.111.8.133]:35034 "EHLO
 	ppsw-3.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536AbXCEAca convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1749667AbXCEAfr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 19:32:30 -0500
+	Sun, 4 Mar 2007 19:35:47 -0500
 X-Cam-SpamDetails: Not scanned
 X-Cam-AntiVirus: No virus found
 X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070305001621.GB18691@lazybastard.org>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com> <20070305001621.GB18691@lazybastard.org>
+In-Reply-To: <CDA7A0DF-D744-416F-83B1-76C148B46A5F@cam.ac.uk>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com> <20070305001621.GB18691@lazybastard.org> <CDA7A0DF-D744-416F-83B1-76C148B46A5F@cam.ac.uk>
 Mime-Version: 1.0 (Apple Message framework v752.3)
 Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <CDA7A0DF-D744-416F-83B1-76C148B46A5F@cam.ac.uk>
-Cc: Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+Message-Id: <3CB60DB3-70A2-4906-88F2-62388FB04E56@cam.ac.uk>
+Cc: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
+       Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
        Christoph Hellwig <hch@infradead.org>,
        Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -29,61 +30,70 @@ Cc: Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
 Content-Transfer-Encoding: 8BIT
 From: Anton Altaparmakov <aia21@cam.ac.uk>
 Subject: Re: [RFC] Heads up on sys_fallocate()
-Date: Mon, 5 Mar 2007 00:32:14 +0000
-To: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>
+Date: Mon, 5 Mar 2007 00:35:36 +0000
+To: Anton Altaparmakov <aia21@cam.ac.uk>
 X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On 5 Mar 2007, at 00:16, Jörn Engel wrote:
-
-> On Sun, 4 March 2007 14:38:13 -0800, Ulrich Drepper wrote:
+On 5 Mar 2007, at 00:32, Anton Altaparmakov wrote:
+> On 5 Mar 2007, at 00:16, Jörn Engel wrote:
+>> On Sun, 4 March 2007 14:38:13 -0800, Ulrich Drepper wrote:
+>>>
+>>> When you do it like this, who can the kernel/filesystem  
+>>> *guarantee* that
+>>> when the data is written there actually is room on the harddrive?
+>>>
+>>> What you described seems like using truncate/ftruncate to  
+>>> increase the
+>>> file's size.  That is not at all what posix_fallocate is for.
+>>> posix_fallocate must make sure that the requested blocks on the  
+>>> disk are
+>>> reserved (allocated) for the file's use and that at no point in the
+>>> future will, say, a msync() fail because a mmap(MAP_SHARED) page has
+>>> been written to.
 >>
->> When you do it like this, who can the kernel/filesystem  
->> *guarantee* that
->> when the data is written there actually is room on the harddrive?
+>> That actually causes an interesting problem for compressing  
+>> filesystems.
+>> The space consumed by blocks depends on their contents and how  
+>> well it
+>> compresses.  At the moment, the only option I see to support
+>> posix_fallocate for LogFS is to set an inode flag disabling  
+>> compression,
+>> then allocate the blocks.
 >>
->> What you described seems like using truncate/ftruncate to increase  
->> the
->> file's size.  That is not at all what posix_fallocate is for.
->> posix_fallocate must make sure that the requested blocks on the  
->> disk are
->> reserved (allocated) for the file's use and that at no point in the
->> future will, say, a msync() fail because a mmap(MAP_SHARED) page has
->> been written to.
+>> But if the file already contains large amounts of compressed data, I
+>> have a problem.  Disabling compression for a range within a file  
+>> is not
+>> supported, so I can only return an error.  But which one?
 >
-> That actually causes an interesting problem for compressing  
-> filesystems.
-> The space consumed by blocks depends on their contents and how well it
-> compresses.  At the moment, the only option I see to support
-> posix_fallocate for LogFS is to set an inode flag disabling  
-> compression,
-> then allocate the blocks.
+> I don't know how your compression algorithm works but at least on  
+> NTFS that bit is easy: you allocate the blocks and mark them as  
+> allocated then the compression engine will write non-compressed  
+> data to those blocks.  Basically it works like this "does  
+> compression block X have any sparse blocks?". If the answer is  
+> "yes" the block is treated as compressed data and if the answer is  
+> "no" the block is treated as uncompressed data.  This means that if  
+> the data cannot be compressed (and in some cases if the data  
+> compressed is bigger than the data uncompressed) the data is stored  
+> non-compressed.  That is the most space efficient method to do things.
 >
-> But if the file already contains large amounts of compressed data, I
-> have a problem.  Disabling compression for a range within a file is  
-> not
-> supported, so I can only return an error.  But which one?
+> An alternative would be to allocate blocks and then when the data  
+> is written perform the compression and free any blocks you do not  
+> need any more because the data has shrunk sufficiently.  Depending  
+> on the implementation details this could potentially create  
+> horrible fragmentation as you would allocate a large consecutive  
+> region and then go and drop random blocks from that region thus  
+> making the file fragmented.
 
-I don't know how your compression algorithm works but at least on  
-NTFS that bit is easy: you allocate the blocks and mark them as  
-allocated then the compression engine will write non-compressed data  
-to those blocks.  Basically it works like this "does compression  
-block X have any sparse blocks?". If the answer is "yes" the block is  
-treated as compressed data and if the answer is "no" the block is  
-treated as uncompressed data.  This means that if the data cannot be  
-compressed (and in some cases if the data compressed is bigger than  
-the data uncompressed) the data is stored non-compressed.  That is  
-the most space efficient method to do things.
-
-An alternative would be to allocate blocks and then when the data is  
-written perform the compression and free any blocks you do not need  
-any more because the data has shrunk sufficiently.  Depending on the  
-implementation details this could potentially create horrible  
-fragmentation as you would allocate a large consecutive region and  
-then go and drop random blocks from that region thus making the file  
-fragmented.
+And another thing you could do (best if you support journalling)  
+would be to do the allocation and hang the details off the inode on a  
+"preallocation list" of some kind and then as the data gets written  
+use blocks from the preallocation list as you go along.  This would  
+avoid the fragmentation issue for example.  You could then free the  
+surplus blocks when the whole range of the file being covered by the  
+preallocation list has been written to and/or when the file is closed  
+for the last time (drop_inode/delete_inode).
 
 Best regards,
 
