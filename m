@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751196AbXCEBHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751286AbXCEBJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751196AbXCEBHc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 20:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXCEBHc
+	id S1751286AbXCEBJl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 20:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbXCEBJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 20:07:32 -0500
-Received: from canuck.infradead.org ([209.217.80.40]:58487 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbXCEBHb (ORCPT
+	Sun, 4 Mar 2007 20:09:41 -0500
+Received: from vms042pub.verizon.net ([206.46.252.42]:64282 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbXCEBJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:07:31 -0500
-X-Greylist: delayed 1644 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Mar 2007 20:07:31 EST
-Reply-To: <kmpark@infradead.org>
-From: "Kyungmin Park" <kmpark@infradead.org>
-To: "'Richard Purdie'" <rpurdie@openedhand.com>,
-       "'Nick Piggin'" <nickpiggin@yahoo.com.au>,
-       "'Hugh Dickins'" <hugh@veritas.com>,
-       "'kernel list'" <linux-kernel@vger.kernel.org>,
-       <linux-mtd@lists.infradead.org>, <dwmw2@infradead.org>
-References: <1172850899.11149.128.camel@localhost.localdomain>
-Subject: RE: [PATCH 7/9] mtd: Fix number of free oob spaces in onenand driver
-Date: Mon, 5 Mar 2007 09:40:01 +0900
-Message-ID: <009201c75ebe$d1ce64b0$c7a3580a@swcenter.sec.samsung.co.kr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-reply-to: <1172850899.11149.128.camel@localhost.localdomain>
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-index: Acdc5EAJHzMR4Em1TYarfLbUBQY0pgB2Ukqw
+	Sun, 4 Mar 2007 20:09:40 -0500
+Date: Sun, 04 Mar 2007 20:09:38 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+ scheduler
+In-reply-to: <20070304231312.GA2268@1wt.eu>
+To: linux-kernel@vger.kernel.org
+Cc: Willy Tarreau <w@1wt.eu>, Con Kolivas <kernel@kolivas.org>,
+       Al Boldi <a1426z@gawab.com>, ck list <ck@vds.kolivas.org>
+Message-id: <200703042009.38270.gene.heskett@gmail.com>
+Organization: very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703042335.26785.a1426z@gawab.com>
+ <200703050849.29674.kernel@kolivas.org> <20070304231312.GA2268@1wt.eu>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Richard Purdie,
+On Sunday 04 March 2007, Willy Tarreau wrote:
+>On Mon, Mar 05, 2007 at 08:49:29AM +1100, Con Kolivas wrote:
+>(...)
+>
+>> > That's just what it did, but when you "nice make -j4", things
+>> > (gears) start to stutter.  Is that due to the staircase?
+>>
+>> gears isn't an interactive task. Apart from using it as a background
+>> load to check for starvation because it loads up the cpu fully (which
+>> a gpu intensive but otherwise simple app like this should _not_ do)
+>> graphics card drivers and interrupts and so on, I wouldn't put much
+>> credence on gears as anything else. However I suspect that gears will
+>> still get a fair share of the cpu on RSDL which almost never happens
+>> on any other scheduler.
+>
+>Con,
+>
+>I've now given it a try with HZ=250 on my dual-athlon. It works
+> beautifully. I also quickly checked that playing mp3 doesn't skip
+> during make -j4, and that gears runs fairly smoothly, since those are
+> the references people often use.
+>
+>But with real work, it's excellent too. When I saturate my CPUs by
+> injecting HTTP traffic on haproxy, the load is stable and the command
+> line perfectly responsive, while in the past the load would oscillate
+> and the command line sometimes stopped to respond for a few seconds.
+>
+>I've also launched my scheddos program (you may remember, the one we did
+> a few experiments with). I could not cause any freeze at all. Plain
+> 2.6.20 had already improved a lot in this area, but above 4
+> processes/CPU, occasional short freezes did still occur. This time,
+> even at 100 processes, the system was rather slow (of course!) but just
+> as expected, and nothing more.
+>
+>I also tried the good old "dd if=/dev/zero bs=1|...|dd bs=1
+> of=/dev/null" and it did not cause any trouble.
+>
+>I will boot 2.6 slightly more often to test the code under various
+> conditions, and I will recommend it to a few people I know who tend to
+> switch back to 2.4 after one day full of 2.6 jerkiness.
+>
+>Overall, you have done a great job !
+>
+>I hope that more people will give it a try, first to help find possible
+>remaining bugs, and to pronounce in favour of its inclusion in mainline.
+>
+>Cheers,
+>Willy
+>
++1 for mainline, this is a HUGE improvement in usability.  End of 
+discussion AFAIK.
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> in the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
-NAK, Even though we can use it. it's out of Spec. It's reason I don't add
-it.
 
-In your swap patch, swap device only uses 4 bytes. so it's enough in
-current driver. so we don't need to patch it.
 
-+struct swpdev_oobdata {
-+	u16 magic;
-+	u16 type;
-+} __attribute__((packed));
-+
-+#define SWPDEV_OOBSIZE		sizeof(struct swpdev_oobdata)
-+
-+	struct mtd_oob_ops ops;
-+
-+	ops.len = SWPDEV_OOBSIZE;
-+	ops.ooblen = SWPDEV_OOBSIZE;
-+	ops.oobbuf = buf;
-+	ops.ooboffs = swpdev->fsdata_pos;
-+	ops.datbuf = NULL;
-+	ops.mode = MTD_OOB_PLACE;
-
-I think this patch is only used at YAFFS case. it uses 28 bytes at spare.
-But current spare areas are 20 bytes (2KB page).
-
-Thank you,
-Kyungmin Park
-
-> 
-> ---
->  drivers/mtd/onenand/onenand_base.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> Index: linux/drivers/mtd/onenand/onenand_base.c
-> ===================================================================
-> --- linux.orig/drivers/mtd/onenand/onenand_base.c	
-> 2007-03-02 15:02:31.000000000 +0000
-> +++ linux/drivers/mtd/onenand/onenand_base.c	2007-03-02 
-> 15:37:05.000000000 +0000
-> @@ -33,8 +33,8 @@ static struct nand_ecclayout onenand_oob
->  		56, 57, 58, 59, 60,
->  		},
->  	.oobfree	= {
-> -		{2, 3}, {14, 2}, {18, 3}, {30, 2},
-> -		{34, 3}, {46, 2}, {50, 3}, {62, 2}
-> +		{2, 6}, {14, 4}, {18, 6}, {30, 4},
-> +		{34, 6}, {46, 4}, {50, 6}, {62, 2}
->  	}
->  };
->  
-> @@ -47,7 +47,7 @@ static struct nand_ecclayout onenand_oob
->  		8, 9, 10, 11, 12,
->  		24, 25, 26, 27, 28,
->  		},
-> -	.oobfree	= { {2, 3}, {14, 2}, {18, 3}, {30, 2} }
-> +	.oobfree	= { {2, 6}, {14, 4}, {18, 6}, {30, 2} }
->  };
->  
->  static const unsigned char ffchars[] = {
-> 
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
