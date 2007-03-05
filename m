@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbXCEMYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933404AbXCEMZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbXCEMYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 07:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933383AbXCEMYR
+	id S933404AbXCEMZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 07:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933403AbXCEMZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 07:24:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53549 "EHLO mx2.mail.elte.hu"
+	Mon, 5 Mar 2007 07:25:25 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:55471 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933326AbXCEMYR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 07:24:17 -0500
-Date: Mon, 5 Mar 2007 13:15:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Zachary Amsden <zach@vmware.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [patch] paravirt: let users decide whether they want VMI
-Message-ID: <20070305121540.GA15710@elte.hu>
+	id S933386AbXCEMZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 07:25:24 -0500
+Subject: Re: [4/6] 2.6.21-rc2: known regressions
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Nelless <andrew@nelless.net>, Len Brown <len.brown@intel.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, linux-acpi@vger.kernel.org,
+       Jiri Kosina <jikos@jikos.cz>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Yaroslav Halchenko <kernel@onerussian.com>,
+       Alex Romosan <romosan@sycorax.lbl.gov>,
+       David Miller <davem@davemloft.net>,
+       James Simmons <jsimmons@infradead.org>, benh@kernel.crashing.org,
+       Andreas Schwab <schwab@suse.de>
+In-Reply-To: <20070305015039.GI3441@stusta.de>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	 <20070305015039.GI3441@stusta.de>
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 12:21:14 +0000
+Message-Id: <1173097274.5842.25.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [patch] paravirt: let users decide whether they want VMI
-From: Ingo Molnar <mingo@elte.hu>
+On Mon, 2007-03-05 at 02:50 +0100, Adrian Bunk wrote:
+> Subject    : LCD is dimmed  (ibm-acpi related)
+> References : http://lkml.org/lkml/2007/2/25/206
+> Submitter  : Jiri Kosina <jikos@jikos.cz>
+> Caused-By  : Richard Purdie <rpurdie@rpsys.net>
+>              commit 994efacdf9a087b52f71e620b58dfa526b0cf928
+> Handled-By : Jiri Kosina <jikos@jikos.cz>
+>              Richard Purdie <rpurdie@rpsys.net>
+>              Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> Status     : patches are being discussed
 
-do not use default=y for CONFIG_VMI (we do not do that for any driver or 
-special-hardware feature): the overwhelming majority of Linux users does 
-not need it, and interested users and distributions can enable it 
-as-needed.
+The confirmed fix is in the ACPI test branch for this.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/i386/Kconfig |    1 -
- 1 file changed, 1 deletion(-)
+> Subject    : no backlight on radeon
+> References : http://lkml.org/lkml/2007/2/19/1
+> Submitter  : Yaroslav Halchenko <kernel@onerussian.com>
+>              Alex Romosan <romosan@sycorax.lbl.gov>
+>              David Miller <davem@davemloft.net>
+> Caused-By  : James Simmons <jsimmons@infradead.org>
+>              commit e0e34ef7f02915cfe50e501e9f32c24217177a96
+> Handled-By : Richard Purdie <rpurdie@rpsys.net>
+>              James Simmons <jsimmons@infradead.org>
+>              Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> Status     : problem is being discussed
+> 
+> 
+> Subject    : nvidiafb broken
+> References : http://lkml.org/lkml/2007/2/24/36
+> Submitter  : Andreas Schwab <schwab@suse.de>
+> Caused-By  : Richard Purdie <rpurdie@rpsys.net>
+>              commit 599a52d12629394236d785615808845823875868
+> Handled-By : Richard Purdie <rpurdie@rpsys.net>
+> Patch      : http://lkml.org/lkml/2007/2/26/43
+> Status     : patch available
 
-Index: linux/arch/i386/Kconfig
-===================================================================
---- linux.orig/arch/i386/Kconfig
-+++ linux/arch/i386/Kconfig
-@@ -225,7 +225,6 @@ config PARAVIRT
- config VMI
- 	bool "VMI Paravirt-ops support"
- 	depends on PARAVIRT
--	default y
- 	help
- 	  VMI provides a paravirtualized interface to the VMware ESX server
- 	  (it could be used by other hypervisors in theory too, but is not
+The confirmed fixes for both of these are in the backlight tree. I was
+waiting for any further feedback on the first issue above but will send
+them to Linus now.
+
+Cheers,
+
+Richard
+
