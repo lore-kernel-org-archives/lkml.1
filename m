@@ -1,81 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750835AbXCEAib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750940AbXCEAoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750835AbXCEAib (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 19:38:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbXCEAib
+	id S1750940AbXCEAoG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 19:44:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbXCEAoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 19:38:31 -0500
-Received: from waste.org ([66.93.16.53]:55994 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbXCEAia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 19:38:30 -0500
-Date: Sun, 4 Mar 2007 18:25:50 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
-       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
-Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
-Message-ID: <20070305002550.GI23311@waste.org>
-References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg>
+	Sun, 4 Mar 2007 19:44:05 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35361 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750916AbXCEAoE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 19:44:04 -0500
+Date: Sun, 4 Mar 2007 19:44:00 -0500
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: git@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] Guilt v0.21
+Message-ID: <20070305004400.GC11920@filer.fsl.cs.sunysb.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173051564.6131.13.camel@johannes.berg>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 12:39:24AM +0100, Johannes Berg wrote:
-> [adding linux-wireless to CC]
-> 
-> On Sun, 2007-03-04 at 16:08 -0600, Matt Mackall wrote:
-> > Recent kernels are having troubles with wireless for me. Two seemingly
-> > related problems:
-> 
-> I don't think they are related actually.
-> 
-> > a) NetworkManager seems oblivious to the existence of my IPW2200
-> 
-> This is due to the recent sysfs restructuring I think. IIRC the fix is
-> to upgrade hal to a current git version.
+Guilt v0.21 is available for download (once it mirrors out on kernel.org).
 
-If that's the cause, the fix is to back out whatever was done to break
-userspace. Breaking userspace is not ok. Upgrading from 2.6.x to
-2.6.x+1 should not entail replacing substantial parts of userspace,
-especially with NOT-EVEN-FRAKKING-RELEASED-YET CODE. 
+Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
+queues-like functionality and interface to git.
 
-I will try a new HAL when it shows up in Debian/unstable and not a
-moment sooner.
+Tarballs:
+http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
 
-> > b) Manual iwconfig waits for 60s and then reports:
-> 
-> That one's strange.
-> 
-> > A second attempt to enable WEP via iwconfig succeeds and network
-> > connectivity is normal. However, NetworkManager still ignores the
-> > device at this point.
-> 
-> I'd think it's a ipw bug but I have no idea if that was even touched
-> during this time.
-> 
-> > Bisect with Mercurial points to this patch:
-> > 
-> > $ hg bisect bad
-> > The first bad revision is:
-> > changeset:   46985:f701b96bb2f7
-> > user:        Greg Kroah-Hartman <gregkh@suse.de>
-> > date:        Wed Feb 07 10:37:11 2007 -0800
-> > summary:     Network: convert network devices to use struct device
-> > instead of class_device
-> > 
-> > which corresponds to 43cb76d91ee85f579a69d42bc8efc08bac560278 in git.
-> 
-> Yup, sysfs breakage/hal stuff. Can you try with a recent hal? And maybe
-> try to bisect the iwconfig stop thing if you've got enough time...
+Git repo:
+git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
 
-Will double-check the iwconfig tests. It's been masked by
-NetworkManager for a while.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+There have been a lot of changes since v0.20. Some of the most important
+ones, include...
+
+1) Allow command abbreviation: 'guilt ser' will have the same effect as
+   'guilt series'
+
+2) "guilt push" behavior now matches "quilt push" when patch doesn't apply
+
+3) guilt and guilt-init got a manpage (more will follow in future releases)
+
+4) guilt-import-commit now saves the git Author field as the 'From:' line in
+   the patch
+
+5) guilt-refresh checks if there is a patch applied before trying to refresh
+   changes
+
+6) Several sanity checks
+
+I know I either say it, or at least think it each time I make a release, but
+really, this is the best release of Guilt yet. :)
+
+As always, patches, and other feedback is welcome.
+
+Josef "Jeff" Sipek.
+
+------------
+Changes since v0.20:
+
+Brandon Philips (1):
+      Initial guilt documentation
+
+Josef 'Jeff' Sipek (14):
+      makefile: Include import-commit in list of scripts
+      Fixed do_make_header to include From:
+      push: Fixed unkown patchname pushing all patches
+      add/rm: Use print_usage instead of using $USAGE directly
+      guilt: Document push_patch's new argument
+      refresh: Make sure there is a patch applied before doing a refresh
+      Reorder makefile rules & use .PHONY
+      docs: Commands should be on a separate line
+      Ignore *.html, *.1 and *.7 in Documentation/
+      refresh: Use ~ as the backup file suffix
+      Install manpages to $(PREFIX)/man
+      Removed print_usage as it shouldn't be used
+      help: A simple help command
+      Guilt v0.21
+
+Theodore Ts'o (1):
+      Make "guilt push" match "quilt push" when the patch doesn't apply
+
+Yasushi SHOJI (7):
+      Allow command abbreviation
+      Guilt: Format command list in usage
+      Guilt: Do not allow patch name duplication
+      Guilt: Replace print_usage and exit 1 with usage and die in git-sh-setup
+      Guilt: add -v to guilt-series
+      Guilt: series -v: Fix zero applied patch case
+      Guilt: add a new command "files"
+
