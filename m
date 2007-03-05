@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbXCEMke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbXCEMlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932173AbXCEMke (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 07:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbXCEMke
+	id S932332AbXCEMlt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 07:41:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXCEMlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 07:40:34 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:46689 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbXCEMkd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 07:40:33 -0500
-Date: Mon, 5 Mar 2007 13:41:53 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Greg KH <gregkh@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       bluez-devel@lists.sourceforge.net, marcel@holtmann.org,
-       Andrew Morton <akpm@osdl.org>,
-       "David S. Miller" <davem@sunset.davemloft.net>
-Subject: Re: [PATCH] Fix 2.6.21 rfcomm lockups (2.6.21 regression)
-Message-ID: <20070305134153.04f97fc0@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <45EB0F69.5070002@rtr.ca>
-References: <45EADD78.1030300@rtr.ca>
-	<45EAE1D6.10900@rtr.ca>
-	<45EB0814.5030306@rtr.ca>
-	<45EB0F69.5070002@rtr.ca>
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 07:41:49 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:55410 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752769AbXCEMls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 07:41:48 -0500
+Date: Mon, 5 Mar 2007 21:39:10 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Bernd Schmidt <bernds_cb1@t-online.de>
+Cc: "Wu, Bryan" <bryan.wu@analog.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
+Message-ID: <20070305123910.GA13684@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Bernd Schmidt <bernds_cb1@t-online.de>,
+	"Wu, Bryan" <bryan.wu@analog.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <1172722480.5264.75.camel@roc-desktop> <20070305092346.GB11664@linux-sh.org> <45EC0DC7.8080504@t-online.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EC0DC7.8080504@t-online.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 04 Mar 2007 13:26:49 -0500,
-Mark Lord <lkml@rtr.ca> wrote:
-
-> The simplest fix for this bug is to prevent sysfs_move_dir()
-> from self-deadlocking when (old_parent == new_parent).
+On Mon, Mar 05, 2007 at 01:32:07PM +0100, Bernd Schmidt wrote:
+> Paul Mundt wrote:
+> >>+comment "Memory Optimizations"
+> >>+
+> >>+config I_ENTRY_L1
+> >>+	bool "Locate interrupt entry code in L1 Memory"
+> >>+	default y
+> >>+	help
+> >>+	  If enabled interrupt entry code (STORE/RESTORE CONTEXT) is linked
+> >>+	  into L1 instruction memory.(less latency)
+> >>+
+> >Wow, this is really crying out for a special linker section with slightly
+> >more intelligent relocation logic. You should flag the performance
+> >critical parts to be located in L1 memory directly with a section
+> >attribute, rather than making everything selectable. If you overflow you
+> >can simply spill in to main memory.
 > 
-> This patch prevents total system lockup when using rfcomm devices.
+> This is done intentionally, because it's also possible for user code to 
+> be loaded into L1 memory.  We want to give users the option to avoid 
+> filling it all up with kernel code.
 > 
-> Signed-off-by:  Mark Lord <mlord@pobox.com>
-> ---
-> --- 2.6.21/fs/sysfs/dir.c	2007-03-04 13:19:00.000000000 -0500
-> +++ linux/fs/sysfs/dir.c	2007-03-04 13:20:45.000000000 -0500
-> @@ -431,6 +431,8 @@
->  	new_parent_dentry = new_parent ?
->  		new_parent->dentry : sysfs_mount->mnt_sb->s_root;
-> 
-> +	if (old_parent_dentry->d_inode == new_parent_dentry->d_inode)
-> +		return 0;	/* nothing to move */
->  again:
->  	mutex_lock(&old_parent_dentry->d_inode->i_mutex);
->  	if (!mutex_trylock(&new_parent_dentry->d_inode->i_mutex)) {
-
-Hm, never thought that someone might call the moving functions with
-old_parent == new_parent, sorry about that. It should be safe to
-return success here, we add only a bit of overhead with some driver
-model juggling and emitting a not needed uevent.
-
-Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+So then why not make the userspace component of it optional and allow a size
+cap for kernel usage that's configurable if it's enabled? This degree of
+abstraction is almost worse than no abstraction.
