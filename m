@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbXCEEVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXCEEXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbXCEEVv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 23:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbXCEEVu
+	id S1752648AbXCEEXg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 23:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXCEEXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 23:21:50 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:22718 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbXCEEVu (ORCPT
+	Sun, 4 Mar 2007 23:23:36 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56267 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752639AbXCEEXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 23:21:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ac5T2fFbiljyzCtdDWVoMgTaxUIGPTURWMtiFK1nHiwmUshKmkGB5CLGttfOC+ywvEtbGjodTxf3n9vkkNhSRnRm8DpNOxtmpl1CN/sS82ZB0ggf3/VbpuAXYA2T1ClUOJUe/d8Znejy9e4l5Yt+Ltlz7i4VPMQF9vAFaGLs0Jk=
-Message-ID: <a44ae5cd0703042021o434e42b1vea6fd90376824917@mail.gmail.com>
-Date: Sun, 4 Mar 2007 20:21:42 -0800
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, "Michael Buesch" <mbuesch@freenet.de>
-Subject: 2.6.21-rc2-mm1 -- WARNING: "pcmcia_access_configuration_register" [drivers/ssb/ssb.ko] undefined!
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Mar 2007 23:23:34 -0500
+Date: Mon, 5 Mar 2007 04:23:22 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-ID: <20070305042322.GA22584@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Anton Altaparmakov <aia21@cam.ac.uk>, Arnd Bergmann <arnd@arndb.de>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+	alex@clusterfs.com, suzuki@in.ibm.com,
+	Ulrich Drepper <drepper@redhat.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: "pcmcia_access_configuration_register" [drivers/ssb/ssb.ko] undefined!
-WARNING: "pccard_parse_tuple"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pcmcia_register_driver"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pccard_get_tuple_data"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pcmcia_request_configuration"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pcmcia_request_window"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pccard_get_first_tuple"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pcmcia_release_window"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pcmcia_map_mem_page"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pcmcia_unregister_driver"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-WARNING: "pcmcia_disable_device"
-[drivers/net/wireless/mac80211/bcm43xx/bcm43xx-mac80211.ko] undefined!
-make[1]: *** [__modpost] Error 1
+On Sun, Mar 04, 2007 at 08:11:17PM +0000, Anton Altaparmakov wrote:
+> glibc cannot ever be smart enough because a file system driver will  
+> always know better and be able to do things in a much more optimized  
+> way.
 
-#
-# PCCARD (PCMCIA/CardBus) support
-#
-# CONFIG_PCCARD is not set
+Please read the thread again.  That is not what anyone proposed.
+The issues we're discussing is whether fallback for a filesystem that
+does not support preallocation natively should be done in kernelspace
+or in userspace.
 
-CONFIG_BCM43XX_MAC80211=m
-CONFIG_BCM43XX_MAC80211_PCI=y
-CONFIG_BCM43XX_MAC80211_PCMCIA=y
-CONFIG_BCM43XX_MAC80211_DEBUG=y
-CONFIG_BCM43XX_MAC80211_DMA=y
-CONFIG_BCM43XX_MAC80211_PIO=y
-CONFIG_BCM43XX_MAC80211_DMA_AND_PIO_MODE=y
-# CONFIG_BCM43XX_MAC80211_DMA_MODE is not set
-# CONFIG_BCM43XX_MAC80211_PIO_MODE is not set
-# CONFIG_RT2X00 is not set
-# CONFIG_ADM8211 is not set
-# CONFIG_P54_COMMON is not set
-# CONFIG_ZD1211RW_MAC80211 is not set
-# CONFIG_RTL818X is not set
-# CONFIG_RTL8187 is not set
-CONFIG_NET_WIRELESS=y
-
-CONFIG_MAC80211=m
-CONFIG_MAC80211_LEDS=y
-CONFIG_MAC80211_DEBUG=y
-CONFIG_MAC80211_VERBOSE_DEBUG=y
-CONFIG_MAC80211_LOWTX_FRAME_DUMP=y
-CONFIG_TKIP_DEBUG=y
-CONFIG_MAC80211_DEBUG_COUNTERS=y
-CONFIG_HOSTAPD_WPA_TESTING=y
-CONFIG_MAC80211_IBSS_DEBUG=y
-CONFIG_MAC80211_VERBOSE_PS_DEBUG=y
-# CONFIG_IEEE80211 is not set
-CONFIG_WIRELESS_EXT=y
-CONFIG_CFG80211=y
-CONFIG_CFG80211_WEXT_COMPAT=y
-CONFIG_NL80211=y
