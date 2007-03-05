@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbXCEDRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbXCEDVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752613AbXCEDRz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 22:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXCEDRz
+	id S1752617AbXCEDVw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 22:21:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbXCEDVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 22:17:55 -0500
-Received: from web52511.mail.yahoo.com ([206.190.48.194]:36931 "HELO
-	web52511.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752613AbXCEDRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 22:17:54 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=u7SaFLiKXyBtJkmMfWVy0fqNHrFROmWXf/lqFmOrbi5JS45A5vOEKBqpmMR2Rh07CnMfsF1BRAjpe4RWbJT42zv2fps2vIAqrn2X51CXJOSy/qzrKnPmRHpVNxQvm4hfKKl1en+CzvTONAHlnL+DvLwaTWZrRy5dl7JgRxhYhyQ=;
-X-YMail-OSG: YPKtumsVM1n0lSDc7IPqiTuM3uI.8iTglZukswTrZtFnmAmn8mfsWl.qTlunxQPkIcDzzKsmPqniazAffZenHj9UZugK.8K8RQwNY3b.s6ZQ9eXjyuu6a_vZ0Z_t1Uxg_gS9gxgoIXSGo0fZRQTJlmSeug--
-Date: Sun, 4 Mar 2007 19:17:53 -0800 (PST)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Raid 10 Problems?
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.61.0703050312050.23714@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <697121.9642.qm@web52511.mail.yahoo.com>
+	Sun, 4 Mar 2007 22:21:52 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44337 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752617AbXCEDVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 22:21:51 -0500
+Date: Mon, 5 Mar 2007 04:21:16 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       clameter@engr.sgi.com, mingo@elte.hu, arjan@infradead.org,
+       mbligh@mbligh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070305032116.GA29678@wotan.suse.de>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E8594B.6020904@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E8594B.6020904@austin.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-
-> 
-> On Mar 4 2007 15:10, Marc Perkel wrote:
-> >> On Mar 4 2007 08:25, Marc Perkel wrote:
-> >> >I'm running the latest OpenVZ kernel 2.6.18. I'm
-> >> not
-> >> >sure if this is a factor or not as the problem
-> >> occurs
-> >> >without starting any VEs.
-> >> >
-> >> >I've never used raid 10 before (stripes on top
-> of 2
-> >> >mirrors) so I don't have anything to compare
-> this
-> >> >with. I'm just wondering if I'm doing something
-> >> wrong.
-> >> 
-> >> Are you using raid1+0 (3 md devices) or raid10 (1
-> >> raid device)?
-> >> Depending on which, you might want to try the
-> other.
+On Fri, Mar 02, 2007 at 11:05:15AM -0600, Joel Schopp wrote:
+> Linus Torvalds wrote:
 > >
+> >On Thu, 1 Mar 2007, Andrew Morton wrote:
+> >>So some urgent questions are: how are we going to do mem hotunplug and
+> >>per-container RSS?
+> 
+> The people who were trying to do memory hot-unplug basically all stopped 
+> waiting for these patches, or something similar, to solve the fragmentation 
+> problem.  Our last working set of patches built on top of an earlier 
+> version of Mel's list based solution.
+> 
 > >
-> >I'm using 3 devices. Can you use just one? If so -
-> >how?
-> >How do I create a raid 10 using mdadm?
+> >Also: how are we going to do this in virtualized environments? Usually the 
+> >people who care abotu memory hotunplug are exactly the same people who 
+> >also care (or claim to care, or _will_ care) about virtualization.
 > 
-> mdadm -C /dev/md0 -N nicearray -b internal -e 1.0 -l
-> 10 -n 4 /dev/sd[abcd]1
-> 
-> for example. (See the manpage for details.)
-> 
+> Yes, we are.  And we are very much in favor of these patches.  At last 
+> year's OLS developers from IBM, HP, Xen coauthored a paper titled "Resizing 
+> Memory with Balloons and Hotplug".  
+> http://www.linuxsymposium.org/2006/linuxsymposium_procv2.pdf  Our 
+> conclusion was that ballooning is simply not good enough and we need memory 
+> hot-unplug.  Here is a quote from the article I find relevant to today's 
+> discussion:
 
-Thanks - because of your suggestion I had found the
-instructions. But you have some interesting options
-set. 
+But if you don't require a lot of higher order allocations anyway, then
+guest fragmentation caused by ballooning doesn't seem like much problem.
 
--N nicearray -b internal -e 1.0
+If you need higher order allocations, then ballooning is bad because of
+fragmentation, so you need memory unplug, so you need higher order
+allocations. Goto 1.
 
-Are these important? I can restart the process. I
-think that I found my original problem. I forgot to
-use:
+Balooning probably does skew memory management stats and watermarks, but
+that's just because it is implemented as a module. A couple of hooks
+should be enough to allow things to be adjusted?
 
-pci=nommconf iommu=soft
-
-
-
-
- 
-____________________________________________________________________________________
-We won't tell. Get more on shows you hate to love 
-(and love to hate): Yahoo! TV's Guilty Pleasures list.
-http://tv.yahoo.com/collections/265 
