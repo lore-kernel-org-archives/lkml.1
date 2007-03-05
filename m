@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933528AbXCEPk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933525AbXCEPpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933528AbXCEPk7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933525AbXCEPk7
+	id S933525AbXCEPpH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:45:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933533AbXCEPpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:40:59 -0500
-Received: from mail.tmr.com ([64.65.253.246]:58279 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933528AbXCEPk6 convert rfc822-to-8bit (ORCPT
+	Mon, 5 Mar 2007 10:45:06 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:3246 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933525AbXCEPpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:40:58 -0500
-Message-ID: <45EC3A76.3040004@tmr.com>
-Date: Mon, 05 Mar 2007 10:42:46 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Mon, 5 Mar 2007 10:45:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=IEWV04bnoS1kCahOAN7Y3IiZVvYMZzatulgz3wnYBJpbmB+fZqoK4qKtjXJvxLAGwifApNH3IcAaLN6OaxnGwJ0hU0gYrKBPws0JwKrhc/MTyEZacqBZ/z6nJ0RI4tJzC3hcFfh2tphCO9s+LKQCyk9iX1vpxSBmjr8+12LPKdQ=
+Message-ID: <45EC3AFC.1050101@gmail.com>
+Date: Tue, 06 Mar 2007 00:45:00 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, jamagallon@ono.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm1
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>	<20070305011133.570a9ba8@werewolf-wl>	<20070304171737.42c14570.akpm@linux-foundation.org> <17899.32654.441273.208962@notabene.brown>
-In-Reply-To: <17899.32654.441273.208962@notabene.brown>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+To: rol@as2917.net
+CC: "'Jeff Garzik'" <jeff@garzik.org>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'Eric D. Mudama'" <edmudama@gmail.com>
+Subject: Re: [git patches] libata fixes
+References: <00a001c75f0c$47f19750$4b00a8c0@donald>
+In-Reply-To: <00a001c75f0c$47f19750$4b00a8c0@donald>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Sunday March 4, akpm@linux-foundation.org wrote:
->> On Mon, 5 Mar 2007 01:11:33 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
->>
->>> On Fri, 2 Mar 2007 03:00:26 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
->>>
->>>> Temporarily at
->>>>
->>>>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
->>>>
->>>> Will appear later at
->>>>
->>>>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
->>>>
->>> nfs blocks shutdown and reboot.
->>> If I try to do 'service nfs stop', the box hangs, no login, no SysRQ-T or P,
->>> S-U-B works at least.
->>>
->> The bug was added by
->> knfsd-use-recv_msg-to-get-peer-address-for-nfsd-instead-of-code-copying.patch.
+Paul Rolland wrote:
+> Hello,
 > 
-> Bother.......
-> Looks like a need a MSG_DONTWAIT in there, don't I.
+>> Your drive has some issues with NCQ and is scheduled to be blacklisted
+>> such that it isn't enabled.  libata used to ignore the 
+>> condition but now
+>> considers it NCQ protocol violation and fails all pending commands.
 > 
-> I'll resend.
+> OK, do you need an hdparm report to fully identify the disk ?
 
-Crap, that's probably in 2.6.20-git14 with all the NFS stuff I thought I 
-had checked before trusting. At least there is a bug found, no more 
-"works for me" reports. I'll revert to an FC6 kernel before load gets 
-high this morning.
+Nope, we already know.
+
+>> libata EH should turn NCQ off automatically after a few of the above
+>> errors.  I'd love to see how that actually works in the field (full
+>> dmesg please).  If it doesn't, it needs fixing.
+> 
+> I'll get you one tonite, I don't have access to the machine right now.
+
+Great. Thanks.
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+tejun
