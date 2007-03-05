@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbXCECar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbXCECbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbXCECar (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 21:30:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXCECar
+	id S1752595AbXCECbw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 21:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbXCECbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 21:30:47 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56520 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596AbXCECap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 21:30:45 -0500
-Date: Sun, 4 Mar 2007 18:26:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org,
-       maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
-       Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Albert Hopkins <kernel@marduk.letterboxes.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-Subject: Re: [1/6] 2.6.21-rc2: known regressions
-Message-Id: <20070304182619.6110bd74.akpm@linux-foundation.org>
-In-Reply-To: <20070305015031.GF3441@stusta.de>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	<20070305015031.GF3441@stusta.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Mar 2007 21:31:52 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:29514 "EHLO
+	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752595AbXCECbv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 21:31:51 -0500
+Date: Sun, 04 Mar 2007 18:31:40 -0800 (PST)
+From: Zwane Mwaikambo <zwane@infradead.org>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+ scheduler
+In-reply-to: <200703040911.16845.gene.heskett@gmail.com>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       ck list <ck@vds.kolivas.org>
+Message-id: <Pine.LNX.4.64.0703041831010.1190@montezuma.windriver.com>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <200703041800.53360.kernel@kolivas.org>
+ <200703040825.42047.gene.heskett@gmail.com>
+ <200703050049.50149.kernel@kolivas.org>
+ <200703040911.16845.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Mar 2007 02:50:31 +0100 Adrian Bunk <bunk@stusta.de> wrote:
+On Sun, 4 Mar 2007, Gene Heskett wrote:
 
-> This email lists some known regressions in 2.6.21-rc2 compared to 2.6.20
-> that are not yet fixed in Linus' tree.
+> >There will be times when the mainline scheduler feels more interactive
+> > than this scheduler, and that is because it has significant unfairness
+> > granted towards interactive tasks. This degree of unfairness in an
+> > effort to maintain interactivity has been criticised and causes
+> > problems in certain environments with both loss of fairness, relative
+> > starvation and is not entirely predictable.
+> 
+> Well, in 20 minutes of playing, I am so far VERY impressed, the kmail 
+> composer is typing to the screen in unison to my keystrokes, where with 
+> the older version it often went away for 10 or more seconds at a time, 
+> then displayed the last sentence I had typed in one (or 2 sometimes) 
+> swell foop.  Now I can back up and correct a typo in real time whereas 
+> before, it was often faster if the typo was half a line back, and the key 
+> repeat so darned slow it was often over a second per character cell 
+> moved, to go grab the mouse, position the cursor on the typo, click, wait 
+> for the indicator to move, and then fix it.  Typing is now pleasurable 
+> again.  Key repeats seem to remain at the set in the bios key repeat 
+> speed.  Amazing.  I do believe you have given me back my machine.
 
-
-We seem to have broken an unusually large amount of stuff this time.
-
-partial post-mortem:
-
-- The ACPICA merge landed in -mm super-late: basically it was in mainline
-  a week afterwards and saw only a single -mm release.
-
-  Part of the reason for this short period in -mm was that ACPICA had its
-  paws all over x86_64 code and conflicted badly with significant changes
-  in the x86_64 tree.
-
-  That happens sometimes.  But when it does, the mess lands in my lap
-  rather than in the laps of the perpetrators.
-
-  Lesson: keep the code well-factored so that different subsystems don't
-  soil each others' kennels.
-
-- The hrtimers/dynticks stuff is simply hard: timekeeping, low-level x86,
-  even APICs.  These are areas in which things break a lot, so churning it
-  was inevitably going to cause problems.
-
-  Lesson: none, I think.  Low-level x86 support is just hard, and
-  changing it breaks things.
-
-
-So that accounts for _some_ of the damage, but I wonder if there's more to
-it than that.
+What are the specs on your hardware?
 
