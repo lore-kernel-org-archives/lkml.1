@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933048AbXCEKda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbXCEKfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933048AbXCEKda (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 05:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbXCEKda
+	id S933054AbXCEKfm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 05:35:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbXCEKfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 05:33:30 -0500
-Received: from nz-out-0506.google.com ([64.233.162.233]:10113 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933048AbXCEKd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 05:33:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ElR2zyD6CVpO2RYg+oZca1lf7iY787/qsv1Po4FA0l69urySgaNjqS314Uk9RSkWAKLbA2VEfdvH689So1nasMc5kEmL7EezFRLDkYO3MRDt+mGgNQQC/HZZ+Zmpf040fUYvPG2fAoKVoYkrVem+8X2VEwVoZ325dVOmA6nIGog=
-Subject: Re: [4/6] 2.6.21-rc2: known regressions
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 5 Mar 2007 05:35:42 -0500
+Received: from il.qumranet.com ([82.166.9.18]:33979 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933054AbXCEKfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 05:35:41 -0500
+Message-ID: <45EBF1E3.4030003@qumranet.com>
+Date: Mon, 05 Mar 2007 12:33:07 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Nelless <andrew@nelless.net>, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Jiri Kosina <jikos@jikos.cz>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Yaroslav Halchenko <kernel@onerussian.com>,
-       Alex Romosan <romosan@sycorax.lbl.gov>,
-       David Miller <davem@davemloft.net>,
-       James Simmons <jsimmons@infradead.org>, benh@kernel.crashing.org,
-       Andreas Schwab <schwab@suse.de>
-In-Reply-To: <20070305015039.GI3441@stusta.de>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015039.GI3441@stusta.de>
-Content-Type: text/plain
-Date: Mon, 05 Mar 2007 18:35:19 +0800
-Message-Id: <1173090919.6782.13.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [patch] KVM: T60 resume fix
+References: <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu> <45EBD9BC.4030801@qumranet.com> <20070305084449.GA1706@elte.hu> <20070305085718.GA2513@elte.hu> <45EBE288.8010101@qumranet.com> <20070305100537.GA9175@elte.hu>
+In-Reply-To: <20070305100537.GA9175@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 02:50 +0100, Adrian Bunk wrote:
-> This email lists some known regressions in 2.6.21-rc2 compared to 2.6.20
-> that are not yet fixed in Linus' tree.
-> 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you caused a breakage or I'm considering you in any other way
-> possibly involved with one or more of these issues.
-> 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> 
-> 
-> Subject    : Asus A8N-VM motherboard:
->              framebuffer/console boot failure boot failure (ACPI related)
-> References : http://lkml.org/lkml/2007/2/23/132
-> Submitter  : Andrew Nelless <andrew@nelless.net>
-> Caused-By  : Len Brown <len.brown@intel.com>
->              commit 7f8f97c3cc75d5783d0b45cf323dedf17684be19
-> Handled-By : Antonino A. Daplas <adaplas@gmail.com>
-> Status     : problem is being debugged
-> 
+Ingo Molnar wrote:
+> * Avi Kivity <avi@qumranet.com> wrote:
+>
+>   
+>>> suspend/resume works fine now and there are no warning messages 
+>>> whatsoever (with suspend simulation). Thanks Avi!
+>>>       
+>> Where do I find this suspend simulation?  Sounds like a great suspend 
+>> debugging tool.
+>>     
+>
+> it's just the simple hack below.
+>
+>
+>   
 
-This is not a framebuffer nor console problem.
+Thanks, I'll put it to good use.  Are you planning to upstream it?  Not 
+for 2.6.21, presumably ;)
 
-I think Andrew Nelless confirmed that the cause is from the above
-commit. How to fix it, I don't know.  Perhaps the
-acpi_skip_timer_override boot option has to be used.
 
-Tony
+
+-- 
+error compiling committee.c: too many arguments to function
 
