@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXCEIqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXCEIrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752072AbXCEIqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 03:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXCEIqU
+	id S1752083AbXCEIrR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 03:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXCEIrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 03:46:20 -0500
-Received: from dev.mellanox.co.il ([194.90.237.44]:35858 "EHLO
-	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbXCEIqT (ORCPT
+	Mon, 5 Mar 2007 03:47:16 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:62010 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbXCEIrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 03:46:19 -0500
-Date: Mon, 5 Mar 2007 10:42:57 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Message-ID: <20070305084257.GA4464@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
+	Mon, 5 Mar 2007 03:47:15 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Aubrey Li" <aubreylee@gmail.com>
+Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
+Date: Mon, 5 Mar 2007 09:47:09 +0100
+User-Agent: KMail/1.9.6
+Cc: bryan.wu@analog.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <1172722480.5264.75.camel@roc-desktop> <200703032330.50116.arnd@arndb.de> <6d6a94c50703042254r6b0a328cu614f8c26ad0b9656@mail.gmail.com>
+In-Reply-To: <6d6a94c50703042254r6b0a328cu614f8c26ad0b9656@mail.gmail.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070302100704.GB2293@elf.ucw.cz>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703050947.10379.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX18RfrAkxmGD5N7aqSRPdwGP/W/I5CcC+YNoZr5
+ DSuJxqONaZ2J1yafV5vgHoJaUXKEqjq0E+rmcuvNqXy1AwJItH
+ xQYwUEZNIhvAHu8W4lHZQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Pavel Machek <pavel@ucw.cz>:
-> Subject: Re: 2.6.21-rc1: known regressions (part 2)
-> 
-> Hi!
-> 
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, [...]
-> > 
-> > update: f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me too, and 
-> > 01363220f5d23ef68276db8974e46a502e43d01d is broken. I too will attempt 
-> > to bisect this.
-> 
-> Strange; on my x60, suspend to ram works okay.
-> 
-> (Resume is very slow, because disks are not spinned up properly; and
-> there's something wrong with timers; console beeps take way too long).
-> 
-> dmesg attached.
-> 
-> That's with
-> 
-> commit 7b965e0884cee430ffe5dc81cdb117b9316b0549
-> tree 754dce6432258e0a8c3a758e13a34eb3a1d22ee1
-> parent 5a39e8c6d655b4fe8305ef8cc2d9bbe782bfee5f
-> author Trond Myklebust <Trond.Myklebust@netapp.com> Wed, 28 Feb 2007
-> 20:13:55 -0800
-> committer Linus Torvalds <torvalds@woody.linux-foundation.org> Thu, 01
-> Mar 2007 14:53:39 -0800
-> 
->     [PATCH] VM: invalidate_inode_pages2_range() should not exit early
-> 
->     Fix invalidate_inode_pages2_range() so that it does not
-> immediately exit
->     just because a single page in the specified range could not be
-> removed.
-> 
->     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+On Monday 05 March 2007, Aubrey Li wrote:
+> On 3/4/07, Arnd Bergmann <arnd@arndb.de> wrote:
 
-Pavel, I tried with your .config, and indeed the system came back to life after
-2-3 minutes after I press Fn/F4, indeed the issue seems to be with the disk.
-It could be that the same takes place with my original .config - maybe
-I just wasn't patient enough. I'll need to re-test that.
+> > In general, please put EXPORT_SYMBOL lines below the definition
+> > of the symbol itself. This list of exports should only be used
+> > for symbols that come from assembly files.
+> 
+> What is the right way to export symbol coming from c files?
+ 
+As I said, below the symbol definition, like
 
-However, I noticed that, after resume, when the system is presumably functional,
-if I try to suspend to ram again, this second suspend hangs, displaying
-the following on screen:
+int global_var;
+EXPORT_SYMBOL(global_var);
 
-[   17.170000] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low) -> IRQ 20
-[   17.170000] PCI: Setting latency timer of device 0000:02:00.0 to 64
-[   17.250000] e1000: 0000:02:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x1) 00:16:41:5
-4:6c:47
-[   17.330000] e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+int global_function(void)
+{
+	return 3;
+}
+EXPORT_SYMBOL(global_function);
 
-the crescent LED starts blinking and does not seem to stop for at lest 10 min,
-I've run out of patience after that. It could be that it's just very slow again.
+> > This detection seems to me like a strange thing to do in setup_arch().
+> > It should be possible to do this much later, at a point where the system
+> > is much less fragile and e.g. printk works. It could even be moved into
+> > some place in the mtd code itself, since other architectures might want
+> > to do the same thing.
+> 
+> After download the rootfs image from host to the target ram, we need
+> to move the image to the right place, so we need to know the size of
+> the image at this time.
 
-Pavel, did you try suspend to RAM after a successfull resume from RAM?
+Well, it doesn't have to be in the modular part of the kernel, but some
+place later than setup_arch() would be a step in the right direction.
+If you need it before the file systems, an arch_initcall() might be
+the right place.
 
-Under 2.6.20, the system suspends/resumes to memory within about 20 sec
-any number of times.
+> > I'm curious: In your dual-core bf561, don't you actually need to implement
+> > something that maintains atomicity across cores rather than just across
+> > processes?
+> 
+> Yes, bf561 is a dual-core processor, but we are using only one core of
+> bf561 now.
+> IMHO, BF561 architecture was not designed for SMP or NUMA.
 
--- 
-MST
+Interesting, so what is the intended use of the other core? Does the
+hardware have any way of supporting concurrency between the cores,
+other than sending interrupts between them?
+
+> > How does this fit in with the generic SPI code? Does it duplicate stuff
+> > from there, or do you use it?
+> 
+> We use our own. We have dma which can be used for SPI operations.
+
+I just looked again at your code. My question was more directed at whether
+you use your own SPI abstraction layer instead of drivers/spi, which
+you fortunately don't. The piece I was missing however is the spi_bfin5xx.c
+driver, which was not part of this patch, though you seem to rely on it.
+Is that already part of the -mm kernel?
+
+	Arnd <><
