@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbXCEXtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbXCEXub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbXCEXtN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 18:49:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbXCEXtN
+	id S932134AbXCEXub (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 18:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932330AbXCEXub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 18:49:13 -0500
-Received: from ns1.suse.de ([195.135.220.2]:39770 "EHLO mx1.suse.de"
+	Mon, 5 Mar 2007 18:50:31 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:41730 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752622AbXCEXtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 18:49:11 -0500
-From: Neil Brown <neilb@suse.de>
-To: Olaf Kirch <olaf.kirch@oracle.com>
-Date: Tue, 6 Mar 2007 10:47:53 +1100
+	id S932134AbXCEXua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 18:50:30 -0500
+Date: Mon, 5 Mar 2007 15:45:49 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
+       Soeren Sonnenburg <kernel@nn7.de>, Len Brown <lenb@kernel.org>
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+In-Reply-To: <1173138193.24738.236.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> 
+ <20070305015040.GJ3441@stusta.de> <1173138193.24738.236.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17900.44073.791834.143726@notabene.brown>
-Cc: nfs@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [NFS] [PATCH 001 of 3] knfsd: Use recv_msg to get peer address for NFSD instead of code-copying
-In-Reply-To: message from Olaf Kirch on Monday March 5
-References: <20070302151748.5226.patches@notabene>
-	<1070302042825.5760@suse.de>
-	<200703051953.24900.olaf.kirch@oracle.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday March 5, olaf.kirch@oracle.com wrote:
-> On Friday 02 March 2007 05:28, NeilBrown wrote:
-> > The sunrpc server code needs to know the source and destination address
-> > for UDP packets so it can reply properly.
-> > It currently copies code out of the network stack to pick the pieces out
-> > of the skb.
-> > This is ugly and causes compile problems with the IPv6 stuff.
+
+
+On Tue, 6 Mar 2007, Thomas Gleixner wrote:
+> > 
+> > Subject    : macbook pro suspend to ram broken  (clockevents)
+> > References : http://lkml.org/lkml/2007/3/4/110
+> > Submitter  : Soeren Sonnenburg <kernel@nn7.de>
+> > Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+> >              commit e9e2cdb412412326c4827fc78ba27f410d837e6e
+> > Status     : unknown
 > 
-> ... and this IPv6 code could never have worked anyway:
+> I can reproduce this on my dual core VAIO. There are some issues:
 
-:-(
-It's hard to test the IPv6 server until we have an IPv6 client I
-guess, so thanks for the code review, even though we aren't going to
-end up using that code...
+Yeah, I think I can too, on my dual-core Mac Mini. 
 
-> 
-> But I find using recvmsg just for getting at the addresses
-> a little awkward too.
+I'm not done with my bisection, but e9e2cdb4 is among the 28 commits left, 
+so I'm pretty sure I'm hitting the same bug. I'll do a few more bootups to 
+be 100% sure.
 
-Do you?  It's surely a lot better than code duplication, and it is
-exactly how you would get the information from user-space.
-
->                       And I think to be on the safe side, you
-> should check that you're really looking at a PKTINFO cmsg
-> rather than something else.
-
-Maybe.....
-But is there really a chance that it might not be PKTINFO?
-And what do you do if it isn't?
-Log an error and drop the packet I guess.
-
-I'll see what I can do.
-
-NeilBrown
+		Linus
