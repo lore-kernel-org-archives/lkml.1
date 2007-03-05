@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbXCER2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbXCER3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752813AbXCER2U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 12:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbXCER2U
+	id S1752819AbXCER3o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 12:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbXCER3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 12:28:20 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:40497 "EHLO e6.ny.us.ibm.com"
+	Mon, 5 Mar 2007 12:29:44 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40858 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752813AbXCER2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 12:28:19 -0500
-Date: Mon, 5 Mar 2007 23:04:01 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Paul Jackson <pj@sgi.com>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
-       winget@google.com, containers@lists.osdl.org, menage@google.com,
-       akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070305173401.GA17044@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070301133543.GK15509@in.ibm.com> <20070301113900.a7dace47.pj@sgi.com> <20070303093655.GA1028@in.ibm.com> <20070303173244.GA16051@MAIL.13thfloor.at>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752816AbXCER3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 12:29:43 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: eranian@hpl.hp.com
+Subject: Re: debug registers and fork
+Date: Mon, 5 Mar 2007 18:25:16 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       akpm@linux-foundation.org, tony.luck@intel.com
+References: <20070226235154.GB19630@frankl.hpl.hp.com>
+In-Reply-To: <20070226235154.GB19630@frankl.hpl.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070303173244.GA16051@MAIL.13thfloor.at>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703051825.16473.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 03, 2007 at 06:32:44PM +0100, Herbert Poetzl wrote:
-> > Yes, perhaps this overloads nsproxy more than what it was intended for.
-> > But, then if we have to to support resource management of each
-> > container/vserver (or whatever group is represented by nsproxy),
-> > then nsproxy seems the best place to store this resource control 
-> > information for a container.
+On Tuesday 27 February 2007 00:51, Stephane Eranian wrote:
+> Hello,
 > 
-> well, the thing is, as nsproxy is working now, you
-> will get a new one (with a changed subset of entries)
-> every time a task does a clone() with one of the 
-> space flags set, which means, that you will end up
-> with quite a lot of them, but resource limits have
-> to address a group of them, not a single nsproxy
-> (or act in a deeply hierarchical way which is not
-> there atm, and probably will never be, as it simply
-> adds too much overhead)
-
-Thats why nsproxy has pointers to resource control objects, rather than
-embedding resource control information in nsproxy itself.
-
->From the patches:
-
-struct nsproxy {
-
-+#ifdef CONFIG_RCFS
-+       struct list_head list;
-+       void *ctlr_data[CONFIG_MAX_RC_SUBSYS];
-+#endif
-
-}
-
-This will let different nsproxy structures share the same resource
-control objects (ctlr_data) and thus be governed by the same parameters.
-
-Where else do you think the resource control information for a container
-should be stored?
-
-> > It should have the same perf overhead as the original
-> > container patches (basically a double dereference -
-> > task->containers/nsproxy->cpuset - required to get to the 
-> > cpuset from a task).
+> I have come across an issue with a monitoring using the
+> hardware debug registers on ia64/i386/x86-64.
 > 
-> on every limit accounting or check? I think that
-> is quite a lot of overhead ...
+> It seems that the way debug registers are inherited across fork
+> differs between ia-64 and i386/x86-64. On ia-64, the debug registers
+> are NEVER inherited in the child. The copy_thread() routine clears
+> the necessary thread flags to avoid reloading the debug registers in
+> the child.
+> 
+> Now, on x86-64, it appears that the TIF_DEBUG flag is inherited via
+> setup_thread_stack(). By virtue of dup_task_struct() the debug registers
+> get copied into the child task on fork. So the child has active breakpoints,
+> unless I am mistaken somewhere.
+> 
+> Given the way the ptrace() interface works, I would tend to
+> think that the ia-64 way is the correct one. Any comment?
 
-tsk->nsproxy->ctlr_data[cpu_ctlr->id]->limit (4 dereferences) is what we 
-need to get to the cpu b/w limit for a task.
+IA64 is probably correct, but changing this might break existing programs.
+Would that be worth the change? What advantage would you have from it.
 
-If cpu_ctlr->id is compile time decided, then that would reduce it to 3.
+> Furthermore, on i386/x86-64, when switching out from a task with TIF_DEBUG
+> enabled to another which does not, it seems we do not clear the debug
+> registers (at least dr7) so they become inactive.
 
-But I think if CPU scheduler schedules tasks from same container one
-after another (to the extent possible that is), then other derefences
-(->ctlr_data[] and ->limit) should be fast, as they should be in the cache?
+You mean they leak? Perhaps they should be cleared.
 
+-Andi
 
--- 
-Regards,
-vatsa
+ 
