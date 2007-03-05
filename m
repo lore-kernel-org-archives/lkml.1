@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbXCEFBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbXCEFLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752676AbXCEFBl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 00:01:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXCEFBl
+	id S1752666AbXCEFLG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 00:11:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbXCEFLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 00:01:41 -0500
-Received: from mga09.intel.com ([134.134.136.24]:28884 "EHLO mga09.intel.com"
+	Mon, 5 Mar 2007 00:11:06 -0500
+Received: from mail4.kite.se ([212.214.165.225]:54841 "EHLO mail4.kite.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752676AbXCEFBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 00:01:40 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,247,1170662400"; 
-   d="scan'208"; a="52998885:sNHT17991504"
-Date: Sun, 4 Mar 2007 20:24:53 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [patch] sched: optimize siblings status check logic in wake_idle()
-Message-ID: <20070304202453.D27368@unix-os.sc.intel.com>
-References: <20070302202331.B27368@unix-os.sc.intel.com> <20070305023534.GB16666@wotan.suse.de> <20070304201309.C27368@unix-os.sc.intel.com> <20070305045831.GA2972@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
-In-Reply-To: <20070305045831.GA2972@wotan.suse.de>; from npiggin@suse.de on Mon, Mar 05, 2007 at 05:58:31AM +0100
+	id S1752666AbXCEFLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 00:11:05 -0500
+X-Greylist: delayed 1445 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Mar 2007 00:11:05 EST
+Message-ID: <45EBA0BE.8070305@kite.se>
+Date: Mon, 05 Mar 2007 05:46:54 +0100
+From: "Magnus Naeslund(k)" <mag@kite.se>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Kirk Kuchov <kirk.kuchov@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+References: <20070301131118.GA30228@elte.hu>	 <Pine.LNX.4.64.0703011123200.23932@alien.or.mcafeemobile.com>	 <20070302081047.GA27122@2ka.mipt.ru>	 <Pine.LNX.4.64.0703020840120.1977@alien.or.mcafeemobile.com>	 <20070303100625.GA22557@2ka.mipt.ru>	 <Pine.LNX.4.64.0703030945030.7075@alien.or.mcafeemobile.com>	 <20070303203140.GA756@2ka.mipt.ru>	 <Pine.LNX.4.64.0703031248450.7278@alien.or.mcafeemobile.com>	 <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com>	 <Pine.LNX.4.64.0703041129550.3300@alien.or.mcafeemobile.com> <ca9528de0703041449x695a4c4bpc133d9afd5524019@mail.gmail.com>
+In-Reply-To: <ca9528de0703041449x695a4c4bpc133d9afd5524019@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 05:58:31AM +0100, Nick Piggin wrote:
-> On Sun, Mar 04, 2007 at 08:13:09PM -0800, Suresh B wrote:
-> > On a 16 node system, we have seen ~1.25% perf improvement on a database workload
-> > when we completely short circuited wake_idle(). This patch is trying to comeup
-> > with a best compromise to avoid the cache misses and also minimize the latenices,
-> > perf impact.
+Kirk Kuchov wrote:
+[snip]
 > 
-> Hmm, I wonder what if we only wake_idle if the wakeup comes from this
-> CPU or a sibling? That's probably going to have downsides in some
-> workloads as well, though.
+> This is a stupid comparaison. By your logic we should also have /dev/stdin,
+> /dev/stdout and /dev/stderr.
+> 
 
-yep. I thought about it and thought this patch is a decent solution.
+Well, as a matter of fact (on my system):
 
-thanks,
-suresh
+# ls -l /dev/std*
+lrwxrwxrwx  1 root root 4 Feb  1  2006 /dev/stderr -> fd/2
+lrwxrwxrwx  1 root root 4 Feb  1  2006 /dev/stdin -> fd/0
+lrwxrwxrwx  1 root root 4 Feb  1  2006 /dev/stdout -> fd/1
+
+Please don't bother to respond to this mail, I just saw that you 
+apparently needed the info.
+
+Magnus
+
+P.S.: *PLONK*
