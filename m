@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbXCESMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbXCESNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752840AbXCESMa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 13:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbXCESMa
+	id S1752836AbXCESNR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 13:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbXCESNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 13:12:30 -0500
-Received: from morbo.e-centre.net ([66.154.82.3]:65199 "EHLO
-	cubert.e-centre.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752840AbXCESM3 (ORCPT
+	Mon, 5 Mar 2007 13:13:16 -0500
+Received: from an-out-0708.google.com ([209.85.132.247]:45825 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbXCESNP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 13:12:29 -0500
-X-Greylist: delayed 12029 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Mar 2007 13:12:28 EST
-X-ASG-Debug-ID: 1173106317-24137-37-0
-X-Barracuda-URL: http://10.3.1.19:8000/cgi-bin/mark.cgi
-X-ASG-Orig-Subj: Re: [patch] disable NMI watchdog by default
-Subject: Re: [patch] disable NMI watchdog by default
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070305122011.GA16133@elte.hu>
-References: <20070305122011.GA16133@elte.hu>
-Content-Type: text/plain
+	Mon, 5 Mar 2007 13:13:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Djb4Cey24KPvAMide7m5x4dj44B4p0+YMKNZoR2YlTF1sp+smvfwj3ylGs+MEQ3IiGpogYZVQpqhxsqG4fcpqHta+dtJESuT+1O7NN3uzbZGBUSSf4kRAbSr20C/XnEtwbUqCfD15D4Ay8Y9/rxrI8NuzBrLwrznuxC6T+bcvMo=
+Message-ID: <8bd0f97a0703051013u5732e127t598ae008e6f5894@mail.gmail.com>
+Date: Mon, 5 Mar 2007 13:13:14 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org, "Robin Getz" <rgetz@blackfin.uclinux.org>
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+In-Reply-To: <20070305175604.GB18548@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Mon, 05 Mar 2007 06:49:57 -0800
-Message-Id: <1173106198.3218.130.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-X-Barracuda-Spam-Score: 0.00
-X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=4.0 tests=
-X-Barracuda-Spam-Report: Code version 3.02, rules version 3.0.35707
-	Rule breakdown below  pts rule name              description
-	---- ---------------------- --------------------------------------------------
+Content-Disposition: inline
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
+	 <20070304194632.GC30345@flint.arm.linux.org.uk>
+	 <8bd0f97a0703050909n18386114kd2c0b2a108591641@mail.gmail.com>
+	 <20070305175604.GB18548@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 3/5/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> On Mon, Mar 05, 2007 at 12:09:20PM -0500, Mike Frysinger wrote:
+> > On 3/4/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > >On Thu, Mar 01, 2007 at 07:03:02PM -0500, Mike Frysinger wrote:
+> > >> the console= bootcmd allows for controlling of the initial state of
+> > >> flow control by adding/omitting the 'r' suffix ...
+> > >
+> > >The console command *only* sets the state for the kernel's use of one
+> > >serial port.  It does not affect any other serial port, so tying
+> > >random RTS behaviours into that command line option is absolutely
+> > >silly.
+> >
+> > true ... so ignoring the original motivation for change i posted, is
+> > it really correct for the serial core to be forcing TIOCM_RTS at uart
+> > startup even though the uart doesnt have CTSRTS flow control enabled ?
+> > in other words, my change is agnostic of the console, and is done for
+> > all uarts ... it should prob have a similar change in uart_shutdown()
+> > though ...
+>
+> No idea - it's something that Linux has always done.  Neither do I have
+> any idea if changing it will break anyones setup.  However, since I don't
+> maintain serial anymore, I'm not about to start playing about with this
+> trying to find out.
 
-> Frankly, i find it ridiculous that i had to write more than 10 emails 
-> about this stupid topic already, while i'm the original author of this 
-> feature to begin with. The "do not enable by default debug features that 
-> break certain systems" concept is obvious to me.
+ok, i was going by Documentation/serial/driver:
+... any questions you have should be directed to <rmk@arm.linux.org.uk>
+guessing that should be updated ? :)
 
+> Feel free to submit a patch to akpm to leave RTS alone when CRTSCTS is
+> not set.  I'd recommend that it sits in -mm for about 6 months to really
+> get an idea if it breaks anything.
 
-NMI breaks on some systems, esp in combination with SMM so
-
-Acked-by: Arjan van de Ven <arjan@linux.intel.com> for both 32 bit and
-64 bit
+sounds good to me, thanks
+-mike
