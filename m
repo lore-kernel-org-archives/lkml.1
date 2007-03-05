@@ -1,70 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbXCEK2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbXCEKbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933053AbXCEK2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 05:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933046AbXCEK2r
+	id S933044AbXCEKbx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 05:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933045AbXCEKbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 05:28:47 -0500
-Received: from www.osadl.org ([213.239.205.134]:39179 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933044AbXCEK2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 05:28:31 -0500
-Subject: Re: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump
-	kernel)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070305080824.GA20583@elte.hu>
-References: <6bffcb0e0703031531h3f0a86c6sda2522c0ca504765@mail.gmail.com>
-	 <1173018209.24738.135.camel@localhost.localdomain>
-	 <6bffcb0e0703040636q5a4ed3ekf5a0461052e8e018@mail.gmail.com>
-	 <1173022668.24738.141.camel@localhost.localdomain>
-	 <6bffcb0e0703040828j46a339c2ofabf7c0e20f6ae09@mail.gmail.com>
-	 <1173026442.24738.143.camel@localhost.localdomain>
-	 <6bffcb0e0703040847g1c04940bm4c22895ec2540bd1@mail.gmail.com>
-	 <1173027823.24738.156.camel@localhost.localdomain>
-	 <6bffcb0e0703040915h442b4d6cq8bb47cd961165916@mail.gmail.com>
-	 <20070305080824.GA20583@elte.hu>
-Content-Type: text/plain
-Date: Mon, 05 Mar 2007 11:34:29 +0100
-Message-Id: <1173090869.24738.198.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 05:31:53 -0500
+Received: from zcars04f.nortel.com ([47.129.242.57]:38432 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933044AbXCEKbw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 05:31:52 -0500
+X-Greylist: delayed 1080 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Mar 2007 05:31:51 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [patch 1/1] ppc: Possible bug fix for FCC driver
+Date: Mon, 5 Mar 2007 11:12:54 +0100
+Message-ID: <00B1F4365DDBE745B091C67A1CCFCB43070CE21E@zctfhxm1>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 1/1] ppc: Possible bug fix for FCC driver
+Thread-Index: AcdfDtbC24HBg98sQZWoIfIKQy9fJg==
+From: "Cedric Pontois" <cpontois@nortel.com>
+To: <dmalek@jlc.net>, <leoli@freescale.com>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 09:08 +0100, Ingo Molnar wrote:
-> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> 
-> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/log2.txt
-> 
-> weird. Could you do a dump with SysRq-T, SysRq-Q done /twice/ after each 
-> other, to see how the system progresses while in this lockup? Plus 
-> please also try to get a register dump via SysRq-P. 
-> 
-> Btw., the task state printout seems busted:
-> 
-> udev_run_devd ? C15B0030  2544   979    853                     (L-TLB)
-> 
-> shouldnt that be 'R' instead of the question mark?
+From: Cedric Pontois <cpontois@nortel.com>
 
-? are dead ones,  
+We use a kernel 2.6.14 on PPC platform (MPC 8555). The FCC driver works
+well with a 100Mbps link. But it doesn't with a 10Mbps link. To solve
+it, I modified the GFMR register init: removed TCI bit and set CRC32 bit
+instead of. 
 
- [<c16191d9>] do_exit+0x6f9/0x6fd
- [<c161924d>] sys_exit_group+0x0/0x11
- [<c161925c>] sys_exit_group+0xf/0x11
- [<c1603e72>] sysenter_past_esp+0x5f/0x99
+       Developer's Certificate of Origin 1.1
 
-The interesting part is here:
+        By making a contribution to this project, I certify that:
 
-1 lock held by udevd/918:
- #0:  (&mm->mmap_sem){----}, at: [<c161135b>] do_page_fault+0x150/0x50d
+        (a) The contribution was created in whole or in part by me and I
+            have the right to submit it under the open source license
+            indicated in the file; or
 
-But udevd/918 is nowhere in the sysrq-t output.
+        (b) The contribution is based upon previous work that, to the
+best
+            of my knowledge, is covered under an appropriate open source
+            license and I have the right under that license to submit
+that
+            work with modifications, whether created in whole or in part
+            by me, under the same open source license (unless I am
+            permitted to submit under a different license), as indicated
+            in the file; or
 
-	tglx
+        (c) The contribution was provided directly to me by some other
+            person who certified (a), (b) or (c) and I have not modified
+            it.
 
+	(d) I understand and agree that this project and the
+contribution
+	    are public and that a record of the contribution (including
+all
+	    personal information I submit with it, including my
+sign-off) is
+	    maintained indefinitely and may be redistributed consistent
+with
+	    this project or the open source license(s) involved.
+
+	Signed-off-by: Cedric Pontois <cpontois@nortel.com>
+
+------------------------------------------------------------------------
+-----
+
+diff -ruN pa-original/arch/ppc/8260_io/fcc_enet.c
+pa-patched/arch/ppc/8260_io/fcc_enet.c
+--- pa-original/arch/ppc/8260_io/fcc_enet.c	2007-03-02
+14:57:07.000197000 +0100
++++ pa-patched/arch/ppc/8260_io/fcc_enet.c	2007-03-02
+14:57:08.000038000 +0100
+@@ -2232,7 +2232,7 @@
+ 
+ 	/* Set GFMR to enable Ethernet operating mode.
+ 	 */
+-	fccp->fcc_gfmr = (FCC_GFMR_TCI | FCC_GFMR_MODE_ENET);
++	fccp->fcc_gfmr = (FCC_GFMR_TCRC_32 | FCC_GFMR_MODE_ENET);
+ 
+ 	/* Set sync/delimiters.
+ 	*/
+
+------------------------------------------------------------------------
+-----
+
+"The author works for the Alcatel-Lucent group, who is solely
+responsible for this email and its contents. All enquiries regarding
+this email should be addressed to Alcatel-Lucent. Nortel has provided
+the use of the nortel.com domain to Alcatel-Lucent in connection with
+this email solely for the purpose of connectivity and Nortel has no
+liability for the email or its contents.  Alcatel Lucent's web site is
+http://www.alcatel-lucent.com"
 
