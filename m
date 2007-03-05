@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750741AbXCEAhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750835AbXCEAib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750741AbXCEAhn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 19:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbXCEAhm
+	id S1750835AbXCEAib (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 19:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbXCEAib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 19:37:42 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:52945 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbXCEAhk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 19:37:40 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@lazybastard.org>
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Date: Mon, 5 Mar 2007 01:36:36 +0100
-User-Agent: KMail/1.9.6
-Cc: Ulrich Drepper <drepper@redhat.com>, Anton Altaparmakov <aia21@cam.ac.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
-       alex@clusterfs.com, suzuki@in.ibm.com
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <45EB4A55.3060908@redhat.com> <20070305001621.GB18691@lazybastard.org>
-In-Reply-To: <20070305001621.GB18691@lazybastard.org>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Sun, 4 Mar 2007 19:38:31 -0500
+Received: from waste.org ([66.93.16.53]:55994 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750797AbXCEAia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 19:38:30 -0500
+Date: Sun, 4 Mar 2007 18:25:50 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
+Message-ID: <20070305002550.GI23311@waste.org>
+References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703050136.37181.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX1+ymGbHvMo2CeqvK/CrxH9X9vRqSYDC/HVFHn3
- 2Rr7LOT6vLL4v6vXlwLlQXK1Oi2Uue7qi1ycBm72WJAxtY3PPX
- AARky4C484W6gPW2Nt/lA==
+In-Reply-To: <1173051564.6131.13.camel@johannes.berg>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 March 2007, Jörn Engel wrote:
-> That actually causes an interesting problem for compressing filesystems.
-> The space consumed by blocks depends on their contents and how well it
-> compresses.  At the moment, the only option I see to support
-> posix_fallocate for LogFS is to set an inode flag disabling compression,
-> then allocate the blocks.
+On Mon, Mar 05, 2007 at 12:39:24AM +0100, Johannes Berg wrote:
+> [adding linux-wireless to CC]
 > 
-> But if the file already contains large amounts of compressed data, I
-> have a problem.  Disabling compression for a range within a file is not
-> supported, so I can only return an error.  But which one?
+> On Sun, 2007-03-04 at 16:08 -0600, Matt Mackall wrote:
+> > Recent kernels are having troubles with wireless for me. Two seemingly
+> > related problems:
+> 
+> I don't think they are related actually.
+> 
+> > a) NetworkManager seems oblivious to the existence of my IPW2200
+> 
+> This is due to the recent sysfs restructuring I think. IIRC the fix is
+> to upgrade hal to a current git version.
 
-Using the current glibc implementation on a compressed file system ideally
-should be a very expensive no-op because you won't actually allocate much
-space for a file when writing zeroes to it. You also don't benefit of a
-contiguous allocation in logfs, since flash has uniform seek times over
-all the medium.
+If that's the cause, the fix is to back out whatever was done to break
+userspace. Breaking userspace is not ok. Upgrading from 2.6.x to
+2.6.x+1 should not entail replacing substantial parts of userspace,
+especially with NOT-EVEN-FRAKKING-RELEASED-YET CODE. 
 
-I'd suggest you implement posix_fallocate as an real nop and just return
-success without doing anything. You could also return ENOSPC in case
-the blocks requested by posix_fallocate don't fit on the medium without
-compression, but that is more or less just guesswork (like statfs is).
+I will try a new HAL when it shows up in Debian/unstable and not a
+moment sooner.
 
-	Arnd <><
+> > b) Manual iwconfig waits for 60s and then reports:
+> 
+> That one's strange.
+> 
+> > A second attempt to enable WEP via iwconfig succeeds and network
+> > connectivity is normal. However, NetworkManager still ignores the
+> > device at this point.
+> 
+> I'd think it's a ipw bug but I have no idea if that was even touched
+> during this time.
+> 
+> > Bisect with Mercurial points to this patch:
+> > 
+> > $ hg bisect bad
+> > The first bad revision is:
+> > changeset:   46985:f701b96bb2f7
+> > user:        Greg Kroah-Hartman <gregkh@suse.de>
+> > date:        Wed Feb 07 10:37:11 2007 -0800
+> > summary:     Network: convert network devices to use struct device
+> > instead of class_device
+> > 
+> > which corresponds to 43cb76d91ee85f579a69d42bc8efc08bac560278 in git.
+> 
+> Yup, sysfs breakage/hal stuff. Can you try with a recent hal? And maybe
+> try to bisect the iwconfig stop thing if you've got enough time...
+
+Will double-check the iwconfig tests. It's been masked by
+NetworkManager for a while.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
