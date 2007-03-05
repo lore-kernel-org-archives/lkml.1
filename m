@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbXCEDVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750819AbXCEDc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbXCEDVw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 22:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbXCEDVw
+	id S1750819AbXCEDc1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 22:32:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbXCEDc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 22:21:52 -0500
-Received: from ns1.suse.de ([195.135.220.2]:44337 "EHLO mx1.suse.de"
+	Sun, 4 Mar 2007 22:32:27 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:53382 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752617AbXCEDVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 22:21:51 -0500
-Date: Mon, 5 Mar 2007 04:21:16 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Joel Schopp <jschopp@austin.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       clameter@engr.sgi.com, mingo@elte.hu, arjan@infradead.org,
-       mbligh@mbligh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related patches
-Message-ID: <20070305032116.GA29678@wotan.suse.de>
-References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E8594B.6020904@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E8594B.6020904@austin.ibm.com>
-User-Agent: Mutt/1.5.9i
+	id S1750819AbXCEDc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 22:32:26 -0500
+Date: Mon, 5 Mar 2007 04:32:07 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Marc Perkel <mperkel@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Raid 10 Problems?
+In-Reply-To: <697121.9642.qm@web52511.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.61.0703050430280.23714@yvahk01.tjqt.qr>
+References: <697121.9642.qm@web52511.mail.yahoo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 02, 2007 at 11:05:15AM -0600, Joel Schopp wrote:
-> Linus Torvalds wrote:
-> >
-> >On Thu, 1 Mar 2007, Andrew Morton wrote:
-> >>So some urgent questions are: how are we going to do mem hotunplug and
-> >>per-container RSS?
-> 
-> The people who were trying to do memory hot-unplug basically all stopped 
-> waiting for these patches, or something similar, to solve the fragmentation 
-> problem.  Our last working set of patches built on top of an earlier 
-> version of Mel's list based solution.
-> 
-> >
-> >Also: how are we going to do this in virtualized environments? Usually the 
-> >people who care abotu memory hotunplug are exactly the same people who 
-> >also care (or claim to care, or _will_ care) about virtualization.
-> 
-> Yes, we are.  And we are very much in favor of these patches.  At last 
-> year's OLS developers from IBM, HP, Xen coauthored a paper titled "Resizing 
-> Memory with Balloons and Hotplug".  
-> http://www.linuxsymposium.org/2006/linuxsymposium_procv2.pdf  Our 
-> conclusion was that ballooning is simply not good enough and we need memory 
-> hot-unplug.  Here is a quote from the article I find relevant to today's 
-> discussion:
 
-But if you don't require a lot of higher order allocations anyway, then
-guest fragmentation caused by ballooning doesn't seem like much problem.
+On Mar 4 2007 19:17, Marc Perkel wrote:
+>Thanks - because of your suggestion I had found the
+>instructions. But you have some interesting options
+>set. 
+>
+>-N nicearray -b internal -e 1.0
+>
+>Are these important?
 
-If you need higher order allocations, then ballooning is bad because of
-fragmentation, so you need memory unplug, so you need higher order
-allocations. Goto 1.
+  -N? What's in a name? I suppose, it's not so important.
+  (Arrays are identified by their UUID anyway. But maybe
+  udev can do something with the name someday as it does
+  today with /dev/disk/*.)
 
-Balooning probably does skew memory management stats and watermarks, but
-that's just because it is implemented as a module. A couple of hooks
-should be enough to allow things to be adjusted?
+  -b internal -- seems like a good idea to speed up
+  resynchronization.
 
+  -e 1.0 -- I wonder why the new superblock format is
+  not default in mdadm (0.90 is still used).
+
+
+>pci=nommconf iommu=soft
+
+The nvidia chipset corruption problem?
+
+
+
+Jan
+-- 
