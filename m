@@ -1,89 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbXCEPuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933554AbXCEPuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933551AbXCEPuS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933554AbXCEPuS
+	id S933554AbXCEPuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbXCEPuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:50:18 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:45746 "EHLO e1.ny.us.ibm.com"
+	Mon, 5 Mar 2007 10:50:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35239 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933551AbXCEPuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:50:16 -0500
-Subject: Re: 2.6.21-rc2-git3 Unstable for me
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Will Trives <will@trivescon.com.au>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <1173108985.9109.11.camel@kleikamp.austin.ibm.com>
-References: <20070305150317.57e62d70@disher.kickcrew>
-	 <45EC3058.2010903@redhat.com>
-	 <1173108985.9109.11.camel@kleikamp.austin.ibm.com>
-Content-Type: text/plain
-Date: Mon, 05 Mar 2007 09:50:11 -0600
-Message-Id: <1173109811.9109.17.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+	id S933553AbXCEPuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:50:20 -0500
+Message-ID: <45EC3BD9.2090604@redhat.com>
+Date: Mon, 05 Mar 2007 07:48:41 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@lazybastard.org>
+CC: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <45EB4A55.3060908@redhat.com> <20070305001621.GB18691@lazybastard.org> <200703050136.37181.arnd@arndb.de> <20070305114109.GA454@lazybastard.org> <45EC3253.2030206@redhat.com> <20070305153326.GA1469@lazybastard.org>
+In-Reply-To: <20070305153326.GA1469@lazybastard.org>
+X-Enigmail-Version: 0.94.1.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig77CA57063B64602467E123E3"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 09:36 -0600, Dave Kleikamp wrote:
-> On Mon, 2007-03-05 at 09:59 -0500, Chuck Ebbert wrote:
-> > Will Trives wrote:
-> > 
-> > [adding JFS maintainer to cc:]
-> 
-> Thanks for adding me to the thread.
-> 
-> > Some kind of JFS problem?
-> 
-> I don' t know yet.  I was notified of the problem through bugzilla:
-> http://bugzilla.kernel.org/show_bug.cgi?id=8128
-> 
-> The problem appears that a non-uptodate page has been marked dirty.  I
-> haven't found much in the way of changes between 2.6.20 and the current
-> git tree to explain this.  There's this one:
-> http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=22c8ca78f20724676b6006232bf06cc3e9299539
-> 
-> I'm looking for for a caller to ->prepare_write() which marks the page
-> dirty without calling ->commit_write().
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig77CA57063B64602467E123E3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-I think I just found it:
+J=C3=B6rn Engel wrote:
+>> Of course.  You call posix_fallocate once for the lifetime of the file=
 
-nobh_truncate_page():
+>> when it is created to ensure that all future uses will work.
+>=20
+> That part is not quite clear from the manpage but I trust most people
+> would assume the same.
 
-	ret = a_ops->prepare_write(NULL, page, offset, to);
-	if (ret == 0) {
-		kaddr = kmap_atomic(page, KM_USER0);
-		memset(kaddr + offset, 0, PAGE_CACHE_SIZE - offset);
-		flush_dcache_page(page);
-		kunmap_atomic(kaddr, KM_USER0);
-		set_page_dirty(page);
-	}
-	unlock_page(page);
-	page_cache_release(page);
+Not only that, it is what this function is for.  In the POSIX committee
+we've looked at the functions in detail before adding them, even if some
+information is not in the man page but instead in the Rationale.
 
-> 
-> Will, could you try reverting that patch?  If that fails, narrowing the
-> problem down with git-bisect would be helpful, if you have the time.
 
-Better yet, try this patch:
+> Still, it is quite obvious that noone designing this interface has lost=
 
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> much thought to compressing filesystems.
 
-diff -Nurp linux-orig/fs/buffer.c linux/fs/buffer.c
---- linux-orig/fs/buffer.c	2007-02-22 07:59:01.000000000 -0600
-+++ linux/fs/buffer.c	2007-03-05 09:47:07.000000000 -0600
-@@ -2466,6 +2466,7 @@ int nobh_truncate_page(struct address_sp
- 		memset(kaddr + offset, 0, PAGE_CACHE_SIZE - offset);
- 		flush_dcache_page(page);
- 		kunmap_atomic(kaddr, KM_USER0);
-+		SetPageUptodate(page);
- 		set_page_dirty(page);
- 	}
- 	unlock_page(page);
+You already have problems with supporting the functionality
+posix_fallocate is supporting.  You cannot reliably support MAP_SHARED
+files if all of a sudden the compression causes and expansion of a block
+and that causes a ENOSPC error.  So, don't expect pity.  This is a
+function in support of a real and reliable implementation of memory
+mapped files.  You don't use MAP_SHARED on such filesystems, it'll eat
+your kittens sooner or later anyway.
 
--- 
-David Kleikamp
-IBM Linux Technology Center
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
 
+
+--------------enig77CA57063B64602467E123E3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFF7DvZ2ijCOnn/RHQRAiQUAJ9B+efQ+xd3MrgwsG42Uitd2c6RSgCcCdA7
+g0s1HK7Izt51Trru9/W9KY0=
+=ezJL
+-----END PGP SIGNATURE-----
+
+--------------enig77CA57063B64602467E123E3--
