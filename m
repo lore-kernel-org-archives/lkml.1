@@ -1,76 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933471AbXCEO2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933483AbXCEOg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933471AbXCEO2J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 09:28:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933484AbXCEO2J
+	id S933483AbXCEOg1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 09:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933484AbXCEOg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 09:28:09 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:53513 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933471AbXCEO2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 09:28:08 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Howard Chu <hyc@symas.com>
-Subject: Re: TCP 2MSL on loopback
-Date: Mon, 5 Mar 2007 15:28:02 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-References: <45EBFD13.1060106@symas.com>
-In-Reply-To: <45EBFD13.1060106@symas.com>
+	Mon, 5 Mar 2007 09:36:27 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:25240 "EHLO
+	outbound3-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933483AbXCEOg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 09:36:26 -0500
+X-BigFish: VP
+X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
+Date: Mon, 5 Mar 2007 15:36:01 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: discuss@x86-64.org
+cc: "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] add reporting of SVM flags to /proc/cpuinfo
+Message-ID: <20070305143601.GF30318@amd.com>
 MIME-Version: 1.0
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 05 Mar 2007 14:36:02.0119 (UTC)
+ FILETIME=[992D1D70:01C75F33]
+X-WSS-ID: 69F2F55F2X01975422-01-01
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+ charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703051528.02564.dada1@cosmosbay.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 March 2007 12:20, Howard Chu wrote:
-> Why is the Maximum Segment Lifetime a global parameter? Surely the
-> maximum possible lifetime of a particular TCP segment depends on the
-> actual connection. At the very least, it would be useful to be able to
-> set it on a per-interface basis. E.g., in the case of the loopback
-> interface, it would be useful to be able to set it to a very small
-> duration.
+This small patch series introduces the reporting of the SVM revision,
+the number of ASIDs and the flags in /proc/cpuinfo on SVM capable AMD
+processors.  The patches are for i386 and for x86_64 architectures.
 
-Hi Howard
+-- 
+Joerg Roedel
+Operating System Research Center
+AMD Saxony LLC & Co. KG
 
-I think you should address these questions on netdev instead of linux-kernel.
-
->
-> As I note in this draft
-> http://www.ietf.org/internet-drafts/draft-chu-ldap-ldapi-00.txt
-> when doing a connection soak test of OpenLDAP using clients connected
-> through localhost, the entire port range is exhausted in well under a
-> second, at which point the test stalls until a port comes out of
-> TIME_WAIT state so the next connection can be opened.
->
-> These days it's not uncommon for an OpenLDAP slapd server to handle tens
-> of thousands of connections per second in real use (e.g., at Google, or
-> at various telcos). While the LDAP server is fast enough to saturate
-> even 10gbit ethernet using contemporary CPUs, we have to resort to
-> multiple virtual interfaces just to make sure we have enough port
-> numbers available.
->
-
-I dont uderstand... doesnt slapd server listen for connections on a given 
-port, like http ? Or is it doing connections like a ftp server ?
-
-Of course, if you want to open more than 60.000 concurrent connections, using 
-127.0.0.1 address, you might have a problem...
-
-> Ideally the 2MSL parameter would be dynamically adjusted based on the
-> route to the destination and the weights associated with those routes.
-> In the simplest case, connections between machines on the same subnet
-> (i.e., no router hops involved) should have a much smaller default value
-> than connections that traverse any routers. I'd settle for a two-level
-> setting - with no router hops, use the small value; with any router hops
-> use the large value.
-
-Well, is it really a MSL problem ?
-
-I did a small test (linux-2.6.21-rc1) and was able to get 1.000.000 
-connections on localhost on my dual proc machine in one minute, without an 
-error.
 
