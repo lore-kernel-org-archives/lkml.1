@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965268AbXCENfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965681AbXCENgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965268AbXCENfH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 08:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965681AbXCENfH
+	id S965681AbXCENgt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 08:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965676AbXCENgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 08:35:07 -0500
-Received: from mx2.suse.de ([195.135.220.15]:52976 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965268AbXCENfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 08:35:04 -0500
-Date: Mon, 5 Mar 2007 15:34:37 +0100
-From: Andi Kleen <ak@suse.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Andi Kleen <ak@suse.de>, virtualization <virtualization@lists.osdl.org>
-Subject: Re: [patch] paravirt: VDSO page is essential
-Message-ID: <20070305143437.GF22829@bingen.suse.de>
-References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain>
-MIME-Version: 1.0
+	Mon, 5 Mar 2007 08:36:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:32846 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965681AbXCENgs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 08:36:48 -0500
+Date: Mon, 5 Mar 2007 13:36:39 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+Message-ID: <20070305133639.GA6490@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Roland McGrath <roland@redhat.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+	Kernel development list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0703021158001.2485-100000@iolanthe.rowland.org> <20070305070136.4CB881801C4@magilla.sf.frob.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173101297.26165.39.camel@localhost.localdomain>
+In-Reply-To: <20070305070136.4CB881801C4@magilla.sf.frob.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> VDSO is only a problem if (1) the hypervisor wants to reserve the top
-> virtual address space (CONFIG_PARAVIRT=y), and (2) the glibc is old and
+On Sun, Mar 04, 2007 at 11:01:36PM -0800, Roland McGrath wrote:
+> > 	The parts relating to kernel breakpoints could be made conditional
+> > 	on a Kconfig option.  The amount of code space saved would be
+> > 	relatively small; I'm not sure that it would be worthwhile.
+> 
+> In a utrace merge, the user parts can be made conditional on CONFIG_UTRACE.
+> Then with both turned off, the code goes away completely.  It's unlikely it
+> will ever be turned off, but it is a clean way to go about things in case
+> someone wants the smallest possible config for a limited-use installation.
 
-It broke the boot even with native hardware, no hypervisor
+Making this unconditional is pointless and just makes things harder to
+read, so please don't do it.  (The same is true for utrace, but Roland
+has unfortunately still not replied to my mail mentioning it :P)
 
->  
-> +config RESERVE_TOP
-> +	bool
-> +	help
-> +	  Many hypervisors want to reserve some amount of the top of
-> +	  virtual address space.  Unfortunately, old glibc needs the
-> +	  vdso page there, so we must disable vdso if COMPAT_VDSO is
-> +	  enabled as well as this option.
+> > +	void		(*installed)(struct hwbkpt *);
+> > +	void		(*uninstalled)(struct hwbkpt *);
+> 
+> Save space in the struct by having just one function for both installed
+> and uninstalled, taking an argument.  Probably a caller should be able to
+> pass a null function here to say that the registration call should fail if
+> it can't be installed due to higher-priority or no-callback registrations
+> existing, and that its registration cannot be ejected by another (i.e., an
+> ill-behaved user).
 
-But this still means I would need to decide between a PARAVIRT
-kernel that either supports xen/VMI or cannot boot old user land without
-weird options.  I don't think that's the correct solution. The goal
-is a single binary that runs everywhere and is still compatible.
+Please not.  That might save a few bytes, but it makes the interface a
+lot harder to understand for users.  We really discourage over-loaded
+interfaces in Linux.
 
-What would probably work is to somehow decide at runtime if a hypervisor
-is there or not and then set vdso default based on that. I guess that
-detection would be hypervisor specific though and probably would
-need paravirt ops extensions.
+> > +struct thread_hwbkpt {		/* HW breakpoint info for a thread */
 
--Andi
+Can this and all the file names please get an actually readable name?
+E.g. hw_breakpoint.  We're not IBM managers that needs to save every
+cent on superflous sillables :)
 
