@@ -1,123 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932217AbXCESjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbXCESmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932217AbXCESjj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 13:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933078AbXCESjj
+	id S933092AbXCESmL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 13:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCESmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 13:39:39 -0500
-Received: from MAIL.13thfloor.at ([213.145.232.33]:41325 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932217AbXCESji (ORCPT
+	Mon, 5 Mar 2007 13:42:11 -0500
+Received: from smtp112.sbc.mail.mud.yahoo.com ([68.142.198.211]:38324 "HELO
+	smtp112.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933092AbXCESmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 13:39:38 -0500
-Date: Mon, 5 Mar 2007 19:39:37 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Paul Jackson <pj@sgi.com>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
-       winget@google.com, containers@lists.osdl.org, menage@google.com,
-       akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070305183937.GC22445@MAIL.13thfloor.at>
-Mail-Followup-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-	Paul Jackson <pj@sgi.com>, ckrm-tech@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
-	winget@google.com, containers@lists.osdl.org, menage@google.com,
-	akpm@linux-foundation.org
-References: <20070301133543.GK15509@in.ibm.com> <20070301113900.a7dace47.pj@sgi.com> <20070303093655.GA1028@in.ibm.com> <20070303173244.GA16051@MAIL.13thfloor.at> <20070305173401.GA17044@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Mar 2007 13:42:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=2GKSyDPmAsuYZFcDeWzoNREHrwUVj2Um3jJKg4pYiF/Duod3P+sIROspXvUZa8GFrnWpNv0b7IMd0WnLkk5/3EkZ1YrLQnSS3qHPzDtPdUm6jsUoiLme5671qIUDOl9NXaJOwmM+hCbYzvw00xztqK0Qpn3GHuN718IZesm0zwg=  ;
+X-YMail-OSG: yeYPZbQVM1kfDZnI3GwLQznMiIYEsmgANk2NUpdpKGli0eePoLH41_hsJ2JE5ppyBNv3p0SiAF80vJ0vCBzKh_d2HTlKVDFj3QMyKGBRpKrM1OspLxDKWe0LGU78EX1C0Jg.PwNY4BJ2M1I-
+From: David Brownell <david-b@pacbell.net>
+To: Michael Buesch <mb@bu3sch.de>
+Subject: Re: 2.6.21-rc2-mm1: drivers/usb/host/ohci-ssb.c doesn't compile
+Date: Mon, 5 Mar 2007 10:42:05 -0800
+User-Agent: KMail/1.7.1
+Cc: greg@kroah.com, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <200703051157.16822.mb@bu3sch.de> <200703051226.46402.mb@bu3sch.de>
+In-Reply-To: <200703051226.46402.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070305173401.GA17044@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703051042.06802.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 11:04:01PM +0530, Srivatsa Vaddagiri wrote:
-> On Sat, Mar 03, 2007 at 06:32:44PM +0100, Herbert Poetzl wrote:
-> > > Yes, perhaps this overloads nsproxy more than what it was intended for.
-> > > But, then if we have to to support resource management of each
-> > > container/vserver (or whatever group is represented by nsproxy),
-> > > then nsproxy seems the best place to store this resource control 
-> > > information for a container.
-> > 
-> > well, the thing is, as nsproxy is working now, you
-> > will get a new one (with a changed subset of entries)
-> > every time a task does a clone() with one of the 
-> > space flags set, which means, that you will end up
-> > with quite a lot of them, but resource limits have
-> > to address a group of them, not a single nsproxy
-> > (or act in a deeply hierarchical way which is not
-> > there atm, and probably will never be, as it simply
-> > adds too much overhead)
+On Monday 05 March 2007 3:26 am, Michael Buesch wrote:
+
+> > Actually, it seems like I will run into other kinds of nasty problems
+> > due to stupid design of the HCD code. The OHCI code #includes
+> > the various drivers, which have a module_init each. So if you
+> > compile PCI and SSB support, you have two module_init for one
+> > OHCI module. Not sure how to fix this. Any idea?
 > 
-> Thats why nsproxy has pointers to resource control objects, rather
-> than embedding resource control information in nsproxy itself.
+> A real problem is that the HCD core seems to have the assumption
+> built-in that there can only be one OHCI driver per machine/arch.
 
-which makes it a (name)space, no?
+What ancient version of the driver are you referring to??
 
-> >From the patches:
-> 
-> struct nsproxy {
-> 
-> +#ifdef CONFIG_RCFS
-> +       struct list_head list;
-> +       void *ctlr_data[CONFIG_MAX_RC_SUBSYS];
-> +#endif
-> 
-> }
-> 
-> This will let different nsproxy structures share the same resource
-> control objects (ctlr_data) and thus be governed by the same
-> parameters.
+CURRENT code has one module_init, and can hook up to several
+different kinds of bus glue.  There *is* only one OHCI driver.
+It can hook up through several different kinds of bus glue; a
+few platforms support more than one way to connect to various
+implementations of OHCI.
 
-as it is currently done for vfs, uts, ipc and soon
-pid and network l2/l3, yes?
 
-> Where else do you think the resource control information for a
-> container should be stored?
+> That's not the case for SSB, where we can have both PCI and SSB
+> bus enabled, so both ohci drivers compiled.
+> Any idea? Greg perhaps?
 
-an alternative for that is to keep the resource
-stuff as part of a 'context' structure, and keep
-a reference from the task to that (one less
-indirection, as we had for vfs before)
+This already works in the current code ...
 
-> > > It should have the same perf overhead as the original
-> > > container patches (basically a double dereference -
-> > > task->containers/nsproxy->cpuset - required to get to the 
-> > > cpuset from a task).
-> > 
-> > on every limit accounting or check? I think that
-> > is quite a lot of overhead ...
-> 
-> tsk->nsproxy->ctlr_data[cpu_ctlr->id]->limit (4 dereferences)
-> is what we need to get to the cpu b/w limit for a task.
-
-sounds very 'cache intensive' to me ...
-(especially compared to the one indirection be use atm)
-
-> If cpu_ctlr->id is compile time decided, then that would reduce it to 3.
-> 
-> But I think if CPU scheduler schedules tasks from same
-> container one after another (to the extent possible that is),
-
-which is very probably not what you want, as it
- 
- - will definitely hurt interactivity
- - give strange 'jerky' behaviour
- - ignore established priorities
-
-> then other derefences (->ctlr_data[] and ->limit) should be fast, as
-> they should be in the cache?
-
-please provide real world numbers from testing ...
-
-at least for me, that is not really obvious in
-four way indirection  :)
-
-TIA,
-Herbert
-
-> -- 
-> Regards,
-> vatsa
+- Dave
