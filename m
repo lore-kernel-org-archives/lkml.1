@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932230AbXCETIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXCETLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932230AbXCETIU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 14:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255AbXCETIU
+	id S932286AbXCETLO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 14:11:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270AbXCETLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 14:08:20 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51556 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932230AbXCETIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 14:08:19 -0500
-Date: Mon, 5 Mar 2007 20:08:52 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: FN <zzzz444@ml1.net>
-Cc: Oleg Verych <olecom@flower.upol.cz>, linux-kernel@vger.kernel.org
-Subject: Re: module builds need improvement / top Makefile not good enough
-Message-ID: <20070305190852.GA9367@uranus.ravnborg.org>
-References: <1172855662.23830.1177403935@webmail.messagingengine.com> <E1HNyYT-00086z-27@flower> <1173102794.12256.1177759349@webmail.messagingengine.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Mar 2007 14:11:14 -0500
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:37757
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932255AbXCETLN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 14:11:13 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: 2.6.21-rc2-mm1: drivers/usb/host/ohci-ssb.c doesn't compile
+Date: Mon, 5 Mar 2007 20:09:25 +0100
+User-Agent: KMail/1.9.5
+Cc: greg@kroah.com, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <200703051226.46402.mb@bu3sch.de> <200703051042.06802.david-b@pacbell.net>
+In-Reply-To: <200703051042.06802.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1173102794.12256.1177759349@webmail.messagingengine.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200703052009.26136.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 05:53:14AM -0800, FN wrote:
-> | > I am unhappy with the direction the 2.6 kernel builds have taken.
-> | > Very much like Micro$loth DDKs we (linux users) are being forced to
-> | > build modules by plugging into a framework that doesn't respect the
-> fine
-> | > aspects of dependency generation and analysis.
-> | 
-> | Ideas in form of patches are accepted,
+On Monday 05 March 2007 19:42, David Brownell wrote:
+> On Monday 05 March 2007 3:26 am, Michael Buesch wrote:
 > 
-> I think that one of the bigger firms that support linux, like IBM,
-> Redhat,
-> Suse, ought to hire a contractor to redesign kbuild and get the linux
-> community involved.
+> > > Actually, it seems like I will run into other kinds of nasty problems
+> > > due to stupid design of the HCD code. The OHCI code #includes
+> > > the various drivers, which have a module_init each. So if you
+> > > compile PCI and SSB support, you have two module_init for one
+> > > OHCI module. Not sure how to fix this. Any idea?
+> > 
+> > A real problem is that the HCD core seems to have the assumption
+> > built-in that there can only be one OHCI driver per machine/arch.
+> 
+> What ancient version of the driver are you referring to??
 
-Obviously kbuild can be better and if someone are committed to put in
-a month work on kbuild we would see improvements.
-As the kbuild maintainer I am the first to agree on this.
+Uh, can't be _that_ ancient, as I wrote this stuff only a few weeks ago. :)
 
-kbuild has taken the direction where make is used not only
-as a simple DAG tool - be some of the other facilities
-has been utilised to support some of the following goals:
--> Very simple Kbuild files for the simple cases - and the simple cases counts
-   for more than 95% of the Kbuild files in the kernel.
--> One kbuild file pr. directory for simplicity
--> rebuild in case prerequisites OR referred CONFIG symbol changes
--> rebuild if commandline arguments changes (but not order of these)
--> revert back to known Makefile syntax for complex scenarios
--> make kbuild infrastructure avialable for external modules to make build
-   of these more releiable (pick up correct CONFIG)
--> Last but not least - relaible.
+> CURRENT code has one module_init, and can hook up to several
+> different kinds of bus glue.  There *is* only one OHCI driver.
+> It can hook up through several different kinds of bus glue; a
+> few platforms support more than one way to connect to various
+> implementations of OHCI.
 
-These golas are fulfilled by kbuild today.
-You want to add another few goals:
--> Do not rely on GNU Make
--> Track actual timestamp/file content to support ClarCase dynamic views
+Yeah, good to see that this changed. I'll fixup the stuff. Thanks.
 
-
-> Currently I face the following situation -- I try to build 2 drivers
-> from the same Makefile
-
-If you try to use Kbuild in a way it is not designed to be used
-then you will obviously face issues.
-One Kbuild file pr. directory.
-Use a top-level Kbuild file to specify both sub-directory Kbuild files.
-
-This structure works well for the kernel - so it should work well for your module too?
-
-I am open for specific improvement proposals - but not for 'redo from scratch proposals'.
-
-	Sam
+-- 
+Greetings Michael.
