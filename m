@@ -1,79 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933641AbXCEViD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbXCEVjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933641AbXCEViD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 16:38:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933638AbXCEViD
+	id S933645AbXCEVjs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 16:39:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbXCEVjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 16:38:03 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4526 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933635AbXCEViA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 16:38:00 -0500
-Date: Fri, 2 Mar 2007 19:56:50 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Marco Lazzarotto <m.lazzarotto@robox.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Trouble using some (fast) compact flash as ide device on an embedded system
-Message-ID: <20070302195650.GA5697@ucw.cz>
-References: <45E6D7EB.5080501@robox.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E6D7EB.5080501@robox.it>
-User-Agent: Mutt/1.5.9i
+	Mon, 5 Mar 2007 16:39:47 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:44334 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933645AbXCEVjq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 16:39:46 -0500
+Message-ID: <45EC8DF9.6060407@cosmosbay.com>
+Date: Mon, 05 Mar 2007 22:39:05 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch - v2/resend] epoll ready set loops diet ...
+References: <Pine.LNX.4.64.0703051308060.4907@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0703051308060.4907@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 05 Mar 2007 22:39:13 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Davide Libenzi a écrit :
+> ChangeLog:
+> 
+> v2) In v1, I was trying to avoid to get the spinlock twice WRT yesterday 
+>     patch, but it turns out I can't since the ready list will be travelling 
+>     through a path w/out the ep->sem held. Oh well...
+> 
+> 
 
-> As I reported in bug 8036 in bugzilla.kernel.org,
-> 
-> Hardware Environment:
-> 
->  - Use a compact flash SanDisk SDCFB-128 Firmware revision HDX 2.15
->    (we used other compact flashes with the same hw ad sw for years
->     with  no trouble)
-> 
-> It happens on both etx boards:
->  - VIA SOM-ETX (4475)
->  - Gene-4312
-> 
-> Doing the command
-> sfdisk -R /dev/hdc
-> 
-> gives:
-> 
->  * * *
-> ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
-> hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-> ide: failed opcode was: unknown
-> hdc: drive not ready for command
-> ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
-> hdc: do_special: 0x02
-> hdc: do_special: recalibrate
-> ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
-> hdc: reading: block=0 sectors=8, buffer = 0xc6cd40000
-> ide1: end_request: current=0xc6ebe754
->  * * *
-> 
-> the 'bad bit' in status error is DataRequest
-> 
-> 
-> 
-> doing
-> sfdisk -l /dev/hdc
-> 
-> gives:
-> 
->  * * *
-> ide1: start_request: current=0xc6ebecd4 (rq->sect=0,block 0)
-> hdc: reading: block=0, sectors=32, buffer=0xc6f37000
-> hdc: lost interrupt
-> hdc: lost interrupt [and so on several times]
->  * * *
-> 
-> I have no knowledge of the internals of the linux kernel, but I'm a
-> programmer and have both hardware and time to spend on solving this issue.
+What about the epitem->revents that we agreed to suppress ?
 
-Debug it, then :-). Try limiting its speed with hdparm to see if it
-helps.
+Me confused...
