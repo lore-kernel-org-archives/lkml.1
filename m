@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932465AbXCEWkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXCEWlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932465AbXCEWkq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932473AbXCEWkp
+	id S932461AbXCEWlI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932495AbXCEWlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:40:45 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:7671 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932465AbXCEWkb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:40:31 -0500
-Date: Mon, 5 Mar 2007 23:40:32 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: holzheu@de.ibm.com
-Subject: [S390] tape: Compression overwrites crypto setting
-Message-ID: <20070305224032.GE22630@skybase>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 5 Mar 2007 17:41:07 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:39909 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932487AbXCEWk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 17:40:58 -0500
+Date: Mon, 5 Mar 2007 14:40:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Lee Revell" <rlrevell@joe-job.com>,
+       "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+ scheduler
+Message-Id: <20070305144052.82a67511.akpm@linux-foundation.org>
+In-Reply-To: <200703051419.25814.gene.heskett@gmail.com>
+References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org>
+	<200703050453.08154.gene.heskett@gmail.com>
+	<75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com>
+	<200703051419.25814.gene.heskett@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Holzheu <holzheu@de.ibm.com>
+On Mon, 05 Mar 2007 14:19:25 -0500
+Gene Heskett <gene.heskett@gmail.com> wrote:
 
-[S390] tape: Compression overwrites crypto setting
+> Andrew, please, get this one in ASAP,
 
-After switching compression on/off with the mt command, tape encryption is no
-longer working. The reason for that is, that the modeset_byte is set to
-the compression value instead of using bitwise and/or bit operations to
-enable/disable the corresponding bit.
+I'm presently nearly 1000 messages behind on my lkml reading.  We'll get
+there.
 
-Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+> but promise me an -mm won't trash 
+> half my filesystems like one I tried 2-3 years ago did.
 
- drivers/s390/char/tape_std.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletion(-)
+I can't.  -mm is crap at present.  Well.  Mainline is crap at present, and
+-mm is crap^2.  I think I might be about to throw vast amounts of code
+overboard.
 
-diff -urpN linux-2.6/drivers/s390/char/tape_std.c linux-2.6-patched/drivers/s390/char/tape_std.c
---- linux-2.6/drivers/s390/char/tape_std.c	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6-patched/drivers/s390/char/tape_std.c	2007-03-05 22:51:51.000000000 +0100
-@@ -647,7 +647,10 @@ tape_std_mtcompression(struct tape_devic
- 		return PTR_ERR(request);
- 	request->op = TO_NOP;
- 	/* setup ccws */
--	*device->modeset_byte = (mt_count == 0) ? 0x00 : 0x08;
-+	if (mt_count == 0)
-+		*device->modeset_byte &= ~0x08;
-+	else
-+		*device->modeset_byte |= 0x08;
- 	tape_ccw_cc(request->cpaddr, MODE_SET_DB, 1, device->modeset_byte);
- 	tape_ccw_end(request->cpaddr + 1, NOP, 0, NULL);
- 	/* execute it */
+
