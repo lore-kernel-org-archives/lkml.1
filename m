@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934108AbXCFNSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXCFNSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934108AbXCFNSc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933290AbXCFNSb
+	id S933290AbXCFNSx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934113AbXCFNSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:18:31 -0500
-Received: from cavan.codon.org.uk ([217.147.92.49]:51273 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933277AbXCFNSa (ORCPT
+	Tue, 6 Mar 2007 08:18:52 -0500
+Received: from coyote.holtmann.net ([217.160.111.169]:34453 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933290AbXCFNSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:18:30 -0500
-Date: Tue, 6 Mar 2007 13:17:53 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Message-ID: <20070306131753.GA15187@srcf.ucam.org>
-References: <200702162223.59837.lenb@kernel.org> <20020101045751.GD4106@ucw.cz> <20070306122213.GF2919@inferi.kami.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070306122213.GF2919@inferi.kami.home>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.21 - part II (resend)
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Tue, 6 Mar 2007 08:18:51 -0500
+Subject: Re: [DOC] The documentation for HID Simple Driver Interface 0.5.0
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Li Yu <raise.sail@gmail.com>, Greg Kroah Hartman <greg@kroah.com>,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Vincent Legoll <vincentlegoll@gmail.com>,
+       "Zephaniah E. Hull" <warp@aehallh.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Harold Sargeant <harold-sargeant@ntlworld.com>,
+       liyu <liyu@ccoss.com.cn>
+In-Reply-To: <d120d5000703051211xb44adcckadd706560caa86e2@mail.gmail.com>
+References: <200703051532096508636@gmail.com>
+	 <1173127471.6638.96.camel@aeonflux.holtmann.net>
+	 <d120d5000703051211xb44adcckadd706560caa86e2@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 23:40:21 +0100
+Message-Id: <1173134421.6638.117.camel@aeonflux.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 01:22:13PM +0100, Mattia Dongili wrote:
+Hi Dmitry,
 
-> the audiopower is basically a _PS3/_PS0 switch for the device, while the
-> lanpower plays with the embedded controller to powerdown/powerup.
->
-> Now, unfortunately those methods are attached to a fake device in the
-> DSDT and afaict there's no way to tell which real device they are
-> playing with (except by inspecting the method implementations).
-> Well of course iff there's only _one_ sound card and _one_ nic you can
-> easily guess it :)
+> > This also means that the current keyboard and mouse
+> > input devices will become a HID driver.
 > 
-> Is there some way to hook into drivers for such kind of runtime power
-> management?
+> Are you talking about usbmouse and usbkbd?
 
-Before worrying, I think it would make more sense to instrument the 
-benefit gained against doing more "traditional" runtime management - 
-that is, simply shutting down the ethernet chipset or doing ac97 power 
-management. It's trivial to add those to the existing drivers, and if 
-the additional benefit of using the Sony-specific methods is small then 
-it's probably not really worth working out how to add it in.
+no, because if I recall correctly these are the boot mode drivers and
+actually not used at all in any modern distribution.
 
-Plus, implementing the generic support benefits more people :)
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+For me the task of converting HID reports into input events shouldn't be
+actually the job of the HID core layer. My understanding is that the HID
+core should support multiple transport layers. This is currently
+achieved through the hid_device abstraction and used by the USB and by
+the Bluetooth subsystem. This is the lower interface to HID. On the
+upper interface I like to see a driver like interface. So we can
+register specific drivers that can handle specific use cases or vendor
+specific reports. For standard keyboard and mouse reports we however
+should have a standard driver that can handle most of them.
+
+For identification we actually do have the bus type, vendor id and
+product id available. We also can register drivers for specific report
+ids or usages.
+
+I do like the HID simple driver idea, but it is not a simple driver, it
+should be a generic driver interface.
+
+Regards
+
+Marcel
+
+
