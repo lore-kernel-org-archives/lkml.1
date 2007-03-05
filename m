@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXCEKAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbXCEKCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbXCEKAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 05:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXCEKAt
+	id S932162AbXCEKCR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 05:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXCEKCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 05:00:49 -0500
-Received: from mx.laposte.net ([81.255.54.11]:22651 "EHLO mx.laposte.net"
+	Mon, 5 Mar 2007 05:02:17 -0500
+Received: from mail.queued.net ([207.210.101.209]:1045 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933006AbXCEKAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 05:00:48 -0500
-Message-ID: <1874.192.54.193.51.1173088840.squirrel@rousalka.dyndns.org>
-In-Reply-To: <200703050453.08154.gene.heskett@gmail.com>
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org>
-    <200703050453.08154.gene.heskett@gmail.com>
-Date: Mon, 5 Mar 2007 11:00:40 +0100 (CET)
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive 
-     cpu scheduler
-From: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
-To: "Gene Heskett" <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8-4.fc6
+	id S932162AbXCEKCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 05:02:16 -0500
+Message-ID: <45EBEA9F.9070109@debian.org>
+Date: Mon, 05 Mar 2007 05:02:07 -0500
+From: Andres Salomon <dilinger@debian.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] highres: warn on softirq handling an unsafe callback
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/mixed;
+ boundary="------------010503070102030508010304"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------010503070102030508010304
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Le Lun 5 mars 2007 10:53, Gene Heskett a écrit :
-> On Monday 05 March 2007, Nicolas Mailhot wrote:
->>This looks like -mm stuff if you want it in 2.6.22
->
-> This needs to get to 2.6.21, it really is that big an improvement.
+run_hrtimer_queue is called from a softirq context, and should never run
+a callback that is classified as HRTIMER_CB_IRQSAFE_NO_SOFTIRQ.  A bug
+in unrelated code had managed to trigger that bug, so let's add an
+explicit warning to this function.
 
-One can dream...
-I suspect Linus will disagree, especially if it never was in mm first
+Signed-off-by: Andres Salomon <dilinger@debian.org>
 
--- 
-Nicolas Mailhot
+--------------010503070102030508010304
+Content-Type: text/x-patch;
+ name="hrtimer5.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="hrtimer5.patch"
 
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 476cb0c..167c296 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1130,6 +1130,7 @@ static inline void run_hrtimer_queue(struct hrtimer_cpu_base *cpu_base,
+ 		if (base->softirq_time.tv64 <= timer->expires.tv64)
+ 			break;
+ 
++		WARN_ON_ONCE(timer->cb_mode == HRTIMER_CB_IRQSAFE_NO_SOFTIRQ);
+ 		timer_stats_account_hrtimer(timer);
+ 
+ 		fn = timer->function;
+
+--------------010503070102030508010304--
