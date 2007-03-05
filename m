@@ -1,46 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbXCEJMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbXCEJUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbXCEJMX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 04:12:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbXCEJMW
+	id S1752762AbXCEJUK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 04:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932081AbXCEJUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 04:12:22 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42652
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752756AbXCEJMW (ORCPT
+	Mon, 5 Mar 2007 04:20:10 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:27562 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbXCEJUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 04:12:22 -0500
-Date: Mon, 05 Mar 2007 01:12:20 -0800 (PST)
-Message-Id: <20070305.011220.112620254.davem@davemloft.net>
-To: lorenzo.milesi@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with skbuff.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <29c147bd0703050052x7c8dca4esfc51b66c67b01cb1@mail.gmail.com>
-References: <29c147bd0703050032k71a06603p89d541071be5d656@mail.gmail.com>
-	<20070305.004436.41635733.davem@davemloft.net>
-	<29c147bd0703050052x7c8dca4esfc51b66c67b01cb1@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 5 Mar 2007 04:20:08 -0500
+X-IronPort-AV: i="4.14,248,1170651600"; 
+   d="scan'208"; a="29940094:sNHT28492373"
+Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Aubrey Li <aubreylee@gmail.com>, bryan.wu@analog.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703050947.10379.arnd@arndb.de>
+References: <1172722480.5264.75.camel@roc-desktop>
+	 <200703032330.50116.arnd@arndb.de>
+	 <6d6a94c50703042254r6b0a328cu614f8c26ad0b9656@mail.gmail.com>
+	 <200703050947.10379.arnd@arndb.de>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Mon, 05 Mar 2007 17:19:58 +0800
+Message-Id: <1173086398.5264.194.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Lorenzo Milesi" <lorenzo.milesi@gmail.com>
-Date: Mon, 5 Mar 2007 09:52:34 +0100
-
-> That patch applies "fine" to 2.6.20.1:
+On Mon, 2007-03-05 at 09:47 +0100, Arnd Bergmann wrote:
+> On Monday 05 March 2007, Aubrey Li wrote:
+> > On 3/4/07, Arnd Bergmann <arnd@arndb.de> wrote:
 > 
-> linux-2.6.20.1 # patch -p1 --dry-run < /home/maxxer/kerpatch.txt
-> patching file net/ipv6/ndisc.c
-> Hunk #2 succeeded at 559 (offset 2 lines).
-> Hunk #3 succeeded at 638 (offset 4 lines).
-> Hunk #4 succeeded at 1390 (offset 7 lines).
+> > > In general, please put EXPORT_SYMBOL lines below the definition
+> > > of the symbol itself. This list of exports should only be used
+> > > for symbols that come from assembly files.
+> > 
+> > What is the right way to export symbol coming from c files?
+>  
+> As I said, below the symbol definition, like
 > 
-> If this is not the correct fix for that bug I have some other problem,
-> because this seems to have fixed for me! ;)
+> int global_var;
+> EXPORT_SYMBOL(global_var);
+> 
+> int global_function(void)
+> {
+> 	return 3;
+> }
+> EXPORT_SYMBOL(global_function);
+> 
 
-It just means there is a miscalculation somewhere else,
-because the bug that patch was meant to fix was cured
-by a different fix.
+Got it, the rule will be followed.
+
+> > > I'm curious: In your dual-core bf561, don't you actually need to implement
+> > > something that maintains atomicity across cores rather than just across
+> > > processes?
+> > 
+> > Yes, bf561 is a dual-core processor, but we are using only one core of
+> > bf561 now.
+> > IMHO, BF561 architecture was not designed for SMP or NUMA.
+> 
+> Interesting, so what is the intended use of the other core? Does the
+> hardware have any way of supporting concurrency between the cores,
+> other than sending interrupts between them?
+> 
+
+AFAIK, the dual-core in BF561 have their own L1 memory which can be
+configured as cache respectively. So there is no hardware to help cache
+coherence management, it is very hard to implement SMP, right?
+
+Maybe NUMA is a solution, but it is not a wonderful solution.
+
+In some application product, BF561 core A is running Linux kernel
++Applications while BF561 core B is just for some complicated
+video/audio codec algorithm.
+
+Any Linux multicore solution in BF561 situation is highly welcome.
+
+> > > How does this fit in with the generic SPI code? Does it duplicate stuff
+> > > from there, or do you use it?
+> > 
+> > We use our own. We have dma which can be used for SPI operations.
+> 
+> I just looked again at your code. My question was more directed at whether
+> you use your own SPI abstraction layer instead of drivers/spi, which
+> you fortunately don't. The piece I was missing however is the spi_bfin5xx.c
+> driver, which was not part of this patch, though you seem to rely on it.
+> Is that already part of the -mm kernel?
+> 
+> 	Arnd <><
+
+I will send out the SPI patch ASAP. and your signature is very
+interesting, it looks like a fish -:)
+
+Another question: when is the merge point from -mm to linus mainline, is
+it the same as the merge window after 2.6.21 released?
+
+Thanks again
+-Bryan Wu
