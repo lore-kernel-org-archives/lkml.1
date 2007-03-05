@@ -1,58 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbXCEEDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbXCEEIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbXCEEDq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 23:03:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXCEEDq
+	id S1752625AbXCEEIW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 23:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXCEEIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 23:03:46 -0500
-Received: from ellpspace.math.ualberta.ca ([129.128.207.67]:33708 "EHLO
-	ellpspace.math.ualberta.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752622AbXCEEDo (ORCPT
+	Sun, 4 Mar 2007 23:08:22 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:10186 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbXCEEIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 23:03:44 -0500
-Date: Sun, 4 Mar 2007 20:58:59 -0700
-From: Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mathieu =?iso-8859-1?Q?B=E9rard?= <Mathieu.Berard@crans.org>,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       Fabio Comolli <fabio.comolli@gmail.com>, Tejun Heo <htejun@gmail.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>,
-       Lukas Hejtmanek <xhejtman@fi.muni.cz>, Meelis Roos <mroos@linux.ee>,
-       Olivier Mondoloni <darkcore71@yahoo.fr>,
-       Thomas Renninger <trenn@suse.de>, Robert Moore <robert.moore@intel.com>,
-       lenb@kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [3/6] 2.6.21-rc2: known regressions
-Message-ID: <20070305035859.GA29234@ellpspace.math.ualberta.ca>
-Reply-To: michal@harddata.com
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015036.GH3441@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 4 Mar 2007 23:08:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PxZghEZbdW50Tw1CQTk1H+PyfH1sKHv1/Nj7Lipp6nDCB+lfFyMAmN4xSK2A+o6wl4SFo39VnsmkoyH+wumcuGAPZ87wmzjlT7eZiBFWUytmgZ5d11lAZdqBelbAYZUSH0UYsnjB6Bww5L6hzVn+vfoNrTqvCCUsdOCdfSL2gto=
+Message-ID: <a44ae5cd0703042008l41e74e4bj59a8d04de5074381@mail.gmail.com>
+Date: Sun, 4 Mar 2007 20:08:19 -0800
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc2-mm1 -- kernel/sched.c:3384: error: 'struct rq' has no member named 'in_nohz_recently'
+In-Reply-To: <a44ae5cd0703041822l777eb4adjea12cef99cf7d89c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070305015036.GH3441@stusta.de>
-User-Agent: Mutt/1.4.2.2i
+References: <a44ae5cd0703041822l777eb4adjea12cef99cf7d89c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 02:50:36AM +0100, Adrian Bunk wrote:
-> This email lists some known regressions in 2.6.21-rc2 compared to 2.6.20
-> that are not yet fixed in Linus' tree.
-....
-> Subject    : kernels fail to boot with drives on ATIIXP controller
-> References : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229621
-> Submitter  : Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
-> Status     : unknown
+Ah, I see this was already reported.  Sorry.  My query at
+marc.theaimsgroup.com didn't find the previous report.  I just
+stumbled onto it while browsing for other information.
 
-Alan added comment to my posting that my problems are caused by
-messed up IRQ routing on that box I tried.  Indeed, I can boot
-kernel 2.6.20-1.2962.fc7, which really is 2.6.21-rc2, provided
-I will use 'acpi=off irqpoll'.  Anything else and a boot silently
-dies if 'acpi=off' is skipped or is not finding disk if 'irqpoll'
-is missing.
-
-Somehow 2.6.19 is booting on the same hardware without "valliant
-efforts"; OTOH 'ahci' driver was not used there.
-
-    Michal
+       Miles
