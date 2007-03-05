@@ -1,42 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbXCEVjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933635AbXCEVnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933645AbXCEVjs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 16:39:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbXCEVjr
+	id S933635AbXCEVnF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 16:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933457AbXCEVnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 16:39:47 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:44334 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933645AbXCEVjq (ORCPT
+	Mon, 5 Mar 2007 16:43:04 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:60746 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933635AbXCEVnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 16:39:46 -0500
-Message-ID: <45EC8DF9.6060407@cosmosbay.com>
-Date: Mon, 05 Mar 2007 22:39:05 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Mon, 5 Mar 2007 16:43:03 -0500
+Date: Mon, 5 Mar 2007 13:42:56 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] configfs: add missing mutex_unlock()
+Message-ID: <20070305214256.GC20528@ca-server1.us.oracle.com>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+References: <20070304133812.GC8519@APFDCB5C> <200703041510.20127.arnd@arndb.de> <20070304151659.GA19972@APFDCB5C>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch - v2/resend] epoll ready set loops diet ...
-References: <Pine.LNX.4.64.0703051308060.4907@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0703051308060.4907@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 05 Mar 2007 22:39:13 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070304151659.GA19972@APFDCB5C>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi a écrit :
-> ChangeLog:
-> 
-> v2) In v1, I was trying to avoid to get the spinlock twice WRT yesterday 
->     patch, but it turns out I can't since the ready list will be travelling 
->     through a path w/out the ep->sem held. Oh well...
-> 
-> 
+	First, thank you Akinobu for discovering the bug.
 
-What about the epitem->revents that we agreed to suppress ?
+On Mon, Mar 05, 2007 at 12:16:59AM +0900, Akinobu Mita wrote:
+> On Sun, Mar 04, 2007 at 03:10:19PM +0100, Arnd Bergmann wrote:
+> > This should be changed to jump to a new exit point, before the mutex_unlock
+> > at the end of the function. Having multiple places in the function that
+> > release the same lock easily leads to the kind of bug you are fixing here.
+> 
+> Agreed. Please see the patch below (untested).
 
-Me confused...
+	Jumping isn't always the solution.  The new patch, while better
+than the first, still calls mutex_unlock() in two places.  The following
+patch keeps it all in one code path, and keeps all dentry modification
+underneath a single mutex_lock()/unlock() pair.  What do you think?  I'm
+building it to test as we speak.
+
+Joel
+
+diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
+index 1814ba4..489c265 100644
+--- a/fs/configfs/dir.c
++++ b/fs/configfs/dir.c
+@@ -1142,25 +1142,22 @@ int configfs_register_subsystem(struct configfs_subsystem *subsys)
+ 
+ 	err = -ENOMEM;
+ 	dentry = d_alloc(configfs_sb->s_root, &name);
+-	if (!dentry)
+-		goto out_release;
+-
+-	d_add(dentry, NULL);
++	if (dentry) {
++		d_add(dentry, NULL);
+ 
+-	err = configfs_attach_group(sd->s_element, &group->cg_item,
+-				    dentry);
+-	if (!err)
+-		dentry = NULL;
+-	else
+-		d_delete(dentry);
++		err = configfs_attach_group(sd->s_element, &group->cg_item,
++					    dentry);
++		if (err) {
++			d_delete(dentry);
++			dput(dentry);
++		}
++	}
+ 
+ 	mutex_unlock(&configfs_sb->s_root->d_inode->i_mutex);
+ 
+-	if (dentry) {
+-	    dput(dentry);
+-out_release:
+-	    unlink_group(group);
+-	    configfs_release_fs();
++	if (err) {
++		unlink_group(group);
++		configfs_release_fs();
+ 	}
+ 
+ 	return err;
+
+-- 
+
+"Nobody loves me,
+ Nobody seems to care.
+ Troubles and worries, people,
+ You know I've had my share."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
