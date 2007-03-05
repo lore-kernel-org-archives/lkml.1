@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbXCEUL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbXCEUN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752843AbXCEUL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 15:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXCEUL1
+	id S1752847AbXCEUN3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 15:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXCEUN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 15:11:27 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53059 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752843AbXCEUL0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 15:11:26 -0500
-Message-ID: <45EC796D.5050705@vmware.com>
-Date: Mon, 05 Mar 2007 12:11:25 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Mon, 5 Mar 2007 15:13:29 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:50869 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752847AbXCEUN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 15:13:28 -0500
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Greg KH <greg@kroah.com>
+Subject: Re: [patch 00/18] 2.6.18-stable review
+Date: Mon, 5 Mar 2007 22:13:20 +0200
+User-Agent: KMail/1.9.6
+Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+References: <20070221014927.GA3684@kroah.com> <200703051544.24041.caglar@pardus.org.tr> <20070305192622.GA2768@kroah.com>
+In-Reply-To: <20070305192622.GA2768@kroah.com>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       virtualization <virtualization@lists.osdl.org>
-Subject: Re: [patch] paravirt: VDSO page is essential
-References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <20070305143437.GF22829@bingen.suse.de>
-In-Reply-To: <20070305143437.GF22829@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart2313152.XGaZYuW2Em";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200703052213.22146.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> But this still means I would need to decide between a PARAVIRT
-> kernel that either supports xen/VMI or cannot boot old user land without
-> weird options.  I don't think that's the correct solution. The goal
-> is a single binary that runs everywhere and is still compatible.
->   
+--nextPart2313152.XGaZYuW2Em
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Rusty's patch looks a step in the right direction to me.  I can't 
-comment on Ingo's patch as he failed to -cc me on it, despite the fact 
-that we are the only ones affected by it.  We are not concerned so much 
-with supporting legacy user land deployments, as we expect for the most 
-part, the install scenario to happen when upgrading to new distros.
+05 Mar 2007 Pts tarihinde, Greg KH =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=C4=
+=B1:=20
+> > So maybe 2.6.18 deserves another stable release :) ?
+>
+> Why?  Does anyone really use it now that 2.6.19 and 2.6.20 is out?
+>
+> I don't want to do a new release as we need to catch up on the 2.6.20
+> issues...
+>
+> And also remember, the point of the -stable tree was that we would drop
+> older releases after the next release came out.
 
-> What would probably work is to somehow decide at runtime if a hypervisor
-> is there or not and then set vdso default based on that. I guess that
-> detection would be hypervisor specific though and probably would
-> need paravirt ops extensions.
->   
+I know, i just referred your "Barring anything extremely serious, this will=
+ be=20
+the last 2.6.18 based release." sentence from last stable release=20
+announcement and some security regressions seems something to me and just=20
+want to ping :) and of course i clearly understand your point of -stable tr=
+ee=20
+maintanence with much more up2date kernel and drop olders view.
 
-What we really need to do is to be able to detect an old user land and 
-drop VDSO support when that is found.  But since we can't do that, the 
-next best thing is to allow the hypervisor to choose whatever workaround 
-it wants when it moves the fixmap and compat_vdso was enabled.  In our 
-case, the workaround we will want is a boot option to disable VDSO for 
-old user land, and a printk warning if you take #GPs and kill the init 
-proc, because for us, this is not an expected support scenario.  We 
-would much rather support the VDSO by default in paravirt kernels even 
-with COMPAT_VDSO turned on.
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-Zach
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart2313152.XGaZYuW2Em
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.1 (GNU/Linux)
+
+iD8DBQBF7Hniy7E6i0LKo6YRAjxqAJ0Sc0lfkbXknnf2dIVlLVVtdBMpswCfbwnh
+v8BRhMZrbF7vmBcYi05gzJQ=
+=gFib
+-----END PGP SIGNATURE-----
+
+--nextPart2313152.XGaZYuW2Em--
