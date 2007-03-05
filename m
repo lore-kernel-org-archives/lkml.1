@@ -1,97 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXCEIrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbXCEIuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752083AbXCEIrR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 03:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXCEIrQ
+	id S1752145AbXCEIuO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 03:50:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbXCEIuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 03:47:16 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:62010 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbXCEIrP (ORCPT
+	Mon, 5 Mar 2007 03:50:14 -0500
+Received: from mis011-1.exch011.intermedia.net ([64.78.21.128]:9264 "EHLO
+	mis011-1.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752145AbXCEIuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 03:47:15 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Aubrey Li" <aubreylee@gmail.com>
-Subject: Re: [PATCH -mm 1/5] Blackfin: blackfin architecture patch update
-Date: Mon, 5 Mar 2007 09:47:09 +0100
-User-Agent: KMail/1.9.6
-Cc: bryan.wu@analog.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <1172722480.5264.75.camel@roc-desktop> <200703032330.50116.arnd@arndb.de> <6d6a94c50703042254r6b0a328cu614f8c26ad0b9656@mail.gmail.com>
-In-Reply-To: <6d6a94c50703042254r6b0a328cu614f8c26ad0b9656@mail.gmail.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Mon, 5 Mar 2007 03:50:12 -0500
+Message-ID: <45EBD9BC.4030801@qumranet.com>
+Date: Mon, 05 Mar 2007 10:50:04 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [patch] KVM: T60 resume fix
+References: <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu> <45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu>
+In-Reply-To: <20070305082251.GA23366@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703050947.10379.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX18RfrAkxmGD5N7aqSRPdwGP/W/I5CcC+YNoZr5
- DSuJxqONaZ2J1yafV5vgHoJaUXKEqjq0E+rmcuvNqXy1AwJItH
- xQYwUEZNIhvAHu8W4lHZQ==
+X-OriginalArrivalTime: 05 Mar 2007 08:50:11.0000 (UTC) FILETIME=[488BA380:01C75F03]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 March 2007, Aubrey Li wrote:
-> On 3/4/07, Arnd Bergmann <arnd@arndb.de> wrote:
+Ingo Molnar wrote:
+> * Avi Kivity <avi@qumranet.com> wrote:
+>
+>   
+>>> my T60 laptop does not resume correctly due to KVM attempting to 
+>>> send an IPI to a CPU that might be down (or not up yet). (Doing so 
+>>> also triggers the send_IPI_mask_bitmask() warning in 
+>>> arch/i386/kernel/smp.c, line 732.)
+>>>
+>>> with this fix applied my laptop does not hang during resume.
+>>>
+>>> [ KVM will have to disable/enable virtualization on the CPU itself 
+>>>  that goes down / comes up, not via an IPI sent from the requesting
+>>> CPU. ]
+>>>       
+>
+>   
+>> That is already CPU_ONLINE in my tree (and in the pull request sent to 
+>> Linus a couple of days ago).
+>>     
+>
+> that solves the resume problem - but doesnt solve the CPU_DEAD issue of 
+> sending an IPI to an already offline CPU. Might be a better idea to do 
+> it in CPU_DOWN_PREPARE? (and then to also add a CPU_DOWN_FAILED branch?)
+>
+> 	
 
-> > In general, please put EXPORT_SYMBOL lines below the definition
-> > of the symbol itself. This list of exports should only be used
-> > for symbols that come from assembly files.
-> 
-> What is the right way to export symbol coming from c files?
- 
-As I said, below the symbol definition, like
+Mainline now has DOWN_PREPARE and UP_CANCELED calling 
+->hardware_disable(), and ONLINE calling ->hardware_enabled().  What 
+tree are you looking at?
 
-int global_var;
-EXPORT_SYMBOL(global_var);
+[but I do see the need for DOWN_FAILED now. Off to find a resumable 
+machine...]
 
-int global_function(void)
-{
-	return 3;
-}
-EXPORT_SYMBOL(global_function);
 
-> > This detection seems to me like a strange thing to do in setup_arch().
-> > It should be possible to do this much later, at a point where the system
-> > is much less fragile and e.g. printk works. It could even be moved into
-> > some place in the mtd code itself, since other architectures might want
-> > to do the same thing.
-> 
-> After download the rootfs image from host to the target ram, we need
-> to move the image to the right place, so we need to know the size of
-> the image at this time.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-Well, it doesn't have to be in the modular part of the kernel, but some
-place later than setup_arch() would be a step in the right direction.
-If you need it before the file systems, an arch_initcall() might be
-the right place.
-
-> > I'm curious: In your dual-core bf561, don't you actually need to implement
-> > something that maintains atomicity across cores rather than just across
-> > processes?
-> 
-> Yes, bf561 is a dual-core processor, but we are using only one core of
-> bf561 now.
-> IMHO, BF561 architecture was not designed for SMP or NUMA.
-
-Interesting, so what is the intended use of the other core? Does the
-hardware have any way of supporting concurrency between the cores,
-other than sending interrupts between them?
-
-> > How does this fit in with the generic SPI code? Does it duplicate stuff
-> > from there, or do you use it?
-> 
-> We use our own. We have dma which can be used for SPI operations.
-
-I just looked again at your code. My question was more directed at whether
-you use your own SPI abstraction layer instead of drivers/spi, which
-you fortunately don't. The piece I was missing however is the spi_bfin5xx.c
-driver, which was not part of this patch, though you seem to rely on it.
-Is that already part of the -mm kernel?
-
-	Arnd <><
