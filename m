@@ -1,192 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933479AbXCEOXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933454AbXCEOZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933479AbXCEOXj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 09:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933483AbXCEOXj
+	id S933454AbXCEOZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 09:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933471AbXCEOZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 09:23:39 -0500
-Received: from mga07.intel.com ([143.182.124.22]:3108 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933479AbXCEOXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 09:23:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,250,1170662400"; 
-   d="scan'208,223"; a="190249698:sNHT21391965"
-Message-ID: <45EC27E5.20006@linux.intel.com>
-Date: Mon, 05 Mar 2007 17:23:33 +0300
-From: Leonid Ananiev <leonid.i.ananiev@linux.intel.com>
-Reply-To: leonid.i.ananiev@intel.com
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Mon, 5 Mar 2007 09:25:26 -0500
+Received: from rtr.ca ([64.26.128.89]:1642 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933454AbXCEOZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 09:25:25 -0500
+Message-ID: <45EC2851.7020905@rtr.ca>
+Date: Mon, 05 Mar 2007 09:25:21 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] aio: fix oops because of extra IO control block freeing.
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: sdhci-devel@list.drzeus.cx, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] sdhci regression in 2.6.21-rc2
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de> <45EB9DC6.8010403@rtr.ca> <45EB9E72.6040107@rtr.ca> <45EBAC73.7010600@drzeus.cx>
+In-Reply-To: <45EBAC73.7010600@drzeus.cx>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- From Leonid Ananiev
+Pierre Ossman wrote:
+> Mark Lord wrote:
+>> Another regression, for Pierre Ossman this time.
+>>
+>> My syslog gets spammed like this (below) on suspend/resume (to RAM) cycles.
+>> Worked fine, without all of the noise, in all previous kernels up to
+>> 2.6.20+.
+>>
+> 
+> This looks like a PCI configuration issue.
 
-The patch fixes oops because of extra IO control block freeing.
-IO is retried if page could not be invalidated.
+To me, it looks like a buggy driver "resume" sequence.
+The low-level SDHCI driver is trying to use the device
+before the PM/PCI stuff has restored the pre-suspend state.
 
-Signed-off-by: Leonid Ananiev <leonid.i.ananiev@intel.com>
+> Can you bisect which commit caused the issue?
 
-The patch fixes oops "Kernel BUG at fs/aio.c:509" archived at 
-http://lkml.org/lkml/2007/2/8/337
-The number of IO control block (iocb)users < 0.
-If page could not be invalidated by invalidate_inode_pages2_range()
-than EIO is returned. It happens if journal_try_to_free_buffers() fails 
-to drop_buffers().
-This EIO is not differing from real IO competition with EIO and 
-aio_complete() is called.
-Later aio_complete() is called from dio_bio_end_aio() and frees iocb 
-once more.
+Nope.  I don't have time to run around that (huge) treadmill, thanks.
 
-After patch generic_file_direct_IO() sets PgBusy flag in iocb
-if page could not be invalidated. iocb is retried after IO competition.
-The process is waked up if IO is SYNC else iocb is kicked.
-The lines “if (ret != -EIOCBRETRY)” is deleted because
-nothing set to EIOCBRETRY.
+>And what's the PCI address of the device?
 
-Next patches 2/3 and 3/3 do cleanup only.
-The patch is applied and tested with aio-stress on 2.6.20 and 2.6.21-rc2
-diff -uprNX linux-2.6.21-rc2/Documentation/dontdiff 
-linux-2.6.21-rc2/fs/aio.c linux-2.6.21-rc2-aio31/fs/aio.c
---- linux-2.6.21-rc2/fs/aio.c	2007-03-05 00:29:58.000000000 -0800
-+++ linux-2.6.21-rc2-aio31/fs/aio.c	2007-03-05 00:38:11.000000000 -0800
-@@ -723,37 +723,12 @@ static ssize_t aio_run_iocb(struct kiocb
-  	ret = retry(iocb);
-  	current->io_wait = NULL;
+0000:03:01.2 0805: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 17)
 
--	if (ret != -EIOCBRETRY && ret != -EIOCBQUEUED) {
-+	if (!kiocbIsPgBusy(iocb) && ret != -EIOCBQUEUED) {
-  		BUG_ON(!list_empty(&iocb->ki_wait.task_list));
-  		aio_complete(iocb, ret, 0);
-  	}
-  out:
-  	spin_lock_irq(&ctx->ctx_lock);
--
--	if (-EIOCBRETRY == ret) {
--		/*
--		 * OK, now that we are done with this iteration
--		 * and know that there is more left to go,
--		 * this is where we let go so that a subsequent
--		 * "kick" can start the next iteration
--		 */
--
--		/* will make __queue_kicked_iocb succeed from here on */
--		INIT_LIST_HEAD(&iocb->ki_run_list);
--		/* we must queue the next iteration ourselves, if it
--		 * has already been kicked */
--		if (kiocbIsKicked(iocb)) {
--			__queue_kicked_iocb(iocb);
--
--			/*
--			 * __queue_kicked_iocb will always return 1 here, because
--			 * iocb->ki_run_list is empty at this point so it should
--			 * be safe to unconditionally queue the context into the
--			 * work queue.
--			 */
--			aio_queue_work(ctx);
--		}
--	}
-  	return ret;
-  }
+So, from the syslog, we see that the machine suspends (to RAM):
 
-@@ -945,6 +920,10 @@ int fastcall aio_complete(struct kiocb *
-  		wake_up_process(iocb->ki_obj.tsk);
-  		return 1;
-  	}
-+	if (TestClearPgBusy(iocb)) { // page could not be invalidated
-+		kick_iocb(iocb);
-+		return 1;
-+	}
+>kernel: Stopping tasks ... done.
+>kernel: Suspending console(s)
+>kernel: pl2303 1-1.3:1.0: no suspend for driver pl2303?
+>kernel: ACPI: PCI interrupt for device 0000:03:01.2 disabled
+>kernel: ACPI: PCI interrupt for device 0000:03:00.0 disabled
+>kernel: ACPI: PCI interrupt for device 0000:00:1f.2 disabled
+>kernel: ACPI: PCI interrupt for device 0000:00:1e.2 disabled
+>kernel: ACPI: PCI interrupt for device 0000:00:1d.7 disabled
+>kernel: ACPI: PCI interrupt for device 0000:00:1d.3 disabled
+>kernel: ACPI: PCI interrupt for device 0000:00:1d.2 disabled
+>kernel: ACPI: PCI interrupt for device 0000:00:1d.1 disabled
+>kernel: ACPI: PCI interrupt for device 0000:00:1d.0 disabled
+>kernel: Intel machine check architecture supported.
+>kernel: Intel machine check reporting enabled on CPU#0.
 
-  	info = &ctx->ring_info;
+A few seconds later, I manually wake-up the machine.
+It resumes (from RAM), and the PM code begins restoring PCI config
+space for various device:
 
-diff -uprNX linux-2.6.21-rc2/Documentation/dontdiff 
-linux-2.6.21-rc2/fs/read_write.c linux-2.6.21-rc2-aio31/fs/read_write.c
---- linux-2.6.21-rc2/fs/read_write.c	2007-03-05 00:29:58.000000000 -0800
-+++ linux-2.6.21-rc2-aio31/fs/read_write.c	2007-03-05 04:44:44.000000000 
--0800
-@@ -239,7 +239,7 @@ ssize_t do_sync_read(struct file *filp,
+>kernel: Back to C!
+>kernel: PM: Writing back config space on device 0000:00:01.0 at offset 7 (was 2000d0d0, writing d0d0)
+>kernel: PM: Writing back config space on device 0000:00:01.0 at offset 3 (was 10000, writing 10010)
+>kernel: PCI: Setting latency timer of device 0000:00:01.0 to 64
+>kernel: ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 16 (level, low) -> IRQ 16
+>kernel: PCI: Setting latency timer of device 0000:00:1d.0 to 64
+>kernel: usb usb2: root hub lost power or was reset
+>kernel: PCI: Enabling device 0000:00:1d.1 (0000 -> 0001)
+>kernel: ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 17 (level, low) -> IRQ 18
+>kernel: PCI: Setting latency timer of device 0000:00:1d.1 to 64
+>kernel: PM: Writing back config space on device 0000:00:1d.1 at offset f (was 200, writing 20a)
+>kernel: PM: Writing back config space on device 0000:00:1d.1 at offset 8 (was 1, writing bf61)
+>kernel: usb usb3: root hub lost power or was reset
+>kernel: PCI: Enabling device 0000:00:1d.2 (0000 -> 0001)
+>kernel: ACPI: PCI Interrupt 0000:00:1d.2[C] -> GSI 18 (level, low) -> IRQ 19
+>kernel: PCI: Setting latency timer of device 0000:00:1d.2 to 64
+>kernel: PM: Writing back config space on device 0000:00:1d.2 at offset f (was 300, writing 309)
+>kernel: PM: Writing back config space on device 0000:00:1d.2 at offset 8 (was 1, writing bf41)
+>kernel: usb usb4: root hub lost power or was reset
+>kernel: PCI: Enabling device 0000:00:1d.3 (0000 -> 0001)
+>kernel: ACPI: PCI Interrupt 0000:00:1d.3[D] -> GSI 19 (level, low) -> IRQ 17
+>kernel: PCI: Setting latency timer of device 0000:00:1d.3 to 64
+>kernel: PM: Writing back config space on device 0000:00:1d.3 at offset f (was 400, writing 407)
+>kernel: PM: Writing back config space on device 0000:00:1d.3 at offset 8 (was 1, writing bf21)
+>kernel: usb usb5: root hub lost power or was reset
 
-  	for (;;) {
-  		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
--		if (ret != -EIOCBRETRY)
-+		if (!TestClearPgBusy(&kiocb))
-  			break;
-  		wait_on_retry_sync_kiocb(&kiocb);
-  	}
-@@ -297,7 +297,7 @@ ssize_t do_sync_write(struct file *filp,
+But.. in the middle of all of this, we now see the SHDCI code
+trying to talk to its as-yet-not-restored device, and being rather
+noisy about it all:
 
-  	for (;;) {
-  		ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
--		if (ret != -EIOCBRETRY)
-+		if (!TestClearPgBusy(&kiocb))
-  			break;
-  		wait_on_retry_sync_kiocb(&kiocb);
-  	}
-@@ -463,7 +463,7 @@ ssize_t do_sync_readv_writev(struct file
+>kernel: sdhci: ============== REGISTER DUMP ==============
+>kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
+>kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
+>kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
+>kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
+>kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
+>kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
+>kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
+>kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
+>kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
+>kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
+>kernel: sdhci: ===========================================
+>kernel: mmc0: Card is consuming too much power!
+>kernel: mmc0: Unexpected interrupt 0x00800000.
+>kernel: sdhci: ============== REGISTER DUMP ==============
+>kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
+>kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
+>kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
+>kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
+>kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
+>kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
+>kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
+>kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
+>kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
+>kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
+>kernel: sdhci: ===========================================
 
-  	for (;;) {
-  		ret = fn(&kiocb, iov, nr_segs, kiocb.ki_pos);
--		if (ret != -EIOCBRETRY)
-+		if (!TestClearPgBusy(&kiocb))
-  			break;
-  		wait_on_retry_sync_kiocb(&kiocb);
-  	}
-diff -uprNX linux-2.6.21-rc2/Documentation/dontdiff 
-linux-2.6.21-rc2/include/linux/aio.h 
-linux-2.6.21-rc2-aio31/include/linux/aio.h
---- linux-2.6.21-rc2/include/linux/aio.h	2007-02-04 10:44:54.000000000 -0800
-+++ linux-2.6.21-rc2-aio31/include/linux/aio.h	2007-03-05 
-00:38:11.000000000 -0800
-@@ -34,21 +34,26 @@ struct kioctx;
-  /* #define KIF_LOCKED		0 */
-  #define KIF_KICKED		1
-  #define KIF_CANCELLED		2
-+#define KIF_PG_BUSY		3
+Meanwhile, the PM code is also continuing to bring up devices:
 
-  #define kiocbTryLock(iocb)	test_and_set_bit(KIF_LOCKED, &(iocb)->ki_flags)
-  #define kiocbTryKick(iocb)	test_and_set_bit(KIF_KICKED, &(iocb)->ki_flags)
-+#define TestClearPgBusy(iocb)	test_and_clear_bit(KIF_PG_BUSY, 
-&(iocb)->ki_flags)
+>kernel: ACPI: PCI Interrupt 0000:00:1d.7[A] -> GSI 16 (level, low) -> IRQ 16
+>kernel: PCI: Setting latency timer of device 0000:00:1d.7 to 64
+>kernel: usb usb1: root hub lost power or was reset
+>kernel: ehci_hcd 0000:00:1d.7: debug port 1
+>kernel: PCI: cache line size of 32 is not supported by device 0000:00:1d.7
+>kernel: PM: Writing back config space on device 0000:00:1e.0 at offset 9 (was 10001, writing 8bf18801)
+>kernel: PM: Writing back config space on device 0000:00:1e.0 at offset 8 (was 0, writing dfc0dfc0)
+>kernel: PM: Writing back config space on device 0000:00:1e.0 at offset 7 (was 2280e0f0, writing 22802020)
+>kernel: PM: Writing back config space on device 0000:00:1e.0 at offset 6 (was 20030300, writing 20070300)
+>kernel: PM: Writing back config space on device 0000:00:1e.0 at offset 1 (was 100005, writing 100107)
+>kernel: PCI: Setting latency timer of device 0000:00:1e.0 to 64
+>kernel: PM: Writing back config space on device 0000:00:1e.2 at offset f (was 100, writing 10b)
+>kernel: PM: Writing back config space on device 0000:00:1e.2 at offset 7 (was 0, writing dffffd00)
+>kernel: PM: Writing back config space on device 0000:00:1e.2 at offset 6 (was 0, writing dffffe00)
+>kernel: PM: Writing back config space on device 0000:00:1e.2 at offset 5 (was 1, writing ec41)
+>kernel: PM: Writing back config space on device 0000:00:1e.2 at offset 4 (was 1, writing ed01)
+>kernel: PM: Writing back config space on device 0000:00:1e.2 at offset 1 (was 2900000, writing 2900003)
+>kernel: ACPI: PCI Interrupt 0000:00:1e.2[A] -> GSI 16 (level, low) -> IRQ 16
+>kernel: PCI: Setting latency timer of device 0000:00:1e.2 to 64
 
-  #define kiocbSetLocked(iocb)	set_bit(KIF_LOCKED, &(iocb)->ki_flags)
-  #define kiocbSetKicked(iocb)	set_bit(KIF_KICKED, &(iocb)->ki_flags)
-  #define kiocbSetCancelled(iocb)	set_bit(KIF_CANCELLED, &(iocb)->ki_flags)
-+#define kiocbSetPgBusy(iocb)	set_bit(KIF_PG_BUSY, &(iocb)->ki_flags)
+And the SDHCI continues to spam the syslog:
 
-  #define kiocbClearLocked(iocb)	clear_bit(KIF_LOCKED, &(iocb)->ki_flags)
-  #define kiocbClearKicked(iocb)	clear_bit(KIF_KICKED, &(iocb)->ki_flags)
-  #define kiocbClearCancelled(iocb)	clear_bit(KIF_CANCELLED, 
-&(iocb)->ki_flags)
-+#define kiocbClearPgBusy(iocb)	clear_bit(KIF_PG_BUSY, &(iocb)->ki_flags)
+>kernel: mmc0: Controller never released inhibit bit(s).
+>kernel: sdhci: ============== REGISTER DUMP ==============
+>kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
+>kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
+>kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
+>kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
+>kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
+>kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
+>kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
+>kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
+>kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
+>kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
+>kernel: sdhci: ===========================================
+>kernel: mmc0: Reset 0x2 never completed.
+>kernel: sdhci: ============== REGISTER DUMP ==============
+>kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
+>kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
+>kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
+>kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
+>kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
+>kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
+>kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
+>kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
+>kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
+>kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
+>kernel: sdhci: ===========================================
+>kernel: mmc0: Reset 0x4 never completed.
+>kernel: sdhci: ============== REGISTER DUMP ==============
+>kernel: sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
+>kernel: sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
+>kernel: sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
+>kernel: sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
+>kernel: sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
+>kernel: sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
+>kernel: sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
+>kernel: sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
+>kernel: sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
+>kernel: sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
+>kernel: sdhci: ===========================================
+...
+<snip>
 
-  #define kiocbIsLocked(iocb)	test_bit(KIF_LOCKED, &(iocb)->ki_flags)
-  #define kiocbIsKicked(iocb)	test_bit(KIF_KICKED, &(iocb)->ki_flags)
-  #define kiocbIsCancelled(iocb)	test_bit(KIF_CANCELLED, &(iocb)->ki_flags)
-+#define kiocbIsPgBusy(iocb)	test_bit(KIF_PG_BUSY, &(iocb)->ki_flags)
+And eventually we see more PM recovery messages:
 
-  /* is there a better place to document function pointer methods? */
-  /**
-diff -upr linux-2.6.20/mm/filemap.c linux-2.6.20-aio2/mm/filemap.c
---- linux-2.6.20/mm/filemap.c	2007-02-04 21:44:54.000000000 +0300
-+++ linux-2.6.20-aio2/mm/filemap.c	2007-03-04 21:46:10.000000000 +0300
-@@ -2413,10 +2413,9 @@ generic_file_direct_IO(int rw, struct ki
-  		if (rw == WRITE && mapping->nrpages) {
-  			pgoff_t end = (offset + write_len - 1)
-  						>> PAGE_CACHE_SHIFT;
--			int err = invalidate_inode_pages2_range(mapping,
--					offset >> PAGE_CACHE_SHIFT, end);
--			if (err)
--				retval = err;
-+			if (invalidate_inode_pages2_range(mapping,
-+					offset >> PAGE_CACHE_SHIFT, end))
-+				kiocbSetPgBusy(iocb);
-  		}
-  	}
-  	return retval;
+>kernel: PM: Writing back config space on device 0000:00:1f.0 at offset 1 (was 2000007, writing 2000107)
+>kernel: PM: Writing back config space on device 0000:00:1f.2 at offset f (was 200, writing 20a)
+>kernel: PM: Writing back config space on device 0000:00:1f.2 at offset 9 (was d0000, writing 0)
+>kernel: ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 17 (level, low) -> IRQ 18
+>kernel: PCI: Setting latency timer of device 0000:00:1f.2 to 64
+>kernel: PM: Writing back config space on device 0000:00:1f.3 at offset f (was 200, writing 20a)
+>kernel: PM: Writing back config space on device 0000:00:1f.3 at offset 1 (was 2800001, writing 2800101)
+>kernel: PM: Writing back config space on device 0000:01:00.0 at offset f (was 1ff, writing 10b)
+>kernel: PM: Writing back config space on device 0000:01:00.0 at offset c (was 0, writing dfe00000)
+>kernel: PM: Writing back config space on device 0000:01:00.0 at offset 3 (was 0, writing 10)
+>kernel: ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+>kernel: PM: Writing back config space on device 0000:03:00.0 at offset f (was 100, writing 109)
+>kernel: PM: Writing back config space on device 0000:03:00.0 at offset 4 (was 0, writing dfcfe000)
+>kernel: PM: Writing back config space on device 0000:03:00.0 at offset 3 (was 0, writing 4000)
+>kernel: PM: Writing back config space on device 0000:03:00.0 at offset 1 (was 100000, writing 100106)
+>kernel: ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 18 (level, low) -> IRQ 19
+
+And here, finally, we see the PM code restoring state for the SDHCI controller:
+
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset f (was 7800100, writing 58001ff)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset e (was 0, writing 24fc)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset d (was 0, writing 2400)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset c (was 0, writing 20fc)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset b (was 0, writing 2000)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset a (was 0, writing 8ffff000)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset 9 (was 0, writing 8c000000)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset 8 (was 0, writing 8bfff000)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset 7 (was 0, writing 88000000)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset 6 (was 0, writing b0070403)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset 4 (was 0, writing dfc00000)
+>kernel: PM: Writing back config space on device 0000:03:01.0 at offset 3 (was 820000, writing 82a800)
+>kernel: PM: Writing back config space on device 0000:03:01.1 at offset 4 (was 0, writing dfcfc800)
+>kernel: PM: Writing back config space on device 0000:03:01.1 at offset 3 (was 800000, writing 804000)
+>kernel: PM: Writing back config space on device 0000:03:01.1 at offset 1 (was 2100000, writing 2100106)
+>kernel: ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[19]  MMIO=[dfcfc800-dfcfcfff]  Max Packet=[2048]  IR/IT contexts=[4/4]
+>kernel: PM: Writing back config space on device 0000:03:01.2 at offset 4 (was 0, writing dfcfc700)
+>kernel: PM: Writing back config space on device 0000:03:01.2 at offset 3 (was 800000, writing 804000)
+>kernel: PM: Writing back config space on device 0000:03:01.2 at offset 1 (was 2100000, writing 2100106)
+>kernel: ACPI: PCI Interrupt 0000:03:01.2[C] -> GSI 17 (level, low) -> IRQ 18
+>kernel: PM: Writing back config space on device 0000:03:03.0 at offset f (was 18030100, writing 1803010a)
+>kernel: PM: Writing back config space on device 0000:03:03.0 at offset 4 (was 0, writing dfcfd000)
+>kernel: PM: Writing back config space on device 0000:03:03.0 at offset 3 (was 0, writing 4010)
+>kernel: PM: Writing back config space on device 0000:03:03.0 at offset 1 (was 2900000, writing 2900112)
+
+So, somewhere, the SDHCI drivers need to be told to stay dormant until their
+device has been recovered, just like most other device drivers do.
+
+Cheers
+
+Mark
