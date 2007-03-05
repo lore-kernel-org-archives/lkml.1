@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932133AbXCEWVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932159AbXCEWVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932133AbXCEWVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932201AbXCEWVO
+	id S932159AbXCEWVP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932201AbXCEWVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 5 Mar 2007 17:21:15 -0500
+Received: from smtp.ono.com ([62.42.230.12]:44212 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932159AbXCEWVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 Mar 2007 17:21:14 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:38351 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932133AbXCEWVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:21:13 -0500
-Date: Mon, 5 Mar 2007 23:16:40 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Eric Lacombe <tuxiko@free.fr>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Steve French <sfrench@us.ibm.com>
-Subject: Re: Linux 2.6.19.2: maybe a bug inside the r8169 network driver (was Re: Linux 2.6.19.2: Freeze with CIFS mount)
-Message-ID: <20070305221640.GA25369@electric-eye.fr.zoreil.com>
-References: <OFC7B98576.0C582E30-ON87257274.0014583D-86257274.00153815@us.ibm.com> <20070213203047.GA4158@electric-eye.fr.zoreil.com> <200702141149.53041.tuxiko@free.fr> <200703052219.23439.tuxiko@free.fr>
+Date: Mon, 5 Mar 2007 23:20:58 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm1
+Message-ID: <20070305232058.6eeeb254@werewolf-wl>
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.8.0cvs15 (GTK+ 2.10.9; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703052219.23439.tuxiko@free.fr>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Lacombe <tuxiko@free.fr> :
-[...]
-> Also, if you have some new ideas about the problem or what I could try to 
-> trigger it more frequently (I already wake up the NAS as more as I can, but 
-> maybe I could write a script to do that), I would be thankful.
+On Fri, 2 Mar 2007 03:00:26 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-You can add more DEBUG options for spinlock and stack usage, disable
-preempt and pray for a trace before the crash. If you do not have a
-second host to add more traffic (wrt to bandwidth and/or pps), try to
-dd your disk and/or your remote storage to /dev/null while watching TV.
+> 
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+> 
+> Will appear later at
+> 
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
+> 
+> 
 
-You are out of luck if it does not crash more easily.
+I'm also noticing very bad behaviour wrt scheduling, I think. When I launch my
+parallel cpu burning code, the system _really_ stalls, the mouse in X11 is not
+jerky, it is _stuck_ for a couple or three seconds...
 
--- 
-Ueimor
+The only diffrecence is that, trying to solve nVidia driver problems, I disabled
+BKL preemption:
+
+werewolf:/usr/src/linux# grep PREEMPT .config
+# CONFIG_PREEMPT_RCU is not set
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=y
+# CONFIG_PREEMPT_BKL is not set
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.20-jam01 (gcc 4.1.2 20070115 (prerelease) (4.1.2-0.20070115.1mdv2007.1)) #1 SMP PREEMPT
