@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933029AbXCEPZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbXCEP1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933029AbXCEPZp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932966AbXCEPZo
+	id S932966AbXCEP1e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932963AbXCEP1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:25:44 -0500
-Received: from ns2.suse.de ([195.135.220.15]:60306 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932914AbXCEPZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:25:43 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Joerg Roedel" <joerg.roedel@amd.com>
-Subject: Re: [PATCH 1/2] x86_64: add reporting of SVM flags to /proc/cpuinfo
-Date: Mon, 5 Mar 2007 16:25:31 +0100
-User-Agent: KMail/1.9.5
-Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org
-References: <20070305143601.GF30318@amd.com> <20070305143911.GG30318@amd.com>
-In-Reply-To: <20070305143911.GG30318@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 5 Mar 2007 10:27:34 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:39476 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932914AbXCEP1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:27:33 -0500
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+From: Daniel Walker <dwalker@mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Emil Karlson <jkarlson@cc.hut.fi>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Soeren Sonnenburg <kernel@nn7.de>
+In-Reply-To: <20070305001358.2eebbfae.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	 <20070305015040.GJ3441@stusta.de> <20070305075747.GA19838@elte.hu>
+	 <20070305001358.2eebbfae.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 07:25:03 -0800
+Message-Id: <1173108303.31337.18.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703051625.31449.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 March 2007 15:39, Joerg Roedel wrote:
-> From: Joerg Roedel <joerg.roedel@amd.com>
+On Mon, 2007-03-05 at 00:13 -0800, Andrew Morton wrote:
+> On Mon, 5 Mar 2007 08:57:47 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> This patch adds the advanced SVM reporting to /proc/cpuinfo on the x86_64
-> architecture.
+> > 
+> > * Adrian Bunk <bunk@stusta.de> wrote:
+> > 
+> > > Subject    : i386: no boot with nmi_watchdog=1  (clockevents)
+> > > References : http://lkml.org/lkml/2007/2/21/208
+> > > Submitter  : Daniel Walker <dwalker@mvista.com>
+> > > Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+> > >              commit e9e2cdb412412326c4827fc78ba27f410d837e6e
+> > > Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> > > Status     : problem is being debugged
+> > 
+> > FYI, this is not a "wont boot" problem, this should be a "NMI watchdog 
+> > does not work" problem - which has far lower severity. Also, Thomas did 
+> > a fix for this which is now in -mm.
+> >
+> 
+> yup, you should be able to cross this one off, Adrian.  The fix worked for me,
+> at least.
 
-Adding more fields to /proc/cpuinfo is always somewhat risky because
-there are lots of badly written parsers for it.
+I didn't see a fix for this one go by .. I'll check the usual places I
+guess ..
 
-I considered adding the SVM fields myself, but decided against it because
-it didn't seem generally useful enough.
+Daniel
 
--Andi
