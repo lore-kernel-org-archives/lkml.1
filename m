@@ -1,82 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933410AbXCEM1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933406AbXCEM2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933410AbXCEM1p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 07:27:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933406AbXCEM1p
+	id S933406AbXCEM2S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 07:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933403AbXCEM2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 07:27:45 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55968 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932143AbXCEM1n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 07:27:43 -0500
-Date: Mon, 5 Mar 2007 13:27:42 +0100
-From: Jan Kara <jack@suse.cz>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nscott@aconex.com,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070305122742.GA11486@atrey.karlin.mff.cuni.cz>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com>
+	Mon, 5 Mar 2007 07:28:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48432 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933406AbXCEM2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 07:28:17 -0500
+Date: Mon, 5 Mar 2007 13:20:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: [patch] disable NMI watchdog by default
+Message-ID: <20070305122011.GA16133@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45E86CBA.3070905@us.ibm.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >On Fri, 02 Mar 2007 09:40:54 +1100
-> >Nathan Scott <nscott@aconex.com> wrote:
-> >
-> >
-> >>On Thu, 2007-03-01 at 14:25 -0800, Andrew Morton wrote:
-> >>
-> >>>On Fri, 2 Mar 2007 00:04:45 +0530
-> >>>"Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> >>>
-> >>>
-> >>>>This is to give a heads up on few patches that we will be soon coming up
-> >>>>with. These patches implement a new system call sys_fallocate() and a
-> >>>>new inode operation "fallocate", for persistent preallocation. The new
-> >>>>system call, as Andrew suggested, will look like:
-> >>>>
-> >>>> asmlinkage long sys_fallocate(int fd, loff_t offset, loff_t len);
-> >>>
-> >>>...
-> >>>
-> >>>I'd agree with Eric on the "command" flag extension.
-> >>
-> >>Seems like a separate syscall would be better, "command" sounds
-> >>a bit ioctl like, especially if that command is passed into the
-> >>filesystems..
-> >>
-> >
-> >
-> >madvise, fadvise, lseek, etc seem to work OK.
-> >
-> >I get repeatedly traumatised by patch rejects whenever a new syscall gets
-> >added, so I'm biased.
-> >
-> >The advantage of a command flag is that we can add new modes in the future
-> >without causing lots of churn, waiting for arch maintainers to catch up,
-> >potentially adding new compat code, etc.
-> >
-> >Rename it to "mode"? ;)
-> >
-> I am wondering if it is useful to add another mode to advise block 
-> allocation policy? Something like indicating which physical block/block 
-> group to allocate from (goal), and whether ask for strict contigous 
-> blocks. This will help preallocation or reservation to choose the right 
-> blocks for the file.
-  Yes, I also think this would be useful so you can "guide"
-preallocation for things like defragmentation (e.g. preallocate space
-for the file being defragmented and move the file to it).
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Linus,
+
+Andrew sent the patch below (which is now months old and has been in -mm 
+for some time) towards Andi's tree 4 weeks ago, but apparently it fell 
+into a black hole there - the patch is still not upstream!
+
+This is a must-have for v2.6.21, because the problem still triggers even 
+with the latest upstream tree, if i boot a KVM guest.
+
+Frankly, i find it ridiculous that i had to write more than 10 emails 
+about this stupid topic already, while i'm the original author of this 
+feature to begin with. The "do not enable by default debug features that 
+break certain systems" concept is obvious to me.
+
+This category of regressions has been introduced by Andi when he made 
+the NMI watchdog the default in certain scenarios at around v2.6.18 - 
+over my repeated objections. Andi Cc:-ed :-)
+
+	Ingo
+
+----- Forwarded message from Ingo Molnar <mingo@elte.hu> -----
+
+From: Ingo Molnar <mingo@elte.hu>
+Subject: [patch] disable NMI watchdog by default
+
+there's a new NMI watchdog related problem: KVM crashes on certain 
+bzImages because ... we enable the NMI watchdog by default (even if the 
+user does not ask for it) , and no other OS on this planet does that so 
+KVM doesnt have emulation for that yet. So KVM injects a #GP, which 
+crashes the Linux guest:
+
+ general protection fault: 0000 [#1]
+ PREEMPT SMP
+ Modules linked in:
+ CPU:    0
+ EIP:    0060:[<c011a8ae>]    Not tainted VLI
+ EFLAGS: 00000246   (2.6.20-rc5-rt0 #3)
+ EIP is at setup_apic_nmi_watchdog+0x26d/0x3d3
+
+and no, i did /not/ request an nmi_watchdog on the boot command line!
+
+Solution: turn off that darn thing! It's a debug tool, not a 'make life 
+harder' tool!!
+
+with this patch the KVM guest boots up just fine.
+
+And with this my laptop (Lenovo T60) also stopped its sporadic hard 
+hanging (sometimes in acpi_init(), sometimes later during bootup, 
+sometimes much later during actual use) as well. It hung with both 
+nmi_watchdog=1 and nmi_watchdog=2, so it's generally the fact of NMI 
+injection that is causing problems, not the NMI watchdog variant, nor 
+any particular bootup code.
+
+The patch is unintrusive.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Index: linux/include/asm-i386/nmi.h
+===================================================================
+--- linux.orig/include/asm-i386/nmi.h
++++ linux/include/asm-i386/nmi.h
+@@ -33,7 +33,7 @@ extern int nmi_watchdog_tick (struct pt_
+ 
+ extern atomic_t nmi_active;
+ extern unsigned int nmi_watchdog;
+-#define NMI_DEFAULT     -1
++#define NMI_DEFAULT     0
+ #define NMI_NONE	0
+ #define NMI_IO_APIC	1
+ #define NMI_LOCAL_APIC	2
+Index: linux/include/asm-x86_64/nmi.h
+===================================================================
+--- linux.orig/include/asm-x86_64/nmi.h
++++ linux/include/asm-x86_64/nmi.h
+@@ -63,7 +63,7 @@ extern int setup_nmi_watchdog(char *);
+ 
+ extern atomic_t nmi_active;
+ extern unsigned int nmi_watchdog;
+-#define NMI_DEFAULT	-1
++#define NMI_DEFAULT	0
+ #define NMI_NONE	0
+ #define NMI_IO_APIC	1
+ #define NMI_LOCAL_APIC	2
+
