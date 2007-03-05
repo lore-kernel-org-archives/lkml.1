@@ -1,73 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbXCEHZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbXCEHbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbXCEHZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 02:25:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbXCEHZ7
+	id S1752711AbXCEHbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 02:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXCEHbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 02:25:59 -0500
-Received: from waste.org ([66.93.16.53]:49319 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967AbXCEHZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 02:25:58 -0500
-Date: Mon, 5 Mar 2007 01:13:26 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, yi.zhu@intel.com,
-       jketreno@linux.intel.com, akpm@osdl.org
-Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
-Message-ID: <20070305071325.GK23311@waste.org>
-References: <20070304220857.GH23311@waste.org> <20070305011625.GA7681@kroah.com> <20070305064229.GJ23311@waste.org> <20070305070248.GA30699@kroah.com>
+	Mon, 5 Mar 2007 02:31:43 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:3976 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbXCEHbm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 02:31:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=t0fNRl9dQ3s7mxG1AyW6OsTOhdAZSin1oLLi6r0XAebKVKjn0v1648ep3jRn0crOJTB6E3XfBEy08rq7QnCfqzKRpPBOUIjsaWjoVfLbY9qtdIe1XPHZgKQL1M6k17qB7vlQlavZviEvEPYEiLJPa/qYrZHTJRJXYjb1bd85w/0=
+Date: Mon, 5 Mar 2007 15:31:37 +0800
+From: "Li Yu" <raise.sail@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "linux-usb-devel" <linux-usb-devel@lists.sourceforge.net>,
+       "Greg Kroah Hartman" <greg@kroah.com>,
+       "linux-usb-devel" <linux-usb-devel@lists.sourceforge.net>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Harold Sargeant" <harold-sargeant@ntlworld.com>
+Cc: "liyu" <liyu@ccoss.com.cn>
+Subject: [PATCH] usb/hid:Microsoft Natural Ergonomic Keyboard 4000 Driver 0.5.0
+Message-ID: <200703051523546032509@gmail.com>
+X-mailer: Foxmail 6, 5, 104, 21 [cn]
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070305070248.GA30699@kroah.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 04, 2007 at 11:02:48PM -0800, Greg KH wrote:
-> On Mon, Mar 05, 2007 at 12:42:29AM -0600, Matt Mackall wrote:
-> > On Sun, Mar 04, 2007 at 05:16:25PM -0800, Greg KH wrote:
-> > > On Sun, Mar 04, 2007 at 04:08:57PM -0600, Matt Mackall wrote:
-> > > > Recent kernels are having troubles with wireless for me. Two seemingly
-> > > > related problems:
-> > > > 
-> > > > a) NetworkManager seems oblivious to the existence of my IPW2200
-> > > > b) Manual iwconfig waits for 60s and then reports:
-> > > > 
-> > > > Error for wireless request "Set Encode" (8B2A) :
-> > > >     SET failed on device eth1 ; Operation not supported.
-> > > 
-> > > Do you have CONFIG_SYSFS_DEPRECATED enabled?  If not, please do as that
-> > > will keep you from having to change any userspace code.
-> > 
-> > No, it's disabled. Will test once I'm done tracking down the iwconfig
-> > problem. From the help text for SYSFS_DEPRECATED:
-> > 
-> >           If you are using a distro that was released in 2006 or
-> > 	  later, it should be safe to say N here.
-> > 
-> > If we need an as-yet-unreleased HAL without it, I would say the above
-> > should be changed to 2008 or so. If Debian actually cuts a release in
-> > the next few months, you might make that 2010.
-> 
-> Well, just because Debian has such a slow release cycle, should the rest
-> of the world be forced to follow suit?  :)
-> 
-> When I originally wrote that, I thought Debian would have already done
-> their release, my mistake...
+Changelogs:
 
-That's not the point. The point is that Debian/unstable as of _this
-morning_ doesn't work. For reference, I'm running both the latest
-releases of both hal (0.5.8.1-6.1) and network-manager (0.6.4-6). And
-there are people telling me I need a copy of HAL out of git that
-hasn't even been released for Debian to package. Debian isn't the
-problem here.
+	1. Port to HID simple driver layer 0.5.0.
 
-If it is indeed the case that HAL needs to be upgraded here, the clock
-on deprecating these features can't even start counting until a usable
-HAL version is released. And then you need to give it at least a year
-after that before you can start recommending people disable it.
+It can be applied on 2.6.21 at least.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Signed-off-by: Liyu <raise.sail@gmail.com>
+
+--- linux-2.6.18/drivers/usb/input.orig/usbnek4k.c	1970-01-01 08:00:00.000000000 +0800
++++ linux-2.6.18/drivers/usb/input/usbnek4k.c	2006-10-12 13:29:28.000000000 +0800
+@@ -0,0 +1,252 @@
++/*
++ *  Microsoft Natural Ergonomic Keyboard 4000 Driver
++ *
++ *  Version:	0.4.0
++ *
++ *  Copyright (c) 2006 Li Yu <raise.sail@gmail.com>
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/input.h>
++#include "hid.h"
++#include "hid-simple.h"
++
++static int ascii_keycode;
++module_param(ascii_keycode, bool, 0444);
++MODULE_PARM_DESC(ascii_keycode, "Only yield ASCII keycodes when turn on this, default=n");
++
++#define USAGE_ZOOM_IN	0x22d
++#define USAGE_ZOOM_OUT	0x22e
++#define USAGE_HOME	0x223
++#define USAGE_SEARCH	0x221
++#define USAGE_EMAIL	0x18a
++#define USAGE_FAVORITES	0x182
++#define USAGE_MUTE	0xe2
++#define USAGE_VOLUME_DOWN	0xea
++#define USAGE_VOLUME_UP	0xe9
++#define USAGE_PLAY_PAUSE	0xcd
++#define USAGE_CALCULATOR	0x192
++#define USAGE_BACK	0x224
++#define USAGE_FORWARD	0x225
++#define USAGE_CUSTOM	0xff05
++
++#define USAGE_CUSTOM_RELEASE	0x0
++#define USAGE_CUSTOM_1	0x1
++#define USAGE_CUSTOM_2	0x2
++#define USAGE_CUSTOM_3	0x4
++#define USAGE_CUSTOM_4	0x8
++#define USAGE_CUSTOM_5	0x10
++
++#define USAGE_HELP	0x95
++#define USAGE_UNDO	0x21a
++#define USAGE_REDO	0x279
++#define USAGE_NEW	0x201
++#define USAGE_OPEN	0x202
++#define USAGE_CLOSE	0x203
++
++#define USAGE_REPLY	0x289
++#define USAGE_FWD	0x28b
++#define USAGE_SEND	0x28c
++#define USAGE_SPELL	0x1ab
++#define USAGE_SAVE	0x207
++#define USAGE_PRINT	0x208
++
++#define USAGE_KEYPAD_EQUAL	0x67
++#define USAGE_KEYPAD_LEFT_PAREN	0xb6
++#define USAGE_KEYPAD_RIGHT_PAREN	0xb7
++
++#define MSNEK4K_ID_VENDOR	0x045e
++#define MSNEK4K_ID_PRODUCT	0x00db
++
++#define map_key(c) do { usage->code = c; usage->type = EV_KEY; set_bit(c,input->keybit); } while (0)
++#define clear_key(c) do { usage->code = 0; usage->type = 0; clear_bit(c,input->keybit); } while (0)
++
++static struct usb_device_id nek4k_id_table[] = {
++	{ USB_DEVICE(MSNEK4K_ID_VENDOR, MSNEK4K_ID_PRODUCT) },
++	{}
++};
++
++MODULE_DEVICE_TABLE(usb, nek4k_id_table);
++MODULE_DESCRIPTION("Microsoft Natural Ergonomic Keyboard 4000 Driver");
++MODULE_VERSION("0.4.0");
++
++struct usage_block consumer_usage_block[] = {
++	USAGE_BLOCK(USAGE_ZOOM_IN, 0, EV_KEY, KEY_F13, 0),
++	USAGE_BLOCK(USAGE_ZOOM_OUT, 0, EV_KEY, KEY_F14, 0),
++	USAGE_BLOCK(USAGE_HOME, 0, EV_KEY, KEY_HOMEPAGE, 0),
++	USAGE_BLOCK(USAGE_SEARCH, 0, EV_KEY, KEY_SEARCH, 0),
++	USAGE_BLOCK(USAGE_EMAIL, 0, EV_KEY, KEY_EMAIL, 0),
++	USAGE_BLOCK(USAGE_MUTE, 0, EV_KEY, KEY_MUTE, 0),
++	USAGE_BLOCK(USAGE_VOLUME_DOWN, 0, EV_KEY, KEY_VOLUMEDOWN, 0),
++	USAGE_BLOCK(USAGE_VOLUME_UP, 0, EV_KEY, KEY_VOLUMEUP, 0),
++	USAGE_BLOCK(USAGE_PLAY_PAUSE, 0, EV_KEY, KEY_PLAYPAUSE, 0),
++	USAGE_BLOCK(USAGE_CALCULATOR, 0, EV_KEY, KEY_CALC, 0),
++	USAGE_BLOCK(USAGE_BACK, 0, EV_KEY, KEY_BACK, 0),
++	USAGE_BLOCK(USAGE_FORWARD, 0, EV_KEY, KEY_FORWARD, 0),
++	USAGE_BLOCK(USAGE_HELP, 0, EV_KEY, KEY_HELP, 0),
++	USAGE_BLOCK(USAGE_UNDO, 0, EV_KEY, KEY_UNDO, 0),
++	USAGE_BLOCK(USAGE_REDO, 0, EV_KEY, KEY_REDO, 0),
++	USAGE_BLOCK(USAGE_NEW, 0, EV_KEY, KEY_NEW, 0),
++	USAGE_BLOCK(USAGE_OPEN, 0, EV_KEY, KEY_OPEN, 0),
++	USAGE_BLOCK(USAGE_CLOSE, 0, EV_KEY, KEY_CLOSE, 0),
++	USAGE_BLOCK(USAGE_REPLY, 0, EV_KEY, KEY_REPLY, 0),
++	USAGE_BLOCK(USAGE_FWD, 0, EV_KEY, KEY_FORWARDMAIL, 0),
++	USAGE_BLOCK(USAGE_SEND, 0, EV_KEY, KEY_SEND, 0),
++	USAGE_BLOCK(USAGE_SPELL, 0, EV_KEY, KEY_F15, 0),
++	USAGE_BLOCK(USAGE_SAVE, 0, EV_KEY, KEY_SAVE, 0),
++	USAGE_BLOCK(USAGE_PRINT, 0, EV_KEY, KEY_PRINT, 0),
++	USAGE_BLOCK_NULL
++};
++
++struct usage_block msvendor_usage_block[] = {
++	USAGE_BLOCK(USAGE_CUSTOM, USAGE_CUSTOM_1, EV_KEY, KEY_FN_F1, 0),
++	USAGE_BLOCK(USAGE_CUSTOM, USAGE_CUSTOM_2, EV_KEY, KEY_FN_F2, 0),
++	USAGE_BLOCK(USAGE_CUSTOM, USAGE_CUSTOM_3, EV_KEY, KEY_FN_F3, 0),
++	USAGE_BLOCK(USAGE_CUSTOM, USAGE_CUSTOM_4, EV_KEY, KEY_FN_F4, 0),
++	USAGE_BLOCK(USAGE_CUSTOM, USAGE_CUSTOM_5, EV_KEY, KEY_FN_F5, 0),
++	USAGE_BLOCK_NULL
++};
++
++struct usage_block keyboard_usage_block[] = {
++	USAGE_BLOCK(USAGE_KEYPAD_EQUAL, 0, EV_KEY, KEY_KPEQUAL, 0),
++	USAGE_BLOCK(USAGE_KEYPAD_LEFT_PAREN, 0, EV_KEY, KEY_KPLEFTPAREN, 0),
++	USAGE_BLOCK(USAGE_KEYPAD_RIGHT_PAREN, 0, EV_KEY, KEY_KPRIGHTPAREN, 0),
++	USAGE_BLOCK_NULL
++};
++
++struct usage_page_block nek4k_usage_page_blockes[] = {
++	USAGE_PAGE_BLOCK(HID_UP_CONSUMER, consumer_usage_block),
++	USAGE_PAGE_BLOCK(HID_UP_MSVENDOR, msvendor_usage_block),
++	USAGE_PAGE_BLOCK(HID_UP_KEYBOARD, keyboard_usage_block),
++	USAGE_PAGE_BLOCK_NULL
++};
++
++static void nek4k_setup_usage(struct hid_field *field, struct hid_usage *usage)
++{
++	struct hid_input *hidinput = field->hidinput;
++	struct input_dev *input = hidinput->input;
++
++	if ((usage->hid & HID_USAGE_PAGE) == HID_UP_CONSUMER) {
++		if ((usage->hid & HID_USAGE) == USAGE_FAVORITES) {
++			if (ascii_keycode)
++				map_key(KEY_F16);
++			else
++				map_key(KEY_FAVORITES);
++		}
++	} else if ((usage->hid & HID_USAGE_PAGE) == HID_UP_MSVENDOR) {
++		if ((usage->hid & HID_USAGE) == USAGE_CUSTOM) {
++			if (ascii_keycode) {
++				set_bit(KEY_F18,input->keybit);
++				set_bit(KEY_F19,input->keybit);
++				set_bit(KEY_F20,input->keybit);
++				set_bit(KEY_F21,input->keybit);
++				set_bit(KEY_F22,input->keybit);
++			} else {
++				set_bit(KEY_FN_F1,input->keybit);
++				set_bit(KEY_FN_F2,input->keybit);
++				set_bit(KEY_FN_F3,input->keybit);
++				set_bit(KEY_FN_F4,input->keybit);
++				set_bit(KEY_FN_F5,input->keybit);
++			}
++		}
++	}
++}
++
++static void nek4k_clear_usage(struct hid_field *field, struct hid_usage *usage)
++{
++	struct hid_input *hidinput = field->hidinput;
++	struct input_dev *input = hidinput->input;
++
++	if ((usage->hid & HID_USAGE_PAGE) == HID_UP_CONSUMER) {
++		if ((usage->hid & HID_USAGE) == USAGE_FAVORITES) {
++			if (ascii_keycode)
++				clear_key(KEY_F16);
++			else
++				clear_key(KEY_FAVORITES);
++		}
++	} else if ((usage->hid & HID_USAGE_PAGE) == HID_UP_MSVENDOR) {
++		if ((usage->hid & HID_USAGE) == USAGE_CUSTOM) {
++			if (ascii_keycode) {
++				clear_bit(KEY_F18,input->keybit);
++				clear_bit(KEY_F19,input->keybit);
++				clear_bit(KEY_F20,input->keybit);
++				clear_bit(KEY_F21,input->keybit);
++				clear_bit(KEY_F22,input->keybit);
++			} else {
++				clear_bit(KEY_FN_F1,input->keybit);
++				clear_bit(KEY_FN_F2,input->keybit);
++				clear_bit(KEY_FN_F3,input->keybit);
++				clear_bit(KEY_FN_F4,input->keybit);
++				clear_bit(KEY_FN_F5,input->keybit);
++			}
++		}
++	}
++}
++
++static int nek4k_pre_event(const struct hid_device *hid, 
++					const struct hid_field *field,
++					const struct hid_usage *usage,
++					const __s32 value,
++					const struct pt_regs *regs)
++{
++	struct hid_input *hidinput = field->hidinput;
++	struct input_dev *input = hidinput->input;
++	int code = 0;
++
++	if (((usage->hid&HID_USAGE_PAGE) != HID_UP_MSVENDOR) ||
++				(usage->hid&HID_USAGE) != USAGE_CUSTOM)
++		return (!0); /* Let hid core continue to process them */
++
++	code = ascii_keycode ? KEY_F18-1 : KEY_FN_F1-1;
++	switch (value) {
++	case USAGE_CUSTOM_RELEASE:
++		code = (int)hidinput->private;
++		break;
++	case USAGE_CUSTOM_1:
++	case USAGE_CUSTOM_2:
++	case USAGE_CUSTOM_3:
++	case USAGE_CUSTOM_4:
++	case USAGE_CUSTOM_5:
++		code += ffs(value);
++	}
++	if (code) {
++		hidinput->private = (void*)code;
++		input_report_key(input, code, value);
++		input_sync(input);
++	}
++	return 0; 
++}
++
++static struct hidinput_simple_driver nek4k_driver = {
++	.owner = THIS_MODULE,
++	.name = "usbnek4k",
++	.setup_usage = nek4k_setup_usage,
++	.clear_usage = nek4k_clear_usage,
++	.pre_event = nek4k_pre_event,
++	.id_table = nek4k_id_table,
++	.usage_page_table = nek4k_usage_page_blockes,
++	.private = NULL
++};
++
++static int __init nek4k_init(void)
++{
++	return hidinput_register_simple_driver(&nek4k_driver);
++}
++
++static void __exit nek4k_exit(void)
++{
++	hidinput_unregister_simple_driver(&nek4k_driver);
++}
++
++module_init(nek4k_init);
++module_exit(nek4k_exit);
++
++MODULE_LICENSE("GPL");
+
