@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932914AbXCEPfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933520AbXCEPgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932914AbXCEPfg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933090AbXCEPfg
+	id S933520AbXCEPgN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933090AbXCEPgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:35:36 -0500
-Received: from rtr.ca ([64.26.128.89]:4218 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932914AbXCEPff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:35:35 -0500
-Message-ID: <45EC38C5.1060600@rtr.ca>
-Date: Mon, 05 Mar 2007 10:35:33 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: sdhci-devel@list.drzeus.cx, Adrian Bunk <bunk@stusta.de>,
+	Mon, 5 Mar 2007 10:36:13 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52938 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933103AbXCEPgL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:36:11 -0500
+Date: Mon, 5 Mar 2007 15:35:35 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>, Arnd Bergmann <arnd@arndb.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] sdhci regression in 2.6.21-rc2
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de> <45EB9DC6.8010403@rtr.ca> <45EB9E72.6040107@rtr.ca> <45EBAC73.7010600@drzeus.cx> <45EC2851.7020905@rtr.ca> <45EC352C.4070508@drzeus.cx> <45EC3609.4030809@drzeus.cx>
-In-Reply-To: <45EC3609.4030809@drzeus.cx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-ID: <20070305153535.GA23524@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Ulrich Drepper <drepper@redhat.com>, Theodore Tso <tytso@mit.edu>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+	alex@clusterfs.com, suzuki@in.ibm.com
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com> <8A8B28AA-3481-4CFF-AEAA-0CB4CCDFF9F9@cam.ac.uk> <20070305143703.GF26781@thunk.org> <45EC3415.6000307@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EC3415.6000307@redhat.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Pierre Ossman wrote:
->> I'd say it's the kernel calling the interrupt handler of a
->> currently sleeping device. Since we're seeing this problem I assume the
->> kernel's interrupt code isn't aware of PM states?
->
-> Hmm... I guess it can't be as the interrupt handler isn't associated with a
-> device, just a random pointer.
+On Mon, Mar 05, 2007 at 07:15:33AM -0800, Ulrich Drepper wrote:
+> Theodore Tso wrote:
+> > Given that glibc already has to support this for older kernels, I
+> > would argue that there's no point putting in generic support for
+> > filesystem that can't support a more advanced way of doing things.
 > 
-> So either release the interrupt (which seems a bit unsafe as then we might not
-> get it back), or handle states at the start of the isr.
+> Well, I'm sure the kernel can do better than the code we have in libc
+> now.  The kernel has access to the bitmasks which say which blocks have
+> already been allocated.
 
->From linux/Documentation/power/pci.txt:
-
-> A reference implementation
-> -------------------------
-> .suspend()
-> {
->         /* driver specific operations */
-> 
->         /* Disable IRQ */
->         free_irq();
->         /* If using MSI */
->         pci_disable_msi();
-> 
->         pci_save_state();
->         pci_enable_wake();
->         /* Disable IO/bus master/irq router */
->         pci_disable_device();
->         pci_set_power_state(pci_choose_state());
-> }
-> 
-> .resume()
-> {
->         pci_set_power_state(PCI_D0);
->         pci_restore_state();
->         /* device's irq possibly is changed, driver should take care */
->         pci_enable_device();
->         pci_set_master();
-> 
->         /* if using MSI, device's vector possibly is changed */
->         pci_enable_msi();
-> 
->         request_irq();
->         /* driver specific operations; */
-> }
+The layer of the kernel where a totally generic fallback would be
+implemented does not have access to this information.  We could do
+a mostly generic helper for block filesystems that allows to implement
+fallocate this way without a lot of their own code.
