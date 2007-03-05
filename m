@@ -1,69 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXCELVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932586AbXCELZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932178AbXCELVt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 06:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbXCELVt
+	id S932586AbXCELZh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 06:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbXCELZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 06:21:49 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:50810 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932167AbXCELVs (ORCPT
+	Mon, 5 Mar 2007 06:25:37 -0500
+Received: from webmail13.mail.yandex.net ([213.180.200.6]:60764 "EHLO
+	webmail13.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932586AbXCELZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 06:21:48 -0500
-Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Greg KH <greg@kroah.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
-       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
-In-Reply-To: <20070305011729.GB7681@kroah.com>
-References: <20070304220857.GH23311@waste.org>
-	 <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org>
-	 <20070305011729.GB7681@kroah.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WaY/ydGDzBbpcLWjiA3+"
-Date: Mon, 05 Mar 2007 12:20:51 +0100
-Message-Id: <1173093651.6131.47.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	Mon, 5 Mar 2007 06:25:36 -0500
+Date: Mon, 5 Mar 2007 14:25:25 +0300 (MSK)
+From: "Mockern" <Mockern@yandex.ru>
+Message-Id: <45EBFE25.000001.10341@webmail13.yandex.ru>
+MIME-Version: 1.0
+X-Mailer: Yamail [ http://yandex.ru ]
+To: linux-kernel@vger.kernel.org
+Subject: Question: Watchdog driver for the SA11x0/PXA2xx
+X-MsgDayCount: 3
+X-BornDate: 1134853200
+Reply-To: Mockern@yandex.ru
+X-Source-Ip: 84.185.214.10
+Content-Type: text/plain;
+  charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+hi,
 
---=-WaY/ydGDzBbpcLWjiA3+
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Could someone  explain me please, do I need sa1100_wdt.c in my Linux box?
 
-On Sun, 2007-03-04 at 17:17 -0800, Greg KH wrote:
+What is the main goal of this driver?
 
-> > > This is due to the recent sysfs restructuring I think. IIRC the fix i=
-s
-> > > to upgrade hal to a current git version.
-> >=20
-> > If that's the cause, the fix is to back out whatever was done to break
-> > userspace. Breaking userspace is not ok. Upgrading from 2.6.x to
-> > 2.6.x+1 should not entail replacing substantial parts of userspace,
-> > especially with NOT-EVEN-FRAKKING-RELEASED-YET CODE.=20
->=20
-> I should not have broken any userspace if CONFIG_SYSFS_DEPRECATED is
-> enabled with that patch.  If that is enabled, and that patch still
-> causes problems, please let me know.
-
-Yeah, sorry for not mentioning that in my original email and the
-discussion it stirred.
-
-johannes
-
---=-WaY/ydGDzBbpcLWjiA3+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF6/0T/ETPhpq3jKURAiozAJsGdNBKnO4F5KILsz5xkFeI1guIhQCgu4Ab
-ZLbtATQiHXpB5fnsD/JwaV8=
-=93wK
------END PGP SIGNATURE-----
-
---=-WaY/ydGDzBbpcLWjiA3+--
-
+Thank you 
