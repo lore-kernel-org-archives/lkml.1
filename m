@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933165AbXCEL0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbXCEL1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933165AbXCEL0K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 06:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933074AbXCEL0K
+	id S932398AbXCEL1s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 06:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbXCEL1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 06:26:10 -0500
-Received: from highlandsun.propagation.net ([66.221.212.168]:3704 "EHLO
-	highlandsun.propagation.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933069AbXCEL0I (ORCPT
+	Mon, 5 Mar 2007 06:27:48 -0500
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:43595
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932398AbXCEL1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 06:26:08 -0500
-Message-ID: <45EBFD13.1060106@symas.com>
-Date: Mon, 05 Mar 2007 03:20:51 -0800
-From: Howard Chu <hyc@symas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9a3pre) Gecko/20070302 SeaMonkey/1.5a
+	Mon, 5 Mar 2007 06:27:47 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: greg@kroah.com
+Subject: Re: 2.6.21-rc2-mm1: drivers/usb/host/ohci-ssb.c doesn't compile
+Date: Mon, 5 Mar 2007 12:26:45 +0100
+User-Agent: KMail/1.9.5
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linux-usb-devel@lists.sourceforge.net
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <200703051149.05664.mb@bu3sch.de> <200703051157.16822.mb@bu3sch.de>
+In-Reply-To: <200703051157.16822.mb@bu3sch.de>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: TCP 2MSL on loopback
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200703051226.46402.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Why is the Maximum Segment Lifetime a global parameter? Surely the 
-maximum possible lifetime of a particular TCP segment depends on the 
-actual connection. At the very least, it would be useful to be able to 
-set it on a per-interface basis. E.g., in the case of the loopback 
-interface, it would be useful to be able to set it to a very small duration.
+On Monday 05 March 2007 11:57, Michael Buesch wrote:
+> > >   CC      drivers/usb/host/ohci-hcd.o
+> > > In file included from 
+> > > /home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-hcd.c:931:
+> > > /home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-ssb.c:47: error: request for member 'hcd_priv_size' in something not a structure or union
+> > 
+> > Seems like there was a comma missing.
+> > There also seems to be some Kconfig problem. will fix that.
+> > 
+> > > /home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-ssb.c:47: error: 'ssb_ohci_device' undeclared here (not in a function)
+> > > /home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-ssb.c:52: error: 'ssb_ohci_reset' undeclared here (not in a function)
+> > > /home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-ssb.c:53: error: 'ssb_ohci_start' undeclared here (not in a function)
+> > > ...
+> > > make[4]: *** [drivers/usb/host/ohci-hcd.o] Error 1
+> > > 
+> > > <--  snip  -->
+> 
+> Actually, it seems like I will run into other kinds of nasty problems
+> due to stupid design of the HCD code. The OHCI code #includes
+> the various drivers, which have a module_init each. So if you
+> compile PCI and SSB support, you have two module_init for one
+> OHCI module. Not sure how to fix this. Any idea?
 
-As I note in this draft 
-http://www.ietf.org/internet-drafts/draft-chu-ldap-ldapi-00.txt
-when doing a connection soak test of OpenLDAP using clients connected 
-through localhost, the entire port range is exhausted in well under a 
-second, at which point the test stalls until a port comes out of 
-TIME_WAIT state so the next connection can be opened.
+A real problem is that the HCD core seems to have the assumption
+built-in that there can only be one OHCI driver per machine/arch.
+That's not the case for SSB, where we can have both PCI and SSB
+bus enabled, so both ohci drivers compiled.
+Any idea? Greg perhaps?
 
-These days it's not uncommon for an OpenLDAP slapd server to handle tens 
-of thousands of connections per second in real use (e.g., at Google, or 
-at various telcos). While the LDAP server is fast enough to saturate 
-even 10gbit ethernet using contemporary CPUs, we have to resort to 
-multiple virtual interfaces just to make sure we have enough port 
-numbers available.
+Refactoring the code that OHCI drivers register to the HCD core
+instead of hard-linking it in would fix the issue. But that's pretty
+intrusive to do.
 
-Ideally the 2MSL parameter would be dynamically adjusted based on the 
-route to the destination and the weights associated with those routes. 
-In the simplest case, connections between machines on the same subnet 
-(i.e., no router hops involved) should have a much smaller default value 
-than connections that traverse any routers. I'd settle for a two-level 
-setting - with no router hops, use the small value; with any router hops 
-use the large value.
 -- 
-   -- Howard Chu
-   Chief Architect, Symas Corp.  http://www.symas.com
-   Director, Highland Sun        http://highlandsun.com/hyc
-   Chief Architect, OpenLDAP     http://www.openldap.org/project/
+Greetings Michael.
