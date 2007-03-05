@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbXCEQBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030582AbXCEQCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933590AbXCEQBo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 11:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933593AbXCEQBn
+	id S1030582AbXCEQCQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 11:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933596AbXCEQCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 11:01:43 -0500
-Received: from tcsfw4.tcs-sec.com ([65.127.223.133]:49057 "EHLO
-	tcsfw4.tcs-sec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933587AbXCEQBH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 11:01:07 -0500
-Reply-To: <vyekkirala@trustedcs.com>
-From: "Venkat Yekkirala" <vyekkirala@trustedcs.com>
-To: "'Eric Paris'" <eparis@parisplace.org>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Cc: <davem@davemloft.net>, <jmorris@namei.org>,
-       "Venkat Yekkirala" <vyekkirala@tcsfw4.tcs-sec.com>,
-       <cxzhang@watson.ibm.com>, <sds@tycho.nsa.gov>
-Subject: RE: [PATCH] xfrm audit hook misplaced in pfkey_delete and xfrm_del_sa
-Date: Mon, 5 Mar 2007 10:00:51 -0600
-Message-ID: <001701c75f3f$73937350$cc0a010a@tcssec.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook CWS, Build 9.0.2416 (9.0.2911.0)
-Importance: Normal
-In-Reply-To: <1172866536.31047.32.camel@localhost.localdomain>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1441
+	Mon, 5 Mar 2007 11:02:12 -0500
+Received: from mx2.suse.de ([195.135.220.15]:34202 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933593AbXCEQCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 11:02:04 -0500
+Date: Mon, 5 Mar 2007 17:01:43 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       clameter@engr.sgi.com, mingo@elte.hu, arjan@infradead.org,
+       mbligh@mbligh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related patches
+Message-ID: <20070305160143.GB8128@wotan.suse.de>
+References: <20070301101249.GA29351@skynet.ie> <20070301160915.6da876c5.akpm@linux-foundation.org> <Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org> <45E8594B.6020904@austin.ibm.com> <20070305032116.GA29678@wotan.suse.de> <45EC352A.7060802@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EC352A.7060802@austin.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Inside pfkey_delete and xfrm_del_sa the audit hooks were not called if
-> there was any permission/security failures in attempting to do the del
-> operation (such as permission denied from security_xfrm_state_delete).
-> This patch moves the audit hook to the exit path such that 
-> all failures
-> (and successes) will actually get audited.
-
-Not sure ALL failures are being audited this way elsewhere, but I guess
-they would catchup in course of time.
-
+On Mon, Mar 05, 2007 at 09:20:10AM -0600, Joel Schopp wrote:
+> >But if you don't require a lot of higher order allocations anyway, then
+> >guest fragmentation caused by ballooning doesn't seem like much problem.
 > 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-Acked-by: Venkat Yekkirala <vyekkirala@trustedcs.com> 
+> If you only need to allocate 1 page size and smaller allocations then no 
+> it's not a problem.  As soon as you go above that it will be.  You don't 
+> need to go all the way up to MAX_ORDER size to see an impact, it's just 
+> increasingly more severe as you get away from 1 page and towards MAX_ORDER.
+
+We allocate order 1 and 2 pages for stuff without too much problem.
+
+> >If you need higher order allocations, then ballooning is bad because of
+> >fragmentation, so you need memory unplug, so you need higher order
+> >allocations. Goto 1.
+> 
+> Yes, it's a closed loop.  But hotplug isn't the only one that needs higher 
+> order allocations.  In fact it's pretty far down the list.  I look at it 
+> like this, a lot of users need high order allocations for better 
+> performance and things like on-demand hugepages.  As a bonus you get memory 
+> hot-remove.
+
+on-demand hugepages could be done better anyway by having the hypervisor
+defrag physical memory and provide some way for the guest to ask for a
+hugepage, no?
+
+> >Balooning probably does skew memory management stats and watermarks, but
+> >that's just because it is implemented as a module. A couple of hooks
+> >should be enough to allow things to be adjusted?
+> 
+> That is a good idea independent of the current discussion.
+
+Well it shouldn't be too difficult. If you cc linux-mm and/or me with
+any thoughts or requirements then I could try to help with it.
+
+Thanks,
+Nick
