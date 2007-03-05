@@ -1,186 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbXCEDRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbXCEDRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616AbXCEDRO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 22:17:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbXCEDRO
+	id S1752613AbXCEDRz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 22:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXCEDRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 22:17:14 -0500
-Received: from fed1rmmtao104.cox.net ([68.230.241.42]:48957 "EHLO
-	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752607AbXCEDRN convert rfc822-to-8bit (ORCPT
+	Sun, 4 Mar 2007 22:17:55 -0500
+Received: from web52511.mail.yahoo.com ([206.190.48.194]:36931 "HELO
+	web52511.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752613AbXCEDRy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 22:17:13 -0500
-From: Junio C Hamano <junkio@cox.net>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.0.3
-References: <7vwt2ec32p.fsf@assigned-by-dhcp.cox.net>
-	<7vabz0j7td.fsf@assigned-by-dhcp.cox.net>
-cc: linux-kernel@vger.kernel.org
-Date: Sun, 04 Mar 2007 19:17:11 -0800
-In-Reply-To: <7vabz0j7td.fsf@assigned-by-dhcp.cox.net> (Junio C. Hamano's
-	message of "Tue, 27 Feb 2007 00:58:22 -0800")
-Message-ID: <7vlkic2xc8.fsf_-_@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 4 Mar 2007 22:17:54 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=u7SaFLiKXyBtJkmMfWVy0fqNHrFROmWXf/lqFmOrbi5JS45A5vOEKBqpmMR2Rh07CnMfsF1BRAjpe4RWbJT42zv2fps2vIAqrn2X51CXJOSy/qzrKnPmRHpVNxQvm4hfKKl1en+CzvTONAHlnL+DvLwaTWZrRy5dl7JgRxhYhyQ=;
+X-YMail-OSG: YPKtumsVM1n0lSDc7IPqiTuM3uI.8iTglZukswTrZtFnmAmn8mfsWl.qTlunxQPkIcDzzKsmPqniazAffZenHj9UZugK.8K8RQwNY3b.s6ZQ9eXjyuu6a_vZ0Z_t1Uxg_gS9gxgoIXSGo0fZRQTJlmSeug--
+Date: Sun, 4 Mar 2007 19:17:53 -0800 (PST)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Raid 10 Problems?
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0703050312050.23714@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <697121.9642.qm@web52511.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.0.3 is available at the
-usual places:
 
-  http://www.kernel.org/pub/software/scm/git/
+--- Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
 
-  git-1.5.0.3.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.0.3.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.0.3.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.0.3-1.$arch.rpm	(RPM)
+> 
+> On Mar 4 2007 15:10, Marc Perkel wrote:
+> >> On Mar 4 2007 08:25, Marc Perkel wrote:
+> >> >I'm running the latest OpenVZ kernel 2.6.18. I'm
+> >> not
+> >> >sure if this is a factor or not as the problem
+> >> occurs
+> >> >without starting any VEs.
+> >> >
+> >> >I've never used raid 10 before (stripes on top
+> of 2
+> >> >mirrors) so I don't have anything to compare
+> this
+> >> >with. I'm just wondering if I'm doing something
+> >> wrong.
+> >> 
+> >> Are you using raid1+0 (3 md devices) or raid10 (1
+> >> raid device)?
+> >> Depending on which, you might want to try the
+> other.
+> >
+> >
+> >I'm using 3 devices. Can you use just one? If so -
+> >how?
+> >How do I create a raid 10 using mdadm?
+> 
+> mdadm -C /dev/md0 -N nicearray -b internal -e 1.0 -l
+> 10 -n 4 /dev/sd[abcd]1
+> 
+> for example. (See the manpage for details.)
+> 
 
-GIT v1.5.0.3 Release Notes
-==========================
+Thanks - because of your suggestion I had found the
+instructions. But you have some interesting options
+set. 
 
-Fixes since v1.5.0.2
---------------------
+-N nicearray -b internal -e 1.0
 
-* Bugfixes
+Are these important? I can restart the process. I
+think that I found my original problem. I forgot to
+use:
 
-  - 'git.el' honors the commit coding system from the configuration.
-
-  - 'blameview' in contrib/ correctly digs deeper when a line is
-    clicked.
-
-  - 'http-push' correctly makes sure the remote side has leading
-    path.  Earlier it started in the middle of the path, and
-    incorrectly.
-
-  - 'git-merge' did not exit with non-zero status when the
-    working tree was dirty and cannot fast forward.  It does
-    now.
-
-  - 'cvsexportcommit' does not lose yet-to-be-used message file.
-
-  - int-vs-size_t typefix when running combined diff on files
-    over 2GB long.
-
-  - 'git apply --whitespace=strip' should not touch unmodified
-    lines.
-
-  - 'git-mailinfo' choke when a logical header line was too long.
-
-  - 'git show A..B' did not error out.  Negative ref ("not A" in
-    this example) does not make sense for the purpose of the
-    command, so now it errors out.
-
-  - 'git fmt-merge-msg --file' without file parameter did not
-    correctly error out.
-
-  - 'git archimport' barfed upon encountering a commit without
-    summary.
-
-  - 'git index-pack' did not protect itself from getting a short
-    read out of pread(2).
-
-  - 'git http-push' had a few buffer overruns.
-
-  - Build dependency fixes to rebuild fetch.o when other headers
-    change.
-
-* Documentation updates
-
-  - user-manual updates.
-
-  - Options to 'git remote add' were described insufficiently.
-
-  - Configuration format.suffix was not documented.
-
-  - Other formatting and spelling fixes.
+pci=nommconf iommu=soft
 
 
-----------------------------------------------------------------
-
-Shortlog since v1.5.0.2
------------------------
-
-Alexandre Julliard (1):
-      git.el: Set the default commit coding system from the repository config.
-
-Aneesh Kumar K.V (1):
-      blameview: Fix the browse behavior in blameview
-
-Christian Schlotter (1):
-      Documentation: Correct minor typo in git-add documentation.
-
-Eygene Ryabinkin (2):
-      http-push.c::lock_remote(): validate all remote refs.
-      Another memory overrun in http-push.c
-
-Gerrit Pape (2):
-      git-cvsexportcommit: don't cleanup .msg if not yet committed to cvs.
-      Fix quoting in update hook template
-
-J. Bruce Fields (6):
-      Documentation: mention module option to git-cvsimport
-      user-manual: reset to ORIG_HEAD not HEAD to undo merge
-      user-manual: ensure generated manual references stylesheet
-      user-manual: insert earlier of mention content-addressable architecture
-      user-manual: how to replace commits older than most recent
-      user-manual: more detailed merge discussion
-
-Jim Meyering (1):
-      diff --cc: integer overflow given a 2GB-or-larger file
-
-Johannes Schindelin (3):
-      fetch.o depends on the headers, too.
-      builtin-archive: use RUN_SETUP
-      Document the config variable format.suffix
-
-Junio C Hamano (5):
-      git-apply: do not fix whitespaces on context lines.
-      Documentation: git-remote add [-t <branch>] [-m <branch>] [-f] name url
-      Start preparing Release Notes for 1.5.0.3
-      git-merge: fail correctly when we cannot fast forward.
-      GIT 1.5.0.3
-
-Linus Torvalds (2):
-      mailinfo: do not get confused with logical lines that are too long.
-      git-show: Reject native ref
-
-Matthias Kestenholz (1):
-      Fix git-gc usage note
-
-Michael Coleman (2):
-      Fix minor typos/grammar in user-manual.txt
-      builtin-fmt-merge-msg: fix bugs in --file option
-
-Michael Poole (1):
-      Correct ordering in git-cvsimport's option documentation
-
-Paolo Bonzini (1):
-      git-archimport: support empty summaries, put summary on a single line.
-
-Ramsay Allan Jones (5):
-      Fix a "label defined but unreferenced" warning.
-      Fix an "implicit function definition" warning.
-      Fix some "comparison is always true/false" warnings.
-      Fix a "pointer type missmatch" warning.
-      Unset NO_C99_FORMAT on Cygwin.
-
-Sergey Vlasov (3):
-      Documentation/build-docdep.perl: Fix dependencies for included asciidoc files
-      Documentation/git-quiltimport.txt: Fix labeled list formatting
-      Documentation/git-send-email.txt: Fix labeled list formatting
-
-Shawn O. Pearce (1):
-      index-pack: Loop over pread until data loading is complete.
-
-Theodore Ts'o (1):
-      Fix git-show man page formatting in the EXAMPLES section
-
-Uwe Kleine-König (1):
-      Include config.mak in doc/Makefile
-
-Yasushi SHOJI (1):
-      glossary: Add definitions for dangling and unreachable objects
 
 
+ 
+____________________________________________________________________________________
+We won't tell. Get more on shows you hate to love 
+(and love to hate): Yahoo! TV's Guilty Pleasures list.
+http://tv.yahoo.com/collections/265 
