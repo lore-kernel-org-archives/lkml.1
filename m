@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933266AbXCEMVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933296AbXCEMWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933266AbXCEMVJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 07:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933288AbXCEMVJ
+	id S933296AbXCEMWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 07:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933383AbXCEMWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 07:21:09 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:35842 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933266AbXCEMVH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 07:21:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uV1Qs9zKb+TMQ0H7aiNxhmtfES420DUMZy3ivqDxUlIrVPS9HTYa2i1FXp9YGpzFEIGLHRlCgbdiPd/sSl4JBMeE8dXo0lxSpZ4wJaQlYMlFvkq510TGBCEdxWVUvdOejEFeSOkVeRlDemmKbXGZ0HzRFmWCfeDfWN33uGEQyY0=
-Message-ID: <6bffcb0e0703050421l32fa68e8u3791731e4305f5b9@mail.gmail.com>
-Date: Mon, 5 Mar 2007 13:21:05 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: 2.6.21-rc2-git3 soft lockup detected on CPU#0 (crash dump kernel)
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <6bffcb0e0703050404h5be8d8d4i8e77e90a25150894@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 07:22:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39833 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933296AbXCEMWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 07:22:23 -0500
+Date: Mon, 5 Mar 2007 13:13:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Zachary Amsden <zach@vmware.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [patch] paravirt: clarify VMI description
+Message-ID: <20070305121346.GA14422@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1173022668.24738.141.camel@localhost.localdomain>
-	 <6bffcb0e0703040847g1c04940bm4c22895ec2540bd1@mail.gmail.com>
-	 <1173027823.24738.156.camel@localhost.localdomain>
-	 <6bffcb0e0703040915h442b4d6cq8bb47cd961165916@mail.gmail.com>
-	 <20070305080824.GA20583@elte.hu>
-	 <1173090869.24738.198.camel@localhost.localdomain>
-	 <20070305103141.GA18404@elte.hu>
-	 <6bffcb0e0703050347j5169c672g19996d5c76707123@mail.gmail.com>
-	 <20070305115111.GA10675@elte.hu>
-	 <6bffcb0e0703050404h5be8d8d4i8e77e90a25150894@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/03/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> On 05/03/07, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> >
-> > > >also below is a softlockup-debug patch that might be useful, which adds
-> > > >a tick/tock output so it spams the console once per second but can show
-> > > >the dynamics of lockups (and other delays).
-> > >
-> > > I have applied this patch
-> > > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/log3.txt
-> >
-> > thanks. It seems that the 'BUG: soft lockup detected' message does not
-> > occur in this log though - and that there are bootup messages between
-> > the two sysrq outputs:
-> >
-> > [  221.101833] skge eth1: disabling interface
-> > [  228.740911] audit(1173094442.943:11): user pid=3245 uid=0
-> > auid=4294967295 subj=system_u:system_r:hwclock_t:s0 msg='changing system
-> > time: exe="/sbin/hwclock"
-> > (hostname=?, addr=?, terminal=console res=success)'
-> > [  233.148571] md: md1 in immediate safe mode
-> >
-> > plus there's trouble with irq 10:
-> >
-> > [  132.013194] irq 10: nobody cared (try booting with the "irqpoll" option)
-> > [  132.072771] Disabling IRQ #10
-> >
-> > that prompted you to enable irqpoll, right?
->
-> No. irqpoll is added by /etc/init.d/kdump script (FC6).
->
-> > So am i right that without
-> > irqpoll there's no lockup?
->
-> I will check this.
+Subject: [patch] paravirt: clarify VMI description
+From: Ingo Molnar <mingo@elte.hu>
 
-I can confirm that without irqpoll everything works fine.
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc2-git3-kdump/log4.txt
+clarify the description of the CONFIG_VMI option: describe the reality 
+that VMI is a VMWare-only interface for now. Once that changes and 
+another hypervisor adopts the VMI ABI we can change the text. As it can 
+be seen from the Xen paravirtualization patches submitted to lkml the 
+Xen project has chosen its own, non-VMI interface between Xen and the 
+para-Linux - so remove Xen from the description.
 
-irqpoll is recommended as a command line option in Documentation/kdump/kdump.txt
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/i386/Kconfig |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+Index: linux/arch/i386/Kconfig
+===================================================================
+--- linux.orig/arch/i386/Kconfig
++++ linux/arch/i386/Kconfig
+@@ -227,8 +227,9 @@ config VMI
+ 	depends on PARAVIRT
+ 	default y
+ 	help
+-	  VMI provides a paravirtualized interface to multiple hypervisors
+-	  include VMware ESX server and Xen by connecting to a ROM module
++	  VMI provides a paravirtualized interface to the VMware ESX server
++	  (it could be used by other hypervisors in theory too, but is not
++	  at the moment), by linking the kernel to a GPL-ed ROM module
+ 	  provided by the hypervisor.
+ 
+ config ACPI_SRAT
