@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750782AbXCEB7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752362AbXCECA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750782AbXCEB7W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 20:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXCEB6Z
+	id S1752362AbXCECA7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 21:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbXCECA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 20:58:25 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:38366 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbXCEBzQ (ORCPT
+	Sun, 4 Mar 2007 21:00:56 -0500
+Received: from lazybastard.de ([212.112.238.170]:55151 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752259AbXCEBzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:55:16 -0500
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 09/13] fs/unionfs/: Miscellaneous coding style fixes
-Date: Sun,  4 Mar 2007 20:54:59 -0500
-Message-Id: <11730597051207-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.0.2.260.g2eb065
-In-Reply-To: <11730597033857-git-send-email-jsipek@cs.sunysb.edu>
-References: <11730597033857-git-send-email-jsipek@cs.sunysb.edu>
+	Sun, 4 Mar 2007 20:55:05 -0500
+Date: Mon, 5 Mar 2007 00:16:21 +0000
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Anton Altaparmakov <aia21@cam.ac.uk>, Arnd Bergmann <arnd@arndb.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-ID: <20070305001621.GB18691@lazybastard.org>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45EB4A55.3060908@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
----
- fs/unionfs/super.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+On Sun, 4 March 2007 14:38:13 -0800, Ulrich Drepper wrote:
+> 
+> When you do it like this, who can the kernel/filesystem *guarantee* that
+> when the data is written there actually is room on the harddrive?
+> 
+> What you described seems like using truncate/ftruncate to increase the
+> file's size.  That is not at all what posix_fallocate is for.
+> posix_fallocate must make sure that the requested blocks on the disk are
+> reserved (allocated) for the file's use and that at no point in the
+> future will, say, a msync() fail because a mmap(MAP_SHARED) page has
+> been written to.
 
-diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index 176cfb6..571b589 100644
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -320,9 +320,8 @@ static int unionfs_show_options(struct seq_file *m, struct vfsmount *mnt)
- 
- 		seq_printf(m, "%s=%s", path,
- 			   perms & MAY_WRITE ? "rw" : "ro");
--		if (bindex != bend) {
-+		if (bindex != bend)
- 			seq_printf(m, ":");
--		}
- 	}
- 
- out:
+That actually causes an interesting problem for compressing filesystems.
+The space consumed by blocks depends on their contents and how well it
+compresses.  At the moment, the only option I see to support
+posix_fallocate for LogFS is to set an inode flag disabling compression,
+then allocate the blocks.
+
+But if the file already contains large amounts of compressed data, I
+have a problem.  Disabling compression for a range within a file is not
+supported, so I can only return an error.  But which one?
+
+Jörn
+
 -- 
-1.5.0.2.260.g2eb065
-
+A surrounded army must be given a way out.
+-- Sun Tzu
