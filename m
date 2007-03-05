@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933571AbXCEP7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752322AbXCEP7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933571AbXCEP7L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933570AbXCEP7J
+	id S1752322AbXCEP7h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933570AbXCEP7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:59:09 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:52684 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933569AbXCEP7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:59:06 -0500
-Message-ID: <45EC3E8C.6000102@drzeus.cx>
-Date: Mon, 05 Mar 2007 17:00:12 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: sdhci-devel@list.drzeus.cx, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] sdhci regression in 2.6.21-rc2
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de> <45EB9DC6.8010403@rtr.ca> <45EB9E72.6040107@rtr.ca> <45EBAC73.7010600@drzeus.cx> <45EC2851.7020905@rtr.ca> <45EC352C.4070508@drzeus.cx> <45EC3609.4030809@drzeus.cx> <45EC38C5.1060600@rtr.ca>
-In-Reply-To: <45EC38C5.1060600@rtr.ca>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 10:59:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39239 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751954AbXCEP7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:59:19 -0500
+Date: Mon, 5 Mar 2007 10:58:45 -0500
+From: Dave Jones <davej@redhat.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [discuss] [PATCH 1/2] x86_64: add reporting of SVM flags to /proc/cpuinfo
+Message-ID: <20070305155845.GA15991@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
+	Joerg Roedel <joerg.roedel@amd.com>, discuss@x86-64.org,
+	linux-kernel@vger.kernel.org
+References: <20070305143601.GF30318@amd.com> <20070305143911.GG30318@amd.com> <200703051625.31449.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703051625.31449.ak@suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Pierre Ossman wrote:
->>
->> Hmm... I guess it can't be as the interrupt handler isn't associated
->> with a
->> device, just a random pointer.
->>
->> So either release the interrupt (which seems a bit unsafe as then we
->> might not
->> get it back), or handle states at the start of the isr.
->
-> From linux/Documentation/power/pci.txt:
->
+On Mon, Mar 05, 2007 at 04:25:31PM +0100, Andi Kleen wrote:
+ > On Monday 05 March 2007 15:39, Joerg Roedel wrote:
+ > > From: Joerg Roedel <joerg.roedel@amd.com>
+ > > 
+ > > This patch adds the advanced SVM reporting to /proc/cpuinfo on the x86_64
+ > > architecture.
+ > 
+ > Adding more fields to /proc/cpuinfo is always somewhat risky because
+ > there are lots of badly written parsers for it.
+ > 
+ > I considered adding the SVM fields myself, but decided against it because
+ > it didn't seem generally useful enough.
 
-That conveniently leaves out the part of how to handle when we're not
-getting our stuff back. ;)
+Agreed.  I'm more than happy to take patches to x86info however :)
 
-But it seems to be the easier route anyway... I'll whip up a patch.
-
-Rgds
+		Dave
 
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
-
+http://www.codemonkey.org.uk
