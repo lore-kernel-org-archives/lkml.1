@@ -1,267 +1,314 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbXCEWoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751785AbXCEWsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbXCEWoh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 17:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXCEWog
+	id S1751785AbXCEWsA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 17:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXCEWsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 17:44:36 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:1400 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752022AbXCEWoP (ORCPT
+	Mon, 5 Mar 2007 17:48:00 -0500
+Received: from mx.neterion.com ([72.1.205.142]:42450 "EHLO owa.neterion.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751625AbXCEWr6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 17:44:15 -0500
-Date: Mon, 5 Mar 2007 23:43:54 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: heiko.carstens@de.ibm.com
-Subject: [S390] Use generic bug.
-Message-ID: <20070305224354.GN22630@skybase>
+	Mon, 5 Mar 2007 17:47:58 -0500
+X-Greylist: delayed 848 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Mar 2007 17:47:57 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] s2io: add PCI error recovery support
+Date: Mon, 5 Mar 2007 17:33:39 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD7701481EE3@nekter>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] s2io: add PCI error recovery support
+Thread-Index: AcdRVkmYbQGrQqWHRcKRS0PtpUkt9QOGxuCQ
+From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+To: "Linas Vepstas" <linas@austin.ibm.com>
+Cc: "Wen Xiong" <wenxiong@us.ibm.com>, <linux-kernel@vger.kernel.org>,
+       <linux-pci@atrey.karlin.mff.cuni.cz>, <netdev@vger.kernel.org>,
+       "Jeff Garzik" <jgarzik@pobox.com>, "Andrew Morton" <akpm@osdl.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Comments on this patch -
 
-[S390] Use generic bug.
+1. device_close_flag is unused and is not required.
+> +static pci_ers_result_t s2io_io_error_detected(struct pci_dev *pdev,
+> +                                               pci_channel_state_t
+state)
+> +{
+		...
+> +		do_s2io_card_down(sp, 0);
+> +		sp->device_close_flag = TRUE;	/* Device is shut down.
+*/
 
-Generic bug implementation for s390. Will increase the value of the
-console output on BUG() statements since registers r0-r5,r14 will
-not be clobbered by a printk() call that was previously done before
-the illegal instruction of BUG() was hit.
-Also implements an architecture specific WARN_ON(). Output of that
-could be increased but requires common code change.
+2. s2io_reset can fail to reset the device. Ideally s2io_reset should
+return a failure in this case (return is void now) and in this case
+could s2io_io_slot_reset() be called again, maybe try thrice, in total,
+before failing to reset the slot?
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/Kconfig              |    5 ++
- arch/s390/defconfig            |    2 +
- arch/s390/kernel/module.c      |    4 +-
- arch/s390/kernel/traps.c       |   17 ++++++++--
- arch/s390/kernel/vmlinux.lds.S |   10 +++++
- include/asm-s390/bug.h         |   69 +++++++++++++++++++++++++++++++++--------
- 6 files changed, 89 insertions(+), 18 deletions(-)
-
-diff -urpN linux-2.6/arch/s390/defconfig linux-2.6-patched/arch/s390/defconfig
---- linux-2.6/arch/s390/defconfig	2007-03-05 22:51:47.000000000 +0100
-+++ linux-2.6-patched/arch/s390/defconfig	2007-03-05 22:52:02.000000000 +0100
-@@ -12,6 +12,7 @@ CONFIG_RWSEM_XCHGADD_ALGORITHM=y
- # CONFIG_ARCH_HAS_ILOG2_U64 is not set
- CONFIG_GENERIC_HWEIGHT=y
- CONFIG_GENERIC_TIME=y
-+CONFIG_GENERIC_BUG=y
- CONFIG_NO_IOMEM=y
- CONFIG_S390=y
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-@@ -705,6 +706,7 @@ CONFIG_DEBUG_MUTEXES=y
- CONFIG_DEBUG_SPINLOCK_SLEEP=y
- # CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
- # CONFIG_DEBUG_KOBJECT is not set
-+CONFIG_DEBUG_BUGVERBOSE=y
- # CONFIG_DEBUG_INFO is not set
- # CONFIG_DEBUG_VM is not set
- # CONFIG_DEBUG_LIST is not set
-diff -urpN linux-2.6/arch/s390/Kconfig linux-2.6-patched/arch/s390/Kconfig
---- linux-2.6/arch/s390/Kconfig	2007-03-05 22:51:51.000000000 +0100
-+++ linux-2.6-patched/arch/s390/Kconfig	2007-03-05 22:52:02.000000000 +0100
-@@ -41,6 +41,11 @@ config GENERIC_HWEIGHT
- config GENERIC_TIME
- 	def_bool y
- 
-+config GENERIC_BUG
-+	bool
-+	depends on BUG
-+	default y
-+
- config NO_IOMEM
- 	def_bool y
- 
-diff -urpN linux-2.6/arch/s390/kernel/module.c linux-2.6-patched/arch/s390/kernel/module.c
---- linux-2.6/arch/s390/kernel/module.c	2007-03-05 22:51:29.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/module.c	2007-03-05 22:52:02.000000000 +0100
-@@ -31,6 +31,7 @@
- #include <linux/string.h>
- #include <linux/kernel.h>
- #include <linux/moduleloader.h>
-+#include <linux/bug.h>
- 
- #if 0
- #define DEBUGP printk
-@@ -398,9 +399,10 @@ int module_finalize(const Elf_Ehdr *hdr,
- 		    struct module *me)
- {
- 	vfree(me->arch.syminfo);
--	return 0;
-+	return module_bug_finalize(hdr, sechdrs, me);
- }
- 
- void module_arch_cleanup(struct module *mod)
- {
-+	module_bug_cleanup(mod);
- }
-diff -urpN linux-2.6/arch/s390/kernel/traps.c linux-2.6-patched/arch/s390/kernel/traps.c
---- linux-2.6/arch/s390/kernel/traps.c	2007-03-05 22:52:02.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/traps.c	2007-03-05 22:52:02.000000000 +0100
-@@ -30,7 +30,7 @@
- #include <linux/kallsyms.h>
- #include <linux/reboot.h>
- #include <linux/kprobes.h>
--
-+#include <linux/bug.h>
- #include <asm/system.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
-@@ -297,6 +297,11 @@ report_user_fault(long interruption_code
- #endif
- }
- 
-+int is_valid_bugaddr(unsigned long addr)
-+{
-+	return 1;
-+}
-+
- static void __kprobes inline do_trap(long interruption_code, int signr,
- 					char *str, struct pt_regs *regs,
- 					siginfo_t *info)
-@@ -323,8 +328,14 @@ static void __kprobes inline do_trap(lon
-                 fixup = search_exception_tables(regs->psw.addr & PSW_ADDR_INSN);
-                 if (fixup)
-                         regs->psw.addr = fixup->fixup | PSW_ADDR_AMODE;
--                else
--                        die(str, regs, interruption_code);
-+		else {
-+			enum bug_trap_type btt;
-+
-+			btt = report_bug(regs->psw.addr & PSW_ADDR_INSN);
-+			if (btt == BUG_TRAP_TYPE_WARN)
-+				return;
-+			die(str, regs, interruption_code);
-+		}
-         }
- }
- 
-diff -urpN linux-2.6/arch/s390/kernel/vmlinux.lds.S linux-2.6-patched/arch/s390/kernel/vmlinux.lds.S
---- linux-2.6/arch/s390/kernel/vmlinux.lds.S	2007-03-05 22:51:29.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/vmlinux.lds.S	2007-03-05 22:52:02.000000000 +0100
-@@ -45,6 +45,8 @@ SECTIONS
-   __ex_table : { *(__ex_table) }
-   __stop___ex_table = .;
- 
-+  BUG_TABLE
-+
-   .data : {			/* Data */
- 	*(.data)
- 	CONSTRUCTORS
-@@ -77,6 +79,12 @@ SECTIONS
- 	*(.init.text)
- 	_einittext = .;
-   }
-+  /*
-+   * .exit.text is discarded at runtime, not link time,
-+   * to deal with references from __bug_table
-+   */
-+  .exit.text :	 { *(.exit.text) }
-+
-   .init.data : { *(.init.data) }
-   . = ALIGN(256);
-   __setup_start = .;
-@@ -116,7 +124,7 @@ SECTIONS
- 
-   /* Sections to be discarded */
-   /DISCARD/ : {
--	*(.exit.text) *(.exit.data) *(.exitcall.exit)
-+	*(.exit.data) *(.exitcall.exit)
- 	}
- 
-   /* Stabs debugging sections.  */
-diff -urpN linux-2.6/include/asm-s390/bug.h linux-2.6-patched/include/asm-s390/bug.h
---- linux-2.6/include/asm-s390/bug.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6-patched/include/asm-s390/bug.h	2007-03-05 22:52:02.000000000 +0100
-@@ -1,27 +1,70 @@
--#ifndef _S390_BUG_H
--#define _S390_BUG_H
-+#ifndef _ASM_S390_BUG_H
-+#define _ASM_S390_BUG_H
- 
- #include <linux/kernel.h>
- 
- #ifdef CONFIG_BUG
- 
--static inline __attribute__((noreturn)) void __do_illegal_op(void)
--{
--#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)
--	__builtin_trap();
-+#ifdef CONFIG_64BIT
-+#define S390_LONG ".quad"
- #else
--	asm volatile(".long 0");
-+#define S390_LONG ".long"
- #endif
--}
- 
--#define BUG() do { \
--	printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); \
--	__do_illegal_op(); \
-+#ifdef CONFIG_DEBUG_BUGVERBOSE
-+
-+#define __EMIT_BUG(x) do {					\
-+	asm volatile(						\
-+		"0:	j	0b+2\n"				\
-+		"1:\n"						\
-+		".section .rodata.str,\"aMS\",@progbits,1\n"	\
-+		"2:	.asciz	\""__FILE__"\"\n"		\
-+		".previous\n"					\
-+		".section __bug_table,\"a\"\n"			\
-+		"3:\t"	S390_LONG "\t1b,2b\n"			\
-+		"	.short	%0,%1\n"			\
-+		"	.org	3b+%2\n"			\
-+		".previous\n"					\
-+		: : "i" (__LINE__),				\
-+		    "i" (x),					\
-+		    "i" (sizeof(struct bug_entry)));		\
- } while (0)
- 
-+#else /* CONFIG_DEBUG_BUGVERBOSE */
-+
-+#define __EMIT_BUG(x) do {				\
-+	asm volatile(					\
-+		"0:	j	0b+2\n"			\
-+		"1:\n"					\
-+		".section __bug_table,\"a\"\n"		\
-+		"2:\t"	S390_LONG "\t1b\n"		\
-+		"	.short	%0\n"			\
-+		"	.org	2b+%1\n"		\
-+		".previous\n"				\
-+		: : "i" (x),				\
-+		    "i" (sizeof(struct bug_entry)));	\
-+} while (0)
-+
-+#endif /* CONFIG_DEBUG_BUGVERBOSE */
-+
-+#define BUG()	__EMIT_BUG(0)
-+
-+#define WARN_ON(x) ({					\
-+	typeof(x) __ret_warn_on = (x);			\
-+	if (__builtin_constant_p(__ret_warn_on)) {	\
-+		if (__ret_warn_on)			\
-+			__EMIT_BUG(BUGFLAG_WARNING);	\
-+	} else {					\
-+		if (unlikely(__ret_warn_on))		\
-+			__EMIT_BUG(BUGFLAG_WARNING);	\
-+	}						\
-+	unlikely(__ret_warn_on);			\
-+})
-+
- #define HAVE_ARCH_BUG
--#endif
-+#define HAVE_ARCH_WARN_ON
-+#endif /* CONFIG_BUG */
- 
- #include <asm-generic/bug.h>
- 
--#endif
-+#endif /* _ASM_S390_BUG_H */
+Ram
+> -----Original Message-----
+> From: Linas Vepstas [mailto:linas@austin.ibm.com]
+> Sent: Thursday, February 15, 2007 3:09 PM
+> To: Ramkrishna Vepa; Raghavendra Koushik; Ananda Raju
+> Cc: Wen Xiong; linux-kernel@vger.kernel.org; linux-
+> pci@atrey.karlin.mff.cuni.cz; netdev@vger.kernel.org; Jeff Garzik;
+Andrew
+> Morton
+> Subject: [PATCH] s2io: add PCI error recovery support
+> 
+> 
+> Koushik, Raju,
+> 
+> Please review, comment, and if you find this acceptable,
+> please forward upstream. This patch incorporates all of
+> fixes resulting from the last set of discussions, circa
+> November 2006.
+> 
+> --linas
+> 
+> This patch adds PCI error recovery support to the
+> s2io 10-Gigabit ethernet device driver. Fourth revision,
+> blocks interrupts and the watchdog. Adds a flag to
+> s2io_down(), to avoid doing I/O when PCI bus is offline.
+> 
+> Tested, seems to work well.
+> 
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> Acked-by: Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>
+> Cc: Raghavendra Koushik <raghavendra.koushik@neterion.com>
+> Cc: Ananda Raju <Ananda.Raju@neterion.com>
+> Cc: Wen Xiong <wenxiong@us.ibm.com>
+> 
+> ----
+>  drivers/net/s2io.c |  116
+> ++++++++++++++++++++++++++++++++++++++++++++++++++---
+>  drivers/net/s2io.h |    5 ++
+>  2 files changed, 116 insertions(+), 5 deletions(-)
+> 
+> Index: linux-2.6.20-git4/drivers/net/s2io.c
+> ===================================================================
+> --- linux-2.6.20-git4.orig/drivers/net/s2io.c	2007-02-15
+> 15:39:35.000000000 -0600
+> +++ linux-2.6.20-git4/drivers/net/s2io.c	2007-02-15
+16:15:10.000000000 -
+> 0600
+> @@ -435,11 +435,18 @@ static struct pci_device_id s2io_tbl[] _
+> 
+>  MODULE_DEVICE_TABLE(pci, s2io_tbl);
+> 
+> +static struct pci_error_handlers s2io_err_handler = {
+> +	.error_detected = s2io_io_error_detected,
+> +	.slot_reset = s2io_io_slot_reset,
+> +	.resume = s2io_io_resume,
+> +};
+> +
+>  static struct pci_driver s2io_driver = {
+>        .name = "S2IO",
+>        .id_table = s2io_tbl,
+>        .probe = s2io_init_nic,
+>        .remove = __devexit_p(s2io_rem_nic),
+> +      .err_handler = &s2io_err_handler,
+>  };
+> 
+>  /* A simplifier macro used both by init and free shared_mem Fns(). */
+> @@ -2577,6 +2584,9 @@ static void s2io_netpoll(struct net_devi
+>  	u64 val64 = 0xFFFFFFFFFFFFFFFFULL;
+>  	int i;
+> 
+> +	if (pci_channel_offline(nic->pdev))
+> +		return;
+> +
+>  	disable_irq(dev->irq);
+> 
+>  	atomic_inc(&nic->isr_cnt);
+> @@ -3079,6 +3089,8 @@ static void alarm_intr_handler(struct s2
+>  	int i;
+>  	if (atomic_read(&nic->card_state) == CARD_DOWN)
+>  		return;
+> +	if (pci_channel_offline(nic->pdev))
+> +		return;
+>  	nic->mac_control.stats_info->sw_stat.ring_full_cnt = 0;
+>  	/* Handling the XPAK counters update */
+>  	if(nic->mac_control.stats_info->xpak_stat.xpak_timer_count <
+72000)
+> {
+> @@ -4117,6 +4129,10 @@ static irqreturn_t s2io_isr(int irq, voi
+>  	struct mac_info *mac_control;
+>  	struct config_param *config;
+> 
+> +	/* Pretend we handled any irq's from a disconnected card */
+> +	if (pci_channel_offline(sp->pdev))
+> +		return IRQ_NONE;
+> +
+>  	atomic_inc(&sp->isr_cnt);
+>  	mac_control = &sp->mac_control;
+>  	config = &sp->config;
+> @@ -6188,7 +6204,7 @@ static void s2io_rem_isr(struct s2io_nic
+>  	} while(cnt < 5);
+>  }
+> 
+> -static void s2io_card_down(struct s2io_nic * sp)
+> +static void do_s2io_card_down(struct s2io_nic * sp, int do_io)
+>  {
+>  	int cnt = 0;
+>  	struct XENA_dev_config __iomem *bar0 = sp->bar0;
+> @@ -6203,7 +6219,8 @@ static void s2io_card_down(struct s2io_n
+>  	atomic_set(&sp->card_state, CARD_DOWN);
+> 
+>  	/* disable Tx and Rx traffic on the NIC */
+> -	stop_nic(sp);
+> +	if (do_io)
+> +		stop_nic(sp);
+> 
+>  	s2io_rem_isr(sp);
+> 
+> @@ -6211,7 +6228,7 @@ static void s2io_card_down(struct s2io_n
+>  	tasklet_kill(&sp->task);
+> 
+>  	/* Check if the device is Quiescent and then Reset the NIC */
+> -	do {
+> +	while(do_io) {
+>  		/* As per the HW requirement we need to replenish the
+>  		 * receive buffer to avoid the ring bump. Since there is
+>  		 * no intention of processing the Rx frame at this
+pointwe are
+> @@ -6236,8 +6253,9 @@ static void s2io_card_down(struct s2io_n
+>  				  (unsigned long long) val64);
+>  			break;
+>  		}
+> -	} while (1);
+> -	s2io_reset(sp);
+> +	}
+> +	if (do_io)
+> +		s2io_reset(sp);
+> 
+>  	spin_lock_irqsave(&sp->tx_lock, flags);
+>  	/* Free all Tx buffers */
+> @@ -6252,6 +6270,11 @@ static void s2io_card_down(struct s2io_n
+>  	clear_bit(0, &(sp->link_state));
+>  }
+> 
+> +static void s2io_card_down(struct s2io_nic * sp)
+> +{
+> +	do_s2io_card_down(sp, 1);
+> +}
+> +
+>  static int s2io_card_up(struct s2io_nic * sp)
+>  {
+>  	int i, ret = 0;
+> @@ -7536,3 +7559,86 @@ static void lro_append_pkt(struct s2io_n
+>  	sp->mac_control.stats_info->sw_stat.clubbed_frms_cnt++;
+>  	return;
+>  }
+> +
+> +/**
+> + * s2io_io_error_detected - called when PCI error is detected
+> + * @pdev: Pointer to PCI device
+> + * @state: The current pci conneection state
+> + *
+> + * This function is called after a PCI bus error affecting
+> + * this device has been detected.
+> + */
+> +static pci_ers_result_t s2io_io_error_detected(struct pci_dev *pdev,
+> +                                               pci_channel_state_t
+state)
+> +{
+> +	struct net_device *netdev = pci_get_drvdata(pdev);
+> +	struct s2io_nic *sp = netdev->priv;
+> +
+> +	netif_device_detach(netdev);
+> +
+> +	if (netif_running(netdev)) {
+> +		/* Bring down the card, while avoiding PCI I/O */
+> +		do_s2io_card_down(sp, 0);
+> +		sp->device_close_flag = TRUE;	/* Device is shut down.
+*/
+> +	}
+> +	pci_disable_device(pdev);
+> +
+> +	return PCI_ERS_RESULT_NEED_RESET;
+> +}
+> +
+> +/**
+> + * s2io_io_slot_reset - called after the pci bus has been reset.
+> + * @pdev: Pointer to PCI device
+> + *
+> + * Restart the card from scratch, as if from a cold-boot.
+> + * At this point, the card has exprienced a hard reset,
+> + * followed by fixups by BIOS, and has its config space
+> + * set up identically to what it was at cold boot.
+> + */
+> +static pci_ers_result_t s2io_io_slot_reset(struct pci_dev *pdev)
+> +{
+> +	struct net_device *netdev = pci_get_drvdata(pdev);
+> +	struct s2io_nic *sp = netdev->priv;
+> +
+> +	if (pci_enable_device(pdev)) {
+> +		printk(KERN_ERR "s2io: "
+> +		       "Cannot re-enable PCI device after reset.\n");
+> +		return PCI_ERS_RESULT_DISCONNECT;
+> +	}
+> +
+> +	pci_set_master(pdev);
+> +	s2io_reset(sp);
+> +
+> +	return PCI_ERS_RESULT_RECOVERED;
+> +}
+> +
+> +/**
+> + * s2io_io_resume - called when traffic can start flowing again.
+> + * @pdev: Pointer to PCI device
+> + *
+> + * This callback is called when the error recovery driver tells
+> + * us that its OK to resume normal operation.
+> + */
+> +static void s2io_io_resume(struct pci_dev *pdev)
+> +{
+> +	struct net_device *netdev = pci_get_drvdata(pdev);
+> +	struct s2io_nic *sp = netdev->priv;
+> +
+> +	if (netif_running(netdev)) {
+> +		if (s2io_card_up(sp)) {
+> +			printk(KERN_ERR "s2io: "
+> +			       "Can't bring device back up after
+reset.\n");
+> +			return;
+> +		}
+> +
+> +		if (s2io_set_mac_addr(netdev, netdev->dev_addr) ==
+FAILURE) {
+> +			s2io_card_down(sp);
+> +			printk(KERN_ERR "s2io: "
+> +			       "Can't resetore mac addr after
+reset.\n");
+> +			return;
+> +		}
+> +	}
+> +
+> +	netif_device_attach(netdev);
+> +	netif_wake_queue(netdev);
+> +}
+> Index: linux-2.6.20-git4/drivers/net/s2io.h
+> ===================================================================
+> --- linux-2.6.20-git4.orig/drivers/net/s2io.h	2007-02-15
+> 15:39:35.000000000 -0600
+> +++ linux-2.6.20-git4/drivers/net/s2io.h	2007-02-15
+16:59:40.000000000 -
+> 0600
+> @@ -1020,6 +1020,11 @@ static void update_L3L4_header(struct s2
+>  static void lro_append_pkt(struct s2io_nic *sp, struct lro *lro,
+>  			   struct sk_buff *skb, u32 tcp_len);
+> 
+> +static pci_ers_result_t s2io_io_error_detected(struct pci_dev *pdev,
+> +			                      pci_channel_state_t
+state);
+> +static pci_ers_result_t s2io_io_slot_reset(struct pci_dev *pdev);
+> +static void s2io_io_resume(struct pci_dev *pdev);
+> +
+>  #define s2io_tcp_mss(skb) skb_shinfo(skb)->gso_size
+>  #define s2io_udp_mss(skb) skb_shinfo(skb)->gso_size
+>  #define s2io_offload_type(skb) skb_shinfo(skb)->gso_type
