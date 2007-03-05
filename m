@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbXCEVLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933203AbXCEVOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbXCEVLo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 16:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbXCEVLo
+	id S933203AbXCEVOg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 16:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933228AbXCEVOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 16:11:44 -0500
-Received: from mail32.syd.optusnet.com.au ([211.29.132.63]:46755 "EHLO
-	mail32.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752892AbXCEVLn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 16:11:43 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH] [RSDL 5/6] sched: implement rsdl cpu scheduler
-Date: Tue, 6 Mar 2007 08:11:21 +1100
-User-Agent: KMail/1.9.5
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-References: <200703041806.22965.kernel@kolivas.org> <20070305203857.GQ16722@waste.org>
-In-Reply-To: <20070305203857.GQ16722@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 5 Mar 2007 16:14:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51314 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933203AbXCEVOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 16:14:35 -0500
+Subject: RE: [PATCH] xfrm_policy delete security check misplaced
+From: Eric Paris <eparis@parisplace.org>
+To: James Morris <jmorris@namei.org>
+Cc: Venkat Yekkirala <vyekkirala@TrustedCS.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Venkat Yekkirala <vyekkirala@tcsfw4.tcs-sec.com>,
+       cxzhang@watson.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>
+In-Reply-To: <Line.LNX.4.64.0703051139040.14821@d.namei>
+References: <001501c75f3f$243a3000$cc0a010a@tcssec.com>
+	 <Line.LNX.4.64.0703051139040.14821@d.namei>
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 11:51:28 -0500
+Message-Id: <1173113488.31047.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703060811.21316.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 March 2007 07:38, Matt Mackall wrote:
-> On Sun, Mar 04, 2007 at 06:06:22PM +1100, Con Kolivas wrote:
-> > + * This is the time all tasks within the same priority round robin.
-> > + * Set to a minimum of 6ms.
-> >   */
-> > +#define RR_INTERVAL		((6 * HZ / 1001) + 1)
->
-> What happens with small HZ? Like 100? I suppose 10ms is a reasonable
-> number here. But in general, how well does this scheduler do without a
-> time source other than jiffies?
+On Mon, 2007-03-05 at 11:39 -0500, James Morris wrote:
+> On Mon, 5 Mar 2007, Venkat Yekkirala wrote:
+> 
+> > > 
+> > > Signed-off-by: Eric Paris <eparis@redhat.com>
+> > Acked-by: Venkat Yekkirala <vyekkirala@trustedcs.com> 
+> 
+> What about your previous comment:
+> 
+>  "I guess you meant to do this here?
+>         else if (err)
+>                 return err; "
 
-Perfectly fine at 100. It only needs to do accounting during a busy tick, and 
-on dynticks we always service a timer interrupt during that busy tick so it 
-works fine there as well. In fact, choosing a lower HZ you are indirectly 
-making a decision that you don't value latency as much as at the higher HZ 
-and 10ms is fine for the scheduling there. It would be possible to service 
-the cpu accounting with any timer that fired at at least 100HZ even if there 
-was some way to turn ticks off fully when the cpu is busy (which there isn't 
-currently a way to do).
+That also gets taken care of in the pfkey_spdget cleanup in a later
+patch.  The return isn't in that same place venkat suggested it instead
+happens inside the new if (delete) block.  (err is only non-zero on
+delete operations so there is no need to check it otherwise)
 
--- 
--ck
+-Eric
+
