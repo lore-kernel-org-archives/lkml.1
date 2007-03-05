@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933509AbXCEPHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933505AbXCEPI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933509AbXCEPHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933507AbXCEPHF
+	id S933505AbXCEPI4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933507AbXCEPI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:07:05 -0500
-Received: from mxout-03.mxes.net ([216.86.168.178]:1557 "EHLO
-	mxout-03.mxes.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933509AbXCEPHD (ORCPT
+	Mon, 5 Mar 2007 10:08:56 -0500
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:49819 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933505AbXCEPIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:07:03 -0500
-Message-ID: <34036.86.7.220.119.1173107218.squirrel@wmbeta.mxes.net>
-In-Reply-To: <1173090919.6782.13.camel@daplas>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> 
-    <20070305015039.GI3441@stusta.de> <1173090919.6782.13.camel@daplas>
-Date: Mon, 5 Mar 2007 15:06:58 -0000 (GMT)
-Subject: Re: [4/6] 2.6.21-rc2: known regressions
-From: "Andrew" <andrew@nelless.net>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Reply-To: "Andrew" <andrew@nelless.net>
-User-Agent: SquirrelMail/1.5.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Mon, 5 Mar 2007 10:08:55 -0500
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <20070305143703.GF26781@thunk.org>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <1172789056.11165.42.camel@kleikamp.austin.ibm.com> <20070301233819.GB31072@infradead.org> <200703032345.33137.arnd@arndb.de> <0DA8B217-DDD4-4E05-B000-DEBE3BE55B94@cam.ac.uk> <45EB4A55.3060908@redhat.com> <8A8B28AA-3481-4CFF-AEAA-0CB4CCDFF9F9@cam.ac.uk> <20070305143703.GF26781@thunk.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <13E89496-3752-42ED-AE23-F1EF6DE23029@cam.ac.uk>
+Cc: Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, cmm@us.ibm.com,
+       alex@clusterfs.com, suzuki@in.ibm.com
+Content-Transfer-Encoding: 7bit
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Date: Mon, 5 Mar 2007 15:07:26 +0000
+To: Theodore Tso <tytso@mit.edu>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, March 5, 2007 10:35 am, Antonino A. Daplas wrote:
+On 5 Mar 2007, at 14:37, Theodore Tso wrote:
+> On Sun, Mar 04, 2007 at 11:22:06PM +0000, Anton Altaparmakov wrote:
+>> And I specifically did NOT update the initialized size in the inode
+>> thus it will remain at its old value thus all new allocated blocks
+>> will be considered as present but not initialized thus a read will
+>> always return zero whilst a write will do the right thing and pad
+>> with zeroes as necessary (if the write is smaller than the block
+>> size, etc).
 >
-> This is not a framebuffer nor console problem.
->
->
-> I think Andrew Nelless confirmed that the cause is from the above
-> commit. How to fix it, I don't know.  Perhaps the acpi_skip_timer_override boot option has to
-> be used.
->
-> Tony
->
+> 	You're describing a method of doing in-advance preallocation
+> where the filesystem format explicitly has support for this kind of
+> feature in a way that doesn't require pre-zeroing the data blocks in
+> question.
 
-Yes, apologies for taking so long with this.
-I tried the acpi_skip_timer_override boot option last night,
-after Tony pointed it out, and this also works around the
-problem.
+Indeed.
 
-To summarize the cause is the changes made to early-quirks.c
-in the mentioned commit and when this is reverted the problem
-goes away.
+> 	The question which this subthread was concerned about was
+> whether the kernel should get involved in initializing datablocks in
+> the case where the filesystem format does not have this support, or
+> whether this functionality should continue to be done in userspace.
+> Given that glibc already has to support this for older kernels, I
+> would argue that there's no point putting in generic support for
+> filesystem that can't support a more advanced way of doing things.
 
-There doesn't seem to be any sign of a living HPET on this
-board or any way of enabling it in the current BIOS revision
-but it seems on intermittent boots the check in early-quirks.c
-returns, the timer override doesn't happen, and the kernel
-fails to boot properly.
+Yes, I understood that after I had sent my post...  And yes, I would  
+agree.  If glibc already does this there does not appear to be any  
+value in just moving existing functionality into the kernel.  Simply  
+let "dumb" file systems return ENOSYS and let glibc do it...  And any  
+FS which can do it better can implement the function and then glibc  
+should not go anywhere near it.
 
-Btw, this is the Asus A8N-VM *CSM* main board, the non-CSM
-variety actually has a nForce 410 rather than an
-nForce 430 chip. I don't know whether they behave any
-differently but the two boards actually have different BIOS
-releases.
+Best regards,
 
-If reverting the commit would disable the HPET on boards
-that do actually support it I personally don't mind using
-the acpi_skip_timer_override workaround.
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
 
--
-  Andrew
 
