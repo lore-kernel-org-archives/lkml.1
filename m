@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbXCEBrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbXCEBr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751876AbXCEBrt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 20:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXCEBrs
+	id S1751832AbXCEBr6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 20:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbXCEBrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 20:47:48 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:49900 "EHLO
+	Sun, 4 Mar 2007 20:47:55 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:49915 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751692AbXCEBr1 (ORCPT
+	with ESMTP id S1751857AbXCEBrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 20:47:27 -0500
-Date: Mon, 5 Mar 2007 02:47:28 +0100
+	Sun, 4 Mar 2007 20:47:43 -0500
+Date: Mon, 5 Mar 2007 02:47:45 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, linville@tuxdriver.com
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       dbrownell@users.sourceforge.net, greg@kroah.com,
-       linux-usb-devel@lists.sourceforge.net
-Subject: 2.6.21-rc2-mm1: drivers/usb/host/ohci-ssb.c doesn't compile
-Message-ID: <20070305014728.GN3441@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, airlied@linux.ie
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+Subject: [-mm patch] make drivers/char/drm/drm_vm.c:drm_io_prot() static
+Message-ID: <20070305014745.GS3441@stusta.de>
 References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -31,34 +29,25 @@ On Fri, Mar 02, 2007 at 03:00:26AM -0800, Andrew Morton wrote:
 >...
 > Changes since 2.6.20-mm2:
 >...
->  git-wireless.patch
+>  git-drm.patch
 >...
 >  git trees
 >...
 
-<--  snip  -->
+This patch makes the needlessly global drm_io_prot() static.
 
-...
-  CC      drivers/usb/host/ohci-hcd.o
-In file included from 
-/home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-hcd.c:931:
-/home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-ssb.c:47: error: request for member 'hcd_priv_size' in something not a structure or union
-/home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-ssb.c:47: error: 'ssb_ohci_device' undeclared here (not in a function)
-/home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-ssb.c:52: error: 'ssb_ohci_reset' undeclared here (not in a function)
-/home/bunk/linux/kernel-2.6/linux-2.6.21-rc2-mm1/drivers/usb/host/ohci-ssb.c:53: error: 'ssb_ohci_start' undeclared here (not in a function)
-...
-make[4]: *** [drivers/usb/host/ohci-hcd.o] Error 1
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-<--  snip  -->
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+---
+--- linux-2.6.21-rc2-mm1/drivers/char/drm/drm_vm.c.old	2007-03-04 20:39:25.000000000 +0100
++++ linux-2.6.21-rc2-mm1/drivers/char/drm/drm_vm.c	2007-03-04 20:39:34.000000000 +0100
+@@ -41,7 +41,7 @@
+ static void drm_vm_open(struct vm_area_struct *vma);
+ static void drm_vm_close(struct vm_area_struct *vma);
+ 
+-pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
++static pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
+ {
+ 	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
+ 
 
