@@ -1,122 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932989AbXCETVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933078AbXCET2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932989AbXCETVX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 14:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXCETVX
+	id S933078AbXCET2b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 14:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCET2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 14:21:23 -0500
-Received: from hoefnix.telenet-ops.be ([195.130.132.54]:38325 "EHLO
-	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932989AbXCETVW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 14:21:22 -0500
-Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
-From: Amedee Van Gasse <amedee@amedee.be>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2ZT4fozuZKpi/pNdd+wj"
-Date: Mon, 05 Mar 2007 20:19:12 +0100
-Message-Id: <1173122352.19761.33.camel@saruman>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 
+	Mon, 5 Mar 2007 14:28:31 -0500
+Received: from mail.kroah.org ([69.55.234.183]:45824 "EHLO perch.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933078AbXCET23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 14:28:29 -0500
+Date: Mon, 5 Mar 2007 11:26:22 -0800
+From: Greg KH <greg@kroah.com>
+To: "S.??a??lar Onur" <caglar@pardus.org.tr>
+Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/18] 2.6.18-stable review
+Message-ID: <20070305192622.GA2768@kroah.com>
+References: <20070221014927.GA3684@kroah.com> <200702211355.05539.caglar@pardus.org.tr> <20070226001824.GI29575@stusta.de> <200703051544.24041.caglar@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703051544.24041.caglar@pardus.org.tr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 05, 2007 at 03:44:22PM +0200, S.??a??lar Onur wrote:
+> 26 ??ub 2007 Pts tarihinde, Adrian Bunk ??unlar?? yazm????t??: 
+> > On Wed, Feb 21, 2007 at 01:55:04PM +0200, S.??a??lar Onur wrote:
+> > > 21 ??ub 2007 ??ar tarihinde, Greg KH ??unlar?? yazm????t??:
+> > > > Responses should be made by Friday February 23 00:00 UTC.  Anything
+> > > > received after that time might be too late.
+> > >
+> > > We have still some CVEish patches in our package which maybe you want to
+> > > consider adding into -stable.
+> >
+> > Below, I'll only look at the 2.6.18, 2.6.19 and 2.6.20 kernels.
+> >
+> > > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-4814
+> >
+> > fixed in:
+> > - 2.6.18.8
+> > - 2.6.19.2
+> > - 2.6.20
+> >
+> > > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5749
+> >
+> > fixed in:
+> > - 2.6.20 (commit dab6df63086762629936e8b89a5984bae39724f6)
+> >
+> > missing in:
+> > - 2.6.18
+> > - 2.6.19
+> >
+> > > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5753
+> >
+> > fixed in:
+> > - 2.6.20 (commit be6aab0e9fa6d3c6d75aa1e38ac972d8b4ee82b8)
+> >
+> > missing in:
+> > - 2.6.18
+> > - 2.6.19
+> >
+> > > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5823
+> >
+> > fixed in:
+> > - 2.6.19.2
+> > - 2.6.20
+> >
+> > missing in:
+> > - 2.6.18
+> >
+> > > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6053
+> >
+> > fixed in:
+> > - 2.6.19.2
+> > - 2.6.20
+> >
+> > missing in:
+> > - 2.6.18
+> >
+> > > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6054
+> >
+> > fixed in:
+> > - 2.6.19.2
+> > - 2.6.20
+> >
+> > missing in:
+> > - 2.6.18
+> >
+> > > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6333
+> >
+> > fixed in:
+> > - 2.6.19.1
+> > - 2.6.20
+> >
+> > problem not present in:
+> > - 2.6.18
+> >
+> > > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-0006
+> >
+> > fixed in:
+> > - 2.6.19.5
+> >
+> > missing in:
+> > - 2.6.18
+> > - 2.6.20
+> 
+> So maybe 2.6.18 deserves another stable release :) ?
 
---=-2ZT4fozuZKpi/pNdd+wj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Why?  Does anyone really use it now that 2.6.19 and 2.6.20 is out?
 
-On Tue, 27 Feb 2007 16:54:27 +0100 (CET), Jiri Kosina <> wrote:
->=20
-> What puzzles me a bit is a fact that both the bugreporters seem to
-> state pretty clearly that this started happening after some update, am
-> I right?
->=20
-> Or did the hardware before work all the time in the HID mode, without
-> even being attempted to switch to HCI (which seems to cause the bug)?
+I don't want to do a new release as we need to catch up on the 2.6.20
+issues...
 
-It _appears_ that the bug reports started after an update of
-bluez-utils, but this remains to be confirmed. It could be
-coincidence/temporal correlation (which does not imply causation).
+And also remember, the point of the -stable tree was that we would drop
+older releases after the next release came out.
 
-As for myself, I have a Logitech MX5000 keyboard/mouse with usb dongle,
-and I can confirm that the keyboard/mouse have always worked in HID.
-But in HID mode, no other bluetooth functions are possible (like pairing
-with a smartphone).
-It's possible to switch from HID to HCI and have a working mouse
-+bluetooth receiver, but in that case the keyboard can't pair.
+thanks,
 
-I used this script to get functional bluetooth (and unresponsive
-keyboard):
-
-hid2hci --tohci
-sleep 1
-/etc/init.d/bluetooth restart
-sleep 1
-# connect with the mouse
-hidd -i hci0 --connect 00:07:61:48:71:DE
-# connect with the keyboard
-hidd -i hci0 --connect 00:07:61:3F:DA:41
-
-I think the "-i hci0" isn't even needed, but it can't hurt.
-
-This triggers a lot of occurences of the following in my logs:
-
-BUG: at drivers/hid/hid-core.c:785 implement()
- [<f8d59608>] hid_output_report+0x288/0x300 [hid]
- [<f8d7d4c8>] hid_submit_ctrl+0x58/0x200 [usbhid]
- [schedule_timeout+83/208] schedule_timeout+0x53/0xd0
- [finish_wait+45/112] finish_wait+0x2d/0x70
- [<f8d7d78b>] usbhid_submit_report+0x11b/0x1b0 [usbhid]
- [autoremove_wake_function+0/80] autoremove_wake_function+0x0/0x50
- [<f8d7f9d6>] hiddev_ioctl+0x446/0xb40 [usbhid]
- [filemap_nopage+753/928] filemap_nopage+0x2f1/0x3a0
- [kmap_atomic+134/160] kmap_atomic+0x86/0xa0
- [kunmap_atomic+107/112] kunmap_atomic+0x6b/0x70
- [__handle_mm_fault+633/2624] __handle_mm_fault+0x279/0xa40
- [nameidata_to_filp+53/64] nameidata_to_filp+0x35/0x40
- [do_ioctl+120/144] do_ioctl+0x78/0x90
- [vfs_ioctl+92/672] vfs_ioctl+0x5c/0x2a0
- [sys_ioctl+114/144] sys_ioctl+0x72/0x90
- [sysenter_past_esp+105/169] sysenter_past_esp+0x69/0xa9
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-There are a few Ubuntu bug reports that describe the problem, with some
-log files and other useful info:
-https://bugs.launchpad.net/ubuntu/+source/bluez-utils/+bug/32415
-https://launchpad.net/ubuntu/+source/bluez-utils/+bug/66884/
-I have found similar descriptions in other distros.
-
-I have exactly the same experience as Vincent Fortier described
-(keyboard working at boot, some keys repeating sometimes, keyboard
-unresponsive when bluetooth comes up, keyboard works again after dongle
-unplug/replug, but no bluetooth)
-
-Anyway, is this a kernel problem or is bluez-utils to blame?
-
-
-PS: I bumped into this topic when googling for "046d:c70e". I'm not a
-developer (I'm what they call "a user"), but I'm not afraid to get my
-hands dirty. If you want me to run debug versions or patched kernels, I
-can do that. After all, I have the hardware and I might give you
-valuable information (even if I wouldn't recognise it when it spat me in
-the face).
-
---=20
-Amedee Van Gasse
-amedee@amedee.be
-
---=-2ZT4fozuZKpi/pNdd+wj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBF7G0wLx1bbS7O0EYRAj+1AJwPV/DgXQthCvsswMqpooFqW2fubgCcDvwM
-tNMRzZS8/fxGMJZZvpkJNOg=
-=En5V
------END PGP SIGNATURE-----
-
---=-2ZT4fozuZKpi/pNdd+wj--
-
+greg k-h
