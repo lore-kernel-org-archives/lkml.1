@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933541AbXCEPti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbXCEPuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933541AbXCEPti (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 10:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933544AbXCEPth
+	id S933551AbXCEPuS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 10:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933554AbXCEPuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 10:49:37 -0500
-Received: from dev.mellanox.co.il ([194.90.237.44]:36006 "EHLO
-	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933541AbXCEPtg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 10:49:36 -0500
-Date: Mon, 5 Mar 2007 17:44:45 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>,
-       git@vger.kernel.org
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Message-ID: <20070305154422.GA4798@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070302080441.GA12785@elte.hu>
-User-Agent: Mutt/1.5.11
+	Mon, 5 Mar 2007 10:50:18 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:45746 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933551AbXCEPuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 10:50:16 -0500
+Subject: Re: 2.6.21-rc2-git3 Unstable for me
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Will Trives <will@trivescon.com.au>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <1173108985.9109.11.camel@kleikamp.austin.ibm.com>
+References: <20070305150317.57e62d70@disher.kickcrew>
+	 <45EC3058.2010903@redhat.com>
+	 <1173108985.9109.11.camel@kleikamp.austin.ibm.com>
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 09:50:11 -0600
+Message-Id: <1173109811.9109.17.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Ingo Molnar <mingo@elte.hu>:
-> Subject: Re: 2.6.21-rc1: known regressions (part 2)
+On Mon, 2007-03-05 at 09:36 -0600, Dave Kleikamp wrote:
+> On Mon, 2007-03-05 at 09:59 -0500, Chuck Ebbert wrote:
+> > Will Trives wrote:
+> > 
+> > [adding JFS maintainer to cc:]
 > 
+> Thanks for adding me to the thread.
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> > Some kind of JFS problem?
 > 
-> > I'll try what i've described in the previous mail: mark all bisection 
-> > points that do not include f3ccb06f as 'good' - thus 'merging' the 
-> > known-bad area with the first known-good commit, and thus eliminating 
-> > it from the bisection space.
+> I don' t know yet.  I was notified of the problem through bugzilla:
+> http://bugzilla.kernel.org/show_bug.cgi?id=8128
 > 
-> this got me quite a bit further:
+> The problem appears that a non-uptodate page has been marked dirty.  I
+> haven't found much in the way of changes between 2.6.20 and the current
+> git tree to explain this.  There's this one:
+> http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=22c8ca78f20724676b6006232bf06cc3e9299539
 > 
->  git-bisect start
->  git-bisect bad       01363220f5d23ef68276db8974e46a502e43d01d
->  git-bisect good      f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 
->  git-bisect fake-good ee404566f97f9254433399fbbcfa05390c7c55f7
->  git-bisect bad       d43a338e395371733a80ec473b40baac5f74d768
->  git-bisect bad       255f0385c8e0d6b9005c0e09fffb5bd852f3b506
->  git-bisect fake-good f99c6bb6e2e9c35bd3dc0b1d0faa28bd6970930d
->  git-bisect fake-good 0187f221e96e3436d552c0c7143f183eb82fb658
->  git-bisect bad       81450b73dde07f473a4a7208b209b4c8b7251d90
->  git-bisect fake-good ef29498655b18d2bfd69048e20835d19333981ab
->  git-bisect fake-good 8a03d9a498eaf02c8a118752050a5154852c13bf
->  git-bisect good      5c95d3f5783ab184f64b7848f0a871352c35c3cf
->  git-bisect good      ecb5f7521a309cb9c5fc0832b9705cd2a03d7d45
->  git-bisect good      0539771d7236b425f285652f6f297cc7939c8f9a
+> I'm looking for for a caller to ->prepare_write() which marks the page
+> dirty without calling ->commit_write().
 
-I just confirmed that 0539771d7236b425f285652f6f297cc7939c8f9a
-is good for me, too.
+I think I just found it:
 
->  81450b73dde07f473a4a7208b209b4c8b7251d90 is first bad commit
+nobh_truncate_page():
 
-Going to test that now.
+	ret = a_ops->prepare_write(NULL, page, offset, to);
+	if (ret == 0) {
+		kaddr = kmap_atomic(page, KM_USER0);
+		memset(kaddr + offset, 0, PAGE_CACHE_SIZE - offset);
+		flush_dcache_page(page);
+		kunmap_atomic(kaddr, KM_USER0);
+		set_page_dirty(page);
+	}
+	unlock_page(page);
+	page_cache_release(page);
+
+> 
+> Will, could you try reverting that patch?  If that fails, narrowing the
+> problem down with git-bisect would be helpful, if you have the time.
+
+Better yet, try this patch:
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+diff -Nurp linux-orig/fs/buffer.c linux/fs/buffer.c
+--- linux-orig/fs/buffer.c	2007-02-22 07:59:01.000000000 -0600
++++ linux/fs/buffer.c	2007-03-05 09:47:07.000000000 -0600
+@@ -2466,6 +2466,7 @@ int nobh_truncate_page(struct address_sp
+ 		memset(kaddr + offset, 0, PAGE_CACHE_SIZE - offset);
+ 		flush_dcache_page(page);
+ 		kunmap_atomic(kaddr, KM_USER0);
++		SetPageUptodate(page);
+ 		set_page_dirty(page);
+ 	}
+ 	unlock_page(page);
 
 -- 
-MST
+David Kleikamp
+IBM Linux Technology Center
+
