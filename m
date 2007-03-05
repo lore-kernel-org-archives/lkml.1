@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbXCEEtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbXCEEuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752658AbXCEEtt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Mar 2007 23:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXCEEtt
+	id S1752659AbXCEEuR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Mar 2007 23:50:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbXCEEuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Mar 2007 23:49:49 -0500
-Received: from mga06.intel.com ([134.134.136.21]:36276 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752658AbXCEEts (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Mar 2007 23:49:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,247,1170662400"; 
-   d="scan'208"; a="203904332:sNHT17816365"
-Date: Sun, 4 Mar 2007 20:13:09 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [patch] sched: optimize siblings status check logic in wake_idle()
-Message-ID: <20070304201309.C27368@unix-os.sc.intel.com>
-References: <20070302202331.B27368@unix-os.sc.intel.com> <20070305023534.GB16666@wotan.suse.de>
-Mime-Version: 1.0
+	Sun, 4 Mar 2007 23:50:17 -0500
+Received: from mail.kroah.org ([69.55.234.183]:44119 "EHLO perch.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752659AbXCEEuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Mar 2007 23:50:14 -0500
+Date: Sun, 4 Mar 2007 20:34:43 -0800
+From: Greg KH <greg@kroah.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>,
+       Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org,
+       maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
+       Matt Mackall <mpm@selenic.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Albert Hopkins <kernel@marduk.letterboxes.org>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org
+Subject: Re: [1/6] 2.6.21-rc2: known regressions
+Message-ID: <20070305043443.GA29158@kroah.com>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de> <45EB961D.6030808@rtr.ca>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
-In-Reply-To: <20070305023534.GB16666@wotan.suse.de>; from npiggin@suse.de on Mon, Mar 05, 2007 at 03:35:34AM +0100
+In-Reply-To: <45EB961D.6030808@rtr.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 03:35:34AM +0100, Nick Piggin wrote:
-> On Fri, Mar 02, 2007 at 08:23:32PM -0800, Suresh B wrote:
-> > When a logical cpu 'x' already has more than one process running, then most likely
-> > the siblings of that cpu 'x' must be busy. Otherwise the idle siblings
-> > would have likely(in most of the scenarios) picked up the extra load making
-> > the load on 'x' atmost one.
+On Sun, Mar 04, 2007 at 11:01:33PM -0500, Mark Lord wrote:
+> Adrian Bunk wrote:
+> >
+> >Subject    : Bluetooth RFComm locks up the machine  (device_move() related)
+> >References : http://lkml.org/lkml/2007/3/4/64
+> >Submitter  : Mark Lord <lkml@rtr.ca>
+> >Caused-By  : Marcel Holtmann <marcel@holtmann.org>
+> >             commit c1a3313698895d8ad4760f98642007bf236af2e8
+> >Status     : unknown
 > 
-> Do you have any stats on this?
+> A 2-line patch exists for fs/sysfs/dir.c to address this.
+> Waiting on Greg to apply it or substitute something prettier.  ;)
 
-Its more of a theory. There will be some conditions that this won't be true but
-IMO those won't be common cases.
-
-> > Use this logic to eliminate the siblings status check and minimize the cache
-> > misses encountered on a heavily loaded system.
-> 
-> Well it does increase the cacheline footprint a bit, but all cachelines
-> should be local to our L1 cache, presuming you don't have any CPUs where
-> threads have seperate caches.
-
-These wakeup's can happen across SMP and NUMA domains. In those cases, most likely
-the sibling runqueue lines won't be in the caches. This has nothing to do with
-siblings sharing caches or not.
-
-> 
-> What sort of numbers do you have?
-
-On a 16 node system, we have seen ~1.25% perf improvement on a database workload
-when we completely short circuited wake_idle(). This patch is trying to comeup
-with a best compromise to avoid the cache misses and also minimize the latenices,
-perf impact.
+I want to see if Marcel agrees with it, as he did the original patch in
+that area.
 
 thanks,
-suresh
+
+greg k-h
