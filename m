@@ -1,85 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965400AbXCFRqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965404AbXCFRrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965400AbXCFRqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965404AbXCFRqa
+	id S965404AbXCFRrb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:47:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965405AbXCFRrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:46:30 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49967 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965400AbXCFRq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:46:29 -0500
-Date: Tue, 6 Mar 2007 09:41:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Ingo Molnar <mingo@elte.hu>, "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>, Soeren Sonnenburg <kernel@nn7.de>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] highres: do not run the TIMER_SOFTIRQ after switching
- to highres mode
-In-Reply-To: <1173202195.24738.350.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0703060935310.5963@woody.linux-foundation.org>
-References: <20070305015040.GJ3441@stusta.de>  <1173138193.24738.236.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org> 
- <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org> 
- <1173142948.24738.257.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org> 
- <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org> 
- <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu> 
- <20070306104618.GA5792@mellanox.co.il> <20070306113225.GA22561@elte.hu> 
- <Pine.LNX.4.64.0703060817060.5963@woody.linux-foundation.org>
- <1173202195.24738.350.camel@localhost.localdomain>
+	Tue, 6 Mar 2007 12:47:31 -0500
+Received: from dsbex1.ad.uiuc.edu ([128.174.68.231]:10405 "EHLO
+	dsbexcluster.ad.uiuc.edu" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965404AbXCFRra convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:47:30 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch 1/1] network: add the missing phy_device speed information to phy_mii_ioctl
+Date: Tue, 6 Mar 2007 11:45:25 -0600
+Message-ID: <9FD2C54661D3494AB6F269E0D4A74E83019D7931@DSBEXCLUSTER.ad.uiuc.edu>
+In-Reply-To: <28C12DE1-E0BD-4C5E-8DB9-B722F1877BDF@freescale.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 1/1] network: add the missing phy_device speed information to phy_mii_ioctl
+Thread-Index: AcdgFaLrA4ws0hz8R4iYCvJURajE8QAAG6Jw
+From: "Shan Lu" <shanlu@cs.uiuc.edu>
+To: "Andy Fleming" <afleming@freescale.com>
+Cc: <jeff@garzik.org>, <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       <shanlu@uiuc.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I probably have misunderstood the code. Thanks very much for pointing
+this out. I don't have special reason to stick to this function. I just
+feel it very strange to miss the speed parameter and it has no reason to
+do so.
+
+As for why not SPEED_10, another function in the same file only update
+the register with two choices: SPEED_100 or SPEED_1000. That's why I
+didn't put SPEED_10. 
+
+-----Original Message-----
+From: Andy Fleming [mailto:afleming@freescale.com] 
+Sent: Tuesday, March 06, 2007 11:34 AM
+To: Shan Lu
+Cc: jeff@garzik.org; akpm@linux-foundation.org;
+linux-kernel@vger.kernel.org; netdev@vger.kernel.org; shanlu@uiuc.edu
+Subject: Re: [patch 1/1] network: add the missing phy_device speed
+information to phy_mii_ioctl
 
 
-On Tue, 6 Mar 2007, Thomas Gleixner wrote:
-> 
-> /me pleads guilty !
-> 
-> Replacement patch below.
+On Mar 2, 2007, at 11:42, Shan Lu wrote:
 
-Well, I already applied the original one that came through Andrew, so I 
-really just wanted to note the coding style in general, and your fixed 
-patch no longer applied ;)
+> Changelog:
+> Function `phy_mii_ioctl' returns physical device's information  
+> based on
+> user requests. When requested to return the basic mode control  
+> register
+> information (BMCR), the original implementation only returns the
+> physical device's duplex information and forgets to return speed
+> information, which should not be because BMCR register is used to hold
+> both duplex and speed information.
+>
+> The patch checks the BMCR value against speed-related flags and fills
+> the return structure's speed field accordingly.
 
-Also, you do end up testing for "not error" with a
 
->  	if (tick_check_oneshot_change(!hrtimer_is_hres_enabled()))
-> -		hrtimer_switch_to_hres();
-> +		if (!hrtimer_switch_to_hres())
-> +			return;
+I think you've misunderstood what this code does, though I agree, in  
+principle, with your change.  You have modified the SIOCSMIIREG  
+command, which takes in a value, and sets the given register to that  
+value.  The structure which is being filled in is not being  
+returned.  It is the PHY's software representation at runtime.
 
-which I guess is ok, if only because we simply don't care about what the 
-exact error was. But it means that this particular code sequence ends up 
-having the same problem (which is still fewer places than the original 
-patch, so we're good).
+So this patch probably fixes a bug (I'd have to think harder about it  
+to see if phydev->speed doesn't get updated automatically), but  
+you've modified the *setting* command, not the *getting* command.
 
-I personally hate the
+Is there a reason you are using this function to get and set the  
+BMCR?  The PHY Lib provides ethtool functions to do this, and they  
+fit better with the design of the PHY Lib.  The mii IOCTL allows you  
+to change the registers any way you want, which potentially breaks  
+the state machine the PHY Lib sets up for tracking such changes.
 
-	if (hrtimer_switch_to_hres() == SUCCESS)
-		return;
+All that said, I think the change below needs to go in.  See below  
+for inline commentary:
 
-kind of syntax (it's just too long, and it's *not* obvious at all that 
-SUCCESS is zero and that this is a "negative error or zero" kind of 
-function, so it's actually *worse* than just doing what you did, but some 
-projects seem to have that kind of approach.
 
-We could encourage people to do
+>
+> Signed-off-by: Shan<shanlu@cs.uiuc.edu>
+>
+> ---
+> --- drivers/net/phy/phy.c   2007-03-02 10:40:26.000000000 -0600   
+> 2.6.20
+> +++ drivers/net/phy/phy.c   2007-03-02 10:41:39.000000000 -0600
+> @@ -337,6 +337,10 @@ int phy_mii_ioctl(struct phy_device *phy
+>                                         phydev->duplex = DUPLEX_FULL;
+>                                 else
+>                                         phydev->duplex = DUPLEX_HALF;
+> +                               if ((!phydev->autoneg) && (val
+> &BMCR_SPEED1000))
+> +                                       phydev->speed = SPEED_1000;
+> +                               else if ((!phydev->autoneg) && (val &
+> BMCR_SPEED100))
+> +                                       phydev->speed = SPEED_100;
 
-	if (hrtimer_switch_to_hres() >= 0)
-		return;
 
-which is fairly obviously a "success" case for a negative error value, but 
-I'm not sure the extra typing really is worth it. Does anybody have any 
-smart ideas that people might even be ok with following (just making 
-things more cumbersome is anti-productive, so I don't want to have some 
-stupid rule that everybody really hates)?
+Why not also support SPEED_10 if neither bits are set?
 
-			Linus
+Andy
