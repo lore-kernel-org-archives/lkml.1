@@ -1,141 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965469AbXCFSJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965533AbXCFSKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965469AbXCFSJh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965508AbXCFSJg
+	id S965533AbXCFSKP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965538AbXCFSKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:09:36 -0500
-Received: from sccrmhc15.comcast.net ([204.127.200.85]:37384 "EHLO
-	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965469AbXCFSJe (ORCPT
+	Tue, 6 Mar 2007 13:10:15 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:41899 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965520AbXCFSKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:09:34 -0500
-Date: Tue, 6 Mar 2007 10:09:40 -0800
-From: Deepak Saxena <dsaxena@plexity.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix building kernel under Solaris
-Message-ID: <20070306180940.GA3240@plexity.net>
-Reply-To: dsaxena@plexity.net
+	Tue, 6 Mar 2007 13:10:12 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 6 Mar 2007 10:10:05 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch v2] epoll use a single inode ...
+In-Reply-To: <45ED96A6.3000704@zytor.com>
+Message-ID: <Pine.LNX.4.64.0703061008570.12892@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
+ <45ECD122.6020907@zytor.com> <Pine.LNX.4.64.0703051832260.4907@alien.or.mcafeemobile.com>
+ <45ECD3D4.5020305@zytor.com> <Pine.LNX.4.64.0703051841380.4907@alien.or.mcafeemobile.com>
+ <45ED08A9.9050501@cosmosbay.com> <45ED96A6.3000704@zytor.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Plexity Networks
-User-Agent: Mutt/1.5.11
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 Mar 2007, H. Peter Anvin wrote:
 
-Fix varous build breakages that occur when building on a Solaris system
-(SunOS 4.8 to be exact)
+> Eric Dumazet wrote:
+> > 
+> > For epoll, I suspect this is harmless : Programs dont allocate epolls fd
+> > every milli second, but at startup only.
+> > 
+> > For pipes/sockets, using a 64 bits would be problematic, because sprintf()
+> > uses a divide for each digit. And a divide is slow. Ten divides are *very*
+> > slow.
+> > 
+> 
+> That's true for *any* sprintf(), though.  sprintf() converts all its arguments
+> to 64 bits.
 
-- No asm/types.h
-
-- lpptest doesn't make sense on a Solaris host (this should really be
-  cross-built..)
-
-- Need to define __s32 and __s16
-
-- Need to define Elf32_Section and Elf64_Section
-
-- Solaris does not provide strsep
-
-Signed-off-by: Deepak Saxena <dsaxena@mvista.com>
-
-
-diff -uNr -X /home/src/dontdiff /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/include/linux/input.h linux-2.6.18_pro500/include/linux/input.h
---- /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/include/linux/input.h	2007-03-05 21:54:45.000000000 -0800
-+++ linux-2.6.18_pro500/include/linux/input.h	2007-03-05 19:19:01.000000000 -0800
-@@ -16,8 +16,10 @@
- #include <sys/time.h>
- #include <sys/ioctl.h>
- #include <sys/types.h>
-+#ifndef __sun__
- #include <asm/types.h>
- #endif
-+#endif
- 
- /*
-  * The event structure itself
-diff -uNr -X /home/src/dontdiff /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/scripts/Makefile linux-2.6.18_pro500/scripts/Makefile
---- /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/scripts/Makefile	2007-03-05 21:54:43.000000000 -0800
-+++ linux-2.6.18_pro500/scripts/Makefile	2007-03-05 19:54:52.000000000 -0800
-@@ -12,10 +12,12 @@
- hostprogs-$(CONFIG_VT)           += conmakehash
- hostprogs-$(CONFIG_PROM_CONSOLE) += conmakehash
- hostprogs-$(CONFIG_IKCONFIG)     += bin2c
-+HOST_OS := $(shell uname)
-+ifneq ($(HOST_OS),SunOS)
- ifdef CONFIG_LPPTEST
- hostprogs-y      += testlpp
- endif
--
-+endif
- always		:= $(hostprogs-y)
- 
- subdir-$(CONFIG_MODVERSIONS) += genksyms
-diff -uNr -X /home/src/dontdiff /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/scripts/mod/file2alias.c linux-2.6.18_pro500/scripts/mod/file2alias.c
---- /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/scripts/mod/file2alias.c	2007-03-05 21:54:42.000000000 -0800
-+++ linux-2.6.18_pro500/scripts/mod/file2alias.c	2007-03-05 19:19:26.000000000 -0800
-@@ -29,6 +29,11 @@
- 
- #include <ctype.h>
- 
-+#if defined(__sun__)
-+typedef int32_t	__s32;
-+typedef int16_t	__s16;
-+#endif
-+
- #if defined(__CYGWIN__)
- typedef __uint32_t	__u32;
- #else
-diff -uNr -X /home/src/dontdiff /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/scripts/mod/modpost.h linux-2.6.18_pro500/scripts/mod/modpost.h
---- /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/scripts/mod/modpost.h	2007-03-05 21:54:42.000000000 -0800
-+++ linux-2.6.18_pro500/scripts/mod/modpost.h	2007-03-05 19:13:16.000000000 -0800
-@@ -15,6 +15,11 @@
- 
- #include "elfconfig.h"
- 
-+#if defined(__sun__)
-+typedef uint16_t Elf32_Section;
-+typedef uint16_t Elf64_Section;
-+#endif
-+
- #if KERNEL_ELFCLASS == ELFCLASS32
- 
- #define Elf_Ehdr    Elf32_Ehdr
-diff -uNr -X /home/src/dontdiff /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/scripts/mod/sumversion.c linux-2.6.18_pro500/scripts/mod/sumversion.c
---- /home/src/mvista/kernel/PRO5-CLEAN/linux-2.6.18/scripts/mod/sumversion.c	2007-03-05 21:54:42.000000000 -0800
-+++ linux-2.6.18_pro500/scripts/mod/sumversion.c	2007-03-05 19:33:55.000000000 -0800
-@@ -1,6 +1,7 @@
- #if defined(__sun__)
- #include <netinet/in.h>
- #include <inttypes.h>
-+#include <limits.h>
- #elif defined(__CYGWIN__)
- #include <asm/byteorder.h>	/* For ntohl/htonl */
- #include <limits.h>
-@@ -421,9 +422,16 @@
- 	*end = '\0';
- 
- 	md4_init(&md);
-+/*
-+ * Solaris does not strsep
-+ */
-+#ifndef __sun__
- 	while ((fname = strsep(&sources, " ")) != NULL) {
- 		if (!*fname)
- 			continue;
-+#else
-+	for (fname = strtok(sources, " "); fname; fname = strtok(NULL, " ")) {
-+#endif
- 		if (!parse_source_files(fname, &md))
- 			goto release;
- 	}
+Sigh! We *always* do do_div(), even for the more trivial %x case.
+Anyway, it does not really matter for the type of dfs will be applied to.
 
 
--- 
-Deepak Saxena - dsaxena@plexity.net - http://www.plexity.net
+- Davide
 
-In the end, they will not say, "those were dark times,"  they will ask
-"why were their poets silent?" - Bertolt Brecht
+
