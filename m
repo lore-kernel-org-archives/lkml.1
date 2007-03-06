@@ -1,116 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965896AbXCFOwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965903AbXCFOzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965896AbXCFOwv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 09:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965898AbXCFOwv
+	id S965903AbXCFOzZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 09:55:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965902AbXCFOzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 09:52:51 -0500
-Received: from main.gmane.org ([80.91.229.2]:53431 "EHLO ciao.gmane.org"
+	Tue, 6 Mar 2007 09:55:25 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:42313 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965896AbXCFOwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 09:52:49 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Dirk Schoebel <dirk@liji-und-dirk.de>
-Subject: Re: [linux-usb-devel] OOPS with 2.6.20 and 2.6.21-rc2 (mos7720)
-Followup-To: gmane.linux.usb.devel
-Date: Tue, 06 Mar 2007 15:52:24 +0100
-Message-ID: <esjv78$g3h$1@sea.gmane.org>
-References: <esjg1h$l8d$1@sea.gmane.org> <200703061207.53484.oliver@neukum.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: port-87-234-91-111.dynamic.qsc.de
-User-Agent: KNode/0.10.4
-Cc: linux-usb-devel@lists.sourceforge.net
+	id S965903AbXCFOzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 09:55:23 -0500
+Message-ID: <45ED8181.2060905@sw.ru>
+Date: Tue, 06 Mar 2007 17:58:09 +0300
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>
+CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
+Subject: [RFC][PATCH 3/7] Data structures changes for RSS accounting
+References: <45ED7DEC.7010403@sw.ru>
+In-Reply-To: <45ED7DEC.7010403@sw.ru>
+Content-Type: multipart/mixed;
+ boundary="------------000301020204040705000207"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum wrote:
+This is a multi-part message in MIME format.
+--------------000301020204040705000207
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> Am Dienstag, 6. März 2007 11:33 schrieb Dirk Schoebel:
->> when trying to access /dev/ttyUSB0, which is a port on a dual port
->> usb-serial cable (mos7720 based) an kernel OOPS happens
->> the driver loads ok, first access via minicom -> OOPS
+Adds needed pointers to mm_struct and page struct,
+places hooks to core code for mm_struct initialization
+and hooks in container_init_early() to preinitialize
+RSS accounting subsystem.
 
-> 
-> Please apply:
->
-ftp://ftp.kernel.org/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-usb/usb-fix-usb-serial-device-naming-bug.patch
->
-ftp://ftp.kernel.org/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-usb/usb-further-fix-for-usb-serial.patch
-> 
-> HTH
-> Oliver
+--------------000301020204040705000207
+Content-Type: text/plain;
+ name="diff-rss-container-ds"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff-rss-container-ds"
 
-hmm, applied these patches, still crashes
+diff -upr linux-2.6.20.orig/include/linux/mm.h linux-2.6.20-0/include/linux/mm.h
+--- linux-2.6.20.orig/include/linux/mm.h	2007-02-04 21:44:54.000000000 +0300
++++ linux-2.6.20-0/include/linux/mm.h	2007-03-06 13:33:28.000000000 +0300
+@@ -220,6 +220,12 @@ struct vm_operations_struct {
+ struct mmu_gather;
+ struct inode;
+ 
++#ifdef CONFIG_RSS_CONTAINER
++#define page_container(page)	(page->rss_container)
++#else
++#define page_container(page)	(NULL)
++#endif
++
+ #define page_private(page)		((page)->private)
+ #define set_page_private(page, v)	((page)->private = (v))
+ 
+diff -upr linux-2.6.20.orig/include/linux/mm_types.h linux-2.6.20-0/include/linux/mm_types.h
+--- linux-2.6.20.orig/include/linux/mm_types.h	2007-02-04 21:44:54.000000000 +0300
++++ linux-2.6.20-0/include/linux/mm_types.h	2007-03-06 13:33:28.000000000 +0300
+@@ -62,6 +62,9 @@ struct page {
+ 	void *virtual;			/* Kernel virtual address (NULL if
+ 					   not kmapped, ie. highmem) */
+ #endif /* WANT_PAGE_VIRTUAL */
++#ifdef CONFIG_RSS_CONTAINER
++	struct page_container *rss_container;
++#endif
+ };
+ 
+ #endif /* _LINUX_MM_TYPES_H */
+diff -upr linux-2.6.20.orig/include/linux/sched.h linux-2.6.20-0/include/linux/sched.h
+--- linux-2.6.20.orig/include/linux/sched.h	2007-03-06 13:33:28.000000000 +0300
++++ linux-2.6.20-0/include/linux/sched.h	2007-03-06 13:33:28.000000000 +0300
+@@ -373,6 +373,9 @@ struct mm_struct {
+ 	/* aio bits */
+ 	rwlock_t		ioctx_list_lock;
+ 	struct kioctx		*ioctx_list;
++#ifdef CONFIG_RSS_CONTAINER
++	struct rss_container	*rss_container;
++#endif
+ };
+ 
+ struct sighand_struct {
+diff -upr linux-2.6.20.orig/kernel/fork.c linux-2.6.20-0/kernel/fork.c
+--- linux-2.6.20.orig/kernel/fork.c	2007-03-06 13:33:28.000000000 +0300
++++ linux-2.6.20-0/kernel/fork.c	2007-03-06 13:33:28.000000000 +0300
+@@ -57,6 +57,8 @@
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
+ 
++#include <linux/rss_container.h>
++
+ /*
+  * Protected counters by write_lock_irq(&tasklist_lock)
+  */
+@@ -325,7 +328,7 @@ static inline void mm_free_pgd(struct mm
+ 
+ #include <linux/init_task.h>
+ 
+-static struct mm_struct * mm_init(struct mm_struct * mm)
++static struct mm_struct * mm_init(struct mm_struct *mm, struct task_struct *tsk)
+ {
+ 	atomic_set(&mm->mm_users, 1);
+ 	atomic_set(&mm->mm_count, 1);
+@@ -341,10 +344,18 @@ static struct mm_struct * mm_init(struct
+ 	mm->free_area_cache = TASK_UNMAPPED_BASE;
+ 	mm->cached_hole_size = ~0UL;
+ 
+-	if (likely(!mm_alloc_pgd(mm))) {
+-		mm->def_flags = 0;
+-		return mm;
+-	}
++	if (unlikely(mm_init_container(mm, tsk)))
++		goto out_cont;
++
++	if (unlikely(mm_alloc_pgd(mm)))
++		goto out_pgd;
++
++	mm->def_flags = 0;
++	return mm;
++
++out_pgd:
++	mm_free_container(mm);
++out_cont:
+ 	free_mm(mm);
+ 	return NULL;
+ }
+@@ -359,7 +370,7 @@ struct mm_struct * mm_alloc(void)
+ 	mm = allocate_mm();
+ 	if (mm) {
+ 		memset(mm, 0, sizeof(*mm));
+-		mm = mm_init(mm);
++		mm = mm_init(mm, current);
+ 	}
+ 	return mm;
+ }
+@@ -373,6 +384,7 @@ void fastcall __mmdrop(struct mm_struct 
+ {
+ 	BUG_ON(mm == &init_mm);
+ 	mm_free_pgd(mm);
++	mm_free_container(mm);
+ 	destroy_context(mm);
+ 	free_mm(mm);
+ }
+@@ -493,7 +505,7 @@ static struct mm_struct *dup_mm(struct t
+ 	mm->token_priority = 0;
+ 	mm->last_interval = 0;
+ 
+-	if (!mm_init(mm))
++	if (!mm_init(mm, tsk))
+ 		goto fail_nomem;
+ 
+ 	if (init_new_context(tsk, mm))
+@@ -520,6 +532,7 @@ fail_nocontext:
+ 	 * because it calls destroy_context()
+ 	 */
+ 	mm_free_pgd(mm);
++	mm_free_container(mm);
+ 	free_mm(mm);
+ 	return NULL;
+ }
+diff -upr linux-2.6.20.orig/kernel/container.c linux-2.6.20-0/kernel/container.c
+--- linux-2.6.20.orig/kernel/container.c	2007-03-06 13:33:28.000000000 +0300
++++ linux-2.6.20-0/kernel/container.c	2007-03-06 13:35:48.000000000 +0300
+@@ -60,6 +60,8 @@
+ #include <asm/atomic.h>
+ #include <linux/mutex.h>
+ 
++#include <linux/rss_container.h>
++
+ #define CONTAINER_SUPER_MAGIC		0x27e0eb
+ 
+ static struct container_subsys *subsys[CONFIG_MAX_CONTAINER_SUBSYS];
+@@ -1721,6 +1725,8 @@ int __init container_init_early(void)
+ 	}
+ 	init_task.containers = &init_container_group;
+ 
++	container_rss_init_early();
++
+ 	return 0;
+ }
+ 
 
 
-Mar  6 15:46:30 emerald Unable to handle kernel NULL pointer dereference at
-0000000000000070 RIP:
-Mar  6 15:46:30 emerald
-[<ffffffff8813b606>] :mos7720:mos7720_open+0x406/0x5a0
-Mar  6 15:46:30 emerald PGD 13d489067 PUD 10ffe4067 PMD 0
-Mar  6 15:46:30 emerald Oops: 0000 [1] SMP
-Mar  6 15:46:30 emerald CPU 0
-Mar  6 15:46:30 emerald Modules linked in: snd_rtctimer snd_seq_midi
-snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_emul
-snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq nls_iso8859_15 vmnet(PF) vmmon(PF) it87 hwmon_vid i2c_isa rfcomm
-eeprom l2cap lm90 fuse nls_iso8859_1 nls_cp850 eth1394 kqemu capability
-dazuko commoncap tuner tvaudio msp3400 psmouse nvidia(P) snd_emu10k1
-snd_rawmidi snd_seq_device snd_util_mem snd_hwdep mos7720 usbserial
-ohci1394 i2c_nforce2 skge snd_bt87x bttv video_buf ir_common compat_ioctl32
-btcx_risc tveeprom videodev v4l2_common v4l1_compat k8temp forcedeth
-snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd snd_page_alloc
-zaurus cdc_ether usbnet hci_usb bluetooth
-Mar  6 15:46:30 emerald Pid: 11881, comm: minicom Tainted: PF     
-2.6.21-rc2-emi #1
-Mar  6 15:46:30 emerald RIP: 0010:[<ffffffff8813b606>] 
-[<ffffffff8813b606>] :mos7720:mos7720_open+0x406/0x5a0
-Mar  6 15:46:30 emerald RSP: 0018:ffff810122757d58  EFLAGS: 00010202
-Mar  6 15:46:30 emerald RAX: 0000000040000780 RBX: ffff81013dfc5800 RCX:
-ffff81013ffe8000
-Mar  6 15:46:30 emerald RDX: 0000000000000000 RSI: ffff810001000110 RDI:
-0000000000000000
-Mar  6 15:46:30 emerald RBP: ffff810122757d6f R08: ffff810122756000 R09:
-ffff810122757b58
-Mar  6 15:46:30 emerald R10: 0000000000000000 R11: 0000000000000000 R12:
-ffff81013dfc5800
-Mar  6 15:46:30 emerald R13: ffff81013d868bc0 R14: ffff81013cf43b00 R15:
-ffff81013d688580
-Mar  6 15:46:30 emerald FS:  00002ba10338cda0(0000) GS:ffffffff808a200
-(0000) knlGS:00000000f64af9c0
-Mar  6 15:46:30 emerald CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-Mar  6 15:46:30 emerald CR2: 0000000000000070 CR3: 000000013e55e000 CR4:
-00000000000006e0
-Mar  6 15:46:30 emerald Process minicom (pid: 11881, threadinfo
-ffff810122756000, task ffff810100074730)
-Mar  6 15:46:30 emerald Stack:  ffff81013dfc5800 ffff81013d774ff0
-0c00000000000282 ffff81013dfc5800
-Mar  6 15:46:30 emerald ffff81013d868bc0 ffff810139607000 ffff81013dfc5818
-00000000ffffffed
-Mar  6 15:46:30 emerald ffff8100bdabb2c0 ffffffff8812f487 ffff810109b6c900
-000000000bc00000
-Mar  6 15:46:30 emerald Call Trace:
-Mar  6 15:46:30 emerald
-[<ffffffff8812f487>] :usbserial:serial_open+0x117/0x190
-Mar  6 15:46:30 emerald [<ffffffff805253a6>] tty_open+0x1b6/0x360
-Mar  6 15:46:30 emerald [<ffffffff8024afe2>] chrdev_open+0x182/0x1e0
-Mar  6 15:46:30 emerald [<ffffffff8024ae60>] chrdev_open+0x0/0x1e0
-Mar  6 15:46:30 emerald [<ffffffff8021eccd>] __dentry_open+0xed/0x1e0
-Mar  6 15:46:30 emerald [<ffffffff8022855d>] do_filp_open+0x2d/0x40
-Mar  6 15:46:30 emerald [<ffffffff80234c6f>] do_setitimer+0x16f/0x350
-Mar  6 15:46:30 emerald [<ffffffff802199ca>] do_sys_open+0x5a/0x100
-Mar  6 15:46:30 emerald [<ffffffff802601ce>] system_call+0x7e/0x83
-Mar  6 15:46:30 emerald
-Mar  6 15:46:30 emerald
-Mar  6 15:46:30 emerald Code: 44 8b 47 70 09 c2 48 8b 43 38 c7 47 04 01 00
-00 00 48 89 4f
-Mar  6 15:46:30 emerald RIP 
-[<ffffffff8813b606>] :mos7720:mos7720_open+0x406/0x5a0
-Mar  6 15:46:30 emerald RSP <ffff810122757d58>
-Mar  6 15:46:30 emerald CR2: 0000000000000070
-
-
+--------------000301020204040705000207--
