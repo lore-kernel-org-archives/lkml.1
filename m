@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbXCFGhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933961AbXCFGks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932672AbXCFGhZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 01:37:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933961AbXCFGhZ
+	id S933961AbXCFGks (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 01:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933967AbXCFGks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 01:37:25 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:38316 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932672AbXCFGhY (ORCPT
+	Tue, 6 Mar 2007 01:40:48 -0500
+Received: from mail31.syd.optusnet.com.au ([211.29.132.102]:46668 "EHLO
+	mail31.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933961AbXCFGkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 01:37:24 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 5 Mar 2007 22:37:23 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch v2] epoll use a single inode ...
-In-Reply-To: <Pine.LNX.4.64.0703052230300.4907@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0703052236010.4907@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
- <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
- <45ECD122.6020907@zytor.com> <Pine.LNX.4.64.0703051832260.4907@alien.or.mcafeemobile.com>
- <45ECD3D4.5020305@zytor.com> <Pine.LNX.4.64.0703051841380.4907@alien.or.mcafeemobile.com>
- <45ED08A9.9050501@cosmosbay.com> <Pine.LNX.4.64.0703052230300.4907@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 6 Mar 2007 01:40:47 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] sched: fix idle at tick
+Date: Tue, 6 Mar 2007 17:25:36 +1100
+User-Agent: KMail/1.9.5
+Cc: "J.A. =?iso-8859-1?q?Magall=F3n?=" <jamagallon@ono.com>,
+       linux-kernel@vger.kernel.org
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <20070305232058.6eeeb254@werewolf-wl> <20070305151120.e5eab328.akpm@linux-foundation.org>
+In-Reply-To: <20070305151120.e5eab328.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703061725.37365.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Mar 2007, Davide Libenzi wrote:
+On Tuesday 06 March 2007 10:11, Andrew Morton wrote:
+> On Mon, 5 Mar 2007 23:20:58 +0100
+>
+> "J.A. Magall__n" <jamagallon@ono.com> wrote:
+> > On Fri, 2 Mar 2007 03:00:26 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > Temporarily at
+> > >
+> > >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+> > >
+> > > Will appear later at
+> > >
+> > >  
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc
+> > >2/2.6.21-rc2-mm1/
+> >
+> > I'm also noticing very bad behaviour wrt scheduling, I think. When I
+> > launch my parallel cpu burning code, the system _really_ stalls, the
+> > mouse in X11 is not jerky, it is _stuck_ for a couple or three seconds...
+> >
+> > The only diffrecence is that, trying to solve nVidia driver problems, I
+> > disabled BKL preemption:
+> >
+> > werewolf:/usr/src/linux# grep PREEMPT .config
+> > # CONFIG_PREEMPT_RCU is not set
+> > # CONFIG_PREEMPT_NONE is not set
+> > # CONFIG_PREEMPT_VOLUNTARY is not set
+> > CONFIG_PREEMPT=y
+> > # CONFIG_PREEMPT_BKL is not set
+>
+> Do you think that is a problem which is introduced by -rc1-mm1?
+>
+> It'd be good if you can capture the `top' output while this is happening -
+> it could be the longstanding problem where an app's sleep/run pattern
+> permits it to get a lot of dynamic priority boosting, even though it is
+> CPU-intensive.
 
-> This would be used for epoll, signalfd and timerfd. And the printf format 
-> is %llu ;)
+Haven't tried -mm in a while... but this could be more than a little hairy..
 
-Today is really one on those days ... %llx
+Call me crazy but I think the following might just be responsible...
 
+---
+Fix reverse idle at tick logic.
 
+Signed-off-by: Con Kolivas <kernel@kolivas.org>
+---
+ kernel/sched.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-- Davide
+Index: linux-2.6.21-rc2-mm1-base/kernel/sched.c
+===================================================================
+--- linux-2.6.21-rc2-mm1-base.orig/kernel/sched.c	2007-03-06 17:19:17.000000000 +1100
++++ linux-2.6.21-rc2-mm1-base/kernel/sched.c	2007-03-06 17:20:40.000000000 +1100
+@@ -3444,7 +3444,7 @@ void scheduler_tick(void)
+ 
+ 	update_cpu_clock(p, rq, now);
+ 
+-	if (idle_at_tick)
++	if (!idle_at_tick)
+ 		task_running_tick(rq, p);
+ #ifdef CONFIG_SMP
+ 	update_load(rq);
 
-
+-- 
+-ck
