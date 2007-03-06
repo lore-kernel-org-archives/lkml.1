@@ -1,91 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030477AbXCFJlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030479AbXCFJmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030477AbXCFJlU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030489AbXCFJlU
+	id S1030479AbXCFJmo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030481AbXCFJmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:41:20 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36304 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030477AbXCFJlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:41:19 -0500
-Date: Tue, 6 Mar 2007 10:41:07 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Kconfig: Update swsusp description
-Message-ID: <20070306094107.GF2040@elf.ucw.cz>
-References: <200703041514.44680.rjw@sisk.pl> <20070306083224.GE2040@elf.ucw.cz> <200703061013.13585.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703061013.13585.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Tue, 6 Mar 2007 04:42:44 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:60059 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030479AbXCFJmn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:42:43 -0500
+Date: Tue, 6 Mar 2007 01:42:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "J.A. =?ISO-8859-1?B?TWFnYWxs824i?= <jamagallon@ono.com>"@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm2
+Message-Id: <20070306014240.ca128a2e.akpm@linux-foundation.org>
+In-Reply-To: <20070306103823.640e08e0@werewolf-wl>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+	<20070306100623.770b9dc9@werewolf-wl>
+	<20070306011524.b0945a42.akpm@linux-foundation.org>
+	<20070306103823.640e08e0@werewolf-wl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 6 Mar 2007 10:38:23 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
 
-> > > Index: linux-2.6.21-rc2/kernel/power/Kconfig
-> > > ===================================================================
-> > > --- linux-2.6.21-rc2.orig/kernel/power/Kconfig	2007-02-28 23:54:45.000000000 +0100
-> > > +++ linux-2.6.21-rc2/kernel/power/Kconfig	2007-03-04 11:50:48.000000000 +0100
-> > > @@ -81,30 +81,35 @@ config SOFTWARE_SUSPEND
-> > >  	bool "Software Suspend"
-> > >  	depends on PM && SWAP && ((X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
-> > >  	---help---
-> > > +	  Enable the suspend to disk (STD) functionality.
-> > >  
-> > > +	  You can suspend your machine with 'echo disk > /sys/power/state'.
-> > > +	  Alternatively, you can use the additional userland tools available
-> > > +	  from <http://suspend.sf.net>.
-> > > +
-> > > +	  In principle it does not require ACPI or APM, although for example
-> > > +	  ACPI will be used if available.
-> > > +
-> > > +	  It creates an image which is saved in your active swap. Upon the next
-> > >  	  boot, pass the 'resume=/dev/swappartition' argument to the kernel to
-> > 
-> > Actually, these days resume=... on kernel command line needs to be
-> > there for suspend, too, IIRC.
+> On Tue, 6 Mar 2007 01:15:24 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> I didn't change this line, so?
-
-So I should go and fix it ;-). (I'm now overloaded with email sorry
-for being terse.)
-
-Can we do something like
-
-+	  Enable the suspend to disk (STD) functionality.
-+	  In principle it does not require any support from BIOS, although 
-+	  ACPI will be used if available.
-
-+	  You can suspend your machine with 'echo disk >
-+	  /sys/power/state' after placing resume=/dev/swappartition on
-+	  kernel command line.
-+	  Alternatively, you can use the additional userland tools available
-+	  from <http://suspend.sf.net>.
-
-(and remove ...upon next boot... section).
-
-> > > +	  Right now you may boot without resuming and resume later but in the
-> > > +	  meantime you cannot use the swap partition(s)/file(s) involved in
-> > > +	  suspending.  Also in this case you must not use the
+> > On Tue, 6 Mar 2007 10:06:23 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
 > > 
-> > I'd prefer not to encourage this use. It has too many traps ready for
-> > people.
+> > > On Tue, 6 Mar 2007 00:44:08 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > 
+> > > > Temporarily at
+> > > > 
+> > > >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
+> > > > 
+> > > 
+> > > Does this include a fix for the NFS problem ?
+> > 
+> > Which NFS problem?
+> > 
 > 
-> But IMHO there should be a warning that if you boot without resuming, make sure
-> you'll not resume after the next reboot or bad things will happen.
+> http://marc.theaimsgroup.com/?l=linux-kernel&m=117305359825926&w=2
 
-+	It is possible to boot without resuming and resume later but
-+	if you access any partitions/files used by suspended kernel,
-+	you'll probably loose your data. See ... for details.
-
-?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+yup, that got fixed.
