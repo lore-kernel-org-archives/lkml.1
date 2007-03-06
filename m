@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750898AbXCFUTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750944AbXCFUU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750898AbXCFUTm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 15:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXCFUTm
+	id S1750944AbXCFUU0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 15:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXCFUU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 15:19:42 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:35341 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbXCFUTl (ORCPT
+	Tue, 6 Mar 2007 15:20:26 -0500
+Received: from mail21.syd.optusnet.com.au ([211.29.133.158]:43241 "EHLO
+	mail21.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750914AbXCFUUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 15:19:41 -0500
-Date: Tue, 6 Mar 2007 12:19:32 -0800
-From: Bill Irwin <bill.irwin@oracle.com>
-To: "Alexander Y. Fomichev" <gluk@php4.ru>
-Cc: Bill Irwin <bill.irwin@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       admin@list.net.ru
-Subject: Re: kernel BUG at arch/x86_64/mm/../../i386/mm/hugetlbpage.c:140!
-Message-ID: <20070306201932.GC18774@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	"Alexander Y. Fomichev" <gluk@php4.ru>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	admin@list.net.ru
-References: <200703021651.16050.gluk@php4.ru> <20070302214111.GL10643@holomorphy.com> <200703061545.23470.gluk@php4.ru>
+	Tue, 6 Mar 2007 15:20:24 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: tglx@linutronix.de
+Subject: Re: 2.6.21-rc2-mm2
+Date: Wed, 7 Mar 2007 07:19:00 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       john stultz <johnstul@us.ibm.com>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <200703070024.51273.kernel@kolivas.org> <1173192434.24738.333.camel@localhost.localdomain>
+In-Reply-To: <1173192434.24738.333.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200703061545.23470.gluk@php4.ru>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200703070719.00442.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 March 2007, Bill Irwin wrote:
->> If you have a known-working kernel version, git-bisect might help you
->> track down where it was introduced. Given the messages prior to the
->> hugetlbpage.c BUG_ON I'd say that this is something else besides the
->> specific code listed by line number, 
+On Wednesday 07 March 2007 01:47, Thomas Gleixner wrote:
+> On Wed, 2007-03-07 at 00:24 +1100, Con Kolivas wrote:
+> > >         printk(KERN_INFO "Time: %s clocksource has been installed.\n",
+> > >                clock->name);
+> > > }
+> > >
+> > > So clock seems to be NULL, but was accessed before
+> > > clocksource_calculate_interval() as well.
+> >
+> > It seems to be specifically tripping at c->mult after reading c->shift if
+> > I'm reading it correctly.
+> >
+> > Note again, this is qemu, not real hardware and it will likely be giving
+> > very unrealistic values for timer calibrations.
+>
+> I know, but this does not really explain why the
+>
+> 	tmp += c->mult/2;
+>
+> results in a NULL pointer access after
+>
+> 	tmp <<= c->shift;
 
-On Tue, Mar 06, 2007 at 03:45:23PM +0300, Alexander Y. Fomichev wrote:
-> Nop, seems like it is hugetlb bug fixed by Adam 
-> commit 516dffdcd8827a40532798602830dfcfc672294c
-> [PATCH] Fix get_unmapped_area and fsync for hugetlb shm segments
-> I've disregard it thoughtlessly so Adam marks it specific for powerpc/ia64.
-> (hmm.. i donno realy why, huge pages should be alined anyway and if i 
-> understend it correctly it may not be if is_file_hugepages() fails)
-> As of "junk" just before the BUG this again IIUC because o-direct staff
-> catches this issue before hugetlb.
+/me shrugs
 
-I'm not terribly surprised. The issue Adam fixed is relatively easily
-triggered. Bisecting probably wouldn't have been useful, sorry.
+No idea.
 
+> Does disassembling the code in question give some info ? You might also
+> try to look with GDB at it.
 
--- wli
+Alas it wouldn't mean anything to me, sorry. And qemu doesn't work with gdb on 
+64bit processes in 32bit userspace even with a 64bit gdb.
+
+-- 
+-ck
