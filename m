@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965484AbXCFSR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965493AbXCFSSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965484AbXCFSR4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965493AbXCFSR4
+	id S965493AbXCFSSE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXCFSSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:17:56 -0500
-Received: from ping.uio.no ([129.240.78.2]:36345 "EHLO ping.uio.no"
+	Tue, 6 Mar 2007 13:18:03 -0500
+Received: from gw.goop.org ([64.81.55.164]:33093 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965484AbXCFSRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:17:55 -0500
-X-Greylist: delayed 2058 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 13:17:54 EST
-From: ilmari@ilmari.org (Dagfinn Ilmari =?utf-8?Q?Manns=C3=A5ker?=)
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
-       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support II
-Organization: Program-, Informasjons- og Nettverksteknologisk Gruppe, UiO
-References: <20070226143127.5c74bec9@freekitty>
-	<p73slcnawh3.fsf@bingen.suse.de> <20070305155714.3abe1b5e@freekitty>
-	<20070305.162551.41660347.davem@davemloft.net>
-	<20070306140412.GA1470@one.firstfloor.org>
-Mail-Copies-To: nobody
-Date: Tue, 06 Mar 2007 18:43:14 +0100
-In-Reply-To: <20070306140412.GA1470@one.firstfloor.org> (Andi Kleen's message
-	of "Tue, 6 Mar 2007 15:04:12 +0100")
-Message-ID: <d8jlkiagte5.fsf@nygaard.ping.uio.no>
-User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
+	id S965505AbXCFSSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:18:01 -0500
+Message-ID: <45EDB057.5080106@goop.org>
+Date: Tue, 06 Mar 2007 10:17:59 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Exiscan-Spam-Score: -7.8 (-------)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 6/8] Allow per-cpu variables to be page-aligned
+References: <1173184747.4644.23.camel@localhost.localdomain>	 <1173185592.4644.28.camel@localhost.localdomain>	 <1173185666.4644.30.camel@localhost.localdomain>	 <1173185734.4644.32.camel@localhost.localdomain>	 <1173185827.4644.34.camel@localhost.localdomain>	 <1173185909.4644.36.camel@localhost.localdomain> <1173186021.4644.38.camel@localhost.localdomain>
+In-Reply-To: <1173186021.4644.38.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
+Rusty Russell wrote:
+> Xen wants page-aligned GDT (and PDA must not cross a page-boundary,
+> but that doesn't happen at the moment since it's so close to start of
+> page).  Let's allow page-alignment in general for per-cpu data.
+>
+> Because larger alignments can use more room, we increase the max
+> per-cpu memory to 64k rather than 32k: it's getting a little tight.
+>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>
+> diff -r 213b1ec27001 arch/alpha/kernel/vmlinux.lds.S
+> --- a/arch/alpha/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
+> +++ b/arch/alpha/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+> @@ -69,7 +69,7 @@ SECTIONS
+>    . = ALIGN(8);
+>    SECURITY_INIT
+>  
+> -  . = ALIGN(64);
+> +  . = ALIGN(8192);
+>   
 
-> Actually on rereading this: is there really any Linux port
-> that emulates multiplies in software? I thought that was only
-> done on really small microcontrollers or smart cards; but anything
-> 32bit+ that runs Linux should have hardware multiply, shouldn't it?
+Isn't there a PAGE_SIZE we can use here?  PAGE_SIZE_asm?
+(ditto all archs)
 
-SPARCv7 (sun4/sun4c) doesn't have hardware mul/div. This includes
-SparcStation 1, 1+, 2, SLC, ELC, IPC and IPX.
-
--- 
-ilmari
-"A disappointingly low fraction of the human race is,
- at any given time, on fire." - Stig Sandbeck Mathisen
+    J
