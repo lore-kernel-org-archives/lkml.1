@@ -1,40 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966013AbXCFSsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030237AbXCFSsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966013AbXCFSsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966008AbXCFSsP
+	id S1030237AbXCFSsp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030231AbXCFSsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:48:15 -0500
-Received: from gw.goop.org ([64.81.55.164]:56070 "EHLO mail.goop.org"
+	Tue, 6 Mar 2007 13:48:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41319 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966013AbXCFSsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:48:14 -0500
-Message-ID: <45EDB76A.4050604@goop.org>
-Date: Tue, 06 Mar 2007 10:48:10 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] paravirt: VDSO page is essential
-References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <20070306073511.GA3938@elte.hu> <45ED1B64.9040104@vmware.com>
-In-Reply-To: <45ED1B64.9040104@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1030237AbXCFSso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:48:44 -0500
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <45EDB568.1090008@zytor.com> 
+References: <45EDB568.1090008@zytor.com>  <20070306183426.10768.51800.stgit@warthog.cambridge.redhat.com> 
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: torvalds@osdl.org, akpm@osdl.org, benh@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, johannes@sipsolutions.net
+Subject: Re: [PATCH] Fix get_order() [try #2] 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 06 Mar 2007 18:47:46 +0000
+Message-ID: <11476.1173206866@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> Yes, I don't have a problem with your patch, I just wish I had been
-> cc'd on it.  Fixing this is rather tricky, but I believe no strange
-> build magic is required, it can be done in kernel init code.  Still
-> building my SUSE 9.0 guest to test.  SUSE 9.0 is one of those that
-> requires COMPAT_VDSO, yes?
+H. Peter Anvin <hpa@zytor.com> wrote:
 
-Where do we stand on VDSO reloc?  Are you turning this into a proper
-patch, or shall I have a look at it?
+> Why not just make it ((n) < 1 ? 0 : ...) and make it well-defined for
+> n == 0?
 
-    J
+Because log2(0) is -INF or mathematically undefined or something isn't it?
+
+David
