@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965770AbXCFCXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965765AbXCFCXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965770AbXCFCXN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 21:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965771AbXCFCXN
+	id S965765AbXCFCXr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 21:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965773AbXCFCXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 21:23:13 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:47471 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965770AbXCFCXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 21:23:11 -0500
-Date: Mon, 5 Mar 2007 18:18:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
-       Soeren Sonnenburg <kernel@nn7.de>, Len Brown <lenb@kernel.org>
-Subject: Re: [5/6] 2.6.21-rc2: known regressions
-In-Reply-To: <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> 
- <20070305015040.GJ3441@stusta.de>  <1173138193.24738.236.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org> 
- <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
- <1173142948.24738.257.camel@localhost.localdomain>
- <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org>
+	Mon, 5 Mar 2007 21:23:46 -0500
+Received: from jenny.ondioline.org ([66.220.1.122]:4427 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965767AbXCFCXp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 21:23:45 -0500
+X-Greylist: delayed 1770 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Mar 2007 21:23:45 EST
+From: Paul Collins <paul@briny.ondioline.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: francesco foresti <frafore@tiscali.it>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: PROBLEM: 2.6.20-1 not working on ibook g4 (BUG/Oops)
+References: <200703051414.15802.frafore@tiscali.it>
+	<1173143894.3461.240.camel@pmac.infradead.org>
+Date: Tue, 06 Mar 2007 14:53:22 +1300
+In-Reply-To: <1173143894.3461.240.camel@pmac.infradead.org> (David Woodhouse's
+	message of "Tue\, 06 Mar 2007 01\:18\:14 +0000")
+Message-ID: <87tzwzqgrx.fsf@briny.internal.ondioline.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.95 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Woodhouse <dwmw2@infradead.org> writes:
 
+> On Mon, 2007-03-05 at 14:13 +0100, francesco foresti wrote:
+>> Hi,
+>> i'm having problems trying to use 2.6.20-1 (taken from kernel.org, not 
+>> patched) on my ibook g4 (debian testing/unstable): 
+>> i'm getting two errors while trying to boot up, and i can only report the 
+>> second one because the other slips offscreen before i can see what's going 
+>> on. However, this is what i have been able to hand-copy:
+>>  
+>> kernel BUG at mm/slab.c:610!
+>> Oops: Exception in kernel mode, sig: 5 [#2]
+[snipped]
+> I've been seeing very similar behaviour with 2.6.20 on all pmac32
+> hardware. I haven't yet tried hard to reproduce on non-pmac.
 
-On Mon, 5 Mar 2007, Linus Torvalds wrote:
-> 
-> Compiling right now - delayed because I just had to pick up one of the 
-> kids from gymnastics.
+In case it's of interest, 2.6.20 has been running fine on my PowerBook5,4.
 
-Ok, it does indeed solve the problem for me.
+-- 
+Paul Collins
+Wellington, New Zealand
 
-Mind sending a signed-off thing with explanations etc?
-
-		Linus
+Dag vijandelijk luchtschip de huismeester is dood
