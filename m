@@ -1,70 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965809AbXCFGtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965808AbXCFGvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965809AbXCFGtv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 01:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965808AbXCFGtv
+	id S965808AbXCFGvh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 01:51:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965806AbXCFGvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 01:49:51 -0500
-Received: from nn7.de ([85.214.94.156]:32847 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965809AbXCFGtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 01:49:50 -0500
-Subject: Re: [5/6] 2.6.21-rc2: known regressions
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: tglx@linutronix.de
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>,
-       "Michael S\. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>
-In-Reply-To: <1173140753.24738.246.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015040.GJ3441@stusta.de>
-	 <1173138193.24738.236.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
-	 <1173140753.24738.246.camel@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 06 Mar 2007 07:49:43 +0100
-Message-Id: <1173163783.3785.1.camel@localhost>
+	Tue, 6 Mar 2007 01:51:37 -0500
+Received: from nz-out-0506.google.com ([64.233.162.238]:25834 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965808AbXCFGvg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 01:51:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer;
+        b=FOC6dVZ8wP0Da8G9xNVOvBjtxjXURPOLIFWpHOJAcqKxrOURY/tdZDytHrf9v6n/bFjXBLX1usIQ96eF+pWR7ZKRoThXs7y2FlCOYy4ZX1/uqGtlSLP9vnZ9PE4KdAheZSol+Hq5uQfEgaVN5gKBlt+8mgjM0yotfB+jpr44PlE=
+Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: DervishD <lkml@dervishd.net>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Fbdev development list 
+	<linux-fbdev-devel@lists.sourceforge.net>
+In-Reply-To: <20070306062528.GF20292@DervishD>
+References: <20070226144744.GA3615@DervishD>
+	 <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD>
+	 <1172510654.7101.11.camel@daplas> <20070226203223.GA161@DervishD>
+	 <1172617755.13422.0.camel@daplas> <20070301160139.GA102@DervishD>
+	 <1173144817.7219.1.camel@daplas>  <20070306062528.GF20292@DervishD>
+Content-Type: multipart/mixed; boundary="=-pIIGclcRZxlYKt1EbrGS"
+Date: Tue, 06 Mar 2007 14:53:25 +0800
+Message-Id: <1173164006.6285.8.camel@daplas>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+X-Mailer: Evolution 2.8.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 01:25 +0100, Thomas Gleixner wrote:
-> On Mon, 2007-03-05 at 15:45 -0800, Linus Torvalds wrote:
-> > 
-> > On Tue, 6 Mar 2007, Thomas Gleixner wrote:
-> > > > 
-> > > > Subject    : macbook pro suspend to ram broken  (clockevents)
-> > > > References : http://lkml.org/lkml/2007/3/4/110
-> > > > Submitter  : Soeren Sonnenburg <kernel@nn7.de>
-> > > > Caused-By  : Thomas Gleixner <tglx@linutronix.de>
-> > > >              commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-> > > > Status     : unknown
+
+--=-pIIGclcRZxlYKt1EbrGS
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+On Tue, 2007-03-06 at 07:25 +0100, DervishD wrote:
+>     Hi Antonino :)
+> 
+>  * Antonino A. Daplas <adaplas@gmail.com> dixit:
+> > On Thu, 2007-03-01 at 17:01 +0100, DervishD wrote:
+> > >  * Antonino A. Daplas <adaplas@gmail.com> dixit:
+> > > > Can you try this patch?  It might help with the screen
+> > > > corruption.
 > > > 
-> > > I can reproduce this on my dual core VAIO. There are some issues:
+> > >     With the patch, the scroll slows to a crawl and the system is
+> > >     unusable. The time to scroll 30 lines is about a minute or so
+> > >     (probably more, I just measured for a while).
+> > > 
+> > >     If you want me to test other patches, just tell :)
 > > 
-> > Yeah, I think I can too, on my dual-core Mac Mini. 
-> > 
-> > I'm not done with my bisection, but e9e2cdb4 is among the 28 commits left, 
-> > so I'm pretty sure I'm hitting the same bug. I'll do a few more bootups to 
-> > be 100% sure.
+> > Can you change the mdelay to udelay and use higher/lower delay values
+> > to see if there's any improvement?
 > 
-> I just got the resume fix cleaned up. The suspend / resume thing was
-> dropped unintentionally during the -mm code reshuffling.
-> 
-> It still needs the broadcast fix though.
-> 
-> Does this make the problem go away ?
+>     Yes, as soon as I can build a new kernel and reboot. Any suggested
+> value?
 
-yes. works in my isolated test-setup. I'm now going to test this in
-git-HEAD with the full config.
+You can start with 5 and increment by 5.  So you need not reboot each
+time, compile tdfxfb as a module, and set CONFIG_HW_CONSOLE_BINDING=y
+(under drivers->char). Make sure you have vbetool, and use the attached
+script.  Thus:
 
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+modprobe tdfxfb
+unbind.sh
+rmmod tdfxfb
+edit, make, make modules_install
+modprobe tdfxfb
+repeat
+
+The script assumes vbetool is in /usr/sbin, if not just edit. Also,
+unbinding will only work if X (or any graphics app, for that matter) is
+not loaded.
+
+Tony
+
+
+--=-pIIGclcRZxlYKt1EbrGS
+Content-Disposition: attachment; filename=unbind.sh
+Content-Type: application/x-shellscript; name=unbind.sh
+Content-Transfer-Encoding: 7bit
+
+#!/bin/bash
+# Unbind fbcon
+
+# Change this to where your actual vgastate file is located
+# Or Use VGASTATE=$1 to indicate the state file at runtime
+VGASTATE=/usr/local/share/vgastate/vgastate
+
+# path to vbetool
+VBETOOL=/usr/sbin
+
+
+for (( i = 0; i < 16; i++))
+do
+  if test -x /sys/class/vtconsole/vtcon$i; then
+      if [ `cat /sys/class/vtconsole/vtcon$i/name | grep -c "frame buffer"` \
+           = 1 ]; then
+	    if test -x $VBETOOL/vbetool; then
+	       echo Unbinding vtcon$i
+	       $VBETOOL/vbetool vbemode set 3
+	       echo 0 > /sys/class/vtconsole/vtcon$i/bind
+	    fi
+      fi
+  fi
+done
+
+
+--=-pIIGclcRZxlYKt1EbrGS--
+
