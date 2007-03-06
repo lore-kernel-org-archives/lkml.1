@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965797AbXCFGM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933960AbXCFGWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965797AbXCFGM7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 01:12:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965796AbXCFGM7
+	id S933960AbXCFGWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 01:22:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933961AbXCFGWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 01:12:59 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:52325 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965797AbXCFGM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 01:12:58 -0500
-Date: Mon, 5 Mar 2007 22:09:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Mark Lord <lkml@rtr.ca>, sdhci-devel@list.drzeus.cx,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] sdhci regression in 2.6.21-rc2
-Message-Id: <20070305220938.d68f9368.akpm@linux-foundation.org>
-In-Reply-To: <45ED0074.5010606@drzeus.cx>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	<20070305015031.GF3441@stusta.de>
-	<45EB9DC6.8010403@rtr.ca>
-	<45EB9E72.6040107@rtr.ca>
-	<45EBAC73.7010600@drzeus.cx>
-	<45EC2851.7020905@rtr.ca>
-	<45EC351B.2020206@rtr.ca>
-	<20070305201707.8d8a092e.akpm@linux-foundation.org>
-	<45ED0074.5010606@drzeus.cx>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Mar 2007 01:22:46 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:36880 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933960AbXCFGWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 01:22:46 -0500
+Message-ID: <45ED08A9.9050501@cosmosbay.com>
+Date: Tue, 06 Mar 2007 07:22:33 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch v2] epoll use a single inode ...
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org> <45ECD122.6020907@zytor.com> <Pine.LNX.4.64.0703051832260.4907@alien.or.mcafeemobile.com> <45ECD3D4.5020305@zytor.com> <Pine.LNX.4.64.0703051841380.4907@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0703051841380.4907@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 06 Mar 2007 07:22:41 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 Mar 2007 06:47:32 +0100 Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-
-> Andrew Morton wrote:
-> >
-> > (I'm also inclined to drop the darned mmc tree - am getting rather tired of
-> > people moving their files all over the tree all the time).
-> >
-> >   
+Davide Libenzi a écrit :
+> On Mon, 5 Mar 2007, H. Peter Anvin wrote:
 > 
-> Fine, I can stop bothering with putting up a test tree and just push the
-> stuff to Linus directly if that is what you prefer. Or is moving files
-> around barred from the kernel?
+>> Davide Libenzi wrote:
+>>> Right now is using:
+>>>
+>>> 	this.len = sprintf(name, "[%u.%d]", current->pid, fd);
+>>>
+>>> That should be unique and not have the wraparound problem. Ack?
+>>>
+>> NAK, very much NAK.
+>>
+>> File descriptors aren't file structures, they're *pointers* to file
+>> structures.
+>>
+>> It's perfectly possible -- downright common -- for a file descriptor to be
+>> inherited by another process, and then the pid is recycled -- collision.
+> 
+> Ugh! Right! 64 bit counter it is ... :)
 
-Oh, it's just a pain in the ass.  Please don't do it lightly - if there's a
-really good reason then OK.
+For epoll, I suspect this is harmless : Programs dont allocate epolls fd every 
+milli second, but at startup only.
 
-Plus it helps if the massive file move isn't left sitting in some external
-tree for months.  I mean, it's usually a trivial thing, so do it just a
-week before the pull is due.  
+For pipes/sockets, using a 64 bits would be problematic, because sprintf() 
+uses a divide for each digit. And a divide is slow. Ten divides are *very* slow.
 
-But whatever.  What are we going to do about $SUBJECT?
+
