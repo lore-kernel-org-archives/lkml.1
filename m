@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030337AbXCFWCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030342AbXCFWHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030337AbXCFWCd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 17:02:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030314AbXCFWCc
+	id S1030342AbXCFWHd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 17:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030357AbXCFWHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 17:02:32 -0500
-Received: from mga09.intel.com ([134.134.136.24]:4786 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030337AbXCFWCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 17:02:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,255,1170662400"; 
-   d="scan'208"; a="53995549:sNHT16920621"
-Date: Tue, 6 Mar 2007 13:58:45 -0800
-From: Mark Gross <mgross@linux.intel.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mark.gross@intel.com, torvalds@linux-foundation.org
-Subject: [PATCH] minor updat to tlclk Kconfig entry
-Message-ID: <20070306215845.GA1380@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 6 Mar 2007 17:07:33 -0500
+Received: from amsfep19-int.chello.nl ([213.46.243.16]:56188 "EHLO
+	amsfep11-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030342AbXCFWHc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 17:07:32 -0500
+Subject: Re: [patch 2/8] update ctime and mtime for mmaped write
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, staubach@redhat.com, hugh@veritas.com
+In-Reply-To: <1173217621.4718.27.camel@lappy>
+References: <20070306180443.669036741@szeredi.hu>
+	 <20070306180549.312408559@szeredi.hu> <1173213151.4718.16.camel@lappy>
+	 <E1HOh8r-0006Sp-00@dorka.pomaz.szeredi.hu> <1173217621.4718.27.camel@lappy>
+Content-Type: text/plain
+Date: Tue, 06 Mar 2007 23:07:23 +0100
+Message-Id: <1173218843.4718.38.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The tlclk driver is going on the MPCBL005 so I need to make the Kconfig
-more more generic.  Just some text changes.
+On Tue, 2007-03-06 at 22:47 +0100, Peter Zijlstra wrote:
+> On Tue, 2007-03-06 at 22:24 +0100, Miklos Szeredi wrote:
+> > > I'm not liking this, its not a constant operation as the name implies.
+> > 
+> > OK, I'll think of something better.
+> > 
+> > > And it style is a bit out of line with the rest of rmap.
+> > > 
+> > > The thing it actually does is page_mkclean(), all it doesn't do is
+> > > setting the pte read-only.
+> > > 
+> > > I can understand you wanting to avoid the overhead of the minor faults
+> > > resulting from using page_mkclean(), but I'm not sure its worth it.
+> > 
+> > It would be nice if the cost of MS_ASYNC wouldn't be too high.  And I
+> > do have the feeling that minor faults are far more expensive than
+> > cleaning the dirty bit in the ptes.
+> > 
+> > Do you have any numbers?
+> 
+> None what so ever, but I always think of msync as a rare function
+> (infrequent when compared to (minor) faults overall). But I don't have
+> numbers backing that up either.
+> 
+> Also, the radix tree scan you do isn't exactly cheap either. 
+> 
+> So what I was wondering is whether its worth optimizing this at the cost
+> of another rmap walker. (one with very dubious semantics at that - it
+> clears the pte dirty bit but doesn't particularly care about that nor
+> does it respect the PG_dirty / PTE dirty relation)
+
+What this functionality requires is that MS_ASYNC is a full barrier wrt.
+dirtyness. That is, we want to call set_page_dirty_mappig() as soon as
+we touch a page in a dirtying fashion after MS_{,A}SYNC gets called.
+
+Hence we need the full page_mkclean() functionality, otherwise we don't
+set AS_CMTIME again in time.
 
 
---mgross
 
-Signed-off-by: Mark Gross <mark.gross@intel.com>
 
-diff -urN -X linux-2.6.21-rc2/Documentation/dontdiff linux-2.6.21-rc2/drivers/char/Kconfig linux-2.6.21-rc2-tlclk/drivers/char/Kconfig
---- linux-2.6.21-rc2/drivers/char/Kconfig	2007-03-06 13:41:21.000000000 -0800
-+++ linux-2.6.21-rc2-tlclk/drivers/char/Kconfig	2007-03-06 13:50:06.000000000 -0800
-@@ -1026,16 +1026,17 @@
- source "drivers/char/tpm/Kconfig"
- 
- config TELCLOCK
--	tristate "Telecom clock driver for MPBL0010 ATCA SBC"
-+	tristate "Telecom clock driver for ATCA SBC"
- 	depends on EXPERIMENTAL && X86
- 	default n
- 	help
--	  The telecom clock device is specific to the MPBL0010 ATCA computer and
--	  allows direct userspace access to the configuration of the telecom clock
--	  configuration settings.  This device is used for hardware synchronization
--	  across the ATCA backplane fabric.  Upon loading, the driver exports a
--	  sysfs directory, /sys/devices/platform/telco_clock, with a number of
--	  files for controlling the behavior of this hardware.
-+	  The telecom clock device is specific to the MPCBL0010 and MPCBL0050
-+	  ATCA computers and allows direct userspace access to the
-+	  configuration of the telecom clock configuration settings.  This
-+	  device is used for hardware synchronization across the ATCA backplane
-+	  fabric.  Upon loading, the driver exports a sysfs directory,
-+	  /sys/devices/platform/telco_clock, with a number of files for
-+	  controlling the behavior of this hardware.
- 
- endmenu
- 
+
