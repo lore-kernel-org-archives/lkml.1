@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965959AbXCFRHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965904AbXCFRJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965959AbXCFRHI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:07:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965960AbXCFRHI
+	id S965904AbXCFRJs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965966AbXCFRJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:07:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51637 "EHLO mx2.mail.elte.hu"
+	Tue, 6 Mar 2007 12:09:48 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47768 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965959AbXCFRHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:07:06 -0500
-Date: Tue, 6 Mar 2007 18:05:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	id S965904AbXCFRJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:09:47 -0500
+Date: Tue, 6 Mar 2007 09:09:18 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>, Soeren Sonnenburg <kernel@nn7.de>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [5/6] 2.6.21-rc2: known regressions
-Message-ID: <20070306170504.GA14311@elte.hu>
-References: <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org> <1173142948.24738.257.camel@localhost.localdomain> <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org> <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu> <20070306104618.GA5792@mellanox.co.il> <20070306113225.GA22561@elte.hu> <Pine.LNX.4.64.0703060817060.5963@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703060817060.5963@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch v2] epoll use a single inode ...
+In-Reply-To: <45ED96A6.3000704@zytor.com>
+Message-ID: <Pine.LNX.4.64.0703060853050.5963@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
+ <45ECD122.6020907@zytor.com> <Pine.LNX.4.64.0703051832260.4907@alien.or.mcafeemobile.com>
+ <45ECD3D4.5020305@zytor.com> <Pine.LNX.4.64.0703051841380.4907@alien.or.mcafeemobile.com>
+ <45ED08A9.9050501@cosmosbay.com> <45ED96A6.3000704@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> This is just a coding style thing, but I thought I should really point 
-> it out, because these kinds of things quite often result in nasty bugs 
-> simply because the source code is so hard to read properly:
+On Tue, 6 Mar 2007, H. Peter Anvin wrote:
+> 
+> That's true for *any* sprintf(), though.  sprintf() converts all its arguments
+> to 64 bits.
 
-yeah, agreed. We'll fix this.
+Well, it very much uses "do_div()", so that it can do a
 
-	Ingo
+	64 / 32 -> (div64,mod32) 
+
+divide, which is often faster than a full 64:64 divide.
+
+> However, this could be optimized.  I think right now sprintf() uses a generic
+> divide-by-base, but a divide by 8 and 16 can of course be handled with a
+> shift, and divide by 10 can be replaced with a multiplication by
+> 0x1999999999999999ULL on most architectures.
+
+Nope. You need both the result of the division *and* the remainder, and 
+you can't do that with a single multiply.
+
+Also, with modern hardware, divides are usually fairly cheap, with early 
+exit logic, so that the common case of small integers is fairly cheap. 
+Yeah, generating a full 64-bit number printout is still expensive, of 
+course (both because you need to do many divides *and* because only the 
+last few divides will be able to do any appreciable early exit logic.
+
+Anyway, I think a full integer divide on Core 2 is something like 22 
+cycles. Yes, the multiply is much fasster (at 4 cycles), but I think that 
+22 cycles is actually worst-case.
+
+Somebody who has a benchmark could try.
+
+		Linus
