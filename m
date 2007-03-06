@@ -1,99 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030573AbXCFNZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXCFNZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030573AbXCFNZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:25:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030567AbXCFNZM
+	id S1030599AbXCFNZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030603AbXCFNZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:25:12 -0500
-Received: from mail22.syd.optusnet.com.au ([211.29.133.160]:35797 "EHLO
-	mail22.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030573AbXCFNZK (ORCPT
+	Tue, 6 Mar 2007 08:25:56 -0500
+Received: from tentacle.s2s.msu.ru ([193.232.119.109]:54519 "EHLO
+	tentacle.sectorb.msk.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030584AbXCFNZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:25:10 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: tglx@linutronix.de
-Subject: Re: 2.6.21-rc2-mm2
-Date: Wed, 7 Mar 2007 00:24:51 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       john stultz <johnstul@us.ibm.com>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <200703062258.19940.kernel@kolivas.org> <1173185537.24738.323.camel@localhost.localdomain>
-In-Reply-To: <1173185537.24738.323.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Mar 2007 08:25:54 -0500
+X-Greylist: delayed 731 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 08:25:52 EST
+Date: Tue, 6 Mar 2007 16:25:51 +0300
+From: "Vladimir B. Savkin" <master@sectorb.msk.ru>
+To: netdev@vger.kernel.org
+Cc: Andi Kleen <ak@suse.de>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       David Miller <davem@davemloft.net>, hawk@diku.dk,
+       harry@atmos.washington.edu, linux-kernel@vger.kernel.org,
+       Rick Jones <rick.jones2@hp.com>
+Subject: Packet timestamps (was: Re: Network performance degradation from 2.6.11.12 to 2.6.16.20)
+Message-ID: <20070306132551.GB8412@tentacle.sectorb.msk.ru>
+References: <200609181850.22851.ak@suse.de> <20060919.124751.24100694.davem@davemloft.net> <20060922153517.GB24866@ms2.inr.ac.ru> <200609221743.40053.ak@suse.de> <4514147D.5040803@hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-Message-Id: <200703070024.51273.kernel@kolivas.org>
+In-Reply-To: <4514147D.5040803@hp.com>
+X-Organization: Moscow State Univ., Institute of Mechanics
+X-Operating-System: Linux 2.6.20.1
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 March 2007 23:52, Thomas Gleixner wrote:
-> On Tue, 2007-03-06 at 22:58 +1100, Con Kolivas wrote:
-> > (tglx cc'ed as he may know something about this - sorry if it's
-> > inappropriate)
->
-> John cc'ed as well :)
+On Fri, Sep 22, 2006 at 09:51:09AM -0700, Rick Jones wrote:
+> >That came from named. It opens lots of sockets with SIOCGSTAMP.
+> >No idea what it needs that many for.
+> 
+> IIRC ISC BIND named opens a socket for each IP it finds on the system. 
+> Presumeably in this way it "knows" implicitly the destination IP without 
+> using platform-specific recvfrom/whatever extensions and gets some 
+> additional parallelism in the stack on SMP systems.
+> 
+> Why it needs/wants the timestamps I've no idea, I don't think it gets 
+> them that way on all platforms.  I suppose the next time I do some named 
+> benchmarking I can try to take a closer look in the source.
+> 
 
-Thanks.
+Returning to the discussion about packet timestamps, I just
+use the following patch now:
 
-> >  [<ffffffff8018401c>] do_timer+0x301/0x419
+diff -ur ../linux-2.6.20.1/include/linux/sysctl.h linux-2.6.20.1-ts/include/linux/sysctl.h
+--- ../linux-2.6.20.1/include/linux/sysctl.h	2007-02-20 09:34:32.000000000 +0300
++++ linux-2.6.20.1-ts/include/linux/sysctl.h	2007-03-04 19:10:36.000000000 +0300
+@@ -280,6 +280,7 @@
+ 	NET_CORE_BUDGET=19,
+ 	NET_CORE_AEVENT_ETIME=20,
+ 	NET_CORE_AEVENT_RSEQTH=21,
++	NET_CORE_ACCURATE_TIMESTAMPS=99,
+ };
+ 
+ /* /proc/sys/net/ethernet */
+diff -ur ../linux-2.6.20.1/net/core/dev.c linux-2.6.20.1-ts/net/core/dev.c
+--- ../linux-2.6.20.1/net/core/dev.c	2007-02-20 09:34:32.000000000 +0300
++++ linux-2.6.20.1-ts/net/core/dev.c	2007-03-04 19:09:44.000000000 +0300
+@@ -1043,9 +1043,11 @@
+ }
+ EXPORT_SYMBOL(__net_timestamp);
+ 
++int sysctl_accurate_timestamps = 1;
++
+ static inline void net_timestamp(struct sk_buff *skb)
+ {
+-	if (atomic_read(&netstamp_needed))
++	if (sysctl_accurate_timestamps && atomic_read(&netstamp_needed))
+ 		__net_timestamp(skb);
+ 	else {
+ 		skb->tstamp.off_sec = 0;
+diff -ur ../linux-2.6.20.1/net/core/sysctl_net_core.c linux-2.6.20.1-ts/net/core/sysctl_net_core.c
+--- ../linux-2.6.20.1/net/core/sysctl_net_core.c	2007-02-20 09:34:32.000000000 +0300
++++ linux-2.6.20.1-ts/net/core/sysctl_net_core.c	2007-03-04 19:05:11.000000000 +0300
+@@ -21,6 +21,8 @@
+ 
+ extern int sysctl_core_destroy_delay;
+ 
++extern int sysctl_accurate_timestamps;
++
+ #ifdef CONFIG_XFRM
+ extern u32 sysctl_xfrm_aevent_etime;
+ extern u32 sysctl_xfrm_aevent_rseqth;
+@@ -136,6 +138,14 @@
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec
+ 	},
++	{
++		.ctl_name	= NET_CORE_ACCURATE_TIMESTAMPS,
++		.procname	= "accurate_timestamps",
++		.data		= &sysctl_accurate_timestamps,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec
++	},
+ 	{ .ctl_name = 0 }
+ };
+ 
 
-> > ---
-> >
-> > list *do_timer+0x301
-> > 0xffffffff8018401c is in do_timer
-> > (/home/con/kernel/linux-2.6.21-rc2-mm2/include/linux/clocksource.h:186).
-> > 181             u64 tmp;
-> > 182
-> > 183             /* XXX - All of this could use a whole lot of
-> > optimization */ 184             tmp = length_nsec;
-> > 185             tmp <<= c->shift;
-> > 186             tmp += c->mult/2;
-> > 187             do_div(tmp, c->mult);
-> > 188
-> > 189             c->cycle_interval = (cycle_t)tmp;
-> > 190             if (c->cycle_interval == 0)
->
-> That's extremly strange. This is inside of
-> clocksource_calculate_interval() in:
->
-> static void change_clocksource(void)
-> {
->         struct clocksource *new;
->         cycle_t now;
->         u64 nsec;
->
->         new = clocksource_get_next();
->
->         if (clock == new)
->                 return;
->
->         now = clocksource_read(new);
->         nsec =  __get_nsec_offset();
->         timespec_add_ns(&xtime, nsec);
->
->         clock = new;
->         clock->cycle_last = now;
->
->         clock->error = 0;
->         clock->xtime_nsec = 0;
-> 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
->
->         tick_clock_notify();
->
->         printk(KERN_INFO "Time: %s clocksource has been installed.\n",
->                clock->name);
-> }
->
-> So clock seems to be NULL, but was accessed before
-> clocksource_calculate_interval() as well.
+May I ask about integrating this or a similar solution for those
+like me who values routing performance (with bind9 running) over
+minor convinience of having tcpdump always display accurate
+timestamps?
 
-It seems to be specifically tripping at c->mult after reading c->shift if I'm 
-reading it correctly.
+And why current kernel (2.6.20.1) still ignores parameter
+clocksource=tsc ? I think with idle=poll TSC is safe to use on my setup,
+it had ran with TSC for many months without a problem.
 
-Note again, this is qemu, not real hardware and it will likely be giving very 
-unrealistic values for timer calibrations.
+~
+:wq
+                                        With best regards, 
+                                           Vladimir Savkin. 
 
--- 
--ck
