@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933166AbXCFJLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933156AbXCFJNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933166AbXCFJLb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934003AbXCFJLa
+	id S933156AbXCFJNL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbXCFJNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:11:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41411 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934002AbXCFJL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:11:26 -0500
-Date: Tue, 6 Mar 2007 10:10:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Gerd Hoffmann <kraxel@suse.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Xen & VMI?
-Message-ID: <20070306091006.GA26073@elte.hu>
-References: <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <45ED2E63.3070700@vmware.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Mar 2007 04:13:11 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:38508 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933156AbXCFJNJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:13:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fVKbJjHPnJRmKQJxP4fZTnWXZfsLazgNXcENI8i57V187nVLlxsEKTEBYYMkK8mGXkm3UILfNT1G7t79EIraqnNpjAuNdVBQVd9sf6tTHHx9x3uNePmS0GWORgnag91lU2Dinja44xPX9eDTvokc/22QUOxhn0DOhJw0to6KKcI=
+Message-ID: <df9815e70703060113w8eeeae3g6fc9ce6190eb380c@mail.gmail.com>
+Date: Tue, 6 Mar 2007 17:13:07 +0800
+From: albcamus <albcamus@gmail.com>
+To: Mockern@yandex.ru
+Subject: RE: Question: schedule()
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <45ED23E3.000004.17474@webmail18.yandex.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45ED2E63.3070700@vmware.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <45ED23E3.000004.17474@webmail18.yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+your kthread IS preemptible unless you call preempt_disable or some
+locking functions explicitly .
 
-* Zachary Amsden <zach@vmware.com> wrote:
+Regards,
+albcamus
 
-> > > reduces the QA effort.  You still have 5 Hypervisors you have to 
-> > > test against.
-> >
-> > yes, just like we have thousands of separate PC boards to support. 
-> > But as long as the basic ABI is the same, the QA effort on the Linux 
-> > kernel side is alot more focused. (Distros still have 
-> > 18446744073709551616 total combinations to QA, and have to make an 
-> > educated guess to reduce that to a more manageable number.)
-> 
-> But hardware PC boards don't do anything as remotely complicate as 
-> changing the semantics required for correctness in you MMU 
-> implementation. [...]
-
-ugh, PC boards are actually far worse and far more diverse than any 
-variances between hypervisors, but i digress.
-
-anyway, my point stands: the Linux kernel is significantly more 
-maintainable and easier to QA if it has only a single 'external' 
-hypervisor ABI to worry about - and that might as well be VMI. This is a 
-really obvious point, i expected the discussion to center more around 
-the specifics of such a move ;-)
-
-	Ingo
+2007/3/6, Mockern <Mockern@yandex.ru>:
+> Hi,
+>
+> What does schedule() function do? I want to make my kthread preemptive.
+>
+> Thanks
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
