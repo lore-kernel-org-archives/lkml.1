@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933253AbXCFMo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932481AbXCFMp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933253AbXCFMo2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933254AbXCFMo2
+	id S932481AbXCFMp5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 07:45:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933243AbXCFMp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:44:28 -0500
-Received: from wx-out-0506.google.com ([66.249.82.232]:35712 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933253AbXCFMo0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:44:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BhFi6YwqFc4F/Sve+2hIBwbgXc+kaiDLHotuguyyx21nucIf7IrSskeOC4fFS0vZt9DaeFqMet4JI/3wO6dvNrWMBmN5PeHLUPQekvzx4EhLptT8d/0+nfOqjaUiLU/nVlov0NVJrgB8kxbXmMztr6hfz2Y53KzBiNjNZ6PYK7U=
-Message-ID: <45ED6221.5090003@gmail.com>
-Date: Tue, 06 Mar 2007 21:44:17 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 6 Mar 2007 07:45:57 -0500
+Received: from village.ehouse.ru ([193.111.92.18]:1305 "EHLO mail.ehouse.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932481AbXCFMp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 07:45:56 -0500
+From: "Alexander Y. Fomichev" <gluk@php4.ru>
+Reply-To: "Alexander Y. Fomichev" <gluk@php4.ru>
+To: Bill Irwin <bill.irwin@oracle.com>
+Subject: Re: kernel BUG at arch/x86_64/mm/../../i386/mm/hugetlbpage.c:140!
+Date: Tue, 6 Mar 2007 15:45:23 +0300
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       admin@list.net.ru
+References: <200703021651.16050.gluk@php4.ru> <20070302214111.GL10643@holomorphy.com>
+In-Reply-To: <20070302214111.GL10643@holomorphy.com>
 MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Use a zero-size array in the struct devres
-References: <20070306095241.28180.76390.stgit@localhost.localdomain>
-In-Reply-To: <20070306095241.28180.76390.stgit@localhost.localdomain>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703061545.23470.gluk@php4.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Catalin.
+On Saturday 03 March 2007, Bill Irwin wrote:
+> On Fri, Mar 02, 2007 at 04:51:15PM +0300, Alexander Y. Fomichev wrote:
+> > I'm hit a bug on 2.6.21-rc1 at startup of mysql with 'large-pages' flag
+> > set. (at this point mysql trying to allocate pages from hugetlb pool by
+> > sysv shm syscalls). Seems like it could be triggered by previous badness
+> > and probably hugetlb itself is not related. Anyway i couldn't reproduce
+> > it by now with 2.6.21-rc2 git commit
+> > 562aa1d4c6a874373f9a48ac184f662fbbb06a04. Very likely it has been fixed
+> > somwhere between 2.6.21-rc1 and -rc2, but i couldn't find something
+> > related by git log so any comments are welcome.
+>
+> If you have a known-working kernel version, git-bisect might help you
+> track down where it was introduced. Given the messages prior to the
+> hugetlbpage.c BUG_ON I'd say that this is something else besides the
+> specific code listed by line number, 
 
-Catalin Marinas wrote:
-> Commit 9ac7849e35f705830f7b016ff272b0ff1f7ff759 adds the devres
-> structure containing a flexible unsigned long long array, with a
-> comment about the guaranteed alignment. According to the gcc manual,
-> flexible arrays are considered incomplete types and it is an error to
-> ask for their alignment. This patch makes data[] a zero-size array.
+Nop, seems like it is hugetlb bug fixed by Adam 
+commit 516dffdcd8827a40532798602830dfcfc672294c
+[PATCH] Fix get_unmapped_area and fsync for hugetlb shm segments
+I've disregard it thoughtlessly so Adam marks it specific for powerpc/ia64.
+(hmm.. i donno realy why, huge pages should be alined anyway and if i 
+understend it correctly it may not be if is_file_hugepages() fails)
 
-The gcc manual says nothing about alignment.  What it says is sizeof()
-doesn't work.  If flexible array doesn't honor the alignment of the
-declared type, it would be useless for its designed purpose of
-supporting *array* of dynamically-determined length.
+As of "junk" just before the BUG this again IIUC because o-direct staff
+catches this issue before hugetlb.
 
-> I came across this when trying to build kmemleak as the modified
-> container_of macro tries to get the size of the devres.data member and
-> sizeof cannot be applied to incomplete types.
+> though I wouldn't rule out hugetlb
+> having tripped over itself before the actual BUG.
+>
 
-If kmemleak's container_of cannot deal with the current struct devres,
-it means it can't deal with flexible arrays at all.  Flexible array
-being the standard as opposed to 0 size array gcc extension, I guess a
-lot of people would prefer flexible array.
+Yep, it is.
 
-It would be best if kmemleak's container_of can be modified to work with
-flexible arrays.  If that's not possible, I guess it needs wider
-discussion to determine whether to ditch flexible array for kmemleak.
+> -- wli
 
-Thanks.
 
 -- 
-tejun
+Best regards.
+        Alexander Y. Fomichev <gluk@php4.ru>
+        Public PGP key: http://sysadminday.org.ru/gluk.asc
