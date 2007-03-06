@@ -1,302 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965744AbXCFCQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965748AbXCFCQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965744AbXCFCQs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 21:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXCFCQr
+	id S965748AbXCFCQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 21:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965747AbXCFCQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 21:16:47 -0500
-Received: from ns2.suse.de ([195.135.220.15]:40369 "EHLO mx2.suse.de"
+	Mon, 5 Mar 2007 21:16:48 -0500
+Received: from ns.suse.de ([195.135.220.2]:47926 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933862AbXCFCQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 21:16:36 -0500
+	id S933861AbXCFCQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 21:16:31 -0500
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 6 Mar 2007 13:15:20 +1100
-Message-Id: <1070306021520.26937@suse.de>
+Date: Tue, 6 Mar 2007 13:15:15 +1100
+Message-Id: <1070306021515.26922@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 004 of 4] knfsd: Provide sunrpc pool_mode module option
+Subject: [PATCH 003 of 4] knfsd: Fix recently introduced problem with shutting down a busy NFS server.
 References: <20070306131103.26638.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Greg Banks <gnb@sgi.com>
+When the last thread of nfsd exits, it shuts down all related sockets.
+It currently uses svc_close_socket to do this, but that only is
+immediately effective if the socket is not SK_BUSY.
 
-Provide a module param "pool_mode" for sunrpc.ko which allows a
-sysadmin to choose the mode for mapping NFS thread service pools
-to CPUs.  Values are:
+If the socket is busy - i.e. if a request has arrived that has not yet
+been processes - svc_close_socket is not effective and the shutdown
+process spins.
 
-auto	    choose a mapping mode heuristically
-global	    (default, same as the pre-2.6.19 code) a single global pool
-percpu	    one pool per CPU
-pernode	    one pool per NUMA node
+So create a new svc_force_close_socket which removes the SK_BUSY flag
+is set and then calls svc_close_socket.
 
-Note that since 2.6.19 the hardcoded behaviour has been "auto",
-this patch makes the default "global".
+Also change some open-codes loops in svc_destroy to use
+list_for_each_entry_safe.
 
-The pool mode can be changed after boot/modprobe using /sys, if the
-NFS and lockd services have been shut down.  A useful side effect of
-this change is to fix a small memory leak when unloading the module.
-
-Signed-off-by: Greg Banks <gnb@melbourne.sgi.com>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./Documentation/kernel-parameters.txt |   16 ++++
- ./net/sunrpc/svc.c                    |  133 +++++++++++++++++++++++++++++-----
- 2 files changed, 130 insertions(+), 19 deletions(-)
+ ./include/linux/sunrpc/svcsock.h |    2 +-
+ ./net/sunrpc/svc.c               |   21 +++++++++------------
+ ./net/sunrpc/svcsock.c           |   16 +++++++++++++++-
+ 3 files changed, 25 insertions(+), 14 deletions(-)
 
-diff .prev/Documentation/kernel-parameters.txt ./Documentation/kernel-parameters.txt
---- .prev/Documentation/kernel-parameters.txt	2007-03-06 12:45:18.000000000 +1100
-+++ ./Documentation/kernel-parameters.txt	2007-03-06 12:45:23.000000000 +1100
-@@ -1692,6 +1692,22 @@ and is between 256 and 4096 characters. 
- 	stifb=		[HW]
- 			Format: bpp:<bpp1>[:<bpp2>[:<bpp3>...]]
- 
-+	sunrpc.pool_mode=
-+			[NFS]
-+			Control how the NFS server code allocates CPUs to
-+			service thread pools.  Depending on how many NICs
-+			you have and where their interrupts are bound, this
-+			option will affect which CPUs will do NFS serving.
-+			Note: this parameter cannot be changed while the
-+			NFS server is running.
-+
-+			auto	    the server chooses an appropriate mode
-+				    automatically using heuristics
-+			global	    a single global pool contains all CPUs
-+			percpu	    one pool for each CPU
-+			pernode	    one pool for each NUMA node (equivalent
-+				    to global on non-NUMA machines)
-+
- 	swiotlb=	[IA-64] Number of I/O TLB slabs
- 
- 	switches=	[HW,M68k]
+diff .prev/include/linux/sunrpc/svcsock.h ./include/linux/sunrpc/svcsock.h
+--- .prev/include/linux/sunrpc/svcsock.h	2007-03-06 12:19:18.000000000 +1100
++++ ./include/linux/sunrpc/svcsock.h	2007-03-06 12:19:23.000000000 +1100
+@@ -66,7 +66,7 @@ struct svc_sock {
+  * Function prototypes.
+  */
+ int		svc_makesock(struct svc_serv *, int, unsigned short, int flags);
+-void		svc_close_socket(struct svc_sock *);
++void		svc_force_close_socket(struct svc_sock *);
+ int		svc_recv(struct svc_rqst *, long);
+ int		svc_send(struct svc_rqst *);
+ void		svc_drop(struct svc_rqst *);
 
 diff .prev/net/sunrpc/svc.c ./net/sunrpc/svc.c
---- .prev/net/sunrpc/svc.c	2007-03-06 12:27:12.000000000 +1100
-+++ ./net/sunrpc/svc.c	2007-03-06 12:45:44.000000000 +1100
-@@ -27,22 +27,26 @@
- 
- #define RPCDBG_FACILITY	RPCDBG_SVCDSP
- 
-+#define svc_serv_is_pooled(serv)    ((serv)->sv_function)
-+
- /*
-  * Mode for mapping cpus to pools.
-  */
- enum {
--	SVC_POOL_NONE = -1,	/* uninitialised, choose one of the others */
-+	SVC_POOL_AUTO = -1,	/* choose one of the others */
- 	SVC_POOL_GLOBAL,	/* no mapping, just a single global pool
- 				 * (legacy & UP mode) */
- 	SVC_POOL_PERCPU,	/* one pool per cpu */
- 	SVC_POOL_PERNODE	/* one pool per numa node */
- };
-+#define SVC_POOL_DEFAULT	SVC_POOL_GLOBAL
- 
- /*
-  * Structure for mapping cpus to pools and vice versa.
-  * Setup once during sunrpc initialisation.
-  */
- static struct svc_pool_map {
-+	int count;			/* How many svc_servs use us */
- 	int mode;			/* Note: int not enum to avoid
- 					 * warnings about "enumeration value
- 					 * not handled in switch" */
-@@ -50,9 +54,63 @@ static struct svc_pool_map {
- 	unsigned int *pool_to;		/* maps pool id to cpu or node */
- 	unsigned int *to_pool;		/* maps cpu or node to pool id */
- } svc_pool_map = {
--	.mode = SVC_POOL_NONE
-+	.count = 0,
-+	.mode = SVC_POOL_DEFAULT
- };
-+static DEFINE_MUTEX(svc_pool_map_mutex);/* protects svc_pool_map.count only */
-+
-+static int
-+param_set_pool_mode(const char *val, struct kernel_param *kp)
-+{
-+	int *ip = (int *)kp->arg;
-+	struct svc_pool_map *m = &svc_pool_map;
-+	int err;
-+
-+	mutex_lock(&svc_pool_map_mutex);
-+
-+	err = -EBUSY;
-+	if (m->count)
-+		goto out;
-+
-+	err = 0;
-+	if (!strncmp(val, "auto", 4))
-+		*ip = SVC_POOL_AUTO;
-+	else if (!strncmp(val, "global", 6))
-+		*ip = SVC_POOL_GLOBAL;
-+	else if (!strncmp(val, "percpu", 6))
-+		*ip = SVC_POOL_PERCPU;
-+	else if (!strncmp(val, "pernode", 7))
-+		*ip = SVC_POOL_PERNODE;
-+	else
-+		err = -EINVAL;
-+
-+out:
-+	mutex_unlock(&svc_pool_map_mutex);
-+	return err;
-+}
-+
-+static int
-+param_get_pool_mode(char *buf, struct kernel_param *kp)
-+{
-+	int *ip = (int *)kp->arg;
-+
-+	switch (*ip)
-+	{
-+	case SVC_POOL_AUTO:
-+		return strlcpy(buf, "auto", 20);
-+	case SVC_POOL_GLOBAL:
-+		return strlcpy(buf, "global", 20);
-+	case SVC_POOL_PERCPU:
-+		return strlcpy(buf, "percpu", 20);
-+	case SVC_POOL_PERNODE:
-+		return strlcpy(buf, "pernode", 20);
-+	default:
-+		return sprintf(buf, "%d", *ip);
-+	}
-+}
- 
-+module_param_call(pool_mode, param_set_pool_mode, param_get_pool_mode,
-+		 &svc_pool_map.mode, 0644);
- 
- /*
-  * Detect best pool mapping mode heuristically,
-@@ -166,18 +224,25 @@ svc_pool_map_init_pernode(struct svc_poo
- 
- 
- /*
-- * Build the global map of cpus to pools and vice versa.
-+ * Add a reference to the global map of cpus to pools (and
-+ * vice versa).  Initialise the map if we're the first user.
-+ * Returns the number of pools.
-  */
- static unsigned int
--svc_pool_map_init(void)
-+svc_pool_map_get(void)
+--- .prev/net/sunrpc/svc.c	2007-03-06 12:02:18.000000000 +1100
++++ ./net/sunrpc/svc.c	2007-03-06 12:27:12.000000000 +1100
+@@ -367,6 +367,7 @@ void
+ svc_destroy(struct svc_serv *serv)
  {
- 	struct svc_pool_map *m = &svc_pool_map;
- 	int npools = -1;
+ 	struct svc_sock	*svsk;
++	struct svc_sock *tmp;
  
--	if (m->mode != SVC_POOL_NONE)
-+	mutex_lock(&svc_pool_map_mutex);
+ 	dprintk("svc: svc_destroy(%s, %d)\n",
+ 				serv->sv_program->pg_name,
+@@ -382,21 +383,17 @@ svc_destroy(struct svc_serv *serv)
+ 
+ 	del_timer_sync(&serv->sv_temptimer);
+ 
+-	while (!list_empty(&serv->sv_tempsocks)) {
+-		svsk = list_entry(serv->sv_tempsocks.next,
+-				  struct svc_sock,
+-				  sk_list);
+-		svc_close_socket(svsk);
+-	}
++	list_for_each_entry_safe(svsk, tmp, &serv->sv_tempsocks, sk_list)
++		svc_force_close_socket(svsk);
 +
-+	if (m->count++) {
-+		mutex_unlock(&svc_pool_map_mutex);
- 		return m->npools;
-+	}
+ 	if (serv->sv_shutdown)
+ 		serv->sv_shutdown(serv);
  
--	m->mode = svc_pool_map_choose_mode();
-+	if (m->mode == SVC_POOL_AUTO)
-+		m->mode = svc_pool_map_choose_mode();
- 
- 	switch (m->mode) {
- 	case SVC_POOL_PERCPU:
-@@ -195,9 +260,36 @@ svc_pool_map_init(void)
- 	}
- 	m->npools = npools;
- 
-+	mutex_unlock(&svc_pool_map_mutex);
- 	return m->npools;
- }
- 
+-	while (!list_empty(&serv->sv_permsocks)) {
+-		svsk = list_entry(serv->sv_permsocks.next,
+-				  struct svc_sock,
+-				  sk_list);
+-		svc_close_socket(svsk);
+-	}
++	list_for_each_entry_safe(svsk, tmp, &serv->sv_permsocks, sk_list)
++		svc_force_close_socket(svsk);
 +
-+/*
-+ * Drop a reference to the global map of cpus to pools.
-+ * When the last reference is dropped, the map data is
-+ * freed; this allows the sysadmin to change the pool
-+ * mode using the pool_mode module option without
-+ * rebooting or re-loading sunrpc.ko.
-+ */
-+static void
-+svc_pool_map_put(void)
-+{
-+	struct svc_pool_map *m = &svc_pool_map;
-+
-+	mutex_lock(&svc_pool_map_mutex);
-+
-+	if (!--m->count) {
-+		m->mode = SVC_POOL_DEFAULT;
-+		kfree(m->to_pool);
-+		kfree(m->pool_to);
-+		m->npools = 0;
-+	}
-+
-+	mutex_unlock(&svc_pool_map_mutex);
-+}
-+
-+
- /*
-  * Set the current thread's cpus_allowed mask so that it
-  * will only run on cpus in the given pool.
-@@ -212,10 +304,9 @@ svc_pool_map_set_cpumask(unsigned int pi
- 
- 	/*
- 	 * The caller checks for sv_nrpools > 1, which
--	 * implies that we've been initialized and the
--	 * map mode is not NONE.
-+	 * implies that we've been initialized.
- 	 */
--	BUG_ON(m->mode == SVC_POOL_NONE);
-+	BUG_ON(m->count == 0);
- 
- 	switch (m->mode)
- 	{
-@@ -246,18 +337,19 @@ svc_pool_for_cpu(struct svc_serv *serv, 
- 	unsigned int pidx = 0;
- 
- 	/*
--	 * SVC_POOL_NONE happens in a pure client when
-+	 * An uninitialised map happens in a pure client when
- 	 * lockd is brought up, so silently treat it the
- 	 * same as SVC_POOL_GLOBAL.
- 	 */
--
--	switch (m->mode) {
--	case SVC_POOL_PERCPU:
--		pidx = m->to_pool[cpu];
--		break;
--	case SVC_POOL_PERNODE:
--		pidx = m->to_pool[cpu_to_node(cpu)];
--		break;
-+	if (svc_serv_is_pooled(serv)) {
-+		switch (m->mode) {
-+		case SVC_POOL_PERCPU:
-+			pidx = m->to_pool[cpu];
-+			break;
-+		case SVC_POOL_PERNODE:
-+			pidx = m->to_pool[cpu_to_node(cpu)];
-+			break;
-+		}
- 	}
- 	return &serv->sv_pools[pidx % serv->sv_nrpools];
- }
-@@ -347,7 +439,7 @@ svc_create_pooled(struct svc_program *pr
- 		  svc_thread_fn func, int sig, struct module *mod)
- {
- 	struct svc_serv *serv;
--	unsigned int npools = svc_pool_map_init();
-+	unsigned int npools = svc_pool_map_get();
- 
- 	serv = __svc_create(prog, bufsize, npools, shutdown);
- 
-@@ -397,6 +489,9 @@ svc_destroy(struct svc_serv *serv)
++	BUG_ON(!list_empty(&serv->sv_permsocks));
++	BUG_ON(!list_empty(&serv->sv_tempsocks));
  
  	cache_clean_deferred(serv);
  
-+	if (svc_serv_is_pooled(serv))
-+		svc_pool_map_put();
+
+diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
+--- .prev/net/sunrpc/svcsock.c	2007-03-06 11:12:40.000000000 +1100
++++ ./net/sunrpc/svcsock.c	2007-03-06 12:36:20.000000000 +1100
+@@ -82,6 +82,7 @@ static void		svc_delete_socket(struct sv
+ static void		svc_udp_data_ready(struct sock *, int);
+ static int		svc_udp_recvfrom(struct svc_rqst *);
+ static int		svc_udp_sendto(struct svc_rqst *);
++static void		svc_close_socket(struct svc_sock *svsk);
+ 
+ static struct svc_deferred_req *svc_deferred_dequeue(struct svc_sock *svsk);
+ static int svc_deferred_recv(struct svc_rqst *rqstp);
+@@ -1787,7 +1788,7 @@ svc_delete_socket(struct svc_sock *svsk)
+ 	spin_unlock_bh(&serv->sv_lock);
+ }
+ 
+-void svc_close_socket(struct svc_sock *svsk)
++static void svc_close_socket(struct svc_sock *svsk)
+ {
+ 	set_bit(SK_CLOSE, &svsk->sk_flags);
+ 	if (test_and_set_bit(SK_BUSY, &svsk->sk_flags))
+@@ -1800,6 +1801,19 @@ void svc_close_socket(struct svc_sock *s
+ 	svc_sock_put(svsk);
+ }
+ 
++void svc_force_close_socket(struct svc_sock *svsk)
++{
++	set_bit(SK_CLOSE, &svsk->sk_flags);
++	if (test_bit(SK_BUSY, &svsk->sk_flags)) {
++		/* Waiting to be processed, but no threads left,
++		 * So just remove it from the waiting list
++		 */
++		list_del_init(&svsk->sk_ready);
++		clear_bit(SK_BUSY, &svsk->sk_flags);
++	}
++	svc_close_socket(svsk);
++}
 +
- 	/* Unregister service with the portmapper */
- 	svc_register(serv, 0, 0);
- 	kfree(serv->sv_pools);
+ /**
+  * svc_makesock - Make a socket for nfsd and lockd
+  * @serv: RPC server structure
