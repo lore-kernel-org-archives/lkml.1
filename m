@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030202AbXCFSrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966013AbXCFSsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030202AbXCFSrf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966008AbXCFSre
+	id S966013AbXCFSsQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966008AbXCFSsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:47:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45063
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S966004AbXCFSrc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:47:32 -0500
-Date: Tue, 06 Mar 2007 10:47:29 -0800 (PST)
-Message-Id: <20070306.104729.43502575.davem@davemloft.net>
-To: heiko.carstens@de.ibm.com
-Cc: schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [S390] Use generic bug.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070306115917.GA28321@osiris.boeblingen.de.ibm.com>
-References: <20070305224354.GN22630@skybase>
-	<20070305.145629.28789919.davem@davemloft.net>
-	<20070306115917.GA28321@osiris.boeblingen.de.ibm.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 6 Mar 2007 13:48:15 -0500
+Received: from gw.goop.org ([64.81.55.164]:56070 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966013AbXCFSsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:48:14 -0500
+Message-ID: <45EDB76A.4050604@goop.org>
+Date: Tue, 06 Mar 2007 10:48:10 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] paravirt: VDSO page is essential
+References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <20070306073511.GA3938@elte.hu> <45ED1B64.9040104@vmware.com>
+In-Reply-To: <45ED1B64.9040104@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date: Tue, 6 Mar 2007 12:59:17 +0100
+Zachary Amsden wrote:
+> Yes, I don't have a problem with your patch, I just wish I had been
+> cc'd on it.  Fixing this is rather tricky, but I believe no strange
+> build magic is required, it can be done in kernel init code.  Still
+> building my SUSE 9.0 guest to test.  SUSE 9.0 is one of those that
+> requires COMPAT_VDSO, yes?
 
-> On Mon, Mar 05, 2007 at 02:56:29PM -0800, David Miller wrote:
-> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > Date: Mon, 5 Mar 2007 23:43:54 +0100
-> > 
-> > > +	if (__builtin_constant_p(__ret_warn_on)) {	\
-> > > +		if (__ret_warn_on)			\
-> > > +			__EMIT_BUG(BUGFLAG_WARNING);	\
-> > 
-> > I see we'll have this construct on powerpc, parisc and now s390.
-> > 
-> > But if it's going to trigger essentially at compile time, I
-> > think it's much better to BUILD_BUG_ON() in this case instead
-> > of counting on the code path to actually run and the user to
-> > notice and report the kernel log message.
-> 
-> So something like WARN_ON(1) won't compile, but BUG_ON(1) still
-> would? Seems odd to me.
-> Also since there is nothing like WARN(), you have to use WARN_ON(1).
-> Btw.: sparc64 has plenty of these ;)
+Where do we stand on VDSO reloc?  Are you turning this into a proper
+patch, or shall I have a look at it?
 
-I see.  It's for case where we can't put the test into the
-WARN_ON() call.
-
-Thanks for the explanation, I hadn't considered such cases.
+    J
