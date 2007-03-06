@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965031AbXCFQUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965103AbXCFQWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965031AbXCFQUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 11:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965036AbXCFQUi
+	id S965103AbXCFQWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 11:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965036AbXCFQWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 11:20:38 -0500
-Received: from www.osadl.org ([213.239.205.134]:53009 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965031AbXCFQUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 11:20:37 -0500
-Subject: Re: SATA resume slowness, e1000 MSI warning
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>,
-       Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>,
+	Tue, 6 Mar 2007 11:22:54 -0500
+Received: from aa014msr.fastwebnet.it ([85.18.95.74]:39132 "EHLO
+	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965103AbXCFQWx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 11:22:53 -0500
+Date: Tue, 6 Mar 2007 17:20:22 +0100
+From: Mattia Dongili <malattia@linux.it>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Auke Kok <auke-jan.h.kok@intel.com>
-In-Reply-To: <20070305101120.GA23032@elte.hu>
-References: <20070225175559.GC12392@stusta.de>
-	 <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz>
-	 <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-	 <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
-	 <20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
-	 <20070305084257.GA4464@mellanox.co.il>  <20070305101120.GA23032@elte.hu>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 17:26:41 +0100
-Message-Id: <1173198401.24738.340.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21 - part II (resend)
+Message-ID: <20070306162021.GJ2919@inferi.kami.home>
+Mail-Followup-To: Matthew Garrett <mjg59@srcf.ucam.org>,
+	Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <200702162223.59837.lenb@kernel.org> <20020101045751.GD4106@ucw.cz> <20070306122213.GF2919@inferi.kami.home> <20070306131753.GA15187@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306131753.GA15187@srcf.ucam.org>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.21-rc2-mm1-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 11:11 +0100, Ingo Molnar wrote:
-> the spin-up takes a few seconds here under suspend/resume simulation:
+On Tue, Mar 06, 2007 at 01:17:53PM +0000, Matthew Garrett wrote:
+> On Tue, Mar 06, 2007 at 01:22:13PM +0100, Mattia Dongili wrote:
 > 
->  | ata1: waiting for device to spin up (7 secs)
->  | Restarting tasks ... done.
+> > the audiopower is basically a _PS3/_PS0 switch for the device, while the
+> > lanpower plays with the embedded controller to powerdown/powerup.
+> >
+> > Now, unfortunately those methods are attached to a fake device in the
+> > DSDT and afaict there's no way to tell which real device they are
+> > playing with (except by inspecting the method implementations).
+> > Well of course iff there's only _one_ sound card and _one_ nic you can
+> > easily guess it :)
+> > 
+> > Is there some way to hook into drivers for such kind of runtime power
+> > management?
 > 
->  [5-10 seconds pass]
-> 
->  | ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
->  | ata1.00: configured for UDMA/100
->  | SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
->  | sda: Write Protect is off
->  | sda: Mode Sense: 00 3a 00 00
->  | SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> 
-> with real resume it takes even longer time - but i dont see where the 
-> delays come from in that case - i suspect it's SATA.
+> Before worrying, I think it would make more sense to instrument the 
+> benefit gained against doing more "traditional" runtime management - 
+> that is, simply shutting down the ethernet chipset or doing ac97 power 
+> management. It's trivial to add those to the existing drivers, and if 
 
-SATA has another nice feature. Somehow there is an interrupt pending on
-the SATA controller, which comes in somewhere in the middle of resume.
-If it happens before the SATA code resumed, the SATA code ignores the
-interrupt and the interrupt is disabled due to "nobody cared", which in
-turn prevents SATA to ever become functional again.
+Can't tell about chipset specific management, but as far as ACPI is
+concerned, this Sony specific stuff is a nice way of hiding features
+behind an undocumented device. Eg: the sound card _PS3 is empty and only
+available through that AZPW method.[1] So I guess that the
+platform_pci_set_power_state for ACPI D3 is basically a no-op there.
 
-Any idea on that one ?
+> the additional benefit of using the Sony-specific methods is small then 
+> it's probably not really worth working out how to add it in.
 
-	tglx
+Yep, will try to get some measurement (by means of the acpi battery
+status, no better way currently available here) but given the above I
+suspect there's some benefit.
 
+> Plus, implementing the generic support benefits more people :)
 
+Yes, of course.
+
+[1]: if you want to make a an idea, one such DSDT is available
+here: http://oioio.altervista.org/linux/DSDT.sz72b.dsl
+sony-laptop basically exposes the Device(SNC) and AZPW/GAZP for the
+audio (an hda) and LNPW/GLNP for the nic (a sky2). Now see the
+audio device Device(HDEF) and its _PS0 and _PS3.
+
+PS: did I disappear from the Cc list? ;)
+-- 
+mattia
+:wq!
