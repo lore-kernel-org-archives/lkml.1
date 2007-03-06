@@ -1,116 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934004AbXCFH7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750828AbXCFIDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934004AbXCFH7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 02:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934000AbXCFH7T
+	id S1750828AbXCFIDX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 03:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXCFIDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 02:59:19 -0500
-Received: from wr-out-0506.google.com ([64.233.184.239]:4679 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934004AbXCFH7Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 02:59:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:x-google-sender-auth;
-        b=KxctGkYwU+wy9F1aLC9RkwdgW6w4txRnpdsBv+GqVKXl9LzmVG0rUcSmtcS7tj/tyVFPVwYA50Tj1L5187vtERyMryRlMkppIBHXrpn0MvgAKOXcn2cqEUsu3eNASJghVP5MkV/KgNcb4CdhjT013XTccK9P2xmqooatSLEmpbo=
-Message-ID: <86802c440703052359q3242f771ne9c10752613820d3@mail.gmail.com>
-Date: Mon, 5 Mar 2007 23:59:14 -0800
-From: "Yinghai Lu" <yinghai.lu@amd.com>
-To: ebiederm@xmission.com, "Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH] x86_64 irq: keep consistent for changing IRQ0_VECTOR from 0x20 to 0x30
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_174980_11505256.1173167954653"
-X-Google-Sender-Auth: 3b1b9ab0018d6799
+	Tue, 6 Mar 2007 03:03:23 -0500
+Received: from www.osadl.org ([213.239.205.134]:53936 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750828AbXCFIDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 03:03:22 -0500
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Soeren Sonnenburg <kernel@nn7.de>, Len Brown <lenb@kernel.org>
+In-Reply-To: <20070306072542.GA30153@elte.hu>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	 <20070305015040.GJ3441@stusta.de>
+	 <1173138193.24738.236.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
+	 <1173142948.24738.257.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org>
+	 <20070306072542.GA30153@elte.hu>
+Content-Type: text/plain
+Date: Tue, 06 Mar 2007 09:09:25 +0100
+Message-Id: <1173168565.24738.273.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_174980_11505256.1173167954653
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 2007-03-06 at 08:25 +0100, Ingo Molnar wrote:
+> The programming of periodic tick devices needs to be saved/restored 
+> across suspend/resume - otherwise we might end up with a system coming 
+> up that relies on getting a PIT (or HPET) interrupt, while those devices 
+> default to 'no interrupts' after powerup. (To confuse things it worked 
+> to a certain degree on some systems because the lapic gets initialized 
+> as a side-effect of SMP bootup.)
+> 
+> This suspend / resume thing was dropped unintentionally during the 
+> last-minute -mm code reshuffling.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-please check the patch
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-YH
 
-------=_Part_174980_11505256.1173167954653
-Content-Type: text/x-patch; name=3_irq_20_30.patch; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_eyy1ubql
-Content-Disposition: attachment; filename="3_irq_20_30.patch"
-
-W1BBVENIXSB4ODZfNjQgaXJxOiBrZWVwIGNvbnNpc3RlbnQgZm9yIElSUTBfVkVDVE9SIGZyb20g
-MHgyMCB0byAweDMwCgpGSVJTVF9FWFRFUk5BTF9WRUNUT1IgaXMgdXNlZCBmb3IgSVJRX01PVkVf
-Q0xFQU5VUF9WRUNUT1IsIGFuZCBJUlEwIHN0YXJ0aW5nIGZyb20gRklSU1RfRVhURVJOQUxfVkVD
-VE9SICsgMHgxMC4gU28gcmVkdWNlIGludGVycnVwdCBhcnJheSBmb3IgSVJRLgoKU2lnbmVkLW9m
-Zi1ieTogWWluZ2hhaSBMdSA8eWluZ2hhaS5sdUBhbWQuY29tPgoKZGlmZiAtLWdpdCBhL2FyY2gv
-eDg2XzY0L2tlcm5lbC9pODI1OS5jIGIvYXJjaC94ODZfNjQva2VybmVsL2k4MjU5LmMKaW5kZXgg
-MjFkOTViNy4uYWM2OTE2ZSAxMDA2NDQKLS0tIGEvYXJjaC94ODZfNjQva2VybmVsL2k4MjU5LmMK
-KysrIGIvYXJjaC94ODZfNjQva2VybmVsL2k4MjU5LmMKQEAgLTQ1LDcgKzQ1LDcgQEAKIAogLyoK
-ICAqIElTQSBQSUMgb3IgbG93IElPLUFQSUMgdHJpZ2dlcmVkIChJTlRBLWN5Y2xlIG9yIEFQSUMp
-IGludGVycnVwdHM6Ci0gKiAodGhlc2UgYXJlIHVzdWFsbHkgbWFwcGVkIHRvIHZlY3RvcnMgMHgy
-MC0weDJmKQorICogKHRoZXNlIGFyZSB1c3VhbGx5IG1hcHBlZCB0byB2ZWN0b3JzIDB4MzAtMHgz
-ZikKICAqLwogCiAvKgpAQCAtNTgsNyArNTgsNyBAQAogICoKICAqICh0aGVzZSBhcmUgdXN1YWxs
-eSBtYXBwZWQgaW50byB0aGUgMHgzMC0weGZmIHZlY3RvciByYW5nZSkKICAqLwotCQkJCSAgICAg
-IEJVSUxEXzE2X0lSUVMoMHgyKSBCVUlMRF8xNl9JUlFTKDB4MykKKwkJCQkJCQkgQlVJTERfMTZf
-SVJRUygweDMpCiBCVUlMRF8xNl9JUlFTKDB4NCkgQlVJTERfMTZfSVJRUygweDUpIEJVSUxEXzE2
-X0lSUVMoMHg2KSBCVUlMRF8xNl9JUlFTKDB4NykKIEJVSUxEXzE2X0lSUVMoMHg4KSBCVUlMRF8x
-Nl9JUlFTKDB4OSkgQlVJTERfMTZfSVJRUygweGEpIEJVSUxEXzE2X0lSUVMoMHhiKQogQlVJTERf
-MTZfSVJRUygweGMpIEJVSUxEXzE2X0lSUVMoMHhkKSBCVUlMRF8xNl9JUlFTKDB4ZSkgQlVJTERf
-MTZfSVJRUygweGYpCkBAIC03Nyw4ICs3Nyw4IEBAIEJVSUxEXzE2X0lSUVMoMHhjKSBCVUlMRF8x
-Nl9JUlFTKDB4ZCkgQlVJTERfMTZfSVJRUygweGUpIEJVSUxEXzE2X0lSUVMoMHhmKQogCUlSUSh4
-LGMpLCBJUlEoeCxkKSwgSVJRKHgsZSksIElSUSh4LGYpCiAKIC8qIGZvciB0aGUgaXJxIHZlY3Rv
-cnMgKi8KLXN0YXRpYyB2b2lkICgqaW50ZXJydXB0W05SX1ZFQ1RPUlMgLSBGSVJTVF9FWFRFUk5B
-TF9WRUNUT1JdKSh2b2lkKSA9IHsKLQkJCQkJICBJUlFMSVNUXzE2KDB4MiksIElSUUxJU1RfMTYo
-MHgzKSwKK3N0YXRpYyB2b2lkICgqaW50ZXJydXB0W05SX1ZFQ1RPUlMgLSBJUlEwX1ZFQ1RPUl0p
-KHZvaWQpID0geworCQkJCQkgIAkJICAgSVJRTElTVF8xNigweDMpLAogCUlSUUxJU1RfMTYoMHg0
-KSwgSVJRTElTVF8xNigweDUpLCBJUlFMSVNUXzE2KDB4NiksIElSUUxJU1RfMTYoMHg3KSwKIAlJ
-UlFMSVNUXzE2KDB4OCksIElSUUxJU1RfMTYoMHg5KSwgSVJRTElTVF8xNigweGEpLCBJUlFMSVNU
-XzE2KDB4YiksCiAJSVJRTElTVF8xNigweGMpLCBJUlFMSVNUXzE2KDB4ZCksIElSUUxJU1RfMTYo
-MHhlKSwgSVJRTElTVF8xNigweGYpCkBAIC0yOTksNyArMjk5LDcgQEAgdm9pZCBpbml0XzgyNTlB
-KGludCBhdXRvX2VvaSkKIAkgKiBvdXRiX3AgLSB0aGlzIGhhcyB0byB3b3JrIG9uIGEgd2lkZSBy
-YW5nZSBvZiBQQyBoYXJkd2FyZS4KIAkgKi8KIAlvdXRiX3AoMHgxMSwgMHgyMCk7CS8qIElDVzE6
-IHNlbGVjdCA4MjU5QS0xIGluaXQgKi8KLQlvdXRiX3AoSVJRMF9WRUNUT1IsIDB4MjEpOwkvKiBJ
-Q1cyOiA4MjU5QS0xIElSMC03IG1hcHBlZCB0byAweDIwLTB4MjcgKi8KKwlvdXRiX3AoSVJRMF9W
-RUNUT1IsIDB4MjEpOwkvKiBJQ1cyOiA4MjU5QS0xIElSMC03IG1hcHBlZCB0byAweDMwLTB4Mzcg
-Ki8KIAlvdXRiX3AoMHgwNCwgMHgyMSk7CS8qIDgyNTlBLTEgKHRoZSBtYXN0ZXIpIGhhcyBhIHNs
-YXZlIG9uIElSMiAqLwogCWlmIChhdXRvX2VvaSkKIAkJb3V0Yl9wKDB4MDMsIDB4MjEpOwkvKiBt
-YXN0ZXIgZG9lcyBBdXRvIEVPSSAqLwpAQCAtMzA3LDcgKzMwNyw3IEBAIHZvaWQgaW5pdF84MjU5
-QShpbnQgYXV0b19lb2kpCiAJCW91dGJfcCgweDAxLCAweDIxKTsJLyogbWFzdGVyIGV4cGVjdHMg
-bm9ybWFsIEVPSSAqLwogCiAJb3V0Yl9wKDB4MTEsIDB4QTApOwkvKiBJQ1cxOiBzZWxlY3QgODI1
-OUEtMiBpbml0ICovCi0Jb3V0Yl9wKElSUThfVkVDVE9SLCAweEExKTsJLyogSUNXMjogODI1OUEt
-MiBJUjAtNyBtYXBwZWQgdG8gMHgyOC0weDJmICovCisJb3V0Yl9wKElSUThfVkVDVE9SLCAweEEx
-KTsJLyogSUNXMjogODI1OUEtMiBJUjAtNyBtYXBwZWQgdG8gMHgzOC0weDNmICovCiAJb3V0Yl9w
-KDB4MDIsIDB4QTEpOwkvKiA4MjU5QS0yIGlzIGEgc2xhdmUgb24gbWFzdGVyJ3MgSVIyICovCiAJ
-b3V0Yl9wKDB4MDEsIDB4QTEpOwkvKiAoc2xhdmUncyBzdXBwb3J0IGZvciBBRU9JIGluIGZsYXQg
-bW9kZQogCQkJCSAgICBpcyB0byBiZSBpbnZlc3RpZ2F0ZWQpICovCkBAIC01MTMsOCArNTEzLDgg
-QEAgdm9pZCBfX2luaXQgaW5pdF9JUlEodm9pZCkKIAkgKiB1cy4gKHNvbWUgb2YgdGhlc2Ugd2ls
-bCBiZSBvdmVycmlkZGVuIGFuZCBiZWNvbWUKIAkgKiAnc3BlY2lhbCcgU01QIGludGVycnVwdHMp
-CiAJICovCi0JZm9yIChpID0gMDsgaSA8IChOUl9WRUNUT1JTIC0gRklSU1RfRVhURVJOQUxfVkVD
-VE9SKTsgaSsrKSB7Ci0JCWludCB2ZWN0b3IgPSBGSVJTVF9FWFRFUk5BTF9WRUNUT1IgKyBpOwor
-CWZvciAoaSA9IDA7IGkgPCAoTlJfVkVDVE9SUyAtIElSUTBfVkVDVE9SKTsgaSsrKSB7CisJCWlu
-dCB2ZWN0b3IgPSBJUlEwX1ZFQ1RPUiArIGk7CiAJCWlmICh2ZWN0b3IgIT0gSUEzMl9TWVNDQUxM
-X1ZFQ1RPUikKIAkJCXNldF9pbnRyX2dhdGUodmVjdG9yLCBpbnRlcnJ1cHRbaV0pOwogCX0KZGlm
-ZiAtLWdpdCBhL2FyY2gveDg2XzY0L2tlcm5lbC9pb19hcGljLmMgYi9hcmNoL3g4Nl82NC9rZXJu
-ZWwvaW9fYXBpYy5jCmluZGV4IGM2YTViYzcuLjFlMTg1MmMgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2
-XzY0L2tlcm5lbC9pb19hcGljLmMKKysrIGIvYXJjaC94ODZfNjQva2VybmVsL2lvX2FwaWMuYwpA
-QCAtMTM3MSw3ICsxMzcxLDcgQEAgYXNtbGlua2FnZSB2b2lkIHNtcF9pcnFfbW92ZV9jbGVhbnVw
-X2ludGVycnVwdCh2b2lkKQogCWlycV9lbnRlcigpOwogCiAJbWUgPSBzbXBfcHJvY2Vzc29yX2lk
-KCk7Ci0JZm9yICh2ZWN0b3IgPSBGSVJTVF9FWFRFUk5BTF9WRUNUT1I7IHZlY3RvciA8IE5SX1ZF
-Q1RPUlM7IHZlY3RvcisrKSB7CisJZm9yICh2ZWN0b3IgPSBJUlEwX1ZFQ1RPUjsgdmVjdG9yIDwg
-TlJfVkVDVE9SUzsgdmVjdG9yKyspIHsKIAkJdW5zaWduZWQgaW50IGlycTsKIAkJc3RydWN0IGly
-cV9kZXNjICpkZXNjOwogCQlzdHJ1Y3QgaXJxX2NmZyAqY2ZnOwpkaWZmIC0tZ2l0IGEvaW5jbHVk
-ZS9hc20teDg2XzY0L2h3X2lycS5oIGIvaW5jbHVkZS9hc20teDg2XzY0L2h3X2lycS5oCmluZGV4
-IDJlNGI3YTUuLjYxNTNhZTUgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvYXNtLXg4Nl82NC9od19pcnEu
-aAorKysgYi9pbmNsdWRlL2FzbS14ODZfNjQvaHdfaXJxLmgKQEAgLTM4LDcgKzM4LDcgQEAKICNk
-ZWZpbmUgSVJRX01PVkVfQ0xFQU5VUF9WRUNUT1IJRklSU1RfRVhURVJOQUxfVkVDVE9SCiAgCiAv
-KgotICogVmVjdG9ycyAweDIwLTB4MmYgYXJlIHVzZWQgZm9yIElTQSBpbnRlcnJ1cHRzLgorICog
-VmVjdG9ycyAweDMwLTB4M2YgYXJlIHVzZWQgZm9yIElTQSBpbnRlcnJ1cHRzLgogICovCiAjZGVm
-aW5lIElSUTBfVkVDVE9SCQlGSVJTVF9FWFRFUk5BTF9WRUNUT1IgKyAweDEwCiAjZGVmaW5lIElS
-UTFfVkVDVE9SCQlJUlEwX1ZFQ1RPUiArIDEK
-------=_Part_174980_11505256.1173167954653--
