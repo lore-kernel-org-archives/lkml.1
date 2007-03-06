@@ -1,156 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030567AbXCFN2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933264AbXCFNeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030567AbXCFN2m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030611AbXCFN2l
+	id S933264AbXCFNeK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933280AbXCFNeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:28:41 -0500
-Received: from MAIL.13thfloor.at ([213.145.232.33]:39215 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030567AbXCFN2k (ORCPT
+	Tue, 6 Mar 2007 08:34:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44883 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933264AbXCFNeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:28:40 -0500
-Date: Tue, 6 Mar 2007 14:28:39 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Paul Jackson <pj@sgi.com>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
-       winget@google.com, containers@lists.osdl.org, menage@google.com,
-       akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070306132837.GA15495@MAIL.13thfloor.at>
-Mail-Followup-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-	Paul Jackson <pj@sgi.com>, ckrm-tech@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, xemul@sw.ru, ebiederm@xmission.com,
-	winget@google.com, containers@lists.osdl.org, menage@google.com,
-	akpm@linux-foundation.org
-References: <20070301133543.GK15509@in.ibm.com> <20070301113900.a7dace47.pj@sgi.com> <20070303093655.GA1028@in.ibm.com> <20070303173244.GA16051@MAIL.13thfloor.at> <20070305173401.GA17044@in.ibm.com> <20070305183937.GC22445@MAIL.13thfloor.at> <20070306103940.GA2336@in.ibm.com>
+	Tue, 6 Mar 2007 08:34:08 -0500
+Date: Tue, 6 Mar 2007 14:34:04 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support
+Message-ID: <20070306133404.GA864@one.firstfloor.org>
+References: <20070223170527.4ca695b2@freekitty> <Pine.LNX.4.61.0702262108010.23355@yvahk01.tjqt.qr> <20070226143127.5c74bec9@freekitty> <p73slcnawh3.fsf@bingen.suse.de> <20070305155714.3abe1b5e@freekitty>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070306103940.GA2336@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070305155714.3abe1b5e@freekitty>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 04:09:40PM +0530, Srivatsa Vaddagiri wrote:
-> On Mon, Mar 05, 2007 at 07:39:37PM +0100, Herbert Poetzl wrote:
-> > > Thats why nsproxy has pointers to resource control objects, rather
-> > > than embedding resource control information in nsproxy itself.
+On Mon, Mar 05, 2007 at 03:57:14PM -0800, Stephen Hemminger wrote:
+> On 03 Mar 2007 03:31:52 +0100
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > Stephen Hemminger <shemminger@linux-foundation.org> writes:
 > > 
-> > which makes it a (name)space, no?
-> 
-> I tend to agree, yes!
-> 
-> > > This will let different nsproxy structures share the same resource
-> > > control objects (ctlr_data) and thus be governed by the same
-> > > parameters.
+> > > Here is another way to handle the 64 bit divide case.
+> > > It allows full 64 bit divide by adding the support routine
+> > > GCC needs.
 > > 
-> > as it is currently done for vfs, uts, ipc and soon
-> > pid and network l2/l3, yes?
-> 
-> yes (by vfs do you mean mnt_ns?)
-
-yep
-
-> > > Where else do you think the resource control information for a
-> > > container should be stored?
+> > Not supplying that was intentional by Linus so that people
+> > think twice (or more often) before they using such expensive
+> > operations. A plain / looks too innocent.
 > > 
-> > an alternative for that is to keep the resource
-> > stuff as part of a 'context' structure, and keep
-> > a reference from the task to that (one less
-> > indirection, as we had for vfs before)
-> 
-> something like:
-> 
-> 	struct resource_context {
-> 		int cpu_limit;
-> 		int rss_limit;
-> 		/* all other limits here */
-> 	}
-> 
-> 	struct task_struct {
-> 		...
-> 		struct resource_context *rc;
-> 
-> 	}
-> 
-> ?
-> 
-> With this approach, it makes it hard to have task-grouping that are
-> unique to each resource. 
-
-that is correct ...
-
-> For ex: lets say that CPU and Memory needs to be divided as follows:
-> 
-> 	CPU : C1 (70%), C2 (30%)
-> 	Mem : M1 (60%), M2 (40%)
-> 
-> Tasks T1, T2, T3, T4 are assigned to these resource classes as follows:
-> 
-> 	C1 : T1, T3
-> 	C2 : T2, T4
-> 	M1 : T1, T4
-> 	M2 : T2, T3
-> 
-> We had a lengthy discussion on this requirement here:
-> 
-> 	http://lkml.org/lkml/2006/11/6/95
-> 	http://lkml.org/lkml/2006/11/1/239
-> 
-> Linus also has expressed a similar view here:
-> 
-> 	http://lwn.net/Articles/94573/
-
-you probably could get that flexibility by grouping
-certain limits into a separate struct, but IMHO the
-real world use of this is limited, because the resource
-limitations usually only fulfill one purpose, being
-protection from malicious users and DoS prevention
-
-groups like Memory, Disk Space, Sockets might make
-sense though, although we never had a single request
-for any overlapping in the resource management (while
-we have quite a few users of overlapping Network spaces)
-
-> Paul Menage's (and its clone rcfs) patches allows this flexibility by
-> simply mounting different hierarchies:
-> 
-> 	mount -t container -o cpu none /dev/cpu
-> 	mount -t container -o mem none /dev/mem
-> 
-> The task-groups created under /dev/cpu can be completely independent of
-> task-groups created under /dev/mem.
-> 
-> Lumping together all resource parameters in one struct (like
-> resource_context above) makes it difficult to provide this feature.	
-> 
-> Now can we live w/o this flexibility? Maybe, I don't know for sure.
-> Since (stability of) user-interface is in question, we need to take a
-> carefull decision here.
-
-I don't like the dev/filesystem interface at all
-but I can probably live with it :)
-
-> > > then other derefences (->ctlr_data[] and ->limit) should be fast,
-> > > theas y should be in the cache?
+> > Is it really needed by CUBIC anyways?  It uses it for getting
+> > the cubic root, but the algorithm recommended by Hacker's Delight
+> > (great book) doesn't use any divisions at all. Probably better 
+> > to use a better algorithm without divisions.
 > > 
-> > please provide real world numbers from testing ...
 > 
-> What kind of testing did you have in mind?
+> I tried the code from Hacker's Delight.
+> It is cool, but performance is CPU (and data) dependent:
 
-for example, implement RSS/VM limits and run memory
-intensive tests like kernel building or so, see that
-the accounting and limit checks do not add measureable
-overhead ...
+I did too. My experiences were mixed: on 32bit it was slower,
+on 64bit faster on average.  Strangely the 32bit version ran
+faster again without -fomit-frame-pointer, so it's likely
+some funny interaction with 32bit long long code generation.
+The difference is never more than 100 cycles so it shouldn't
+be a big issue either way.
 
-similar could be done for socket/ipc accounting and
-multithreaded network tests (apache comes to my mind)
+For some input arguments (<1% in my testing)
+it also gave an answer 1 off from the existing code, 
+but I don't think that's a problem.
 
-HTH,
-Herbert
+But more importantly during testing I found that the cubic
+code gives a division by zero for input arguments >2^43. If you
+have a system with >16TB of memory this could actually be a remotely
+exploitable bug :)
 
-> -- 
-> Regards,
-> vatsa
+I still think it's a good idea to switch to the new function,
+especially since it's shorter code.
+
+Here's the patch. Note I didn't verify it with real large window
+TCP operations; only unit testing.
+
+-Andi
+
+Use Hacker's delight cube root algorithm in cubic TCP
+
+Shorter code and fixes a theoretically remote exploitable bug.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+
+Index: linux-2.6.21-rc1-net/net/ipv4/tcp_cubic.c
+===================================================================
+--- linux-2.6.21-rc1-net.orig/net/ipv4/tcp_cubic.c
++++ linux-2.6.21-rc1-net/net/ipv4/tcp_cubic.c
+@@ -93,51 +93,24 @@ static void bictcp_init(struct sock *sk)
+ 		tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
+ }
+ 
+-/* 64bit divisor, dividend and result. dynamic precision */
+-static inline u_int64_t div64_64(u_int64_t dividend, u_int64_t divisor)
++static u32 cubic_root(u64 x)
+ {
+-	u_int32_t d = divisor;
+-
+-	if (divisor > 0xffffffffULL) {
+-		unsigned int shift = fls(divisor >> 32);
+-
+-		d = divisor >> shift;
+-		dividend >>= shift;
+-	}
+-
+-	/* avoid 64 bit division if possible */
+-	if (dividend >> 32)
+-		do_div(dividend, d);
+-	else
+-		dividend = (uint32_t) dividend / d;
+-
+-	return dividend;
+-}
+-
+-/*
+- * calculate the cubic root of x using Newton-Raphson
+- */
+-static u32 cubic_root(u64 a)
+-{
+-	u32 x, x1;
+-
+-	/* Initial estimate is based on:
+-	 * cbrt(x) = exp(log(x) / 3)
+-	 */
+-	x = 1u << (fls64(a)/3);
+-
+-	/*
+-	 * Iteration based on:
+-	 *                         2
+-	 * x    = ( 2 * x  +  a / x  ) / 3
+-	 *  k+1          k         k
+-	 */
+-	do {
+-		x1 = x;
+-		x = (2 * x + (uint32_t) div64_64(a, x*x)) / 3;
+-	} while (abs(x1 - x) > 1);
+-
+-	return x;
++	int s;
++	u32 y;
++	u64 b;
++	u64 bs;
++
++	y = 0;
++	for (s = 63; s >= 0; s -= 3) {
++		y = 2 * y;
++		b = 3 * y * (y+1) + 1;
++		bs = b << s;
++		if (x >= bs && (b == (bs>>s))) {  /* avoid overflow */
++			x -= bs;
++			y++;
++		}
++	}
++	return y;
+ }
+ 
+ /*
