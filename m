@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750828AbXCFIDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXCFIFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750828AbXCFIDX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 03:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXCFIDX
+	id S1751672AbXCFIFj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 03:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbXCFIFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 03:03:23 -0500
-Received: from www.osadl.org ([213.239.205.134]:53936 "EHLO mail.tglx.de"
+	Tue, 6 Mar 2007 03:05:39 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43016 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750828AbXCFIDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 03:03:22 -0500
-Subject: Re: [5/6] 2.6.21-rc2: known regressions
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Soeren Sonnenburg <kernel@nn7.de>, Len Brown <lenb@kernel.org>
-In-Reply-To: <20070306072542.GA30153@elte.hu>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015040.GJ3441@stusta.de>
-	 <1173138193.24738.236.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
-	 <1173142948.24738.257.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org>
-	 <20070306072542.GA30153@elte.hu>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 09:09:25 +0100
-Message-Id: <1173168565.24738.273.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1751672AbXCFIFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 03:05:38 -0500
+Date: Tue, 6 Mar 2007 09:05:09 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       Alan <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] libata: add missing PM callbacks
+Message-ID: <20070306080509.GA2040@elf.ucw.cz>
+References: <20070302083001.GK20322@htj.dyndns.org> <45E8B3C8.2090009@garzik.org> <45E8E749.4030406@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E8E749.4030406@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 08:25 +0100, Ingo Molnar wrote:
-> The programming of periodic tick devices needs to be saved/restored 
-> across suspend/resume - otherwise we might end up with a system coming 
-> up that relies on getting a PIT (or HPET) interrupt, while those devices 
-> default to 'no interrupts' after powerup. (To confuse things it worked 
-> to a certain degree on some systems because the lapic gets initialized 
-> as a side-effect of SMP bootup.)
+Hi!
+
+> [cc'ing Pavel and linux-kernel, hello]
 > 
-> This suspend / resume thing was dropped unintentionally during the 
-> last-minute -mm code reshuffling.
+> Original thread can be read from
 > 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>   http://thread.gmane.org/gmane.linux.ide/16475
+> 
+> Jeff Garzik wrote:
+> > Tejun Heo wrote:
+> >> Some LLDs were missing scsi device PM callbacks while having host/port
+> >> suspend support.  Add missing ones.
+> >>
+> >> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> > 
+> > applied 1-3, though I agree with Alan that a non-ifdef solution should
+> > be sought (by the PM & PCI people?), where possible
+> 
+> Agreed, CONFIG_PM ifdefs are all over low level drivers, libata or not,
+> and ugly as hell.  Maybe use separate section, mark functions with
+> __power and drop them at link time is a better idea.  With linker
+> tricks, we can make references to __power symbols NULL.  How does it sound?
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-
+Much complexity for little gain. Who is running _without_ CONFIG_PM
+these days?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
