@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965925AbXCFPVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965926AbXCFPX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965925AbXCFPVm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965926AbXCFPVl
+	id S965926AbXCFPX5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965928AbXCFPX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:21:41 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:54195 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965925AbXCFPVl (ORCPT
+	Tue, 6 Mar 2007 10:23:57 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:45903 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965926AbXCFPX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:21:41 -0500
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Use a zero-size array in the struct devres
-References: <20070306095241.28180.76390.stgit@localhost.localdomain>
-	<45ED6221.5090003@gmail.com> <tnx649emo55.fsf@arm.com>
-	<45ED818F.2030502@gmail.com>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Tue, 06 Mar 2007 15:21:33 +0000
-In-Reply-To: <45ED818F.2030502@gmail.com> (Tejun Heo's message of "Tue, 06
- Mar 2007 23:58:23 +0900")
-Message-ID: <tnx1wk2mm82.fsf@arm.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) Emacs/21.4 (gnu/linux)
+	Tue, 6 Mar 2007 10:23:56 -0500
+Date: Tue, 6 Mar 2007 10:23:53 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Roland McGrath <roland@redhat.com>
+cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: <20070306031308.D78891800E5@magilla.sf.frob.com>
+Message-ID: <Pine.LNX.4.44L0.0703061015100.3401-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Mar 2007 15:21:35.0003 (UTC) FILETIME=[2083DEB0:01C76003]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> wrote:
-> Catalin Marinas wrote:
->> It sounds to me like the alignment of an incomplete type is not
->> guaranteed (as you can't even enquire about it, though I might be
->> wrong). This is probably dependent on the compiler as well - with
->> gcc-3.3 on x86, __alignof__(unsigned long long) is 8 but the
->> "offsetof(struct test, data)" below is 12 (and it doesn't make any
->> difference whether it is a 0-size array or not):
->> 
->> struct test {
->>     unsigned long a;
->>     unsigned long b;
->>     unsigned long c;
->>     unsigned long long data[];
->> };
->
-> data[0] and data[1] or whatever will also give you offset of 12.  Dunno
-> why, but it is.  Anyways, whatever the wording in the manual is,
-> flexible arrays just have to have the required alignment to do its job
-> as advertised.  :-)
+On Mon, 5 Mar 2007, Roland McGrath wrote:
 
-On ARM (with gcc-4) it gives 16 for both offsetof and sizeof.
+> > The actual guarantee I need is that nobody will switch_to() the task while
+> > my routines are running.
+> 
+> You can't get that.  It can always be woken for SIGKILL (which is a good
+> thing).  What you are guaranteed is that if it does, it will never return
+> to user mode.  So it has to be ok for switching in to use the bits in any
+> intermediate state you might get them, meaning any possible garbage state
+> is harmful only to user mode or is otherwise recoverable (worst case
+> perhaps the exception handler has to know to ignore some traps).  This is
+> already true with ptrace and ->thread.debugreg, as well as the normal user
+> registers.  In your case, if you wanted to be paranoid you could clear
+> TIF_DEBUG before you touch anything, and set it again only after you're
+> done (with memory barriers as needed).
 
->> I did a quick grep through the kernel and it looks like Linux mainly
->> uses 0-size rather than flexible arrays at the end of a structure
->> (>500 vs ~14). This might be for historical reasons but it's not a big
->> issue in modifying them.
->
-> I think it's mostly historical.  Flexible array is still a relatively
-> new thing.  I don't mind changing devres to zero sized array, but please
-> explain in the commit message and as a comment that the choice is for
-> kmemleak's container_of(), and cc Greg K-H as the change should probably
-> go through his tree.
+Guess I'll have to take that approach.  The new additions to __switch_to() 
+follow a linked list, and obviously it's not safe to do that while the 
+list is being updated.  (No, I'm not about to start using RCU for this!)
 
-OK. I'll probably wait until I post a new version of kmemleak against
-2.6.21-rcX.
 
-Thanks.
+> > If someone really needs to do that, they can always put their own call to
+> > (un)register_kernel_hwbkpt() at the entry(exit) to the complex subsystems.  
+> > Or perhaps it should be a job for systemtap, which would use hwbkpt to do
+> > the actual work.
+> 
+> But you don't have an option to avoid interrupting other CPUs to update,
+> which is not necessary or desireable for this usage.  That's what I was
+> referring to.  If it's not trivial to add, it isn't needed now.
 
--- 
-Catalin
+I see your point.  If you want to monitor a certain location in kernel
+space but only while in the context of a specific task, the new framework
+doesn't provide any way of doing it.  One approach could be to use a
+regular kernel breakpoint and return immediately if the task of interest
+isn't the current one.  Beyond that, let's punt.
+
+
+> > Which implies that do_debug needs to decide whether or not to issue 
+> > SIGTRAP.  Presumably the condition will be that any of the DR_STEP or 
+> > DR_TRAPn bits remain set after the notifier chain has run.  This means the 
+> > kprobes code will have to be modified to clear DR_STEP in args->err.
+> 
+> Yeah, I guess that's right.  It should still return NOTIFY_STOP when
+> args->err has no other bits set, so notifiers aren't called with zero.
+
+In practice that might not work.  On my machine, at least, reads of DR6
+return ones in all the reserved bit positions.
+
+Alan Stern
+
