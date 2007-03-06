@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965323AbXCFQmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965322AbXCFQme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965323AbXCFQmo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 11:42:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965336AbXCFQmn
+	id S965322AbXCFQme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 11:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965323AbXCFQme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 11:42:43 -0500
-Received: from wx-out-0506.google.com ([66.249.82.237]:32175 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965323AbXCFQmk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 11:42:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:sender;
-        b=JqBKTOLyYDw1VxzIrvXkCDd0ysq7UAqysZLScPS5ua8BKievUtBdLPfM8zClZgiat4w1ryqxUBwlWwG7+UnQ/M/oHiNod5kC0gtpygkR3aY/Aj+23khj2/caguOsqVLVfch1ks0NVgEON7cQOWa/dmnk6Dc4RgTdA1D2HCBS+vs=
-From: Eric Lacombe <tuxiko@free.fr>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: Linux 2.6.19.2: maybe a bug inside the r8169 network driver (was Re: Linux 2.6.19.2: Freeze with CIFS mount)
-Date: Tue, 6 Mar 2007 17:42:36 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Steve French <sfrench@us.ibm.com>
-References: <OFC7B98576.0C582E30-ON87257274.0014583D-86257274.00153815@us.ibm.com> <200703052219.23439.tuxiko@free.fr> <20070305221640.GA25369@electric-eye.fr.zoreil.com>
-In-Reply-To: <20070305221640.GA25369@electric-eye.fr.zoreil.com>
+	Tue, 6 Mar 2007 11:42:34 -0500
+Received: from gw.goop.org ([64.81.55.164]:44978 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965322AbXCFQmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 11:42:33 -0500
+Message-ID: <45ED99F8.9060705@goop.org>
+Date: Tue, 06 Mar 2007 08:42:32 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
+Subject: Re: Xen & VMI?
+References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2F53.2040101@goop.org> <20070306092636.GC26073@elte.hu>
+In-Reply-To: <20070306092636.GC26073@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703061742.36467.tuxiko@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-I've just triggered the bug again but _now_ without the nvidia proprietary 
-module. Unfortunately, I hadn't enable the DEBUG options yet.
-
-Nevertheless, It seems that the bug was triggered when the NAS was going to 
-awake and that 2 user applications wanted to access it during his awakening.
-
-Maybe it could give you some clues about where the problem could be (it seems 
-to be a deadlock that occur when (maybe) the r8169 driver is waiting to serve 
-one application and that an other one reclaim the same type of service, 
-dunno...).
-
-I will give you more information and a trace if I can obtain it.
-
-Thanks
-
-	Eric Lacombe
-
-
-On Monday 05 March 2007 23:16:40 Francois Romieu wrote:
-> Eric Lacombe <tuxiko@free.fr> :
-> [...]
+Ingo Molnar wrote:
+> i think you are missing my point.
 >
-> > Also, if you have some new ideas about the problem or what I could try to
-> > trigger it more frequently (I already wake up the NAS as more as I can,
-> > but maybe I could write a script to do that), I would be thankful.
->
-> You can add more DEBUG options for spinlock and stack usage, disable
-> preempt and pray for a trace before the crash. If you do not have a
-> second host to add more traffic (wrt to bandwidth and/or pps), try to
-> dd your disk and/or your remote storage to /dev/null while watching TV.
->
-> You are out of luck if it does not crash more easily.
+> paravirt_ops is a Linux-internal abstraction that tries to make our life 
+> easier but it has no relevance whatsoever to an external hypervisor - be 
+> that Xen, VMWare/ESX or Windows/Longhorn.
+>   
 
+Of course it has relevance.  Linux is an important guest system, and not
+supporting it would be a major problem.  I already have a list of things
+which need to be done to Xen to make it work better with current kernels
+- none of them mandatory, but nice to have.
 
+> My suggestion would be for Linux to make only a /single/ external ABI 
+> promise: VMI. (and we can extend it with higher-level paravirt ops, 
+> etc.)
+>   
+
+"VMI" is not a promise, it's just three letters.  It doesn't even mean
+the same thing now as it did 12 months ago.  Turning "VMI" from three
+letters into anything remotely like a promise is a huge amount of work
+which requires:
+
+   1. someone actually sit down and fully document what all those
+      entrypoints are going to do
+   2. everyone to implement them
+   3. someone to test that all the implementations conform to the
+      document (bearing in mind that if anyone is going to go to all
+      this effort, they're going to use this with non-Linux guests)
+   4. and repeat all that every subsequent update
+
+That's assuming all the parties involved are approaching the process
+with goodwill.  If someone wanted to effectively stall the kernel's
+development (at least in terms of useful kernels that people can keep
+shipping and deploying), then all they have to do is drag their heels on
+this "VMI" interface process.  All this heavyweight process is very
+enterprisy, but it doesn't help Linux at all.
+
+And given that the idea of multiple implementations of a complex ABI
+like this will actually conform to a spec and/or each other is pretty
+much pie-in-the-sky, the kernel will still have to deal with all the
+quirks of multiple implementations anyway.
+
+    J
