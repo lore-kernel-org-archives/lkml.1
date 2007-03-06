@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965765AbXCFCXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965764AbXCFC06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965765AbXCFCXr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 21:23:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965773AbXCFCXq
+	id S965764AbXCFC06 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 21:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965768AbXCFC06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 21:23:46 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:4427 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965767AbXCFCXp (ORCPT
+	Mon, 5 Mar 2007 21:26:58 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:60382 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965764AbXCFC05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 21:23:45 -0500
-X-Greylist: delayed 1770 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Mar 2007 21:23:45 EST
-From: Paul Collins <paul@briny.ondioline.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: francesco foresti <frafore@tiscali.it>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: PROBLEM: 2.6.20-1 not working on ibook g4 (BUG/Oops)
-References: <200703051414.15802.frafore@tiscali.it>
-	<1173143894.3461.240.camel@pmac.infradead.org>
-Date: Tue, 06 Mar 2007 14:53:22 +1300
-In-Reply-To: <1173143894.3461.240.camel@pmac.infradead.org> (David Woodhouse's
-	message of "Tue\, 06 Mar 2007 01\:18\:14 +0000")
-Message-ID: <87tzwzqgrx.fsf@briny.internal.ondioline.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.95 (gnu/linux)
+	Mon, 5 Mar 2007 21:26:57 -0500
+Message-ID: <45ECD122.6020907@zytor.com>
+Date: Mon, 05 Mar 2007 18:25:38 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch v2] epoll use a single inode ...
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse <dwmw2@infradead.org> writes:
+Linus Torvalds wrote:
+> 
+> Since this is not actually *used* for anything but showing the fd's in 
+> /proc/<pid>/fd/ etc, no. In fact, an integer will wrap a *lot* less than a 
+> kernel data structure will be re-used, so even with the simple "wraps 
+> every 4G uses", you're still better off.
+> 
 
-> On Mon, 2007-03-05 at 14:13 +0100, francesco foresti wrote:
->> Hi,
->> i'm having problems trying to use 2.6.20-1 (taken from kernel.org, not 
->> patched) on my ibook g4 (debian testing/unstable): 
->> i'm getting two errors while trying to boot up, and i can only report the 
->> second one because the other slips offscreen before i can see what's going 
->> on. However, this is what i have been able to hand-copy:
->>  
->> kernel BUG at mm/slab.c:610!
->> Oops: Exception in kernel mode, sig: 5 [#2]
-[snipped]
-> I've been seeing very similar behaviour with 2.6.20 on all pmac32
-> hardware. I haven't yet tried hard to reproduce on non-pmac.
+... and if that worries you, use a 64-bit counter.  They're cheap 
+(compared to an sprintf), and even if they advance once a nanosecond 
+they won't wrap around for over 584 years.
 
-In case it's of interest, 2.6.20 has been running fine on my PowerBook5,4.
+> IOW, if the thing actually _mattered_ we should use some bitmap allocator 
+> or similar (eg pidmaps etc), but with something where the only reason 
+> really is as a visible indicator of difference for a user that happens to 
+> look, simple-and-stupid is better.
 
--- 
-Paul Collins
-Wellington, New Zealand
+That only makes sense if it matters that the numbers are kept small. 
+This is in fact a highly suboptimal constraint, as it is almost 
+guaranteed to create wraparounds much sooner, but there are situations 
+in which that's the only option, e.g. for pty number allocations due to 
+glibc braindamage.
 
-Dag vijandelijk luchtschip de huismeester is dood
+	-hpa
