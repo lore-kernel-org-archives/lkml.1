@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933979AbXCFHl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXCFHma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933979AbXCFHl2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 02:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933980AbXCFHl1
+	id S933024AbXCFHma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 02:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933981AbXCFHma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 02:41:27 -0500
-Received: from mail19.syd.optusnet.com.au ([211.29.132.200]:42750 "EHLO
-	mail19.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933979AbXCFHl0 (ORCPT
+	Tue, 6 Mar 2007 02:42:30 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:38284 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933024AbXCFHm3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 02:41:26 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sched: fix idle at tick
-Date: Tue, 6 Mar 2007 18:41:08 +1100
-User-Agent: KMail/1.9.5
-Cc: "J.A. =?iso-8859-1?q?Magall=F3n?=" <jamagallon@ono.com>,
-       linux-kernel@vger.kernel.org
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <200703061725.37365.kernel@kolivas.org> <20070305230240.9c2741d1.akpm@linux-foundation.org>
-In-Reply-To: <20070305230240.9c2741d1.akpm@linux-foundation.org>
+	Tue, 6 Mar 2007 02:42:29 -0500
+Message-ID: <45ED1B64.9040104@vmware.com>
+Date: Mon, 05 Mar 2007 23:42:28 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] paravirt: VDSO page is essential
+References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <20070306073511.GA3938@elte.hu>
+In-Reply-To: <20070306073511.GA3938@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703061841.08343.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 March 2007 18:02, Andrew Morton wrote:
-> On Tue, 6 Mar 2007 17:25:36 +1100 Con Kolivas <kernel@kolivas.org> wrote:
-> > Signed-off-by: Con Kolivas <kernel@kolivas.org>
-> > ---
-> >  kernel/sched.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > Index: linux-2.6.21-rc2-mm1-base/kernel/sched.c
-> > ===================================================================
-> > --- linux-2.6.21-rc2-mm1-base.orig/kernel/sched.c	2007-03-06
-> > 17:19:17.000000000 +1100 +++
-> > linux-2.6.21-rc2-mm1-base/kernel/sched.c	2007-03-06 17:20:40.000000000
-> > +1100 @@ -3444,7 +3444,7 @@ void scheduler_tick(void)
-> >
-> >  	update_cpu_clock(p, rq, now);
-> >
-> > -	if (idle_at_tick)
-> > +	if (!idle_at_tick)
-> >  		task_running_tick(rq, p);
-> >  #ifdef CONFIG_SMP
-> >  	update_load(rq);
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >
-> Looks right, thanks.  The original patch had
+>   
+>>> I had just sent this out for internal review...
+>>>       
+>> I think Jan's approach is better if it works (since there's no 
+>> compromise), but this is better if you want to get something working 
+>> in the near term.
+>>     
 >
-> -	if (p == rq->idle)
-> +	if (idle_at_tick)
->  		/* Task on the idle queue */
->  		wake_priority_sleeper(rq);
->  	else
->  		task_running_tick(rq, p);
->
-> but it got damaged by smt-nice removal.
+> yeah. (plus my patches of course that remove the current papering-over 
+> hackery and restores COMPAT_VDSO.)
+>   
 
-I gathered something like that happened. If it wasn't clear this change caused 
-massive scheduler damage with no cpu accounting whatsoever occurring. I 
-recommend putting it in your hotfixes/ dir if you're not planning an -mm2 
-soon.
+Yes, I don't have a problem with your patch, I just wish I had been cc'd 
+on it.  Fixing this is rather tricky, but I believe no strange build 
+magic is required, it can be done in kernel init code.  Still building 
+my SUSE 9.0 guest to test.  SUSE 9.0 is one of those that requires 
+COMPAT_VDSO, yes?
 
--- 
--ck
+Thanks,
+
+Zach
