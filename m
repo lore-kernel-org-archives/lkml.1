@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965839AbXCFK5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbXCFLEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965839AbXCFK5M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 05:57:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965837AbXCFK5M
+	id S964896AbXCFLEl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 06:04:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964931AbXCFLEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 05:57:12 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2489 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965839AbXCFK5L (ORCPT
+	Tue, 6 Mar 2007 06:04:41 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:32785 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964896AbXCFLEk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 05:57:11 -0500
-Date: Tue, 6 Mar 2007 11:56:24 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "J.A. Magallon" <jamagallon@ono.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: i2c vs nVidia [Re: 2.6.21-rc2-mm1]
-Message-Id: <20070306115624.523d99dc.khali@linux-fr.org>
-In-Reply-To: <20070306094543.abb6e290.khali@linux-fr.org>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	<20070306011621.5a844c41@werewolf-wl>
-	<20070305163320.2b21ab7e.akpm@linux-foundation.org>
-	<20070306004444.GC12566@kroah.com>
-	<20070306094543.abb6e290.khali@linux-fr.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Mar 2007 06:04:40 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch 1/1] ppc: Possible bug fix for FCC driver
+Date: Tue, 6 Mar 2007 12:03:57 +0100
+Message-ID: <00B1F4365DDBE745B091C67A1CCFCB4307124DB1@zctfhxm1>
+In-Reply-To: <20070306124218.4bebc288@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 1/1] ppc: Possible bug fix for FCC driver
+Thread-Index: Acdf08ASKLZJHcf3SQW9/huDZQ9GIQACSOWA
+From: "Cedric Pontois" <cpontois@nortel.com>
+To: "Vitaly Bordug" <vbordug@ru.mvista.com>,
+       "Li Yang-r58472" <LeoLi@freescale.com>
+Cc: <dmalek@jlc.net>, <linux-kernel@vger.kernel.org>,
+       <linuxppc-embedded@ozlabs.org>, "Rachid Koucha" <koucha@nortel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+Hi Vitaly,
 
-On Tue, 6 Mar 2007 09:45:43 +0100, Jean Delvare wrote:
-> > > I guess we need to wait and see if someone hits the same problems
-> > > with an in-kernel driver.
+The problem seems to be similar in recent kernels
+(/drivers/net/fs_enet/mac-fcc.c). The transmit clock is inverted (TCI
+bit set). The packets are well received, transmitted packets go out (tx
+counter is ok), unfortunately as the clock is inverted (TCI) the data
+are not correctly received by the other side. The FCC works in 100Mbps
+(luck?) but doesn't in 10Mbps. I solved this problem by removing the TCI
+bit set as described in the patch. Actually, this problem depends also
+of the Ethernet phy used on board.
+
+Cedric
+
+-----Original Message-----
+From: Vitaly Bordug [mailto:vbordug@ru.mvista.com] 
+Sent: mardi 6 mars 2007 10:42
+To: Li Yang-r58472
+Cc: Pontois, Cedric UMTS (CEZ:8Z10); dmalek@jlc.net;
+linux-kernel@vger.kernel.org; linuxppc-embedded@ozlabs.org
+Subject: Re: [patch 1/1] ppc: Possible bug fix for FCC driver
+
+
+On Tue, 6 Mar 2007 10:23:43 +0800
+Li Yang-r58472 wrote:
+
+> Hi Cedric,
 > 
-> I just did, with i2c-nforce2. The key to trigger it seems to be to load
-> an i2c bus driver _after_ loading i2c-isa and a suitable i2c-isa-based
-> hardware monitoring driver (w83791d, w83627hf, w83627ehf, it87, lm78,
-> pc87360, sis5595, smsc47m1, smsc47b397, via686a or vt8231.) I have no
-> idea why, though. Given that I was able to trigger the problem with
-> only my own patches on top of Linus' tree, it means that the bug was
-> clearly introduced by one of my patches. I'll bisect my stack now to
-> find out which one. There aren't that many patches so it should be
-> relatively quick.
+> For ppc embedded related patches, please also cc: 
+> linuxppc-embedded@ozlabs.org.
+> 
+> > We use a kernel 2.6.14 on PPC platform (MPC 8555). The FCC driver
+> works
+> 
+> To submit a kernel patch upstream, the patch should be against the 
+> latest kernel version which is 2.6.21-rc now.
+> > well with a 100Mbps link. But it doesn't with a 10Mbps link. To 
+> > solve it, I modified the GFMR register init: removed TCI bit and set
 
-Faulty patch is i2c-06-remove-duplicate-i2c-drivers-list.patch. The
-oops is the result of the combination of two factors:
+> > CRC32
+> bit
+> > instead of.
+> 
+> I don't know how these bits caused the 10M link issue.  Do you have 
+> any reasoning?
+> 
+> > 	Signed-off-by: Cedric Pontois <cpontois@nortel.com>
+> > 
+> >
+> ----------------------------------------------------------------------
+> --
+> > -----
+> > 
+> > diff -ruN pa-original/arch/ppc/8260_io/fcc_enet.c
+The fcc code in 8260_io has been obsoleted by fs_enet driver
+(drivers/net/fs_enet). It is known to work with 85xx at least in recent
+kernels. If it does not for some reason, please letus know.
 
-1* I'm too optimistic trying to remove the duplicate i2c drivers list
-now. i2c-isa drivers are listed in the list managed by the driver
-model, but not in the list managed by i2c-core. This difference between
-both lists caused new errors to be returned, triggering the second
-problem.
+Thanks,
 
-2* We do not want i2c_add_adapter to fail just because one
-attach_adapter callback returned an error. The patch improperly caused
-this to happen, while i2c_add_adapter is not designed to handle these
-errors.
-
-The bottom line is that I really need to kill i2c-isa before I can
-apply this patch. So I'll drop it out for now, sorry for the noise.
-
--- 
-Jean Delvare
+-Vitaly
