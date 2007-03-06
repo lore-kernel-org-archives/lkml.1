@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXCFMe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbXCFMkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbXCFMe1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:34:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932111AbXCFMe1
+	id S932111AbXCFMkf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 07:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbXCFMkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:34:27 -0500
-Received: from ns2.suse.de ([195.135.220.15]:45850 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932089AbXCFMe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:34:26 -0500
-Message-ID: <45ED5FCC.3000608@suse.de>
-Date: Tue, 06 Mar 2007 13:34:20 +0100
-From: Gerd Hoffmann <kraxel@suse.de>
-Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
- =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	Tue, 6 Mar 2007 07:40:35 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:44761 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932111AbXCFMke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 07:40:34 -0500
+Message-ID: <45ED6185.1000203@drzeus.cx>
+Date: Tue, 06 Mar 2007 13:41:41 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Xen & VMI?
-References: <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <45ED3121.8090308@suse.de> <20070306093436.GA30239@elte.hu> <45ED3F29.6000705@suse.de> <20070306102658.GA7478@elte.hu> <45ED4AD8.6020504@suse.de> <20070306115937.GA25313@elte.hu>
-In-Reply-To: <20070306115937.GA25313@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] MMC and NCP fixes
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Linus, please pull from
 
-> legacy support has to be ensured, but it does not hugely matter in terms 
-> of the designing our future. What matters is that once we change some 
-> fundamental aspect of Linux, we can adopt lguest/KVM immediately. With 
-> 'external' hypervisors there is no such compulsory forward motion, and 
-> my fear is that by giving them ABI interfaces to the innards of the 
-> Linux guest they will just stick with those ABIs - and worse, drag Linux 
-> along with them. (because distros will be forced by the legacy 
-> assumptions to carry those ABIs along.)
+        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
 
-I don't share your fear when it comes to Xen.
+to receive the following updates:
 
-The Xen ABI did involve too, there are a few hypercalls with old and new
-versions, just like different linux syscall versions exist.  Guests then
-can choose to either fallback to the slow, old version in case the new
-hypercall returns -ENOSYS or raise the minimum required xen version to
-the one with the new hypercall and leave out the legacy cruft.
+ drivers/mmc/mmc.c         |   83 ++++++++++++++----------
+ drivers/mmc/sdhci.c       |   39 +++++++-----
+ fs/ncpfs/inode.c          |   16 ++++-
+ fs/ncpfs/sock.c           |  151 ++++++++++++++++++++++++++------------------
+ include/linux/mmc/host.h  |    8 +++
+ include/linux/ncp_fs_sb.h |    2 +
+ 6 files changed, 184 insertions(+), 115 deletions(-)
 
-The current xen hypercall ABI isn't set in stone, it can and will evolve
-too ...
+Mark Lord (1):
+      sdhci: make isr tolerant of read errors
 
-> but there is no danger of KVM 
-> staying in legacy land forever. With Xen and VMWare i see no guarantee 
-> at all that Linux wont be hindered by their legacies (or by any plain 
-> diverging approaches) forever.
+Pierre Ossman (3):
+      ncpfs: make sure server connection survives a kill
+      mmc: require explicit support for high-speed
+      sdhci: release irq during suspend
 
-I don't expect that being a problem with Xen.
-
-> so for example, if we change some fundamental thing that can be 
-> implemented via the legacy ABI but only slowly, that's not a problem 
-> because new-lguest/new-KVM will use the new approach, so there's a 
-> straightforward technology-based migratory path out of the legacy.
-
-See above, that path exists with Xen too.
-
-cheers,
-  Gerd
-
+Rgds
 -- 
-Gerd Hoffmann <kraxel@suse.de>
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
