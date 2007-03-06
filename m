@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbXCFMWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbXCFMX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932442AbXCFMWq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:22:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbXCFMWq
+	id S1752833AbXCFMX6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 07:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbXCFMX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:22:46 -0500
-Received: from mx.laposte.net ([81.255.54.11]:18033 "EHLO mx.laposte.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932442AbXCFMWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:22:45 -0500
-Message-ID: <14850.192.54.193.51.1173183673.squirrel@rousalka.dyndns.org>
-Date: Tue, 6 Mar 2007 13:21:13 +0100 (CET)
-Subject: Re: [linux-usb-devel] [DOC] The documentation for HID Simple 
-     Driver
-From: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
-To: linux-kernel@vger.kernel.org
-Cc: linux-usb-devel@lists.sourceforge.net
-User-Agent: SquirrelMail/1.4.8-4.fc6
+	Tue, 6 Mar 2007 07:23:58 -0500
+Received: from dev.mellanox.co.il ([194.90.237.44]:36095 "EHLO
+	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933251AbXCFMX5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 07:23:57 -0500
+Date: Tue, 6 Mar 2007 14:20:30 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>, Soeren Sonnenburg <kernel@nn7.de>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+Message-ID: <20070306122030.GA4317@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <1173138193.24738.236.camel@localhost.localdomain> <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org> <1173142948.24738.257.camel@localhost.localdomain> <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org> <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu> <20070306104618.GA5792@mellanox.co.il> <20070306113225.GA22561@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306113225.GA22561@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Quoting Ingo Molnar <mingo@elte.hu>:
+> Subject: Re: [5/6] 2.6.21-rc2: known regressions
+> 
+> 
+> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+> 
+> > > > Not yet for me unfortunately, although this seems to help.
+> > > > Is this the patch I should have applied?
+> > > > http://lkml.org/lkml/2007/3/5/445
+> > > > 
+> > > > With this applied, on resume I get *some* screen output soon after 
+> > > > resume (e.g. with s2ram I get several characters on VGA, X starts 
+> > > > drawing some windows) but then the crescent symbol starts blinking 
+> > > > again and the system hangs.
+> > > 
+> > > could you try this via s2ram on a text console, to see whether the 
+> > > kernel spits out any warning before it locks up?
+> > 
+> > Yes, that's what I did. Unfortunately only a couple of characters were 
+> > shown before it locked up.
+> > 
+> > I still need to check what does this do in the NO_HZ configuration.
+> > 
+> > BTW, Ingo, can you suspend/resume any number of times with this patch?
+> 
+> yeah, i can now suspend/resume an arbitrary number of times, vga, 
+> network, SATA all works fine after that. (i tried it 5 times)
+> 
+> i also have the patch below applied - but i dont think it should make a 
+> difference to your case. (maybe it does though)
 
->> But (You may guess I will say this word :), before the HID bus or other
->> better
->> implementation come , I hope use the extended keys of my keyboard on
->> Linux, and I guess other people
->> also think same with me, so we need something here temporarily, even it
->> do not merge
->> into upstream code tree.
+Nope, system hangs on resume with or without this patch applied.
 
-> And until something better comes along I am happy to use what Li Yu
-> has produced (speaking as an ordinary user).
+> I've attached my config as well.
 
-+1 as a stupid user I don't see the point of blocking a perfectly fine
-driver because a better solution may happen someday (the proof is in the
-pudding and people may still find stopper problems when coding it). At the
-pace things are going the hardware will be end of lifed before this
-solution happens.
-
-Li Yu first drivers messages have more than a year now! Is the driver so
-invasive it couldn't be deprecated later?
-
-(also there is the slight problem of teaching X to accept > 255 keycodes,
-which won't happen till there are popular drivers linux-side emitting
-them)
+Haven't tried that yet.
 
 -- 
-Nicolas Mailhot
-
+MST
