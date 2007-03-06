@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXCFLPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934083AbXCFLPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932207AbXCFLPG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 06:15:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933242AbXCFLPG
+	id S934083AbXCFLPn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 06:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934084AbXCFLPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 06:15:06 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:57702 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932207AbXCFLPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 06:15:04 -0500
-Message-ID: <45ED4CF7.7030501@linux.vnet.ibm.com>
-Date: Tue, 06 Mar 2007 16:43:59 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
-MIME-Version: 1.0
-To: Shane <ibm-main@tpg.com.au>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, riel@redhat.com,
-       vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
-       xemul@sw.ru, menage@google.com, devel@openvz.org, clameter@sgi.com
-Subject: Re: [ckrm-tech] [PATCH 3/3][RFC] Containers: Pagecache controller
- reclaim
-References: <20070305145237.003560000@linux.vnet.ibm.com> > <20070305145311.247699000@linux.vnet.ibm.com>> <1173178212.4998.54.camel@localhost.localdomain>
-In-Reply-To: <1173178212.4998.54.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Mar 2007 06:15:43 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:5700 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934083AbXCFLPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 06:15:42 -0500
+Date: Tue, 6 Mar 2007 12:14:44 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm2
+Message-ID: <20070306111444.GE20362@kernel.dk>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <20070306100623.770b9dc9@werewolf-wl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070306100623.770b9dc9@werewolf-wl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 06 2007, J.A. Magallón wrote:
+> On Tue, 6 Mar 2007 00:44:08 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > 
+> > Temporarily at
+> > 
+> >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
+> > 
+> 
+> Does this include a fix for the NFS problem ?
+> 
+> BTW, I have in my kernel a patch like this below, isn't it needed ?
+> Original thread:
+> 
+> http://marc.theaimsgroup.com/?l=linux-kernel&m=117189051227292&w=2
+> 
+> --- a/block/ll_rw_blk.c
+> +++ b/block/ll_rw_blk.c
+> @@ -2919,14 +2919,14 @@ static int __make_request(request_queue_
+>  	 */
+>  	blk_queue_bounce(q, &bio);
+>  
+> +	spin_lock_irq(q->queue_lock);
+>  	/*
+>  	 * Check if we can merge with the plugged list before grabbing
+>  	 * any locks.
+>  	 */
+>  	if (!check_plug_merge(q, ioc, bio))
+> -		goto out;
+> +		goto out_unlock;
+>  
+> -	spin_lock_irq(q->queue_lock);
+>  	el_ret = elv_merge(q, &req, bio);
+>  	if (el_ret == ELEVATOR_BACK_MERGE) {
+>  		if (bio_attempt_back_merge(q, req, bio)) {
+> @@ -2984,7 +2984,6 @@ out_unlock:
+>  		list_add_tail(&req->queuelist, &ioc->plugged_list);
+>  	}
+>  
+> -out:
+>  	return 0;
+>  
+>  end_io_eopnotsupp:
 
+No it's not, plus andrew didn't include git-block in this release so
+you'd have a hard time even applying it. The above patch would also
+eliminate 50% of the win of per-process plugging, if you go and grab the
+queue lock anyway.
 
-Shane wrote:
-> Anyone else have trouble fitting this patch ???.
-> I see a later version today, but not markedly different from this
-> mornings (Aus time). Initially I thought I had the first version, prior
-> to Balbir's RSS controller V2 re-write, but apparently not.
-> Kernel 2.6.20.1
-
-Hi Shane,
-
-I did post the same patch again today since the previous post
-yesterday did not showup on LKML.  I have not changed the version
-since it is the same patch.
-
-Next time around i will explicitly mention that this is the same patch
-posted again.
-
-> Had to toss it away so I could do some base line testing - I'll redo the
-> build and see where the mis-matches are.
-
-Please let me know if so see any problem running the patch.  The
-patches are against 2.6.20 only since dependent patches are at that level.
-
---Vaidy
+-- 
+Jens Axboe
 
