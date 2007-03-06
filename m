@@ -1,59 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965778AbXCFEfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965181AbXCFEgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965778AbXCFEfm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 23:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965181AbXCFEfm
+	id S965181AbXCFEgN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 23:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXCFEgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 23:35:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49495
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752163AbXCFEfl (ORCPT
+	Mon, 5 Mar 2007 23:36:13 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:61282 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbXCFEgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 23:35:41 -0500
-Date: Mon, 05 Mar 2007 20:35:36 -0800 (PST)
-Message-Id: <20070305.203536.92584097.davem@davemloft.net>
-To: shemminger@linux-foundation.org
-Cc: jeremy@goop.org, ak@muc.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, chrisw@sous-sol.org, zach@vmware.com,
-       rusty@rustcorp.com.au, ian.pratt@xensource.com,
-       Christian.Limpach@cl.cam.ac.uk, netdev@vger.kernel.org, jeff@garzik.org
-Subject: Re: [RFC] Arp announce (for Xen)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070301173030.754514ec@freekitty>
-References: <20070301164214.4a40bc59@freekitty>
-	<45E7764A.7000100@goop.org>
-	<20070301173030.754514ec@freekitty>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 5 Mar 2007 23:36:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=Poa/XsRSpmw5ZuFpUZ0j82JU5nlnODxvhvwmoDUANvL4GF6N78w8iHl/IJ+LmiCDC
+	G6dovjdOhlg+v/6+Pfg3w==
+Message-ID: <45ECEF85.2080503@google.com>
+Date: Mon, 05 Mar 2007 20:35:17 -0800
+From: Mathieu Desnoyers <compudj@google.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Martin J. Bligh" <mbligh@google.com>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Paul Mackerras <paulus@samba.org>, "Luck, Tony" <tony.luck@intel.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: Thread flags modified without set_thread_flag() (non atomically)
+References: <45E33EBD.6020603@google.com> <20070228220349.b42bf571.akpm@linux-foundation.org> <20070305144033.GG22829@bingen.suse.de>
+In-Reply-To: <20070305144033.GG22829@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Date: Thu, 1 Mar 2007 17:30:30 -0800
+Andi Kleen wrote:
+>> It does seem risky.  Perhaps it is a micro-optimisation which utilises
+>> knowledge that this thread_struct cannot be looked up via any path in this
+>> context.
+>>
+>> Or perhaps it is a bug.  Andi, can you please comment?
+>>     
+>
+> On flush_thread nobody else can mess with the thread, so yes it's a micro
+> optimization.
+>
+>   
+Hi Andi,
 
-> What about implementing the unused arp_announce flag on the inetdevice?
-> Something like the following.  Totally untested...
-> 
-> Looks like it either was there (and got removed) or was planned but
-> never implemented.
+Here is what I think would be a counter example :
 
-This idea is fine.  But:
+If, at the same time, we have, on x86_64 :
 
-> +	case NETDEV_CHANGEADDR:
-> +		/* Send gratuitous ARP in case of address change or new device */
-> +		if (IN_DEV_ARP_ANNOUNCE(in_dev))
-> +			arp_send(ARPOP_REQUEST, ETH_P_ARP,
-> +				 in_dev->ifa_list->ifa_address, dev,
-> +				 in_dev->ifa_list->ifa_address, NULL, 
-> +				 dev->dev_addr, NULL);
+parent process executing :
+sys_ptrace()
+  (lock_kernel())
+  (ptrace_get_task_struct(pid))
+  arch_ptrace()
+    ptrace_detach()
+      ptrace_disable(child);
+        clear_singlestep(child);
+          clear_tsk_thread_flag(child, TIF_SINGLESTEP);
+          (which clears the TIF_SINGLESTEP  flag atomically from a 
+different process)
+  (put_task_struct(child))
+  (unlock_kernel())
 
-We'll need to make sure the appropriate 'arp_anounce' address
-selection is employed here.
+And at the same time, in the child process :
+sys_execve()
+  do_execve()
+    search_binary_handler()
+      load_elf_binary()
+        flush_old_exec()
+          flush_thread()
+            doing a non-atomic thread flag update
 
-One idea is to change arp_solicit() such that it can be invoked in
-this context, or provide a new helper function which will do the
-source address selection rules of 'arp_announce' and then invoke
-arp_send() as appropriate for us.
+Is there any protection mechanism that would protect from this race 
+condition
+that I have missed ?
+
+>>> And about this specific flush_thread, I am puzzled about the t->flags ^= 
+>>> (_TIF_ABI_PENDING | _TIF_IA32); line. The XOR will clearly flip the 
+>>> _TIF_ABI_PENDING bit to 0, and very likely set _TIF_IA32 to the opposite 
+>>> of its current value. Why does this change need to be written atomically 
+>>> (can other threads play with these flags ?) ?
+>>>
+>>>       
+>> Don't know.
+>>     
+>
+> iirc it came from DaveM originally. He just likes to write things in 
+> comp^wclever ways :0) It's just a little shorter.
+>
+>   
+>> No, I don't immediately see anything in the flush_old_exec() code path
+>> which tells us that nobody else can look up this thread_info (or be holding
+>> a ref to it) in this context.
+>>     
+>
+> Normally the process flags atomicity should only matter with signals;
+> i don't think you can send a signal to a process being in exec this way.
+>
+> -Andi
+>   
+
