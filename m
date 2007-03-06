@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933876AbXCFCyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbXCFDHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933876AbXCFCyi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 21:54:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933882AbXCFCyi
+	id S933883AbXCFDHE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 22:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933884AbXCFDHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 21:54:38 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:48269 "EHLO smtp.osdl.org"
+	Mon, 5 Mar 2007 22:07:03 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:48468 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933876AbXCFCyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 21:54:37 -0500
-Date: Mon, 5 Mar 2007 18:54:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ed Tomlinson <edt@aei.ca>
-cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Revell <rlrevell@joe-job.com>,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
- scheduler
-In-Reply-To: <200703052123.29421.edt@aei.ca>
-Message-ID: <Pine.LNX.4.64.0703051849410.3998@woody.linux-foundation.org>
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org>
- <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com>
- <200703051419.25814.gene.heskett@gmail.com> <200703052123.29421.edt@aei.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S933883AbXCFDHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 22:07:01 -0500
+Date: Mon, 5 Mar 2007 19:03:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerd Hoffmann <kraxel@suse.de>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       Alex Williamson <alex.williamson@hp.com>,
+       Kevin Stansell <kstansel@us.ibm.com>
+Subject: Re: [patch] Add insmod option to force the use of the backup timer.
+Message-Id: <20070305190333.c01a7ffc.akpm@linux-foundation.org>
+In-Reply-To: <45E6D309.5050409@suse.de>
+References: <20070228102346.115707000@suse.de>
+	<20070228185505.GA17193@redhat.com>
+	<45E6D309.5050409@suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 01 Mar 2007 14:20:09 +0100 Gerd Hoffmann <kraxel@suse.de> wrote:
 
-
-On Mon, 5 Mar 2007, Ed Tomlinson wrote:
+> Dave Jones wrote:
+> > On Wed, Feb 28, 2007 at 11:23:46AM +0100, Gerd Hoffmann wrote:
+> >  > The test which automatically enables the backup timer on some HP
+> >  > machines doesn't trigger on other hardware which needs the backup
+> >  > timer too.
+> > 
+> > Did you figure out *why* that test doesn't trigger?
 > 
-> The patch _does_ make a difference.  For instance reading mail with freenet working 
-> hard  (threaded java application) and gentoo's emerge triggering compiles to update the 
-> box is much smoother.
+> I didn't, probably a slightly different hardware bug.
 > 
-> Think this scheduler needs serious looking at.  
+> > Making that work seems a better solution to me than adding magic
+> > options that users won't know they have to use.
+> 
+> Sure, that would be better.  I'll leave that to the ibm guys who own the
+> hardware in question ;)
+> 
 
-I agree, partly because it's obviously been getting rave reviews so far, 
-but mainly because it looks like you can think about behaviour a lot 
-better, something that was always very hard with the interactivity 
-boosters with process state history.
+Well, it doens't _have_ to be the IBM guys.  Anyone who can reproduce this
+problem should be able to find the suitable magic to detect the broken
+interrupt generation.
 
-I'm not at all opposed to this, but we do need:
- - to not do it at this stage in the stable kernel
- - to let it sit in -mm for at least a short while
- - and generally more people testing more loads.
+An automatic fix is much preferable to a module parameter which most people
+won't even know exists.
 
-I don't actually worry too much about switching out a CPU scheduler: those 
-things are places where you *can* largely read the source code and get an 
-idea for them (although with the kind of history state that we currently 
-have, it's really really hard). But at the very least they aren't likely 
-to have subtle bugs that show up elsewhere, so...
-
-So as long as the generic concerns above are under control, I'll happily 
-try something like this if it can be merged early in a merge window..
-
-			Linus
+Perhaps Alex can suggest some debugging steps we can take to work out
+why the test isn't triggering?
