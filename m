@@ -1,108 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933886AbXCFDK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933889AbXCFDNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933886AbXCFDK7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 22:10:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933890AbXCFDK7
+	id S933889AbXCFDNn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 22:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933890AbXCFDNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 22:10:59 -0500
-Received: from aeimail.aei.ca ([206.123.6.84]:53876 "EHLO aeimail.aei.ca"
+	Mon, 5 Mar 2007 22:13:43 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59223 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933886AbXCFDK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 22:10:57 -0500
-X-Greylist: delayed 2842 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Mar 2007 22:10:57 EST
-From: Ed Tomlinson <edt@aei.ca>
-To: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Date: Mon, 5 Mar 2007 21:23:28 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Lee Revell" <rlrevell@joe-job.com>,
-       "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com> <200703051419.25814.gene.heskett@gmail.com>
-In-Reply-To: <200703051419.25814.gene.heskett@gmail.com>
+	id S933889AbXCFDNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 22:13:42 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703052123.29421.edt@aei.ca>
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/utrace
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: Alan Stern's message of  Monday, 5 March 2007 12:25:23 -0500 <Pine.LNX.4.44L0.0703051118200.3401-100000@iolanthe.rowland.org>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20070306031308.D78891800E5@magilla.sf.frob.com>
+Date: Mon,  5 Mar 2007 19:13:08 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Presumably you mean that hw-breakpoint.c shouldn't do anything at all on
+> single-step exceptions.  
 
-I have had this in for about 24 hours.  So far so good.  I am running on IUP amd64 with
-'voluntary kernel Preemption' enabled (preemptible kernels seem to lock up solid
-switching between 32 and 64 apps - no opps and nothing on the serial console...)
+Right.
 
-The patch _does_ make a difference.  For instance reading mail with freenet working 
-hard  (threaded java application) and gentoo's emerge triggering compiles to update the 
-box is much smoother.
+> So far I've been developing under 2.6.21-rc, which doesn't have utrace.
+> But eventually this will be submitted by way of -mm, which does.  The
+> easiest approach would be to make the whole thing conditional on
+> CONFIG_UTRACE.
 
-Think this scheduler needs serious looking at.  
+That is fine with me.
 
-Ed Tomlinson
+> The actual guarantee I need is that nobody will switch_to() the task while
+> my routines are running.
 
-On Monday 05 March 2007 14:19, Gene Heskett wrote:
-> On Monday 05 March 2007, Lee Revell wrote:
-> >On 3/5/07, Gene Heskett <gene.heskett@gmail.com> wrote
-> >> On Monday 05 March 2007, Nicolas Mailhot wrote:
-> >> >This looks like -mm stuff if you want it in 2.6.22
-> >>
-> >> This needs to get to 2.6.21, it really is that big an improvement.
-> >
-> >You can probably speed things up by regression testing against a wide
-> >range of non-desktop workloads and posting your numbers...
-> >
-> >Lee
-> 
-> I'm not THAT much of a tester other than seeing how it does my personal 
-> workload, such as working over an image in Gimp, and then printing it, 
-> while I'm reading and reply to email, browsing the web or playing 
-> solitaire.  At all of this is marches along rather nicely, and generally 
-> unaffected by the fetchmail/procmail/spamc loop every 90 seconds in the 
-> background.  glxgears runs about 1190 fps here, and loses maybe 4 or 5 
-> frames when the system beeps at me to indicate a new mail has arrived.  
-> Strangely, the wah wah wah wah it plays for a spam sent to trash doesn't 
-> bother glxgears any more then the 1/3 second beep.
-> 
-> I might add that its a bit puzzling to me, that when these pregnant pauses 
-> occur without the patch, gkrellm cpu usage, at an update frequency of 1 
-> second granularity, doesn't show ANY change, or so little it can't 
-> possibly explain why I'm sitting here for 10 seconds or more, waiting for 
-> what I've typed to actually show up on screen.  I should see a spike in 
-> one of the three cpu usage windows, but the whole thing is sitting at 2% 
-> total cpu while my application is starved and frozen for 10+ seconds at a 
-> time. 
-> 
-> That in itself tells this unwashed user that the scheduler is spinning its 
-> wheel somewhere as it exists today without this patch.  With this patch, 
-> those pauses are very small fractions of a second.  Just barely 
-> detectable.  And, system or user activity now properly registers in the 
-> gkrellm display, going up to about 15% user if I stand on the left arrow 
-> to backspace the cursor here in kmails composer screen.
-> 
-> To me, this plays great in Peoria, put it in ASAP and the users will bow 
-> at your feet to pay homage to Con for submitting it.
-> 
-> I am having a hard time figuring out why Con has thrown patches that might 
-> have helped over the fence only to have them go splat in the night.  When 
-> Con gets frustrated enough to post about it, everybody seems to turn a 
-> deaf ear, like he's committed some cardinal sin and I don't understand 
-> why or what.
-> 
-> This list is about development, supposedly in an orderly fashion, but 
-> occasionally a patch comes along that's so obviously correct it deserves 
-> to be fast tracked, and this is one of those.  To me this is as important 
-> as the filesystem corruption that was chased all the way thru from around 
-> 2.6.17 to the middle of the 20-rc stuff.  Nobody wasted any time getting 
-> that into the next rc when it was finally found.  Fortunately I didn't 
-> get bit, possibly due to my habit of restarting azureas to seed, and I've 
-> seen it re-suck a few pieces to correct itself more than once.
-> 
-> Andrew, please, get this one in ASAP, but promise me an -mm won't trash 
-> half my filesystems like one I tried 2-3 years ago did.  Its a shame when 
-> Con submits a patch, and only 2 people post their experiences from using 
-> it.
-> 
+You can't get that.  It can always be woken for SIGKILL (which is a good
+thing).  What you are guaranteed is that if it does, it will never return
+to user mode.  So it has to be ok for switching in to use the bits in any
+intermediate state you might get them, meaning any possible garbage state
+is harmful only to user mode or is otherwise recoverable (worst case
+perhaps the exception handler has to know to ignore some traps).  This is
+already true with ptrace and ->thread.debugreg, as well as the normal user
+registers.  In your case, if you wanted to be paranoid you could clear
+TIF_DEBUG before you touch anything, and set it again only after you're
+done (with memory barriers as needed).
+
+> If someone really needs to do that, they can always put their own call to
+> (un)register_kernel_hwbkpt() at the entry(exit) to the complex subsystems.  
+> Or perhaps it should be a job for systemtap, which would use hwbkpt to do
+> the actual work.
+
+But you don't have an option to avoid interrupting other CPUs to update,
+which is not necessary or desireable for this usage.  That's what I was
+referring to.  If it's not trivial to add, it isn't needed now.
+
+> Not nearly as hot as switch_to()!  But I'll do it.
+
+That's why it's got a cheap TIF_DEBUG check with unlikely().
+
+> That may be so, but the only way to access that part of the state is via
+> ptrace.  Think of it this way: The debug register settings really should
+> not be part of the thread's virtual state.  If we had some other, more
+> logical API for managing breakpoints in a task then ptrace_bps[] wouldn't
+> be necessary at all (other than for backward compatibility perhaps).
+
+As things are in utrace, there will continue to be a utrace method of
+setting the (virtual) "raw" debugregs, even if ptrace per se is not involved.
+(So all I'm saying really is I'm on a personal campaign against the letter P.)
+
+OTOH, your point is well taken.  Once your stuff is integrated, there is no
+real reason that thread-virtualized "raw" debug registers need to be
+accessible via utrace_regset.  Perhaps I should drop it.  Then those calls
+will be used purely by ptrace compatibility and can be #ifdef CONFIG_PTRACE.
+
+> Which implies that do_debug needs to decide whether or not to issue 
+> SIGTRAP.  Presumably the condition will be that any of the DR_STEP or 
+> DR_TRAPn bits remain set after the notifier chain has run.  This means the 
+> kprobes code will have to be modified to clear DR_STEP in args->err.
+
+Yeah, I guess that's right.  It should still return NOTIFY_STOP when
+args->err has no other bits set, so notifiers aren't called with zero.
+
+
+Thanks,
+Roland
