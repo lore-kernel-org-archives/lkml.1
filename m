@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbXCFIf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbXCFIhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbXCFIf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 03:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932978AbXCFIf3
+	id S932980AbXCFIhV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 03:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXCFIhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 03:35:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51181 "EHLO mx2.mail.elte.hu"
+	Tue, 6 Mar 2007 03:37:21 -0500
+Received: from mx2.suse.de ([195.135.220.15]:55583 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752937AbXCFIf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 03:35:28 -0500
-Date: Tue, 6 Mar 2007 09:34:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [patch] paravirt: VDSO page is essential
-Message-ID: <20070306083449.GA12511@elte.hu>
-References: <45EC9347.9030009@goop.org> <20070305225859.236021800E5@magilla.sf.frob.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070305225859.236021800E5@magilla.sf.frob.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S932980AbXCFIhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 03:37:20 -0500
+Message-ID: <45ED2837.3020108@suse.de>
+Date: Tue, 06 Mar 2007 09:37:11 +0100
+From: Gerd Hoffmann <kraxel@suse.de>
+Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
+ =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Xen & VMI?
+References: <20070305120631.GA14105@elte.hu>	<1173101297.26165.39.camel@localhost.localdomain>	<1173142644.4644.6.camel@localhost.localdomain>	<45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org>	<45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu>
+In-Reply-To: <20070306081909.GA9331@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> btw., while we have everyone on the phone and talking ;) Technologically 
+> it would save us a whole lot of trouble in Linux if 'external' 
+> hypervisors could standardize around a single ABI - such as VMI. Is 
+> there any deep reason why Xen couldnt use VMI to talk to Linux? I 
+> suspect a range of VMI vectors could be set aside for Xen's dom0 (and 
+> other) APIs that have no current VMI equivalent - if there's broad 
+> agreement on the current 60+ base VMI vectors that center around basic 
+> x86 CPU capabilities - which make up the largest portion of our 
+> paravirtualization complexity. Pipe dream?
 
-* Roland McGrath <roland@redhat.com> wrote:
+IIRC there was some proof-of-concept at least for xen guests.
 
-> > Jan Beulich just posted a patch to do just this - relocate the 
-> > vdso's ELF header.  If that's all that's really required to keep 
-> > COMPAT_VDSO viable under PARAVIRT, then it seems like the way to go.
+> there are already 5 major hypervisors we are going to support (in 
+> alphabetical order):
 > 
-> I found 
-> http://marc.theaimsgroup.com/?l=xen-devel&m=117309332600075&w=2 and 
-> that must be the one you meant.  The ELF-grokking form of that is 
-> exactly what I had in mind.  The "find relocs with cmp" scheme is 
-> pretty silly, but also works fine.  It trades tweaky ELF knowledge 
-> with tweaky fragile build methods, but it's all about the same to me.
+>  - KVM
+>  - lguest
+>  - Windows
+>  - VMWare
+>  - Xen
+> 
+> the QA matrix is gonna be a _mess_.
 
-this looks good to me too in principle, the #else branch. But the actual 
-implementation will have to be redone quite a bit i fear. Some details: 
-relocate_vdso() needs some major coding style cleanups. This bit:
+I fail to see how xen-via-vmirom instead of xen-via-paravirt_ops reduces
+the QA effort.  You still have 5 Hypervisors you have to test against.
 
--# define VDSO_PRELINK          VDSO_HIGH_BASE
-+# ifndef CONFIG_XEN
-+#  define VDSO_PRELINK         VDSO_HIGH_BASE
-+# else
-+#  define VDSO_PRELINK         (0UL - FIX_VDSO * PAGE_SIZE)
-+# endif
+cheers,
+  Gerd
 
-should be Kconfig driven, not #ifdef driven, due to cleanliness and also 
-because lguest wants to have the same thing. Plus:
-
-+#if defined(CONFIG_XEN) && defined(CONFIG_COMPAT_VDSO)
-
-i'd just make this depend on CONFIG_COMPAT_VDSO, always. Same here:
-
-+#if defined(CONFIG_XEN) && defined(CONFIG_COMPAT_VDSO)
-+static void __init relocate_vdso
-
-just make this driven in the normal CONFIG_COMPAT_VDSO case too - even 
-though we 'prelink' the VDSO to the usual address - we better run 
-through the same code all the time and reduce the number of variants as 
-much as possible.
-
-furthermore, there should be a paravirt_ops method to chose the 
-relocation address, unless i'm missing something. On the native kernel 
-that address will default to 0xffffe000. (if CONFIG_COMPAT_VDSO is 
-selected)
-
-this way there will only be two main variants to worry about: compat and 
-modern (which is the current status quo anyway), instead of 4-5 
-variants.
-
-	Ingo
+-- 
+Gerd Hoffmann <kraxel@suse.de>
