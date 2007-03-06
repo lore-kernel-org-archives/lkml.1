@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965933AbXCFP13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965122AbXCFPbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965933AbXCFP13 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965930AbXCFP13
+	id S965122AbXCFPbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965148AbXCFPbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:27:29 -0500
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:1640 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965929AbXCFP12 (ORCPT
+	Tue, 6 Mar 2007 10:31:35 -0500
+Received: from reserv5.univ-lille1.fr ([193.49.225.19]:40174 "EHLO
+	reserv5.univ-lille1.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965122AbXCFPbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:27:28 -0500
-Date: Tue, 6 Mar 2007 16:26:34 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070306162634.bcaaf0c7.khali@linux-fr.org>
-In-Reply-To: <20070305222548.GA4946@ucw.cz>
-References: <20070218183805.5a4fd813.khali@linux-fr.org>
-	<20070228213803.GA4877@ucw.cz>
-	<20070301152655.f232db64.khali@linux-fr.org>
-	<20070302114023.GD2163@elf.ucw.cz>
-	<20070302114747.GB1212@srcf.ucam.org>
-	<20070302151055.d2665d66.khali@linux-fr.org>
-	<20070302141840.GA3441@srcf.ucam.org>
-	<20070302220454.a0c66d04.khali@linux-fr.org>
-	<20070302211251.GA10035@srcf.ucam.org>
-	<20070303105316.d51e032d.khali@linux-fr.org>
-	<20070305222548.GA4946@ucw.cz>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Mar 2007 10:31:34 -0500
+Message-ID: <45ED8809.70309@tremplin-utc.net>
+Date: Tue, 06 Mar 2007 16:26:01 +0100
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Thunderbird 2.0b2 (X11/20070215)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: mitr@volny.cz, otauber@web.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Wistron button support for TravelMate 610
+References: <45ECA23A.5010503@tremplin-utc.net> <d120d5000703060536k7743ece9hb20fa4d1f7ad7ad7@mail.gmail.com>
+In-Reply-To: <d120d5000703060536k7743ece9hb20fa4d1f7ad7ad7@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender DNS name whitelisted, not delayed by milter-greylist-2.0.2 (reserv5.univ-lille1.fr [193.49.225.19]); Tue, 06 Mar 2007 16:26:02 +0100 (CET)
+X-USTL-MailScanner-Information: Please contact the ISP for more information
+X-USTL-MailScanner: Found to be clean
+X-USTL-MailScanner-From: eric.piel@tremplin-utc.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
-
-On Mon, 5 Mar 2007 22:25:48 +0000, Pavel Machek wrote:
-> > Is there anything preventing us from doing such a walk and pre-allocate
-> > all the I/O ranges? I am not familiar with the ACPI code at all, would
-> > you possibly propose a patch doing that?
+03/06/2007 02:36 PM, Dmitry Torokhov wrote/a écrit:
+> Hi Eric,
 > 
-> ACPI AML is probably turing-complete: I'm afraid you are trying to
-> solve the halting problem (-> impossible).
+> I believe we have KEY_WLAN for Wifi, not KEY_XFER. I will fix that up.
+Oh! Yes, this sounds better, I used KEY_XFER just for historical reasons 
+;-) Thanks
 
-Can you please translate this into something mere humans like myself
-have a chance to understand?
 
-Thanks,
--- 
-Jean Delvare
+> 
+>> I'm sending just this one for now (as I can test it) but if you like it,
+>> I would like to try to add all the database of keyboards available in
+>> acerhk (that Olaf has written).
+> 
+> That would be nice. I have one request though - please send patches
+> inline instead of attachments, or, if you need to send it as an
+> attachment then put patch description and signed-off-by there as well
+> so I don't have to reassemble it.
+> 
+Ok, sorry for the troubles. I'll keep patch and description together 
+next time :-)
+
+See you,
+Eric
