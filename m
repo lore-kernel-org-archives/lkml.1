@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXCFA42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbXCFA4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbXCFA42 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbXCFA41
+	id S1752701AbXCFA4f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbXCFA4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:56:27 -0500
-Received: from www.osadl.org ([213.239.205.134]:58172 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752697AbXCFA41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:56:27 -0500
-Subject: Re: [5/6] 2.6.21-rc2: known regressions
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
-       Soeren Sonnenburg <kernel@nn7.de>, Len Brown <lenb@kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015040.GJ3441@stusta.de>
-	 <1173138193.24738.236.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 02:02:28 +0100
-Message-Id: <1173142948.24738.257.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 19:56:35 -0500
+Received: from THUNK.ORG ([69.25.196.29]:47213 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752697AbXCFA4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:56:33 -0500
+Date: Mon, 5 Mar 2007 19:56:25 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Greg KH <greg@kroah.com>
+Cc: Bron Gondwana <brong@fastmail.fm>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, yi.zhu@intel.com,
+       jketreno@linux.intel.com, akpm@osdl.org
+Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
+Message-ID: <20070306005625.GC19634@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+	Bron Gondwana <brong@fastmail.fm>, Matt Mackall <mpm@selenic.com>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	yi.zhu@intel.com, jketreno@linux.intel.com, akpm@osdl.org
+References: <20070304220857.GH23311@waste.org> <20070305011625.GA7681@kroah.com> <20070305064229.GJ23311@waste.org> <20070305070248.GA30699@kroah.com> <20070305071325.GK23311@waste.org> <20070305154609.GA3626@irc.pl> <20070305211425.GR16722@waste.org> <20070306002457.GA7078@brong.net> <20070306003715.GA12566@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306003715.GA12566@kroah.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 16:38 -0800, Linus Torvalds wrote:
-> > I'm not done with my bisection, but e9e2cdb4 is among the 28 commits left, 
-> > so I'm pretty sure I'm hitting the same bug. I'll do a few more bootups to 
-> > be 100% sure.
+On Mon, Mar 05, 2007 at 04:37:15PM -0800, Greg KH wrote:
+> But I AM TRYING TO MAKE IT COMPATIBLE!!!
 > 
-> Ok, it's in the last six candidates, so yeah, I'm pretty sure. I'll do a 
-> final compile/boot cycle to verify, but if you don't hear from me, you can 
-> pretty much assume that was it.
-> 
-> Thomas, Ingo, I'd _really_ like to get -rc3 out there, but I'd like to cut 
-> down the regression list a bit, and a number of them were about resume 
-> from RAM, and this is probably it. So I'd *really* like to get this one 
-> nailed, especially since the causing commit is known. Can you look at it 
-> as a high-priority thing, please?
+> That's what that config option is there for.  If you happen to be
+> running a newer userspace, a different distro than what is in Debian
+> right now, or don't use HAL and Networkmanager, then disable that
+> option.  Then all of sysfs looks just like it used to, no user visble
+> changes at all.  It doesn't get any more compatible than that.
 
-Sure. I fought it all day. Can you please test the patch I sent a couple
-of minutes ago ? Would be great to have your feedback tomorrow morning. 
+This is great, but I think the real problem isn't the config option,
+but what is changing if the config option isn't enabled.  The claim
+which some, including Matt and Bron, seem to be making is that if you
+turn *off* CONFIG_SYSFS_DEPRECATED, you must be using at least hal
+0.5.9-rc1, released ***yesterday***, or suffer breakages for at least
+some system configurations.
 
-We need to fix that ACPI problem (acpi_processor_start is not called
-when CPU#1 is resumed) as well. I look into this tomorrow unless Len
-beats me.
+So the problem with putting a date in Kconfig.txt help file, or in
+Documentation/feature-removal-schedule.txt, is that if there are other
+incompatible changes which are added to sysfs in say, December 2007 or
+January 2008, but which are papered over with CONFIG_SYSFS_DEPRECATED,
+and then come June 2008, CONFIG_SYSFS_DEPRECATED is unceremoniously
+ripped out, then users will get screwed.  
 
-	tglx
+So the question really is are we really done making changes to sysfs,
+or maybe what we should do is talk about major version numbers to
+sysfs.  Call what we have currently not CONFIG_SYSFS_DEPRECATED, but
+rather CONFIG_SYSFS_LAYOUT_1.  At the moment, CONFIG_SYSFS_LAYOUT_2 is
+undergoing changes, but at some point we need to lock down and state
+that Layout version 2 is never going to change, and then people who
+want changes can go work on CONFIG_SYSFS_LAYOUT_3.  
 
+The problem with calling CONFIG_SYSFS_DEPRECATED is that people think
+that since it's deprecated, it should be turned off, but if we have
+staged major version numbers, with guarantees of absolute stability
+once a particular major version number is locked down, then it may
+make it a lot easier to talk about what version of hal and udev and
+Network Manager is really needed for different versions.  
 
+					- Ted
