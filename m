@@ -1,162 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965427AbXCFRzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965415AbXCFR5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965427AbXCFRzV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:55:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965419AbXCFRzQ
+	id S965415AbXCFR5l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:57:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965413AbXCFR5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:55:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52391 "EHLO mx1.redhat.com"
+	Tue, 6 Mar 2007 12:57:41 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:50262 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965416AbXCFRzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:55:12 -0500
-Subject: Re: [2.6.21 patch] unconditionally enable SYSFS_DEPRECATED
-From: Dan Williams <dcbw@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Matt Mackall <mpm@selenic.com>, Adrian Bunk <bunk@stusta.de>,
-       Theodore Tso <tytso@mit.edu>, Johannes Berg <johannes@sipsolutions.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, yi.zhu@intel.com,
-       jketreno@linux.intel.com,
-       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
-In-Reply-To: <20070306015638.GA23756@kroah.com>
-References: <20070304220857.GH23311@waste.org>
-	 <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org>
-	 <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org>
-	 <20070305185813.GA31465@kroah.com> <20070305234052.GR3441@stusta.de>
-	 <20070306000722.GA11436@kroah.com> <20070306013020.GN23311@waste.org>
-	 <20070306015638.GA23756@kroah.com>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 10:55:34 -0500
-Message-Id: <1173196534.12545.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+	id S965405AbXCFR5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:57:40 -0500
+Date: Tue, 6 Mar 2007 09:57:34 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Uwe Bugla <uwe.bugla@gmx.de>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: bugs in kernel 2.6.21 (both two release candidates) and kernel
+ 2.6.20
+In-Reply-To: <20070306173259.276350@gmx.net>
+Message-ID: <Pine.LNX.4.64.0703060942060.5963@woody.linux-foundation.org>
+References: <20070303155536.65380@gmx.net> <Pine.LNX.4.64.0703041325540.3953@woody.linux-foundation.org>
+ <20070306173259.276350@gmx.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-05 at 17:56 -0800, Greg KH wrote:
-> On Mon, Mar 05, 2007 at 07:30:21PM -0600, Matt Mackall wrote:
-> > On Mon, Mar 05, 2007 at 04:07:22PM -0800, Greg KH wrote:
-> > > On Tue, Mar 06, 2007 at 12:40:52AM +0100, Adrian Bunk wrote:
-> > > > On Mon, Mar 05, 2007 at 10:58:13AM -0800, Greg KH wrote:
-> > > > > 
-> > > > > Ok, how about the following patch.  Is it acceptable to everyone?
-> > > > > 
-> > > > > thanks,
-> > > > > 
-> > > > > greg k-h
-> > > > > 
-> > > > > ---
-> > > > >  init/Kconfig |   13 +++++++++++--
-> > > > >  1 file changed, 11 insertions(+), 2 deletions(-)
-> > > > > 
-> > > > > --- gregkh-2.6.orig/init/Kconfig
-> > > > > +++ gregkh-2.6/init/Kconfig
-> > > > > @@ -290,8 +290,17 @@ config SYSFS_DEPRECATED
-> > > > >  	  that belong to a class, back into the /sys/class heirachy, in
-> > > > >  	  order to support older versions of udev.
-> > > > >  
-> > > > > -	  If you are using a distro that was released in 2006 or later,
-> > > > > -	  it should be safe to say N here.
-> > > > > +	  If you are using an OpenSuSE, Gentoo, Ubuntu, or Fedora
-> > > > > +	  release from 2007 or later, it should be safe to say N here.
-> > > > > +
-> > > > > +	  If you are using Debian or other distros that are slow to
-> > > > > +	  update HAL, please say Y here.
-> > > > >...
-> > > > 
-> > > > The sane solution seems to be to enable SYSFS_DEPRECATED unconditionally 
-> > > > for all users, and schedule it's removal for mid-2008 (or later).
-> > > > 
-> > > > 12 months after the first _release_ of a HAL that can live without seems 
-> > > > to be the first time when we can consider getting rid of it, since all 
-> > > > distributions with at least one release a year should ship it by then.
-> > > > 
-> > > > Currently, SYSFS_DEPRECATED is only a trap for users.
-> > > 
-> > > Huh?
-> > > 
-> > > No, again, I've been using this just fine for about 6 months now.
-> > > 
-> > > And what about all of the servers not using HAL/NetworkManager?
-> > > And what about all of the embedded systems not using either?
-> > > 
-> > > So to not allow this to be turned off by people who might want to (we
-> > > want this for OpenSuSE 10.3, and Fedora 7 also will want this, as will
-> > > other distros released this year), is pretty heavy-handed.
-> > > 
-> > > It also will work in OpenSuSE 10.2 which is already released, and I
-> > > think Fedora 6, but I've only limited experience with these.
-> > > 
-> > > Oh, and Gentoo works just fine, and has been for the past 6 months.
-> > >
-> > > I would just prefer to come up with an acceptable set of wording that
-> > > will work to properly warn people.
-> > > 
-> > > I proposed one such wording which some people took as a slam against
-> > > Debian, which it really was not at all.
-> > > 
-> > > Does someone else want to propose some other wording instead?
-> > 
-> > Back up a bit. Let's review:
-> > 
-> > Problem: NetworkManager stopped working with my ipw2200 on Debian/unstable
-> > 
-> > Theory A: It broke because I'm not running an as-yet-unreleased HAL.
-> > 
-> >  Then we should revert the patch pronto because it's an unqualified
-> >  regression.
-> > 
-> > Theory B: It broke because I'm not running relatively recent HAL.
-> > 
-> >  By all accounts I'm running the latest and greatest HAL and Network
-> >  Manager, more than recent enough to work.
-> > 
-> > Theory C: It broke because I've got some goofy config.
-> > 
-> >  My setup passes no arguments to either. The HAL config file is
-> >  completely bare-bones and there's no sign of any configuration files
-> >  for Network Manager.
-> > 
-> > Theory D: It broke for some nebulous Debian-related reason.
-> > 
-> >  That's a bunch of unhelpful crap.
-> > 
-> 
-> > Can we come up with an actual theory for what's wrong with my setup, please?
-> > Like, perhaps:
-> > 
-> > Theory E: There's some undiagnosed new breakage that this introduces
-> > that no else hit until it went into mainline.
-> 
-> Theory F:  It broke because you are using NetworkManager for your
-> network devices and the patches that fix this have not made it into a
-> real release?
 
-The problem is _NOT_ NetworkManager.  NM just asks HAL for network
-devices, NM does not muck with /sys at all.  If HAL can't see it,
-NetworkManager can't see it, because NM uses HAL.
 
-The problem is that sysfs is fundamentally a kernel API.  Whenever it
-changes, HAL must change or HAL will break.  Same story with anything
-that ever reads from sysfs.
+[ Whitespace in your email fixed so that it's easier to read again ;^]
 
-Dan
+On Tue, 6 Mar 2007, Uwe Bugla wrote:
+>
+> But please do not compare me with maintainers, especially never in this 
+> life with the suboptimal one from linuxtv.org being in question.
+>
+>  a. I ain't no maintainer
 
-> I'm just guessing, but does anyone who is having this problem, NOT using
-> NetworkManager?
-> 
-> I'm running an old version of HAL just fine, but I'm not using
-> NetworkManager here.
-> 
-> I am using NetworkManager on a OpenSuSE 10.3 release, but suse's version
-> of NetworkManager is well known to not be anywhere near what is released
-> as a tarball :(
-> 
-> thanks,
-> 
-> greg k-h
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Sure. The problem is that it's actually really really hard (read: almost 
+totally impossible) to find a person that everybody will agree is a good 
+maintainer. It's just a really hard job, and we all screw up.
 
+Not just from a technical angle too - quite often, the biggest problem for 
+a maintainer is just the people skills. There's a fair number of people 
+that are good at technology but have no people skills what-so-ever, and 
+those are usually *worse* maintainers than people who may not be 100% up 
+on all the technical issues, but have no problem working with people who 
+do.
+
+Finding somebody who is both technically top-notch *and* can work with 
+people is so rare as to be something you shouldn't even look for. That's 
+especially true since quite often, maintainership doesn't even come with a 
+lot of glory - just a lot of work, and the expectation that you always be 
+there. 
+
+So when you call maintainers suboptimal, please realize that:
+
+ - We're *all* suboptimal.
+
+   I personally, of course, am totally perfect, and never ever make any 
+   mistakes (did I already mention that I'm also good-looking?) but even 
+   despite my obviously superior features, some people have the temerity 
+   to point out that they think I make mistakes and argue way too much.
+
+   So imagine that if people can find fault in the absolute perfection 
+   that is Linus "almost Godlike" Torvalds, what about some poor sap who 
+   maintains a piece of hardware with crappy documentation and a difficult 
+   user base? And he doesn't even get the recognition that I do, so he's 
+   just left with tons of abuse and may not be paid to do what he wants to 
+   do, so he has to do other work *too*.
+
+ - if you want to change something, it's fine to not be entirely polite 
+   all the time: Al Viro and Christoph "is my hair blue this week?" 
+   Hellwig are *famous* for being blunt bastards that are negative as hell 
+   (and hey, so am I), but they are also well-known for getting things 
+   done and mostly being right.
+
+   And building that up takes time.
+
+>  b. As far as my virtues are concerned in comparison to his the 
+>     comparison is completely displaced.
+
+Well, not entirely. The thing is, we all have "mental filters". Like it or 
+not, people get associated with what they do, and even if they then do 
+something totally different in another setting, the association remains. 
+I'm just saying..
+
+		Linus
