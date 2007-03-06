@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030614AbXCFXE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030701AbXCFXXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030614AbXCFXE5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 18:04:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030636AbXCFXE5
+	id S1030701AbXCFXXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 18:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030703AbXCFXXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 18:04:57 -0500
-Received: from an-out-0708.google.com ([209.85.132.248]:56611 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030614AbXCFXE4 (ORCPT
+	Tue, 6 Mar 2007 18:23:19 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:31413 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030701AbXCFXXS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 18:04:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V+Uwll027SwRAM7XXlDbqyiH6RklnyBqwfG6WUD307tox+oms08iltKA8NEjZ6d63KdVMbRUqZsQrLQdeWH0lGbkoAjCi0YkFy4mPKfNjUwInjkkOgI6G/fJDX3O8Wxqmp8VAPTyFbYUFbxStYGB9C71bsbFt63zS0V1ebuxqpI=
-Message-ID: <8bd0f97a0703061504h78890fcexc10e97c026c41924@mail.gmail.com>
-Date: Tue, 6 Mar 2007 18:04:56 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
-Cc: "Wu, Bryan" <bryan.wu@analog.com>, khali@linux-fr.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, mhfan@ustc.edu
-In-Reply-To: <20070306214301.GA5590@martell.zuzino.mipt.ru>
+	Tue, 6 Mar 2007 18:23:18 -0500
+X-IronPort-AV: i="4.14,255,1170651600"; 
+   d="scan'208"; a="23739270:sNHT4718752675"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Krzysztof Halasa" <khc@pm.waw.pl>
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+Date: Tue, 6 Mar 2007 18:24:08 -0500
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>, rmk@arm.linux.org.uk,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com> <m3bqj6jebt.fsf@maximus.localdomain>
+In-Reply-To: <m3bqj6jebt.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <1173164058.31825.16.camel@roc-desktop>
-	 <20070306214301.GA5590@martell.zuzino.mipt.ru>
+Message-Id: <200703061824.08834.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 06 Mar 2007 23:23:10.0336 (UTC) FILETIME=[6779C800:01C76046]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/6/07, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > +static int __init i2c_bfin_twi_init(void)
-> > +{
-> > +     rc = request_irq(twi_iface.irq, bfin_twi_interrupt_entry, SA_INTERRUPT, "i2c-bfin-twi", &twi_iface);
-> > +     if (rc) {
-> > +             printk(KERN_ERR "i2c-bfin-twi: can't get IRQ %d !\n", twi_iface.irq);
-> > +             return -ENODEV;
-> > +     }
-> > +
-> > +     /* Set TWI internal clock as 10MHz */
-> > +     bfin_write_TWI_CONTROL(((get_sclk() / 1024 / 1024 + 5) / 10) & 0x7F);
-> > +
-> > +     /* Set Twi interface clock as specified */
-> > +     if (CONFIG_TWICLK_KHZ > 400)
-> > +             bfin_write_TWI_CLKDIV((( 5*1024 / 400 ) << 8) | (( 5*1024 / 400 ) & 0xFF));
-> > +     else
-> > +             bfin_write_TWI_CLKDIV((( 5*1024 / CONFIG_TWICLK_KHZ ) << 8) | (( 5*1024 / CONFIG_TWICLK_KHZ ) & 0xFF));
-> > +
-> > +     /* Enable TWI */
-> > +     bfin_write_TWI_CONTROL(bfin_read_TWI_CONTROL() | TWI_ENA);
-> > +     SSYNC();
-> > +
-> > +     return i2c_add_adapter(p_adap);
+On Tue 6 Mar 2007 15:40, Krzysztof Halasa pondered:
+> "Mike Frysinger" <vapier.adi@gmail.com> writes:
+>  >            /*
+>  >             * Setup the RTS and DTR signals once the
+>  >             * port is open and ready to respond.
+>  >             */
+>  >            if (info->tty->termios->c_cflag & CBAUD)
+>  >                uart_set_mctrl(port, TIOCM_RTS | TIOCM_DTR);
+>  > ...
+>  >
+>  > shouldnt TIOCM_RTS be passed down only when the 'r' is appended to the
+>  > boot cmdline ?
 >
-> free_irq on error?
+>  How would it be useful?
 
-what error ?  do you mean i2c_add_adapter() ?
--mike
+It is useful on (broken) legacy serial equipment, where RTS should be 
+completely under the applications control.
+
+Glitches on RTS aren't acceptable, and confuse some devices.
+
+>  CRTSCTS is for CTS only (i.e., the transmission is paused when CTS is
+>  inactive), not for RTS. DTR and RTS should be active when the port is
+>  open even without CRTSCTS (= without handshaking),
+
+That depends on the equipment that you are attached to. Some very early 
+(broken) systems actually invert the meaning of RTS, so while the kernel 
+thinks it is "opening" the port, it actually closes it...
+
+>  it's used for 
+>  various purposes such as providing +12V to the device (and two pins
+>  can supply more power than one - sure, it isn't the best idea).
+
+I understand - the request wasn't to change the default operation - just add a 
+method of controlling things, so those minority of people who want the 
+control can have it.
+
+-Robin
