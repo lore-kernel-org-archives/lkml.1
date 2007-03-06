@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbXCFUyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbXCFVCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932129AbXCFUyW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 15:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbXCFUyW
+	id S932152AbXCFVCp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932167AbXCFVCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 15:54:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45201 "EHLO ogre.sisk.pl"
+	Tue, 6 Mar 2007 16:02:45 -0500
+Received: from gw.goop.org ([64.81.55.164]:42792 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932129AbXCFUyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 15:54:19 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: vgoyal@in.ibm.com
-Subject: Re: BUG() during suspend to disk (2.6.21-rc2, x86_64)
-Date: Tue, 6 Mar 2007 21:56:46 +0100
-User-Agent: KMail/1.9.5
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Andi Kleen <ak@suse.de>
-References: <20070306103247.GA11002@in.ibm.com>
-In-Reply-To: <20070306103247.GA11002@in.ibm.com>
+	id S932152AbXCFVCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 16:02:45 -0500
+Message-ID: <45EDD6F1.7080100@goop.org>
+Date: Tue, 06 Mar 2007 13:02:41 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Nakajima, Jun" <jun.nakajima@intel.com>,
+       virtualization <virtualization@lists.osdl.org>,
+       Roland McGrath <roland@redhat.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
+Subject: Re: Xen & VMI?
+References: <45ED82D9.6050204@codemonkey.ws>	<8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com> <20070306203712.GC21736@elte.hu>
+In-Reply-To: <20070306203712.GC21736@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703062156.46905.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ingo Molnar wrote:
+> maybe we are talking past each other because i dont really disagree with 
+> that: i mentioned it right at beginning that higher-level APIs would 
+> have to be added to VMI. What i'd like to avoid is the ABI duplication 
+> for the lowlevel stuff /and/ for the highlevel stuff. Since VMI is 
+> mostly about lowlevel stuff right now it's obvious that it would have to 
+> grow more highlevel ops. Doing an IO driver via IO emulation is 
+> obviously pretty ... low-tech.
+>
+> maybe i shouldnt call it 'VMI' but 'the paravirt ABI'. I dont mind if 
+> it's the Xen ABI or the VMWare ABI or a mesh of the two - everyone can 
+> map their own internals to that /one/ ABI.
 
-On Tuesday, 6 March 2007 11:32, Vivek Goyal wrote:
-> Hi,
-> 
-> I see following BUG() on serial console while hibernating on a x86_64
-> machine. I am using 2.6.21-rc2 kernel.
+Well, that's the basic force shaping paravirt_ops; many of the calls are
+generally used by all backends, and some are more specific.  The
+entrypoints in paravirt_ops would be an approximate model for this
+hypothetical ABI you're talking about.
 
-I see it too.
- 
-> BUG: at arch/x86_64/kernel/acpi/sleep.c:70 init_low_mapping()
-> 
-> Call Trace:
->  [<ffffffff80214b9a>] acpi_save_state_mem+0x70/0xd6
->  [<ffffffff8036e90e>] acpi_pm_enter+0x23/0xc1
->  [<ffffffff8024eec4>] pm_suspend_disk+0x1ac/0x228
->  [<ffffffff8024dc9b>] enter_state+0x50/0x1e6
->  [<ffffffff8036ecce>] acpi_system_write_sleep+0x5c/0x79
->  [<ffffffff8027b767>] vfs_write+0xad/0x136
->  [<ffffffff8027bca4>] sys_write+0x45/0x6e
->  [<ffffffff80209bbe>] system_call+0x7e/0x83
+But the key point you're missing is that this isn't a one-way
+interface.  The hypervisor backend code makes calls into the kernel's
+interfaces as well.  We use memory allocation, the interrupt
+infrastructure, timers, per-cpu and as many other existing interfaces as
+possible, so that we don't have to bloat paravirt_ops with duplicates of
+all those other interfaces.
 
-Hm, it doesn't like the fact that nonboot CPUs are online at that point, but
-we don't do anything to disable them.  Should we?
+If you're seriously talking about an ABI, then you'd also have to
+present stable ABIs for all subsystems the hypervisor backends want to
+call into, either by actually freezing the internal linux interfaces
+into ABIs, or by effectively duplicating them across the paravirt ABI
+(or whatever).
 
-I think the appended patch might work.
-
-Rafael
-
----
- kernel/power/disk.c |    1 +
- kernel/power/user.c |    1 +
- 2 files changed, 2 insertions(+)
-
-Index: linux-2.6.21-rc2/kernel/power/disk.c
-===================================================================
---- linux-2.6.21-rc2.orig/kernel/power/disk.c
-+++ linux-2.6.21-rc2/kernel/power/disk.c
-@@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
- 	switch(mode) {
- 	case PM_DISK_PLATFORM:
- 		if (pm_ops && pm_ops->enter) {
-+			disable_nonboot_cpus();
- 			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
- 			pm_ops->enter(PM_SUSPEND_DISK);
- 			break;
-Index: linux-2.6.21-rc2/kernel/power/user.c
-===================================================================
---- linux-2.6.21-rc2.orig/kernel/power/user.c
-+++ linux-2.6.21-rc2/kernel/power/user.c
-@@ -398,6 +398,7 @@ static int snapshot_ioctl(struct inode *
- 
- 		case PMOPS_ENTER:
- 			if (data->platform_suspend) {
-+				disable_nonboot_cpus();
- 				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
- 				error = pm_ops->enter(PM_SUSPEND_DISK);
- 				error = 0;
+    J
