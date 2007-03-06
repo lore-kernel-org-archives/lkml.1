@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbXCFAZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbXCFAZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932601AbXCFAZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932765AbXCFAZR
+	id S932794AbXCFAZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:25:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932809AbXCFAZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:25:17 -0500
-Received: from paragon.brong.net ([66.232.154.163]:59411 "EHLO
-	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932601AbXCFAZP (ORCPT
+	Mon, 5 Mar 2007 19:25:54 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53529
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932794AbXCFAZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:25:15 -0500
-Date: Tue, 6 Mar 2007 11:24:57 +1100
-From: Bron Gondwana <brong@fastmail.fm>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com, netdev@vger.kernel.org,
-       yi.zhu@intel.com, jketreno@linux.intel.com, akpm@osdl.org
-Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
-Message-ID: <20070306002457.GA7078@brong.net>
-References: <20070304220857.GH23311@waste.org> <20070305011625.GA7681@kroah.com> <20070305064229.GJ23311@waste.org> <20070305070248.GA30699@kroah.com> <20070305071325.GK23311@waste.org> <20070305154609.GA3626@irc.pl> <20070305211425.GR16722@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070305211425.GR16722@waste.org>
-Organization: brong.net
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 5 Mar 2007 19:25:53 -0500
+Date: Mon, 05 Mar 2007 16:25:51 -0800 (PST)
+Message-Id: <20070305.162551.41660347.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: andi@firstfloor.org, jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070305155714.3abe1b5e@freekitty>
+References: <20070226143127.5c74bec9@freekitty>
+	<p73slcnawh3.fsf@bingen.suse.de>
+	<20070305155714.3abe1b5e@freekitty>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 03:14:25PM -0600, Matt Mackall wrote:
-> On Mon, Mar 05, 2007 at 04:46:09PM +0100, Tomasz Torcz wrote:
-> > > That's not the point. The point is that Debian/unstable as of _this
-> > > morning_ doesn't work. For reference, I'm running both the latest
-> > > releases of both hal (0.5.8.1-6.1) and network-manager (0.6.4-6). And
-> > > there are people telling me I need a copy of HAL out of git that
-> > > hasn't even been released for Debian to package. Debian isn't the
-> > > problem here.
-> > 
-> >   hal 0.5.9-rc1 (released, not from git) should work. It will be
-> > problably released soon and picked by sane distributions. Debian is very
-> > irritating corner case.
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Mon, 5 Mar 2007 15:57:14 -0800
+
+> I tried the code from Hacker's Delight.
+> It is cool, but performance is CPU (and data) dependent:
 > 
-> Presumably the -rc1 stands for "release candidate". Which means "not
-> yet released". And when did it show up? 04-Mar-2007 at 18:31. That's
-> right, YESTERDAY. Almost a full month after Greg's commit.
-> 
-> For the last time, DEBIAN IS NOT THE PROBLEM.
+> Average # of usecs per operation:
 
-Can I please second this (having been burned by hell that was udev of
-the 0.5ish era) - Greg, please try to make changes in a cross-compatible
-way so that versions of userspace and kernel are not so closely
-dependant on tracking each other.  The whole 2.6.8 -> 2.6.12 series of
-kernels and associated udevs are fraught with race conditions where
-upgrading one but not the other will leave your machine unbootable.
+Interesting results.
 
-I read the "manifesto" for udev showing how crap devfs was, it was
-broken, it could never be fixed etc - yet my experience was that devfs
-systems "just worked"[tm] and udev was very dangerous.  My thinking is
-going to be tarnished by that for a while and my mental image of udev
-is "unreliable POS".  I'm hoping enough good experiences with udev might
-make me feel less scared whenever I have to deal with it.
+The problem with these algorithms that tradoff one or more
+multiplies in order to avoid a divide is that they don't
+give anything and often lose when both multiplies and
+divides are emulated in software.
 
-Similarly, I'm hoping I don't have to think "oh shit, will this break
-boot" every time I upgrade either a kernel or hal version for the next
-year, because it would really suck to do that all over again.  It
-contributes to the meme that linux is unreliable and perpetually
-unstable.
+This is particularly true in this cube-root case from Hacker's
+Delight, because it's using 3 multiplies per iteration in place of one
+divide per iteration.
 
-Regards,
+Actually, sorry, there is only one real multiply in there since the
+other two can be computed using addition and shifts.
 
-Bron.
+Another thing is that the non-Hacker's Delight version iterates
+differently for different input values, so the input value space is
+very important to consider when comparing these two pieces of code.
