@@ -1,408 +1,1264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965868AbXCFLgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964980AbXCFLsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965868AbXCFLgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 06:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964980AbXCFLgV
+	id S964980AbXCFLsN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 06:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965869AbXCFLsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 06:36:21 -0500
-Received: from nn7.de ([85.214.94.156]:34685 "EHLO nn7.de"
+	Tue, 6 Mar 2007 06:48:13 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:48805 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965868AbXCFLgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 06:36:20 -0500
-Subject: Re: [5/6] 2.6.21-rc2: known regressions
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Michael S\. Tsirkin" <mst@mellanox.co.il>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>, Len Brown <lenb@kernel.org>
-In-Reply-To: <20070306104618.GA5792@mellanox.co.il>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015040.GJ3441@stusta.de>
-	 <1173138193.24738.236.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
-	 <1173142948.24738.257.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org>
-	 <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu>
-	 <20070306104618.GA5792@mellanox.co.il>
-Content-Type: multipart/mixed; boundary="=-oGM2mw+JlLzfbgASqL/p"
-Date: Tue, 06 Mar 2007 12:36:17 +0100
-Message-Id: <1173180977.9161.14.camel@localhost>
+	id S964980AbXCFLsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 06:48:09 -0500
+Date: Tue, 6 Mar 2007 06:48:08 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] net driver fixes
+Message-ID: <20070306114808.GA22724@havoc.gtf.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-oGM2mw+JlLzfbgASqL/p
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
 
-On Tue, 2007-03-06 at 12:46 +0200, Michael S. Tsirkin wrote:
-> > Quoting Ingo Molnar <mingo@elte.hu>:
-> > Subject: Re: [5/6] 2.6.21-rc2: known regressions
-> > 
-> > 
-> > * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> > 
-> > > > Quoting Linus Torvalds <torvalds@linux-foundation.org>:
-> > > >
-> > > > Ok, it does indeed solve the problem for me.
-> > > 
-> > > Not yet for me unfortunately, although this seems to help.
-> > > Is this the patch I should have applied?
-> > > http://lkml.org/lkml/2007/3/5/445
-> > > 
-> > > With this applied, on resume I get *some* screen output soon after 
-> > > resume (e.g. with s2ram I get several characters on VGA, X starts 
-> > > drawing some windows) but then the crescent symbol starts blinking 
-> > > again and the system hangs.
-> > 
-> > could you try this via s2ram on a text console, to see whether the 
-> > kernel spits out any warning before it locks up?
-> 
-> Yes, that's what I did. Unfortunately only a couple of characters were
-> shown before it locked up.
-> 
-> I still need to check what does this do in the NO_HZ configuration.
-> 
-> BTW, Ingo, can you suspend/resume any number of times with this patch?
+to receive the following updates:
 
-well I could at least two times in a row in my minimalistic setup
-(config attached) however using the full kernel config it still
-hangs ... (config also attached in case you watn to compare it).
+ arch/mips/momentum/jaguar_atx/platform.c  |    8 +-
+ arch/mips/momentum/ocelot_3/platform.c    |    8 +-
+ arch/mips/momentum/ocelot_c/platform.c    |    4 +
+ arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +
+ arch/ppc/syslib/mv64x60.c                 |   12 ++-
+ drivers/net/3c59x.c                       |    8 +-
+ drivers/net/bonding/bond_main.c           |   86 +++++--------
+ drivers/net/mv643xx_eth.c                 |   53 ++++----
+ drivers/net/natsemi.c                     |   24 +++-
+ drivers/net/pcnet32.c                     |    4 +-
+ drivers/net/sis900.c                      |   10 +-
+ drivers/net/tulip/de2104x.c               |    6 +-
+ drivers/net/tulip/dmfe.c                  |  204 +++++++++++++++++++---------
+ drivers/net/ucc_geth.c                    |   17 ++-
+ include/linux/igmp.h                      |    2 +
+ include/linux/mv643xx.h                   |    1 +
+ net/ipv4/igmp.c                           |   23 ++++
+ 17 files changed, 302 insertions(+), 170 deletions(-)
 
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+Andrew Morton (2):
+      revert "drivers/net/tulip/dmfe: support basic carrier detection"
+      sis900 warning fixes
 
---=-oGM2mw+JlLzfbgASqL/p
-Content-Disposition: attachment; filename=linux-config-2.6.21-isolated-s2ram-debug.bz2
-Content-Type: application/x-bzip; name=linux-config-2.6.21-isolated-s2ram-debug.bz2
-Content-Transfer-Encoding: base64
+Dale Farnsworth (1):
+      mv643xx_eth: Place explicit port number in mv643xx_eth_platform_data
 
-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
-5IpwoSD+Wdz4
+Dmitriy Monakhov (1):
+      3c59x: Handle pci_enable_device() failure while resuming
 
+Don Fry (1):
+      pcnet32: Fix PCnet32 performance bug on non-coherent architecutres
 
---=-oGM2mw+JlLzfbgASqL/p
-Content-Disposition: attachment; filename=linux-config-2.6.21.bz2
-Content-Type: application/x-bzip; name=linux-config-2.6.21.bz2
-Content-Transfer-Encoding: base64
+Jay Vosburgh (3):
+      bonding: fix double dev_add_pack
+      bonding: only receive ARPs for us
+      bonding: Improve IGMP join processing
 
-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
+Li Yang (2):
+      ucc_geth: Fix BD processing
+      ucc_geth: returns NETDEV_TX_BUSY when BD ring is full
 
+Maxim Levitsky (3):
+      dmfe: trivial/spelling fixes
+      dmfe: fix two bugs
+      dmfe: Fix link detection
 
---=-oGM2mw+JlLzfbgASqL/p--
+Prarit Bhargava (1):
+      __devinit & __devexit cleanups for de2104x driver
+
+Sergei Shtylyov (1):
+      natsemi: netpoll fixes
+
+diff --git a/arch/mips/momentum/jaguar_atx/platform.c b/arch/mips/momentum/jaguar_atx/platform.c
+index 771e55f..5618448 100644
+--- a/arch/mips/momentum/jaguar_atx/platform.c
++++ b/arch/mips/momentum/jaguar_atx/platform.c
+@@ -48,6 +48,8 @@ static struct resource mv64x60_eth0_resources[] = {
+ };
+ 
+ static struct mv643xx_eth_platform_data eth0_pd = {
++	.port_number	= 0,
++
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -77,6 +79,8 @@ static struct resource mv64x60_eth1_resources[] = {
+ };
+ 
+ static struct mv643xx_eth_platform_data eth1_pd = {
++	.port_number	= 1,
++
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -105,7 +109,9 @@ static struct resource mv64x60_eth2_resources[] = {
+ 	},
+ };
+ 
+-static struct mv643xx_eth_platform_data eth2_pd;
++static struct mv643xx_eth_platform_data eth2_pd = {
++	.port_number	= 2,
++};
+ 
+ static struct platform_device eth2_device = {
+ 	.name		= MV643XX_ETH_NAME,
+diff --git a/arch/mips/momentum/ocelot_3/platform.c b/arch/mips/momentum/ocelot_3/platform.c
+index b80733f..44e4c3f 100644
+--- a/arch/mips/momentum/ocelot_3/platform.c
++++ b/arch/mips/momentum/ocelot_3/platform.c
+@@ -48,6 +48,8 @@ static struct resource mv64x60_eth0_resources[] = {
+ };
+ 
+ static struct mv643xx_eth_platform_data eth0_pd = {
++	.port_number	= 0,
++
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -77,6 +79,8 @@ static struct resource mv64x60_eth1_resources[] = {
+ };
+ 
+ static struct mv643xx_eth_platform_data eth1_pd = {
++	.port_number	= 1,
++
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -105,7 +109,9 @@ static struct resource mv64x60_eth2_resources[] = {
+ 	},
+ };
+ 
+-static struct mv643xx_eth_platform_data eth2_pd;
++static struct mv643xx_eth_platform_data eth2_pd = {
++	.port_number	= 2,
++};
+ 
+ static struct platform_device eth2_device = {
+ 	.name		= MV643XX_ETH_NAME,
+diff --git a/arch/mips/momentum/ocelot_c/platform.c b/arch/mips/momentum/ocelot_c/platform.c
+index f7cd303..7780aa0 100644
+--- a/arch/mips/momentum/ocelot_c/platform.c
++++ b/arch/mips/momentum/ocelot_c/platform.c
+@@ -47,6 +47,8 @@ static struct resource mv64x60_eth0_resources[] = {
+ };
+ 
+ static struct mv643xx_eth_platform_data eth0_pd = {
++	.port_number	= 0,
++
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -76,6 +78,8 @@ static struct resource mv64x60_eth1_resources[] = {
+ };
+ 
+ static struct mv643xx_eth_platform_data eth1_pd = {
++	.port_number	= 1,
++
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
+index 6ad4b1a..7104567 100644
+--- a/arch/powerpc/platforms/chrp/pegasos_eth.c
++++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
+@@ -58,6 +58,7 @@ static struct resource mv643xx_eth0_resources[] = {
+ 
+ 
+ static struct mv643xx_eth_platform_data eth0_pd = {
++	.port_number	= 0,
+ 	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH0,
+ 	.tx_sram_size = PEGASOS2_SRAM_TXRING_SIZE,
+ 	.tx_queue_size = PEGASOS2_SRAM_TXRING_SIZE/16,
+@@ -87,6 +88,7 @@ static struct resource mv643xx_eth1_resources[] = {
+ };
+ 
+ static struct mv643xx_eth_platform_data eth1_pd = {
++	.port_number	= 1,
+ 	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH1,
+ 	.tx_sram_size = PEGASOS2_SRAM_TXRING_SIZE,
+ 	.tx_queue_size = PEGASOS2_SRAM_TXRING_SIZE/16,
+diff --git a/arch/ppc/syslib/mv64x60.c b/arch/ppc/syslib/mv64x60.c
+index 3b039c3..a6f8b68 100644
+--- a/arch/ppc/syslib/mv64x60.c
++++ b/arch/ppc/syslib/mv64x60.c
+@@ -339,7 +339,9 @@ static struct resource mv64x60_eth0_resources[] = {
+ 	},
+ };
+ 
+-static struct mv643xx_eth_platform_data eth0_pd;
++static struct mv643xx_eth_platform_data eth0_pd = {
++	.port_number	= 0,
++};
+ 
+ static struct platform_device eth0_device = {
+ 	.name		= MV643XX_ETH_NAME,
+@@ -362,7 +364,9 @@ static struct resource mv64x60_eth1_resources[] = {
+ 	},
+ };
+ 
+-static struct mv643xx_eth_platform_data eth1_pd;
++static struct mv643xx_eth_platform_data eth1_pd = {
++	.port_number	= 1,
++};
+ 
+ static struct platform_device eth1_device = {
+ 	.name		= MV643XX_ETH_NAME,
+@@ -385,7 +389,9 @@ static struct resource mv64x60_eth2_resources[] = {
+ 	},
+ };
+ 
+-static struct mv643xx_eth_platform_data eth2_pd;
++static struct mv643xx_eth_platform_data eth2_pd = {
++	.port_number	= 2,
++};
+ 
+ static struct platform_device eth2_device = {
+ 	.name		= MV643XX_ETH_NAME,
+diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
+index 716a472..7299577 100644
+--- a/drivers/net/3c59x.c
++++ b/drivers/net/3c59x.c
+@@ -822,11 +822,17 @@ static int vortex_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct vortex_private *vp = netdev_priv(dev);
++	int err;
+ 
+ 	if (dev && vp) {
+ 		pci_set_power_state(pdev, PCI_D0);
+ 		pci_restore_state(pdev);
+-		pci_enable_device(pdev);
++		err = pci_enable_device(pdev);
++		if (err) {
++			printk(KERN_WARNING "%s: Could not enable device \n",
++				dev->name);
++			return err;
++		}
+ 		pci_set_master(pdev);
+ 		if (request_irq(dev->irq, vp->full_bus_master_rx ?
+ 				&boomerang_interrupt : &vortex_interrupt, IRQF_SHARED, dev->name, dev)) {
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index ea73ebf..e4724d8 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -60,6 +60,7 @@
+ #include <linux/errno.h>
+ #include <linux/netdevice.h>
+ #include <linux/inetdevice.h>
++#include <linux/igmp.h>
+ #include <linux/etherdevice.h>
+ #include <linux/skbuff.h>
+ #include <net/sock.h>
+@@ -861,6 +862,28 @@ static void bond_mc_delete(struct bonding *bond, void *addr, int alen)
+ 	}
+ }
+ 
++
++/*
++ * Retrieve the list of registered multicast addresses for the bonding
++ * device and retransmit an IGMP JOIN request to the current active
++ * slave.
++ */
++static void bond_resend_igmp_join_requests(struct bonding *bond)
++{
++	struct in_device *in_dev;
++	struct ip_mc_list *im;
++
++	rcu_read_lock();
++	in_dev = __in_dev_get_rcu(bond->dev);
++	if (in_dev) {
++		for (im = in_dev->mc_list; im; im = im->next) {
++			ip_mc_rejoin_group(im);
++		}
++	}
++
++	rcu_read_unlock();
++}
++
+ /*
+  * Totally destroys the mc_list in bond
+  */
+@@ -874,6 +897,7 @@ static void bond_mc_list_destroy(struct bonding *bond)
+ 		kfree(dmi);
+ 		dmi = bond->mc_list;
+ 	}
++        bond->mc_list = NULL;
+ }
+ 
+ /*
+@@ -967,6 +991,7 @@ static void bond_mc_swap(struct bonding *bond, struct slave *new_active, struct
+ 		for (dmi = bond->dev->mc_list; dmi; dmi = dmi->next) {
+ 			dev_mc_add(new_active->dev, dmi->dmi_addr, dmi->dmi_addrlen, 0);
+ 		}
++		bond_resend_igmp_join_requests(bond);
+ 	}
+ }
+ 
+@@ -3423,15 +3448,21 @@ void bond_register_arp(struct bonding *bond)
+ {
+ 	struct packet_type *pt = &bond->arp_mon_pt;
+ 
++	if (pt->type)
++		return;
++
+ 	pt->type = htons(ETH_P_ARP);
+-	pt->dev = NULL; /*bond->dev;XXX*/
++	pt->dev = bond->dev;
+ 	pt->func = bond_arp_rcv;
+ 	dev_add_pack(pt);
+ }
+ 
+ void bond_unregister_arp(struct bonding *bond)
+ {
+-	dev_remove_pack(&bond->arp_mon_pt);
++	struct packet_type *pt = &bond->arp_mon_pt;
++
++	dev_remove_pack(pt);
++	pt->type = 0;
+ }
+ 
+ /*---------------------------- Hashing Policies -----------------------------*/
+@@ -4011,42 +4042,6 @@ out:
+ 	return 0;
+ }
+ 
+-static void bond_activebackup_xmit_copy(struct sk_buff *skb,
+-                                        struct bonding *bond,
+-                                        struct slave *slave)
+-{
+-	struct sk_buff *skb2 = skb_copy(skb, GFP_ATOMIC);
+-	struct ethhdr *eth_data;
+-	u8 *hwaddr;
+-	int res;
+-
+-	if (!skb2) {
+-		printk(KERN_ERR DRV_NAME ": Error: "
+-		       "bond_activebackup_xmit_copy(): skb_copy() failed\n");
+-		return;
+-	}
+-
+-	skb2->mac.raw = (unsigned char *)skb2->data;
+-	eth_data = eth_hdr(skb2);
+-
+-	/* Pick an appropriate source MAC address
+-	 *	-- use slave's perm MAC addr, unless used by bond
+-	 *	-- otherwise, borrow active slave's perm MAC addr
+-	 *	   since that will not be used
+-	 */
+-	hwaddr = slave->perm_hwaddr;
+-	if (!memcmp(eth_data->h_source, hwaddr, ETH_ALEN))
+-		hwaddr = bond->curr_active_slave->perm_hwaddr;
+-
+-	/* Set source MAC address appropriately */
+-	memcpy(eth_data->h_source, hwaddr, ETH_ALEN);
+-
+-	res = bond_dev_queue_xmit(bond, skb2, slave->dev);
+-	if (res)
+-		dev_kfree_skb(skb2);
+-
+-	return;
+-}
+ 
+ /*
+  * in active-backup mode, we know that bond->curr_active_slave is always valid if
+@@ -4067,21 +4062,6 @@ static int bond_xmit_activebackup(struct sk_buff *skb, struct net_device *bond_d
+ 	if (!bond->curr_active_slave)
+ 		goto out;
+ 
+-	/* Xmit IGMP frames on all slaves to ensure rapid fail-over
+-	   for multicast traffic on snooping switches */
+-	if (skb->protocol == __constant_htons(ETH_P_IP) &&
+-	    skb->nh.iph->protocol == IPPROTO_IGMP) {
+-		struct slave *slave, *active_slave;
+-		int i;
+-
+-		active_slave = bond->curr_active_slave;
+-		bond_for_each_slave_from_to(bond, slave, i, active_slave->next,
+-		                            active_slave->prev)
+-			if (IS_UP(slave->dev) &&
+-			    (slave->link == BOND_LINK_UP))
+-				bond_activebackup_xmit_copy(skb, bond, slave);
+-	}
+-
+ 	res = bond_dev_queue_xmit(bond, skb, bond->curr_active_slave->dev);
+ 
+ out:
+diff --git a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
+index be2ddbb..9ba21e0 100644
+--- a/drivers/net/mv643xx_eth.c
++++ b/drivers/net/mv643xx_eth.c
+@@ -1309,7 +1309,7 @@ static void mv643xx_init_ethtool_cmd(struct net_device *dev, int phy_address,
+ static int mv643xx_eth_probe(struct platform_device *pdev)
+ {
+ 	struct mv643xx_eth_platform_data *pd;
+-	int port_num = pdev->id;
++	int port_num;
+ 	struct mv643xx_private *mp;
+ 	struct net_device *dev;
+ 	u8 *p;
+@@ -1319,6 +1319,12 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
+ 	int duplex = DUPLEX_HALF;
+ 	int speed = 0;			/* default to auto-negotiation */
+ 
++	pd = pdev->dev.platform_data;
++	if (pd == NULL) {
++		printk(KERN_ERR "No mv643xx_eth_platform_data\n");
++		return -ENODEV;
++	}
++
+ 	dev = alloc_etherdev(sizeof(struct mv643xx_private));
+ 	if (!dev)
+ 		return -ENOMEM;
+@@ -1331,8 +1337,6 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
+ 	BUG_ON(!res);
+ 	dev->irq = res->start;
+ 
+-	mp->port_num = port_num;
+-
+ 	dev->open = mv643xx_eth_open;
+ 	dev->stop = mv643xx_eth_stop;
+ 	dev->hard_start_xmit = mv643xx_eth_start_xmit;
+@@ -1373,39 +1377,40 @@ static int mv643xx_eth_probe(struct platform_device *pdev)
+ 
+ 	spin_lock_init(&mp->lock);
+ 
++	port_num = pd->port_number;
++
+ 	/* set default config values */
+ 	eth_port_uc_addr_get(dev, dev->dev_addr);
+ 	mp->rx_ring_size = MV643XX_ETH_PORT_DEFAULT_RECEIVE_QUEUE_SIZE;
+ 	mp->tx_ring_size = MV643XX_ETH_PORT_DEFAULT_TRANSMIT_QUEUE_SIZE;
+ 
+-	pd = pdev->dev.platform_data;
+-	if (pd) {
+-		if (is_valid_ether_addr(pd->mac_addr))
+-			memcpy(dev->dev_addr, pd->mac_addr, 6);
++	if (is_valid_ether_addr(pd->mac_addr))
++		memcpy(dev->dev_addr, pd->mac_addr, 6);
+ 
+-		if (pd->phy_addr || pd->force_phy_addr)
+-			ethernet_phy_set(port_num, pd->phy_addr);
++	if (pd->phy_addr || pd->force_phy_addr)
++		ethernet_phy_set(port_num, pd->phy_addr);
+ 
+-		if (pd->rx_queue_size)
+-			mp->rx_ring_size = pd->rx_queue_size;
++	if (pd->rx_queue_size)
++		mp->rx_ring_size = pd->rx_queue_size;
+ 
+-		if (pd->tx_queue_size)
+-			mp->tx_ring_size = pd->tx_queue_size;
++	if (pd->tx_queue_size)
++		mp->tx_ring_size = pd->tx_queue_size;
+ 
+-		if (pd->tx_sram_size) {
+-			mp->tx_sram_size = pd->tx_sram_size;
+-			mp->tx_sram_addr = pd->tx_sram_addr;
+-		}
+-
+-		if (pd->rx_sram_size) {
+-			mp->rx_sram_size = pd->rx_sram_size;
+-			mp->rx_sram_addr = pd->rx_sram_addr;
+-		}
++	if (pd->tx_sram_size) {
++		mp->tx_sram_size = pd->tx_sram_size;
++		mp->tx_sram_addr = pd->tx_sram_addr;
++	}
+ 
+-		duplex = pd->duplex;
+-		speed = pd->speed;
++	if (pd->rx_sram_size) {
++		mp->rx_sram_size = pd->rx_sram_size;
++		mp->rx_sram_addr = pd->rx_sram_addr;
+ 	}
+ 
++	duplex = pd->duplex;
++	speed = pd->speed;
++
++	mp->port_num = port_num;
++
+ 	/* Hook up MII support for ethtool */
+ 	mp->mii.dev = dev;
+ 	mp->mii.mdio_read = mv643xx_mdio_read;
+diff --git a/drivers/net/natsemi.c b/drivers/net/natsemi.c
+index 5c57433..c6172a7 100644
+--- a/drivers/net/natsemi.c
++++ b/drivers/net/natsemi.c
+@@ -2024,6 +2024,7 @@ static int start_tx(struct sk_buff *skb, struct net_device *dev)
+ 	struct netdev_private *np = netdev_priv(dev);
+ 	void __iomem * ioaddr = ns_ioaddr(dev);
+ 	unsigned entry;
++	unsigned long flags;
+ 
+ 	/* Note: Ordering is important here, set the field with the
+ 	   "ownership" bit last, and only then increment cur_tx. */
+@@ -2037,7 +2038,7 @@ static int start_tx(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	np->tx_ring[entry].addr = cpu_to_le32(np->tx_dma[entry]);
+ 
+-	spin_lock_irq(&np->lock);
++	spin_lock_irqsave(&np->lock, flags);
+ 
+ 	if (!np->hands_off) {
+ 		np->tx_ring[entry].cmd_status = cpu_to_le32(DescOwn | skb->len);
+@@ -2056,7 +2057,7 @@ static int start_tx(struct sk_buff *skb, struct net_device *dev)
+ 		dev_kfree_skb_irq(skb);
+ 		np->stats.tx_dropped++;
+ 	}
+-	spin_unlock_irq(&np->lock);
++	spin_unlock_irqrestore(&np->lock, flags);
+ 
+ 	dev->trans_start = jiffies;
+ 
+@@ -2222,6 +2223,8 @@ static void netdev_rx(struct net_device *dev, int *work_done, int work_to_do)
+ 		pkt_len = (desc_status & DescSizeMask) - 4;
+ 		if ((desc_status&(DescMore|DescPktOK|DescRxLong)) != DescPktOK){
+ 			if (desc_status & DescMore) {
++				unsigned long flags;
++
+ 				if (netif_msg_rx_err(np))
+ 					printk(KERN_WARNING
+ 						"%s: Oversized(?) Ethernet "
+@@ -2236,12 +2239,12 @@ static void netdev_rx(struct net_device *dev, int *work_done, int work_to_do)
+ 				 * reset procedure documented in
+ 				 * AN-1287. */
+ 
+-				spin_lock_irq(&np->lock);
++				spin_lock_irqsave(&np->lock, flags);
+ 				reset_rx(dev);
+ 				reinit_rx(dev);
+ 				writel(np->ring_dma, ioaddr + RxRingPtr);
+ 				check_link(dev);
+-				spin_unlock_irq(&np->lock);
++				spin_unlock_irqrestore(&np->lock, flags);
+ 
+ 				/* We'll enable RX on exit from this
+ 				 * function. */
+@@ -2396,8 +2399,19 @@ static struct net_device_stats *get_stats(struct net_device *dev)
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ static void natsemi_poll_controller(struct net_device *dev)
+ {
++	struct netdev_private *np = netdev_priv(dev);
++
+ 	disable_irq(dev->irq);
+-	intr_handler(dev->irq, dev);
++
++	/*
++	 * A real interrupt might have already reached us at this point
++	 * but NAPI might still haven't called us back.  As the interrupt
++	 * status register is cleared by reading, we should prevent an
++	 * interrupt loss in this case...
++	 */
++	if (!np->intr_status)
++		intr_handler(dev->irq, dev);
++
+ 	enable_irq(dev->irq);
+ }
+ #endif
+diff --git a/drivers/net/pcnet32.c b/drivers/net/pcnet32.c
+index 36f9d98..4d94ba7 100644
+--- a/drivers/net/pcnet32.c
++++ b/drivers/net/pcnet32.c
+@@ -1234,14 +1234,14 @@ static void pcnet32_rx_entry(struct net_device *dev,
+ 		skb_put(skb, pkt_len);	/* Make room */
+ 		pci_dma_sync_single_for_cpu(lp->pci_dev,
+ 					    lp->rx_dma_addr[entry],
+-					    PKT_BUF_SZ - 2,
++					    pkt_len,
+ 					    PCI_DMA_FROMDEVICE);
+ 		eth_copy_and_sum(skb,
+ 				 (unsigned char *)(lp->rx_skbuff[entry]->data),
+ 				 pkt_len, 0);
+ 		pci_dma_sync_single_for_device(lp->pci_dev,
+ 					       lp->rx_dma_addr[entry],
+-					       PKT_BUF_SZ - 2,
++					       pkt_len,
+ 					       PCI_DMA_FROMDEVICE);
+ 	}
+ 	lp->stats.rx_bytes += skb->len;
+diff --git a/drivers/net/sis900.c b/drivers/net/sis900.c
+index fb2b530..b3750f2 100644
+--- a/drivers/net/sis900.c
++++ b/drivers/net/sis900.c
+@@ -968,10 +968,10 @@ static void mdio_write(struct net_device *net_dev, int phy_id, int location,
+ 
+ static u16 sis900_reset_phy(struct net_device *net_dev, int phy_addr)
+ {
+-	int i = 0;
++	int i;
+ 	u16 status;
+ 
+-	while (i++ < 2)
++	for (i = 0; i < 2; i++)
+ 		status = mdio_read(net_dev, phy_addr, MII_STATUS);
+ 
+ 	mdio_write( net_dev, phy_addr, MII_CONTROL, MII_CNTL_RESET );
+@@ -1430,7 +1430,7 @@ static void sis900_auto_negotiate(struct net_device *net_dev, int phy_addr)
+ 	int i = 0;
+ 	u32 status;
+ 
+-	while (i++ < 2)
++	for (i = 0; i < 2; i++)
+ 		status = mdio_read(net_dev, phy_addr, MII_STATUS);
+ 
+ 	if (!(status & MII_STAT_LINK)){
+@@ -1466,9 +1466,9 @@ static void sis900_read_mode(struct net_device *net_dev, int *speed, int *duplex
+ 	int phy_addr = sis_priv->cur_phy;
+ 	u32 status;
+ 	u16 autoadv, autorec;
+-	int i = 0;
++	int i;
+ 
+-	while (i++ < 2)
++	for (i = 0; i < 2; i++)
+ 		status = mdio_read(net_dev, phy_addr, MII_STATUS);
+ 
+ 	if (!(status & MII_STAT_LINK))
+diff --git a/drivers/net/tulip/de2104x.c b/drivers/net/tulip/de2104x.c
+index dacea4f..c82befa 100644
+--- a/drivers/net/tulip/de2104x.c
++++ b/drivers/net/tulip/de2104x.c
+@@ -1685,7 +1685,7 @@ static const struct ethtool_ops de_ethtool_ops = {
+ 	.get_regs		= de_get_regs,
+ };
+ 
+-static void __init de21040_get_mac_address (struct de_private *de)
++static void __devinit de21040_get_mac_address (struct de_private *de)
+ {
+ 	unsigned i;
+ 
+@@ -1703,7 +1703,7 @@ static void __init de21040_get_mac_address (struct de_private *de)
+ 	}
+ }
+ 
+-static void __init de21040_get_media_info(struct de_private *de)
++static void __devinit de21040_get_media_info(struct de_private *de)
+ {
+ 	unsigned int i;
+ 
+@@ -1765,7 +1765,7 @@ static unsigned __devinit tulip_read_eeprom(void __iomem *regs, int location, in
+ 	return retval;
+ }
+ 
+-static void __init de21041_get_srom_info (struct de_private *de)
++static void __devinit de21041_get_srom_info (struct de_private *de)
+ {
+ 	unsigned i, sa_offset = 0, ofs;
+ 	u8 ee_data[DE_EEPROM_SIZE + 6] = {};
+diff --git a/drivers/net/tulip/dmfe.c b/drivers/net/tulip/dmfe.c
+index 7f59a3d..24a29c9 100644
+--- a/drivers/net/tulip/dmfe.c
++++ b/drivers/net/tulip/dmfe.c
+@@ -143,9 +143,16 @@
+ #define DMFE_TX_TIMEOUT ((3*HZ)/2)	/* tx packet time-out time 1.5 s" */
+ #define DMFE_TX_KICK 	(HZ/2)	/* tx packet Kick-out time 0.5 s" */
+ 
+-#define DMFE_DBUG(dbug_now, msg, value) if (dmfe_debug || (dbug_now)) printk(KERN_ERR DRV_NAME ": %s %lx\n", (msg), (long) (value))
++#define DMFE_DBUG(dbug_now, msg, value) \
++	do { \
++ 		if (dmfe_debug || (dbug_now)) \
++			printk(KERN_ERR DRV_NAME ": %s %lx\n",\
++ 				(msg), (long) (value)); \
++	} while (0)
+ 
+-#define SHOW_MEDIA_TYPE(mode) printk(KERN_ERR DRV_NAME ": Change Speed to %sMhz %s duplex\n",mode & 1 ?"100":"10", mode & 4 ? "full":"half");
++#define SHOW_MEDIA_TYPE(mode) \
++	printk (KERN_INFO DRV_NAME ": Change Speed to %sMhz %s duplex\n" , \
++		(mode & 1) ? "100":"10", (mode & 4) ? "full":"half");
+ 
+ 
+ /* CR9 definition: SROM/MII */
+@@ -163,10 +170,20 @@
+ 
+ #define SROM_V41_CODE   0x14
+ 
+-#define SROM_CLK_WRITE(data, ioaddr) outl(data|CR9_SROM_READ|CR9_SRCS,ioaddr);udelay(5);outl(data|CR9_SROM_READ|CR9_SRCS|CR9_SRCLK,ioaddr);udelay(5);outl(data|CR9_SROM_READ|CR9_SRCS,ioaddr);udelay(5);
++#define SROM_CLK_WRITE(data, ioaddr) \
++	outl(data|CR9_SROM_READ|CR9_SRCS,ioaddr); \
++	udelay(5); \
++	outl(data|CR9_SROM_READ|CR9_SRCS|CR9_SRCLK,ioaddr); \
++	udelay(5); \
++	outl(data|CR9_SROM_READ|CR9_SRCS,ioaddr); \
++	udelay(5);
++
++#define __CHK_IO_SIZE(pci_id, dev_rev) \
++ (( ((pci_id)==PCI_DM9132_ID) || ((dev_rev) >= 0x02000030) ) ? \
++	DM9102A_IO_SIZE: DM9102_IO_SIZE)
+ 
+-#define __CHK_IO_SIZE(pci_id, dev_rev) ( ((pci_id)==PCI_DM9132_ID) || ((dev_rev) >= 0x02000030) ) ? DM9102A_IO_SIZE: DM9102_IO_SIZE
+-#define CHK_IO_SIZE(pci_dev, dev_rev) __CHK_IO_SIZE(((pci_dev)->device << 16) | (pci_dev)->vendor, dev_rev)
++#define CHK_IO_SIZE(pci_dev, dev_rev) \
++	(__CHK_IO_SIZE(((pci_dev)->device << 16) | (pci_dev)->vendor, dev_rev))
+ 
+ /* Sten Check */
+ #define DEVICE net_device
+@@ -187,7 +204,7 @@ struct rx_desc {
+ struct dmfe_board_info {
+ 	u32 chip_id;			/* Chip vendor/Device ID */
+ 	u32 chip_revision;		/* Chip revision */
+-	struct DEVICE *dev;		/* net device */
++	struct DEVICE *next_dev;	/* next device */
+ 	struct pci_dev *pdev;		/* PCI device */
+ 	spinlock_t lock;
+ 
+@@ -231,7 +248,6 @@ struct dmfe_board_info {
+ 	u8 media_mode;			/* user specify media mode */
+ 	u8 op_mode;			/* real work media mode */
+ 	u8 phy_addr;
+-	u8 link_failed;			/* Ever link failed */
+ 	u8 wait_reset;			/* Hardware failed, need to reset */
+ 	u8 dm910x_chk_mode;		/* Operating mode check */
+ 	u8 first_in_callback;		/* Flag to record state */
+@@ -329,7 +345,7 @@ static void dmfe_program_DM9802(struct dmfe_board_info *);
+ static void dmfe_HPNA_remote_cmd_chk(struct dmfe_board_info * );
+ static void dmfe_set_phyxcer(struct dmfe_board_info *);
+ 
+-/* DM910X network baord routine ---------------------------- */
++/* DM910X network board routine ---------------------------- */
+ 
+ /*
+  *	Search DM910X board ,allocate space and register it
+@@ -356,7 +372,8 @@ static int __devinit dmfe_init_one (struct pci_dev *pdev,
+ 	SET_NETDEV_DEV(dev, &pdev->dev);
+ 
+ 	if (pci_set_dma_mask(pdev, DMA_32BIT_MASK)) {
+-		printk(KERN_WARNING DRV_NAME ": 32-bit PCI DMA not available.\n");
++		printk(KERN_WARNING DRV_NAME
++			": 32-bit PCI DMA not available.\n");
+ 		err = -ENODEV;
+ 		goto err_out_free;
+ 	}
+@@ -399,11 +416,12 @@ static int __devinit dmfe_init_one (struct pci_dev *pdev,
+ 	/* Init system & device */
+ 	db = netdev_priv(dev);
+ 
+-	db->dev = dev;
+-
+ 	/* Allocate Tx/Rx descriptor memory */
+-	db->desc_pool_ptr = pci_alloc_consistent(pdev, sizeof(struct tx_desc) * DESC_ALL_CNT + 0x20, &db->desc_pool_dma_ptr);
+-	db->buf_pool_ptr = pci_alloc_consistent(pdev, TX_BUF_ALLOC * TX_DESC_CNT + 4, &db->buf_pool_dma_ptr);
++	db->desc_pool_ptr = pci_alloc_consistent(pdev, sizeof(struct tx_desc) *
++			DESC_ALL_CNT + 0x20, &db->desc_pool_dma_ptr);
++
++	db->buf_pool_ptr = pci_alloc_consistent(pdev, TX_BUF_ALLOC *
++			TX_DESC_CNT + 4, &db->buf_pool_dma_ptr);
+ 
+ 	db->first_tx_desc = (struct tx_desc *) db->desc_pool_ptr;
+ 	db->first_tx_desc_dma = db->desc_pool_dma_ptr;
+@@ -428,7 +446,7 @@ static int __devinit dmfe_init_one (struct pci_dev *pdev,
+ 	dev->poll_controller = &poll_dmfe;
+ #endif
+ 	dev->ethtool_ops = &netdev_ethtool_ops;
+-	netif_carrier_off(db->dev);
++	netif_carrier_off(dev);
+ 	spin_lock_init(&db->lock);
+ 
+ 	pci_read_config_dword(pdev, 0x50, &pci_pmr);
+@@ -440,7 +458,8 @@ static int __devinit dmfe_init_one (struct pci_dev *pdev,
+ 
+ 	/* read 64 word srom data */
+ 	for (i = 0; i < 64; i++)
+-		((u16 *) db->srom)[i] = cpu_to_le16(read_srom_word(db->ioaddr, i));
++		((u16 *) db->srom)[i] =
++			cpu_to_le16(read_srom_word(db->ioaddr, i));
+ 
+ 	/* Set Node address */
+ 	for (i = 0; i < 6; i++)
+@@ -482,14 +501,17 @@ static void __devexit dmfe_remove_one (struct pci_dev *pdev)
+ 	DMFE_DBUG(0, "dmfe_remove_one()", 0);
+ 
+  	if (dev) {
++
++		unregister_netdev(dev);
++
+ 		pci_free_consistent(db->pdev, sizeof(struct tx_desc) *
+ 					DESC_ALL_CNT + 0x20, db->desc_pool_ptr,
+  					db->desc_pool_dma_ptr);
+ 		pci_free_consistent(db->pdev, TX_BUF_ALLOC * TX_DESC_CNT + 4,
+ 					db->buf_pool_ptr, db->buf_pool_dma_ptr);
+-		unregister_netdev(dev);
+ 		pci_release_regions(pdev);
+ 		free_netdev(dev);	/* free board information */
++
+ 		pci_set_drvdata(pdev, NULL);
+ 	}
+ 
+@@ -509,7 +531,8 @@ static int dmfe_open(struct DEVICE *dev)
+ 
+ 	DMFE_DBUG(0, "dmfe_open", 0);
+ 
+-	ret = request_irq(dev->irq, &dmfe_interrupt, IRQF_SHARED, dev->name, dev);
++	ret = request_irq(dev->irq, &dmfe_interrupt,
++			  IRQF_SHARED, dev->name, dev);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -518,7 +541,6 @@ static int dmfe_open(struct DEVICE *dev)
+ 	db->tx_packet_cnt = 0;
+ 	db->tx_queue_cnt = 0;
+ 	db->rx_avail_cnt = 0;
+-	db->link_failed = 1;
+ 	db->wait_reset = 0;
+ 
+ 	db->first_in_callback = 0;
+@@ -650,7 +672,8 @@ static int dmfe_start_xmit(struct sk_buff *skb, struct DEVICE *dev)
+ 	/* No Tx resource check, it never happen nromally */
+ 	if (db->tx_queue_cnt >= TX_FREE_DESC_CNT) {
+ 		spin_unlock_irqrestore(&db->lock, flags);
+-		printk(KERN_ERR DRV_NAME ": No Tx resource %ld\n", db->tx_queue_cnt);
++		printk(KERN_ERR DRV_NAME ": No Tx resource %ld\n",
++		       db->tx_queue_cnt);
+ 		return 1;
+ 	}
+ 
+@@ -722,7 +745,8 @@ static int dmfe_stop(struct DEVICE *dev)
+ 
+ #if 0
+ 	/* show statistic counter */
+-	printk(DRV_NAME ": FU:%lx EC:%lx LC:%lx NC:%lx LOC:%lx TXJT:%lx RESET:%lx RCR8:%lx FAL:%lx TT:%lx\n",
++	printk(DRV_NAME ": FU:%lx EC:%lx LC:%lx NC:%lx"
++		" LOC:%lx TXJT:%lx RESET:%lx RCR8:%lx FAL:%lx TT:%lx\n",
+ 		db->tx_fifo_underrun, db->tx_excessive_collision,
+ 		db->tx_late_collision, db->tx_no_carrier, db->tx_loss_carrier,
+ 		db->tx_jabber_timeout, db->reset_count, db->reset_cr8,
+@@ -905,7 +929,7 @@ static inline u32 cal_CRC(unsigned char * Data, unsigned int Len, u8 flag)
+ static void dmfe_rx_packet(struct DEVICE *dev, struct dmfe_board_info * db)
+ {
+ 	struct rx_desc *rxptr;
+-	struct sk_buff *skb;
++	struct sk_buff *skb, *newskb;
+ 	int rxlen;
+ 	u32 rdes0;
+ 
+@@ -919,7 +943,9 @@ static void dmfe_rx_packet(struct DEVICE *dev, struct dmfe_board_info * db)
+ 		db->rx_avail_cnt--;
+ 		db->interval_rx_cnt++;
+ 
+-		pci_unmap_single(db->pdev, le32_to_cpu(rxptr->rdes2), RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE);
++		pci_unmap_single(db->pdev, le32_to_cpu(rxptr->rdes2),
++				 RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE);
++
+ 		if ( (rdes0 & 0x300) != 0x300) {
+ 			/* A packet without First/Last flag */
+ 			/* reuse this SKB */
+@@ -956,9 +982,11 @@ static void dmfe_rx_packet(struct DEVICE *dev, struct dmfe_board_info * db)
+ 				} else {
+ 					/* Good packet, send to upper layer */
+ 					/* Shorst packet used new SKB */
+-					if ( (rxlen < RX_COPY_SIZE) &&
+-						( (skb = dev_alloc_skb(rxlen + 2) )
+-						!= NULL) ) {
++					if ((rxlen < RX_COPY_SIZE) &&
++						((newskb = dev_alloc_skb(rxlen + 2))
++						!= NULL)) {
++
++						skb = newskb;
+ 						/* size less than COPY_SIZE, allocate a rxlen SKB */
+ 						skb->dev = dev;
+ 						skb_reserve(skb, 2); /* 16byte align */
+@@ -1069,6 +1097,8 @@ static void dmfe_timer(unsigned long data)
+ 	struct dmfe_board_info *db = netdev_priv(dev);
+  	unsigned long flags;
+ 
++	int link_ok, link_ok_phy;
++
+ 	DMFE_DBUG(0, "dmfe_timer()", 0);
+ 	spin_lock_irqsave(&db->lock, flags);
+ 
+@@ -1078,7 +1108,8 @@ static void dmfe_timer(unsigned long data)
+ 		if (db->chip_type && (db->chip_id==PCI_DM9102_ID)) {
+ 			db->cr6_data &= ~0x40000;
+ 			update_cr6(db->cr6_data, db->ioaddr);
+-			phy_write(db->ioaddr, db->phy_addr, 0, 0x1000, db->chip_id);
++			phy_write(db->ioaddr,
++				  db->phy_addr, 0, 0x1000, db->chip_id);
+ 			db->cr6_data |= 0x40000;
+ 			update_cr6(db->cr6_data, db->ioaddr);
+ 			db->timer.expires = DMFE_TIMER_WUT + HZ * 2;
+@@ -1139,21 +1170,41 @@ static void dmfe_timer(unsigned long data)
+ 		(db->chip_revision == 0x02000010)) ) {
+ 		/* DM9102A Chip */
+ 		if (tmp_cr12 & 2)
+-			tmp_cr12 = 0x0;		/* Link failed */
++			link_ok = 0;
+ 		else
+-			tmp_cr12 = 0x3;	/* Link OK */
++			link_ok = 1;
+ 	}
++	else
++		/*0x43 is used instead of 0x3 because bit 6 should represent
++			link status of external PHY */
++		link_ok = (tmp_cr12 & 0x43) ? 1 : 0;
++
++
++	/* If chip reports that link is failed it could be because external
++		PHY link status pin is not conected correctly to chip
++		To be sure ask PHY too.
++	*/
++
++	/* need a dummy read because of PHY's register latch*/
++	phy_read (db->ioaddr, db->phy_addr, 1, db->chip_id);
++	link_ok_phy = (phy_read (db->ioaddr,
++		       db->phy_addr, 1, db->chip_id) & 0x4) ? 1 : 0;
+ 
+-	if ( !(tmp_cr12 & 0x3) && !db->link_failed ) {
++	if (link_ok_phy != link_ok) {
++		DMFE_DBUG (0, "PHY and chip report different link status", 0);
++		link_ok = link_ok | link_ok_phy;
++ 	}
++
++	if ( !link_ok && netif_carrier_ok(dev)) {
+ 		/* Link Failed */
+ 		DMFE_DBUG(0, "Link Failed", tmp_cr12);
+-		db->link_failed = 1;
+-		netif_carrier_off(db->dev);
++		netif_carrier_off(dev);
+ 
+ 		/* For Force 10/100M Half/Full mode: Enable Auto-Nego mode */
+ 		/* AUTO or force 1M Homerun/Longrun don't need */
+ 		if ( !(db->media_mode & 0x38) )
+-			phy_write(db->ioaddr, db->phy_addr, 0, 0x1000, db->chip_id);
++			phy_write(db->ioaddr, db->phy_addr,
++				  0, 0x1000, db->chip_id);
+ 
+ 		/* AUTO mode, if INT phyxcer link failed, select EXT device */
+ 		if (db->media_mode & DMFE_AUTO) {
+@@ -1162,21 +1213,19 @@ static void dmfe_timer(unsigned long data)
+ 			db->cr6_data&=~0x00000200;	/* bit9=0, HD mode */
+ 			update_cr6(db->cr6_data, db->ioaddr);
+ 		}
+-	} else
+-		if ((tmp_cr12 & 0x3) && db->link_failed) {
+-			DMFE_DBUG(0, "Link link OK", tmp_cr12);
+-			db->link_failed = 0;
+-
+-			/* Auto Sense Speed */
+-			if ( (db->media_mode & DMFE_AUTO) &&
+-				dmfe_sense_speed(db) )
+-				db->link_failed = 1;
+-			else
+-				netif_carrier_on(db->dev);
+-			dmfe_process_mode(db);
+-			/* SHOW_MEDIA_TYPE(db->op_mode); */
++	} else if (!netif_carrier_ok(dev)) {
++
++		DMFE_DBUG(0, "Link link OK", tmp_cr12);
++
++		/* Auto Sense Speed */
++		if ( !(db->media_mode & DMFE_AUTO) || !dmfe_sense_speed(db)) {
++			netif_carrier_on(dev);
++			SHOW_MEDIA_TYPE(db->op_mode);
+ 		}
+ 
++		dmfe_process_mode(db);
++	}
++
+ 	/* HPNA remote command check */
+ 	if (db->HPNA_command & 0xf00) {
+ 		db->HPNA_timer--;
+@@ -1221,7 +1270,7 @@ static void dmfe_dynamic_reset(struct DEVICE *dev)
+ 	db->tx_packet_cnt = 0;
+ 	db->tx_queue_cnt = 0;
+ 	db->rx_avail_cnt = 0;
+-	db->link_failed = 1;
++	netif_carrier_off(dev);
+ 	db->wait_reset = 0;
+ 
+ 	/* Re-initilize DM910X board */
+@@ -1259,7 +1308,8 @@ static void dmfe_reuse_skb(struct dmfe_board_info *db, struct sk_buff * skb)
+ 
+ 	if (!(rxptr->rdes0 & cpu_to_le32(0x80000000))) {
+ 		rxptr->rx_skb_ptr = skb;
+-		rxptr->rdes2 = cpu_to_le32( pci_map_single(db->pdev, skb->data, RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE) );
++		rxptr->rdes2 = cpu_to_le32( pci_map_single(db->pdev,
++			    skb->data, RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE) );
+ 		wmb();
+ 		rxptr->rdes0 = cpu_to_le32(0x80000000);
+ 		db->rx_avail_cnt++;
+@@ -1291,8 +1341,11 @@ static void dmfe_descriptor_init(struct dmfe_board_info *db, unsigned long ioadd
+ 	outl(db->first_tx_desc_dma, ioaddr + DCR4);     /* TX DESC address */
+ 
+ 	/* rx descriptor start pointer */
+-	db->first_rx_desc = (void *)db->first_tx_desc + sizeof(struct tx_desc) * TX_DESC_CNT;
+-	db->first_rx_desc_dma =  db->first_tx_desc_dma + sizeof(struct tx_desc) * TX_DESC_CNT;
++	db->first_rx_desc = (void *)db->first_tx_desc +
++			sizeof(struct tx_desc) * TX_DESC_CNT;
++
++	db->first_rx_desc_dma =  db->first_tx_desc_dma +
++			sizeof(struct tx_desc) * TX_DESC_CNT;
+ 	db->rx_insert_ptr = db->first_rx_desc;
+ 	db->rx_ready_ptr = db->first_rx_desc;
+ 	outl(db->first_rx_desc_dma, ioaddr + DCR3);	/* RX DESC address */
+@@ -1470,7 +1523,8 @@ static void allocate_rx_buffer(struct dmfe_board_info *db)
+ 		if ( ( skb = dev_alloc_skb(RX_ALLOC_SIZE) ) == NULL )
+ 			break;
+ 		rxptr->rx_skb_ptr = skb; /* FIXME (?) */
+-		rxptr->rdes2 = cpu_to_le32( pci_map_single(db->pdev, skb->data, RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE) );
++		rxptr->rdes2 = cpu_to_le32( pci_map_single(db->pdev, skb->data,
++				    RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE) );
+ 		wmb();
+ 		rxptr->rdes0 = cpu_to_le32(0x80000000);
+ 		rxptr = rxptr->next_rx_desc;
+@@ -1510,7 +1564,8 @@ static u16 read_srom_word(long ioaddr, int offset)
+ 	for (i = 16; i > 0; i--) {
+ 		outl(CR9_SROM_READ | CR9_SRCS | CR9_SRCLK, cr9_ioaddr);
+ 		udelay(5);
+-		srom_data = (srom_data << 1) | ((inl(cr9_ioaddr) & CR9_CRDOUT) ? 1 : 0);
++		srom_data = (srom_data << 1) |
++				((inl(cr9_ioaddr) & CR9_CRDOUT) ? 1 : 0);
+ 		outl(CR9_SROM_READ | CR9_SRCS, cr9_ioaddr);
+ 		udelay(5);
+ 	}
+@@ -1537,9 +1592,11 @@ static u8 dmfe_sense_speed(struct dmfe_board_info * db)
+ 
+ 	if ( (phy_mode & 0x24) == 0x24 ) {
+ 		if (db->chip_id == PCI_DM9132_ID)	/* DM9132 */
+-			phy_mode = phy_read(db->ioaddr, db->phy_addr, 7, db->chip_id) & 0xf000;
++			phy_mode = phy_read(db->ioaddr,
++				    db->phy_addr, 7, db->chip_id) & 0xf000;
+ 		else 				/* DM9102/DM9102A */
+-			phy_mode = phy_read(db->ioaddr, db->phy_addr, 17, db->chip_id) & 0xf000;
++			phy_mode = phy_read(db->ioaddr,
++				    db->phy_addr, 17, db->chip_id) & 0xf000;
+ 		/* printk(DRV_NAME ": Phy_mode %x ",phy_mode); */
+ 		switch (phy_mode) {
+ 		case 0x1000: db->op_mode = DMFE_10MHF; break;
+@@ -1576,8 +1633,11 @@ static void dmfe_set_phyxcer(struct dmfe_board_info *db)
+ 
+ 	/* DM9009 Chip: Phyxcer reg18 bit12=0 */
+ 	if (db->chip_id == PCI_DM9009_ID) {
+-		phy_reg = phy_read(db->ioaddr, db->phy_addr, 18, db->chip_id) & ~0x1000;
+-		phy_write(db->ioaddr, db->phy_addr, 18, phy_reg, db->chip_id);
++		phy_reg = phy_read(db->ioaddr,
++				   db->phy_addr, 18, db->chip_id) & ~0x1000;
++
++		phy_write(db->ioaddr,
++			  db->phy_addr, 18, phy_reg, db->chip_id);
+ 	}
+ 
+ 	/* Phyxcer capability setting */
+@@ -1650,10 +1710,12 @@ static void dmfe_process_mode(struct dmfe_board_info *db)
+ 			case DMFE_100MHF: phy_reg = 0x2000; break;
+ 			case DMFE_100MFD: phy_reg = 0x2100; break;
+ 			}
+-			phy_write(db->ioaddr, db->phy_addr, 0, phy_reg, db->chip_id);
++			phy_write(db->ioaddr,
++				  db->phy_addr, 0, phy_reg, db->chip_id);
+        			if ( db->chip_type && (db->chip_id == PCI_DM9102_ID) )
+ 				mdelay(20);
+-			phy_write(db->ioaddr, db->phy_addr, 0, phy_reg, db->chip_id);
++			phy_write(db->ioaddr,
++				  db->phy_addr, 0, phy_reg, db->chip_id);
+ 		}
+ 	}
+ }
+@@ -1663,7 +1725,8 @@ static void dmfe_process_mode(struct dmfe_board_info *db)
+  *	Write a word to Phy register
+  */
+ 
+-static void phy_write(unsigned long iobase, u8 phy_addr, u8 offset, u16 phy_data, u32 chip_id)
++static void phy_write(unsigned long iobase, u8 phy_addr, u8 offset,
++		      u16 phy_data, u32 chip_id)
+ {
+ 	u16 i;
+ 	unsigned long ioaddr;
+@@ -1689,11 +1752,13 @@ static void phy_write(unsigned long iobase, u8 phy_addr, u8 offset, u16 phy_data
+ 
+ 		/* Send Phy address */
+ 		for (i = 0x10; i > 0; i = i >> 1)
+-			phy_write_1bit(ioaddr, phy_addr & i ? PHY_DATA_1 : PHY_DATA_0);
++			phy_write_1bit(ioaddr,
++				       phy_addr & i ? PHY_DATA_1 : PHY_DATA_0);
+ 
+ 		/* Send register address */
+ 		for (i = 0x10; i > 0; i = i >> 1)
+-			phy_write_1bit(ioaddr, offset & i ? PHY_DATA_1 : PHY_DATA_0);
++			phy_write_1bit(ioaddr,
++				       offset & i ? PHY_DATA_1 : PHY_DATA_0);
+ 
+ 		/* written trasnition */
+ 		phy_write_1bit(ioaddr, PHY_DATA_1);
+@@ -1701,7 +1766,8 @@ static void phy_write(unsigned long iobase, u8 phy_addr, u8 offset, u16 phy_data
+ 
+ 		/* Write a word data to PHY controller */
+ 		for ( i = 0x8000; i > 0; i >>= 1)
+-			phy_write_1bit(ioaddr, phy_data & i ? PHY_DATA_1 : PHY_DATA_0);
++			phy_write_1bit(ioaddr,
++				       phy_data & i ? PHY_DATA_1 : PHY_DATA_0);
+ 	}
+ }
+ 
+@@ -1738,11 +1804,13 @@ static u16 phy_read(unsigned long iobase, u8 phy_addr, u8 offset, u32 chip_id)
+ 
+ 		/* Send Phy address */
+ 		for (i = 0x10; i > 0; i = i >> 1)
+-			phy_write_1bit(ioaddr, phy_addr & i ? PHY_DATA_1 : PHY_DATA_0);
++			phy_write_1bit(ioaddr,
++				       phy_addr & i ? PHY_DATA_1 : PHY_DATA_0);
+ 
+ 		/* Send register address */
+ 		for (i = 0x10; i > 0; i = i >> 1)
+-			phy_write_1bit(ioaddr, offset & i ? PHY_DATA_1 : PHY_DATA_0);
++			phy_write_1bit(ioaddr,
++				       offset & i ? PHY_DATA_1 : PHY_DATA_0);
+ 
+ 		/* Skip transition state */
+ 		phy_read_1bit(ioaddr);
+@@ -1963,7 +2031,8 @@ static void dmfe_HPNA_remote_cmd_chk(struct dmfe_board_info * db)
+ 
+ 	/* Check remote device status match our setting ot not */
+ 	if ( phy_reg != (db->HPNA_command & 0x0f00) ) {
+-		phy_write(db->ioaddr, db->phy_addr, 16, db->HPNA_command, db->chip_id);
++		phy_write(db->ioaddr, db->phy_addr, 16, db->HPNA_command,
++			  db->chip_id);
+ 		db->HPNA_timer=8;
+ 	} else
+ 		db->HPNA_timer=600;	/* Match, every 10 minutes, check */
+@@ -2003,8 +2072,11 @@ module_param(HPNA_tx_cmd, byte, 0);
+ module_param(HPNA_NoiseFloor, byte, 0);
+ module_param(SF_mode, byte, 0);
+ MODULE_PARM_DESC(debug, "Davicom DM9xxx enable debugging (0-1)");
+-MODULE_PARM_DESC(mode, "Davicom DM9xxx: Bit 0: 10/100Mbps, bit 2: duplex, bit 8: HomePNA");
+-MODULE_PARM_DESC(SF_mode, "Davicom DM9xxx special function (bit 0: VLAN, bit 1 Flow Control, bit 2: TX pause packet)");
++MODULE_PARM_DESC(mode, "Davicom DM9xxx: "
++		"Bit 0: 10/100Mbps, bit 2: duplex, bit 8: HomePNA");
++
++MODULE_PARM_DESC(SF_mode, "Davicom DM9xxx special function "
++		"(bit 0: VLAN, bit 1 Flow Control, bit 2: TX pause packet)");
+ 
+ /*	Description:
+  *	when user used insmod to add module, system invoked init_module()
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 885e73d..dab88b9 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3598,17 +3598,20 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	/* Move to next BD in the ring */
+ 	if (!(bd_status & T_W))
+-		ugeth->txBd[txQ] = bd + sizeof(struct qe_bd);
++		bd += sizeof(struct qe_bd);
+ 	else
+-		ugeth->txBd[txQ] = ugeth->p_tx_bd_ring[txQ];
++		bd = ugeth->p_tx_bd_ring[txQ];
+ 
+ 	/* If the next BD still needs to be cleaned up, then the bds
+ 	   are full.  We need to tell the kernel to stop sending us stuff. */
+ 	if (bd == ugeth->confBd[txQ]) {
+ 		if (!netif_queue_stopped(dev))
+ 			netif_stop_queue(dev);
++		return NETDEV_TX_BUSY;
+ 	}
+ 
++	ugeth->txBd[txQ] = bd;
++
+ 	if (ugeth->p_scheduler) {
+ 		ugeth->cpucount[txQ]++;
+ 		/* Indicate to QE that there are more Tx bds ready for
+@@ -3620,7 +3623,7 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	spin_unlock_irq(&ugeth->lock);
+ 
+-	return 0;
++	return NETDEV_TX_OK;
+ }
+ 
+ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit)
+@@ -3722,7 +3725,7 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
+ 		/* Handle the transmitted buffer and release */
+ 		/* the BD to be used with the current frame  */
+ 
+-		if ((bd = ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
++		if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
+ 			break;
+ 
+ 		ugeth->stats.tx_packets++;
+@@ -3741,10 +3744,12 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
+ 
+ 		/* Advance the confirmation BD pointer */
+ 		if (!(bd_status & T_W))
+-			ugeth->confBd[txQ] += sizeof(struct qe_bd);
++			bd += sizeof(struct qe_bd);
+ 		else
+-			ugeth->confBd[txQ] = ugeth->p_tx_bd_ring[txQ];
++			bd = ugeth->p_tx_bd_ring[txQ];
++		bd_status = in_be32((u32 *)bd);
+ 	}
++	ugeth->confBd[txQ] = bd;
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/igmp.h b/include/linux/igmp.h
+index 9dbb525..a113fe6 100644
+--- a/include/linux/igmp.h
++++ b/include/linux/igmp.h
+@@ -218,5 +218,7 @@ extern void ip_mc_up(struct in_device *);
+ extern void ip_mc_down(struct in_device *);
+ extern void ip_mc_dec_group(struct in_device *in_dev, __be32 addr);
+ extern void ip_mc_inc_group(struct in_device *in_dev, __be32 addr);
++extern void ip_mc_rejoin_group(struct ip_mc_list *im);
++
+ #endif
+ #endif
+diff --git a/include/linux/mv643xx.h b/include/linux/mv643xx.h
+index e7d4da1..c6d4ab8 100644
+--- a/include/linux/mv643xx.h
++++ b/include/linux/mv643xx.h
+@@ -1288,6 +1288,7 @@ struct mv64xxx_i2c_pdata {
+ #define MV643XX_ETH_NAME	"mv643xx_eth"
+ 
+ struct mv643xx_eth_platform_data {
++	int		port_number;
+ 	u16		force_phy_addr;	/* force override if phy_addr == 0 */
+ 	u16		phy_addr;
+ 
+diff --git a/net/ipv4/igmp.c b/net/ipv4/igmp.c
+index 0637213..1c6a084 100644
+--- a/net/ipv4/igmp.c
++++ b/net/ipv4/igmp.c
+@@ -1251,6 +1251,28 @@ out:
+ }
+ 
+ /*
++ *	Resend IGMP JOIN report; used for bonding.
++ */
++void ip_mc_rejoin_group(struct ip_mc_list *im)
++{
++	struct in_device *in_dev = im->interface;
++
++#ifdef CONFIG_IP_MULTICAST
++	if (im->multiaddr == IGMP_ALL_HOSTS)
++		return;
++
++	if (IGMP_V1_SEEN(in_dev) || IGMP_V2_SEEN(in_dev)) {
++		igmp_mod_timer(im, IGMP_Initial_Report_Delay);
++		return;
++	}
++	/* else, v3 */
++	im->crcount = in_dev->mr_qrv ? in_dev->mr_qrv :
++		IGMP_Unsolicited_Report_Count;
++	igmp_ifc_event(in_dev);
++#endif
++}
++
++/*
+  *	A socket has left a multicast group on device dev
+  */
+ 
+@@ -2596,3 +2618,4 @@ int __init igmp_mc_proc_init(void)
+ EXPORT_SYMBOL(ip_mc_dec_group);
+ EXPORT_SYMBOL(ip_mc_inc_group);
+ EXPORT_SYMBOL(ip_mc_join_group);
++EXPORT_SYMBOL(ip_mc_rejoin_group);
