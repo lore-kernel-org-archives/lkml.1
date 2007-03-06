@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965170AbXCFPSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965924AbXCFPUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965170AbXCFPSi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965174AbXCFPSh
+	id S965924AbXCFPUZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965925AbXCFPUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:18:37 -0500
-Received: from mo-p07-ob.rzone.de ([81.169.146.190]:46690 "EHLO
-	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965170AbXCFPSh (ORCPT
+	Tue, 6 Mar 2007 10:20:25 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:3365 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965924AbXCFPUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:18:37 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Dirk Schoebel <dirk@liji-und-dirk.de>
-Subject: Re: [linux-usb-devel] OOPS with 2.6.20 and 2.6.21-rc2 (mos7720)
-Date: Tue, 6 Mar 2007 16:18:26 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-References: <esjg1h$l8d$1@sea.gmane.org> <200703061207.53484.oliver@neukum.org> <esjv78$g3h$1@sea.gmane.org>
-In-Reply-To: <esjv78$g3h$1@sea.gmane.org>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_CZY7FYLjRdgV+i8"
-Message-Id: <200703061618.26402.oliver@neukum.org>
-X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GPE5pUNaoG1wTinqjVVl1GKJZKNFH60/y81w==
-X-RZG-CLASS-ID: mo07
+	Tue, 6 Mar 2007 10:20:24 -0500
+Date: Tue, 6 Mar 2007 16:19:35 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: David Hubbard <david.c.hubbard@gmail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
+       linux-acpi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
+       Rudolf@atrpms.net
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-Id: <20070306161935.025a3ec1.khali@linux-fr.org>
+In-Reply-To: <E1HODgC-0000h8-Vc@be1.lrz>
+References: <7PvLN-1cj-3@gated-at.bofh.it>
+	<7TEGV-6Jy-39@gated-at.bofh.it>
+	<7TUBX-6TN-5@gated-at.bofh.it>
+	<7UeqX-4QO-17@gated-at.bofh.it>
+	<7UeqZ-4QO-27@gated-at.bofh.it>
+	<7UgM5-np-1@gated-at.bofh.it>
+	<7UgM8-np-11@gated-at.bofh.it>
+	<7UnaS-2xP-9@gated-at.bofh.it>
+	<7UnkC-2JB-9@gated-at.bofh.it>
+	<7Uzcd-49u-3@gated-at.bofh.it>
+	<7UEEN-4xi-3@gated-at.bofh.it>
+	<E1HODgC-0000h8-Vc@be1.lrz>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_CZY7FYLjRdgV+i8
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Bodo,
 
-Am Dienstag, 6. M=C3=A4rz 2007 15:52 schrieb Dirk Schoebel:
+On Mon, 05 Mar 2007 14:56:44 +0100, Bodo Eggert wrote:
+> 1) Make a general resource allocation lock, if there is none.
 
-> hmm, applied these patches, still crashes
+Such a lock certainly exists, but I doubt it is public at the moment.
 
-Please apply the attached debugging patch.
+> 2) make ACPI take this lock whenever it touches ports not allocated by itself
+>    and release it on function return.
 
-	Regards
-		Oliver
+This is costly.
 
---Boundary-00=_CZY7FYLjRdgV+i8
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="mos.debug"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="mos.debug"
+> 3) Make ACPI callback the allocating device if it touches allocated ranges,
+>    and on function return.
 
---- a/drivers/usb/serial/mos7720.c	2007-03-06 16:16:16.000000000 +0100
-+++ b/drivers/usb/serial/mos7720.c	2007-03-06 16:16:21.000000000 +0100
-@@ -334,7 +334,7 @@
- 	int port_number;
- 	char data;
- 	int j;
--
-+BUG_ON(port == NULL);
- 	serial = port->serial;
- 
- 	mos7720_port = usb_get_serial_port_data(port);
+By callback, do you mean port forwarding as Rudolf Marek did, or more
+simple "stop touching the device" and "you can touch the device again"
+sort of signals? If the latter, this is no different from a mutex.
 
---Boundary-00=_CZY7FYLjRdgV+i8--
+> 1 + 2 will replace allocating single ports and freeing them again (so ACPI won't
+> prevent e.g. the display driver from loading just because it turned on the
+> backlight) while preventing races with newly allocated ranges, and 3 allows
+> coexistence with other drivers.
+
+What benefit do you see compared to a lock taken by both AML and the
+hardware monitoring drivers?
+
+Care to submit a sample implementation?
+
+Thanks,
+-- 
+Jean Delvare
