@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbXCFEQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbXCFEQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbXCFEQO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 23:16:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbXCFEQO
+	id S1752856AbXCFEQd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 23:16:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXCFEQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 23:16:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:45581 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbXCFEQN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 23:16:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:x-google-sender-auth;
-        b=tI2MTcmazV1hoEj7pyLXbqf4LQOfry9AwG38isQfFPBrdl6siM/KgbAM/whNxOJGgtnLmPOMT8Hccti+5Ie7MnlM+3QraRiiB44PlahHhqJPb95ncq2yC/EuBjmM+lwdG0F0rXY3+CZ6OWFFfC4ghfjFftdLtGi1gvRins6Nu8k=
-Message-ID: <86802c440703052016rc7500cbn929fa94d623c2a1@mail.gmail.com>
-Date: Mon, 5 Mar 2007 20:16:10 -0800
-From: "Yinghai Lu" <yinghai.lu@amd.com>
-To: ebiederm@xmission.com, "Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 1/2] x86_64 irq: remove extra smp_processor_id calling
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
+	Mon, 5 Mar 2007 23:16:33 -0500
+Received: from ozlabs.org ([203.10.76.45]:41568 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752856AbXCFEQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 23:16:31 -0500
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_172839_25553037.1173154570670"
-X-Google-Sender-Auth: 204630101cf9567c
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17900.60167.418766.280544@cargo.ozlabs.ibm.com>
+Date: Tue, 6 Mar 2007 15:16:07 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Balbir Singh <balbir@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
+       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: The performance and behaviour of the anti-fragmentation related
+ patches
+In-Reply-To: <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
+References: <20070301101249.GA29351@skynet.ie>
+	<20070301160915.6da876c5.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
+	<45E7835A.8000908@in.ibm.com>
+	<Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_172839_25553037.1173154570670
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Linus Torvalds writes:
 
-please check the patch
+> The point being that in the guests, hotunplug is almost useless (for 
+> bigger ranges), and we're much better off just telling the virtualization 
+> hosts on a per-page level whether we care about a page or not, than to 
+> worry about fragmentation.
 
-------=_Part_172839_25553037.1173154570670
-Content-Type: text/x-patch; name=1_irq_move_clean.patch; 
-	charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_eyxtvw4v
-Content-Disposition: attachment; filename="1_irq_move_clean.patch"
+We don't have that luxury on IBM System p machines, where the
+hypervisor manages memory in much larger units than a page.  Typically
+the size of memory block that the hypervisor uses to manage memory is
+16MB or more -- which makes sense from the point of view that if the
+hypervisor had to manage individual pages, it would end up adding a
+lot more overhead than it does.
 
-W1BBVENIIDEvMl0geDg2XzY0IGlycTogcmVtb3ZlIGV4dHJhIHNtcF9wcm9jZXNzb3JfaWQgY2Fs
-bGluZwoKcmVtb3ZlIHRoZSBleHRyYSBzbXBfcHJvY2Vzc29yX2lkIGNhbGxpbmcuCgpTaWduZWQt
-b2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpLmx1QGFtZC5jb20+IAoKZGlmZiAtLWdpdCBhL2Fy
-Y2gveDg2XzY0L2tlcm5lbC9pb19hcGljLmMgYi9hcmNoL3g4Nl82NC9rZXJuZWwvaW9fYXBpYy5j
-CmluZGV4IGM2YTViYzcuLjMxOGQ5MDUgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2XzY0L2tlcm5lbC9p
-b19hcGljLmMKKysrIGIvYXJjaC94ODZfNjQva2VybmVsL2lvX2FwaWMuYwpAQCAtMTQwNyw4ICsx
-NDA3LDcgQEAgc3RhdGljIHZvaWQgaXJxX2NvbXBsZXRlX21vdmUodW5zaWduZWQgaW50IGlycSkK
-IAogCXZlY3RvciA9IH5nZXRfaXJxX3JlZ3MoKS0+b3JpZ19yYXg7CiAJbWUgPSBzbXBfcHJvY2Vz
-c29yX2lkKCk7Ci0JaWYgKCh2ZWN0b3IgPT0gY2ZnLT52ZWN0b3IpICYmCi0JICAgIGNwdV9pc3Nl
-dChzbXBfcHJvY2Vzc29yX2lkKCksIGNmZy0+ZG9tYWluKSkgeworCWlmICgodmVjdG9yID09IGNm
-Zy0+dmVjdG9yKSAmJiBjcHVfaXNzZXQobWUsIGNmZy0+ZG9tYWluKSkgewogCQljcHVtYXNrX3Qg
-Y2xlYW51cF9tYXNrOwogCiAJCWNwdXNfYW5kKGNsZWFudXBfbWFzaywgY2ZnLT5vbGRfZG9tYWlu
-LCBjcHVfb25saW5lX21hcCk7Cg==
-------=_Part_172839_25553037.1173154570670--
+Paul.
