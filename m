@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965879AbXCFOis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965884AbXCFOkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965879AbXCFOis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 09:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965884AbXCFOis
+	id S965884AbXCFOkJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 09:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965105AbXCFOkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 09:38:48 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:39661 "EHLO pfx2.jmh.fr"
+	Tue, 6 Mar 2007 09:40:09 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:42636 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965879AbXCFOir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 09:38:47 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: "Vladimir B. Savkin" <master@sectorb.msk.ru>
-Subject: Re: Packet timestamps (was: Re: Network performance degradation from 2.6.11.12 to 2.6.16.20)
-Date: Tue, 6 Mar 2007 15:38:44 +0100
-User-Agent: KMail/1.9.5
-Cc: netdev@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       David Miller <davem@davemloft.net>, hawk@diku.dk,
-       harry@atmos.washington.edu, linux-kernel@vger.kernel.org,
-       Rick Jones <rick.jones2@hp.com>
-References: <200609181850.22851.ak@suse.de> <4514147D.5040803@hp.com> <20070306132551.GB8412@tentacle.sectorb.msk.ru>
-In-Reply-To: <20070306132551.GB8412@tentacle.sectorb.msk.ru>
+	id S965884AbXCFOkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 09:40:07 -0500
+Message-ID: <45ED7DEC.7010403@sw.ru>
+Date: Tue, 06 Mar 2007 17:42:52 +0300
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="koi8-r"
+To: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>
+CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
+Subject: [RFC][PATCH 0/7] Resource controllers based on process containers
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703061538.45049.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 March 2007 14:25, Vladimir B. Savkin wrote:
+This patchset adds RSS, accounting and control and
+limiting the number of tasks and files within container.
 
->  	},
-> +	{
-> +		.ctl_name	= NET_CORE_ACCURATE_TIMESTAMPS,
-> +		.procname	= "accurate_timestamps",
-> +		.data		= &sysctl_accurate_timestamps,
-> +		.maxlen		= sizeof(int),
-> +		.mode		= 0644,
-> +		.proc_handler	= &proc_dointvec
-> +	},
->  	{ .ctl_name = 0 }
->  };
->
->
-> May I ask about integrating this or a similar solution for those
-> like me who values routing performance (with bind9 running) over
-> minor convinience of having tcpdump always display accurate
-> timestamps?
->
+Based on top of Paul Menage's container subsystem v7
 
-Quite frankly I dont like this patch :
+RSS controller includes per-container RSS accounter,
+reclamation and OOM killer. It behaves like standalone
+machine - when container runs out of resources it tries
+to reclaim some pages and if it doesn't succeed in it
+kills some task which mm_struct belongs to container in
+question.
 
-1) Fix applications, do not bloat kernel.
+Num tasks and files containers are very simple and
+self-descriptive from code.
 
-2) "accurate_timestamps" is misleading. 
-	Should be "disable_timestamps" 
+As discussed before when a task moves from one container
+to another no resources follow it - they keep holding the
+container they were allocated in.
 
+The difficulties met during using of Pauls' containers were:
+
+1. Container fork hook is placed before new task
+   changes. This makes impossible of handling fork
+   properly. I.e. new mm_struct should have pointer
+   to RSS container, but we don't have one at that
+   early time.
+
+2. Extended containers may register themselves too late.
+   Kernel threads/helpers start forking, opening files
+   and touching pages much earlier. This patchset
+   workarounds this in not-so-cute manner and I'm waiting
+   for Paul's comments on this issue.
