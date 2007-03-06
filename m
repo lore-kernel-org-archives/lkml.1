@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933971AbXCFHf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933976AbXCFHiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933971AbXCFHf5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 02:35:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933972AbXCFHf5
+	id S933976AbXCFHiD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 02:38:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933975AbXCFHiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 02:35:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39474 "EHLO mx2.mail.elte.hu"
+	Tue, 6 Mar 2007 02:38:02 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:40313 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933971AbXCFHf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 02:35:56 -0500
-Date: Tue, 6 Mar 2007 08:35:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] paravirt: VDSO page is essential
-Message-ID: <20070306073511.GA3938@elte.hu>
-References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45ECC076.9050209@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S933106AbXCFHiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 02:38:00 -0500
+Date: Tue, 6 Mar 2007 08:37:38 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Robert Marquardt <marquardt@codemercs.com>
+cc: Li Yu <raise.sail@gmail.com>, Vincent Legoll <vincentlegoll@gmail.com>,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       Harold Sargeant <harold-sargeant@ntlworld.com>,
+       Greg Kroah Hartman <greg@kroah.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-usb-devel] [DOC] The documentation for HID Simple Driver
+ Interface 0.5.0
+In-Reply-To: <45ED11DE.4080304@codemercs.com>
+Message-ID: <Pine.LNX.4.64.0703060836360.10909@twin.jikos.cz>
+References: <200703051532096508636@gmail.com> <Pine.LNX.4.64.0703052304070.10909@twin.jikos.cz>
+ <45ED11DE.4080304@codemercs.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 Mar 2007, Robert Marquardt wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> I do not know too much about the Linux innards, but my opinion is that 
+> the HID API to userland should be the bare reports. Windows is handling 
+> it that way for a good reason. Far too many HID devices have either 
+> non-informative descriptors (declaring a byte array report) or declaring 
+> a report which does not match the data contained. Parsing a report is 
+> definitely a userland job.
 
-> > I had just sent this out for internal review...
-> 
-> I think Jan's approach is better if it works (since there's no 
-> compromise), but this is better if you want to get something working 
-> in the near term.
+Which is exactly what the new hidraw interface is going to provide.
 
-yeah. (plus my patches of course that remove the current papering-over 
-hackery and restores COMPAT_VDSO.)
-
-	Ingo
+-- 
+Jiri Kosina
