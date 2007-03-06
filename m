@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXCFNSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964976AbXCFNUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933290AbXCFNSx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934113AbXCFNSw
+	id S964976AbXCFNUv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030493AbXCFNUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:18:52 -0500
-Received: from coyote.holtmann.net ([217.160.111.169]:34453 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933290AbXCFNSv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:18:51 -0500
-Subject: Re: [DOC] The documentation for HID Simple Driver Interface 0.5.0
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Li Yu <raise.sail@gmail.com>, Greg Kroah Hartman <greg@kroah.com>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vincent Legoll <vincentlegoll@gmail.com>,
-       "Zephaniah E. Hull" <warp@aehallh.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Harold Sargeant <harold-sargeant@ntlworld.com>,
-       liyu <liyu@ccoss.com.cn>
-In-Reply-To: <d120d5000703051211xb44adcckadd706560caa86e2@mail.gmail.com>
-References: <200703051532096508636@gmail.com>
-	 <1173127471.6638.96.camel@aeonflux.holtmann.net>
-	 <d120d5000703051211xb44adcckadd706560caa86e2@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 05 Mar 2007 23:40:21 +0100
-Message-Id: <1173134421.6638.117.camel@aeonflux.holtmann.net>
+	Tue, 6 Mar 2007 08:20:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53696 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964976AbXCFNUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 08:20:50 -0500
+Date: Tue, 6 Mar 2007 14:20:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 1/8] Remove cpu_gdt_table: use boot_gdt_table until migration to per-cpu
+Message-ID: <20070306132004.GD9031@elte.hu>
+References: <1173184747.4644.23.camel@localhost.localdomain> <1173185592.4644.28.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173185592.4644.28.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
 
-> > This also means that the current keyboard and mouse
-> > input devices will become a HID driver.
-> 
-> Are you talking about usbmouse and usbkbd?
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-no, because if I recall correctly these are the boot mode drivers and
-actually not used at all in any modern distribution.
+> +/* The boot Global Descriptor Table: after boot we allocate a per-cpu copy */
+>  	.align L1_CACHE_BYTES
+>  ENTRY(boot_gdt_table)
+> -	.fill GDT_ENTRY_BOOT_CS,8,0
+> -	.quad 0x00cf9a000000ffff	/* kernel 4GB code at 0x00000000 */
+> -	.quad 0x00cf92000000ffff	/* kernel 4GB data at 0x00000000 */
+> -
+> -/*
+> - * The Global Descriptor Table contains 28 quadwords, per-CPU.
+> - */
+> -	.align L1_CACHE_BYTES
+> -ENTRY(cpu_gdt_table)
+>  	.quad 0x0000000000000000	/* NULL descriptor */
+>  	.quad 0x0000000000000000	/* 0x0b reserved */
+> -	.quad 0x0000000000000000	/* 0x13 reserved */
+> -	.quad 0x0000000000000000	/* 0x1b reserved */
+> +	.quad 0x00cf9a000000ffff	/* boot: 4GB code at 0x00000000 */
+> +	.quad 0x00cf92000000ffff	/* boot: 4GB data at 0x00000000 */
+>  	.quad 0x0000000000000000	/* 0x20 unused */
+>  	.quad 0x0000000000000000	/* 0x28 unused */
+>  	.quad 0x0000000000000000	/* 0x33 TLS entry 1 */
 
-For me the task of converting HID reports into input events shouldn't be
-actually the job of the HID core layer. My understanding is that the HID
-core should support multiple transport layers. This is currently
-achieved through the hid_device abstraction and used by the USB and by
-the Bluetooth subsystem. This is the lower interface to HID. On the
-upper interface I like to see a driver like interface. So we can
-register specific drivers that can handle specific use cases or vendor
-specific reports. For standard keyboard and mouse reports we however
-should have a standard driver that can handle most of them.
+actually, the reason for the small boot GDT was that some systems 
+wouldnt even boot with a larger GDT. (there was some BIOS interaction, 
+forgot what it was - iirc it was mach-visws and also some other older 
+box)
 
-For identification we actually do have the bus type, vendor id and
-product id available. We also can register drivers for specific report
-ids or usages.
+the 'simplification' you do here is actually how Linux worked before it 
+was fixed for those systems.
 
-I do like the HID simple driver idea, but it is not a simple driver, it
-should be a generic driver interface.
+so i'd be quite nervous to touch this area of the GDT code. (I'd support 
+a renaming though, gdt_table is indeed ugly.)
 
-Regards
-
-Marcel
-
-
+	Ingo
