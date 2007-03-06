@@ -1,63 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932507AbXCFCnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933879AbXCFCui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932507AbXCFCnY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 21:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933862AbXCFCnY
+	id S933879AbXCFCui (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 21:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933876AbXCFCui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 21:43:24 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:37957 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932507AbXCFCnX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 21:43:23 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 5 Mar 2007 18:43:22 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch v2] epoll use a single inode ...
-In-Reply-To: <45ECD3D4.5020305@zytor.com>
-Message-ID: <Pine.LNX.4.64.0703051841380.4907@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
- <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
- <45ECD122.6020907@zytor.com> <Pine.LNX.4.64.0703051832260.4907@alien.or.mcafeemobile.com>
- <45ECD3D4.5020305@zytor.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 5 Mar 2007 21:50:38 -0500
+Received: from ns1.suse.de ([195.135.220.2]:49592 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933871AbXCFCug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 21:50:36 -0500
+Date: Mon, 5 Mar 2007 18:48:50 -0800
+From: Greg KH <greg@kroah.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Theodore Tso <tytso@mit.edu>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Subject: Re: [2.6.21 patch] unconditionally enable SYSFS_DEPRECATED
+Message-ID: <20070306024850.GA24477@kroah.com>
+References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org> <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org> <20070305185813.GA31465@kroah.com> <20070305234052.GR3441@stusta.de> <20070306000722.GA11436@kroah.com> <20070306013020.GN23311@waste.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306013020.GN23311@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Mar 2007, H. Peter Anvin wrote:
-
-> Davide Libenzi wrote:
+On Mon, Mar 05, 2007 at 07:30:21PM -0600, Matt Mackall wrote:
+> On Mon, Mar 05, 2007 at 04:07:22PM -0800, Greg KH wrote:
+> > On Tue, Mar 06, 2007 at 12:40:52AM +0100, Adrian Bunk wrote:
+> > > On Mon, Mar 05, 2007 at 10:58:13AM -0800, Greg KH wrote:
+> > > > 
+> > > > Ok, how about the following patch.  Is it acceptable to everyone?
+> > > > 
+> > > > thanks,
+> > > > 
+> > > > greg k-h
+> > > > 
+> > > > ---
+> > > >  init/Kconfig |   13 +++++++++++--
+> > > >  1 file changed, 11 insertions(+), 2 deletions(-)
+> > > > 
+> > > > --- gregkh-2.6.orig/init/Kconfig
+> > > > +++ gregkh-2.6/init/Kconfig
+> > > > @@ -290,8 +290,17 @@ config SYSFS_DEPRECATED
+> > > >  	  that belong to a class, back into the /sys/class heirachy, in
+> > > >  	  order to support older versions of udev.
+> > > >  
+> > > > -	  If you are using a distro that was released in 2006 or later,
+> > > > -	  it should be safe to say N here.
+> > > > +	  If you are using an OpenSuSE, Gentoo, Ubuntu, or Fedora
+> > > > +	  release from 2007 or later, it should be safe to say N here.
+> > > > +
+> > > > +	  If you are using Debian or other distros that are slow to
+> > > > +	  update HAL, please say Y here.
+> > > >...
+> > > 
+> > > The sane solution seems to be to enable SYSFS_DEPRECATED unconditionally 
+> > > for all users, and schedule it's removal for mid-2008 (or later).
+> > > 
+> > > 12 months after the first _release_ of a HAL that can live without seems 
+> > > to be the first time when we can consider getting rid of it, since all 
+> > > distributions with at least one release a year should ship it by then.
+> > > 
+> > > Currently, SYSFS_DEPRECATED is only a trap for users.
 > > 
-> > Right now is using:
+> > Huh?
 > > 
-> > 	this.len = sprintf(name, "[%u.%d]", current->pid, fd);
+> > No, again, I've been using this just fine for about 6 months now.
 > > 
-> > That should be unique and not have the wraparound problem. Ack?
+> > And what about all of the servers not using HAL/NetworkManager?
+> > And what about all of the embedded systems not using either?
 > > 
+> > So to not allow this to be turned off by people who might want to (we
+> > want this for OpenSuSE 10.3, and Fedora 7 also will want this, as will
+> > other distros released this year), is pretty heavy-handed.
+> > 
+> > It also will work in OpenSuSE 10.2 which is already released, and I
+> > think Fedora 6, but I've only limited experience with these.
+> > 
+> > Oh, and Gentoo works just fine, and has been for the past 6 months.
+> >
+> > I would just prefer to come up with an acceptable set of wording that
+> > will work to properly warn people.
+> > 
+> > I proposed one such wording which some people took as a slam against
+> > Debian, which it really was not at all.
+> > 
+> > Does someone else want to propose some other wording instead?
 > 
-> NAK, very much NAK.
+> Back up a bit. Let's review:
 > 
-> File descriptors aren't file structures, they're *pointers* to file
-> structures.
-> 
-> It's perfectly possible -- downright common -- for a file descriptor to be
-> inherited by another process, and then the pid is recycled -- collision.
+> Problem: NetworkManager stopped working with my ipw2200 on Debian/unstable
 
-Ugh! Right! 64 bit counter it is ... :)
+Wait, have confirmed that if you enable this config option,
+NetworkManager starts back up again and works properly?
 
+If so, can you disable the option and strace it to see what program is
+trying to access what?  That will put the
+HAL/NetworkManager/libsysfs/distro script finger pointing to rest pretty
+quickly :)
 
+thanks,
 
-- Davide
-
-
+greg k-h
