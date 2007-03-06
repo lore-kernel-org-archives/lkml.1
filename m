@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933956AbXCFFiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933957AbXCFFid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933956AbXCFFiF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 00:38:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933954AbXCFFiF
+	id S933957AbXCFFid (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 00:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933951AbXCFFiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 00:38:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54784
+	Tue, 6 Mar 2007 00:38:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54787
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933946AbXCFFiA (ORCPT
+	by vger.kernel.org with ESMTP id S933953AbXCFFiD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 00:38:00 -0500
-Date: Mon, 05 Mar 2007 21:37:57 -0800 (PST)
-Message-Id: <20070305.213757.78733139.davem@davemloft.net>
+	Tue, 6 Mar 2007 00:38:03 -0500
+Date: Mon, 05 Mar 2007 21:37:59 -0800 (PST)
+Message-Id: <20070305.213759.35469392.davem@davemloft.net>
 To: tglx@linutronix.de
 CC: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [PATCH 2/4]: [SPARC64]: Unify timer interrupt handler.
+Subject: [PATCH 4/4]: [SPARC64]: Add clocksource/clockevents support.
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -24,131 +24,536 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From 6f7ea1d2d56aa7c6cc0e1ae98d8e40eb9de27d16 Mon Sep 17 00:00:00 2001
+>From 1171ef62b18d7eef093ecf961dd09b11339d53d9 Mon Sep 17 00:00:00 2001
 From: David S. Miller <davem@sunset.davemloft.net>
-Date: Thu, 22 Feb 2007 06:24:10 -0800
-Subject: [PATCH] [SPARC64]: Unify timer interrupt handler.
+Date: Mon, 5 Mar 2007 15:28:37 -0800
+Subject: [PATCH] [SPARC64]: Add clocksource/clockevents support.
 
-Things were scattered all over the place, split between
-SMP and non-SMP.
+I'd like to thank John Stul and others for helping
+me along the way.
 
-Unify it all so that dyntick support is easier to add.
+A lot of cleanups fell out of this.  For example, the get_compare()
+tick_op was totally unused, so was deleted.  And the most often used
+tick_op members were grouped together for cache-friendlyness.
+
+The sparc64 TSC is given to the kernel as a one-shot timer.
+
+tick_ops->init_timer() simply turns off the privileged bit in
+the tick register (when possible), and disables the interrupt
+by setting bit 63 in the compare register.  The ->disable_irq()
+op also sets this bit.
+
+tick_ops->add_compare() is changed to:
+
+1) Add the given delta to "tick" not to "compare"
+2) Return a boolean which, if true, means that the tick
+   value read after writing the compare value was found
+   to have incremented past the initial tick value.  This
+   mirrors logic used in the HPET driver's ->next_event()
+   method.
+
+Each tick_ops implementation also now provides a name string.
+And we feed this into the clocksource and clockevents layers.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- arch/sparc64/kernel/irq.c     |   26 ------------
- arch/sparc64/kernel/smp.c     |   87 +----------------------------------------
- arch/sparc64/kernel/time.c    |   43 ++++++++------------
- arch/sparc64/kernel/ttable.S  |    6 +--
- include/asm-sparc64/cpudata.h |    4 +-
- include/asm-sparc64/smp.h     |    4 +-
- include/asm-sparc64/ttable.h  |   27 -------------
- 7 files changed, 25 insertions(+), 172 deletions(-)
+ arch/sparc64/Kconfig        |   14 +-
+ arch/sparc64/kernel/smp.c   |   29 +---
+ arch/sparc64/kernel/time.c  |  408 +++++++++++++++++++++++--------------------
+ include/asm-sparc64/timer.h |   17 +-
+ 4 files changed, 238 insertions(+), 230 deletions(-)
 
-diff --git a/arch/sparc64/kernel/irq.c b/arch/sparc64/kernel/irq.c
-index c443db1..d1bb3b3 100644
---- a/arch/sparc64/kernel/irq.c
-+++ b/arch/sparc64/kernel/irq.c
-@@ -589,32 +589,6 @@ void ack_bad_irq(unsigned int virt_irq)
- 	       ino, virt_irq);
- }
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index f75a686..7944169 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -19,6 +19,14 @@ config SPARC64
+ 	  SPARC64 ports; its web page is available at
+ 	  <http://www.ultralinux.org/>.
  
--#ifndef CONFIG_SMP
--extern irqreturn_t timer_interrupt(int, void *);
++config GENERIC_TIME
++	bool
++	default y
++
++config GENERIC_CLOCKEVENTS
++	bool
++	default y
++
+ config 64BIT
+ 	def_bool y
+ 
+@@ -34,10 +42,6 @@ config LOCKDEP_SUPPORT
+ 	bool
+ 	default y
+ 
+-config TIME_INTERPOLATION
+-	bool
+-	default y
 -
--void timer_irq(int irq, struct pt_regs *regs)
--{
--	unsigned long clr_mask = 1 << irq;
--	unsigned long tick_mask = tick_ops->softint_mask;
--	struct pt_regs *old_regs;
--
--	if (get_softint() & tick_mask) {
--		irq = 0;
--		clr_mask = tick_mask;
--	}
--	clear_softint(clr_mask);
--
--	old_regs = set_irq_regs(regs);
--	irq_enter();
--
--	kstat_this_cpu.irqs[0]++;
--	timer_interrupt(irq, NULL);
--
--	irq_exit();
--	set_irq_regs(old_regs);
--}
--#endif
--
- void handler_irq(int irq, struct pt_regs *regs)
- {
- 	struct ino_bucket *bucket;
+ config ARCH_MAY_HAVE_PC_FDC
+ 	bool
+ 	default y
+@@ -113,6 +117,8 @@ config GENERIC_HARDIRQS
+ 
+ menu "General machine setup"
+ 
++source "kernel/time/Kconfig"
++
+ config SMP
+ 	bool "Symmetric multi-processing support"
+ 	---help---
 diff --git a/arch/sparc64/kernel/smp.c b/arch/sparc64/kernel/smp.c
-index fc99f7b..39deb03 100644
+index 39deb03..d4f0a70 100644
 --- a/arch/sparc64/kernel/smp.c
 +++ b/arch/sparc64/kernel/smp.c
-@@ -45,7 +45,7 @@
- extern void calibrate_delay(void);
+@@ -123,7 +123,7 @@ void __init smp_store_cpu_info(int id)
+ 	       cpu_data(id).ecache_size, cpu_data(id).ecache_line_size);
+ }
  
- /* Please don't make this stuff initdata!!!  --DaveM */
--static unsigned char boot_cpu_id;
-+unsigned char boot_cpu_id;
+-static void smp_setup_percpu_timer(void);
++extern void setup_sparc64_timer(void);
  
- cpumask_t cpu_online_map __read_mostly = CPU_MASK_NONE;
- cpumask_t phys_cpu_present_map __read_mostly = CPU_MASK_NONE;
-@@ -81,8 +81,6 @@ void __init smp_store_cpu_info(int id)
- 	struct device_node *dp;
- 	int def;
+ static volatile unsigned long callin_flag = 0;
  
--	/* multiplier and counter set by
--	   smp_setup_percpu_timer()  */
- 	cpu_data(id).udelay_val			= loops_per_jiffy;
+@@ -138,7 +138,7 @@ void __init smp_callin(void)
  
- 	cpu_find_by_mid(id, &dp);
-@@ -1180,75 +1178,10 @@ void smp_penguin_jailcell(int irq, struct pt_regs *regs)
+ 	__flush_tlb_all();
+ 
+-	smp_setup_percpu_timer();
++	setup_sparc64_timer();
+ 
+ 	if (cheetah_pcache_forced_on)
+ 		cheetah_enable_pcache();
+@@ -175,8 +175,6 @@ void cpu_panic(void)
+ 	panic("SMP bolixed\n");
+ }
+ 
+-static unsigned long current_tick_offset __read_mostly;
+-
+ /* This tick register synchronization scheme is taken entirely from
+  * the ia64 port, see arch/ia64/kernel/smpboot.c for details and credit.
+  *
+@@ -259,7 +257,7 @@ void smp_synchronize_tick_client(void)
+ 				} else
+ 					adj = -delta;
+ 
+-				tick_ops->add_tick(adj, current_tick_offset);
++				tick_ops->add_tick(adj);
+ 			}
+ #if DEBUG_TICK_SYNC
+ 			t[i].rt = rt;
+@@ -1178,30 +1176,9 @@ void smp_penguin_jailcell(int irq, struct pt_regs *regs)
  	preempt_enable();
  }
  
--#define prof_multiplier(__cpu)		cpu_data(__cpu).multiplier
--#define prof_counter(__cpu)		cpu_data(__cpu).counter
--
--void smp_percpu_timer_interrupt(struct pt_regs *regs)
+-static void __init smp_setup_percpu_timer(void)
 -{
--	unsigned long compare, tick, pstate;
--	int cpu = smp_processor_id();
--	int user = user_mode(regs);
--	struct pt_regs *old_regs;
+-	unsigned long pstate;
 -
--	/*
--	 * Check for level 14 softint.
+-	/* Guarantee that the following sequences execute
+-	 * uninterrupted.
 -	 */
--	{
--		unsigned long tick_mask = tick_ops->softint_mask;
+-	__asm__ __volatile__("rdpr	%%pstate, %0\n\t"
+-			     "wrpr	%0, %1, %%pstate"
+-			     : "=r" (pstate)
+-			     : "i" (PSTATE_IE));
 -
--		if (!(get_softint() & tick_mask)) {
--			extern void handler_irq(int, struct pt_regs *);
+-	tick_ops->init_tick(current_tick_offset);
 -
--			handler_irq(14, regs);
--			return;
--		}
--		clear_softint(tick_mask);
--	}
+-	/* Restore PSTATE_IE. */
+-	__asm__ __volatile__("wrpr	%0, 0x0, %%pstate"
+-			     : /* no outputs */
+-			     : "r" (pstate));
+-}
 -
--	old_regs = set_irq_regs(regs);
+ void __init smp_tick_init(void)
+ {
+ 	boot_cpu_id = hard_smp_processor_id();
+-	current_tick_offset = timer_tick_offset;
+ }
+ 
+ /* /proc/profile writes can call this, don't __init it please. */
+diff --git a/arch/sparc64/kernel/time.c b/arch/sparc64/kernel/time.c
+index 48e1217..21e3b0b 100644
+--- a/arch/sparc64/kernel/time.c
++++ b/arch/sparc64/kernel/time.c
+@@ -32,6 +32,8 @@
+ #include <linux/miscdevice.h>
+ #include <linux/rtc.h>
+ #include <linux/kernel_stat.h>
++#include <linux/clockchips.h>
++#include <linux/clocksource.h>
+ 
+ #include <asm/oplib.h>
+ #include <asm/mostek.h>
+@@ -61,6 +63,7 @@ static void __iomem *mstk48t59_regs;
+ static int set_rtc_mmss(unsigned long);
+ 
+ #define TICK_PRIV_BIT	(1UL << 63)
++#define TICKCMP_IRQ_BIT	(1UL << 63)
+ 
+ #ifdef CONFIG_SMP
+ unsigned long profile_pc(struct pt_regs *regs)
+@@ -94,21 +97,22 @@ static void tick_disable_protection(void)
+ 	: "g2");
+ }
+ 
+-static void tick_init_tick(unsigned long offset)
++static void tick_disable_irq(void)
+ {
+-	tick_disable_protection();
+-
+ 	__asm__ __volatile__(
+-	"	rd	%%tick, %%g1\n"
+-	"	andn	%%g1, %1, %%g1\n"
+ 	"	ba,pt	%%xcc, 1f\n"
+-	"	 add	%%g1, %0, %%g1\n"
++	"	 nop\n"
+ 	"	.align	64\n"
+-	"1:	wr	%%g1, 0x0, %%tick_cmpr\n"
++	"1:	wr	%0, 0x0, %%tick_cmpr\n"
+ 	"	rd	%%tick_cmpr, %%g0"
+ 	: /* no outputs */
+-	: "r" (offset), "r" (TICK_PRIV_BIT)
+-	: "g1");
++	: "r" (TICKCMP_IRQ_BIT));
++}
++
++static void tick_init_tick(void)
++{
++	tick_disable_protection();
++	tick_disable_irq();
+ }
+ 
+ static unsigned long tick_get_tick(void)
+@@ -122,20 +126,14 @@ static unsigned long tick_get_tick(void)
+ 	return ret & ~TICK_PRIV_BIT;
+ }
+ 
+-static unsigned long tick_get_compare(void)
++static int tick_add_compare(unsigned long adj)
+ {
+-	unsigned long ret;
++	unsigned long orig_tick, new_tick, new_compare;
+ 
+-	__asm__ __volatile__("rd	%%tick_cmpr, %0\n\t"
+-			     "mov	%0, %0"
+-			     : "=r" (ret));
++	__asm__ __volatile__("rd	%%tick, %0"
++			     : "=r" (orig_tick));
+ 
+-	return ret;
+-}
+-
+-static unsigned long tick_add_compare(unsigned long adj)
+-{
+-	unsigned long new_compare;
++	orig_tick &= ~TICKCMP_IRQ_BIT;
+ 
+ 	/* Workaround for Spitfire Errata (#54 I think??), I discovered
+ 	 * this via Sun BugID 4008234, mentioned in Solaris-2.5.1 patch
+@@ -146,44 +144,41 @@ static unsigned long tick_add_compare(unsigned long adj)
+ 	 * at the start of an I-cache line, and perform a dummy
+ 	 * read back from %tick_cmpr right after writing to it. -DaveM
+ 	 */
+-	__asm__ __volatile__("rd	%%tick_cmpr, %0\n\t"
+-			     "ba,pt	%%xcc, 1f\n\t"
+-			     " add	%0, %1, %0\n\t"
++	__asm__ __volatile__("ba,pt	%%xcc, 1f\n\t"
++			     " add	%1, %2, %0\n\t"
+ 			     ".align	64\n"
+ 			     "1:\n\t"
+ 			     "wr	%0, 0, %%tick_cmpr\n\t"
+-			     "rd	%%tick_cmpr, %%g0"
+-			     : "=&r" (new_compare)
+-			     : "r" (adj));
++			     "rd	%%tick_cmpr, %%g0\n\t"
++			     : "=r" (new_compare)
++			     : "r" (orig_tick), "r" (adj));
++
++	__asm__ __volatile__("rd	%%tick, %0"
++			     : "=r" (new_tick));
++	new_tick &= ~TICKCMP_IRQ_BIT;
+ 
+-	return new_compare;
++	return ((long)(new_tick - (orig_tick+adj))) > 0L;
+ }
+ 
+-static unsigned long tick_add_tick(unsigned long adj, unsigned long offset)
++static unsigned long tick_add_tick(unsigned long adj)
+ {
+-	unsigned long new_tick, tmp;
++	unsigned long new_tick;
+ 
+ 	/* Also need to handle Blackbird bug here too. */
+ 	__asm__ __volatile__("rd	%%tick, %0\n\t"
+-			     "add	%0, %2, %0\n\t"
++			     "add	%0, %1, %0\n\t"
+ 			     "wrpr	%0, 0, %%tick\n\t"
+-			     "andn	%0, %4, %1\n\t"
+-			     "ba,pt	%%xcc, 1f\n\t"
+-			     " add	%1, %3, %1\n\t"
+-			     ".align	64\n"
+-			     "1:\n\t"
+-			     "wr	%1, 0, %%tick_cmpr\n\t"
+-			     "rd	%%tick_cmpr, %%g0"
+-			     : "=&r" (new_tick), "=&r" (tmp)
+-			     : "r" (adj), "r" (offset), "r" (TICK_PRIV_BIT));
++			     : "=&r" (new_tick)
++			     : "r" (adj));
+ 
+ 	return new_tick;
+ }
+ 
+ static struct sparc64_tick_ops tick_operations __read_mostly = {
++	.name		=	"tick",
+ 	.init_tick	=	tick_init_tick,
++	.disable_irq	=	tick_disable_irq,
+ 	.get_tick	=	tick_get_tick,
+-	.get_compare	=	tick_get_compare,
+ 	.add_tick	=	tick_add_tick,
+ 	.add_compare	=	tick_add_compare,
+ 	.softint_mask	=	1UL << 0,
+@@ -191,7 +186,15 @@ static struct sparc64_tick_ops tick_operations __read_mostly = {
+ 
+ struct sparc64_tick_ops *tick_ops __read_mostly = &tick_operations;
+ 
+-static void stick_init_tick(unsigned long offset)
++static void stick_disable_irq(void)
++{
++	__asm__ __volatile__(
++	"wr	%0, 0x0, %%asr25"
++	: /* no outputs */
++	: "r" (TICKCMP_IRQ_BIT));
++}
++
++static void stick_init_tick(void)
+ {
+ 	/* Writes to the %tick and %stick register are not
+ 	 * allowed on sun4v.  The Hypervisor controls that
+@@ -199,6 +202,7 @@ static void stick_init_tick(unsigned long offset)
+ 	 */
+ 	if (tlb_type != hypervisor) {
+ 		tick_disable_protection();
++		tick_disable_irq();
+ 
+ 		/* Let the user get at STICK too. */
+ 		__asm__ __volatile__(
+@@ -210,14 +214,7 @@ static void stick_init_tick(unsigned long offset)
+ 		: "g1", "g2");
+ 	}
+ 
+-	__asm__ __volatile__(
+-	"	rd	%%asr24, %%g1\n"
+-	"	andn	%%g1, %1, %%g1\n"
+-	"	add	%%g1, %0, %%g1\n"
+-	"	wr	%%g1, 0x0, %%asr25"
+-	: /* no outputs */
+-	: "r" (offset), "r" (TICK_PRIV_BIT)
+-	: "g1");
++	stick_disable_irq();
+ }
+ 
+ static unsigned long stick_get_tick(void)
+@@ -230,49 +227,43 @@ static unsigned long stick_get_tick(void)
+ 	return ret & ~TICK_PRIV_BIT;
+ }
+ 
+-static unsigned long stick_get_compare(void)
+-{
+-	unsigned long ret;
+-
+-	__asm__ __volatile__("rd	%%asr25, %0"
+-			     : "=r" (ret));
+-
+-	return ret;
+-}
+-
+-static unsigned long stick_add_tick(unsigned long adj, unsigned long offset)
++static unsigned long stick_add_tick(unsigned long adj)
+ {
+-	unsigned long new_tick, tmp;
++	unsigned long new_tick;
+ 
+ 	__asm__ __volatile__("rd	%%asr24, %0\n\t"
+-			     "add	%0, %2, %0\n\t"
++			     "add	%0, %1, %0\n\t"
+ 			     "wr	%0, 0, %%asr24\n\t"
+-			     "andn	%0, %4, %1\n\t"
+-			     "add	%1, %3, %1\n\t"
+-			     "wr	%1, 0, %%asr25"
+-			     : "=&r" (new_tick), "=&r" (tmp)
+-			     : "r" (adj), "r" (offset), "r" (TICK_PRIV_BIT));
++			     : "=&r" (new_tick)
++			     : "r" (adj));
+ 
+ 	return new_tick;
+ }
+ 
+-static unsigned long stick_add_compare(unsigned long adj)
++static int stick_add_compare(unsigned long adj)
+ {
+-	unsigned long new_compare;
++	unsigned long orig_tick, new_tick;
+ 
+-	__asm__ __volatile__("rd	%%asr25, %0\n\t"
+-			     "add	%0, %1, %0\n\t"
+-			     "wr	%0, 0, %%asr25"
+-			     : "=&r" (new_compare)
+-			     : "r" (adj));
++	__asm__ __volatile__("rd	%%asr24, %0"
++			     : "=r" (orig_tick));
++	orig_tick &= ~TICKCMP_IRQ_BIT;
++
++	__asm__ __volatile__("wr	%0, 0, %%asr25"
++			     : /* no outputs */
++			     : "r" (orig_tick + adj));
++
++	__asm__ __volatile__("rd	%%asr24, %0"
++			     : "=r" (new_tick));
++	new_tick &= ~TICKCMP_IRQ_BIT;
+ 
+-	return new_compare;
++	return ((long)(new_tick - (orig_tick+adj))) > 0L;
+ }
+ 
+ static struct sparc64_tick_ops stick_operations __read_mostly = {
++	.name		=	"stick",
+ 	.init_tick	=	stick_init_tick,
++	.disable_irq	=	stick_disable_irq,
+ 	.get_tick	=	stick_get_tick,
+-	.get_compare	=	stick_get_compare,
+ 	.add_tick	=	stick_add_tick,
+ 	.add_compare	=	stick_add_compare,
+ 	.softint_mask	=	1UL << 16,
+@@ -321,20 +312,6 @@ static unsigned long __hbird_read_stick(void)
+ 	return ret;
+ }
+ 
+-static unsigned long __hbird_read_compare(void)
+-{
+-	unsigned long low, high;
+-	unsigned long addr = HBIRD_STICKCMP_ADDR;
+-
+-	__asm__ __volatile__("ldxa	[%2] %3, %0\n\t"
+-			     "add	%2, 0x8, %2\n\t"
+-			     "ldxa	[%2] %3, %1"
+-			     : "=&r" (low), "=&r" (high), "=&r" (addr)
+-			     : "i" (ASI_PHYS_BYPASS_EC_E), "2" (addr));
+-
+-	return (high << 32UL) | low;
+-}
+-
+ static void __hbird_write_stick(unsigned long val)
+ {
+ 	unsigned long low = (val & 0xffffffffUL);
+@@ -365,10 +342,13 @@ static void __hbird_write_compare(unsigned long val)
+ 			       "i" (ASI_PHYS_BYPASS_EC_E));
+ }
+ 
+-static void hbtick_init_tick(unsigned long offset)
++static void hbtick_disable_irq(void)
+ {
+-	unsigned long val;
++	__hbird_write_compare(TICKCMP_IRQ_BIT);
++}
+ 
++static void hbtick_init_tick(void)
++{
+ 	tick_disable_protection();
+ 
+ 	/* XXX This seems to be necessary to 'jumpstart' Hummingbird
+@@ -378,8 +358,7 @@ static void hbtick_init_tick(unsigned long offset)
+ 	 */
+ 	__hbird_write_stick(__hbird_read_stick());
+ 
+-	val = __hbird_read_stick() & ~TICK_PRIV_BIT;
+-	__hbird_write_compare(val + offset);
++	hbtick_disable_irq();
+ }
+ 
+ static unsigned long hbtick_get_tick(void)
+@@ -387,45 +366,40 @@ static unsigned long hbtick_get_tick(void)
+ 	return __hbird_read_stick() & ~TICK_PRIV_BIT;
+ }
+ 
+-static unsigned long hbtick_get_compare(void)
+-{
+-	return __hbird_read_compare();
+-}
+-
+-static unsigned long hbtick_add_tick(unsigned long adj, unsigned long offset)
++static unsigned long hbtick_add_tick(unsigned long adj)
+ {
+ 	unsigned long val;
+ 
+ 	val = __hbird_read_stick() + adj;
+ 	__hbird_write_stick(val);
+ 
+-	val &= ~TICK_PRIV_BIT;
+-	__hbird_write_compare(val + offset);
+-
+ 	return val;
+ }
+ 
+-static unsigned long hbtick_add_compare(unsigned long adj)
++static int hbtick_add_compare(unsigned long adj)
+ {
+-	unsigned long val = __hbird_read_compare() + adj;
++	unsigned long val = __hbird_read_stick();
++	unsigned long val2;
+ 
+-	val &= ~TICK_PRIV_BIT;
++	val &= ~TICKCMP_IRQ_BIT;
++	val += adj;
+ 	__hbird_write_compare(val);
+ 
+-	return val;
++	val2 = __hbird_read_stick() & ~TICKCMP_IRQ_BIT;
++
++	return ((long)(val2 - val)) > 0L;
+ }
+ 
+ static struct sparc64_tick_ops hbtick_operations __read_mostly = {
++	.name		=	"hbtick",
+ 	.init_tick	=	hbtick_init_tick,
++	.disable_irq	=	hbtick_disable_irq,
+ 	.get_tick	=	hbtick_get_tick,
+-	.get_compare	=	hbtick_get_compare,
+ 	.add_tick	=	hbtick_add_tick,
+ 	.add_compare	=	hbtick_add_compare,
+ 	.softint_mask	=	1UL << 0,
+ };
+ 
+-unsigned long timer_tick_offset __read_mostly;
+-
+ static unsigned long timer_ticks_per_nsec_quotient __read_mostly;
+ 
+ #define TICK_SIZE (tick_nsec / 1000)
+@@ -482,50 +456,6 @@ void notify_arch_cmos_timer(void)
+ 	mod_timer(&sync_cmos_timer, jiffies + 1);
+ }
+ 
+-void timer_interrupt(int irq, struct pt_regs *regs)
+-{
+-	struct pt_regs *old_regs = set_irq_regs(regs);
+-	unsigned long ticks, compare, pstate;
+-	unsigned long tick_mask = tick_ops->softint_mask;
+-
+-	clear_softint(tick_mask);
+-
+-	irq_enter();
+-
+-	kstat_this_cpu.irqs[0]++;
+-
 -	do {
 -		profile_tick(CPU_PROFILING);
--		if (!--prof_counter(cpu)) {
--			irq_enter();
+-		update_process_times(user_mode(get_irq_regs()));
 -
--			if (cpu == boot_cpu_id) {
--				kstat_this_cpu.irqs[0]++;
--				timer_tick_interrupt(regs);
--			}
--
--			update_process_times(user);
--
--			irq_exit();
--
--			prof_counter(cpu) = prof_multiplier(cpu);
+-		if (smp_processor_id() == boot_cpu_id) {
+-			write_seqlock(&xtime_lock);
+-			do_timer(1);
+-			write_sequnlock(&xtime_lock);
 -		}
 -
 -		/* Guarantee that the following sequences execute
@@ -159,242 +564,256 @@ index fc99f7b..39deb03 100644
 -				     : "=r" (pstate)
 -				     : "i" (PSTATE_IE));
 -
--		compare = tick_ops->add_compare(current_tick_offset);
--		tick = tick_ops->get_tick();
+-		compare = tick_ops->add_compare(timer_tick_offset);
+-		ticks = tick_ops->get_tick();
 -
 -		/* Restore PSTATE_IE. */
 -		__asm__ __volatile__("wrpr	%0, 0x0, %%pstate"
 -				     : /* no outputs */
 -				     : "r" (pstate));
--	} while (time_after_eq(tick, compare));
+-	} while (unlikely(time_after_eq(ticks, compare)));
+-
+-	irq_exit();
+-
 -	set_irq_regs(old_regs);
 -}
--
- static void __init smp_setup_percpu_timer(void)
- {
--	int cpu = smp_processor_id();
- 	unsigned long pstate;
- 
--	prof_counter(cpu) = prof_multiplier(cpu) = 1;
--
- 	/* Guarantee that the following sequences execute
- 	 * uninterrupted.
- 	 */
-@@ -1269,28 +1202,12 @@ void __init smp_tick_init(void)
- {
- 	boot_cpu_id = hard_smp_processor_id();
- 	current_tick_offset = timer_tick_offset;
--
--	prof_counter(boot_cpu_id) = prof_multiplier(boot_cpu_id) = 1;
- }
- 
- /* /proc/profile writes can call this, don't __init it please. */
--static DEFINE_SPINLOCK(prof_setup_lock);
--
- int setup_profiling_timer(unsigned int multiplier)
- {
--	unsigned long flags;
--	int i;
--
--	if ((!multiplier) || (timer_tick_offset / multiplier) < 1000)
--		return -EINVAL;
--
--	spin_lock_irqsave(&prof_setup_lock, flags);
--	for_each_possible_cpu(i)
--		prof_multiplier(i) = multiplier;
--	current_tick_offset = (timer_tick_offset / multiplier);
--	spin_unlock_irqrestore(&prof_setup_lock, flags);
--
--	return 0;
-+	return -EINVAL;
- }
- 
- static void __init smp_tune_scheduling(void)
-diff --git a/arch/sparc64/kernel/time.c b/arch/sparc64/kernel/time.c
-index d457079..48e1217 100644
---- a/arch/sparc64/kernel/time.c
-+++ b/arch/sparc64/kernel/time.c
-@@ -31,6 +31,7 @@
- #include <linux/profile.h>
- #include <linux/miscdevice.h>
- #include <linux/rtc.h>
-+#include <linux/kernel_stat.h>
- 
- #include <asm/oplib.h>
- #include <asm/mostek.h>
-@@ -423,12 +424,6 @@ static struct sparc64_tick_ops hbtick_operations __read_mostly = {
- 	.softint_mask	=	1UL << 0,
- };
- 
--/* timer_interrupt() needs to keep up the real-time clock,
-- * as well as call the "do_timer()" routine every clocktick
-- *
-- * NOTE: On SUN5 systems the ticker interrupt comes in using 2
-- *       interrupts, one at level14 and one with softint bit 0.
-- */
- unsigned long timer_tick_offset __read_mostly;
- 
- static unsigned long timer_ticks_per_nsec_quotient __read_mostly;
-@@ -487,18 +482,27 @@ void notify_arch_cmos_timer(void)
- 	mod_timer(&sync_cmos_timer, jiffies + 1);
- }
- 
--irqreturn_t timer_interrupt(int irq, void *dev_id)
-+void timer_interrupt(int irq, struct pt_regs *regs)
- {
-+	struct pt_regs *old_regs = set_irq_regs(regs);
- 	unsigned long ticks, compare, pstate;
-+	unsigned long tick_mask = tick_ops->softint_mask;
-+
-+	clear_softint(tick_mask);
-+
-+	irq_enter();
- 
--	write_seqlock(&xtime_lock);
-+	kstat_this_cpu.irqs[0]++;
- 
- 	do {
--#ifndef CONFIG_SMP
- 		profile_tick(CPU_PROFILING);
- 		update_process_times(user_mode(get_irq_regs()));
--#endif
--		do_timer(1);
-+
-+		if (smp_processor_id() == boot_cpu_id) {
-+			write_seqlock(&xtime_lock);
-+			do_timer(1);
-+			write_sequnlock(&xtime_lock);
-+		}
- 
- 		/* Guarantee that the following sequences execute
- 		 * uninterrupted.
-@@ -515,24 +519,13 @@ irqreturn_t timer_interrupt(int irq, void *dev_id)
- 		__asm__ __volatile__("wrpr	%0, 0x0, %%pstate"
- 				     : /* no outputs */
- 				     : "r" (pstate));
--	} while (time_after_eq(ticks, compare));
-+	} while (unlikely(time_after_eq(ticks, compare)));
- 
--	write_sequnlock(&xtime_lock);
-+	irq_exit();
- 
--	return IRQ_HANDLED;
-+	set_irq_regs(old_regs);
- }
- 
--#ifdef CONFIG_SMP
--void timer_tick_interrupt(struct pt_regs *regs)
--{
--	write_seqlock(&xtime_lock);
--
--	do_timer(1);
--
--	write_sequnlock(&xtime_lock);
--}
--#endif
 -
  /* Kick start a stopped clock (procedure from the Sun NVRAM/hostid FAQ). */
  static void __init kick_start_clock(void)
  {
-diff --git a/arch/sparc64/kernel/ttable.S b/arch/sparc64/kernel/ttable.S
-index d7d2a8b..7575aa3 100644
---- a/arch/sparc64/kernel/ttable.S
-+++ b/arch/sparc64/kernel/ttable.S
-@@ -60,11 +60,7 @@ tl0_irq4:	BTRAP(0x44)
- tl0_irq5:	TRAP_IRQ(handler_irq, 5)
- tl0_irq6:	BTRAP(0x46) BTRAP(0x47) BTRAP(0x48) BTRAP(0x49)
- tl0_irq10:	BTRAP(0x4a) BTRAP(0x4b) BTRAP(0x4c) BTRAP(0x4d)
--#ifndef CONFIG_SMP
--tl0_irq14:	TRAP_IRQ(timer_irq, 14)
--#else
--tl0_irq14:	TICK_SMP_IRQ
+@@ -923,7 +853,6 @@ static unsigned long sparc64_init_timers(void)
+ 		prop = of_find_property(dp, "stick-frequency", NULL);
+ 	}
+ 	clock = *(unsigned int *) prop->value;
+-	timer_tick_offset = clock / HZ;
+ 
+ #ifdef CONFIG_SMP
+ 	smp_tick_init();
+@@ -932,26 +861,6 @@ static unsigned long sparc64_init_timers(void)
+ 	return clock;
+ }
+ 
+-static void sparc64_start_timers(void)
+-{
+-	unsigned long pstate;
+-
+-	/* Guarantee that the following sequences execute
+-	 * uninterrupted.
+-	 */
+-	__asm__ __volatile__("rdpr	%%pstate, %0\n\t"
+-			     "wrpr	%0, %1, %%pstate"
+-			     : "=r" (pstate)
+-			     : "i" (PSTATE_IE));
+-
+-	tick_ops->init_tick(timer_tick_offset);
+-
+-	/* Restore PSTATE_IE. */
+-	__asm__ __volatile__("wrpr	%0, 0x0, %%pstate"
+-			     : /* no outputs */
+-			     : "r" (pstate));
+-}
+-
+ struct freq_table {
+ 	unsigned long clock_tick_ref;
+ 	unsigned int ref_freq;
+@@ -998,29 +907,148 @@ static struct notifier_block sparc64_cpufreq_notifier_block = {
+ 
+ #endif /* CONFIG_CPU_FREQ */
+ 
+-static struct time_interpolator sparc64_cpu_interpolator = {
+-	.source		=	TIME_SOURCE_CPU,
+-	.shift		=	16,
+-	.mask		=	0xffffffffffffffffLL
++static int sparc64_next_event(unsigned long delta,
++			      struct clock_event_device *evt)
++{
++	return tick_ops->add_compare(delta);
++}
++
++static void sparc64_timer_setup(enum clock_event_mode mode,
++				struct clock_event_device *evt)
++{
++	switch (mode) {
++	case CLOCK_EVT_MODE_ONESHOT:
++		break;
++
++	case CLOCK_EVT_MODE_SHUTDOWN:
++		tick_ops->disable_irq();
++		break;
++
++	case CLOCK_EVT_MODE_PERIODIC:
++	case CLOCK_EVT_MODE_UNUSED:
++		WARN_ON(1);
++		break;
++	};
++}
++
++static struct clock_event_device sparc64_clockevent = {
++	.features	= CLOCK_EVT_FEAT_ONESHOT,
++	.set_mode	= sparc64_timer_setup,
++	.set_next_event	= sparc64_next_event,
++	.rating		= 100,
++	.shift		= 30,
++	.irq		= -1,
+ };
++static DEFINE_PER_CPU(struct clock_event_device, sparc64_events);
+ 
+-/* The quotient formula is taken from the IA64 port. */
+-#define SPARC64_NSEC_PER_CYC_SHIFT	10UL
+-void __init time_init(void)
++void timer_interrupt(int irq, struct pt_regs *regs)
+ {
+-	unsigned long clock = sparc64_init_timers();
++	struct pt_regs *old_regs = set_irq_regs(regs);
++	unsigned long tick_mask = tick_ops->softint_mask;
++	int cpu = smp_processor_id();
++	struct clock_event_device *evt = &per_cpu(sparc64_events, cpu);
++
++	clear_softint(tick_mask);
++
++	irq_enter();
++
++	kstat_this_cpu.irqs[0]++;
++
++	if (unlikely(!evt->event_handler)) {
++		printk(KERN_WARNING
++		       "Spurious SPARC64 timer interrupt on cpu %d\n", cpu);
++	} else
++		evt->event_handler(evt);
++
++	irq_exit();
++
++	set_irq_regs(old_regs);
++}
+ 
+-	sparc64_cpu_interpolator.frequency = clock;
+-	register_time_interpolator(&sparc64_cpu_interpolator);
++void __devinit setup_sparc64_timer(void)
++{
++	struct clock_event_device *sevt;
++	unsigned long pstate;
+ 
+-	/* Now that the interpolator is registered, it is
+-	 * safe to start the timer ticking.
++	/* Guarantee that the following sequences execute
++	 * uninterrupted.
+ 	 */
+-	sparc64_start_timers();
++	__asm__ __volatile__("rdpr	%%pstate, %0\n\t"
++			     "wrpr	%0, %1, %%pstate"
++			     : "=r" (pstate)
++			     : "i" (PSTATE_IE));
++
++	tick_ops->init_tick();
++
++	/* Restore PSTATE_IE. */
++	__asm__ __volatile__("wrpr	%0, 0x0, %%pstate"
++			     : /* no outputs */
++			     : "r" (pstate));
++
++	sevt = &__get_cpu_var(sparc64_events);
++
++	memcpy(sevt, &sparc64_clockevent, sizeof(*sevt));
++	sevt->cpumask = cpumask_of_cpu(smp_processor_id());
++
++	clockevents_register_device(sevt);
++}
++
++#define SPARC64_NSEC_PER_CYC_SHIFT	32UL
++
++static struct clocksource clocksource_tick = {
++	.rating		= 100,
++	.mask		= CLOCKSOURCE_MASK(64),
++	.shift		= 16,
++	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
++};
++
++static void __init setup_clockevent_multiplier(unsigned long hz)
++{
++	unsigned long mult, shift = 32;
++
++	while (1) {
++		mult = div_sc(hz, NSEC_PER_SEC, shift);
++		if (mult && (mult >> 32UL) == 0UL)
++			break;
++
++		shift--;
++	}
++
++	sparc64_clockevent.shift = shift;
++	sparc64_clockevent.mult = mult;
++}
++
++void __init time_init(void)
++{
++	unsigned long clock = sparc64_init_timers();
+ 
+ 	timer_ticks_per_nsec_quotient =
+-		(((NSEC_PER_SEC << SPARC64_NSEC_PER_CYC_SHIFT) +
+-		  (clock / 2)) / clock);
++		clocksource_hz2mult(clock, SPARC64_NSEC_PER_CYC_SHIFT);
++
++	clocksource_tick.name = tick_ops->name;
++	clocksource_tick.mult =
++		clocksource_hz2mult(clock,
++				    clocksource_tick.shift);
++	clocksource_tick.read = tick_ops->get_tick;
++
++	printk("clocksource: mult[%x] shift[%d]\n",
++	       clocksource_tick.mult, clocksource_tick.shift);
++
++	clocksource_register(&clocksource_tick);
++
++	sparc64_clockevent.name = tick_ops->name;
++
++	setup_clockevent_multiplier(clock);
++
++	sparc64_clockevent.max_delta_ns =
++		clockevent_delta2ns(0x7fffffffffffffff, &sparc64_clockevent);
++	sparc64_clockevent.min_delta_ns =
++		clockevent_delta2ns(0xF, &sparc64_clockevent);
++
++	printk("clockevent: mult[%lx] shift[%d]\n",
++	       sparc64_clockevent.mult, sparc64_clockevent.shift);
++
++	setup_sparc64_timer();
+ 
+ #ifdef CONFIG_CPU_FREQ
+ 	cpufreq_register_notifier(&sparc64_cpufreq_notifier_block,
+diff --git a/include/asm-sparc64/timer.h b/include/asm-sparc64/timer.h
+index d435594..ccbd694 100644
+--- a/include/asm-sparc64/timer.h
++++ b/include/asm-sparc64/timer.h
+@@ -11,22 +11,19 @@
+ 
+ 
+ struct sparc64_tick_ops {
+-	void (*init_tick)(unsigned long);
+ 	unsigned long (*get_tick)(void);
+-	unsigned long (*get_compare)(void);
+-	unsigned long (*add_tick)(unsigned long, unsigned long);
+-	unsigned long (*add_compare)(unsigned long);
++	int (*add_compare)(unsigned long);
+ 	unsigned long softint_mask;
++	void (*disable_irq)(void);
++
++	void (*init_tick)(void);
++	unsigned long (*add_tick)(unsigned long);
++
++	char *name;
+ };
+ 
+ extern struct sparc64_tick_ops *tick_ops;
+ 
+-#ifdef CONFIG_SMP
+-extern unsigned long timer_tick_offset;
+-struct pt_regs;
+-extern void timer_tick_interrupt(struct pt_regs *);
 -#endif
-+tl0_irq14:	TRAP_IRQ(timer_interrupt, 14)
- tl0_irq15:	TRAP_IRQ(handler_irq, 15)
- tl0_resv050:	BTRAP(0x50) BTRAP(0x51) BTRAP(0x52) BTRAP(0x53) BTRAP(0x54) BTRAP(0x55)
- tl0_resv056:	BTRAP(0x56) BTRAP(0x57) BTRAP(0x58) BTRAP(0x59) BTRAP(0x5a) BTRAP(0x5b)
-diff --git a/include/asm-sparc64/cpudata.h b/include/asm-sparc64/cpudata.h
-index f2cc941..e89922d 100644
---- a/include/asm-sparc64/cpudata.h
-+++ b/include/asm-sparc64/cpudata.h
-@@ -17,8 +17,8 @@
- typedef struct {
- 	/* Dcache line 1 */
- 	unsigned int	__softirq_pending; /* must be 1st, see rtrap.S */
--	unsigned int	multiplier;
--	unsigned int	counter;
-+	unsigned int	__pad0_1;
-+	unsigned int	__pad0_2;
- 	unsigned int	__pad1;
- 	unsigned long	clock_tick;	/* %tick's per second */
- 	unsigned long	udelay_val;
-diff --git a/include/asm-sparc64/smp.h b/include/asm-sparc64/smp.h
-index 388249b..cca5480 100644
---- a/include/asm-sparc64/smp.h
-+++ b/include/asm-sparc64/smp.h
-@@ -42,15 +42,15 @@ extern int hard_smp_processor_id(void);
- #define raw_smp_processor_id() (current_thread_info()->cpu)
- 
- extern void smp_setup_cpu_possible_map(void);
-+extern unsigned char boot_cpu_id;
- 
- #endif /* !(__ASSEMBLY__) */
- 
- #else
- 
- #define smp_setup_cpu_possible_map() do { } while (0)
-+#define boot_cpu_id	(0)
- 
- #endif /* !(CONFIG_SMP) */
- 
--#define NO_PROC_ID		0xFF
 -
- #endif /* !(_SPARC64_SMP_H) */
-diff --git a/include/asm-sparc64/ttable.h b/include/asm-sparc64/ttable.h
-index c2a16e1..bbb9c8f 100644
---- a/include/asm-sparc64/ttable.h
-+++ b/include/asm-sparc64/ttable.h
-@@ -157,23 +157,6 @@
- 	ba,a,pt	%xcc, rtrap_irq;			\
- 	.previous;
+ extern unsigned long sparc64_get_clock_tick(unsigned int cpu);
  
--#define TICK_SMP_IRQ					\
--	rdpr	%pil, %g2;				\
--	wrpr	%g0, 15, %pil;				\
--	sethi	%hi(1f-4), %g7;				\
--	ba,pt	%xcc, etrap_irq;			\
--	 or	%g7, %lo(1f-4), %g7;			\
--	nop;						\
--	nop;						\
--	nop;						\
--	.subsection	2;				\
--1:	call	trace_hardirqs_off;			\
--	 nop;						\
--	call	smp_percpu_timer_interrupt;		\
--	 add	%sp, PTREGS_OFF, %o0;			\
--	ba,a,pt	%xcc, rtrap_irq;			\
--	.previous;
--
- #else
- 
- #define TRAP_IRQ(routine, level)			\
-@@ -186,16 +169,6 @@
- 	 add	%sp, PTREGS_OFF, %o1;			\
- 	ba,a,pt	%xcc, rtrap_irq;
- 	
--#define TICK_SMP_IRQ					\
--	rdpr	%pil, %g2;				\
--	wrpr	%g0, 15, %pil;				\
--	sethi	%hi(109f), %g7;				\
--	ba,pt	%xcc, etrap_irq;			\
--109:	 or	%g7, %lo(109b), %g7;			\
--	call	smp_percpu_timer_interrupt;		\
--	 add	%sp, PTREGS_OFF, %o0;			\
--	ba,a,pt	%xcc, rtrap_irq;
--
- #endif
- 
- #define TRAP_IVEC TRAP_NOSAVE(do_ivec)
+ #endif /* _SPARC64_TIMER_H */
 -- 
 1.5.0
 
