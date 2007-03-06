@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbXCFClH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932507AbXCFCnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933869AbXCFClH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 21:41:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933867AbXCFClH
+	id S932507AbXCFCnY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 21:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933862AbXCFCnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 21:41:07 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37055 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933866AbXCFClF (ORCPT
+	Mon, 5 Mar 2007 21:43:24 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:37957 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932507AbXCFCnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 21:41:05 -0500
-Message-ID: <45ECD4B6.8000607@sgi.com>
-Date: Mon, 05 Mar 2007 18:40:54 -0800
-From: Jay Lan <jlan@sgi.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060725)
+	Mon, 5 Mar 2007 21:43:23 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 5 Mar 2007 18:43:22 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch v2] epoll use a single inode ...
+In-Reply-To: <45ECD3D4.5020305@zytor.com>
+Message-ID: <Pine.LNX.4.64.0703051841380.4907@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
+ <45ECD122.6020907@zytor.com> <Pine.LNX.4.64.0703051832260.4907@alien.or.mcafeemobile.com>
+ <45ECD3D4.5020305@zytor.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Fastboot] [PATCH 1/1] - platform_kernel_launch_event is noop
- on generic kernel
-References: <20070228194517.25635.98535.sendpatchset@attica.americas.sgi.com> <20070301042227.GO6479@verge.net.au> <20070301125736.GA18853@strauss.suse.de> <20070301130336.GB18853@strauss.suse.de>
-In-Reply-To: <20070301130336.GB18853@strauss.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernhard Walle wrote:
-> * Bernhard Walle <bwalle@suse.de> [2007-03-01 13:57]:
->> * Horms <horms@verge.net.au> [2007-03-01 05:22]:
->>> On Wed, Feb 28, 2007 at 01:45:17PM -0600, John Keller wrote:
->>>> Add a missing #define for the platform_kernel_launch_event.
->>>> Without this fix, a call to platform_kernel_launch_event()
->>>> becomes a noop on generic kernels. SN systems require this
->>>> fix to successfully kdump/kexec from certain hardware errors.
->>>>
->>>> Signed-off-by: John Keller <jpk@sgi.com>
->>> I made a similar change when porting to xen, but I hadn't thought
->>> to see if mainline linux needs it to.
->>>
->>> Acked-by: Simon Horman <horms@verge.net.au>
->> I think there's an additional change needed. Without that, it leads to
->> a NULL pointer dereference.
+On Mon, 5 Mar 2007, H. Peter Anvin wrote:
 
-Yep, it is needed. The missing line was in Jack's original patch
-but was lost somehow in 2.6.20.
+> Davide Libenzi wrote:
+> > 
+> > Right now is using:
+> > 
+> > 	this.len = sprintf(name, "[%u.%d]", current->pid, fd);
+> > 
+> > That should be unique and not have the wraparound problem. Ack?
+> > 
+> 
+> NAK, very much NAK.
+> 
+> File descriptors aren't file structures, they're *pointers* to file
+> structures.
+> 
+> It's perfectly possible -- downright common -- for a file descriptor to be
+> inherited by another process, and then the pid is recycled -- collision.
 
-Acked-by: Jay Lan <jlan@sgi.com>
+Ugh! Right! 64 bit counter it is ... :)
 
-> 
-> Maybe I should also get my editor right ... ;):
-> 
-> ---
->  include/asm-ia64/machvec.h |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Index: b/include/asm-ia64/machvec.h
-> ===================================================================
-> --- a/include/asm-ia64/machvec.h
-> +++ b/include/asm-ia64/machvec.h
-> @@ -168,6 +168,7 @@ extern void machvec_tlb_migrate_finish (
->  #  define platform_setup_msi_irq	ia64_mv.setup_msi_irq
->  #  define platform_teardown_msi_irq	ia64_mv.teardown_msi_irq
->  #  define platform_pci_fixup_bus	ia64_mv.pci_fixup_bus
-> +#  define platform_kernel_launch_event	ia64_mv.kernel_launch_event
->  # endif
->  
->  /* __attribute__((__aligned__(16))) is required to make size of the
-> @@ -269,6 +270,7 @@ struct ia64_machine_vector {
->  	platform_setup_msi_irq,			\
->  	platform_teardown_msi_irq,		\
->  	platform_pci_fixup_bus,			\
-> +	platform_kernel_launch_event            \
->  }
->  
->  extern struct ia64_machine_vector ia64_mv;
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+- Davide
+
 
