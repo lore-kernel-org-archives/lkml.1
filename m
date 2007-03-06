@@ -1,211 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934102AbXCFM7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751010AbXCFNBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934102AbXCFM7n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:59:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934103AbXCFM7n
+	id S1751010AbXCFNBa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:01:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbXCFNBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:59:43 -0500
-Received: from ozlabs.org ([203.10.76.45]:56558 "EHLO ozlabs.org"
+	Tue, 6 Mar 2007 08:01:30 -0500
+Received: from ozlabs.org ([203.10.76.45]:56622 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934102AbXCFM7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:59:42 -0500
-Subject: [PATCH 5/8] Cleanup GDT access
+	id S1751010AbXCFNB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 08:01:29 -0500
+Subject: [PATCH 6/8] Allow per-cpu variables to be page-aligned
 From: Rusty Russell <rusty@rustcorp.com.au>
 To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Zachary Amsden <zach@vmware.com>,
        Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-In-Reply-To: <1173185827.4644.34.camel@localhost.localdomain>
+In-Reply-To: <1173185909.4644.36.camel@localhost.localdomain>
 References: <1173184747.4644.23.camel@localhost.localdomain>
 	 <1173185592.4644.28.camel@localhost.localdomain>
 	 <1173185666.4644.30.camel@localhost.localdomain>
 	 <1173185734.4644.32.camel@localhost.localdomain>
 	 <1173185827.4644.34.camel@localhost.localdomain>
+	 <1173185909.4644.36.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 06 Mar 2007 23:58:29 +1100
-Message-Id: <1173185909.4644.36.camel@localhost.localdomain>
+Date: Wed, 07 Mar 2007 00:00:20 +1100
+Message-Id: <1173186021.4644.38.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now we have an explicit per-cpu GDT variable, we don't need to keep
-the descriptors around to use them to find the GDT.  Also remove the
-cpu_pda() accessor: it's just a per-cpu variable.
+Xen wants page-aligned GDT (and PDA must not cross a page-boundary,
+but that doesn't happen at the moment since it's so close to start of
+page).  Let's allow page-alignment in general for per-cpu data.
+
+Because larger alignments can use more room, we increase the max
+per-cpu memory to 64k rather than 32k: it's getting a little tight.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-diff -r e9d5b8e6f5ee arch/i386/kernel/cpu/common.c
---- a/arch/i386/kernel/cpu/common.c	Tue Mar 06 16:20:48 2007 +1100
-+++ b/arch/i386/kernel/cpu/common.c	Tue Mar 06 17:04:37 2007 +1100
-@@ -22,11 +22,8 @@
+diff -r 213b1ec27001 arch/alpha/kernel/vmlinux.lds.S
+--- a/arch/alpha/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/alpha/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -69,7 +69,7 @@ SECTIONS
+   . = ALIGN(8);
+   SECURITY_INIT
  
- #include "cpu.h"
- 
--DEFINE_PER_CPU(struct Xgt_desc_struct, cpu_gdt_descr);
--EXPORT_PER_CPU_SYMBOL(cpu_gdt_descr);
--
- DEFINE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]);
--
-+EXPORT_PER_CPU_SYMBOL_GPL(cpu_gdt);
- DEFINE_PER_CPU(struct i386_pda, _cpu_pda);
- EXPORT_PER_CPU_SYMBOL(_cpu_pda);
- 
-@@ -631,14 +628,11 @@ static inline void set_kernel_fs(void)
-    will soon come up. */
- __cpuinit void init_gdt(int cpu, struct task_struct *idle)
- {
--	struct Xgt_desc_struct *cpu_gdt_descr = &per_cpu(cpu_gdt_descr, cpu);
- 	struct desc_struct *gdt = per_cpu(cpu_gdt, cpu);
- 	struct i386_pda *pda = &per_cpu(_cpu_pda, cpu);
- 
-+	/* Based on boot_gdt_table: set PDA so it can be used immediately */
-  	memcpy(gdt, boot_gdt_table, GDT_SIZE);
-- 	cpu_gdt_descr->address = (unsigned long)gdt;
--	cpu_gdt_descr->size = GDT_SIZE - 1;
--
- 	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PDA].a,
- 			(u32 *)&gdt[GDT_ENTRY_PDA].b,
- 			(unsigned long)pda, sizeof(*pda) - 1,
-@@ -653,9 +647,12 @@ __cpuinit void init_gdt(int cpu, struct 
- /* Move this CPU from boot_gdt_table & boot_pda to this cpu's proper one. */
- void __cpuinit cpu_set_gdt(int cpu)
- {
--	struct Xgt_desc_struct *cpu_gdt_descr = &per_cpu(cpu_gdt_descr, cpu);
--
--	load_gdt(cpu_gdt_descr);
-+	struct Xgt_desc_struct gdt_descr;
-+
-+ 	gdt_descr.address = (unsigned long)per_cpu(cpu_gdt, cpu);
-+	gdt_descr.size = GDT_SIZE - 1;
-+
-+	load_gdt(&gdt_descr);
- 	set_kernel_fs();
- }
- 
-diff -r e9d5b8e6f5ee arch/i386/kernel/efi.c
---- a/arch/i386/kernel/efi.c	Tue Mar 06 16:20:48 2007 +1100
-+++ b/arch/i386/kernel/efi.c	Tue Mar 06 17:05:41 2007 +1100
-@@ -69,12 +69,10 @@ static void efi_call_phys_prelog(void) _
- {
- 	unsigned long cr4;
- 	unsigned long temp;
--	struct Xgt_desc_struct *cpu_gdt_descr;
-+	struct Xgt_desc_struct gdt_descr;
- 
- 	spin_lock(&efi_rt_lock);
- 	local_irq_save(efi_rt_eflags);
--
--	cpu_gdt_descr = &per_cpu(cpu_gdt_descr, 0);
- 
- 	/*
- 	 * If I don't have PSE, I should just duplicate two entries in page
-@@ -105,17 +103,19 @@ static void efi_call_phys_prelog(void) _
- 	 */
- 	local_flush_tlb();
- 
--	cpu_gdt_descr->address = __pa(cpu_gdt_descr->address);
--	load_gdt(cpu_gdt_descr);
-+	gdt_descr.address = __pa(get_cpu_gdt_table(0));
-+	gdt_descr.size = GDT_SIZE - 1;
-+	load_gdt(&gdt_descr);
- }
- 
- static void efi_call_phys_epilog(void) __releases(efi_rt_lock)
- {
- 	unsigned long cr4;
--	struct Xgt_desc_struct *cpu_gdt_descr = &per_cpu(cpu_gdt_descr, 0);
--
--	cpu_gdt_descr->address = (unsigned long)__va(cpu_gdt_descr->address);
--	load_gdt(cpu_gdt_descr);
-+	struct Xgt_desc_struct gdt_descr;
-+
-+	gdt_descr.address = (unsigned long)get_cpu_gdt_table(0);
-+	gdt_descr.size = GDT_SIZE - 1;
-+	load_gdt(&gdt_descr);
- 
- 	cr4 = read_cr4();
- 
-diff -r e9d5b8e6f5ee arch/i386/kernel/entry.S
---- a/arch/i386/kernel/entry.S	Tue Mar 06 16:20:48 2007 +1100
-+++ b/arch/i386/kernel/entry.S	Tue Mar 06 17:04:37 2007 +1100
-@@ -561,8 +561,7 @@ END(syscall_badsys)
- #define FIXUP_ESPFIX_STACK \
- 	/* since we are on a wrong stack, we cant make it a C code :( */ \
- 	movl %fs:PDA_cpu, %ebx; \
--	PER_CPU(cpu_gdt_descr, %ebx); \
--	movl GDS_address(%ebx), %ebx; \
-+	PER_CPU(cpu_gdt, %ebx); \
- 	GET_DESC_BASE(GDT_ENTRY_ESPFIX_SS, %ebx, %eax, %ax, %al, %ah); \
- 	addl %esp, %eax; \
- 	pushl $__KERNEL_DS; \
-diff -r e9d5b8e6f5ee arch/i386/kernel/traps.c
---- a/arch/i386/kernel/traps.c	Tue Mar 06 16:20:48 2007 +1100
-+++ b/arch/i386/kernel/traps.c	Tue Mar 06 17:04:37 2007 +1100
-@@ -1018,9 +1018,7 @@ fastcall unsigned long patch_espfix_desc
- fastcall unsigned long patch_espfix_desc(unsigned long uesp,
- 					  unsigned long kesp)
- {
--	int cpu = smp_processor_id();
--	struct Xgt_desc_struct *cpu_gdt_descr = &per_cpu(cpu_gdt_descr, cpu);
--	struct desc_struct *gdt = (struct desc_struct *)cpu_gdt_descr->address;
-+	struct desc_struct *gdt = __get_cpu_var(cpu_gdt);
- 	unsigned long base = (kesp - uesp) & -THREAD_SIZE;
- 	unsigned long new_kesp = kesp - base;
- 	unsigned long lim_pages = (new_kesp | (THREAD_SIZE - 1)) >> PAGE_SHIFT;
-diff -r e9d5b8e6f5ee include/asm-i386/desc.h
---- a/include/asm-i386/desc.h	Tue Mar 06 16:20:48 2007 +1100
-+++ b/include/asm-i386/desc.h	Tue Mar 06 17:04:37 2007 +1100
-@@ -13,6 +13,7 @@
- #include <asm/mmu.h>
- 
- extern struct desc_struct boot_gdt_table[GDT_ENTRIES];
-+DECLARE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]);
- 
- struct Xgt_desc_struct {
- 	unsigned short size;
-@@ -21,13 +22,9 @@ struct Xgt_desc_struct {
- } __attribute__ ((packed));
- 
- extern struct Xgt_desc_struct idt_descr;
--DECLARE_PER_CPU(struct Xgt_desc_struct, cpu_gdt_descr);
--DECLARE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]);
--extern struct Xgt_desc_struct early_gdt_descr;
--
- static inline struct desc_struct *get_cpu_gdt_table(unsigned int cpu)
- {
--	return (struct desc_struct *)per_cpu(cpu_gdt_descr, cpu).address;
-+	return per_cpu(cpu_gdt, cpu);
- }
- 
- extern struct desc_struct idt_table[];
-@@ -102,13 +99,12 @@ static inline fastcall void native_set_l
- 	if (likely(entries == 0))
- 		__asm__ __volatile__("lldt %w0"::"q" (0));
- 	else {
--		unsigned cpu = smp_processor_id();
- 		__u32 a, b;
- 
- 		pack_descriptor(&a, &b, (unsigned long)addr,
- 				entries * sizeof(struct desc_struct) - 1,
- 				DESCTYPE_LDT, 0);
--		write_gdt_entry(get_cpu_gdt_table(cpu), GDT_ENTRY_LDT, a, b);
-+		write_gdt_entry(__get_cpu_var(cpu_gdt), GDT_ENTRY_LDT, a, b);
- 		__asm__ __volatile__("lldt %w0"::"q" (GDT_ENTRY_LDT*8));
+-  . = ALIGN(64);
++  . = ALIGN(8192);
+   __per_cpu_start = .;
+   .data.percpu : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/arm/kernel/vmlinux.lds.S
+--- a/arch/arm/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/arm/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -59,7 +59,7 @@ SECTIONS
+ 			usr/built-in.o(.init.ramfs)
+ 		__initramfs_end = .;
+ #endif
+-		. = ALIGN(64);
++		. = ALIGN(4096);
+ 		__per_cpu_start = .;
+ 			*(.data.percpu)
+ 		__per_cpu_end = .;
+diff -r 213b1ec27001 arch/cris/arch-v32/vmlinux.lds.S
+--- a/arch/cris/arch-v32/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/cris/arch-v32/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -91,6 +91,7 @@ SECTIONS
  	}
- }
-diff -r e9d5b8e6f5ee include/asm-i386/pda.h
---- a/include/asm-i386/pda.h	Tue Mar 06 16:20:48 2007 +1100
-+++ b/include/asm-i386/pda.h	Tue Mar 06 17:04:26 2007 +1100
-@@ -20,8 +20,6 @@ struct i386_pda
- };
+ 	SECURITY_INIT
  
- DECLARE_PER_CPU(struct i386_pda, _cpu_pda);
--
--#define cpu_pda(i)	(&per_cpu(_cpu_pda, (i)))
++	. =  ALIGN (8192);
+ 	__per_cpu_start = .;
+ 	.data.percpu  : { *(.data.percpu) }
+ 	__per_cpu_end = .;
+diff -r 213b1ec27001 arch/frv/kernel/vmlinux.lds.S
+--- a/arch/frv/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/frv/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -57,6 +57,7 @@ SECTIONS
+   __alt_instructions_end = .;
+  .altinstr_replacement : { *(.altinstr_replacement) }
  
- #define pda_offset(field) offsetof(struct i386_pda, field)
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/i386/kernel/vmlinux.lds.S
+--- a/arch/i386/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/i386/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -196,7 +196,7 @@ SECTIONS
+ 	__initramfs_end = .;
+   }
+ #endif
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(4096);
+   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
+ 	__per_cpu_start = .;
+ 	*(.data.percpu)
+diff -r 213b1ec27001 arch/m32r/kernel/vmlinux.lds.S
+--- a/arch/m32r/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/m32r/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -110,7 +110,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
  
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/mips/kernel/vmlinux.lds.S
+--- a/arch/mips/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/mips/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -119,7 +119,7 @@ SECTIONS
+   .init.ramfs : { *(.init.ramfs) }
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(32);
++  . = ALIGN(_PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/parisc/kernel/vmlinux.lds.S
+--- a/arch/parisc/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/parisc/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -181,7 +181,7 @@ SECTIONS
+   .init.ramfs : { *(.init.ramfs) }
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(32);
++  . = ALIGN(ASM_PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/powerpc/kernel/vmlinux.lds.S
+--- a/arch/powerpc/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/powerpc/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -139,11 +139,7 @@ SECTIONS
+ 		__initramfs_end = .;
+ 	}
+ #endif
+-#ifdef CONFIG_PPC32
+-	. = ALIGN(32);
+-#else
+-	. = ALIGN(128);
+-#endif
++	. = ALIGN(PAGE_SIZE);
+ 	.data.percpu : {
+ 		__per_cpu_start = .;
+ 		*(.data.percpu)
+diff -r 213b1ec27001 arch/ppc/kernel/vmlinux.lds.S
+--- a/arch/ppc/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/ppc/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -130,7 +130,7 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/s390/kernel/vmlinux.lds.S
+--- a/arch/s390/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/s390/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -99,7 +99,7 @@ SECTIONS
+   . = ALIGN(2);
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(256);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/sh/kernel/vmlinux.lds.S
+--- a/arch/sh/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/sh/kernel/vmlinux.lds.S	Tue Mar 06 19:02:25 2007 +1100
+@@ -54,7 +54,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.page_aligned : { *(.data.page_aligned) }
+ 
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/sh64/kernel/vmlinux.lds.S
+--- a/arch/sh64/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/sh64/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -85,7 +85,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.page_aligned : C_PHYS(.data.page_aligned) { *(.data.page_aligned) }
+ 
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu : C_PHYS(.data.percpu) { *(.data.percpu) }
+   __per_cpu_end = . ;
+diff -r 213b1ec27001 arch/sparc/kernel/vmlinux.lds.S
+--- a/arch/sparc/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/sparc/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -65,7 +65,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/x86_64/kernel/vmlinux.lds.S
+--- a/arch/x86_64/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/x86_64/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -194,7 +194,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-    . = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 arch/xtensa/kernel/vmlinux.lds.S
+--- a/arch/xtensa/kernel/vmlinux.lds.S	Tue Mar 06 19:01:59 2007 +1100
++++ b/arch/xtensa/kernel/vmlinux.lds.S	Tue Mar 06 19:02:03 2007 +1100
+@@ -198,7 +198,7 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+diff -r 213b1ec27001 include/linux/percpu.h
+--- a/include/linux/percpu.h	Tue Mar 06 19:01:59 2007 +1100
++++ b/include/linux/percpu.h	Tue Mar 06 23:32:35 2007 +1100
+@@ -11,7 +11,7 @@
+ 
+ /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
+ #ifndef PERCPU_ENOUGH_ROOM
+-#define PERCPU_ENOUGH_ROOM 32768
++#define PERCPU_ENOUGH_ROOM 65536
+ #endif
+ 
+ /*
+diff -r 213b1ec27001 init/main.c
+--- a/init/main.c	Tue Mar 06 19:01:59 2007 +1100
++++ b/init/main.c	Tue Mar 06 19:02:03 2007 +1100
+@@ -368,12 +368,12 @@ static void __init setup_per_cpu_areas(v
+ 	unsigned long nr_possible_cpus = num_possible_cpus();
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+-	size = ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES);
++	size = ALIGN(__per_cpu_end - __per_cpu_start, PAGE_SIZE);
+ #ifdef CONFIG_MODULES
+ 	if (size < PERCPU_ENOUGH_ROOM)
+ 		size = PERCPU_ENOUGH_ROOM;
+ #endif
+-	ptr = alloc_bootmem(size * nr_possible_cpus);
++	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
+ 
+ 	for_each_possible_cpu(i) {
+ 		__per_cpu_offset[i] = ptr - __per_cpu_start;
+diff -r 213b1ec27001 kernel/module.c
+--- a/kernel/module.c	Tue Mar 06 19:01:59 2007 +1100
++++ b/kernel/module.c	Tue Mar 06 19:02:03 2007 +1100
+@@ -544,10 +544,10 @@ static void *percpu_modalloc(unsigned lo
+ 	unsigned int i;
+ 	void *ptr;
+ 
+-	if (align > SMP_CACHE_BYTES) {
+-		printk(KERN_WARNING "%s: per-cpu alignment %li > %i\n",
+-		       name, align, SMP_CACHE_BYTES);
+-		align = SMP_CACHE_BYTES;
++	if (align > PAGE_SIZE) {
++		printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
++		       name, align, PAGE_SIZE);
++		align = PAGE_SIZE;
+ 	}
+ 
+ 	ptr = __per_cpu_start;
+@@ -628,7 +628,7 @@ static int percpu_modinit(void)
+ 	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
+ 			    GFP_KERNEL);
+ 	/* Static in-kernel percpu data (used). */
+-	pcpu_size[0] = -ALIGN(__per_cpu_end-__per_cpu_start, SMP_CACHE_BYTES);
++	pcpu_size[0] = -ALIGN(__per_cpu_end-__per_cpu_start, PAGE_SIZE);
+ 	/* Free room. */
+ 	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
+ 	if (pcpu_size[1] < 0) {
 
 
