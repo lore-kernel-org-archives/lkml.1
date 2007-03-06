@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030263AbXCFVrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030266AbXCFVxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030263AbXCFVrM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030266AbXCFVrL
+	id S1030266AbXCFVxx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030310AbXCFVxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:47:11 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:23425 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030260AbXCFVrJ (ORCPT
+	Tue, 6 Mar 2007 16:53:53 -0500
+Received: from pne-smtpout3-sn2.hy.skanova.net ([81.228.8.111]:38087 "EHLO
+	pne-smtpout3-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030266AbXCFVxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:47:09 -0500
-Subject: Re: [patch 2/8] update ctime and mtime for mmaped write
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, staubach@redhat.com, hugh@veritas.com
-In-Reply-To: <E1HOh8r-0006Sp-00@dorka.pomaz.szeredi.hu>
-References: <20070306180443.669036741@szeredi.hu>
-	 <20070306180549.312408559@szeredi.hu> <1173213151.4718.16.camel@lappy>
-	 <E1HOh8r-0006Sp-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 22:47:01 +0100
-Message-Id: <1173217621.4718.27.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Mar 2007 16:53:52 -0500
+Date: Tue, 6 Mar 2007 23:53:49 +0200
+From: Sami Farin <7atbggg02@sneakemail.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support
+Message-ID: <20070306215349.hquin7d6pfy2n5d2@m.safari.iki.fi>
+Mail-Followup-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20070223170527.4ca695b2@freekitty> <20070305155714.3abe1b5e@freekitty> <20070306133404.GA864@one.firstfloor.org> <200703061519.20346.dada1@cosmosbay.com> <20070306144529.GA2004@one.firstfloor.org> <84C47260-4B57-4568-8197-58F438A6F737@e18.physik.tu-muenchen.de> <20070306102941.32471d57@freekitty>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306102941.32471d57@freekitty>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 22:24 +0100, Miklos Szeredi wrote:
-> > I'm not liking this, its not a constant operation as the name implies.
+On Tue, Mar 06, 2007 at 10:29:41 -0800, Stephen Hemminger wrote:
+> Don't count the existing Newton-Raphson out. It turns out that to get enough
+> precision for 32 bits, only 4 iterations are needed. By unrolling those, it
+> gets much better timing.
 > 
-> OK, I'll think of something better.
-> 
-> > And it style is a bit out of line with the rest of rmap.
-> > 
-> > The thing it actually does is page_mkclean(), all it doesn't do is
-> > setting the pte read-only.
-> > 
-> > I can understand you wanting to avoid the overhead of the minor faults
-> > resulting from using page_mkclean(), but I'm not sure its worth it.
-> 
-> It would be nice if the cost of MS_ASYNC wouldn't be too high.  And I
-> do have the feeling that minor faults are far more expensive than
-> cleaning the dirty bit in the ptes.
-> 
-> Do you have any numbers?
+> Slightly gross test program (with original cubic wraparound bug fixed).
+...
+> 	{~0, 2097151},
+             ^^^^^^^
+this should be 2642245.
 
-None what so ever, but I always think of msync as a rare function
-(infrequent when compared to (minor) faults overall). But I don't have
-numbers backing that up either.
+Without serializing instruction before rdtsc and with one loop
+I do not get very accurate results (104 for ncubic, > 1000 for others).
 
-Also, the radix tree scan you do isn't exactly cheap either. 
+#define rdtscll_serialize(val) \
+  __asm__ __volatile__("movl $0, %%eax\n\tcpuid\n\trdtsc\n" : "=A" (val) : : "ebx", "ecx")
 
-So what I was wondering is whether its worth optimizing this at the cost
-of another rmap walker. (one with very dubious semantics at that - it
-clears the pte dirty bit but doesn't particularly care about that nor
-does it respect the PG_dirty / PTE dirty relation)
+Here Pentium D timings for 1000 loops. 
 
+~0, 2097151
+
+Function     clocks mean(us)  max(us)  std(us) total error
+ocubic          912    0.306   20.317    0.730      545101
+ncubic          777    0.261   14.799    0.486      576263
+acbrt          1168    0.392   21.681    0.547      547562
+hcbrt           827    0.278   15.244    0.387        2410
+
+~0, 2642245
+
+Function     clocks mean(us)  max(us)  std(us) total error
+ocubic          908    0.305   20.210    0.656           7
+ncubic          775    0.260   14.792    0.550       31169
+acbrt          1176    0.395   22.017    0.970        2468
+hcbrt           826    0.278   15.326    0.670      547504
+
+And I found bug in gcc-4.1.2, it gave 0 for ncubic results
+when doing 1000 loops test... gcc-4.0.3 works.
+
+-- 
