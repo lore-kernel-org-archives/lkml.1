@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbXCFLEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964919AbXCFLEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964896AbXCFLEl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 06:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964931AbXCFLEl
+	id S964919AbXCFLEu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 06:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964931AbXCFLEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 06:04:41 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:32785 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964896AbXCFLEk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 06:04:40 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
-Content-class: urn:content-classes:message
+	Tue, 6 Mar 2007 06:04:50 -0500
+Received: from ns2.suse.de ([195.135.220.15]:37408 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964919AbXCFLEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 06:04:49 -0500
+Message-ID: <45ED4AD8.6020504@suse.de>
+Date: Tue, 06 Mar 2007 12:04:56 +0100
+From: Gerd Hoffmann <kraxel@suse.de>
+Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
+ =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 1/1] ppc: Possible bug fix for FCC driver
-Date: Tue, 6 Mar 2007 12:03:57 +0100
-Message-ID: <00B1F4365DDBE745B091C67A1CCFCB4307124DB1@zctfhxm1>
-In-Reply-To: <20070306124218.4bebc288@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 1/1] ppc: Possible bug fix for FCC driver
-Thread-Index: Acdf08ASKLZJHcf3SQW9/huDZQ9GIQACSOWA
-From: "Cedric Pontois" <cpontois@nortel.com>
-To: "Vitaly Bordug" <vbordug@ru.mvista.com>,
-       "Li Yang-r58472" <LeoLi@freescale.com>
-Cc: <dmalek@jlc.net>, <linux-kernel@vger.kernel.org>,
-       <linuxppc-embedded@ozlabs.org>, "Rachid Koucha" <koucha@nortel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Xen & VMI?
+References: <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <45ED3121.8090308@suse.de> <20070306093436.GA30239@elte.hu> <45ED3F29.6000705@suse.de> <20070306102658.GA7478@elte.hu>
+In-Reply-To: <20070306102658.GA7478@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vitaly,
-
-The problem seems to be similar in recent kernels
-(/drivers/net/fs_enet/mac-fcc.c). The transmit clock is inverted (TCI
-bit set). The packets are well received, transmitted packets go out (tx
-counter is ok), unfortunately as the clock is inverted (TCI) the data
-are not correctly received by the other side. The FCC works in 100Mbps
-(luck?) but doesn't in 10Mbps. I solved this problem by removing the TCI
-bit set as described in the patch. Actually, this problem depends also
-of the Ethernet phy used on board.
-
-Cedric
-
------Original Message-----
-From: Vitaly Bordug [mailto:vbordug@ru.mvista.com] 
-Sent: mardi 6 mars 2007 10:42
-To: Li Yang-r58472
-Cc: Pontois, Cedric UMTS (CEZ:8Z10); dmalek@jlc.net;
-linux-kernel@vger.kernel.org; linuxppc-embedded@ozlabs.org
-Subject: Re: [patch 1/1] ppc: Possible bug fix for FCC driver
-
-
-On Tue, 6 Mar 2007 10:23:43 +0800
-Li Yang-r58472 wrote:
-
-> Hi Cedric,
+Ingo Molnar wrote:
+>>> IMO the GPL-ed ROM portion of VMI was a bad idea to begin with.
+>> So why do you want xen use vmi then?
 > 
-> For ppc embedded related patches, please also cc: 
-> linuxppc-embedded@ozlabs.org.
+> due to the other argument i listed:
 > 
-> > We use a kernel 2.6.14 on PPC platform (MPC 8555). The FCC driver
-> works
-> 
-> To submit a kernel patch upstream, the patch should be against the 
-> latest kernel version which is 2.6.21-rc now.
-> > well with a 100Mbps link. But it doesn't with a 10Mbps link. To 
-> > solve it, I modified the GFMR register init: removed TCI bit and set
+> || Also, lguest and KVM is Linux-internal, so there's a natural match 
+> || between the guest and the host APIs.
+>
+> It's a basic kernel maintainance issue: lguest/KVM and Linux host and 
+> guest will co-evolve foward in a natural way as they are in essence 
+> Linux-internal technologies. They /will/ harmonize.
 
-> > CRC32
-> bit
-> > instead of.
-> 
-> I don't know how these bits caused the 10M link issue.  Do you have 
-> any reasoning?
-> 
-> > 	Signed-off-by: Cedric Pontois <cpontois@nortel.com>
-> > 
-> >
-> ----------------------------------------------------------------------
-> --
-> > -----
-> > 
-> > diff -ruN pa-original/arch/ppc/8260_io/fcc_enet.c
-The fcc code in 8260_io has been obsoleted by fs_enet driver
-(drivers/net/fs_enet). It is known to work with 85xx at least in recent
-kernels. If it does not for some reason, please letus know.
+Yes for lguest, that is a linux-only ground for play and research and
+that will most likely not change in near future.
 
-Thanks,
+It is complete bullshit for kvm.  You can run almost anything as guest
+in kvm, and I certainly wouldn't be surprised if we see other operating
+systems start using the kvm paravirt interface.
 
--Vitaly
+> There is no such 
+> guarantee with Xen/VMWare/etc. (which are distinctly separate 
+> technologies) - so any ABIs towards them could become (and are already 
+> becoming) a drag and distraction.
+
+We'll certainly need some stable ABI for kvm too, so you can mix kernel
+versions on host and guest.  I really can't see why do you think kvm is
+special in any way (except that it is your favorite toy at the moment).
+
+>> So in the end you would still have two different hypervisor ABI's, the 
+>> VMI ROM just hides that.
+> 
+> oh, but that way i have cleverly pushed the problem out of Linux and 
+> into the VMI-ROM's domain ;) Which is all i care about.
+
+Fine, so lets move kvm paravirtualitzation into vmi too (proof of
+concept code by Anthony Liguori exists) and kill one more item on the
+(linux) QA test matrix?  (just following your arguments, not that I'm
+confident it would actually help reducing QA effort).
+
+cheers,
+  Gerd
+
+-- 
+Gerd Hoffmann <kraxel@suse.de>
