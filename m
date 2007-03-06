@@ -1,160 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934003AbXCFJR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933180AbXCFJUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934003AbXCFJR2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933180AbXCFJR2
+	id S933180AbXCFJUP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:20:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934007AbXCFJUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:17:28 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:48531 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934003AbXCFJRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:17:25 -0500
-Date: Tue, 6 Mar 2007 04:17:24 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20070306091724.GA17523@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Tue, 6 Mar 2007 04:20:14 -0500
+Received: from 85-18-76-201.ip.fastwebnet.it ([85.18.76.201]:55962 "EHLO
+	85-18-76-201.ip.fastwebnet.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933180AbXCFJTz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:19:55 -0500
+Message-ID: <45ED3218.5000406@robox.it>
+Date: Tue, 06 Mar 2007 10:19:20 +0100
+From: Marco Lazzarotto <m.lazzarotto@robox.it>
+User-Agent: Mozilla Thunderbird 1.0.2 (X11/20070113)
+X-Accept-Language: it, it-it, en-us, en
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Trouble using some (fast) compact flash as ide device on an embedded
+ system
+References: <45E6D7EB.5080501@robox.it> <20070302195650.GA5697@ucw.cz> <200703052316.50257.bzolnier@gmail.com>
+In-Reply-To: <200703052316.50257.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ciao!
 
-There were some bumps, but I'm surprised at the lack of ACPI problem
-reports.  It did live in -mm for many months, but nonetheless...  we'll
-see how 2.6.21 release goes.
+Bartlomiej Zolnierkiewicz ha scritto:
+> On Friday 02 March 2007, Pavel Machek wrote:
+> 
+>>Hi!
+>>
+>>
+>>>As I reported in bug 8036 in bugzilla.kernel.org,
+>>>
+>>>Hardware Environment:
+>>>
+>>> - Use a compact flash SanDisk SDCFB-128 Firmware revision HDX 2.15
+>>>   (we used other compact flashes with the same hw ad sw for years
+>>>    with  no trouble)
+>>>
+>>>It happens on both etx boards:
+>>> - VIA SOM-ETX (4475)
+>>> - Gene-4312
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+ERRATA CORRIGE: Gene-4312 is not a etx board ;-) but a pc/104
 
-to receive the following updates:
+>>>
+>>>Doing the command
+>>>sfdisk -R /dev/hdc
+>>>
+>>>gives:
+>>>
+>>> * * *
+>>>ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
+>>>hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+>>>ide: failed opcode was: unknown
+>>>hdc: drive not ready for command
+>>>ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
+>>>hdc: do_special: 0x02
+>>>hdc: do_special: recalibrate
+>>>ide1: start_request: current=0xc6ebe754 (rq->sect=0,block 0)
+>>>hdc: reading: block=0 sectors=8, buffer = 0xc6cd40000
+>>>ide1: end_request: current=0xc6ebe754
+>>> * * *
+>>>
+>>>the 'bad bit' in status error is DataRequest
+>>>
+>>>
+>>>
+>>>doing
+>>>sfdisk -l /dev/hdc
+>>>
+>>>gives:
+>>>
+>>> * * *
+>>>ide1: start_request: current=0xc6ebecd4 (rq->sect=0,block 0)
+>>>hdc: reading: block=0, sectors=32, buffer=0xc6f37000
+>>>hdc: lost interrupt
+>>>hdc: lost interrupt [and so on several times]
+>>> * * *
+>>>
+>>>I have no knowledge of the internals of the linux kernel, but I'm a
+>>>programmer and have both hardware and time to spend on solving this issue.
+>>
+>>Debug it, then :-). Try limiting its speed with hdparm to see if it
+>>helps.
 
- drivers/ata/ahci.c              |    1 +
- drivers/ata/pata_legacy.c       |    2 +-
- drivers/ata/pata_pdc202xx_old.c |   22 ++++++++++++++--------
- 3 files changed, 16 insertions(+), 9 deletions(-)
+I tried hdparm -p 0 /dev/hdc but nothing changes
 
-Bartlomiej Zolnierkiewicz (1):
-      pata_pdc202xx_old: fix data corruption and other problems
+> I would suggest trying booting with "ide=nodma" first.
 
-Jason Gaston (1):
-      ahci: RAID mode SATA patch for Intel ICH9M
+I tried this too, without success.
+I disabled 'Use PCI DMA by default when available' in the kernel, if
+this is enabled the message 'hdc: lost interrupt' comes when the kernel
+tries to access the CF for the first time.
 
-Mikael Pettersson (1):
-      pata_legacy: fix io/irq mismatch
+ * * * Other information : * * *
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 43cc43d..dc7b562 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -389,6 +389,7 @@ static const struct pci_device_id ahci_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, 0x2929), board_ahci_pi }, /* ICH9M */
- 	{ PCI_VDEVICE(INTEL, 0x292a), board_ahci_pi }, /* ICH9M */
- 	{ PCI_VDEVICE(INTEL, 0x292b), board_ahci_pi }, /* ICH9M */
-+	{ PCI_VDEVICE(INTEL, 0x292c), board_ahci_pi }, /* ICH9M */
- 	{ PCI_VDEVICE(INTEL, 0x292f), board_ahci_pi }, /* ICH9M */
- 	{ PCI_VDEVICE(INTEL, 0x294d), board_ahci_pi }, /* ICH9 */
- 	{ PCI_VDEVICE(INTEL, 0x294e), board_ahci_pi }, /* ICH9M */
-diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
-index fc5b73d..86fbcd6 100644
---- a/drivers/ata/pata_legacy.c
-+++ b/drivers/ata/pata_legacy.c
-@@ -69,7 +69,7 @@
- #define NR_HOST 6
- 
- static int legacy_port[NR_HOST] = { 0x1f0, 0x170, 0x1e8, 0x168, 0x1e0, 0x160 };
--static int legacy_irq[NR_HOST] = { 15, 14, 11, 10, 8, 12 };
-+static int legacy_irq[NR_HOST] = { 14, 15, 11, 10, 8, 12 };
- 
- struct legacy_data {
- 	unsigned long timing;
-diff --git a/drivers/ata/pata_pdc202xx_old.c b/drivers/ata/pata_pdc202xx_old.c
-index 3fb4177..acdc52c 100644
---- a/drivers/ata/pata_pdc202xx_old.c
-+++ b/drivers/ata/pata_pdc202xx_old.c
-@@ -2,13 +2,14 @@
-  * pata_pdc202xx_old.c 	- Promise PDC202xx PATA for new ATA layer
-  *			  (C) 2005 Red Hat Inc
-  *			  Alan Cox <alan@redhat.com>
-+ *			  (C) 2007 Bartlomiej Zolnierkiewicz
-  *
-  * Based in part on linux/drivers/ide/pci/pdc202xx_old.c
-  *
-  * First cut with LBA48/ATAPI
-  *
-  * TODO:
-- *	Channel interlock/reset on both required ?
-+ *	Channel interlock/reset on both required
-  */
- 
- #include <linux/kernel.h>
-@@ -21,7 +22,7 @@
- #include <linux/libata.h>
- 
- #define DRV_NAME "pata_pdc202xx_old"
--#define DRV_VERSION "0.3.0"
-+#define DRV_VERSION "0.4.0"
- 
- /**
-  *	pdc2024x_pre_reset		-	probe begin
-@@ -76,7 +77,7 @@ static void pdc2026x_error_handler(struct ata_port *ap)
- static void pdc202xx_configure_piomode(struct ata_port *ap, struct ata_device *adev, int pio)
- {
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--	int port = 0x60 + 4 * ap->port_no + 2 * adev->devno;
-+	int port = 0x60 + 8 * ap->port_no + 4 * adev->devno;
- 	static u16 pio_timing[5] = {
- 		0x0913, 0x050C , 0x0308, 0x0206, 0x0104
- 	};
-@@ -85,7 +86,7 @@ static void pdc202xx_configure_piomode(struct ata_port *ap, struct ata_device *a
- 	pci_read_config_byte(pdev, port, &r_ap);
- 	pci_read_config_byte(pdev, port + 1, &r_bp);
- 	r_ap &= ~0x3F;	/* Preserve ERRDY_EN, SYNC_IN */
--	r_bp &= ~0x07;
-+	r_bp &= ~0x1F;
- 	r_ap |= (pio_timing[pio] >> 8);
- 	r_bp |= (pio_timing[pio] & 0xFF);
- 
-@@ -123,7 +124,7 @@ static void pdc202xx_set_piomode(struct ata_port *ap, struct ata_device *adev)
- static void pdc202xx_set_dmamode(struct ata_port *ap, struct ata_device *adev)
- {
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--	int port = 0x60 + 4 * ap->port_no + 2 * adev->devno;
-+	int port = 0x60 + 8 * ap->port_no + 4 * adev->devno;
- 	static u8 udma_timing[6][2] = {
- 		{ 0x60, 0x03 },	/* 33 Mhz Clock */
- 		{ 0x40, 0x02 },
-@@ -132,12 +133,17 @@ static void pdc202xx_set_dmamode(struct ata_port *ap, struct ata_device *adev)
- 		{ 0x20, 0x01 },
- 		{ 0x20, 0x01 }
- 	};
-+	static u8 mdma_timing[3][2] = {
-+		{ 0x60, 0x03 },
-+		{ 0x60, 0x04 },
-+		{ 0xe0, 0x0f },
-+	};
- 	u8 r_bp, r_cp;
- 
- 	pci_read_config_byte(pdev, port + 1, &r_bp);
- 	pci_read_config_byte(pdev, port + 2, &r_cp);
- 
--	r_bp &= ~0xF0;
-+	r_bp &= ~0xE0;
- 	r_cp &= ~0x0F;
- 
- 	if (adev->dma_mode >= XFER_UDMA_0) {
-@@ -147,8 +153,8 @@ static void pdc202xx_set_dmamode(struct ata_port *ap, struct ata_device *adev)
- 
- 	} else {
- 		int speed = adev->dma_mode - XFER_MW_DMA_0;
--		r_bp |= 0x60;
--		r_cp |= (5 - speed);
-+		r_bp |= mdma_timing[speed][0];
-+		r_cp |= mdma_timing[speed][1];
- 	}
- 	pci_write_config_byte(pdev, port + 1, r_bp);
- 	pci_write_config_byte(pdev, port + 2, r_cp);
+If I try hdparm -I /dev/hdc immediately after boot I receive:
+
+/ # hdparm -I /dev/hdc
+
+/dev/hdc:
+hdc: ide_cmd_ioctl()
+hdc: ide_do_drive_cmd()
+ide1: start_request: current=0xc6e1dcc8 (rq->sect=0,block0)
+hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+ide: failed opcode was: 0xec
+hdc: drive not ready for command
+
+ATA device, with non-removable media
+Standards:
+	Likely used: 1
+Configuration:
+	Logical		max	current
+	cylinders	0	0
+	heads		0	0
+	sectors/track	0	0
+	--
+	device size with M = 1024*1024:           0 MBytes
+	device size with M = 1000*1000:           0 MBytes
+Capabilities:
+	IORDY not likely
+	Cannot perform double-word IO
+	R/W multiple sector transfer: not supported
+	DMA: not supported
+	PIO: pio0
+/ #
+
+Then, I must do for example
+
+/ # dd if=/dev/hdc of=/dev/null bs=512 count=1 skip=128
+
+ide1: start_request: current=0xc6e7fcd4 (rq->sect=128,block 128)
+hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+ide: failed opcode was: unknown
+hdc: GOOD BITS   : ATA status=0x40 { DriveReady }
+ide: failed opcode was: unknown
+hdc: BAD BITS    : ATA status=0x08 { DataRequest }
+ide: failed opcode was: unknown
+hdc: drive not ready for command
+ide1: start_request: current=0xc6e7fcd4 (rq->sect=128,block 128)
+hdc: do_special: 0x02
+hdc: do_special: recalibrate
+ide1: start_request: current=0xc6e7fcd4 (rq->sect=128,block 128)
+hdc: reading: block=128, sectors=8, buffer=0xc1306000
+ide1: end_request:   current=0xc6e7fcd4
+1+0 record in
+1+0 record out
+/ #
+
+The lines with 'GOOD BITS' and 'BAD BITS' is debugging made by me in
+drivers/ide/ide-iops.c :
+    *startstop = ide_error(drive, "status error", stat);
++   *startstop = ide_error(drive, "GOOD BITS   ", (stat & good));
++   *startstop = ide_error(drive, "BAD BITS    ", (stat & bad));
+
+After that, redoing the command
+/ # dd if=/dev/hdc of=/dev/null bs=512 count=1 skip=128
+does not give an error, and
+
+/ # hdparm -I /dev/hdc	# gives:
+
+CompactFlash ATA device, with removable media
+	Model Number:       SanDisk SDCFB-128
+	Serial Number:      012101G0604F3431
+	Firmware Revision:  HDX 2.15
+Standards:
+	Supported: 10
+	Likely used: 10
+Configuration:
+	Logical		max	current
+	cylinders	980	497
+	heads		8	8
+	sectors/track	32	63
+	--
+	CHS current addressable sectors:     250488
+	LBA    user addressable sectors:     250880
+	device size with M = 1024*1024:         122 MBytes
+	device size with M = 1000*1000:         128 MBytes
+Capabilities:
+	LBA, IORDY(may be)(cannot be disabled)
+	Standby timer values: spec'd by Vendor
+	R/W multiple sector transfer: Max = 1	Current = 1
+	DMA: mdma0 mdma1 *mdma2
+	     Cycle time: min=120ns recommended=120ns
+	PIO: pio0 pio1 pio2 pio3 pio4
+	     Cycle time: no flow control=120ns  IORDY flow control=120ns
+	Integrity word not set (found 0x0000, expected 0x10a5)
+
+/ #
+
+after that,
+
+/ # dd if=/dev/hdc of=/dev/null bs=512 count=1
+ide1: start_request: current=0xc6e7fc24 (rq->sect=0,block=0)
+hdc: reading: block=0, sectors=32, buffer=0xc1104000
+
+hdc: lost interrupt
+hdc: lost interrupt
+...
+
+> Should help if this is CF adapter without DMA support with DMA capable CF.
+> [ Hmm, this should be in the documentation somewhere but actually isn't. ]
+> 
+> Thanks,
+> Bart
+
+Tanks
+	Marco Lazzarotto
+
+-- 
+ *------------------------------------------------------------------*
+ | Vi preghiamo, se questo messaggio fosse ricevuto per errore,     |
+ | di avvisare il mittente e, tenuto conto delle responsabilita'    |
+ | connesse all'indebito utilizzo e/o divulgazione del messaggio    |
+ | e/o delle informazioni in esso contenute, di cancellare          |
+ | l'originale e distruggere le varie copie o stampe. Grazie        |
+ *------------------------------------------------------------------*
+ | The information in this e-mail is solely for the addressee.      |
+ | Please delete this e-mail if you are not the intended recipient. |
+ | Do not disclose or distribute the communication in any form.     |
+ *------------------------------------------------------------------*
