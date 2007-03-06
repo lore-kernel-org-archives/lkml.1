@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbXCFMYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXCFMe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752915AbXCFMYO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:24:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXCFMYO
+	id S932089AbXCFMe1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 07:34:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932111AbXCFMe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:24:14 -0500
-Received: from aa014msr.fastwebnet.it ([85.18.95.74]:49263 "EHLO
-	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbXCFMYM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:24:12 -0500
-Date: Tue, 6 Mar 2007 13:22:13 +0100
-From: Mattia Dongili <malattia@linux.it>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.21 - part II (resend)
-Message-ID: <20070306122213.GF2919@inferi.kami.home>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <200702162223.59837.lenb@kernel.org> <20020101045751.GD4106@ucw.cz>
+	Tue, 6 Mar 2007 07:34:27 -0500
+Received: from ns2.suse.de ([195.135.220.15]:45850 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932089AbXCFMe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 07:34:26 -0500
+Message-ID: <45ED5FCC.3000608@suse.de>
+Date: Tue, 06 Mar 2007 13:34:20 +0100
+From: Gerd Hoffmann <kraxel@suse.de>
+Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
+ =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20020101045751.GD4106@ucw.cz>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.21-rc2-mm1-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Xen & VMI?
+References: <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <45ED3121.8090308@suse.de> <20070306093436.GA30239@elte.hu> <45ED3F29.6000705@suse.de> <20070306102658.GA7478@elte.hu> <45ED4AD8.6020504@suse.de> <20070306115937.GA25313@elte.hu>
+In-Reply-To: <20070306115937.GA25313@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 01, 2002 at 04:57:52AM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > commit 4465857d5f99079bae00621626adf74ed8256296
-> > Author: Mattia Dongili <malattia@linux.it>
-> > Date:   Sat Jan 13 23:04:39 2007 +0100
-> > 
-> >     sony_acpi: Add lanpower and audiopower controls
-> >     
-> >     audiopower works well on my SZ72B so it's not marked has "debug" while lanpower
-> >     has at least one report of not resuming power happily so morked as "debug"
-> >     
-> >     Signed-off-by: Mattia Dongili <malattia@linux.it>
-> >     Signed-off-by: Len Brown <len.brown@intel.com>
-> 
-> What is interface to these? It would be nice to automagically disable
-> audiopower when sound device is closed, and automagically power down
-> lan on ifconfig ... down.
+  Hi,
 
-the audiopower is basically a _PS3/_PS0 switch for the device, while the
-lanpower plays with the embedded controller to powerdown/powerup.
+> legacy support has to be ensured, but it does not hugely matter in terms 
+> of the designing our future. What matters is that once we change some 
+> fundamental aspect of Linux, we can adopt lguest/KVM immediately. With 
+> 'external' hypervisors there is no such compulsory forward motion, and 
+> my fear is that by giving them ABI interfaces to the innards of the 
+> Linux guest they will just stick with those ABIs - and worse, drag Linux 
+> along with them. (because distros will be forced by the legacy 
+> assumptions to carry those ABIs along.)
 
-Now, unfortunately those methods are attached to a fake device in the
-DSDT and afaict there's no way to tell which real device they are
-playing with (except by inspecting the method implementations).
-Well of course iff there's only _one_ sound card and _one_ nic you can
-easily guess it :)
+I don't share your fear when it comes to Xen.
 
-Is there some way to hook into drivers for such kind of runtime power
-management?
+The Xen ABI did involve too, there are a few hypercalls with old and new
+versions, just like different linux syscall versions exist.  Guests then
+can choose to either fallback to the slow, old version in case the new
+hypercall returns -ENOSYS or raise the minimum required xen version to
+the one with the new hypercall and leave out the legacy cruft.
 
-PS: lanpower currently seems to be a little too invasive (or it's just
-ACPI that reacts badly) because switching off lanpower also disables the
-pic link and never comes back. I need to better diagnose what's
-happening and report to linux-acpi.
+The current xen hypercall ABI isn't set in stone, it can and will evolve
+too ...
+
+> but there is no danger of KVM 
+> staying in legacy land forever. With Xen and VMWare i see no guarantee 
+> at all that Linux wont be hindered by their legacies (or by any plain 
+> diverging approaches) forever.
+
+I don't expect that being a problem with Xen.
+
+> so for example, if we change some fundamental thing that can be 
+> implemented via the legacy ABI but only slowly, that's not a problem 
+> because new-lguest/new-KVM will use the new approach, so there's a 
+> straightforward technology-based migratory path out of the legacy.
+
+See above, that path exists with Xen too.
+
+cheers,
+  Gerd
+
 -- 
-mattia
-:wq!
+Gerd Hoffmann <kraxel@suse.de>
