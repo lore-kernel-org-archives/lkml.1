@@ -1,34 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933291AbXCFTsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXCFTsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933291AbXCFTsa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 14:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933299AbXCFTsa
+	id S933299AbXCFTsp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 14:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964852AbXCFTso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 14:48:30 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:7638 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933291AbXCFTs3 (ORCPT
+	Tue, 6 Mar 2007 14:48:44 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37814 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933307AbXCFTsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 14:48:29 -0500
-X-IronPort-AV: i="4.14,255,1170662400"; 
-   d="scan'208"; a="397701659:sNHT43952370"
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: Netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       General@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH 2.6.21-rc2] iw_cxgb3: Don't use mm after its freed in iwch_mmap().
-X-Message-Flag: Warning: May contain useful information
-References: <1172873196.21241.62.camel@stevo-desktop>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 06 Mar 2007 11:48:27 -0800
-In-Reply-To: <1172873196.21241.62.camel@stevo-desktop> (Steve Wise's message of "Fri, 02 Mar 2007 16:06:36 -0600")
-Message-ID: <ada8xeanofo.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
+	Tue, 6 Mar 2007 14:48:43 -0500
+Date: Tue, 6 Mar 2007 20:48:41 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
+       Andi Kleen <andi@firstfloor.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support
+Message-ID: <20070306194841.GA5424@one.firstfloor.org>
+References: <20070223170527.4ca695b2@freekitty> <20070305155714.3abe1b5e@freekitty> <20070306133404.GA864@one.firstfloor.org> <200703061519.20346.dada1@cosmosbay.com> <20070306144529.GA2004@one.firstfloor.org> <84C47260-4B57-4568-8197-58F438A6F737@e18.physik.tu-muenchen.de> <20070306102941.32471d57@freekitty>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Mar 2007 19:48:27.0371 (UTC) FILETIME=[68A153B0:01C76028]
-Authentication-Results: sj-dkim-5; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim5002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20070306102941.32471d57@freekitty>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, applied.
+On Tue, Mar 06, 2007 at 10:29:41AM -0800, Stephen Hemminger wrote:
+> Don't count the existing Newton-Raphson out. It turns out that to get enough
+> precision for 32 bits, only 4 iterations are needed. By unrolling those, it
+> gets much better timing.
+
+But did you fix the >2^43 bug too?
+
+SGI has already shipped 10TB Altixen, so it's not entirely theoretical.
+
+-Andi
+
