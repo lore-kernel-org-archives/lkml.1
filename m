@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbXCFNJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934109AbXCFNKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367AbXCFNJa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:09:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933914AbXCFNJa
+	id S934109AbXCFNKk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934106AbXCFNKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:09:30 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:57411 "EHLO
+	Tue, 6 Mar 2007 08:10:40 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:59781 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbXCFNJ3 (ORCPT
+	with ESMTP id S934104AbXCFNKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:09:29 -0500
-Subject: Re: Problem with freezable workqueues
+	Tue, 6 Mar 2007 08:10:38 -0500
+Subject: Re: [1/6] 2.6.21-rc2: known regressions
 From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-In-Reply-To: <200702272251.28844.rjw@sisk.pl>
-References: <200702272251.28844.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mtulcmuYQEa/J9wRz5To"
-Date: Tue, 06 Mar 2007 01:30:19 +0100
-Message-Id: <1173141019.15891.39.camel@johannes.berg>
+To: Greg KH <greg@kroah.com>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>,
+       Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org,
+       maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
+       Mark Lord <lkml@rtr.ca>, Matt Mackall <mpm@selenic.com>,
+       Albert Hopkins <kernel@marduk.letterboxes.org>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <20070305033533.GA28319@kroah.com>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	 <20070305015031.GF3441@stusta.de>  <20070305033533.GA28319@kroah.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-i3jBLRY+r3mxA0BLoyxz"
+Date: Tue, 06 Mar 2007 01:55:46 +0100
+Message-Id: <1173142546.15891.63.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-mtulcmuYQEa/J9wRz5To
+--=-i3jBLRY+r3mxA0BLoyxz
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2007-02-27 at 22:51 +0100, Rafael J. Wysocki wrote:
+On Sun, 2007-03-04 at 19:35 -0800, Greg KH wrote:
 
-> For 2.6.21-rc1 I've invented the appended workaround (works for me, waiti=
-ng for
-> Johannes to confirm it works for him too), but I think we need something =
-better
-> for -mm and future kernels.
+> > Subject    : wireless breakage (ipw2200, iwconfig, NetworkManager)
+> > References : http://lkml.org/lkml/2007/3/4/135
+> > Submitter  : Matt Mackall <mpm@selenic.com>
+> > Caused-By  : Greg Kroah-Hartman <gregkh@suse.de> (?)
+> >              commit 43cb76d91ee85f579a69d42bc8efc08bac560278 (?)
+> > Handled-By : Johannes Berg <johannes@sipsolutions.net>
+> > Status     : unknown
+>=20
+> I really think this is a CONFIG_SYSFS_DEPRECATED issue (not being set),
+> but want to get Matt confirm either way before saying this is a real
+> issue or not.
 
-Finally I could get back to this but after reading the thread I figured
-it might not be necessary to test this. Please let me know ASAP if you
-want this patch tested as well or it'll take quite a long time (going
-skiing for a week on Saturday)
-
-In any case, I made the two xfs workqueues non-freezable and everything
-on my quad powermac works again, I also couldn't detect any filesystem
-correction. I wanted to adapt the BUG_ON(block IO not from suspend code)
-patch from suspend2 but haven't gotten around to it yet.
+I just tested on my quad powermac that also runs a stock Debian/unstable
+and changing that option makes all the difference. Nevermind that it
+defaults to yes and one needs to turn it off explicitly...
 
 johannes
 
---=-mtulcmuYQEa/J9wRz5To
+--=-i3jBLRY+r3mxA0BLoyxz
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBF7LYb/ETPhpq3jKURAnJ2AKCAK+hM7+Lkf7GJ65471DYySCYNFgCgrG+H
-jSGr6rqxF/UxHaXBfKWJssU=
-=+oSe
+iD8DBQBF7LwS/ETPhpq3jKURAuGuAJ90d8Ucs+DvKGONqv3pqz5OhbORZACgqE1G
+9nOJkgdgY15qW65IIDjPV60=
+=8EIz
 -----END PGP SIGNATURE-----
 
---=-mtulcmuYQEa/J9wRz5To--
+--=-i3jBLRY+r3mxA0BLoyxz--
 
