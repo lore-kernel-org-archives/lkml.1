@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933968AbXCFH33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933971AbXCFHf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933968AbXCFH33 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 02:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933967AbXCFH32
+	id S933971AbXCFHf5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 02:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933972AbXCFHf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 02:29:28 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59495 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932759AbXCFH3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 02:29:23 -0500
-Date: Tue, 6 Mar 2007 07:28:50 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       nscott@aconex.com, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070306072850.GA23081@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mingming Cao <cmm@us.ibm.com>, Jan Kara <jack@suse.cz>,
-	Andrew Morton <akpm@linux-foundation.org>, nscott@aconex.com,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
-	suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com> <20070305122742.GA11486@atrey.karlin.mff.cuni.cz> <45EC7773.7020603@us.ibm.com>
+	Tue, 6 Mar 2007 02:35:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39474 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933971AbXCFHf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 02:35:56 -0500
+Date: Tue, 6 Mar 2007 08:35:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] paravirt: VDSO page is essential
+Message-ID: <20070306073511.GA3938@elte.hu>
+References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45EC7773.7020603@us.ibm.com>
+In-Reply-To: <45ECC076.9050209@goop.org>
 User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 12:02:59PM -0800, Mingming Cao wrote:
-> Yep, I think it makes sense to use preallocation for defragmentation.
-> After all both preallocation and defragmentation shall call underlying 
-> filesystem multiple block allocator to try to allocate a chunk of 
-> contiguous blocks on disk. ext4 online defrag implementation by Takashi 
-> already support to choose a "goal" allocation block to guide the ext4 
-> block allocator to place the defraged file is a specific location.
-> 
-> Passing a little bit more hint to sys_fallocate() (i.e, goal block, 
-> and/or whether the goal block is important over the size of prealloc 
-> extent), might make it more useful for the orginial goal (get contigous 
-> and guranteed blocks) and for defragmentation.
 
-fallocate with the whence argument and flags is already quite complicated,
-I'd rather have another call for placement decisions, that would
-be called on an fd to do placement decissions for any further allocations
-(prealloc, write, etc)
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> > I had just sent this out for internal review...
+> 
+> I think Jan's approach is better if it works (since there's no 
+> compromise), but this is better if you want to get something working 
+> in the near term.
+
+yeah. (plus my patches of course that remove the current papering-over 
+hackery and restores COMPAT_VDSO.)
+
+	Ingo
