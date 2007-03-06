@@ -1,78 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965332AbXCFQqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965936AbXCFQtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965332AbXCFQqX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 11:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965920AbXCFQqX
+	id S965936AbXCFQtu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 11:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965920AbXCFQtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 11:46:23 -0500
-Received: from mail.tmr.com ([64.65.253.246]:58839 "EHLO gaimboi.tmr.com"
+	Tue, 6 Mar 2007 11:49:49 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47028 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965332AbXCFQqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 11:46:22 -0500
-Message-ID: <45ED9B5B.2030806@tmr.com>
-Date: Tue, 06 Mar 2007 11:48:27 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S965309AbXCFQts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 11:49:48 -0500
+Date: Tue, 6 Mar 2007 08:44:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>, Soeren Sonnenburg <kernel@nn7.de>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+In-Reply-To: <20070306113225.GA22561@elte.hu>
+Message-ID: <Pine.LNX.4.64.0703060817060.5963@woody.linux-foundation.org>
+References: <20070305015040.GJ3441@stusta.de> <1173138193.24738.236.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
+ <1173142948.24738.257.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org>
+ <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu>
+ <20070306104618.GA5792@mellanox.co.il> <20070306113225.GA22561@elte.hu>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Marc Perkel <mperkel@yahoo.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
-Subject: Re: Raid 10 Problems?
-References: <Pine.LNX.4.61.0703050430280.23714@yvahk01.tjqt.qr> <382470.25191.qm@web52508.mail.yahoo.com>
-In-Reply-To: <382470.25191.qm@web52508.mail.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marc Perkel wrote:
-> --- Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> 
->> On Mar 4 2007 19:17, Marc Perkel wrote:
->>> Thanks - because of your suggestion I had found the
->>> instructions. But you have some interesting options
->>> set. 
->>>
->>> -N nicearray -b internal -e 1.0
->>>
->>> Are these important?
->>   -N? What's in a name? I suppose, it's not so
->> important.
->>   (Arrays are identified by their UUID anyway. But
->> maybe
->>   udev can do something with the name someday as it
->> does
->>   today with /dev/disk/*.)
-> 
-> Not worth starting over for.
-> 
->>   -b internal -- seems like a good idea to speed up
->>   resynchronization.
-> 
-> I'm trying to figure out what the default is. 
-> 
->>   -e 1.0 -- I wonder why the new superblock format
->> is
->>   not default in mdadm (0.90 is still used).
->>
-> 
-> Looks interesting for big arrays but not sure it's
-> worth starting over for. Trying to get through a 2
-> hour sync using 4 500gb sata 2 drives.
 
-That's exactly why you want the bitmap. Fortunately you can add it after 
-the array is created. Now the bad news, you should read and understand 
-the meaning of the "far" layout. Part of the information is in the mdadm 
-man page under -p, some in the md man page. Use of "far" layout will 
-effect the performance of the array, the balance of read vs. write 
-performance, and (maybe) the reliability.
+This is just a coding style thing, but I thought I should really point it 
+out, because these kinds of things quite often result in nasty bugs simply 
+because the source code is so hard to read properly:
 
-Two hours is a pretty short time to invest if you find that you have 
-your layout wrong and would be better off for the life of the array with 
-some other data layout. And the time to do the reading is worth if if 
-you wind up convinced that the default settings are fine for you.
+On Tue, 6 Mar 2007, Ingo Molnar wrote:
+>
+> -static void hrtimer_switch_to_hres(void)
+> +static int hrtimer_switch_to_hres(void)
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Ok, so here's the quiz: does this function return "true on success, false 
+on failure", or does it return "zero on success, negative on failure"?
+
+>  	if (base->hres_active)
+> -		return;
+> +		return 1;
+
+Ahh, it must be "true on success", right?
+
+>  	local_irq_save(flags);
+>  
+>  	if (tick_init_highres()) {
+>  		local_irq_restore(flags);
+> -		return;
+> +		return 0;
+
+Ohh-oh! This is clearly a failure schenario! And indeed, 
+"tick_init_highres()" will do the "negative on failure, zero on success" 
+thing.
+
+BUT! That means that you're testing the return value WRONG!
+
+A function that returns a negative error value should be tested with
+
+	if (tick_init_highres() < 0) {
+		local_irq_restore(flags);
+		return 0;
+	}
+
+because now you *see* that it's a failure.
+
+So here's the coding style:
+
+ - "true on success, false on failure" should be tested by just doing the 
+   implicit test against zero (because that's how C booleans work!)
+
+   Example:
+
+	if (everything_is_done())
+		return;
+
+   Or:
+
+	if (!something_worked_ok()) {
+		printk("Aiee! Bug!\n");
+		return;
+	}
+
+ - "negative error values" should preferably always be tested as such
+
+	if (tick_init_highres() < 0) {
+		printk("Aieee! Couldn't init!\n");
+		return 0;
+	}
+
+   or, much better, actually use a temporary variable called "err" or 
+   "error" or something, at which point "!error" is suddenly readable 
+   again:
+
+	err = tick_init_highres();
+	if (!err)
+		return;
+
+I know this sounds stupid, but we've long since come to the point where 
+source code readability on a *local* scale is damn important, simply 
+because that's how people look at code: they may not always remember 
+whether "zero is success" or "zero is false".
+
+In general, I would suggest:
+
+ - ALWAYS use "negative means error". If you had done that in this case, 
+   then hrtimer_switch_to_hres() would have been a lot more readable, 
+   *and* it could actually have returned the error code that it got to the 
+   caller. In general, it's just more information when you see
+
+	error = some_function();
+	if (error)
+		return error;
+
+   because even if it may generate basically *exactly* same code as the 
+   reversed "positive" version:
+
+	if (!some_version_is_true())
+		return 0;
+
+   it simply has more semantic information for *humans*.
+
+   And when you do this, *test it as such*. Either use an explicit "< 0" 
+   so that you *see* that you're testing an error value, or use that 
+   "retval/error = xyzzy()" pattern that is already showing "it's more 
+   than just true/false"
+
+ - use "true/false" only for things where it's *really* obvious that the 
+   answer is never an error, and always a "was it true"?
+
+Yeah, even so, the true/false kind of thing may be more common (especially 
+with small helper functions that are literally *designed* to be used just 
+as a conditional), but I think in this case, you really should have done 
+it as a "returns error" function. Partly because now it was throwing away 
+an error code, partly simply because in this case, it really wasn't about 
+true/false as much as about "did something error out and keep it from 
+succeeding?".
+
+Maybe I'm just getting anal in my old age. I at one time tried to make 
+sparse check for these things, but there was no really sane thing I could 
+come up with (way way WAAY too much manual annotation).
+
+I might have to break down and suggest people use
+
+	bool somefunction(..)
+	{
+		if (... < 0)
+			return false;
+		...
+		return true;
+	}
+
+just to (a) eventually have sparse check for these things but more 
+importantly (b) have people see more at a glance whether a function is 
+supposed to return "negative or success" or "true or false".
+
+I've not generally been a huge fan of "boolean", especially in the 
+traditional C kind of sense (capital screaming letters, and really just an 
+"int" with lipstick). But with modern C, and "bool" defined as really 
+holding just 0/1 (in practice - "unsigned char"), we could actually check 
+these things (and verify with sparse that you never assign any integer 
+except for 0/1 to a boolean, and otherwise always have to use a real 
+boolean construct).
+
+Thus endeth my overly long coding style rant.
+
+		Linus
