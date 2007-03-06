@@ -1,101 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964838AbXCFUj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbXCFUk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964838AbXCFUj7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 15:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932510AbXCFUj6
+	id S932526AbXCFUk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 15:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932632AbXCFUk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 15:39:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45160 "EHLO ogre.sisk.pl"
+	Tue, 6 Mar 2007 15:40:27 -0500
+Received: from khc.piap.pl ([195.187.100.11]:34090 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932438AbXCFUj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 15:39:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Kconfig: Update swsusp description
-Date: Tue, 6 Mar 2007 21:42:28 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200703041514.44680.rjw@sisk.pl> <200703061013.13585.rjw@sisk.pl> <20070306094107.GF2040@elf.ucw.cz>
-In-Reply-To: <20070306094107.GF2040@elf.ucw.cz>
+	id S932610AbXCFUkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 15:40:25 -0500
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: rmk@arm.linux.org.uk,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org, "Robin Getz" <rgetz@blackfin.uclinux.org>
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 06 Mar 2007 21:40:22 +0100
+In-Reply-To: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com> (Mike Frysinger's message of "Thu, 1 Mar 2007 19:03:02 -0500")
+Message-ID: <m3bqj6jebt.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703062142.28952.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+"Mike Frysinger" <vapier.adi@gmail.com> writes:
 
-On Tuesday, 6 March 2007 10:41, Pavel Machek wrote:
-> Hi!
-> 
-> > > > Index: linux-2.6.21-rc2/kernel/power/Kconfig
-> > > > ===================================================================
-> > > > --- linux-2.6.21-rc2.orig/kernel/power/Kconfig	2007-02-28 23:54:45.000000000 +0100
-> > > > +++ linux-2.6.21-rc2/kernel/power/Kconfig	2007-03-04 11:50:48.000000000 +0100
-> > > > @@ -81,30 +81,35 @@ config SOFTWARE_SUSPEND
-> > > >  	bool "Software Suspend"
-> > > >  	depends on PM && SWAP && ((X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
-> > > >  	---help---
-> > > > +	  Enable the suspend to disk (STD) functionality.
-> > > >  
-> > > > +	  You can suspend your machine with 'echo disk > /sys/power/state'.
-> > > > +	  Alternatively, you can use the additional userland tools available
-> > > > +	  from <http://suspend.sf.net>.
-> > > > +
-> > > > +	  In principle it does not require ACPI or APM, although for example
-> > > > +	  ACPI will be used if available.
-> > > > +
-> > > > +	  It creates an image which is saved in your active swap. Upon the next
-> > > >  	  boot, pass the 'resume=/dev/swappartition' argument to the kernel to
-> > > 
-> > > Actually, these days resume=... on kernel command line needs to be
-> > > there for suspend, too, IIRC.
-> > 
-> > I didn't change this line, so?
-> 
-> So I should go and fix it ;-). (I'm now overloaded with email sorry
-> for being terse.)
-> 
-> Can we do something like
-> 
-> +	  Enable the suspend to disk (STD) functionality.
-> +	  In principle it does not require any support from BIOS, although 
-> +	  ACPI will be used if available.
-> 
-> +	  You can suspend your machine with 'echo disk >
-> +	  /sys/power/state' after placing resume=/dev/swappartition on
-> +	  kernel command line.
-> +	  Alternatively, you can use the additional userland tools available
-> +	  from <http://suspend.sf.net>.
-> 
-> (and remove ...upon next boot... section).
+>            /*
+>             * Setup the RTS and DTR signals once the
+>             * port is open and ready to respond.
+>             */
+>            if (info->tty->termios->c_cflag & CBAUD)
+>                uart_set_mctrl(port, TIOCM_RTS | TIOCM_DTR);
+> ...
+>
+> shouldnt TIOCM_RTS be passed down only when the 'r' is appended to the
+> boot cmdline ?
 
-Generally, why not, but I think Andrew has already pushed the patch to Linus,
-so perhaps we can apply the changes on top of it?
+How would it be useful?
 
-> > > > +	  Right now you may boot without resuming and resume later but in the
-> > > > +	  meantime you cannot use the swap partition(s)/file(s) involved in
-> > > > +	  suspending.  Also in this case you must not use the
-> > > 
-> > > I'd prefer not to encourage this use. It has too many traps ready for
-> > > people.
-> > 
-> > But IMHO there should be a warning that if you boot without resuming, make sure
-> > you'll not resume after the next reboot or bad things will happen.
-> 
-> +	It is possible to boot without resuming and resume later but
-> +	if you access any partitions/files used by suspended kernel,
-> +	you'll probably loose your data. See ... for details.
+CRTSCTS is for CTS only (i.e., the transmission is paused when CTS is
+inactive), not for RTS. DTR and RTS should be active when the port is
+open even without CRTSCTS (= without handshaking), it's used for
+various purposes such as providing +12V to the device (and two pins
+can supply more power than one - sure, it isn't the best idea).
 
-Well, I think "access" is too weak here.  IMO we should say something like
-"if you have booted without resuming and any journaled filesystems used before
-the suspend have been mounted, you MUST NEVER EVER attempt to resume from the
-'old' image.  In that case make sure the image is destroyed by running 'mkswap'
-against the swap partition/file that contains it."
-
-Greetings,
-Rafael
+I wouldn't touch that.
+-- 
+Krzysztof Halasa
