@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965924AbXCFPUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965925AbXCFPVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965924AbXCFPUZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965925AbXCFPUZ
+	id S965925AbXCFPVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965926AbXCFPVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:20:25 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:3365 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965924AbXCFPUY (ORCPT
+	Tue, 6 Mar 2007 10:21:41 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:54195 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965925AbXCFPVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:20:24 -0500
-Date: Tue, 6 Mar 2007 16:19:35 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: David Hubbard <david.c.hubbard@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
-       linux-acpi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf@atrpms.net
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070306161935.025a3ec1.khali@linux-fr.org>
-In-Reply-To: <E1HODgC-0000h8-Vc@be1.lrz>
-References: <7PvLN-1cj-3@gated-at.bofh.it>
-	<7TEGV-6Jy-39@gated-at.bofh.it>
-	<7TUBX-6TN-5@gated-at.bofh.it>
-	<7UeqX-4QO-17@gated-at.bofh.it>
-	<7UeqZ-4QO-27@gated-at.bofh.it>
-	<7UgM5-np-1@gated-at.bofh.it>
-	<7UgM8-np-11@gated-at.bofh.it>
-	<7UnaS-2xP-9@gated-at.bofh.it>
-	<7UnkC-2JB-9@gated-at.bofh.it>
-	<7Uzcd-49u-3@gated-at.bofh.it>
-	<7UEEN-4xi-3@gated-at.bofh.it>
-	<E1HODgC-0000h8-Vc@be1.lrz>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Mar 2007 10:21:41 -0500
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Use a zero-size array in the struct devres
+References: <20070306095241.28180.76390.stgit@localhost.localdomain>
+	<45ED6221.5090003@gmail.com> <tnx649emo55.fsf@arm.com>
+	<45ED818F.2030502@gmail.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Tue, 06 Mar 2007 15:21:33 +0000
+In-Reply-To: <45ED818F.2030502@gmail.com> (Tejun Heo's message of "Tue, 06
+ Mar 2007 23:58:23 +0900")
+Message-ID: <tnx1wk2mm82.fsf@arm.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 06 Mar 2007 15:21:35.0003 (UTC) FILETIME=[2083DEB0:01C76003]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bodo,
+Tejun Heo <htejun@gmail.com> wrote:
+> Catalin Marinas wrote:
+>> It sounds to me like the alignment of an incomplete type is not
+>> guaranteed (as you can't even enquire about it, though I might be
+>> wrong). This is probably dependent on the compiler as well - with
+>> gcc-3.3 on x86, __alignof__(unsigned long long) is 8 but the
+>> "offsetof(struct test, data)" below is 12 (and it doesn't make any
+>> difference whether it is a 0-size array or not):
+>> 
+>> struct test {
+>>     unsigned long a;
+>>     unsigned long b;
+>>     unsigned long c;
+>>     unsigned long long data[];
+>> };
+>
+> data[0] and data[1] or whatever will also give you offset of 12.  Dunno
+> why, but it is.  Anyways, whatever the wording in the manual is,
+> flexible arrays just have to have the required alignment to do its job
+> as advertised.  :-)
 
-On Mon, 05 Mar 2007 14:56:44 +0100, Bodo Eggert wrote:
-> 1) Make a general resource allocation lock, if there is none.
+On ARM (with gcc-4) it gives 16 for both offsetof and sizeof.
 
-Such a lock certainly exists, but I doubt it is public at the moment.
+>> I did a quick grep through the kernel and it looks like Linux mainly
+>> uses 0-size rather than flexible arrays at the end of a structure
+>> (>500 vs ~14). This might be for historical reasons but it's not a big
+>> issue in modifying them.
+>
+> I think it's mostly historical.  Flexible array is still a relatively
+> new thing.  I don't mind changing devres to zero sized array, but please
+> explain in the commit message and as a comment that the choice is for
+> kmemleak's container_of(), and cc Greg K-H as the change should probably
+> go through his tree.
 
-> 2) make ACPI take this lock whenever it touches ports not allocated by itself
->    and release it on function return.
+OK. I'll probably wait until I post a new version of kmemleak against
+2.6.21-rcX.
 
-This is costly.
+Thanks.
 
-> 3) Make ACPI callback the allocating device if it touches allocated ranges,
->    and on function return.
-
-By callback, do you mean port forwarding as Rudolf Marek did, or more
-simple "stop touching the device" and "you can touch the device again"
-sort of signals? If the latter, this is no different from a mutex.
-
-> 1 + 2 will replace allocating single ports and freeing them again (so ACPI won't
-> prevent e.g. the display driver from loading just because it turned on the
-> backlight) while preventing races with newly allocated ranges, and 3 allows
-> coexistence with other drivers.
-
-What benefit do you see compared to a lock taken by both AML and the
-hardware monitoring drivers?
-
-Care to submit a sample implementation?
-
-Thanks,
 -- 
-Jean Delvare
+Catalin
