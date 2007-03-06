@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030339AbXCFSxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXCFS7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030339AbXCFSxi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966004AbXCFSxX
+	id S965407AbXCFS7r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:59:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965977AbXCFS7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:53:23 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:59832 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966008AbXCFSxU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:53:20 -0500
-Message-ID: <45EDB82F.8030803@zytor.com>
-Date: Tue, 06 Mar 2007 10:51:27 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Tue, 6 Mar 2007 13:59:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44564 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965407AbXCFS7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:59:46 -0500
+Message-ID: <45EDBA1B.8050007@redhat.com>
+Date: Tue, 06 Mar 2007 13:59:39 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: torvalds@osdl.org, akpm@osdl.org, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, johannes@sipsolutions.net
-Subject: Re: [PATCH] Fix get_order() [try #2]
-References: <45EDB568.1090008@zytor.com>  <20070306183426.10768.51800.stgit@warthog.cambridge.redhat.com> <11476.1173206866@redhat.com>
-In-Reply-To: <11476.1173206866@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bill Irwin <bill.irwin@oracle.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Wanted: simple, safe x86 stack overflow detection
+References: <45E5913D.3080505@redhat.com> <20070228204144.GA32316@one.firstfloor.org> <20070304015031.GA4224@holomorphy.com>
+In-Reply-To: <20070304015031.GA4224@holomorphy.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> H. Peter Anvin <hpa@zytor.com> wrote:
+Bill Irwin wrote:
+> On Wed, Feb 28, 2007 at 09:41:44PM +0100, Andi Kleen wrote:
+>> I suppose one could have a CONFIG_DEBUG_STACK_OVERFLOW that gets
+>> the stacks from vmalloc which would catch any overflow with its
+>> guard pages. This is you would need to change __pa() to handle
+>> that too because there might be still some drivers that do
+>> DMA on stack addresses.  Would be somewhat ugly but doable.
+>> But I have my doubts it is worth it again -- in my experience static
+>> analysis works well enough to trace them down and 
+>> there are not that many anyways.
 > 
->> Why not just make it ((n) < 1 ? 0 : ...) and make it well-defined for
->> n == 0?
-> 
-> Because log2(0) is -INF or mathematically undefined or something isn't it?
+> In case anyone wants them, patches against v2.6.21-rc2-116-gbb648a0
+> for this are available from http://oss.oracle.com/~wli/stack_paranoia/
 
-Yes, but it's a *rounding up* function.  In this case, it makes sense to 
-round up 0 to 1.  This is, in fact, a common way to handle requests for 
-zero-byte allocation in order to be able to return a unique address for 
-each one, so it's not a spurious thing.
 
-	-hpa
+> Chuck, is any of this of any use to you?
+
+
+I said "simple." :)
+
+In the 4k/4k stack i386 kernel, is there any fundamental reason it
+can't be 4k/8k? We seem to be mostly hitting problems in overflowing
+the IRQ stack... I think. Overhead would only be 4k per CPU for that.
+
