@@ -1,83 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965923AbXCFPKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965917AbXCFPMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965923AbXCFPKx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:10:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965922AbXCFPKx
+	id S965917AbXCFPMx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:12:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965924AbXCFPMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:10:53 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:1216 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965921AbXCFPKv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:10:51 -0500
-Date: Tue, 6 Mar 2007 16:10:02 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "David Hubbard" <david.c.hubbard@gmail.com>
-Cc: "Rudolf Marek" <r.marek@assembler.cz>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>, Ebbert <cebbert@redhat.com>,
-       Chuck@atrpms.net, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Machek <pavel@ucw.cz>, Pavel@atrpms.net,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070306161002.2a7d5c74.khali@linux-fr.org>
-In-Reply-To: <4dfa50520703051335j34e7d92bl982705adcfd8b1d5@mail.gmail.com>
-References: <20070228213803.GA4877@ucw.cz>
-	<20070302141840.GA3441@srcf.ucam.org>
-	<20070302220454.a0c66d04.khali@linux-fr.org>
-	<20070302211251.GA10035@srcf.ucam.org>
-	<20070303105316.d51e032d.khali@linux-fr.org>
-	<4dfa50520703030747g3c887f5bxe25caefd1723c635@mail.gmail.com>
-	<20070303155048.GA22755@srcf.ucam.org>
-	<45E9AB8B.1070804@assembler.cz>
-	<45EB01E8.5080003@assembler.cz>
-	<20070305221635.8b20eab5.khali@linux-fr.org>
-	<4dfa50520703051335j34e7d92bl982705adcfd8b1d5@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 Mar 2007 10:12:53 -0500
+Received: from [212.12.190.221] ([212.12.190.221]:32912 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965917AbXCFPMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 10:12:52 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Xavier Bestel <xavier.bestel@free.fr>
+Subject: Re: [ck] Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Date: Tue, 6 Mar 2007 18:15:16 +0300
+User-Agent: KMail/1.5
+Cc: Markus =?iso-8859-1?q?T=F6rnqvist?= <mjt@nysv.org>,
+       ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>
+References: <200703042335.26785.a1426z@gawab.com> <200703060910.06343.kernel@kolivas.org> <1173170554.5835.385.camel@frg-rhel40-em64t-03>
+In-Reply-To: <1173170554.5835.385.camel@frg-rhel40-em64t-03>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200703061815.16702.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Xavier Bestel wrote:
+> On Tue, 2007-03-06 at 09:10 +1100, Con Kolivas wrote:
+> > Hah I just wish gears would go away. If I get hardware where it runs at
+> > just the right speed it looks like it doesn't move at all. On other
+> > hardware the wheels go backwards and forwards where the screen refresh
+> > rate is just perfectly a factor of the frames per second (or something
+> > like that).
+> >
+> > This is not a cpu scheduler test and you're inferring that there are cpu
+> > scheduling artefacts based on an application that has bottlenecks at
+> > different places depending on the hardware combination.
+>
+> I'd add that Xorg has its own scheduler (for X11 operations, of course),
+> that has its own quirks, and chances are that it is the one you're
+> testing with glxgears. And as Con said, as long as glxgears does more
+> FPS than your screen refresh rate, its flickering its completely
+> meaningless: it doesn't even attempt to sync with vblank. Al, you'd
+> better try with Quake3 or Nexuiz, or even Blender if you want to test 3D
+> interactivity under load.
 
-On Mon, 5 Mar 2007 13:35:20 -0800, David Hubbard wrote:
-> > 2* It seems to incur a signficant performance penalty.
-> > ____request_resource isn't cheap as far as I know. And in the
-> > absence of conflict, you are even allocating and releasing the resource
-> > on _each_ I/O operation, which certainly isn't cheap either. Again, it
-> > is not a blocker point, after all this is a workaround for an improper
-> > behavior of the acpi subsystem, this performance penalty is the price to
-> > pay. But there is also a performance penalty for legitimate I/O access,
-> > which worries me more.
-> 
-> I thought Rudolf's patch allocated the resource in the driver
-> (w83627ehf) and ACPI contacted the driver when it could not allocate
-> the resource. Since ACPI never *really* wants to allocate the
-> resource, is there a fast-path check it could do? This would help
-> performance.
+Actually, games aren't really usefull to evaluate scheduler performance, due 
+to their bursty nature.
 
-Alas, I don't think it can work safely. If ACPI doesn't actually
-allocate the resource, there is a risk that another driver does so
-between the conflict check and the I/O access. I believe this is the
-reason why Rudolf used ____request_resource and not __check_region.
+OTOH, gears runs full throttle, including any of its bottlenecks. In fact, 
+it's the bottlenecks that add to its realism.  It exposes underlying 
+scheduler hickups visually, unless buffered by the display-driver, in which 
+case you just use the vesa-driver to be sure.
 
-> I like the virtualized driver method (if it wasn't obvious!) but the
-> global AML lock works also. It will be interesting to see profiling of
-> both solutions.
+If gears starts to flicker on you, just slow it down with a cpu hog like:
 
-In fact Rudolf's solution is nice for LPC chips, however I don't think
-it can work with SMBus chips. It might intercept the accesses to the
-SMBus master and be able to emulate it, even though this will be more
-complex that the W83627EHF case, and I'm not sure about the PCI config
-space. But ultimately we need to emulate all the chips behind the
-SMBus, too. The drivers for these chips won't know if they are accessed
-for real of through the emulation layer, so there is no way they'll
-remember states, while they might have to (e.g. the W83781D has a bank
-register too.)
+	# while :; do :; done &
 
-The AML lock approach, OTOH, should work fine in all cases as long as
-the context doesn't need to be remembered across AML "sections".
+Add as many hogs as you need to make the hickups visible.
 
--- 
-Jean Delvare
+Again, these hickups are only visible when using uneven nice+ levels.
+
+BTW, another way to show these hickups would be through some kind of a 
+cpu/proc timing-tracer.  Do we have something like that?
+
+
+Thanks!
+
+--
+Al
+
