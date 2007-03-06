@@ -1,92 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbXCFTUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932764AbXCFTWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933142AbXCFTUQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 14:20:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXCFTUQ
+	id S932764AbXCFTWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 14:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933286AbXCFTWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 14:20:16 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:1217 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932965AbXCFTUN (ORCPT
+	Tue, 6 Mar 2007 14:22:17 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:4507 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932764AbXCFTWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 14:20:13 -0500
-X-AuditID: d80ac287-a2c32bb000002978-5e-45edbeec314b 
-Date: Tue, 6 Mar 2007 19:20:11 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Oliver Neukum <oliver@neukum.name>
-cc: Maneesh Soni <maneesh@in.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: 2.6.21-rc suspend regression: sysfs deadlock
-Message-ID: <Pine.LNX.4.64.0703061914030.18144@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 06 Mar 2007 19:20:09.0107 (UTC) FILETIME=[7462CE30:01C76024]
-X-Brightmail-Tracker: AAAAAA==
+	Tue, 6 Mar 2007 14:22:15 -0500
+Subject: [Patch 2/2] add for_each_substring() and match_substring() -
+	exploitation
+From: Martin Peschke <mp3@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Wu Fengguang <wfg@mail.ustc.edu.cn>
+Content-Type: text/plain
+Date: Tue, 06 Mar 2007 20:22:13 +0100
+Message-Id: <1173208933.5266.12.camel@dix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resume from RAM on a ThinkPad T43p is now happy with Thomas' periodic
-tick fix - the most unusable aspect of that for me had been how slow
-repeat keys were to start repeating, but that's all fine now.
+simplifying statistics code by using for_each_substring() and
+match_substring() instead of strsep() and match_token()
 
-But suspend to RAM still hanging, unless I "chmod a-x /usr/sbin/docker"
-on SuSE 10.2: docker undock tries to unregister /sys/block/sr0 and hangs:
+Signed-off-by: Martin Peschke <mp3@de.ibm.com>
+---
 
-60x60         D B0415080     0 10778  10771                     (NOTLB)
-       e8227e04 00000086 e80c60b0 b0415080 ef3f5454 b041dc20 ef3f5430 00000001 
-       e80c60b0 72af360e 00000085 00001941 e80c61bc e8227e00 b01606bf ef47d3c0 
-       ed07c1dc ed07c1e4 00000246 e8227e30 b02f6ef0 e80c60b0 00000001 e80c60b0 
-Call Trace:
- [<b02f6ef0>] __down+0xaa/0xb8
- [<b02f6de6>] __down_failed+0xa/0x10
- [<b0180529>] sysfs_drop_dentry+0xa2/0xda
- [<b01819b3>] __sysfs_remove_dir+0x6d/0xf8
- [<b0181a53>] sysfs_remove_dir+0x15/0x20
- [<b01d49a9>] kobject_del+0x16/0x22
- [<b0230041>] device_del+0x1c9/0x1e2
- [<b025705a>] __scsi_remove_device+0x43/0x7a
- [<b02570b0>] scsi_remove_device+0x1f/0x2b
- [<b0256a44>] sdev_store_delete+0x16/0x1b
- [<b022f0a0>] dev_attr_store+0x32/0x34
- [<b0180931>] flush_write_buffer+0x37/0x3d
- [<b0180995>] sysfs_write_file+0x5e/0x82
- [<b01507f5>] vfs_write+0xa7/0x150
- [<b0150950>] sys_write+0x47/0x6b
- [<b0103d56>] sysenter_past_esp+0x5f/0x85
-              /usr/lib/dockutils/hooks/thinkpad/60x60 undock
-              /usr/lib/dockutils/dockhandler undock
-              /usr/sbin/docker undock
-              /etc/pm/hooks/23dock suspend
+ statistic.c |   67 +++++++++++++++++-------------------------------------------
+ 1 file changed, 20 insertions(+), 47 deletions(-)
 
-This comes from Oliver's commit 94bebf4d1b8e7719f0f3944c037a21cfd99a4af7
-Driver core: fix race in sysfs between sysfs_remove_file() and read()/write()
-in 2.6.21-rc1.  It looks to me like sysfs_write_file downs buffer->sem
-while calling flush_write_buffer, and flushing that particular write
-buffer entails downing buffer->sem in orphan_all_buffers.
-
-Suspend no longer deadlocks with the following silly patch, but I expect
-this either pokes a small hole in your scheme, or renders it pointless.
-Maybe that commit needs to be reverted, or maybe you can see how to fix
-it up for -rc3.
-
-Thanks,
-Hugh
-
---- 2.6.21-rc2-git5/fs/sysfs/inode.c	2007-02-28 08:30:26.000000000 +0000
-+++ linux/fs/sysfs/inode.c	2007-03-06 18:03:13.000000000 +0000
-@@ -227,11 +227,8 @@ static inline void orphan_all_buffers(st
+Index: linux/lib/statistic.c
+===================================================================
+--- linux.orig/lib/statistic.c
++++ linux/lib/statistic.c
+@@ -469,18 +469,13 @@ static int statistic_parse_single(struct
+ {
+ 	struct statistic_discipline *disc = &statistic_discs[type];
+ 	int prev_state = stat->state, retval = 0;
+-	char *copy;
  
- 	mutex_lock_nested(&node->i_mutex, I_MUTEX_CHILD);
- 	if (node->i_private) {
--		list_for_each_entry(buf, &set->associates, associates) {
--			down(&buf->sem);
-+		list_for_each_entry(buf, &set->associates, associates)
- 			buf->orphaned = 1;
--			up(&buf->sem);
--		}
+ 	if (info->flags & STATISTIC_FLAGS_NOFLEX && stat->type != type &&
+ 	    def != info->defaults)
+ 		return -EINVAL;
+-	if (disc->parse) {
+-		copy = kstrdup(def, GFP_KERNEL);
+-		if (unlikely(!copy))
+-			return -ENOMEM;
+-		retval = disc->parse(stat, info, type, copy);
+-		kfree(copy);
+-	} else if (type != stat->type)
++	if (disc->parse)
++		retval = disc->parse(stat, info, type, def);
++	else if (type != stat->type)
+ 		statistic_transition(stat, info, STATISTIC_STATE_UNCONFIGURED);
+ 	if (!retval) {
+ 		stat->type = type;
+@@ -500,30 +495,22 @@ static int statistic_parse_match(struct 
+ 				 struct statistic_info *info, char *def)
+ {
+ 	int type, len;
+-	char *p, *copy, *twisted;
+-	substring_t args[MAX_OPT_ARGS];
++	substring_t args[MAX_OPT_ARGS], sub;
+ 	struct statistic_discipline *disc;
+ 
+ 	if (!def)
+ 		def = info->defaults;
+-	twisted = copy = kstrdup(def, GFP_KERNEL);
+-	if (unlikely(!copy))
+-		return -ENOMEM;
+-	while ((p = strsep(&twisted, " ")) != NULL) {
+-		if (!*p)
+-			continue;
+-		if (match_token(p, statistic_match_type, args) != 1)
++	for_each_substring(&sub, def, " ") {
++		if (match_substring(&sub, statistic_match_type, args) != 1)
+ 			continue;
+-		len = (args[0].to - args[0].from) + 1;
++		len = (args[0].to - args[0].from);
+ 		for (type = 0; type < STAT_NONE; type++) {
+ 			disc = &statistic_discs[type];
+ 			if (unlikely(strncmp(disc->name, args[0].from, len)))
+ 				continue;
+-			kfree(copy);
+ 			return statistic_parse_single(stat, info, def, type);
+ 		}
  	}
- 	mutex_unlock(&node->i_mutex);
+-	kfree(copy);
+ 	if (unlikely(stat->type == STAT_NONE))
+ 		return -EINVAL;
+ 	return statistic_parse_single(stat, info, def, stat->type);
+@@ -543,8 +530,8 @@ static match_table_t statistic_match_com
+ static void statistic_parse_line(struct statistic_interface *interface,
+ 				 char *def)
+ {
+-	char *p, *copy, *twisted, *name = NULL;
+-	substring_t args[MAX_OPT_ARGS];
++	char *name = NULL;
++	substring_t args[MAX_OPT_ARGS], sub;
+ 	int token, reset = 0, defaults = 0, i;
+ 	int state = STATISTIC_STATE_INVALID;
+ 	struct statistic *stat = interface->stat;
+@@ -552,14 +539,8 @@ static void statistic_parse_line(struct 
+ 
+ 	if (unlikely(!def))
+ 		return;
+-	twisted = copy = kstrdup(def, GFP_KERNEL);
+-	if (unlikely(!copy))
+-		return;
+-
+-	while ((p = strsep(&twisted, " ")) != NULL) {
+-		if (!*p)
+-			continue;
+-		token = match_token(p, statistic_match_common, args);
++	for_each_substring(&sub, def, " ") {
++		token = match_substring(&sub, statistic_match_common, args);
+ 		switch (token) {
+ 		case STATISTIC_STATE_UNCONFIGURED:
+ 		case STATISTIC_STATE_RELEASED:
+@@ -591,7 +572,6 @@ static void statistic_parse_line(struct 
+ 				statistic_reset(stat, info);
+ 		}
+ 	}
+-	kfree(copy);
+ 	kfree(name);
  }
+ 
+@@ -1113,16 +1093,13 @@ static int statistic_parse_histogram(str
+ 				     struct statistic_info *info,
+ 				     int type, char *def)
+ {
+-	char *p;
+-	substring_t args[MAX_OPT_ARGS];
++	substring_t args[MAX_OPT_ARGS], sub;
+ 	int token, got_entries = 0, got_interval = 0, got_range = 0;
+ 	u32 entries, base_interval;
+ 	s64 range_min;
+ 
+-	while ((p = strsep(&def, " ")) != NULL) {
+-		if (!*p)
+-			continue;
+-		token = match_token(p, statistic_match_histogram, args);
++	for_each_substring(&sub, def, " ") {
++		token = match_substring(&sub, statistic_match_histogram, args);
+ 		switch (token) {
+ 		case 1:
+ 			match_int(&args[0], &entries);
+@@ -1311,18 +1288,14 @@ static int statistic_parse_sparse(struct
+ 				  struct statistic_info *info,
+ 				  int type, char *def)
+ {
+-	char *p;
+-	substring_t args[MAX_OPT_ARGS];
++	substring_t args[MAX_OPT_ARGS], sub;
+ 
+-	while ((p = strsep(&def, " ")) != NULL) {
+-		if (!*p)
++	for_each_substring(&sub, def, " ") {
++		if (match_substring(&sub, statistic_match_sparse, args) != 1)
+ 			continue;
+-		if (match_token(p, statistic_match_sparse, args) == 1) {
+-			statistic_transition(stat, info,
+-					     STATISTIC_STATE_UNCONFIGURED);
+-			match_int(&args[0], &stat->u.sparse.entries_max);
+-			return 0;
+-		}
++		statistic_transition(stat, info, STATISTIC_STATE_UNCONFIGURED);
++		match_int(&args[0], &stat->u.sparse.entries_max);
++		return 0;
+ 	}
+ 	return -EINVAL;
+ }
+
+
