@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933930AbXCFESH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933934AbXCFEUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933930AbXCFESH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 23:18:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933929AbXCFESH
+	id S933934AbXCFEUd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 23:20:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933935AbXCFEUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 23:18:07 -0500
-Received: from wr-out-0506.google.com ([64.233.184.225]:55010 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933930AbXCFESF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 23:18:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:x-google-sender-auth;
-        b=QNXIFYgW9V4M+41nuWFdUzhmKhyrfu7NVbEHomsamB2S4nEwt25UgLzw73c3a01xMEJRWmq81XmSFhFkgLV4Pd9t4ET+SmTS2ylqJ3VNF47f2GZILROTa+Wevxxx8Kgljw7ThDvW/xiRoI0uaIS2GB3a6t7CZFznvV4RYOyox/o=
-Message-ID: <86802c440703052018p5adba0c4la99c5557db4717b6@mail.gmail.com>
-Date: Mon, 5 Mar 2007 20:18:04 -0800
-From: "Yinghai Lu" <yinghai.lu@amd.com>
-To: ebiederm@xmission.com, "Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 2/2] x86_64 irq: make affinity work for genapic_flat mode
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_172859_29473913.1173154684097"
-X-Google-Sender-Auth: 36db24d153fcbafa
+	Mon, 5 Mar 2007 23:20:33 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:50013 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933934AbXCFEUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 23:20:32 -0500
+Date: Mon, 5 Mar 2007 20:17:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, sdhci-devel@list.drzeus.cx,
+       Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] sdhci regression in 2.6.21-rc2
+Message-Id: <20070305201707.8d8a092e.akpm@linux-foundation.org>
+In-Reply-To: <45EC351B.2020206@rtr.ca>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	<20070305015031.GF3441@stusta.de>
+	<45EB9DC6.8010403@rtr.ca>
+	<45EB9E72.6040107@rtr.ca>
+	<45EBAC73.7010600@drzeus.cx>
+	<45EC2851.7020905@rtr.ca>
+	<45EC351B.2020206@rtr.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_172859_29473913.1173154684097
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, 05 Mar 2007 10:19:55 -0500 Mark Lord <lkml@rtr.ca> wrote:
 
-please check the patch
+> The interrupt is shared with another device, which resumes
+> earlier than the sdhci controller, and generates an interrupt.
+> 
+> The sdhci interrupt handler runs, sees 0xffffffff in its own
+> device's interrupt status, and tries to handle it..
+> The reason for the 0xffffffff is that the device is still
+> suspended, and *all* regs are reading back 0xffffffff.
+> 
+> So.. the suspend routine should de-register the irq handler,
+> and the resume routine should re-register it again.
+> 
+> Or perhaps a simpler kludge like this one, which fixes it for me:
+> 
+> Signed-off-by:  Mark Lord <mlord@pobox.com>
+> ---
+> --- linux/drivers/mmc/sdhci.c.orig	2007-03-02 15:06:31.000000000 -0500
+> +++ linux/drivers/mmc/sdhci.c	2007-03-05 10:13:51.000000000 -0500
+> @@ -994,7 +994,7 @@
+>  
+>  	intmask = readl(host->ioaddr + SDHCI_INT_STATUS);
+>  
+> -	if (!intmask) {
+> +	if (!intmask || intmask == 0xffffffff) {
+>  		result = IRQ_NONE;
+>  		goto out;
+>  	}
 
-YH
+This is actually pretty standard handling for a lot of drivers: any
+device which can appear on a cardbus or other hot-unpluggable bus and which
+shares interupts needs such treatment.
 
-------=_Part_172859_29473913.1173154684097
-Content-Type: text/x-patch; name="2_flat_irq_affinity.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="2_flat_irq_affinity.patch"
-X-Attachment-Id: f_eyxtz90a
+I don't know whether anything which this driver drives could ever appear on
+such a bus, but I'm inclined to just apply it into 2.6.21.
 
-W1BBVENIIDIvMl0geDg2XzY0IGlycTogbWFrZSBhZmZpbml0eSB3b3JrcyBmb3IgZ2VuYXBpY19m
-bGF0IG1vZGUKCkZvciBBTUQgZHVhbCBzb2NrZXQgc3lzdGVtIHdpdGggdHdvIElPIEh5cGVydHJh
-bnNvcnQgY2hhaW4gb24gZGlmZmVyZW5jdCBjcHUuIApXZSBzdGlsbCBjYW4gdXNlIGFwaWNfZmxh
-dCBtb2RlIGluc3RlYWQgb2YgYXBpY19waHlzZmxhdCBtb2RlLCBhbmQgbGlrZSB0byAKQ1BVcyBv
-biBzZWNvbmQgc29ja2V0IHRvIGhhbmRsZSBpcnEgZm9yIGRldmljZSBvbiBpdHMgY2hhaW4uICBX
-aGVuIGFwaWNfZmxhdCAKbW9kZSBpcyB1c2VkLCB0aGUgZG9tYWluIHdpbGwgYmUgdGhlIHNhbWUg
-KGFsbCBDUFVTKS4gV2UgbmVlZCB0byBjaGVjayB0aGUgb2xkIAphZmZpbml0eSBpbiBhZGRpdGlv
-biB0byBkb21haW4sIG90aGVyd2lzZSB3ZSBjYW4gbm90IHNldCBhZmZpbml0eSBmcm9tIDB4MGYg
-dG8gCjB4MGMsIG9yIGZyb20gMHhmZiB0byAweGYwLiBBbHNvIG5lZWQgdG8gbWFrZSBzdXJlIHZl
-Y3RvciBpcyBjaGFuZ2VkIHdoZW4gd2UgCnNldCBhZmZpbml0eSBmcm9tIDB4MDMgdG8gMHgwYyBv
-ciAweDBmIHRvIDB4ZjAuCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpLmx1QGFt
-ZC5jb20+IAoKZGlmZiAtLWdpdCBhL2FyY2gveDg2XzY0L2tlcm5lbC9pb19hcGljLmMgYi9hcmNo
-L3g4Nl82NC9rZXJuZWwvaW9fYXBpYy5jCmluZGV4IDBhOTEzNjguLmIyZWEyOWEgMTAwNjQ0Ci0t
-LSBhL2FyY2gveDg2XzY0L2tlcm5lbC9pb19hcGljLmMKKysrIGIvYXJjaC94ODZfNjQva2VybmVs
-L2lvX2FwaWMuYwpAQCAtNjczLDggKzY3MywzMSBAQCBzdGF0aWMgaW50IF9fYXNzaWduX2lycV92
-ZWN0b3IoaW50IGlycSwgY3B1bWFza190IG1hc2spCiAJaWYgKG9sZF92ZWN0b3IpIHsKIAkJY3B1
-bWFza190IHRtcDsKIAkJY3B1c19hbmQodG1wLCBjZmctPmRvbWFpbiwgbWFzayk7Ci0JCWlmICgh
-Y3B1c19lbXB0eSh0bXApKQotCQkJcmV0dXJuIDA7CisKKwkJLyogb25seSBleGFjdCBzYW1lIG1h
-c2sgY2FuIHJldHVybiBkaXJlY3RseSAqLworCQlmb3JfZWFjaF9jcHVfbWFzayhjcHUsIG1hc2sp
-IHsKKwkJCWNwdW1hc2tfdCBkb21haW47CisKKwkJCWRvbWFpbiA9IHZlY3Rvcl9hbGxvY2F0aW9u
-X2RvbWFpbihjcHUpOworCQkJaWYgKGNwdXNfZXF1YWwoZG9tYWluLCBjZmctPmRvbWFpbikpIHsK
-KyNpZmRlZiBDT05GSUdfU01QCisJCQkJLyogd2UgZG9uJ3QgbmVlZCBsb2NrIGZvciBkZXNjIGhl
-cmUgCisJCQkJICAgZm9yIGFwaWNfZmxhdCBjYW4gbm90IGJlIHVzZWQgd2l0aCBDT05GSUdfSE9U
-UExVR19DUFUgCisJCQkJICAgb3RoZXJzIG9ubHkgaGF2ZSBvbmUgY3B1IHNldCBpbiBkb21haW4g
-b3IgYWZmaW5pdHkKKwkJCQkgKi8KKwkJCQlpbnQgZXF1YWw7CisJCQkJc3RydWN0IGlycV9kZXNj
-ICpkZXNjOworCQkJCWRlc2MgPSBpcnFfZGVzYyArIGlycTsKKwkJCQllcXVhbCA9IGNwdXNfZXF1
-YWwodG1wLCBkZXNjLT5hZmZpbml0eSk7IAorCQkJCWlmIChlcXVhbCkgeworCQkJCQlyZXR1cm4g
-MDsKKwkJCQl9CisjZWxzZQorCQkJCXJldHVybiAwOworI2VuZGlmCisJCQl9CisKKyAgICAgICAg
-ICAgICAgIH0KIAl9CiAKIAlmb3JfZWFjaF9jcHVfbWFzayhjcHUsIG1hc2spIHsKQEAgLTY4Myw3
-ICs3MDYsNiBAQCBzdGF0aWMgaW50IF9fYXNzaWduX2lycV92ZWN0b3IoaW50IGlycSwgY3B1bWFz
-a190IG1hc2spCiAJCWludCB2ZWN0b3IsIG9mZnNldDsKIAogCQlkb21haW4gPSB2ZWN0b3JfYWxs
-b2NhdGlvbl9kb21haW4oY3B1KTsKLQkJY3B1c19hbmQobmV3X21hc2ssIGRvbWFpbiwgY3B1X29u
-bGluZV9tYXApOwogCiAJCXZlY3RvciA9IGN1cnJlbnRfdmVjdG9yOwogCQlvZmZzZXQgPSBjdXJy
-ZW50X29mZnNldDsKQEAgLTY5OCw5ICs3MjAsMTcgQEAgbmV4dDoKIAkJCWNvbnRpbnVlOwogCQlp
-ZiAodmVjdG9yID09IElBMzJfU1lTQ0FMTF9WRUNUT1IpCiAJCQlnb3RvIG5leHQ7CisKKwkJY3B1
-c19hbmQobmV3X21hc2ssIGRvbWFpbiwgY3B1X29ubGluZV9tYXApOwogCQlmb3JfZWFjaF9jcHVf
-bWFzayhuZXdfY3B1LCBuZXdfbWFzaykKIAkJCWlmIChwZXJfY3B1KHZlY3Rvcl9pcnEsIG5ld19j
-cHUpW3ZlY3Rvcl0gIT0gLTEpCiAJCQkJZ290byBuZXh0OworCisJCS8qIE1ha2Ugc3VyZSB2ZWN0
-b3IgaXMgY2hhbmdlZCB3aGVuIGRvbWFpbiBpcyBub3QgY2hhbmdlZCAqLworCQlpZiAodW5saWtl
-bHkodmVjdG9yID09IG9sZF92ZWN0b3IpKSAKKwkJCWlmIChjcHVzX2VxdWFsKGRvbWFpbiwgY2Zn
-LT5kb21haW4pKQorCQkJCWdvdG8gbmV4dDsKKwogCQkvKiBGb3VuZCBvbmUhICovCiAJCWN1cnJl
-bnRfdmVjdG9yID0gdmVjdG9yOwogCQljdXJyZW50X29mZnNldCA9IG9mZnNldDsKQEAgLTcxNSw2
-ICs3NDUsOCBAQCBuZXh0OgogCQlyZXR1cm4gMDsKIAl9CiAJcmV0dXJuIC1FTk9TUEM7CisKKwkK
-IH0KIAogc3RhdGljIGludCBhc3NpZ25faXJxX3ZlY3RvcihpbnQgaXJxLCBjcHVtYXNrX3QgbWFz
-aykK
-------=_Part_172859_29473913.1173154684097--
+(I'm also inclined to drop the darned mmc tree - am getting rather tired of
+people moving their files all over the tree all the time).
+
