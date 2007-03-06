@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXCFHma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933987AbXCFHt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933024AbXCFHma (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 02:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933981AbXCFHma
+	id S933987AbXCFHt7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 02:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933988AbXCFHt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 02:42:30 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:38284 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933024AbXCFHm3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 02:42:29 -0500
-Message-ID: <45ED1B64.9040104@vmware.com>
-Date: Mon, 05 Mar 2007 23:42:28 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] paravirt: VDSO page is essential
-References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <20070306073511.GA3938@elte.hu>
-In-Reply-To: <20070306073511.GA3938@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 6 Mar 2007 02:49:59 -0500
+Received: from nn7.de ([85.214.94.156]:33154 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933987AbXCFHt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 02:49:58 -0500
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: tglx@linutronix.de
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>,
+       "Michael S\. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>
+In-Reply-To: <1173163783.3785.1.camel@localhost>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	 <20070305015040.GJ3441@stusta.de>
+	 <1173138193.24738.236.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
+	 <1173140753.24738.246.camel@localhost.localdomain>
+	 <1173163783.3785.1.camel@localhost>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 06 Mar 2007 08:49:55 +0100
+Message-Id: <1173167395.4942.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->>> I had just sent this out for internal review...
->>>       
->> I think Jan's approach is better if it works (since there's no 
->> compromise), but this is better if you want to get something working 
->> in the near term.
->>     
->
-> yeah. (plus my patches of course that remove the current papering-over 
-> hackery and restores COMPAT_VDSO.)
->   
+On Tue, 2007-03-06 at 07:49 +0100, Soeren Sonnenburg wrote:
+> On Tue, 2007-03-06 at 01:25 +0100, Thomas Gleixner wrote:
+> > On Mon, 2007-03-05 at 15:45 -0800, Linus Torvalds wrote:
+> > > 
+> > > On Tue, 6 Mar 2007, Thomas Gleixner wrote:
+> > > > > 
+> > > > > Subject    : macbook pro suspend to ram broken  (clockevents)
+> > > > > References : http://lkml.org/lkml/2007/3/4/110
+> > > > > Submitter  : Soeren Sonnenburg <kernel@nn7.de>
+> > > > > Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+> > > > >              commit e9e2cdb412412326c4827fc78ba27f410d837e6e
+> > > > > Status     : unknown
+> > Does this make the problem go away ?
+> 
+> yes. works in my isolated test-setup. I'm now going to test this in
+> git-HEAD with the full config.
 
-Yes, I don't have a problem with your patch, I just wish I had been cc'd 
-on it.  Fixing this is rather tricky, but I believe no strange build 
-magic is required, it can be done in kernel init code.  Still building 
-my SUSE 9.0 guest to test.  SUSE 9.0 is one of those that requires 
-COMPAT_VDSO, yes?
+*argh* when using the full config on HEAD something still causes a hang
+on resume, but no time to trace it (the this probably new problem) down
+atm :(
 
-Thanks,
-
-Zach
+Soeren
+-- 
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
