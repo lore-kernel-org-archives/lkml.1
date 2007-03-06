@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXCFTsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751121AbXCFUCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933299AbXCFTsp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 14:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964852AbXCFTso
+	id S1751121AbXCFUCO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 15:02:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXCFUCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 14:48:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37814 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933307AbXCFTsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 14:48:43 -0500
-Date: Tue, 6 Mar 2007 20:48:41 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
-       Andi Kleen <andi@firstfloor.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support
-Message-ID: <20070306194841.GA5424@one.firstfloor.org>
-References: <20070223170527.4ca695b2@freekitty> <20070305155714.3abe1b5e@freekitty> <20070306133404.GA864@one.firstfloor.org> <200703061519.20346.dada1@cosmosbay.com> <20070306144529.GA2004@one.firstfloor.org> <84C47260-4B57-4568-8197-58F438A6F737@e18.physik.tu-muenchen.de> <20070306102941.32471d57@freekitty>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070306102941.32471d57@freekitty>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 6 Mar 2007 15:02:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37949 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121AbXCFUCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 15:02:13 -0500
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070306194255.GA5524@martell.zuzino.mipt.ru> 
+References: <20070306194255.GA5524@martell.zuzino.mipt.ru>  <20070306183426.10768.51800.stgit@warthog.cambridge.redhat.com> 
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: torvalds@osdl.org, akpm@osdl.org, benh@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, johannes@sipsolutions.net
+Subject: Re: [PATCH] Fix get_order() [try #2] 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 06 Mar 2007 20:01:18 +0000
+Message-ID: <23156.1173211278@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 10:29:41AM -0800, Stephen Hemminger wrote:
-> Don't count the existing Newton-Raphson out. It turns out that to get enough
-> precision for 32 bits, only 4 iterations are needed. By unrolling those, it
-> gets much better timing.
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-But did you fix the >2^43 bug too?
+> >  #if BITS_PER_LONG == 32 && defined(ARCH_HAS_ILOG2_U32)
+> 
+> There is no such thing except on FRV, where it's redundant.
 
-SGI has already shipped 10TB Altixen, so it's not entirely theoretical.
+Redundant in what way?
 
--Andi
+> 				      CONFIG_ARCH_HAS_ILOG2_U32
+> 				      ^^^^^^
 
+Grrr.  Thanks for spotting that.
+
+> >  #elif BITS_PER_LONG == 64 && defined(ARCH_HAS_ILOG2_U64)
+> 
+> ditto
+
+Ditto.
+
+David
