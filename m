@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934109AbXCFNKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934106AbXCFNLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934109AbXCFNKk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934106AbXCFNKk
+	id S934106AbXCFNLb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934110AbXCFNLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:10:40 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:59781 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934104AbXCFNKi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:10:38 -0500
-Subject: Re: [1/6] 2.6.21-rc2: known regressions
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Greg KH <greg@kroah.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org,
-       maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
-       Mark Lord <lkml@rtr.ca>, Matt Mackall <mpm@selenic.com>,
-       Albert Hopkins <kernel@marduk.letterboxes.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <20070305033533.GA28319@kroah.com>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015031.GF3441@stusta.de>  <20070305033533.GA28319@kroah.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-i3jBLRY+r3mxA0BLoyxz"
-Date: Tue, 06 Mar 2007 01:55:46 +0100
-Message-Id: <1173142546.15891.63.camel@johannes.berg>
+	Tue, 6 Mar 2007 08:11:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46404 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934106AbXCFNL3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 08:11:29 -0500
+Date: Tue, 6 Mar 2007 14:10:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 8/8] Convert PDA into the percpu section
+Message-ID: <20070306131041.GB9031@elte.hu>
+References: <1173184747.4644.23.camel@localhost.localdomain> <1173185592.4644.28.camel@localhost.localdomain> <1173185666.4644.30.camel@localhost.localdomain> <1173185734.4644.32.camel@localhost.localdomain> <1173185827.4644.34.camel@localhost.localdomain> <1173185909.4644.36.camel@localhost.localdomain> <1173186021.4644.38.camel@localhost.localdomain> <1173186107.4644.41.camel@localhost.localdomain> <1173186214.4644.44.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173186214.4644.44.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-i3jBLRY+r3mxA0BLoyxz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-On Sun, 2007-03-04 at 19:35 -0800, Greg KH wrote:
+> Currently x86 (similar to x84-64) has a special per-cpu structure 
+> called "i386_pda" which can be easily and efficiently referenced via 
+> the %fs register.  An ELF section is more flexible than a structure, 
+> allowing any piece of code to use this area.  Indeed, such a section 
+> already exists: the per-cpu area.
+> 
+> So this patch
+> (1) Removes the PDA and uses per-cpu variables for each current member.
 
-> > Subject    : wireless breakage (ipw2200, iwconfig, NetworkManager)
-> > References : http://lkml.org/lkml/2007/3/4/135
-> > Submitter  : Matt Mackall <mpm@selenic.com>
-> > Caused-By  : Greg Kroah-Hartman <gregkh@suse.de> (?)
-> >              commit 43cb76d91ee85f579a69d42bc8efc08bac560278 (?)
-> > Handled-By : Johannes Berg <johannes@sipsolutions.net>
-> > Status     : unknown
->=20
-> I really think this is a CONFIG_SYSFS_DEPRECATED issue (not being set),
-> but want to get Matt confirm either way before saying this is a real
-> issue or not.
+hmm ... i very much like this, but its needs performance and kernel-size 
+testing before it can move from -mm into mainline. We are now exposing 
+wide ranges of the kernel to segment prefixes again. (Btw., i'd expect 
+there to be a kernel size reduction.)
 
-I just tested on my quad powermac that also runs a stock Debian/unstable
-and changing that option makes all the difference. Nevermind that it
-defaults to yes and one needs to turn it off explicitly...
-
-johannes
-
---=-i3jBLRY+r3mxA0BLoyxz
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF7LwS/ETPhpq3jKURAuGuAJ90d8Ucs+DvKGONqv3pqz5OhbORZACgqE1G
-9nOJkgdgY15qW65IIDjPV60=
-=8EIz
------END PGP SIGNATURE-----
-
---=-i3jBLRY+r3mxA0BLoyxz--
-
+	Ingo
