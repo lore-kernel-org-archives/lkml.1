@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965396AbXCFRn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965397AbXCFRpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965396AbXCFRn0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965397AbXCFRn0
+	id S965397AbXCFRpX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:45:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965400AbXCFRpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:43:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48176 "EHLO mx1.redhat.com"
+	Tue, 6 Mar 2007 12:45:23 -0500
+Received: from mail.tmr.com ([64.65.253.246]:58880 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965396AbXCFRnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:43:25 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0703060910340.5963@woody.linux-foundation.org> 
-References: <Pine.LNX.4.64.0703060910340.5963@woody.linux-foundation.org>  <1173200555.9349.2.camel@localhost.localdomain> 
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: get_order() broken ! 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 06 Mar 2007 17:43:16 +0000
-Message-ID: <2793.1173202996@redhat.com>
+	id S965397AbXCFRpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:45:22 -0500
+Message-ID: <45EDA8EE.1060308@tmr.com>
+Date: Tue, 06 Mar 2007 12:46:22 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22 patch] the scheduled removal of OBSOLETE_OSS options
+References: <20070305014956.GE3441@stusta.de>
+In-Reply-To: <20070305014956.GE3441@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Adrian Bunk wrote:
+> This patch contains the scheduled removal of the OBSOLETE_OSS options 
+> for 2.6.22.
+> 
+If these are drivers for which there are thought to be useful ALSA 
+drivers, would it be reasonable to leave a stub for a help file naming 
+the driver which claims to support the hardware?
 
-> Yeah, I think the recent get_order() changes to change it to use ilog2() 
-> are just crap. I actually looked at it when it went in, but I assumed that 
-> it had been tested. I don't think it has.
+I'm not objection to the removal of the drivers, just noting that 
+identifying the new drivers can be made easier.
 
-It had, it's just that the testing totally failed to show up the problem; that
-and I think my userspace testing went wrong because I made the wrong
-assumptions about what the answer should be.
-
-However, having discussed it with Ben, HPA and David Woodhouse and others I've
-come up with a patch (sent separately) that should fix it by using:
-
-	ilog2((n) - 1) + 1 
-
-as the basis for the calculation as this should round up the result.  I've
-encapsulated this as a function called ilog2_up() and fixed the docs to make
-it cleared how ilog2() and co actually work.
-
-David
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
