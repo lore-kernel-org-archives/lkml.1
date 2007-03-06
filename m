@@ -1,146 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933877AbXCFNC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbXCFND2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933877AbXCFNC7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933285AbXCFNC7
+	id S1752360AbXCFND2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:03:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933914AbXCFND2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:02:59 -0500
-Received: from ozlabs.org ([203.10.76.45]:56641 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933877AbXCFNC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:02:58 -0500
-Subject: [PATCH 7/8] Page-align the GDT
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-In-Reply-To: <1173186021.4644.38.camel@localhost.localdomain>
-References: <1173184747.4644.23.camel@localhost.localdomain>
-	 <1173185592.4644.28.camel@localhost.localdomain>
-	 <1173185666.4644.30.camel@localhost.localdomain>
-	 <1173185734.4644.32.camel@localhost.localdomain>
-	 <1173185827.4644.34.camel@localhost.localdomain>
-	 <1173185909.4644.36.camel@localhost.localdomain>
-	 <1173186021.4644.38.camel@localhost.localdomain>
+	Tue, 6 Mar 2007 08:03:28 -0500
+Received: from www.osadl.org ([213.239.205.134]:42365 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752360AbXCFND0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 08:03:26 -0500
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Soeren Sonnenburg <kernel@nn7.de>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>, Len Brown <lenb@kernel.org>
+In-Reply-To: <20070306125119.GA6119@elte.hu>
+References: <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
+	 <1173142948.24738.257.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org>
+	 <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu>
+	 <20070306104618.GA5792@mellanox.co.il> <1173180977.9161.14.camel@localhost>
+	 <20070306120701.GA29599@elte.hu>  <20070306125119.GA6119@elte.hu>
 Content-Type: text/plain
-Date: Wed, 07 Mar 2007 00:01:47 +1100
-Message-Id: <1173186107.4644.41.camel@localhost.localdomain>
+Date: Tue, 06 Mar 2007 14:09:29 +0100
+Message-Id: <1173186570.24738.326.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen wants a dedicated page for the GDT.  I believe VMI likes it too.
-lguest, KVM and native don't care.
+On Tue, 2007-03-06 at 13:51 +0100, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > > BTW, Ingo, can you suspend/resume any number of times with this 
+> > > > patch?
+> > > 
+> > > well I could at least two times in a row in my minimalistic setup 
+> > > (config attached) however using the full kernel config it still 
+> > > hangs ... (config also attached in case you watn to compare it).
+> > 
+> > i can confirm that with your full config i see a hang too. This is 
+> > most likely the ACPI problem - we are debugging this now and will come 
+> > up with a patch.
+> 
+> update: this only happens with simulation, and even then it's not a full 
+> hang but 'hangs until i hit a key'. With real resume i'm hitting a real 
+> key anyway so it doesnt hang.
 
-Simple transformation to page-aligned "struct gdt_page".
+Hmm. The key is consumed in the BIOS, so there should be no
+interrupt. /me digs deeper.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff -r 576929b5b43f arch/i386/kernel/cpu/common.c
---- a/arch/i386/kernel/cpu/common.c	Tue Mar 06 16:28:38 2007 +1100
-+++ b/arch/i386/kernel/cpu/common.c	Tue Mar 06 16:47:11 2007 +1100
-@@ -22,8 +22,8 @@
- 
- #include "cpu.h"
- 
--DEFINE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]);
--EXPORT_PER_CPU_SYMBOL_GPL(cpu_gdt);
-+DEFINE_PER_CPU(struct gdt_page, gdt_page);
-+EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
- DEFINE_PER_CPU(struct i386_pda, _cpu_pda);
- EXPORT_PER_CPU_SYMBOL(_cpu_pda);
- 
-@@ -628,7 +628,7 @@ static inline void set_kernel_fs(void)
-    will soon come up. */
- __cpuinit void init_gdt(int cpu, struct task_struct *idle)
- {
--	struct desc_struct *gdt = per_cpu(cpu_gdt, cpu);
-+	struct desc_struct *gdt = per_cpu(gdt_page, cpu).gdt;
- 	struct i386_pda *pda = &per_cpu(_cpu_pda, cpu);
- 
- 	/* Based on boot_gdt_table: set PDA so it can be used immediately */
-@@ -649,7 +649,7 @@ void __cpuinit cpu_set_gdt(int cpu)
- {
- 	struct Xgt_desc_struct gdt_descr;
- 
-- 	gdt_descr.address = (unsigned long)per_cpu(cpu_gdt, cpu);
-+ 	gdt_descr.address = (unsigned long)per_cpu(gdt_page, cpu).gdt;
- 	gdt_descr.size = GDT_SIZE - 1;
- 
- 	load_gdt(&gdt_descr);
-diff -r 576929b5b43f arch/i386/kernel/entry.S
---- a/arch/i386/kernel/entry.S	Tue Mar 06 16:28:38 2007 +1100
-+++ b/arch/i386/kernel/entry.S	Tue Mar 06 16:47:11 2007 +1100
-@@ -561,7 +561,7 @@ END(syscall_badsys)
- #define FIXUP_ESPFIX_STACK \
- 	/* since we are on a wrong stack, we cant make it a C code :( */ \
- 	movl %fs:PDA_cpu, %ebx; \
--	PER_CPU(cpu_gdt, %ebx); \
-+	PER_CPU(gdt_page, %ebx); \
- 	GET_DESC_BASE(GDT_ENTRY_ESPFIX_SS, %ebx, %eax, %ax, %al, %ah); \
- 	addl %esp, %eax; \
- 	pushl $__KERNEL_DS; \
-diff -r 576929b5b43f arch/i386/kernel/head.S
---- a/arch/i386/kernel/head.S	Tue Mar 06 16:28:38 2007 +1100
-+++ b/arch/i386/kernel/head.S	Tue Mar 06 16:47:11 2007 +1100
-@@ -592,7 +592,7 @@ ENTRY(early_gdt_descr)
- 	.long boot_gdt_table
- 
- /* The boot Global Descriptor Table: after boot we allocate a per-cpu copy */
--	.align L1_CACHE_BYTES
-+	.p2align PAGE_SHIFT
- ENTRY(boot_gdt_table)
- 	.quad 0x0000000000000000	/* NULL descriptor */
- 	.quad 0x0000000000000000	/* 0x0b reserved */
-diff -r 576929b5b43f arch/i386/kernel/traps.c
---- a/arch/i386/kernel/traps.c	Tue Mar 06 16:28:38 2007 +1100
-+++ b/arch/i386/kernel/traps.c	Tue Mar 06 16:28:40 2007 +1100
-@@ -1018,7 +1018,7 @@ fastcall unsigned long patch_espfix_desc
- fastcall unsigned long patch_espfix_desc(unsigned long uesp,
- 					  unsigned long kesp)
- {
--	struct desc_struct *gdt = __get_cpu_var(cpu_gdt);
-+	struct desc_struct *gdt = __get_cpu_var(gdt_page).gdt;
- 	unsigned long base = (kesp - uesp) & -THREAD_SIZE;
- 	unsigned long new_kesp = kesp - base;
- 	unsigned long lim_pages = (new_kesp | (THREAD_SIZE - 1)) >> PAGE_SHIFT;
-diff -r 576929b5b43f include/asm-i386/desc.h
---- a/include/asm-i386/desc.h	Tue Mar 06 16:28:38 2007 +1100
-+++ b/include/asm-i386/desc.h	Tue Mar 06 16:47:22 2007 +1100
-@@ -13,7 +13,11 @@
- #include <asm/mmu.h>
- 
- extern struct desc_struct boot_gdt_table[GDT_ENTRIES];
--DECLARE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]);
-+struct gdt_page
-+{
-+	struct desc_struct gdt[GDT_ENTRIES];
-+} __attribute__((aligned(PAGE_SIZE)));
-+DECLARE_PER_CPU(struct gdt_page, gdt_page);
- 
- struct Xgt_desc_struct {
- 	unsigned short size;
-@@ -24,7 +28,7 @@ extern struct Xgt_desc_struct idt_descr;
- extern struct Xgt_desc_struct idt_descr;
- static inline struct desc_struct *get_cpu_gdt_table(unsigned int cpu)
- {
--	return per_cpu(cpu_gdt, cpu);
-+	return per_cpu(gdt_page, cpu).gdt;
- }
- 
- extern struct desc_struct idt_table[];
-@@ -104,7 +108,8 @@ static inline fastcall void native_set_l
- 		pack_descriptor(&a, &b, (unsigned long)addr,
- 				entries * sizeof(struct desc_struct) - 1,
- 				DESCTYPE_LDT, 0);
--		write_gdt_entry(__get_cpu_var(cpu_gdt), GDT_ENTRY_LDT, a, b);
-+		write_gdt_entry(__get_cpu_var(gdt_page).gdt, GDT_ENTRY_LDT,
-+				a, b);
- 		__asm__ __volatile__("lldt %w0"::"q" (GDT_ENTRY_LDT*8));
- 	}
- }
+	tglx
 
 
