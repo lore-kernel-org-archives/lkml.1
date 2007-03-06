@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965790AbXCFFis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933951AbXCFFjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965790AbXCFFis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 00:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965784AbXCFFiG
+	id S933951AbXCFFjz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 00:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933958AbXCFFjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 00:38:06 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54785
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933952AbXCFFiC (ORCPT
+	Tue, 6 Mar 2007 00:39:54 -0500
+Received: from rwcrmhc13.comcast.net ([216.148.227.153]:39319 "EHLO
+	rwcrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933951AbXCFFjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 00:38:02 -0500
-Date: Mon, 05 Mar 2007 21:37:58 -0800 (PST)
-Message-Id: <20070305.213758.95894643.davem@davemloft.net>
-To: tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [PATCH 3/4]: [SPARC64]: Add tick_nohz_{stop,restart}_sched_tick()
- calls to cpu_idle().
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 6 Mar 2007 00:39:53 -0500
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free   interactive
+	cpu scheduler
+From: Nicholas Miell <nmiell@comcast.net>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Con Kolivas <kernel@kolivas.org>, Bill Davidsen <davidsen@tmr.com>,
+       jos poortvliet <jos@mijnkamer.nl>, ck@vds.kolivas.org,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070306044112.GA10707@1wt.eu>
+References: <200703041800.53360.kernel@kolivas.org>
+	 <200703041708.54953.jos@mijnkamer.nl> <45ECA239.5000306@tmr.com>
+	 <200703061118.44616.kernel@kolivas.org>  <20070306044112.GA10707@1wt.eu>
+Content-Type: text/plain
+Date: Mon, 05 Mar 2007 21:39:35 -0800
+Message-Id: <1173159575.2987.2.camel@entropy>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.3 (2.8.3-1.0.njm.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-03-06 at 05:41 +0100, Willy Tarreau wrote:
+> On Tue, Mar 06, 2007 at 11:18:44AM +1100, Con Kolivas wrote:
+> > On Tuesday 06 March 2007 10:05, Bill Davidsen wrote:
+> > > jos poortvliet wrote:
+> > > > Well, imho his current staircase scheduler already does a better job
+> > > > compared to mainline, but it won't make it in (or at least, it's not
+> > > > likely). So we can hope this WILL make it into mainline, but I wouldn't
+> > > > count on it.
+> > >
+> > > Wrong problem, what is really needed is to get CPU scheduler choice into
+> > > mainline, just as i/o scheduler finally did. Con has noted that for some
+> > > loads this will present suboptimal performance, as will his -ck patches,
+> > > as will the default scheduler. Instead of trying to make ANY one size
+> > > fit all, we should have a means to select, at runtime, between any of
+> > > the schedulers, and preferably to define an interface by which a user
+> > > can insert a new scheduler in the kernel (compile in, I don't mean
+> > > plugable) with clear and well defined rules for how that can be done.
+> > 
+> > Been there, done that. Wli wrote the infrastructure for plugsched; I took his 
+> > code and got it booting and ported 3 or so different scheduler designs. It 
+> > allowed you to build as few or as many different schedulers into the kernel 
+> > and either boot the only one you built into your kernel, or choose a 
+> > scheduler at boot time. That code got permavetoed by both Ingo and Linus. 
+> > After that I gave up on that code and handed it over to Peter Williams who 
+> > still maintains it. So please note that I pushed the plugsched barrow 
+> > previously and still don't think it's a bad idea, but the maintainers think 
+> > it's the wrong approach.
+> 
+> In a way, I think they are right. Let me explain. Pluggable schedulers are
+> useful when you want to switch away from the default one. This is very useful
+> during development of a new scheduler, as well as when you're not satisfied
+> with the default scheduler. Having this feature will incitate many people to
+> develop their own scheduler for their very specific workload, and nothing
+> generic. It's a bit what happened after all : you, Peter, Nick, and Mike
+> have worked a lot trying to provide alternative solutions.
+> 
+> But when you think about it, there are other OSes which have only one scheduler
+> and which behave very well with tens of thousands of tasks and scale very well
+> with lots of CPUs (eg: solaris). So there is a real challenge here to try to
+> provide something at least as good and universal because we know that it can
+> exist. And this is what you finally did : work on a scheduler which ought to be
+> good with any workload.
 
->From 12dfac63a2e0977473115d8e10a96d1c0e91bf24 Mon Sep 17 00:00:00 2001
-From: David S. Miller <davem@sunset.davemloft.net>
-Date: Thu, 22 Feb 2007 06:24:45 -0800
-Subject: [PATCH] [SPARC64]: Add tick_nohz_{stop,restart}_sched_tick() calls to cpu_idle().
+Solaris has a pluggable scheduler framework (each policy --
+OTHER/FIFO/RR/etc. -- is it's own separate component).
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- arch/sparc64/kernel/process.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/arch/sparc64/kernel/process.c b/arch/sparc64/kernel/process.c
-index 7d75cd4..cca0360 100644
---- a/arch/sparc64/kernel/process.c
-+++ b/arch/sparc64/kernel/process.c
-@@ -28,6 +28,7 @@
- #include <linux/reboot.h>
- #include <linux/delay.h>
- #include <linux/compat.h>
-+#include <linux/tick.h>
- #include <linux/init.h>
- 
- #include <asm/oplib.h>
-@@ -88,12 +89,14 @@ void cpu_idle(void)
- 	set_thread_flag(TIF_POLLING_NRFLAG);
- 
- 	while(1) {
--		if (need_resched()) {
--			preempt_enable_no_resched();
--			schedule();
--			preempt_disable();
--		}
--		sparc64_yield();
-+		tick_nohz_stop_sched_tick();
-+		while (!need_resched())
-+			sparc64_yield();
-+		tick_nohz_restart_sched_tick();
-+
-+		preempt_enable_no_resched();
-+		schedule();
-+		preempt_disable();
- 	}
- }
- 
 -- 
-1.5.0
+Nicholas Miell <nmiell@comcast.net>
 
