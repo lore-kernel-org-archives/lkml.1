@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXCFQfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965283AbXCFQhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965292AbXCFQfj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 11:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965294AbXCFQfi
+	id S965283AbXCFQhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 11:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965303AbXCFQhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 11:35:38 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:51831 "EHLO
-	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965292AbXCFQfh convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 11:35:37 -0500
-X-Greylist: delayed 6179 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 11:35:37 EST
-X-BigFish: VP
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: return negative number for unsigned long function in kernel
-Date: Tue, 6 Mar 2007 09:52:34 -0500
-Message-ID: <314BE1148B8C8D468A05944FDF577583069B021E@MRE02.enterprise.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: return negative number for unsigned long function in kernel
-Thread-Index: Acdf/xO0ZtB2sG02Rz25I+qq9fD3lQ==
-From: "Chen, Dongliang" <Chen.D@ems-t.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: "Chen, Dongliang" <Chen.D@ems-t.com>
+	Tue, 6 Mar 2007 11:37:54 -0500
+Received: from main.gmane.org ([80.91.229.2]:58941 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965283AbXCFQhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 11:37:54 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de>
+Subject: Re: I2O block driver broken in kernel 2.6.19?
+Date: Tue, 06 Mar 2007 17:09:35 +0100
+Message-ID: <87y7ma9ww0.fsf@fc5.bigo.ensc.de>
+References: <45D8E102.6090004@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: p54b4f6c1.dip.t-dialin.net
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+Cancel-Lock: sha1:PNucoj+1xSneAsukE6PuigfKQJc=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are lots of functions in the Linux kernel that are declared as
-unsigned long, but the return value is negative integer while error
-occurred. An example of these functions is do_mmap_pgoff in mm/mmap.c,
-which is defined as:
+Chuck Ebbert <cebbert@redhat.com> writes:
 
-unsigned long do_mmap_pgoff(....)
+> Everything looks like it loads OK, but no block IO can be
+> done, not even reading the partition table:
 
-In this function, it returns -ENODEV, -EPERM, -ENOMEM, -EINVAL, -EAGAIN,
--EACCESS depends on the error type. My question is how should the caller
-perform error check based on the return value? 
+Same here with
 
+| 03:08.0 RAID bus controller: Adaptec (formerly DPT) SmartRAID V Controller (rev 01)
+|         Subsystem: Adaptec (formerly DPT) ASR-2010S I2O Zero Channel
 
-Please CC reply to me at chen.d@ems-t.com
- 
-
-Thanks,
-
-Dongliang Chen
-
-Staff Engineer
-EMS Technologies, Inc - Defense and Space Systems
-660 Engineering Dr
-Norcross, GA 30092
-Tel: 770-263-9200 x 4379
+on a Dual Xeon (SMP) machine. Tested with (nearly) vanilla kernels
+2.6.19.2 + 2.6.20.1 and http://ensc.de/kernel-i2o-config.txt
 
 
+
+Enrico
 
