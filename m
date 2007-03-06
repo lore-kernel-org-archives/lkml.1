@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934011AbXCFJVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030320AbXCFJXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934011AbXCFJVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbXCFJVS
+	id S1030320AbXCFJXn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:23:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030201AbXCFJXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:21:18 -0500
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:26513 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934014AbXCFJVQ (ORCPT
+	Tue, 6 Mar 2007 04:23:43 -0500
+Received: from ip-svs-1.Informatik.Uni-Oldenburg.DE ([134.106.12.126]:48335
+	"EHLO schlidder.svs.informatik.uni-oldenburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030189AbXCFJXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:21:16 -0500
-Subject: Re: [S390] system call cleanup.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-In-Reply-To: <20070306072706.GA22458@infradead.org>
-References: <20070305224320.GL22630@skybase>
-	 <20070306072706.GA22458@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Tue, 06 Mar 2007 10:21:16 +0100
-Message-Id: <1173172876.24596.0.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Tue, 6 Mar 2007 04:23:41 -0500
+Date: Tue, 6 Mar 2007 10:23:39 +0100
+From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATA] Failed to set xfermode on LITE-ON LTR-48246S
+Message-ID: <20070306092339.GA3803@titan.lahn.de>
+Mail-Followup-To: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070227135838.GA4328@titan.lahn.de> <45EB9822.40300@gmail.com> <20070305103840.GA4381@titan.lahn.de> <45EC3B3F.7020509@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EC3B3F.7020509@gmail.com>
+Organization: UUCP-Freunde Lahn e.V.
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 07:27 +0000, Christoph Hellwig wrote:
-> > +	struct pt_regs *regs = task_pt_regs(current);
-> > +	char *filename;
-> > +	unsigned long result;
-> > +	int rc;
-> > +
-> > +	filename = getname(compat_ptr(regs->orig_gpr2));
-> > +	if (IS_ERR(filename)) {
-> > +		result = PTR_ERR(filename);
-> >                  goto out;
-> 
-> The old code here..
-> 
-> > +	struct pt_regs *regs = task_pt_regs(current);
-> >          unsigned long clone_flags;
-> >          unsigned long newsp;
-> >  	int __user *parent_tidptr, *child_tidptr;
-> 
-> ..and here..
-> 
-> > +asmlinkage long sys_clone(void)
-> >  {
-> > +	struct pt_regs *regs = task_pt_regs(current);
-> >          unsigned long clone_flags;
-> >          unsigned long newsp;
-> >  	int __user *parent_tidptr, *child_tidptr;
-> 
-> ..and here used spaces instead of tabs, it would be nice to clean this
-> up while you're at it.
+Hello Tejun!
 
-Will do, thanks for the hint.
+On Tue, Mar 06, 2007 at 12:46:07AM +0900, Tejun Heo wrote:
+> Philipp Matthias Hahn wrote:
+> > On Mon, Mar 05, 2007 at 01:10:10PM +0900, Tejun Heo wrote:
+> > > * Does applying the attached patch over unpatched 2.6.20.1 fix the problem?
+> >
+> > Yes, it seems to fix it. (testes on top of the first patch mentioned
+> > above, but witheout the second one.).
+> > If I should test it as the sole patche, just mail me again please.
+>
+> Yeap, please test it on top of vanilla kernel to verify that the patch
+> proper fixes the problem.
 
+Yes, applying only this patch does fix the problem.
+Thank you for your support.
+
+BYtE
+Philipp
 -- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
-
-"Reality continues to ruin my life." - Calvin.
-
-
+  / /  (_)__  __ ____  __ Philipp Hahn
+ / /__/ / _ \/ // /\ \/ /
+/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
