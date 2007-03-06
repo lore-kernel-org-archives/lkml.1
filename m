@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965379AbXCFRdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965378AbXCFReX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965379AbXCFRdE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965380AbXCFRdE
+	id S965378AbXCFReX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965381AbXCFReX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:33:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34116 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965379AbXCFRdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:33:00 -0500
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Tue, 06 Mar 2007 18:32:59 +0100
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <Pine.LNX.4.64.0703041325540.3953@woody.linux-foundation.org>
-Message-ID: <20070306173259.276350@gmx.net>
+	Tue, 6 Mar 2007 12:34:23 -0500
+Received: from mail.tmr.com ([64.65.253.246]:58869 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965378AbXCFReW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:34:22 -0500
+Message-ID: <45EDA6A3.7010109@tmr.com>
+Date: Tue, 06 Mar 2007 12:36:35 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-References: <20070303155536.65380@gmx.net>
- <Pine.LNX.4.64.0703041325540.3953@woody.linux-foundation.org>
-Subject: Re: bugs in kernel 2.6.21 (both two release candidates) and kernel
- 2.6.20
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/qHVJLZnTqEZAPOUiZObs2RazUsCF56hwJGn3LHn
- kL7M5z+KBcuuk+FdNh7jaysjB7N/q71cnkEA== 
-Content-Transfer-Encoding: 8bit
+To: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
+Subject: CONFIG_SYSFS_DEPRECATED and similar issues
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Just a few comments on changes like this in general. Prompted by, but 
+not otherwise related to the subject.
 
--------- Original-Nachricht --------
-Datum: Sun, 4 Mar 2007 13:30:13 -0800 (PST)
-Von: Linus Torvalds <torvalds@linux-foundation.org>
-An: Uwe Bugla <uwe.bugla@gmx.de>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Betreff: Re: bugs in kernel 2.6.21 (both two release candidates) and kernel 2.6.20
+When any new feature in the kernel requires significant changes in 
+userspace, attention should be given to documenting the user items which 
+must change. Now "attention" doesn't mean handwaving b.s. like "user 
+programs which depend on sysfs will need to be modified." It means a 
+list of which common user features need to be updated and where to find 
+new ones. That's what the whole Documentation directory is for, but it's 
+rarely used for such a purpose.
 
-> 
-> 
-> On Sat, 3 Mar 2007, Uwe Bugla wrote:
-> >
-> > Hi folks,
-> 
-> Hi Uwe.
-> 
-> The thing is, nobody really reads your emails. Why?
-> 
->  - you're too abrasive.
-> 
->    Hey, I'm not the most polite person either, but when you complain about
->    other maintainers doing badly, you'd better try to show that you can do
->    better.
-> 
->  - they are so horribly formatted that it's impossible to read them.
-> 
->    Quote appropriately, and use correct whitespace. That means wrapping 
->    long lines, proper paragraphs, and it means whitespace in between 
->    paragraphs and the things you quote.
-> 
-> I really would suggest you try to fix these issues, as I strongly suspect 
-> that people skip over your messages as it is now.
-> 
-> 		Linus
-Thanks Linus. I will try my best to learn from your criticism.
-But please do not compare me with maintainers, especially never in this life with the suboptimal one from linuxtv.org being in question.
-a. I ain't no maintainer
-b. As far as my virtues are concerned in comparison to his the comparison
-is completely displaced.
+In the most recent case, a user tool is needed which doesn't even exist 
+as a release.
 
-Above that it feels good to have people like you.
-
-Best regards
-
-Uwe
-
-
+The other issue is to avoid "trap door" changes, which occur when a 
+kernel change requires new user tools, and the user tools will not run 
+with older kernels. That includes missing major features like having a 
+display and being able to mount filesystems, even if the kernel is 
+technically running. When there were stable and development kernel 
+series that was not so much of an issue, now that every kernel is an 
+adventure it would be nice to ensure that testing a new kernel is not an 
+irrevocable step.
 
 -- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
