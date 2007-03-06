@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932993AbXCFIic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933014AbXCFImo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932993AbXCFIic (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 03:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933001AbXCFIic
+	id S933014AbXCFImo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 03:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933040AbXCFImo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 03:38:32 -0500
-Received: from smtp.ono.com ([62.42.230.12]:16262 "EHLO resmaa06.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932993AbXCFIib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 03:38:31 -0500
-Date: Tue, 6 Mar 2007 09:38:05 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+	Tue, 6 Mar 2007 03:42:44 -0500
+Received: from smtp23.orange.fr ([193.252.22.30]:7528 "EHLO smtp23.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933014AbXCFImn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 03:42:43 -0500
+X-ME-UUID: 20070306084241444.6C6087008BEE@mwinf2329.orange.fr
+Subject: Re: [ck] Re: [ANNOUNCE] RSDL completely fair starvation free
+	interactive cpu scheduler
+From: Xavier Bestel <xavier.bestel@free.fr>
 To: Con Kolivas <kernel@kolivas.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: fix idle at tick
-Message-ID: <20070306093805.6d8461ca@werewolf-wl>
-In-Reply-To: <200703061841.08343.kernel@kolivas.org>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	<200703061725.37365.kernel@kolivas.org>
-	<20070305230240.9c2741d1.akpm@linux-foundation.org>
-	<200703061841.08343.kernel@kolivas.org>
-X-Mailer: Claws Mail 2.8.0cvs15 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Cc: Al Boldi <a1426z@gawab.com>,
+       Markus =?ISO-8859-1?Q?T=F6rnqvist?= <mjt@nysv.org>,
+       ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703060910.06343.kernel@kolivas.org>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703052329.45217.kernel@kolivas.org>
+	 <200703052123.01095.a1426z@gawab.com>
+	 <200703060910.06343.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Tue, 06 Mar 2007 09:42:34 +0100
+Message-Id: <1173170554.5835.385.camel@frg-rhel40-em64t-03>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007 18:41:08 +1100, Con Kolivas <kernel@kolivas.org> wrote:
-
-> On Tuesday 06 March 2007 18:02, Andrew Morton wrote:
-> > On Tue, 6 Mar 2007 17:25:36 +1100 Con Kolivas <kernel@kolivas.org> wrote:
-> > > Signed-off-by: Con Kolivas <kernel@kolivas.org>
-> > > ---
-> > >  kernel/sched.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >
-> > > Index: linux-2.6.21-rc2-mm1-base/kernel/sched.c
-> > > ===================================================================
-> > > --- linux-2.6.21-rc2-mm1-base.orig/kernel/sched.c	2007-03-06
-> > > 17:19:17.000000000 +1100 +++
-> > > linux-2.6.21-rc2-mm1-base/kernel/sched.c	2007-03-06 17:20:40.000000000
-> > > +1100 @@ -3444,7 +3444,7 @@ void scheduler_tick(void)
-> > >
-> > >  	update_cpu_clock(p, rq, now);
-> > >
-> > > -	if (idle_at_tick)
-> > > +	if (!idle_at_tick)
-> > >  		task_running_tick(rq, p);
-> > >  #ifdef CONFIG_SMP
-> > >  	update_load(rq);
-> >
-> > Looks right, thanks.  The original patch had
-> >
-> > -	if (p == rq->idle)
-> > +	if (idle_at_tick)
-> >  		/* Task on the idle queue */
-> >  		wake_priority_sleeper(rq);
-> >  	else
-> >  		task_running_tick(rq, p);
-> >
-> > but it got damaged by smt-nice removal.
+On Tue, 2007-03-06 at 09:10 +1100, Con Kolivas wrote:
+> Hah I just wish gears would go away. If I get hardware where it runs at just 
+> the right speed it looks like it doesn't move at all. On other hardware the 
+> wheels go backwards and forwards where the screen refresh rate is just 
+> perfectly a factor of the frames per second (or something like that). 
 > 
-> I gathered something like that happened. If it wasn't clear this change caused 
-> massive scheduler damage with no cpu accounting whatsoever occurring. I 
-> recommend putting it in your hotfixes/ dir if you're not planning an -mm2 
-> soon.
-> 
+> This is not a cpu scheduler test and you're inferring that there are cpu 
+> scheduling artefacts based on an application that has bottlenecks at 
+> different places depending on the hardware combination. 
 
-Good! I can confirm this makes things going smoothly again....
+I'd add that Xorg has its own scheduler (for X11 operations, of course),
+that has its own quirks, and chances are that it is the one you're
+testing with glxgears. And as Con said, as long as glxgears does more
+FPS than your screen refresh rate, its flickering its completely
+meaningless: it doesn't even attempt to sync with vblank. Al, you'd
+better try with Quake3 or Nexuiz, or even Blender if you want to test 3D
+interactivity under load.
 
-(apart from the speed of the x11 nv driver at 1600x1200 ;) ).
+	Xav
 
-hot-fixes candidate.
 
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.20-jam01 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #2 SMP PREEMPT
