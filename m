@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965280AbXCFQeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXCFQeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965280AbXCFQeD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 11:34:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965283AbXCFQeC
+	id S965287AbXCFQeX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 11:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965291AbXCFQeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 11:34:02 -0500
-Received: from wr-out-0506.google.com ([64.233.184.229]:56229 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965280AbXCFQeB (ORCPT
+	Tue, 6 Mar 2007 11:34:23 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:7712 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965289AbXCFQeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 11:34:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=BxSlyLi8SqPneTwWRXooCD7b7/1/uXLHC5XGhFBeNU7JvEgD8/aaxDlyD0kpYaGEqRqlD2EnxSM6yWeB1HfuJb4cyNbgL5vkUoJQGamAJ7sKar8EzLvpZiRhcn+7jXmrAHL2FLvegM3nmOIZptg27ln2Y0x41lh7Ps2mfcB1j8w=
-Message-ID: <9c21eeae0703060833m69ebe196o302508f1e809d03@mail.gmail.com>
-Date: Tue, 6 Mar 2007 08:33:59 -0800
-From: "David Brown" <dmlb2000@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] remove availability for PAGE_SIZE and friends (ppc)
+	Tue, 6 Mar 2007 11:34:20 -0500
+Message-ID: <45ED9390.3000308@ru.mvista.com>
+Date: Tue, 06 Mar 2007 19:15:12 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Greg KH <greg@kroah.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
+References: <20070111222627.66bb75ab.akpm@osdl.org> <20070124135354.GI17836@stusta.de> <45B76946.1070009@ru.mvista.com> <45D756D7.4060106@ru.mvista.com> <45D75853.1060607@ru.mvista.com> <45E2DF13.9010200@ru.mvista.com> <20070226092644.aea76b37.randy.dunlap@oracle.com> <20070226211401.GC3810@kroah.com>
+In-Reply-To: <20070226211401.GC3810@kroah.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Same patch as the i386 one only for ppc.
+Hello.
 
-Thanks,
-- David Brown
+Greg KH wrote:
 
-diff --git a/include/asm-ppc/page.h b/include/asm-ppc/page.h
-index fe95c82..79d54af 100644
---- a/include/asm-ppc/page.h
-+++ b/include/asm-ppc/page.h
-@@ -3,6 +3,8 @@
+>>>>>>>3x59x-fix-pci-resource-management.patch causes the following compile 
+>>>>>>>error with CONFIG_PCI=n:
 
- #include <asm/asm-compat.h>
+>>>>>>><--  snip  -->
 
-+#ifdef __KERNEL__
-+
- /* PAGE_SHIFT determines the page size */
- #define PAGE_SHIFT     12
- #define PAGE_SIZE      (ASM_CONST(1) << PAGE_SHIFT)
-@@ -13,8 +15,6 @@
-  */
- #define PAGE_MASK      (~((1 << PAGE_SHIFT) - 1))
+>>>>>>>...
+>>>>>>>  CC      drivers/net/3c59x.o
+>>>>>>>/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: 
+>>>>>>>In function 'vortex_init_one':
+>>>>>>>/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: 
+>>>>>>>error: implicit declaration of function 'pci_request_regions'
+>>>>>>>/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: 
+>>>>>>>error: implicit declaration of function 'pci_release_regions'
+>>>>>>>make[3]: *** [drivers/net/3c59x.o] Error 1
 
--#ifdef __KERNEL__
--
- /* This must match what is in arch/ppc/Makefile */
- #define PAGE_OFFSET    CONFIG_KERNEL_START
- #define KERNELBASE     PAGE_OFFSET
+>>>>>>   Grr, at at the same time it's happy with pci_enable_device().
+>>>>>>   I'd say the problem is in <linux/pci.h>,  not in the patch.
+
+>>>>>   Has there been any patch to fix the "unbalanced" 
+>>>>>pci_{request|release}_regions() declarations? Am I suposed to create 
+>>>>>such?
+
+>>>>   Alternatively, vortex_{init|remove_one() and struct pci_driver there 
+>>>>could have been put under #ifdef CONFIG_PCI (good idea anyway -- should 
+>>>>reduce driver size on non-PCI systems)...
+
+>>>    I wonder if I may count on any feedback on this -- asking linux-pci now...
+>>>    The issue is as follows: with my patch pci_{request|release}_regions() may 
+>>>be called with CONFIG_PCI=n (probably, this never has been a issue before) but 
+>>><linux/pci.h> don't have them declared in this case -- unlike 
+>>>pci_enable_device() which is just empty for CONFIG_PCI=n.
+>>>    Now, what kind of approach do I take:
+
+>>>- a "fair one", so that pci_{request|release}_regions() get "balanced"
+>>>   declarations in the header like pci_enable_device();
+
+>>>- a "local one" (and even saving non-PCI kernel from needless bloat), i.e.
+>>>   #ifdef out functions that are only meaningful with CONFIG_PCI=y)?
+
+>>>    I'm leaning to the second now...
+
+>>I'd prefer the fair one -- add stubs to include/linux/pci.h.
+
+> Me too, please just send me a patch adding them to pci.h so you don't
+> have to have #ifdefs in your .c code.
+
+    Erm, before I do that, could somebody explain what
+
+#define HAVE_PCI_REQ_REGIONS 2
+
+accompanying their declaration is for? I have't found any references to it in 
+the source. Should I duplicate it for CONFIG_PCI=n case (I guess not)?
+
+> thanks,
+
+> greg k-h
+
+WBR, Sergei
