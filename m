@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030489AbXCFJoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030495AbXCFJwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030489AbXCFJoX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:44:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030493AbXCFJoX
+	id S1030495AbXCFJwI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:52:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030502AbXCFJwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:44:23 -0500
-Received: from smtp.ono.com ([62.42.230.12]:29532 "EHLO resmaa04.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030489AbXCFJoX convert rfc822-to-8bit (ORCPT
+	Tue, 6 Mar 2007 04:52:08 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:19347 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030496AbXCFJwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:44:23 -0500
-Date: Tue, 6 Mar 2007 10:44:13 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm2
-Message-ID: <20070306104413.4911d902@werewolf-wl>
-In-Reply-To: <20070306014240.ca128a2e.akpm@linux-foundation.org>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-	<20070306100623.770b9dc9@werewolf-wl>
-	<20070306011524.b0945a42.akpm@linux-foundation.org>
-	<20070306103823.640e08e0@werewolf-wl>
-	<20070306014240.ca128a2e.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.8.0cvs15 (GTK+ 2.10.9; i686-pc-linux-gnu)
+	Tue, 6 Mar 2007 04:52:07 -0500
+X-IronPort-AV: i="4.14,253,1170651600"; 
+   d="scan'208"; a="23667335:sNHT21389368"
+Subject: Re: [PATCH -mm] utrace: nommu fixup support utrace
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: David Howells <dhowells@redhat.com>
+Cc: bryan.wu@analog.com, roland@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <17048.1173173858@redhat.com>
+References: <1173165927.17134.5.camel@roc-desktop>
+	 <17048.1173173858@redhat.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Tue, 06 Mar 2007 17:49:51 +0800
+Message-Id: <1173174592.20836.0.camel@roc-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007 01:42:40 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 6 Mar 2007 10:38:23 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
+On Tue, 2007-03-06 at 09:37 +0000, David Howells wrote:
+> Wu, Bryan <bryan.wu@analog.com> wrote:
 > 
-> > On Tue, 6 Mar 2007 01:15:24 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Tue, 6 Mar 2007 10:06:23 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
-> > > 
-> > > > On Tue, 6 Mar 2007 00:44:08 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > 
-> > > > > 
-> > > > > Temporarily at
-> > > > > 
-> > > > >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
-> > > > > 
-> > > > 
-> > > > Does this include a fix for the NFS problem ?
-> > > 
-> > > Which NFS problem?
-> > > 
-> > 
-> > http://marc.theaimsgroup.com/?l=linux-kernel&m=117305359825926&w=2
+> > When adding utrace support to blackfin architecture, I found a compiling
+> > error in nommu related utrace stuff. Then this little patch will fix
+> > this for nommu arch utrace.
 > 
-> yup, that got fixed.
+> You really don't want to do it like this.  This prevents ELF shared libraries
+> from being shared at all if UTRACE is enabled.
+> 
+> David
 
-Thanks, I will build it tonite...
+Got it, I will find another way to fix this.
+Now, I just make it compile pass. 
 
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.20-jam01 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #2 SMP PREEMPT
+Thanks
+-Bryan
