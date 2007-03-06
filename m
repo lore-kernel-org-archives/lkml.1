@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933373AbXCFADU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933532AbXCFAE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933373AbXCFADU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXCFADU
+	id S933532AbXCFAE1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:04:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXCFAE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:03:20 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40500 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933344AbXCFADT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:03:19 -0500
-From: Neil Brown <neilb@suse.de>
-To: Bill Davidsen <davidsen@tmr.com>
-Date: Tue, 6 Mar 2007 11:01:53 +1100
+	Mon, 5 Mar 2007 19:04:27 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:49749 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933565AbXCFAE0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:04:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Yw4C3jL/pNBffcYkW3znaOk2NrEZmlbvW790J3ErT+cpo4C9yHGGISBgqj17mgQvQc8D5BXj7TG4ICeWzaNYidIdExc9NCdzxPvsux8ZFpjSTKQJVYu5gcdzHwwwC0L4eUscAcvzKeNiw14GtpnCvbiFDfQe9FYnJUSFu7TE6ms=
+Message-ID: <9c21eeae0703051604l20a029c3r8cf09d792ba523be@mail.gmail.com>
+Date: Mon, 5 Mar 2007 16:04:24 -0800
+From: "David Brown" <dmlb2000@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: PAGE_SIZE Availability Inconsistency
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070305.160303.59493440.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <17900.44913.481329.963558@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] md: Fix for raid6 reshape.
-In-Reply-To: message from Bill Davidsen on Friday March 2
-References: <20070302155626.19014.patches@notabene>
-	<1070302045655.19069@suse.de>
-	<20070301223619.d9957521.akpm@linux-foundation.org>
-	<17895.50900.585915.565155@notabene.brown>
-	<45E88A50.8060906@tmr.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
+	 <20070305.160303.59493440.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday March 2, davidsen@tmr.com wrote:
-> >   
-> >>> +	conf->expand_progress = (sector_nr + i) * new_data_disks;
-> >>>       
-> Will the (real) fix be in 2.6.21?
+On 3/5/07, David Miller <davem@davemloft.net> wrote:
+> From: "David Brown" <dmlb2000@gmail.com>
+> Date: Mon, 5 Mar 2007 15:55:06 -0800
+>
+> > I'm kinda wondering how I'm supposed to write portable user-space code
+> > if I want to use the PAGE_SIZE define on different architectures.
+>
+> Call getpagesize().
+>
 
-It is now in Linus' git tree, so yes.
+Thanks, but that still leaves PAGE_SIZE available for some
+architectures and not for others shouldn't this be moved inside
+__KERNEL__ in i386 and x86_64 then?
 
-NeilBrown
+- David Brown
