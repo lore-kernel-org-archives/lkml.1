@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXCFKNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933211AbXCFKPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933212AbXCFKNo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 05:13:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933213AbXCFKNo
+	id S933211AbXCFKPH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 05:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933215AbXCFKPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 05:13:44 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:36326 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933212AbXCFKNn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 05:13:43 -0500
-X-Greylist: delayed 1141 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 05:13:43 EST
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: [PATCH] Use a zero-size array in the struct devres
-To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org
-Date: Tue, 06 Mar 2007 09:54:37 +0000
-Message-ID: <20070306095241.28180.76390.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12
+	Tue, 6 Mar 2007 05:15:07 -0500
+Received: from mx2.suse.de ([195.135.220.15]:32884 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933214AbXCFKPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 05:15:05 -0500
+Message-ID: <45ED3F29.6000705@suse.de>
+Date: Tue, 06 Mar 2007 11:15:05 +0100
+From: Gerd Hoffmann <kraxel@suse.de>
+Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
+ =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Xen & VMI?
+References: <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <45ED3121.8090308@suse.de> <20070306093436.GA30239@elte.hu>
+In-Reply-To: <20070306093436.GA30239@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2007 09:54:37.0874 (UTC) FILETIME=[73CB8920:01C75FD5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 9ac7849e35f705830f7b016ff272b0ff1f7ff759 adds the devres
-structure containing a flexible unsigned long long array, with a
-comment about the guaranteed alignment. According to the gcc manual,
-flexible arrays are considered incomplete types and it is an error to
-ask for their alignment. This patch makes data[] a zero-size array.
+Ingo Molnar wrote:
+> * Gerd Hoffmann <kraxel@suse.de> wrote:
+> 
+>> Oh, and btw: What was the reason why kvm paravirtualization doesn't 
+>> use the vmi interface?
+> 
+> cleanliness and performance: KVM doesnt need any artificial indirection.
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
----
+Xen doesn't need it either.
 
-I came across this when trying to build kmemleak as the modified
-container_of macro tries to get the size of the devres.data member and
-sizeof cannot be applied to incomplete types.
+> IMO the GPL-ed ROM portion of VMI was a bad idea to begin with.
 
- drivers/base/devres.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+So why do you want xen use vmi then?
 
-diff --git a/drivers/base/devres.c b/drivers/base/devres.c
-index e177c95..0d6c067 100644
---- a/drivers/base/devres.c
-+++ b/drivers/base/devres.c
-@@ -22,7 +22,7 @@ struct devres_node {
- struct devres {
- 	struct devres_node		node;
- 	/* -- 3 pointers */
--	unsigned long long		data[];	/* guarantee ull alignment */
-+	unsigned long long		data[0];	/* guarantee ull alignment */
- };
- 
- struct devres_group {
+> well, the VMI patches got into Linux with the claim that it's also 
+> useful for Xen. So that claim was ... not actually true?
 
+As mentioned there was a proof-of-concept VMI ROM done by vmware.  As
+far I know it translated the VMI ROM interface calls into xen hypercalls
+somehow, Zach probably has more details.
+
+So in the end you would still have two different hypervisor ABI's, the
+VMI ROM just hides that.
+
+cheers,
+  Gerd
+
+-- 
+Gerd Hoffmann <kraxel@suse.de>
