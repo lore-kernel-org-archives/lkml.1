@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934096AbXCFMMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933233AbXCFMNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934096AbXCFMMZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934091AbXCFMMY
+	id S933233AbXCFMNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 07:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934091AbXCFMNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:12:24 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:16928 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934097AbXCFMMX (ORCPT
+	Tue, 6 Mar 2007 07:13:45 -0500
+Received: from mail.station1.mxsweep.com ([212.147.136.149]:3712 "EHLO
+	blue.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933233AbXCFMNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:12:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HA+qVqLMHKo1DCiMnPzlQ+7js9X5pFNtEMU+Z1yhDmdWHS9l3dIPMoLfpol7bqMhKzjugzLyp4nOD5Dx268qBZapzA9wy57K8yetS461jxNAgTkZWqticiXPmjaVEJEpwGDiyBYFm065tl2sIF51wbP4xX5bUNtZ3ftzup6DESU=
-Message-ID: <b6a2187b0703060412l66fe8db8l12e5403821d1438b@mail.gmail.com>
-Date: Tue, 6 Mar 2007 20:12:20 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Cc: "Adrian Bunk" <bunk@stusta.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Pavel Machek" <pavel@ucw.cz>, linux-pm@lists.osdl.org,
-       "Ingo Molnar" <mingo@elte.hu>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20070306120808.GA9537@mellanox.co.il>
+	Tue, 6 Mar 2007 07:13:44 -0500
+Message-ID: <45ED5A49.1010702@draigBrady.com>
+Date: Tue, 06 Mar 2007 12:10:49 +0000
+From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
+User-Agent: Thunderbird 1.5.0.8 (X11/20061116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <20070226220152.GA29575@stusta.de>
-	 <20070228211318.GB4301@mellanox.co.il>
-	 <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com>
-	 <20070305000421.GF3441@stusta.de>
-	 <b6a2187b0703051732v79a532f6mbf0d3da857a914e6@mail.gmail.com>
-	 <b6a2187b0703060403o48130853m9393df70160303c1@mail.gmail.com>
-	 <20070306120808.GA9537@mellanox.co.il>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: bert hubert <bert.hubert@netherlabs.nl>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: userspace pagecache management tool
+References: <20070303122935.f1ab0067.akpm@linux-foundation.org>	<45E9DD4A.2060806@redhat.com>	<20070303131204.6706a95c.akpm@linux-foundation.org>	<45E9E910.2070804@redhat.com>	<20070303214108.GA28961@outpost.ds9a.nl>	<20070303141448.1ed70e6d.akpm@linux-foundation.org>	<45E9F454.2080600@redhat.com>	<20070303142609.d3bc9cc3.akpm@linux-foundation.org>	<20070303230155.GA475@outpost.ds9a.nl> <20070303154541.70aed9df.akpm@linux-foundation.org>
+In-Reply-To: <20070303154541.70aed9df.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Mlf-Version: 5.0.2.8415
+X-Mlf-UniqueId: o200703061216200093761
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/6/07, Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> > Quoting Jeff Chua <jeff.chua.linux@gmail.com>:
-> > Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-> >
-> > On 3/6/07, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> > > On 3/5/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > >
-> > > > > I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
-> > > > > from RAM, can't suspend to disk. It is possible to revert all the
-> > > > > changes to ACPI and test it?
-> > > >
-> > > > This is with CONFIG_KVM=n?
-> > >
-> > > Yes.
-> >
-> > I've tried with CONFIG_KVM=n and CONFIG_KVM=y and both does not suspend.
->
-> Do you mean that they "do not resume after suspend"?
+Andrew Morton wrote:
+> Yes.  Let's flesh it out the backup program policy some more:
+> 
+> - Unconditionally invalidate output files
+> 
+> - on entry to read(), probe pagecache, record which pages in the range are present
+> 
+> - on entry to next read(), shoot down those pages from the previous read
+>   which weren't in pagecache.
+> 
+> - But we can do better!  LRU the page's files up to a certain number of pages.
+> 
+> - Once that point is exceeded, we need to reclaim some pages.  Which
+>   ones?  Well, we've been observing all reads, so we can record which pages
+>   were referenced once, and which ones were referenced multiple times so we
+>   can do arbitrarily complex page aging in there.
+> 
+> - On close(), nuke all pages which weren't in core during open(), even if
+>   this app referenced them multiple times.
+> 
+> - If the backup program decided to read its input files with mmap we're
+>   rather screwed.  We can't intercept pagefaults so the best we can do is
+>   to restore the file's pagecache to its previous state on close().
+> 
+>   Or if it's really a problem, get control in there somehow and
+>   periodically poll the pagecache occupancy via mincore(), use madvise()
+>   then fadvise() to trim it back.
+> 
+> That all sounds reasonably doable.  It'd be pretty complex to do it
+> in-kernel but we could do it there too.  Problem is if course that the
+> above strategy is explicitly optimised for the backup program and if it's
+> in-kernel it becomes applicable to all other workloads.
 
-I can't even suspend to disk/ram. It just hangs and the lights just
-blink and everything else hangs. With 2.6.20, it works fine.
+I can see the above being possible, but I can't see the reason
+for exposing that complexity to userspace. If I'm the target
+audience for that API then it's broken as I'd mess it up,
+or would take too long to get it right.
 
-Jeff.
+Can't we just fix the posix_fadvise() implementation to
+only evict pages paged in by the current process.
+Perhaps one could possibly just evict pages with _mapcount==0 ?
+
+cheers,
+Pádraig.
