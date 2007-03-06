@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965054AbXCFOU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965084AbXCFOiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965054AbXCFOU7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 09:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965055AbXCFOU6
+	id S965084AbXCFOiD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 09:38:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965879AbXCFOiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 09:20:58 -0500
-Received: from gate.perex.cz ([212.20.107.50]:45377 "EHLO gate.perex.cz"
+	Tue, 6 Mar 2007 09:38:02 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35647 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965054AbXCFOU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 09:20:58 -0500
-Date: Tue, 6 Mar 2007 15:20:53 +0100 (CET)
-From: Jaroslav Kysela <perex@suse.cz>
-X-X-Sender: perex@tm8103.perex-int.cz
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [ALSA PATCH] alsa-git merge request
-Message-ID: <Pine.LNX.4.61.0703061412300.8516@tm8103.perex-int.cz>
+	id S965084AbXCFOh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 09:37:59 -0500
+Message-ID: <45ED7C59.4050508@redhat.com>
+Date: Tue, 06 Mar 2007 06:36:09 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Hellwig <hch@infradead.org>, Mingming Cao <cmm@us.ibm.com>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       nscott@aconex.com, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com> <20070305122742.GA11486@atrey.karlin.mff.cuni.cz> <45EC7773.7020603@us.ibm.com> <20070306072850.GA23081@infradead.org>
+In-Reply-To: <20070306072850.GA23081@infradead.org>
+X-Enigmail-Version: 0.94.1.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig1892E0C32A25A7EFC2025B6B"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig1892E0C32A25A7EFC2025B6B
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Linus, please pull from [the linus branch at]:
+Christoph Hellwig wrote:
+> fallocate with the whence argument and flags is already quite complicat=
+ed,
+> I'd rather have another call for placement decisions, that would
+> be called on an fd to do placement decissions for any further allocatio=
+ns
+> (prealloc, write, etc)
 
-  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
-gitweb interface:
-  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
+Yes, posix_fallocate shouldn't be made more complicated.  But I don't
+understand why requesting linear layout of the blocks should be an
+option.  It's always an advantage if the blocks requested this way are
+linear on disk.  So, the kernel should always do its best to make this
+happen, without needing an additional option.
 
-The GNU patch is available at:
-
-  ftp://ftp.alsa-project.org/pub/kernel-patches/alsa-git-2007-03-06.patch.gz
-
-The following files will be updated:
-
- Documentation/sound/alsa/ALSA-Configuration.txt |   12 ++++++-
- include/sound/version.h                         |    4 +-
- sound/pci/ac97/ac97_patch.c                     |    2 +
- sound/pci/ali5451/ali5451.c                     |    2 +
- sound/pci/cmipci.c                              |   18 +++++++----
- sound/pci/echoaudio/echoaudio.c                 |    2 +
- sound/pci/hda/patch_analog.c                    |    3 ++
- sound/pci/hda/patch_conexant.c                  |    8 ++++-
- sound/pci/hda/patch_realtek.c                   |   21 ++++++++++++--
- sound/pci/hda/patch_sigmatel.c                  |   35 +++++++++++++++++++++--
- sound/pci/riptide/riptide.c                     |    2 +
- sound/pci/rme9652/hdspm.c                       |    2 +
- sound/soc/codecs/wm9712.c                       |    3 +-
- 13 files changed, 94 insertions(+), 20 deletions(-)
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
 
 
-The following things were done:
+--------------enig1892E0C32A25A7EFC2025B6B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Jaroslav Kysela (1):
-      [ALSA] version 1.0.14rc3
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-Joe Sauer (1):
-      [ALSA] soc - Fix WM9712 register cache entry
+iD8DBQFF7XxZ2ijCOnn/RHQRAsMhAKDBrHJkvkZUHExGPidVYnuNhLCcZQCfb5lZ
+qX3NSLUZ509TmALajVw+/Bs=
+=bhNM
+-----END PGP SIGNATURE-----
 
-Liam Girdwood (1):
-      [ALSA] soc - WM9712 PCM volume
-
-Takashi Iwai (7):
-      [ALSA] hda-codec - Add LFE support on Dell M90
-      [ALSA] hda-codec - Add missing Mic Boost controls for ALC262
-      [ALSA] hda-codec - Define pin configs for MacBooks
-      [ALSA] Add missing sysfs device assignment for ALSA PCI drivers
-      [ALSA] ac97 - Add Thinkpad X31 and R40 to AD1981x blacklist
-      [ALSA] hda-codec - Add missing Mic Boost for AD1986A codec
-      [ALSA] cmipci - Allow to disable integrated FM port
-
-Tobin Davis (2):
-      [ALSA] hda-codec - Add method for configuring Mac Pro without PCI SSID
-      [ALSA] hda-codec - Fix logic error in headphone mute for Conexant codecs
-
-
------
-Jaroslav Kysela <perex@suse.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, SUSE Labs
+--------------enig1892E0C32A25A7EFC2025B6B--
