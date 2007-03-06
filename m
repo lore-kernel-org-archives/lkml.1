@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933915AbXCFM6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934101AbXCFM6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933915AbXCFM6R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934101AbXCFM6Q
+	id S934101AbXCFM6x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 07:58:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933877AbXCFM6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:58:16 -0500
-Received: from ozlabs.org ([203.10.76.45]:56499 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933915AbXCFM6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:58:15 -0500
-Subject: [PATCH 4/8] Cleanup setup_pda
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-In-Reply-To: <1173185734.4644.32.camel@localhost.localdomain>
-References: <1173184747.4644.23.camel@localhost.localdomain>
-	 <1173185592.4644.28.camel@localhost.localdomain>
-	 <1173185666.4644.30.camel@localhost.localdomain>
-	 <1173185734.4644.32.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 23:57:07 +1100
-Message-Id: <1173185827.4644.34.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Mar 2007 07:58:53 -0500
+Received: from dev.mellanox.co.il ([194.90.237.44]:36107 "EHLO
+	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934101AbXCFM6w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 07:58:52 -0500
+Date: Tue, 6 Mar 2007 14:55:30 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Soeren Sonnenburg <kernel@nn7.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>, Len Brown <lenb@kernel.org>
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+Message-ID: <20070306125530.GA6981@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org> <1173142948.24738.257.camel@localhost.localdomain> <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org> <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu> <20070306104618.GA5792@mellanox.co.il> <1173180977.9161.14.camel@localhost> <20070306120701.GA29599@elte.hu> <20070306125119.GA6119@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306125119.GA6119@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The comment above this function has never been true in mainline:
-talking to Jeremy it's from previous patch churn.  What setup_pda
-actually does is to write the segment entry for boot_pda into the
-boot_gdt_table.  Ideally, this would be a static initialization, but
-because the addresses are split over multiple parts in the funk bit
-layout of the GDT entry (thanks Intel!) that's not a valid C
-initializer.
+> Quoting Ingo Molnar <mingo@elte.hu>:
+> Subject: Re: [5/6] 2.6.21-rc2: known regressions
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > > BTW, Ingo, can you suspend/resume any number of times with this 
+> > > > patch?
+> > > 
+> > > well I could at least two times in a row in my minimalistic setup 
+> > > (config attached) however using the full kernel config it still 
+> > > hangs ... (config also attached in case you watn to compare it).
+> > 
+> > i can confirm that with your full config i see a hang too. This is 
+> > most likely the ACPI problem - we are debugging this now and will come 
+> > up with a patch.
+> 
+> update: this only happens with simulation, and even then it's not a full 
+> hang but 'hangs until i hit a key'. With real resume i'm hitting a real 
+> key anyway so it doesnt hang.
 
-We in fact call this routine on every CPU bringup, but that's
-harmless.  Non-boot CPUs switch to their own GDTs immediately in
-initialize_secondary.
-
-VMI certainly doesn't need to call it explicitly.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff -r 2d9aa53572e2 arch/i386/kernel/head.S
---- a/arch/i386/kernel/head.S	Tue Mar 06 19:01:08 2007 +1100
-+++ b/arch/i386/kernel/head.S	Tue Mar 06 19:01:12 2007 +1100
-@@ -365,17 +365,10 @@ 1:	movb $1,X86_HARD_MATH
- 	.byte 0xDB,0xE4		/* fsetpm for 287, ignored by 387 */
- 	ret
- 
--/*
-- * Point the GDT at this CPU's PDA.  On boot this will be
-- * cpu_gdt_table and boot_pda; for secondary CPUs, these will be
-- * that CPU's GDT and PDA.
-- */
--ENTRY(setup_pda)
--	/* get the PDA pointer */
--	movl start_pda, %eax
--
--	/* slot the PDA address into the GDT */
--	mov early_gdt_descr+2, %ecx
-+/* Initialize the boot_gdt_table's GDT_ENTRY_PDA (can't be done statically) */
-+setup_pda:
-+	movl $boot_pda, %eax
-+	movl $boot_gdt_table, %ecx
- 	mov %ax, (__KERNEL_PDA+0+2)(%ecx)		/* base & 0x0000ffff */
- 	shr $16, %eax
- 	mov %al, (__KERNEL_PDA+4+0)(%ecx)		/* base & 0x00ff0000 */
-@@ -554,9 +547,6 @@ ENTRY(empty_zero_page)
-  * This starts the data section.
-  */
- .data
--ENTRY(start_pda)
--	.long boot_pda
--
- ENTRY(stack_start)
- 	.long init_thread_union+THREAD_SIZE
- 	.long __BOOT_DS
-diff -r 2d9aa53572e2 arch/i386/kernel/vmi.c
---- a/arch/i386/kernel/vmi.c	Tue Mar 06 19:01:08 2007 +1100
-+++ b/arch/i386/kernel/vmi.c	Tue Mar 06 19:01:47 2007 +1100
-@@ -525,8 +525,6 @@ void vmi_pmd_clear(pmd_t *pmd)
- #endif
- 
- #ifdef CONFIG_SMP
--extern void setup_pda(void);
--
- static void __devinit
- vmi_startup_ipi_hook(int phys_apicid, unsigned long start_eip,
- 		     unsigned long start_esp)
-@@ -555,8 +553,6 @@ vmi_startup_ipi_hook(int phys_apicid, un
- 	ap.gs = 0;
- 
- 	ap.eflags = 0;
--
--	setup_pda();
- 
- #ifdef CONFIG_X86_PAE
- 	/* efer should match BSP efer. */
+How 'bout my .config?
 
 
+-- 
+MST
