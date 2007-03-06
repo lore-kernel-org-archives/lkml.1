@@ -1,106 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965181AbXCFEgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933941AbXCFEok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965181AbXCFEgN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 23:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXCFEgN
+	id S933941AbXCFEok (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 23:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965784AbXCFEoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 23:36:13 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:61282 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbXCFEgK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 23:36:10 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=Poa/XsRSpmw5ZuFpUZ0j82JU5nlnODxvhvwmoDUANvL4GF6N78w8iHl/IJ+LmiCDC
-	G6dovjdOhlg+v/6+Pfg3w==
-Message-ID: <45ECEF85.2080503@google.com>
-Date: Mon, 05 Mar 2007 20:35:17 -0800
-From: Mathieu Desnoyers <compudj@google.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Martin J. Bligh" <mbligh@google.com>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Paul Mackerras <paulus@samba.org>, "Luck, Tony" <tony.luck@intel.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: Thread flags modified without set_thread_flag() (non atomically)
-References: <45E33EBD.6020603@google.com> <20070228220349.b42bf571.akpm@linux-foundation.org> <20070305144033.GG22829@bingen.suse.de>
-In-Reply-To: <20070305144033.GG22829@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 23:44:39 -0500
+Received: from 1wt.eu ([62.212.114.60]:4953 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933941AbXCFEoj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 23:44:39 -0500
+Date: Tue, 6 Mar 2007 05:41:12 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Bill Davidsen <davidsen@tmr.com>, jos poortvliet <jos@mijnkamer.nl>,
+       ck@vds.kolivas.org, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free   interactive cpu scheduler
+Message-ID: <20070306044112.GA10707@1wt.eu>
+References: <200703041800.53360.kernel@kolivas.org> <200703041708.54953.jos@mijnkamer.nl> <45ECA239.5000306@tmr.com> <200703061118.44616.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703061118.44616.kernel@kolivas.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> It does seem risky.  Perhaps it is a micro-optimisation which utilises
->> knowledge that this thread_struct cannot be looked up via any path in this
->> context.
->>
->> Or perhaps it is a bug.  Andi, can you please comment?
->>     
->
-> On flush_thread nobody else can mess with the thread, so yes it's a micro
-> optimization.
->
->   
-Hi Andi,
+On Tue, Mar 06, 2007 at 11:18:44AM +1100, Con Kolivas wrote:
+> On Tuesday 06 March 2007 10:05, Bill Davidsen wrote:
+> > jos poortvliet wrote:
+> > > Well, imho his current staircase scheduler already does a better job
+> > > compared to mainline, but it won't make it in (or at least, it's not
+> > > likely). So we can hope this WILL make it into mainline, but I wouldn't
+> > > count on it.
+> >
+> > Wrong problem, what is really needed is to get CPU scheduler choice into
+> > mainline, just as i/o scheduler finally did. Con has noted that for some
+> > loads this will present suboptimal performance, as will his -ck patches,
+> > as will the default scheduler. Instead of trying to make ANY one size
+> > fit all, we should have a means to select, at runtime, between any of
+> > the schedulers, and preferably to define an interface by which a user
+> > can insert a new scheduler in the kernel (compile in, I don't mean
+> > plugable) with clear and well defined rules for how that can be done.
+> 
+> Been there, done that. Wli wrote the infrastructure for plugsched; I took his 
+> code and got it booting and ported 3 or so different scheduler designs. It 
+> allowed you to build as few or as many different schedulers into the kernel 
+> and either boot the only one you built into your kernel, or choose a 
+> scheduler at boot time. That code got permavetoed by both Ingo and Linus. 
+> After that I gave up on that code and handed it over to Peter Williams who 
+> still maintains it. So please note that I pushed the plugsched barrow 
+> previously and still don't think it's a bad idea, but the maintainers think 
+> it's the wrong approach.
 
-Here is what I think would be a counter example :
+In a way, I think they are right. Let me explain. Pluggable schedulers are
+useful when you want to switch away from the default one. This is very useful
+during development of a new scheduler, as well as when you're not satisfied
+with the default scheduler. Having this feature will incitate many people to
+develop their own scheduler for their very specific workload, and nothing
+generic. It's a bit what happened after all : you, Peter, Nick, and Mike
+have worked a lot trying to provide alternative solutions.
 
-If, at the same time, we have, on x86_64 :
+But when you think about it, there are other OSes which have only one scheduler
+and which behave very well with tens of thousands of tasks and scale very well
+with lots of CPUs (eg: solaris). So there is a real challenge here to try to
+provide something at least as good and universal because we know that it can
+exist. And this is what you finally did : work on a scheduler which ought to be
+good with any workload.
 
-parent process executing :
-sys_ptrace()
-  (lock_kernel())
-  (ptrace_get_task_struct(pid))
-  arch_ptrace()
-    ptrace_detach()
-      ptrace_disable(child);
-        clear_singlestep(child);
-          clear_tsk_thread_flag(child, TIF_SINGLESTEP);
-          (which clears the TIF_SINGLESTEP  flag atomically from a 
-different process)
-  (put_task_struct(child))
-  (unlock_kernel())
+Then, when we have a generic, good enough scheduler for most situations, I
+think that it could be good to get the plugsched for very specific usages.
+People working in HPC may prefer to allocate ressource differently for
+instance. There may also be people refusing to mix tasks from different users
+on two different siblings of one CPU for security reasons, etc... All those
+would justify a plugable scheduler. But it should not be an excuse to provide
+a set of bad schedulers and no good one.
 
-And at the same time, in the child process :
-sys_execve()
-  do_execve()
-    search_binary_handler()
-      load_elf_binary()
-        flush_old_exec()
-          flush_thread()
-            doing a non-atomic thread flag update
+The CPU scheduler is often compared to the I/O schedulers while in fact this
+is a completely different story. The I/O schedulers are needed because the
+hardware and filesystems may lead to very different behaviours, and the
+workload may vary a lot (eg: news server, ftp server, cache, desktop, real
+time streaming, ...). But at least, the default I/O scheduler was good enough
+for most usages, and alternative ones are here to provide optimal solutions
+to specific needs.
 
-Is there any protection mechanism that would protect from this race 
-condition
-that I have missed ?
-
->>> And about this specific flush_thread, I am puzzled about the t->flags ^= 
->>> (_TIF_ABI_PENDING | _TIF_IA32); line. The XOR will clearly flip the 
->>> _TIF_ABI_PENDING bit to 0, and very likely set _TIF_IA32 to the opposite 
->>> of its current value. Why does this change need to be written atomically 
->>> (can other threads play with these flags ?) ?
->>>
->>>       
->> Don't know.
->>     
->
-> iirc it came from DaveM originally. He just likes to write things in 
-> comp^wclever ways :0) It's just a little shorter.
->
->   
->> No, I don't immediately see anything in the flush_old_exec() code path
->> which tells us that nobody else can look up this thread_info (or be holding
->> a ref to it) in this context.
->>     
->
-> Normally the process flags atomicity should only matter with signals;
-> i don't think you can send a signal to a process being in exec this way.
->
-> -Andi
->   
+Regards,
+Willy
 
