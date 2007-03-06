@@ -1,34 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030459AbXCFJht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030468AbXCFJil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030459AbXCFJht (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:37:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030463AbXCFJhs
+	id S1030468AbXCFJil (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030463AbXCFJil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:37:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58890 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030459AbXCFJhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:37:47 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1173165927.17134.5.camel@roc-desktop> 
-References: <1173165927.17134.5.camel@roc-desktop> 
-To: bryan.wu@analog.com
-Cc: roland@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] utrace: nommu fixup support utrace 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 06 Mar 2007 09:37:38 +0000
-Message-ID: <17048.1173173858@redhat.com>
+	Tue, 6 Mar 2007 04:38:41 -0500
+Received: from smtp.ono.com ([62.42.230.12]:10295 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030469AbXCFJik convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:38:40 -0500
+Date: Tue, 6 Mar 2007 10:38:23 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm2
+Message-ID: <20070306103823.640e08e0@werewolf-wl>
+In-Reply-To: <20070306011524.b0945a42.akpm@linux-foundation.org>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+	<20070306100623.770b9dc9@werewolf-wl>
+	<20070306011524.b0945a42.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.8.0cvs15 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu, Bryan <bryan.wu@analog.com> wrote:
+On Tue, 6 Mar 2007 01:15:24 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> When adding utrace support to blackfin architecture, I found a compiling
-> error in nommu related utrace stuff. Then this little patch will fix
-> this for nommu arch utrace.
+> On Tue, 6 Mar 2007 10:06:23 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
+> 
+> > On Tue, 6 Mar 2007 00:44:08 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > 
+> > > Temporarily at
+> > > 
+> > >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
+> > > 
+> > 
+> > Does this include a fix for the NFS problem ?
+> 
+> Which NFS problem?
+> 
 
-You really don't want to do it like this.  This prevents ELF shared libraries
-from being shared at all if UTRACE is enabled.
+http://marc.theaimsgroup.com/?l=linux-kernel&m=117305359825926&w=2
 
-David
+> > BTW, I have in my kernel a patch like this below, isn't it needed ?
+> > Original thread:
+> > 
+> > http://marc.theaimsgroup.com/?l=linux-kernel&m=117189051227292&w=2
+> 
+> That patch caused additional failures.  But I tossed out the git-block tree,
+> so that problem should no longer be there.
+> 
+
+OK, thanks.
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.20-jam01 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #2 SMP PREEMPT
