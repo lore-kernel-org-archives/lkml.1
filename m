@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbXCFAZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXCFA0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932794AbXCFAZy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932809AbXCFAZy
+	id S932765AbXCFA0O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:26:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932806AbXCFA0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:25:54 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53529
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932794AbXCFAZx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:25:53 -0500
-Date: Mon, 05 Mar 2007 16:25:51 -0800 (PST)
-Message-Id: <20070305.162551.41660347.davem@davemloft.net>
-To: shemminger@linux-foundation.org
-Cc: andi@firstfloor.org, jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070305155714.3abe1b5e@freekitty>
-References: <20070226143127.5c74bec9@freekitty>
-	<p73slcnawh3.fsf@bingen.suse.de>
-	<20070305155714.3abe1b5e@freekitty>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 19:26:14 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42758 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932765AbXCFA0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:26:11 -0500
+Date: Mon, 5 Mar 2007 16:25:36 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch v2] epoll use a single inode ...
+In-Reply-To: <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Date: Mon, 5 Mar 2007 15:57:14 -0800
 
-> I tried the code from Hacker's Delight.
-> It is cool, but performance is CPU (and data) dependent:
+
+On Mon, 5 Mar 2007, Davide Libenzi wrote:
+
+> On Mon, 5 Mar 2007, Linus Torvalds wrote:
+> > 
+> > It's much better to do something like
+> > 
+> > 	static unsigned int epoll_inode;
+> > 
+> > 	this.len = sprintf(name, "[%u]", ++epoll_inode);
+> > 
+> > if you just need some pseudo-unique name to distinguish two epoll things 
+> > from each other (vs from a dup'ed fd).
 > 
-> Average # of usecs per operation:
+> Heh, this is what Al was saying ;)
+> I'm fine with that, but how about counter cycles (going back to zero)? 
+> Should we care to handle them correctly? 
 
-Interesting results.
+Since this is not actually *used* for anything but showing the fd's in 
+/proc/<pid>/fd/ etc, no. In fact, an integer will wrap a *lot* less than a 
+kernel data structure will be re-used, so even with the simple "wraps 
+every 4G uses", you're still better off.
 
-The problem with these algorithms that tradoff one or more
-multiplies in order to avoid a divide is that they don't
-give anything and often lose when both multiplies and
-divides are emulated in software.
+IOW, if the thing actually _mattered_ we should use some bitmap allocator 
+or similar (eg pidmaps etc), but with something where the only reason 
+really is as a visible indicator of difference for a user that happens to 
+look, simple-and-stupid is better.
 
-This is particularly true in this cube-root case from Hacker's
-Delight, because it's using 3 multiplies per iteration in place of one
-divide per iteration.
-
-Actually, sorry, there is only one real multiply in there since the
-other two can be computed using addition and shifts.
-
-Another thing is that the non-Hacker's Delight version iterates
-differently for different input values, so the input value space is
-very important to consider when comparing these two pieces of code.
+		Linus
