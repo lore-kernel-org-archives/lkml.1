@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXCFTc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933286AbXCFTmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933262AbXCFTc2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 14:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933287AbXCFTc2
+	id S933286AbXCFTmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 14:42:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933299AbXCFTmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 14:32:28 -0500
-Received: from mail.tnnet.fi ([217.112.240.26]:49006 "EHLO mail.tnnet.fi"
+	Tue, 6 Mar 2007 14:42:15 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:47301 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933262AbXCFTc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 14:32:27 -0500
-Message-ID: <45EDC1C3.548EB915@users.sourceforge.net>
-Date: Tue, 06 Mar 2007 21:32:19 +0200
-From: Jari Ruusu <jariruusu@users.sourceforge.net>
-To: markus reichelt <ml@mareichelt.de>
-Cc: emin ak <eminak71@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: encrypting jffs2 filesystem with DM-crypt or what else?
-References: <2cf1ee820703060405l1cd30bf1o896910341bb8f293@mail.gmail.com> <20070306130524.GG4168@tatooine.rebelbase.local>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S933286AbXCFTmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 14:42:14 -0500
+Date: Tue, 6 Mar 2007 20:41:23 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Bill Davidsen <davidsen@tmr.com>
+cc: Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: Raid 10 Problems?
+In-Reply-To: <45ED9B5B.2030806@tmr.com>
+Message-ID: <Pine.LNX.4.61.0703062040510.17131@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0703050430280.23714@yvahk01.tjqt.qr>
+ <382470.25191.qm@web52508.mail.yahoo.com> <45ED9B5B.2030806@tmr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-markus reichelt wrote:
-> * emin ak <eminak71@gmail.com> wrote:
-> > I need to encrypt a jffs2/mtd formatted flash filesystem for an
-> > embedded device, Normally using a loopback interface (cryptoloop,
-> > DM-crypt or loop-aes) solves this problem but they are not well
-> > known on journalling file systems (like jffs2) because of cached
-> > write etc.. Also I could'nt find any guideline for encrypting
-> > fikesystem on a flash.
-> 
-> device-backed loops are ok, file-based once aren't. The cache issue
-> you talk about concerns writing caches of HDDs f.e., I haven't seen a
-> flash device with writing cache. However, in most cases writing cache
-> can be turned off.
 
-Flash devices behave differently than hard disks. If I remember correcly,
-bits can be flipped in one direction (set or reset) without erasing whole
-block, but flipping a bit in reverse direction requires that whole block be
-erased first.
+>> > -b internal -- seems like a good idea to speed up
+>> > resynchronization.
+>> 
+>> I'm trying to figure out what the default is. 
+>> >  -e 1.0 -- I wonder why the new superblock format
+>> > is
+>> > not default in mdadm (0.90 is still used).
+>> > 
+>> 
+>> Looks interesting for big arrays but not sure it's
+>> worth starting over for. Trying to get through a 2
+>> hour sync using 4 500gb sata 2 drives.
+>
+> That's exactly why you want the bitmap. Fortunately you can add it after the
+> array is created. Now the bad news, you should read and understand the meaning
+> of the "far" layout. Part of the information is in the mdadm man page under -p,
+> some in the md man page. Use of "far" layout will effect the performance of the
+> array, the balance of read vs. write performance, and (maybe) the reliability.
 
-If jffs2 takes advantage of this one-direction-bit-flipping, then adding
-encryption layer between jffs2 and flash device makes it completely
-different game that is guaranteed to require lots of flash block erases that
-wears down the device much faster than expected.
+So to keep it simple, don't use far unless you have a reason to.
 
+
+Jan
 -- 
-Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
