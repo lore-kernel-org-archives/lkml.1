@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965917AbXCFPMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965158AbXCFPQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965917AbXCFPMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965924AbXCFPMx
+	id S965158AbXCFPQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:16:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965174AbXCFPQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:12:53 -0500
-Received: from [212.12.190.221] ([212.12.190.221]:32912 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965917AbXCFPMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:12:52 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Subject: Re: [ck] Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Date: Tue, 6 Mar 2007 18:15:16 +0300
-User-Agent: KMail/1.5
-Cc: Markus =?iso-8859-1?q?T=F6rnqvist?= <mjt@nysv.org>,
-       ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>
-References: <200703042335.26785.a1426z@gawab.com> <200703060910.06343.kernel@kolivas.org> <1173170554.5835.385.camel@frg-rhel40-em64t-03>
-In-Reply-To: <1173170554.5835.385.camel@frg-rhel40-em64t-03>
+	Tue, 6 Mar 2007 10:16:28 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:40195 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965158AbXCFPQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 10:16:27 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: "Vladimir B. Savkin" <master@sectorb.msk.ru>
+Subject: Re: Packet timestamps (was: Re: Network performance degradation from 2.6.11.12 to 2.6.16.20)
+Date: Tue, 6 Mar 2007 16:16:24 +0100
+User-Agent: KMail/1.9.5
+Cc: netdev@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       David Miller <davem@davemloft.net>, hawk@diku.dk,
+       harry@atmos.washington.edu, linux-kernel@vger.kernel.org,
+       Rick Jones <rick.jones2@hp.com>
+References: <200609181850.22851.ak@suse.de> <200703061538.45049.dada1@cosmosbay.com> <20070306144315.GA9036@tentacle.sectorb.msk.ru>
+In-Reply-To: <20070306144315.GA9036@tentacle.sectorb.msk.ru>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="koi8-r"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200703061815.16702.a1426z@gawab.com>
+Content-Disposition: inline
+Message-Id: <200703061616.24959.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xavier Bestel wrote:
-> On Tue, 2007-03-06 at 09:10 +1100, Con Kolivas wrote:
-> > Hah I just wish gears would go away. If I get hardware where it runs at
-> > just the right speed it looks like it doesn't move at all. On other
-> > hardware the wheels go backwards and forwards where the screen refresh
-> > rate is just perfectly a factor of the frames per second (or something
-> > like that).
-> >
-> > This is not a cpu scheduler test and you're inferring that there are cpu
-> > scheduling artefacts based on an application that has bottlenecks at
-> > different places depending on the hardware combination.
+On Tuesday 06 March 2007 15:43, Vladimir B. Savkin wrote:
+> On Tue, Mar 06, 2007 at 03:38:44PM +0100, Eric Dumazet wrote:
+> > 2) "accurate_timestamps" is misleading.
+> > 	Should be "disable_timestamps"
 >
-> I'd add that Xorg has its own scheduler (for X11 operations, of course),
-> that has its own quirks, and chances are that it is the one you're
-> testing with glxgears. And as Con said, as long as glxgears does more
-> FPS than your screen refresh rate, its flickering its completely
-> meaningless: it doesn't even attempt to sync with vblank. Al, you'd
-> better try with Quake3 or Nexuiz, or even Blender if you want to test 3D
-> interactivity under load.
+> Not, if default is 1, as in my patch.
 
-Actually, games aren't really usefull to evaluate scheduler performance, due 
-to their bursty nature.
+Yes I saw this. I should write more words next time :)
 
-OTOH, gears runs full throttle, including any of its bottlenecks. In fact, 
-it's the bottlenecks that add to its realism.  It exposes underlying 
-scheduler hickups visually, unless buffered by the display-driver, in which 
-case you just use the vesa-driver to be sure.
+Full explanation:
+----------------------
 
-If gears starts to flicker on you, just slow it down with a cpu hog like:
+If your tunable is named "accurate_timestamps" then a 0 value would mean :
 
-	# while :; do :; done &
+Use a low precision timestamp (based on xtime for example) instead of a full 
+resolution...
 
-Add as many hogs as you need to make the hickups visible.
+This is not what your patch does (while it could do that, but beware that 
+net-2.6.22 includes now a ktime_t timestamping)
 
-Again, these hickups are only visible when using uneven nice+ levels.
+So :
+------
 
-BTW, another way to show these hickups would be through some kind of a 
-cpu/proc timing-tracer.  Do we have something like that?
+It would be better to name the tunable "disable_timestamps", default 0 of 
+course.... 
+It would better describe what your patch is actually doing : Even if a tcpdump 
+is running (so asking for timestamps), it wont have them because the sysctl 
+disabled them.
 
-
-Thanks!
-
---
-Al
+Thank you
 
