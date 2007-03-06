@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964976AbXCFNUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964981AbXCFNVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964976AbXCFNUv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:20:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030493AbXCFNUv
+	id S964981AbXCFNVz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964989AbXCFNVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:20:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53696 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964976AbXCFNUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:20:50 -0500
-Date: Tue, 6 Mar 2007 14:20:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 1/8] Remove cpu_gdt_table: use boot_gdt_table until migration to per-cpu
-Message-ID: <20070306132004.GD9031@elte.hu>
-References: <1173184747.4644.23.camel@localhost.localdomain> <1173185592.4644.28.camel@localhost.localdomain>
+	Tue, 6 Mar 2007 08:21:54 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:38291 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964981AbXCFNVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 08:21:53 -0500
+Subject: Re: [2.6.21 patch] unconditionally enable SYSFS_DEPRECATED
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Greg KH <greg@kroah.com>
+Cc: Matt Mackall <mpm@selenic.com>, Adrian Bunk <bunk@stusta.de>,
+       Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+In-Reply-To: <20070306015638.GA23756@kroah.com>
+References: <20070304220857.GH23311@waste.org>
+	 <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org>
+	 <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org>
+	 <20070305185813.GA31465@kroah.com> <20070305234052.GR3441@stusta.de>
+	 <20070306000722.GA11436@kroah.com> <20070306013020.GN23311@waste.org>
+	 <20070306015638.GA23756@kroah.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-15IQDM44rstVXjWudRV8"
+Date: Tue, 06 Mar 2007 14:20:50 +0100
+Message-Id: <1173187250.3403.7.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173185592.4644.28.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+--=-15IQDM44rstVXjWudRV8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> +/* The boot Global Descriptor Table: after boot we allocate a per-cpu copy */
->  	.align L1_CACHE_BYTES
->  ENTRY(boot_gdt_table)
-> -	.fill GDT_ENTRY_BOOT_CS,8,0
-> -	.quad 0x00cf9a000000ffff	/* kernel 4GB code at 0x00000000 */
-> -	.quad 0x00cf92000000ffff	/* kernel 4GB data at 0x00000000 */
-> -
-> -/*
-> - * The Global Descriptor Table contains 28 quadwords, per-CPU.
-> - */
-> -	.align L1_CACHE_BYTES
-> -ENTRY(cpu_gdt_table)
->  	.quad 0x0000000000000000	/* NULL descriptor */
->  	.quad 0x0000000000000000	/* 0x0b reserved */
-> -	.quad 0x0000000000000000	/* 0x13 reserved */
-> -	.quad 0x0000000000000000	/* 0x1b reserved */
-> +	.quad 0x00cf9a000000ffff	/* boot: 4GB code at 0x00000000 */
-> +	.quad 0x00cf92000000ffff	/* boot: 4GB data at 0x00000000 */
->  	.quad 0x0000000000000000	/* 0x20 unused */
->  	.quad 0x0000000000000000	/* 0x28 unused */
->  	.quad 0x0000000000000000	/* 0x33 TLS entry 1 */
+On Mon, 2007-03-05 at 17:56 -0800, Greg KH wrote:
 
-actually, the reason for the small boot GDT was that some systems 
-wouldnt even boot with a larger GDT. (there was some BIOS interaction, 
-forgot what it was - iirc it was mach-visws and also some other older 
-box)
+> Theory F:  It broke because you are using NetworkManager for your
+> network devices and the patches that fix this have not made it into a
+> real release?
+>=20
+> I'm just guessing, but does anyone who is having this problem, NOT using
+> NetworkManager?
+>=20
+> I'm running an old version of HAL just fine, but I'm not using
+> NetworkManager here.
 
-the 'simplification' you do here is actually how Linux worked before it 
-was fixed for those systems.
+Greg, HAL itself isn't the problem. The problem is that older versions
+of HAL ignore all network devices when this option is not set and thus
+network manager can't pick them up.
 
-so i'd be quite nervous to touch this area of the GDT code. (I'd support 
-a renaming though, gdt_table is indeed ugly.)
+johannes
 
-	Ingo
+--=-15IQDM44rstVXjWudRV8
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF7Wqy/ETPhpq3jKURAmEZAKCE3mEn0TqexYxE2hmmdxG99XgqKwCgpetD
+p8rd51qaqJYQZRMK+qUJK60=
+=mau2
+-----END PGP SIGNATURE-----
+
+--=-15IQDM44rstVXjWudRV8--
+
