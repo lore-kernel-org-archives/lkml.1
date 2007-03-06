@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbXCFAU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbXCFAZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbXCFAU2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbXCFAU2
+	id S932601AbXCFAZR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:25:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932765AbXCFAZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:20:28 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:37917 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752568AbXCFAU1 (ORCPT
+	Mon, 5 Mar 2007 19:25:17 -0500
+Received: from paragon.brong.net ([66.232.154.163]:59411 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932601AbXCFAZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:20:27 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 5 Mar 2007 16:20:26 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch v2] epoll use a single inode ...
-In-Reply-To: <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0703051619170.4907@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
- <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 5 Mar 2007 19:25:15 -0500
+Date: Tue, 6 Mar 2007 11:24:57 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com, netdev@vger.kernel.org,
+       yi.zhu@intel.com, jketreno@linux.intel.com, akpm@osdl.org
+Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
+Message-ID: <20070306002457.GA7078@brong.net>
+References: <20070304220857.GH23311@waste.org> <20070305011625.GA7681@kroah.com> <20070305064229.GJ23311@waste.org> <20070305070248.GA30699@kroah.com> <20070305071325.GK23311@waste.org> <20070305154609.GA3626@irc.pl> <20070305211425.GR16722@waste.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070305211425.GR16722@waste.org>
+Organization: brong.net
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Mar 2007, Davide Libenzi wrote:
-
-> On Mon, 5 Mar 2007, Linus Torvalds wrote:
+On Mon, Mar 05, 2007 at 03:14:25PM -0600, Matt Mackall wrote:
+> On Mon, Mar 05, 2007 at 04:46:09PM +0100, Tomasz Torcz wrote:
+> > > That's not the point. The point is that Debian/unstable as of _this
+> > > morning_ doesn't work. For reference, I'm running both the latest
+> > > releases of both hal (0.5.8.1-6.1) and network-manager (0.6.4-6). And
+> > > there are people telling me I need a copy of HAL out of git that
+> > > hasn't even been released for Debian to package. Debian isn't the
+> > > problem here.
+> > 
+> >   hal 0.5.9-rc1 (released, not from git) should work. It will be
+> > problably released soon and picked by sane distributions. Debian is very
+> > irritating corner case.
 > 
-> > On Mon, 5 Mar 2007, Davide Libenzi wrote:
-> > > @@ -763,15 +767,17 @@
-> > >  	 * using the inode number.
-> > >  	 */
-> > >  	error = -ENOMEM;
-> > > -	sprintf(name, "[%lu]", inode->i_ino);
-> > >  	this.name = name;
-> > > -	this.len = strlen(name);
-> > > -	this.hash = inode->i_ino;
-> > > +	this.len = sprintf(name, "[%p]", ep);
-> > > +	this.hash = 0;
-> > 
-> > Please don't expose kernel pointers to user space.
-> > 
-> > It's much better to do something like
-> > 
-> > 	static unsigned int epoll_inode;
-> > 
-> > 	this.len = sprintf(name, "[%u]", ++epoll_inode);
-> > 
-> > if you just need some pseudo-unique name to distinguish two epoll things 
-> > from each other (vs from a dup'ed fd).
+> Presumably the -rc1 stands for "release candidate". Which means "not
+> yet released". And when did it show up? 04-Mar-2007 at 18:31. That's
+> right, YESTERDAY. Almost a full month after Greg's commit.
 > 
-> Heh, this is what Al was saying ;)
-> I'm fine with that, but how about counter cycles (going back to zero)? 
-> Should we care to handle them correctly? 
+> For the last time, DEBIAN IS NOT THE PROBLEM.
 
-Maybe a [TID.FD] format?
+Can I please second this (having been burned by hell that was udev of
+the 0.5ish era) - Greg, please try to make changes in a cross-compatible
+way so that versions of userspace and kernel are not so closely
+dependant on tracking each other.  The whole 2.6.8 -> 2.6.12 series of
+kernels and associated udevs are fraught with race conditions where
+upgrading one but not the other will leave your machine unbootable.
 
+I read the "manifesto" for udev showing how crap devfs was, it was
+broken, it could never be fixed etc - yet my experience was that devfs
+systems "just worked"[tm] and udev was very dangerous.  My thinking is
+going to be tarnished by that for a while and my mental image of udev
+is "unreliable POS".  I'm hoping enough good experiences with udev might
+make me feel less scared whenever I have to deal with it.
 
+Similarly, I'm hoping I don't have to think "oh shit, will this break
+boot" every time I upgrade either a kernel or hal version for the next
+year, because it would really suck to do that all over again.  It
+contributes to the meme that linux is unreliable and perpetually
+unstable.
 
-- Davide
+Regards,
 
-
+Bron.
