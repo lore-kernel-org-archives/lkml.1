@@ -1,63 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030349AbXCFV6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030269AbXCFWB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030349AbXCFV6i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030334AbXCFV6i
+	id S1030269AbXCFWB1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 17:01:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030289AbXCFWB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:58:38 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55341
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1030327AbXCFV6h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:58:37 -0500
-Date: Tue, 06 Mar 2007 13:58:34 -0800 (PST)
-Message-Id: <20070306.135834.26100913.davem@davemloft.net>
-To: shemminger@linux-foundation.org
-Cc: rkuhn@e18.physik.tu-muenchen.de, andi@firstfloor.org, dada1@cosmosbay.com,
-       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070306102941.32471d57@freekitty>
-References: <20070306144529.GA2004@one.firstfloor.org>
-	<84C47260-4B57-4568-8197-58F438A6F737@e18.physik.tu-muenchen.de>
-	<20070306102941.32471d57@freekitty>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 6 Mar 2007 17:01:27 -0500
+Received: from 1wt.eu ([62.212.114.60]:4971 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030269AbXCFWB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 17:01:26 -0500
+Date: Tue, 6 Mar 2007 22:54:51 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Con Kolivas <kernel@kolivas.org>, jos poortvliet <jos@mijnkamer.nl>,
+       ck@vds.kolivas.org, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free   interactive cpu scheduler
+Message-ID: <20070306215451.GB256@1wt.eu>
+References: <200703041800.53360.kernel@kolivas.org> <200703041708.54953.jos@mijnkamer.nl> <45ECA239.5000306@tmr.com> <200703061118.44616.kernel@kolivas.org> <20070306044112.GA10707@1wt.eu> <45EDDF21.7090602@tmr.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EDDF21.7090602@tmr.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Date: Tue, 6 Mar 2007 10:29:41 -0800
+Hi Bill,
 
-> /* calculate the cubic root of x using Newton-Raphson */
-> static uint32_t ncubic(uint64_t a)
-> {
-> 	uint64_t x;
-> 
-> 	/* Initial estimate is based on:
-> 	 * cbrt(x) = exp(log(x) / 3)
-> 	 */
-> 	x = 1u << (fls64(a)/3);
-> 
-> 	/* Converges in 3 iterations to > 32 bits */
-> 
-> 	x = (2 * x + div64_64(a, x*x)) / 3;
-> 	x = (2 * x + div64_64(a, x*x)) / 3;
-> 	x = (2 * x + div64_64(a, x*x)) / 3;
-> 
-> 	return x;
-> }
+On Tue, Mar 06, 2007 at 04:37:37PM -0500, Bill Davidsen wrote:
+(...)
+> The point is that no one CPU scheduler will satisfy the policy needs of 
+> all users, any more than one i/o scheduler does so. We have realtime 
+> scheduling, preempt both voluntary and involuntary, why should we not 
+> have multiple CPU schedulers. If Linus has an objection to plugable 
+> schedulers, then let's identify what the problem is and address it. If 
+> that means one scheduler or the other must be compiled in, or all 
+> compiled in and selected, so be it.
 
-Indeed that will be the fastest variant for cpus with hw
-integer division.
+I'm not in Linus' head, but I think that he wanted the recurrent scheduler
+problems to be addressed first for most users before going further. Too
+much choice is often dangerous for quality. For instance, look at all the
+netfilter modules. Many of them were completely bogus in their early stages,
+and some of them even do mostly the same jobs, and many of them have never
+left the "extra" stage. Choice is good to detect users' needs, it's good
+for global evolution, but it's not as good when you want to have something
+good enough for most people.
 
-I did a quick sparc64 port, here is what I got:
+> >Then, when we have a generic, good enough scheduler for most situations, I
+> >think that it could be good to get the plugsched for very specific usages.
+> >People working in HPC may prefer to allocate ressource differently for
+> >instance. There may also be people refusing to mix tasks from different 
+> >users
+> >on two different siblings of one CPU for security reasons, etc... All those
+> >would justify a plugable scheduler. But it should not be an excuse to 
+> >provide
+> >a set of bad schedulers and no good one.
+> >
+> >  
+> Unless you force the the definition of "good" to "what the default 
+> scheduler does," there can be no "one" good one. Choice is good, no one 
+> is calling for bizarre niche implementations, but we have at minimum 
+> three CPU schedulers which as "best" for a large number of users. 
+> (current default, and Con's fair and interactive flavors, before you ask).
 
-Function     clocks  mean(us) max(us)  std(us)  total error
-ocubic          529     0.35    15.16     0.66 545101
-ncubic          498     0.33    12.83     0.36 576263
-acbrt           427     0.28    11.04     0.33 547562
-hcbrt           393     0.26    10.18     0.47 2410
+By "good", I mean a scheduler that is not trivially DoSable, and which
+does not cause unexpected long pauses to some processes without any reason
+(processes which cannot get any time slice for tens of seconds, or ssh
+daemons which freeze under system load, to the point of totally preventing
+remote administration past 50% CPU usage on some systems).
+
+> >The CPU scheduler is often compared to the I/O schedulers while in fact 
+> >this
+> >is a completely different story. The I/O schedulers are needed because the
+> >hardware and filesystems may lead to very different behaviours, and the
+> >workload may vary a lot (eg: news server, ftp server, cache, desktop, real
+> >time streaming, ...). But at least, the default I/O scheduler was good 
+> >enough
+> >for most usages, and alternative ones are here to provide optimal solutions
+> >to specific needs.
+> And multiple schedulers are needed because the type of load, mix of 
+> loads, and admin preference all require decisions at the policy which 
+> can't be covered by a single solution. Or at least none of the existing 
+> solutions, and I think letting people tune the guts of scheduler policy 
+> is more dangerous than giving a selection of solutions. Linux has been 
+> about choice all along, I hope it's nearly time for a solution better 
+> than patches to be presented.
+
+There's a difference between CPU and I/O scheduler though. With the CPU
+scheduler, you've always had the choice to assign per-process priorities 
+with "nice". Don't get me wrong, I'm all for pluggable schedulers, as I'm
+an ever unsatisfied optimizer. It's just that I think it has been good to
+encourage people to focus on real issues before dispersing efforts on
+different needs. I hope that Con's work will eventually get merged and
+that the door will be opened towards pluggable schedulers.
+
+Best regards,
+Willy
+
