@@ -1,113 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933688AbXCFAmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933686AbXCFAn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933688AbXCFAmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933686AbXCFAmz
+	id S933686AbXCFAn1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933687AbXCFAn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:42:55 -0500
-Received: from mx2.suse.de ([195.135.220.15]:36528 "EHLO mx2.suse.de"
+	Mon, 5 Mar 2007 19:43:27 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:43163 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933683AbXCFAmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:42:53 -0500
-Date: Mon, 5 Mar 2007 16:41:17 -0800
-From: Greg KH <greg@kroah.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Theodore Tso <tytso@mit.edu>, Matt Mackall <mpm@selenic.com>,
-       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
-       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
-Subject: Re: [2.6.21 patch] unconditionally enable SYSFS_DEPRECATED
-Message-ID: <20070306004117.GB12566@kroah.com>
-References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org> <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org> <20070305185813.GA31465@kroah.com> <20070305234052.GR3441@stusta.de> <20070306000722.GA11436@kroah.com> <20070306003541.GT3441@stusta.de>
+	id S933686AbXCFAn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:43:26 -0500
+Date: Mon, 5 Mar 2007 16:38:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
+       Soeren Sonnenburg <kernel@nn7.de>, Len Brown <lenb@kernel.org>
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+In-Reply-To: <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> 
+ <20070305015040.GJ3441@stusta.de> <1173138193.24738.236.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070306003541.GT3441@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 01:35:41AM +0100, Adrian Bunk wrote:
-> On Mon, Mar 05, 2007 at 04:07:22PM -0800, Greg KH wrote:
-> > On Tue, Mar 06, 2007 at 12:40:52AM +0100, Adrian Bunk wrote:
-> > > On Mon, Mar 05, 2007 at 10:58:13AM -0800, Greg KH wrote:
-> > > > 
-> > > > Ok, how about the following patch.  Is it acceptable to everyone?
-> > > > 
-> > > > thanks,
-> > > > 
-> > > > greg k-h
-> > > > 
-> > > > ---
-> > > >  init/Kconfig |   13 +++++++++++--
-> > > >  1 file changed, 11 insertions(+), 2 deletions(-)
-> > > > 
-> > > > --- gregkh-2.6.orig/init/Kconfig
-> > > > +++ gregkh-2.6/init/Kconfig
-> > > > @@ -290,8 +290,17 @@ config SYSFS_DEPRECATED
-> > > >  	  that belong to a class, back into the /sys/class heirachy, in
-> > > >  	  order to support older versions of udev.
-> > > >  
-> > > > -	  If you are using a distro that was released in 2006 or later,
-> > > > -	  it should be safe to say N here.
-> > > > +	  If you are using an OpenSuSE, Gentoo, Ubuntu, or Fedora
-> > > > +	  release from 2007 or later, it should be safe to say N here.
-> > > > +
-> > > > +	  If you are using Debian or other distros that are slow to
-> > > > +	  update HAL, please say Y here.
-> > > >...
+
+
+On Mon, 5 Mar 2007, Linus Torvalds wrote:
+> On Tue, 6 Mar 2007, Thomas Gleixner wrote:
 > > > 
-> > > The sane solution seems to be to enable SYSFS_DEPRECATED unconditionally 
-> > > for all users, and schedule it's removal for mid-2008 (or later).
-> > > 
-> > > 12 months after the first _release_ of a HAL that can live without seems 
-> > > to be the first time when we can consider getting rid of it, since all 
-> > > distributions with at least one release a year should ship it by then.
-> > > 
-> > > Currently, SYSFS_DEPRECATED is only a trap for users.
+> > > Subject    : macbook pro suspend to ram broken  (clockevents)
+> > > References : http://lkml.org/lkml/2007/3/4/110
+> > > Submitter  : Soeren Sonnenburg <kernel@nn7.de>
+> > > Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+> > >              commit e9e2cdb412412326c4827fc78ba27f410d837e6e
+> > > Status     : unknown
 > > 
-> > Huh?
-> > 
-> > No, again, I've been using this just fine for about 6 months now.
-> > 
-> > And what about all of the servers not using HAL/NetworkManager?
+> > I can reproduce this on my dual core VAIO. There are some issues:
 > 
-> On a server, it shouldn't harm.
-
-But if they wanted that option enabled?
-
-> > And what about all of the embedded systems not using either?
+> Yeah, I think I can too, on my dual-core Mac Mini. 
 > 
-> If it was much code, I would have sent a patch that allowed disabling it 
-> if EMBEDDED=y.
+> I'm not done with my bisection, but e9e2cdb4 is among the 28 commits left, 
+> so I'm pretty sure I'm hitting the same bug. I'll do a few more bootups to 
+> be 100% sure.
 
-It's not a code size issue.  In fact, if the option is enabled, like you
-have done, it builds more code into the kernel than before.
+Ok, it's in the last six candidates, so yeah, I'm pretty sure. I'll do a 
+final compile/boot cycle to verify, but if you don't hear from me, you can 
+pretty much assume that was it.
 
-> > So to not allow this to be turned off by people who might want to (we
-> > want this for OpenSuSE 10.3, and Fedora 7 also will want this, as will
-> > other distros released this year), is pretty heavy-handed.
-> > 
-> > It also will work in OpenSuSE 10.2 which is already released, and I
-> > think Fedora 6, but I've only limited experience with these.
-> > 
-> > Oh, and Gentoo works just fine, and has been for the past 6 months.
-> 
-> For most people, it simply doesn't matter whether SYSFS_DEPRECATED is 
-> on or off.
+Thomas, Ingo, I'd _really_ like to get -rc3 out there, but I'd like to cut 
+down the regression list a bit, and a number of them were about resume 
+from RAM, and this is probably it. So I'd *really* like to get this one 
+nailed, especially since the causing commit is known. Can you look at it 
+as a high-priority thing, please?
 
-Exactly.
+I don't see anything interesting in my logs.
 
-> But accidentally disabling SYSFS_DEPRECATED has proven to be a trap 
-> people sometimes fall into - and tracking them down to 
-> SYSFS_DEPRECATED=n sometimes takes some time.
+	..
+	Time: acpi_pm clocksource has been installed.
+	Real Time Clock Driver v1.12ac
+	hpet_acpi_add: no address or irqs in _CRS
+	..
 
-So how do I put up the warning flag any larger than I have?
+(I also see "Time: tsc clocksource has been installed." on some boots)
 
-I do not want this always enabled, that option is not acceptable to me,
-or to the zillions of people who are running a distro that this option
-works just fine on (see above list...)
+		Linus
 
-thanks,
-
-greg k-h
