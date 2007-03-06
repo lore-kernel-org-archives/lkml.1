@@ -1,107 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965920AbXCFQy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965940AbXCFQ5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965920AbXCFQy6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 11:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965940AbXCFQy5
+	id S965940AbXCFQ5I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 11:57:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965945AbXCFQ5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 11:54:57 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:35004 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965920AbXCFQy4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 11:54:56 -0500
-Date: Tue, 6 Mar 2007 08:47:51 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>, htejun@gmail.com
-Cc: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
-Message-Id: <20070306084751.b82a7b84.randy.dunlap@oracle.com>
-In-Reply-To: <45ED9390.3000308@ru.mvista.com>
-References: <20070111222627.66bb75ab.akpm@osdl.org>
-	<20070124135354.GI17836@stusta.de>
-	<45B76946.1070009@ru.mvista.com>
-	<45D756D7.4060106@ru.mvista.com>
-	<45D75853.1060607@ru.mvista.com>
-	<45E2DF13.9010200@ru.mvista.com>
-	<20070226092644.aea76b37.randy.dunlap@oracle.com>
-	<20070226211401.GC3810@kroah.com>
-	<45ED9390.3000308@ru.mvista.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 6 Mar 2007 11:57:08 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47342 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965940AbXCFQ5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 11:57:05 -0500
+Date: Tue, 6 Mar 2007 08:52:32 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Ingo Molnar <mingo@elte.hu>, "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Jeff Garzik <jgarzik@pobox.com>, Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: SATA resume slowness, e1000 MSI warning
+In-Reply-To: <1173198401.24738.340.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0703060845480.5963@woody.linux-foundation.org>
+References: <20070225175559.GC12392@stusta.de>  <20070227100202.GV3822@kernel.dk>
+ <20070227102109.GG6745@elf.ucw.cz>  <20070227103021.GA2250@kernel.dk>
+ <20070227103407.GA17819@elte.hu>  <20070227105922.GD2250@kernel.dk>
+ <20070227111515.GA4271@kernel.dk>  <20070301093450.GA8508@elte.hu>
+ <20070302100704.GB2293@elf.ucw.cz>  <20070305084257.GA4464@mellanox.co.il>
+  <20070305101120.GA23032@elte.hu> <1173198401.24738.340.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 Mar 2007 19:15:12 +0300 Sergei Shtylyov wrote:
 
-> Hello.
-> 
-> Greg KH wrote:
-> 
-> >>>>>>>3x59x-fix-pci-resource-management.patch causes the following compile 
-> >>>>>>>error with CONFIG_PCI=n:
-> 
-> >>>>>>><--  snip  -->
-> 
-> >>>>>>>...
-> >>>>>>>  CC      drivers/net/3c59x.o
-> >>>>>>>/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: 
-> >>>>>>>In function 'vortex_init_one':
-> >>>>>>>/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: 
-> >>>>>>>error: implicit declaration of function 'pci_request_regions'
-> >>>>>>>/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: 
-> >>>>>>>error: implicit declaration of function 'pci_release_regions'
-> >>>>>>>make[3]: *** [drivers/net/3c59x.o] Error 1
-> 
-> >>>>>>   Grr, at at the same time it's happy with pci_enable_device().
-> >>>>>>   I'd say the problem is in <linux/pci.h>,  not in the patch.
-> 
-> >>>>>   Has there been any patch to fix the "unbalanced" 
-> >>>>>pci_{request|release}_regions() declarations? Am I suposed to create 
-> >>>>>such?
-> 
-> >>>>   Alternatively, vortex_{init|remove_one() and struct pci_driver there 
-> >>>>could have been put under #ifdef CONFIG_PCI (good idea anyway -- should 
-> >>>>reduce driver size on non-PCI systems)...
-> 
-> >>>    I wonder if I may count on any feedback on this -- asking linux-pci now...
-> >>>    The issue is as follows: with my patch pci_{request|release}_regions() may 
-> >>>be called with CONFIG_PCI=n (probably, this never has been a issue before) but 
-> >>><linux/pci.h> don't have them declared in this case -- unlike 
-> >>>pci_enable_device() which is just empty for CONFIG_PCI=n.
-> >>>    Now, what kind of approach do I take:
-> 
-> >>>- a "fair one", so that pci_{request|release}_regions() get "balanced"
-> >>>   declarations in the header like pci_enable_device();
-> 
-> >>>- a "local one" (and even saving non-PCI kernel from needless bloat), i.e.
-> >>>   #ifdef out functions that are only meaningful with CONFIG_PCI=y)?
-> 
-> >>>    I'm leaning to the second now...
-> 
-> >>I'd prefer the fair one -- add stubs to include/linux/pci.h.
-> 
-> > Me too, please just send me a patch adding them to pci.h so you don't
-> > have to have #ifdefs in your .c code.
-> 
->     Erm, before I do that, could somebody explain what
-> 
-> #define HAVE_PCI_REQ_REGIONS 2
-> 
-> accompanying their declaration is for? I have't found any references to it in 
-> the source. Should I duplicate it for CONFIG_PCI=n case (I guess not)?
 
-I wouldn't since it's not used anywhere, but maybe Tejun could comment
-on it...
+On Tue, 6 Mar 2007, Thomas Gleixner wrote:
+> 
+> SATA has another nice feature. Somehow there is an interrupt pending on
+> the SATA controller, which comes in somewhere in the middle of resume.
+> If it happens before the SATA code resumed, the SATA code ignores the
+> interrupt and the interrupt is disabled due to "nobody cared", which in
+> turn prevents SATA to ever become functional again.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Jeff - that sounds like a SATA bug.
+
+If you have an interrupt handler registered, you'd better handle the 
+interrupt regardless of whether you think the hardware might be gone or 
+not.
+
+It's generally *not* ok to do
+
+	if (device_offline())
+		return IRQ_NONE;
+
+at the top of an interrupt handler. 
+
+Of course, if you think the hardware is supposed to be quiescent, then the 
+only thing you should do is generally just do the "shut up" operation (ie 
+read status, write it back or whatever). You must generally *not* try to 
+pass any data upwards (ie if the higher layers have told you to shut up, 
+you may need to handle the hardware, but you must not involve the higher 
+layers themselves any more, because they expect you to be quiet).
+
+And if you cannot do that because you need to resume in order to have the 
+status register mapped, then you need to have an "early_resume()" function 
+which gets called *before* interrupts are enabled. That's what 
+early-resume (and late-suspend) are designed for: doing things that happen 
+very early in the resume sequence before everything is up.
+
+And if you don't want to do any of these things (or are unable to, because 
+of some ordering constraint or bad design), then you simply need to 
+unregister and re-register the interrupt handler over sleep.
+
+> Any idea on that one ?
+
+Jeff, Auke, does this ring any bells?
+
+		Linus
