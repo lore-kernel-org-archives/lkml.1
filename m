@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965126AbXCFOpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965895AbXCFOpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965126AbXCFOpM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 09:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965889AbXCFOpH
+	id S965895AbXCFOpp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 09:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965896AbXCFOpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 09:45:07 -0500
-Received: from styx.suse.cz ([82.119.242.94]:42877 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965126AbXCFOpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 09:45:04 -0500
-Date: Tue, 6 Mar 2007 15:50:09 +0100
-From: Jan Kara <jack@suse.cz>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Mingming Cao <cmm@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, nscott@aconex.com,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070306145009.GB3661@duck.suse.cz>
-References: <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com> <20070305122742.GA11486@atrey.karlin.mff.cuni.cz> <45EC7773.7020603@us.ibm.com> <20070306072850.GA23081@infradead.org> <45ED7C59.4050508@redhat.com>
-MIME-Version: 1.0
+	Tue, 6 Mar 2007 09:45:44 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33192 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965094AbXCFOpd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 09:45:33 -0500
+Date: Tue, 6 Mar 2007 15:45:29 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support
+Message-ID: <20070306144529.GA2004@one.firstfloor.org>
+References: <20070223170527.4ca695b2@freekitty> <20070305155714.3abe1b5e@freekitty> <20070306133404.GA864@one.firstfloor.org> <200703061519.20346.dada1@cosmosbay.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45ED7C59.4050508@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200703061519.20346.dada1@cosmosbay.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 06-03-07 06:36:09, Ulrich Drepper wrote:
-> Christoph Hellwig wrote:
-> > fallocate with the whence argument and flags is already quite complicated,
-> > I'd rather have another call for placement decisions, that would
-> > be called on an fd to do placement decissions for any further allocations
-> > (prealloc, write, etc)
-> 
-> Yes, posix_fallocate shouldn't be made more complicated.  But I don't
-> understand why requesting linear layout of the blocks should be an
-> option.  It's always an advantage if the blocks requested this way are
-> linear on disk.  So, the kernel should always do its best to make this
-> happen, without needing an additional option.
-  Actually, it's not that simple. You want linear layout of blocks you are
-going to read. That is not necessary a linear layout of blocks in a single
-file - trace sometime a start of some complicated app like KDE. You find
-it's seeking like a hell because it needs a few blocks from a ton of
-distinct files (shared libs, config files, etc). As these files are mostly
-read only, it's advantageous to interleave them on disk or at least keep
-them close.
+> <rant>
+> Let me see... You throw code like that and expect someone to actually 
+> understand it in one year, and be able to correct a bug ?
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+To be honest I don't expect any bugs in this function.
+
+> </rant>
+> 
+> Please add something, an URL or even better a nice explanation, per favor...
+
+It's straight out of Hacker's delight which is referenced in the commit
+log.
+
+-Andi
