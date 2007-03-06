@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965158AbXCFPQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965170AbXCFPSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965158AbXCFPQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965174AbXCFPQ2
+	id S965170AbXCFPSi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:18:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965174AbXCFPSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:16:28 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:40195 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965158AbXCFPQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:16:27 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: "Vladimir B. Savkin" <master@sectorb.msk.ru>
-Subject: Re: Packet timestamps (was: Re: Network performance degradation from 2.6.11.12 to 2.6.16.20)
-Date: Tue, 6 Mar 2007 16:16:24 +0100
-User-Agent: KMail/1.9.5
-Cc: netdev@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       David Miller <davem@davemloft.net>, hawk@diku.dk,
-       harry@atmos.washington.edu, linux-kernel@vger.kernel.org,
-       Rick Jones <rick.jones2@hp.com>
-References: <200609181850.22851.ak@suse.de> <200703061538.45049.dada1@cosmosbay.com> <20070306144315.GA9036@tentacle.sectorb.msk.ru>
-In-Reply-To: <20070306144315.GA9036@tentacle.sectorb.msk.ru>
+	Tue, 6 Mar 2007 10:18:37 -0500
+Received: from mo-p07-ob.rzone.de ([81.169.146.190]:46690 "EHLO
+	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965170AbXCFPSh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 10:18:37 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Dirk Schoebel <dirk@liji-und-dirk.de>
+Subject: Re: [linux-usb-devel] OOPS with 2.6.20 and 2.6.21-rc2 (mos7720)
+Date: Tue, 6 Mar 2007 16:18:26 +0100
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+References: <esjg1h$l8d$1@sea.gmane.org> <200703061207.53484.oliver@neukum.org> <esjv78$g3h$1@sea.gmane.org>
+In-Reply-To: <esjv78$g3h$1@sea.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="koi8-r"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703061616.24959.dada1@cosmosbay.com>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_CZY7FYLjRdgV+i8"
+Message-Id: <200703061618.26402.oliver@neukum.org>
+X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GPE5pUNaoG1wTinqjVVl1GKJZKNFH60/y81w==
+X-RZG-CLASS-ID: mo07
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 March 2007 15:43, Vladimir B. Savkin wrote:
-> On Tue, Mar 06, 2007 at 03:38:44PM +0100, Eric Dumazet wrote:
-> > 2) "accurate_timestamps" is misleading.
-> > 	Should be "disable_timestamps"
->
-> Not, if default is 1, as in my patch.
+--Boundary-00=_CZY7FYLjRdgV+i8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yes I saw this. I should write more words next time :)
+Am Dienstag, 6. M=C3=A4rz 2007 15:52 schrieb Dirk Schoebel:
 
-Full explanation:
-----------------------
+> hmm, applied these patches, still crashes
 
-If your tunable is named "accurate_timestamps" then a 0 value would mean :
+Please apply the attached debugging patch.
 
-Use a low precision timestamp (based on xtime for example) instead of a full 
-resolution...
+	Regards
+		Oliver
 
-This is not what your patch does (while it could do that, but beware that 
-net-2.6.22 includes now a ktime_t timestamping)
+--Boundary-00=_CZY7FYLjRdgV+i8
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="mos.debug"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="mos.debug"
 
-So :
-------
+--- a/drivers/usb/serial/mos7720.c	2007-03-06 16:16:16.000000000 +0100
++++ b/drivers/usb/serial/mos7720.c	2007-03-06 16:16:21.000000000 +0100
+@@ -334,7 +334,7 @@
+ 	int port_number;
+ 	char data;
+ 	int j;
+-
++BUG_ON(port == NULL);
+ 	serial = port->serial;
+ 
+ 	mos7720_port = usb_get_serial_port_data(port);
 
-It would be better to name the tunable "disable_timestamps", default 0 of 
-course.... 
-It would better describe what your patch is actually doing : Even if a tcpdump 
-is running (so asking for timestamps), it wont have them because the sysctl 
-disabled them.
-
-Thank you
-
+--Boundary-00=_CZY7FYLjRdgV+i8--
