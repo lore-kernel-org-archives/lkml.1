@@ -1,38 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965539AbXCFSVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965971AbXCFSZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965539AbXCFSVx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965552AbXCFSVx
+	id S965971AbXCFSZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:25:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965968AbXCFSZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:21:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33197 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965539AbXCFSVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:21:51 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <45EDABC8.8040901@zytor.com> 
-References: <45EDABC8.8040901@zytor.com>  <20070306173929.2708.37191.stgit@warthog.cambridge.redhat.com> 
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: torvalds@osdl.org, akpm@osdl.org, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, johannes@sipsolutions.net
-Subject: Re: [PATCH] Fix get_order() 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 06 Mar 2007 18:21:39 +0000
-Message-ID: <3523.1173205299@redhat.com>
+	Tue, 6 Mar 2007 13:25:54 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59543
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965971AbXCFSZx convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:25:53 -0500
+Date: Tue, 06 Mar 2007 10:25:51 -0800 (PST)
+Message-Id: <20070306.102551.34761735.davem@davemloft.net>
+To: ilmari@ilmari.org
+Cc: andi@firstfloor.org, shemminger@linux-foundation.org,
+       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support II
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <d8jlkiagte5.fsf@nygaard.ping.uio.no>
+References: <20070305.162551.41660347.davem@davemloft.net>
+	<20070306140412.GA1470@one.firstfloor.org>
+	<d8jlkiagte5.fsf@nygaard.ping.uio.no>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin <hpa@zytor.com> wrote:
+From: ilmari@ilmari.org (Dagfinn Ilmari Mannsåker)
+Date: Tue, 06 Mar 2007 18:43:14 +0100
 
-> 	if (size <= (1UL << page_shift))
-> 		return 0;
-> 	else
-> 		return __ilog2_u32(size-1)+1-page_shift;
+> Andi Kleen <andi@firstfloor.org> writes:
+> 
+> > Actually on rereading this: is there really any Linux port
+> > that emulates multiplies in software? I thought that was only
+> > done on really small microcontrollers or smart cards; but anything
+> > 32bit+ that runs Linux should have hardware multiply, shouldn't it?
+> 
+> SPARCv7 (sun4/sun4c) doesn't have hardware mul/div. This includes
+> SparcStation 1, 1+, 2, SLC, ELC, IPC and IPX.
 
-I think you're right.  That'll also defend against the result of __ilog2_u32()
-being less than page_shift-1.
+Right and the cypress sun4m parts don't do multiply/divide in
+hardware either.
 
-I think I can dispense with the page_shift argument.  IIRC __get_order() was
-overridden by some arch, but isn't now.
-
-David
+I believe the Alpha does divide in software too, see
+arch/alpha/lib/divide.S
