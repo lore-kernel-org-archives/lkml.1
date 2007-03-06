@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964930AbXCFKxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965839AbXCFK5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964930AbXCFKxd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 05:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965830AbXCFKxd
+	id S965839AbXCFK5M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 05:57:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965837AbXCFK5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 05:53:33 -0500
-Received: from www.osadl.org ([213.239.205.134]:39026 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964930AbXCFKxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 05:53:31 -0500
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Zachary Amsden <zach@vmware.com>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, ak@suse.de,
-       Daniel Hecht <dhecht@vmware.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <45ED2C82.3080008@vmware.com>
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>
-	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>
-	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 11:59:34 +0100
-Message-Id: <1173178774.24738.311.camel@localhost.localdomain>
+	Tue, 6 Mar 2007 05:57:12 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2489 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965839AbXCFK5L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 05:57:11 -0500
+Date: Tue, 6 Mar 2007 11:56:24 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "J.A. Magallon" <jamagallon@ono.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: i2c vs nVidia [Re: 2.6.21-rc2-mm1]
+Message-Id: <20070306115624.523d99dc.khali@linux-fr.org>
+In-Reply-To: <20070306094543.abb6e290.khali@linux-fr.org>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+	<20070306011621.5a844c41@werewolf-wl>
+	<20070305163320.2b21ab7e.akpm@linux-foundation.org>
+	<20070306004444.GC12566@kroah.com>
+	<20070306094543.abb6e290.khali@linux-fr.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 00:55 -0800, Zachary Amsden wrote:
-> > a proper CE device also has the added bonus of making high-res timers 
-> > guests work automatically. It should be simple: just pass it through to 
-> > your hypervisor, a hyper-CE-device, like a hyper-clocksource device has 
-> > essentially no guest-side complexity.
-> >   
+Hi All,
+
+On Tue, 6 Mar 2007 09:45:43 +0100, Jean Delvare wrote:
+> > > I guess we need to wait and see if someone hits the same problems
+> > > with an in-kernel driver.
 > 
-> It is not so simple.  In theory it works great.  In reality, the i386 
-> implementation is completely hardwired to work the way hardware works, 
-> and breaking the clockevent code out of the deep ties to the APIC is 
-> extremely non-trivial.  We tried, and could not accomplish it for 2.6.21 
-> because the hrtimers integration was complex, and introduced many bugs 
-> for us.
+> I just did, with i2c-nforce2. The key to trigger it seems to be to load
+> an i2c bus driver _after_ loading i2c-isa and a suitable i2c-isa-based
+> hardware monitoring driver (w83791d, w83627hf, w83627ehf, it87, lm78,
+> pc87360, sis5595, smsc47m1, smsc47b397, via686a or vt8231.) I have no
+> idea why, though. Given that I was able to trigger the problem with
+> only my own patches on top of Linus' tree, it means that the bug was
+> clearly introduced by one of my patches. I'll bisect my stack now to
+> find out which one. There aren't that many patches so it should be
+> relatively quick.
 
-Why is this so non-trivial ? All you have to do is _NOT_ register
-PIT/HPET/APIC timers and register a per CPU hyper-CE-device instead,
-which uses the hypervisor timer emulation instead of real hardware.
+Faulty patch is i2c-06-remove-duplicate-i2c-drivers-list.patch. The
+oops is the result of the combination of two factors:
 
-clockevents breaks the hardwired assumptions of the old timer code and
-allows you to remove _ALL_ the hardwired hackery in vmitimer.c, i.e.
-stuff like
+1* I'm too optimistic trying to remove the duplicate i2c drivers list
+now. i2c-isa drivers are listed in the list managed by the driver
+model, but not in the list managed by i2c-core. This difference between
+both lists caused new errors to be returned, triggering the second
+problem.
 
-       /* Disable PIT. */
-        outb_p(0x3a, PIT_MODE); /* binary, mode 5, LSB/MSB, ch 0 */
+2* We do not want i2c_add_adapter to fail just because one
+attach_adapter callback returned an error. The patch improperly caused
+this to happen, while i2c_add_adapter is not designed to handle these
+errors.
 
-> We worked around this by keeping NO_IDLE_HZ support, which now 
-> you deprecated.  So now we are using NO_HZ without a hyper-CE device, 
-> and it is working fine.  We understand the benefits of moving to the CE 
-> model - but it cannot be done overnight.
+The bottom line is that I really need to kill i2c-isa before I can
+apply this patch. So I'll drop it out for now, sorry for the noise.
 
-This is ugly as hell. NO_HZ enables the dyntick functions in idle(),
-irq_enter() and irq_exit() so the clockevents code is actually invoked.
-I have not looked close enough why this does work at all.
-
-I have the feeling that "working fine" means something like "does not
-explode".
-
-We really want to fix this now instead of pushing some not know why it
-works hack into the kernel.
-
-	tglx
-
-
+-- 
+Jean Delvare
