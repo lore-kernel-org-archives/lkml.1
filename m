@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030362AbXCFWBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030337AbXCFWCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030362AbXCFWBt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 17:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030352AbXCFWBs
+	id S1030337AbXCFWCd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 17:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030314AbXCFWCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 17:01:48 -0500
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:58351 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030317AbXCFWBp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 17:01:45 -0500
-To: a.p.zijlstra@chello.nl
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, staubach@redhat.com, hugh@veritas.com
-In-reply-to: <1173217621.4718.27.camel@lappy> (message from Peter Zijlstra on
-	Tue, 06 Mar 2007 22:47:01 +0100)
-Subject: Re: [patch 2/8] update ctime and mtime for mmaped write
-References: <20070306180443.669036741@szeredi.hu>
-	 <20070306180549.312408559@szeredi.hu> <1173213151.4718.16.camel@lappy>
-	 <E1HOh8r-0006Sp-00@dorka.pomaz.szeredi.hu> <1173217621.4718.27.camel@lappy>
-Message-Id: <E1HOhhp-0006YZ-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 06 Mar 2007 23:00:25 +0100
+	Tue, 6 Mar 2007 17:02:32 -0500
+Received: from mga09.intel.com ([134.134.136.24]:4786 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030337AbXCFWCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 17:02:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,255,1170662400"; 
+   d="scan'208"; a="53995549:sNHT16920621"
+Date: Tue, 6 Mar 2007 13:58:45 -0800
+From: Mark Gross <mgross@linux.intel.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mark.gross@intel.com, torvalds@linux-foundation.org
+Subject: [PATCH] minor updat to tlclk Kconfig entry
+Message-ID: <20070306215845.GA1380@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > I can understand you wanting to avoid the overhead of the minor faults
-> > > resulting from using page_mkclean(), but I'm not sure its worth it.
-> > 
-> > It would be nice if the cost of MS_ASYNC wouldn't be too high.  And I
-> > do have the feeling that minor faults are far more expensive than
-> > cleaning the dirty bit in the ptes.
-> > 
-> > Do you have any numbers?
-> 
-> None what so ever, but I always think of msync as a rare function
-> (infrequent when compared to (minor) faults overall). But I don't have
-> numbers backing that up either.
+The tlclk driver is going on the MPCBL005 so I need to make the Kconfig
+more more generic.  Just some text changes.
 
-It depends entirely on the usage pattern.  I can imagine this sort of
-use:
 
-  mmap
-  write lots of data to memory
-  msync(MS_ASYNC)
-  overwrite previous data
-  msync(MS_ASYNC)
-  ...
+--mgross
 
-In this case write protecting and faulting the pages will be slower,
-than just checking the page tables.
+Signed-off-by: Mark Gross <mark.gross@intel.com>
 
-> Also, the radix tree scan you do isn't exactly cheap either. 
-> 
-> So what I was wondering is whether its worth optimizing this at the cost
-> of another rmap walker. (one with very dubious semantics at that - it
-> clears the pte dirty bit but doesn't particularly care about that nor
-> does it respect the PG_dirty / PTE dirty relation)
-
-I don't think this is dubious.  The pte dirty bit in this case means,
-that the page was modified _since_the_last_call_ of this function.
-
-The PG_dirty on the other hand means, that the page will need to be
-written back.  So they have completely different meanings.
-
-Thanks,
-Miklos
+diff -urN -X linux-2.6.21-rc2/Documentation/dontdiff linux-2.6.21-rc2/drivers/char/Kconfig linux-2.6.21-rc2-tlclk/drivers/char/Kconfig
+--- linux-2.6.21-rc2/drivers/char/Kconfig	2007-03-06 13:41:21.000000000 -0800
++++ linux-2.6.21-rc2-tlclk/drivers/char/Kconfig	2007-03-06 13:50:06.000000000 -0800
+@@ -1026,16 +1026,17 @@
+ source "drivers/char/tpm/Kconfig"
+ 
+ config TELCLOCK
+-	tristate "Telecom clock driver for MPBL0010 ATCA SBC"
++	tristate "Telecom clock driver for ATCA SBC"
+ 	depends on EXPERIMENTAL && X86
+ 	default n
+ 	help
+-	  The telecom clock device is specific to the MPBL0010 ATCA computer and
+-	  allows direct userspace access to the configuration of the telecom clock
+-	  configuration settings.  This device is used for hardware synchronization
+-	  across the ATCA backplane fabric.  Upon loading, the driver exports a
+-	  sysfs directory, /sys/devices/platform/telco_clock, with a number of
+-	  files for controlling the behavior of this hardware.
++	  The telecom clock device is specific to the MPCBL0010 and MPCBL0050
++	  ATCA computers and allows direct userspace access to the
++	  configuration of the telecom clock configuration settings.  This
++	  device is used for hardware synchronization across the ATCA backplane
++	  fabric.  Upon loading, the driver exports a sysfs directory,
++	  /sys/devices/platform/telco_clock, with a number of files for
++	  controlling the behavior of this hardware.
+ 
+ endmenu
+ 
