@@ -1,76 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933678AbXCFAi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933688AbXCFAmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933678AbXCFAi7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:38:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbXCFAi7
+	id S933688AbXCFAmz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:42:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933686AbXCFAmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:38:59 -0500
-Received: from mail.suse.de ([195.135.220.2]:42828 "EHLO mx1.suse.de"
+	Mon, 5 Mar 2007 19:42:55 -0500
+Received: from mx2.suse.de ([195.135.220.15]:36528 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933675AbXCFAi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:38:58 -0500
-Date: Mon, 5 Mar 2007 16:37:15 -0800
+	id S933683AbXCFAmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:42:53 -0500
+Date: Mon, 5 Mar 2007 16:41:17 -0800
 From: Greg KH <greg@kroah.com>
-To: Bron Gondwana <brong@fastmail.fm>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Theodore Tso <tytso@mit.edu>, Matt Mackall <mpm@selenic.com>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
-       akpm@osdl.org
-Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
-Message-ID: <20070306003715.GA12566@kroah.com>
-References: <20070304220857.GH23311@waste.org> <20070305011625.GA7681@kroah.com> <20070305064229.GJ23311@waste.org> <20070305070248.GA30699@kroah.com> <20070305071325.GK23311@waste.org> <20070305154609.GA3626@irc.pl> <20070305211425.GR16722@waste.org> <20070306002457.GA7078@brong.net>
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Subject: Re: [2.6.21 patch] unconditionally enable SYSFS_DEPRECATED
+Message-ID: <20070306004117.GB12566@kroah.com>
+References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org> <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org> <20070305185813.GA31465@kroah.com> <20070305234052.GR3441@stusta.de> <20070306000722.GA11436@kroah.com> <20070306003541.GT3441@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070306002457.GA7078@brong.net>
+In-Reply-To: <20070306003541.GT3441@stusta.de>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 11:24:57AM +1100, Bron Gondwana wrote:
-> On Mon, Mar 05, 2007 at 03:14:25PM -0600, Matt Mackall wrote:
-> > On Mon, Mar 05, 2007 at 04:46:09PM +0100, Tomasz Torcz wrote:
-> > > > That's not the point. The point is that Debian/unstable as of _this
-> > > > morning_ doesn't work. For reference, I'm running both the latest
-> > > > releases of both hal (0.5.8.1-6.1) and network-manager (0.6.4-6). And
-> > > > there are people telling me I need a copy of HAL out of git that
-> > > > hasn't even been released for Debian to package. Debian isn't the
-> > > > problem here.
+On Tue, Mar 06, 2007 at 01:35:41AM +0100, Adrian Bunk wrote:
+> On Mon, Mar 05, 2007 at 04:07:22PM -0800, Greg KH wrote:
+> > On Tue, Mar 06, 2007 at 12:40:52AM +0100, Adrian Bunk wrote:
+> > > On Mon, Mar 05, 2007 at 10:58:13AM -0800, Greg KH wrote:
+> > > > 
+> > > > Ok, how about the following patch.  Is it acceptable to everyone?
+> > > > 
+> > > > thanks,
+> > > > 
+> > > > greg k-h
+> > > > 
+> > > > ---
+> > > >  init/Kconfig |   13 +++++++++++--
+> > > >  1 file changed, 11 insertions(+), 2 deletions(-)
+> > > > 
+> > > > --- gregkh-2.6.orig/init/Kconfig
+> > > > +++ gregkh-2.6/init/Kconfig
+> > > > @@ -290,8 +290,17 @@ config SYSFS_DEPRECATED
+> > > >  	  that belong to a class, back into the /sys/class heirachy, in
+> > > >  	  order to support older versions of udev.
+> > > >  
+> > > > -	  If you are using a distro that was released in 2006 or later,
+> > > > -	  it should be safe to say N here.
+> > > > +	  If you are using an OpenSuSE, Gentoo, Ubuntu, or Fedora
+> > > > +	  release from 2007 or later, it should be safe to say N here.
+> > > > +
+> > > > +	  If you are using Debian or other distros that are slow to
+> > > > +	  update HAL, please say Y here.
+> > > >...
 > > > 
-> > >   hal 0.5.9-rc1 (released, not from git) should work. It will be
-> > > problably released soon and picked by sane distributions. Debian is very
-> > > irritating corner case.
+> > > The sane solution seems to be to enable SYSFS_DEPRECATED unconditionally 
+> > > for all users, and schedule it's removal for mid-2008 (or later).
+> > > 
+> > > 12 months after the first _release_ of a HAL that can live without seems 
+> > > to be the first time when we can consider getting rid of it, since all 
+> > > distributions with at least one release a year should ship it by then.
+> > > 
+> > > Currently, SYSFS_DEPRECATED is only a trap for users.
 > > 
-> > Presumably the -rc1 stands for "release candidate". Which means "not
-> > yet released". And when did it show up? 04-Mar-2007 at 18:31. That's
-> > right, YESTERDAY. Almost a full month after Greg's commit.
+> > Huh?
 > > 
-> > For the last time, DEBIAN IS NOT THE PROBLEM.
+> > No, again, I've been using this just fine for about 6 months now.
+> > 
+> > And what about all of the servers not using HAL/NetworkManager?
 > 
-> Can I please second this (having been burned by hell that was udev of
-> the 0.5ish era) - Greg, please try to make changes in a cross-compatible
-> way so that versions of userspace and kernel are not so closely
-> dependant on tracking each other.  The whole 2.6.8 -> 2.6.12 series of
-> kernels and associated udevs are fraught with race conditions where
-> upgrading one but not the other will leave your machine unbootable.
+> On a server, it shouldn't harm.
 
-But I AM TRYING TO MAKE IT COMPATIBLE!!!
+But if they wanted that option enabled?
 
-That's what that config option is there for.  If you happen to be
-running a newer userspace, a different distro than what is in Debian
-right now, or don't use HAL and Networkmanager, then disable that
-option.  Then all of sysfs looks just like it used to, no user visble
-changes at all.  It doesn't get any more compatible than that.
+> > And what about all of the embedded systems not using either?
+> 
+> If it was much code, I would have sent a patch that allowed disabling it 
+> if EMBEDDED=y.
 
-Again, I've pointed out distros that work just fine many times in this
-thread...
+It's not a code size issue.  In fact, if the option is enabled, like you
+have done, it builds more code into the kernel than before.
 
-It's been there since 2.6.20 I think, no one seemed to have noticed it
-then for an odd reason...
+> > So to not allow this to be turned off by people who might want to (we
+> > want this for OpenSuSE 10.3, and Fedora 7 also will want this, as will
+> > other distros released this year), is pretty heavy-handed.
+> > 
+> > It also will work in OpenSuSE 10.2 which is already released, and I
+> > think Fedora 6, but I've only limited experience with these.
+> > 
+> > Oh, and Gentoo works just fine, and has been for the past 6 months.
+> 
+> For most people, it simply doesn't matter whether SYSFS_DEPRECATED is 
+> on or off.
 
-And the default is enabled, you have to manually turn it off in order to
-break your machine.
+Exactly.
 
-Again, how can I word this in a manner that would be sufficient to keep
-this misunderstanding from happening again?
+> But accidentally disabling SYSFS_DEPRECATED has proven to be a trap 
+> people sometimes fall into - and tracking them down to 
+> SYSFS_DEPRECATED=n sometimes takes some time.
+
+So how do I put up the warning flag any larger than I have?
+
+I do not want this always enabled, that option is not acceptable to me,
+or to the zillions of people who are running a distro that this option
+works just fine on (see above list...)
+
+thanks,
 
 greg k-h
