@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030320AbXCFJXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030326AbXCFJ1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030320AbXCFJXn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030201AbXCFJXn
+	id S1030326AbXCFJ1J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:27:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030344AbXCFJ1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:23:43 -0500
-Received: from ip-svs-1.Informatik.Uni-Oldenburg.DE ([134.106.12.126]:48335
-	"EHLO schlidder.svs.informatik.uni-oldenburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030189AbXCFJXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:23:41 -0500
-Date: Tue, 6 Mar 2007 10:23:39 +0100
-From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-ide@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATA] Failed to set xfermode on LITE-ON LTR-48246S
-Message-ID: <20070306092339.GA3803@titan.lahn.de>
-Mail-Followup-To: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070227135838.GA4328@titan.lahn.de> <45EB9822.40300@gmail.com> <20070305103840.GA4381@titan.lahn.de> <45EC3B3F.7020509@gmail.com>
-MIME-Version: 1.0
+	Tue, 6 Mar 2007 04:27:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44753 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030326AbXCFJ1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:27:06 -0500
+Date: Tue, 6 Mar 2007 10:26:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
+Subject: Re: Xen & VMI?
+Message-ID: <20070306092636.GC26073@elte.hu>
+References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2F53.2040101@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45EC3B3F.7020509@gmail.com>
-Organization: UUCP-Freunde Lahn e.V.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <45ED2F53.2040101@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Tejun!
 
-On Tue, Mar 06, 2007 at 12:46:07AM +0900, Tejun Heo wrote:
-> Philipp Matthias Hahn wrote:
-> > On Mon, Mar 05, 2007 at 01:10:10PM +0900, Tejun Heo wrote:
-> > > * Does applying the attached patch over unpatched 2.6.20.1 fix the problem?
-> >
-> > Yes, it seems to fix it. (testes on top of the first patch mentioned
-> > above, but witheout the second one.).
-> > If I should test it as the sole patche, just mail me again please.
->
-> Yeap, please test it on top of vanilla kernel to verify that the patch
-> proper fixes the problem.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Yes, applying only this patch does fix the problem.
-Thank you for your support.
+> You could come up with some shim layer which makes the two interfaces 
+> appear similar, and you could spell the name of that shim "VMI".  Or 
+> you could call it "paravirt_ops", which is the name we chose.  And you 
+> could implement the interface to that layer as a binary ABI, or you 
+> could make it a normal source-level Linux kernel interface, which is 
+> what we chose to do.
 
-BYtE
-Philipp
--- 
-  / /  (_)__  __ ____  __ Philipp Hahn
- / /__/ / _ \/ // /\ \/ /
-/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
+i think you are missing my point.
+
+paravirt_ops is a Linux-internal abstraction that tries to make our life 
+easier but it has no relevance whatsoever to an external hypervisor - be 
+that Xen, VMWare/ESX or Windows/Longhorn.
+
+What matters is the /ABI/ that the hypervisor uses to talk to a Linux 
+guest. In the VMWare/ESX case that's VMI. In the Xen case that's the 
+hypercall page call-table ABI or the legacy int $0x82 ABI.
+
+My suggestion would be for Linux to make only a /single/ external ABI 
+promise: VMI. (and we can extend it with higher-level paravirt ops, 
+etc.)
+
+paravirt_ops has ZERO relevance here... Anyone who suggests that 
+paravirt_ops somehow magically hides the ABIs that are behind it (and 
+its effects on Linux) is smoking something real funny ;-)
+
+	Ingo
