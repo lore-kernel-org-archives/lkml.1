@@ -1,63 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751072AbXCFUiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964838AbXCFUj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751072AbXCFUiF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 15:38:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXCFUiE
+	id S964838AbXCFUj7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 15:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932510AbXCFUj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 15:38:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45308 "EHLO mx2.mail.elte.hu"
+	Tue, 6 Mar 2007 15:39:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45160 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751072AbXCFUiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 15:38:02 -0500
-Date: Tue, 6 Mar 2007 21:37:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-Cc: Anthony Liguori <anthony@codemonkey.ws>,
-       virtualization <virtualization@lists.osdl.org>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: Xen & VMI?
-Message-ID: <20070306203712.GC21736@elte.hu>
-References: <45ED82D9.6050204@codemonkey.ws> <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932438AbXCFUj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 15:39:57 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Kconfig: Update swsusp description
+Date: Tue, 6 Mar 2007 21:42:28 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200703041514.44680.rjw@sisk.pl> <200703061013.13585.rjw@sisk.pl> <20070306094107.GF2040@elf.ucw.cz>
+In-Reply-To: <20070306094107.GF2040@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200703062142.28952.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Nakajima, Jun <jun.nakajima@intel.com> wrote:
+On Tuesday, 6 March 2007 10:41, Pavel Machek wrote:
+> Hi!
+> 
+> > > > Index: linux-2.6.21-rc2/kernel/power/Kconfig
+> > > > ===================================================================
+> > > > --- linux-2.6.21-rc2.orig/kernel/power/Kconfig	2007-02-28 23:54:45.000000000 +0100
+> > > > +++ linux-2.6.21-rc2/kernel/power/Kconfig	2007-03-04 11:50:48.000000000 +0100
+> > > > @@ -81,30 +81,35 @@ config SOFTWARE_SUSPEND
+> > > >  	bool "Software Suspend"
+> > > >  	depends on PM && SWAP && ((X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
+> > > >  	---help---
+> > > > +	  Enable the suspend to disk (STD) functionality.
+> > > >  
+> > > > +	  You can suspend your machine with 'echo disk > /sys/power/state'.
+> > > > +	  Alternatively, you can use the additional userland tools available
+> > > > +	  from <http://suspend.sf.net>.
+> > > > +
+> > > > +	  In principle it does not require ACPI or APM, although for example
+> > > > +	  ACPI will be used if available.
+> > > > +
+> > > > +	  It creates an image which is saved in your active swap. Upon the next
+> > > >  	  boot, pass the 'resume=/dev/swappartition' argument to the kernel to
+> > > 
+> > > Actually, these days resume=... on kernel command line needs to be
+> > > there for suspend, too, IIRC.
+> > 
+> > I didn't change this line, so?
+> 
+> So I should go and fix it ;-). (I'm now overloaded with email sorry
+> for being terse.)
+> 
+> Can we do something like
+> 
+> +	  Enable the suspend to disk (STD) functionality.
+> +	  In principle it does not require any support from BIOS, although 
+> +	  ACPI will be used if available.
+> 
+> +	  You can suspend your machine with 'echo disk >
+> +	  /sys/power/state' after placing resume=/dev/swappartition on
+> +	  kernel command line.
+> +	  Alternatively, you can use the additional userland tools available
+> +	  from <http://suspend.sf.net>.
+> 
+> (and remove ...upon next boot... section).
 
-> I think a KVM Linux would benefit more from paravirt ops, rather than 
-> VMI. The higher-level interface such as the one in Xen, espeically for 
-> I/O, interrupt controllers, timer, SMP, etc. actually simplifies the 
-> implementation of the VMM, and improve performance of the guest. Even 
-> for MMU, direct page tables, for example, would work better for 
-> hardware-based virtualization because the processor can use the native 
-> page tables.
+Generally, why not, but I think Andrew has already pushed the patch to Linus,
+so perhaps we can apply the changes on top of it?
 
-maybe we are talking past each other because i dont really disagree with 
-that: i mentioned it right at beginning that higher-level APIs would 
-have to be added to VMI. What i'd like to avoid is the ABI duplication 
-for the lowlevel stuff /and/ for the highlevel stuff. Since VMI is 
-mostly about lowlevel stuff right now it's obvious that it would have to 
-grow more highlevel ops. Doing an IO driver via IO emulation is 
-obviously pretty ... low-tech.
+> > > > +	  Right now you may boot without resuming and resume later but in the
+> > > > +	  meantime you cannot use the swap partition(s)/file(s) involved in
+> > > > +	  suspending.  Also in this case you must not use the
+> > > 
+> > > I'd prefer not to encourage this use. It has too many traps ready for
+> > > people.
+> > 
+> > But IMHO there should be a warning that if you boot without resuming, make sure
+> > you'll not resume after the next reboot or bad things will happen.
+> 
+> +	It is possible to boot without resuming and resume later but
+> +	if you access any partitions/files used by suspended kernel,
+> +	you'll probably loose your data. See ... for details.
 
-maybe i shouldnt call it 'VMI' but 'the paravirt ABI'. I dont mind if 
-it's the Xen ABI or the VMWare ABI or a mesh of the two - everyone can 
-map their own internals to that /one/ ABI.
+Well, I think "access" is too weak here.  IMO we should say something like
+"if you have booted without resuming and any journaled filesystems used before
+the suspend have been mounted, you MUST NEVER EVER attempt to resume from the
+'old' image.  In that case make sure the image is destroyed by running 'mkswap'
+against the swap partition/file that contains it."
 
-	Ingo
+Greetings,
+Rafael
