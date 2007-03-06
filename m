@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933156AbXCFJNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbXCFJNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933156AbXCFJNL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbXCFJNL
+	id S933158AbXCFJNr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934003AbXCFJNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:13:11 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:38508 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933156AbXCFJNJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:13:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fVKbJjHPnJRmKQJxP4fZTnWXZfsLazgNXcENI8i57V187nVLlxsEKTEBYYMkK8mGXkm3UILfNT1G7t79EIraqnNpjAuNdVBQVd9sf6tTHHx9x3uNePmS0GWORgnag91lU2Dinja44xPX9eDTvokc/22QUOxhn0DOhJw0to6KKcI=
-Message-ID: <df9815e70703060113w8eeeae3g6fc9ce6190eb380c@mail.gmail.com>
-Date: Tue, 6 Mar 2007 17:13:07 +0800
-From: albcamus <albcamus@gmail.com>
-To: Mockern@yandex.ru
-Subject: RE: Question: schedule()
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45ED23E3.000004.17474@webmail18.yandex.ru>
+	Tue, 6 Mar 2007 04:13:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52321 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933158AbXCFJNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:13:44 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45ED23E3.000004.17474@webmail18.yandex.ru>
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [patch] paravirt: VDSO page is essential
+In-Reply-To: Ingo Molnar's message of  Tuesday, 6 March 2007 09:34:49 +0100 <20070306083449.GA12511@elte.hu>
+X-Windows: live the nightmare.
+Message-Id: <20070306091307.259DC1801C4@magilla.sf.frob.com>
+Date: Tue,  6 Mar 2007 01:13:07 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-your kthread IS preemptible unless you call preempt_disable or some
-locking functions explicitly .
+> -# define VDSO_PRELINK          VDSO_HIGH_BASE
+> +# ifndef CONFIG_XEN
+> +#  define VDSO_PRELINK         VDSO_HIGH_BASE
+> +# else
+> +#  define VDSO_PRELINK         (0UL - FIX_VDSO * PAGE_SIZE)
+> +# endif
+> 
+> should be Kconfig driven, not #ifdef driven, due to cleanliness and also 
+> because lguest wants to have the same thing. Plus:
 
-Regards,
-albcamus
+In fact, with the relocate_vdso stuff it doesn't matter what VDSO_PRELINK
+is at compile time.  It saves the small amount of startup cost if it
+matches the runtime address, but that is probably not noticeable.
 
-2007/3/6, Mockern <Mockern@yandex.ru>:
-> Hi,
->
-> What does schedule() function do? I want to make my kthread preemptive.
->
-> Thanks
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> furthermore, there should be a paravirt_ops method to chose the 
+> relocation address, unless i'm missing something. On the native kernel 
+> that address will default to 0xffffe000. (if CONFIG_COMPAT_VDSO is 
+> selected)
+
+For everything else to work, it needs to be set by changing __FIXADDR_TOP,
+which seems to be done by calling reserve_top_address early enough.
+It looks like that needs to be properly tied into paravirt_ops somehow.
+
+
+Thanks,
+Roland
