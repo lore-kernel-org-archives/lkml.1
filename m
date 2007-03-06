@@ -1,86 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965103AbXCFQWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965036AbXCFQ1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965103AbXCFQWy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 11:22:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965036AbXCFQWy
+	id S965036AbXCFQ1n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 11:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965263AbXCFQ1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 11:22:54 -0500
-Received: from aa014msr.fastwebnet.it ([85.18.95.74]:39132 "EHLO
-	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965103AbXCFQWx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 11:22:53 -0500
-Date: Tue, 6 Mar 2007 17:20:22 +0100
-From: Mattia Dongili <malattia@linux.it>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.21 - part II (resend)
-Message-ID: <20070306162021.GJ2919@inferi.kami.home>
-Mail-Followup-To: Matthew Garrett <mjg59@srcf.ucam.org>,
-	Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <200702162223.59837.lenb@kernel.org> <20020101045751.GD4106@ucw.cz> <20070306122213.GF2919@inferi.kami.home> <20070306131753.GA15187@srcf.ucam.org>
+	Tue, 6 Mar 2007 11:27:43 -0500
+Received: from gw.goop.org ([64.81.55.164]:57303 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965036AbXCFQ1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 11:27:42 -0500
+Message-ID: <45ED9678.5050907@goop.org>
+Date: Tue, 06 Mar 2007 08:27:36 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070306131753.GA15187@srcf.ucam.org>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.21-rc2-mm1-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Gerd Hoffmann <kraxel@suse.de>,
+       virtualization <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Xen & VMI?
+References: <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <45ED3121.8090308@suse.de> <20070306093436.GA30239@elte.hu> <45ED3F29.6000705@suse.de> <20070306102658.GA7478@elte.hu> <45ED4AD8.6020504@suse.de> <20070306115937.GA25313@elte.hu>
+In-Reply-To: <20070306115937.GA25313@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 01:17:53PM +0000, Matthew Garrett wrote:
-> On Tue, Mar 06, 2007 at 01:22:13PM +0100, Mattia Dongili wrote:
-> 
-> > the audiopower is basically a _PS3/_PS0 switch for the device, while the
-> > lanpower plays with the embedded controller to powerdown/powerup.
-> >
-> > Now, unfortunately those methods are attached to a fake device in the
-> > DSDT and afaict there's no way to tell which real device they are
-> > playing with (except by inspecting the method implementations).
-> > Well of course iff there's only _one_ sound card and _one_ nic you can
-> > easily guess it :)
-> > 
-> > Is there some way to hook into drivers for such kind of runtime power
-> > management?
-> 
-> Before worrying, I think it would make more sense to instrument the 
-> benefit gained against doing more "traditional" runtime management - 
-> that is, simply shutting down the ethernet chipset or doing ac97 power 
-> management. It's trivial to add those to the existing drivers, and if 
+Ingo Molnar wrote:
+> legacy support has to be ensured, but it does not hugely matter in terms 
+> of the designing our future. What matters is that once we change some 
+> fundamental aspect of Linux, we can adopt lguest/KVM immediately. With 
+> 'external' hypervisors there is no such compulsory forward motion, and 
+> my fear is that by giving them ABI interfaces to the innards of the 
+> Linux guest they will just stick with those ABIs - and worse, drag Linux 
+> along with them. (because distros will be forced by the legacy 
+> assumptions to carry those ABIs along.)
+>   
 
-Can't tell about chipset specific management, but as far as ACPI is
-concerned, this Sony specific stuff is a nice way of hiding features
-behind an undocumented device. Eg: the sound card _PS3 is empty and only
-available through that AZPW method.[1] So I guess that the
-platform_pci_set_power_state for ACPI D3 is basically a no-op there.
+So what's your argument here?  That if Xen/ESX/whatever are evolved
+separately from Linux, then they should be tied together behind one ABI,
+so that even if one could support a new Linux feature it can't move
+until everyone else implementing the ABI too?  How does that help anyone?
 
-> the additional benefit of using the Sony-specific methods is small then 
-> it's probably not really worth working out how to add it in.
+The big practical difficulty is that there are no examples of an ABI
+with multiple implementations all being sufficiently cross-compatible
+that a user of that ABI can actually rely on it working consistently
+(and certainly not to the extent that it actually reduces the test
+matrix size).  There are masses of subtle details that are hard to get
+right, and making sure that multiple implementations get all this right
+is apparently impossible (otherwise ACPI would be a dream to work with...).
 
-Yep, will try to get some measurement (by means of the acpi battery
-status, no better way currently available here) but given the above I
-suspect there's some benefit.
+> lguest/KVM is fundamentally special because its future evolution is 
+> naturally aligned with that of Linux.
 
-> Plus, implementing the generic support benefits more people :)
+lguest is special, because it is purely kernel-internal (and because
+Rusty wrote it, of course).  kvm is not, and I don't see why you think
+it is.  In its simplest form its a thin layer which exposes hardware
+virtualization to usermode, which happens to be qemu at the moment.  Its
+evolving some bells and whistles, but at heart it's being developed by a
+company with just as much commercial interest and backing as Xen and
+VMI, and it has the scope to be just as cross-platform.
 
-Yes, of course.
+>  Sure, legacies will have to be 
+> taken care of (just like Linux supports old system-calls and even old 
+> driver APIs in some circumstances), but there is no danger of KVM 
+> staying in legacy land forever.
 
-[1]: if you want to make a an idea, one such DSDT is available
-here: http://oioio.altervista.org/linux/DSDT.sz72b.dsl
-sony-laptop basically exposes the Device(SNC) and AZPW/GAZP for the
-audio (an hda) and LNPW/GLNP for the nic (a sky2). Now see the
-audio device Device(HDEF) and its _PS0 and _PS3.
+Sure there is.  It needs the usermode part to keep sync; that's easy if
+its qemu, but you're stuck if its a proprietary usermode implementing
+that end of the kvm equation.
 
-PS: did I disappear from the Cc list? ;)
--- 
-mattia
-:wq!
+>  With Xen and VMWare i see no guarantee 
+> at all that Linux wont be hindered by their legacies (or by any plain 
+> diverging approaches) forever.
+>   
+
+Well, if the kernel goes one way and Xen doesn't follow, then that
+pretty severely restricts Xen's usefulness - there's a pretty strong
+incentive for Xen to keep supporting Linux.  And besides, Xen is all
+GPL, so anyone who's sufficiently motivated can do this work.
+
+> so for example, if we change some fundamental thing that can be 
+> implemented via the legacy ABI but only slowly, that's not a problem 
+> because new-lguest/new-KVM will use the new approach, so there's a 
+> straightforward technology-based migratory path out of the legacy. But 
+> if Xen or VMWare were to stick with that legacy ABI forever (for 
+> whatever reason), we couldnt solve that situation on the Linux side at 
+> all, via technological measures.
+>   
+
+Well, that's the reason for minimizing Linux's exposure to any ABI. 
+Clearly the interface to a hypervisor has to be *some* ABI.  But it
+doesn't help anyone if there's an extra uber-ABI which is a superset of
+all the underlying hypervisor ABIs; that's just a big rigid, brittle mess.
+
+The whole point of pv_ops is to allow the hypervisors interfaces to
+evolve at their own pace without having to constrain the core kernel's
+development
+
+> yes - although obviously a KVM Linux guest does not need such an 
+> interface - but it's a nice proof of concept to integrate other guest 
+> OSs into KVM.
+>   
+
+Well, if there were any other guests that used VMI that might be
+useful.  You'd get further using the Xen ABI.
+
+
+    J
