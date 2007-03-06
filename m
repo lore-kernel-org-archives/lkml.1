@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbXCFDHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbXCFDIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933883AbXCFDHE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 22:07:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933884AbXCFDHD
+	id S932570AbXCFDIL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 22:08:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933885AbXCFDIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 22:07:03 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:48468 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933883AbXCFDHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 22:07:01 -0500
-Date: Mon, 5 Mar 2007 19:03:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gerd Hoffmann <kraxel@suse.de>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       Alex Williamson <alex.williamson@hp.com>,
-       Kevin Stansell <kstansel@us.ibm.com>
-Subject: Re: [patch] Add insmod option to force the use of the backup timer.
-Message-Id: <20070305190333.c01a7ffc.akpm@linux-foundation.org>
-In-Reply-To: <45E6D309.5050409@suse.de>
-References: <20070228102346.115707000@suse.de>
-	<20070228185505.GA17193@redhat.com>
-	<45E6D309.5050409@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Mar 2007 22:08:10 -0500
+Received: from cavan.codon.org.uk ([217.147.92.49]:57988 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932570AbXCFDII (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 22:08:08 -0500
+Date: Tue, 6 Mar 2007 03:07:36 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Greg KH <greg@kroah.com>
+Cc: Matt Mackall <mpm@selenic.com>, Theodore Tso <tytso@mit.edu>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Message-ID: <20070306030735.GA6769@srcf.ucam.org>
+References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org> <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org> <20070305185813.GA31465@kroah.com> <20070305195530.GM23311@waste.org> <20070305223900.GA7676@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070305223900.GA7676@kroah.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Mar 2007 14:20:09 +0100 Gerd Hoffmann <kraxel@suse.de> wrote:
+On Mon, Mar 05, 2007 at 02:39:00PM -0800, Greg KH wrote:
 
-> Dave Jones wrote:
-> > On Wed, Feb 28, 2007 at 11:23:46AM +0100, Gerd Hoffmann wrote:
-> >  > The test which automatically enables the backup timer on some HP
-> >  > machines doesn't trigger on other hardware which needs the backup
-> >  > timer too.
-> > 
-> > Did you figure out *why* that test doesn't trigger?
+> Ok, I only named HAL as that is what people have told me the problem is.
+> I have been running this change on my boxs, without
+> CONFIG_SYSFS_DEPRECATED since last July or so.
 > 
-> I didn't, probably a slightly different hardware bug.
-> 
-> > Making that work seems a better solution to me than adding magic
-> > options that users won't know they have to use.
-> 
-> Sure, that would be better.  I'll leave that to the ibm guys who own the
-> hardware in question ;)
-> 
+> But I don't use NetworkManager here for the most part, but I have tried
+> this in the OpenSuse10.3 alpha releases and it seems to work just fine
+> with whatever version of NetworkManager it uses.
 
-Well, it doens't _have_ to be the IBM guys.  Anyone who can reproduce this
-problem should be able to find the suitable magic to detect the broken
-interrupt generation.
+At a guess, you're carrying either a git snapshot or have backports from 
+git. Several distributions do this, but until there's actually been a 
+released version that works, it's a bit early to set a timescale.
 
-An automatic fix is much preferable to a module parameter which most people
-won't even know exists.
-
-Perhaps Alex can suggest some debugging steps we can take to work out
-why the test isn't triggering?
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
