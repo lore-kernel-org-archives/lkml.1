@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030182AbXCFVcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030200AbXCFVfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030182AbXCFVcZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030200AbXCFVcZ
+	id S1030200AbXCFVfy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:35:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030194AbXCFVfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:32:25 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:35646 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030182AbXCFVcY (ORCPT
+	Tue, 6 Mar 2007 16:35:54 -0500
+Received: from mga09.intel.com ([134.134.136.24]:11246 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030200AbXCFVfx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:32:24 -0500
-Message-ID: <45EDDDE7.9060408@vmware.com>
-Date: Tue, 06 Mar 2007 13:32:23 -0800
-From: Dan Hecht <dhecht@vmware.com>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Tue, 6 Mar 2007 16:35:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,255,1170662400"; 
+   d="scan'208"; a="53982425:sNHT20503575"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-Cc: tglx@linutronix.de, Zachary Amsden <zach@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net> <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu> <20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com> <1173178774.24738.311.camel@localhost.localdomain> <45EDD82F.90204@vmware.com> <20070306222157.GJ22829@bingen.suse.de>
-In-Reply-To: <20070306222157.GJ22829@bingen.suse.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2007 21:32:22.0997 (UTC) FILETIME=[ED5A5850:01C76036]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Xen & VMI?
+Date: Tue, 6 Mar 2007 13:35:51 -0800
+Message-ID: <8FFF7E42E93CC646B632AB40643802A8022CBA54@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <20070306203712.GC21736@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Xen & VMI?
+Thread-Index: AcdgL0JQNMCdaM76Qr++eQom2dn7SAAAykAQ
+From: "Nakajima, Jun" <jun.nakajima@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Anthony Liguori" <anthony@codemonkey.ws>,
+       "virtualization" <virtualization@lists.osdl.org>,
+       "Roland McGrath" <roland@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Jan Beulich" <jbeulich@novell.com>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 06 Mar 2007 21:35:52.0084 (UTC) FILETIME=[69FA7D40:01C76037]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/06/2007 02:21 PM, Andi Kleen wrote:
->> I believe this was just a quick fix in response to Ingo breaking the VMI 
->> build yesterday by disabling NO_IDLE_HZ on us.  There is no technical 
->> reason why NO_IDLE_HZ=y can't coexist with NO_HZ.
+Ingo Molnar wrote:
+> * Nakajima, Jun <jun.nakajima@intel.com> wrote:
 > 
-> Well it's nasty that you force NO_IDLE_HZ on all of paravirt ops users.
+>> I think a KVM Linux would benefit more from paravirt ops, rather than
+>> VMI. The higher-level interface such as the one in Xen, espeically
+>> for I/O, interrupt controllers, timer, SMP, etc. actually simplifies
+>> the implementation of the VMM, and improve performance of the guest.
+>> Even for MMU, direct page tables, for example, would work better for
+>> hardware-based virtualization because the processor can use the
+>> native page tables.
+> 
+> maybe we are talking past each other because i dont really disagree
+> with that: i mentioned it right at beginning that higher-level APIs
+> would have to be added to VMI. What i'd like to avoid is the ABI
+> duplication for the lowlevel stuff /and/ for the highlevel stuff.
+> Since VMI is mostly about lowlevel stuff right now it's obvious that
+> it would have to grow more highlevel ops. Doing an IO driver via IO
+> emulation is obviously pretty ... low-tech.
+>
 
-The only thing NO_IDLE_HZ=y "forces" on other users is some extra code 
-(which you are going to get no matter what with CONFIG_PARAVIRT).   It 
-doesn't force them to use this code.  It just provides a few extra 
-routines that a paravirt_ops backend might want to call back into (I 
-think both vmi and xen backends use these routines and that is why it 
-became associated with CONFIG_PARAVIRT rather than CONFIG_VMI).
+I agree with you.
+ 
+> maybe i shouldnt call it 'VMI' but 'the paravirt ABI'. I dont mind if
+> it's the Xen ABI or the VMWare ABI or a mesh of the two - everyone can
+> map their own internals to that /one/ ABI.
+
+To me it should be handled as 'paravirt devices', 'paravirt chipset',
+etc. If we use the standard H/W detection mechanism (such as CPUID, I/O
+port, etc.) used by the native kernel, we should be able to extend the
+kernel cleanly (or just add device drivers). And the key here is to
+define the behavior of such pseudo (or fake) H/W as we do for actual
+H/W. Then 'the paravirt ABI' is the set of (high-level) operations for
+such fake H/W devices.
+
+> 
+> 	Ingo
+
+Jun
+---
+Intel Open Source Technology Center
