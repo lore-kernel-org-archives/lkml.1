@@ -1,86 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965528AbXCFSPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965470AbXCFSQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965528AbXCFSPf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:15:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965535AbXCFSPJ
+	id S965470AbXCFSQK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:16:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965505AbXCFSQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:15:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59195 "EHLO mx1.redhat.com"
+	Tue, 6 Mar 2007 13:16:09 -0500
+Received: from gw.goop.org ([64.81.55.164]:33059 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965524AbXCFSPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:15:04 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0703051843030.10272@blonde.wat.veritas.com> 
-References: <Pine.LNX.4.64.0703051843030.10272@blonde.wat.veritas.com>  <Pine.LNX.4.64.0703021646050.13167@blonde.wat.veritas.com> <20070216165042.GB409@lnx-holt.americas.sgi.com> <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> <18817.1171656543@redhat.com> <29317.1172931029@redhat.com> 
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Robin Holt <holt@sgi.com>,
-       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>,
-       "Hideo AOKI@redhat" <haoki@redhat.com>
-Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 06 Mar 2007 18:13:33 +0000
-Message-ID: <3378.1173204813@redhat.com>
+	id S965470AbXCFSQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:16:04 -0500
+Message-ID: <45EDAFE1.1090106@goop.org>
+Date: Tue, 06 Mar 2007 10:16:01 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 5/8] Cleanup GDT access
+References: <1173184747.4644.23.camel@localhost.localdomain>	 <1173185592.4644.28.camel@localhost.localdomain>	 <1173185666.4644.30.camel@localhost.localdomain>	 <1173185734.4644.32.camel@localhost.localdomain>	 <1173185827.4644.34.camel@localhost.localdomain> <1173185909.4644.36.camel@localhost.localdomain>
+In-Reply-To: <1173185909.4644.36.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rusty Russell wrote:
+> Now we have an explicit per-cpu GDT variable, we don't need to keep
+> the descriptors around to use them to find the GDT.  Also remove the
+> cpu_pda() accessor: it's just a per-cpu variable.
+>   
+Looks good.
 
-Hugh Dickins <hugh@veritas.com> wrote:
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-> > > Under precisely what NOMMU conditions?
-> > 
-> > CONFIG_MMU=n.
-> 
-> Believe it or not, I had just about grasped that subtlety.  I was
-> rather expecting some helpful response along the lines of "we share
-> all the vmas across a fork" or "whenever we go to allocate a vma, we
-> look to see if there's already an isomorphic vma which we can share"
-> or something like that.  But don't worry about it, the source is
-> there for me to look at whenever.
-
-Any VMAs that can be shared are, as a general rule.  It works this way because
-shared MAP_PRIVATE read-only file data (such as a segment of an ELF
-executable) is stored in a kmalloc()'d buffer attached to the VMA.  The
-lifetime of this buffer is handled by the VMA, and the buffer is not part of
-the pagecache.
-
-Maybe it could be; that'd make the ramfs handling more consistent with normal
-file handling.
-
-Such things as mappable chardevs do get separate VMA's, but those don't own
-the backing store.  That's configured through the BDI information in the
-address_space.
-
-> > I can if it makes you happier.  It's not strictly necessary, but it does
-> > make the struct smaller which is good.
-> 
-> No, it doesn't really make me any happier: I expect that if I look any
-> deeper, I'll just find plenty more to worry about there.
-
-Good.  I was hoping someone else would review it.
-
-> I have the impression, now reinforced by your defensive posture,
-
-*shrug*  I was trying to keep the VMA as little changed as possible and add as
-little extra to it as possible.
-
-> that NOMMU is a hack that squeamish outsiders had better not look too deeply
-> into:
-
-Anyone that squeamish should avoid the full MMU VM like the plague then - it's
-way way worse.  NOMMU is considerably simpler.  Yes, some liberties have to be
-taken, but there's no avoiding that as there's no MMU available.  I've tried to
-take as few as possible, and I've managed to make sure almost all the
-functionality afforded by the MMU kernels is available.
-
-> so long as it mostly works for those who need it to work, we'd probably just
-> be wasting your time anyway.
-
-*shrug* as you wish.
-
-David
+    J
