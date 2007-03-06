@@ -1,52 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030220AbXCFVon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030238AbXCFVp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030220AbXCFVon (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:44:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030224AbXCFVon
+	id S1030238AbXCFVp0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030224AbXCFVp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:44:43 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44422 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030220AbXCFVom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:44:42 -0500
-Message-ID: <45EDE0B5.4060907@redhat.com>
-Date: Tue, 06 Mar 2007 16:44:21 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>,
-       bert hubert <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org
-Subject: Re: userspace pagecache management tool
-References: <20070303122935.f1ab0067.akpm@linux-foundation.org>	<45E9DD4A.2060806@redhat.com>	<20070303131204.6706a95c.akpm@linux-foundation.org>	<45E9E910.2070804@redhat.com>	<20070303214108.GA28961@outpost.ds9a.nl>	<20070303141448.1ed70e6d.akpm@linux-foundation.org>	<45E9F454.2080600@redhat.com>	<20070303142609.d3bc9cc3.akpm@linux-foundation.org>	<20070303230155.GA475@outpost.ds9a.nl>	<20070303154541.70aed9df.akpm@linux-foundation.org>	<45ED5A49.1010702@draigBrady.com> <20070306134046.5be821f5.akpm@linux-foundation.org>
-In-Reply-To: <20070306134046.5be821f5.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 6 Mar 2007 16:45:26 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:13013 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030242AbXCFVpY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 16:45:24 -0500
+Date: Wed, 7 Mar 2007 00:45:14 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "Cedric Pontois" <cpontois@nortel.com>
+Cc: "Li Yang-r58472" <LeoLi@freescale.com>, <dmalek@jlc.net>,
+       <linux-kernel@vger.kernel.org>, <linuxppc-embedded@ozlabs.org>,
+       "Rachid Koucha" <koucha@nortel.com>
+Subject: Re: [patch 1/1] ppc: Possible bug fix for FCC driver
+Message-ID: <20070307004514.76bb83cc@localhost.localdomain>
+In-Reply-To: <00B1F4365DDBE745B091C67A1CCFCB4307124DB1@zctfhxm1>
+References: <20070306124218.4bebc288@localhost.localdomain>
+	<00B1F4365DDBE745B091C67A1CCFCB4307124DB1@zctfhxm1>
+X-Mailer: Claws Mail 2.7.2cvs30 (GTK+ 2.10.9; i686-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 06 Mar 2007 12:10:49 +0000
-> P__draig Brady <P@draigBrady.com> wrote:
->> Andrew Morton wrote:
+On Tue, 6 Mar 2007 12:03:57 +0100
+Cedric Pontois wrote:
 
->> If I'm the target
->> audience for that API then it's broken as I'd mess it up,
->> or would take too long to get it right.
->>
->> Can't we just fix the posix_fadvise() implementation to
->> only evict pages paged in by the current process.
+> Hi Vitaly,
 > 
-> The kernel doesn't have that information.
+> The problem seems to be similar in recent kernels
+> (/drivers/net/fs_enet/mac-fcc.c). The transmit clock is inverted (TCI
+> bit set). The packets are well received, transmitted packets go out
+> (tx counter is ok), unfortunately as the clock is inverted (TCI) the
+> data are not correctly received by the other side. The FCC works in
+> 100Mbps (luck?) but doesn't in 10Mbps. I solved this problem by
+> removing the TCI bit set as described in the patch. Actually, this
+> problem depends also of the Ethernet phy used on board.
+> 
+IIRC it worked for us with Davicom PHY on 10 MBps on one of 8260-like...
+ 
+Well I give it a try once more with the recent kernel, but anyway if you think 
+you've located and fixed root cause, do (and test) a patch against recent kernel,
+send it to me cc'ing netdev and linuxppc-embedded, and I'll push it along
+if it is not breaking existing boards.
 
-It doesn't _keep_ the information.  File readahead is done
-in the process context, so we had it originally.
+-Vitaly
 
-I agree though that we probably should not bother trying
-to keep that kind of information :)
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+> Cedric
+> 
+> -----Original Message-----
+> From: Vitaly Bordug [mailto:vbordug@ru.mvista.com] 
+> Sent: mardi 6 mars 2007 10:42
+> To: Li Yang-r58472
+> Cc: Pontois, Cedric UMTS (CEZ:8Z10); dmalek@jlc.net;
+> linux-kernel@vger.kernel.org; linuxppc-embedded@ozlabs.org
+> Subject: Re: [patch 1/1] ppc: Possible bug fix for FCC driver
+> 
+> 
+> On Tue, 6 Mar 2007 10:23:43 +0800
+> Li Yang-r58472 wrote:
+> 
+> > Hi Cedric,
+> > 
+> > For ppc embedded related patches, please also cc: 
+> > linuxppc-embedded@ozlabs.org.
+> > 
+> > > We use a kernel 2.6.14 on PPC platform (MPC 8555). The FCC driver
+> > works
+> > 
+> > To submit a kernel patch upstream, the patch should be against the 
+> > latest kernel version which is 2.6.21-rc now.
+> > > well with a 100Mbps link. But it doesn't with a 10Mbps link. To 
+> > > solve it, I modified the GFMR register init: removed TCI bit and
+> > > set
+> 
+> > > CRC32
+> > bit
+> > > instead of.
+> > 
+> > I don't know how these bits caused the 10M link issue.  Do you have 
+> > any reasoning?
+> > 
+> > > 	Signed-off-by: Cedric Pontois <cpontois@nortel.com>
+> > > 
+> > >
+> > ----------------------------------------------------------------------
+> > --
+> > > -----
+> > > 
+> > > diff -ruN pa-original/arch/ppc/8260_io/fcc_enet.c
+> The fcc code in 8260_io has been obsoleted by fs_enet driver
+> (drivers/net/fs_enet). It is known to work with 85xx at least in
+> recent kernels. If it does not for some reason, please letus know.
+> 
+> Thanks,
+> 
+> -Vitaly
