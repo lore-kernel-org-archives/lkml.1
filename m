@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbXCFVKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751023AbXCFVLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751326AbXCFVKL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:10:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXCFVKK
+	id S1751023AbXCFVLz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbXCFVLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:10:10 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45471 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751099AbXCFVKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:10:08 -0500
-Date: Tue, 6 Mar 2007 22:09:59 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Len Brown <lenb@kernel.org>,
+	Tue, 6 Mar 2007 16:11:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40520 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751023AbXCFVLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 16:11:54 -0500
+Date: Tue, 6 Mar 2007 22:11:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Nakajima, Jun" <jun.nakajima@intel.com>,
+       virtualization <virtualization@lists.osdl.org>,
+       Roland McGrath <roland@redhat.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.21 - part II (resend)
-Message-ID: <20070306210959.GB3843@elf.ucw.cz>
-References: <200702162223.59837.lenb@kernel.org> <20020101045751.GD4106@ucw.cz> <20070306122213.GF2919@inferi.kami.home>
-MIME-Version: 1.0
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
+Subject: Re: Xen & VMI?
+Message-ID: <20070306211105.GD26348@elte.hu>
+References: <45ED82D9.6050204@codemonkey.ws> <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com> <20070306203712.GC21736@elte.hu> <45EDD6F1.7080100@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070306122213.GF2919@inferi.kami.home>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <45EDD6F1.7080100@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > commit 4465857d5f99079bae00621626adf74ed8256296
-> > > Author: Mattia Dongili <malattia@linux.it>
-> > > Date:   Sat Jan 13 23:04:39 2007 +0100
-> > > 
-> > >     sony_acpi: Add lanpower and audiopower controls
-> > >     
-> > >     audiopower works well on my SZ72B so it's not marked has "debug" while lanpower
-> > >     has at least one report of not resuming power happily so morked as "debug"
-> > >     
-> > >     Signed-off-by: Mattia Dongili <malattia@linux.it>
-> > >     Signed-off-by: Len Brown <len.brown@intel.com>
-> > 
-> > What is interface to these? It would be nice to automagically disable
-> > audiopower when sound device is closed, and automagically power down
-> > lan on ifconfig ... down.
-> 
-> the audiopower is basically a _PS3/_PS0 switch for the device, while the
-> lanpower plays with the embedded controller to powerdown/powerup.
-> 
-> Now, unfortunately those methods are attached to a fake device in the
-> DSDT and afaict there's no way to tell which real device they are
-> playing with (except by inspecting the method implementations).
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Well of course iff there's only _one_ sound card and _one_ nic you can
-> easily guess it :)
+> If you're seriously talking about an ABI, [...]
 
-Hmm... you are on sony notebook... right? That means it is very likely
-it has just one sound card, and just one ethernet, no?
+HELLO, this isnt a hypothetical!! The moment there's a xen_paravirt_ops, 
+Linux has DE FACTO committed itself to the Xen ABI: whatever 
+functionality the hypercall_page call table plus the int $0x82 interface 
+offers.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+THE MOMENT any of that goes upstream and ships in a distro it's going to 
+be there forever! Try to change paravirt_ops or any core bit of Linux so 
+that this ABI cannot be sanely supported: 'fix it, you broke Xen!'. It 
+wont matter that paravirt_ops is 'internal' to Linux.
+
+so trying to argue as if there was no ABI imposed on Linux by hiding the 
+Xen ABI behind paravirt_ops, and whistling into the air as if nothing 
+happened is misguided at best.
+
+	Ingo
