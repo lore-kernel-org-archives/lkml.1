@@ -1,456 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965890AbXCFOwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965896AbXCFOwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965890AbXCFOwo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 09:52:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965898AbXCFOwo
+	id S965896AbXCFOwv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 09:52:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965898AbXCFOwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 09:52:44 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:21302 "EHLO relay.sw.ru"
+	Tue, 6 Mar 2007 09:52:51 -0500
+Received: from main.gmane.org ([80.91.229.2]:53431 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965890AbXCFOwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 09:52:42 -0500
-Message-ID: <45ED80E1.7030406@sw.ru>
-Date: Tue, 06 Mar 2007 17:55:29 +0300
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>
-CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
-Subject: [RFC][PATCH 2/7] RSS controller core
-References: <45ED7DEC.7010403@sw.ru>
-In-Reply-To: <45ED7DEC.7010403@sw.ru>
-Content-Type: multipart/mixed;
- boundary="------------020800020604050801060908"
+	id S965896AbXCFOwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 09:52:49 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Dirk Schoebel <dirk@liji-und-dirk.de>
+Subject: Re: [linux-usb-devel] OOPS with 2.6.20 and 2.6.21-rc2 (mos7720)
+Followup-To: gmane.linux.usb.devel
+Date: Tue, 06 Mar 2007 15:52:24 +0100
+Message-ID: <esjv78$g3h$1@sea.gmane.org>
+References: <esjg1h$l8d$1@sea.gmane.org> <200703061207.53484.oliver@neukum.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: port-87-234-91-111.dynamic.qsc.de
+User-Agent: KNode/0.10.4
+Cc: linux-usb-devel@lists.sourceforge.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020800020604050801060908
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Oliver Neukum wrote:
 
-This includes setup of RSS container within generic
-process containers, all the declarations used in RSS
-accounting, and core code responsible for accounting.
+> Am Dienstag, 6. März 2007 11:33 schrieb Dirk Schoebel:
+>> when trying to access /dev/ttyUSB0, which is a port on a dual port
+>> usb-serial cable (mos7720 based) an kernel OOPS happens
+>> the driver loads ok, first access via minicom -> OOPS
 
---------------020800020604050801060908
-Content-Type: text/plain;
- name="diff-rss-container-core"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff-rss-container-core"
+> 
+> Please apply:
+>
+ftp://ftp.kernel.org/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-usb/usb-fix-usb-serial-device-naming-bug.patch
+>
+ftp://ftp.kernel.org/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-usb/usb-further-fix-for-usb-serial.patch
+> 
+> HTH
+> Oliver
 
-diff -upr linux-2.6.20.orig/include/linux/rss_container.h linux-2.6.20-0/include/linux/rss_container.h
---- linux-2.6.20.orig/include/linux/rss_container.h	2007-03-06 13:39:17.000000000 +0300
-+++ linux-2.6.20-0/include/linux/rss_container.h	2007-03-06 13:33:28.000000000 +0300
-@@ -0,0 +1,68 @@
-+#ifndef __RSS_CONTAINER_H__
-+#define __RSS_CONTAINER_H__
-+/*
-+ * RSS container
-+ *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ *
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-+ */
-+
-+struct page_container;
-+struct rss_container;
-+
-+#ifdef CONFIG_RSS_CONTAINER
-+int container_rss_prepare(struct page *, struct vm_area_struct *vma,
-+		struct page_container **);
-+
-+void container_rss_add(struct page_container *);
-+void container_rss_del(struct page_container *);
-+void container_rss_release(struct page_container *);
-+
-+int mm_init_container(struct mm_struct *mm, struct task_struct *tsk);
-+void mm_free_container(struct mm_struct *mm);
-+
-+unsigned long container_isolate_pages(unsigned long nr_to_scan,
-+		struct rss_container *rss, struct list_head *dst,
-+		int active, unsigned long *scanned);
-+unsigned long container_nr_physpages(struct rss_container *rss);
-+
-+unsigned long container_try_to_free_pages(struct rss_container *);
-+void container_out_of_memory(struct rss_container *);
-+
-+void container_rss_init_early(void);
-+#else
-+static inline int container_rss_prepare(struct page *pg,
-+		struct vm_area_struct *vma, struct page_container **pc)
-+{
-+	*pc = NULL; /* to make gcc happy */
-+	return 0;
-+}
-+
-+static inline void container_rss_add(struct page_container *pc)
-+{
-+}
-+
-+static inline void container_rss_del(struct page_container *pc)
-+{
-+}
-+
-+static inline void container_rss_release(struct page_container *pc)
-+{
-+}
-+
-+static inline int mm_init_container(struct mm_struct *mm, struct task_struct *t)
-+{
-+	return 0;
-+}
-+
-+static inline void mm_free_container(struct mm_struct *mm)
-+{
-+}
-+
-+static inline void container_rss_init_early(void)
-+{
-+}
-+#endif
-+#endif
-diff -upr linux-2.6.20.orig/init/Kconfig linux-2.6.20-0/init/Kconfig
---- linux-2.6.20.orig/init/Kconfig	2007-03-06 13:33:28.000000000 +0300
-+++ linux-2.6.20-0/init/Kconfig	2007-03-06 13:33:28.000000000 +0300
-@@ -265,6 +265,13 @@ config CPUSETS
- 	bool
- 	select CONTAINERS
- 
-+config RSS_CONTAINER
-+	bool "RSS accounting container"
-+	select RESOURCE_COUNTERS
-+	help
-+	  Provides a simple Resource Controller for monitoring and
-+	  controlling the total Resident Set Size of the tasks in a container
-+
- config SYSFS_DEPRECATED
- 	bool "Create deprecated sysfs files"
- 	default y
-diff -upr linux-2.6.20.orig/mm/Makefile linux-2.6.20-0/mm/Makefile
---- linux-2.6.20.orig/mm/Makefile	2007-02-04 21:44:54.000000000 +0300
-+++ linux-2.6.20-0/mm/Makefile	2007-03-06 13:33:28.000000000 +0300
-@@ -29,3 +29,5 @@ obj-$(CONFIG_MEMORY_HOTPLUG) += memory_h
- obj-$(CONFIG_FS_XIP) += filemap_xip.o
- obj-$(CONFIG_MIGRATION) += migrate.o
- obj-$(CONFIG_SMP) += allocpercpu.o
-+
-+obj-$(CONFIG_RSS_CONTAINER) += rss_container.o
-diff -upr linux-2.6.20.orig/mm/rss_container.c linux-2.6.20-0/mm/rss_container.c
---- linux-2.6.20.orig/mm/rss_container.c	2007-03-06 13:39:17.000000000 +0300
-+++ linux-2.6.20-0/mm/rss_container.c	2007-03-06 13:33:28.000000000 +0300
-@@ -0,0 +1,307 @@
-+/*
-+ * RSS accounting container
-+ *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ *
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-+ */
-+
-+#include <linux/list.h>
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/res_counter.h>
-+#include <linux/rss_container.h>
-+
-+static struct container_subsys rss_subsys;
-+
-+struct rss_container {
-+	struct res_counter res;
-+	struct list_head page_list;
-+	struct container_subsys_state css;
-+};
-+
-+struct page_container {
-+	struct page *page;
-+	struct rss_container *cnt;
-+	struct list_head list;
-+};
-+
-+static inline struct rss_container *rss_from_cont(struct container *cnt)
-+{
-+	return container_of(container_subsys_state(cnt, &rss_subsys),
-+			struct rss_container, css);
-+}
-+
-+int mm_init_container(struct mm_struct *mm, struct task_struct *tsk)
-+{
-+	struct rss_container *cnt;
-+
-+	cnt = rss_from_cont(task_container(tsk, &rss_subsys));
-+	if (css_get(&cnt->css))
-+		return -EBUSY;
-+
-+	mm->rss_container = cnt;
-+	return 0;
-+}
-+
-+void mm_free_container(struct mm_struct *mm)
-+{
-+	css_put(&mm->rss_container->css);
-+}
-+
-+int container_rss_prepare(struct page *page, struct vm_area_struct *vma,
-+		struct page_container **ppc)
-+{
-+	struct rss_container *rss;
-+	struct page_container *pc;
-+
-+	rcu_read_lock();
-+	rss = rcu_dereference(vma->vm_mm->rss_container);
-+	css_get_current(&rss->css);
-+	rcu_read_unlock();
-+
-+	pc = kmalloc(sizeof(struct page_container), GFP_KERNEL);
-+	if (pc == NULL)
-+		goto out_nomem;
-+
-+	while (res_counter_charge(&rss->res, 1)) {
-+		if (container_try_to_free_pages(rss))
-+			continue;
-+
-+		container_out_of_memory(rss);
-+		if (test_thread_flag(TIF_MEMDIE))
-+			goto out_charge;
-+	}
-+
-+	pc->page = page;
-+	pc->cnt = rss;
-+	*ppc = pc;
-+	return 0;
-+
-+out_charge:
-+	kfree(pc);
-+out_nomem:
-+	css_put(&rss->css);
-+	return -ENOMEM;
-+}
-+
-+void container_rss_release(struct page_container *pc)
-+{
-+	struct rss_container *rss;
-+
-+	rss = pc->cnt;
-+	res_counter_uncharge(&rss->res, 1);
-+	css_put(&rss->css);
-+	kfree(pc);
-+}
-+
-+void container_rss_add(struct page_container *pc)
-+{
-+	struct page *pg;
-+	struct rss_container *rss;
-+
-+	pg = pc->page;
-+	rss = pc->cnt;
-+
-+	spin_lock(&rss->res.lock);
-+	list_add(&pc->list, &rss->page_list);
-+	spin_unlock(&rss->res.lock);
-+
-+	page_container(pg) = pc;
-+}
-+
-+void container_rss_del(struct page_container *pc)
-+{
-+	struct page *page;
-+	struct rss_container *rss;
-+
-+	page = pc->page;
-+	rss = pc->cnt;
-+
-+	spin_lock(&rss->res.lock);
-+	list_del(&pc->list);
-+	res_counter_uncharge_locked(&rss->res, 1);
-+	spin_unlock(&rss->res.lock);
-+
-+	css_put(&rss->css);
-+	kfree(pc);
-+}
-+
-+unsigned long container_isolate_pages(unsigned long nr_to_scan,
-+		struct rss_container *rss, struct list_head *dst,
-+		int active, unsigned long *scanned)
-+{
-+	unsigned long nr_taken = 0;
-+	struct page *page;
-+	struct page_container *pc;
-+	unsigned long scan;
-+	struct list_head *src;
-+	LIST_HEAD(pc_list);
-+	struct zone *z;
-+
-+	spin_lock_irq(&rss->res.lock);
-+	src = &rss->page_list;
-+
-+	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
-+		pc = list_entry(src->prev, struct page_container, list);
-+		page = pc->page;
-+		z = page_zone(page);
-+
-+		list_move(&pc->list, &pc_list);
-+
-+		spin_lock(&z->lru_lock);
-+		if (PageLRU(page)) {
-+			if ((active && PageActive(page)) ||
-+					(!active && !PageActive(page))) {
-+				if (likely(get_page_unless_zero(page))) {
-+					ClearPageLRU(page);
-+					nr_taken++;
-+					list_move(&page->lru, dst);
-+				}
-+			}
-+		}
-+		spin_unlock(&z->lru_lock);
-+	}
-+
-+	list_splice(&pc_list, src);
-+	spin_unlock_irq(&rss->res.lock);
-+
-+	*scanned = scan;
-+	return nr_taken;
-+}
-+
-+unsigned long container_nr_physpages(struct rss_container *rss)
-+{
-+	return rss->res.usage;
-+}
-+
-+static void rss_move_task(struct container_subsys *ss,
-+		struct container *cont,
-+		struct container *old_cont,
-+		struct task_struct *p)
-+{
-+	struct mm_struct *mm;
-+	struct rss_container *rss, *old_rss;
-+
-+	mm = get_task_mm(p);
-+	if (mm == NULL)
-+		goto out;
-+
-+	rss = rss_from_cont(cont);
-+	old_rss = rss_from_cont(old_cont);
-+	if (old_rss != mm->rss_container)
-+		goto out_put;
-+
-+	css_get_current(&rss->css);
-+	rcu_assign_pointer(mm->rss_container, rss);
-+	css_put(&old_rss->css);
-+
-+out_put:
-+	mmput(mm);
-+out:
-+	return;
-+}
-+
-+static int rss_create(struct container_subsys *ss, struct container *cont)
-+{
-+	struct rss_container *rss;
-+
-+	rss = kzalloc(sizeof(struct rss_container), GFP_KERNEL);
-+	if (rss == NULL)
-+		return -ENOMEM;
-+
-+	res_counter_init(&rss->res);
-+	INIT_LIST_HEAD(&rss->page_list);
-+	cont->subsys[rss_subsys.subsys_id] = &rss->css;
-+	return 0;
-+}
-+
-+static void rss_destroy(struct container_subsys *ss,
-+		struct container *cont)
-+{
-+	kfree(rss_from_cont(cont));
-+}
-+
-+
-+static ssize_t rss_read(struct container *cont, struct cftype *cft,
-+		struct file *file, char __user *userbuf,
-+		size_t nbytes, loff_t *ppos)
-+{
-+	return res_counter_read(&rss_from_cont(cont)->res, cft->private,
-+			userbuf, nbytes, ppos);
-+}
-+
-+static ssize_t rss_write(struct container *cont, struct cftype *cft,
-+		struct file *file, const char __user *userbuf,
-+		size_t nbytes, loff_t *ppos)
-+{
-+	return res_counter_write(&rss_from_cont(cont)->res, cft->private,
-+			userbuf, nbytes, ppos);
-+}
-+
-+
-+static struct cftype rss_usage = {
-+	.name = "rss_usage",
-+	.private = RES_USAGE,
-+	.read = rss_read,
-+};
-+
-+static struct cftype rss_limit = {
-+	.name = "rss_limit",
-+	.private = RES_LIMIT,
-+	.read = rss_read,
-+	.write = rss_write,
-+};
-+
-+static struct cftype rss_failcnt = {
-+	.name = "rss_failcnt",
-+	.private = RES_FAILCNT,
-+	.read = rss_read,
-+};
-+
-+static int rss_populate(struct container_subsys *ss,
-+		struct container *cont)
-+{
-+	int rc;
-+
-+	if ((rc = container_add_file(cont, &rss_usage)) < 0)
-+		return rc;
-+	if ((rc = container_add_file(cont, &rss_failcnt)) < 0)
-+		return rc;
-+	if ((rc = container_add_file(cont, &rss_limit)) < 0)
-+		return rc;
-+
-+	return 0;
-+}
-+
-+static struct rss_container init_rss_container;
-+
-+static __init int rss_create_early(struct container_subsys *ss,
-+		struct container *cont)
-+{
-+	struct rss_container *rss;
-+
-+	rss = &init_rss_container;
-+	res_counter_init(&rss->res);
-+	INIT_LIST_HEAD(&rss->page_list);
-+	cont->subsys[rss_subsys.subsys_id] = &rss->css;
-+	ss->create = rss_create;
-+	return 0;
-+}
-+
-+static struct container_subsys rss_subsys = {
-+	.name = "rss",
-+	.create = rss_create_early,
-+	.destroy = rss_destroy,
-+	.populate = rss_populate,
-+	.attach = rss_move_task,
-+};
-+
-+void __init container_rss_init_early(void)
-+{
-+	container_register_subsys(&rss_subsys);
-+	init_mm.rss_container = rss_from_cont(
-+			task_container(&init_task, &rss_subsys));
-+	css_get_current(&init_mm.rss_container->css);
-+}
+hmm, applied these patches, still crashes
 
 
---------------020800020604050801060908--
+Mar  6 15:46:30 emerald Unable to handle kernel NULL pointer dereference at
+0000000000000070 RIP:
+Mar  6 15:46:30 emerald
+[<ffffffff8813b606>] :mos7720:mos7720_open+0x406/0x5a0
+Mar  6 15:46:30 emerald PGD 13d489067 PUD 10ffe4067 PMD 0
+Mar  6 15:46:30 emerald Oops: 0000 [1] SMP
+Mar  6 15:46:30 emerald CPU 0
+Mar  6 15:46:30 emerald Modules linked in: snd_rtctimer snd_seq_midi
+snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_emul
+snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event
+snd_seq nls_iso8859_15 vmnet(PF) vmmon(PF) it87 hwmon_vid i2c_isa rfcomm
+eeprom l2cap lm90 fuse nls_iso8859_1 nls_cp850 eth1394 kqemu capability
+dazuko commoncap tuner tvaudio msp3400 psmouse nvidia(P) snd_emu10k1
+snd_rawmidi snd_seq_device snd_util_mem snd_hwdep mos7720 usbserial
+ohci1394 i2c_nforce2 skge snd_bt87x bttv video_buf ir_common compat_ioctl32
+btcx_risc tveeprom videodev v4l2_common v4l1_compat k8temp forcedeth
+snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd snd_page_alloc
+zaurus cdc_ether usbnet hci_usb bluetooth
+Mar  6 15:46:30 emerald Pid: 11881, comm: minicom Tainted: PF     
+2.6.21-rc2-emi #1
+Mar  6 15:46:30 emerald RIP: 0010:[<ffffffff8813b606>] 
+[<ffffffff8813b606>] :mos7720:mos7720_open+0x406/0x5a0
+Mar  6 15:46:30 emerald RSP: 0018:ffff810122757d58  EFLAGS: 00010202
+Mar  6 15:46:30 emerald RAX: 0000000040000780 RBX: ffff81013dfc5800 RCX:
+ffff81013ffe8000
+Mar  6 15:46:30 emerald RDX: 0000000000000000 RSI: ffff810001000110 RDI:
+0000000000000000
+Mar  6 15:46:30 emerald RBP: ffff810122757d6f R08: ffff810122756000 R09:
+ffff810122757b58
+Mar  6 15:46:30 emerald R10: 0000000000000000 R11: 0000000000000000 R12:
+ffff81013dfc5800
+Mar  6 15:46:30 emerald R13: ffff81013d868bc0 R14: ffff81013cf43b00 R15:
+ffff81013d688580
+Mar  6 15:46:30 emerald FS:  00002ba10338cda0(0000) GS:ffffffff808a200
+(0000) knlGS:00000000f64af9c0
+Mar  6 15:46:30 emerald CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+Mar  6 15:46:30 emerald CR2: 0000000000000070 CR3: 000000013e55e000 CR4:
+00000000000006e0
+Mar  6 15:46:30 emerald Process minicom (pid: 11881, threadinfo
+ffff810122756000, task ffff810100074730)
+Mar  6 15:46:30 emerald Stack:  ffff81013dfc5800 ffff81013d774ff0
+0c00000000000282 ffff81013dfc5800
+Mar  6 15:46:30 emerald ffff81013d868bc0 ffff810139607000 ffff81013dfc5818
+00000000ffffffed
+Mar  6 15:46:30 emerald ffff8100bdabb2c0 ffffffff8812f487 ffff810109b6c900
+000000000bc00000
+Mar  6 15:46:30 emerald Call Trace:
+Mar  6 15:46:30 emerald
+[<ffffffff8812f487>] :usbserial:serial_open+0x117/0x190
+Mar  6 15:46:30 emerald [<ffffffff805253a6>] tty_open+0x1b6/0x360
+Mar  6 15:46:30 emerald [<ffffffff8024afe2>] chrdev_open+0x182/0x1e0
+Mar  6 15:46:30 emerald [<ffffffff8024ae60>] chrdev_open+0x0/0x1e0
+Mar  6 15:46:30 emerald [<ffffffff8021eccd>] __dentry_open+0xed/0x1e0
+Mar  6 15:46:30 emerald [<ffffffff8022855d>] do_filp_open+0x2d/0x40
+Mar  6 15:46:30 emerald [<ffffffff80234c6f>] do_setitimer+0x16f/0x350
+Mar  6 15:46:30 emerald [<ffffffff802199ca>] do_sys_open+0x5a/0x100
+Mar  6 15:46:30 emerald [<ffffffff802601ce>] system_call+0x7e/0x83
+Mar  6 15:46:30 emerald
+Mar  6 15:46:30 emerald
+Mar  6 15:46:30 emerald Code: 44 8b 47 70 09 c2 48 8b 43 38 c7 47 04 01 00
+00 00 48 89 4f
+Mar  6 15:46:30 emerald RIP 
+[<ffffffff8813b606>] :mos7720:mos7720_open+0x406/0x5a0
+Mar  6 15:46:30 emerald RSP <ffff810122757d58>
+Mar  6 15:46:30 emerald CR2: 0000000000000070
+
+
