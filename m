@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965842AbXCFLI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964959AbXCFLJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965842AbXCFLI0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 06:08:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965844AbXCFLI0
+	id S964959AbXCFLJn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 06:09:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965844AbXCFLJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 06:08:26 -0500
-Received: from mail10.tpgi.com.au ([203.12.160.147]:34814 "EHLO
-	mail10.tpgi.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965842AbXCFLIZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 06:08:25 -0500
-X-Greylist: delayed 876 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 06:08:24 EST
-X-TPG-Antivirus: Passed
-Subject: Re: [ckrm-tech] [PATCH 3/3][RFC] Containers: Pagecache controller
-	reclaim
-From: Shane <ibm-main@tpg.com.au>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, riel@redhat.com,
-       vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
-       xemul@sw.ru, menage@google.com, devel@openvz.org, clameter@sgi.com
-In-Reply-To: <20070305145311.247699000@linux.vnet.ibm.com>>
-References: <20070305145237.003560000@linux.vnet.ibm.com> >
-	  <20070305145311.247699000@linux.vnet.ibm.com>>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 20:50:11 +1000
-Message-Id: <1173178212.4998.54.camel@localhost.localdomain>
+	Tue, 6 Mar 2007 06:09:43 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36119 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964959AbXCFLJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 06:09:41 -0500
+Date: Tue, 6 Mar 2007 03:09:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm2
+Message-Id: <20070306030927.bc2f15fc.akpm@linux-foundation.org>
+In-Reply-To: <20070306192718.999e114d.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+	<20070306192718.999e114d.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anyone else have trouble fitting this patch ???.
-I see a later version today, but not markedly different from this
-mornings (Aus time). Initially I thought I had the first version, prior
-to Balbir's RSS controller V2 re-write, but apparently not.
-Kernel 2.6.20.1
+On Tue, 6 Mar 2007 19:27:18 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Had to toss it away so I could do some base line testing - I'll redo the
-build and see where the mis-matches are.
+> 
+> Following panic ouccurred (always) on ia64/NUMA(with empty node.)
+> 
+> Bug in here.
+> ==
+> void move_native_irq(int irq)
+> {
+>         struct irq_desc *desc = irq_desc + irq;
+> 
+>         if (likely(!(desc->status & IRQ_MOVE_PENDING)))
+>                 return;
+> 
+>         if (unlikely(desc->status & IRQ_DISABLED))
+>                 return;
+> 
+>         desc->chip->mask(irq);  <---------maybe this *mask* is NULL pointer
+>         move_masked_irq(irq);
+>         desc->chip->unmask(irq);
+> }
+> ==
+> 
+> Is "mask"  always valid pointer ?
 
-Shane ...
+I can only find two `struct irq_chip's in arch/ia64 and they both have a
+.mask.  And a .unmask.  So perhaps that is a misreading of what oopsed.
+
+There are no changes in kernel/irq/ in -mm.  Are you sure mainline doesn't
+do this too?
+
+Anyway, can you please take a closer look at exactly what pointer it is
+oopsing on?
 
