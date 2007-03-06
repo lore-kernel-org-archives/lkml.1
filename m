@@ -1,177 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933857AbXCFCQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965744AbXCFCQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933857AbXCFCQW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 21:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933858AbXCFCQW
+	id S965744AbXCFCQs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 21:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXCFCQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 21:16:22 -0500
-Received: from mx2.suse.de ([195.135.220.15]:40347 "EHLO mx2.suse.de"
+	Mon, 5 Mar 2007 21:16:47 -0500
+Received: from ns2.suse.de ([195.135.220.15]:40369 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933857AbXCFCQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 21:16:21 -0500
+	id S933862AbXCFCQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 21:16:36 -0500
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 6 Mar 2007 13:15:05 +1100
-Message-Id: <1070306021505.26892@suse.de>
+Date: Tue, 6 Mar 2007 13:15:20 +1100
+Message-Id: <1070306021520.26937@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 001 of 4] knfsd: Use recv_msg to get peer address for NFSD instead of code-copying
+Subject: [PATCH 004 of 4] knfsd: Provide sunrpc pool_mode module option
 References: <20070306131103.26638.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The sunrpc server code needs to know the source and destination address
-for UDP packets so it can reply properly. 
-It currently copies code out of the network stack to pick the pieces out
-of the skb.
-This is ugly and causes compile problems with the IPv6 stuff.
+From: Greg Banks <gnb@sgi.com>
 
-So, rip that out and use recv_msg instead.  This is a much cleaner
-interface, but has a slight cost in that the checksum is now checked
-before the copy, so we don't benefit from doing both at the same time.
-This can probably be fixed.
+Provide a module param "pool_mode" for sunrpc.ko which allows a
+sysadmin to choose the mode for mapping NFS thread service pools
+to CPUs.  Values are:
 
+auto	    choose a mapping mode heuristically
+global	    (default, same as the pre-2.6.19 code) a single global pool
+percpu	    one pool per CPU
+pernode	    one pool per NUMA node
 
+Note that since 2.6.19 the hardcoded behaviour has been "auto",
+this patch makes the default "global".
+
+The pool mode can be changed after boot/modprobe using /sys, if the
+NFS and lockd services have been shut down.  A useful side effect of
+this change is to fix a small memory leak when unloading the module.
+
+Signed-off-by: Greg Banks <gnb@melbourne.sgi.com>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./net/sunrpc/svcsock.c |   72 +++++++++++++++++++++++++++----------------------
- 1 file changed, 40 insertions(+), 32 deletions(-)
+ ./Documentation/kernel-parameters.txt |   16 ++++
+ ./net/sunrpc/svc.c                    |  133 +++++++++++++++++++++++++++++-----
+ 2 files changed, 130 insertions(+), 19 deletions(-)
 
-diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
---- .prev/net/sunrpc/svcsock.c	2007-03-06 11:02:55.000000000 +1100
-+++ ./net/sunrpc/svcsock.c	2007-03-06 11:10:09.000000000 +1100
-@@ -721,45 +721,23 @@ svc_write_space(struct sock *sk)
- 	}
- }
+diff .prev/Documentation/kernel-parameters.txt ./Documentation/kernel-parameters.txt
+--- .prev/Documentation/kernel-parameters.txt	2007-03-06 12:45:18.000000000 +1100
++++ ./Documentation/kernel-parameters.txt	2007-03-06 12:45:23.000000000 +1100
+@@ -1692,6 +1692,22 @@ and is between 256 and 4096 characters. 
+ 	stifb=		[HW]
+ 			Format: bpp:<bpp1>[:<bpp2>[:<bpp3>...]]
  
--static void svc_udp_get_sender_address(struct svc_rqst *rqstp,
--					struct sk_buff *skb)
-+static inline void svc_udp_get_dest_address(struct svc_rqst *rqstp,
-+					    struct cmsghdr *cmh)
- {
- 	switch (rqstp->rq_sock->sk_sk->sk_family) {
- 	case AF_INET: {
--		/* this seems to come from net/ipv4/udp.c:udp_recvmsg */
--			struct sockaddr_in *sin = svc_addr_in(rqstp);
--
--			sin->sin_family = AF_INET;
--			sin->sin_port = skb->h.uh->source;
--			sin->sin_addr.s_addr = skb->nh.iph->saddr;
--			rqstp->rq_addrlen = sizeof(struct sockaddr_in);
--			/* Remember which interface received this request */
--			rqstp->rq_daddr.addr.s_addr = skb->nh.iph->daddr;
--		}
-+		struct in_pktinfo *pki = CMSG_DATA(cmh);
-+		rqstp->rq_daddr.addr.s_addr = pki->ipi_spec_dst.s_addr;
- 		break;
-+		}
- #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
- 	case AF_INET6: {
--		/* this is derived from net/ipv6/udp.c:udpv6_recvmesg */
--			struct sockaddr_in6 *sin6 = svc_addr_in6(rqstp);
--
--			sin6->sin6_family = AF_INET6;
--			sin6->sin6_port = skb->h.uh->source;
--			sin6->sin6_flowinfo = 0;
--			sin6->sin6_scope_id = 0;
--			if (ipv6_addr_type(&sin6->sin6_addr) &
--							IPV6_ADDR_LINKLOCAL)
--				sin6->sin6_scope_id = IP6CB(skb)->iif;
--			ipv6_addr_copy(&sin6->sin6_addr,
--							&skb->nh.ipv6h->saddr);
--			rqstp->rq_addrlen = sizeof(struct sockaddr_in);
--			/* Remember which interface received this request */
--			ipv6_addr_copy(&rqstp->rq_daddr.addr6,
--							&skb->nh.ipv6h->saddr);
--		}
-+		struct in6_pktinfo *pki = CMSG_DATA(cmh);
-+		ipv6_addr_copy(&rqstp->rq_daddr.addr6, &pki->ipi6_addr);
- 		break;
-+		}
- #endif
- 	}
--	return;
- }
++	sunrpc.pool_mode=
++			[NFS]
++			Control how the NFS server code allocates CPUs to
++			service thread pools.  Depending on how many NICs
++			you have and where their interrupts are bound, this
++			option will affect which CPUs will do NFS serving.
++			Note: this parameter cannot be changed while the
++			NFS server is running.
++
++			auto	    the server chooses an appropriate mode
++				    automatically using heuristics
++			global	    a single global pool contains all CPUs
++			percpu	    one pool for each CPU
++			pernode	    one pool for each NUMA node (equivalent
++				    to global on non-NUMA machines)
++
+ 	swiotlb=	[IA-64] Number of I/O TLB slabs
+ 
+ 	switches=	[HW,M68k]
+
+diff .prev/net/sunrpc/svc.c ./net/sunrpc/svc.c
+--- .prev/net/sunrpc/svc.c	2007-03-06 12:27:12.000000000 +1100
++++ ./net/sunrpc/svc.c	2007-03-06 12:45:44.000000000 +1100
+@@ -27,22 +27,26 @@
+ 
+ #define RPCDBG_FACILITY	RPCDBG_SVCDSP
+ 
++#define svc_serv_is_pooled(serv)    ((serv)->sv_function)
++
+ /*
+  * Mode for mapping cpus to pools.
+  */
+ enum {
+-	SVC_POOL_NONE = -1,	/* uninitialised, choose one of the others */
++	SVC_POOL_AUTO = -1,	/* choose one of the others */
+ 	SVC_POOL_GLOBAL,	/* no mapping, just a single global pool
+ 				 * (legacy & UP mode) */
+ 	SVC_POOL_PERCPU,	/* one pool per cpu */
+ 	SVC_POOL_PERNODE	/* one pool per numa node */
+ };
++#define SVC_POOL_DEFAULT	SVC_POOL_GLOBAL
  
  /*
-@@ -771,7 +749,15 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
- 	struct svc_sock	*svsk = rqstp->rq_sock;
- 	struct svc_serv	*serv = svsk->sk_server;
- 	struct sk_buff	*skb;
-+	char		buffer[CMSG_SPACE(sizeof(union svc_pktinfo_u))];
-+	struct cmsghdr *cmh = (struct cmsghdr *)buffer;
- 	int		err, len;
-+	struct msghdr msg = {
-+		.msg_name = svc_addr(rqstp),
-+		.msg_control = cmh,
-+		.msg_controllen = sizeof(buffer),
-+		.msg_flags = MSG_DONTWAIT,
-+	};
- 
- 	if (test_and_clear_bit(SK_CHNGBUF, &svsk->sk_flags))
- 	    /* udp sockets need large rcvbuf as all pending
-@@ -797,7 +783,9 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
- 	}
- 
- 	clear_bit(SK_DATA, &svsk->sk_flags);
--	while ((skb = skb_recv_datagram(svsk->sk_sk, 0, 1, &err)) == NULL) {
-+	while ((err == kernel_recvmsg(svsk->sk_sock, &msg, NULL,
-+				      0, 0, MSG_PEEK | MSG_DONTWAIT)) < 0 ||
-+	       (skb = skb_recv_datagram(svsk->sk_sk, 0, 1, &err)) == NULL) {
- 		if (err == -EAGAIN) {
- 			svc_sock_received(svsk);
- 			return err;
-@@ -805,6 +793,7 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
- 		/* possibly an icmp error */
- 		dprintk("svc: recvfrom returned error %d\n", -err);
- 	}
-+	rqstp->rq_addrlen = sizeof(rqstp->rq_addr);
- 	if (skb->tstamp.off_sec == 0) {
- 		struct timeval tv;
- 
-@@ -827,7 +816,16 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
- 
- 	rqstp->rq_prot = IPPROTO_UDP;
- 
--	svc_udp_get_sender_address(rqstp, skb);
-+	if (cmh->cmsg_level != IPPROTO_IP ||
-+	    cmh->cmsg_type != IP_PKTINFO) {
-+		if (net_ratelimit())
-+			printk("rpcsvc: received unknown control message:"
-+			       "%d/%d\n",
-+			       cmh->cmsg_level, cmh->cmsg_type);
-+		skb_free_datagram(svsk->sk_sk, skb);
-+		return 0;
+  * Structure for mapping cpus to pools and vice versa.
+  * Setup once during sunrpc initialisation.
+  */
+ static struct svc_pool_map {
++	int count;			/* How many svc_servs use us */
+ 	int mode;			/* Note: int not enum to avoid
+ 					 * warnings about "enumeration value
+ 					 * not handled in switch" */
+@@ -50,9 +54,63 @@ static struct svc_pool_map {
+ 	unsigned int *pool_to;		/* maps pool id to cpu or node */
+ 	unsigned int *to_pool;		/* maps cpu or node to pool id */
+ } svc_pool_map = {
+-	.mode = SVC_POOL_NONE
++	.count = 0,
++	.mode = SVC_POOL_DEFAULT
+ };
++static DEFINE_MUTEX(svc_pool_map_mutex);/* protects svc_pool_map.count only */
++
++static int
++param_set_pool_mode(const char *val, struct kernel_param *kp)
++{
++	int *ip = (int *)kp->arg;
++	struct svc_pool_map *m = &svc_pool_map;
++	int err;
++
++	mutex_lock(&svc_pool_map_mutex);
++
++	err = -EBUSY;
++	if (m->count)
++		goto out;
++
++	err = 0;
++	if (!strncmp(val, "auto", 4))
++		*ip = SVC_POOL_AUTO;
++	else if (!strncmp(val, "global", 6))
++		*ip = SVC_POOL_GLOBAL;
++	else if (!strncmp(val, "percpu", 6))
++		*ip = SVC_POOL_PERCPU;
++	else if (!strncmp(val, "pernode", 7))
++		*ip = SVC_POOL_PERNODE;
++	else
++		err = -EINVAL;
++
++out:
++	mutex_unlock(&svc_pool_map_mutex);
++	return err;
++}
++
++static int
++param_get_pool_mode(char *buf, struct kernel_param *kp)
++{
++	int *ip = (int *)kp->arg;
++
++	switch (*ip)
++	{
++	case SVC_POOL_AUTO:
++		return strlcpy(buf, "auto", 20);
++	case SVC_POOL_GLOBAL:
++		return strlcpy(buf, "global", 20);
++	case SVC_POOL_PERCPU:
++		return strlcpy(buf, "percpu", 20);
++	case SVC_POOL_PERNODE:
++		return strlcpy(buf, "pernode", 20);
++	default:
++		return sprintf(buf, "%d", *ip);
 +	}
-+	svc_udp_get_dest_address(rqstp, cmh);
++}
  
- 	if (skb_is_nonlinear(skb)) {
- 		/* we have to copy */
-@@ -884,6 +882,9 @@ svc_udp_sendto(struct svc_rqst *rqstp)
- static void
- svc_udp_init(struct svc_sock *svsk)
- {
-+	int one = 1;
-+	mm_segment_t oldfs;
-+
- 	svsk->sk_sk->sk_data_ready = svc_udp_data_ready;
- 	svsk->sk_sk->sk_write_space = svc_write_space;
- 	svsk->sk_recvfrom = svc_udp_recvfrom;
-@@ -899,6 +900,13 @@ svc_udp_init(struct svc_sock *svsk)
- 
- 	set_bit(SK_DATA, &svsk->sk_flags); /* might have come in before data_ready set up */
- 	set_bit(SK_CHNGBUF, &svsk->sk_flags);
-+
-+	oldfs = get_fs();
-+	set_fs(KERNEL_DS);
-+	/* make sure we get destination address info */
-+	svsk->sk_sock->ops->setsockopt(svsk->sk_sock, IPPROTO_IP, IP_PKTINFO,
-+				       (char __user *)&one, sizeof(one));
-+	set_fs(oldfs);
- }
++module_param_call(pool_mode, param_set_pool_mode, param_get_pool_mode,
++		 &svc_pool_map.mode, 0644);
  
  /*
+  * Detect best pool mapping mode heuristically,
+@@ -166,18 +224,25 @@ svc_pool_map_init_pernode(struct svc_poo
+ 
+ 
+ /*
+- * Build the global map of cpus to pools and vice versa.
++ * Add a reference to the global map of cpus to pools (and
++ * vice versa).  Initialise the map if we're the first user.
++ * Returns the number of pools.
+  */
+ static unsigned int
+-svc_pool_map_init(void)
++svc_pool_map_get(void)
+ {
+ 	struct svc_pool_map *m = &svc_pool_map;
+ 	int npools = -1;
+ 
+-	if (m->mode != SVC_POOL_NONE)
++	mutex_lock(&svc_pool_map_mutex);
++
++	if (m->count++) {
++		mutex_unlock(&svc_pool_map_mutex);
+ 		return m->npools;
++	}
+ 
+-	m->mode = svc_pool_map_choose_mode();
++	if (m->mode == SVC_POOL_AUTO)
++		m->mode = svc_pool_map_choose_mode();
+ 
+ 	switch (m->mode) {
+ 	case SVC_POOL_PERCPU:
+@@ -195,9 +260,36 @@ svc_pool_map_init(void)
+ 	}
+ 	m->npools = npools;
+ 
++	mutex_unlock(&svc_pool_map_mutex);
+ 	return m->npools;
+ }
+ 
++
++/*
++ * Drop a reference to the global map of cpus to pools.
++ * When the last reference is dropped, the map data is
++ * freed; this allows the sysadmin to change the pool
++ * mode using the pool_mode module option without
++ * rebooting or re-loading sunrpc.ko.
++ */
++static void
++svc_pool_map_put(void)
++{
++	struct svc_pool_map *m = &svc_pool_map;
++
++	mutex_lock(&svc_pool_map_mutex);
++
++	if (!--m->count) {
++		m->mode = SVC_POOL_DEFAULT;
++		kfree(m->to_pool);
++		kfree(m->pool_to);
++		m->npools = 0;
++	}
++
++	mutex_unlock(&svc_pool_map_mutex);
++}
++
++
+ /*
+  * Set the current thread's cpus_allowed mask so that it
+  * will only run on cpus in the given pool.
+@@ -212,10 +304,9 @@ svc_pool_map_set_cpumask(unsigned int pi
+ 
+ 	/*
+ 	 * The caller checks for sv_nrpools > 1, which
+-	 * implies that we've been initialized and the
+-	 * map mode is not NONE.
++	 * implies that we've been initialized.
+ 	 */
+-	BUG_ON(m->mode == SVC_POOL_NONE);
++	BUG_ON(m->count == 0);
+ 
+ 	switch (m->mode)
+ 	{
+@@ -246,18 +337,19 @@ svc_pool_for_cpu(struct svc_serv *serv, 
+ 	unsigned int pidx = 0;
+ 
+ 	/*
+-	 * SVC_POOL_NONE happens in a pure client when
++	 * An uninitialised map happens in a pure client when
+ 	 * lockd is brought up, so silently treat it the
+ 	 * same as SVC_POOL_GLOBAL.
+ 	 */
+-
+-	switch (m->mode) {
+-	case SVC_POOL_PERCPU:
+-		pidx = m->to_pool[cpu];
+-		break;
+-	case SVC_POOL_PERNODE:
+-		pidx = m->to_pool[cpu_to_node(cpu)];
+-		break;
++	if (svc_serv_is_pooled(serv)) {
++		switch (m->mode) {
++		case SVC_POOL_PERCPU:
++			pidx = m->to_pool[cpu];
++			break;
++		case SVC_POOL_PERNODE:
++			pidx = m->to_pool[cpu_to_node(cpu)];
++			break;
++		}
+ 	}
+ 	return &serv->sv_pools[pidx % serv->sv_nrpools];
+ }
+@@ -347,7 +439,7 @@ svc_create_pooled(struct svc_program *pr
+ 		  svc_thread_fn func, int sig, struct module *mod)
+ {
+ 	struct svc_serv *serv;
+-	unsigned int npools = svc_pool_map_init();
++	unsigned int npools = svc_pool_map_get();
+ 
+ 	serv = __svc_create(prog, bufsize, npools, shutdown);
+ 
+@@ -397,6 +489,9 @@ svc_destroy(struct svc_serv *serv)
+ 
+ 	cache_clean_deferred(serv);
+ 
++	if (svc_serv_is_pooled(serv))
++		svc_pool_map_put();
++
+ 	/* Unregister service with the portmapper */
+ 	svc_register(serv, 0, 0);
+ 	kfree(serv->sv_pools);
