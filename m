@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933616AbXCFAFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbXCFAHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933616AbXCFAFE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:05:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933620AbXCFAFB
+	id S933565AbXCFAHv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933575AbXCFAHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:05:01 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:46214 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933699AbXCFAE7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:04:59 -0500
-Date: Mon, 5 Mar 2007 16:01:10 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "David Brown" <dmlb2000@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: PAGE_SIZE Availability Inconsistency
-Message-Id: <20070305160110.1410b1e7.randy.dunlap@oracle.com>
-In-Reply-To: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
-References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Mon, 5 Mar 2007 19:07:51 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:46545 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933565AbXCFAHu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:07:50 -0500
+Date: Tue, 6 Mar 2007 00:07:46 +0000
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: francesco foresti <frafore@tiscali.it>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: 2.6.20-1 not working on ibook g4 (BUG/Oops)
+Message-ID: <20070306000746.GA20438@deepthought>
+References: <200703051659.56245.frafore@tiscali.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <200703051659.56245.frafore@tiscali.it>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Mar 2007 15:55:06 -0800 David Brown wrote:
-
-> I was rtfc'ing the code one day and noticed somethings about the
-> PAGE_SIZE define that is kinda inconsistent around its relative
-> location to the __KERNEL__ define.
+On Mon, Mar 05, 2007 at 04:59:35PM +0100, francesco foresti wrote:
+> Hi,
+> I have to correct myself:
+> 2.6.19-7 just freezes randomly. At this point, the last surely working kernel 
+> i am aware of is 2.6.18, built from debian sources. Actually i'm trying 
+> (for the very first time) to git-bisect Linus' tree, to see if i can figure 
+> out something, but i feel my chances are extremely low.. 
 > 
-> On some architectures the PAGE_SIZE is outside the __KERNEL__ define
-> (i386 and x86_64) and on others its inside the define (ia64 and
-> powerpc).  I was wondering if this is because the powerpc and ia64
-> architectures have dynamic page sizes so that's why they can't export
-> PAGE_SIZE outside __KERNEL__.
-> 
-> I'm kinda wondering how I'm supposed to write portable user-space code
-> if I want to use the PAGE_SIZE define on different architectures.
+> Best
+> -- 
+ Sounds like a distro problem.  In particular, distros add patches
+and use different configs.  My ibook G4 has been running 2.6.20-rc4
+since about January 8th without any issues, but I can remember that
+it took me a very long time to come up with a .config which worked
+for me after the move to arch/powerpc.  If your graphics card is a
+radeon, I can send you my .config off-list if you think that will
+help.
 
-use 'getpagesize(2)'
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
