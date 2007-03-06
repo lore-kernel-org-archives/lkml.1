@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbXCFMX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbXCFMYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752833AbXCFMX6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbXCFMX6
+	id S1752915AbXCFMYO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 07:24:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXCFMYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:23:58 -0500
-Received: from dev.mellanox.co.il ([194.90.237.44]:36095 "EHLO
-	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933251AbXCFMX5 (ORCPT
+	Tue, 6 Mar 2007 07:24:14 -0500
+Received: from aa014msr.fastwebnet.it ([85.18.95.74]:49263 "EHLO
+	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbXCFMYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:23:57 -0500
-Date: Tue, 6 Mar 2007 14:20:30 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>, Soeren Sonnenburg <kernel@nn7.de>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [5/6] 2.6.21-rc2: known regressions
-Message-ID: <20070306122030.GA4317@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <1173138193.24738.236.camel@localhost.localdomain> <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org> <1173142948.24738.257.camel@localhost.localdomain> <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org> <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu> <20070306104618.GA5792@mellanox.co.il> <20070306113225.GA22561@elte.hu>
+	Tue, 6 Mar 2007 07:24:12 -0500
+Date: Tue, 6 Mar 2007 13:22:13 +0100
+From: Mattia Dongili <malattia@linux.it>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21 - part II (resend)
+Message-ID: <20070306122213.GF2919@inferi.kami.home>
+Mail-Followup-To: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <200702162223.59837.lenb@kernel.org> <20020101045751.GD4106@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070306113225.GA22561@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20020101045751.GD4106@ucw.cz>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.21-rc2-mm1-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Ingo Molnar <mingo@elte.hu>:
-> Subject: Re: [5/6] 2.6.21-rc2: known regressions
+On Tue, Jan 01, 2002 at 04:57:52AM +0000, Pavel Machek wrote:
+> Hi!
 > 
-> 
-> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> 
-> > > > Not yet for me unfortunately, although this seems to help.
-> > > > Is this the patch I should have applied?
-> > > > http://lkml.org/lkml/2007/3/5/445
-> > > > 
-> > > > With this applied, on resume I get *some* screen output soon after 
-> > > > resume (e.g. with s2ram I get several characters on VGA, X starts 
-> > > > drawing some windows) but then the crescent symbol starts blinking 
-> > > > again and the system hangs.
-> > > 
-> > > could you try this via s2ram on a text console, to see whether the 
-> > > kernel spits out any warning before it locks up?
+> > commit 4465857d5f99079bae00621626adf74ed8256296
+> > Author: Mattia Dongili <malattia@linux.it>
+> > Date:   Sat Jan 13 23:04:39 2007 +0100
 > > 
-> > Yes, that's what I did. Unfortunately only a couple of characters were 
-> > shown before it locked up.
-> > 
-> > I still need to check what does this do in the NO_HZ configuration.
-> > 
-> > BTW, Ingo, can you suspend/resume any number of times with this patch?
+> >     sony_acpi: Add lanpower and audiopower controls
+> >     
+> >     audiopower works well on my SZ72B so it's not marked has "debug" while lanpower
+> >     has at least one report of not resuming power happily so morked as "debug"
+> >     
+> >     Signed-off-by: Mattia Dongili <malattia@linux.it>
+> >     Signed-off-by: Len Brown <len.brown@intel.com>
 > 
-> yeah, i can now suspend/resume an arbitrary number of times, vga, 
-> network, SATA all works fine after that. (i tried it 5 times)
-> 
-> i also have the patch below applied - but i dont think it should make a 
-> difference to your case. (maybe it does though)
+> What is interface to these? It would be nice to automagically disable
+> audiopower when sound device is closed, and automagically power down
+> lan on ifconfig ... down.
 
-Nope, system hangs on resume with or without this patch applied.
+the audiopower is basically a _PS3/_PS0 switch for the device, while the
+lanpower plays with the embedded controller to powerdown/powerup.
 
-> I've attached my config as well.
+Now, unfortunately those methods are attached to a fake device in the
+DSDT and afaict there's no way to tell which real device they are
+playing with (except by inspecting the method implementations).
+Well of course iff there's only _one_ sound card and _one_ nic you can
+easily guess it :)
 
-Haven't tried that yet.
+Is there some way to hook into drivers for such kind of runtime power
+management?
 
+PS: lanpower currently seems to be a little too invasive (or it's just
+ACPI that reacts badly) because switching off lanpower also disables the
+pic link and never comes back. I need to better diagnose what's
+happening and report to linux-acpi.
 -- 
-MST
+mattia
+:wq!
