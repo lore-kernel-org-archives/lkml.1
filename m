@@ -1,122 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbXCFSei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965984AbXCFSet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965475AbXCFSei (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965984AbXCFSeh
+	id S965984AbXCFSet (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965988AbXCFSet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:34:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37185 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965475AbXCFSeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:34:36 -0500
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix get_order() [try #2]
-To: torvalds@osdl.org, akpm@osdl.org, benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, johannes@sipsolutions.net,
-       dhowells@redhat.com
-Date: Tue, 06 Mar 2007 18:34:26 +0000
-Message-ID: <20070306183426.10768.51800.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	Tue, 6 Mar 2007 13:34:49 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:46972 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965984AbXCFSes (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:34:48 -0500
+Date: Tue, 6 Mar 2007 13:34:41 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: ebuddington@wesleyan.edu
+cc: Oliver Neukum <oneukum@suse.de>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] khubd and ent:sda1 sucking CPU with reiser4
+ + USB HD
+In-Reply-To: <20070306154854.GD9198@pool-71-123-121-36.spfdma.east.verizon.net>
+Message-ID: <Pine.LNX.4.44L0.0703061328570.24545-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+On Tue, 6 Mar 2007, Eric Buddington wrote:
 
-Provide an ilog2_up() that rounds its result up (ilog2() rounds down).
+> On Tue, Mar 06, 2007 at 10:36:20AM -0500, Alan Stern wrote:
+> > On Tue, 6 Mar 2007, Oliver Neukum wrote:
+> > 
+> > > > Am Dienstag, 6. M??rz 2007 05:13 schrieb Eric Buddington:
+> > > > reiser4[khubd(163)]: commit_current_atom (fs/reiser4/txnmgr.c:1049)[nikita-3176]:
+> > > > WARNING: Flushing like mad: 16384
+> > > > reiser4[khubd(163)]: commit_current_atom (fs/reiser4/txnmgr.c:1049)[nikita-3176]:
+> > > > WARNING: Flushing like mad: 32768
+> > > > ...<many simiar messages>
+> > > > 
+> > > > Most problematically, khubd and ent:sda1! are conspiring to suck 100%
+> > > > CPU time, even after powering off the drive. A bunch of processes are
+> > > > stuck in 'D' state, possibly because they're trying to access the dead
+> > > > disk, which won't umount ("device is busy").
+> > > 
+> > > It looks like khubd allocates memory and enters reiser4. Possibly we have
+> > > GFP_KERNEL in khubd where we should have GFP_NOIO or reiser4 has
+> > > a problem dealing with IO failures.
+> > 
+> > A more complete stack trace (for example, Alt-SysRq-T) would help.
 
-Fix get_order() to use ilog2_up() not ilog2() to get the correct rounding.
+The stack trace didn't include the khubd process at all.  Probably that 
+means it had already died.
 
-Adjust the documentation surrounding ilog2() and co. to indicate what rounding
-they perform.
+On the good side, if khubd is dead, it can't be using up 100% of the CPU 
+time!  :-)
 
-Fix roundup_pow_of_two(1) to give 1, not 0.
+You need to find out somehow what khubd is doing while it is so busy.  It 
+could easily be, like Oliver suggested, that reiser4 is unable to handle 
+I/O failures and gets stuck.
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
-
- include/asm-generic/page.h |   14 +++++++++-----
- include/linux/log2.h       |   20 ++++++++++++++++++--
- 2 files changed, 27 insertions(+), 7 deletions(-)
-
-diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
-index b55052c..c79dc23 100644
---- a/include/asm-generic/page.h
-+++ b/include/asm-generic/page.h
-@@ -17,11 +17,15 @@ static inline __attribute__((const))
- int __get_order(unsigned long size, int page_shift)
- {
- #if BITS_PER_LONG == 32 && defined(ARCH_HAS_ILOG2_U32)
--	int order = __ilog2_u32(size) - page_shift;
--	return order >= 0 ? order : 0;
-+	if (size <= (1UL << page_shift))
-+		return 0;
-+	else
-+		return __ilog2_u32(size - 1) + 1 - page_shift;
- #elif BITS_PER_LONG == 64 && defined(ARCH_HAS_ILOG2_U64)
--	int order = __ilog2_u64(size) - page_shift;
--	return order >= 0 ? order : 0;
-+	if (size <= (1UL << page_shift))
-+		return 0;
-+	else
-+		return __ilog2_u64(size - 1) + 1 - page_shift;
- #else
- 	int order;
- 
-@@ -46,7 +50,7 @@ int __get_order(unsigned long size, int page_shift)
- #define get_order(n)							\
- (									\
- 	__builtin_constant_p(n) ?					\
--	((n < (1UL << PAGE_SHIFT)) ? 0 : ilog2(n) - PAGE_SHIFT) :	\
-+	((n < (1UL << PAGE_SHIFT)) ? 0 : ilog2_up(n) - PAGE_SHIFT) :	\
- 	__get_order(n, PAGE_SHIFT)					\
-  )
- 
-diff --git a/include/linux/log2.h b/include/linux/log2.h
-index 57e641e..bc3a0eb 100644
---- a/include/linux/log2.h
-+++ b/include/linux/log2.h
-@@ -70,6 +70,8 @@ unsigned long __roundup_pow_of_two(unsigned long n)
-  * constant-capable log of base 2 calculation
-  * - this can be used to initialise global variables from constant data, hence
-  *   the massive ternary operator construction
-+ * - the result is rounded down
-+ * - the result is undefined when n < 1
-  *
-  * selects the appropriately-sized optimised version depending on sizeof(n)
-  */
-@@ -149,6 +151,20 @@ unsigned long __roundup_pow_of_two(unsigned long n)
-  )
- 
- /**
-+ * ilog2_up - rounded up log of base 2 of 32-bit or a 64-bit unsigned value
-+ * @n - parameter
-+ *
-+ * constant-capable log of base 2 calculation
-+ * - this can be used to initialise global variables from constant data, hence
-+ *   the massive ternary operator construction
-+ * - the result is rounded up
-+ * - the result is undefined when n < 1
-+ *
-+ * selects the appropriately-sized optimised version depending on sizeof(n)
-+ */
-+#define ilog2_up(n) ((n) == 1 ? 0 : ilog2((n) - 1) + 1)
-+
-+/**
-  * roundup_pow_of_two - round the given value up to nearest power of two
-  * @n - parameter
-  *
-@@ -159,8 +175,8 @@ unsigned long __roundup_pow_of_two(unsigned long n)
- #define roundup_pow_of_two(n)			\
- (						\
- 	__builtin_constant_p(n) ? (		\
--		(n == 1) ? 0 :			\
--		(1UL << (ilog2((n) - 1) + 1))	\
-+		(n == 1) ? 1 :			\
-+		(1UL << ilog2_up(n))		\
- 				   ) :		\
- 	__roundup_pow_of_two(n)			\
-  )
+Alan Stern
 
