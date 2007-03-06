@@ -1,340 +1,618 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965908AbXCFPEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965915AbXCFPEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965908AbXCFPEQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965912AbXCFPEQ
+	id S965915AbXCFPEp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:04:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965916AbXCFPEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:04:16 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:11988 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965908AbXCFPEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:04:14 -0500
-Message-ID: <45ED8394.8060600@sw.ru>
-Date: Tue, 06 Mar 2007 18:07:00 +0300
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Tue, 6 Mar 2007 10:04:45 -0500
+Received: from aa011msr.fastwebnet.it ([85.18.95.71]:33820 "EHLO
+	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965914AbXCFPEm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 10:04:42 -0500
+From: francesco foresti <frafore@tiscali.it>
+To: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: 2.6.20-1 not working on ibook g4 (BUG/Oops)
+Date: Tue, 6 Mar 2007 16:04:32 +0100
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>
-CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
-Subject: [RFC][PATCH 7/7] Account for the number of files opened within container
-References: <45ED7DEC.7010403@sw.ru>
-In-Reply-To: <45ED7DEC.7010403@sw.ru>
-Content-Type: multipart/mixed;
- boundary="------------080000070707000801030901"
+Content-Type: multipart/signed;
+  boundary="nextPart1239677.2I8geGo3Ff";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703061604.42112.frafore@tiscali.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080000070707000801030901
-Content-Type: text/plain; charset=ISO-8859-1
+--nextPart1239677.2I8geGo3Ff
+Content-Type: multipart/mixed;
+  boundary="Boundary-01=_CMY7F2HfGumz7kW"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Simple again - increment usage counter at file open and
-decrement at file close. Reject opening if limit is hit.
-
---------------080000070707000801030901
+--Boundary-01=_CMY7F2HfGumz7kW
 Content-Type: text/plain;
- name="diff-numfiles-container"
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi,
+i'm happy to report that i've been able to boot my ibook without any error,=
+=20
+using Ken Moffat's .config (thanks again Ken!) as a base.=20
+I'm putting the prominent part here for completeness.
+I still have no idea what caused these errors, but at least i'll try to find
+what was compiled with the failing config that is not compiled anymore with=
+=20
+this one.
+
+Best
+=2D-=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=46rancesco Foresti
+Registered Linux User #332599
+key fingerprint =3D 59D5 1E61 6631 5DEF DC88 C64C 7F53 2F45 99FB CD21
+
+--Boundary-01=_CMY7F2HfGumz7kW
+Content-Type: text/plain;
+  charset="us-ascii";
+  name="config"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff-numfiles-container"
+Content-Disposition: attachment;
+	filename="config"
 
-diff -upr linux-2.6.20.orig/fs/Makefile linux-2.6.20-0/fs/Makefile
---- linux-2.6.20.orig/fs/Makefile	2007-02-04 21:44:54.000000000 +0300
-+++ linux-2.6.20-0/fs/Makefile	2007-03-06 13:33:28.000000000 +0300
-@@ -19,6 +19,8 @@ else
- obj-y +=	no-block.o
- endif
- 
-+obj-$(CONFIG_FILES_CONTAINER)	+= numfiles_container.o
-+
- obj-$(CONFIG_INOTIFY)		+= inotify.o
- obj-$(CONFIG_INOTIFY_USER)	+= inotify_user.o
- obj-$(CONFIG_EPOLL)		+= eventpoll.o
-diff -upr linux-2.6.20.orig/fs/file_table.c linux-2.6.20-0/fs/file_table.c
---- linux-2.6.20.orig/fs/file_table.c	2007-02-04 21:44:54.000000000 +0300
-+++ linux-2.6.20-0/fs/file_table.c	2007-03-06 13:33:28.000000000 +0300
-@@ -21,6 +21,7 @@
- #include <linux/fsnotify.h>
- #include <linux/sysctl.h>
- #include <linux/percpu_counter.h>
-+#include <linux/numfiles_container.h>
- 
- #include <asm/atomic.h>
- 
-@@ -42,6 +43,7 @@ static inline void file_free_rcu(struct 
- 
- static inline void file_free(struct file *f)
- {
-+	container_file_uncharge(f);
- 	percpu_counter_dec(&nr_files);
- 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
- }
-@@ -109,6 +111,10 @@ struct file *get_empty_filp(void)
- 
- 	percpu_counter_inc(&nr_files);
- 	memset(f, 0, sizeof(*f));
-+
-+	if (container_file_charge(f))
-+		goto fail_charge;
-+
- 	if (security_file_alloc(f))
- 		goto fail_sec;
- 
-@@ -132,7 +138,10 @@ over:
- 	goto fail;
- 
- fail_sec:
--	file_free(f);
-+	container_file_uncharge(f);
-+fail_charge:
-+	percpu_counter_dec(&nr_files);
-+	kmem_cache_free(filp_cachep, f);
- fail:
- 	return NULL;
- }
-diff -upr linux-2.6.20.orig/fs/numfiles_container.c linux-2.6.20-0/fs/numfiles_container.c
---- linux-2.6.20.orig/fs/numfiles_container.c	2007-03-06 13:39:17.000000000 +0300
-+++ linux-2.6.20-0/fs/numfiles_container.c	2007-03-06 13:33:28.000000000 +0300
-@@ -0,0 +1,152 @@
-+/*
-+ * Numfiles accounting container
-+ *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ *
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-+ */
-+
-+#include <linux/list.h>
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/res_counter.h>
-+#include <linux/numfiles_container.h>
-+
-+static struct container_subsys numfiles_subsys;
-+
-+struct files_container {
-+	struct res_counter res;
-+	struct container_subsys_state css;
-+};
-+
-+static inline struct files_container *numfiles_from_cont(struct container *cnt)
-+{
-+	return container_of(container_subsys_state(cnt, &numfiles_subsys),
-+			struct files_container, css);
-+}
-+
-+int container_file_charge(struct file *file)
-+{
-+	struct files_container *fc;
-+
-+	rcu_read_lock();
-+	fc = numfiles_from_cont(task_container(current, &numfiles_subsys));
-+	css_get_current(&fc->css);
-+	rcu_read_unlock();
-+
-+	if (res_counter_charge(&fc->res, 1)) {
-+		css_put(&fc->css);
-+		return -ENOMEM;
-+	}
-+
-+	file->f_cont = fc;
-+	return 0;
-+}
-+
-+void container_file_uncharge(struct file *file)
-+{
-+	struct files_container *fc;
-+
-+	fc = file->f_cont;
-+	res_counter_uncharge(&fc->res, 1);
-+	css_put(&fc->css);
-+}
-+
-+static int numfiles_create(struct container_subsys *ss, struct container *cont)
-+{
-+	struct files_container *fc;
-+
-+	fc = kzalloc(sizeof(struct files_container), GFP_KERNEL);
-+	if (fc == NULL)
-+		return -ENOMEM;
-+
-+	res_counter_init(&fc->res);
-+	cont->subsys[numfiles_subsys.subsys_id] = &fc->css;
-+	return 0;
-+}
-+
-+static void numfiles_destroy(struct container_subsys *ss,
-+		struct container *cont)
-+{
-+	kfree(numfiles_from_cont(cont));
-+}
-+
-+
-+static ssize_t numfiles_read(struct container *cont, struct cftype *cft,
-+		struct file *file, char __user *userbuf,
-+		size_t nbytes, loff_t *ppos)
-+{
-+	return res_counter_read(&numfiles_from_cont(cont)->res, cft->private,
-+			userbuf, nbytes, ppos);
-+}
-+
-+static ssize_t numfiles_write(struct container *cont, struct cftype *cft,
-+		struct file *file, const char __user *userbuf,
-+		size_t nbytes, loff_t *ppos)
-+{
-+	return res_counter_write(&numfiles_from_cont(cont)->res, cft->private,
-+			userbuf, nbytes, ppos);
-+}
-+
-+
-+static struct cftype numfiles_usage = {
-+	.name = "numfiles_usage",
-+	.private = RES_USAGE,
-+	.read = numfiles_read,
-+};
-+
-+static struct cftype numfiles_limit = {
-+	.name = "numfiles_limit",
-+	.private = RES_LIMIT,
-+	.read = numfiles_read,
-+	.write = numfiles_write,
-+};
-+
-+static struct cftype numfiles_failcnt = {
-+	.name = "numfiles_failcnt",
-+	.private = RES_FAILCNT,
-+	.read = numfiles_read,
-+};
-+
-+static int numfiles_populate(struct container_subsys *ss,
-+		struct container *cont)
-+{
-+	int rc;
-+
-+	if ((rc = container_add_file(cont, &numfiles_usage)) < 0)
-+		return rc;
-+	if ((rc = container_add_file(cont, &numfiles_failcnt)) < 0)
-+		return rc;
-+	if ((rc = container_add_file(cont, &numfiles_limit)) < 0)
-+		return rc;
-+
-+	return 0;
-+}
-+
-+static struct files_container init_files_container;
-+
-+static __init int numfiles_create_early(struct container_subsys *ss,
-+		struct container *cont)
-+{
-+	struct files_container *np;
-+
-+	np = &init_files_container;
-+	res_counter_init(&np->res);
-+	cont->subsys[numfiles_subsys.subsys_id] = &np->css;
-+	ss->create = numfiles_create;
-+	return 0;
-+}
-+
-+static struct container_subsys numfiles_subsys = {
-+	.name = "numfiles",
-+	.create = numfiles_create_early,
-+	.destroy = numfiles_destroy,
-+	.populate = numfiles_populate,
-+};
-+
-+void __init container_numfiles_init_early(void)
-+{
-+	container_register_subsys(&numfiles_subsys);
-+}
-+
-diff -upr linux-2.6.20.orig/include/linux/fs.h linux-2.6.20-0/include/linux/fs.h
---- linux-2.6.20.orig/include/linux/fs.h	2007-03-06 13:33:28.000000000 +0300
-+++ linux-2.6.20-0/include/linux/fs.h	2007-03-06 13:33:28.000000000 +0300
-@@ -739,6 +739,9 @@ struct file {
- 	spinlock_t		f_ep_lock;
- #endif /* #ifdef CONFIG_EPOLL */
- 	struct address_space	*f_mapping;
-+#ifdef CONFIG_FILES_CONTAINER
-+	struct files_container	*f_cont;
-+#endif
- };
- extern spinlock_t files_lock;
- #define file_list_lock() spin_lock(&files_lock);
-diff -upr linux-2.6.20.orig/include/linux/numfiles_container.h linux-2.6.20-0/include/linux/numfiles_container.h
---- linux-2.6.20.orig/include/linux/numfiles_container.h	2007-03-06 13:39:17.000000000 +0300
-+++ linux-2.6.20-0/include/linux/numfiles_container.h	2007-03-06 13:33:28.000000000 +0300
-@@ -0,0 +1,33 @@
-+#ifndef __NUMFILES_CONTAINER_H__
-+#define __NUMFILES_CONTAINER_H__
-+/*
-+ * Numfiles container
-+ *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ *
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-+ */
-+
-+#ifdef CONFIG_FILES_CONTAINER
-+int container_file_charge(struct file *file);
-+void container_file_uncharge(struct file *file);
-+
-+void container_numfiles_init_early(void);
-+#else
-+static inline int container_file_charge(struct file *file)
-+{
-+	return 0;
-+}
-+
-+static inline void container_file_uncharge(struct file *file)
-+{
-+}
-+
-+static inline void container_numfiles_init_early(void)
-+{
-+}
-+#endif
-+
-+#endif
-+
-diff -upr linux-2.6.20.orig/init/Kconfig linux-2.6.20-0/init/Kconfig
---- linux-2.6.20.orig/init/Kconfig	2007-03-06 13:33:28.000000000 +0300
-+++ linux-2.6.20-0/init/Kconfig	2007-03-06 13:33:28.000000000 +0300
-@@ -265,6 +265,12 @@ config CPUSETS
- 	help
- 	  Provides the-number-of-tasks accounting container
- 
-+config FILES_CONTAINER
-+	bool "Numfiles accounting container"
-+	select RESOURCE_COUNTERS
-+	help
-+	  Provides the-number-of-files accounting container
-+
- config SYSFS_DEPRECATED
- 	bool "Create deprecated sysfs files"
- 	default y
-diff -upr linux-2.6.20.orig/kernel/container.c linux-2.6.20-0/kernel/container.c
---- linux-2.6.20.orig/kernel/container.c	2007-03-06 13:33:28.000000000 +0300
-+++ linux-2.6.20-0/kernel/container.c	2007-03-06 13:35:48.000000000 +0300
-@@ -60,6 +60,7 @@
- 
- #include <linux/rss_container.h>
- #include <linux/numproc_container.h>
-+#include <linux/numfiles_container.h>
- 
- #define CONTAINER_SUPER_MAGIC		0x27e0eb
- 
-@@ -1721,6 +1725,7 @@ int __init container_init_early(void)
- 
- 	container_rss_init_early();
- 	container_numproc_init_early();
-+	container_numfiles_init_early();
- 
- 	return 0;
- }
+CONFIG_PPC32=y
+CONFIG_PPC_MERGE=y
+CONFIG_MMU=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_IRQ_PER_CPU=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_ILOG2_U32=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_PPC=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_GENERIC_NVRAM=y
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_PPC_OF=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_GENERIC_BUG=y
+CONFIG_CLASSIC32=y
+CONFIG_6xx=y
+CONFIG_PPC_FPU=y
+CONFIG_ALTIVEC=y
+CONFIG_PPC_STD_MMU=y
+CONFIG_PPC_STD_MMU_32=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_SYSCTL=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+CONFIG_SHMEM=y
+CONFIG_SLAB=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+CONFIG_KMOD=y
+CONFIG_BLOCK=y
+CONFIG_LBD=y
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_AS=y
+CONFIG_DEFAULT_IOSCHED="anticipatory"
+CONFIG_PPC_MULTIPLATFORM=y
+CONFIG_PPC_PMAC=y
+CONFIG_PPC_NATIVE=y
+CONFIG_PPC_MPC106=y
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_STAT=y
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_PMAC=y
+CONFIG_PPC601_SYNC_FIX=y
+CONFIG_TAU=y
+CONFIG_MPIC=y
+CONFIG_HZ_1000=y
+CONFIG_HZ=1000
+CONFIG_PREEMPT_VOLUNTARY=y
+CONFIG_BINFMT_ELF=y
+CONFIG_BINFMT_MISC=m
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_PROC_DEVICETREE=y
+CONFIG_PM=y
+CONFIG_PM_DEBUG=y
+CONFIG_SOFTWARE_SUSPEND=y
+CONFIG_PM_STD_PARTITION=""
+CONFIG_SECCOMP=y
+CONFIG_ISA_DMA_API=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_PPC_INDIRECT_PCI=y
+CONFIG_PCI=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCCARD=m
+CONFIG_PCMCIA=m
+CONFIG_PCMCIA_LOAD_CIS=y
+CONFIG_PCMCIA_IOCTL=y
+CONFIG_CARDBUS=y
+CONFIG_YENTA=m
+CONFIG_YENTA_O2=y
+CONFIG_YENTA_RICOH=y
+CONFIG_YENTA_TI=y
+CONFIG_YENTA_ENE_TUNE=y
+CONFIG_YENTA_TOSHIBA=y
+CONFIG_PCCARD_NONSTATIC=m
+CONFIG_HIGHMEM_START=0xfe000000
+CONFIG_LOWMEM_SIZE=0x30000000
+CONFIG_KERNEL_START=0xc0000000
+CONFIG_TASK_SIZE=0x80000000
+CONFIG_BOOT_LOAD=0x00800000
+CONFIG_NET=y
+CONFIG_PACKET=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_FIB_HASH=y
+CONFIG_SYN_COOKIES=y
+CONFIG_INET_XFRM_MODE_TRANSPORT=y
+CONFIG_INET_XFRM_MODE_TUNNEL=y
+CONFIG_INET_XFRM_MODE_BEET=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_NETFILTER=y
+CONFIG_NETFILTER_NETLINK=m
+CONFIG_NF_CONNTRACK_ENABLED=m
+CONFIG_NF_CONNTRACK_SUPPORT=y
+CONFIG_NF_CONNTRACK=m
+CONFIG_NETFILTER_XTABLES=m
+CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+CONFIG_NETFILTER_XT_TARGET_MARK=m
+CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
+CONFIG_NETFILTER_XT_MATCH_COMMENT=m
+CONFIG_NETFILTER_XT_MATCH_LENGTH=m
+CONFIG_NETFILTER_XT_MATCH_LIMIT=m
+CONFIG_NETFILTER_XT_MATCH_MAC=m
+CONFIG_NETFILTER_XT_MATCH_MARK=m
+CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
+CONFIG_NETFILTER_XT_MATCH_REALM=m
+CONFIG_NETFILTER_XT_MATCH_SCTP=m
+CONFIG_NETFILTER_XT_MATCH_STRING=m
+CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
+CONFIG_IP_NF_IPTABLES=m
+CONFIG_IP_NF_MATCH_IPRANGE=m
+CONFIG_IP_NF_MATCH_TOS=m
+CONFIG_IP_NF_MATCH_RECENT=m
+CONFIG_IP_NF_MATCH_ECN=m
+CONFIG_IP_NF_MATCH_TTL=m
+CONFIG_IP_NF_MATCH_OWNER=m
+CONFIG_IP_NF_MATCH_ADDRTYPE=m
+CONFIG_IP_NF_FILTER=m
+CONFIG_IP_NF_TARGET_REJECT=m
+CONFIG_IP_NF_TARGET_LOG=m
+CONFIG_IP_NF_TARGET_ULOG=m
+CONFIG_IP_NF_TARGET_TCPMSS=m
+CONFIG_IP_NF_MANGLE=m
+CONFIG_IP_NF_TARGET_TOS=m
+CONFIG_IP_NF_TARGET_ECN=m
+CONFIG_IP_NF_TARGET_TTL=m
+CONFIG_IP_NF_RAW=m
+CONFIG_IP_NF_ARPTABLES=m
+CONFIG_IP_NF_ARPFILTER=m
+CONFIG_IP_NF_ARP_MANGLE=m
+CONFIG_IP_DCCP=m
+CONFIG_INET_DCCP_DIAG=m
+CONFIG_IP_DCCP_ACKVEC=y
+CONFIG_IP_DCCP_CCID2=m
+CONFIG_IP_DCCP_CCID3=m
+CONFIG_IP_DCCP_TFRC_LIB=m
+CONFIG_IP_DCCP_CCID3_RTO=100
+CONFIG_LLC=m
+CONFIG_ATALK=m
+CONFIG_NET_CLS_ROUTE=y
+CONFIG_BT=m
+CONFIG_BT_L2CAP=m
+CONFIG_BT_SCO=m
+CONFIG_BT_RFCOMM=m
+CONFIG_BT_RFCOMM_TTY=y
+CONFIG_BT_BNEP=m
+CONFIG_BT_BNEP_MC_FILTER=y
+CONFIG_BT_BNEP_PROTO_FILTER=y
+CONFIG_BT_HIDP=m
+CONFIG_BT_HCIUSB=m
+CONFIG_BT_HCIBCM203X=m
+CONFIG_BT_HCIBFUSB=m
+CONFIG_IEEE80211=m
+CONFIG_IEEE80211_CRYPT_WEP=m
+CONFIG_IEEE80211_CRYPT_CCMP=m
+CONFIG_IEEE80211_CRYPT_TKIP=m
+CONFIG_IEEE80211_SOFTMAC=m
+CONFIG_WIRELESS_EXT=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_CONNECTOR=y
+CONFIG_PROC_EVENTS=y
+CONFIG_MAC_FLOPPY=m
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_UB=m
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_IDE=y
+CONFIG_BLK_DEV_IDE=y
+CONFIG_BLK_DEV_IDEDISK=y
+CONFIG_BLK_DEV_IDECS=m
+CONFIG_BLK_DEV_IDECD=y
+CONFIG_BLK_DEV_IDEFLOPPY=y
+CONFIG_BLK_DEV_IDESCSI=y
+CONFIG_BLK_DEV_IDEPCI=y
+CONFIG_IDEPCI_SHARE_IRQ=y
+CONFIG_BLK_DEV_GENERIC=y
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+CONFIG_IDEDMA_PCI_AUTO=y
+CONFIG_BLK_DEV_PDC202XX_NEW=y
+CONFIG_BLK_DEV_SL82C105=y
+CONFIG_BLK_DEV_IDE_PMAC=y
+CONFIG_BLK_DEV_IDE_PMAC_ATA100FIRST=y
+CONFIG_BLK_DEV_IDEDMA_PMAC=y
+CONFIG_BLK_DEV_IDEDMA=y
+CONFIG_IDEDMA_AUTO=y
+CONFIG_SCSI=y
+CONFIG_SCSI_NETLINK=y
+CONFIG_SCSI_PROC_FS=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_CHR_DEV_ST=y
+CONFIG_BLK_DEV_SR=y
+CONFIG_BLK_DEV_SR_VENDOR=y
+CONFIG_CHR_DEV_SG=y
+CONFIG_SCSI_CONSTANTS=y
+CONFIG_SCSI_SPI_ATTRS=y
+CONFIG_SCSI_FC_ATTRS=y
+CONFIG_SCSI_AIC7XXX=m
+CONFIG_AIC7XXX_CMDS_PER_DEVICE=253
+CONFIG_AIC7XXX_RESET_DELAY_MS=15000
+CONFIG_AIC7XXX_DEBUG_ENABLE=y
+CONFIG_AIC7XXX_DEBUG_MASK=0
+CONFIG_AIC7XXX_REG_PRETTY_PRINT=y
+CONFIG_SCSI_AIC7XXX_OLD=m
+CONFIG_SCSI_SYM53C8XX_2=y
+CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
+CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
+CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
+CONFIG_SCSI_SYM53C8XX_MMIO=y
+CONFIG_SCSI_MESH=y
+CONFIG_SCSI_MESH_SYNC_RATE=5
+CONFIG_SCSI_MESH_RESET_DELAY_MS=4000
+CONFIG_SCSI_MAC53C94=y
+CONFIG_MD=y
+CONFIG_BLK_DEV_MD=m
+CONFIG_MD_LINEAR=m
+CONFIG_MD_RAID0=m
+CONFIG_MD_RAID1=m
+CONFIG_MD_MULTIPATH=m
+CONFIG_MD_FAULTY=m
+CONFIG_BLK_DEV_DM=m
+CONFIG_DM_CRYPT=m
+CONFIG_IEEE1394=m
+CONFIG_IEEE1394_EXTRA_CONFIG_ROMS=y
+CONFIG_IEEE1394_CONFIG_ROM_IP1394=y
+CONFIG_IEEE1394_OHCI1394=m
+CONFIG_IEEE1394_VIDEO1394=m
+CONFIG_IEEE1394_SBP2=m
+CONFIG_IEEE1394_ETH1394=m
+CONFIG_IEEE1394_DV1394=m
+CONFIG_IEEE1394_RAWIO=m
+CONFIG_ADB=y
+CONFIG_ADB_CUDA=y
+CONFIG_ADB_PMU=y
+CONFIG_ADB_PMU_LED=y
+CONFIG_ADB_PMU_LED_IDE=y
+CONFIG_PMAC_APM_EMU=m
+CONFIG_PMAC_MEDIABAY=y
+CONFIG_PMAC_BACKLIGHT=y
+CONFIG_PMAC_BACKLIGHT_LEGACY=y
+CONFIG_INPUT_ADBHID=y
+CONFIG_MAC_EMUMOUSEBTN=y
+CONFIG_THERM_WINDTUNNEL=m
+CONFIG_THERM_ADT746X=m
+CONFIG_NETDEVICES=y
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+CONFIG_MACE=y
+CONFIG_BMAC=y
+CONFIG_SUNGEM=y
+CONFIG_NET_PCI=y
+CONFIG_PCNET32=y
+CONFIG_NET_RADIO=y
+CONFIG_NET_WIRELESS_RTNETLINK=y
+CONFIG_HERMES=m
+CONFIG_APPLE_AIRPORT=m
+CONFIG_PRISM54=m
+CONFIG_BCM43XX=m
+CONFIG_BCM43XX_DEBUG=y
+CONFIG_BCM43XX_DMA=y
+CONFIG_BCM43XX_PIO=y
+CONFIG_BCM43XX_DMA_AND_PIO_MODE=y
+CONFIG_ZD1211RW=m
+CONFIG_ZD1211RW_DEBUG=y
+CONFIG_NET_WIRELESS=y
+CONFIG_PPP=y
+CONFIG_PPP_MULTILINK=y
+CONFIG_PPP_ASYNC=y
+CONFIG_PPP_SYNC_TTY=m
+CONFIG_PPP_DEFLATE=y
+CONFIG_PPP_BSDCOMP=m
+CONFIG_SLHC=y
+CONFIG_INPUT=y
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+CONFIG_INPUT_EVDEV=y
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_INPUT_MOUSE=y
+CONFIG_SERIO=y
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_SERIAL_8250=m
+CONFIG_SERIAL_8250_PCI=m
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+CONFIG_SERIAL_CORE=m
+CONFIG_SERIAL_PMACZILOG=m
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+CONFIG_HW_RANDOM=y
+CONFIG_NVRAM=y
+CONFIG_GEN_RTC=y
+CONFIG_AGP=m
+CONFIG_AGP_UNINORTH=m
+CONFIG_DRM=m
+CONFIG_DRM_RADEON=m
+CONFIG_I2C=y
+CONFIG_I2C_CHARDEV=m
+CONFIG_I2C_ALGOBIT=y
+CONFIG_I2C_POWERMAC=y
+CONFIG_HWMON=m
+CONFIG_SENSORS_AMS=m
+CONFIG_SENSORS_AMS_PMU=y
+CONFIG_SENSORS_AMS_I2C=y
+CONFIG_FIRMWARE_EDID=y
+CONFIG_FB=y
+CONFIG_FB_DDC=y
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+CONFIG_FB_MACMODES=y
+CONFIG_FB_BACKLIGHT=y
+CONFIG_FB_MODE_HELPERS=y
+CONFIG_FB_TILEBLITTING=y
+CONFIG_FB_OF=y
+CONFIG_FB_CONTROL=y
+CONFIG_FB_PLATINUM=y
+CONFIG_FB_VALKYRIE=y
+CONFIG_FB_CT65550=y
+CONFIG_FB_IMSTT=y
+CONFIG_FB_RADEON=y
+CONFIG_FB_RADEON_I2C=y
+CONFIG_FB_RADEON_BACKLIGHT=y
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=y
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+CONFIG_BACKLIGHT_DEVICE=y
+CONFIG_LCD_CLASS_DEVICE=y
+CONFIG_LCD_DEVICE=y
+CONFIG_SOUND=m
+CONFIG_DMASOUND_PMAC=m
+CONFIG_DMASOUND=m
+CONFIG_SND=m
+CONFIG_SND_TIMER=m
+CONFIG_SND_PCM=m
+CONFIG_SND_HWDEP=m
+CONFIG_SND_RAWMIDI=m
+CONFIG_SND_SEQUENCER=m
+CONFIG_SND_SEQ_DUMMY=m
+CONFIG_SND_OSSEMUL=y
+CONFIG_SND_MIXER_OSS=m
+CONFIG_SND_PCM_OSS=m
+CONFIG_SND_PCM_OSS_PLUGINS=y
+CONFIG_SND_SEQUENCER_OSS=y
+CONFIG_SND_SUPPORT_OLD_API=y
+CONFIG_SND_VERBOSE_PROCFS=y
+CONFIG_SND_DUMMY=m
+CONFIG_SND_VIRMIDI=m
+CONFIG_SND_POWERMAC=m
+CONFIG_SND_POWERMAC_AUTO_DRC=y
+CONFIG_SND_AOA=m
+CONFIG_SND_AOA_FABRIC_LAYOUT=m
+CONFIG_SND_AOA_ONYX=m
+CONFIG_SND_AOA_TAS=m
+CONFIG_SND_AOA_TOONIE=m
+CONFIG_SND_AOA_SOUNDBUS=m
+CONFIG_SND_AOA_SOUNDBUS_I2S=m
+CONFIG_SND_USB_AUDIO=m
+CONFIG_HID=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_DYNAMIC_MINORS=y
+CONFIG_USB_OHCI_HCD=y
+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+CONFIG_USB_ACM=m
+CONFIG_USB_PRINTER=m
+CONFIG_USB_STORAGE=m
+CONFIG_USB_HID=y
+CONFIG_USB_HIDINPUT_POWERBOOK=y
+CONFIG_USB_APPLETOUCH=y
+CONFIG_USB_USBNET_MII=m
+CONFIG_USB_USBNET=m
+CONFIG_USB_NET_AX8817X=m
+CONFIG_USB_NET_CDCETHER=m
+CONFIG_USB_NET_NET1080=m
+CONFIG_USB_NET_ZAURUS=m
+CONFIG_USB_MON=y
+CONFIG_USB_SERIAL=m
+CONFIG_USB_SERIAL_VISOR=m
+CONFIG_USB_SERIAL_IPAQ=m
+CONFIG_USB_SERIAL_KEYSPAN_PDA=m
+CONFIG_USB_SERIAL_KEYSPAN=m
+CONFIG_USB_SERIAL_KEYSPAN_MPR=y
+CONFIG_USB_SERIAL_KEYSPAN_USA28=y
+CONFIG_USB_SERIAL_KEYSPAN_USA28X=y
+CONFIG_USB_SERIAL_KEYSPAN_USA28XA=y
+CONFIG_USB_SERIAL_KEYSPAN_USA28XB=y
+CONFIG_USB_SERIAL_KEYSPAN_USA19=y
+CONFIG_USB_SERIAL_KEYSPAN_USA18X=y
+CONFIG_USB_SERIAL_KEYSPAN_USA19W=y
+CONFIG_USB_SERIAL_KEYSPAN_USA19QW=y
+CONFIG_USB_SERIAL_KEYSPAN_USA19QI=y
+CONFIG_USB_SERIAL_KEYSPAN_USA49W=y
+CONFIG_USB_SERIAL_KEYSPAN_USA49WLC=y
+CONFIG_USB_EZUSB=y
+CONFIG_NEW_LEDS=y
+CONFIG_LEDS_CLASS=y
+CONFIG_LEDS_TRIGGERS=y
+CONFIG_LEDS_TRIGGER_IDE_DISK=y
+CONFIG_EXT2_FS=y
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_JBD=y
+CONFIG_FS_MBCACHE=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_DNOTIFY=y
+CONFIG_AUTOFS4_FS=m
+CONFIG_FUSE_FS=m
+CONFIG_ISO9660_FS=y
+CONFIG_JOLIET=y
+CONFIG_ZISOFS=y
+CONFIG_ZISOFS_FS=y
+CONFIG_UDF_FS=m
+CONFIG_UDF_NLS=y
+CONFIG_FAT_FS=m
+CONFIG_MSDOS_FS=m
+CONFIG_VFAT_FS=m
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_RAMFS=y
+CONFIG_HFS_FS=m
+CONFIG_HFSPLUS_FS=m
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+CONFIG_SMB_FS=m
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=m
+CONFIG_NLS_CODEPAGE_850=m
+CONFIG_NLS_ASCII=m
+CONFIG_NLS_ISO8859_1=m
+CONFIG_NLS_ISO8859_15=m
+CONFIG_NLS_UTF8=m
+CONFIG_BITREVERSE=y
+CONFIG_CRC_CCITT=y
+CONFIG_CRC16=y
+CONFIG_CRC32=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
+CONFIG_TEXTSEARCH=y
+CONFIG_TEXTSEARCH_KMP=m
+CONFIG_TEXTSEARCH_BM=m
+CONFIG_TEXTSEARCH_FSM=m
+CONFIG_PLIST=y
+CONFIG_IOMAP_COPY=y
+CONFIG_PROFILING=y
+CONFIG_OPROFILE=y
+CONFIG_HEADERS_CHECK=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_LOG_BUF_SHIFT=14
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUGGER=y
+CONFIG_XMON=y
+CONFIG_XMON_DEFAULT=y
+CONFIG_XMON_DISASSEMBLY=y
+CONFIG_BOOTX_TEXT=y
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=m
+CONFIG_CRYPTO_BLKCIPHER=m
+CONFIG_CRYPTO_MANAGER=m
+CONFIG_CRYPTO_ECB=m
+CONFIG_CRYPTO_CBC=m
+CONFIG_CRYPTO_AES=m
+CONFIG_CRYPTO_ARC4=m
+CONFIG_CRYPTO_MICHAEL_MIC=m
 
---------------080000070707000801030901--
+--Boundary-01=_CMY7F2HfGumz7kW--
+
+--nextPart1239677.2I8geGo3Ff
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBF7YMKf1MvRZn7zSERAkonAKCJORQVAUZA5UmCFBLHRl0fNM5/5QCfdaan
+XgpRO9hgFzkTiPqUFICEtYg=
+=BYs9
+-----END PGP SIGNATURE-----
+
+--nextPart1239677.2I8geGo3Ff--
