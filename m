@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965971AbXCFSZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965975AbXCFS2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965971AbXCFSZy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965968AbXCFSZy
+	id S965975AbXCFS2K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:28:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965980AbXCFS2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:25:54 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59543
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965971AbXCFSZx convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:25:53 -0500
-Date: Tue, 06 Mar 2007 10:25:51 -0800 (PST)
-Message-Id: <20070306.102551.34761735.davem@davemloft.net>
-To: ilmari@ilmari.org
-Cc: andi@firstfloor.org, shemminger@linux-foundation.org,
-       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support II
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <d8jlkiagte5.fsf@nygaard.ping.uio.no>
-References: <20070305.162551.41660347.davem@davemloft.net>
-	<20070306140412.GA1470@one.firstfloor.org>
-	<d8jlkiagte5.fsf@nygaard.ping.uio.no>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 6 Mar 2007 13:28:10 -0500
+Received: from gw.goop.org ([64.81.55.164]:50324 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965975AbXCFS2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:28:08 -0500
+Message-ID: <45EDB2B5.4000506@goop.org>
+Date: Tue, 06 Mar 2007 10:28:05 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 8/8] Convert PDA into the percpu section
+References: <1173184747.4644.23.camel@localhost.localdomain>	 <1173185592.4644.28.camel@localhost.localdomain>	 <1173185666.4644.30.camel@localhost.localdomain>	 <1173185734.4644.32.camel@localhost.localdomain>	 <1173185827.4644.34.camel@localhost.localdomain>	 <1173185909.4644.36.camel@localhost.localdomain>	 <1173186021.4644.38.camel@localhost.localdomain>	 <1173186107.4644.41.camel@localhost.localdomain> <1173186214.4644.44.camel@localhost.localdomain>
+In-Reply-To: <1173186214.4644.44.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ilmari@ilmari.org (Dagfinn Ilmari Mannsåker)
-Date: Tue, 06 Mar 2007 18:43:14 +0100
+Rusty Russell wrote:
+> Currently x86 (similar to x84-64) has a special per-cpu structure
+> called "i386_pda" which can be easily and efficiently referenced via
+> the %fs register.  An ELF section is more flexible than a structure,
+> allowing any piece of code to use this area.  Indeed, such a section
+> already exists: the per-cpu area.
+>
+> So this patch
+> (1) Removes the PDA and uses per-cpu variables for each current member.
+> (2) Replaces the __KERNEL_PDA segment with __KERNEL_PERCPU.
+> (3) Creates a per-cpu mirror of __per_cpu_offset called this_cpu_off, which
+>     can be used to calculate addresses for this CPU's variables.
+> (4) Moves the boot cpu's GDT/percpu setup to smp_prepare_boot_cpu(),
+>     immediately after the per-cpu areas are allocated.
+>
+> The result is one less x86-specific concept.
+>   
 
-> Andi Kleen <andi@firstfloor.org> writes:
-> 
-> > Actually on rereading this: is there really any Linux port
-> > that emulates multiplies in software? I thought that was only
-> > done on really small microcontrollers or smart cards; but anything
-> > 32bit+ that runs Linux should have hardware multiply, shouldn't it?
-> 
-> SPARCv7 (sun4/sun4c) doesn't have hardware mul/div. This includes
-> SparcStation 1, 1+, 2, SLC, ELC, IPC and IPX.
+Looks good.  I think you can drop x86_add/sub/or_percpu; there are no users.
 
-Right and the cypress sun4m parts don't do multiply/divide in
-hardware either.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-I believe the Alpha does divide in software too, see
-arch/alpha/lib/divide.S
+    J
