@@ -1,46 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965187AbXCFV1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030179AbXCFV3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965187AbXCFV1M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:27:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965185AbXCFV1M
+	id S1030179AbXCFV3o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965258AbXCFV3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:27:12 -0500
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:47609 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965164AbXCFV1K (ORCPT
+	Tue, 6 Mar 2007 16:29:44 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:1204 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965149AbXCFV3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:27:10 -0500
-To: a.p.zijlstra@chello.nl
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, staubach@redhat.com, hugh@veritas.com
-In-reply-to: <1173213151.4718.16.camel@lappy> (message from Peter Zijlstra on
-	Tue, 06 Mar 2007 21:32:31 +0100)
-Subject: Re: [patch 2/8] update ctime and mtime for mmaped write
-References: <20070306180443.669036741@szeredi.hu>
-	 <20070306180549.312408559@szeredi.hu> <1173213151.4718.16.camel@lappy>
-Message-Id: <E1HOh8r-0006Sp-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 06 Mar 2007 22:24:17 +0100
+	Tue, 6 Mar 2007 16:29:42 -0500
+Date: Tue, 6 Mar 2007 22:28:47 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
+       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-Id: <20070306222847.85b4aff4.khali@linux-fr.org>
+In-Reply-To: <20070302214643.GA10774@srcf.ucam.org>
+References: <45D5EA88.7090300@redhat.com>
+	<45D6DDCE.5050803@assembler.cz>
+	<45D7461A.2040808@redhat.com>
+	<20070218183805.5a4fd813.khali@linux-fr.org>
+	<20070228213803.GA4877@ucw.cz>
+	<20070301152655.f232db64.khali@linux-fr.org>
+	<20070302114023.GD2163@elf.ucw.cz>
+	<20070302150313.198b6053.khali@linux-fr.org>
+	<20070302145709.GA3710@srcf.ucam.org>
+	<20070302224155.143b8643.khali@linux-fr.org>
+	<20070302214643.GA10774@srcf.ucam.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm not liking this, its not a constant operation as the name implies.
+Hi Matthew,
 
-OK, I'll think of something better.
-
-> And it style is a bit out of line with the rest of rmap.
+On Fri, 2 Mar 2007 21:46:43 +0000, Matthew Garrett wrote:
+> On Fri, Mar 02, 2007 at 10:41:55PM +0100, Jean Delvare wrote:
 > 
-> The thing it actually does is page_mkclean(), all it doesn't do is
-> setting the pte read-only.
+> > I like the patch, after adding some casts to the printf args it
+> > compiles fine. However you print warnings each time a resource has been
+> > reserved... without checking if it hasn't been reserved by ACPI itself!
+> > My machine looks like this:
 > 
-> I can understand you wanting to avoid the overhead of the minor faults
-> resulting from using page_mkclean(), but I'm not sure its worth it.
+> Oops! I'll look into fixing that. Thanks, that's an excellent point...
 
-It would be nice if the cost of MS_ASYNC wouldn't be too high.  And I
-do have the feeling that minor faults are far more expensive than
-cleaning the dirty bit in the ptes.
+Here is what I have come up with, by mixing your patch with Rudolf
+Marek's one. Again this is only a reporting patch, but now it only
+reports real unreserved accesses. I plan to use it for debugging
+purposes.
 
-Do you have any numbers?
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/acpi/osl.c |   72 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 72 insertions(+)
 
-Thanks,
-Miklos
+--- linux-2.6.21-rc2.orig/drivers/acpi/osl.c	2007-03-06 20:59:00.000000000 +0100
++++ linux-2.6.21-rc2/drivers/acpi/osl.c	2007-03-06 21:33:13.000000000 +0100
+@@ -35,6 +35,7 @@
+ #include <linux/kmod.h>
+ #include <linux/delay.h>
+ #include <linux/workqueue.h>
++#include <linux/ioport.h>
+ #include <linux/nmi.h>
+ #include <linux/acpi.h>
+ #include <acpi/acpi.h>
+@@ -370,6 +371,7 @@ u64 acpi_os_get_timer(void)
+ acpi_status acpi_os_read_port(acpi_io_address port, u32 * value, u32 width)
+ {
+ 	u32 dummy;
++	struct resource *conflict, res;
+ 
+ 	if (!value)
+ 		value = &dummy;
+@@ -388,6 +390,23 @@ acpi_status acpi_os_read_port(acpi_io_ad
+ 		BUG();
+ 	}
+ 
++	res.flags = IORESOURCE_IO;
++	res.name = "_ACPI Access";
++	res.start = port;
++	res.end = port + width/8 - 1;
++
++	conflict = ____request_resource(&ioport_resource, &res);
++	while (conflict && conflict->child)
++		conflict = ____request_resource(conflict, &res);
++
++	if (conflict && strncmp(conflict->name, "ACPI ", 5)) {
++		printk (KERN_INFO "ACPI read from allocated ioport %lx, value %lx, width %d\n",
++			(unsigned long)port, (unsigned long)(*value), (int)width);
++	}
++
++	if (conflict == NULL)
++		release_resource(&res);
++
+ 	return AE_OK;
+ }
+ 
+@@ -395,6 +414,25 @@ EXPORT_SYMBOL(acpi_os_read_port);
+ 
+ acpi_status acpi_os_write_port(acpi_io_address port, u32 value, u32 width)
+ {
++	struct resource *conflict, res;
++
++	res.flags = IORESOURCE_IO;
++	res.name = "_ACPI Access";
++	res.start = port;
++	res.end = port + width/8 - 1;
++
++	conflict = ____request_resource(&ioport_resource, &res);
++	while (conflict && conflict->child)
++		conflict = ____request_resource(conflict, &res);
++
++	if (conflict && strncmp(conflict->name, "ACPI ", 5)) {
++		printk (KERN_INFO "ACPI write to allocated ioport %lx, value %lx, width %d\n",
++			(unsigned long)port, (unsigned long)(value), (int)width);
++	}
++
++	if (conflict == NULL)
++		release_resource(&res);
++
+ 	switch (width) {
+ 	case 8:
+ 		outb(value, port);
+@@ -419,6 +457,7 @@ acpi_os_read_memory(acpi_physical_addres
+ {
+ 	u32 dummy;
+ 	void __iomem *virt_addr;
++	struct resource *conflict, res;
+ 
+ 	virt_addr = ioremap(phys_addr, width);
+ 	if (!value)
+@@ -440,6 +479,22 @@ acpi_os_read_memory(acpi_physical_addres
+ 
+ 	iounmap(virt_addr);
+ 
++	res.flags = IORESOURCE_MEM;
++	res.name = "_ACPI Access";
++	res.start = phys_addr;
++	res.end = phys_addr + width/8 - 1;
++
++	conflict = ____request_resource(&iomem_resource, &res);
++	while (conflict && conflict->child)
++		conflict = ____request_resource(conflict, &res);
++
++	if (conflict && strncmp(conflict->name, "ACPI ", 5))
++		pr_info("ACPI read from allocated iomem %lx, value %lx, width %d\n",
++			(unsigned long)phys_addr, (unsigned long)(*value), (int)width);
++
++	if (conflict == NULL)
++		release_resource(&res);
++
+ 	return AE_OK;
+ }
+ 
+@@ -447,6 +502,23 @@ acpi_status
+ acpi_os_write_memory(acpi_physical_address phys_addr, u32 value, u32 width)
+ {
+ 	void __iomem *virt_addr;
++	struct resource *conflict, res;
++
++	res.flags = IORESOURCE_MEM;
++	res.name = "_ACPI Access";
++	res.start = phys_addr;
++	res.end = phys_addr + width/8 - 1;
++
++	conflict = ____request_resource(&iomem_resource, &res);
++	while (conflict && conflict->child)
++		conflict = ____request_resource(conflict, &res);
++
++	if (conflict && strncmp(conflict->name, "ACPI ", 5))
++		pr_info("ACPI write to allocated iomem %lx, value %lx, width %d\n",
++			(unsigned long)phys_addr, (unsigned long)value, (int)width);
++
++	if (conflict == NULL)
++		release_resource(&res);
+ 
+ 	virt_addr = ioremap(phys_addr, width);
+ 
+
+
+-- 
+Jean Delvare
