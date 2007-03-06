@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750879AbXCFUFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751245AbXCFUGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750879AbXCFUFy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 15:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXCFUFy
+	id S1751245AbXCFUGz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 15:06:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXCFUGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 15:05:54 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39002 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbXCFUFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 15:05:53 -0500
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Use CONFIG_ARCH_HAS_ILOG2_xxx in __get_order() not
-	ARCH_HAS_ILOG2_xxx
-To: torvalds@osdl.org, akpm@osdl.org, adobriyan@gmail.com
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com
-Date: Tue, 06 Mar 2007 20:05:08 +0000
-Message-ID: <20070306200508.23249.27096.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	Tue, 6 Mar 2007 15:06:54 -0500
+Received: from mail21.syd.optusnet.com.au ([211.29.133.158]:35536 "EHLO
+	mail21.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751245AbXCFUGx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 15:06:53 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu   scheduler
+Date: Wed, 7 Mar 2007 07:06:41 +1100
+User-Agent: KMail/1.9.5
+Cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>
+References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <200703050453.08154.gene.heskett@gmail.com> <45EDA9DF.6030305@tmr.com>
+In-Reply-To: <45EDA9DF.6030305@tmr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703070706.41676.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+On Wednesday 07 March 2007 04:50, Bill Davidsen wrote:
+> Gene Heskett wrote:
+> > On Monday 05 March 2007, Nicolas Mailhot wrote:
+> >> This looks like -mm stuff if you want it in 2.6.22
+> >
+> > This needs to get to 2.6.21, it really is that big an improvement.
+>
+> As Con pointed out, for some workloads and desired behavour this is not
+> as good as the existing scheduler. Therefore it should go in -mm and
+> hopefully give the user an option to select which is appropriate.
 
-Use CONFIG_ARCH_HAS_ILOG2_xxx in __get_order() not ARCH_HAS_ILOG2_xxx as the
-former is the right thing to use.
+Actually I wasn't saying that for some workloads mainline will be better. What 
+I was saying was there will be some bizarre scenarios where the intrinsic 
+unfairness in mainline towards certain interactive tasks will make them 
+appear to run better. After fiddling with scheduler code for the last few 
+years I've come to believe that that may _appear to look better_, but is 
+worse since that behaviour can be exploited and leads to scheduling delays 
+elsewhere.
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
+> With luck I'll get to shake out that patch in combination with kvm later
+> today.
 
- include/asm-generic/page.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Great thanks!. I've appreciated all the feedback so far.
 
-diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
-index c79dc23..3a22a76 100644
---- a/include/asm-generic/page.h
-+++ b/include/asm-generic/page.h
-@@ -16,12 +16,12 @@
- static inline __attribute__((const))
- int __get_order(unsigned long size, int page_shift)
- {
--#if BITS_PER_LONG == 32 && defined(ARCH_HAS_ILOG2_U32)
-+#if BITS_PER_LONG == 32 && defined(CONFIG_ARCH_HAS_ILOG2_U32)
- 	if (size <= (1UL << page_shift))
- 		return 0;
- 	else
- 		return __ilog2_u32(size - 1) + 1 - page_shift;
--#elif BITS_PER_LONG == 64 && defined(ARCH_HAS_ILOG2_U64)
-+#elif BITS_PER_LONG == 64 && defined(CONFIG_ARCH_HAS_ILOG2_U64)
- 	if (size <= (1UL << page_shift))
- 		return 0;
- 	else
-
+-- 
+-ck
