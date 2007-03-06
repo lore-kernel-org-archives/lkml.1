@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965970AbXCFROG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965972AbXCFROn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965970AbXCFROG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:14:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965953AbXCFROF
+	id S965972AbXCFROn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965971AbXCFROn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:14:05 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:47998 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965971AbXCFROE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:14:04 -0500
-Date: Tue, 6 Mar 2007 09:13:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Howells <dhowells@redhat.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: get_order() broken !
-In-Reply-To: <1173200555.9349.2.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0703060910340.5963@woody.linux-foundation.org>
-References: <1173200555.9349.2.camel@localhost.localdomain>
+	Tue, 6 Mar 2007 12:14:43 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:45159 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965974AbXCFROm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:14:42 -0500
+Message-ID: <45EDA15F.5090805@zytor.com>
+Date: Tue, 06 Mar 2007 09:14:07 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch v2] epoll use a single inode ...
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org> <45ECD122.6020907@zytor.com> <Pine.LNX.4.64.0703051832260.4907@alien.or.mcafeemobile.com> <45ECD3D4.5020305@zytor.com> <Pine.LNX.4.64.0703051841380.4907@alien.or.mcafeemobile.com> <45ED08A9.9050501@cosmosbay.com> <45ED96A6.3000704@zytor.com> <Pine.LNX.4.64.0703060853050.5963@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703060853050.5963@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 6 Mar 2007, Benjamin Herrenschmidt wrote:
->
-> Ok, maybe I have lots of shit in my eyes.... but it looks like get_order
-> in asm-generic/page.h is broken.
+Linus Torvalds wrote:
 > 
-> AFAIK, get_order() should round up (and we have code here or there
-> assuming such).
+>> However, this could be optimized.  I think right now sprintf() uses a generic
+>> divide-by-base, but a divide by 8 and 16 can of course be handled with a
+>> shift, and divide by 10 can be replaced with a multiplication by
+>> 0x1999999999999999ULL on most architectures.
 > 
-> However, it seems to assume that ilog2 rounds up, which it doesn't. It
-> rounds down. At least the generic implementation seems to do so and the
-> powerpc optimized one too.
+> Nope. You need both the result of the division *and* the remainder, and 
+> you can't do that with a single multiply.
 
-Yeah, I think the recent get_order() changes to change it to use ilog2() 
-are just crap. I actually looked at it when it went in, but I assumed that 
-it had been tested. I don't think it has.
+Oh, right.  *D'oh*.
 
-Let's just revert that entirely.
-
-David, quick comments before I undo commit 39d61db0?
-
-		Linus
+	-hpa
