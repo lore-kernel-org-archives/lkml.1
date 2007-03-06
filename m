@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030469AbXCFJkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030477AbXCFJlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030469AbXCFJkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030472AbXCFJkh
+	id S1030477AbXCFJlU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030489AbXCFJlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:40:37 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:46859 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030469AbXCFJkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:40:36 -0500
-Date: Tue, 6 Mar 2007 10:40:09 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Li Yu <liyu@ccoss.com.cn>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Vincent Legoll <vincentlegoll@gmail.com>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       Harold Sargeant <harold-sargeant@ntlworld.com>,
-       Greg Kroah Hartman <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, Li Yu <raise.sail@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-usb-devel] [DOC] The documentation for HID Simple Driver
- Interface 0.5.0
-In-Reply-To: <45ECC5A4.20203@ccoss.com.cn>
-Message-ID: <Pine.LNX.4.64.0703061036120.10909@twin.jikos.cz>
-References: <200703051532096508636@gmail.com> <Pine.LNX.4.64.0703052304070.10909@twin.jikos.cz>
- <d120d5000703051427r577acc82x85a70ff963b991fa@mail.gmail.com>
- <45ECC5A4.20203@ccoss.com.cn>
+	Tue, 6 Mar 2007 04:41:20 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36304 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030477AbXCFJlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:41:19 -0500
+Date: Tue, 6 Mar 2007 10:41:07 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Kconfig: Update swsusp description
+Message-ID: <20070306094107.GF2040@elf.ucw.cz>
+References: <200703041514.44680.rjw@sisk.pl> <20070306083224.GE2040@elf.ucw.cz> <200703061013.13585.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703061013.13585.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007, Li Yu wrote:
+Hi!
 
-> > If we define HID "bus" allowing drivers to bind on VID:PID and provide 
-> > default library module for parsing HID reports and providing access to 
-> > HID transports (USB/BT) then writing tiny drivers adjusting just a 
-> > part of hid_input_event and relying on default implemenattaion where 
-> > it makes sense will become a breeze.
-> But (You may guess I will say this word :), before the HID bus or other 
-> better implementation come , I hope use the extended keys of my keyboard 
-> on Linux, and I guess other people also think same with me, so we need 
-> something here temporarily, even it do not merge into upstream code 
-> tree.
-> And, I want to know that is somebody works on HID bus, Can I join it?
+> > > Index: linux-2.6.21-rc2/kernel/power/Kconfig
+> > > ===================================================================
+> > > --- linux-2.6.21-rc2.orig/kernel/power/Kconfig	2007-02-28 23:54:45.000000000 +0100
+> > > +++ linux-2.6.21-rc2/kernel/power/Kconfig	2007-03-04 11:50:48.000000000 +0100
+> > > @@ -81,30 +81,35 @@ config SOFTWARE_SUSPEND
+> > >  	bool "Software Suspend"
+> > >  	depends on PM && SWAP && ((X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
+> > >  	---help---
+> > > +	  Enable the suspend to disk (STD) functionality.
+> > >  
+> > > +	  You can suspend your machine with 'echo disk > /sys/power/state'.
+> > > +	  Alternatively, you can use the additional userland tools available
+> > > +	  from <http://suspend.sf.net>.
+> > > +
+> > > +	  In principle it does not require ACPI or APM, although for example
+> > > +	  ACPI will be used if available.
+> > > +
+> > > +	  It creates an image which is saved in your active swap. Upon the next
+> > >  	  boot, pass the 'resume=/dev/swappartition' argument to the kernel to
+> > 
+> > Actually, these days resume=... on kernel command line needs to be
+> > there for suspend, too, IIRC.
+> 
+> I didn't change this line, so?
 
-I will probably start working on it one day. Anyway some parts of what 
-Dmitry described are already in the mainline since 2.6.20 - the parser 
-code (and hid_device registration and initialization in general) is 
-already there. Access to transport layers (USB/BT) is partly also there 
-(see hid_open(), hid_close() and hidinput_input_event() callbacks in 
-struct hid_device). So really the only one pending thing which is 
-non-trivial would be creating an interface for registering the device 
-driver for given VID/PID on the HID bus, and solving the fallback 
-mechanism, i.e. assuring that everything works for drivers which are OK 
-with generic hid and hid-input behavior.
+So I should go and fix it ;-). (I'm now overloaded with email sorry
+for being terse.)
 
-I will happily accept such patches from you, if you do them. Otherwise I 
-will start to work on it in a future anyway.
+Can we do something like
 
-Thanks,
++	  Enable the suspend to disk (STD) functionality.
++	  In principle it does not require any support from BIOS, although 
++	  ACPI will be used if available.
 
++	  You can suspend your machine with 'echo disk >
++	  /sys/power/state' after placing resume=/dev/swappartition on
++	  kernel command line.
++	  Alternatively, you can use the additional userland tools available
++	  from <http://suspend.sf.net>.
+
+(and remove ...upon next boot... section).
+
+> > > +	  Right now you may boot without resuming and resume later but in the
+> > > +	  meantime you cannot use the swap partition(s)/file(s) involved in
+> > > +	  suspending.  Also in this case you must not use the
+> > 
+> > I'd prefer not to encourage this use. It has too many traps ready for
+> > people.
+> 
+> But IMHO there should be a warning that if you boot without resuming, make sure
+> you'll not resume after the next reboot or bad things will happen.
+
++	It is possible to boot without resuming and resume later but
++	if you access any partitions/files used by suspended kernel,
++	you'll probably loose your data. See ... for details.
+
+?
+								Pavel
 -- 
-Jiri Kosina
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
