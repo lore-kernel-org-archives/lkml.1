@@ -1,72 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965369AbXCFR2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965373AbXCFRck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965369AbXCFR2F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965371AbXCFR2E
+	id S965373AbXCFRck (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965376AbXCFRck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:28:04 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:42289 "EHLO pfx2.jmh.fr"
+	Tue, 6 Mar 2007 12:32:40 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:49632 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965369AbXCFR2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:28:02 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch v2] epoll use a single inode ...
-Date: Tue, 6 Mar 2007 18:28:00 +0100
-User-Agent: KMail/1.9.5
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com> <200703061812.28478.dada1@cosmosbay.com> <Pine.LNX.4.64.0703060917500.5963@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703060917500.5963@woody.linux-foundation.org>
+	id S965373AbXCFRcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:32:39 -0500
+Message-ID: <45EDA596.3020607@us.ibm.com>
+Date: Tue, 06 Mar 2007 11:32:06 -0600
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       virtualization <virtualization@lists.osdl.org>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: Xen & VMI?
+References: <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703061828.00253.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 March 2007 18:19, Linus Torvalds wrote:
-> On Tue, 6 Mar 2007, Eric Dumazet wrote:
-> > Something like :
-> >
-> > [PATCH] : Use reciprocal divides in sprintf()
+Nakajima, Jun wrote:
+> Anthony Liguori wrote:
+>   
+>> Ingo Molnar wrote:
+>>     
+>>> * Gerd Hoffmann <kraxel@suse.de> wrote:
+>>>
+>>>       
+>>>>>> So in the end you would still have two different hypervisor ABI's,
+>>>>>> the VMI ROM just hides that.
+>>>>>>             
+>>>>> oh, but that way i have cleverly pushed the problem out of Linux
+>>>>> and into the VMI-ROM's domain ;) Which is all i care about.
+>>>>>           
+>>>> Fine, so lets move kvm paravirtualitzation into vmi too (proof of
+>>>> concept code by Anthony Liguori exists) and kill one more item on
+>>>> the (linux) QA test matrix?  (just following your arguments, not
+>>>> that I'm confident it would actually help reducing QA effort).
+>>>>         
+>>> yes - although obviously a KVM Linux guest does not need such an
+>>> interface - but it's a nice proof of concept to integrate other guest
+>>> OSs into KVM.
+>>>       
+>> I disagree that a KVM Linux guest does not benefit from VMI.  Right
+>> now, your KVM paravirt interface only covers CR3 target caching and
+>> apic enhancements (neither of which I believe have made it into
+>> 2.6.21). Inevitably, things like MMU batching will be added.
+>>     
 >
-> Try this on Core 2, and I suspect that you'll find that the hardware is
-> actually *faster* than doing the shift/test, function call and the
-> two multiplies.
+> I think a KVM Linux would benefit more from paravirt ops, rather than
+> VMI. 
+
+Functionally speaking, the only difference between using VMI and 
+paravirt_ops is that with VMI you redirect the paravirt_ops to a ROM 
+area.  This has the following effects:
+
+1) you cannot call back into Linux from the op implementation
+2) you can change the implementation of the op w/o rebuilding the kernel
+
+1 & 2 are trade-offs.  For everything that KVM can do wrt 
+paravirtualization, there really isn't a need for #1 at the moment.  Xen 
+is much more challenging to do with VMI as there are a lot of instances 
+where #1 is quite useful.  I think you pretty much have to target 
+paravirt_ops for Xen.
+
+> The higher-level interface such as the one in Xen, espeically for
+> I/O, interrupt controllers, timer, SMP, etc. actually simplifies the
+> implementation of the VMM,
+
+Right, but those higher-level interfaces can certainly be implemented 
+within the context of a VMI rom.  For instance, VMI already defines a 
+paravirtual timer.  In the case of interrupt control, it just provides 
+hooks for APIC reads/writes with the assumption (presumably) that the 
+ROM will implement APIC emulation and bridge to whatever the hypervisor 
+abstraction is.
+
+>  and improve performance of the guest. Even
+> for MMU, direct page tables, for example, would work better for
+> hardware-based virtualization because the processor can use the native
+> page tables. 
+>   
+
+Direct paging is a whole other can of worms.  Fortunately, EPT and NPT 
+will eliminate the need to worry about this in the future for things 
+like KVM/HVM :-)
+
+Regards,
+
+Anthony Liguori
+
+>> Using paravirt_ops, this is going to require new kernels for the
+>>   guests. Every new paravirtualization feature will require a new
+>>   guest kernel. With VMI, one can add these features to any 2.6.21+
+>> guest by just modifying the ROM (assuming a newer host).  Some
+>> features will require new VMI entry points but quite a lot will fall
+>> under the current entry points.
+>>
+>> Of all the hypervisors, KVM is the easiest to use VMI with.  QEMU
+>> already supports option ROM loading and Zach just made some changes to
+>> allow a native ROM to be implemented very easily.
+>>
+>> If we're going to use VMI for anything other than VMware, it seems to
+>> be that KVM should be what we use it for.
+>>
+>> Regards,
+>>
+>> Anthony Liguori
+>>
+>>     
+>>> 	Ingo
+>>>       
 >
-
-Where do you see a function call ?
-
-     448:       44 89 d0                mov    %r10d,%eax
-     44b:       44 89 ea                mov    %r13d,%edx
-     44e:       48 0f af c1             imul   %rcx,%rax
-     452:       48 c1 e8 20             shr    $0x20,%rax
-     456:       0f af d0                imul   %eax,%edx
-     459:       49 29 d2                sub    %rdx,%r10
-     45c:       43 0f b6 14 16          movzbl (%r14,%r10,1),%edx
-     461:       41 89 c2                mov    %eax,%r10d
-     464:       41 88 13                mov    %dl,(%r11)
-     467:       49 ff c3                inc    %r11
-     46a:       85 c0                   test   %eax,%eax
-     46c:       75 da                   jne    448 <number+0x138>
-
-
-
-> > Using reciprocal divides permits to change each divide by two multiplies,
-> > less expensive on current CPUS.
+> Jun
+> ---
+> Intel Open Source Technology Center
 >
-> Are you sure?
-
-I am going to test this, but at least on Opterons, the reciprocal divide I 
-added into mm/slab.c gave me a nice speedup.
-
-I am going to bench some stupid loop :
-
-for (i = 0 ; i < 1000*1000 ; i++) {
-	pipe(fds); close(fds[0]); close(fds[1]);
-}
+>   
 
