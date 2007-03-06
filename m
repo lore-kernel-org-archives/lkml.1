@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbXCFUIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbXCFUI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751330AbXCFUIG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 15:08:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXCFUIG
+	id S1751635AbXCFUI0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 15:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbXCFUI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 15:08:06 -0500
-Received: from [212.12.190.250] ([212.12.190.250]:32963 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751330AbXCFUID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 15:08:03 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: bugs in kernel 2.6.21 (both two release candidates) and kernel
-Date: Tue, 6 Mar 2007 23:11:13 +0300
-User-Agent: KMail/1.5
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 6 Mar 2007 15:08:26 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:55345 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325AbXCFUIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 15:08:23 -0500
+Date: Tue, 6 Mar 2007 12:04:33 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
+       Andi Kleen <andi@firstfloor.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support
+Message-ID: <20070306120433.3863e6c9@freekitty>
+In-Reply-To: <20070306194841.GA5424@one.firstfloor.org>
+References: <20070223170527.4ca695b2@freekitty>
+	<20070305155714.3abe1b5e@freekitty>
+	<20070306133404.GA864@one.firstfloor.org>
+	<200703061519.20346.dada1@cosmosbay.com>
+	<20070306144529.GA2004@one.firstfloor.org>
+	<84C47260-4B57-4568-8197-58F438A6F737@e18.physik.tu-muenchen.de>
+	<20070306102941.32471d57@freekitty>
+	<20070306194841.GA5424@one.firstfloor.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200703062311.13408.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Finding somebody who is both technically top-notch *and* can work with
-> people is so rare as to be something you shouldn't even look for. That's
-> especially true since quite often, maintainership doesn't even come with a
-> lot of glory - just a lot of work, and the expectation that you always be
-> there.
+On Tue, 6 Mar 2007 20:48:41 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-There is a threaded approach; it's called XP, as in eXtremeProgramming.
-It's a 2-person programming adventure, where each person covers the 
-shortcomings of the other.  Doesn't work so well for bigEgos, though.
+> On Tue, Mar 06, 2007 at 10:29:41AM -0800, Stephen Hemminger wrote:
+> > Don't count the existing Newton-Raphson out. It turns out that to get enough
+> > precision for 32 bits, only 4 iterations are needed. By unrolling those, it
+> > gets much better timing.
+> 
+> But did you fix the >2^43 bug too?
+
+It was caused by not doing x^2 in 64 bit.
+
+> 
+> SGI has already shipped 10TB Altixen, so it's not entirely theoretical.
+> 
+> -Andi
+> 
 
 
-Thanks!
-
---
-Al
-
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
