@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbXCFVCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXCFVEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932152AbXCFVCp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932167AbXCFVCp
+	id S932167AbXCFVEF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:04:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbXCFVEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:02:45 -0500
-Received: from gw.goop.org ([64.81.55.164]:42792 "EHLO mail.goop.org"
+	Tue, 6 Mar 2007 16:04:04 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37876 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932152AbXCFVCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:02:45 -0500
-Message-ID: <45EDD6F1.7080100@goop.org>
-Date: Tue, 06 Mar 2007 13:02:41 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Nakajima, Jun" <jun.nakajima@intel.com>,
+	id S932167AbXCFVED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 16:04:03 -0500
+Date: Tue, 6 Mar 2007 22:03:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Gerd Hoffmann <kraxel@suse.de>,
        virtualization <virtualization@lists.osdl.org>,
-       Roland McGrath <roland@redhat.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
+       Jan Beulich <jbeulich@novell.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
 Subject: Re: Xen & VMI?
-References: <45ED82D9.6050204@codemonkey.ws>	<8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com> <20070306203712.GC21736@elte.hu>
-In-Reply-To: <20070306203712.GC21736@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070306210334.GC26348@elte.hu>
+References: <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <20070306194612.GG19575@sequoia.sous-sol.org> <20070306203018.GA21736@elte.hu> <20070306205351.GA10574@sequoia.sous-sol.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306205351.GA10574@sequoia.sous-sol.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> maybe we are talking past each other because i dont really disagree with 
-> that: i mentioned it right at beginning that higher-level APIs would 
-> have to be added to VMI. What i'd like to avoid is the ABI duplication 
-> for the lowlevel stuff /and/ for the highlevel stuff. Since VMI is 
-> mostly about lowlevel stuff right now it's obvious that it would have to 
-> grow more highlevel ops. Doing an IO driver via IO emulation is 
-> obviously pretty ... low-tech.
->
-> maybe i shouldnt call it 'VMI' but 'the paravirt ABI'. I dont mind if 
-> it's the Xen ABI or the VMWare ABI or a mesh of the two - everyone can 
-> map their own internals to that /one/ ABI.
 
-Well, that's the basic force shaping paravirt_ops; many of the calls are
-generally used by all backends, and some are more specific.  The
-entrypoints in paravirt_ops would be an approximate model for this
-hypothetical ABI you're talking about.
+* Chris Wright <chrisw@sous-sol.org> wrote:
 
-But the key point you're missing is that this isn't a one-way
-interface.  The hypervisor backend code makes calls into the kernel's
-interfaces as well.  We use memory allocation, the interrupt
-infrastructure, timers, per-cpu and as many other existing interfaces as
-possible, so that we don't have to bloat paravirt_ops with duplicates of
-all those other interfaces.
+> > i'm still arguing the same: that doing the same thing via 
+> > overlapping, conflicting, redundant ABIs is crazy and contrary to 
+> > the basic interests of Linux. It's like having 5 different, parallel 
+> > variants of sys_open(), interfaced via a convoluted open_ops.
+> 
+> I would've said 5 parallel implementations of inode->i_op simply given 
+> the nature of the operations, which is entirely sane.
 
-If you're seriously talking about an ABI, then you'd also have to
-present stable ABIs for all subsystems the hypervisor backends want to
-call into, either by actually freezing the internal linux interfaces
-into ABIs, or by effectively duplicating them across the paravirt ABI
-(or whatever).
+with the big freaking difference that the 5 parallel implementations of 
+inode->i_op are:
 
-    J
+	_internal to Linux_
+
+Doh. There's only a data ABI underneath them.
+
+every time someone tried to impose a functional/behavioral ABI on core 
+bits of Linux we said: 'no way dude!'. Remember STREAMS? Remember the 
+module KABI? Remember ACPI? [doh, i guess we messed up on the latter 
+one. We regret that day ever since.]
+
+(network file systems are a bit of an exception to the rule, but those 
+are pretty isolated themselves and in no way as wide and central as the 
+direction paravirt_ops appears to grow.)
+
+> > having data ABI coupling is one thing (filesystems, network formats, 
+> > etc.). But having a 5-way function ABI coupling between system 
+> > software running on the /same piece of hardware/, doing the same 
+> > thing in essence is just madness in my book.
+> 
+> This is where I'm not understanding your argument.  The hardware is 
+> somewhat irrelevant since the OS is running on a platform presented by 
+> the hypervisor.  And the point is to allow multiple implementations of 
+> the OS opertations that interact with the platform.  And in essence 
+> all network stacks and file systems are doing the same thing with the 
+> same hardware. [...]
+
+again, those are /DATA/ ABIs. Not function ABIs. Not behavioral ABIs. 
+The coupling is /FAR/ saner and far more plannable and far more 
+isolated. And even data ABIs are very non-trivial ...
+
+	Ingo
