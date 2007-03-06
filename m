@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965966AbXCFRMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965309AbXCFRM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965966AbXCFRMI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:12:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbXCFRMI
+	id S965309AbXCFRM0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965970AbXCFRM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:12:08 -0500
-Received: from mga03.intel.com ([143.182.124.21]:31504 "EHLO mga03.intel.com"
+	Tue, 6 Mar 2007 12:12:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56023 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965966AbXCFRMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:12:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,254,1170662400"; 
-   d="scan'208"; a="191050859:sNHT1358156093"
-Message-ID: <45EDA04A.1060500@intel.com>
-Date: Tue, 06 Mar 2007 09:09:30 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.9 (X11/20061228)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>,
-       Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>,
+	id S965309AbXCFRMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:12:24 -0500
+Date: Tue, 6 Mar 2007 18:11:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Gerd Hoffmann <kraxel@suse.de>,
+       virtualization <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-References: <20070225175559.GC12392@stusta.de>  <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz>  <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>  <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>  <20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>  <20070305084257.GA4464@mellanox.co.il>  <20070305101120.GA23032@elte.hu> <1173198401.24738.340.camel@localhost.localdomain> <Pine.LNX.4.64.0703060845480.5963@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703060845480.5963@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2007 17:09:31.0080 (UTC) FILETIME=[348ECC80:01C76012]
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Xen & VMI?
+Message-ID: <20070306171130.GA13403@elte.hu>
+References: <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <45ED3121.8090308@suse.de> <20070306093436.GA30239@elte.hu> <45ED3F29.6000705@suse.de> <20070306102658.GA7478@elte.hu> <45ED4AD8.6020504@suse.de> <20070306115937.GA25313@elte.hu> <45ED9678.5050907@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45ED9678.5050907@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Tue, 6 Mar 2007, Thomas Gleixner wrote:
->> SATA has another nice feature. Somehow there is an interrupt pending on
->> the SATA controller, which comes in somewhere in the middle of resume.
->> If it happens before the SATA code resumed, the SATA code ignores the
->> interrupt and the interrupt is disabled due to "nobody cared", which in
->> turn prevents SATA to ever become functional again. >
 
-> And if you don't want to do any of these things (or are unable to, because 
-> of some ordering constraint or bad design), then you simply need to 
-> unregister and re-register the interrupt handler over sleep.
-> 
->> Any idea on that one ?
-> 
-> Jeff, Auke, does this ring any bells?
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-For the e1000 issue, the problem is solved with Eric Biederman's 3-patch msi 
-cleanups. You should have another message in your mailbox confirming that I 
-tested his patches and the MSI warning for e1000 suspend-resume is gone with them.
+> The whole point of pv_ops is to allow the hypervisors interfaces to 
+> evolve at their own pace without having to constrain the core kernel's 
+> development
 
-Cheers,
+unfortunately that's a self-serving oxymoron, contradicted by real life 
+;) Pretty much the only way to ensure a sane ABI is to do it like we do 
+it with the Linux syscall ABI:
 
-Auke
+	_to have only one_
+
+We do not let OpenOffice or Evolution have its own separate ABI to Linux 
+so that they 'can evolve at their own pace'... We want them to cooperate 
+and come up with a common ABI (or rather, we try to come up with the 
+right syscalls ourselves), because divering, overlapping ABIs are a huge 
+PITA.
+
+We do not unify their pointlessly diverging ABIs to within the kernel 
+via say office_ops (while we could) because that's crappy on its face. 
+Hypervisors arent in any way different, they just _think_ they are 
+special because they are relatively new. But hey, i dont expect you to 
+concede this point ;)
+
+	Ingo
