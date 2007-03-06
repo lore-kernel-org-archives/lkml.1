@@ -1,37 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964983AbXCFNwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965028AbXCFOEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964983AbXCFNwl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965024AbXCFNwl
+	id S965028AbXCFOEP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 09:04:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965030AbXCFOEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:52:41 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:59834 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964983AbXCFNwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:52:40 -0500
-Date: Tue, 6 Mar 2007 14:52:38 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Mockern <Mockern@yandex.ru>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Question: shutdown Linux from user space
-In-Reply-To: <45ED6973.000007.21430@webmail11.yandex.ru>
-Message-ID: <Pine.LNX.4.64.0703061451480.10909@twin.jikos.cz>
-References: <45ED6973.000007.21430@webmail11.yandex.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Mar 2007 09:04:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58839 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965025AbXCFOEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 09:04:14 -0500
+Date: Tue, 6 Mar 2007 15:04:12 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@linux-foundation.org, andi@firstfloor.org,
+       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support II
+Message-ID: <20070306140412.GA1470@one.firstfloor.org>
+References: <20070226143127.5c74bec9@freekitty> <p73slcnawh3.fsf@bingen.suse.de> <20070305155714.3abe1b5e@freekitty> <20070305.162551.41660347.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070305.162551.41660347.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007, Mockern wrote:
+> The problem with these algorithms that tradoff one or more
+> multiplies in order to avoid a divide is that they don't
+> give anything and often lose when both multiplies and
+> divides are emulated in software.
 
-> I need to shutdown Linux from user level application. Which is the best 
-> way to do it? (I need it for embedded system)
+Actually on rereading this: is there really any Linux port
+that emulates multiplies in software? I thought that was only
+done on really small microcontrollers or smart cards; but anything
+32bit+ that runs Linux should have hardware multiply, shouldn't it?
 
-Use sys_reboot() syscall with either LINUX_REBOOT_CMD_HALT or 
-LINUX_REBOOT_CMD_POWER_OFF.
-
-Also this is probably offtopic here, please use kernelnewbies mailinglist 
-instead.
-
--- 
-Jiri Kosina
+-Andi
