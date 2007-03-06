@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932750AbXCFHaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933968AbXCFH33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932750AbXCFHaO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 02:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933023AbXCFHaO
+	id S933968AbXCFH33 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 02:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933967AbXCFH32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 02:30:14 -0500
-Received: from tag.witbe.net ([81.88.96.48]:52470 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932741AbXCFHaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 02:30:12 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Adrian Bunk'" <bunk@stusta.de>
-Cc: <linux-kernel@vger.kernel.org>, "'David Brownell'" <david-b@pacbell.net>,
-       <a.zummo@towertech.it>, <rtc-linux@googlegroups.com>
-Subject: RE: 2.6.21-rc2 : Oops in rtc_cmos...
-Date: Tue, 6 Mar 2007 08:29:06 +0100
-Organization: AS2917.net
-Message-ID: <01b901c75fc1$2295d4c0$4b00a8c0@donald>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <20070304234837.GE3441@stusta.de>
-Thread-Index: Acdet6L/WEto3bhXSpGibStSiSsjBQBCSzhg
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+	Tue, 6 Mar 2007 02:29:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59495 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932759AbXCFH3X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 02:29:23 -0500
+Date: Tue, 6 Mar 2007 07:28:50 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       nscott@aconex.com, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-ID: <20070306072850.GA23081@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mingming Cao <cmm@us.ibm.com>, Jan Kara <jack@suse.cz>,
+	Andrew Morton <akpm@linux-foundation.org>, nscott@aconex.com,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
+	suzuki@in.ibm.com, Ulrich Drepper <drepper@redhat.com>
+References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com> <20070305122742.GA11486@atrey.karlin.mff.cuni.cz> <45EC7773.7020603@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EC7773.7020603@us.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Adrian,
+On Mon, Mar 05, 2007 at 12:02:59PM -0800, Mingming Cao wrote:
+> Yep, I think it makes sense to use preallocation for defragmentation.
+> After all both preallocation and defragmentation shall call underlying 
+> filesystem multiple block allocator to try to allocate a chunk of 
+> contiguous blocks on disk. ext4 online defrag implementation by Takashi 
+> already support to choose a "goal" allocation block to guide the ext4 
+> block allocator to place the defraged file is a specific location.
+> 
+> Passing a little bit more hint to sys_fallocate() (i.e, goal block, 
+> and/or whether the goal block is important over the size of prealloc 
+> extent), might make it more useful for the orginial goal (get contigous 
+> and guranteed blocks) and for defragmentation.
 
-> does the patch in http://lkml.org/lkml/2007/2/23/184 fix your problem?
-
-Yes, it does, so it's a Good One (tm), but I don't understand what's going
-on then... My dmesg says, related to rtc :
-
-...
-rtc_cmos 00:03: rtc core: registered rtc_cmos as rtc0
-pnp: Device 00:03 does not support disabling.
-rtc_cmos: probe of 00:03 failed with error -16
-...
-and then later :
-...
-drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-...
-
-What does this all mean ? I thought an RTC Cmos was always there on a
-standard PC motherboard... (that's why I had activated the option in the
-first time).
-
-Regards,
-Paul
-
+fallocate with the whence argument and flags is already quite complicated,
+I'd rather have another call for placement decisions, that would
+be called on an fd to do placement decissions for any further allocations
+(prealloc, write, etc)
