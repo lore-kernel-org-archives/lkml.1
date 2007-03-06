@@ -1,129 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030306AbXCFTCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030323AbXCFTDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030306AbXCFTCN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 14:02:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030323AbXCFTCN
+	id S1030323AbXCFTDM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 14:03:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030342AbXCFTDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 14:02:13 -0500
-Received: from psmtp02.wxs.nl ([195.121.247.11]:62907 "EHLO psmtp02.wxs.nl"
+	Tue, 6 Mar 2007 14:03:11 -0500
+Received: from mail.kroah.org ([69.55.234.183]:41559 "EHLO perch.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030306AbXCFTCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 14:02:10 -0500
-Date: Tue, 06 Mar 2007 20:04:42 +0100
-From: jos poortvliet <jos@mijnkamer.nl>
-X-Face: $0>4o"Xx2u2q(Tx!D+6~yPc{ZhEfnQnu:/nthh%Kr%f$aiATk$xjx^X4admsd*)=?utf-8?q?IZz=3A=5FkT=0A=09=7CurITP!=2E?=)L`*)Vw@4\@6>#r;3xSPW`,~C9vb`W/s]}Gq]b!o_/+(lJ:b)=?utf-8?q?T0=26KCLMGvG=7CS=5E=0A=09z=7B=5C=2E7EtehxhFQE=27eYSsir/=7CtQ?=
- =?utf-8?q?j=23rWQe4o?=>WC>_R<vO,d]czmqWYkq[v~iB.e_GuxB'")
- =?utf-8?q?p3=0A=09jGdrhlY4=5E!vd=3F=3AegW?=)xn&fP4!FV<.
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free   interactive cpu
- scheduler
-In-reply-to: <20070306044112.GA10707@1wt.eu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Con Kolivas <kernel@kolivas.org>, Bill Davidsen <davidsen@tmr.com>,
-       ck@vds.kolivas.org, Gene Heskett <gene.heskett@gmail.com>,
-       linux-kernel@vger.kernel.org
-Message-id: <200703062004.46050.jos@mijnkamer.nl>
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart1535898.Ep622qelu3
-Content-transfer-encoding: 7bit
-User-Agent: KMail/1.9.5 + Features
-References: <200703041800.53360.kernel@kolivas.org>
- <200703061118.44616.kernel@kolivas.org> <20070306044112.GA10707@1wt.eu>
+	id S1030323AbXCFTDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 14:03:08 -0500
+Date: Tue, 6 Mar 2007 11:01:37 -0800
+From: Greg KH <greg@kroah.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Theodore Tso <tytso@mit.edu>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Subject: Re: [2.6.21 patch] unconditionally enable SYSFS_DEPRECATED
+Message-ID: <20070306190137.GB8993@kroah.com>
+References: <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org> <20070305185813.GA31465@kroah.com> <20070305234052.GR3441@stusta.de> <20070306000722.GA11436@kroah.com> <20070306013020.GN23311@waste.org> <20070306024850.GA24477@kroah.com> <20070306033947.GQ23311@waste.org> <20070306040350.GA25783@kroah.com> <20070306061009.GR23311@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306061009.GR23311@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1535898.Ep622qelu3
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, Mar 06, 2007 at 12:10:09AM -0600, Matt Mackall wrote:
+> On Mon, Mar 05, 2007 at 08:03:50PM -0800, Greg KH wrote:
+> > On Mon, Mar 05, 2007 at 09:39:47PM -0600, Matt Mackall wrote:
+> > > On Mon, Mar 05, 2007 at 06:48:50PM -0800, Greg KH wrote:
+> > > > If so, can you disable the option and strace it to see what program is
+> > > > trying to access what?  That will put the
+> > > > HAL/NetworkManager/libsysfs/distro script finger pointing to rest pretty
+> > > > quickly :)
+> > > 
+> > > Ok, I've got straces of both good and bad (>5M each). Filtered out
+> > > random pointer values and the like, diffed, and filtered for /sys/,
+> > > and the result's still 1.5M. What should I be looking for?
+> > 
+> > Failures when trying to read from /sys/class/net/
+> > 
+> > Or opening the directory and iterating over the subdirs in there.  Or
+> > something like that.
+> > 
+> > But the /sys/class/net/ stuff should hopefully help narrow it down.
+> 
+> Works:
+> 
+> 6857  open("/sys/class/net",
+> O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 13
+> 6857  fstat64(13, {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+> 6857  fcntl64(13, F_SETFD, FD_CLOEXEC)  = 0
+> 6857  getdents64(13, /* 5 entries */, 4096) = 120
+> 6857  readlink("/sys/class/net/eth1", 0x80a2450, 256) = -1 EINVAL
+> (Invalid argument)
+> 6857  readlink("/sys/class/net/eth1/device",
+> "../../../devices/pci0000:00/0000:00:1e.0/0000:02:02.0", 256) = 53
+> 6857  readlink("/sys/class/net/lo", 0x80a2450, 256) = -1 EINVAL
+> (Invalid argument)
+> 6857  readlink("/sys/class/net/lo/device", 0x80a2450, 256) = -1 ENOENT
+> (No such
+> file or directory)
+> 6857  readlink("/sys/class/net/eth0", 0x80a2450, 256) = -1 EINVAL
+> (Invalid argument)
+> 6857  readlink("/sys/class/net/eth0/device",
+> "../../../devices/pci0000:00/0000:00:1e.0/0000:02:01.0", 256) = 53
+> 6857  getdents64(13, /* 0 entries */, 4096) = 0
+> 6857  close(13)                         = 0
+> 
+> Breaks:
+> 
+> 3620  open("/sys/class/net",
+> O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 13
+> 3620  fstat64(13, {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+> 3620  fcntl64(13, F_SETFD, FD_CLOEXEC)  = 0
+> 3620  getdents64(13, /* 5 entries */, 4096) = 120
+> 3620  readlink("/sys/class/net/eth1",
+> "../../devices/pci0000:00/0000:00:1e.0/00\00:02:02.0/eth1", 256) = 55
+> 3620
+> readlink("/sys/devices/pci0000:00/0000:00:1e.0/0000:02:02.0/eth1/device",
+> 0x809e910, 256) = -1 ENOENT (No such file or directory)
+> 3620  readlink("/sys/class/net/lo", "../../devices/virtual/net/lo",
+> 256) = 28
+> 3620  readlink("/sys/devices/virtual/net/lo/device", 0x809e960, 256) =
+> -1 ENOEN\T (No such file or directory)
+> 3620  readlink("/sys/class/net/eth0",
+> "../../devices/pci0000:00/0000:00:1e.0/00\00:02:01.0/eth0", 256) = 55
+> 3620
+> readlink("/sys/devices/pci0000:00/0000:00:1e.0/0000:02:01.0/eth0/device",
+> 0x809e960, 256) = -1 ENOENT (No such file or directory)
+> 3620  getdents64(13, /* 0 entries */, 4096) = 0
+> 3620  close(13)                         = 0
 
-Op Tuesday 06 March 2007, schreef Willy Tarreau:
-> In a way, I think they are right. Let me explain. Pluggable schedulers are
-> useful when you want to switch away from the default one. This is very
-> useful during development of a new scheduler, as well as when you're not
-> satisfied with the default scheduler. Having this feature will incitate
-> many people to develop their own scheduler for their very specific
-> workload, and nothing generic. It's a bit what happened after all : you,
-> Peter, Nick, and Mike have worked a lot trying to provide alternative
-> solutions.
+Ah, that should be simple to fix in the kernel, give me an hour or so...
 
-Did that happen for I/O? There are a few schedulers, eg some for servers,=20
-other more for desktop or throughput. But not 10 or something...
+thanks,
 
-> But when you think about it, there are other OSes which have only one
-> scheduler and which behave very well with tens of thousands of tasks and
-> scale very well with lots of CPUs (eg: solaris). So there is a real
-> challenge here to try to provide something at least as good and universal
-> because we know that it can exist. And this is what you finally did : work
-> on a scheduler which ought to be good with any workload.
-
-I can imagine a desktop can work optimally with another scheduler than a ti=
-ny=20
-embedded OS in a phone or an 8-core system serving a website, or a=20
-distributed 512 core system doing heavy scientific calculations?!?
-
-Optimizing for all at the same time involves some compromises, and thus lim=
-its=20
-performance on certain scenario's, right?
-
-> Then, when we have a generic, good enough scheduler for most situations, I
-> think that it could be good to get the plugsched for very specific usages.
-> People working in HPC may prefer to allocate ressource differently for
-> instance. There may also be people refusing to mix tasks from different
-> users on two different siblings of one CPU for security reasons, etc... A=
-ll
-> those would justify a plugable scheduler. But it should not be an excuse =
-to
-> provide a set of bad schedulers and no good one.
-
-CFQ does pretty well at most workloads, that's why it's default, right? But=
-=20
-there is choice, which is a good thing. And the current mainline CPU=20
-scheduler isn't bad at all, so having 'no good one' won't happen anyway.
-
-> The CPU scheduler is often compared to the I/O schedulers while in fact
-> this is a completely different story. The I/O schedulers are needed becau=
-se
-> the hardware and filesystems may lead to very different behaviours, and t=
-he
-> workload may vary a lot (eg: news server, ftp server, cache, desktop, real
-> time streaming, ...). But at least, the default I/O scheduler was good
-> enough for most usages, and alternative ones are here to provide optimal
-> solutions to specific needs.
-
-Ok, for I/O, the diff could be pretty big. But still, there are workloads=20
-which could be improved by a certain scheduler, right?
-
-And wouldn't it make sense then to have a choice in the default kernel at=20
-boottime? If that wouldn't hurt performance, it would be an improvement for=
-=20
-desktop distributions like (K)ubuntu who can set staircase by default, and=
-=20
-server distro's offering RSDL...
-
-At least having a desktop/interactivity optimized scheduler like staircase =
-and=20
-a fair, throughput-optimized scheduler like RSDL sounds sane. RSDL does=20
-better at the msql testcase, staircase is better on the desktop... We're no=
-t=20
-talking about huge amounts of code, or 10 schedulers, and the diff of a few=
-=20
-percent and better scaling on many cpu's and processes versus better=20
-interactivity on the desktop sounds like it's worth it.
-
-> Regards,
-> Willy
-
---nextPart1535898.Ep622qelu3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBF7btO+wgQ1AD35iwRAnQuAJ4xNPOCMRYuM/OJr22nuEaIiUnXHgCgtMwl
-PhtAtzTRGqdT/0mm8QTjIQw=
-=NH76
------END PGP SIGNATURE-----
-
---nextPart1535898.Ep622qelu3--
+greg k-h
