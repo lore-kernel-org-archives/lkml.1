@@ -1,74 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933803AbXCFBlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933818AbXCFBo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933803AbXCFBlN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 20:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933805AbXCFBlL
+	id S933818AbXCFBo1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 20:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933817AbXCFBo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 20:41:11 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:34556 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933803AbXCFBlK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 20:41:10 -0500
-Date: Mon, 5 Mar 2007 17:37:56 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Robert Peterson <rpeterso@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2.6.21-rc1] Extend print_symbol capability TRY #2
-Message-Id: <20070305173756.4b52e3d4.randy.dunlap@oracle.com>
-In-Reply-To: <45ECAFEF.3030607@redhat.com>
-References: <45ECAFEF.3030607@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 5 Mar 2007 20:44:27 -0500
+Received: from waste.org ([66.93.16.53]:39267 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933815AbXCFBoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 20:44:25 -0500
+Date: Mon, 5 Mar 2007 19:30:21 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Greg KH <greg@kroah.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Theodore Tso <tytso@mit.edu>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
+       linux-wireless <linux-wireless@vger.kernel.org>, akpm@osdl.org
+Subject: Re: [2.6.21 patch] unconditionally enable SYSFS_DEPRECATED
+Message-ID: <20070306013020.GN23311@waste.org>
+References: <20070304220857.GH23311@waste.org> <1173051564.6131.13.camel@johannes.berg> <20070305002550.GI23311@waste.org> <20070305011729.GB7681@kroah.com> <20070305125950.GC26781@thunk.org> <20070305185813.GA31465@kroah.com> <20070305234052.GR3441@stusta.de> <20070306000722.GA11436@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306000722.GA11436@kroah.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Mar 2007 18:03:59 -0600 Robert Peterson wrote:
-
-> This is try #2 for this patch, with corrections based on feedback. 
-> It is the same as the previous patch except:
-> (1) The function has been renamed from lookup_symbol to sprint_symbol
->     as requested by Paulo Marques.
-> (2) I fixed the "return NULL;" to "return;" as pointed out by Paulo Marques
->     for the case where the kallsyms function is not selected in .config
-> (3) I changed EXPORT_SYMBOL to EXPORT_SYMBOL_GPL as
->     requested by Roman Zippel. (Andrew, I thought you said you changed this,
->     but I didn't see it in mm1).
+On Mon, Mar 05, 2007 at 04:07:22PM -0800, Greg KH wrote:
+> On Tue, Mar 06, 2007 at 12:40:52AM +0100, Adrian Bunk wrote:
+> > On Mon, Mar 05, 2007 at 10:58:13AM -0800, Greg KH wrote:
+> > > 
+> > > Ok, how about the following patch.  Is it acceptable to everyone?
+> > > 
+> > > thanks,
+> > > 
+> > > greg k-h
+> > > 
+> > > ---
+> > >  init/Kconfig |   13 +++++++++++--
+> > >  1 file changed, 11 insertions(+), 2 deletions(-)
+> > > 
+> > > --- gregkh-2.6.orig/init/Kconfig
+> > > +++ gregkh-2.6/init/Kconfig
+> > > @@ -290,8 +290,17 @@ config SYSFS_DEPRECATED
+> > >  	  that belong to a class, back into the /sys/class heirachy, in
+> > >  	  order to support older versions of udev.
+> > >  
+> > > -	  If you are using a distro that was released in 2006 or later,
+> > > -	  it should be safe to say N here.
+> > > +	  If you are using an OpenSuSE, Gentoo, Ubuntu, or Fedora
+> > > +	  release from 2007 or later, it should be safe to say N here.
+> > > +
+> > > +	  If you are using Debian or other distros that are slow to
+> > > +	  update HAL, please say Y here.
+> > >...
+> > 
+> > The sane solution seems to be to enable SYSFS_DEPRECATED unconditionally 
+> > for all users, and schedule it's removal for mid-2008 (or later).
+> > 
+> > 12 months after the first _release_ of a HAL that can live without seems 
+> > to be the first time when we can consider getting rid of it, since all 
+> > distributions with at least one release a year should ship it by then.
+> > 
+> > Currently, SYSFS_DEPRECATED is only a trap for users.
 > 
-> I hope this patch attaches with proper spacing and without word wrap.
-> If it doesn't, my apologies (I'm using Thunderbird, but suggestions 
-> welcome).
+> Huh?
 > 
-> Original comment:
+> No, again, I've been using this just fine for about 6 months now.
 > 
-> Today's print_symbol function dumps a kernel symbol with printk.
-> This patch extends the functionality of kallsyms.c so that the symbol
-> lookup function may be used without the printk.  This is
-> useful for modules that want to dump symbols elsewhere, for
-> example, to debugfs.  I intend to use the new function call in the
-> GFS2 file system (which will be a separate patch).
+> And what about all of the servers not using HAL/NetworkManager?
+> And what about all of the embedded systems not using either?
 > 
-> Signed-off-by: Robert Peterson <rpeterso@redhat.com>
-> ---
+> So to not allow this to be turned off by people who might want to (we
+> want this for OpenSuSE 10.3, and Fedora 7 also will want this, as will
+> other distros released this year), is pretty heavy-handed.
+> 
+> It also will work in OpenSuSE 10.2 which is already released, and I
+> think Fedora 6, but I've only limited experience with these.
+> 
+> Oh, and Gentoo works just fine, and has been for the past 6 months.
+>
+> I would just prefer to come up with an acceptable set of wording that
+> will work to properly warn people.
+> 
+> I proposed one such wording which some people took as a slam against
+> Debian, which it really was not at all.
+> 
+> Does someone else want to propose some other wording instead?
 
-argh, attachment, harder to review/comment on....
+Back up a bit. Let's review:
 
-I had commented on this comment, but you seem to have missed it.
+Problem: NetworkManager stopped working with my ipw2200 on Debian/unstable
 
-+/* Replace "%s" in format with address, or returns -errno. */
-+void __print_symbol(const char *fmt, unsigned long address)
-+{
+Theory A: It broke because I'm not running an as-yet-unreleased HAL.
 
-This function does not "returns -errno" at all.
+ Then we should revert the patch pronto because it's an unqualified
+ regression.
 
----
-~Randy
+Theory B: It broke because I'm not running relatively recent HAL.
 
-using tbird for inline patches:
-http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
+ By all accounts I'm running the latest and greatest HAL and Network
+ Manager, more than recent enough to work.
+
+Theory C: It broke because I've got some goofy config.
+
+ My setup passes no arguments to either. The HAL config file is
+ completely bare-bones and there's no sign of any configuration files
+ for Network Manager.
+
+Theory D: It broke for some nebulous Debian-related reason.
+
+ That's a bunch of unhelpful crap.
+
+Can we come up with an actual theory for what's wrong with my setup, please?
+Like, perhaps:
+
+Theory E: There's some undiagnosed new breakage that this introduces
+that no else hit until it went into mainline.
+
+ Hmmm, this one sounds more promising.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
