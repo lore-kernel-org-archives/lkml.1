@@ -1,97 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933762AbXCFBLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933727AbXCFBMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933762AbXCFBLy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 20:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933763AbXCFBLy
+	id S933727AbXCFBMY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 20:12:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933738AbXCFBMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 20:11:54 -0500
-Received: from mx1.suse.de ([195.135.220.2]:44469 "EHLO mx1.suse.de"
+	Mon, 5 Mar 2007 20:12:24 -0500
+Received: from ozlabs.org ([203.10.76.45]:36992 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933762AbXCFBLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 20:11:53 -0500
-Date: Mon, 5 Mar 2007 17:10:09 -0800
-From: Greg KH <greg@kroah.com>
-To: Theodore Tso <tytso@mit.edu>, Bron Gondwana <brong@fastmail.fm>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, yi.zhu@intel.com, jketreno@linux.intel.com,
-       akpm@osdl.org
-Subject: Re: Recent wireless breakage (ipw2200, iwconfig, NetworkManager)
-Message-ID: <20070306011009.GA13267@kroah.com>
-References: <20070304220857.GH23311@waste.org> <20070305011625.GA7681@kroah.com> <20070305064229.GJ23311@waste.org> <20070305070248.GA30699@kroah.com> <20070305071325.GK23311@waste.org> <20070305154609.GA3626@irc.pl> <20070305211425.GR16722@waste.org> <20070306002457.GA7078@brong.net> <20070306003715.GA12566@kroah.com> <20070306005625.GC19634@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070306005625.GC19634@thunk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S933727AbXCFBMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 20:12:23 -0500
+Subject: Re: [patch] paravirt: VDSO page is essential
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Andi Kleen <ak@suse.de>, virtualization <virtualization@lists.osdl.org>
+In-Reply-To: <45ECBDDC.8080708@vmware.com>
+References: <20070305120631.GA14105@elte.hu>
+	 <1173101297.26165.39.camel@localhost.localdomain>
+	 <1173142644.4644.6.camel@localhost.localdomain>
+	 <45ECBDDC.8080708@vmware.com>
+Content-Type: text/plain
+Date: Tue, 06 Mar 2007 12:11:25 +1100
+Message-Id: <1173143485.4644.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 07:56:25PM -0500, Theodore Tso wrote:
-> On Mon, Mar 05, 2007 at 04:37:15PM -0800, Greg KH wrote:
-> > But I AM TRYING TO MAKE IT COMPATIBLE!!!
-> > 
-> > That's what that config option is there for.  If you happen to be
-> > running a newer userspace, a different distro than what is in Debian
-> > right now, or don't use HAL and Networkmanager, then disable that
-> > option.  Then all of sysfs looks just like it used to, no user visble
-> > changes at all.  It doesn't get any more compatible than that.
-> 
-> This is great, but I think the real problem isn't the config option,
-> but what is changing if the config option isn't enabled.  The claim
-> which some, including Matt and Bron, seem to be making is that if you
-> turn *off* CONFIG_SYSFS_DEPRECATED, you must be using at least hal
-> 0.5.9-rc1, released ***yesterday***, or suffer breakages for at least
-> some system configurations.
+On Mon, 2007-03-05 at 17:03 -0800, Zachary Amsden wrote:
+> Rusty Russell wrote:
+> > This still need some work (doing that now), but do people like the idea?
+> >
+> I had just sent this out for internal review...
 
-Ok, well that has been proven incorrect.  I originally thought it was
-HAL that had the problem, but I think that is not true, as I am using
-the older version of hal here (0.5.7.1) just fine.
+Spooky!
 
-> So the problem with putting a date in Kconfig.txt help file, or in
-> Documentation/feature-removal-schedule.txt, is that if there are other
-> incompatible changes which are added to sysfs in say, December 2007 or
-> January 2008, but which are papered over with CONFIG_SYSFS_DEPRECATED,
-> and then come June 2008, CONFIG_SYSFS_DEPRECATED is unceremoniously
-> ripped out, then users will get screwed.  
-> 
-> So the question really is are we really done making changes to sysfs,
-> or maybe what we should do is talk about major version numbers to
-> sysfs.  Call what we have currently not CONFIG_SYSFS_DEPRECATED, but
-> rather CONFIG_SYSFS_LAYOUT_1.  At the moment, CONFIG_SYSFS_LAYOUT_2 is
-> undergoing changes, but at some point we need to lock down and state
-> that Layout version 2 is never going to change, and then people who
-> want changes can go work on CONFIG_SYSFS_LAYOUT_3.  
-> 
-> The problem with calling CONFIG_SYSFS_DEPRECATED is that people think
-> that since it's deprecated, it should be turned off, but if we have
-> staged major version numbers, with guarantees of absolute stability
-> once a particular major version number is locked down, then it may
-> make it a lot easier to talk about what version of hal and udev and
-> Network Manager is really needed for different versions.  
+I was just testing with lguest, but I'll do so with your patch instead.
 
-This is what Documentation/ABI/ has tried to nail down, unfortunatly it
-has turned out to be very hard to track down all of the odd userspace
-programs that use sysfs and see what they are relying on.  We are slowly
-fixing things, as is proof in the OpenSuSE and Gentoo releases.
+Thanks,
+Rusty.
 
-And I'll be the first to admit that the ABI/ directory needs some
-flushing out...
 
-And it isn't really a whole different layout, the only problem here is
-that a directory has turned into a symlink, so programs that were not
-written that well (and I'll be the first to admit that I made the same
-mistake in udev many years ago) and can't handle the change.
-
-So numerous programs "just work" fine, but for a limited few, they have
-problems, hence the config option so that nothing will break.
-
-And if you look in the ABI/ directory, it describes this usage of the
-class devices in sysfs.  But again, no one is flushing out the users of
-these features, or even reading the stuff that is there...
-
-So, again, a better wording for the CONFIG help text anyone?  Or a
-better name for the CONFIG value itself?
-
-thanks,
-
-greg k-h
