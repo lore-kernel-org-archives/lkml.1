@@ -1,188 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965449AbXCFSOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965508AbXCFSO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965449AbXCFSOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965484AbXCFSOd
+	id S965508AbXCFSO4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965560AbXCFSO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:14:33 -0500
-Received: from mx2.suse.de ([195.135.220.15]:52385 "EHLO mx2.suse.de"
+	Tue, 6 Mar 2007 13:14:56 -0500
+Received: from gw.goop.org ([64.81.55.164]:33041 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965449AbXCFSOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:14:32 -0500
-Date: Tue, 6 Mar 2007 19:14:30 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>, alon.barlev@gmail.com,
-       ak@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64, i386: Add command line length to boot protocol
-Message-ID: <20070306181430.GB3151@strauss.suse.de>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	alon.barlev@gmail.com, ak@suse.de, linux-kernel@vger.kernel.org
+	id S965508AbXCFSOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:14:51 -0500
+Message-ID: <45EDAF99.7080709@goop.org>
+Date: Tue, 06 Mar 2007 10:14:49 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 3/8] Use per-cpu variables for GDT, PDA
+References: <1173184747.4644.23.camel@localhost.localdomain>	 <1173185592.4644.28.camel@localhost.localdomain>	 <1173185666.4644.30.camel@localhost.localdomain> <1173185734.4644.32.camel@localhost.localdomain>
+In-Reply-To: <1173185734.4644.32.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because the command line is increased to 2048 characters after 2.6.21,
-it's not possible for boot loaders and userspace tools to determine the length
-of the command line the kernel can understand. The benefit of knowing the
-length is that users can be warned if the command line size is too long which
-prevents surprise if things don't work after bootup.
+Rusty Russell wrote:
+> Allocating PDA and GDT at boot is a pain.  Using simple per-cpu
+> variables adds happiness (although we need the GDT page-aligned for
+> Xen, see later).
+>   
 
-This patch updates the boot protocol to contain a field called
-"cmdline_size" that contain the length of the command line (excluding
-the terminating zero).
+Not just Xen.  Apparently it leads to general goodness.
 
-The patch also adds missing fields (of protocol version 2.05) to the x86_64
-setup code.
+> Finally, we can simply call it "cpu_gdt" rather than enduring the
+> superfluous and unnecessarily redundant tautology of "cpu_gdt_table".
+>   
 
+Ah, well, at least it isn't excessive.
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-Cc: Alon Bar-Lev <alon.barlev@gmail.com>
-Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
----
- Documentation/i386/boot.txt |   23 +++++++++++++++++------
- arch/i386/boot/setup.S      |    7 ++++++-
- arch/x86_64/boot/setup.S    |   15 ++++++++++++++-
- 3 files changed, 37 insertions(+), 8 deletions(-)
-
-Index: longer-cmdline-boot-proto-mm/Documentation/i386/boot.txt
-===================================================================
---- longer-cmdline-boot-proto-mm.orig/Documentation/i386/boot.txt
-+++ longer-cmdline-boot-proto-mm/Documentation/i386/boot.txt
-@@ -2,7 +2,7 @@
- 		     ----------------------------
- 
- 		    H. Peter Anvin <hpa@zytor.com>
--			Last update 2007-01-26
-+			Last update 2007-03-06
- 
- On the i386 platform, the Linux kernel uses a rather complicated boot
- convention.  This has evolved partially due to historical aspects, as
-@@ -35,9 +35,13 @@ Protocol 2.03:	(Kernel 2.4.18-pre1) Expl
- 		initrd address available to the bootloader.
- 
- Protocol 2.04:	(Kernel 2.6.14) Extend the syssize field to four bytes.
-+
- Protocol 2.05:	(Kernel 2.6.20) Make protected mode kernel relocatable.
- 		Introduce relocatable_kernel and kernel_alignment fields.
- 
-+Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
-+		the boot command line
-+
- 
- **** MEMORY LAYOUT
- 
-@@ -133,6 +137,8 @@ Offset	Proto	Name		Meaning
- 022C/4	2.03+	initrd_addr_max	Highest legal initrd address
- 0230/4	2.05+	kernel_alignment Physical addr alignment required for kernel
- 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
-+0235/3	N/A	pad2		Unused
-+0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
- 
- (1) For backwards compatibility, if the setup_sects field contains 0, the
-     real value is 4.
-@@ -233,6 +239,12 @@ filled out, however:
- 	if your ramdisk is exactly 131072 bytes long and this field is
- 	0x37FFFFFF, you can start your ramdisk at 0x37FE0000.)
- 
-+  cmdline_size:
-+	The maximum size of the command line without the terminating
-+	zero. This means that the command line can contain at most
-+	cmdline_size characters. With protocol version 2.05 and
-+	earlier, the maximum size was 255.
-+
- 
- **** THE KERNEL COMMAND LINE
- 
-@@ -241,11 +253,10 @@ loader to communicate with the kernel.  
- relevant to the boot loader itself, see "special command line options"
- below.
- 
--The kernel command line is a null-terminated string currently up to
--255 characters long, plus the final null.  A string that is too long
--will be automatically truncated by the kernel, a boot loader may allow
--a longer command line to be passed to permit future kernels to extend
--this limit.
-+The kernel command line is a null-terminated string. The maximum
-+length can be retrieved from the field cmdline_size.  Before protocol
-+version 2.06, the maximum was 255 characters.  A string that is too
-+long will be automatically truncated by the kernel.
- 
- If the boot protocol version is 2.02 or later, the address of the
- kernel command line is given by the header field cmd_line_ptr (see
-Index: longer-cmdline-boot-proto-mm/arch/i386/boot/setup.S
-===================================================================
---- longer-cmdline-boot-proto-mm.orig/arch/i386/boot/setup.S
-+++ longer-cmdline-boot-proto-mm/arch/i386/boot/setup.S
-@@ -52,6 +52,7 @@
- #include <asm/boot.h>
- #include <asm/e820.h>
- #include <asm/page.h>
-+#include <asm/setup.h>
- 	
- /* Signature words to ensure LILO loaded us right */
- #define SIG1	0xAA55
-@@ -81,7 +82,7 @@ start:
- # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
- 
- 		.ascii	"HdrS"		# header signature
--		.word	0x0205		# header version number (>= 0x0105)
-+		.word	0x0206		# header version number (>= 0x0105)
- 					# or else old loadlin-1.5 will fail)
- realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
- start_sys_seg:	.word	SYSSEG
-@@ -171,6 +172,10 @@ relocatable_kernel:    .byte 0
- pad2:			.byte 0
- pad3:			.word 0
- 
-+cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
-+                                                #added with boot protocol
-+                                                #version 2.06
-+
- trampoline:	call	start_of_setup
- 		.align 16
- 					# The offset at this point is 0x240
-Index: longer-cmdline-boot-proto-mm/arch/x86_64/boot/setup.S
-===================================================================
---- longer-cmdline-boot-proto-mm.orig/arch/x86_64/boot/setup.S
-+++ longer-cmdline-boot-proto-mm/arch/x86_64/boot/setup.S
-@@ -51,6 +51,7 @@
- #include <asm/boot.h>
- #include <asm/e820.h>
- #include <asm/page.h>
-+#include <asm/setup.h>
- 
- /* Signature words to ensure LILO loaded us right */
- #define SIG1	0xAA55
-@@ -80,7 +81,7 @@ start:
- # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
- 
- 		.ascii	"HdrS"		# header signature
--		.word	0x0204		# header version number (>= 0x0105)
-+		.word	0x0206		# header version number (>= 0x0105)
- 					# or else old loadlin-1.5 will fail)
- realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
- start_sys_seg:	.word	SYSSEG
-@@ -155,6 +156,18 @@ cmd_line_ptr:	.long 0			# (Header versio
- 					# low memory 0x10000 or higher.
- 
- ramdisk_max:	.long 0xffffffff
-+
-+kernel_alignment:  .long CONFIG_PHYSICAL_START 	#physical addr alignment
-+						#(not relocatable =>
-+						#fixed start == alignment)
-+
-+relocatable_kernel:     .byte 0                 #x86_64 is currently not
-+pad2:			.byte 0                 #relocatable
-+pad3:			.word 0
-+
-+cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
-+                                                #added with boot protocol
-+                                                #version 2.06
- 	
- trampoline:	call	start_of_setup
- 		.align 16
+    J
