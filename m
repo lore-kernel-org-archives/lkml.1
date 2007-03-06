@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933286AbXCFTmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933303AbXCFTmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933286AbXCFTmP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 14:42:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933299AbXCFTmP
+	id S933303AbXCFTmw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 14:42:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933312AbXCFTmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 14:42:15 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:47301 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933286AbXCFTmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 14:42:14 -0500
-Date: Tue, 6 Mar 2007 20:41:23 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Bill Davidsen <davidsen@tmr.com>
-cc: Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: Raid 10 Problems?
-In-Reply-To: <45ED9B5B.2030806@tmr.com>
-Message-ID: <Pine.LNX.4.61.0703062040510.17131@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0703050430280.23714@yvahk01.tjqt.qr>
- <382470.25191.qm@web52508.mail.yahoo.com> <45ED9B5B.2030806@tmr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Tue, 6 Mar 2007 14:42:52 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:25924 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933303AbXCFTmv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 14:42:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=K5f/skAKS7f9IIagPODAj6EQVzb9ghbrQq274GBLblNsIN0FcZuIyjR5mGtK/IV1vtuu8ImUcot2GkWm6tOhHdeuiec/NQSIYJvjqhri/mTU7Fcu7uVt0I9/1G8Mr4hTYDFNv9rNHvbWzKJT8/F2UwuXmLtXCsmtKsSLcq3tqEY=
+Date: Tue, 6 Mar 2007 22:42:56 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@osdl.org, benh@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, johannes@sipsolutions.net
+Subject: Re: [PATCH] Fix get_order() [try #2]
+Message-ID: <20070306194255.GA5524@martell.zuzino.mipt.ru>
+References: <20070306183426.10768.51800.stgit@warthog.cambridge.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306183426.10768.51800.stgit@warthog.cambridge.redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->> > -b internal -- seems like a good idea to speed up
->> > resynchronization.
->> 
->> I'm trying to figure out what the default is. 
->> >  -e 1.0 -- I wonder why the new superblock format
->> > is
->> > not default in mdadm (0.90 is still used).
->> > 
->> 
->> Looks interesting for big arrays but not sure it's
->> worth starting over for. Trying to get through a 2
->> hour sync using 4 500gb sata 2 drives.
+On Tue, Mar 06, 2007 at 06:34:26PM +0000, David Howells wrote:
+> Provide an ilog2_up() that rounds its result up (ilog2() rounds down).
 >
-> That's exactly why you want the bitmap. Fortunately you can add it after the
-> array is created. Now the bad news, you should read and understand the meaning
-> of the "far" layout. Part of the information is in the mdadm man page under -p,
-> some in the md man page. Use of "far" layout will effect the performance of the
-> array, the balance of read vs. write performance, and (maybe) the reliability.
+> Fix get_order() to use ilog2_up() not ilog2() to get the correct rounding.
+>
+> Adjust the documentation surrounding ilog2() and co. to indicate what rounding
+> they perform.
+>
+> Fix roundup_pow_of_two(1) to give 1, not 0.
 
-So to keep it simple, don't use far unless you have a reason to.
+> --- a/include/asm-generic/page.h
+> +++ b/include/asm-generic/page.h
+> @@ -17,11 +17,15 @@ static inline __attribute__((const))
+>  int __get_order(unsigned long size, int page_shift)
+>  {
+>  #if BITS_PER_LONG == 32 && defined(ARCH_HAS_ILOG2_U32)
 
+There is no such thing except on FRV, where it's redundant.
 
-Jan
--- 
+				      CONFIG_ARCH_HAS_ILOG2_U32
+				      ^^^^^^
+
+> -	int order = __ilog2_u32(size) - page_shift;
+> -	return order >= 0 ? order : 0;
+> +	if (size <= (1UL << page_shift))
+> +		return 0;
+> +	else
+> +		return __ilog2_u32(size - 1) + 1 - page_shift;
+>  #elif BITS_PER_LONG == 64 && defined(ARCH_HAS_ILOG2_U64)
+
+ditto
+
+> -	int order = __ilog2_u64(size) - page_shift;
+> -	return order >= 0 ? order : 0;
+> +	if (size <= (1UL << page_shift))
+> +		return 0;
+> +	else
+> +		return __ilog2_u64(size - 1) + 1 - page_shift;
+>  #else
+>  	int order;
+
