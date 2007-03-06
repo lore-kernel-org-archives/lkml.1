@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXCFNPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934108AbXCFNSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933265AbXCFNPl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 08:15:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933277AbXCFNPl
+	id S934108AbXCFNSc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 08:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933290AbXCFNSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 08:15:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44251 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933265AbXCFNPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 08:15:40 -0500
-Date: Tue, 6 Mar 2007 14:15:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 6/8] Allow per-cpu variables to be page-aligned
-Message-ID: <20070306131522.GC9031@elte.hu>
-References: <1173184747.4644.23.camel@localhost.localdomain> <1173185592.4644.28.camel@localhost.localdomain> <1173185666.4644.30.camel@localhost.localdomain> <1173185734.4644.32.camel@localhost.localdomain> <1173185827.4644.34.camel@localhost.localdomain> <1173185909.4644.36.camel@localhost.localdomain> <1173186021.4644.38.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Tue, 6 Mar 2007 08:18:31 -0500
+Received: from cavan.codon.org.uk ([217.147.92.49]:51273 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933277AbXCFNSa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 08:18:30 -0500
+Date: Tue, 6 Mar 2007 13:17:53 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Message-ID: <20070306131753.GA15187@srcf.ucam.org>
+References: <200702162223.59837.lenb@kernel.org> <20020101045751.GD4106@ucw.cz> <20070306122213.GF2919@inferi.kami.home>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173186021.4644.38.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070306122213.GF2919@inferi.kami.home>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21 - part II (resend)
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 06, 2007 at 01:22:13PM +0100, Mattia Dongili wrote:
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> Xen wants page-aligned GDT (and PDA must not cross a page-boundary, 
-> but that doesn't happen at the moment since it's so close to start of 
-> page).  Let's allow page-alignment in general for per-cpu data.
+> the audiopower is basically a _PS3/_PS0 switch for the device, while the
+> lanpower plays with the embedded controller to powerdown/powerup.
+>
+> Now, unfortunately those methods are attached to a fake device in the
+> DSDT and afaict there's no way to tell which real device they are
+> playing with (except by inspecting the method implementations).
+> Well of course iff there's only _one_ sound card and _one_ nic you can
+> easily guess it :)
 > 
-> Because larger alignments can use more room, we increase the max 
-> per-cpu memory to 64k rather than 32k: it's getting a little tight.
+> Is there some way to hook into drivers for such kind of runtime power
+> management?
 
-i recently needed page-aligned per-cpu data too for KVM-paravirt. Btw., 
-what's the size increase of the native kernel?
+Before worrying, I think it would make more sense to instrument the 
+benefit gained against doing more "traditional" runtime management - 
+that is, simply shutting down the ethernet chipset or doing ac97 power 
+management. It's trivial to add those to the existing drivers, and if 
+the additional benefit of using the Sony-specific methods is small then 
+it's probably not really worth working out how to add it in.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+Plus, implementing the generic support benefits more people :)
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
