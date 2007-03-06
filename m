@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbXCFEQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933930AbXCFESH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752856AbXCFEQd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 23:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXCFEQd
+	id S933930AbXCFESH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 23:18:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933929AbXCFESH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 23:16:33 -0500
-Received: from ozlabs.org ([203.10.76.45]:41568 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752856AbXCFEQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 23:16:31 -0500
+	Mon, 5 Mar 2007 23:18:07 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:55010 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933930AbXCFESF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 23:18:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:x-google-sender-auth;
+        b=QNXIFYgW9V4M+41nuWFdUzhmKhyrfu7NVbEHomsamB2S4nEwt25UgLzw73c3a01xMEJRWmq81XmSFhFkgLV4Pd9t4ET+SmTS2ylqJ3VNF47f2GZILROTa+Wevxxx8Kgljw7ThDvW/xiRoI0uaIS2GB3a6t7CZFznvV4RYOyox/o=
+Message-ID: <86802c440703052018p5adba0c4la99c5557db4717b6@mail.gmail.com>
+Date: Mon, 5 Mar 2007 20:18:04 -0800
+From: "Yinghai Lu" <yinghai.lu@amd.com>
+To: ebiederm@xmission.com, "Andrew Morton" <akpm@osdl.org>
+Subject: [PATCH 2/2] x86_64 irq: make affinity work for genapic_flat mode
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17900.60167.418766.280544@cargo.ozlabs.ibm.com>
-Date: Tue, 6 Mar 2007 15:16:07 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Balbir Singh <balbir@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
-       npiggin@suse.de, clameter@engr.sgi.com, mingo@elte.hu,
-       jschopp@austin.ibm.com, arjan@infradead.org, mbligh@mbligh.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: The performance and behaviour of the anti-fragmentation related
- patches
-In-Reply-To: <Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
-References: <20070301101249.GA29351@skynet.ie>
-	<20070301160915.6da876c5.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703011642190.12485@woody.linux-foundation.org>
-	<45E7835A.8000908@in.ibm.com>
-	<Pine.LNX.4.64.0703011939120.12485@woody.linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_172859_29473913.1173154684097"
+X-Google-Sender-Auth: 36db24d153fcbafa
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
+------=_Part_172859_29473913.1173154684097
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> The point being that in the guests, hotunplug is almost useless (for 
-> bigger ranges), and we're much better off just telling the virtualization 
-> hosts on a per-page level whether we care about a page or not, than to 
-> worry about fragmentation.
+please check the patch
 
-We don't have that luxury on IBM System p machines, where the
-hypervisor manages memory in much larger units than a page.  Typically
-the size of memory block that the hypervisor uses to manage memory is
-16MB or more -- which makes sense from the point of view that if the
-hypervisor had to manage individual pages, it would end up adding a
-lot more overhead than it does.
+YH
 
-Paul.
+------=_Part_172859_29473913.1173154684097
+Content-Type: text/x-patch; name="2_flat_irq_affinity.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="2_flat_irq_affinity.patch"
+X-Attachment-Id: f_eyxtz90a
+
+W1BBVENIIDIvMl0geDg2XzY0IGlycTogbWFrZSBhZmZpbml0eSB3b3JrcyBmb3IgZ2VuYXBpY19m
+bGF0IG1vZGUKCkZvciBBTUQgZHVhbCBzb2NrZXQgc3lzdGVtIHdpdGggdHdvIElPIEh5cGVydHJh
+bnNvcnQgY2hhaW4gb24gZGlmZmVyZW5jdCBjcHUuIApXZSBzdGlsbCBjYW4gdXNlIGFwaWNfZmxh
+dCBtb2RlIGluc3RlYWQgb2YgYXBpY19waHlzZmxhdCBtb2RlLCBhbmQgbGlrZSB0byAKQ1BVcyBv
+biBzZWNvbmQgc29ja2V0IHRvIGhhbmRsZSBpcnEgZm9yIGRldmljZSBvbiBpdHMgY2hhaW4uICBX
+aGVuIGFwaWNfZmxhdCAKbW9kZSBpcyB1c2VkLCB0aGUgZG9tYWluIHdpbGwgYmUgdGhlIHNhbWUg
+KGFsbCBDUFVTKS4gV2UgbmVlZCB0byBjaGVjayB0aGUgb2xkIAphZmZpbml0eSBpbiBhZGRpdGlv
+biB0byBkb21haW4sIG90aGVyd2lzZSB3ZSBjYW4gbm90IHNldCBhZmZpbml0eSBmcm9tIDB4MGYg
+dG8gCjB4MGMsIG9yIGZyb20gMHhmZiB0byAweGYwLiBBbHNvIG5lZWQgdG8gbWFrZSBzdXJlIHZl
+Y3RvciBpcyBjaGFuZ2VkIHdoZW4gd2UgCnNldCBhZmZpbml0eSBmcm9tIDB4MDMgdG8gMHgwYyBv
+ciAweDBmIHRvIDB4ZjAuCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpLmx1QGFt
+ZC5jb20+IAoKZGlmZiAtLWdpdCBhL2FyY2gveDg2XzY0L2tlcm5lbC9pb19hcGljLmMgYi9hcmNo
+L3g4Nl82NC9rZXJuZWwvaW9fYXBpYy5jCmluZGV4IDBhOTEzNjguLmIyZWEyOWEgMTAwNjQ0Ci0t
+LSBhL2FyY2gveDg2XzY0L2tlcm5lbC9pb19hcGljLmMKKysrIGIvYXJjaC94ODZfNjQva2VybmVs
+L2lvX2FwaWMuYwpAQCAtNjczLDggKzY3MywzMSBAQCBzdGF0aWMgaW50IF9fYXNzaWduX2lycV92
+ZWN0b3IoaW50IGlycSwgY3B1bWFza190IG1hc2spCiAJaWYgKG9sZF92ZWN0b3IpIHsKIAkJY3B1
+bWFza190IHRtcDsKIAkJY3B1c19hbmQodG1wLCBjZmctPmRvbWFpbiwgbWFzayk7Ci0JCWlmICgh
+Y3B1c19lbXB0eSh0bXApKQotCQkJcmV0dXJuIDA7CisKKwkJLyogb25seSBleGFjdCBzYW1lIG1h
+c2sgY2FuIHJldHVybiBkaXJlY3RseSAqLworCQlmb3JfZWFjaF9jcHVfbWFzayhjcHUsIG1hc2sp
+IHsKKwkJCWNwdW1hc2tfdCBkb21haW47CisKKwkJCWRvbWFpbiA9IHZlY3Rvcl9hbGxvY2F0aW9u
+X2RvbWFpbihjcHUpOworCQkJaWYgKGNwdXNfZXF1YWwoZG9tYWluLCBjZmctPmRvbWFpbikpIHsK
+KyNpZmRlZiBDT05GSUdfU01QCisJCQkJLyogd2UgZG9uJ3QgbmVlZCBsb2NrIGZvciBkZXNjIGhl
+cmUgCisJCQkJICAgZm9yIGFwaWNfZmxhdCBjYW4gbm90IGJlIHVzZWQgd2l0aCBDT05GSUdfSE9U
+UExVR19DUFUgCisJCQkJICAgb3RoZXJzIG9ubHkgaGF2ZSBvbmUgY3B1IHNldCBpbiBkb21haW4g
+b3IgYWZmaW5pdHkKKwkJCQkgKi8KKwkJCQlpbnQgZXF1YWw7CisJCQkJc3RydWN0IGlycV9kZXNj
+ICpkZXNjOworCQkJCWRlc2MgPSBpcnFfZGVzYyArIGlycTsKKwkJCQllcXVhbCA9IGNwdXNfZXF1
+YWwodG1wLCBkZXNjLT5hZmZpbml0eSk7IAorCQkJCWlmIChlcXVhbCkgeworCQkJCQlyZXR1cm4g
+MDsKKwkJCQl9CisjZWxzZQorCQkJCXJldHVybiAwOworI2VuZGlmCisJCQl9CisKKyAgICAgICAg
+ICAgICAgIH0KIAl9CiAKIAlmb3JfZWFjaF9jcHVfbWFzayhjcHUsIG1hc2spIHsKQEAgLTY4Myw3
+ICs3MDYsNiBAQCBzdGF0aWMgaW50IF9fYXNzaWduX2lycV92ZWN0b3IoaW50IGlycSwgY3B1bWFz
+a190IG1hc2spCiAJCWludCB2ZWN0b3IsIG9mZnNldDsKIAogCQlkb21haW4gPSB2ZWN0b3JfYWxs
+b2NhdGlvbl9kb21haW4oY3B1KTsKLQkJY3B1c19hbmQobmV3X21hc2ssIGRvbWFpbiwgY3B1X29u
+bGluZV9tYXApOwogCiAJCXZlY3RvciA9IGN1cnJlbnRfdmVjdG9yOwogCQlvZmZzZXQgPSBjdXJy
+ZW50X29mZnNldDsKQEAgLTY5OCw5ICs3MjAsMTcgQEAgbmV4dDoKIAkJCWNvbnRpbnVlOwogCQlp
+ZiAodmVjdG9yID09IElBMzJfU1lTQ0FMTF9WRUNUT1IpCiAJCQlnb3RvIG5leHQ7CisKKwkJY3B1
+c19hbmQobmV3X21hc2ssIGRvbWFpbiwgY3B1X29ubGluZV9tYXApOwogCQlmb3JfZWFjaF9jcHVf
+bWFzayhuZXdfY3B1LCBuZXdfbWFzaykKIAkJCWlmIChwZXJfY3B1KHZlY3Rvcl9pcnEsIG5ld19j
+cHUpW3ZlY3Rvcl0gIT0gLTEpCiAJCQkJZ290byBuZXh0OworCisJCS8qIE1ha2Ugc3VyZSB2ZWN0
+b3IgaXMgY2hhbmdlZCB3aGVuIGRvbWFpbiBpcyBub3QgY2hhbmdlZCAqLworCQlpZiAodW5saWtl
+bHkodmVjdG9yID09IG9sZF92ZWN0b3IpKSAKKwkJCWlmIChjcHVzX2VxdWFsKGRvbWFpbiwgY2Zn
+LT5kb21haW4pKQorCQkJCWdvdG8gbmV4dDsKKwogCQkvKiBGb3VuZCBvbmUhICovCiAJCWN1cnJl
+bnRfdmVjdG9yID0gdmVjdG9yOwogCQljdXJyZW50X29mZnNldCA9IG9mZnNldDsKQEAgLTcxNSw2
+ICs3NDUsOCBAQCBuZXh0OgogCQlyZXR1cm4gMDsKIAl9CiAJcmV0dXJuIC1FTk9TUEM7CisKKwkK
+IH0KIAogc3RhdGljIGludCBhc3NpZ25faXJxX3ZlY3RvcihpbnQgaXJxLCBjcHVtYXNrX3QgbWFz
+aykK
+------=_Part_172859_29473913.1173154684097--
