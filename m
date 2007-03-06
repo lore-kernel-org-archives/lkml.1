@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbXCFByB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933838AbXCFByP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbXCFByB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 20:54:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933838AbXCFByA
+	id S933838AbXCFByP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 20:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933840AbXCFByO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 20:54:00 -0500
-Received: from gw.goop.org ([64.81.55.164]:33067 "EHLO mail.goop.org"
+	Mon, 5 Mar 2007 20:54:14 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46253 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933832AbXCFByA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 20:54:00 -0500
-Message-ID: <45ECC9B6.1060209@goop.org>
-Date: Mon, 05 Mar 2007 17:53:58 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [patch] paravirt: VDSO page is essential
-References: <20070305120631.GA14105@elte.hu>		<1173101297.26165.39.camel@localhost.localdomain>	<1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com>
-In-Reply-To: <45ECC91D.1020809@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S933838AbXCFByN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 20:54:13 -0500
+Date: Mon, 5 Mar 2007 17:54:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Robert Peterson <rpeterso@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21-rc1] Extend print_symbol capability TRY #2
+Message-Id: <20070305175402.1803cbd3.akpm@linux-foundation.org>
+In-Reply-To: <20070305173756.4b52e3d4.randy.dunlap@oracle.com>
+References: <45ECAFEF.3030607@redhat.com>
+	<20070305173756.4b52e3d4.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> Jeremy Fitzhardinge wrote:
->> I think Jan's approach is better if it works (since there's no
->> compromise), but this is better if you want to get something working in
->> the near term.
->>   
->
-> Is Jan dynamically relinking the vdso at runtime?  
-Yes.  His patch adds a runtime relocation for the vdso.
-http://marc.theaimsgroup.com/?l=xen-devel&m=117309332600075&w=2
+On Mon, 5 Mar 2007 17:37:56 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-    J
+> On Mon, 05 Mar 2007 18:03:59 -0600 Robert Peterson wrote:
+> 
+> > This is try #2 for this patch, with corrections based on feedback. 
+> > It is the same as the previous patch except:
+> > (1) The function has been renamed from lookup_symbol to sprint_symbol
+> >     as requested by Paulo Marques.
+> > (2) I fixed the "return NULL;" to "return;" as pointed out by Paulo Marques
+> >     for the case where the kallsyms function is not selected in .config
+> > (3) I changed EXPORT_SYMBOL to EXPORT_SYMBOL_GPL as
+> >     requested by Roman Zippel. (Andrew, I thought you said you changed this,
+> >     but I didn't see it in mm1).
+> > 
+> > I hope this patch attaches with proper spacing and without word wrap.
+> > If it doesn't, my apologies (I'm using Thunderbird, but suggestions 
+> > welcome).
+> > 
+> > Original comment:
+> > 
+> > Today's print_symbol function dumps a kernel symbol with printk.
+> > This patch extends the functionality of kallsyms.c so that the symbol
+> > lookup function may be used without the printk.  This is
+> > useful for modules that want to dump symbols elsewhere, for
+> > example, to debugfs.  I intend to use the new function call in the
+> > GFS2 file system (which will be a separate patch).
+> > 
+> > Signed-off-by: Robert Peterson <rpeterso@redhat.com>
+> > ---
+> 
+> argh, attachment, harder to review/comment on....
+> 
+> I had commented on this comment, but you seem to have missed it.
+> 
+> +/* Replace "%s" in format with address, or returns -errno. */
+> +void __print_symbol(const char *fmt, unsigned long address)
+> +{
+> 
+> This function does not "returns -errno" at all.
+
+I think the arguments to sprint_symbol() are backwards.  Would prefer
+
+	sprint_symbol(char *buffer, unsigned long addr)
+
+like all the other print-into-a-buffer functions.
