@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965176AbXCFPnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965172AbXCFPqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965176AbXCFPnX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 10:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965172AbXCFPnW
+	id S965172AbXCFPqV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 10:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965180AbXCFPqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 10:43:22 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:61101 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965176AbXCFPnW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 10:43:22 -0500
-Message-ID: <45ED8C13.5020401@nortel.com>
-Date: Tue, 06 Mar 2007 09:43:15 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Linux kernel <linux-kernel@vger.kernel.org>
-Subject: resend: KERNEL BUG: nice level should not affect SCHED_RR timeslice
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 6 Mar 2007 10:46:21 -0500
+Received: from smtp.ono.com ([62.42.230.12]:28986 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965172AbXCFPqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 10:46:20 -0500
+Date: Tue, 6 Mar 2007 16:46:09 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm2
+Message-ID: <20070306164609.2a05a49b@werewolf-wl>
+In-Reply-To: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.8.0cvs15 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2007 15:43:19.0058 (UTC) FILETIME=[29CADF20:01C76006]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 Mar 2007 00:44:08 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Apparently the timeslice of the SCHED_RR process varies with nice level 
-the same way that it does for SCHED_OTHER.  So while niceness doesn't 
-affect the priority of a SCHED_RR task, it does impact how much cpu it gets.
+> 
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
+> 
 
-SUSv3 indicates, "Any processes or threads using SCHED_FIFO or SCHED_RR 
-shall be unaffected by a call to setpriority()."
+I have another question about i2c...
 
-The code in set_user_nice() has a comment that leads me to believe the 
-current behaviour is accidental (although I think the "not" in the last 
-line isn't meant to be there):
+The 'sensors' program gives me a stange message:
 
-/*
-  * The RT priorities are set via sched_setscheduler(), but we still
-  * allow the 'normal' nice value to be set - but as expected
-  * it wont have any effect on scheduling until the task is
-  * not SCHED_NORMAL/SCHED_BATCH:
-  */
+w83627thf-i2c-9191-290
+Can't get adapter name for bus 9191    <<<<<-----------------------------
+VCore:     +1.49 V  (min =  +1.94 V, max =  +1.94 V)       ALARM  
++12.0V:   +11.86 V  (min = +10.82 V, max = +13.19 V)              
++ 3.3V:    +3.30 V  (min =  +3.14 V, max =  +3.47 V)              
+...
 
-It appears that the desired behaviour is to allow setting the nice level 
-of a realtime task, but to not have it affect anything until (and 
-unless) it drops that realtime status.  Is this correct?
+And gnome-sensors-applet can't read the sensors. If using libsensors, no
+value is displayed (I suppose an applicacion bug). And the access to sensors
+directly through i2c-dev gives an error like this:
 
-Chris
+Error opening sensor device file:
+/sys/devices/platform/i2c-9191/9191-0290/....
+
+In fact, the real path is 
+
+/sys/devices/platform/i2c-adapter:i2c-9191/9191-0290/....
+
+I supposed it was a kernel change not tracked by userspace, but the strange
+thing is that looking at the code the sensors applet lists the sensors
+reding directories and files in /sys (AFAICS in the code).
+So perhaps there is a little inconsistency, /sys says in some place the
+sensor is at xxxxx, when it really is at yyyyy.
+Or the 'i2c-adapter:' is a bug and should be 'i2c-adapter/'.
+
+???
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.20-jam02 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #1 SMP PREEMPT
