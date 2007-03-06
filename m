@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932965AbXCFT0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXCFTc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932965AbXCFT0F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 14:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932315AbXCFT0F
+	id S933262AbXCFTc2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 14:32:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933287AbXCFTc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 14:26:05 -0500
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:46559 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932310AbXCFT0C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 14:26:02 -0500
-Subject: [Patch] fix parsing of statistics type-attribute
-From: Martin Peschke <mp3@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Wu Fengguang <wfg@mail.ustc.edu.cn>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 20:26:00 +0100
-Message-Id: <1173209160.5266.17.camel@dix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Tue, 6 Mar 2007 14:32:28 -0500
+Received: from mail.tnnet.fi ([217.112.240.26]:49006 "EHLO mail.tnnet.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933262AbXCFTc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 14:32:27 -0500
+Message-ID: <45EDC1C3.548EB915@users.sourceforge.net>
+Date: Tue, 06 Mar 2007 21:32:19 +0200
+From: Jari Ruusu <jariruusu@users.sourceforge.net>
+To: markus reichelt <ml@mareichelt.de>
+Cc: emin ak <eminak71@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: encrypting jffs2 filesystem with DM-crypt or what else?
+References: <2cf1ee820703060405l1cd30bf1o896910341bb8f293@mail.gmail.com> <20070306130524.GG4168@tatooine.rebelbase.local>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Without this fix the the statistics user interface accepted, for example:
+markus reichelt wrote:
+> * emin ak <eminak71@gmail.com> wrote:
+> > I need to encrypt a jffs2/mtd formatted flash filesystem for an
+> > embedded device, Normally using a loopback interface (cryptoloop,
+> > DM-crypt or loop-aes) solves this problem but they are not well
+> > known on journalling file systems (like jffs2) because of cached
+> > write etc.. Also I could'nt find any guideline for encrypting
+> > fikesystem on a flash.
+> 
+> device-backed loops are ok, file-based once aren't. The cache issue
+> you talk about concerns writing caches of HDDs f.e., I haven't seen a
+> flash device with writing cache. However, in most cases writing cache
+> can be turned off.
 
-	echo name=my_stats type=utilisa > definition
+Flash devices behave differently than hard disks. If I remember correcly,
+bits can be flipped in one direction (set or reset) without erasing whole
+block, but flipping a bit in reverse direction requires that whole block be
+erased first.
 
-while it should only accept:
+If jffs2 takes advantage of this one-direction-bit-flipping, then adding
+encryption layer between jffs2 and flash device makes it completely
+different game that is guaranteed to require lots of flash block erases that
+wears down the device much faster than expected.
 
-	echo name=my_stats type=utilisation > definition
-
-
-Signed-off-by: Martin Peschke <mp3@de.ibm.com>
----
-
- statistic.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux/lib/statistic.c
-===================================================================
---- linux.orig/lib/statistic.c
-+++ linux/lib/statistic.c
-@@ -506,7 +506,8 @@ static int statistic_parse_match(struct 
- 		len = (args[0].to - args[0].from);
- 		for (type = 0; type < STAT_NONE; type++) {
- 			disc = &statistic_discs[type];
--			if (unlikely(strncmp(disc->name, args[0].from, len)))
-+			if (strlen(disc->name) != len ||
-+			    strncmp(disc->name, args[0].from, len))
- 				continue;
- 			return statistic_parse_single(stat, info, def, type);
- 		}
-
-
+-- 
+Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
