@@ -1,117 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbXCFAQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752454AbXCFARK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752403AbXCFAQg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbXCFAQg
+	id S1752454AbXCFARK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbXCFARK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:16:36 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:1280 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbXCFAQf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:16:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:from;
-        b=ejczVlj5ooDq7u7IQV9pX+c1aLc5NkvavTd6nA6N0b7ISQpAQreQmocPN7ZhqclfrX+g9Hsyqs6zq3nP5WBRnOGQ85q78xWb3BrKHVrYJX4N+DcdWkIQvnfkqgQauD2K7jMoLz4iJ35co8MfAHFrb5M274fdE2o9Fia76QLuBEU=
-Message-ID: <45ECB2D0.3080205@telia.com>
-Date: Tue, 06 Mar 2007 01:16:16 +0100
-User-Agent: Mail/News 1.5.0.8 (X11/20061119)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Radeon xpress 200m and radeonfb kinda work
-Content-Type: multipart/mixed;
- boundary="------------030203060702090507020206"
-From: Johan Henriksson <jhn98032@gmail.com>
+	Mon, 5 Mar 2007 19:17:10 -0500
+Received: from smtp.ono.com ([62.42.230.12]:36932 "EHLO resmaa04.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752454AbXCFARI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:17:08 -0500
+Date: Tue, 6 Mar 2007 01:16:21 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: i2c vs nVidia [Re: 2.6.21-rc2-mm1]
+Message-ID: <20070306011621.5a844c41@werewolf-wl>
+In-Reply-To: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.8.0cvs15 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030203060702090507020206
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, 2 Mar 2007 03:00:26 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Hi!
+> 
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm1/
+> 
 
-I have gotten the radeon xpress 200m (the version without dedicated vmem)
- to work with radeonfb.
-The attached patch (against linux-2.6.20.1) works for me.
-Since I don't have any docs for the card I am unsure if the patch is 
-100% correct.
-Can someone else with a 200m try it out?
-(I have tested it by enabling  fbcon and radeonfb in the kernel  and
- added "video=radeonfb" to lilo. This gave me a nice 1280x800 console :) )
+More things...
 
-/Johan Henriksson
+Yes, this is related to nVidia driver. First of all, I'm not asking for help
+for a broken closed-source driver. I just want Linux to be fool^^^^bullet-proof ;).
 
-Please CC, I'm not on the list.
+As one can expect from a closed-source driver, recent changes in Linux broke it.
+New nVidia drivers include some i2c sensors. The driver worked till 2.6.20-rc6-mm3.
+Since then, I can't use them. I have tracked down the problem to i2c.
+nVidia driver tries to create 3 i2c devices, and I get this:
 
+**WARNING** I2C adapter driver [NVIDIA i2c adapter 0 at 1:00.0] forgot to specify physical device; fix it!
+ i2c-10: attach_adapter failed (-16) for driver [w83627hf]
+**WARNING** I2C adapter driver [NVIDIA i2c adapter 1 at 1:00.0] forgot to specify physical device; fix it!
+ i2c-11: attach_adapter failed (-16) for driver [w83627hf]
+**WARNING** I2C adapter driver [NVIDIA i2c adapter 2 at 1:00.0] forgot to specify physical device; fix it!
+ i2c-12: attach_adapter failed (-16) for driver [w83627hf]
 
---------------030203060702090507020206
-Content-Type: text/plain;
- name="radeonfb_200m_patch.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="radeonfb_200m_patch.txt"
+Two problems arise:
+- The directories in /sys/class/i2c-adapter/ are created, but trying to ls
+  its contents oopses:
 
-diff -uprN -X linux-2.6.20.1-vanilla/Documentation/dontdiff linux-2.6.20.1-vanilla/drivers/video/aty/ati_ids.h linux-2.6.20.1/drivers/video/aty/ati_ids.h
---- linux-2.6.20.1-vanilla/drivers/video/aty/ati_ids.h	Tue Feb 20 07:34:32 2007
-+++ linux-2.6.20.1/drivers/video/aty/ati_ids.h	Tue Mar  6 00:31:16 2007
-@@ -209,4 +209,4 @@
- #define PCI_CHIP_R423_5D57              0x5D57
- #define PCI_CHIP_RS350_7834             0x7834
- #define PCI_CHIP_RS350_7835             0x7835
--
-+#define PCI_CHIP_RS480_5955             0x5955
-diff -uprN -X linux-2.6.20.1-vanilla/Documentation/dontdiff linux-2.6.20.1-vanilla/drivers/video/aty/radeon_base.c linux-2.6.20.1/drivers/video/aty/radeon_base.c
---- linux-2.6.20.1-vanilla/drivers/video/aty/radeon_base.c	Tue Feb 20 07:34:32 2007
-+++ linux-2.6.20.1/drivers/video/aty/radeon_base.c	Tue Mar  6 00:31:19 2007
-@@ -100,6 +100,8 @@
- 	{ PCI_VENDOR_ID_ATI, id, PCI_ANY_ID, PCI_ANY_ID, 0, 0, (flags) | (CHIP_FAMILY_##family) }
- 
- static struct pci_device_id radeonfb_pci_table[] = {
-+        /* Radeon Xpress 200m */
-+	CHIP_DEF(PCI_CHIP_RS480_5955,   RS480,  CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
- 	/* Mobility M6 */
- 	CHIP_DEF(PCI_CHIP_RADEON_LY, 	RV100,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
- 	CHIP_DEF(PCI_CHIP_RADEON_LZ,	RV100,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
-@@ -1990,7 +1992,8 @@ static void radeon_identify_vram(struct 
- 	/* framebuffer size */
-         if ((rinfo->family == CHIP_FAMILY_RS100) ||
-             (rinfo->family == CHIP_FAMILY_RS200) ||
--            (rinfo->family == CHIP_FAMILY_RS300)) {
-+            (rinfo->family == CHIP_FAMILY_RS300) ||
-+	    (rinfo->family == CHIP_FAMILY_RS480) ) {
-           u32 tom = INREG(NB_TOM);
-           tmp = ((((tom >> 16) - (tom & 0xffff) + 1) << 6) * 1024);
-@@ -2329,7 +2332,7 @@ static int __devinit radeonfb_pci_regist
- 		/* -2 is special: means  ON on mobility chips and do not
- 		 * change on others
- 		 */
--		radeonfb_pm_init(rinfo, rinfo->is_mobility ? 1 : -1, ignore_devlist, force_sleep);
-+		radeonfb_pm_init(rinfo, -1,ignore_devlist, force_sleep);//rinfo->is_mobility ? 1 : -1);
- 	} else
- 		radeonfb_pm_init(rinfo, default_dynclk, ignore_devlist, force_sleep);
-diff -uprN -X linux-2.6.20.1-vanilla/Documentation/dontdiff linux-2.6.20.1-vanilla/drivers/video/aty/radeonfb.h linux-2.6.20.1/drivers/video/aty/radeonfb.h
---- linux-2.6.20.1-vanilla/drivers/video/aty/radeonfb.h	Tue Feb 20 07:34:32 2007
-+++ linux-2.6.20.1/drivers/video/aty/radeonfb.h	Tue Mar  6 00:31:16 2007
-@@ -48,6 +48,7 @@ enum radeon_family {
- 	CHIP_FAMILY_RV350,
- 	CHIP_FAMILY_RV380,    /* RV370/RV380/M22/M24 */
- 	CHIP_FAMILY_R420,     /* R420/R423/M18 */
-+	CHIP_FAMILY_RS480,
- 	CHIP_FAMILY_LAST,
- };
- 
-@@ -64,7 +65,8 @@ enum radeon_family {
- 				((rinfo)->family == CHIP_FAMILY_RV350) || \
- 				((rinfo)->family == CHIP_FAMILY_R350)  || \
- 				((rinfo)->family == CHIP_FAMILY_RV380) || \
--				((rinfo)->family == CHIP_FAMILY_R420))
-+				((rinfo)->family == CHIP_FAMILY_R420)  || \
-+		                ((rinfo)->family == CHIP_FAMILY_RS480) )
- 
- /*
-  * Chip flags
+last sysfs file: class/i2c-adapter/i2c-0/name
+Modules linked in: nvidia(P) nfsd exportfs lockd nfs_acl sunrpc snd_intel8x0 snd_ens1371 gameport snd_rawmidi snd_ac97_codec w83627hf ac97_bus hwmon_vid snd_pcm hwmon snd_timer i2c_isa snd_page_alloc i2c_i801 snd i2c_dev loop intel_agp agpgart udf e1000 3c59x microcode ohci1394 ieee1394 usblp evdev
+CPU:    3
+EIP:    0060:[<c0194b0c>]    Tainted: P       VLI
+EFLAGS: 00010202   (2.6.20-jam01 #1)
+EIP is at sysfs_follow_link+0xe6/0x254
+eax: 00020b36   ebx: f329edd8   ecx: 00000000   edx: f4ab84d8
+esi: f0df4ee8   edi: 00000100   ebp: 00000002   esp: f4039ea4
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process sensors (pid: 4991, ti=f4038000 task=f7efa540 task.ti=f4038000)
+Stack: f7ee4338 f4039edc f0ef7000 ffffffea f4ab84d8 00000000 c0387128 00000000
+       c02f76a0 f329edd8 00000100 bfd2b6fc c0162b12 00000000 00000000 00000000
+       00000000 00000000 45eb5857 1f6efe56 c2235fc0 00000000 f4039f44 c011c434
+Call Trace:
+ [<c0162b12>] generic_readlink+0x27/0x6e
+ [<c011c434>] timespec_trunc+0x18/0x5d
+ [<c011ca11>] current_fs_time+0x41/0x50
+ [<c015f43a>] sys_readlinkat+0x61/0x7a
+ [<c015f47a>] sys_readlink+0x27/0x2b
+ [<c01027ee>] sysenter_past_esp+0x5f/0x85
+ [<c02f0000>] __down_interruptible+0xa2/0x10e
+ =======================
+Code: 24 18 b8 00 b2 39 c0 e8 6e ba 15 00 8b 44 24 18 85 c0 0f 84 42 01 00 00 b8 cc ee 37 c0 e8 dd 73 f9 ff 8b 44 24 10 31 ed 83 c5 01 <8b> 40 24 85 c0 75 f6 8b 44 24 18 89 04 24 bb 01 00 00 00 31 f6 
+EIP: [<c0194b0c>] sysfs_follow_link+0xe6/0x254 SS:ESP 0068:f4039ea4
+BUG: at lib/kref.c:32 kref_get()
+ [<c01ec858>] kref_get+0x3d/0x3f
+ [<c01ebcd6>] kobject_get+0xf/0x13
+ [<c0194c00>] sysfs_follow_link+0x1da/0x254
+ [<c0162b12>] generic_readlink+0x27/0x6e
+ [<c011c434>] timespec_trunc+0x18/0x5d
+ [<c011ca11>] current_fs_time+0x41/0x50
+ [<c015f43a>] sys_readlinkat+0x61/0x7a
+ [<c015f47a>] sys_readlink+0x27/0x2b
+ [<c01027ee>] sysenter_past_esp+0x5f/0x85
+ [<c02f0000>] __down_interruptible+0xa2/0x10e
+ =======================
 
---------------030203060702090507020206--
+- As adapters do not get a driver (or what ?), each time you start X, three
+  new folders are created in /sys/class/i2c-adapter/
+  For some AGP black magic, the driver is loaded/registered/whatever 2 times
+  on each X start.
+
+So, after each X start, you get SIX broken dirs in /sys that hang and oops
+every app that tries to list i2c devices (like Gnome Sensors Applet, so your
+Gnome login hangs forever....). Just ls /sys/class/i2c-adapter/i2c-*/.
+It also oopses when removing i2c modules.
+
+No driver should be able to do that to Linux, even if I try lo load a jpeg
+of my children renamed to .ko....
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.20-jam01 (gcc 4.1.2 20070115 (prerelease) (4.1.2-0.20070115.1mdv2007.1)) #1 SMP PREEMPT
