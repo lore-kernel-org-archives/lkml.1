@@ -1,34 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933348AbXCFADG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933373AbXCFADU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933348AbXCFADG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:03:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933344AbXCFADG
+	id S933373AbXCFADU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXCFADU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:03:06 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38643
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933348AbXCFADF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:03:05 -0500
-Date: Mon, 05 Mar 2007 16:03:03 -0800 (PST)
-Message-Id: <20070305.160303.59493440.davem@davemloft.net>
-To: dmlb2000@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PAGE_SIZE Availability Inconsistency
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
-References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 5 Mar 2007 19:03:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40500 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933344AbXCFADT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:03:19 -0500
+From: Neil Brown <neilb@suse.de>
+To: Bill Davidsen <davidsen@tmr.com>
+Date: Tue, 6 Mar 2007 11:01:53 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17900.44913.481329.963558@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] md: Fix for raid6 reshape.
+In-Reply-To: message from Bill Davidsen on Friday March 2
+References: <20070302155626.19014.patches@notabene>
+	<1070302045655.19069@suse.de>
+	<20070301223619.d9957521.akpm@linux-foundation.org>
+	<17895.50900.585915.565155@notabene.brown>
+	<45E88A50.8060906@tmr.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "David Brown" <dmlb2000@gmail.com>
-Date: Mon, 5 Mar 2007 15:55:06 -0800
+On Friday March 2, davidsen@tmr.com wrote:
+> >   
+> >>> +	conf->expand_progress = (sector_nr + i) * new_data_disks;
+> >>>       
+> Will the (real) fix be in 2.6.21?
 
-> I'm kinda wondering how I'm supposed to write portable user-space code
-> if I want to use the PAGE_SIZE define on different architectures.
+It is now in Linus' git tree, so yes.
 
-Call getpagesize().
+NeilBrown
