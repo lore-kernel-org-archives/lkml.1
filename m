@@ -1,86 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934084AbXCFLUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965855AbXCFLUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934084AbXCFLUX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 06:20:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934085AbXCFLUX
+	id S965855AbXCFLUv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 06:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965852AbXCFLUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 06:20:23 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:59178 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934084AbXCFLUS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 06:20:18 -0500
-Message-ID: <45ED4E40.3010404@linux.vnet.ibm.com>
-Date: Tue, 06 Mar 2007 16:49:28 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+	Tue, 6 Mar 2007 06:20:51 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:53341 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934082AbXCFLUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 06:20:21 -0500
+Message-ID: <45ED4E71.4080106@garzik.org>
+Date: Tue, 06 Mar 2007 06:20:17 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Kari Hurtta <hurtta+gmane@siilo.fmi.fi>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/3][RFC] Containers: Pagecache controller reclaim
-References: <45ED251C.2010400@linux.vnet.ibm.com> <45ED266E.7040107@linux.vnet.ibm.com> <5d4poyvfdq.fsf@Hurtta06k.keh.iki.fi>
-In-Reply-To: <5d4poyvfdq.fsf@Hurtta06k.keh.iki.fi>
-Content-Type: text/plain; charset=us-ascii
+To: Adrian Bunk <bunk@stusta.de>
+CC: linux-driver@qlogic.com, Ron Mercer <ron.mercer@qlogic.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/net/qla3xxx.c: make 2 functions static
+References: <20070305014927.GY3441@stusta.de>
+In-Reply-To: <20070305014927.GY3441@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Kari Hurtta wrote:
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> writes
-> in gmane.linux.kernel,gmane.linux.kernel.mm:
+Adrian Bunk wrote:
+> This patch makes two needlessly global functions static.
 > 
->> --- linux-2.6.20.orig/mm/pagecache_acct.c
->> +++ linux-2.6.20/mm/pagecache_acct.c
->> @@ -29,6 +29,7 @@
->>  #include <linux/uaccess.h>
->>  #include <asm/div64.h>
->>  #include <linux/pagecache_acct.h>
->> +#include <linux/memcontrol.h>
->>
->>  /*
->>   * Convert unit from pages to kilobytes
->> @@ -337,12 +338,20 @@ int pagecache_acct_cont_overlimit(struct
->>  		return 0;
->>  }
->>
->> -extern unsigned long shrink_all_pagecache_memory(unsigned long nr_pages);
->> +extern unsigned long shrink_container_memory(unsigned int memory_type,
->> +				unsigned long nr_pages, void *container);
->>
->>  int pagecache_acct_shrink_used(unsigned long nr_pages)
->>  {
->>  	unsigned long ret = 0;
->>  	atomic_inc(&reclaim_count);
->> +
->> +	/* Don't call reclaim for each page above limit */
->> +	if (nr_pages > NR_PAGES_RECLAIM_THRESHOLD) {
->> +		ret += shrink_container_memory(
->> +				RECLAIM_PAGECACHE_MEMORY, nr_pages, NULL);
->> +	}
->> +
->>  	return 0;
->>  }
->>
-> 
-> 'ret' is not used ?
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-I have been setting watch points and tracing the value of ret.
-Basically that is used while debugging.  I have not removed it since
-this is an RFC post and we would go through many cleanups cycles.
+applied
 
-I will remember to remove it in the next version or verify that the
-compiler does remove 'ret' :)
 
---Vaidy
-
-> / Kari Hurtta
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
