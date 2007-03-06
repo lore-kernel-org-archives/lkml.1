@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965402AbXCFSAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965442AbXCFSEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965402AbXCFSAc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965419AbXCFSAc
+	id S965442AbXCFSEk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965446AbXCFSEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:00:32 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:36213 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965402AbXCFSAb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:00:31 -0500
-Message-ID: <45EDABC8.8040901@zytor.com>
-Date: Tue, 06 Mar 2007 09:58:32 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Tue, 6 Mar 2007 13:04:40 -0500
+Received: from gw.goop.org ([64.81.55.164]:54712 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965442AbXCFSEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:04:38 -0500
+Message-ID: <45EDAD33.7070903@goop.org>
+Date: Tue, 06 Mar 2007 10:04:35 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: torvalds@osdl.org, akpm@osdl.org, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, johannes@sipsolutions.net
-Subject: Re: [PATCH] Fix get_order()
-References: <20070306173929.2708.37191.stgit@warthog.cambridge.redhat.com>
-In-Reply-To: <20070306173929.2708.37191.stgit@warthog.cambridge.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
+Subject: Re: Xen & VMI?
+References: <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2F53.2040101@goop.org> <20070306092636.GC26073@elte.hu> <45ED99F8.9060705@goop.org> <20070306171813.GA21218@elte.hu>
+In-Reply-To: <20070306171813.GA21218@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> From: David Howells <dhowells@redhat.com>
-> 
-> Fix get_order() to use ilog2() properly.
-> 
-> Signed-Off-By: David Howells <dhowells@redhat.com>
-> ---
-> 
->  include/asm-generic/page.h |   14 +++++++++++---
->  include/linux/log2.h       |   20 ++++++++++++++++++--
->  2 files changed, 29 insertions(+), 5 deletions(-)
-> 
-> diff --git a/include/asm-generic/page.h b/include/asm-generic/page.h
-> index b55052c..c37571d 100644
-> --- a/include/asm-generic/page.h
-> +++ b/include/asm-generic/page.h
-> @@ -17,10 +17,18 @@ static inline __attribute__((const))
->  int __get_order(unsigned long size, int page_shift)
->  {
->  #if BITS_PER_LONG == 32 && defined(ARCH_HAS_ILOG2_U32)
-> -	int order = __ilog2_u32(size) - page_shift;
-> +	int order;
-> +	if (size <= 1)
-> +		order = 0;
-> +	else
-> +		order = __ilog2_u32(size - 1) + 1 - page_shift;
->  	return order >= 0 ? order : 0;
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>>> My suggestion would be for Linux to make only a /single/ external 
+>>> ABI promise: VMI. (and we can extend it with higher-level paravirt 
+>>> ops, etc.)
+>>>       
+>> "VMI" is not a promise, it's just three letters.  It doesn't even mean 
+>> the same thing now as it did 12 months ago.  Turning "VMI" from three 
+>> letters into anything remotely like a promise is a huge amount of work 
+>> which requires:
+>>
+>>    1. someone actually sit down and fully document what all those
+>>       entrypoints are going to do
+>>    2. everyone to implement them
+>>    3. someone to test that all the implementations conform to the
+>>       document (bearing in mind that if anyone is going to go to all
+>>       this effort, they're going to use this with non-Linux guests)
+>>    4. and repeat all that every subsequent update
+>>     
+>
+> There's no process needed. The only thing needed is to treat the Linux 
+> implementation as the reference design, documentation and specification. 
+>   
+What Linux implementation?  Linux as a client of this interface?  So
+everyone implements as much of the ABI as needed to get Linux to boot?
 
-This seems a lot more complex than it should be.
+We have an excellent example of how well that model works.  Thousands of
+BIOS implementations all implementing just enough of the various BIOS
+interfaces to get Windows to boot.  And then all fall over as soon as
+you try to be non-Windows, or even a later version of Windows.  It's the
+path to being absolutely inundated with legacy crap.
 
-Assuming page_shift is usually constant, it would seem to make more 
-sense to do:
+You're arguing that we should have a single hypervisor ABI in order to,
+among other things, reduce the test matrix, and yet the ABI is entirely
+defined by testing to see how well a given implementation runs some
+random version of Linux.  And if Linux wants to use that interface in a
+different way, everyone is supposed to magically keep up.
 
-	if (size <= (1UL << page_shift))
-		return 0;
-	else
-		return __ilog2_u32(size-1)+1-page_shift;
+And all this is supposed to be managed by multiple disparate independent
+out-of-tree implementations?
 
-... instead of having *two* conditionals...
+Yep, I want a pony too.
 
-	-hpa
+> Treat it as we treat the Linux system calls. We promise not to change 
+> them.
+
+OK.  How does that help with "not hindering Linux's development"?
+
+    J
