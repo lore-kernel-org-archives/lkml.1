@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933934AbXCFEUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933937AbXCFEWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933934AbXCFEUd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 23:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933935AbXCFEUd
+	id S933937AbXCFEWl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 23:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933938AbXCFEWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 23:20:33 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:50013 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933934AbXCFEUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 23:20:32 -0500
-Date: Mon, 5 Mar 2007 20:17:07 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>, sdhci-devel@list.drzeus.cx,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] sdhci regression in 2.6.21-rc2
-Message-Id: <20070305201707.8d8a092e.akpm@linux-foundation.org>
-In-Reply-To: <45EC351B.2020206@rtr.ca>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	<20070305015031.GF3441@stusta.de>
-	<45EB9DC6.8010403@rtr.ca>
-	<45EB9E72.6040107@rtr.ca>
-	<45EBAC73.7010600@drzeus.cx>
-	<45EC2851.7020905@rtr.ca>
-	<45EC351B.2020206@rtr.ca>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 5 Mar 2007 23:22:41 -0500
+Received: from smtp.cce.hp.com ([161.114.21.24]:46090 "EHLO
+	ccerelrim03.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933937AbXCFEWk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 23:22:40 -0500
+Subject: Re: [patch] Add insmod option to force the use of the backup timer.
+From: Alex Williamson <alex.williamson@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gerd Hoffmann <kraxel@suse.de>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org, Kevin Stansell <kstansel@us.ibm.com>
+In-Reply-To: <20070305190333.c01a7ffc.akpm@linux-foundation.org>
+References: <20070228102346.115707000@suse.de>
+	 <20070228185505.GA17193@redhat.com> <45E6D309.5050409@suse.de>
+	 <20070305190333.c01a7ffc.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: HP OSLO R&D
+Date: Mon, 05 Mar 2007 21:22:32 -0700
+Message-Id: <1173154952.5941.142.camel@bling>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.2.1.279297, Antispam-Engine: 2.4.0.264935, Antispam-Data: 2007.3.5.200935
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Mar 2007 10:19:55 -0500 Mark Lord <lkml@rtr.ca> wrote:
-
-> The interrupt is shared with another device, which resumes
-> earlier than the sdhci controller, and generates an interrupt.
+On Mon, 2007-03-05 at 19:03 -0800, Andrew Morton wrote:
 > 
-> The sdhci interrupt handler runs, sees 0xffffffff in its own
-> device's interrupt status, and tries to handle it..
-> The reason for the 0xffffffff is that the device is still
-> suspended, and *all* regs are reading back 0xffffffff.
-> 
-> So.. the suspend routine should de-register the irq handler,
-> and the resume routine should re-register it again.
-> 
-> Or perhaps a simpler kludge like this one, which fixes it for me:
-> 
-> Signed-off-by:  Mark Lord <mlord@pobox.com>
-> ---
-> --- linux/drivers/mmc/sdhci.c.orig	2007-03-02 15:06:31.000000000 -0500
-> +++ linux/drivers/mmc/sdhci.c	2007-03-05 10:13:51.000000000 -0500
-> @@ -994,7 +994,7 @@
->  
->  	intmask = readl(host->ioaddr + SDHCI_INT_STATUS);
->  
-> -	if (!intmask) {
-> +	if (!intmask || intmask == 0xffffffff) {
->  		result = IRQ_NONE;
->  		goto out;
->  	}
+> Perhaps Alex can suggest some debugging steps we can take to work out
+> why the test isn't triggering?
 
-This is actually pretty standard handling for a lot of drivers: any
-device which can appear on a cardbus or other hot-unpluggable bus and which
-shares interupts needs such treatment.
+   I was lucky and had a hardware description of the bug I was trying to
+work around with the 8250 backup timer patch.  If the UART on the system
+in question is an integrated component, it might be worthwhile to start
+with the errata documented in the hardware manual.
 
-I don't know whether anything which this driver drives could ever appear on
-such a bus, but I'm inclined to just apply it into 2.6.21.
+   The detection test is simply looking for UARTs that don't re-assert
+the transmit holding register empty interrupt when it becomes
+re-enabled.  Since the backup timer is successfully kicking the UART
+back into action, it would be interesting to know whether this is
+because the "Diva test" is detecting work to do or if it's just a matter
+of reading the IIR bits (the interrupt is there, but not getting
+delivered).  The state of the UART at that point may be a clue how to
+detect the problem.
 
-(I'm also inclined to drop the darned mmc tree - am getting rather tired of
-people moving their files all over the tree all the time).
+   UARTs often seem to be the most troubling part of a system, so I'm
+not opposed to a boot/module option, but auto-detection provides a much
+better user experience.  Thanks,
+
+	Alex
+
+-- 
+Alex Williamson                             HP Open Source & Linux Org.
 
