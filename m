@@ -1,189 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965543AbXCFSK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965449AbXCFSOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965543AbXCFSK5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 13:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965552AbXCFSK4
+	id S965449AbXCFSOd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 13:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965484AbXCFSOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 13:10:56 -0500
-Received: from fmmailgate05.web.de ([217.72.192.243]:49222 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965535AbXCFSKZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 13:10:25 -0500
-Date: Tue, 06 Mar 2007 19:02:00 +0100
-Message-Id: <1667877556@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: Bill Davidsen <davidsen@tmr.com>
+	Tue, 6 Mar 2007 13:14:33 -0500
+Received: from mx2.suse.de ([195.135.220.15]:52385 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965449AbXCFSOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 13:14:32 -0500
+Date: Tue, 6 Mar 2007 19:14:30 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>, alon.barlev@gmail.com,
+       ak@suse.de
 Cc: linux-kernel@vger.kernel.org
-Subject: =?iso-8859-15?Q?Re:_[RFC]_BadRAM_still_not_ready_for_inclusion_=3F_(wa?=
- =?iso-8859-15?Q?s:_Re:_Free_Linux_Driver_Development!)?=
-Organization: http://freemail.web.de/
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] x86_64, i386: Add command line length to boot protocol
+Message-ID: <20070306181430.GB3151@strauss.suse.de>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	alon.barlev@gmail.com, ak@suse.de, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bill, 
-i have to admit that this sounds reasonable what you tell.
+Because the command line is increased to 2048 characters after 2.6.21,
+it's not possible for boot loaders and userspace tools to determine the length
+of the command line the kernel can understand. The benefit of knowing the
+length is that users can be warned if the command line size is too long which
+prevents surprise if things don't work after bootup.
 
-maybe this patch is just something very special, having many pro's but also con's - so this also could be one reason why it exists for so long outside mainline.
+This patch updates the boot protocol to contain a field called
+"cmdline_size" that contain the length of the command line (excluding
+the terminating zero).
 
-regards
-roland
-
-
-
-> -----Ursprüngliche Nachricht-----
-> Von: Bill Davidsen <davidsen@tmr.com>
-> Gesendet: 06.03.07 18:11:34
-> An: devzero@web.de
-> CC: linux-kernel@vger.kernel.org, greg@kroah.com, pavel@suse.cz
-> Betreff: Re: [RFC] BadRAM still not ready for inclusion ? (was: Re: Free Linux Driver Development!)
+The patch also adds missing fields (of protocol version 2.05) to the x86_64
+setup code.
 
 
-> telling youdevzero@web.de wrote:
-> > Hello !
-> > 
-> > There's some really nice feature-patch named BadRAM at
-> http://rick.vanrein.org/linux/badram/index.html for years now, being
-> announced around 2000 on this list, voted for inclusion in 2.3.99.
-> > 
-> > BadRAM let's you tell the kernel to skip certain regions of ram, so
-> you can continue using defective modules. Some older article describing
-> BadRAM in more detail is at http://www.linuxjournal.com/article/4489
-> 
-> 	[...snip...]
-> > 
-> > Basically, this feature is a matter of adding/modifying 200 lines of
-> code, so i´m even more wondering, why it exists for more than 7 years
-> and nothing happening here. I don`t know of any kernel patch which is
-> comparable to this.
-> > 
-> Think about that... 200 lines of code which will have to be maintained 
-> forever, once it becomes a supported feature, for the benefit of the few 
-> people who can't or won't replace bad memory.
-> 
-> > This patch is real a ressource-saver - if being a standard Linux
-> feature, it will save even more ressources: Saving user's time (because
-> they are pulling their hair out to get this run with kernel XYZ) and
-> also saving CPU time (no compile orgies anymore), and thus waste of energy.
-> > 
-> Consider one technical and one human behavour issue. While memory with 
-> "bad spots" was common a decade ago, it's as likely with current memory 
-> that the memory will "throw a bad bit" once in a while, on a read or 
-> write anywhere in the marginal or bad chip. Depending on how the memory 
-> is organized that could be 1/16th of the memory as a block of 32MB on a 
-> 512MB part, or every 16th byte in the whole memory.
-> 
-> As for the human issue, how many more people will use this capability to 
-> avoid buying memory, run with only part of the bad memory detected and 
-> blocked out, get unreliable operation, and think that Linux is unreliable.
-> 
-> > Please comment if someone sees chances of getting this (after years
-> > of
-> existance) into mainline and also please jump in to make the good thing
-> happen !
-> > 
-> I personally think that the patch is at best a balance between benefit 
-> and problems. As a patch I have to use deliberately I think it's a good 
-> idea. As a permanent and default part of the kernel, I'm not convinced. 
-> There are some patches I would love to see in mainline, like suspend2 
-> which includes resume as well as suspend, but this is not one of them, 
-> hope I've explained why.
-> 
-> As with so many other things in life, "it's not the cost but the upkeep."
-> 
-> > Historical patch collection at:
-> > http://rick.vanrein.org/linux/badram/download.html
-> > 
-> > Most recent version of BadRAM should be:
-> > http://rick.vanrein.org/linux/badram/software/BadRAM-2.6.19.1.patch
-> > 
-> > Sorry for being a little bit "noisy" here, but I think BadRAM is a
-> great feature and Linux could really benefit from that.
-> > 
-> > regards
-> > Roland K.
-> > Sysadmin
-> > 
-> > 
-> > List:       linux-kernel
-> > Subject:    Re: Free Linux Driver Development!
-> > From:       devzero () web ! de
-> > Date:       2007-02-04 21:37:33
-> > Message-ID: 1605445807 () web ! de
-> > [Download message RAW]
-> > 
-> > First off, compliments to this announcement, I liked it very much!
-> > 
-> > Some comment regarding those "volunteers, waiting to get some real work" :)
-> > 
-> >>> OK, but why isn't your army of volunteers fixing them?
-> > 
-> >> They don't know about them, or they don't have the hardware to test?
-> >> Seriously, let the kernel-janitor's project know about any issues you
-> >> have and they will be glad to jump on it.  Those people are just
-> >> chomping a the bit to do something a bit bigger than "compiler warning
-> >> cleanups" :)
-> > 
-> > So many times i have seen good ideas brought up, kernel patches being written, posted \
-> > to lkml, being developed outside mainline for a while and then being forgotten some \
-> > time later due to lack of energy of some individual to get this into mainline.
-> > 
-> > If there is an noticeably number of talented programmers (unfortunately, i`m not) , \
-> > so why not "feeding" them the right way ? Where is those public and transparent and \
-> > moderated Linux-Kernel "ToDo"- or "Keep an eye on"-list, sorted by priorities, with \
-> > sort of a "vote for this feature"-button, so those guys have something they can pick \
-> > up? There is so much great stuff and ideas out there where they could put their work \
-> > onto or getting involved, it just needs to be found or sort of being "managed" a \
-> > little bit better.
-> > 
-> > For myself, i`m waiting for so quite some things to get "one step further", but they \
-> > are more or less tied to some single individuals, for which you just cannot send some \
-> > "hey, what`s up with your project"-message every second day. The interest in many \
-> > nice projects often is quite low and evolution quite slow, but not only because of \
-> > the fact that they aren`t great, but more because of not getting widely known. It`s \
-> > not always missing specs, it`s also some missing noise/feedback for different \
-> > features or missing of some "driving force" to bring things forward. How should one \
-> > developer know that somebody needs a feature if those who could probably need it \
-> > don`t request it? Maybe just because of the fact that they even imagine that such \
-> > feature would be possible ?
-> > 
-> > Where is those efforts for fixing/integrating fantastic cowloop?
-> > What about badram/badmem patch ?
-> > Compressed Ccaching ?
-> > Somebody helping with development of dm-loop or extend loop.c to support more than \
-> > 256 devices ? Replacement of proprietary, unstable and unelegant vmware-lopp for \
-> > being able to mount vmware .vmdk files ? Internal Spec for this is open, dm-userspace \
-> > could be some infrastructure for this, but the author seems to have other \
-> > priorities.... dm-cow, zfs-fuse - anybody ?
-> > Kernel based target for AoE (Ata over Ethernet) ?  (there are two independent \
-> > implementations, but both got stuck at some early experimental stage) 
-> > 
-> > Just my 2 cents. 
-> > 
-> > Roland K.
-> > Sysadmin
-> > 
-> > ps:
-> > This isn`t meant to criticise any of you kernel developers since you`re doing \
-> > fantastic work!
-> > _______________________________________________________________________
-> > Viren-Scan für Ihren PC! Jetzt für jeden. Sofort, online und kostenlos.
-> > Gleich testen! http://www.pc-sicherheit.web.de/freescan/?mc=022222
-> > 
-> 
-> 
-> -- 
-> Bill Davidsen <davidsen@tmr.com>
->    "We have more to fear from the bungling of the incompetent than from
-> the machinations of the wicked."  - from Slashdot
-> 
-> 
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+Cc: Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: Andi Kleen <ak@suse.de>
 
+---
+ Documentation/i386/boot.txt |   23 +++++++++++++++++------
+ arch/i386/boot/setup.S      |    7 ++++++-
+ arch/x86_64/boot/setup.S    |   15 ++++++++++++++-
+ 3 files changed, 37 insertions(+), 8 deletions(-)
 
-_______________________________________________________________________
-Viren-Scan für Ihren PC! Jetzt für jeden. Sofort, online und kostenlos.
-Gleich testen! http://www.pc-sicherheit.web.de/freescan/?mc=022222
-
+Index: longer-cmdline-boot-proto-mm/Documentation/i386/boot.txt
+===================================================================
+--- longer-cmdline-boot-proto-mm.orig/Documentation/i386/boot.txt
++++ longer-cmdline-boot-proto-mm/Documentation/i386/boot.txt
+@@ -2,7 +2,7 @@
+ 		     ----------------------------
+ 
+ 		    H. Peter Anvin <hpa@zytor.com>
+-			Last update 2007-01-26
++			Last update 2007-03-06
+ 
+ On the i386 platform, the Linux kernel uses a rather complicated boot
+ convention.  This has evolved partially due to historical aspects, as
+@@ -35,9 +35,13 @@ Protocol 2.03:	(Kernel 2.4.18-pre1) Expl
+ 		initrd address available to the bootloader.
+ 
+ Protocol 2.04:	(Kernel 2.6.14) Extend the syssize field to four bytes.
++
+ Protocol 2.05:	(Kernel 2.6.20) Make protected mode kernel relocatable.
+ 		Introduce relocatable_kernel and kernel_alignment fields.
+ 
++Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
++		the boot command line
++
+ 
+ **** MEMORY LAYOUT
+ 
+@@ -133,6 +137,8 @@ Offset	Proto	Name		Meaning
+ 022C/4	2.03+	initrd_addr_max	Highest legal initrd address
+ 0230/4	2.05+	kernel_alignment Physical addr alignment required for kernel
+ 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
++0235/3	N/A	pad2		Unused
++0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
+ 
+ (1) For backwards compatibility, if the setup_sects field contains 0, the
+     real value is 4.
+@@ -233,6 +239,12 @@ filled out, however:
+ 	if your ramdisk is exactly 131072 bytes long and this field is
+ 	0x37FFFFFF, you can start your ramdisk at 0x37FE0000.)
+ 
++  cmdline_size:
++	The maximum size of the command line without the terminating
++	zero. This means that the command line can contain at most
++	cmdline_size characters. With protocol version 2.05 and
++	earlier, the maximum size was 255.
++
+ 
+ **** THE KERNEL COMMAND LINE
+ 
+@@ -241,11 +253,10 @@ loader to communicate with the kernel.  
+ relevant to the boot loader itself, see "special command line options"
+ below.
+ 
+-The kernel command line is a null-terminated string currently up to
+-255 characters long, plus the final null.  A string that is too long
+-will be automatically truncated by the kernel, a boot loader may allow
+-a longer command line to be passed to permit future kernels to extend
+-this limit.
++The kernel command line is a null-terminated string. The maximum
++length can be retrieved from the field cmdline_size.  Before protocol
++version 2.06, the maximum was 255 characters.  A string that is too
++long will be automatically truncated by the kernel.
+ 
+ If the boot protocol version is 2.02 or later, the address of the
+ kernel command line is given by the header field cmd_line_ptr (see
+Index: longer-cmdline-boot-proto-mm/arch/i386/boot/setup.S
+===================================================================
+--- longer-cmdline-boot-proto-mm.orig/arch/i386/boot/setup.S
++++ longer-cmdline-boot-proto-mm/arch/i386/boot/setup.S
+@@ -52,6 +52,7 @@
+ #include <asm/boot.h>
+ #include <asm/e820.h>
+ #include <asm/page.h>
++#include <asm/setup.h>
+ 	
+ /* Signature words to ensure LILO loaded us right */
+ #define SIG1	0xAA55
+@@ -81,7 +82,7 @@ start:
+ # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
+ 
+ 		.ascii	"HdrS"		# header signature
+-		.word	0x0205		# header version number (>= 0x0105)
++		.word	0x0206		# header version number (>= 0x0105)
+ 					# or else old loadlin-1.5 will fail)
+ realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
+ start_sys_seg:	.word	SYSSEG
+@@ -171,6 +172,10 @@ relocatable_kernel:    .byte 0
+ pad2:			.byte 0
+ pad3:			.word 0
+ 
++cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
++                                                #added with boot protocol
++                                                #version 2.06
++
+ trampoline:	call	start_of_setup
+ 		.align 16
+ 					# The offset at this point is 0x240
+Index: longer-cmdline-boot-proto-mm/arch/x86_64/boot/setup.S
+===================================================================
+--- longer-cmdline-boot-proto-mm.orig/arch/x86_64/boot/setup.S
++++ longer-cmdline-boot-proto-mm/arch/x86_64/boot/setup.S
+@@ -51,6 +51,7 @@
+ #include <asm/boot.h>
+ #include <asm/e820.h>
+ #include <asm/page.h>
++#include <asm/setup.h>
+ 
+ /* Signature words to ensure LILO loaded us right */
+ #define SIG1	0xAA55
+@@ -80,7 +81,7 @@ start:
+ # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
+ 
+ 		.ascii	"HdrS"		# header signature
+-		.word	0x0204		# header version number (>= 0x0105)
++		.word	0x0206		# header version number (>= 0x0105)
+ 					# or else old loadlin-1.5 will fail)
+ realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
+ start_sys_seg:	.word	SYSSEG
+@@ -155,6 +156,18 @@ cmd_line_ptr:	.long 0			# (Header versio
+ 					# low memory 0x10000 or higher.
+ 
+ ramdisk_max:	.long 0xffffffff
++
++kernel_alignment:  .long CONFIG_PHYSICAL_START 	#physical addr alignment
++						#(not relocatable =>
++						#fixed start == alignment)
++
++relocatable_kernel:     .byte 0                 #x86_64 is currently not
++pad2:			.byte 0                 #relocatable
++pad3:			.word 0
++
++cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
++                                                #added with boot protocol
++                                                #version 2.06
+ 	
+ trampoline:	call	start_of_setup
+ 		.align 16
