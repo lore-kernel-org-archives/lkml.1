@@ -1,43 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964781AbXCFTqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXCFTrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964781AbXCFTqe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 14:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964793AbXCFTqe
+	id S964934AbXCFTrP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 14:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964932AbXCFTrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 14:46:34 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53724 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964781AbXCFTqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 14:46:32 -0500
-Date: Tue, 6 Mar 2007 11:46:12 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Gerd Hoffmann <kraxel@suse.de>,
-       virtualization <virtualization@lists.osdl.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
-Subject: Re: Xen & VMI?
-Message-ID: <20070306194612.GG19575@sequoia.sous-sol.org>
-References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu>
-Mime-Version: 1.0
+	Tue, 6 Mar 2007 14:47:15 -0500
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:47925 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964852AbXCFTrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 14:47:13 -0500
+X-IronPort-AV: i="4.14,255,1170662400"; 
+   d="scan'208"; a="765642383:sNHT38291090"
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, General@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH 2.6.21-rc2] iw_cxgb3: Start ep timer on a MPA reject.
+X-Message-Flag: Warning: May contain useful information
+References: <1173137566.14159.95.camel@stevo-desktop>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 06 Mar 2007 11:47:11 -0800
+In-Reply-To: <1173137566.14159.95.camel@stevo-desktop> (Steve Wise's message of "Mon, 05 Mar 2007 17:32:46 -0600")
+Message-ID: <adad53mnohs.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070306085222.GA17002@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+X-OriginalArrivalTime: 06 Mar 2007 19:47:11.0355 (UTC) FILETIME=[3B5234B0:01C76028]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> yes - but de-facto contradicted by the Xen paravirt_ops patches sent to 
-> lkml ;)
-
-There's no intrinsic value to the Xen on VMI approach that's superior
-to Xen on pv_ops (not to mention the complications that it causes).
-
-What are you driving at?  You seem to be arguing that abstractions
-are bad unless done via ABI's.  ACPI....
-
-thanks,
--chris
+Thanks, applied.
