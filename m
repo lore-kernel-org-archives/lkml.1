@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933243AbXCFMrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933840AbXCFMxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933243AbXCFMrb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 07:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933256AbXCFMrb
+	id S933840AbXCFMxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 07:53:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933870AbXCFMxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 07:47:31 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:15541 "EHLO
-	outbound1-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933243AbXCFMra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 07:47:30 -0500
-X-BigFish: VP
-X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
-Date: Tue, 6 Mar 2007 13:46:52 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: discuss@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] x86_64: add reporting of SVM flags to
- /proc/cpuinfo
-Message-ID: <20070306124652.GK30318@amd.com>
-References: <20070305143601.GF30318@amd.com>
- <20070305143911.GG30318@amd.com> <200703051625.31449.ak@suse.de>
-MIME-Version: 1.0
-In-Reply-To: <200703051625.31449.ak@suse.de>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 06 Mar 2007 12:46:54.0083 (UTC)
- FILETIME=[84A7DD30:01C75FED]
-X-WSS-ID: 69F3BD472EG2065002-02-01
-Content-Type: text/plain;
- charset=us-ascii
+	Tue, 6 Mar 2007 07:53:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51952 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933840AbXCFMxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 07:53:10 -0500
+Date: Tue, 6 Mar 2007 13:51:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>, Len Brown <lenb@kernel.org>
+Subject: Re: [5/6] 2.6.21-rc2: known regressions
+Message-ID: <20070306125119.GA6119@elte.hu>
+References: <Pine.LNX.4.64.0703051542030.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051626490.3998@woody.linux-foundation.org> <1173142948.24738.257.camel@localhost.localdomain> <Pine.LNX.4.64.0703051730230.3998@woody.linux-foundation.org> <Pine.LNX.4.64.0703051810030.3998@woody.linux-foundation.org> <20070306103315.GA4295@mellanox.co.il> <20070306103712.GA10942@elte.hu> <20070306104618.GA5792@mellanox.co.il> <1173180977.9161.14.camel@localhost> <20070306120701.GA29599@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070306120701.GA29599@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 05, 2007 at 04:25:31PM +0100, Andi Kleen wrote:
-> On Monday 05 March 2007 15:39, Joerg Roedel wrote:
-> > From: Joerg Roedel <joerg.roedel@amd.com>
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > > BTW, Ingo, can you suspend/resume any number of times with this 
+> > > patch?
 > > 
-> > This patch adds the advanced SVM reporting to /proc/cpuinfo on the x86_64
-> > architecture.
+> > well I could at least two times in a row in my minimalistic setup 
+> > (config attached) however using the full kernel config it still 
+> > hangs ... (config also attached in case you watn to compare it).
 > 
-> Adding more fields to /proc/cpuinfo is always somewhat risky because
-> there are lots of badly written parsers for it.
+> i can confirm that with your full config i see a hang too. This is 
+> most likely the ACPI problem - we are debugging this now and will come 
+> up with a patch.
 
-Can you point me to some really broken parsers of /proc/cpuinfo to test
-with?
+update: this only happens with simulation, and even then it's not a full 
+hang but 'hangs until i hit a key'. With real resume i'm hitting a real 
+key anyway so it doesnt hang.
 
-> I considered adding the SVM fields myself, but decided against it because
-> it didn't seem generally useful enough.
-
-I don't see that this is less important than the power flags in that
-file. Some users might be interested to see if their processor has npt
-for example by simply looking into cpuinfo.
-As I said, would be interested to know more about these badly written
-parsers.
-
-Joerg
-
--- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
-
-
+	Ingo
