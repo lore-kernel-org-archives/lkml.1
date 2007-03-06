@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933131AbXCFJHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933152AbXCFJKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933131AbXCFJHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933156AbXCFJHi
+	id S933152AbXCFJKn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:10:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933156AbXCFJKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:07:38 -0500
-Received: from gw.goop.org ([64.81.55.164]:50607 "EHLO mail.goop.org"
+	Tue, 6 Mar 2007 04:10:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41079 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933149AbXCFJHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:07:34 -0500
-Message-ID: <45ED2F53.2040101@goop.org>
-Date: Tue, 06 Mar 2007 01:07:31 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S933152AbXCFJKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:10:41 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Kconfig: Update swsusp description
+Date: Tue, 6 Mar 2007 10:13:13 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200703041514.44680.rjw@sisk.pl> <20070306083224.GE2040@elf.ucw.cz>
+In-Reply-To: <20070306083224.GE2040@elf.ucw.cz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
-Subject: Re: Xen & VMI?
-References: <20070305120631.GA14105@elte.hu> <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu>
-In-Reply-To: <20070306081909.GA9331@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703061013.13585.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> btw., while we have everyone on the phone and talking ;) Technologically 
-> it would save us a whole lot of trouble in Linux if 'external' 
-> hypervisors could standardize around a single ABI - such as VMI. Is 
-> there any deep reason why Xen couldnt use VMI to talk to Linux? I 
-> suspect a range of VMI vectors could be set aside for Xen's dom0 (and 
-> other) APIs that have no current VMI equivalent - if there's broad 
-> agreement on the current 60+ base VMI vectors that center around basic 
-> x86 CPU capabilities - which make up the largest portion of our 
-> paravirtualization complexity. Pipe dream?
+On Tuesday, 6 March 2007 09:32, Pavel Machek wrote:
+> Hi!
+> 
+> > Index: linux-2.6.21-rc2/kernel/power/Kconfig
+> > ===================================================================
+> > --- linux-2.6.21-rc2.orig/kernel/power/Kconfig	2007-02-28 23:54:45.000000000 +0100
+> > +++ linux-2.6.21-rc2/kernel/power/Kconfig	2007-03-04 11:50:48.000000000 +0100
+> > @@ -81,30 +81,35 @@ config SOFTWARE_SUSPEND
+> >  	bool "Software Suspend"
+> >  	depends on PM && SWAP && ((X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
+> >  	---help---
+> > +	  Enable the suspend to disk (STD) functionality.
+> >  
+> > +	  You can suspend your machine with 'echo disk > /sys/power/state'.
+> > +	  Alternatively, you can use the additional userland tools available
+> > +	  from <http://suspend.sf.net>.
+> > +
+> > +	  In principle it does not require ACPI or APM, although for example
+> > +	  ACPI will be used if available.
+> > +
+> > +	  It creates an image which is saved in your active swap. Upon the next
+> >  	  boot, pass the 'resume=/dev/swappartition' argument to the kernel to
+> 
+> Actually, these days resume=... on kernel command line needs to be
+> there for suspend, too, IIRC.
 
-Well, we went around this about six months ago, and decided the best way
-forward is the current paravirt_ops approach. 
+I didn't change this line, so?
+ 
+> > +	  Right now you may boot without resuming and resume later but in the
+> > +	  meantime you cannot use the swap partition(s)/file(s) involved in
+> > +	  suspending.  Also in this case you must not use the
+> 
+> I'd prefer not to encourage this use. It has too many traps ready for
+> people.
 
-The Xen and VMI interfaces are quite different, and have different
-design goals.  VMI is fairly low-level, and is approximately a software
-implementation of VT/SVM with a couple of extra bits, whereas the Xen
-interface is intended to be higher level, with the expectation that the
-guest cooperates more with its virtualization.  They have similarities
-by necessity, but they have some fairly basic differences.
+But IMHO there should be a warning that if you boot without resuming, make sure
+you'll not resume after the next reboot or bad things will happen.
 
-You could come up with some shim layer which makes the two interfaces
-appear similar, and you could spell the name of that shim "VMI".  Or you
-could call it "paravirt_ops", which is the name we chose.  And you could
-implement the interface to that layer as a binary ABI, or you could make
-it a normal source-level Linux kernel interface, which is what we chose
-to do.
-
-Either way, its still one of native hardware, VMI/ESX, Xen or something
-else under the interface layer, and you need to test for each case
-regardless of what the interface looks like.
-
-
-    J
+Greetings,
+Rafael
