@@ -1,63 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965827AbXCFHHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932719AbXCFHTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965827AbXCFHHO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 02:07:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965828AbXCFHHO
+	id S932719AbXCFHTO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 02:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932722AbXCFHTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 02:07:14 -0500
-Received: from server225-han.de-nserver.de ([85.158.176.91]:41168 "EHLO
-	server225-han.de-nserver.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965827AbXCFHHM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 02:07:12 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 02:07:12 EST
-Message-ID: <45ED11DE.4080304@codemercs.com>
-Date: Tue, 06 Mar 2007 08:01:50 +0100
-From: Robert Marquardt <marquardt@codemercs.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Jiri Kosina <jikos@jikos.cz>
-CC: Li Yu <raise.sail@gmail.com>, Vincent Legoll <vincentlegoll@gmail.com>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       Harold Sargeant <harold-sargeant@ntlworld.com>,
-       Greg Kroah Hartman <greg@kroah.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-usb-devel] [DOC] The documentation for HID Simple Driver
- Interface 0.5.0
-References: <200703051532096508636@gmail.com> <Pine.LNX.4.64.0703052304070.10909@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0703052304070.10909@twin.jikos.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-User-Auth: Auth by marquardt@codemercs.com through 87.187.29.211
+	Tue, 6 Mar 2007 02:19:14 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53738 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932719AbXCFHTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 02:19:13 -0500
+Date: Mon, 5 Mar 2007 23:18:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: bryan.wu@analog.com
+Cc: khali@linux-fr.org, linux-kernel@vger.kernel.org, mhfan@ustc.edu
+Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
+Message-Id: <20070305231846.d4a31502.akpm@linux-foundation.org>
+In-Reply-To: <1173164058.31825.16.camel@roc-desktop>
+References: <1173164058.31825.16.camel@roc-desktop>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
+On Tue, 06 Mar 2007 14:54:18 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
 
-> In addition to that, as I stated in some previous e-mail, I am currently 
-> working on new 'hidraw' interface, which will provide more flexibility to 
-> userland applications willing to operate on raw HID data, than they 
-> currently have with hiddev.
+> Hi folks, 
+> 
+> [PATCH] Blackfin: blackfin i2c driver
+> 
+> The i2c linux driver for blackfin architecture which supports both GPIO
+> i2c operation and blackfin on-chip TWI controller i2c operation.
+> 
 
-I do not know too much about the Linux innards, but my opinion is that 
-the HID API to userland should be the bare reports. Windows is handling 
-it that way for a good reason. Far too many HID devices have either 
-non-informative descriptors (declaring a byte array report) or declaring 
-a report which does not match the data contained. Parsing a report is 
-definitely a userland job.
+Little things...
 
--- 
---------------------------------------
-Code Mercenaries
-Hard- und Software GmbH
-Karl-Marx-Str. 147a
-12529 Schönefeld OT Grossziethen
-Germany
+> +static int __init i2c_hhbf_init(void)
+> +{
+> +
+> +    if(gpio_request(CONFIG_BFIN_SCL, NULL)) {
+> +    	printk(KERN_ERR "%s: gpio_request GPIO %d failed \n",__FUNCTION__, CONFIG_BFIN_SCL);
+> +	return -1;
+> +	}
+> +
+> +    if(gpio_request(CONFIG_BFIN_SDA, NULL)) {
+> +    	printk(KERN_ERR "%s: gpio_request GPIO %d failed \n",__FUNCTION__, CONFIG_BFIN_SDA);
+> +	return -1;
+> +	}
 
-Tel: x49-3379-2050920
-Fax: x49-3379-2050930
+whitespace breakage there
 
-HRB 16007 Potsdam
-Geschäftsführer: Guido Körber, Christian Lucht
+> +
+> +    gpio_direction_output(CONFIG_BFIN_SCL);
+> +    gpio_direction_input(CONFIG_BFIN_SDA);
+> +    gpio_set_value(CONFIG_BFIN_SCL, 1);    
+> +
+> +    return i2c_bit_add_bus(&hhbf_ops);
+> +}
+> +
+> +#define TWI_I2C_MODE_COMBINED		0x04
+> +
+> +struct bfin_twi_iface
+> +{
+
+	struct bfin_twi_iface {
+
+> +	struct semaphore 	twi_lock;
+
+Can this be converted to a mutex?
+
+> +	int			irq;
+> +	spinlock_t		lock;
+> + */
+>
+> ...
+>
+> +static int bfin_twi_master_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
+> +{
+> +	struct bfin_twi_iface* iface = (struct bfin_twi_iface*)adap->algo_data;
+
+This code has zillions of unneeded casts of void*
+
+> +	struct i2c_msg *pmsg;
+> +	int i, ret;
+> +	int rc = 0;
+> +
+> +	if (!(bfin_read_TWI_CONTROL() & TWI_ENA))
+> +		return -ENXIO;
+> +
+> +	down(&iface->twi_lock);
+> +
+> +	while (bfin_read_TWI_MASTER_STAT() & BUSBUSY) {
+> +		up(&iface->twi_lock);
+> +		schedule();
+> +		down(&iface->twi_lock);
+> +	}
+
+That's a busy loop until this task's timeslice has expired.  It'll work,
+but it'll suck a bit.  (Repeated in several places)
+
+> +	ret = 0;
+> +	for (i = 0; rc >= 0 && i < num;) {
+> +		pmsg = &msgs[i++];
+
+Strange.  Why not do the i++ in the `for' statement?
+
+> +		if (pmsg->flags & I2C_M_TEN) {
+> +			printk(KERN_ERR "i2c-bfin-twi: 10 bits addr not supported !\n");
+> +			rc = -EINVAL;
+> +			break;
+> +		}
+> +
+>
+> ...
+>
+> +	switch (iface->cur_mode) {
+> +	case TWI_I2C_MODE_STANDARDSUB:
+> +		bfin_write_TWI_XMT_DATA8(iface->command);
+> +		bfin_write_TWI_INT_MASK(MCOMP | MERR | ((iface->read_write == I2C_SMBUS_READ) ? RCVSERV : XMTSERV));
+
+It's preferred if code is readable in an 80-col display.
+
+> +		SSYNC();
+> +
+> +		if (iface->writeNum + 1 <= 255)
+> +			bfin_write_TWI_MASTER_CTL(((iface->writeNum+1) << 6));
+
