@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932334AbXCFVVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964832AbXCFVWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932334AbXCFVVK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:21:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964832AbXCFVVK
+	id S964832AbXCFVWl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965109AbXCFVWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:21:10 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44543 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932334AbXCFVVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:21:08 -0500
-Date: Tue, 6 Mar 2007 22:20:56 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-ID: <20070306212056.GC3843@elf.ucw.cz>
-References: <20070301152655.f232db64.khali@linux-fr.org> <20070302114023.GD2163@elf.ucw.cz> <20070302114747.GB1212@srcf.ucam.org> <20070302151055.d2665d66.khali@linux-fr.org> <20070302141840.GA3441@srcf.ucam.org> <20070302220454.a0c66d04.khali@linux-fr.org> <20070302211251.GA10035@srcf.ucam.org> <20070303105316.d51e032d.khali@linux-fr.org> <20070305222548.GA4946@ucw.cz> <20070306162634.bcaaf0c7.khali@linux-fr.org>
+	Tue, 6 Mar 2007 16:22:41 -0500
+Received: from cantor.suse.de ([195.135.220.2]:55877 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964832AbXCFVWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 16:22:40 -0500
+Date: Tue, 6 Mar 2007 23:21:58 +0100
+From: Andi Kleen <ak@suse.de>
+To: Dan Hecht <dhecht@vmware.com>
+Cc: tglx@linutronix.de, Zachary Amsden <zach@vmware.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, ak@suse.de,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+Message-ID: <20070306222157.GJ22829@bingen.suse.de>
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net> <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu> <20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com> <1173178774.24738.311.camel@localhost.localdomain> <45EDD82F.90204@vmware.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070306162634.bcaaf0c7.khali@linux-fr.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <45EDD82F.90204@vmware.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+> I believe this was just a quick fix in response to Ingo breaking the VMI 
+> build yesterday by disabling NO_IDLE_HZ on us.  There is no technical 
+> reason why NO_IDLE_HZ=y can't coexist with NO_HZ.
 
-> > > Is there anything preventing us from doing such a walk and pre-allocate
-> > > all the I/O ranges? I am not familiar with the ACPI code at all, would
-> > > you possibly propose a patch doing that?
-> > 
-> > ACPI AML is probably turing-complete: I'm afraid you are trying to
-> > solve the halting problem (-> impossible).
-> 
-> Can you please translate this into something mere humans like myself
-> have a chance to understand?
+Well it's nasty that you force NO_IDLE_HZ on all of paravirt ops users.
+I think the right solution is to make VMI depend on (not select) NO_IDLE_HZ
+until you can fix your code to work with dynticks properly.
 
-ACPI AML is turing-complete -- that means it is as powerful any
-programming language. It can do arbitrary computation. That means it
-is theoretically impossible to analyze its accesses using any program.
-
-Now... may be possible to introduce _some_ ACPI BIOSes, but doing it
-would certainly be very complex -- we are talking "put gcc into
-kernel" here.
-
-So no, it is not possible to preallocate the ranges.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Andi
