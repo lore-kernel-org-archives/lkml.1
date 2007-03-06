@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751014AbXCFVTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932272AbXCFVU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751014AbXCFVTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 16:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbXCFVTS
+	id S932272AbXCFVU6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 16:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932334AbXCFVU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 16:19:18 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:50038 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751014AbXCFVTR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 16:19:17 -0500
-Message-ID: <45EDDA8F.5060106@nortel.com>
-Date: Tue, 06 Mar 2007 15:18:07 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: David Miller <davem@davemloft.net>, jeremy@goop.org, ak@muc.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       chrisw@sous-sol.org, zach@vmware.com, rusty@rustcorp.com.au,
-       ian.pratt@xensource.com, Christian.Limpach@cl.cam.ac.uk,
-       netdev@vger.kernel.org, jeff@garzik.org
-Subject: Re: [RFC] ARP notify option
-References: <20070301164214.4a40bc59@freekitty> <45E7764A.7000100@goop.org>	<20070301173030.754514ec@freekitty> <20070305.203536.92584097.davem@davemloft.net> <20070306105132.52c77491@freekitty>
-In-Reply-To: <20070306105132.52c77491@freekitty>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2007 21:18:11.0447 (UTC) FILETIME=[F1CA2070:01C76034]
+	Tue, 6 Mar 2007 16:20:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58299 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932272AbXCFVU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 16:20:56 -0500
+Date: Tue, 6 Mar 2007 22:20:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Nakajima, Jun" <jun.nakajima@intel.com>,
+       virtualization <virtualization@lists.osdl.org>,
+       Roland McGrath <roland@redhat.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
+Subject: Re: Xen & VMI?
+Message-ID: <20070306212037.GB31568@elte.hu>
+References: <45ED82D9.6050204@codemonkey.ws> <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com> <20070306203712.GC21736@elte.hu> <45EDD6F1.7080100@goop.org> <20070306211105.GD26348@elte.hu> <45EDD96D.1030108@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EDD96D.1030108@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
 
-> +arp_notify - BOOLEAN
-> +	Define mode for notification of address and device changes.
-> +	0 - (default): do nothing
-> +	1 - Generate gratuitous arp replies when device is brought up
-> +	    or hardware address changes.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Did you consider using gratuitous arp requests instead?  I remember 
-reading about some hardware that updated its arp cache on gratuitous 
-requests but not gratuitous replies.
+> > so trying to argue as if there was no ABI imposed on Linux by hiding 
+> > the Xen ABI behind paravirt_ops, and whistling into the air as if 
+> > nothing happened is misguided at best.
+> 
+> How is the situation even slightly different with a unified hypervisor 
+> ABI?
 
-Chris
+1 sane ABI instead of 4 parallel ones? It's the same difference as the 
+difference between 300 system calls and 1200 system calls. Alot more 
+focus, alot more integration, alot less pain. Every time i change a 
+detail in Linux i have to update (and think about) 1 virtualization 
+aspect - not 4 (or more).
+
+	Ingo
