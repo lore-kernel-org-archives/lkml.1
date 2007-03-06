@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965115AbXCFOo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965126AbXCFOpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965115AbXCFOo7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 09:44:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965133AbXCFOo6
+	id S965126AbXCFOpM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 09:45:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965889AbXCFOpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 09:44:58 -0500
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:46645 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965119AbXCFOo5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 09:44:57 -0500
-Date: Tue, 6 Mar 2007 09:44:55 -0500 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Kanhu Rauta <choiskanhu@gmail.com>
-cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Problem With LOCAL IN HOOK
-In-Reply-To: <4c348ac20703060327t44450331la1be820bc146d308@mail.gmail.com>
-Message-ID: <Line.LNX.4.64.0703060944290.22674@d.namei>
-References: <4c348ac20703060327t44450331la1be820bc146d308@mail.gmail.com>
+	Tue, 6 Mar 2007 09:45:07 -0500
+Received: from styx.suse.cz ([82.119.242.94]:42877 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965126AbXCFOpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 09:45:04 -0500
+Date: Tue, 6 Mar 2007 15:50:09 +0100
+From: Jan Kara <jack@suse.cz>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Mingming Cao <cmm@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, nscott@aconex.com,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-ID: <20070306145009.GB3661@duck.suse.cz>
+References: <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com> <20070305122742.GA11486@atrey.karlin.mff.cuni.cz> <45EC7773.7020603@us.ibm.com> <20070306072850.GA23081@infradead.org> <45ED7C59.4050508@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45ED7C59.4050508@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007, Kanhu Rauta wrote:
-
-> I am not able to understand the behavior and struggled to resolve this
-> issue for last 1 week .
+On Tue 06-03-07 06:36:09, Ulrich Drepper wrote:
+> Christoph Hellwig wrote:
+> > fallocate with the whence argument and flags is already quite complicated,
+> > I'd rather have another call for placement decisions, that would
+> > be called on an fd to do placement decissions for any further allocations
+> > (prealloc, write, etc)
 > 
-> Can anybody help me on this regard ?
+> Yes, posix_fallocate shouldn't be made more complicated.  But I don't
+> understand why requesting linear layout of the blocks should be an
+> option.  It's always an advantage if the blocks requested this way are
+> linear on disk.  So, the kernel should always do its best to make this
+> happen, without needing an additional option.
+  Actually, it's not that simple. You want linear layout of blocks you are
+going to read. That is not necessary a linear layout of blocks in a single
+file - trace sometime a start of some complicated app like KDE. You find
+it's seeking like a hell because it needs a few blocks from a ton of
+distinct files (shared libs, config files, etc). As these files are mostly
+read only, it's advantageous to interleave them on disk or at least keep
+them close.
 
-Please post a link to your code so people can see the full context.
-
-
+									Honza
 -- 
-James Morris
-<jmorris@namei.org>
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
