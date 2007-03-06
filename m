@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933208AbXCFKFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXCFKNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933208AbXCFKFM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 05:05:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933184AbXCFKFM
+	id S933212AbXCFKNo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 05:13:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933213AbXCFKNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 05:05:12 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:10303 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933208AbXCFKFL (ORCPT
+	Tue, 6 Mar 2007 05:13:44 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:36326 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933212AbXCFKNn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 05:05:11 -0500
-X-Greylist: delayed 1365 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 05:05:10 EST
-Date: Tue, 6 Mar 2007 12:42:18 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: "Li Yang-r58472" <LeoLi@freescale.com>
-Cc: "Cedric Pontois" <cpontois@nortel.com>, <dmalek@jlc.net>,
-       linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [patch 1/1] ppc: Possible bug fix for FCC driver
-Message-ID: <20070306124218.4bebc288@localhost.localdomain>
-In-Reply-To: <989B956029373F45A0B8AF02970818902DA97B@zch01exm26.fsl.freescale.net>
-References: <00B1F4365DDBE745B091C67A1CCFCB43070CE21E@zctfhxm1>
-	<989B956029373F45A0B8AF02970818902DA97B@zch01exm26.fsl.freescale.net>
-X-Mailer: Claws Mail 2.7.2cvs30 (GTK+ 2.10.9; i686-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 Mar 2007 05:13:43 -0500
+X-Greylist: delayed 1141 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 05:13:43 EST
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: [PATCH] Use a zero-size array in the struct devres
+To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org
+Date: Tue, 06 Mar 2007 09:54:37 +0000
+Message-ID: <20070306095241.28180.76390.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Mar 2007 09:54:37.0874 (UTC) FILETIME=[73CB8920:01C75FD5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007 10:23:43 +0800
-Li Yang-r58472 wrote:
+Commit 9ac7849e35f705830f7b016ff272b0ff1f7ff759 adds the devres
+structure containing a flexible unsigned long long array, with a
+comment about the guaranteed alignment. According to the gcc manual,
+flexible arrays are considered incomplete types and it is an error to
+ask for their alignment. This patch makes data[] a zero-size array.
 
-> Hi Cedric,
-> 
-> For ppc embedded related patches, please also cc:
-> linuxppc-embedded@ozlabs.org.
-> 
-> > We use a kernel 2.6.14 on PPC platform (MPC 8555). The FCC driver
-> works
-> 
-> To submit a kernel patch upstream, the patch should be against the
-> latest kernel version which is 2.6.21-rc now.
-> > well with a 100Mbps link. But it doesn't with a 10Mbps link. To
-> > solve it, I modified the GFMR register init: removed TCI bit and
-> > set CRC32
-> bit
-> > instead of.
-> 
-> I don't know how these bits caused the 10M link issue.  Do you have
-> any reasoning?
-> 
-> > 	Signed-off-by: Cedric Pontois <cpontois@nortel.com>
-> > 
-> >
-> ------------------------------------------------------------------------
-> > -----
-> > 
-> > diff -ruN pa-original/arch/ppc/8260_io/fcc_enet.c
-The fcc code in 8260_io has been obsoleted by fs_enet driver (drivers/net/fs_enet).
-It is known to work with 85xx at least in recent kernels. If it does not for some reason,
-please letus know.
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
 
-Thanks,
+I came across this when trying to build kmemleak as the modified
+container_of macro tries to get the size of the devres.data member and
+sizeof cannot be applied to incomplete types.
 
--Vitaly
+ drivers/base/devres.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/base/devres.c b/drivers/base/devres.c
+index e177c95..0d6c067 100644
+--- a/drivers/base/devres.c
++++ b/drivers/base/devres.c
+@@ -22,7 +22,7 @@ struct devres_node {
+ struct devres {
+ 	struct devres_node		node;
+ 	/* -- 3 pointers */
+-	unsigned long long		data[];	/* guarantee ull alignment */
++	unsigned long long		data[0];	/* guarantee ull alignment */
+ };
+ 
+ struct devres_group {
+
