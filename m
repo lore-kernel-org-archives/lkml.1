@@ -1,111 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965404AbXCFRrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965414AbXCFRsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965404AbXCFRrb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 12:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965405AbXCFRrb
+	id S965414AbXCFRsQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 12:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965415AbXCFRsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 12:47:31 -0500
-Received: from dsbex1.ad.uiuc.edu ([128.174.68.231]:10405 "EHLO
-	dsbexcluster.ad.uiuc.edu" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965404AbXCFRra convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 12:47:30 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 6 Mar 2007 12:48:16 -0500
+Received: from mail.tmr.com ([64.65.253.246]:58887 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965410AbXCFRsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 12:48:15 -0500
+Message-ID: <45EDA9DF.6030305@tmr.com>
+Date: Tue, 06 Mar 2007 12:50:23 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch 1/1] network: add the missing phy_device speed information to phy_mii_ioctl
-Date: Tue, 6 Mar 2007 11:45:25 -0600
-Message-ID: <9FD2C54661D3494AB6F269E0D4A74E83019D7931@DSBEXCLUSTER.ad.uiuc.edu>
-In-Reply-To: <28C12DE1-E0BD-4C5E-8DB9-B722F1877BDF@freescale.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 1/1] network: add the missing phy_device speed information to phy_mii_ioctl
-Thread-Index: AcdgFaLrA4ws0hz8R4iYCvJURajE8QAAG6Jw
-From: "Shan Lu" <shanlu@cs.uiuc.edu>
-To: "Andy Fleming" <afleming@freescale.com>
-Cc: <jeff@garzik.org>, <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       <shanlu@uiuc.edu>
+To: Gene Heskett <gene.heskett@gmail.com>
+CC: linux-kernel@vger.kernel.org,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+   scheduler
+References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <200703050453.08154.gene.heskett@gmail.com>
+In-Reply-To: <200703050453.08154.gene.heskett@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I probably have misunderstood the code. Thanks very much for pointing
-this out. I don't have special reason to stick to this function. I just
-feel it very strange to miss the speed parameter and it has no reason to
-do so.
+Gene Heskett wrote:
+> On Monday 05 March 2007, Nicolas Mailhot wrote:
+>> This looks like -mm stuff if you want it in 2.6.22
+> 
+> This needs to get to 2.6.21, it really is that big an improvement.
+> 
+As Con pointed out, for some workloads and desired behavour this is not 
+as good as the existing scheduler. Therefore it should go in -mm and 
+hopefully give the user an option to select which is appropriate.
 
-As for why not SPEED_10, another function in the same file only update
-the register with two choices: SPEED_100 or SPEED_1000. That's why I
-didn't put SPEED_10. 
+With luck I'll get to shake out that patch in combination with kvm later 
+today.
 
------Original Message-----
-From: Andy Fleming [mailto:afleming@freescale.com] 
-Sent: Tuesday, March 06, 2007 11:34 AM
-To: Shan Lu
-Cc: jeff@garzik.org; akpm@linux-foundation.org;
-linux-kernel@vger.kernel.org; netdev@vger.kernel.org; shanlu@uiuc.edu
-Subject: Re: [patch 1/1] network: add the missing phy_device speed
-information to phy_mii_ioctl
-
-
-On Mar 2, 2007, at 11:42, Shan Lu wrote:
-
-> Changelog:
-> Function `phy_mii_ioctl' returns physical device's information  
-> based on
-> user requests. When requested to return the basic mode control  
-> register
-> information (BMCR), the original implementation only returns the
-> physical device's duplex information and forgets to return speed
-> information, which should not be because BMCR register is used to hold
-> both duplex and speed information.
->
-> The patch checks the BMCR value against speed-related flags and fills
-> the return structure's speed field accordingly.
-
-
-I think you've misunderstood what this code does, though I agree, in  
-principle, with your change.  You have modified the SIOCSMIIREG  
-command, which takes in a value, and sets the given register to that  
-value.  The structure which is being filled in is not being  
-returned.  It is the PHY's software representation at runtime.
-
-So this patch probably fixes a bug (I'd have to think harder about it  
-to see if phydev->speed doesn't get updated automatically), but  
-you've modified the *setting* command, not the *getting* command.
-
-Is there a reason you are using this function to get and set the  
-BMCR?  The PHY Lib provides ethtool functions to do this, and they  
-fit better with the design of the PHY Lib.  The mii IOCTL allows you  
-to change the registers any way you want, which potentially breaks  
-the state machine the PHY Lib sets up for tracking such changes.
-
-All that said, I think the change below needs to go in.  See below  
-for inline commentary:
-
-
->
-> Signed-off-by: Shan<shanlu@cs.uiuc.edu>
->
-> ---
-> --- drivers/net/phy/phy.c   2007-03-02 10:40:26.000000000 -0600   
-> 2.6.20
-> +++ drivers/net/phy/phy.c   2007-03-02 10:41:39.000000000 -0600
-> @@ -337,6 +337,10 @@ int phy_mii_ioctl(struct phy_device *phy
->                                         phydev->duplex = DUPLEX_FULL;
->                                 else
->                                         phydev->duplex = DUPLEX_HALF;
-> +                               if ((!phydev->autoneg) && (val
-> &BMCR_SPEED1000))
-> +                                       phydev->speed = SPEED_1000;
-> +                               else if ((!phydev->autoneg) && (val &
-> BMCR_SPEED100))
-> +                                       phydev->speed = SPEED_100;
-
-
-Why not also support SPEED_10 if neither bits are set?
-
-Andy
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
