@@ -1,62 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030456AbXCFJfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030462AbXCFJfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030456AbXCFJfW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 04:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030459AbXCFJfW
+	id S1030462AbXCFJfj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 04:35:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030463AbXCFJfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 04:35:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53232 "EHLO mx2.mail.elte.hu"
+	Tue, 6 Mar 2007 04:35:38 -0500
+Received: from linux.dunaweb.hu ([62.77.196.1]:42206 "EHLO linux.dunaweb.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030456AbXCFJfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 04:35:21 -0500
-Date: Tue, 6 Mar 2007 10:34:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gerd Hoffmann <kraxel@suse.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Xen & VMI?
-Message-ID: <20070306093436.GA30239@elte.hu>
-References: <1173101297.26165.39.camel@localhost.localdomain> <1173142644.4644.6.camel@localhost.localdomain> <45ECBDDC.8080708@vmware.com> <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <45ED3121.8090308@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45ED3121.8090308@suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1030462AbXCFJfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 04:35:36 -0500
+Message-ID: <45ED35E0.3060402@dunaweb.hu>
+Date: Tue, 06 Mar 2007 10:35:28 +0100
+From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>
+Subject: BUG in kernel-rt 2.6.20-0119.rt8
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Gerd Hoffmann <kraxel@suse.de> wrote:
+I am using kernel-rt on my FC6/x86-64 system,
+the CPU is an Athlon64 X2.
 
-> Oh, and btw: What was the reason why kvm paravirtualization doesn't 
-> use the vmi interface?
+It locks up very rarely (I haven't found any sign in the logs for that)
+but I always get this on shutdown, I wonder if it might be related
+to the lockup:
 
-cleanliness and performance: KVM doesnt need any artificial indirection. 
-IMO the GPL-ed ROM portion of VMI was a bad idea to begin with. Also, 
-lguest and KVM is Linux-internal, so there's a natural match between the 
-guest and the host APIs.
+Mar  5 23:53:52 static-81-17-177-202 kernel: BUG: using 
+smp_processor_id() in preemptible [00000000] code: nfsd/3939
+Mar  5 23:53:52 static-81-17-177-202 kernel: caller is 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: Call Trace:
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026d828>] 
+dump_trace+0xbd/0x3d8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026db87>] 
+show_trace+0x44/0x6d
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026ddc8>] 
+dump_stack+0x13/0x15
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff80355e2e>] 
+debug_smp_processor_id+0xe3/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e01b5>] 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e07ac>] 
+__cache_shrink+0xd5/0x1a6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e0a47>] 
+kmem_cache_destroy+0x6c/0xe3
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a809>] 
+:nfsd:nfsd4_free_slab+0x16/0x21
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a824>] 
+:nfsd:nfsd4_free_slabs+0x10/0x36
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878baf9>] 
+:nfsd:nfs4_state_shutdown+0x1a2/0x1ae
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff887750f8>] 
+:nfsd:nfsd_last_thread+0x47/0x76
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f63a>] 
+:sunrpc:svc_destroy+0x8d/0xd1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f738>] 
+:sunrpc:svc_exit_thread+0xba/0xc6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8877595f>] 
+:nfsd:nfsd+0x2a3/0x2b8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802600f8>] 
+child_rip+0xa/0x12
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: ---------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: | preempt count: 00000001 ]
+Mar  5 23:53:52 static-81-17-177-202 kernel: | 1-level deep critical 
+section nesting:
+Mar  5 23:53:52 static-81-17-177-202 kernel: 
+----------------------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: .. [<ffffffff80355ddb>] 
+.... debug_smp_processor_id+0x90/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel: .....[<ffffffff802e01b5>] 
+..   ( <= drain_array+0x25/0x132)
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: BUG: nfsd:3939 task might 
+have lost a preemption check!
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: Call Trace:
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026d828>] 
+dump_trace+0xbd/0x3d8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026db87>] 
+show_trace+0x44/0x6d
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026ddc8>] 
+dump_stack+0x13/0x15
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8028be9b>] 
+preempt_enable_no_resched+0x5c/0x5e
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff80355e33>] 
+debug_smp_processor_id+0xe8/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e01b5>] 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e07ac>] 
+__cache_shrink+0xd5/0x1a6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e0a47>] 
+kmem_cache_destroy+0x6c/0xe3
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a809>] 
+:nfsd:nfsd4_free_slab+0x16/0x21
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a824>] 
+:nfsd:nfsd4_free_slabs+0x10/0x36
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878baf9>] 
+:nfsd:nfs4_state_shutdown+0x1a2/0x1ae
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff887750f8>] 
+:nfsd:nfsd_last_thread+0x47/0x76
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f63a>] 
+:sunrpc:svc_destroy+0x8d/0xd1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f738>] 
+:sunrpc:svc_exit_thread+0xba/0xc6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8877595f>] 
+:nfsd:nfsd+0x2a3/0x2b8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802600f8>] 
+child_rip+0xa/0x12
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: ---------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: | preempt count: 00000000 ]
+Mar  5 23:53:52 static-81-17-177-202 kernel: | 0-level deep critical 
+section nesting:
+Mar  5 23:53:52 static-81-17-177-202 kernel: 
+----------------------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: BUG: using 
+smp_processor_id() in preemptible [00000000] code: nfsd/3939
+Mar  5 23:53:52 static-81-17-177-202 kernel: caller is 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: Call Trace:
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026d828>] 
+dump_trace+0xbd/0x3d8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026db87>] 
+show_trace+0x44/0x6d
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026ddc8>] 
+dump_stack+0x13/0x15
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff80355e2e>] 
+debug_smp_processor_id+0xe3/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e01b5>] 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e07ac>] 
+__cache_shrink+0xd5/0x1a6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e0a47>] 
+kmem_cache_destroy+0x6c/0xe3
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a809>] 
+:nfsd:nfsd4_free_slab+0x16/0x21
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a830>] 
+:nfsd:nfsd4_free_slabs+0x1c/0x36
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878baf9>] 
+:nfsd:nfs4_state_shutdown+0x1a2/0x1ae
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff887750f8>] 
+:nfsd:nfsd_last_thread+0x47/0x76
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f63a>] 
+:sunrpc:svc_destroy+0x8d/0xd1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f738>] 
+:sunrpc:svc_exit_thread+0xba/0xc6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8877595f>] 
+:nfsd:nfsd+0x2a3/0x2b8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802600f8>] 
+child_rip+0xa/0x12
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: ---------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: | preempt count: 00000001 ]
+Mar  5 23:53:52 static-81-17-177-202 kernel: | 1-level deep critical 
+section nesting:
+Mar  5 23:53:52 static-81-17-177-202 kernel: 
+----------------------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: .. [<ffffffff80355ddb>] 
+.... debug_smp_processor_id+0x90/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel: .....[<ffffffff802e01b5>] 
+..   ( <= drain_array+0x25/0x132)
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: BUG: using 
+smp_processor_id() in preemptible [00000000] code: nfsd/3939
+Mar  5 23:53:52 static-81-17-177-202 kernel: caller is 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: Call Trace:
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026d828>] 
+dump_trace+0xbd/0x3d8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026db87>] 
+show_trace+0x44/0x6d
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026ddc8>] 
+dump_stack+0x13/0x15
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff80355e2e>] 
+debug_smp_processor_id+0xe3/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e01b5>] 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e07ac>] 
+__cache_shrink+0xd5/0x1a6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e0a47>] 
+kmem_cache_destroy+0x6c/0xe3
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a809>] 
+:nfsd:nfsd4_free_slab+0x16/0x21
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a83c>] 
+:nfsd:nfsd4_free_slabs+0x28/0x36
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878baf9>] 
+:nfsd:nfs4_state_shutdown+0x1a2/0x1ae
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff887750f8>] 
+:nfsd:nfsd_last_thread+0x47/0x76
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f63a>] 
+:sunrpc:svc_destroy+0x8d/0xd1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f738>] 
+:sunrpc:svc_exit_thread+0xba/0xc6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8877595f>] 
+:nfsd:nfsd+0x2a3/0x2b8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802600f8>] 
+child_rip+0xa/0x12
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: ---------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: | preempt count: 00000001 ]
+Mar  5 23:53:52 static-81-17-177-202 kernel: | 1-level deep critical 
+section nesting:
+Mar  5 23:53:52 static-81-17-177-202 kernel: 
+----------------------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: .. [<ffffffff80355ddb>] 
+.... debug_smp_processor_id+0x90/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel: .....[<ffffffff802e01b5>] 
+..   ( <= drain_array+0x25/0x132)
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: BUG: using 
+smp_processor_id() in preemptible [00000000] code: nfsd/3939
+Mar  5 23:53:52 static-81-17-177-202 kernel: caller is 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: Call Trace:
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026d828>] 
+dump_trace+0xbd/0x3d8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026db87>] 
+show_trace+0x44/0x6d
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8026ddc8>] 
+dump_stack+0x13/0x15
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff80355e2e>] 
+debug_smp_processor_id+0xe3/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e01b5>] 
+drain_array+0x25/0x132
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e07ac>] 
+__cache_shrink+0xd5/0x1a6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802e0a47>] 
+kmem_cache_destroy+0x6c/0xe3
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a809>] 
+:nfsd:nfsd4_free_slab+0x16/0x21
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878a848>] 
+:nfsd:nfsd4_free_slabs+0x34/0x36
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8878baf9>] 
+:nfsd:nfs4_state_shutdown+0x1a2/0x1ae
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff887750f8>] 
+:nfsd:nfsd_last_thread+0x47/0x76
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f63a>] 
+:sunrpc:svc_destroy+0x8d/0xd1
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8867f738>] 
+:sunrpc:svc_exit_thread+0xba/0xc6
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff8877595f>] 
+:nfsd:nfsd+0x2a3/0x2b8
+Mar  5 23:53:52 static-81-17-177-202 kernel:  [<ffffffff802600f8>] 
+child_rip+0xa/0x12
+Mar  5 23:53:52 static-81-17-177-202 kernel:
+Mar  5 23:53:52 static-81-17-177-202 kernel: ---------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: | preempt count: 00000001 ]
+Mar  5 23:53:52 static-81-17-177-202 kernel: | 1-level deep critical 
+section nesting:
+Mar  5 23:53:52 static-81-17-177-202 kernel: 
+----------------------------------------
+Mar  5 23:53:52 static-81-17-177-202 kernel: .. [<ffffffff80355ddb>] 
+.... debug_smp_processor_id+0x90/0xf1
+Mar  5 23:53:52 static-81-17-177-202 kernel: .....[<ffffffff802e01b5>] 
+..   ( <= drain_array+0x25/0x132)
+Mar  5 23:53:52 static-81-17-177-202 kernel:
 
-> > yes, just like we have thousands of separate PC boards to support. 
-> > But as long as the basic ABI is the same, the QA effort on the Linux 
-> > kernel side is alot more focused.
-> 
-> xen and vmware are still two very different hypervisors from the 
-> memory mangement point of view.  I doubt moving the abstraction line 
-> within the linux kernel from paravirt_ops to vmi makes QA easier.
+BTW, I am kind of forced to use kernel-rt, as the official
+2.6.19 based Fedora kernel doesn't behave well on my machine.
+The mainboard is an ABit KN9 SLI. With that kernel, the USB
+keyboard gets crazy sometimes, repeating the last pressed key
+ad infinitum which although doesn't lock up the machine but
+makes it unusable as the keyboard doesn't get out of this state.
+Maybe the USB subsystem misses an IRQ ACK or some ACPI
+bug which is fixed in 2.6.20?
 
-well, the VMI patches got into Linux with the claim that it's also 
-useful for Xen. So that claim was ... not actually true?
+Best regards,
+Zoltán Böszörményi
 
-	Ingo
