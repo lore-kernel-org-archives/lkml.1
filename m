@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXCFA0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbXCFA0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbXCFA0O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 19:26:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932806AbXCFA0O
+	id S932806AbXCFA0X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 19:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXCFA0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 19:26:14 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42758 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932765AbXCFA0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 19:26:11 -0500
-Date: Mon, 5 Mar 2007 16:25:36 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch v2] epoll use a single inode ...
-In-Reply-To: <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0703051621590.3998@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
- <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 Mar 2007 19:26:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53532
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932809AbXCFA0V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 19:26:21 -0500
+Date: Mon, 05 Mar 2007 16:26:20 -0800 (PST)
+Message-Id: <20070305.162620.04006691.davem@davemloft.net>
+To: dmlb2000@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PAGE_SIZE Availability Inconsistency
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <9c21eeae0703051604l20a029c3r8cf09d792ba523be@mail.gmail.com>
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
+	<20070305.160303.59493440.davem@davemloft.net>
+	<9c21eeae0703051604l20a029c3r8cf09d792ba523be@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "David Brown" <dmlb2000@gmail.com>
+Date: Mon, 5 Mar 2007 16:04:24 -0800
 
-
-On Mon, 5 Mar 2007, Davide Libenzi wrote:
-
-> On Mon, 5 Mar 2007, Linus Torvalds wrote:
-> > 
-> > It's much better to do something like
-> > 
-> > 	static unsigned int epoll_inode;
-> > 
-> > 	this.len = sprintf(name, "[%u]", ++epoll_inode);
-> > 
-> > if you just need some pseudo-unique name to distinguish two epoll things 
-> > from each other (vs from a dup'ed fd).
+> On 3/5/07, David Miller <davem@davemloft.net> wrote:
+> > From: "David Brown" <dmlb2000@gmail.com>
+> > Date: Mon, 5 Mar 2007 15:55:06 -0800
+> >
+> > > I'm kinda wondering how I'm supposed to write portable user-space code
+> > > if I want to use the PAGE_SIZE define on different architectures.
+> >
+> > Call getpagesize().
+> >
 > 
-> Heh, this is what Al was saying ;)
-> I'm fine with that, but how about counter cycles (going back to zero)? 
-> Should we care to handle them correctly? 
+> Thanks, but that still leaves PAGE_SIZE available for some
+> architectures and not for others shouldn't this be moved inside
+> __KERNEL__ in i386 and x86_64 then?
 
-Since this is not actually *used* for anything but showing the fd's in 
-/proc/<pid>/fd/ etc, no. In fact, an integer will wrap a *lot* less than a 
-kernel data structure will be re-used, so even with the simple "wraps 
-every 4G uses", you're still better off.
-
-IOW, if the thing actually _mattered_ we should use some bitmap allocator 
-or similar (eg pidmaps etc), but with something where the only reason 
-really is as a visible indicator of difference for a user that happens to 
-look, simple-and-stupid is better.
-
-		Linus
+I definitely think so.
