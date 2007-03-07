@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992566AbXCGUwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992563AbXCGUyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992566AbXCGUwa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 15:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992565AbXCGUw2
+	id S2992563AbXCGUyE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 15:54:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992564AbXCGUyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 15:52:28 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:56394 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992570AbXCGUw0 (ORCPT
+	Wed, 7 Mar 2007 15:54:04 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34418 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992563AbXCGUyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 15:52:26 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux v2.6.21-rc3
-Date: Wed, 7 Mar 2007 21:52:26 +0100
-User-Agent: KMail/1.9.6
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <1173263132.9349.47.camel@localhost.localdomain> <Pine.LNX.4.64.0703070735240.5963@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703070735240.5963@woody.linux-foundation.org>
+	Wed, 7 Mar 2007 15:54:01 -0500
+Message-ID: <45EF2560.7090104@vmware.com>
+Date: Wed, 07 Mar 2007 12:49:36 -0800
+From: Dan Hecht <dhecht@vmware.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: James Morris <jmorris@namei.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	<45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	<20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com>	<1173178774.24738.311.camel@localhost.localdomain>	<45EDD82F.90204@vmware.com>	<1173225182.24738.507.camel@localhost.localdomain>	<45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com>	<1173228544.24738.514.camel@localhost.localdomain>	<45EE0D10.7070807@vmware.com>	<1173230305.24738.529.camel@localhost.localdomain>	<45EE1EA3.90803@vmware.com>	<1173256666.24738.576.camel@localhost.localdomain>	<45EEF966.6060902@goop.org>	<Line.LNX.4.64.0703071304080.1851@d.namei> <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com> <45EF1C80.50900@goop.org>
+In-Reply-To: <45EF1C80.50900@goop.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703072152.26479.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:bf0b512fe2ff06b96d9695102898be39
-X-Provags-ID2: V01U2FsdGVkX1/Fcr4SQ+jAUaQIAlO+VUvoy2BioGHqHZM73NC
- du07Rjlvk6pRnhnyEz/lUFIMqBh11pX9GmaIFsxDHch8Vy9Ifg
- 0m4bgKL8CSf1who98maow==
+X-OriginalArrivalTime: 07 Mar 2007 20:53:59.0943 (UTC) FILETIME=[BB09F170:01C760FA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 March 2007 16:39:00 Linus Torvalds wrote:
-> So did you hunt it down to a particular cases where it triggers?
+On 03/07/2007 12:11 PM, Jeremy Fitzhardinge wrote:
+> Dan Hecht wrote:
+>> Jeremy, I saw you sent out the Xen version earlier, thanks.  Here's
+>> ours for reference (please excuse any formating issues); it's also
+>> lean. We'll send out a proper patch later after some more testing:
+> 
+> So the interrupt side of the clockevent comes through the virtual apic? 
+> Where does evt->handle_event get called?
+> 
 
-IIRC, it crashed on boot in the powerpc iommu code when slab
-debugging is enabled. Not sure if it was on Cell or on benh's
-powerbook though.
-
-	Arnd <><
+Yeah, we use the same interrupt handlers as normal i386: timer_interrupt 
+and smp_apic_timer_interrupt.  That way we don't need to duplicate the 
+interrupt handler code.
