@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161105AbXCGHO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161081AbXCGHNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161105AbXCGHO0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:14:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161106AbXCGHO0
+	id S1161081AbXCGHNz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:13:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161092AbXCGHNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:14:26 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:52690 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161105AbXCGHOZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:14:25 -0500
-Message-ID: <45EE662D.4010701@zytor.com>
-Date: Tue, 06 Mar 2007 23:13:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 7 Mar 2007 02:13:55 -0500
+Received: from netcore.fi ([193.94.160.1]:35416 "EHLO netcore.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161081AbXCGHNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 02:13:54 -0500
+X-Greylist: delayed 1689 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 02:13:53 EST
+Date: Wed, 7 Mar 2007 08:42:39 +0200 (EET)
+From: Pekka Savola <pekkas@netcore.fi>
+To: Chris Friesen <cfriesen@nortel.com>
+cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, ak@muc.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, zach@vmware.com, rusty@rustcorp.com.au,
+       ian.pratt@xensource.com, Christian.Limpach@cl.cam.ac.uk,
+       netdev@vger.kernel.org, jeff@garzik.org
+Subject: Re: [RFC] ARP notify option
+In-Reply-To: <45EDDA8F.5060106@nortel.com>
+Message-ID: <Pine.LNX.4.64.0703070838010.8567@netcore.fi>
+References: <20070301164214.4a40bc59@freekitty> <45E7764A.7000100@goop.org>
+ <20070301173030.754514ec@freekitty> <20070305.203536.92584097.davem@davemloft.net>
+ <20070306105132.52c77491@freekitty> <45EDDA8F.5060106@nortel.com>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch v2] epoll use a single inode ...
-References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703060917500.5963@woody.linux-foundation.org> <200703061828.00253.dada1@cosmosbay.com> <200703061910.13431.dada1@cosmosbay.com> <45EDCD11.8070000@cosmosbay.com> <Pine.LNX.4.64.0703061944590.5963@woody.linux-foundation.org> <45EE624A.8040407@cosmosbay.com>
-In-Reply-To: <45EE624A.8040407@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Linus Torvalds a écrit :
->>
->> On Tue, 6 Mar 2007, Eric Dumazet wrote:
->>> I did a user space program, attached to this mail.
->>>
->>> I rewrote the reciprocal_div() for i386 so that one multiply is used.
->>
->> Ok, this is definitely faster on Core 2 as well, so "numbers talk, 
->> bullshit walks". No more objections.
-> 
-> And the numbers were ? :)
-> 
->>
->> (That said, I bet you could do even better for octal and hex numbers, 
->> so if you *really* want to speed things up, you should just make a 
->> special-case routine for each base (there's just three of them), and 
->> you can then also optimize the base-10 thing much better (you can do 
->> two digits at a time by dividing by 100, etc)
-> 
-> Well, given that sprintf() is frequently called only for pipe/sockets 
-> creation, we probably better :
-> 
-> 1) wait a very clever idea to suppress individual dentry per 
-> pipe/sockets (no more sprintf() at pipe/socket setup)
-> 
-> 2) delay the sprintf() only if needed as you mentioned in a previous 
-> mail (when someone wants ls -l /proc/pid/fd/....), since their dentries 
-> are not anymore inserted in the global dcache hash, they could stay with 
-> a (nul) dname.
+On Tue, 6 Mar 2007, Chris Friesen wrote:
+> Stephen Hemminger wrote:
+>>  +arp_notify - BOOLEAN
+>>  +	Define mode for notification of address and device changes.
+>>  +	0 - (default): do nothing
+>>  +	1 - Generate gratuitous arp replies when device is brought up
+>>  +	    or hardware address changes.
+>
+> Did you consider using gratuitous arp requests instead?  I remember reading 
+> about some hardware that updated its arp cache on gratuitous requests but not 
+> gratuitous replies.
 
-Yes, the right thing to do is probably to only generate these strings 
-when someone tries to list them, not on every socket/pipe/epoll 
-creation.  One can assign a counter and keep it as a binary value at the 
-start, but create the strings when necessary.
+You might be interested in taking a look at:
 
-	-hpa
+http://tools.ietf.org/id/draft-cheshire-ipv4-acd
 
+There has been some follow-up discussion on this in the thread 
+starting at:
+
+http://www1.ietf.org/mail-archive/web/int-area/current/msg00611.html
+
+In particular, you may be interested in this comment about ARP 
+request and ARP reply for gratuitous ARP:
+
+http://www1.ietf.org/mail-archive/web/int-area/current/msg00669.html
+
+-- 
+Pekka Savola                 "You each name yourselves king, yet the
+Netcore Oy                    kingdom bleeds."
+Systems. Networks. Security. -- George R.R. Martin: A Clash of Kings
