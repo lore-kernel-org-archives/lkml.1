@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422908AbXCGRUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422890AbXCGRTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422908AbXCGRUB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422905AbXCGRT5
+	id S1422890AbXCGRTF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:19:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422908AbXCGRSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:19:57 -0500
-Received: from verein.lst.de ([213.95.11.210]:52909 "EHLO mail.lst.de"
+	Wed, 7 Mar 2007 12:18:45 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43756 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422940AbXCGRTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:19:08 -0500
-Date: Wed, 7 Mar 2007 18:15:47 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Michael Nishimoto <miken@agami.com>
-Cc: Christoph Hellwig <hch@lst.de>, xfs@oss.sgi.com, ecashin@coraid.com,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] xfs: stop using kmalloc in xfs_buf_get_noaddr
-Message-ID: <20070307171547.GA22641@lst.de>
-References: <20070307101324.GC30587@lst.de> <45EEF0B5.40905@agami.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45EEF0B5.40905@agami.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+	id S1422890AbXCGRSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:18:09 -0500
+Message-Id: <20070307171628.356761999@mini.kroah.org>
+References: <20070307171035.150802805@mini.kroah.org>
+User-Agent: quilt/0.45-1
+Date: Wed, 07 Mar 2007 09:12:03 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       mathieu.desnoyers@polymtl.ca, zippel@linux-m68k.org, tglx@linutronix.de,
+       mingo@elte.hu
+Subject: [patch 088/101] kernel/time/clocksource.c needs struct task_struct on m68k
+Content-Disposition: inline; filename=kernel-time-clocksource.c-needs-struct-task_struct-on-m68k.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 09:04:53AM -0800, Michael Nishimoto wrote:
-> Incore log buffers are not always a power of two of the page size.
-> In particular, when xfs is running over software raid devices, the
-> log buffers are allocated to match the size of a stripe.
-> 
-> However, they are always a multiple of PAGE_SIZE, so we are still safe.
 
-It's not actually about beeing safe - any allocation is still safe
-with this patch.  The issue is just that we waste memory because
-we round up allocations to the next page size.
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-The power of two bit is actually wrong in this mail, it was about
-another optimization I have that needs some more testing first.
+kernel/time/clocksource.c needs struct task_struct on m68k.
 
+Because it uses spin_unlock_irq(), which, on m68k, uses hardirq_count(), which
+uses preempt_count(), which needs to dereference struct task_struct, we
+have to include sched.h. Because it would cause a loop inclusion, we
+cannot include sched.h in any other of asm-m68k/system.h,
+linux/thread_info.h, linux/hardirq.h, which leaves this ugly include in
+a C file as the only simple solution.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ kernel/time/clocksource.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-2.6.20.1.orig/kernel/time/clocksource.c
++++ linux-2.6.20.1/kernel/time/clocksource.c
+@@ -28,6 +28,7 @@
+ #include <linux/sysdev.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
++#include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
+ 
+ /* XXX - Would like a better way for initializing curr_clocksource */
+ extern struct clocksource clocksource_jiffies;
+
+--
