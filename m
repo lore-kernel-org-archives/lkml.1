@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422760AbXCGSBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422967AbXCGSB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422760AbXCGSBw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422963AbXCGSAS
+	id S1422967AbXCGSB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422766AbXCGSBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:00:18 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43389 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 13:01:54 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46116 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422760AbXCGRNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:13:32 -0500
-Message-Id: <20070307171146.761038818@mini.kroah.org>
-References: <20070307171035.150802805@mini.kroah.org>
-User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:10:44 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>
-Subject: [patch 009/101] bcm43xx: Fix for oops on resume
-Content-Disposition: inline; filename=bcm43xx-fix-for-oops-on-resume.patch
+	id S1422889AbXCGSBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 13:01:14 -0500
+Date: Wed, 7 Mar 2007 10:00:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Nick Piggin <npiggin@suse.de>, Miklos Szeredi <miklos@szeredi.hu>,
+       akpm@linux-foundation.org, mingo@elte.hu, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       Jeff Dike <jdike@addtoit.com>, hugh <hugh@veritas.com>
+Subject: Re: [RFC][PATCH] mm: fix page_mkclean() vs non-linear vmas
+In-Reply-To: <1173286682.6374.191.camel@twins>
+Message-ID: <Pine.LNX.4.64.0703070959430.5963@woody.linux-foundation.org>
+References: <1173264462.6374.140.camel@twins>  <20070307110035.GE5555@wotan.suse.de>
+ <1173268086.6374.157.camel@twins>  <20070307121730.GC18704@wotan.suse.de>
+ <1173271286.6374.166.camel@twins>  <20070307130851.GE18704@wotan.suse.de>
+ <1173273562.6374.175.camel@twins>  <20070307133649.GF18704@wotan.suse.de>
+ <1173275532.6374.183.camel@twins>  <1173278067.6374.188.camel@twins> 
+ <20070307150102.GH18704@wotan.suse.de> <1173286682.6374.191.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-There is a kernel oops on bcm43xx when resuming due to an overly tight timeout loop.
 
-Signed-off-by: Larry Finger<Larry.Finger@lwfinger.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+On Wed, 7 Mar 2007, Peter Zijlstra wrote:
+> 
+> I'm not at all happy with this, but plain disallowing remap_file_pages on bdis
+> without BDI_CAP_NO_WRITEBACK seems to offend some people, hence restrict it to
+> root only.
 
----
- drivers/net/wireless/bcm43xx/bcm43xx.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I don't think that's a viable approach. Nonlinear mappings would normally 
+be used by databases, and you don't want to limit databases to be run by 
+root only.
 
---- linux-2.6.20.1.orig/drivers/net/wireless/bcm43xx/bcm43xx.h
-+++ linux-2.6.20.1/drivers/net/wireless/bcm43xx/bcm43xx.h
-@@ -21,7 +21,7 @@
- #define PFX				KBUILD_MODNAME ": "
- 
- #define BCM43xx_SWITCH_CORE_MAX_RETRIES	50
--#define BCM43xx_IRQWAIT_MAX_RETRIES	50
-+#define BCM43xx_IRQWAIT_MAX_RETRIES	100
- 
- #define BCM43xx_IO_SIZE			8192
- 
-
---
+		Linus
