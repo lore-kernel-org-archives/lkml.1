@@ -1,183 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161238AbXCGCfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161231AbXCGCfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161238AbXCGCfw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 21:35:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161235AbXCGCfn
+	id S1161231AbXCGCfm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 21:35:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161240AbXCGCfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 21:35:43 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38119 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1161227AbXCGCfQ (ORCPT
+	Tue, 6 Mar 2007 21:35:41 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:57651 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161231AbXCGCfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 21:35:16 -0500
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@osdl.org
-Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Christoph Lameter <clameter@sgi.com>,
-       mpm@selenic.com, Manfred Spraul <manfred@colorfullife.com>
-Message-Id: <20070307023513.19658.81228.sendpatchset@schroedinger.engr.sgi.com>
-In-Reply-To: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
-References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
-Subject: [SLUB 2/3] Large kmalloc pass through. Removal of large general slabs
-Date: Tue,  6 Mar 2007 18:35:16 -0800 (PST)
+	Tue, 6 Mar 2007 21:35:39 -0500
+Message-ID: <45EE24FA.7090002@vmware.com>
+Date: Tue, 06 Mar 2007 18:35:38 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>, Ingo Molnar <mingo@elte.hu>
+CC: Gerd Hoffmann <kraxel@suse.de>,
+       virtualization <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+Subject: Re: Xen & VMI?
+References: <45ECC076.9050209@goop.org> <45ECC91D.1020809@vmware.com> <45ECC9B6.1060209@goop.org> <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de> <20070306085222.GA17002@elte.hu> <20070306194612.GG19575@sequoia.sous-sol.org> <20070306203018.GA21736@elte.hu> <20070306205351.GA10574@sequoia.sous-sol.org> <20070306210334.GC26348@elte.hu> <20070306212855.GB10574@sequoia.sous-sol.org>
+In-Reply-To: <20070306212855.GB10574@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unlimited kmalloc size and removal of general caches >=4.
+Chris Wright wrote:
+> I agree that changing the interface to the low-level platform is tricky
+> and less isolated.  But how does the VMI protect you from those changes?
+> It simply doesn't, the changes are still necessary.  And the inflexibility
+> means the tough corner cases swept under the VMI rug are more difficult
+> to debug, get right, etc...
+>   
 
-We can directly use the page allocator for all allocations 4K and larger. This
-means that no general slabs are necessary and the size of the allocation passed
-to kmalloc() can be arbitrarily large. Remove the useless general caches over 4k.
+I actually disagree here.  Yes, it will change over time.  VMI was 
+designed to be extensible and flexible - you can omit implementation for 
+any calls you don't require, and with consensus, you can add new flags, 
+fields, and calls where you need them.  But VMI as it stands today is 
+simply not sufficient to support the hypervisors which are here now.  
+There are gaps, particularly with SMP support, which require significant 
+changes to either the hypervisors, the kernel, or the VMI itself.  There 
+are many reasons these gaps still exist, but most prominently, the big 
+reason is that nobody wanted to use a single ABI to interface to the 
+hypervisor a year ago when we first proposed the VMI interface as a 
+virtualization solution for Linux.  In the end, I see no reason the 
+technical issues can't be solved, but the larger questions about the 
+future evolution of the interface and also some largely non-technical 
+points, valid or not, have stalled the growth which we originally desired.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+At this point, the question of whether to pursue a common ABI is no 
+longer a technical issue, it's no longer a management or evolutionary 
+issue at all.  It's a pragmatic issue about getting code that works into 
+Linux today.  It's about working together using what we have as a base, 
+which is paravirt-ops, to get working code to users.  We can always 
+evolve the code in tree if we find a workable cross-vendor ABI that 
+solves everyone's problems.  But that is neither here nor there, because 
+it isn't here today.
 
-Index: linux-2.6.21-rc2-mm1/mm/slub.c
-===================================================================
---- linux-2.6.21-rc2-mm1.orig/mm/slub.c	2007-03-06 17:56:50.000000000 -0800
-+++ linux-2.6.21-rc2-mm1/mm/slub.c	2007-03-06 17:57:11.000000000 -0800
-@@ -1101,6 +1101,13 @@ void kmem_cache_free(struct kmem_cache *
- 	if (unlikely(PageCompound(page)))
- 		page = page->first_page;
- 
-+	if (unlikely(!PageSlab(page))) {
-+		if (x == page_address(page)) {
-+			put_page(page);
-+			return;
-+		}
-+	}
-+
- 	if (!s)
- 		s = page->slab;
- 
-@@ -1678,7 +1685,8 @@ static struct kmem_cache *get_slab(size_
- 	/* SLAB allows allocations with zero size. So warn on those */
- 	WARN_ON(size == 0);
- 	/* Allocation too large? */
--	BUG_ON(index < 0);
-+	if (index < 0)
-+		return NULL;
- 
- #ifdef CONFIG_ZONE_DMA
- 	if ((flags & SLUB_DMA)) {
-@@ -1722,15 +1730,32 @@ static struct kmem_cache *get_slab(size_
- 
- void *__kmalloc(size_t size, gfp_t flags)
- {
--	return kmem_cache_alloc(get_slab(size, flags), flags);
-+	struct kmem_cache *s = get_slab(size, flags);
-+	struct page *page;
-+
-+	if (s)
-+		return kmem_cache_alloc(s, flags);
-+
-+	page = alloc_pages(flags, get_order(size));
-+	if (!page)
-+		return NULL;
-+	return page_address(page);
- }
- EXPORT_SYMBOL(__kmalloc);
- 
- #ifdef CONFIG_NUMA
- void *__kmalloc_node(size_t size, gfp_t flags, int node)
- {
--	return kmem_cache_alloc_node(get_slab(size, flags),
--							flags, node);
-+	struct kmem_cache *s = get_slab(size, flags);
-+	struct page *page;
-+
-+	if (s)
-+		return kmem_cache_alloc_node(s, flags, node);
-+
-+	page = alloc_pages_node(node, flags, get_order(size));
-+	if (!page)
-+		return NULL;
-+	return page_address(page);
- }
- EXPORT_SYMBOL(__kmalloc_node);
- #endif
-Index: linux-2.6.21-rc2-mm1/include/linux/slub_def.h
-===================================================================
---- linux-2.6.21-rc2-mm1.orig/include/linux/slub_def.h	2007-03-06 17:56:14.000000000 -0800
-+++ linux-2.6.21-rc2-mm1/include/linux/slub_def.h	2007-03-06 17:57:11.000000000 -0800
-@@ -55,7 +55,7 @@ struct kmem_cache {
-  */
- #define KMALLOC_SHIFT_LOW 3
- 
--#define KMALLOC_SHIFT_HIGH 18
-+#define KMALLOC_SHIFT_HIGH 11
- 
- #if L1_CACHE_BYTES <= 64
- #define KMALLOC_EXTRAS 2
-@@ -93,13 +93,6 @@ static inline int kmalloc_index(int size
- 	if (size <=  512) return 9;
- 	if (size <= 1024) return 10;
- 	if (size <= 2048) return 11;
--	if (size <= 4096) return 12;
--	if (size <=   8 * 1024) return 13;
--	if (size <=  16 * 1024) return 14;
--	if (size <=  32 * 1024) return 15;
--	if (size <=  64 * 1024) return 16;
--	if (size <= 128 * 1024) return 17;
--	if (size <= 256 * 1024) return 18;
- 	return -1;
- }
- 
-@@ -113,14 +106,8 @@ static inline struct kmem_cache *kmalloc
- {
- 	int index = kmalloc_index(size) - KMALLOC_SHIFT_LOW;
- 
--	if (index < 0) {
--		/*
--		 * Generate a link failure. Would be great if we could
--		 * do something to stop the compile here.
--		 */
--		extern void __kmalloc_size_too_large(void);
--		__kmalloc_size_too_large();
--	}
-+	if (index < 0)
-+		return NULL;
- 	return &kmalloc_caches[index];
- }
- 
-@@ -136,9 +123,10 @@ static inline void *kmalloc(size_t size,
- 	if (__builtin_constant_p(size) && !(flags & SLUB_DMA)) {
- 		struct kmem_cache *s = kmalloc_slab(size);
- 
--		return kmem_cache_alloc(s, flags);
--	} else
--		return __kmalloc(size, flags);
-+		if (s)
-+			return kmem_cache_alloc(s, flags);
-+	}
-+	return __kmalloc(size, flags);
- }
- 
- static inline void *kzalloc(size_t size, gfp_t flags)
-@@ -146,9 +134,10 @@ static inline void *kzalloc(size_t size,
- 	if (__builtin_constant_p(size) && !(flags & SLUB_DMA)) {
- 		struct kmem_cache *s = kmalloc_slab(size);
- 
--		return kmem_cache_zalloc(s, flags);
--	} else
--		return __kzalloc(size, flags);
-+		if (s)
-+			return kmem_cache_zalloc(s, flags);
-+	}
-+	return __kzalloc(size, flags);
- }
- 
- #ifdef CONFIG_NUMA
-@@ -159,9 +148,10 @@ static inline void *kmalloc_node(size_t 
- 	if (__builtin_constant_p(size) && !(flags & SLUB_DMA)) {
- 		struct kmem_cache *s = kmalloc_slab(size);
- 
--		return kmem_cache_alloc_node(s, flags, node);
--	} else
--		return __kmalloc_node(size, flags, node);
-+		if (s)
-+			return kmem_cache_alloc_node(s, flags, node);
-+	}
-+	return __kmalloc_node(size, flags, node);
- }
- #endif
- 
+Zach
