@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422931AbXCGR2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422887AbXCGR2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422931AbXCGR2B (ORCPT <rfc822;w@1wt.eu>);
+	id S1422887AbXCGR2B (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 7 Mar 2007 12:28:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422887AbXCGRRu
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422886AbXCGRRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:17:50 -0500
-Received: from ns1.suse.de ([195.135.220.2]:44301 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:17:21 -0500
+Received: from mx2.suse.de ([195.135.220.15]:43594 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422894AbXCGRRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:17:39 -0500
-Message-Id: <20070307171601.477163034@mini.kroah.org>
+	id S1422885AbXCGRRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:17:12 -0500
+Message-Id: <20070307171532.880767304@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:55 -0800
+Date: Wed, 07 Mar 2007 09:11:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,70 +22,157 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, neilb@suse.de, kas@fi.muni.cz,
-       Trond.Myklebust@netapp.com, Andrew Morton <akpm@osdl.org>
-Subject: [patch 080/101] NLM: Fix double free in __nlm_async_call
-Content-Disposition: inline; filename=nlm-fix-double-free-in-__nlm_async_call.patch
+       alan@lxorguk.ukuu.org.uk,
+       Aristeu Sergio Rozanski Filho <aris@ruivo.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 074/101] tty_io: fix race in master pty close/slave pty close path
+Content-Disposition: inline; filename=tty_io-fix-race-in-master-pty-close-slave-pty-close-path.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Aristeu Sergio Rozanski Filho <aristeu.sergio@gmail.com>
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+[PATCH] tty_io: fix race in master pty close/slave pty close path
 
-rpc_call_async() will always call rpc_release_calldata(), so it is an
-error for __nlm_async_call() to do so as well.
+This patch fixes a possible race that leads to double freeing an idr index.
+ When the master begin to close, release_dev() is called and then
+pty_close() is called:
 
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=7923
+        if (tty->driver->close)
+                tty->driver->close(tty, filp);
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Jan "Yenya" Kasprzak <kas@fi.muni.cz>
-Cc: Neil Brown <neilb@suse.de>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
+This is done without helding any locks other than BKL.  Inside pty_close(),
+being a master close, the devpts entry will be removed:
+
+#ifdef CONFIG_UNIX98_PTYS
+                if (tty->driver == ptm_driver)
+                        devpts_pty_kill(tty->index);
+#endif
+
+But devpts_pty_kill() will call get_node() that may sleep while waiting for
+&devpts_root->d_inode->i_sem.  When this happens and the slave is being
+opened, tty_open() just found the driver and index:
+
+        driver = get_tty_driver(device, &index);
+        if (!driver) {
+                mutex_unlock(&tty_mutex);
+                return -ENODEV;
+        }
+
+This part of the code is already protected under tty_mute.  The problem is
+that the slave close already got an index.  Then init_dev() is called and
+blocks waiting for the same &devpts_root->d_inode->i_sem.
+
+When the master close resumes, it removes the devpts entry, and the
+relation between idr index and the tty is gone.  The master then sleeps
+waiting for the tty_mutex on release_dev().
+
+Slave open resumes and found no tty for that index.  As result, a NULL tty
+is returned and init_dev() doesn't flow to fast_track:
+
+        /* check whether we're reopening an existing tty */
+        if (driver->flags & TTY_DRIVER_DEVPTS_MEM) {
+                tty = devpts_get_tty(idx);
+                if (tty && driver->subtype == PTY_TYPE_MASTER)
+                        tty = tty->link;
+        } else {
+                tty = driver->ttys[idx];
+        }
+        if (tty) goto fast_track;
+
+The result of this, is that a new tty will be created and init_dev() returns
+sucessfull. After returning, tty_mutex is dropped and master close may resume.
+
+Master close finds it's the only use and both sides are closing, then releases
+the tty and the index. At this point, the idr index is free, but slave still
+has it.
+
+Slave open then calls pty_open() and finds that tty->link->count is 0,
+because there's no master and returns error.  Then tty_open() calls
+release_dev() which executes without any warning, as it was a case of last
+slave close when the master is already closed (master->count == 0,
+slave->count == 1).  The tty is then released with the already released idr
+index.
+
+This normally would only issue a warning on idr_remove() but in case of a
+customer's critical application, it's never too simple:
+
+thread1: opens master, gets index X
+thread1: begin closing master
+thread2: begin opening slave with index X
+thread1: finishes closing master, index X released
+thread3: opens master, gets index X, just released
+thread2: fails opening slave, releases index X         <----
+thread4: opens master, gets index X, init_dev() then find an already in use
+	 and healthy tty and fails
+
+If no more indexes are released, ptmx_open() will keep failing, as the
+first free index available is X, and it will make init_dev() fail because
+you're trying to "reopen a master" which isn't valid.
+
+The patch notices when this race happens and make init_dev() fail
+imediately.  The init_dev() function is called with tty_mutex held, so it's
+safe to continue with tty till the end of function because release_dev()
+won't make any further changes without grabbing the tty_mutex.
+
+Without the patch, on some machines it's possible get easily idr warnings
+like this one:
+
+idr_remove called for id=15 which is not allocated.
+ [<c02555b9>] idr_remove+0x139/0x170
+ [<c02a1b62>] release_mem+0x182/0x230
+ [<c02a28e7>] release_dev+0x4b7/0x700
+ [<c02a0ea7>] tty_ldisc_enable+0x27/0x30
+ [<c02a1e64>] init_dev+0x254/0x580
+ [<c02a0d64>] check_tty_count+0x14/0xb0
+ [<c02a4f05>] tty_open+0x1c5/0x340
+ [<c02a4d40>] tty_open+0x0/0x340
+ [<c017388f>] chrdev_open+0xaf/0x180
+ [<c017c2ac>] open_namei+0x8c/0x760
+ [<c01737e0>] chrdev_open+0x0/0x180
+ [<c0167bc9>] __dentry_open+0xc9/0x210
+ [<c0167e2c>] do_filp_open+0x5c/0x70
+ [<c0167a91>] get_unused_fd+0x61/0xd0
+ [<c0167e93>] do_sys_open+0x53/0x100
+ [<c0167f97>] sys_open+0x27/0x30
+ [<c010303b>] syscall_call+0x7/0xb
+
+using this test application available on:
+ http://www.ruivo.org/~aris/pty_sodomizer.c
+
+Signed-off-by: Aristeu Sergio Rozanski Filho <aris@ruivo.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/lockd/clntproc.c |    9 +++------
- fs/lockd/svclock.c  |    4 +---
- 2 files changed, 4 insertions(+), 9 deletions(-)
+ drivers/char/tty_io.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
---- linux-2.6.20.1.orig/fs/lockd/clntproc.c
-+++ linux-2.6.20.1/fs/lockd/clntproc.c
-@@ -361,7 +361,6 @@ static int __nlm_async_call(struct nlm_r
- {
- 	struct nlm_host	*host = req->a_host;
- 	struct rpc_clnt	*clnt;
--	int status = -ENOLCK;
- 
- 	dprintk("lockd: call procedure %d on %s (async)\n",
- 			(int)proc, host->h_name);
-@@ -373,12 +372,10 @@ static int __nlm_async_call(struct nlm_r
- 	msg->rpc_proc = &clnt->cl_procinfo[proc];
- 
-         /* bootstrap and kick off the async RPC call */
--        status = rpc_call_async(clnt, msg, RPC_TASK_ASYNC, tk_ops, req);
--	if (status == 0)
--		return 0;
-+        return rpc_call_async(clnt, msg, RPC_TASK_ASYNC, tk_ops, req);
- out_err:
--	nlm_release_call(req);
--	return status;
-+	tk_ops->rpc_release(req);
-+	return -ENOLCK;
- }
- 
- int nlm_async_call(struct nlm_rqst *req, u32 proc, const struct rpc_call_ops *tk_ops)
---- linux-2.6.20.1.orig/fs/lockd/svclock.c
-+++ linux-2.6.20.1/fs/lockd/svclock.c
-@@ -593,9 +593,7 @@ callback:
- 
- 	/* Call the client */
- 	kref_get(&block->b_count);
--	if (nlm_async_call(block->b_call, NLMPROC_GRANTED_MSG,
--						&nlmsvc_grant_ops) < 0)
--		nlmsvc_release_block(block);
-+	nlm_async_call(block->b_call, NLMPROC_GRANTED_MSG, &nlmsvc_grant_ops);
- }
- 
- /*
+--- linux-2.6.20.1.orig/drivers/char/tty_io.c
++++ linux-2.6.20.1/drivers/char/tty_io.c
+@@ -1891,6 +1891,20 @@ static int init_dev(struct tty_driver *d
+ 	/* check whether we're reopening an existing tty */
+ 	if (driver->flags & TTY_DRIVER_DEVPTS_MEM) {
+ 		tty = devpts_get_tty(idx);
++		/*
++		 * If we don't have a tty here on a slave open, it's because
++		 * the master already started the close process and there's
++		 * no relation between devpts file and tty anymore.
++		 */
++		if (!tty && driver->subtype == PTY_TYPE_SLAVE) {
++			retval = -EIO;
++			goto end_init;
++		}
++		/*
++		 * It's safe from now on because init_dev() is called with
++		 * tty_mutex held and release_dev() won't change tty->count
++		 * or tty->flags without having to grab tty_mutex
++		 */
+ 		if (tty && driver->subtype == PTY_TYPE_MASTER)
+ 			tty = tty->link;
+ 	} else {
 
 --
