@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030528AbXCGObS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030621AbXCGOgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030528AbXCGObS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 09:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030500AbXCGObR
+	id S1030621AbXCGOgJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 09:36:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030622AbXCGOgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 09:31:17 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39351 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030474AbXCGObP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 09:31:15 -0500
-Subject: [GFS2] Fix bz 229873, alternate test: assertion
-	"!ip->i_inode.i_mapping->nrpages" failed [12/12]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: Abhijith Das <adas@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1173277501.11001.752.camel@quoit.chygwyn.com>
-References: <1173277501.11001.752.camel@quoit.chygwyn.com>
+	Wed, 7 Mar 2007 09:36:08 -0500
+Received: from amsfep15-int.chello.nl ([62.179.120.10]:59853 "EHLO
+	amsfep15-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030621AbXCGOgG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 09:36:06 -0500
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
+	nonlinear)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org, Jeff Dike <jdike@addtoit.com>
+In-Reply-To: <1173275532.6374.183.camel@twins>
+References: <20070307102106.GB5555@wotan.suse.de>
+	 <1173263085.6374.132.camel@twins> <20070307103842.GD5555@wotan.suse.de>
+	 <1173264462.6374.140.camel@twins> <20070307110035.GE5555@wotan.suse.de>
+	 <1173268086.6374.157.camel@twins> <20070307121730.GC18704@wotan.suse.de>
+	 <1173271286.6374.166.camel@twins> <20070307130851.GE18704@wotan.suse.de>
+	 <1173273562.6374.175.camel@twins>  <20070307133649.GF18704@wotan.suse.de>
+	 <1173275532.6374.183.camel@twins>
 Content-Type: text/plain
-Organization: Red Hat (UK) Ltd
-Date: Wed, 07 Mar 2007 14:34:19 +0000
-Message-Id: <1173278059.11001.776.camel@quoit.chygwyn.com>
+Date: Wed, 07 Mar 2007 15:34:27 +0100
+Message-Id: <1173278067.6374.188.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From c3f49bc209b28d2b5f82b78baaa827eb3a4d1891 Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Wed, 7 Mar 2007 09:06:48 +0000
-Subject: [PATCH] [GFS2] Fix bz 229873, alternate test: assertion "!ip->i_inode.i_mapping->nrpages" failed
+On Wed, 2007-03-07 at 14:52 +0100, Peter Zijlstra wrote:
 
-The following removes an incorrect assertion from the GFS2 glops code. This
-fixes Red Hat bz 229873. Thanks to Abhijith Das for testing the patch
-and confirming the fix.
+> True. We could even guesstimate the nonlinear dirty pages by subtracting
+> the result of page_mkclean() from page_mapcount() and force an
+> msync(MS_ASYNC) on said mapping (or all (nonlinear) mappings of the
+> related file) when some threshold gets exceeded.
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Abhijith Das <adas@redhat.com>
+Almost, but not quite, we'd need to extract another value from the
+page_mkclean() run, the actual number of mappings encountered. The
+return value only sums the number of dirty mappings encountered.
 
-diff --git a/fs/gfs2/glops.c b/fs/gfs2/glops.c
-index 4221110..39c8ae2 100644
---- a/fs/gfs2/glops.c
-+++ b/fs/gfs2/glops.c
-@@ -245,7 +245,6 @@ static void inode_go_inval(struct gfs2_glock *gl, int flags)
- 
- 	if (ip && S_ISREG(ip->i_inode.i_mode)) {
- 		truncate_inode_pages(ip->i_inode.i_mapping, 0);
--		gfs2_assert_withdraw(GFS2_SB(&ip->i_inode), !ip->i_inode.i_mapping->nrpages);
- 		clear_bit(GIF_PAGED, &ip->i_flags);
- 	}
- }
--- 
-1.4.4.2
+s390 would already work I guess.
 
-
+Certainly doable.
 
