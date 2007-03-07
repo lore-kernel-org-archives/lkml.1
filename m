@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992688AbXCGWlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992691AbXCGWlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992688AbXCGWlg (ORCPT <rfc822;w@1wt.eu>);
+	id S2992691AbXCGWlg (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 7 Mar 2007 17:41:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992700AbXCGWlS
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992688AbXCGWlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 17:41:18 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52715 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992688AbXCGWlL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:41:11 -0500
-Date: Wed, 7 Mar 2007 23:41:11 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, drzeus-mmc@drzeus.cx
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC: -mm patch] #if 0 mmc_deselect_cards()
-Message-ID: <20070307224111.GD3441@stusta.de>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 7 Mar 2007 17:41:20 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35351 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992694AbXCGWlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 17:41:12 -0500
+Date: Wed, 7 Mar 2007 14:41:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Petr =?ISO-8859-1?Q?Tesa=5F=5F=EDk?= <ptesarik@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] remove_arg_zero() rewrite
+Message-Id: <20070307144101.f97cfa53.akpm@linux-foundation.org>
+In-Reply-To: <1173305397.4868.4.camel@lappy>
+References: <1171978145.22720.21.camel@golias.tesarici.cz>
+	<20070221154159.d316d526.akpm@linux-foundation.org>
+	<1173305397.4868.4.camel@lappy>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 12:44:08AM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.20-rc2-mm1:
->...
->  git-mmc.patch
->...
->  git trees
->...
+On Wed, 07 Mar 2007 23:09:57 +0100
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-mmc_deselect_cards() is no longer used.
+> On Wed, 2007-02-21 at 15:41 -0800, Andrew Morton wrote:
+> 
+> > I mean.... what the hell?
+> > 
+> > As you appear to have managed to work out what the sorry thing is trying to
+> > do, would you have time to simply rip it out and completely rewrite it,
+> > including a nice comment telling the world what this function's function is?
+> > 
+> > Because what we have there is beyond repairing.
+> 
+> Something like so?
+> Boots uml seemingly without errors.
+> 
+> ---
+> Rewrite remove_arg_zero() to be more parseable by untwisted minds.
+> 
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Sorry, Nick already had a go at this:
 
----
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm2/broken-out/exec-fix-remove_arg_zero.patch
 
- drivers/mmc/core/mmc_ops.c |    2 ++
- drivers/mmc/core/mmc_ops.h |    1 -
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
---- linux-2.6.21-rc2-mm2/drivers/mmc/core/mmc_ops.h.old	2007-03-07 00:55:48.000000000 +0100
-+++ linux-2.6.21-rc2-mm2/drivers/mmc/core/mmc_ops.h	2007-03-07 00:55:54.000000000 +0100
-@@ -13,7 +13,6 @@
- #define _MMC_MMC_OPS_H
- 
- int mmc_select_card(struct mmc_card *card);
--int mmc_deselect_cards(struct mmc_host *host);
- int mmc_go_idle(struct mmc_host *host);
- int mmc_send_op_cond(struct mmc_host *host, u32 ocr, u32 *rocr);
- int mmc_all_send_cid(struct mmc_host *host, u32 *cid);
---- linux-2.6.21-rc2-mm2/drivers/mmc/core/mmc_ops.c.old	2007-03-07 00:56:00.000000000 +0100
-+++ linux-2.6.21-rc2-mm2/drivers/mmc/core/mmc_ops.c	2007-03-07 00:56:22.000000000 +0100
-@@ -53,10 +53,12 @@
- 	return _mmc_select_card(card->host, card);
- }
- 
-+#if 0
- int mmc_deselect_cards(struct mmc_host *host)
- {
- 	return _mmc_select_card(host, NULL);
- }
-+#endif  /*  0  */
- 
- int mmc_go_idle(struct mmc_host *host)
- {
+But your patch has a nice comment and has to be better ;)
 
