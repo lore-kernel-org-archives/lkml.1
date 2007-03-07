@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992432AbXCGSON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992434AbXCGSRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992432AbXCGSON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992431AbXCGSON
+	id S2992434AbXCGSRN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:17:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992435AbXCGSRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:14:13 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42552 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992432AbXCGSOL (ORCPT
+	Wed, 7 Mar 2007 13:17:12 -0500
+Received: from mo-p07-ob.rzone.de ([81.169.146.188]:20935 "EHLO
+	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992434AbXCGSRK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:14:11 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
+	Wed, 7 Mar 2007 13:17:10 -0500
+From: Oliver Neukum <oliver@neukum.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Yinghai Lu <yinghai.lu@amd.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] x86_64 irq: keep consistent for changing IRQ0_VECTOR from 0x20 to 0x30
-References: <86802c440703052359q3242f771ne9c10752613820d3@mail.gmail.com>
-	<Pine.LNX.4.64.0703061942000.5963@woody.linux-foundation.org>
-Date: Wed, 07 Mar 2007 11:13:34 -0700
-In-Reply-To: <Pine.LNX.4.64.0703061942000.5963@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Tue, 6 Mar 2007 19:43:50 -0800 (PST)")
-Message-ID: <m1irdcdir5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+Date: Wed, 7 Mar 2007 19:16:57 +0100
+User-Agent: KMail/1.9.1
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Hugh Dickins <hugh@veritas.com>, Maneesh Soni <maneesh@in.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0703061914030.18144@blonde.wat.veritas.com> <200703071759.29522.oliver@neukum.org> <Pine.LNX.4.64.0703071001020.5963@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703071001020.5963@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703071916.57907.oliver@neukum.org>
+X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GPE5pUNaoG1wTinqjVVl1GKJZKNFH/11jSg2To
+X-RZG-CLASS-ID: mo07
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Am Mittwoch, 7. März 2007 19:02 schrieb Linus Torvalds:
+> 
+> On Wed, 7 Mar 2007, Oliver Neukum wrote:
+> >
+> > The problem also exists with unplugging devices. Drivers get no feedback
+> > to tell them when it is safe to free the data structures associated with
+> > an attribute.
+> 
+> So you just pointed to *another* data structure that apparently violates 
+> the "you MUST use refcounting" rule.
+> 
+> What is it with you people? It's really simple. Data structures must be 
+> refcounted if you can reach them two different ways.
+> 
+> If you don't use refcounting, then you'd better make sure that the data 
+> can be reached only one way (for example, by *not* exposing it for sysfs).
+> 
+> It really *is* that simple. Read the CodingStyle rules.
 
-> On Mon, 5 Mar 2007, Yinghai Lu wrote:
->>
->> please check the patch
->
-> Hmm.. It doesn't look *wrong*, but could you please
->
->  - split it up a bit (some of it is 100% obvious, ie the comment fixes)
->
->  - write an explanation for the individually split up patches
->
->  - not use attachments, but just make it inline. It's practically 
->    impossible to reply and quote part of the patch now.
->
-> Eric/Ingo - did you go through and check the patch?
+Very well, there seems to be no clean way to avoid that work.
 
-This patch will probably work but I'm against it, as is.
-
-The comment fixes or some variation on them are needed.
-
-But code that assumes we place IRQ0 at a particular place isn't
-exactly bad but it is brittle.  If we are to reduce our array size
-we can also shave a lot of entries off the top because we mostly use
-the high end of the vector range for IPI's.
-
-So if we were to introduce some set of defines of exactly which
-vectors we can use and do a thorough job of this I think there may
-be something reasonable we can do here.
-
-Unless this makes the code clearer I don't think there is much point
-in reducing a fixed sized array from 224 entries to 191 entries, and
-it has the potential to make this much less pleasant if we goof up
-elsewhere.
-
-Eric
+	Regards
+		Oliver
