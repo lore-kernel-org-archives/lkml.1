@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965026AbXCGM3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965045AbXCGMgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965026AbXCGM3q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965094AbXCGM3q
+	id S965045AbXCGMgN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965042AbXCGMgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:29:46 -0500
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:38845 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965026AbXCGM3p (ORCPT
+	Wed, 7 Mar 2007 07:36:12 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36430 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbXCGMgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:29:45 -0500
-Message-ID: <45EEB011.5020606@freedesktop.org>
-Date: Wed, 07 Mar 2007 04:29:05 -0800
-From: Josh Triplett <josh@freedesktop.org>
-User-Agent: Icedove 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Allow pktgen to work with loopback devices.
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 7 Mar 2007 07:36:12 -0500
+Subject: Re: Wanted: simple, safe x86 stack overflow detection
+From: Arjan van de Ven <arjan@infradead.org>
+To: Bill Irwin <bill.irwin@oracle.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070307064423.GH18774@holomorphy.com>
+References: <45E5913D.3080505@redhat.com>
+	 <20070228204144.GA32316@one.firstfloor.org>
+	 <20070304015031.GA4224@holomorphy.com> <45EDBA1B.8050007@redhat.com>
+	 <Pine.LNX.4.64.0703061937450.19813@blonde.wat.veritas.com>
+	 <20070306203432.GD18774@holomorphy.com>
+	 <1173241715.3236.16.camel@laptopd505.fenrus.org>
+	 <20070307064423.GH18774@holomorphy.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 07 Mar 2007 04:34:52 -0800
+Message-Id: <1173270892.3176.4.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pktgen currently only works on network devices with type ARPHRD_ETHER.  Add
-support for the loopback device, type ARPHRD_LOOPBACK.
+On Tue, 2007-03-06 at 22:44 -0800, Bill Irwin wrote:
+> At some point in the past, I wrote:
+> >> I'm certainly in favor of the move; IRQ stacks could be made
+> >> rather deep and cheaply at that. I may get around to writing it this
+> >> week if no one else does it first.
+> 
+> On Tue, Mar 06, 2007 at 08:28:35PM -0800, Arjan van de Ven wrote:
+> > the irq stacks aren't the problem; RH at some point accidentally shipped
+> > a kernel with 4k *shared* irq/user context stack and even that gave
+> > almost no issues.
+> > irq's really shouldn't actually nest; it's bad for just about everything
+> > to do that (but that's another story, I would *love* to get rid of the
+> > "enable irqs" thing in the x86 irq path, it hurts just about anything in
+> > reality)
+> 
+> What do you see as the obstacle to eliminating nested IRQ's?
 
-I've tested this on my system, using a modified pktgen.conf-1-1 with
-s/eth1/lo/g, and it works fine; the network device statistics confirm packet
-transmission and receipt.
+political will, or maybe just the lack of convincing people so far
 
-Thanks to Sarah Bailey for discovering and tracking down the problem.
+>  It doesn't
+> seem so far out to test for being on the interrupt stack and defer the
+> call to do_IRQ() until after the currently-running instance of do_IRQ()
+> has returned, or to move to per-irq stacks modulo special arrangements
+> for the per-cpu IRQ's. Or did you have other methods in mind?
 
-Signed-off-by: Josh Triplett <josh@freedesktop.org>
----
+it's simpler...
 
-I intentionally didn't change the error message "not an ethernet device".  For
-the purposes of pktgen, loopback devices act like ethernet devices.
+irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+{ 
+        irqreturn_t ret, retval = IRQ_NONE;
+        unsigned int status = 0;
 
- net/core/pktgen.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+        handle_dynamic_tick(action);
+   
+        if (!(action->flags & IRQF_DISABLED))
+                local_irq_enable_in_hardirq();
 
-diff --git a/net/core/pktgen.c b/net/core/pktgen.c
-index 74a9a32..6fc6f9d 100644
---- a/net/core/pktgen.c
-+++ b/net/core/pktgen.c
-@@ -1930,7 +1930,7 @@ static struct net_device *pktgen_setup_dev(struct pktgen_dev *pkt_dev)
- 		printk("pktgen: no such netdevice: \"%s\"\n", pkt_dev->ifname);
- 		goto out;
- 	}
--	if (odev->type != ARPHRD_ETHER) {
-+	if (odev->type != ARPHRD_LOOPBACK && odev->type != ARPHRD_ETHER) {
- 		printk("pktgen: not an ethernet device: \"%s\"\n",
- 		       pkt_dev->ifname);
- 		goto out_put;
+
+just removing the if() and the explicit IRQ enabling already makes irqs no longer nest...
+
 -- 
-1.5.0.2
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
