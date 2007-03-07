@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965143AbXCGMkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965171AbXCGMnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965143AbXCGMkj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965157AbXCGMkj
+	id S965171AbXCGMnF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965193AbXCGMnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:40:39 -0500
-Received: from verein.lst.de ([213.95.11.210]:38560 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965143AbXCGMki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:40:38 -0500
-Date: Wed, 7 Mar 2007 13:38:24 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Shailendra Tripathi <stripathi@agami.com>
-Cc: Christoph Hellwig <hch@lst.de>, xfs@oss.sgi.com, ecashin@coraid.com,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] xfs: stop using kmalloc in xfs_buf_get_noaddr
-Message-ID: <20070307123824.GA3996@lst.de>
-References: <20070307101324.GC30587@lst.de> <45EEACA0.4050206@agami.com>
+	Wed, 7 Mar 2007 07:43:04 -0500
+Received: from amsfep20-int.chello.nl ([62.179.120.15]:35029 "EHLO
+	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965171AbXCGMnC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 07:43:02 -0500
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
+	nonlinear)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org, Jeff Dike <jdike@addtoit.com>
+In-Reply-To: <20070307121730.GC18704@wotan.suse.de>
+References: <20070307094503.GD8609@wotan.suse.de>
+	 <20070307100430.GA5080@wotan.suse.de> <1173262002.6374.128.camel@twins>
+	 <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu>
+	 <20070307102106.GB5555@wotan.suse.de> <1173263085.6374.132.camel@twins>
+	 <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins>
+	 <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins>
+	 <20070307121730.GC18704@wotan.suse.de>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 13:41:26 +0100
+Message-Id: <1173271286.6374.166.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45EEACA0.4050206@agami.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 05:44:24PM +0530, Shailendra Tripathi wrote:
-> Hi Christoph,
-> 	     Did you do some testing for recovery when end of the physical 
-> 	     log is seen ?
+On Wed, 2007-03-07 at 13:17 +0100, Nick Piggin wrote:
 
-I ran xfsqa over it, which should catch this case.
+> > Tracking these ranges on a per-vma basis would avoid taking the mm wide
+> > mmap_sem and so would be cheaper than regular vmas.
+> > 
+> > Would that still be too expensive?
+> 
+> Well you can today remap N pages in a file, arbitrarily for
+> sizeof(pte_t)*tiny bit for the upper page tables + small constant
+> for the vma.
+> 
+> At best, you need an extra pointer to pte / vaddr, so you'd basically
+> double memory overhead.
 
-> 	     When you will be dealing with striped ICLOG buffers or big 
-> 	     sized ICLOGs, header size might range from 512 to 2k. Also, this header 
-> might be split into 2 parts at the end of physical log. Then, you don't 
-> have page size buffer. Please verify that XFS_BUF_SETP_PTRs work correctly 
-> for those cases.
-> 	 Same thing is true when data section is split around physical log. 
-> 	 You can get one part which is not PAGE sized. 	
+I was hoping some form of range compression would gain something, but if
+its a fully random mapping, then yes a shadow page table would be needed
+(still looking into what a pte_chain is)
 
-I should have made my wording more clear, we always do PAGE_SIZE +
-buffer allocations.  After XFS_BUF_SETP_PTR the actually used buffer
-might be smaller.  I tested XFS_BUF_SETP_PTR manually with
-artifical test code aswell, and made sure it still works.
-Long term I have a plan to replace XFS_BUF_SETP_PTR with better
-schemes, but that's irrelevant for this patch.
+> > > > Well, now they don't, but it could be done or even exploited as a DoS.
+> > > 
+> > > But so could nonlinear page reclaim. I think we need to restrict nonlinear
+> > > mappings to root if we're worried about that.
+> > 
+> > Can't we just 'fix' it?
+> 
+> The thing is, I don't think anybody who uses these things cares
+> about any of the 'problems' you want to fix, do they? We are
+> interested in dirty pages only for the correctness issue, rather
+> than performance. Same as reclaim.
+
+If so, we can just stick to the dead slow but correct 'scan the full
+vma' page_mkclean() and nobody would ever trigger it.
+
+What is the DoS scenario wrt reclaim? We really ought to fix that if
+real, those UML farms run on nothing but nonlinear reclaim I'd think.
+
 
