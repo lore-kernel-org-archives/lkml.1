@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422667AbXCGJfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422674AbXCGJg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422667AbXCGJfb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422670AbXCGJfb
+	id S1422674AbXCGJg6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:36:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422672AbXCGJg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:35:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43629 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422667AbXCGJfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:35:30 -0500
-Date: Wed, 7 Mar 2007 10:35:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Bill Irwin <bill.irwin@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307093518.GB8424@elte.hu>
-References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu> <20070307085944.GA17433@wotan.suse.de> <20070307092252.GA6499@elte.hu> <20070307093208.GK18774@holomorphy.com>
-Mime-Version: 1.0
+	Wed, 7 Mar 2007 04:36:57 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41362 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422662AbXCGJg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:36:56 -0500
+Date: Wed, 7 Mar 2007 10:36:44 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Bodo Eggert <7eggert@gmx.de>, David Hubbard <david.c.hubbard@gmail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
+       linux-acpi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
+       Rudolf@atrpms.net
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-ID: <20070307093644.GC4285@elf.ucw.cz>
+References: <7UgM5-np-1@gated-at.bofh.it> <7UgM8-np-11@gated-at.bofh.it> <7UnaS-2xP-9@gated-at.bofh.it> <7UnkC-2JB-9@gated-at.bofh.it> <7Uzcd-49u-3@gated-at.bofh.it> <7UEEN-4xi-3@gated-at.bofh.it> <E1HODgC-0000h8-Vc@be1.lrz> <20070306161935.025a3ec1.khali@linux-fr.org> <Pine.LNX.4.58.0703061804360.2988@be1.lrz> <20070307101758.8cf2c53d.khali@linux-fr.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070307093208.GK18774@holomorphy.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070307101758.8cf2c53d.khali@linux-fr.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Bill Irwin <bill.irwin@oracle.com> wrote:
-
-> * Nick Piggin <npiggin@suse.de> wrote:
-> >> After these patches, I don't think there is too much burden. The main 
-> >> thing left really is just the objrmap stuff, but that is just handled 
-> >> with a minimal 'dumb' algorithm that doesn't cost much.
+> > > > 2) make ACPI take this lock whenever it touches ports not allocated by itself
+> > > >    and release it on function return.
+> > > 
+> > > This is costly.
+> > 
+> > TANSTAAFL. You'll need to take some lock, and if you want port emulation 
+> > or per-device-mutex, you'll have to pay the price.
 > 
-> On Wed, Mar 07, 2007 at 10:22:52AM +0100, Ingo Molnar wrote:
-> > ok. What do you think about the sys_remap_file_pages_prot() thing that 
-> > Paolo has done in a nicely split up form - does that complicate things 
-> > in any fundamental way? That is what is useful to UML.
-> 
-> Oracle would love it. You don't want to know how far back I've been 
-> asked to backport that.
+> True, but precisely, I wonder what will perform the best in practice, a
+> single semaphore that is unconditionally taken by ACPI/AML, or your
+> finer-grained approach and its many additional tests.
 
-ok, cool! Then the first step would be for you to talk to Paolo and to 
-pick up the patches, review them, nurse it in -mm, etc. Suffering in 
-silence is just a pointless act of masochism, not an efficient 
-upstream-merge tactic ;-)
+I'd say mutexes are not that bad. ... i/o accesses are expensive,
+anyway, right?
 
-	Ingo
+> We may be able to workaround the inter-driver exclusion though, if we
+> use a semaphore initialized to N, have ACPI take N, but other drivers
+> take just one. This would let ACPI be exclusive with all the other
+> drivers, but drivers themselves could otherwise run concurrently. That
+> being said, we do not appear to have the required primitives to take
+> more than 1 semaphore resource at once at the moment, so we'd need to
+> do that first.
+
+Hmm, nice hack. Yes, driver-driver serialization would be nasty.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
