@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422903AbXCGRfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422883AbXCGRf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422903AbXCGRfz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:35:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422883AbXCGRfB
+	id S1422883AbXCGRf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422959AbXCGRfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:35:01 -0500
-Received: from mx1.suse.de ([195.135.220.2]:44094 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422854AbXCGRQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:16:36 -0500
-Message-Id: <20070307171458.916902349@mini.kroah.org>
-References: <20070307171035.150802805@mini.kroah.org>
-User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:40 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 065/101] Fix xfrm_add_sa_expire() return value
-Content-Disposition: inline; filename=fix-xfrm_add_sa_expire-return-value.patch
+	Wed, 7 Mar 2007 12:35:55 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3953 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422886AbXCGRfi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:35:38 -0500
+Date: Wed, 7 Mar 2007 17:35:13 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Stephen Mollett <molletts@yahoo.com>
+Cc: linux-parport@lists.infradead.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tim Waugh <tim@cyberelk.net>
+Subject: Re: [Linux-parport] Linux v2.6.21-rc3
+Message-ID: <20070307173512.GA2512@flint.arm.linux.org.uk>
+Mail-Followup-To: Stephen Mollett <molletts@yahoo.com>,
+	linux-parport@lists.infradead.org,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Tim Waugh <tim@cyberelk.net>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <45EEB99D.7020406@googlemail.com> <200703071714.21572.molletts@yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703071714.21572.molletts@yahoo.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
+On Wed, Mar 07, 2007 at 05:14:21PM +0000, Stephen Mollett wrote:
+> On Wednesday 07 Mar 2007, Michal Piotrowski wrote:
+> > BTW. Does anyone care about parport console?
+> > console=lp0 hangs since at least 2.6.18
+> 
+> For the record, I used console=lp0 quite recently (stock 2.6.19 according to 
+> the printout, running on i386) [to find out what was causing a panic that 
+> immediately vanished off the top of the screen because of "atkbd.c: Spurious 
+> ACK..."s from the flashing kb LEDs] and it worked just fine.
 
-[XFRM] xfrm_user: Fix return values of xfrm_add_sa_expire.
+ISTR lp consoles block indefinitely until the printer is ready, so
+if you ask for a lp console but don't have a working printer connected
+it will hang.
 
-As noted by Kent Yoder, this function will always return an
-error.  Make sure it returns zero on success.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- net/xfrm/xfrm_user.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
---- linux-2.6.20.1.orig/net/xfrm/xfrm_user.c
-+++ linux-2.6.20.1/net/xfrm/xfrm_user.c
-@@ -1557,14 +1557,13 @@ static int xfrm_add_sa_expire(struct sk_
- 	struct xfrm_usersa_info *p = &ue->state;
- 
- 	x = xfrm_state_lookup(&p->id.daddr, p->id.spi, p->id.proto, p->family);
--		err = -ENOENT;
- 
-+	err = -ENOENT;
- 	if (x == NULL)
- 		return err;
- 
--	err = -EINVAL;
--
- 	spin_lock_bh(&x->lock);
-+	err = -EINVAL;
- 	if (x->km.state != XFRM_STATE_VALID)
- 		goto out;
- 	km_state_expired(x, ue->hard, current->pid);
-@@ -1574,6 +1573,7 @@ static int xfrm_add_sa_expire(struct sk_
- 		xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
- 			       AUDIT_MAC_IPSEC_DELSA, 1, NULL, x);
- 	}
-+	err = 0;
- out:
- 	spin_unlock_bh(&x->lock);
- 	xfrm_state_put(x);
-
---
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
