@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030496AbXCGJCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161352AbXCGJDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030496AbXCGJCw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030502AbXCGJCv
+	id S1161352AbXCGJDa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161357AbXCGJD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:02:51 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:28698 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030496AbXCGJCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:02:49 -0500
-Subject: Re: [SLUB 2/3] Large kmalloc pass through. Removal of large
-	general slabs
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@osdl.org, Marcelo Tosatti <marcelo@kvack.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mpm@selenic.com,
-       Manfred Spraul <manfred@colorfullife.com>
-In-Reply-To: <20070307023513.19658.81228.sendpatchset@schroedinger.engr.sgi.com>
-References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
-	 <20070307023513.19658.81228.sendpatchset@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 10:01:17 +0100
-Message-Id: <1173258077.6374.120.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Mar 2007 04:03:29 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47963 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161344AbXCGJDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:03:25 -0500
+Date: Wed, 7 Mar 2007 10:03:11 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: devzero@web.de
+Cc: Lee Revell <rlrevell@joe-job.com>, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] BadRAM still not ready for inclusion ? (was: Re: Free Linux Driver Development!)
+Message-ID: <20070307090311.GA4285@elf.ucw.cz>
+References: <1667859354@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1667859354@web.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 18:35 -0800, Christoph Lameter wrote:
-> Unlimited kmalloc size and removal of general caches >=4.
+Hi!
+
+> >What's so hard about submitting a 200 line patch to LKML?
 > 
-> We can directly use the page allocator for all allocations 4K and larger. This
-> means that no general slabs are necessary and the size of the allocation passed
-> to kmalloc() can be arbitrarily large. Remove the useless general caches over 4k.
+> that's what i was wondering about ;D
+> it's not the first time, that i see nice features not being submitted to lkml.
 > 
+> anyway - pavel (thanks btw!) just pointed me to some param "mem=exactmap" :
+> 
+> >I think functionality is there in latest vanila with mem=exactmap even
+> >w/o patches.
+> 
+> so, maybe we need to find out _if_ and _how_ this could make BadRAM obsolete (i.e. if this is a good alternative) ?
+> (so we won't need to discuss about BadRAM inclusion anymore. :)
+> 
+> what i found is:
+> 
+> 894         memmap=exactmap [KNL,IA-32,X86_64] Enable setting of an exact
+> 895                         E820 memory map, as specified by the user.
+> 896                         Such memmap=exactmap lines can be constructed based on
+> 897                         BIOS output or other requirements. See the memmap=nn@ss
+> 898                         option description.
+> 899 
+> 900         memmap=nn[KMG]@ss[KMG]
+> 901                         [KNL] Force usage of a specific region of memory
+> 902                         Region of memory to be used, from ss to ss+nn.
+> 903 
+> 904         memmap=nn[KMG]#ss[KMG]
+> 905                         [KNL,ACPI] Mark specific memory as ACPI data.
+> 906                         Region of memory to be used, from ss to ss+nn.
+> 907 
+> 908         memmap=nn[KMG]$ss[KMG]
+> 909                         [KNL,ACPI] Mark specific memory as reserved.
+> 910                         Region of memory to be used, from ss to ss+nn.
 
-> Index: linux-2.6.21-rc2-mm1/include/linux/slub_def.h
-> ===================================================================
-> --- linux-2.6.21-rc2-mm1.orig/include/linux/slub_def.h	2007-03-06 17:56:14.000000000 -0800
-> +++ linux-2.6.21-rc2-mm1/include/linux/slub_def.h	2007-03-06 17:57:11.000000000 -0800
-> @@ -55,7 +55,7 @@ struct kmem_cache {
->   */
->  #define KMALLOC_SHIFT_LOW 3
->  
-> -#define KMALLOC_SHIFT_HIGH 18
-> +#define KMALLOC_SHIFT_HIGH 11
->  
->  #if L1_CACHE_BYTES <= 64
->  #define KMALLOC_EXTRAS 2
-> @@ -93,13 +93,6 @@ static inline int kmalloc_index(int size
->  	if (size <=  512) return 9;
->  	if (size <= 1024) return 10;
->  	if (size <= 2048) return 11;
-> -	if (size <= 4096) return 12;
-> -	if (size <=   8 * 1024) return 13;
-> -	if (size <=  16 * 1024) return 14;
-> -	if (size <=  32 * 1024) return 15;
-> -	if (size <=  64 * 1024) return 16;
-> -	if (size <= 128 * 1024) return 17;
-> -	if (size <= 256 * 1024) return 18;
->  	return -1;
->  }
+>  this indeed looks like something being able to replace BadRAM, but
+> the question is, how to handle/enable that and how to translate
+> BadRAM patterns from memtest86 to be usable. (i.e.: writing a HowTo
+> for the average user not being a kernel wizard) 
 
-Perhaps so something with PAGE_SIZE here, as you know there are
-platforms/configs where PAGE_SIZE != 4k :-)
+Writing a howto, or maybe writting a shellscript to do a translation
+:-). It will not be trivial, but certainly better than trying to push
+the badram patch. Good luck ;-).
 
+(e820 map is available from dmesg after boot, and perhaps from other
+places. First, you'll need to duplicate it on cmdline using
+memmap=... arguments. Then, if bad ram is in the middle of something,
+you'll need to split memmap= accordingly).
+								Pavel
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
