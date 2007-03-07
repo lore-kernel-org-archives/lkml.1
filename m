@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422885AbXCGR32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422853AbXCGR33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422885AbXCGR32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422853AbXCGRRR
+	id S1422853AbXCGR33 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422874AbXCGRRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:17:17 -0500
-Received: from mx2.suse.de ([195.135.220.15]:43485 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 12:17:15 -0500
+Received: from mx1.suse.de ([195.135.220.2]:44128 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422821AbXCGRQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:16:46 -0500
-Message-Id: <20070307171507.521078125@mini.kroah.org>
+	id S1422853AbXCGRQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:16:49 -0500
+Message-Id: <20070307171511.258148132@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:42 -0800
+Date: Wed, 07 Mar 2007 09:11:43 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,60 +24,102 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 067/101] Fix %100 cpu spinning on sparc64
-Content-Disposition: inline; filename=fix-100-cpu-spinning-on-sparc64.patch
+Subject: [patch 068/101] Fix TCP MD5 locking.
+Content-Disposition: inline; filename=fix-tcp-md5-locking.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Miller <davem@davemloft.net>
 
-[SPARC64] bbc_i2c: Fix kenvctrld eating %100 cpu.
+[TCP]: Fix MD5 signature pool locking.
 
-Based almost entirely upon a patch by Joerg Friedrich
+The locking calls assumed that these code paths were only
+invoked in software interrupt context, but that isn't true.
+
+Therefore we need to use spin_{lock,unlock}_bh() throughout.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/sbus/char/bbc_i2c.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ net/ipv4/tcp.c |   24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
---- linux-2.6.20.1.orig/drivers/sbus/char/bbc_i2c.c
-+++ linux-2.6.20.1/drivers/sbus/char/bbc_i2c.c
-@@ -187,19 +187,20 @@ static int wait_for_pin(struct bbc_i2c_b
- 	bp->waiting = 1;
- 	add_wait_queue(&bp->wq, &wait);
- 	while (limit-- > 0) {
--		u8 val;
-+		unsigned long val;
+--- linux-2.6.20.1.orig/net/ipv4/tcp.c
++++ linux-2.6.20.1/net/ipv4/tcp.c
+@@ -2266,12 +2266,12 @@ void tcp_free_md5sig_pool(void)
+ {
+ 	struct tcp_md5sig_pool **pool = NULL;
  
--		set_current_state(TASK_INTERRUPTIBLE);
--		*status = val = readb(bp->i2c_control_regs + 0);
--		if ((val & I2C_PCF_PIN) == 0) {
-+		val = wait_event_interruptible_timeout(
-+				bp->wq,
-+				(((*status = readb(bp->i2c_control_regs + 0))
-+				  & I2C_PCF_PIN) == 0),
-+				msecs_to_jiffies(250));
-+		if (val > 0) {
- 			ret = 0;
- 			break;
- 		}
--		msleep_interruptible(250);
+-	spin_lock(&tcp_md5sig_pool_lock);
++	spin_lock_bh(&tcp_md5sig_pool_lock);
+ 	if (--tcp_md5sig_users == 0) {
+ 		pool = tcp_md5sig_pool;
+ 		tcp_md5sig_pool = NULL;
  	}
- 	remove_wait_queue(&bp->wq, &wait);
- 	bp->waiting = 0;
--	current->state = TASK_RUNNING;
- 
- 	return ret;
+-	spin_unlock(&tcp_md5sig_pool_lock);
++	spin_unlock_bh(&tcp_md5sig_pool_lock);
+ 	if (pool)
+ 		__tcp_free_md5sig_pool(pool);
  }
-@@ -340,7 +341,7 @@ static irqreturn_t bbc_i2c_interrupt(int
- 	 */
- 	if (bp->waiting &&
- 	    !(readb(bp->i2c_control_regs + 0x0) & I2C_PCF_PIN))
--		wake_up(&bp->wq);
-+		wake_up_interruptible(&bp->wq);
+@@ -2314,36 +2314,36 @@ struct tcp_md5sig_pool **tcp_alloc_md5si
+ 	int alloc = 0;
  
- 	return IRQ_HANDLED;
+ retry:
+-	spin_lock(&tcp_md5sig_pool_lock);
++	spin_lock_bh(&tcp_md5sig_pool_lock);
+ 	pool = tcp_md5sig_pool;
+ 	if (tcp_md5sig_users++ == 0) {
+ 		alloc = 1;
+-		spin_unlock(&tcp_md5sig_pool_lock);
++		spin_unlock_bh(&tcp_md5sig_pool_lock);
+ 	} else if (!pool) {
+ 		tcp_md5sig_users--;
+-		spin_unlock(&tcp_md5sig_pool_lock);
++		spin_unlock_bh(&tcp_md5sig_pool_lock);
+ 		cpu_relax();
+ 		goto retry;
+ 	} else
+-		spin_unlock(&tcp_md5sig_pool_lock);
++		spin_unlock_bh(&tcp_md5sig_pool_lock);
+ 
+ 	if (alloc) {
+ 		/* we cannot hold spinlock here because this may sleep. */
+ 		struct tcp_md5sig_pool **p = __tcp_alloc_md5sig_pool();
+-		spin_lock(&tcp_md5sig_pool_lock);
++		spin_lock_bh(&tcp_md5sig_pool_lock);
+ 		if (!p) {
+ 			tcp_md5sig_users--;
+-			spin_unlock(&tcp_md5sig_pool_lock);
++			spin_unlock_bh(&tcp_md5sig_pool_lock);
+ 			return NULL;
+ 		}
+ 		pool = tcp_md5sig_pool;
+ 		if (pool) {
+ 			/* oops, it has already been assigned. */
+-			spin_unlock(&tcp_md5sig_pool_lock);
++			spin_unlock_bh(&tcp_md5sig_pool_lock);
+ 			__tcp_free_md5sig_pool(p);
+ 		} else {
+ 			tcp_md5sig_pool = pool = p;
+-			spin_unlock(&tcp_md5sig_pool_lock);
++			spin_unlock_bh(&tcp_md5sig_pool_lock);
+ 		}
+ 	}
+ 	return pool;
+@@ -2354,11 +2354,11 @@ EXPORT_SYMBOL(tcp_alloc_md5sig_pool);
+ struct tcp_md5sig_pool *__tcp_get_md5sig_pool(int cpu)
+ {
+ 	struct tcp_md5sig_pool **p;
+-	spin_lock(&tcp_md5sig_pool_lock);
++	spin_lock_bh(&tcp_md5sig_pool_lock);
+ 	p = tcp_md5sig_pool;
+ 	if (p)
+ 		tcp_md5sig_users++;
+-	spin_unlock(&tcp_md5sig_pool_lock);
++	spin_unlock_bh(&tcp_md5sig_pool_lock);
+ 	return (p ? *per_cpu_ptr(p, cpu) : NULL);
  }
+ 
 
 --
