@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965534AbXCGO1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030471AbXCGO1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965534AbXCGO1J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 09:27:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965537AbXCGO1J
+	id S1030471AbXCGO1h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 09:27:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030198AbXCGO1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 09:27:09 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60380 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965534AbXCGO1H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 09:27:07 -0500
-Date: Wed, 7 Mar 2007 20:04:12 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: menage@google.com
-Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, winget@google.com,
-       containers@lists.osdl.org, devel@openvz.org
-Subject: Re: [PATCH 2/7] containers (V7): Cpusets hooked into containers
-Message-ID: <20070307143412.GC32105@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.290909000@menage.corp.google.com>
+	Wed, 7 Mar 2007 09:27:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38038 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030192AbXCGO10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 09:27:26 -0500
+Subject: [GFS2] pass formal ino in do_filldir_main [6/12]
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: cluster-devel@redhat.com
+Cc: "S. Wendy Cheng" <wcheng@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1173277501.11001.752.camel@quoit.chygwyn.com>
+References: <1173277501.11001.752.camel@quoit.chygwyn.com>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd
+Date: Wed, 07 Mar 2007 14:30:30 +0000
+Message-Id: <1173277830.11001.764.camel@quoit.chygwyn.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070212085104.290909000@menage.corp.google.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 12:15:23AM -0800, menage@google.com wrote:
->  /*
-> @@ -913,12 +537,14 @@ static int update_nodemask(struct cpuset
->  	int migrate;
->  	int fudge;
->  	int retval;
-> +	struct container *cont;
+>From fb0d3bce8e88cca4abb26076f778f64edcaf19aa Mon Sep 17 00:00:00 2001
+From: Wendy Cheng <wcheng@redhat.com>
+Date: Wed, 28 Feb 2007 11:24:25 -0500
+Subject: [PATCH] [GFS2] pass formal ino in do_filldir_main
 
-This seems to be redundant?
+ok, the following is the minimum changes to get NFSD going before we
+settle down this issue .. would appreciate this in the tree so other NFS
+related works can get done in parallel.
 
+Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+
+diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
+index 0d6831a..902dd81 100644
+--- a/fs/gfs2/inode.c
++++ b/fs/gfs2/inode.c
+@@ -61,13 +61,13 @@ static int iget_set(struct inode *inode, void *opaque)
+ 
+ struct inode *gfs2_ilookup(struct super_block *sb, struct gfs2_inum_host *inum)
+ {
+-	return ilookup5(sb, (unsigned long)inum->no_formal_ino,
++	return ilookup5(sb, (unsigned long)inum->no_addr,
+ 			iget_test, inum);
+ }
+ 
+ static struct inode *gfs2_iget(struct super_block *sb, struct gfs2_inum_host *inum)
+ {
+-	return iget5_locked(sb, (unsigned long)inum->no_formal_ino,
++	return iget5_locked(sb, (unsigned long)inum->no_addr,
+ 		     iget_test, iget_set, inum);
+ }
+ 
 -- 
-Regards,
-vatsa
+1.4.4.2
+
+
+
