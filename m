@@ -1,79 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992448AbXCGSVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992443AbXCGSXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992448AbXCGSVX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992445AbXCGSVW
+	id S2992443AbXCGSXk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992444AbXCGSXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:21:22 -0500
-Received: from nz-out-0506.google.com ([64.233.162.228]:48254 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992448AbXCGSVU (ORCPT
+	Wed, 7 Mar 2007 13:23:40 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42148 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S2992443AbXCGSXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:21:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Kw177zoqPRaxRONZIgSSeQ3RPfXj5UZ4/07LOeFvZhcXjnfiz3fbhMZL/Tx0huQ4odYdtcm2P5bxsxFEzWya9GOnEg2H4P6FvqTzPOCgsBeZ59pHBHzRE0Zhj1vM1/fR4tJsdDOPf/e8yQBG8IUYKv0d7YXrhs5H2Adkgx3u8fE=
-Message-ID: <ca9528de0703071021t2aeb19d9ve537b0447cfd310@mail.gmail.com>
-Date: Wed, 7 Mar 2007 15:21:19 -0300
-From: "Kirk Kuchov" <kirk.kuchov@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Davide Libenzi" <davidel@xmailserver.org>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Eric Dumazet" <dada1@cosmosbay.com>, "Theodore Tso" <tytso@mit.edu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Zach Brown" <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20070307173953.GA27603@elte.hu>
+	Wed, 7 Mar 2007 13:23:38 -0500
+Date: Wed, 7 Mar 2007 10:23:36 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, akpm@osdl.org,
+       Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: [SLUB 2/3] Large kmalloc pass through. Removal of large general
+ slabs
+In-Reply-To: <20070307180359.GU23311@waste.org>
+Message-ID: <Pine.LNX.4.64.0703071022230.22448@schroedinger.engr.sgi.com>
+References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
+ <20070307023513.19658.81228.sendpatchset@schroedinger.engr.sgi.com>
+ <1173258077.6374.120.camel@twins> <Pine.LNX.4.64.0703070732130.9460@schroedinger.engr.sgi.com>
+ <20070307180359.GU23311@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703020840120.1977@alien.or.mcafeemobile.com>
-	 <Pine.LNX.4.64.0703030945030.7075@alien.or.mcafeemobile.com>
-	 <20070303203140.GA756@2ka.mipt.ru>
-	 <Pine.LNX.4.64.0703031248450.7278@alien.or.mcafeemobile.com>
-	 <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com>
-	 <Pine.LNX.4.64.0703041129550.3300@alien.or.mcafeemobile.com>
-	 <ca9528de0703041449x695a4c4bpc133d9afd5524019@mail.gmail.com>
-	 <20070306081935.GB2040@elf.ucw.cz>
-	 <ca9528de0703070402r3d189348t78d27cf3b80b4623@mail.gmail.com>
-	 <20070307173953.GA27603@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Kirk Kuchov <kirk.kuchov@gmail.com> wrote:
->
-> > I don't believe I'm wasting my time explaining this. They don't exist
-> > as /dev/null, they are just fucking _LINKS_.
-> [...]
-> > > Either stop flaming kernel developers or become one. It is that
-> > > simple.
-> >
-> > If I were to become a kernel developer I would stick with FreeBSD.
-> > [...]
->
-> Hey, really, this is an excellent idea: what a boon you could become to
-> FreeBSD, again! How much they must be longing for your insightful
-> feedback, how much they must be missing your charming style and tactful
-> approach! I bet they'll want to print your mails out, frame them and
-> hang them over their fireplace, to remember the good old days on cold
-> snowy winter days, with warmth in their hearts! Please?
->
+On Wed, 7 Mar 2007, Matt Mackall wrote:
 
-http://www.totallytom.com/thecureforgayness.html
+> > I have a patch here to make this dependent on page size using a loop. The 
+> > problem is that it does not work with some versions of gcc. On the 
+> > other hand we really need this since one arch can 
+> > actually have an order 22 page size!
+> 
+> You don't need a loop, you need an if (s >= PAGE_SIZE) at the head of
+> your static list.
 
---
-Kirk Kuchov
+As I just said: PAGE_SIZE may be quite high. So I would need a looong 
+static list. We already check for the size being bigger than 2048 which is 
+half the usual page size. Anything larger will get passed through.
+
