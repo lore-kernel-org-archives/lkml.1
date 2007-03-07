@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXCGVDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423005AbXCGVHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965645AbXCGVDu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 16:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965648AbXCGVDu
+	id S1423005AbXCGVHD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 16:07:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423004AbXCGVHC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 16:03:50 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:30208 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965645AbXCGVDs (ORCPT
+	Wed, 7 Mar 2007 16:07:02 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:58128 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965648AbXCGVHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 16:03:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=hE49NySPWNPCryLkrJ8Ts/09jJ8lJFNmKbwUdwyIWAuu/qJBYBj6ipjVAElq+jkBPG5Qq5MvA8usrrxR9OjkhmIiFoZ1Jd1c5tRh6AQlAk0aQBwDzViiyHCDcYf9UVfLODUxy427tyvnIKbo/3NThyl2sj9QlB1sHzDJ36Mk/+0=
-Message-ID: <75b66ecd0703071303k24799f10ibc5c49dc69c5ee86@mail.gmail.com>
-Date: Wed, 7 Mar 2007 16:03:36 -0500
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Subject: Re: Sleeping thread not receive signal until it wakes up
-Cc: "Luong Ngo" <luong.ngo@gmail.com>,
-       "Linux kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0703071457060.13923@chaos.analogic.com>
+	Wed, 7 Mar 2007 16:07:00 -0500
+Message-ID: <45EF2868.8050009@vmware.com>
+Date: Wed, 07 Mar 2007 13:02:32 -0800
+From: Dan Hecht <dhecht@vmware.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: tglx@linutronix.de
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, James Morris <jmorris@namei.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	 <20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com>	 <1173178774.24738.311.camel@localhost.localdomain>	 <45EDD82F.90204@vmware.com>	 <1173225182.24738.507.camel@localhost.localdomain>	 <45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com>	 <1173228544.24738.514.camel@localhost.localdomain>	 <45EE0D10.7070807@vmware.com>	 <1173230305.24738.529.camel@localhost.localdomain>	 <45EE1EA3.90803@vmware.com>	 <1173256666.24738.576.camel@localhost.localdomain>	 <45EEF966.6060902@goop.org>	<Line.LNX.4.64.0703071304080.1851@d.namei>	 <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com>	 <45EF1C80.50900@goop.org> <1173301065.24738.766.camel@localhost.localdomain>
+In-Reply-To: <1173301065.24738.766.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1b2aacd80703062131g6c8578fgf200dd05a502c49f@mail.gmail.com>
-	 <Pine.LNX.4.61.0703070813070.12338@chaos.analogic.com>
-	 <1b2aacd80703071128v5227382do2277d0b85ca3b20c@mail.gmail.com>
-	 <Pine.LNX.4.61.0703071457060.13923@chaos.analogic.com>
-X-Google-Sender-Auth: cdf97d263f32d4c8
+X-OriginalArrivalTime: 07 Mar 2007 21:06:58.0921 (UTC) FILETIME=[8B588D90:01C760FC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
-> Interruptible_sleep_on is interruptible, but for your task to
-> actually be awakened and your alarm handler to get some CPU,
-> it needs to be scheduled. If the BKL (big kernel lock) is
-> held, it won't be scheduled until it is released.
+On 03/07/2007 12:57 PM, Thomas Gleixner wrote:
+> On Wed, 2007-03-07 at 12:11 -0800, Jeremy Fitzhardinge wrote:
+>> Dan Hecht wrote:
+>>> Jeremy, I saw you sent out the Xen version earlier, thanks.  Here's
+>>> ours for reference (please excuse any formating issues); it's also
+>>> lean. We'll send out a proper patch later after some more testing:
+>> So the interrupt side of the clockevent comes through the virtual apic? 
+>> Where does evt->handle_event get called?
+> 
+> 
+>>         /* We use normal irq0 handler on cpu0. */
+>>         time_init_hook();
+> 
+> That's exactly the thing I ranted about before. We keep the historic
+> view of emulated hardware and just wrap it into enough glue code instead
+> of doing an abstract design, which just gets rid of those hardware
+> assumptions at all. That's the big advantage of paravirtualization, but
+> the current way on paravirt ops is just ignoring this.
+> 
 
-You can schedule while holding the BKL and it will be dropped and reacquired.
+Are you saying you would prefer we create our own irq handler something 
+like this rather than using the standard i386 handlers?
 
-Lee
+irqreturn_t vmi_timer_interrupt(int irq, void *dev_id)
+{
+    local_event->event_handler(local_event);
+    return IRQ_HANDLED;
+}
+
+??  That's fine with me.
