@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422977AbXCGRvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422989AbXCGRuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422977AbXCGRvI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:51:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422948AbXCGRvB
+	id S1422989AbXCGRuE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:50:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422791AbXCGROv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:51:01 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:42656 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422968AbXCGRuL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:50:11 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 7 Mar 2007 09:50:10 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/4] signalfd v1 - signalfd core ...
-In-Reply-To: <Pine.LNX.4.64.0703070854280.5963@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703070943180.12283@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703061639370.3661@alien.or.mcafeemobile.com>
- <20070307155553.06c82ca1.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0703062301590.10398@alien.or.mcafeemobile.com>
- <20070307233833.f1482f86.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0703070854280.5963@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Mar 2007 12:14:51 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:42915 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422779AbXCGROS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:14:18 -0500
+Message-Id: <20070307171229.446952598@mini.kroah.org>
+References: <20070307171035.150802805@mini.kroah.org>
+User-Agent: quilt/0.45-1
+Date: Wed, 07 Mar 2007 09:10:57 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, imr@rtschenk.de, linuxppc-embedded@ozlabs.org,
+       Kumar Gala <galak@kernel.crashing.org>
+Subject: [patch 022/101] Fix compile error for e500 core based processors
+Content-Disposition: inline; filename=fix-compile-error-for-e500-core-based-processors.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007, Linus Torvalds wrote:
+From: Rojhalat Ibrahim <imr@rtschenk.de>
 
-> On Wed, 7 Mar 2007, Stephen Rothwell wrote:
-> > 
-> > You probably need the queue anyway because the real time signals are
-> > supposed to queue.
-> 
-> Davide - the *real* problem is (I think) that you try to allow signals to 
-> be returned *both* by signalfd() and as a real signal.
-> 
-> That's wrong, wrong, wrong.
-> 
-> My original patch used "dequeue_signal()" to dequeue signals. Trust me, I 
-> did that for a reason. Your re-design to think that you can get the signal 
-> without using the real signal dequeueing is simply broken.
+We get the following compiler error:
 
-I think having the ability to have both can be usefull, so the idea of 
-having multiple listeners fd (that both would not work with the single 
-queue since they'd racing over dequeue_signal).
-The two place where I plugges signalfd_notify() has the siginfo already 
-compiled, so I just need to:
+   CC      arch/ppc/kernel/ppc_ksyms.o
+arch/ppc/kernel/ppc_ksyms.c:275: error: '__mtdcr' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:275: warning: type defaults to 'int' in declaration of '__mtdcr'
+arch/ppc/kernel/ppc_ksyms.c:276: error: '__mfdcr' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:276: warning: type defaults to 'int' in declaration of '__mfdcr'
+make[1]: *** [arch/ppc/kernel/ppc_ksyms.o] Error 1
 
-1) Pass the siginfo pointer to signalfd_notify too
+This is due to the EXPORT_SYMBOL for __mtdcr/__mfdcr not having the proper CONFIG protection
 
-2) Switch from having a bitmap, to a struct list_head queue
+Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-3) Dequeue and return the signal and siginfo inside a compat-free 
-   structure
+---
+ arch/ppc/kernel/ppc_ksyms.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The #2 makes code even easier actually. The poll would just do a 
-list_empty(), and dequeueing is just get-head and list_del().
+--- linux-2.6.20.1.orig/arch/ppc/kernel/ppc_ksyms.c
++++ linux-2.6.20.1/arch/ppc/kernel/ppc_ksyms.c
+@@ -270,7 +270,7 @@ EXPORT_SYMBOL(mmu_hash_lock); /* For MOL
+ extern long *intercept_table;
+ EXPORT_SYMBOL(intercept_table);
+ #endif /* CONFIG_PPC_STD_MMU */
+-#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
++#ifdef CONFIG_PPC_DCR_NATIVE
+ EXPORT_SYMBOL(__mtdcr);
+ EXPORT_SYMBOL(__mfdcr);
+ #endif
 
-
-
-- Davide
-
-
+--
