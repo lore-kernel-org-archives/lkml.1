@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965580AbXCGQ4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965585AbXCGQ4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965580AbXCGQ4J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965587AbXCGQ4J
+	id S965585AbXCGQ4c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:56:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965583AbXCGQ4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:56:09 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:43366 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965580AbXCGQ4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:56:06 -0500
-Date: Wed, 7 Mar 2007 08:52:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Hugh Dickins <hugh@veritas.com>, Oliver Neukum <oliver@neukum.name>,
-       Maneesh Soni <maneesh@in.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
-In-Reply-To: <d120d5000703070756v4fe11a54u9009d3efd93faa9d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0703070845500.5963@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703061914030.18144@blonde.wat.veritas.com> 
- <Pine.LNX.4.64.0703061735350.5963@woody.linux-foundation.org>
- <d120d5000703070756v4fe11a54u9009d3efd93faa9d@mail.gmail.com>
+	Wed, 7 Mar 2007 11:56:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:60334 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965585AbXCGQ4a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 11:56:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dWtQ6LH4Y9AQrA9EKpvRifEXVKx02sANJEek6XF9zcqnsp8t7O1gJfy873SDaVb9yNsPQecaEsDANSdNyTAbyYUlz4C92NKMZQ788n3LbpOkcz5m9mFrJrLTePRHZ2W0QZXP1Sp/3H9RJdN083jOSQFEwxasAUyJqeZRbwXx5/8=
+Message-ID: <d120d5000703070856of068f19k62c5a7ce1f829336@mail.gmail.com>
+Date: Wed, 7 Mar 2007 11:56:27 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] Input: add sensable phantom driver
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, "Greg KH" <gregkh@suse.de>
+In-Reply-To: <45EEEAA3.50009@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2460126662758025813@fi.muni.cz>
+	 <d120d5000703070647t223f8858i8c495dcc3e1378a2@mail.gmail.com>
+	 <45EEEAA3.50009@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 3/7/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> Dmitry Torokhov napsal(a):
+> > Hi Jiri,
+>
+> Hi.
+>
+> > On 3/7/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> >> add sensable phantom driver
+> > ...
+> >
+> > General question - can this driver use force-feedback mecahnisms
+> > already present in kernel instead of exporting raw datastream to
+> > userspace. What are shortcomings of kernels force-feedback
+> > implemenattion that make it insufficient for phantom?
+>
+> I didn't even think about it, sorry. Does any problem with rate about 2kHz come
+> on your mind before I'll try to rewrite it?
 
+No, not really.
 
-On Wed, 7 Mar 2007, Dmitry Torokhov wrote:
-> 
-> ... with the exception that it will again make data associated with
-> sysfs attributes accessible past the point of returning from
-> sysfs_remove_file. And that was the point so drivers would not have to
-> care about handling access to extra data (such as static strings) past
-> the driver unload.
-
-Drivers are unloaded by stopping the whole machine (exactly because module 
-unload is otherwise so hard to handle), so that never happens unless you 
-actively block. In other words, if you do something as simple as
-
-	if (inode->i_private_data)
-		sysfs_flush_buffer(buffer);
-
-then there is no race with unloading (unless the driver itself does 
-something stupid, of course - but the whole point of having a kernel 
-buffer is so that it does *not* have to make user accesses etc).
-
-But the one thing you should *not* do is to depend on a sleeping lock, 
-because that breaks the whole model!
-
-			Linus
+-- 
+Dmitry
