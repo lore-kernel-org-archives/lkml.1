@@ -1,71 +1,334 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161043AbXCGAmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161049AbXCGAmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161043AbXCGAmO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 19:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161048AbXCGAmO
+	id S1161049AbXCGAmt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 19:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161052AbXCGAmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 19:42:14 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:36650 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161043AbXCGAmN (ORCPT
+	Tue, 6 Mar 2007 19:42:49 -0500
+Received: from mx.neterion.com ([72.1.205.142]:14149 "EHLO owa.neterion.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161049AbXCGAmr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 19:42:13 -0500
-Message-ID: <45EE0A68.6010406@vmware.com>
-Date: Tue, 06 Mar 2007 16:42:16 -0800
-From: Dan Hecht <dhecht@vmware.com>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Tue, 6 Mar 2007 19:42:47 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: tglx@linutronix.de
-Cc: Zachary Amsden <zach@vmware.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, ak@suse.de,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
-       Dan Hecht <dhecht@vmware.com>
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>	 <1173178774.24738.311.camel@localhost.localdomain>	 <45EDD82F.90204@vmware.com> <1173225182.24738.507.camel@localhost.localdomain>
-In-Reply-To: <1173225182.24738.507.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Mar 2007 00:42:11.0890 (UTC) FILETIME=[71A98120:01C76051]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] s2io: add PCI error recovery support
+Date: Tue, 6 Mar 2007 19:42:35 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77014FE40E@nekter>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] s2io: add PCI error recovery support
+Thread-Index: AcdRVkmYbQGrQqWHRcKRS0PtpUkt9QOGxuCQACioQJA=
+From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+To: "Linas Vepstas" <linas@austin.ibm.com>, "Jeff Garzik" <jgarzik@pobox.com>
+Cc: "Wen Xiong" <wenxiong@us.ibm.com>, <linux-kernel@vger.kernel.org>,
+       <linux-pci@atrey.karlin.mff.cuni.cz>, <netdev@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/06/2007 03:53 PM, Thomas Gleixner wrote:
->> 2) Virtual interrupts have a relatively high overhead as compared with 
->> native interrupts.  So, in vmitime, we wanted to be able to lower the 
->> timer interrupt rate at runtime, even if HZ is a compile time constant 
->> (and set to something high, like 1000hz).  While we could hack this in 
->> by using evt->min_delta_ns, it wouldn't really work since process time 
->> accounting would be wrong.  Instead, we should allow the 
->> tick_sched_timer in cases (c) and (d) to have runtime configurable 
->> period, and then scale the time value accordingly before passing to 
->> account_system_time.  This is probably something the Xen folks will want 
->> also, since I think Xen itself only gets 100hz hard timer, and so it can 
->> implement at best a oneshot virtual timer with 100hz resolution.  Any 
->> objections to us doing something like this?
-> 
-> Yes. It's gross hackery. 
-> 
-> 1) We want to have a cleanup of the tick assumptions _all_ over the
-> place and this is going to be real hard work.
-> 
-> 2) As I said above. The time accounting for virtualization needs to be
-> fixed in a generic way.
-> 
-> I'm not going to accept some weird hackery for virtualization, which is
-> of exactly ZERO value for the kernel itself. Quite the contrary it will
-> make the cleanup harder and introduce another hard to remove thing,
-> which will in the worst case last for ever.
->
+Jeff,
 
-Okay, to confirm I'm on the same page as you, you want to move process 
-time accounting from being periodic sampled based to being trace based? 
-i.e. at the system-call/interrupt boundaries, read clocksource and 
-compute directly the amount of system/user/process time?
+Please apply and forward this patch upstream.
 
-Do you know if anyone has explored this?  I thought there was a 
-discussion about this a while back but it was rejected due to the 
-sample-based approach having much lower overheads on high system call 
-rate workloads.
+Ram
+> -----Original Message-----
+> From: Ramkrishna Vepa
+> Sent: Monday, March 05, 2007 2:34 PM
+> To: 'Linas Vepstas'
+> Cc: Wen Xiong; linux-kernel@vger.kernel.org; linux-
+> pci@atrey.karlin.mff.cuni.cz; netdev@vger.kernel.org; Jeff Garzik;
+Andrew
+> Morton
+> Subject: RE: [PATCH] s2io: add PCI error recovery support
+> 
+> Comments on this patch -
+> 
+> 1. device_close_flag is unused and is not required.
+> > +static pci_ers_result_t s2io_io_error_detected(struct pci_dev
+*pdev,
+> > +                                               pci_channel_state_t
+> state)
+> > +{
+> 		...
+> > +		do_s2io_card_down(sp, 0);
+> > +		sp->device_close_flag = TRUE;	/* Device is shut down.
+*/
+> 
+> 2. s2io_reset can fail to reset the device. Ideally s2io_reset should
+> return a failure in this case (return is void now) and in this case
+could
+> s2io_io_slot_reset() be called again, maybe try thrice, in total,
+before
+> failing to reset the slot?
+> 
+> Ram
+> > -----Original Message-----
+> > From: Linas Vepstas [mailto:linas@austin.ibm.com]
+> > Sent: Thursday, February 15, 2007 3:09 PM
+> > To: Ramkrishna Vepa; Raghavendra Koushik; Ananda Raju
+> > Cc: Wen Xiong; linux-kernel@vger.kernel.org; linux-
+> > pci@atrey.karlin.mff.cuni.cz; netdev@vger.kernel.org; Jeff Garzik;
+> Andrew
+> > Morton
+> > Subject: [PATCH] s2io: add PCI error recovery support
+> >
+> >
+> > Koushik, Raju,
+> >
+> > Please review, comment, and if you find this acceptable,
+> > please forward upstream. This patch incorporates all of
+> > fixes resulting from the last set of discussions, circa
+> > November 2006.
+> >
+> > --linas
+> >
+> > This patch adds PCI error recovery support to the
+> > s2io 10-Gigabit ethernet device driver. Fourth revision,
+> > blocks interrupts and the watchdog. Adds a flag to
+> > s2io_down(), to avoid doing I/O when PCI bus is offline.
+> >
+> > Tested, seems to work well.
+> >
+> > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> > Acked-by: Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>
+> > Cc: Raghavendra Koushik <raghavendra.koushik@neterion.com>
+> > Cc: Ananda Raju <Ananda.Raju@neterion.com>
+> > Cc: Wen Xiong <wenxiong@us.ibm.com>
+> >
+> > ----
+> >  drivers/net/s2io.c |  116
+> > ++++++++++++++++++++++++++++++++++++++++++++++++++---
+> >  drivers/net/s2io.h |    5 ++
+> >  2 files changed, 116 insertions(+), 5 deletions(-)
+> >
+> > Index: linux-2.6.20-git4/drivers/net/s2io.c
+> > ===================================================================
+> > --- linux-2.6.20-git4.orig/drivers/net/s2io.c	2007-02-15
+> > 15:39:35.000000000 -0600
+> > +++ linux-2.6.20-git4/drivers/net/s2io.c	2007-02-15
+> 16:15:10.000000000 -
+> > 0600
+> > @@ -435,11 +435,18 @@ static struct pci_device_id s2io_tbl[] _
+> >
+> >  MODULE_DEVICE_TABLE(pci, s2io_tbl);
+> >
+> > +static struct pci_error_handlers s2io_err_handler = {
+> > +	.error_detected = s2io_io_error_detected,
+> > +	.slot_reset = s2io_io_slot_reset,
+> > +	.resume = s2io_io_resume,
+> > +};
+> > +
+> >  static struct pci_driver s2io_driver = {
+> >        .name = "S2IO",
+> >        .id_table = s2io_tbl,
+> >        .probe = s2io_init_nic,
+> >        .remove = __devexit_p(s2io_rem_nic),
+> > +      .err_handler = &s2io_err_handler,
+> >  };
+> >
+> >  /* A simplifier macro used both by init and free shared_mem Fns().
+*/
+> > @@ -2577,6 +2584,9 @@ static void s2io_netpoll(struct net_devi
+> >  	u64 val64 = 0xFFFFFFFFFFFFFFFFULL;
+> >  	int i;
+> >
+> > +	if (pci_channel_offline(nic->pdev))
+> > +		return;
+> > +
+> >  	disable_irq(dev->irq);
+> >
+> >  	atomic_inc(&nic->isr_cnt);
+> > @@ -3079,6 +3089,8 @@ static void alarm_intr_handler(struct s2
+> >  	int i;
+> >  	if (atomic_read(&nic->card_state) == CARD_DOWN)
+> >  		return;
+> > +	if (pci_channel_offline(nic->pdev))
+> > +		return;
+> >  	nic->mac_control.stats_info->sw_stat.ring_full_cnt = 0;
+> >  	/* Handling the XPAK counters update */
+> >  	if(nic->mac_control.stats_info->xpak_stat.xpak_timer_count <
+72000)
+> > {
+> > @@ -4117,6 +4129,10 @@ static irqreturn_t s2io_isr(int irq, voi
+> >  	struct mac_info *mac_control;
+> >  	struct config_param *config;
+> >
+> > +	/* Pretend we handled any irq's from a disconnected card */
+> > +	if (pci_channel_offline(sp->pdev))
+> > +		return IRQ_NONE;
+> > +
+> >  	atomic_inc(&sp->isr_cnt);
+> >  	mac_control = &sp->mac_control;
+> >  	config = &sp->config;
+> > @@ -6188,7 +6204,7 @@ static void s2io_rem_isr(struct s2io_nic
+> >  	} while(cnt < 5);
+> >  }
+> >
+> > -static void s2io_card_down(struct s2io_nic * sp)
+> > +static void do_s2io_card_down(struct s2io_nic * sp, int do_io)
+> >  {
+> >  	int cnt = 0;
+> >  	struct XENA_dev_config __iomem *bar0 = sp->bar0;
+> > @@ -6203,7 +6219,8 @@ static void s2io_card_down(struct s2io_n
+> >  	atomic_set(&sp->card_state, CARD_DOWN);
+> >
+> >  	/* disable Tx and Rx traffic on the NIC */
+> > -	stop_nic(sp);
+> > +	if (do_io)
+> > +		stop_nic(sp);
+> >
+> >  	s2io_rem_isr(sp);
+> >
+> > @@ -6211,7 +6228,7 @@ static void s2io_card_down(struct s2io_n
+> >  	tasklet_kill(&sp->task);
+> >
+> >  	/* Check if the device is Quiescent and then Reset the NIC */
+> > -	do {
+> > +	while(do_io) {
+> >  		/* As per the HW requirement we need to replenish the
+> >  		 * receive buffer to avoid the ring bump. Since there is
+> >  		 * no intention of processing the Rx frame at this
+pointwe are
+> > @@ -6236,8 +6253,9 @@ static void s2io_card_down(struct s2io_n
+> >  				  (unsigned long long) val64);
+> >  			break;
+> >  		}
+> > -	} while (1);
+> > -	s2io_reset(sp);
+> > +	}
+> > +	if (do_io)
+> > +		s2io_reset(sp);
+> >
+> >  	spin_lock_irqsave(&sp->tx_lock, flags);
+> >  	/* Free all Tx buffers */
+> > @@ -6252,6 +6270,11 @@ static void s2io_card_down(struct s2io_n
+> >  	clear_bit(0, &(sp->link_state));
+> >  }
+> >
+> > +static void s2io_card_down(struct s2io_nic * sp)
+> > +{
+> > +	do_s2io_card_down(sp, 1);
+> > +}
+> > +
+> >  static int s2io_card_up(struct s2io_nic * sp)
+> >  {
+> >  	int i, ret = 0;
+> > @@ -7536,3 +7559,86 @@ static void lro_append_pkt(struct s2io_n
+> >  	sp->mac_control.stats_info->sw_stat.clubbed_frms_cnt++;
+> >  	return;
+> >  }
+> > +
+> > +/**
+> > + * s2io_io_error_detected - called when PCI error is detected
+> > + * @pdev: Pointer to PCI device
+> > + * @state: The current pci conneection state
+> > + *
+> > + * This function is called after a PCI bus error affecting
+> > + * this device has been detected.
+> > + */
+> > +static pci_ers_result_t s2io_io_error_detected(struct pci_dev
+*pdev,
+> > +                                               pci_channel_state_t
+> state)
+> > +{
+> > +	struct net_device *netdev = pci_get_drvdata(pdev);
+> > +	struct s2io_nic *sp = netdev->priv;
+> > +
+> > +	netif_device_detach(netdev);
+> > +
+> > +	if (netif_running(netdev)) {
+> > +		/* Bring down the card, while avoiding PCI I/O */
+> > +		do_s2io_card_down(sp, 0);
+> > +		sp->device_close_flag = TRUE;	/* Device is shut down.
+*/
+> > +	}
+> > +	pci_disable_device(pdev);
+> > +
+> > +	return PCI_ERS_RESULT_NEED_RESET;
+> > +}
+> > +
+> > +/**
+> > + * s2io_io_slot_reset - called after the pci bus has been reset.
+> > + * @pdev: Pointer to PCI device
+> > + *
+> > + * Restart the card from scratch, as if from a cold-boot.
+> > + * At this point, the card has exprienced a hard reset,
+> > + * followed by fixups by BIOS, and has its config space
+> > + * set up identically to what it was at cold boot.
+> > + */
+> > +static pci_ers_result_t s2io_io_slot_reset(struct pci_dev *pdev)
+> > +{
+> > +	struct net_device *netdev = pci_get_drvdata(pdev);
+> > +	struct s2io_nic *sp = netdev->priv;
+> > +
+> > +	if (pci_enable_device(pdev)) {
+> > +		printk(KERN_ERR "s2io: "
+> > +		       "Cannot re-enable PCI device after reset.\n");
+> > +		return PCI_ERS_RESULT_DISCONNECT;
+> > +	}
+> > +
+> > +	pci_set_master(pdev);
+> > +	s2io_reset(sp);
+> > +
+> > +	return PCI_ERS_RESULT_RECOVERED;
+> > +}
+> > +
+> > +/**
+> > + * s2io_io_resume - called when traffic can start flowing again.
+> > + * @pdev: Pointer to PCI device
+> > + *
+> > + * This callback is called when the error recovery driver tells
+> > + * us that its OK to resume normal operation.
+> > + */
+> > +static void s2io_io_resume(struct pci_dev *pdev)
+> > +{
+> > +	struct net_device *netdev = pci_get_drvdata(pdev);
+> > +	struct s2io_nic *sp = netdev->priv;
+> > +
+> > +	if (netif_running(netdev)) {
+> > +		if (s2io_card_up(sp)) {
+> > +			printk(KERN_ERR "s2io: "
+> > +			       "Can't bring device back up after
+reset.\n");
+> > +			return;
+> > +		}
+> > +
+> > +		if (s2io_set_mac_addr(netdev, netdev->dev_addr) ==
+FAILURE) {
+> > +			s2io_card_down(sp);
+> > +			printk(KERN_ERR "s2io: "
+> > +			       "Can't resetore mac addr after
+reset.\n");
+> > +			return;
+> > +		}
+> > +	}
+> > +
+> > +	netif_device_attach(netdev);
+> > +	netif_wake_queue(netdev);
+> > +}
+> > Index: linux-2.6.20-git4/drivers/net/s2io.h
+> > ===================================================================
+> > --- linux-2.6.20-git4.orig/drivers/net/s2io.h	2007-02-15
+> > 15:39:35.000000000 -0600
+> > +++ linux-2.6.20-git4/drivers/net/s2io.h	2007-02-15
+> 16:59:40.000000000 -
+> > 0600
+> > @@ -1020,6 +1020,11 @@ static void update_L3L4_header(struct s2
+> >  static void lro_append_pkt(struct s2io_nic *sp, struct lro *lro,
+> >  			   struct sk_buff *skb, u32 tcp_len);
+> >
+> > +static pci_ers_result_t s2io_io_error_detected(struct pci_dev
+*pdev,
+> > +			                      pci_channel_state_t
+state);
+> > +static pci_ers_result_t s2io_io_slot_reset(struct pci_dev *pdev);
+> > +static void s2io_io_resume(struct pci_dev *pdev);
+> > +
+> >  #define s2io_tcp_mss(skb) skb_shinfo(skb)->gso_size
+> >  #define s2io_udp_mss(skb) skb_shinfo(skb)->gso_size
+> >  #define s2io_offload_type(skb) skb_shinfo(skb)->gso_type
