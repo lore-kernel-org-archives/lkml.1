@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbXCGPNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbXCGPTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751805AbXCGPNT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 10:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXCGPNT
+	id S1751891AbXCGPTF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 10:19:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXCGPTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 10:13:19 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34303 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbXCGPNS (ORCPT
+	Wed, 7 Mar 2007 10:19:04 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:4703 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbXCGPTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 10:13:18 -0500
-Subject: Re: How do I analyze a soft lockup?
-From: Arjan van de Ven <arjan@infradead.org>
-To: Rainer Koenig <Rainer.Koenig@fujitsu-siemens.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <87k5xt40ew.fsf@ABG3595C.abg.fsc.net>
-References: <87k5xt40ew.fsf@ABG3595C.abg.fsc.net>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 07 Mar 2007 07:12:20 -0800
-Message-Id: <1173280342.3540.7.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Wed, 7 Mar 2007 10:19:03 -0500
+X-IronPort-AV: i="4.14,260,1170651600"; 
+   d="scan'208"; a="23803696:sNHT23746345"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Krzysztof Halasa" <khc@pm.waw.pl>
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+Date: Wed, 7 Mar 2007 10:19:55 -0500
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>, rmk@arm.linux.org.uk,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com> <200703061824.08834.rgetz@blackfin.uclinux.org> <m3irddusp0.fsf@maximus.localdomain>
+In-Reply-To: <m3irddusp0.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200703071019.55896.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 07 Mar 2007 15:18:56.0498 (UTC) FILETIME=[EC73AD20:01C760CB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 15:02 +0100, Rainer Koenig wrote:
-> Hi there,
-> 
-> Environment:
-> 
-> Kernel is 2.6.16.27, arch x86_64 on a Dual Core AMD64 machine with
-> 4 GB of RAM. Also involved is an Areca 1100 SATA RAID controller
-> with the drives from the Tekram website. 
-> 
-> Problem: 
-> 
-> We get customer reports that a system stops with the following kernel
-> messages (as they are submitted to us, we're not able yet to reproduce
-> the problem in our laboratory :-( )
+On Wed 7 Mar 2007 07:46, Krzysztof Halasa pondered:
+> Robin Getz <rgetz@blackfin.uclinux.org> writes:
+> > It is useful on (broken) legacy serial equipment, where RTS should be
+> > completely under the applications control.
+> >
+> > Glitches on RTS aren't acceptable, and confuse some devices.
+>
+> Does that mean you can't use TIOCMSET, TIOCM_RTS etc?
+>
+> > I understand - the request wasn't to change the default operation -
+>
+> just
+>
+> > add a
+> > method of controlling things, so those minority of people who want the
+> >
+> > control can have it.
+>
+> No problem as long as open without CRTSCTS raises RTS by default.
 
-looks like a stack overflow or a random memory scribble to me.
-Alternatively the stacktrace is entirely garbled, also a possibility.
-I assume you checked there were no other external modules involved?
-Also can the user use a much later version of the kernel (which has
-areca merged and can enable lockdep debugging)?
+Right - so the question is where to manage the default state? I was thinking 
+in the resource might be a good idea, but there isn't really a good place for 
+it. (You could re-use some bits if flags, but I think that would not be a 
+good idea).
 
+-Robin
