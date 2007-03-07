@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161108AbXCGBRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161104AbXCGBSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161108AbXCGBRX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 20:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161113AbXCGBRX
+	id S1161104AbXCGBSU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 20:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161107AbXCGBST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 20:17:23 -0500
-Received: from imx12.toshiba.co.jp ([61.202.160.132]:39027 "EHLO
-	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161110AbXCGBRV (ORCPT
+	Tue, 6 Mar 2007 20:18:19 -0500
+Received: from inet-tsb5.toshiba.co.jp ([202.33.96.24]:39580 "EHLO
+	inet-tsb5.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161104AbXCGBSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 20:17:21 -0500
-Date: Wed, 07 Mar 2007 10:16:55 +0900
-Message-ID: <yyify8h26pk.wl@toshiba.co.jp>
+	Tue, 6 Mar 2007 20:18:18 -0500
+Date: Wed, 07 Mar 2007 10:18:05 +0900
+Message-ID: <yyiejo126nm.wl@toshiba.co.jp>
 From: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 To: mingo@elte.hu
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        tsutomu.owa@toshiba.co.jp
-Subject: [patch 3/7] powerpc 2.6.20-rt8: fix compile error (manage.c)
+Subject: [patch 4/7] powerpc 2.6.20-rt8: fix compile error (futex.h)
 In-Reply-To: <yyik5xt27c0.wl@toshiba.co.jp>
 References: <yyik5xt27c0.wl@toshiba.co.jp>
 User-Agent: Wanderlust/2.8.1 (Something) Emacs/20.7 Mule/4.0 (HANANOEN)
@@ -27,30 +27,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-To fix the following compile error.
+To fix the following compile error by adding dummy functions for now.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-kernel/irq/manage.c: In function 'irq_set_affinity':
-kernel/irq/manage.c:81: error: invalid type argument of '->'
-kernel/irq/manage.c:82: error: invalid type argument of '->'
+include/asm-powerpc/futex.h
+kernel/built-in.o: In function `fixup_pi_state_owner64':
+kernel/futex.c:2380: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
+kernel/built-in.o: In function `futex_lock_pi64':
+kernel/futex.c:3228: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
+kernel/futex.c:3273: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
+kernel/futex.c:3310: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
+kernel/built-in.o: In function `futex_requeue_pi64':
+kernel/futex.c:2756: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
+kernel/built-in.o: In function `do_futex64':
+kernel/futex.c:2547: undefined reference to `.futex_atomic_op_inuser64'
+kernel/futex.c:3446: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
+	:
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Signed-off-by: Tsutomu Owa <tsutomu.owa@toshiba.co.jp>
 -- owa
 
-diff -rup linux-rt8/kernel/irq/manage.c rt/kernel/irq/manage.c
---- linux-rt8/kernel/irq/manage.c	2007-02-20 14:30:41.000000000 +0900
-+++ rt/kernel/irq/manage.c	2007-02-20 16:07:37.000000000 +0900
-@@ -78,8 +78,8 @@ int irq_set_affinity(unsigned int irq, c
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	set_pending_irq(irq, cpumask);
- #else
--	irq_desc[irq]->affinity = cpumask;
--	irq_desc[irq]->chip->set_affinity(irq, cpumask);
-+	desc->affinity = cpumask;
-+	desc->chip->set_affinity(irq, cpumask);
- #endif
- 	return 0;
+diff -rup linux-rt8/include/asm-powerpc/futex.h rt/include/asm-powerpc/futex.h
+--- linux-rt8/include/asm-powerpc/futex.h	2007-02-20 09:37:26.000000000 +0900
++++ rt/include/asm-powerpc/futex.h	2007-03-05 10:36:15.000000000 +0900
+@@ -113,5 +113,25 @@ futex_atomic_cmpxchg_inatomic(int __user
+         return prev;
  }
-
+ 
++static inline int
++futex_atomic_op_inuser64 (int encoded_op, u64 __user *uaddr)
++{
++       /* FIXME: implement this at some point! */
++	printk("futex_atomic_op_inuser64: not yet.\n");
++       BUG();
++
++       return 0;
++}
++
++static inline u64
++futex_atomic_cmpxchg_inatomic64(u64 __user *uaddr, u64 oldval, u64 newval)
++{
++       /* FIXME: implement this at some point! */
++	printk("futex_atomic_cmpxchg_inatomic64: not yet.\n");
++       BUG();
++
++       return 0;
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_FUTEX_H */
 
