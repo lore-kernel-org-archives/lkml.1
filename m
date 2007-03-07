@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751108AbXCGXu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbXCGXzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751108AbXCGXu6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbXCGXu6
+	id S1751954AbXCGXzw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXCGXzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:50:58 -0500
-Received: from mta9.adelphia.net ([68.168.78.199]:58312 "EHLO
-	mta9.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbXCGXu4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:50:56 -0500
-Message-ID: <45EF502C.9090207@walsh.ws>
-Date: Wed, 07 Mar 2007 18:52:12 -0500
-From: Brian Walsh <brian@walsh.ws>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070127)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Russell King <linux@arm.linux.org.uk>
-Subject: [PATCH] include/asm-arm/arch-ixp4xx:  Consolidate check_signature
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 7 Mar 2007 18:55:52 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:39554 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751954AbXCGXzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 18:55:51 -0500
+Date: Wed, 7 Mar 2007 15:55:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix erroneous "MODVERSIONS" with "CONFIG_MODVERSIONS".
+Message-Id: <20070307155548.e00f95cc.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703071826490.3752@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703071826490.3752@CPE00045a9c397f-CM001225dbafb6>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The check_signature function is now in linux/include/io.h.  This platform
-was missed in the previous consolidation.
+On Wed, 7 Mar 2007 18:28:48 -0500 (EST)
+"Robert P. J. Day" <rpjday@mindspring.com> wrote:
 
-Signed-off-by:  Brian Walsh <brian@walsh.ws>
+> 
+>   Replace the apparently misspelled "MODVERSIONS" preprocessor
+> variable with "CONFIG_MODVERSIONS".
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+> ---
+> 
+> diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
+> index 76357c8..94473fc 100644
+> --- a/drivers/char/rocket.c
+> +++ b/drivers/char/rocket.c
+> @@ -65,7 +65,7 @@
+> 
+>  /****** Kernel includes ******/
+> 
+> -#ifdef MODVERSIONS
+> +#ifdef CONFIG_MODVERSIONS
+>  #include <config/modversions.h>
+>  #endif
+> 
 
-
-diff -ur a/include/asm-arm/arch-ixp4xx/io.h b/include/asm-arm/arch-ixp4xx/io.h
---- a/include/asm-arm/arch-ixp4xx/io.h	2007-03-07 14:59:47.000000000 -0500
-+++ b/include/asm-arm/arch-ixp4xx/io.h	2007-03-07 14:58:54.000000000 -0500
-@@ -238,23 +238,6 @@
- #define memcpy_fromio(a,c,l)		_memcpy_fromio((a),(c),(l))
- #define memcpy_toio(c,a,l)		_memcpy_toio((c),(a),(l))
-
--static inline int
--check_signature(const unsigned char __iomem *bus_addr, const unsigned char
-*signature,
--		int length)
--{
--	int retval = 0;
--	do {
--		if (readb(bus_addr) != *signature)
--			goto out;
--		bus_addr++;
--		signature++;
--		length--;
--	} while (length);
--	retval = 1;
--out:
--	return retval;
--}
--
- #endif
-
- #ifndef CONFIG_PCI
+It was obviously all do-nothing code, so I deleted it.
