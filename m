@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161304AbXCGHpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbXCGICf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161304AbXCGHpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161309AbXCGHpw
+	id S1751597AbXCGICf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 03:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXCGICf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:45:52 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:54809 "EHLO smtp.osdl.org"
+	Wed, 7 Mar 2007 03:02:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50614 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161304AbXCGHpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:45:51 -0500
-Date: Tue, 6 Mar 2007 23:45:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: bryan.wu@analog.com
-Cc: Jean Delvare <khali@linux-fr.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Sonic Zhang <sonic.adi@gmail.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       mhfan@ustc.edu
-Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
-Message-Id: <20070306234529.3ce4cf3b.akpm@linux-foundation.org>
-In-Reply-To: <1173253167.28531.41.camel@roc-desktop>
-References: <1173164058.31825.16.camel@roc-desktop>
-	<20070306214301.GA5590@martell.zuzino.mipt.ru>
-	<1173247078.28531.24.camel@roc-desktop>
-	<20070307075822.53e53c42.khali@linux-fr.org>
-	<20070306231423.4231c99b.akpm@linux-foundation.org>
-	<1173253167.28531.41.camel@roc-desktop>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751596AbXCGICe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 03:02:34 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jeff Dike <jdike@addtoit.com>
+X-Fcc: ~/Mail/utrace
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH] UML utrace support, step 1
+In-Reply-To: Jeff Dike's message of  Monday, 5 March 2007 14:21:20 -0500 <20070305192120.GA7320@ccure.user-mode-linux.org>
+X-Windows: let it get in *your* way.
+Message-Id: <20070307080159.F27C41801C4@magilla.sf.frob.com>
+Date: Wed,  7 Mar 2007 00:01:59 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Mar 2007 15:39:27 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
+> On Thu, Feb 22, 2007 at 07:19:03PM -0800, Roland McGrath wrote:
+> > Your replacement patch still has utrace_regset stuff in it, so it doesn't
+> > compile without the later patches in the series.  Try applying only
+> > utrace-tracehook.patch from the series, then get it to build and make your
+> > utrace-tracehook-um.patch.
+> 
+> Below is a tracehook patch for UML which goes right after
+> utrace-utrace-tracehook.patch.
 
-> Thanks a lot, could you please give me a script just to kill this
-> whitespace? So I can do it before sending you patches.
-
-
-Is pretty simple:
-
-#!/bin/sh
-#
-# Strip any trailing whitespace which a unified diff adds.
-#
-
-strip1()
-{
-	TMP=$(mktemp /tmp/XXXXXX)
-	cp $1 $TMP
-	sed -e '/^+/s/[ 	]*$//' < $TMP > $1
-	rm $TMP
-}
-
-for i in $*
-do
-	strip1 $i
-done
+It does not.  That patch has regset and ptrace stuff in it.  It indeed
+applies fine before or after utrace patches.  But it doesn't close to
+compile without utrace-regset.patch and utrace-core.patch applied,
+and even with utrace-ptrace-compat.patch it still doesn't compile for me
+with a lot of complaints about TIF_SINGLESTEP not being defined where
+it's used in asm/tracehook.h.
 
 
-that'll be in
-http://www.zip.com.au/~akpm/linux/patches/patch-scripts-0.20/patch-scripts-0.20.tar.gz
-too
+Thanks,
+Roland
