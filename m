@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422906AbXCGR1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422900AbXCGR1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422906AbXCGR1T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422903AbXCGRR4
+	id S1422900AbXCGR1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422897AbXCGRRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:17:56 -0500
-Received: from ns1.suse.de ([195.135.220.2]:44270 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:17:52 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43676 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422889AbXCGRR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:17:28 -0500
-Message-Id: <20070307171548.971856222@mini.kroah.org>
+	id S1422890AbXCGRRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:17:35 -0500
+Message-Id: <20070307171558.201204297@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:52 -0800
+Date: Wed, 07 Mar 2007 09:11:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,96 +22,59 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Dmitry Torokhov <dtor@mail.ru>, Thomas Renninger <trenn@suse.de>
-Subject: [patch 077/101] Backport of psmouse suspend/shutdown cleanups
-Content-Disposition: inline; filename=backport-of-psmouse-suspend-shutdown-cleanups.patch
+       alan@lxorguk.ukuu.org.uk, neilb@suse.de, kas@fi.muni.cz,
+       Trond.Myklebust@netapp.com
+Subject: [patch 079/101] RPM: fix double free in portmapper code
+Content-Disposition: inline; filename=rpm-fix-double-free-in-portmapper-code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Renninger <trenn@suse.de>
 
-This patch works back to 2.6.17 (earlier kernels seem to
-need up/down operations on mutex/semaphore).
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-psmouse - properly reset mouse on shutdown/suspend
+rpc_run_task is guaranteed to always call ->rpc_release.
 
-Some people report that they need psmouse module unloaded
-for suspend to ram/disk to work properly. Let's make port
-cleanup behave the same way as driver unload.
-
-This fixes "bad state" problem on various HP laptops, such
-as nx7400.
-
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Neil Brown <neilb@suse.de>
+Cc: Jan "Yenya" Kasprzak <kas@fi.muni.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/input/mouse/psmouse-base.c |   28 ++++++++++++++++++++++++++++
- drivers/input/mouse/psmouse.h      |    1 +
- drivers/input/mouse/synaptics.c    |    1 +
- 3 files changed, 30 insertions(+)
 
---- linux-2.6.20.1.orig/drivers/input/mouse/psmouse-base.c
-+++ linux-2.6.20.1/drivers/input/mouse/psmouse-base.c
-@@ -987,8 +987,36 @@ static void psmouse_resync(struct work_s
- static void psmouse_cleanup(struct serio *serio)
- {
- 	struct psmouse *psmouse = serio_get_drvdata(serio);
-+	struct psmouse *parent = NULL;
-+
-+	mutex_lock(&psmouse_mutex);
-+
-+	if (serio->parent && serio->id.type == SERIO_PS_PSTHRU) {
-+		parent = serio_get_drvdata(serio->parent);
-+		psmouse_deactivate(parent);
-+	}
-+
-+	psmouse_deactivate(psmouse);
-+
-+	if (psmouse->cleanup)
-+		psmouse->cleanup(psmouse);
+---
+ net/sunrpc/pmap_clnt.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+--- linux-2.6.20.1.orig/net/sunrpc/pmap_clnt.c
++++ linux-2.6.20.1/net/sunrpc/pmap_clnt.c
+@@ -62,7 +62,10 @@ static inline void pmap_map_free(struct 
  
- 	psmouse_reset(psmouse);
+ static void pmap_map_release(void *data)
+ {
+-	pmap_map_free(data);
++	struct portmap_args *map = data;
 +
-+/*
-+ * Some boxes, such as HP nx7400, get terribly confused if mouse
-+ * is not fully enabled before suspending/shutting down.
-+ */
-+	ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_ENABLE);
-+
-+	if (parent) {
-+		if (parent->pt_deactivate)
-+			parent->pt_deactivate(parent);
-+
-+		psmouse_activate(parent);
-+	}
-+
-+	mutex_unlock(&psmouse_mutex);
++	xprt_put(map->pm_xprt);
++	pmap_map_free(map);
  }
  
- /*
---- linux-2.6.20.1.orig/drivers/input/mouse/psmouse.h
-+++ linux-2.6.20.1/drivers/input/mouse/psmouse.h
-@@ -68,6 +68,7 @@ struct psmouse {
+ static const struct rpc_call_ops pmap_getport_ops = {
+@@ -133,7 +136,7 @@ void rpc_getport(struct rpc_task *task)
+ 	status = -EIO;
+ 	child = rpc_run_task(pmap_clnt, RPC_TASK_ASYNC, &pmap_getport_ops, map);
+ 	if (IS_ERR(child))
+-		goto bailout;
++		goto bailout_nofree;
+ 	rpc_put_task(child);
  
- 	int (*reconnect)(struct psmouse *psmouse);
- 	void (*disconnect)(struct psmouse *psmouse);
-+	void (*cleanup)(struct psmouse *psmouse);
- 	int (*poll)(struct psmouse *psmouse);
+ 	task->tk_xprt->stat.bind_count++;
+@@ -222,7 +225,6 @@ static void pmap_getport_done(struct rpc
+ 			child->tk_pid, status, map->pm_port);
  
- 	void (*pt_activate)(struct psmouse *psmouse);
---- linux-2.6.20.1.orig/drivers/input/mouse/synaptics.c
-+++ linux-2.6.20.1/drivers/input/mouse/synaptics.c
-@@ -652,6 +652,7 @@ int synaptics_init(struct psmouse *psmou
- 	psmouse->set_rate = synaptics_set_rate;
- 	psmouse->disconnect = synaptics_disconnect;
- 	psmouse->reconnect = synaptics_reconnect;
-+	psmouse->cleanup = synaptics_reset;
- 	psmouse->pktsize = 6;
- 	/* Synaptics can usually stay in sync without extra help */
- 	psmouse->resync_time = 0;
+ 	pmap_wake_portmap_waiters(xprt, status);
+-	xprt_put(xprt);
+ }
+ 
+ /**
 
 --
