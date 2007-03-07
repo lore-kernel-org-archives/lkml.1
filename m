@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422826AbXCGRrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422823AbXCGRru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422826AbXCGRrM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422964AbXCGRrL
+	id S1422823AbXCGRru (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422954AbXCGRrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:47:11 -0500
-Received: from smtp.rutgers.edu ([128.6.72.243]:22551 "EHLO
-	annwn14.rutgers.edu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422954AbXCGRrF (ORCPT
+	Wed, 7 Mar 2007 12:47:14 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:21140 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422823AbXCGRqy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:47:05 -0500
-X-Greylist: delayed 1497 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 12:47:05 EST
-From: Michael Wu <flamingice@sourmilk.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] prism54usb: Fix hail of warnings on 64bit platforms
-Date: Wed, 7 Mar 2007 12:21:12 -0500
-User-Agent: KMail/1.9.5
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-References: <20070307164020.16944e32@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070307164020.16944e32@lxorguk.ukuu.org.uk>
+	Wed, 7 Mar 2007 12:46:54 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=XLCR8J/qwir9NVYWlFcnB2AenJw31Aw613DBqHr93dd0c97ZpbRFBw99DVdDAT2eJ
+	SZ20FMv/FmQIwLAe2mI+A==
+Message-ID: <6599ad830703070946s1c6c0535oadff0a109731a4f9@mail.gmail.com>
+Date: Wed, 7 Mar 2007 09:46:35 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Cc: "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, ebiederm@xmission.com,
+       sam@vilain.net, akpm@linux-foundation.org, pj@sgi.com, dev@sw.ru,
+       xemul@sw.ru, containers@lists.osdl.org, winget@google.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20070307174346.GA19521@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3115638.HeVOGtHyun";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200703071221.19580.flamingice@sourmilk.net>
+Content-Disposition: inline
+References: <20070301133543.GK15509@in.ibm.com>
+	 <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com>
+	 <20070307173031.GC2336@in.ibm.com>
+	 <20070307174346.GA19521@sergelap.austin.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3115638.HeVOGtHyun
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Wednesday 07 March 2007 11:40, Alan Cox wrote:
-> If you want to cast a pointer to a small value then start by turning it
-> into an unsigned long so the compiler knows what is going on.
+On 3/7/07, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> Quoting Srivatsa Vaddagiri (vatsa@in.ibm.com):
+> > On Tue, Mar 06, 2007 at 06:32:07PM -0800, Paul Menage wrote:
+> > > I'm not really sure that I see the value of having this be part of
+> > > nsproxy rather than the previous independent container (and
+> > > container_group) structure.
+> >
+> > *shrug*
+> >
+> > I wrote the patch mainly to see whether the stuff container folks (Sam Vilain
+> > et al) were complaining abt (that container structure abstraction
+> > inside the kernel is redundant/unnecessary) made sense or not.
 >
-I already have a fix for that - just haven't pushed it up to wireless-dev y=
-et.
+> I still think the complaint was about terminology, not implementation.
 
-> Personally I find the whole approach used by this driver for types of
-> registers (which are really USB register numbers) utterly perverse...
->
-The same register offsets are used in the PCI driver since version 1 usb=20
-devices are really just the PCI device with a usb->pci bridge chip attached.
+No, Sam was saying that nsproxy should be the object that all resource
+controllers hook off.
 
-=2DMichael Wu
-
---nextPart3115638.HeVOGtHyun
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBF7vSPT3Oqt9AH4aERAk/+AJ47KBW4bG3o0v6E2HsiFeZIL+el+ACgnL15
-Vqmt1hL7herq5ZcLS8Krg1Y=
-=hFX9
------END PGP SIGNATURE-----
-
---nextPart3115638.HeVOGtHyun--
+Paul
