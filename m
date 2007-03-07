@@ -1,211 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992472AbXCGWOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030301AbXCGWQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992472AbXCGWOg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 17:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992476AbXCGWOg
+	id S1030301AbXCGWQy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 17:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXCGWQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 17:14:36 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34113 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992472AbXCGWOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:14:33 -0500
-Date: Wed, 7 Mar 2007 14:14:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: leonid.i.ananiev@intel.com
-Cc: Leonid Ananiev <leonid.i.ananiev@linux.intel.com>,
-       linux-kernel@vger.kernel.org,
-       "linux-aio@kvack.org" <linux-aio@kvack.org>
-Subject: Re: [PATCH 1/3] aio: fix oops because of extra IO control block
- freeing.
-Message-Id: <20070307141422.25ba2730.akpm@linux-foundation.org>
-In-Reply-To: <45EC27E5.20006@linux.intel.com>
-References: <45EC27E5.20006@linux.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Mar 2007 17:16:54 -0500
+Received: from wr-out-0506.google.com ([64.233.184.236]:42843 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030301AbXCGWQx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 17:16:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FY8KHPD1NnbOohldV6OA8INDyDfkSWwvLe8z3sx5ShVbebhaOGpcXvIpYYOgArjEsOjEoKa1fH6JK2doT0wFYDDipQUPXxpZwvwPM+tpWsUcNc2sJZjGtsOPc5pVnbQa/GDHARsmb/BpmQKva3WF6XKAXGJ9Zvn2jkpnX0hGbXI=
+Message-ID: <6bffcb0e0703071416j2217623bxbef6d24ddf755630@mail.gmail.com>
+Date: Wed, 7 Mar 2007 23:16:51 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: mm snapshot broken-out-2007-03-05-02-22.tar.gz uploaded
+Cc: "Randy Cushman" <rcushman_linux@earthlink.net>,
+       "Takashi Iwai" <tiwai@suse.de>, "Jaroslav Kysela" <perex@suse.cz>,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@stusta.de>
+In-Reply-To: <20070307115024.756c848f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703051024.l25AOIF3015951@shell0.pdx.osdl.net>
+	 <45EC2DEB.1050108@googlemail.com> <45EEA3C4.7000501@googlemail.com>
+	 <20070307104746.f08a2e84.akpm@linux-foundation.org>
+	 <6bffcb0e0703071141j42309702w793e4a76b1b23bfa@mail.gmail.com>
+	 <20070307115024.756c848f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Mar 2007 17:23:33 +0300
-Leonid Ananiev <leonid.i.ananiev@linux.intel.com> wrote:
+On 07/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 7 Mar 2007 20:41:30 +0100 "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
+>
+> > > > 831466f4ad2b5fe23dff77edbe6a7c244435e973 is first bad commit
+> > > > commit 831466f4ad2b5fe23dff77edbe6a7c244435e973
+> > > > Author: Randy Cushman <rcushman_linux@earthlink.net>
+> > > > Date:   Tue Dec 19 18:42:16 2006 +0100
+> > > >
+> > > >     [ALSA] ac97 - fix microphone and line_in selection logic
+> > > >
+> > > >     This patch fixes the Microphone and LINE_IN select logic for
+> > > >     Analog Devices surround codecs with shared jacks.  The existing
+> > > >     code can never utilize the shared jacks for Microphone and LINE_IN
+> > > >     due to the reversed jack selection logic.  The patched code
+> > > >     correctly selects the shared jack for input if the 'Channel Mode'
+> > > >     selector does not specify that the jack is to be used for output.
+> > > >     Specifically, in '2ch' mode the Center/LFE jack is used for
+> > > >     microphone input and the Surround jack is used for LINE_IN,
+> > > >     in '4ch' mode the Center/LFE jack is used for microphone input
+> > > >     and the Surround jack is used for output, and in '6ch' mode
+> > > >     both jacks are used for output.
+> > > >
+> > > >     Signed-off-by: Randy Cushman <rcushman_linux@earthlink.net>
+> > > >     Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> > > >     Signed-off-by: Jaroslav Kysela <perex@suse.cz>
+> > > >
+> > >
+> > > Is 2.6.21-rc3 similarly broken?
+> >
+> > Yes.
+> >
+>
+> OK.  Can you please confirm that applying the below fixes 2.6.21-rc3?
 
->  From Leonid Ananiev
-> 
-> The patch fixes oops because of extra IO control block freeing.
-> IO is retried if page could not be invalidated.
-> 
-> Signed-off-by: Leonid Ananiev <leonid.i.ananiev@intel.com>
-> 
-> The patch fixes oops "Kernel BUG at fs/aio.c:509" archived at 
-> http://lkml.org/lkml/2007/2/8/337
-> The number of IO control block (iocb)users < 0.
-> If page could not be invalidated by invalidate_inode_pages2_range()
-> than EIO is returned. It happens if journal_try_to_free_buffers() fails 
-> to drop_buffers().
-> This EIO is not differing from real IO competition with EIO and 
-> aio_complete() is called.
-> Later aio_complete() is called from dio_bio_end_aio() and frees iocb 
-> once more.
-> 
-> After patch generic_file_direct_IO() sets PgBusy flag in iocb
-> if page could not be invalidated. iocb is retried after IO competition.
-> The process is waked up if IO is SYNC else iocb is kicked.
-> The lines ___if (ret != -EIOCBRETRY)___ is deleted because
-> nothing set to EIOCBRETRY.
+Yes, I can confirm that.
 
-Please copy linux-aio@kvack.org on AIO patches.
+>
+> If so, I'll queue it up for application in a week or two if there is no
+> progress on this.
+>
 
-> Next patches 2/3 and 3/3 do cleanup only.
+Regards,
+Michal
 
-I cannot find those patches.
-
-> The patch is applied and tested with aio-stress on 2.6.20 and 2.6.21-rc2
-> diff -uprNX linux-2.6.21-rc2/Documentation/dontdiff 
-
-Your email client performs space-stuffing, which makes things harder on the
-receiving end.  http://mbligh.org/linuxdocs/Email/Clients/Thunderbird might
-help.
-
-> linux-2.6.21-rc2/fs/aio.c linux-2.6.21-rc2-aio31/fs/aio.c
-> --- linux-2.6.21-rc2/fs/aio.c	2007-03-05 00:29:58.000000000 -0800
-> +++ linux-2.6.21-rc2-aio31/fs/aio.c	2007-03-05 00:38:11.000000000 -0800
-> @@ -723,37 +723,12 @@ static ssize_t aio_run_iocb(struct kiocb
->   	ret = retry(iocb);
->   	current->io_wait = NULL;
-> 
-> -	if (ret != -EIOCBRETRY && ret != -EIOCBQUEUED) {
-> +	if (!kiocbIsPgBusy(iocb) && ret != -EIOCBQUEUED) {
->   		BUG_ON(!list_empty(&iocb->ki_wait.task_list));
->   		aio_complete(iocb, ret, 0);
->   	}
->   out:
->   	spin_lock_irq(&ctx->ctx_lock);
-> -
-> -	if (-EIOCBRETRY == ret) {
-> -		/*
-> -		 * OK, now that we are done with this iteration
-> -		 * and know that there is more left to go,
-> -		 * this is where we let go so that a subsequent
-> -		 * "kick" can start the next iteration
-> -		 */
-> -
-> -		/* will make __queue_kicked_iocb succeed from here on */
-> -		INIT_LIST_HEAD(&iocb->ki_run_list);
-> -		/* we must queue the next iteration ourselves, if it
-> -		 * has already been kicked */
-> -		if (kiocbIsKicked(iocb)) {
-> -			__queue_kicked_iocb(iocb);
-> -
-> -			/*
-> -			 * __queue_kicked_iocb will always return 1 here, because
-> -			 * iocb->ki_run_list is empty at this point so it should
-> -			 * be safe to unconditionally queue the context into the
-> -			 * work queue.
-> -			 */
-> -			aio_queue_work(ctx);
-> -		}
-> -	}
->   	return ret;
->   }
-> 
-> @@ -945,6 +920,10 @@ int fastcall aio_complete(struct kiocb *
->   		wake_up_process(iocb->ki_obj.tsk);
->   		return 1;
->   	}
-> +	if (TestClearPgBusy(iocb)) { // page could not be invalidated
-> +		kick_iocb(iocb);
-> +		return 1;
-> +	}
-> 
->   	info = &ctx->ring_info;
-> 
-> diff -uprNX linux-2.6.21-rc2/Documentation/dontdiff 
-> linux-2.6.21-rc2/fs/read_write.c linux-2.6.21-rc2-aio31/fs/read_write.c
-> --- linux-2.6.21-rc2/fs/read_write.c	2007-03-05 00:29:58.000000000 -0800
-> +++ linux-2.6.21-rc2-aio31/fs/read_write.c	2007-03-05 04:44:44.000000000 
-> -0800
-> @@ -239,7 +239,7 @@ ssize_t do_sync_read(struct file *filp,
-> 
->   	for (;;) {
->   		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
-> -		if (ret != -EIOCBRETRY)
-> +		if (!TestClearPgBusy(&kiocb))
->   			break;
->   		wait_on_retry_sync_kiocb(&kiocb);
->   	}
-> @@ -297,7 +297,7 @@ ssize_t do_sync_write(struct file *filp,
-> 
->   	for (;;) {
->   		ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
-> -		if (ret != -EIOCBRETRY)
-> +		if (!TestClearPgBusy(&kiocb))
->   			break;
->   		wait_on_retry_sync_kiocb(&kiocb);
->   	}
-> @@ -463,7 +463,7 @@ ssize_t do_sync_readv_writev(struct file
-> 
->   	for (;;) {
->   		ret = fn(&kiocb, iov, nr_segs, kiocb.ki_pos);
-> -		if (ret != -EIOCBRETRY)
-> +		if (!TestClearPgBusy(&kiocb))
->   			break;
->   		wait_on_retry_sync_kiocb(&kiocb);
->   	}
-> diff -uprNX linux-2.6.21-rc2/Documentation/dontdiff 
-> linux-2.6.21-rc2/include/linux/aio.h 
-> linux-2.6.21-rc2-aio31/include/linux/aio.h
-> --- linux-2.6.21-rc2/include/linux/aio.h	2007-02-04 10:44:54.000000000 -0800
-> +++ linux-2.6.21-rc2-aio31/include/linux/aio.h	2007-03-05 
-> 00:38:11.000000000 -0800
-> @@ -34,21 +34,26 @@ struct kioctx;
->   /* #define KIF_LOCKED		0 */
->   #define KIF_KICKED		1
->   #define KIF_CANCELLED		2
-> +#define KIF_PG_BUSY		3
-> 
->   #define kiocbTryLock(iocb)	test_and_set_bit(KIF_LOCKED, &(iocb)->ki_flags)
->   #define kiocbTryKick(iocb)	test_and_set_bit(KIF_KICKED, &(iocb)->ki_flags)
-> +#define TestClearPgBusy(iocb)	test_and_clear_bit(KIF_PG_BUSY, 
-> &(iocb)->ki_flags)
-> 
->   #define kiocbSetLocked(iocb)	set_bit(KIF_LOCKED, &(iocb)->ki_flags)
->   #define kiocbSetKicked(iocb)	set_bit(KIF_KICKED, &(iocb)->ki_flags)
->   #define kiocbSetCancelled(iocb)	set_bit(KIF_CANCELLED, &(iocb)->ki_flags)
-> +#define kiocbSetPgBusy(iocb)	set_bit(KIF_PG_BUSY, &(iocb)->ki_flags)
-> 
->   #define kiocbClearLocked(iocb)	clear_bit(KIF_LOCKED, &(iocb)->ki_flags)
->   #define kiocbClearKicked(iocb)	clear_bit(KIF_KICKED, &(iocb)->ki_flags)
->   #define kiocbClearCancelled(iocb)	clear_bit(KIF_CANCELLED, 
-> &(iocb)->ki_flags)
-> +#define kiocbClearPgBusy(iocb)	clear_bit(KIF_PG_BUSY, &(iocb)->ki_flags)
-> 
->   #define kiocbIsLocked(iocb)	test_bit(KIF_LOCKED, &(iocb)->ki_flags)
->   #define kiocbIsKicked(iocb)	test_bit(KIF_KICKED, &(iocb)->ki_flags)
->   #define kiocbIsCancelled(iocb)	test_bit(KIF_CANCELLED, &(iocb)->ki_flags)
-> +#define kiocbIsPgBusy(iocb)	test_bit(KIF_PG_BUSY, &(iocb)->ki_flags)
-> 
->   /* is there a better place to document function pointer methods? */
->   /**
-> diff -upr linux-2.6.20/mm/filemap.c linux-2.6.20-aio2/mm/filemap.c
-> --- linux-2.6.20/mm/filemap.c	2007-02-04 21:44:54.000000000 +0300
-> +++ linux-2.6.20-aio2/mm/filemap.c	2007-03-04 21:46:10.000000000 +0300
-> @@ -2413,10 +2413,9 @@ generic_file_direct_IO(int rw, struct ki
->   		if (rw == WRITE && mapping->nrpages) {
->   			pgoff_t end = (offset + write_len - 1)
->   						>> PAGE_CACHE_SHIFT;
-> -			int err = invalidate_inode_pages2_range(mapping,
-> -					offset >> PAGE_CACHE_SHIFT, end);
-> -			if (err)
-> -				retval = err;
-> +			if (invalidate_inode_pages2_range(mapping,
-> +					offset >> PAGE_CACHE_SHIFT, end))
-> +				kiocbSetPgBusy(iocb);
->   		}
->   	}
->   	return retval;
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
