@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422950AbXCGRja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422751AbXCGRja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422950AbXCGRja (ORCPT <rfc822;w@1wt.eu>);
+	id S1422751AbXCGRja (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 7 Mar 2007 12:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422785AbXCGRPv
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422817AbXCGRPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:15:51 -0500
-Received: from ns.suse.de ([195.135.220.2]:43864 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:15:55 -0500
+Received: from mx2.suse.de ([195.135.220.15]:43137 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422817AbXCGRP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:15:26 -0500
-Message-Id: <20070307171348.920686101@mini.kroah.org>
+	id S1422801AbXCGRPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:15:02 -0500
+Message-Id: <20070307171322.788439455@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:21 -0800
+Date: Wed, 07 Mar 2007 09:11:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,78 +22,102 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Marcel Siegert <mws@linuxtv.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 046/101] dvbdev: fix illegal re-usage of fileoperations struct
-Content-Disposition: inline; filename=dvbdev-fix-illegal-re-usage-of-fileoperations-struct.patch
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 038/101] Fix oops in xfrm_audit_log()
+Content-Disposition: inline; filename=fix-oops-in-xfrm_audit_log.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcel Siegert <mws@linuxtv.org>
+From: David Miller <davem@davemloft.net>
 
-Arjan van de Ven <arjan@infradead.org> reported an illegal re-usage of
-the fileoperations struct if more than one dvb device (e.g. frontend) is
-present.
+[XFRM]: Fix OOPSes in xfrm_audit_log().
 
-This patch fixes this issue.
+Make sure that this function is called correctly, and
+add BUG() checking to ensure the arguments are sane.
 
-It allocates a new fileoperations struct each time a device is
-registered and copies the default template fileops.
+Based upon a patch by Joy Latten.
 
-(backported from commit b61901024776b25ce7b8edc31bb1757c7382a88e)
-
-Signed-off-by: Marcel Siegert <mws@linuxtv.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/dvb/dvb-core/dvbdev.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ net/key/af_key.c       |   11 ++++++-----
+ net/xfrm/xfrm_policy.c |    7 ++++++-
+ net/xfrm/xfrm_user.c   |   12 +++++++-----
+ 3 files changed, 19 insertions(+), 11 deletions(-)
 
---- linux-2.6.20.1.orig/drivers/media/dvb/dvb-core/dvbdev.c
-+++ linux-2.6.20.1/drivers/media/dvb/dvb-core/dvbdev.c
-@@ -200,6 +200,8 @@ int dvb_register_device(struct dvb_adapt
- 			const struct dvb_device *template, void *priv, int type)
- {
- 	struct dvb_device *dvbdev;
-+	struct file_operations *dvbdevfops;
-+
- 	int id;
+--- linux-2.6.20.1.orig/net/key/af_key.c
++++ linux-2.6.20.1/net/key/af_key.c
+@@ -2297,16 +2297,17 @@ static int pfkey_spddelete(struct sock *
+ 				   &sel, tmp.security, 1);
+ 	security_xfrm_policy_free(&tmp);
  
- 	if (mutex_lock_interruptible(&dvbdev_register_lock))
-@@ -219,12 +221,22 @@ int dvb_register_device(struct dvb_adapt
- 		return -ENOMEM;
+-	xfrm_audit_log(audit_get_loginuid(current->audit_context), 0,
+-		       AUDIT_MAC_IPSEC_DELSPD, (xp) ? 1 : 0, xp, NULL);
+-
+ 	if (xp == NULL)
+ 		return -ENOENT;
+ 
+-	err = 0;
++	err = security_xfrm_policy_delete(xp);
+ 
+-	if ((err = security_xfrm_policy_delete(xp)))
++	xfrm_audit_log(audit_get_loginuid(current->audit_context), 0,
++		       AUDIT_MAC_IPSEC_DELSPD, err ? 0 : 1, xp, NULL);
++
++	if (err)
+ 		goto out;
++
+ 	c.seq = hdr->sadb_msg_seq;
+ 	c.pid = hdr->sadb_msg_pid;
+ 	c.event = XFRM_MSG_DELPOLICY;
+--- linux-2.6.20.1.orig/net/xfrm/xfrm_policy.c
++++ linux-2.6.20.1/net/xfrm/xfrm_policy.c
+@@ -1997,9 +1997,14 @@ void xfrm_audit_log(uid_t auid, u32 sid,
+ 	if (audit_enabled == 0)
+ 		return;
+ 
++	BUG_ON((type == AUDIT_MAC_IPSEC_ADDSA ||
++		type == AUDIT_MAC_IPSEC_DELSA) && !x);
++	BUG_ON((type == AUDIT_MAC_IPSEC_ADDSPD ||
++		type == AUDIT_MAC_IPSEC_DELSPD) && !xp);
++
+ 	audit_buf = audit_log_start(current->audit_context, GFP_ATOMIC, type);
+ 	if (audit_buf == NULL)
+-	return;
++		return;
+ 
+ 	switch(type) {
+ 	case AUDIT_MAC_IPSEC_ADDSA:
+--- linux-2.6.20.1.orig/net/xfrm/xfrm_user.c
++++ linux-2.6.20.1/net/xfrm/xfrm_user.c
+@@ -1273,10 +1273,6 @@ static int xfrm_get_policy(struct sk_buf
+ 		xp = xfrm_policy_bysel_ctx(type, p->dir, &p->sel, tmp.security, delete);
+ 		security_xfrm_policy_free(&tmp);
  	}
+-	if (delete)
+-		xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
+-			       AUDIT_MAC_IPSEC_DELSPD, (xp) ? 1 : 0, xp, NULL);
+-
+ 	if (xp == NULL)
+ 		return -ENOENT;
  
-+	dvbdevfops = kzalloc(sizeof(struct file_operations), GFP_KERNEL);
+@@ -1292,8 +1288,14 @@ static int xfrm_get_policy(struct sk_buf
+ 					      MSG_DONTWAIT);
+ 		}
+ 	} else {
+-		if ((err = security_xfrm_policy_delete(xp)) != 0)
++		err = security_xfrm_policy_delete(xp);
 +
-+	if (!dvbdevfops) {
-+		kfree (dvbdev);
-+		mutex_unlock(&dvbdev_register_lock);
-+		return -ENOMEM;
-+	}
++		xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
++			       AUDIT_MAC_IPSEC_DELSPD, err ? 0 : 1, xp, NULL);
 +
- 	memcpy(dvbdev, template, sizeof(struct dvb_device));
- 	dvbdev->type = type;
- 	dvbdev->id = id;
- 	dvbdev->adapter = adap;
- 	dvbdev->priv = priv;
-+	dvbdev->fops = dvbdevfops;
- 
-+	memcpy(dvbdev->fops, template->fops, sizeof(struct file_operations));
- 	dvbdev->fops->owner = adap->module;
- 
- 	list_add_tail (&dvbdev->list_head, &adap->device_list);
-@@ -252,6 +264,7 @@ void dvb_unregister_device(struct dvb_de
- 					dvbdev->type, dvbdev->id)));
- 
- 	list_del (&dvbdev->list_head);
-+	kfree (dvbdev->fops);
- 	kfree (dvbdev);
- }
- EXPORT_SYMBOL(dvb_unregister_device);
++		if (err != 0)
+ 			goto out;
++
+ 		c.data.byid = p->index;
+ 		c.event = nlh->nlmsg_type;
+ 		c.seq = nlh->nlmsg_seq;
 
 --
