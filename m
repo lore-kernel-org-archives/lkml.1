@@ -1,178 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422887AbXCGR2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965578AbXCGR2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422887AbXCGR2B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:28:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422886AbXCGRRV
+	id S965578AbXCGR2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:28:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422903AbXCGR2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:17:21 -0500
-Received: from mx2.suse.de ([195.135.220.15]:43594 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 12:28:03 -0500
+Received: from cantor.suse.de ([195.135.220.2]:44330 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422885AbXCGRRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:17:12 -0500
-Message-Id: <20070307171532.880767304@mini.kroah.org>
+	id S1422895AbXCGRRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:17:50 -0500
+Message-Id: <20070307171611.982262000@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:49 -0800
+Date: Wed, 07 Mar 2007 09:11:58 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Aristeu Sergio Rozanski Filho <aris@ruivo.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 074/101] tty_io: fix race in master pty close/slave pty close path
-Content-Disposition: inline; filename=tty_io-fix-race-in-master-pty-close-slave-pty-close-path.patch
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, dushistov@mail.ru
+Subject: [patch 083/101] ufs: restore back support of openstep
+Content-Disposition: inline; filename=ufs-restore-back-support-of-openstep.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aristeu Sergio Rozanski Filho <aristeu.sergio@gmail.com>
 
-[PATCH] tty_io: fix race in master pty close/slave pty close path
+From: Evgeniy Dushistov <dushistov@mail.ru>
 
-This patch fixes a possible race that leads to double freeing an idr index.
- When the master begin to close, release_dev() is called and then
-pty_close() is called:
+This is a fix of regression, which triggered by ~2.6.16.
 
-        if (tty->driver->close)
-                tty->driver->close(tty, filp);
+Patch with name ufs-directory-and-page-cache-from-blocks-to-pages.patch: in
+additional to conversation from block to page cache mechanism added new
+checks of directory integrity, one of them that directory entry do not
+across directory chunks.
 
-This is done without helding any locks other than BKL.  Inside pty_close(),
-being a master close, the devpts entry will be removed:
+But some kinds of UFS: OpenStep UFS and Apple UFS (looks like these are the
+same filesystems) have different directory chunk size, then common
+UFSes(BSD and Solaris UFS).
 
-#ifdef CONFIG_UNIX98_PTYS
-                if (tty->driver == ptm_driver)
-                        devpts_pty_kill(tty->index);
-#endif
+So this patch adds ability to works with variable size of directory chunks,
+and set it for ufstype=openstep to right size.
 
-But devpts_pty_kill() will call get_node() that may sleep while waiting for
-&devpts_root->d_inode->i_sem.  When this happens and the slave is being
-opened, tty_open() just found the driver and index:
+Tested on darwin ufs.
 
-        driver = get_tty_driver(device, &index);
-        if (!driver) {
-                mutex_unlock(&tty_mutex);
-                return -ENODEV;
-        }
-
-This part of the code is already protected under tty_mute.  The problem is
-that the slave close already got an index.  Then init_dev() is called and
-blocks waiting for the same &devpts_root->d_inode->i_sem.
-
-When the master close resumes, it removes the devpts entry, and the
-relation between idr index and the tty is gone.  The master then sleeps
-waiting for the tty_mutex on release_dev().
-
-Slave open resumes and found no tty for that index.  As result, a NULL tty
-is returned and init_dev() doesn't flow to fast_track:
-
-        /* check whether we're reopening an existing tty */
-        if (driver->flags & TTY_DRIVER_DEVPTS_MEM) {
-                tty = devpts_get_tty(idx);
-                if (tty && driver->subtype == PTY_TYPE_MASTER)
-                        tty = tty->link;
-        } else {
-                tty = driver->ttys[idx];
-        }
-        if (tty) goto fast_track;
-
-The result of this, is that a new tty will be created and init_dev() returns
-sucessfull. After returning, tty_mutex is dropped and master close may resume.
-
-Master close finds it's the only use and both sides are closing, then releases
-the tty and the index. At this point, the idr index is free, but slave still
-has it.
-
-Slave open then calls pty_open() and finds that tty->link->count is 0,
-because there's no master and returns error.  Then tty_open() calls
-release_dev() which executes without any warning, as it was a case of last
-slave close when the master is already closed (master->count == 0,
-slave->count == 1).  The tty is then released with the already released idr
-index.
-
-This normally would only issue a warning on idr_remove() but in case of a
-customer's critical application, it's never too simple:
-
-thread1: opens master, gets index X
-thread1: begin closing master
-thread2: begin opening slave with index X
-thread1: finishes closing master, index X released
-thread3: opens master, gets index X, just released
-thread2: fails opening slave, releases index X         <----
-thread4: opens master, gets index X, init_dev() then find an already in use
-	 and healthy tty and fails
-
-If no more indexes are released, ptmx_open() will keep failing, as the
-first free index available is X, and it will make init_dev() fail because
-you're trying to "reopen a master" which isn't valid.
-
-The patch notices when this race happens and make init_dev() fail
-imediately.  The init_dev() function is called with tty_mutex held, so it's
-safe to continue with tty till the end of function because release_dev()
-won't make any further changes without grabbing the tty_mutex.
-
-Without the patch, on some machines it's possible get easily idr warnings
-like this one:
-
-idr_remove called for id=15 which is not allocated.
- [<c02555b9>] idr_remove+0x139/0x170
- [<c02a1b62>] release_mem+0x182/0x230
- [<c02a28e7>] release_dev+0x4b7/0x700
- [<c02a0ea7>] tty_ldisc_enable+0x27/0x30
- [<c02a1e64>] init_dev+0x254/0x580
- [<c02a0d64>] check_tty_count+0x14/0xb0
- [<c02a4f05>] tty_open+0x1c5/0x340
- [<c02a4d40>] tty_open+0x0/0x340
- [<c017388f>] chrdev_open+0xaf/0x180
- [<c017c2ac>] open_namei+0x8c/0x760
- [<c01737e0>] chrdev_open+0x0/0x180
- [<c0167bc9>] __dentry_open+0xc9/0x210
- [<c0167e2c>] do_filp_open+0x5c/0x70
- [<c0167a91>] get_unused_fd+0x61/0xd0
- [<c0167e93>] do_sys_open+0x53/0x100
- [<c0167f97>] sys_open+0x27/0x30
- [<c010303b>] syscall_call+0x7/0xb
-
-using this test application available on:
- http://www.ruivo.org/~aris/pty_sodomizer.c
-
-Signed-off-by: Aristeu Sergio Rozanski Filho <aris@ruivo.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/tty_io.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ fs/ufs/dir.c           |   21 ++++++++++++---------
+ fs/ufs/super.c         |    5 ++++-
+ include/linux/ufs_fs.h |    1 +
+ 3 files changed, 17 insertions(+), 10 deletions(-)
 
---- linux-2.6.20.1.orig/drivers/char/tty_io.c
-+++ linux-2.6.20.1/drivers/char/tty_io.c
-@@ -1891,6 +1891,20 @@ static int init_dev(struct tty_driver *d
- 	/* check whether we're reopening an existing tty */
- 	if (driver->flags & TTY_DRIVER_DEVPTS_MEM) {
- 		tty = devpts_get_tty(idx);
-+		/*
-+		 * If we don't have a tty here on a slave open, it's because
-+		 * the master already started the close process and there's
-+		 * no relation between devpts file and tty anymore.
-+		 */
-+		if (!tty && driver->subtype == PTY_TYPE_SLAVE) {
-+			retval = -EIO;
-+			goto end_init;
-+		}
-+		/*
-+		 * It's safe from now on because init_dev() is called with
-+		 * tty_mutex held and release_dev() won't change tty->count
-+		 * or tty->flags without having to grab tty_mutex
-+		 */
- 		if (tty && driver->subtype == PTY_TYPE_MASTER)
- 			tty = tty->link;
- 	} else {
+--- linux-2.6.20.1.orig/fs/ufs/dir.c
++++ linux-2.6.20.1/fs/ufs/dir.c
+@@ -106,12 +106,13 @@ static void ufs_check_page(struct page *
+ 	char *kaddr = page_address(page);
+ 	unsigned offs, rec_len;
+ 	unsigned limit = PAGE_CACHE_SIZE;
++	const unsigned chunk_mask = UFS_SB(sb)->s_uspi->s_dirblksize - 1;
+ 	struct ufs_dir_entry *p;
+ 	char *error;
+ 
+ 	if ((dir->i_size >> PAGE_CACHE_SHIFT) == page->index) {
+ 		limit = dir->i_size & ~PAGE_CACHE_MASK;
+-		if (limit & (UFS_SECTOR_SIZE - 1))
++		if (limit & chunk_mask)
+ 			goto Ebadsize;
+ 		if (!limit)
+ 			goto out;
+@@ -126,7 +127,7 @@ static void ufs_check_page(struct page *
+ 			goto Ealign;
+ 		if (rec_len < UFS_DIR_REC_LEN(ufs_get_de_namlen(sb, p)))
+ 			goto Enamelen;
+-		if (((offs + rec_len - 1) ^ offs) & ~(UFS_SECTOR_SIZE-1))
++		if (((offs + rec_len - 1) ^ offs) & ~chunk_mask)
+ 			goto Espan;
+ 		if (fs32_to_cpu(sb, p->d_ino) > (UFS_SB(sb)->s_uspi->s_ipg *
+ 						  UFS_SB(sb)->s_uspi->s_ncg))
+@@ -310,6 +311,7 @@ int ufs_add_link(struct dentry *dentry, 
+ 	int namelen = dentry->d_name.len;
+ 	struct super_block *sb = dir->i_sb;
+ 	unsigned reclen = UFS_DIR_REC_LEN(namelen);
++	const unsigned int chunk_size = UFS_SB(sb)->s_uspi->s_dirblksize;
+ 	unsigned short rec_len, name_len;
+ 	struct page *page = NULL;
+ 	struct ufs_dir_entry *de;
+@@ -342,8 +344,8 @@ int ufs_add_link(struct dentry *dentry, 
+ 			if ((char *)de == dir_end) {
+ 				/* We hit i_size */
+ 				name_len = 0;
+-				rec_len = UFS_SECTOR_SIZE;
+-				de->d_reclen = cpu_to_fs16(sb, UFS_SECTOR_SIZE);
++				rec_len = chunk_size;
++				de->d_reclen = cpu_to_fs16(sb, chunk_size);
+ 				de->d_ino = 0;
+ 				goto got_it;
+ 			}
+@@ -431,7 +433,7 @@ ufs_readdir(struct file *filp, void *dir
+ 	unsigned int offset = pos & ~PAGE_CACHE_MASK;
+ 	unsigned long n = pos >> PAGE_CACHE_SHIFT;
+ 	unsigned long npages = ufs_dir_pages(inode);
+-	unsigned chunk_mask = ~(UFS_SECTOR_SIZE - 1);
++	unsigned chunk_mask = ~(UFS_SB(sb)->s_uspi->s_dirblksize - 1);
+ 	int need_revalidate = filp->f_version != inode->i_version;
+ 	unsigned flags = UFS_SB(sb)->s_flags;
+ 
+@@ -511,7 +513,7 @@ int ufs_delete_entry(struct inode *inode
+ 	struct super_block *sb = inode->i_sb;
+ 	struct address_space *mapping = page->mapping;
+ 	char *kaddr = page_address(page);
+-	unsigned from = ((char*)dir - kaddr) & ~(UFS_SECTOR_SIZE - 1);
++	unsigned from = ((char*)dir - kaddr) & ~(UFS_SB(sb)->s_uspi->s_dirblksize - 1);
+ 	unsigned to = ((char*)dir - kaddr) + fs16_to_cpu(sb, dir->d_reclen);
+ 	struct ufs_dir_entry *pde = NULL;
+ 	struct ufs_dir_entry *de = (struct ufs_dir_entry *) (kaddr + from);
+@@ -556,6 +558,7 @@ int ufs_make_empty(struct inode * inode,
+ 	struct super_block * sb = dir->i_sb;
+ 	struct address_space *mapping = inode->i_mapping;
+ 	struct page *page = grab_cache_page(mapping, 0);
++	const unsigned int chunk_size = UFS_SB(sb)->s_uspi->s_dirblksize;
+ 	struct ufs_dir_entry * de;
+ 	char *base;
+ 	int err;
+@@ -563,7 +566,7 @@ int ufs_make_empty(struct inode * inode,
+ 	if (!page)
+ 		return -ENOMEM;
+ 	kmap(page);
+-	err = mapping->a_ops->prepare_write(NULL, page, 0, UFS_SECTOR_SIZE);
++	err = mapping->a_ops->prepare_write(NULL, page, 0, chunk_size);
+ 	if (err) {
+ 		unlock_page(page);
+ 		goto fail;
+@@ -584,11 +587,11 @@ int ufs_make_empty(struct inode * inode,
+ 		((char *)de + fs16_to_cpu(sb, de->d_reclen));
+ 	de->d_ino = cpu_to_fs32(sb, dir->i_ino);
+ 	ufs_set_de_type(sb, de, dir->i_mode);
+-	de->d_reclen = cpu_to_fs16(sb, UFS_SECTOR_SIZE - UFS_DIR_REC_LEN(1));
++	de->d_reclen = cpu_to_fs16(sb, chunk_size - UFS_DIR_REC_LEN(1));
+ 	ufs_set_de_namlen(sb, de, 2);
+ 	strcpy (de->d_name, "..");
+ 
+-	err = ufs_commit_chunk(page, 0, UFS_SECTOR_SIZE);
++	err = ufs_commit_chunk(page, 0, chunk_size);
+ fail:
+ 	kunmap(page);
+ 	page_cache_release(page);
+--- linux-2.6.20.1.orig/fs/ufs/super.c
++++ linux-2.6.20.1/fs/ufs/super.c
+@@ -649,7 +649,7 @@ static int ufs_fill_super(struct super_b
+ 		kmalloc (sizeof(struct ufs_sb_private_info), GFP_KERNEL);
+ 	if (!uspi)
+ 		goto failed;
+-
++	uspi->s_dirblksize = UFS_SECTOR_SIZE;
+ 	super_block_offset=UFS_SBLOCK;
+ 
+ 	/* Keep 2Gig file limit. Some UFS variants need to override 
+@@ -718,6 +718,7 @@ static int ufs_fill_super(struct super_b
+ 		break;
+ 	
+ 	case UFS_MOUNT_UFSTYPE_NEXTSTEP:
++		/*TODO: check may be we need set special dir block size?*/
+ 		UFSD("ufstype=nextstep\n");
+ 		uspi->s_fsize = block_size = 1024;
+ 		uspi->s_fmask = ~(1024 - 1);
+@@ -733,6 +734,7 @@ static int ufs_fill_super(struct super_b
+ 		break;
+ 	
+ 	case UFS_MOUNT_UFSTYPE_NEXTSTEP_CD:
++		/*TODO: check may be we need set special dir block size?*/
+ 		UFSD("ufstype=nextstep-cd\n");
+ 		uspi->s_fsize = block_size = 2048;
+ 		uspi->s_fmask = ~(2048 - 1);
+@@ -754,6 +756,7 @@ static int ufs_fill_super(struct super_b
+ 		uspi->s_fshift = 10;
+ 		uspi->s_sbsize = super_block_size = 2048;
+ 		uspi->s_sbbase = 0;
++		uspi->s_dirblksize = 1024;
+ 		flags |= UFS_DE_44BSD | UFS_UID_44BSD | UFS_ST_44BSD | UFS_CG_44BSD;
+ 		if (!(sb->s_flags & MS_RDONLY)) {
+ 			if (!silent)
+--- linux-2.6.20.1.orig/include/linux/ufs_fs.h
++++ linux-2.6.20.1/include/linux/ufs_fs.h
+@@ -789,6 +789,7 @@ struct ufs_sb_private_info {
+ 
+ 	__u32	s_maxsymlinklen;/* upper limit on fast symlinks' size */
+ 	__s32	fs_magic;       /* filesystem magic */
++	unsigned int s_dirblksize;
+ };
+ 
+ /*
 
 --
