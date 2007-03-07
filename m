@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbXCGUvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932928AbXCGUv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932774AbXCGUvh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 15:51:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932813AbXCGUvh
+	id S932928AbXCGUv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 15:51:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992562AbXCGUv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 15:51:37 -0500
-Received: from www.osadl.org ([213.239.205.134]:49669 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932774AbXCGUvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 15:51:36 -0500
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dan Hecht <dhecht@vmware.com>, James Morris <jmorris@namei.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <45EF1C80.50900@goop.org>
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>
-	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>
-	 <20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com>
-	 <1173178774.24738.311.camel@localhost.localdomain>
-	 <45EDD82F.90204@vmware.com>
-	 <1173225182.24738.507.camel@localhost.localdomain>
-	 <45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com>
-	 <1173228544.24738.514.camel@localhost.localdomain>
-	 <45EE0D10.7070807@vmware.com>
-	 <1173230305.24738.529.camel@localhost.localdomain>
-	 <45EE1EA3.90803@vmware.com>
-	 <1173256666.24738.576.camel@localhost.localdomain>
-	 <45EEF966.6060902@goop.org>	<Line.LNX.4.64.0703071304080.1851@d.namei>
-	 <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com>
-	 <45EF1C80.50900@goop.org>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 21:57:44 +0100
-Message-Id: <1173301065.24738.766.camel@localhost.localdomain>
+	Wed, 7 Mar 2007 15:51:56 -0500
+Received: from 1wt.eu ([62.212.114.60]:1058 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932928AbXCGUvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 15:51:54 -0500
+Date: Wed, 7 Mar 2007 21:48:36 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Bill Davidsen <davidsen@tmr.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22 patch] the scheduled removal of OBSOLETE_OSS options
+Message-ID: <20070307204836.GA22200@1wt.eu>
+References: <20070305014956.GE3441@stusta.de> <45EDA8EE.1060308@tmr.com> <20070306175504.GW3441@stusta.de> <20070307062157.GJ943@1wt.eu> <20070307195601.GZ3441@stusta.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070307195601.GZ3441@stusta.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 12:11 -0800, Jeremy Fitzhardinge wrote:
-> Dan Hecht wrote:
-> > Jeremy, I saw you sent out the Xen version earlier, thanks.  Here's
-> > ours for reference (please excuse any formating issues); it's also
-> > lean. We'll send out a proper patch later after some more testing:
+Hi Adrian !
+
+On Wed, Mar 07, 2007 at 08:56:02PM +0100, Adrian Bunk wrote:
+(...)
+> > Real problem is that we can expect several "sound does not work anymore"
+> > because people doing "make oldconfig" will get no warning at all about
+> > the removed options. Remember people complaining about keyboard not working ?
 > 
-> So the interrupt side of the clockevent comes through the virtual apic? 
-> Where does evt->handle_event get called?
+> There already were two kernel releases where people had to say
+> explicitely "yes" to "Obsolete OSS drivers" with a quite clear help text
+> for getting these OSS drivers.
 
+To be fair, I did not notice it, but I think that people who will miss it
+will have skipped 2 versions, in which case they can reasonably expect
+enough changes to be very careful when updating their config.
 
->         /* We use normal irq0 handler on cpu0. */
->         time_init_hook();
+> And did you complain when all the SATA options were renamed in 2.6.19
+> without any warnings in previous kernels and far more user-visible 
+> effects than some obsolete OSS drivers (and no driver for your hard 
+> disk even prevents booting)?
 
-That's exactly the thing I ranted about before. We keep the historic
-view of emulated hardware and just wrap it into enough glue code instead
-of doing an abstract design, which just gets rid of those hardware
-assumptions at all. That's the big advantage of paravirtualization, but
-the current way on paravirt ops is just ignoring this.
+No, because I have no SATA disk ;-)
 
-	tglx
+> Or about the mess with the mes with the netfilter options when upgrading 
+> from 2.6.19 to 2.6.20?
 
+Yes I've noticed this one, and at least it was clearly visible !
+
+> If you didn't, this is the wrong patch to start complaining about...
+
+Don't get me wrong, I'm not complaining. I just realized from previous
+post that options disappearing produce no warning on make oldconfig, and
+that it is easy to get trapped, even though there's nothing harmful.
+
+> > Perhaps the real problem is more Kconfig than OSS, but it would be fine if
+> > we found a solution to enumerate the list of options which have been removed
+> > when they do their make oldconfig.
+> 
+> Printing won't help - there are two many options (some even not user 
+> visible) that disappear with each kernel release.
+
+Sometimes I do a diff between old and new config, and I do not notice
+that many changes. So maybe a simple report at the end saying "The
+following options have been removed" may catch people's attention
+when it lists something which looks like a driver they know they use.
+
+Anyway, I don't have time to propose something in this area, and I
+know that talking is cheap, showing the code is another matter.
+
+Cheers,
+Willy
 
