@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992536AbXCGXIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965717AbXCGXNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992536AbXCGXIl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992700AbXCGXIl
+	id S965717AbXCGXNu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXCGXNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:08:41 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:36865 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992536AbXCGXIk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:08:40 -0500
-Date: Wed, 7 Mar 2007 15:05:30 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Petr =?ISO-8859-1?Q?Tesa=5F?= =?ISO-8859-1?Q?=5F=EDk?= 
-	<ptesarik@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] remove_arg_zero() rewrite
-Message-Id: <20070307150530.73463dc5.randy.dunlap@oracle.com>
-In-Reply-To: <1173308113.4868.11.camel@lappy>
-References: <1171978145.22720.21.camel@golias.tesarici.cz>
-	<20070221154159.d316d526.akpm@linux-foundation.org>
-	<1173305397.4868.4.camel@lappy>
-	<20070307144101.f97cfa53.akpm@linux-foundation.org>
-	<1173308113.4868.11.camel@lappy>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Mar 2007 18:13:50 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:51845 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965717AbXCGXNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 18:13:49 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] swsusp: Disable nonboot CPUs before entering platform suspend
+Date: Thu, 8 Mar 2007 00:13:05 +0100
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+References: <200703072044.12021.rjw@sisk.pl> <200703072314.30265.rjw@sisk.pl> <20070307144903.6e196b88.akpm@linux-foundation.org>
+In-Reply-To: <20070307144903.6e196b88.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200703080013.05544.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Mar 2007 23:55:12 +0100 Peter Zijlstra wrote:
-
-> On Wed, 2007-03-07 at 14:41 -0800, Andrew Morton wrote:
-> > On Wed, 07 Mar 2007 23:09:57 +0100
-> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > On Wed, 2007-02-21 at 15:41 -0800, Andrew Morton wrote:
-> > > 
-> > > > I mean.... what the hell?
-> > > > 
-> > > > As you appear to have managed to work out what the sorry thing is trying to
-> > > > do, would you have time to simply rip it out and completely rewrite it,
-> > > > including a nice comment telling the world what this function's function is?
-> > > > 
-> > > > Because what we have there is beyond repairing.
-> > > 
-> > > Something like so?
-> > > Boots uml seemingly without errors.
-> > > 
-> > > ---
-> > > Rewrite remove_arg_zero() to be more parseable by untwisted minds.
-> > > 
-> > 
-> > Sorry, Nick already had a go at this:
+On Wednesday, 7 March 2007 23:49, Andrew Morton wrote:
+> On Wed, 7 Mar 2007 23:14:29 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Darn, must've fell off of lkml... or I missed it catching up my 4000+
-> email backlog.
+> > On Wednesday, 7 March 2007 22:16, Andrew Morton wrote:
+> > > On Wed, 7 Mar 2007 20:44:11 +0100
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Prevent the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
+> > > > from triggering by disabling nonboot CPUs before we finally enter the platform
+> > > > suspend.
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > ---
+> > > >  kernel/power/disk.c |    1 +
+> > > >  kernel/power/user.c |    2 +-
+> > > >  2 files changed, 2 insertions(+), 1 deletion(-)
+> > > > 
+> > > > Index: linux-2.6.21-rc2-mm2/kernel/power/disk.c
+> > > > ===================================================================
+> > > > --- linux-2.6.21-rc2-mm2.orig/kernel/power/disk.c
+> > > > +++ linux-2.6.21-rc2-mm2/kernel/power/disk.c
+> > > > @@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
+> > > >  	switch(mode) {
+> > > >  	case PM_DISK_PLATFORM:
+> > > >  		if (pm_ops && pm_ops->enter) {
+> > > > +			disable_nonboot_cpus();
+> > > >  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+> > > >  			pm_ops->enter(PM_SUSPEND_DISK);
+> > > >  			break;
+> > > > Index: linux-2.6.21-rc2-mm2/kernel/power/user.c
+> > > > ===================================================================
+> > > > --- linux-2.6.21-rc2-mm2.orig/kernel/power/user.c
+> > > > +++ linux-2.6.21-rc2-mm2/kernel/power/user.c
+> > > > @@ -398,9 +398,9 @@ static int snapshot_ioctl(struct inode *
+> > > >  
+> > > >  		case PMOPS_ENTER:
+> > > >  			if (data->platform_suspend) {
+> > > > +				disable_nonboot_cpus();
+> > > >  				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+> > > >  				error = pm_ops->enter(PM_SUSPEND_DISK);
+> > > > -				error = 0;
+> > > >  			}
+> > > >  			break;
+> > > 
+> > > Is this considered 2.6.21 material?  If so why?
+> > 
+> > Well, the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
+> > triggers every time an SMP x86_64 box is suspended to disk using the platform
+> > mode (default), which is quite annoying IMHO and users think something wrong is
+> > going on.  This will probably cause them to report the problem and I'd rather
+> > like to avoid handling these reports. ;-)
+> 
+> Well sure - if patches were always error-free, we'd always apply them
+> immediately.
+> 
+> The question is: is the risk of this patch breaking things exceeded by the
+> benefit which you describe?
 
-Hm, I've had a similar issue.  Mail problems or what...
+Well, it has survived some testing (http://lkml.org/lkml/2007/3/7/16).  Also,
+before the code ordering in 2.6.21-rc* we had been running on one CPU
+here, so I think the risk is small.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+We could remove the WARN_ON() as Pavel has just suggested, but first I'd like
+to know who put it there and why.
+
