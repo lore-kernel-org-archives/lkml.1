@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422729AbXCGLJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422726AbXCGLJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422729AbXCGLJX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 06:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422726AbXCGLJW
+	id S1422726AbXCGLJt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 06:09:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422731AbXCGLJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 06:09:22 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:35602 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422721AbXCGLJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 06:09:21 -0500
-Message-ID: <45EE9D52.9060807@garzik.org>
-Date: Wed, 07 Mar 2007 06:09:06 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 7 Mar 2007 06:09:49 -0500
+Received: from www.osadl.org ([213.239.205.134]:51371 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422726AbXCGLJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 06:09:47 -0500
+Subject: Re: Xen & VMI?
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Zachary Amsden <zach@vmware.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       virtualization <virtualization@lists.osdl.org>,
+       Roland McGrath <roland@redhat.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, luming.yu@intel.com,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>, greg@kroah.com,
-       linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>,
-       Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de>
-In-Reply-To: <20070305015034.GG3441@stusta.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <45EE8315.3020800@vmware.com>
+References: <45ED82D9.6050204@codemonkey.ws>
+	 <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com>
+	 <20070306203712.GC21736@elte.hu>
+	 <1173228246.4644.85.camel@localhost.localdomain>
+	 <20070307081510.GB15111@elte.hu>  <45EE8315.3020800@vmware.com>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 12:15:54 +0100
+Message-Id: <1173266155.24738.613.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Subject    : AT keyboard only works with pci=noacpi
-> References : http://lkml.org/lkml/2007/3/3/68
-> Submitter  : Ash Milsted <thatistosayiseenem@gawab.com>
-> Status     : unknown
+On Wed, 2007-03-07 at 01:17 -0800, Zachary Amsden wrote:
+> Ingo Molnar wrote:
+> > For example, VMI_CALL_SetAlarm takes a 'cycles' argument. Cycles is a 
+> > quite bad unit for an API, it should be absolute time, nanosec or 
+> > picosec based instead. We could easily see CPUs that have /no concept of 
+> >   
+> 
+> Actually, putting the unit in terms of cycles is more portable and 
+> flexible.  Rather than perform a conversion from cycles to 
+> nano/femto/pico seconds, the raw cycle count is exposed, along with the 
+> current clock frequency.  This allows the timer infrastructure to merely 
+> do one conversion, from cycles to real time, rather than converting to 
+> an arbitrary time unit which may change with operating systems and time 
+> and thus break the ABI.
 
+Putting the unit in terms of cycles is just ugly. Virtual hardware
+should provide the easiest interface and in case of time this _IS_
+nanoseconds. 
 
-sounds like a BIOS bug, even though it appears to be a regression?
+nanoseconds is neither an arbitrary time unit nor will it change anytime
+soon to femtoseconds. So your argument that the ABI might break is just
+a strawman.
+
+The cycles conversion gets ugly as hell, as you want to have absolute
+time for your clock event reprogramming. This requires 128 bit math in
+the reprogramming path for nothing and I'm not going to put it there.
+
+Even worse on a Linux host we would convert ktime_t to some virtual
+hardware clock on the guest side, feed it through paravirt to the host
+and convert it back to ktime_t as the host uses an hrtimer to schedule
+the next guest event.
+
+The whole rush of paravirt ops leads to an arbitrary number of virtual
+clock source and clock event devices instead of having one virtual
+silicon with a sane design and a per hypervisor backend. Paravirtualized
+kernels should provide _sane_ silicon emulations rather than dumping
+more crap on the kernel developers by competing with the real silicon
+vendors for the BDHA (Brain Damaged Hardware Award).
+
+	tglx
+
 
