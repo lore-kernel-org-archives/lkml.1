@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751294AbXCGM1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965026AbXCGM3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751294AbXCGM1f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXCGM1e
+	id S965026AbXCGM3q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:29:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965094AbXCGM3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:27:34 -0500
-Received: from wx-out-0506.google.com ([66.249.82.238]:10417 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbXCGM1d (ORCPT
+	Wed, 7 Mar 2007 07:29:46 -0500
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:38845 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965026AbXCGM3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:27:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=dZnCm+bkdHvff7PWy4rYyf7WVHeAs4s8BgcZzRVHFrn5yU+KaEzug/X+f2qcEPt+7gV884P+xmG/8wdGI2Sh3/9eNqmvsYZypc5LrGxm0iWwC10RMNRh7fNOdC3LMjcrP61FKiUxX3tfAr9aRcbc14jtMGpEsLfcEsBVLSryERs=
-Message-ID: <45EEAFB4.3060306@gmail.com>
-Date: Wed, 07 Mar 2007 21:27:32 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Wed, 7 Mar 2007 07:29:45 -0500
+Message-ID: <45EEB011.5020606@freedesktop.org>
+Date: Wed, 07 Mar 2007 04:29:05 -0800
+From: Josh Triplett <josh@freedesktop.org>
+User-Agent: Icedove 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-To: Conke Hu <conke.hu@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>, Alan <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] ATAPI command TEST_UNIT_READY never succeeds!
-References: <5767b9100703070409o3e094420rf7ccffc436332184@mail.gmail.com> <5767b9100703070423y194bf492wad28ddc66ab98775@mail.gmail.com>
-In-Reply-To: <5767b9100703070423y194bf492wad28ddc66ab98775@mail.gmail.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Allow pktgen to work with loopback devices.
 X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Conke Hu wrote:
-> On 3/7/07, Conke Hu <conke.hu@gmail.com> wrote:
->> Hi,
->>     Do you ever noticed that the ATAPI command TEST_UNIT_READY always
->> fails to execute !?
->>     I debugged in the following environments:
->>         piix + Intel ICH6/ICH7 PATA
->>         atiixp + ATI SB600 PATA
->>         libata + ata_piix + Intel ICH6/ICH7 PATA
->>         libata + sata_sil24 + Silicon Image 3132
->>         libata + ahci + ATI SB600 SATA
->>         libata + ahci + Intel AHCI
->>     but none of them can execute TEST_UNIT_READY command successfully.
->>     For example, in ahci driver, ahci_interrupt() reads port status as
->> 0x4000_0000, which indicates an taskfile error.
-> ~~~~~~~~~~~~~~~~~~
-> 
-> 0x4000_0001, not 0x4000_0000, sorry.
-> 
-> more precisely speaking, ahci_host_intr() reads PORT_IRQ_STAT as
-> 0x4000_0001, not the  expected 0x0000_0001.
+pktgen currently only works on network devices with type ARPHRD_ETHER.  Add
+support for the loopback device, type ARPHRD_LOOPBACK.
 
-I've read your last posting about this, but forgot to follow up.  TUR is
-supposed to fail if ATAPI device doesn't have media loaded.  TUR fails
-and sense data returns device not ready - media not present.  That's the
-normal operation.  Does TUR fail even with media loaded or is sense data
-not properly fetched?
+I've tested this on my system, using a modified pktgen.conf-1-1 with
+s/eth1/lo/g, and it works fine; the network device statistics confirm packet
+transmission and receipt.
 
+Thanks to Sarah Bailey for discovering and tracking down the problem.
+
+Signed-off-by: Josh Triplett <josh@freedesktop.org>
+---
+
+I intentionally didn't change the error message "not an ethernet device".  For
+the purposes of pktgen, loopback devices act like ethernet devices.
+
+ net/core/pktgen.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/core/pktgen.c b/net/core/pktgen.c
+index 74a9a32..6fc6f9d 100644
+--- a/net/core/pktgen.c
++++ b/net/core/pktgen.c
+@@ -1930,7 +1930,7 @@ static struct net_device *pktgen_setup_dev(struct pktgen_dev *pkt_dev)
+ 		printk("pktgen: no such netdevice: \"%s\"\n", pkt_dev->ifname);
+ 		goto out;
+ 	}
+-	if (odev->type != ARPHRD_ETHER) {
++	if (odev->type != ARPHRD_LOOPBACK && odev->type != ARPHRD_ETHER) {
+ 		printk("pktgen: not an ethernet device: \"%s\"\n",
+ 		       pkt_dev->ifname);
+ 		goto out_put;
 -- 
-tejun
+1.5.0.2
+
