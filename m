@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbXCGMOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964790AbXCGMRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751218AbXCGMOT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXCGMOT
+	id S964790AbXCGMRi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:17:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXCGMRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:14:19 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:34151 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbXCGMOS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:14:18 -0500
-Date: Wed, 7 Mar 2007 17:51:17 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: menage@google.com
-Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, winget@google.com,
-       containers@lists.osdl.org, devel@openvz.org
-Subject: Re: [PATCH 1/7] containers (V7): Generic container system abstracted from cpusets code
-Message-ID: <20070307122117.GB2336@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.130746000@menage.corp.google.com>
+	Wed, 7 Mar 2007 07:17:38 -0500
+Received: from mail.suse.de ([195.135.220.2]:49881 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751224AbXCGMRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 07:17:37 -0500
+Date: Wed, 7 Mar 2007 13:17:30 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+Message-ID: <20070307121730.GC18704@wotan.suse.de>
+References: <20070307094503.GD8609@wotan.suse.de> <20070307100430.GA5080@wotan.suse.de> <1173262002.6374.128.camel@twins> <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu> <20070307102106.GB5555@wotan.suse.de> <1173263085.6374.132.camel@twins> <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins> <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070212085104.130746000@menage.corp.google.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1173268086.6374.157.camel@twins>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 12:15:22AM -0800, menage@google.com wrote:
-> +/**
-> + * container_lock - lock out any changes to container structures
-> + *
-> + * The out of memory (oom) code needs to mutex_lock containers
-> + * from being changed while it scans the tasklist looking for a
-> + * task in an overlapping container.
+On Wed, Mar 07, 2007 at 12:48:06PM +0100, Peter Zijlstra wrote:
+> On Wed, 2007-03-07 at 12:00 +0100, Nick Piggin wrote:
+> > On Wed, Mar 07, 2007 at 11:47:42AM +0100, Peter Zijlstra wrote:
+> > > On Wed, 2007-03-07 at 11:38 +0100, Nick Piggin wrote:
+> > > 
+> > > > > > There are real users who want these fast, though.
+> > > > > 
+> > > > > Yeah, why don't we have a tree per nonlinear vma to find these pages?
+> > > > > 
+> > > > > wli mentions shadow page tables..
+> > > > 
+> > > > We could do something more efficient, but I thought that half the point
+> > > > was that they didn't carry any of this extra memory, and they could be
+> > > > really fast to set up at the expense of efficiency elsewhere.
+> > > 
+> > > I'm failing to understand this :-(
+> > > 
+> > > That extra memory, and apparently they don't want the inefficiency
+> 
+> s/T/W/
+> 
+> > > either.
+> > 
+> > Sorry, I didn't understand your misunderstandings ;)
+> 
+> Bah, my brain is thick and foggy today. Let us try again;
+> 
+> Nonlinear vmas exist because many vmas are expensive somehow, right?
+> Nonlinear vmas keep the page mapping in the page tables and screw rmaps.
+> 
+> This 'extra memory' you mentioned would be the overhead of tracking the
+> actual ranges?
+> 
+> And apparently now we want it to not suck on the rmap case :-(
 
-Which specific portion of oom code cares abt container structure being
-intact? 
+Do we? I think just "work" is the way we've been handling them up until
+now. Making them suck less for rmap makes them suck more for what they're
+good at.
 
-If I understand correctly, only cpuset requires this double locking.
-More specifically, cpusets cares about walking cpuset->parent list
-safely with callback_mutex held correct?
+> Anyway, if used on a non writeback capable backing store (ramfs)
+> page_mkclean will never be called. If also mlocked (I think oracle does
+> this) then page reclaim will pass over too.
+> 
+> So we're only interested in the bdi_cap_accounting_dirty and VM_SHARED
+> case, right?
+> 
+> Tracking these ranges on a per-vma basis would avoid taking the mm wide
+> mmap_sem and so would be cheaper than regular vmas.
+> 
+> Would that still be too expensive?
 
-If that is the case, I think we can push container_lock entirely inside 
-cpuset.c and not have others exposed to this double-lock complexity.
-This is possible because cpuset.c (build on top of containers) still has
-cpuset->parent and walking cpuset->parent list safely can be made
-possible with a second lock which is local to only cpuset.c.
+Well you can today remap N pages in a file, arbitrarily for
+sizeof(pte_t)*tiny bit for the upper page tables + small constant
+for the vma.
 
--- 
-Regards,
-vatsa
+At best, you need an extra pointer to pte / vaddr, so you'd basically
+double memory overhead.
+
+> > > Well, now they don't, but it could be done or even exploited as a DoS.
+> > 
+> > But so could nonlinear page reclaim. I think we need to restrict nonlinear
+> > mappings to root if we're worried about that.
+> 
+> Can't we just 'fix' it?
+
+The thing is, I don't think anybody who uses these things cares
+about any of the 'problems' you want to fix, do they? We are
+interested in dirty pages only for the correctness issue, rather
+than performance. Same as reclaim.
+
