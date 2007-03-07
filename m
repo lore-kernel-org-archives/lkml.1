@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422756AbXCGSA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422969AbXCGSBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422756AbXCGSA7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422975AbXCGSA0
+	id S1422969AbXCGSBw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422973AbXCGSAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:00:26 -0500
-Received: from mx2.suse.de ([195.135.220.15]:42682 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 13:00:22 -0500
+Received: from mx2.suse.de ([195.135.220.15]:42690 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422756AbXCGRNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1422757AbXCGRNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 7 Mar 2007 12:13:31 -0500
-Message-Id: <20070307171129.642816571@mini.kroah.org>
+Message-Id: <20070307171140.244147573@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:10:39 -0800
+Date: Wed, 07 Mar 2007 09:10:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,58 +22,102 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Williams <dcbw@redhat.com>
-Subject: [patch 004/101] prism54: correct assignment of DOT1XENABLE in WE-19 codepaths
-Content-Disposition: inline; filename=prism54-correct-assignment-of-dot1xenable-in-we-19-codepaths.patch
+       alan@lxorguk.ukuu.org.uk, David Howells <dhowells@redhat.com>
+Subject: [patch 007/101] Keys: Fix key serial number collision handling
+Content-Disposition: inline; filename=keys-fix-key-serial-number-collision-handling.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Howells <dhowells@redhat.com>
 
-Correct assignment of DOT1XENABLE in WE-19 codepaths.
-RX_UNENCRYPTED_EAPOL = 1 really means setting DOT1XENABLE _off_, and
-vice versa.  The original WE-19 patch erroneously reversed that.  This
-patch fixes association with unencrypted and WEP networks when using
-wpa_supplicant.
+[PATCH] Keys: Fix key serial number collision handling
 
-It also adds two missing break statements that, left out, could result
-in incorrect card configuration.
+Fix the key serial number collision avoidance code in key_alloc_serial().
 
-Applies to (I think) 2.6.19 and later.
+This didn't use to be so much of a problem as the key serial numbers were
+allocated from a simple incremental counter, and it would have to go through
+two billion keys before it could possibly encounter a collision.  However, now
+that random numbers are used instead, collisions are much more likely.
 
-Signed-off-by: Dan Williams <dcbw@redhat.com>
+This is fixed by finding a hole in the rbtree where the next unused serial
+number ought to be and using that by going almost back to the top of the
+insertion routine and redoing the insertion with the new serial number rather
+than trying to be clever and attempting to work out the insertion point
+pointer directly.
+
+This fixes kernel BZ #7727.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/prism54/isl_ioctl.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ security/keys/key.c |   33 ++++++++++++++-------------------
+ 1 file changed, 14 insertions(+), 19 deletions(-)
 
---- linux-2.6.20.1.orig/drivers/net/wireless/prism54/isl_ioctl.c
-+++ linux-2.6.20.1/drivers/net/wireless/prism54/isl_ioctl.c
-@@ -1395,11 +1395,16 @@ static int prism54_set_auth(struct net_d
- 		break;
+--- linux-2.6.20.1.orig/security/keys/key.c
++++ linux-2.6.20.1/security/keys/key.c
+@@ -188,6 +188,7 @@ static inline void key_alloc_serial(stru
  
- 	case IW_AUTH_RX_UNENCRYPTED_EAPOL:
--		dot1x = param->value ? 1 : 0;
-+		/* dot1x should be the opposite of RX_UNENCRYPTED_EAPOL;
-+		 * turn off dot1x when  allowing recepit of unencrypted eapol
-+		 * frames, turn on dot1x when we disallow receipt
-+		 */
-+		dot1x = param->value ? 0x00 : 0x01;
- 		break;
+ 	spin_lock(&key_serial_lock);
  
- 	case IW_AUTH_PRIVACY_INVOKED:
- 		privinvoked = param->value ? 1 : 0;
-+		break;
++attempt_insertion:
+ 	parent = NULL;
+ 	p = &key_serial_tree.rb_node;
  
- 	case IW_AUTH_DROP_UNENCRYPTED:
- 		exunencrypt = param->value ? 1 : 0;
-@@ -1589,6 +1594,7 @@ static int prism54_set_encodeext(struct 
- 			}
- 			key.type = DOT11_PRIV_TKIP;
- 			key.length = KEY_SIZE_TKIP;
-+			break;
- 		default:
- 			return -EINVAL;
- 		}
+@@ -202,39 +203,33 @@ static inline void key_alloc_serial(stru
+ 		else
+ 			goto serial_exists;
+ 	}
+-	goto insert_here;
++
++	/* we've found a suitable hole - arrange for this key to occupy it */
++	rb_link_node(&key->serial_node, parent, p);
++	rb_insert_color(&key->serial_node, &key_serial_tree);
++
++	spin_unlock(&key_serial_lock);
++	return;
+ 
+ 	/* we found a key with the proposed serial number - walk the tree from
+ 	 * that point looking for the next unused serial number */
+ serial_exists:
+ 	for (;;) {
+ 		key->serial++;
+-		if (key->serial < 2)
+-			key->serial = 2;
+-
+-		if (!rb_parent(parent))
+-			p = &key_serial_tree.rb_node;
+-		else if (rb_parent(parent)->rb_left == parent)
+-			p = &(rb_parent(parent)->rb_left);
+-		else
+-			p = &(rb_parent(parent)->rb_right);
++		if (key->serial < 3) {
++			key->serial = 3;
++			goto attempt_insertion;
++		}
+ 
+ 		parent = rb_next(parent);
+ 		if (!parent)
+-			break;
++			goto attempt_insertion;
+ 
+ 		xkey = rb_entry(parent, struct key, serial_node);
+ 		if (key->serial < xkey->serial)
+-			goto insert_here;
++			goto attempt_insertion;
+ 	}
+ 
+-	/* we've found a suitable hole - arrange for this key to occupy it */
+-insert_here:
+-	rb_link_node(&key->serial_node, parent, p);
+-	rb_insert_color(&key->serial_node, &key_serial_tree);
+-
+-	spin_unlock(&key_serial_lock);
+-
+ } /* end key_alloc_serial() */
+ 
+ /*****************************************************************************/
 
 --
