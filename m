@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422665AbXCGJcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422663AbXCGJd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422665AbXCGJcw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422664AbXCGJcv
+	id S1422663AbXCGJd4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422668AbXCGJd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:32:51 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55167 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422667AbXCGJcu convert rfc822-to-8bit (ORCPT
+	Wed, 7 Mar 2007 04:33:56 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:26734 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422663AbXCGJdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:32:50 -0500
-Date: Wed, 7 Mar 2007 10:30:14 +0100
-From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+	Wed, 7 Mar 2007 04:33:55 -0500
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
+	nonlinear)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm2
-Message-ID: <20070307103014.510ad408@frecb000686.frec.bull.fr>
-In-Reply-To: <20070307004919.b5b8b7da.akpm@linux-foundation.org>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-	<20070307093948.188ac51c@frecb000686.frec.bull.fr>
-	<20070307004919.b5b8b7da.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Cc: Miklos Szeredi <miklos@szeredi.hu>, mingo@elte.hu, npiggin@suse.de,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org
+In-Reply-To: <20070307010756.b31c8190.akpm@linux-foundation.org>
+References: <20070221023656.6306.246.sendpatchset@linux.site>
+	 <20070221023735.6306.83373.sendpatchset@linux.site>
+	 <20070306225101.f393632c.akpm@linux-foundation.org>
+	 <20070307070853.GB15877@wotan.suse.de>
+	 <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu>
+	 <E1HOrfO-0008AW-00@dorka.pomaz.szeredi.hu>
+	 <20070307004709.432ddf97.akpm@linux-foundation.org>
+	 <E1HOrsL-0008Dv-00@dorka.pomaz.szeredi.hu>
+	 <20070307010756.b31c8190.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 10:32:22 +0100
+Message-Id: <1173259942.6374.125.camel@twins>
 Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 07/03/2007 10:34:31,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 07/03/2007 10:34:32,
-	Serialize complete at 07/03/2007 10:34:32
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 00:49:19 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 7 Mar 2007 09:39:48 +0100 Sébastien Dugué <sebastien.dugue@bull.net> wrote:
+On Wed, 2007-03-07 at 01:07 -0800, Andrew Morton wrote:
+> On Wed, 07 Mar 2007 09:51:57 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
 > 
+> > > > Dirty page accounting doesn't work either on
+> > > > non-linear mappings
+> > > 
+> > > It doesn't?  Confused - these things don't have anything to do with each
+> > > other do they?
 > > 
-> >   Hi Andrew,
+> > Look in page_mkclean().  Where does it handle non-linear mappings?
 > > 
-> > On Tue, 6 Mar 2007 00:44:08 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > 
-> > > Temporarily at
-> > > 
-> > >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
-> > > 
-> > > Will appear later at
-> > > 
-> > >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc2/2.6.20-rc2-mm2/
-> > > 
-> > > 
-> > > - git-block.patch is having problems which are getting in the way - it has
-> > >   been dropped.
-> > > 
-> > > - As a consequence all the AIO patches were dropped
-> > > 
-> > 
-> >   Why? The aio notification and listio patches have nothing to do with
-> > git-block.patch.
 > 
-> Yes, I could have retained those with a little bit of jiggling.  But...
+> OK, I'd forgotten about that.  It won't break dirty memory accounting,
+> but it'll potentially break dirty memory balancing.
 > 
-> >   If you think those patches will be rendered obsolete by the new
-> > syslet/fibril/whatever approach, then fine.
+> If we have the wrong page (due to nonlinear), page_check_address() will
+> fail and we'll leave the pte dirty.  That puts us back to the pre-2.6.17
+> algorithms and I guess it'll break the msync guarantees.
 > 
-> Until this is sorted out I don't think we can add new core AIO code. 
-> Particularly not new syscalls.
+> Peter, I thought we went through the nonlinear problem ages ago and decided
+> it was OK?
 
-  Makes sense.
+Can recollect as much, I modelled it after page_referenced() and can't
+find any VM_NONLINEAR specific code in there either.
 
-> 
-> > Otherwise do you expect me to
-> > resubmit?
-> 
-> Is OK for now, I think.
+Will have a hard look, but if its broken, then page_referenced if
+equally broken it seems, which would make page reclaim funny in the
+light of nonlinear mappings.
 
-  Ok, thanks for the good job.
-
-  Sébastien.
