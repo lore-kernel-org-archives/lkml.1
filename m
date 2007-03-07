@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161206AbXCGCC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161209AbXCGCE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161206AbXCGCC4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 21:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161209AbXCGCC4
+	id S1161209AbXCGCE7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 21:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161210AbXCGCE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 21:02:56 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:17000 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161206AbXCGCCz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 21:02:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=boz1x5Fbj3PAMeOk2WoP2PM6a8bdyZ+1x9xztt7kkpJgZyrFJ6JKanzD42lHZdOn7xFDdsn4gEV1O+FncXO3nDvgzdbklQSoPtjlDbXklgTvnHrr0r9ZZHVdbW1KsdZfT59xIz7i5GGaVQeXAULVgJjQdqT3rIg47aCYE+9rhbo=
-Message-ID: <75b66ecd0703061802g29246g3a6c2c9123d891b3@mail.gmail.com>
-Date: Tue, 6 Mar 2007 21:02:52 -0500
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: Mockern@yandex.ru
-Subject: Re: Problem: how to make kernel thread more faster?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45ED1AED.000003.06978@webmail13.yandex.ru>
+	Tue, 6 Mar 2007 21:04:59 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:43092 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161209AbXCGCE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 21:04:58 -0500
+Date: Tue, 6 Mar 2007 18:04:56 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] epoll optimizations and cleanups  ...
+In-Reply-To: <Pine.LNX.4.64.0703061616550.3661@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0703061803140.5963@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703061616550.3661@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45ED1AED.000003.06978@webmail13.yandex.ru>
-X-Google-Sender-Auth: c62de680ab746c1b
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/6/07, Mockern <Mockern@yandex.ru> wrote:
-> hi,
->
-> Is there a way how to make kernel thread more faster?
->
-> I put some of my code to the kthread, but I noticed that kthread sends data more slow
-> than original driver without kthread.
 
-Please post a link to your driver source code.
 
-Lee
+On Tue, 6 Mar 2007, Davide Libenzi wrote:
+> 
+> This patch is the same as the v3 posted before, and removes multiple 
+> passes over the ready set.
+
+Can you put a nicer Subject: message, rather than giving all three patches 
+the same Subject.
+
+I'm assuming this will all go through Andrew anyway, but at least my tools 
+(and I assume Andrew's too) will take the Subject: line and make it into 
+the short description. So if you give a nondescriptive subject line, the 
+short description will be bad too.
+
+So please make the subject line really be about that *particular* patch.
+
+		Linus
