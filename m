@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161111AbXCGHQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161095AbXCGHTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161111AbXCGHQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161106AbXCGHQk
+	id S1161095AbXCGHTq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161103AbXCGHTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:16:40 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:39141 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161111AbXCGHQj (ORCPT
+	Wed, 7 Mar 2007 02:19:46 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:27524 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161095AbXCGHTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:16:39 -0500
-Message-ID: <45EE66BE.8020003@cosmosbay.com>
-Date: Wed, 07 Mar 2007 08:16:14 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 7 Mar 2007 02:19:45 -0500
+Date: Tue, 6 Mar 2007 23:19:09 -0800
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+Message-ID: <20070307071909.GI18774@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Nick Piggin <npiggin@suse.de>,
+	Linux Memory Management <linux-mm@kvack.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Ingo Molnar <mingo@elte.hu>
+References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [patch] epoll use a single inode ...
-References: <45ED1A3C.6030707@argo.co.il> <Pine.LNX.4.64.0703061635430.3661@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703061644570.5963@woody.linux-foundation.org> <45EE6125.3010702@cosmosbay.com>
-In-Reply-To: <45EE6125.3010702@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 07 Mar 2007 08:16:22 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306225101.f393632c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> 
-> I would definitly *love* saving dentries for pipes (and sockets too), 
-> but how are you going to get the inode ?
-> 
-> pipes()/sockets() can use read()/write()/rw_verify_area() and thus need 
-> file->f_path.dentry->d_inode (so each pipe needs a separate dentry)
-> 
-> Are you suggesting adding a new "struct file_operations" member to get 
-> the inode ?
-> Or re-intoducing an inode pointer in struct file ?
+On Tue, Mar 06, 2007 at 10:51:01PM -0800, Andrew Morton wrote:
+> Does anybody really pass a NULL `type' arg into filemap_nopage()?
 
-Crazy ideas : (some readers are going to kill me)
+The major vs. minor fault accounting patch that introduced the argument
+didn't make non-NULL type arguments a requirement. It's essentially an
+optional second return value and the NULL pointer represents the caller
+choosing to ignore it. I'm not sure I actually liked that aspect of it,
+but that's how it ended up going in. I think it had something to do
+with driver churn clashing with the sweep at the time of the merge. I'd
+rather the argument be mandatory and defaulted to VM_FAULT_MINOR.
 
-1) Use the low order bit of f_path.dentry to say : this pointer is not a 
-pointer to a dentry but the inode pointer (with the low order bit set to 1)
+It's something of a non-answer, though, since it only discusses a
+convention as opposed to reviewing specific callers of filemap_nopage().
+NULL type arguments to ->nopage() are rare at most, and could be easily
+eliminated, at least for in-tree drivers.
 
-OR
-
-2) file->f_path.dentry set to NULL for this special files (so that we dont 
-need to dput() and cache line ping pong the common dentry each time we 
-__fput() a pipe/socket.
-
-Same trick could be used for file->f_path.mnt, because there is a big SMP 
-cache line ping/pong to maintain a mnt_count on pipe/sockets mountpoint while 
-these file systems cannot be un-mounted)
-
-If dentry is NULL, we get the inode pointer from an overlay of struct 
-file_ra_state    f_ra; (because for this special files readahead is unused)
-
-This adds some conditional branches of course, but being able to save ram and 
-better use cpu caches might be worth them.
+egrep -nr 'nopage.*NULL' . 2>/dev/null | grep -v '^Bin' on a current
+git tree yields zero matches.
 
 
+-- wli
