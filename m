@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965376AbXCGRDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422741AbXCGRIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965376AbXCGRDq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:03:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965398AbXCGRDq
+	id S1422741AbXCGRIu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422743AbXCGRIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:03:46 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:43845 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965376AbXCGRDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:03:45 -0500
-Date: Wed, 7 Mar 2007 09:02:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [patch] epoll use a single inode ...
-In-Reply-To: <45EE6125.3010702@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0703070859070.5963@woody.linux-foundation.org>
-References: <45ED1A3C.6030707@argo.co.il> <Pine.LNX.4.64.0703061635430.3661@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703061644570.5963@woody.linux-foundation.org>
- <45EE6125.3010702@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Mar 2007 12:08:50 -0500
+Received: from www.osadl.org ([213.239.205.134]:52192 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422741AbXCGRIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:08:50 -0500
+Subject: Re: Linux v2.6.21-rc3
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <1173277354.24738.620.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+	 <1173277354.24738.620.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 18:14:58 +0100
+Message-Id: <1173287699.24738.647.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 7 Mar 2007, Eric Dumazet wrote:
+On Wed, 2007-03-07 at 15:22 +0100, Thomas Gleixner wrote:
+> On Tue, 2007-03-06 at 20:59 -0800, Linus Torvalds wrote:
+> > We've finally hopefully started to put a dent in the regressions, 
+> > especially the suspend/resume problems introduced since 2.6.20.
 > 
-> I would definitly *love* saving dentries for pipes (and sockets too), but how
-> are you going to get the inode ?
+> Still having SATA breakage on resume:
+> 
+> Caught that one (from screen)
+> 
+> ATA: abnormal status 0x7F on port 0x000118cf
+> irq 21: nobody cared (try booting ......)
+> ...
+> Disabling IRQ #21
+> 
+> 
+> During normal boot I see the "ATA: abnormal status 0x7F on port
+> 0x000118cf" once, but there the system behaves normal
 
-Don't use an inode at all.
+I enabled ATA_DEBUG and hacked it to provide debug output only on
+resume. Now the disk resumes and no stale interrupt happens.
 
-> pipes()/sockets() can use read()/write()/rw_verify_area() and thus need
-> file->f_path.dentry->d_inode (so each pipe needs a separate dentry)
+Full log at: http://www.tglx.de/private/tglx/sata-2.6.21-rc3.log
 
-No, at least pipes could easily just use "file->f_private_data" instead.
+Both states are fully reproducible. (DEBUG ON/OFF == GOOD/BAD)
 
-Now, sockets really do want the inode (or it would be really really big 
-changes), but pipes really just want a "struct pipe_inode_info" pointer, 
-which we could hide away directly in the file descriptor itself.
+/me continues the libata exploration
 
-That's what Davide already did (on my suggestion) for signalfd - there's a 
-*single* inode, and the real data is in the per-fd f_private_data.
+	tglx
 
-		Linus
+
