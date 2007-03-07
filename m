@@ -1,57 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932868AbXCGKM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932894AbXCGKNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932868AbXCGKM5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 05:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbXCGKM4
+	id S932894AbXCGKNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 05:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932891AbXCGKNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 05:12:56 -0500
-Received: from gate.crashing.org ([63.228.1.57]:38768 "EHLO gate.crashing.org"
+	Wed, 7 Mar 2007 05:13:16 -0500
+Received: from verein.lst.de ([213.95.11.210]:60827 "EHLO mail.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932868AbXCGKMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 05:12:55 -0500
-Subject: Re: [RFC] [patch 4/6 -rt] powerpc 2.6.20-rt8: fix a runtime
-	warnings for xmon
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070307091638.GC1783@elte.hu>
-References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi3b4h25jj.wl@toshiba.co.jp>
-	 <20070307091638.GC1783@elte.hu>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 11:10:59 +0100
-Message-Id: <1173262259.9349.40.camel@localhost.localdomain>
+	id S932890AbXCGKNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 05:13:14 -0500
+Date: Wed, 7 Mar 2007 11:13:02 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: xfs@oss.sgi.com, ecashin@coraid.com, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] xfs: only use refcounted pages for I/O
+Message-ID: <20070307101302.GA30587@lst.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 10:16 +0100, Ingo Molnar wrote:
-> * Tsutomu OWA <tsutomu.owa@toshiba.co.jp> wrote:
-> 
-> > @@ -342,6 +342,7 @@ static int xmon_core(struct pt_regs *reg
-> >  
-> >  	msr = mfmsr();
-> >  	mtmsr(msr & ~MSR_EE);	/* disable interrupts */
-> > +	preempt_disable();
-> 
-> i'm not an xmon expert, but maybe it might make more sense to first 
-> disable preemption, then interrupts - otherwise you could be preempted 
-> right after having disabled these interrupts (and be scheduled to 
-> another CPU, etc.). What is the difference between local_irq_save() and 
-> the above 'disable interrupts' sequence? If it's not the same and 
-> xmon_core() relied on having hardirqs disabled then it might make sense 
-> to do a local_irq_save() there, instead of a preempt_disable().
-
-powerpc 64 bits nowadays does lazy HW masking, so local_irq_disable()
-will not actually switch MSR_EE off. However, xmon needs that to happen
-(though we have a nicer accessor to do it, I suspect some bitrot need
-fixing in there, possibly already fixed in .21)
-
-I agree that preempt_disable() should be put before the MSR tweaking
-though.
-
-Ben.
-
-
+Many block drivers (aoe, iscsi) really want refcountable pages in
+bios, which is what almost everyone send down.  XFS unfortunately
+has a few places where it sends down buffers that may come from
+kmalloc, which breaks them.  The patches in this series fix this
+issue up.
