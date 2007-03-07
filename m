@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422694AbXCGJtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422696AbXCGJuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422694AbXCGJtt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422696AbXCGJtt
+	id S1422696AbXCGJuj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422699AbXCGJuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:49:49 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41318 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422694AbXCGJts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:49:48 -0500
-Date: Wed, 7 Mar 2007 10:49:47 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Bill Irwin <bill.irwin@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+	Wed, 7 Mar 2007 04:50:39 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:11132 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422696AbXCGJuh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:50:37 -0500
+Date: Wed, 7 Mar 2007 01:50:16 -0800
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Bill Irwin <bill.irwin@oracle.com>, Nick Piggin <npiggin@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Memory Management <linux-mm@kvack.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307094947.GE8609@wotan.suse.de>
-References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu> <20070307003520.08b1a082.akpm@linux-foundation.org> <20070307085323.GB27337@elte.hu> <20070307092821.GB8609@wotan.suse.de> <20070307094420.GL18774@holomorphy.com>
-Mime-Version: 1.0
+Message-ID: <20070307095016.GN18774@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Memory Management <linux-mm@kvack.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu> <20070307085944.GA17433@wotan.suse.de> <20070307092252.GA6499@elte.hu> <20070307093208.GK18774@holomorphy.com> <20070307093518.GB8424@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070307094420.GL18774@holomorphy.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070307093518.GB8424@elte.hu>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 01:44:20AM -0800, Bill Irwin wrote:
-> On Wed, Mar 07, 2007 at 10:28:21AM +0100, Nick Piggin wrote:
-> > Depending on whether anyone wants it, and what features they want, we
-> > could emulate the old syscall, and make a new restricted one which is
-> > much less intrusive.
-> > For example, if we can operate only on MAP_ANONYMOUS memory and specify
-> > that nonlinear mappings effectively mlock the pages, then we can get
-> > rid of all the objrmap and unmap_mapping_range handling, forget about
-> > the writeout and msync problems...
-> 
-> Anonymous-only would make it a doorstop for Oracle, since its entire
-> motive for using it is to window into objects larger than user virtual
+On Wed, Mar 07, 2007 at 10:22:52AM +0100, Ingo Molnar wrote:
+>>> ok. What do you think about the sys_remap_file_pages_prot() thing that 
+>>> Paolo has done in a nicely split up form - does that complicate things 
+>>> in any fundamental way? That is what is useful to UML.
 
-Uh, duh yes I don't mean MAP_ANONYMOUS, I was just thinking of the shmem
-inode that sits behind MAP_ANONYMOUS|MAP_SHARED. Of course if you don't
-have a file descriptor to get a pgoff, then remap_file_pages is a doorstop
-for everyone ;)
+* Bill Irwin <bill.irwin@oracle.com> wrote:
+>> Oracle would love it. You don't want to know how far back I've been 
+>> asked to backport that.
 
-> address spaces (this likely also applies to UML, though they should
-> really chime in to confirm). Restrictions to tmpfs and/or ramfs would
-> likely be liveable, though I suspect some things might want to do it to
-> shm segments (I'll ask about that one). There's definitely no need for a
-> persistent backing store for the object to be remapped in Oracle's case,
-> in any event. It's largely the in-core destination and source of IO, not
-> something saved on-disk itself.
+On Wed, Mar 07, 2007 at 10:35:18AM +0100, Ingo Molnar wrote:
+> ok, cool! Then the first step would be for you to talk to Paolo and to 
+> pick up the patches, review them, nurse it in -mm, etc. Suffering in 
+> silence is just a pointless act of masochism, not an efficient 
+> upstream-merge tactic ;-)
 
-Yeah, tmpfs/shm segs are what I was thinking about. If UML can live with
-that as well, then I think it might be a good option.
+It was intended for use in a debugging mode for the database, so given
+the general mood where fighting backouts was an issue, I was relatively
+loath to bring it up. With UML behind it I don't feel that's as much of
+a concern.
 
+
+-- wli
