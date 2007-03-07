@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXCGQDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbXCGQE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbXCGQDZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932404AbXCGQDZ
+	id S932382AbXCGQE0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:04:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932404AbXCGQE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:03:25 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:53894 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932403AbXCGQDY (ORCPT
+	Wed, 7 Mar 2007 11:04:26 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:6326 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932382AbXCGQEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:03:24 -0500
-Date: Wed, 7 Mar 2007 11:03:21 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: ebuddington@wesleyan.edu
-cc: Oliver Neukum <oneukum@suse.de>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] khubd and ent:sda1 sucking CPU with reiser4
- + USB HD
-In-Reply-To: <20070306190552.GA21166@pool-71-123-121-36.spfdma.east.verizon.net>
-Message-ID: <Pine.LNX.4.44L0.0703071058480.6624-100000@iolanthe.rowland.org>
+	Wed, 7 Mar 2007 11:04:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DB3JCDnZGTvORiT8nf+ldFA3l0RGXlWoRCRiDuIKjYqaHNlvLidYFvLlZF8n/3PLJulfCKfzr1lvlbGFTKPhn2FgYJtrSRy0cCQeUxebMNoKUhj4EyuFGJdtmVgoeaL/dcutCiPqZM0aJTz8sZQALDmDUS+YonHnxRnzBJG22Fc=
+Message-ID: <ca9528de0703070804m1bea046fya0aac72b94ee320d@mail.gmail.com>
+Date: Wed, 7 Mar 2007 13:04:24 -0300
+From: "Kirk Kuchov" <kirk.kuchov@gmail.com>
+To: "Al Boldi" <a1426z@gawab.com>
+Subject: Re: Trading Places (was: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200703071752.56013.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703071752.56013.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007, Eric Buddington wrote:
+On 3/7/07, Al Boldi <a1426z@gawab.com> wrote:
+> Kirk Kuchov wrote:
+> > > Either stop flaming kernel developers or become one. It is  that
+> > > simple.
+> >
+> > If I were to become a kernel developer I would stick with FreeBSD. At
+> > least they have kqueue for about seven years now.
+>
+> I have been playing with this thought for quite some time.  The question is,
+> can I just use FreeBSD as a drop-in kernel replacement for Linux, or do I
+> have to leave all the GNU/Linux distributions behind as well?
+>
 
-> On Tue, Mar 06, 2007 at 01:34:41PM -0500, Alan Stern wrote:
-> > The stack trace didn't include the khubd process at all.  Probably that 
-> > means it had already died.
-> 
-> No, it's still there. I ran 'echo t >/proc/sysrq-trigger' again, and
-> khubd did not show up in dmesg:
-> 
-> -bash-2.05b# echo t >/proc/sysrq-trigger
-> -bash-2.05b# dmesg | grep khub
-> -bash-2.05b# dmesg | grep SysRq
-> SysRq : Show State
-> SysRq : Show State
-> -bash-2.05b# ps ax | grep khubd
->   163 ?        R<   633:41 [khubd]
-> -bash-2.05b# echo p >/proc/sysrq-trigger
-> -bash-2.05b# dmesg | tail -2
->  =======================
-> SysRq : Show Regs
-> -bash-2.05b#
-> 
-> So SysRq-t doesn't show anything about khubd, and SysRq-p doesn't give
-> me anything at all. What else can I try?
+http://www.debian.org/ports/kfreebsd-gnu/
 
-I'm baffled.  khubd should have shown up as the process with ID 163.  Is 
-that process listed under a different name?
-
-Alan Stern
-
+--
+Kirk Kuchov
