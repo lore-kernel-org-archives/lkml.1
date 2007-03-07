@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422989AbXCGRuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422791AbXCGRvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422989AbXCGRuE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:50:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422791AbXCGROv
+	id S1422791AbXCGRvv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422786AbXCGROo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:14:51 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:42915 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 12:14:44 -0500
+Received: from ns.suse.de ([195.135.220.2]:43656 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422779AbXCGROS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:14:18 -0500
-Message-Id: <20070307171229.446952598@mini.kroah.org>
+	id S1422787AbXCGROb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:14:31 -0500
+Message-Id: <20070307171244.080136521@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:10:57 -0800
+Date: Wed, 07 Mar 2007 09:11:01 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,44 +22,42 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, imr@rtschenk.de, linuxppc-embedded@ozlabs.org,
-       Kumar Gala <galak@kernel.crashing.org>
-Subject: [patch 022/101] Fix compile error for e500 core based processors
-Content-Disposition: inline; filename=fix-compile-error-for-e500-core-based-processors.patch
+       alan@lxorguk.ukuu.org.uk, Julien BLACHE <jb@jblache.org>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: [patch 026/101] USB HID: Fix USB vendor and product IDs endianness for USB HID devices
+Content-Disposition: inline; filename=usb-hid-fix-usb-vendor-and-product-ids-endianness-for-usb-hid-devices.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rojhalat Ibrahim <imr@rtschenk.de>
+From: Julien BLACHE <jb@jblache.org>
 
-We get the following compiler error:
+[PATCH] USB HID: Fix USB vendor and product IDs endianness for USB HID devices
 
-   CC      arch/ppc/kernel/ppc_ksyms.o
-arch/ppc/kernel/ppc_ksyms.c:275: error: '__mtdcr' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:275: warning: type defaults to 'int' in declaration of '__mtdcr'
-arch/ppc/kernel/ppc_ksyms.c:276: error: '__mfdcr' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:276: warning: type defaults to 'int' in declaration of '__mfdcr'
-make[1]: *** [arch/ppc/kernel/ppc_ksyms.o] Error 1
+The USB vendor and product IDs are not byteswapped appropriately, and
+thus come out in the wrong endianness when fetched through the evdev
+using ioctl() on big endian platforms.
 
-This is due to the EXPORT_SYMBOL for __mtdcr/__mfdcr not having the proper CONFIG protection
-
-Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Julien BLACHE <jb@jblache.org>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- arch/ppc/kernel/ppc_ksyms.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.20.1.orig/arch/ppc/kernel/ppc_ksyms.c
-+++ linux-2.6.20.1/arch/ppc/kernel/ppc_ksyms.c
-@@ -270,7 +270,7 @@ EXPORT_SYMBOL(mmu_hash_lock); /* For MOL
- extern long *intercept_table;
- EXPORT_SYMBOL(intercept_table);
- #endif /* CONFIG_PPC_STD_MMU */
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_DCR_NATIVE
- EXPORT_SYMBOL(__mtdcr);
- EXPORT_SYMBOL(__mfdcr);
- #endif
+---
+ drivers/usb/input/hid-core.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-2.6.20.1.orig/drivers/usb/input/hid-core.c
++++ linux-2.6.20.1/drivers/usb/input/hid-core.c
+@@ -1212,8 +1212,8 @@ static struct hid_device *usb_hid_config
+ 			 le16_to_cpu(dev->descriptor.idProduct));
+ 
+ 	hid->bus = BUS_USB;
+-	hid->vendor = dev->descriptor.idVendor;
+-	hid->product = dev->descriptor.idProduct;
++	hid->vendor = le16_to_cpu(dev->descriptor.idVendor);
++	hid->product = le16_to_cpu(dev->descriptor.idProduct);
+ 
+ 	usb_make_path(dev, hid->phys, sizeof(hid->phys));
+ 	strlcat(hid->phys, "/input", sizeof(hid->phys));
 
 --
