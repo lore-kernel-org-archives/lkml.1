@@ -1,42 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750894AbXCGQbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXCGQbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750894AbXCGQbI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:31:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXCGQbI
+	id S932458AbXCGQbQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbXCGQbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:31:08 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:50001 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbXCGQbH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:31:07 -0500
-Message-ID: <45EEE8B7.3070108@zytor.com>
-Date: Wed, 07 Mar 2007 08:30:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 7 Mar 2007 11:31:16 -0500
+Received: from mga03.intel.com ([143.182.124.21]:24772 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932458AbXCGQbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 11:31:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,261,1170662400"; 
+   d="scan'208"; a="191740398:sNHT23577358"
+Message-ID: <45EEE8CF.1060803@intel.com>
+Date: Wed, 07 Mar 2007 08:31:11 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
 MIME-Version: 1.0
-To: "Chen, Dongliang" <Chen.D@ems-t.com>
-CC: Andreas Schwab <schwab@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: return negative number for unsigned long function in kernel
-References: <314BE1148B8C8D468A05944FDF577583069B021E@MRE02.enterprise.com> <45EE09B4.40207@zytor.com> <314BE1148B8C8D468A05944FDF577583069B0222@MRE02.enterprise.com>
-In-Reply-To: <314BE1148B8C8D468A05944FDF577583069B0222@MRE02.enterprise.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>,
+       Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: SATA resume slowness, e1000 MSI warning
+References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>	<20070305084257.GA4464@mellanox.co.il>	<20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org>	<45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>	<45ED8A12.5040803@intel.com> <m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Mar 2007 16:31:11.0777 (UTC) FILETIME=[047AC110:01C760D6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chen, Dongliang wrote:
-> Peter & Andreas,
+Eric W. Biederman wrote:
+> "Kok, Auke" <auke-jan.h.kok@intel.com> writes:
 > 
-> Thank you very much for your help. 
+>> Ingo Molnar wrote:
+>>> * Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+>>>
+>>>>>> BUG: at drivers/pci/msi.c:611 pci_enable_msi()
+>>>>> I would poke Eric Biederman(sp?) about this one.  Maybe its even solved by
+>>>>> the MSI-enable-related patch he posted in the past 24-48 hours.
+>>>> I tried the 3-patch series "[PATCH 0/3] Basic msi bug fixes.." and they fix
+>>>> this problem for me. Were you expecting the OOPS in the first place? [...]
+>>> the bug was the warning message (a WARN_ON()) above - not an oops. So that
+>>> warning message is gone in your testing?
+>> yes.
 > 
-> I understood that the kernel error numbers are limited. The largest
-> error number for i386 (kernel 2.6) is 131 so far.  Assume that the
-> virtual address returned from do_mmap_pgoff will never exceed (unsigned
-> long)(-1000L), which is in the address range one page below the maximum
-> virtual address, then IS_ERR_VALUE() should work.
+> Sorry for the slow delay.  I was out of town for my brothers wedding the last few
+> days.
 > 
+> I wasn't exactly expecting the WARN_ON to trigger.  What I fixed was
+> an inconsistency in handling our state bits.  Fixing that
+> inconsistency appears to have fixed the e1000 usage scenario mostly by
+> accident.
+> 
+> The basic issue is that pci_save_state saves the current msi state
+> along with other registers, and then the e1000 driver goes and
+> disables the msi irq after we have saved the irq state as on.
+> 
+> My code notices that the msi irq was disabled before restore time, so
+> it skips the restore.  However we now have a leak of the msi saved cap
+> because we are not freeing it. 
+> 
+> This leaves with some basic questions.
+> - Does it make sense for suspend/resume methods to request/free irqs?
+> - Does it make sense for suspend/resume methods to allocate/free msi irqs?
+> - Do we want pci_save/restore_cap to save/restore msi state?
+> 
+> The path of least resistance is to just free the extra state and we
+> are good.  I'm just not quite certain that is sane and it has been a
+> long day.
 
-The error value boundary is defined in <linux/err.h>, currently 4095.
+we used to have a lengthy e1000_pci_save|restore_state in our code, which is now 
+gone, so I'm all for that. A separate pci_save_pxie|msi(x)_state for every 
+driver seems completely unnecessary. I can't think of a use case where 
+saving+restoring everything hurts. That's what you want I presume.
 
-	-hpa
+We currently free all irq's and msi before going into suspend in e1000, and I 
+think that is probably a good thing, somehow I can think of bad things happening 
+if we dont, but I admit that I haven't tried it without alloc/free. We do this 
+in e100 as well and it works.
+
+Another motivation would be to leave this up to the driver: if the driver 
+chooses to free/alloc interrupts because it makes sense, you probably would want 
+to keep that choice available. Devices that don't need this can skip the 
+alloc/free, but leave the choice open for others.
+
+hth
+
+Auke
