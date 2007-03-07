@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422673AbXCGRZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422924AbXCGR0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422673AbXCGRZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422877AbXCGRZP
+	id S1422924AbXCGR0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965632AbXCGRZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:25:15 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43718 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 12:25:12 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43742 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422894AbXCGRSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:18:03 -0500
-Message-Id: <20070307171618.763827313@mini.kroah.org>
+	id S1422906AbXCGRSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:18:09 -0500
+Message-Id: <20070307171631.420556680@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:12:00 -0800
+Date: Wed, 07 Mar 2007 09:12:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -22,53 +22,71 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, kernel@nn7.de,
-       benh@kernel.crashing.org, paulus@samba.org, dtor@mail.ru
-Subject: [patch 085/101] enable mouse button 2+3 emulation for x86 macs
-Content-Disposition: inline; filename=enable-mouse-button-2-3-emulation-for-x86-macs.patch
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, npiggin@suse.de,
+       cmm@us.ibm.com
+Subject: [patch 089/101] buffer: memorder fix
+Content-Disposition: inline; filename=buffer-memorder-fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Soeren Sonnenburg <kernel@nn7.de>
+From: Nick Piggin <npiggin@suse.de>
 
-As macbook/macbook pro's also have to live with a single mouse button the
-following patch just enables the Macintosh device drivers menu in Kconfig +
-adds the macintosh dir to the obj-* to make macbook* users happy (who use
-exactly that since months....
+unlock_buffer(), like unlock_page(), must not clear the lock without
+ensuring that the critical section is closed.
 
-Signed-off-by: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Dmitry Torokhov <dtor@mail.ru>
+
+Mingming later sent the same patch, saying:
+
+We are running SDET benchmark and saw double free issue for ext3 extended
+attributes block, which complains the same xattr block already being freed (in
+ext3_xattr_release_block()).  The problem could also been triggered by
+multiple threads loop untar/rm a kernel tree.
+
+The race is caused by missing a memory barrier at unlock_buffer() before the
+lock bit being cleared, resulting in possible concurrent h_refcounter update. 
+That causes a reference counter leak, then later leads to the double free that
+we have seen.
+
+Inside unlock_buffer(), there is a memory barrier is placed *after* the lock
+bit is being cleared, however, there is no memory barrier *before* the bit is
+cleared.  On some arch the h_refcount update instruction and the clear bit
+instruction could be reordered, thus leave the critical section re-entered.
+
+The race is like this: For example, if the h_refcount is initialized as 1,
+
+cpu 0:                                   cpu1
+--------------------------------------   -----------------------------------
+lock_buffer() /* test_and_set_bit */
+clear_buffer_locked(bh);             
+                                        lock_buffer() /* test_and_set_bit */
+h_refcount = h_refcount+1; /* = 2*/     h_refcount = h_refcount + 1; /*= 2 */
+                                        clear_buffer_locked(bh);
+....                                    ......
+
+
+We lost a h_refcount here.  We need a memory barrier before the buffer head
+lock bit being cleared to force the order of the two writes.  Please apply.
+
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Cc: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/Makefile          |    2 +-
- drivers/macintosh/Kconfig |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ fs/buffer.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- linux-2.6.20.1.orig/drivers/Makefile
-+++ linux-2.6.20.1/drivers/Makefile
-@@ -30,7 +30,7 @@ obj-$(CONFIG_PARPORT)		+= parport/
- obj-y				+= base/ block/ misc/ mfd/ net/ media/
- obj-$(CONFIG_NUBUS)		+= nubus/
- obj-$(CONFIG_ATM)		+= atm/
--obj-$(CONFIG_PPC_PMAC)		+= macintosh/
-+obj-y				+= macintosh/
- obj-$(CONFIG_IDE)		+= ide/
- obj-$(CONFIG_FC4)		+= fc4/
- obj-$(CONFIG_SCSI)		+= scsi/
---- linux-2.6.20.1.orig/drivers/macintosh/Kconfig
-+++ linux-2.6.20.1/drivers/macintosh/Kconfig
-@@ -1,6 +1,6 @@
+--- linux-2.6.20.1.orig/fs/buffer.c
++++ linux-2.6.20.1/fs/buffer.c
+@@ -78,6 +78,7 @@ EXPORT_SYMBOL(__lock_buffer);
  
- menu "Macintosh device drivers"
--	depends on PPC || MAC
-+	depends on PPC || MAC || X86
- 
- config ADB
- 	bool "Apple Desktop Bus (ADB) support"
+ void fastcall unlock_buffer(struct buffer_head *bh)
+ {
++	smp_mb__before_clear_bit();
+ 	clear_buffer_locked(bh);
+ 	smp_mb__after_clear_bit();
+ 	wake_up_bit(&bh->b_state, BH_Lock);
 
 --
