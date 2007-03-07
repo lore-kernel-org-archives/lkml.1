@@ -1,94 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965180AbXCGQet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965511AbXCGQfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965180AbXCGQet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:34:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965254AbXCGQet
+	id S965511AbXCGQfu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:35:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965531AbXCGQfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:34:49 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42665 "EHLO smtp.osdl.org"
+	Wed, 7 Mar 2007 11:35:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56701 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965180AbXCGQes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:34:48 -0500
-Date: Wed, 7 Mar 2007 08:34:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Linux v2.6.21-rc3
-In-Reply-To: <45EEB66C.9090901@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0703070827490.5963@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
- <45EEB66C.9090901@googlemail.com>
+	id S965511AbXCGQft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 11:35:49 -0500
+Message-ID: <45EEE445.4080806@redhat.com>
+Date: Wed, 07 Mar 2007 11:11:49 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sami Farin <7atbggg02@sneakemail.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC] div64_64 support
+References: <20070223170527.4ca695b2@freekitty> <20070305155714.3abe1b5e@freekitty> <20070306133404.GA864@one.firstfloor.org> <200703061519.20346.dada1@cosmosbay.com> <20070306144529.GA2004@one.firstfloor.org> <84C47260-4B57-4568-8197-58F438A6F737@e18.physik.tu-muenchen.de> <20070306102941.32471d57@freekitty> <20070306215349.hquin7d6pfy2n5d2@m.safari.iki.fi> <20070306222435.cbpv63ltximq6lrf@m.safari.iki.fi>
+In-Reply-To: <20070306222435.cbpv63ltximq6lrf@m.safari.iki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sami Farin wrote:
+> On Tue, Mar 06, 2007 at 23:53:49 +0200, Sami Farin wrote:
+> ...
+>> And I found bug in gcc-4.1.2, it gave 0 for ncubic results
+>> when doing 1000 loops test... gcc-4.0.3 works.
+> 
+> Found it.
+> 
+> --- cbrt-test.c~	2007-03-07 00:20:54.735248105 +0200
+> +++ cbrt-test.c	2007-03-07 00:21:03.964864343 +0200
+> @@ -209,7 +209,7 @@
+>  
+>  	__asm__("bsrl %1,%0\n\t"
+>  		"cmovzl %2,%0"
+> -		: "=&r" (r) : "rm" (x), "rm" (-1));
+> +		: "=&r" (r) : "rm" (x), "rm" (-1) : "memory");
+>  	return r+1;
+>  }
+>  
+> Now Linux 2.6 does not have "memory" in fls, maybe it causes
+> some gcc funnies some people are seeing.
 
-[ Ingo and Thomas added to  Cc, because I think this is them.. ]
+Can you post the difference in the generated code with that change?
 
-Ingo, I think this came in during commit 95492e4646, "x86: rewrite SMP TSC 
-sync code".
-
-(Leaving the original message quoted in full for Ingo and Thomas, sorry 
-for the waste of bandwidth)
-
-		Linus
-
----
-On Wed, 7 Mar 2007, Michal Piotrowski wrote:
-> 
-> I get this while
-> echo shutdown > /sys/power/disk; echo disk > /sys/power/state
-> 
-> BUG: using smp_processor_id() in preemptible [00000001] code: swsusp_shutdown/3359
-> caller is check_tsc_sync_source+0x1b/0xef
->  [<c010503d>] show_trace_log_lvl+0x1a/0x2f
->  [<c0105724>] show_trace+0x12/0x14
->  [<c01057d6>] dump_stack+0x16/0x18
->  [<c01f835e>] debug_smp_processor_id+0xa2/0xb4
->  [<c0113cc5>] check_tsc_sync_source+0x1b/0xef
->  [<c011367d>] __cpu_up+0x136/0x158
->  [<c0141aec>] _cpu_up+0x74/0xbf
->  [<c0141b5d>] cpu_up+0x26/0x38
->  [<c0141bbc>] enable_nonboot_cpus+0x4d/0x9a
->  [<c0146ae0>] pm_suspend_disk+0x11c/0x210
->  [<c014597e>] enter_state+0x50/0x1d0
->  [<c0145b84>] state_store+0x86/0x9c
->  [<c01a53d0>] subsys_attr_store+0x20/0x25
->  [<c01a54ea>] sysfs_write_file+0xc1/0xe9
->  [<c017199b>] vfs_write+0xaf/0x138
->  [<c0171f65>] sys_write+0x3d/0x61
->  [<c0104064>] syscall_call+0x7/0xb
->  =======================
-> 
-> l *check_tsc_sync_source+0x1b/0xef
-> 0xc0113caa is in check_tsc_sync_source (/mnt/md0/devel/linux-git/arch/i386/kernel/../../x86_64/kernel/tsc_sync.c:99).
-> 94      /*
-> 95       * Source CPU calls into this - it waits for the freshly booted
-> 96       * target CPU to arrive and then starts the measurement:
-> 97       */
-> 98      void __cpuinit check_tsc_sync_source(int cpu)
-> 99      {
-> 100             int cpus = 2;
-> 101
-> 102             /*
-> 103              * No need to check if we already know that the TSC is not
-> 
-> echo platform > /sys/power/disk; echo disk > /sys/power/state
-> doesn't work (as always).
-> 
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc3/boot.log
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc3/git-config
-> 
-> Regards,
-> Michal
-> 
-> -- 
-> Michal K. K. Piotrowski
-> LTG - Linux Testers Group (PL)
-> (http://www.stardust.webpages.pl/ltg/)
-> LTG - Linux Testers Group (EN)
-> (http://www.stardust.webpages.pl/linux_testers_group_en/)
-> 
