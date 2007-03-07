@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXCGQbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbXCGQbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932458AbXCGQbQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbXCGQbQ
+	id S932886AbXCGQbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932848AbXCGQbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:31:16 -0500
-Received: from mga03.intel.com ([143.182.124.21]:24772 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932458AbXCGQbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:31:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,261,1170662400"; 
-   d="scan'208"; a="191740398:sNHT23577358"
-Message-ID: <45EEE8CF.1060803@intel.com>
-Date: Wed, 07 Mar 2007 08:31:11 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+	Wed, 7 Mar 2007 11:31:35 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:13167 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932813AbXCGQbd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 11:31:33 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=vhbWa2O+7c/eSaylNJ8kPUpQIKZLSESMfwo4gzr6bbY/9MViUudzzqSggdNQZdZRd
+	4FlGr/PusI4hYvGRHsbLw==
+Message-ID: <6599ad830703070831g5a295bd9k6a27989952722120@mail.gmail.com>
+Date: Wed, 7 Mar 2007 08:31:26 -0800
+From: "Paul Menage" <menage@google.com>
+To: vatsa@in.ibm.com
+Subject: Re: [ckrm-tech] [PATCH 2/7] containers (V7): Cpusets hooked into containers
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
+       containers@lists.osdl.org, pj@sgi.com, ebiederm@xmission.com,
+       mbligh@google.com, winget@google.com, rohitseth@google.com,
+       serue@us.ibm.com, devel@openvz.org
+In-Reply-To: <20070307163112.GA6504@in.ibm.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>,
-       Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>	<20070305084257.GA4464@mellanox.co.il>	<20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org>	<45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>	<45ED8A12.5040803@intel.com> <m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Mar 2007 16:31:11.0777 (UTC) FILETIME=[047AC110:01C760D6]
+Content-Disposition: inline
+References: <20070212081521.808338000@menage.corp.google.com>
+	 <20070212085104.290909000@menage.corp.google.com>
+	 <20070307143412.GC32105@in.ibm.com>
+	 <6599ad830703070801r3f4cd5bak8cbc9b3090ec4490@mail.gmail.com>
+	 <20070307163112.GA6504@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> "Kok, Auke" <auke-jan.h.kok@intel.com> writes:
-> 
->> Ingo Molnar wrote:
->>> * Kok, Auke <auke-jan.h.kok@intel.com> wrote:
->>>
->>>>>> BUG: at drivers/pci/msi.c:611 pci_enable_msi()
->>>>> I would poke Eric Biederman(sp?) about this one.  Maybe its even solved by
->>>>> the MSI-enable-related patch he posted in the past 24-48 hours.
->>>> I tried the 3-patch series "[PATCH 0/3] Basic msi bug fixes.." and they fix
->>>> this problem for me. Were you expecting the OOPS in the first place? [...]
->>> the bug was the warning message (a WARN_ON()) above - not an oops. So that
->>> warning message is gone in your testing?
->> yes.
-> 
-> Sorry for the slow delay.  I was out of town for my brothers wedding the last few
-> days.
-> 
-> I wasn't exactly expecting the WARN_ON to trigger.  What I fixed was
-> an inconsistency in handling our state bits.  Fixing that
-> inconsistency appears to have fixed the e1000 usage scenario mostly by
-> accident.
-> 
-> The basic issue is that pci_save_state saves the current msi state
-> along with other registers, and then the e1000 driver goes and
-> disables the msi irq after we have saved the irq state as on.
-> 
-> My code notices that the msi irq was disabled before restore time, so
-> it skips the restore.  However we now have a leak of the msi saved cap
-> because we are not freeing it. 
-> 
-> This leaves with some basic questions.
-> - Does it make sense for suspend/resume methods to request/free irqs?
-> - Does it make sense for suspend/resume methods to allocate/free msi irqs?
-> - Do we want pci_save/restore_cap to save/restore msi state?
-> 
-> The path of least resistance is to just free the extra state and we
-> are good.  I'm just not quite certain that is sane and it has been a
-> long day.
+On 3/7/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+> It makes sense in the first cpuset patch
+> (cpusets_using_containers.patch), but should be removed in the second
+> cpuset patch (multiuser_container.patch). In the 2nd patch, we use this
+> comparison:
+>
+>         if (task_cs(p) != cs)
+>                 continue;
+>
+> cont variable introduced in the 1st patch essentially becomes unused
+> after 2nd patch.
+>
 
-we used to have a lengthy e1000_pci_save|restore_state in our code, which is now 
-gone, so I'm all for that. A separate pci_save_pxie|msi(x)_state for every 
-driver seems completely unnecessary. I can't think of a use case where 
-saving+restoring everything hurts. That's what you want I presume.
+Yes, you're right - it could be removed in the 3rd patch.
 
-We currently free all irq's and msi before going into suspend in e1000, and I 
-think that is probably a good thing, somehow I can think of bad things happening 
-if we dont, but I admit that I haven't tried it without alloc/free. We do this 
-in e100 as well and it works.
-
-Another motivation would be to leave this up to the driver: if the driver 
-chooses to free/alloc interrupts because it makes sense, you probably would want 
-to keep that choice available. Devices that don't need this can skip the 
-alloc/free, but leave the choice open for others.
-
-hth
-
-Auke
+Paul
