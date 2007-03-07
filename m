@@ -1,39 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965524AbXCGUZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXCGUav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965524AbXCGUZz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 15:25:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965624AbXCGUZz
+	id S965632AbXCGUav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 15:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965639AbXCGUau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 15:25:55 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41006 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965524AbXCGUZy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 15:25:54 -0500
-Date: Wed, 7 Mar 2007 12:25:51 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andres Salomon <dilinger@debian.org>
-cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: don't use ZONE_DMA unless CONFIG_ZONE_DMA is set in
- setup.c
-In-Reply-To: <45EE42BC.6030209@debian.org>
-Message-ID: <Pine.LNX.4.64.0703071224470.24546@schroedinger.engr.sgi.com>
-References: <45EDFEDB.3000507@debian.org> <20070306175246.b1253ec3.akpm@linux-foundation.org>
- <20070307040248.GA30278@redhat.com> <45EE42BC.6030209@debian.org>
+	Wed, 7 Mar 2007 15:30:50 -0500
+Received: from gw.goop.org ([64.81.55.164]:56697 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965632AbXCGUau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 15:30:50 -0500
+Message-ID: <45EF20F7.1050307@goop.org>
+Date: Wed, 07 Mar 2007 12:30:47 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/4] signalfd v1 - signalfd core ...
+References: <Pine.LNX.4.64.0703061639370.3661@alien.or.mcafeemobile.com> <20070307155553.06c82ca1.sfr@canb.auug.org.au> <Pine.LNX.4.64.0703062301590.10398@alien.or.mcafeemobile.com> <20070307233833.f1482f86.sfr@canb.auug.org.au> <Pine.LNX.4.64.0703070854280.5963@woody.linux-foundation.org> <Pine.LNX.4.64.0703070943180.12283@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0703070943180.12283@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007, Andres Salomon wrote:
+Davide Libenzi wrote:
+> On Wed, 7 Mar 2007, Linus Torvalds wrote:
+>
+>   
+>> On Wed, 7 Mar 2007, Stephen Rothwell wrote:
+>>     
+>>> You probably need the queue anyway because the real time signals are
+>>> supposed to queue.
+>>>       
+>> Davide - the *real* problem is (I think) that you try to allow signals to 
+>> be returned *both* by signalfd() and as a real signal.
+>>
+>> That's wrong, wrong, wrong.
+>>
+>> My original patch used "dequeue_signal()" to dequeue signals. Trust me, I 
+>> did that for a reason. Your re-design to think that you can get the signal 
+>> without using the real signal dequeueing is simply broken.
+>>     
+>
+> I think having the ability to have both can be usefull, so the idea of 
+> having multiple listeners fd (that both would not work with the single 
+> queue since they'd racing over dequeue_signal).
+>   
 
-> It would've been nice to see the ZONE_DMA removal patches just #define
-> ZONE_DMA regardless, and include less #ifdefs scattered about; but at
-> this point, I'd just as soon prefer to see a proper way to allocate
-> things based on address constraints (as discussed in
-> http://www.gelato.unsw.edu.au/archives/linux-ia64/0609/19036.html).
+Do you have a specific use-case in mind?  Because I don't think this is
+very useful at all; in fact it may be the opposite of useful.
 
-Would you be willing to work on that? I can sent you a bunch of unfinished 
-patches if you have the time.
+Generally signals are "owned" by one particular piece of code, and if
+you want to distribute the event further then you do that in the app, as
+you have to do with a normal signal handler.  This code is the fd-based
+analog of sigtimedwait, and so it should behave basically the same way. 
+If multiple threads call sigtimedwait on the same signal set, then one
+and only one will receive each signal.  This is good, because it means
+you can have a thread pool processing signals (and other events) knowing
+that there won't be duplicate processing.
+
+I haven't looked at your code in detail, but it isn't clear from your
+description whether you can have multiple signalfds for different
+(distinct) sets of signals.  That would be useful as a first level of
+demultiplexing between multiple user-mode signal consumers.  If you
+allow that, you need to decide whether a read/poll on a signalfd blocks
+until the head queued signal is part of the signal set, or if any queued
+signal is in the set.
+
+    J
