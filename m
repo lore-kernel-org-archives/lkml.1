@@ -1,118 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422917AbXCGRZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422673AbXCGRZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422917AbXCGRZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:25:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422894AbXCGRZU
+	id S1422673AbXCGRZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422877AbXCGRZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:25:20 -0500
-Received: from mx1.suse.de ([195.135.220.2]:44373 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:25:15 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43718 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422889AbXCGRR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:17:58 -0500
-Message-Id: <20070307171604.708827049@mini.kroah.org>
+	id S1422894AbXCGRSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:18:03 -0500
+Message-Id: <20070307171618.763827313@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:56 -0800
+Date: Wed, 07 Mar 2007 09:12:00 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, tony.luck@intel.com
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ia64@vger.kernel.org, jlan@sgi.com,
-       magnus@valinux.co.jp, horms@verge.net.au
-Subject: [patch 081/101] kexec: Fix CONFIG_SMP=n compilation V2 (ia64)
-Content-Disposition: inline; filename=kexec-fix-config_smp-n-compilation-v2.patch
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, kernel@nn7.de,
+       benh@kernel.crashing.org, paulus@samba.org, dtor@mail.ru
+Subject: [patch 085/101] enable mouse button 2+3 emulation for x86 macs
+Content-Disposition: inline; filename=enable-mouse-button-2-3-emulation-for-x86-macs.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Magnus Damm <magnus@valinux.co.jp>
+From: Soeren Sonnenburg <kernel@nn7.de>
 
-Kexec support for 2.6.20 on ia64 does not build properly using a config
-made up by CONFIG_SMP=n and CONFIG_HOTPLUG_CPU=n:
+As macbook/macbook pro's also have to live with a single mouse button the
+following patch just enables the Macintosh device drivers menu in Kconfig +
+adds the macintosh dir to the obj-* to make macbook* users happy (who use
+exactly that since months....
 
-  CC      arch/ia64/kernel/machine_kexec.o
-arch/ia64/kernel/machine_kexec.c: In function `machine_shutdown':
-arch/ia64/kernel/machine_kexec.c:77: warning: implicit declaration of function `cpu_down'
-  AS      arch/ia64/kernel/relocate_kernel.o
-  CC      arch/ia64/kernel/crash.o
-arch/ia64/kernel/crash.c: In function `kdump_cpu_freeze':
-arch/ia64/kernel/crash.c:139: warning: implicit declaration of function `ia64_jump_to_sal'
-arch/ia64/kernel/crash.c:139: error: `sal_boot_rendez_state' undeclared (first use in this function)
-arch/ia64/kernel/crash.c:139: error: (Each undeclared identifier is reported only once
-arch/ia64/kernel/crash.c:139: error: for each function it appears in.)
-arch/ia64/kernel/crash.c: At top level:
-arch/ia64/kernel/crash.c:84: warning: 'kdump_wait_cpu_freeze' defined but not used
-make[1]: *** [arch/ia64/kernel/crash.o] Error 1
-make: *** [arch/ia64/kernel] Error 2
-
-Signed-off-by: Magnus Damm <magnus@valinux.co.jp>
-Acked-by: Simon Horman <horms@verge.net.au>
-Acked-by: Jay Lan <jlan@sgi.com>
-Cc: Tony Luck <tony.luck@intel.com>
+Signed-off-by: Soeren Sonnenburg <kernel@nn7.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/ia64/kernel/crash.c         |   11 +++++++----
- arch/ia64/kernel/machine_kexec.c |    2 ++
- 2 files changed, 9 insertions(+), 4 deletions(-)
+ drivers/Makefile          |    2 +-
+ drivers/macintosh/Kconfig |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- linux-2.6.20.1.orig/arch/ia64/kernel/crash.c
-+++ linux-2.6.20.1/arch/ia64/kernel/crash.c
-@@ -79,6 +79,7 @@ crash_save_this_cpu()
- 	final_note(buf);
- }
+--- linux-2.6.20.1.orig/drivers/Makefile
++++ linux-2.6.20.1/drivers/Makefile
+@@ -30,7 +30,7 @@ obj-$(CONFIG_PARPORT)		+= parport/
+ obj-y				+= base/ block/ misc/ mfd/ net/ media/
+ obj-$(CONFIG_NUBUS)		+= nubus/
+ obj-$(CONFIG_ATM)		+= atm/
+-obj-$(CONFIG_PPC_PMAC)		+= macintosh/
++obj-y				+= macintosh/
+ obj-$(CONFIG_IDE)		+= ide/
+ obj-$(CONFIG_FC4)		+= fc4/
+ obj-$(CONFIG_SCSI)		+= scsi/
+--- linux-2.6.20.1.orig/drivers/macintosh/Kconfig
++++ linux-2.6.20.1/drivers/macintosh/Kconfig
+@@ -1,6 +1,6 @@
  
-+#ifdef CONFIG_SMP
- static int
- kdump_wait_cpu_freeze(void)
- {
-@@ -91,6 +92,7 @@ kdump_wait_cpu_freeze(void)
- 	}
- 	return 1;
- }
-+#endif
+ menu "Macintosh device drivers"
+-	depends on PPC || MAC
++	depends on PPC || MAC || X86
  
- void
- machine_crash_shutdown(struct pt_regs *pt)
-@@ -132,11 +134,12 @@ kdump_cpu_freeze(struct unw_frame_info *
- 	atomic_inc(&kdump_cpu_freezed);
- 	kdump_status[cpuid] = 1;
- 	mb();
--	if (cpuid == 0) {
--		for (;;)
--			cpu_relax();
--	} else
-+#ifdef CONFIG_HOTPLUG_CPU
-+	if (cpuid != 0)
- 		ia64_jump_to_sal(&sal_boot_rendez_state[cpuid]);
-+#endif
-+	for (;;)
-+		cpu_relax();
- }
- 
- static int
---- linux-2.6.20.1.orig/arch/ia64/kernel/machine_kexec.c
-+++ linux-2.6.20.1/arch/ia64/kernel/machine_kexec.c
-@@ -70,12 +70,14 @@ void machine_kexec_cleanup(struct kimage
- 
- void machine_shutdown(void)
- {
-+#ifdef CONFIG_HOTPLUG_CPU
- 	int cpu;
- 
- 	for_each_online_cpu(cpu) {
- 		if (cpu != smp_processor_id())
- 			cpu_down(cpu);
- 	}
-+#endif
- 	kexec_disable_iosapic();
- }
- 
+ config ADB
+ 	bool "Apple Desktop Bus (ADB) support"
 
 --
