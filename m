@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161113AbXCGBTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161120AbXCGBU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161113AbXCGBTm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 20:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161107AbXCGBTm
+	id S1161120AbXCGBU4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 20:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161123AbXCGBU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 20:19:42 -0500
-Received: from imx12.toshiba.co.jp ([61.202.160.132]:39360 "EHLO
-	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161106AbXCGBTl (ORCPT
+	Tue, 6 Mar 2007 20:20:56 -0500
+Received: from inet-tsb5.toshiba.co.jp ([202.33.96.24]:39965 "EHLO
+	inet-tsb5.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161121AbXCGBUz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 20:19:41 -0500
-Date: Wed, 07 Mar 2007 10:19:31 +0900
-Message-ID: <yyid53l26l8.wl@toshiba.co.jp>
+	Tue, 6 Mar 2007 20:20:55 -0500
+Date: Wed, 07 Mar 2007 10:20:42 +0900
+Message-ID: <yyibqj526j9.wl@toshiba.co.jp>
 From: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 To: mingo@elte.hu
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        tsutomu.owa@toshiba.co.jp
-Subject: [patch 5/7 -rt] powerpc 2.6.20-rt8: fix compile error (spinlock.h)
+Subject: [patch 6/7 -rt] powerpc 2.6.20-rt8: fix compile error (percpu.h)
 In-Reply-To: <yyik5xt27c0.wl@toshiba.co.jp>
 References: <yyik5xt27c0.wl@toshiba.co.jp>
 User-Agent: Wanderlust/2.8.1 (Something) Emacs/20.7 Mule/4.0 (HANANOEN)
@@ -27,72 +27,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  To fix the following compile error by changing names from
-__{read,write}_trylock to ___raw_{read,write}_trylock in asm-powerpc/spinlock.h
+  To fix the following compile error by adding necessary macro definitions
+(mostly taken from asm-generic/percpu.h).
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-include/asm-powerpc/spinlock.h
-include/linux/spinlock_api_smp.h:49: error: conflicting types for '__read_trylock'
-include/asm/spinlock.h:183: error: previous definition of '__read_trylock' was here
-include/linux/spinlock_api_smp.h:50: error: conflicting types for '__write_trylock'
-include/asm/spinlock.h:207: error: previous definition of '__write_trylock' was here
+include/asm-powerpc/percpu.h
+In file included from include/asm/tlb.h:52,
+		 from arch/powerpc/mm/mem.c:44:
+include/asm-generic/tlb.h:49: error: expected declaration specifiers or '...' before 'mmu_gathers'
+include/asm-generic/tlb.h:49: warning: data definition has no type or storage class
+include/asm-generic/tlb.h:49: warning: type defaults to 'int' in declaration of 'DECLARE_PER_CPU_LOCKED'
+include/asm-generic/tlb.h: In function 'tlb_gather_mmu':
+include/asm-generic/tlb.h:58: warning: implicit declaration of function '__get_cpu_lock'
+include/asm-generic/tlb.h:58: error: 'mmu_gathers' undeclared (first use in this function)
+include/asm-generic/tlb.h:58: error: (Each undeclared identifier is reported only once
+include/asm-generic/tlb.h:58: error: for each function it appears in.)
+	:
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Signed-off-by: Tsutomu Owa <tsutomu.owa@toshiba.co.jp>
 -- owa
 
-diff -rup linux-rt8/include/asm-powerpc/spinlock.h rt/include/asm-powerpc/spinlock.h
---- linux-rt8/include/asm-powerpc/spinlock.h	2007-02-20 14:30:40.000000000 +0900
-+++ rt/include/asm-powerpc/spinlock.h	2007-02-20 16:05:27.000000000 +0900
-@@ -179,7 +179,7 @@ extern void __raw_spin_unlock_wait(__raw
-  * This returns the old value in the lock + 1,
-  * so we got a read lock if the return value is > 0.
-  */
--static long __inline__ __read_trylock(__raw_rwlock_t *rw)
-+static long __inline__ ___raw_read_trylock(__raw_rwlock_t *rw)
- {
- 	long tmp;
+diff -rup linux-rt8/include/asm-powerpc/percpu.h rt/include/asm-powerpc/percpu.h
+--- linux-rt8/include/asm-powerpc/percpu.h	2007-02-20 09:37:27.000000000 +0900
++++ rt/include/asm-powerpc/percpu.h	2007-02-20 16:03:44.000000000 +0900
+@@ -19,12 +19,24 @@
+ /* Separate out the type, so (int[3], foo) works. */
+ #define DEFINE_PER_CPU(type, name) \
+     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
++#define DEFINE_PER_CPU_LOCKED(type, name) \
++    __attribute__((__section__(".data.percpu"))) __DEFINE_SPINLOCK(per_cpu_lock__##name##_locked); \
++    __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name##_locked
  
-@@ -203,7 +203,7 @@ static long __inline__ __read_trylock(__
-  * This returns the old value in the lock,
-  * so we got the write lock if the return value is 0.
-  */
--static __inline__ long __write_trylock(__raw_rwlock_t *rw)
-+static __inline__ long ___raw_write_trylock(__raw_rwlock_t *rw)
- {
- 	long tmp, token;
+ /* var is in discarded region: offset to particular copy we want */
+ #define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
+ #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
+ #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
  
-@@ -226,7 +226,7 @@ static __inline__ long __write_trylock(_
- static void __inline__ __raw_read_lock(__raw_rwlock_t *rw)
- {
- 	while (1) {
--		if (likely(__read_trylock(rw) > 0))
-+		if (likely(___raw_read_trylock(rw) > 0))
- 			break;
- 		do {
- 			HMT_low();
-@@ -240,7 +240,7 @@ static void __inline__ __raw_read_lock(_
- static void __inline__ __raw_write_lock(__raw_rwlock_t *rw)
- {
- 	while (1) {
--		if (likely(__write_trylock(rw) == 0))
-+		if (likely(___raw_write_trylock(rw) == 0))
- 			break;
- 		do {
- 			HMT_low();
-@@ -253,12 +253,12 @@ static void __inline__ __raw_write_lock(
++#define per_cpu_lock(var, cpu) \
++    (*RELOC_HIDE(&per_cpu_lock__##var##_locked, __per_cpu_offset(cpu)))
++#define per_cpu_var_locked(var, cpu) \
++    (*RELOC_HIDE(&per_cpu__##var##_locked, __per_cpu_offset(cpu)))
++#define __get_cpu_lock(var, cpu) \
++    per_cpu_lock(var, cpu)
++#define __get_cpu_var_locked(var, cpu) \
++    per_cpu_var_locked(var, cpu)
++
+ /* A macro to avoid #include hell... */
+ #define percpu_modcopy(pcpudst, src, size)			\
+ do {								\
+@@ -40,17 +52,27 @@ extern void setup_per_cpu_areas(void);
  
- static int __inline__ __raw_read_trylock(__raw_rwlock_t *rw)
- {
--	return __read_trylock(rw) > 0;
-+	return ___raw_read_trylock(rw) > 0;
- }
+ #define DEFINE_PER_CPU(type, name) \
+     __typeof__(type) per_cpu__##name
++#define DEFINE_PER_CPU_LOCKED(type, name) \
++    __DEFINE_SPINLOCK(per_cpu_lock__##name##_locked); \
++    __typeof__(type) per_cpu__##name##_locked
  
- static int __inline__ __raw_write_trylock(__raw_rwlock_t *rw)
- {
--	return __write_trylock(rw) == 0;
-+	return ___raw_write_trylock(rw) == 0;
- }
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
++#define per_cpu_var_locked(var, cpu)		(*((void)(cpu), &per_cpu__##var##_locked))
++
+ #define __get_cpu_var(var)			per_cpu__##var
+ #define __raw_get_cpu_var(var)			per_cpu__##var
  
- static void __inline__ __raw_read_unlock(__raw_rwlock_t *rw)
+ #endif	/* SMP */
+ 
+ #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
++#define DECLARE_PER_CPU_LOCKED(type, name) \
++    extern spinlock_t per_cpu_lock__##name##_locked; \
++    extern __typeof__(type) per_cpu__##name##_locked
+ 
+ #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+ #define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
++#define EXPORT_PER_CPU_LOCKED_SYMBOL(var) EXPORT_SYMBOL(per_cpu_lock__##var##_locked); EXPORT_SYMBOL(per_cpu__##var##_locked)
++#define EXPORT_PER_CPU_LOCKED_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu_lock__##var##_locked); EXPORT_SYMBOL_GPL(per_cpu__##var##_locked)
+ 
+ #else
+ #include <asm-generic/percpu.h>
 
