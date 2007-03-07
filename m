@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992729AbXCGXQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992700AbXCGXRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992729AbXCGXQj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992700AbXCGXQi
+	id S2992700AbXCGXRc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992716AbXCGXRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:16:38 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:57588 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992715AbXCGXP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:15:59 -0500
-Date: Wed, 7 Mar 2007 15:13:21 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <ak@suse.de>, Luigi Genoni <luigi.genoni@pirelli.com>
-Subject: [patch 104/101] x86-64: survive having no irq mapping for a vector
-Message-ID: <20070307231321.GR10574@sequoia.sous-sol.org>
-References: <20070307171035.150802805@mini.kroah.org> <20070307173420.GA24957@kroah.com>
+	Wed, 7 Mar 2007 18:17:32 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:37175 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992700AbXCGXRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 18:17:31 -0500
+Date: Wed, 7 Mar 2007 15:16:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <hansendc@us.ibm.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: 2.6.21-rc2-mm2 hang
+Message-Id: <20070307151658.bfcd90e1.akpm@linux-foundation.org>
+In-Reply-To: <1173308841.868.14.camel@localhost.localdomain>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+	<1173305536.868.8.camel@localhost.localdomain>
+	<20070307221628.GD26473@linux-os.sc.intel.com>
+	<1173308841.868.14.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307173420.GA24957@kroah.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+On Wed, 07 Mar 2007 15:07:21 -0800
+Dave Hansen <hansendc@us.ibm.com> wrote:
 
-Occasionally the kernel has bugs that result in no irq being found for a
-given cpu vector.  If we acknowledge the irq the system has a good chance
-of continuing even though we dropped an irq message.  If we continue to
-simply print a message and not acknowledge the irq the system is likely to
-become non-responsive shortly there after.
+> On Wed, 2007-03-07 at 14:16 -0800, Siddha, Suresh B wrote:
+> > On Wed, Mar 07, 2007 at 02:12:16PM -0800, Dave Hansen wrote:
+> > > I'm seeing weird hangs running ltp on 2.6.21-rc2-mm2.  It manifests
+> > > itself by the waitpid06 test in LTP hanging.  This is very, very
+> > > reproducible in about 5 seconds by adding '-s wait' to the ltp command
+> > > line.
+> > > 
+> > > I see 4 waitpid06 processes on my 4-way machine spinning in userspace.
+> > > But, the weird part is that I can't ssh in once this happens, but I can
+> > > log in to the console.  I've bisected it down to:
+> > >         
+> > >         sched-fix-idle-load-balancing-in-softirqd-context
+> > 
+> > This sounds like an issue in merge we recently had and 2.6.21-rc2-mm2 already
+> > has a fix for this.
+> > 
+> > sched-fix-idle-load-balancing-in-softirqd-context-fix.patch  
+> > 
+> > Can you please apply both
+> > sched-fix-idle-load-balancing-in-softirqd-context
+> > sched-fix-idle-load-balancing-in-softirqd-context-fix.patch
+> > and see if you still see this problem?
+> 
+> I was confused that I couldn't find this fix in my patches directory,
+> but I double-checked, and realized that I was still on 2.6.21-rc2-mm1.
+> I must have grabbed the wrong broken-out tarball when I started the
+> bisect.  Darn.
+> 
+> Anyway, 2.6.21-rc2-mm2 appears to be OK.  Sorry for the false alarm.
+> 
 
-AK: Fixed compilation for UP kernels
+Ah, OK.  I'll undrop those three patches.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: "Luigi Genoni" <luigi.genoni@pirelli.com>
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- arch/x86_64/kernel/irq.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
-
---- linux-2.6.20.1.orig/arch/x86_64/kernel/irq.c
-+++ linux-2.6.20.1/arch/x86_64/kernel/irq.c
-@@ -18,6 +18,7 @@
- #include <asm/uaccess.h>
- #include <asm/io_apic.h>
- #include <asm/idle.h>
-+#include <asm/smp.h>
- 
- atomic_t irq_err_count;
- 
-@@ -120,9 +121,14 @@ asmlinkage unsigned int do_IRQ(struct pt
- 
- 	if (likely(irq < NR_IRQS))
- 		generic_handle_irq(irq);
--	else if (printk_ratelimit())
--		printk(KERN_EMERG "%s: %d.%d No irq handler for vector\n",
--			__func__, smp_processor_id(), vector);
-+	else {
-+		if (!disable_apic)
-+			ack_APIC_irq();
-+
-+		if (printk_ratelimit())
-+			printk(KERN_EMERG "%s: %d.%d No irq handler for vector\n",
-+				__func__, smp_processor_id(), vector);
-+	}
- 
- 	irq_exit();
- 
+Michal, did rc2-mm2 make that weird hang go away for you?
