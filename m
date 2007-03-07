@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964773AbXCGMJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbXCGMMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964773AbXCGMJO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:09:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXCGMJO
+	id S964824AbXCGMMt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXCGMMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:09:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:49744 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751165AbXCGMJN (ORCPT
+	Wed, 7 Mar 2007 07:12:49 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49120 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbXCGMMs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:09:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ftlhPJCoDHhd8VQsiaQ1TQUuj3kZ9lG8IE0fUbfAm7T48LIgCCgWGg4LgrdY05Y6tihfna+vdOZBfrvm/bO6Q/lUqrJDV/JwIfN/YoYTSjkIqNMulX1QwlsjRQxNFUTFRuwOcdJkzzIfLe7umz44hWhgZvr9JRI85hfUuprUnHI=
-Message-ID: <5767b9100703070409o3e094420rf7ccffc436332184@mail.gmail.com>
-Date: Wed, 7 Mar 2007 20:09:10 +0800
-From: "Conke Hu" <conke.hu@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>, Alan <alan@lxorguk.ukuu.org.uk>,
-       "Tejun Heo" <htejun@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [BUG] ATAPI command TEST_UNIT_READY never succeeds!
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Mar 2007 07:12:48 -0500
+Date: Wed, 7 Mar 2007 13:12:46 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@linux-foundation.org, rkuhn@e18.physik.tu-muenchen.de,
+       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] tcp_cubic: faster cube root
+Message-ID: <20070307121246.GA7728@one.firstfloor.org>
+References: <20070306102941.32471d57@freekitty> <20070306.135834.26100913.davem@davemloft.net> <20070306144706.4585c079@freekitty> <20070306.202052.03980320.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070306.202052.03980320.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-    Do you ever noticed that the ATAPI command TEST_UNIT_READY always
-fails to execute !?
-    I debugged in the following environments:
-        piix + Intel ICH6/ICH7 PATA
-        atiixp + ATI SB600 PATA
-        libata + ata_piix + Intel ICH6/ICH7 PATA
-        libata + sata_sil24 + Silicon Image 3132
-        libata + ahci + ATI SB600 SATA
-        libata + ahci + Intel AHCI
-    but none of them can execute TEST_UNIT_READY command successfully.
-    For example, in ahci driver, ahci_interrupt() reads port status as
-0x4000_0000, which indicates an taskfile error.
+On Tue, Mar 06, 2007 at 08:20:52PM -0800, David Miller wrote:
+> From: Stephen Hemminger <shemminger@linux-foundation.org>
+> Date: Tue, 6 Mar 2007 14:47:06 -0800
+> 
+> > The Newton-Raphson method is quadratically convergent so
+> > only a small fixed number of steps are necessary.
+> > Therefore it is faster to unroll the loop. Since div64_64 is no longer
+> > inline it won't cause code explosion.
+> > 
+> > Also fixes a bug that can occur if x^2 was bigger than 32 bits.
+> > 
+> > Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+> 
+> Applied, thanks Stephen.
 
+Well that still needs the ugly div64_64 function. At least my goal was to 
+eliminate that, not make it faster (I don't see any evidence this function 
+is particularly performance critical). You prefer to keep div64_64? 
 
-Conke
+-Andi
