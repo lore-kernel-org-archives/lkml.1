@@ -1,55 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965656AbXCGVUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965667AbXCGVVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965656AbXCGVUe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 16:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965657AbXCGVUd
+	id S965667AbXCGVVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 16:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965668AbXCGVVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 16:20:33 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:41509 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965656AbXCGVUc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 16:20:32 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=x5oqphJQqGNqsvr7OOU1qBBttQtchgaALohZzFLgA/XbEZ5jhy1Zr2Zhvz54GAU+b
-	annCm8vmGoJB8QNJ+VDow==
-Message-ID: <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
-Date: Wed, 7 Mar 2007 13:20:18 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Cc: "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, ebiederm@xmission.com,
-       sam@vilain.net, akpm@linux-foundation.org, pj@sgi.com, dev@sw.ru,
-       xemul@sw.ru, containers@lists.osdl.org, winget@google.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20070307205846.GB7010@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 7 Mar 2007 16:21:18 -0500
+Received: from hermes2.dur.ac.uk ([129.234.8.21]:51937 "EHLO hermes2.dur.ac.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965671AbXCGVVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 16:21:16 -0500
+Date: Wed, 7 Mar 2007 21:25:34 +0000
+From: Ash Milsted <thatistosayiseenem@gawab.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
+       dmitry.torokhov@gmail.com
+Subject: Re: 2.6.21-rc2 regression vs. 2.6.20: AT keyboard only works with
+ pci=noacpi
+Message-Id: <20070307212534.325f2f32.thatistosayiseenem@gawab.com>
+In-Reply-To: <20070307120004.0bab0f76.thatistosayiseenem@gawab.com>
+References: <20070303151424.3b08c33e.thatistosayiseenem@gawab.com>
+	<20070304142350.7c3c79af.thatistosayiseenem@gawab.com>
+	<20070307120004.0bab0f76.thatistosayiseenem@gawab.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070301133543.GK15509@in.ibm.com>
-	 <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com>
-	 <20070307173031.GC2336@in.ibm.com>
-	 <20070307174346.GA19521@sergelap.austin.ibm.com>
-	 <20070307180055.GC17151@in.ibm.com>
-	 <20070307205846.GB7010@sergelap.austin.ibm.com>
+X-DurhamAcUk-MailScanner: Found to be clean, Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/07, Serge E. Hallyn <serue@us.ibm.com> wrote:
->
-> All that being said, if it were going to save space without overly
-> complicating things I'm actually not opposed to using nsproxy, but it
+On Wed, 7 Mar 2007 12:00:04 +0000
+Ash Milsted <thatistosayiseenem@gawab.com> wrote:
 
-If space-saving is the main issue, then the latest version of my
-containers patches uses just a single pointer in the task_struct, and
-all tasks in the same set of containers (across all hierarchies) will
-share a single container_group object, which holds the actual pointers
-to container state.
+> On Sun, 4 Mar 2007 14:23:50 +0000
+> Ash Milsted <thatistosayiseenem@gawab.com> wrote:
+> 
+> > On Sat, 3 Mar 2007 15:14:24 +0000
+> > Ash Milsted <thatistosayiseenem@gawab.com> wrote:
+> > 
+> > > Hi,
+> > > With 2.6.21-rc2-git1 I have a problem with my ps/2 port keyboard - it only works
+> > > with one of the following on the command-line:
+> > >  - nolapic
+> > >  - irqfixup
+> > >  - pci=noacpi
+> > > Otherwise it gets stuck with the numlock on.
+> > > The following options have no effect:
+> > >  - nohz=off (who knows eh?)
+> > >  - pci=nomsi
+> > > 
+> snip
+> > > 
+> > > Ash
+> > 
+> > Just checked 2.6.21-rc2-mm1, still has the problem.
+> > Also, acpi=noirq fixes it too.
+> > To clarify, the problem is that my ps/2 port keyboard is completely frozen
+> > on boot - usually it gets activated when udev probes for hardware (my kernel
+> > config is highly modular). It worked fine with 2.6.20 and earlier with acpi 
+> > taking care of interrupt routing.
+> > 
+> > Ash
+> 
+> Any thoughts on this? It still occurs with 2.6.21-rc3. Here's my config
+> in case that helps. You'll see that I have swap-prefetch patched in (I
+> also have RDSL and some VM changes in there), but I have confirmed that
+> the problem occurs with no extra patches. By the way, I tested mm1 with
+> a rather different config (I used my distro package) and still saw the
+> problem.
+> 
+> Also, you should probably ignore that bit above where I suggest the
+> keyboard driver is being loaded as a module, because of course it
+> isn't.. Yet it does start responding (with pci=noacpi) at about that
+> time that udev does its thing.
+> 
+schnip
 
-Effectively, container_group is to container as nsproxy is to namespace.
+So, I tracked this down to 2.6.21-git7, the first snapshot that gives me
+this problem. Tellingly it does contain an input tree merge. I would git bisect
+but I don't have a local copy of the tree - I tried to get one, but it stopped
+halfway through the clone, probably because I had to use http... So, I hope that
+helps.
 
-Paul
+Ash
+
+PS: I should have said I'm not subscribed, so please CC me on reply.
+PPS: That almost rhymes. Almost.
