@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030766AbXCGAdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161025AbXCGAeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030766AbXCGAdo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 19:33:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030775AbXCGAdo
+	id S1161025AbXCGAeG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 19:34:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161028AbXCGAeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 19:33:44 -0500
-Received: from ozlabs.org ([203.10.76.45]:53170 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030766AbXCGAdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 19:33:43 -0500
-Subject: Re: [PATCH 8/8] Convert PDA into the percpu section
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@suse.de>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070306193445.GI22829@bingen.suse.de>
-References: <1173184747.4644.23.camel@localhost.localdomain>
-	 <1173185592.4644.28.camel@localhost.localdomain>
-	 <1173185666.4644.30.camel@localhost.localdomain>
-	 <1173185734.4644.32.camel@localhost.localdomain>
-	 <1173185827.4644.34.camel@localhost.localdomain>
-	 <1173185909.4644.36.camel@localhost.localdomain>
-	 <1173186021.4644.38.camel@localhost.localdomain>
-	 <1173186107.4644.41.camel@localhost.localdomain>
-	 <1173186214.4644.44.camel@localhost.localdomain>
-	 <20070306193445.GI22829@bingen.suse.de>
+	Tue, 6 Mar 2007 19:34:06 -0500
+Received: from www.osadl.org ([213.239.205.134]:47005 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161025AbXCGAeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 19:34:02 -0500
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Dan Hecht <dhecht@vmware.com>, Zachary Amsden <zach@vmware.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, ak@suse.de,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
+In-Reply-To: <45EE0628.1080108@goop.org>
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>
+	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>
+	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>
+	 <1173178774.24738.311.camel@localhost.localdomain>
+	 <45EDD82F.90204@vmware.com>
+	 <1173225182.24738.507.camel@localhost.localdomain>
+	 <45EE0628.1080108@goop.org>
 Content-Type: text/plain
-Date: Wed, 07 Mar 2007 11:33:02 +1100
-Message-Id: <1173227582.4644.74.camel@localhost.localdomain>
+Date: Wed, 07 Mar 2007 01:40:07 +0100
+Message-Id: <1173228007.24738.509.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 20:34 +0100, Andi Kleen wrote:
-> Sigh -- i had hoped this had settled down because it was a
-> merging nightmare last time. Ok. 
-
-Indeed, that's why I waited until everything else was fully merged and
-accepted.
-
-> > +#define percpu_to_op(op,var,val)				\
-> > +	do {							\
-> > +		typedef typeof(var) T__;			\
-> > +		if (0) { T__ tmp__; tmp__ = (val); }		\
-> > +		switch (sizeof(var)) {				\
-> > +		case 1:						\
-> > +			asm(op "b %1,"__percpu_seg"%0"		\
-> > +			    : "+m" (var)			\
-> > +			    :"ri" ((T__)val));			\
+On Tue, 2007-03-06 at 16:24 -0800, Jeremy Fitzhardinge wrote:
+> >> 3) clockevent set_next_event interface is suboptimal for paravirt (and 
+> >> probably realtime-ish uses).  The problem is that the expiry is passed 
+> >> as a relative time.  On paravirt, an arbitrary amount of (stolen) time 
+> >> may have passed since the delta was computed and when the timer device 
+> >> is programmed, causing that next interrupt to be too far out in the 
+> >> future.  It seems a better interface for set_next_event would be to pass 
+> >> the current time and the absolute expiry.  Actually, I sent email to 
+> >> Thomas and Ingo about this (and some other clockevents/hrtimer feedback) 
+> >> in July 2006, but never heard back.  Thoughts?
+> >>     
+> >
+> > There is no problem for realtime uses, as the reprogramming path is
+> > running with local interrupts disabled. I can see the point for paravirt
+> > and I'm not opposed to change / expand the interface for that. It might
+> > be done by an extra clockevents feature flag, which requests absolute
+> > time instead of relative time.
+> >   
 > 
-> Perhaps I'm blind but I can't see where the %fs reference is there.
-> How does this work? 
+> I'm not sure how much different it makes overall.  It's true that
+> absolute time would be a more useful interface, but because the guest
+> vcpu can be preempted at any time, we could miss the timeout
+> regardless.  In Xen if you set a timeout for the past you get an
+> immediate interrupt; I presume the clockevent code can deal with that?
 
-Here:
+Yep. You also can return -ETIME so it just works w/o an interrupt.
 
-+/* fs segment starts at (positive) offset == __per_cpu_offset[cpu] */
-+#define __percpu_seg "%%fs:"
-+#else  /* !SMP */
-+#include <asm-generic/percpu.h>
-+#define __percpu_seg ""
-+#endif /* SMP */
+	tglx
 
-That's how we get SMP & non-SMP unification in that code.
 
-> Do you have text size comparisons before/after and possible lmbench? 
 
-No, but I'll run them this evening.  Last time the size reduction was
-slight, and there was no measurable performance improvement in
-microbenchmarks.
-
-Thanks,
-Rusty.
 
