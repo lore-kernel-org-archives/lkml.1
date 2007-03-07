@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422707AbXCGKVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422712AbXCGKZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422707AbXCGKVL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 05:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422712AbXCGKVL
+	id S1422712AbXCGKZG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 05:25:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422714AbXCGKZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 05:21:11 -0500
-Received: from ns.suse.de ([195.135.220.2]:41916 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 05:25:06 -0500
+Received: from main.gmane.org ([80.91.229.2]:42312 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422707AbXCGKVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 05:21:10 -0500
-Date: Wed, 7 Mar 2007 11:21:06 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org, mingo@elte.hu,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307102106.GB5555@wotan.suse.de>
-References: <20070307082755.GA25733@elte.hu> <E1HOrfO-0008AW-00@dorka.pomaz.szeredi.hu> <20070307004709.432ddf97.akpm@linux-foundation.org> <E1HOrsL-0008Dv-00@dorka.pomaz.szeredi.hu> <20070307010756.b31c8190.akpm@linux-foundation.org> <1173259942.6374.125.camel@twins> <20070307094503.GD8609@wotan.suse.de> <20070307100430.GA5080@wotan.suse.de> <1173262002.6374.128.camel@twins> <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu>
+	id S1422712AbXCGKZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 05:25:04 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Leroy van Logchem <leroy.vanlogchem@gmail.com>
+Subject: Re: [PATCH - RFC] allow setting =?utf-8?b?dm1fZGlydHk=?= below 1% for large memory machines
+Date: Wed, 7 Mar 2007 10:23:14 +0000 (UTC)
+Message-ID: <loom.20070307T111716-18@post.gmane.org>
+References: <17827.22798.625018.673326@notabene.brown> <Pine.LNX.4.64.0701110245300.22043@twinlark.arctic.org> <20070111122127.5bcc0b0f.akpm@osdl.org> <Pine.LNX.4.64.0701111431470.4980@twinlark.arctic.org> <20070111144801.ef86c169.akpm@osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 145.9.190.39 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.2) Gecko/20070219 Firefox/2.0.0.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 11:13:20AM +0100, Miklos Szeredi wrote:
-> > *sigh* yes was looking at all that code, thats gonna be darn slow
-> > though, but I'll whip up a patch.
+
+> > actually a global dirty_ratio causes interference between devices which 
+> > should otherwise not block each other...
+> > 
+> > if you set up a "dd if=/dev/zero of=/dev/sdb bs=1M" it shouldn't affect 
+> > write performance on sda -- but it does... because the dd basically 
+> > dirties all of the "dirty_background_ratio" pages and then any task 
+> > writing to sda has to block in the foreground...  (i've had this happen in 
+> > practice -- my hack fix is oflag=direct on the dd... but the problem still 
+> > exists.)
 > 
-> Well, if it's going to be darn slow, maybe it's better to go with
-> mingo's plan on emulating nonlinear vmas with linear ones.  That'll be
+> yeah.  Plus your heavy-dd-to-/dev/sda tends to block light-writers to
+> /dev/sda in perhaps disproportionate ways.
+> 
+> This is on my list of things to look at.  Hah.
 
-There are real users who want these fast, though.
-
-> darn slow as well, but at least it will be much less complicated.
-
-IMO, the best thing to do is just restore msync behaviour, and comment
-the fact that we ignore nonlinears. We need to restore msync behaviour
-to fix races in regular mappings anyway, at least for now.
+It really exists in the wild on both large memory and storage machines. I hope
+we don't have to patch Samba on every release to add POSIX fadvise calls in
+order to have a more polite VM. A 'cfq' for write generators from vm to devices
+would be nice if it can auto probe the device write speed so we don't have to
+use knobs. Just let the kernel figure out what are the best values to the
+algorithms would be the ideal world.
 
