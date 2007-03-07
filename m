@@ -1,98 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964790AbXCGMRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbXCGMUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964790AbXCGMRi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:17:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXCGMRi
+	id S964834AbXCGMUm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:20:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965026AbXCGMUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:17:38 -0500
-Received: from mail.suse.de ([195.135.220.2]:49881 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751224AbXCGMRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:17:37 -0500
-Date: Wed, 7 Mar 2007 13:17:30 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307121730.GC18704@wotan.suse.de>
-References: <20070307094503.GD8609@wotan.suse.de> <20070307100430.GA5080@wotan.suse.de> <1173262002.6374.128.camel@twins> <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu> <20070307102106.GB5555@wotan.suse.de> <1173263085.6374.132.camel@twins> <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins> <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173268086.6374.157.camel@twins>
-User-Agent: Mutt/1.5.9i
+	Wed, 7 Mar 2007 07:20:42 -0500
+Received: from 64.221.212.177.ptr.us.xo.net ([64.221.212.177]:12654 "EHLO
+	ext.agami.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964834AbXCGMUl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 07:20:41 -0500
+X-Greylist: delayed 882 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 07:20:41 EST
+Message-ID: <45EEACA0.4050206@agami.com>
+Date: Wed, 07 Mar 2007 17:44:24 +0530
+From: Shailendra Tripathi <stripathi@agami.com>
+User-Agent: Mozilla Thunderbird 0.9 (X11/20041127)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@lst.de>
+CC: xfs@oss.sgi.com, ecashin@coraid.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] xfs: stop using kmalloc in xfs_buf_get_noaddr
+References: <20070307101324.GC30587@lst.de>
+In-Reply-To: <20070307101324.GC30587@lst.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Mar 2007 12:20:45.0223 (UTC) FILETIME=[07F49370:01C760B3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 12:48:06PM +0100, Peter Zijlstra wrote:
-> On Wed, 2007-03-07 at 12:00 +0100, Nick Piggin wrote:
-> > On Wed, Mar 07, 2007 at 11:47:42AM +0100, Peter Zijlstra wrote:
-> > > On Wed, 2007-03-07 at 11:38 +0100, Nick Piggin wrote:
-> > > 
-> > > > > > There are real users who want these fast, though.
-> > > > > 
-> > > > > Yeah, why don't we have a tree per nonlinear vma to find these pages?
-> > > > > 
-> > > > > wli mentions shadow page tables..
-> > > > 
-> > > > We could do something more efficient, but I thought that half the point
-> > > > was that they didn't carry any of this extra memory, and they could be
-> > > > really fast to set up at the expense of efficiency elsewhere.
-> > > 
-> > > I'm failing to understand this :-(
-> > > 
-> > > That extra memory, and apparently they don't want the inefficiency
-> 
-> s/T/W/
-> 
-> > > either.
-> > 
-> > Sorry, I didn't understand your misunderstandings ;)
-> 
-> Bah, my brain is thick and foggy today. Let us try again;
-> 
-> Nonlinear vmas exist because many vmas are expensive somehow, right?
-> Nonlinear vmas keep the page mapping in the page tables and screw rmaps.
-> 
-> This 'extra memory' you mentioned would be the overhead of tracking the
-> actual ranges?
-> 
-> And apparently now we want it to not suck on the rmap case :-(
+Hi Christoph,
+	     Did you do some testing for recovery when end of the physical log 
+is seen ?
+	     When you will be dealing with striped ICLOG buffers or big sized 
+ICLOGs, header size might range from 512 to 2k. Also, this header might 
+be split into 2 parts at the end of physical log. Then, you don't have 
+page size buffer. Please verify that XFS_BUF_SETP_PTRs work correctly 
+for those cases.
+	 Same thing is true when data section is split around physical log. You 
+can get one part which is not PAGE sized. 	
 
-Do we? I think just "work" is the way we've been handling them up until
-now. Making them suck less for rmap makes them suck more for what they're
-good at.
+(I am referring to the function xlog_do_recovery_pass).	
 
-> Anyway, if used on a non writeback capable backing store (ramfs)
-> page_mkclean will never be called. If also mlocked (I think oracle does
-> this) then page reclaim will pass over too.
+Regards,
+Shailendra
+
+
+
+Christoph Hellwig wrote:
+> Currently xfs_buf_get_noaddr allocates memory using kmem_alloc which
+> can end up either in kmalloc or vmalloc and assigns it to the buffer.
+> This patch changes it to allocate individual pages and if there is
+> more then one maps it into kernel virtual space using vmap.
 > 
-> So we're only interested in the bdi_cap_accounting_dirty and VM_SHARED
-> case, right?
+> This means the minimum buffer allocation is PAGE_SIZE now.  For two
+> of the three caller (log buffers, log recovery) that is perfectly
+> fine, because they always allocate buffers that are a power of two
+> of the page size anyway.  For xfs_zero_remaining_bytes the minimum
+> allocation goes up from blocksize to pagesize and thus there is
+> a potential waste of memory for blocksize < pagesize allocations,
+> which is unfortunate but not directly solveable when block
+> drivers expect reference countable pages.  To fix this waste
+> xfs_zero_remaining_bytes could be rewritten to zero more than
+> a single block at a time, which sounds like a good idea in general.
 > 
-> Tracking these ranges on a per-vma basis would avoid taking the mm wide
-> mmap_sem and so would be cheaper than regular vmas.
 > 
-> Would that still be too expensive?
-
-Well you can today remap N pages in a file, arbitrarily for
-sizeof(pte_t)*tiny bit for the upper page tables + small constant
-for the vma.
-
-At best, you need an extra pointer to pte / vaddr, so you'd basically
-double memory overhead.
-
-> > > Well, now they don't, but it could be done or even exploited as a DoS.
-> > 
-> > But so could nonlinear page reclaim. I think we need to restrict nonlinear
-> > mappings to root if we're worried about that.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 > 
-> Can't we just 'fix' it?
-
-The thing is, I don't think anybody who uses these things cares
-about any of the 'problems' you want to fix, do they? We are
-interested in dirty pages only for the correctness issue, rather
-than performance. Same as reclaim.
-
+> Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+> ===================================================================
+> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c	2007-03-05 15:54:40.000000000 +0100
+> +++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c	2007-03-05 15:54:47.000000000 +0100
+> @@ -314,7 +314,7 @@
+>  
+>  	ASSERT(list_empty(&bp->b_hash_list));
+>  
+> -	if (bp->b_flags & _XBF_PAGE_CACHE) {
+> +	if (bp->b_flags & (_XBF_PAGE_CACHE|_XBF_PAGES)) {
+>  		uint		i;
+>  
+>  		if ((bp->b_flags & XBF_MAPPED) && (bp->b_page_count > 1))
+> @@ -323,18 +323,11 @@
+>  		for (i = 0; i < bp->b_page_count; i++) {
+>  			struct page	*page = bp->b_pages[i];
+>  
+> -			ASSERT(!PagePrivate(page));
+> +			if (bp->b_flags & _XBF_PAGE_CACHE)
+> +				ASSERT(!PagePrivate(page));
+>  			page_cache_release(page);
+>  		}
+>  		_xfs_buf_free_pages(bp);
+> -	} else if (bp->b_flags & _XBF_KMEM_ALLOC) {
+> -		 /*
+> -		  * XXX(hch): bp->b_count_desired might be incorrect (see
+> -		  * xfs_buf_associate_memory for details), but fortunately
+> -		  * the Linux version of kmem_free ignores the len argument..
+> -		  */
+> -		kmem_free(bp->b_addr, bp->b_count_desired);
+> -		_xfs_buf_free_pages(bp);
+>  	}
+>  
+>  	xfs_buf_deallocate(bp);
+> @@ -764,41 +757,41 @@
+>  	size_t			len,
+>  	xfs_buftarg_t		*target)
+>  {
+> -	size_t			malloc_len = len;
+> +	unsigned long		page_count = PAGE_ALIGN(len) >> PAGE_SHIFT;
+> +	int			error, i;
+>  	xfs_buf_t		*bp;
+> -	void			*data;
+> -	int			error;
+>  
+>  	bp = xfs_buf_allocate(0);
+>  	if (unlikely(bp == NULL))
+>  		goto fail;
+>  	_xfs_buf_initialize(bp, target, 0, len, 0);
+>  
+> - try_again:
+> -	data = kmem_alloc(malloc_len, KM_SLEEP | KM_MAYFAIL | KM_LARGE);
+> -	if (unlikely(data == NULL))
+> +	error = _xfs_buf_get_pages(bp, page_count, 0);
+> +	if (error)
+>  		goto fail_free_buf;
+>  
+> -	/* check whether alignment matches.. */
+> -	if ((__psunsigned_t)data !=
+> -	    ((__psunsigned_t)data & ~target->bt_smask)) {
+> -		/* .. else double the size and try again */
+> -		kmem_free(data, malloc_len);
+> -		malloc_len <<= 1;
+> -		goto try_again;
+> -	}
+> -
+> -	error = xfs_buf_associate_memory(bp, data, len);
+> -	if (error)
+> +	for (i = 0; i < page_count; i++) {
+> +		bp->b_pages[i] = alloc_page(GFP_KERNEL);
+> +		if (!bp->b_pages[i])
+> +			goto fail_free_mem;
+> +	}
+> +	bp->b_flags |= _XBF_PAGES;
+> +
+> +	error = _xfs_buf_map_pages(bp, XBF_MAPPED);
+> +	if (unlikely(error)) {
+> +		printk(KERN_WARNING "%s: failed to map pages\n",
+> +				__FUNCTION__);
+>  		goto fail_free_mem;
+> -	bp->b_flags |= _XBF_KMEM_ALLOC;
+> +	}
+>  
+>  	xfs_buf_unlock(bp);
+>  
+>  	XB_TRACE(bp, "no_daddr", data);
+>  	return bp;
+> +
+>   fail_free_mem:
+> -	kmem_free(data, malloc_len);
+> + 	for ( ; i >= 0; i++)
+> +		__free_page(bp->b_pages[i]);
+>   fail_free_buf:
+>  	xfs_buf_free(bp);
+>   fail:
+> Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.h
+> ===================================================================
+> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.h	2007-03-05 15:54:40.000000000 +0100
+> +++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.h	2007-03-05 15:55:06.000000000 +0100
+> @@ -63,7 +63,7 @@
+>  
+>  	/* flags used only internally */
+>  	_XBF_PAGE_CACHE = (1 << 17),/* backed by pagecache		   */
+> -	_XBF_KMEM_ALLOC = (1 << 18),/* backed by kmem_alloc()		   */
+> +	_XBF_PAGES = (1 << 18),	    /* backed by refcounted pages	   */
+>  	_XBF_RUN_QUEUES = (1 << 19),/* run block device task queue	   */
+>  	_XBF_DELWRI_Q = (1 << 21),   /* buffer on delwri queue		   */
+>  } xfs_buf_flags_t;
+> 
+> 
