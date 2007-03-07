@@ -1,36 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751443AbXCGPGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbXCGPIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751443AbXCGPGd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 10:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbXCGPGd
+	id S1751048AbXCGPIg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 10:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXCGPIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 10:06:33 -0500
-Received: from mfront7.mail.yandex.net ([213.180.223.96]:34113 "EHLO
-	mfront7.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbXCGPGc (ORCPT
+	Wed, 7 Mar 2007 10:08:36 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33840 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751048AbXCGPIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 10:06:32 -0500
-Date: Wed, 7 Mar 2007 18:06:19 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45EED4EB.000002.11493@mfront7.yandex.ru>
-MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: linux-kernel@vger.kernel.org
-Subject: pxa.c cat problem
-X-MsgDayCount: 1
-X-BornDate: 1134853200
-Reply-To: Mockern@yandex.ru
-X-Source-Ip: 84.185.215.18
-Content-Type: text/plain;
-  charset="US-ASCII"
+	Wed, 7 Mar 2007 10:08:35 -0500
+Subject: Re: [PATCH 0/20] x86_64 Relocatable bzImage support (V4)
+From: Arjan van de Ven <arjan@infradead.org>
+To: vgoyal@in.ibm.com
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
+       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
+       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
+       pavel@suse.cz, rjw@sisk.pl
+In-Reply-To: <20070307065703.GA23412@in.ibm.com>
+References: <20070307065703.GA23412@in.ibm.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 07 Mar 2007 07:07:39 -0800
+Message-Id: <1173280059.3540.5.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-03-07 at 12:27 +0530, Vivek Goyal wrote:
+> Hi,
+> 
+> Here is another attempt on x86_64 relocatable bzImage patches(V4). This
+> patchset makes a bzImage relocatable and same kernel binary can be loaded
+> and run from different physical addresses.
 
-I have two PXA Linux boards, I connected them and tried cat myfile > /dev/ttyS0 on  one board and cat < /dev/ttyS0 on another. But I can't see nothing. 
 
-What is wrong with my pxa.c driver?
+have these patches been extensively tested with various suspend
+scenarios? (S1,S3,S4 in acpi speak or s2ram and s2disk in Linux speak)
 
-thanks
