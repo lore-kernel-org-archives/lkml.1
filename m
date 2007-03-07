@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965621AbXCGRa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422892AbXCGRbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965621AbXCGRa6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965607AbXCGRa5
+	id S1422892AbXCGRbm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422876AbXCGRRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:30:57 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:20820 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422903AbXCGRaW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:30:22 -0500
-Message-ID: <45EEF6A4.9090807@ru.mvista.com>
-Date: Wed, 07 Mar 2007 20:30:12 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>, linuxppc-dev@ozlabs.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw
- ones.
-References: <yyi8xe925vg.wl@toshiba.co.jp>	<yyi649d25qz.wl@toshiba.co.jp>	<45EECE5C.6030100@ru.mvista.com> <17902.60669.945986.186995@cargo.ozlabs.ibm.com>
-In-Reply-To: <17902.60669.945986.186995@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Mar 2007 12:17:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43524 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422858AbXCGRRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:17:00 -0500
+Message-Id: <20070307171522.336289321@mini.kroah.org>
+References: <20070307171035.150802805@mini.kroah.org>
+User-Agent: quilt/0.45-1
+Date: Wed, 07 Mar 2007 09:11:46 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       =?ISO-8859-15?q?Micha=C5=82=20Miros=C5=82aw?= 
+	<mirq-linux@rere.qmqm.pl>
+Subject: [patch 071/101] Fix reference counting (memory leak) problem in __nfulnl_send() and callers related to packet queueing.
+Content-Disposition: inline; filename=nfnetlink_log_refcounting_fix.patch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Paul Mackerras wrote:
+---
+ net/netfilter/nfnetlink_log.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
->>    I've already sent a patch fixing this one (along with many others) a month 
->>ago:
+--- linux-2.6.20.1.orig/net/netfilter/nfnetlink_log.c
++++ linux-2.6.20.1/net/netfilter/nfnetlink_log.c
+@@ -217,6 +217,11 @@ _instance_destroy2(struct nfulnl_instanc
+ 
+ 	spin_lock_bh(&inst->lock);
+ 	if (inst->skb) {
++		/* timer "holds" one reference (we have one more) */
++		if (timer_pending(&inst->timer)) {
++			del_timer(&inst->timer);
++			instance_put(inst);
++		}
+ 		if (inst->qlen)
+ 			__nfulnl_send(inst);
+ 		if (inst->skb) {
+@@ -363,9 +368,6 @@ __nfulnl_send(struct nfulnl_instance *in
+ {
+ 	int status;
+ 
+-	if (timer_pending(&inst->timer))
+-		del_timer(&inst->timer);
+-
+ 	if (!inst->skb)
+ 		return 0;
+ 
+@@ -392,6 +394,8 @@ static void nfulnl_timer(unsigned long d
+ 	UDEBUG("timer function called, flushing buffer\n");
+ 
+ 	spin_lock_bh(&inst->lock);
++	if (timer_pending(&inst->timer))	/* is it always true or false here? */
++		del_timer(&inst->timer);
+ 	__nfulnl_send(inst);
+ 	instance_put(inst);
+ 	spin_unlock_bh(&inst->lock);
+@@ -689,6 +693,11 @@ nfulnl_log_packet(unsigned int pf,
+ 		 * enough room in the skb left. flush to userspace. */
+ 		UDEBUG("flushing old skb\n");
+ 
++		/* timer "holds" one reference (we have another one) */
++		if (timer_pending(&inst->timer)) {
++			del_timer(&inst->timer);
++			instance_put(inst);
++		}
+ 		__nfulnl_send(inst);
+ 
+ 		if (!(inst->skb = nfulnl_alloc_skb(nlbufsiz, size))) {
 
->>http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031164.html
-
->>    I wonder iof it was ever considered... :-/
-
-> The entire patch description was just this:
-
->>Convert the spinlocks in the PowerPC interrupt related code into the raw ones,
->>also convert the PURR and PMC related spinlocks...
-
-> which says what you did, but gives NO CLUE about why this might be a
-> good thing to do - what problem it fixes or what desirable outcome it
-> produces.  I will not apply patches with inadequate descriptions.
-
-    As I said, this was intended for the -rt patch, hence the question was for 
-Ingo. I CC'ed the list just to keep people here in a loop.
-
-> Paul.
-
-WBR, Sergei
+--
