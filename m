@@ -1,47 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965563AbXCGTXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992486AbXCGT2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965563AbXCGTXy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 14:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965586AbXCGTXy
+	id S2992486AbXCGT2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 14:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992489AbXCGT2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 14:23:54 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33095 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965563AbXCGTXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 14:23:53 -0500
-Date: Wed, 7 Mar 2007 20:24:04 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
-       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
-       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
-       pavel@suse.cz, rjw@sisk.pl
-Subject: Re: [PATCH 1/20] x86_64: Assembly safe page.h and pgtable.h
-Message-ID: <20070307192404.GA31826@uranus.ravnborg.org>
-References: <20070307065703.GA23412@in.ibm.com> <20070307065920.GB23412@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Mar 2007 14:28:34 -0500
+Received: from wr-out-0506.google.com ([64.233.184.234]:22919 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992486AbXCGT2d convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 14:28:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nwh/16Cag/keWoqhWYu7I6CGA7okDNQZt+bttOD4fwVe0ztKl+CzatkfE6cXWXayJVzFZw45TKvHZsEq/OJPdoP4RjGCXfZ+XmdeNiATprC5EAMmRbnLMn7X3nroVTdeA3EI9EjhyJlUJJ6MMRBM4Us95rniXhiKdItpHbOUICc=
+Message-ID: <1b2aacd80703071128v5227382do2277d0b85ca3b20c@mail.gmail.com>
+Date: Wed, 7 Mar 2007 11:28:21 -0800
+From: "Luong Ngo" <luong.ngo@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: Sleeping thread not receive signal until it wakes up
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0703070813070.12338@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-In-Reply-To: <20070307065920.GB23412@in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+References: <1b2aacd80703062131g6c8578fgf200dd05a502c49f@mail.gmail.com>
+	 <Pine.LNX.4.61.0703070813070.12338@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 12:29:20PM +0530, Vivek Goyal wrote:
-> 
-> 
-> This patch makes pgtable.h and page.h safe to include
-> in assembly files like head.S.  Allowing us to use
-> symbolic constants instead of hard coded numbers when
-> refering to the page tables.
-> 
-> This patch copies asm-sparc64/const.h to asm-x86_64 to
-> get a definition of _AC() a very convinient macro that
-> allows us to force the type when we are compiling the
-> code in C and to drop all of the type information when
-> we are using the constant in assembly.
-Should this file not live in asm-generic and be useable
-for all architectures?
+Hi Dick,
+Thanks for your response. In my ioctl in the kernel, I use
+interruptible_sleep_on to sleep on a queue and will be wake up by the
+the ISR routine when interrupt happens, so  isn't
+interruptible_sleep_on supposed to be interruptable, from its name? I
+am using kernel 2.6.14.
 
-	Sam
+Thanks again,
+LNgo
+
+On 3/7/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+>
+> On Wed, 7 Mar 2007, Luong Ngo wrote:
+>
+> > Hi all,
+> >
+> > I am having this problem. I have a process with 2 threads created. One
+> > of the thread will keep calling IOCTL  to get information from the
+> > kernel and will be blocked if there is no new information. If there is
+> > information retured, the thread will be checked to see if any error
+> > happens and trigger an action. Since we have no way to know if the
+> > error is gone (Hardware provides no signal), so what we do is when
+> > trigger an action for the error, we will set an timer using alarm()
+> > and register a SIGALRM handler in the thread by using sigaction. After
+> > setting the alarm, the thread will loop back and call IOCTL, which
+> > could cause it to be put to sleep. The problem is the SIGALRM handler
+> > does not receive the SIGALRM while the thread is being blocked by
+> > IOCTL. And if we generated some event so that the IOCTL is returned
+> > with new information, the SIGALRM handler is invoked right away.
+> > However, as I read the manual, which says a thread/process should be
+> > waken up even when it sleeps if there is a signal delivered to it. Am
+> > I right?
+> > One thing I don't know it mattters or not is that I am not using
+> > sigwait to block the process and wait for signal because the thread
+> > need to go back to the IOCTL call and be slept on that. So I used
+> > sigaction to register the signal handler in hope that this handler wil
+> > be invoked by the kernel when there is an SIGALRM delivered to the
+> > thread.
+> > Could anyone tell me if I did something wrong and what is the correct
+> > way to achieve this task? I tried to avoid creating another thread
+> > which will call sigwait and block until the IOCTL thread send it
+> > explicitly a signal because I want to use timer.
+> >
+> >
+> > Thank you in advance,
+> > LNgo
+> > -
+>
+> Later versions of the kernel lock the kernel when an ioctl() is
+> entered. This means that if you sleep in the ioctl(), nothing
+> will get scheduled.
+>
+> You can do the following (possibly unsafe) in your ioctl():
+>
+>     int locked = kernel_locked();
+>
+>     ......... code
+>     ......... code
+>
+>     if(locked)  // Before sleeping section
+>        unlock_kernel();
+>     .......... sleeping code
+>     if(locked)  // After sleeping section
+>         lock_kernel();
+>
+>
+>
+> Cheers,
+> Dick Johnson
+> Penguin : Linux version 2.6.16.24 on an i686 machine (5592.71 BogoMips).
+> New book: http://www.AbominableFirebug.com/
+> _
+> 
+>
+> ****************************************************************
+> The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+>
+> Thank you.
+>
