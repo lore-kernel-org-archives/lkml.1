@@ -1,64 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422968AbXCGR4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422957AbXCGR5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422968AbXCGR4z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422776AbXCGROA
+	id S1422957AbXCGR5Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422956AbXCGR4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:14:00 -0500
-Received: from mx2.suse.de ([195.135.220.15]:42799 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 12:56:55 -0500
+Received: from mx1.suse.de ([195.135.220.2]:43523 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422770AbXCGRNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:13:51 -0500
-Message-Id: <20070307171156.140479670@mini.kroah.org>
+	id S1422750AbXCGROD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:14:03 -0500
+Message-Id: <20070307171226.114733654@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:10:47 -0800
+Date: Wed, 07 Mar 2007 09:10:56 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, discuss@x86-64.org,
-       Jan Beulich <jbeulich@novell.com>, David Moore <dcm@mit.edu>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       David Moore <dcm@acm.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 012/101] Missing critical phys_to_virt in lib/swiotlb.c
-Content-Disposition: inline; filename=missing-critical-phys_to_virt-in-lib-swiotlb.c.patch
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-raid@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: [patch 021/101] md: Avoid possible BUG_ON in md bitmap handling.
+Content-Disposition: inline; filename=md-avoid-possible-bug_on-in-md-bitmap-handling.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Moore <dcm@acm.org>
+From: Neil Brown <neilb@suse.de>
 
-Missing critical phys_to_virt in lib/swiotlb.c
+md/bitmap tracks how many active write requests are pending on blocks
+associated with each bit in the bitmap, so that it knows when it can
+clear the bit (when count hits zero).
 
-Adds missing call to phys_to_virt() in the
-lib/swiotlb.c:swiotlb_sync_sg() function.  Without this change, a kernel
-panic will always occur whenever a SWIOTLB bounce buffer from a
-scatter-gather list gets synced.  Affected are especially Intel x86_64
-machines with more than about 3 GB RAM.
+The counter has 14 bits of space, so if there are ever more than 16383,
+we cannot cope.
 
-Signed-off-by: David Moore <dcm@acm.org>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Currently the code just calles BUG_ON as "all" drivers have request queue
+limits much smaller than this.
+
+However is seems that some don't.  Apparently some multipath configurations
+can allow more than 16383 concurrent write requests.
+
+So, in this unlikely situation, instead of calling BUG_ON we now wait
+for the count to drop down a bit.  This requires a new wait_queue_head,
+some waiting code, and a wakeup call.
+
+Tested by limiting the counter to 20 instead of 16383 (writes go a lot slower
+in that case...).
+
+Signed-off-by: Neil Brown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
 ---
- lib/swiotlb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/md/bitmap.c         |   22 +++++++++++++++++++++-
+ include/linux/raid/bitmap.h |    1 +
+ 2 files changed, 22 insertions(+), 1 deletion(-)
 
---- linux-2.6.20.1.orig/lib/swiotlb.c
-+++ linux-2.6.20.1/lib/swiotlb.c
-@@ -750,7 +750,7 @@ swiotlb_sync_sg(struct device *hwdev, st
+--- linux-2.6.20.1.orig/drivers/md/bitmap.c
++++ linux-2.6.20.1/drivers/md/bitmap.c
+@@ -1160,6 +1160,22 @@ int bitmap_startwrite(struct bitmap *bit
+ 			return 0;
+ 		}
  
- 	for (i = 0; i < nelems; i++, sg++)
- 		if (sg->dma_address != SG_ENT_PHYS_ADDRESS(sg))
--			sync_single(hwdev, (void *) sg->dma_address,
-+			sync_single(hwdev, phys_to_virt(sg->dma_address),
- 				    sg->dma_length, dir, target);
- }
++		if (unlikely((*bmc & COUNTER_MAX) == COUNTER_MAX)) {
++			DEFINE_WAIT(__wait);
++			/* note that it is safe to do the prepare_to_wait
++			 * after the test as long as we do it before dropping
++			 * the spinlock.
++			 */
++			prepare_to_wait(&bitmap->overflow_wait, &__wait,
++					TASK_UNINTERRUPTIBLE);
++			spin_unlock_irq(&bitmap->lock);
++			bitmap->mddev->queue
++				->unplug_fn(bitmap->mddev->queue);
++			schedule();
++			finish_wait(&bitmap->overflow_wait, &__wait);
++			continue;
++		}
++
+ 		switch(*bmc) {
+ 		case 0:
+ 			bitmap_file_set_bit(bitmap, offset);
+@@ -1169,7 +1185,7 @@ int bitmap_startwrite(struct bitmap *bit
+ 		case 1:
+ 			*bmc = 2;
+ 		}
+-		BUG_ON((*bmc & COUNTER_MAX) == COUNTER_MAX);
++
+ 		(*bmc)++;
+ 
+ 		spin_unlock_irq(&bitmap->lock);
+@@ -1207,6 +1223,9 @@ void bitmap_endwrite(struct bitmap *bitm
+ 		if (!success && ! (*bmc & NEEDED_MASK))
+ 			*bmc |= NEEDED_MASK;
+ 
++		if ((*bmc & COUNTER_MAX) == COUNTER_MAX)
++			wake_up(&bitmap->overflow_wait);
++
+ 		(*bmc)--;
+ 		if (*bmc <= 2) {
+ 			set_page_attr(bitmap,
+@@ -1431,6 +1450,7 @@ int bitmap_create(mddev_t *mddev)
+ 	spin_lock_init(&bitmap->lock);
+ 	atomic_set(&bitmap->pending_writes, 0);
+ 	init_waitqueue_head(&bitmap->write_wait);
++	init_waitqueue_head(&bitmap->overflow_wait);
+ 
+ 	bitmap->mddev = mddev;
+ 
+--- linux-2.6.20.1.orig/include/linux/raid/bitmap.h
++++ linux-2.6.20.1/include/linux/raid/bitmap.h
+@@ -247,6 +247,7 @@ struct bitmap {
+ 
+ 	atomic_t pending_writes; /* pending writes to the bitmap file */
+ 	wait_queue_head_t write_wait;
++	wait_queue_head_t overflow_wait;
+ 
+ };
  
 
 --
