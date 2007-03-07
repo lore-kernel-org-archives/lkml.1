@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992434AbXCGSRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992435AbXCGSRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992434AbXCGSRN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:17:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992435AbXCGSRM
+	id S2992435AbXCGSRz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992438AbXCGSRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:17:12 -0500
-Received: from mo-p07-ob.rzone.de ([81.169.146.188]:20935 "EHLO
-	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992434AbXCGSRK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:17:10 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
-Date: Wed, 7 Mar 2007 19:16:57 +0100
-User-Agent: KMail/1.9.1
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, Maneesh Soni <maneesh@in.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0703061914030.18144@blonde.wat.veritas.com> <200703071759.29522.oliver@neukum.org> <Pine.LNX.4.64.0703071001020.5963@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703071001020.5963@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Wed, 7 Mar 2007 13:17:54 -0500
+Received: from waste.org ([66.93.16.53]:40972 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992437AbXCGSRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 13:17:53 -0500
+Date: Wed, 7 Mar 2007 12:03:59 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, akpm@osdl.org,
+       Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: [SLUB 2/3] Large kmalloc pass through. Removal of large general slabs
+Message-ID: <20070307180359.GU23311@waste.org>
+References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com> <20070307023513.19658.81228.sendpatchset@schroedinger.engr.sgi.com> <1173258077.6374.120.camel@twins> <Pine.LNX.4.64.0703070732130.9460@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703071916.57907.oliver@neukum.org>
-X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GPE5pUNaoG1wTinqjVVl1GKJZKNFH/11jSg2To
-X-RZG-CLASS-ID: mo07
+In-Reply-To: <Pine.LNX.4.64.0703070732130.9460@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 7. März 2007 19:02 schrieb Linus Torvalds:
+On Wed, Mar 07, 2007 at 07:34:38AM -0800, Christoph Lameter wrote:
+> On Wed, 7 Mar 2007, Peter Zijlstra wrote:
 > 
-> On Wed, 7 Mar 2007, Oliver Neukum wrote:
-> >
-> > The problem also exists with unplugging devices. Drivers get no feedback
-> > to tell them when it is safe to free the data structures associated with
-> > an attribute.
+> > >  	return -1;
+> > >  }
+> > 
+> > Perhaps so something with PAGE_SIZE here, as you know there are
+> > platforms/configs where PAGE_SIZE != 4k :-)
 > 
-> So you just pointed to *another* data structure that apparently violates 
-> the "you MUST use refcounting" rule.
+> Any allocation > 2k just uses a regular allocation which will waste space.
 > 
-> What is it with you people? It's really simple. Data structures must be 
-> refcounted if you can reach them two different ways.
-> 
-> If you don't use refcounting, then you'd better make sure that the data 
-> can be reached only one way (for example, by *not* exposing it for sysfs).
-> 
-> It really *is* that simple. Read the CodingStyle rules.
+> I have a patch here to make this dependent on page size using a loop. The 
+> problem is that it does not work with some versions of gcc. On the 
+> other hand we really need this since one arch can 
+> actually have an order 22 page size!
 
-Very well, there seems to be no clean way to avoid that work.
+You don't need a loop, you need an if (s >= PAGE_SIZE) at the head of
+your static list.
 
-	Regards
-		Oliver
+-- 
+Mathematics is the supreme nostalgia of our time.
