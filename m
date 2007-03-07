@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965511AbXCGQfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965547AbXCGQgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965511AbXCGQfu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965531AbXCGQfu
+	id S965547AbXCGQgd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:36:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965553AbXCGQgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:35:50 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56701 "EHLO mx1.redhat.com"
+	Wed, 7 Mar 2007 11:36:33 -0500
+Received: from mail.emacinc.com ([63.245.244.68]:43944 "EHLO mail.emacinc.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965511AbXCGQft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:35:49 -0500
-Message-ID: <45EEE445.4080806@redhat.com>
-Date: Wed, 07 Mar 2007 11:11:49 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S965547AbXCGQgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 11:36:32 -0500
+From: NZG <ngustavson@emacinc.com>
+Organization: EMAC.Inc
+To: Ben Nizette <ben.nizette@iinet.net.au>
+Date: Wed, 7 Mar 2007 10:37:00 -0600
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+References: <200703061246.29615.ngustavson@emacinc.com> <45EE373B.80606@iinet.net.au>
+In-Reply-To: <45EE373B.80606@iinet.net.au>
 MIME-Version: 1.0
-To: Sami Farin <7atbggg02@sneakemail.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support
-References: <20070223170527.4ca695b2@freekitty> <20070305155714.3abe1b5e@freekitty> <20070306133404.GA864@one.firstfloor.org> <200703061519.20346.dada1@cosmosbay.com> <20070306144529.GA2004@one.firstfloor.org> <84C47260-4B57-4568-8197-58F438A6F737@e18.physik.tu-muenchen.de> <20070306102941.32471d57@freekitty> <20070306215349.hquin7d6pfy2n5d2@m.safari.iki.fi> <20070306222435.cbpv63ltximq6lrf@m.safari.iki.fi>
-In-Reply-To: <20070306222435.cbpv63ltximq6lrf@m.safari.iki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200703071037.00322.ngustavson@emacinc.com>
+X-SA-Exim-Connect-IP: 63.245.244.67
+X-SA-Exim-Mail-From: ngustavson@emacinc.com
+Subject: Re: passing function pointers through platform devices?
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Spam-Relay: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sami Farin wrote:
-> On Tue, Mar 06, 2007 at 23:53:49 +0200, Sami Farin wrote:
-> ...
->> And I found bug in gcc-4.1.2, it gave 0 for ncubic results
->> when doing 1000 loops test... gcc-4.0.3 works.
-> 
-> Found it.
-> 
-> --- cbrt-test.c~	2007-03-07 00:20:54.735248105 +0200
-> +++ cbrt-test.c	2007-03-07 00:21:03.964864343 +0200
-> @@ -209,7 +209,7 @@
->  
->  	__asm__("bsrl %1,%0\n\t"
->  		"cmovzl %2,%0"
-> -		: "=&r" (r) : "rm" (x), "rm" (-1));
-> +		: "=&r" (r) : "rm" (x), "rm" (-1) : "memory");
->  	return r+1;
->  }
->  
-> Now Linux 2.6 does not have "memory" in fls, maybe it causes
-> some gcc funnies some people are seeing.
+> Once the generic GPIO framework migrates upstream from -mm
+Thank you,  but I've reorganized my system to pass platform resources to a 
+driver, which then registers simple gpio/pwm/quadencoder type devices as 
+standard classes declared in a subdirectory.  Specific methods are then 
+simple exported by stackable drivers.
+It's unlikely I will adopt the GPIO interface at this point unless they really 
+bring something new to the table.
 
-Can you post the difference in the generated code with that change?
+I googled extensively and requested information on any current work here 
+before I began this project and got zip. (see forwarded email paste)
+
+I also emailed Robert Schwebel directly and he told me to ask VGER as it was 
+being developed by someone else.
+
+I don't mean to sound rude, but I really tried to build on existing work and 
+it wasn't made available, so I've gone my own way, I had not other choice.
+
+P.S. Forgive my VGER newbness, but what is "-mm" ?
+
+thx,
+NZG
+
+> ----------  Forwarded Message  ----------
+>
+> Subject: GPIO device class driver
+> Date: Tuesday 20 February 2007 10:40 am
+> From: NZG <ngustavson@emacinc.com>
+> To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+>
+> I am currently developing support for an ep9xx based SBC and want to export
+> it's GPIO through sysfs in a simple and standard way,
+> without adding yet another platform specific gpio driver to the kernel.
+>
+> As I understand it, a gpio class has already been begun by Robert Schwebel
+> in but has not as of yet become part of the mainstream kernel.
+>
+> Searching the archives for this yields no results since 2006.
+>
+> Can anyone point me to a current patch?
+> I'd like to start from there.
+>
+> thank you,
+> NZG
+>
+> -------------------------------------------------
 
