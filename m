@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbXCGL4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750917AbXCGL7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932322AbXCGL4v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 06:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932403AbXCGL4v
+	id S1750917AbXCGL7s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 06:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbXCGL7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 06:56:51 -0500
-Received: from ozlabs.org ([203.10.76.45]:59184 "EHLO ozlabs.org"
+	Wed, 7 Mar 2007 06:59:47 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35859 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932322AbXCGL4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 06:56:50 -0500
-Subject: Re: [PATCH 8/8] Convert PDA into the percpu section
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@suse.de>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1173227582.4644.74.camel@localhost.localdomain>
-References: <1173184747.4644.23.camel@localhost.localdomain>
-	 <1173185592.4644.28.camel@localhost.localdomain>
-	 <1173185666.4644.30.camel@localhost.localdomain>
-	 <1173185734.4644.32.camel@localhost.localdomain>
-	 <1173185827.4644.34.camel@localhost.localdomain>
-	 <1173185909.4644.36.camel@localhost.localdomain>
-	 <1173186021.4644.38.camel@localhost.localdomain>
-	 <1173186107.4644.41.camel@localhost.localdomain>
-	 <1173186214.4644.44.camel@localhost.localdomain>
-	 <20070306193445.GI22829@bingen.suse.de>
-	 <1173227582.4644.74.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 22:55:50 +1100
-Message-Id: <1173268550.32234.3.camel@localhost.localdomain>
+	id S1750917AbXCGL7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 06:59:47 -0500
+Date: Wed, 7 Mar 2007 14:59:14 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-kernel@vger.kernel.org, drbd-dev@linbit.com
+Subject: Re: connector: Bugfix for cn_call_callback()
+Message-ID: <20070307115914.GA1287@2ka.mipt.ru>
+References: <200703071226.13088.philipp.reisner@linbit.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <200703071226.13088.philipp.reisner@linbit.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 07 Mar 2007 14:59:18 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 11:33 +1100, Rusty Russell wrote:
-> On Tue, 2007-03-06 at 20:34 +0100, Andi Kleen wrote:
-> > Do you have text size comparisons before/after and possible lmbench? 
+On Wed, Mar 07, 2007 at 12:26:12PM +0100, Philipp Reisner (philipp.reisner@linbit.com) wrote:
+> Hi Evgeniy,
+
+Hi Philipp.
+
+> When one stresses the connector code, with sending many messages
+> from userspace to kernel, one could get in the "unlikely()"
+> part in cn_call_callback().
 > 
-> No, but I'll run them this evening.  Last time the size reduction was
-> slight, and there was no measurable performance improvement in
-> microbenchmarks.
+> There a new __cbq gets allocated, and a NULL pointer got assigned
+> to the callback by dereferencing __cbq. This is the bug. The right
+> thing is the dereference the original __cbq. Therefore the bugfix
+> is to use a new variable for the newly allocated __cbq. 
+> 
+> This is tested, and it fixes the issue.
 
-Here are the size results, for a start:
+Yes, your patch is correct.
 
+> Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
+> Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
 
-UP:
-Before:
-size vmlinux
-   text    data     bss     dec     hex filename
-3094881  243110  221184 3559175  364f07 vmlinux
+I will push it, thanks a lot.
 
-After:
-size vmlinux 
-   text    data     bss     dec     hex filename
-3093409  243142  221184 3557735  364967 vmlinux
-
-SMP:
-Before:
-size vmlinux
-   text    data     bss     dec     hex filename
-3222269  318770  237568 3778607  39a82f vmlinux
-
-After:
-size vmlinux
-   text    data     bss     dec     hex filename
-3221421  314674  237568 3773663  3994df vmlinux
-
-(The data size changes are moving from pda -> percpu, and on SMP
-removing the page-aligned PDA).
-
-So, a slight win.  lmbench tomorrow...
-
-Rusty.
-
+-- 
+	Evgeniy Polyakov
