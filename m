@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161281AbXCGHhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161157AbXCGHjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161281AbXCGHhR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:37:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161295AbXCGHhQ
+	id S1161157AbXCGHjX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:39:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161204AbXCGHjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:37:16 -0500
-Received: from mx.laposte.net ([81.255.54.11]:29023 "EHLO mx.laposte.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161281AbXCGHhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:37:13 -0500
-Subject: Re: [Bug 8136] 2.6.21-rc2-mm2 won't boot
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+	Wed, 7 Mar 2007 02:39:23 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:9236 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161157AbXCGHjW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 02:39:22 -0500
+X-IronPort-AV: i="4.14,256,1170651600"; 
+   d="scan'208"; a="30231746:sNHT22919295"
+Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-In-Reply-To: <20070306161559.e0c7ee71.akpm@linux-foundation.org>
-References: <200703062336.l26NaTZA026385@fire-2.osdl.org>
-	 <20070306161559.e0c7ee71.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IhBZ6vCGP/XoOUv3fvok"
-Organization: Adresse perso
-Date: Wed, 07 Mar 2007 08:36:09 +0100
-Message-Id: <1173252969.20978.4.camel@rousalka.dyndns.org>
+Cc: Jean Delvare <khali@linux-fr.org>, Bryan Wu <bryan.wu@analog.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Sonic Zhang <sonic.adi@gmail.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
+       mhfan@ustc.edu
+In-Reply-To: <20070306231423.4231c99b.akpm@linux-foundation.org>
+References: <1173164058.31825.16.camel@roc-desktop>
+	 <20070306214301.GA5590@martell.zuzino.mipt.ru>
+	 <1173247078.28531.24.camel@roc-desktop>
+	 <20070307075822.53e53c42.khali@linux-fr.org>
+	 <20070306231423.4231c99b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Wed, 07 Mar 2007 15:39:27 +0800
+Message-Id: <1173253167.28531.41.camel@roc-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 (2.9.92-1.fc7.1) 
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-03-06 at 23:14 -0800, Andrew Morton wrote:
+> On Wed, 7 Mar 2007 07:58:22 +0100 Jean Delvare <khali@linux-fr.org> wrote:
+> 
+> > > +config BFIN_SDA
+> > 
+> > I2C_BLACKFIN_SDA
+> 
+> The blackfin architecture uses "bfin" pretty much universally, so this
+> usage is consistent.
+> 
+> box:/usr/src/25> grep -i blackfin patches/blackfin*|wc -l
+>    1608
+> box:/usr/src/25> grep -i bfin patches/blackfin*|wc -l
+>    6198
+> 
 
---=-IhBZ6vCGP/XoOUv3fvok
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Thanks for you understanding, but now we want to move to use
+CONFIG_BLACKFIN options. There is a new task in our development plan to
+change things to CONFIG_BLACKFIN.
 
-Le mardi 06 mars 2007 =C3=A0 16:15 -0800, Andrew Morton a =C3=A9crit :
+At this moment, we both provide CONFIG_BFIN and CONFIG_BLACKFIN. When
+all the things relied on CONFIG_BFIN/bfin are changed to
+CONFIG_BLACKFIN/blackfin, the CONFIG_BFIN will be removed.
 
-> So rc2-mm2 panics due to "MP-BIOS bug: 8254 timer not connected to IO-API=
-C" and
-> rc2-mm1 does not.
->=20
-> Could be ACPI, could be x86_64 timer changes, could be something else.
->=20
-> Would you have time to bisect it?=20
-> http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
-> explains how.
->=20
-> If so, I'd suggest you drill in on the patches between
-> x86_64-mm-defconfig-update.patch and
-> optimize-and-simplify-get_cycles_sync.patch: the x86 changes.
+So here I will follow Jean's comments.
 
-I may have some more debug time this evening (CET), probably not enough
-for a full bisection. I'd really love to have timer/clock problems
-nailed once and for all on this box (MP BIOS, RTC, HPET, whatever)
+> Let's just hope nobody makes a bluefin.
 
---=20
-Nicolas Mailhot
+So it is ok  for both blackfin and bluefin. But I think Black is cooler
+than Blue. -:)
 
---=-IhBZ6vCGP/XoOUv3fvok
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+> 
+> > > +	range 0 15 if (BF533 || BF532 || BF531) 
+> > 
+> > Trailing whitespace.
+> 
+> I always remove that when merging a patch.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Thanks a lot, could you please give me a script just to kill this
+whitespace? So I can do it before sending you patches.
 
-iEYEABECAAYFAkXua2IACgkQI2bVKDsp8g0kBQCg3HJHDiPIGByPvAXtyVwz9cXM
-3/IAnRIt2/eRKGWZum0yDVF4gLK6Q3zi
-=aCWz
------END PGP SIGNATURE-----
-
---=-IhBZ6vCGP/XoOUv3fvok--
+Thanks Jean and Andrew.
+-Bryan
