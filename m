@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992667AbXCGWd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992683AbXCGWfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992667AbXCGWd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 17:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992476AbXCGWd0
+	id S2992683AbXCGWfF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 17:35:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992680AbXCGWfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 17:33:26 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:25400 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992667AbXCGWdZ (ORCPT
+	Wed, 7 Mar 2007 17:35:04 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58750 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992683AbXCGWfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:33:25 -0500
-Date: Wed, 7 Mar 2007 14:27:18 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Steven French <sfrench@us.ibm.com>, linux-cifs-client@lists.samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cifs: remove useless cargo-cult checks
-Message-Id: <20070307142718.9c3c18bd.randy.dunlap@oracle.com>
-In-Reply-To: <20070307221746.GA3620@lst.de>
-References: <20070307152912.GA15650@lst.de>
-	<OF8579A98D.13CFCC0A-ON87257297.006728AA-86257297.006794F0@us.ibm.com>
-	<20070307221746.GA3620@lst.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 7 Mar 2007 17:35:03 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Paul Menage" <menage@google.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, sam@vilain.net,
+       akpm@linux-foundation.org, pj@sgi.com, dev@sw.ru, xemul@sw.ru,
+       containers@lists.osdl.org, winget@google.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+References: <20070301133543.GK15509@in.ibm.com>
+	<6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com>
+	<20070307173031.GC2336@in.ibm.com>
+	<20070307174346.GA19521@sergelap.austin.ibm.com>
+	<20070307180055.GC17151@in.ibm.com>
+	<20070307205846.GB7010@sergelap.austin.ibm.com>
+	<6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
+Date: Wed, 07 Mar 2007 15:32:48 -0700
+In-Reply-To: <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
+	(Paul Menage's message of "Wed, 7 Mar 2007 13:20:18 -0800")
+Message-ID: <m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 23:17:46 +0100 Christoph Hellwig wrote:
+"Paul Menage" <menage@google.com> writes:
 
-> On Wed, Mar 07, 2007 at 12:51:04PM -0600, Steven French wrote:
-> > > file->f_path.dentry or file->f_path.dentry.d_inode can't be NULL
-> > 
-> > OK - I don't really mind removing these checks - and I agree that I there
-> > is not an obvious way that they can be null, yet we had a case in which
-> > file->f_dentry was reported as NULL a few years back in a bug report that
-> > we could not reproduce.
-> 
-> There's a good reason you couldn't reproduce it, because it most likely
-> must have been a really bad hack in the submitters kernel.  Setting
-> up file->f_dentry is one of the first thing we do after allocating the
-> file struct.
-> 
-> > 
-> > The change to f_path.dentry did hit all filesystems (not sure who did it
-> > last year) and that patch did hit lkml - so this is not something new that
-> > just slipped in.
-> 
-> I know - that patch just made the enormous amount of useless checks
-> vissible.
-> 
-> > Is there an easy way to mirror particular patches going into the
-> > cifs-2.6.git tree (which is pulled into mm) to lkml?
+> On 3/7/07, Serge E. Hallyn <serue@us.ibm.com> wrote:
+>>
+>> All that being said, if it were going to save space without overly
+>> complicating things I'm actually not opposed to using nsproxy, but it
+>
+> If space-saving is the main issue, then the latest version of my
+> containers patches uses just a single pointer in the task_struct, and
+> all tasks in the same set of containers (across all hierarchies) will
+> share a single container_group object, which holds the actual pointers
+> to container state.
 
-BTW, this isn't just a cifs issue.  There are way too many git trees
-for Random J Developer <random@developer.example.org> to track.
+Yes.
 
+However:
+> Effectively, container_group is to container as nsproxy is to namespace.
 
-> Maybe some git expert can comment on that.
-> 
-> > The cifs patches go in mm for at least a week before they go into kernel
-> > but some of them I would like to post again to lkml.
-> 
-> polling -mm is a little hard as it's an enormous blob, so posting to
-> lkml or -fsdevel would definitively be quite helpfull.
+The statement above nicely summarizes the confusion in terminology.
 
-I prefer -fsdevel or any more focused list (let's not make lkml
-a dumping ground for everything).
+In the namespace world when we say container we mean roughly at the level
+of nsproxy and container_group.  Although it is expected to be a user space
+concept like an application, not a concept implemented directly in the kernel.
+i.e. User space is expected to combine separate resource controls and namespaces
+and run processes inside that combination.
 
+You are calling something that is on par with a namespace a container.  Which
+seriously muddies the waters.  About as much as calling as referring to your
+shoe as your whole outfit.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Without fixing the terminology it is going to be very hard to
+successfully communicate.
+
+Eric
+
