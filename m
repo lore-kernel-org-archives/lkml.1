@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbXCGQNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbXCGQOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbXCGQNN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:13:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbXCGQNN
+	id S932346AbXCGQOe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932886AbXCGQOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:13:13 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:24636 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932619AbXCGQNL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:13:11 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=ulok5OS/Cr7AWFMnGx61eMZwmjs9bFwgq/Gn/IAPI1ib6nKGPeFsK5vlBIuK5Ouvj
-	lZ9umxy3THzgF0VfxIj4A==
-Message-ID: <6599ad830703070812p6071487ay841c0985fd734159@mail.gmail.com>
-Date: Wed, 7 Mar 2007 08:12:20 -0800
-From: "Paul Menage" <menage@google.com>
-To: vatsa@in.ibm.com
-Subject: Re: [PATCH 2/7] containers (V7): Cpusets hooked into containers
-Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, winget@google.com,
-       containers@lists.osdl.org, devel@openvz.org
-In-Reply-To: <20070307145257.GD32105@in.ibm.com>
+	Wed, 7 Mar 2007 11:14:34 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:41715 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932346AbXCGQOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 11:14:33 -0500
+Date: Wed, 7 Mar 2007 08:10:45 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>, Ash Milsted <thatistosayiseenem@gawab.com>
+cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, luming.yu@intel.com,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+In-Reply-To: <45EE9D52.9060807@garzik.org>
+Message-ID: <Pine.LNX.4.64.0703070746150.5963@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+ <20070305015034.GG3441@stusta.de> <45EE9D52.9060807@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070212081521.808338000@menage.corp.google.com>
-	 <20070212085104.290909000@menage.corp.google.com>
-	 <20070307145257.GD32105@in.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
-> On Mon, Feb 12, 2007 at 12:15:23AM -0800, menage@google.com wrote:
-> > -     mutex_lock(&callback_mutex);
-> > -     list_add(&cs->sibling, &cs->parent->children);
-> > +     cont->cpuset = cs;
-> > +     cs->container = cont;
-> >       number_of_cpusets++;
-> > -     mutex_unlock(&callback_mutex);
+
+
+On Wed, 7 Mar 2007, Jeff Garzik wrote:
 >
-> What's the rule to read/write number_of_cpusets? The earlier cpuset code was
-> incrementing/decrementing under callback_mutex, but now we aren't. How safe is
-> that?
+> Adrian Bunk wrote:
+> > Subject    : AT keyboard only works with pci=noacpi
+> > References : http://lkml.org/lkml/2007/3/3/68
+> > Submitter  : Ash Milsted <thatistosayiseenem@gawab.com>
+> > Status     : unknown
+> 
+> sounds like a BIOS bug, even though it appears to be a regression?
 
-We're still inside manage_mutex, so we guarantee that no-one else is
-changing it.
+So?
 
->
-> The earlier cpuset code also was reading number_of_cpusets w/o the
-> callback_mutex held (atleast in cpuset_zone_allowed_softwall). Is that safe?
+BIOS bugs are not bugs we can fix, they are things we have to work around. 
+They are like hardware bugs in a network chip: a "driver" that doesn't 
+work around a BIOS bug is simply a *buggy* driver, exactly the same way a 
+network driver has to work around errata in the hardware.
 
-Yes, I think so. Unless every memory allocator was to hold a lock for
-the duration of alloc_pages(), number_of_cpusets can theoretically be
-out of date by the time you're using it. But since the process could
-have allocated just before you created the first cpuset and moved it
-into that cpuset anywa, it's not really a race (and the consequences
-are inconsequential).
+So it doesn't really matter if something is a BIOS bug or not. It's not 
+reasonable to expect people to upgrade their BIOS'es - even if such an 
+upgrade were to exist (which is fairly rare in itself). 
 
-Paul
+If it used to work, that just makes it (a) doubly important to try to fix 
+it, since regressions are BAD BAD BAD and (b) a fair amount *easier* to 
+fix, since we can hopefully get an idea of what broke it.
+
+Ash, can you try to use "git bisect" to figure where it started? But 
+perhaps just try -rc3 first to see if it's been fixed?
+
+The working setups (whether with irqfixup or with pci=noacpi seem to both 
+have a nice
+
+	input: AT Translated Set 2 keyboard as /class/input/inputX
+
+but the nonworking one does not. But even the nonworking one actually 
+*found* the controller:
+
+	PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
+	PNP: PS/2 controller doesn't have AUX irq; using default 12
+	serio: i8042 KBD port at 0x60,0x64 irq 1
+	serio: i8042 AUX port at 0x60,0x64 irq 12
+	mice: PS/2 mouse device common for all mice
+
+which probably means that the "atkbd_probe()" function fails (probably 
+because it never gets a reply, which in turn is probably because the 
+interrupt routing is broken).
+
+If you use "atkbd.reset=1" on the kernel command line, you would probably 
+get a message like "keyboard reset failed"..
+
+Now, the most likely cause is obviously just the ACPI changes that mess up 
+irq routing somehow, but it would be important to figure out *what* makes 
+it happen, which is why "git bisect" would be wonderful to try.
+
+So Ash, if you get the git tree, just start with
+
+	git bisect start
+	git bisect good v2.6.20
+	git bisect bad v2.6.21-rc1
+
+and off you go.. git isn't really that hard to use any more.
+
+		Linus
