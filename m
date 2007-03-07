@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbXCGBOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161091AbXCGBPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbXCGBOh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 20:14:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbXCGBOh
+	id S1161091AbXCGBPv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 20:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161092AbXCGBPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 20:14:37 -0500
-Received: from imx12.toshiba.co.jp ([61.202.160.132]:38573 "EHLO
-	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932645AbXCGBOg (ORCPT
+	Tue, 6 Mar 2007 20:15:51 -0500
+Received: from inet-tsb5.toshiba.co.jp ([202.33.96.24]:39207 "EHLO
+	inet-tsb5.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161091AbXCGBPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 20:14:36 -0500
-X-Greylist: delayed 647 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 20:14:36 EST
-Date: Wed, 07 Mar 2007 10:14:15 +0900
-Message-ID: <yyiirdd26u0.wl@toshiba.co.jp>
+	Tue, 6 Mar 2007 20:15:50 -0500
+X-Greylist: delayed 479 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Mar 2007 20:15:49 EST
+Date: Wed, 07 Mar 2007 10:15:35 +0900
+Message-ID: <yyihcsx26rs.wl@toshiba.co.jp>
 From: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 To: mingo@elte.hu
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        tsutomu.owa@toshiba.co.jp
-Subject: [patch 1/7 -rt] powerpc 2.6.20-rt8: fix compile error in bug.h
+Subject: [patch 2/7] powerpc 2.6.20-rt8: fix compile error (time.c)
 In-Reply-To: <yyik5xt27c0.wl@toshiba.co.jp>
 References: <yyik5xt27c0.wl@toshiba.co.jp>
 User-Agent: Wanderlust/2.8.1 (Something) Emacs/20.7 Mule/4.0 (HANANOEN)
@@ -28,28 +28,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  To fix the following compile error by enclosing it in ifndef __ASSEMBLY__/endif.
+To fix the following compile error by replacing the deleted structure
+member "is_continuous" with "flags".
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-include/asm-generic/bug.h
-include/asm-generic/bug.h: Assembler messages:
-include/asm-generic/bug.h:7: Error: Unrecognized opcode: `extern'
+arch/powerpc/kernel/time.c
+arch/powerpc/kernel/time.c:938: error: unknown field 'is_continuous' specified in initializer
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Signed-off-by: Tsutomu Owa <tsutomu.owa@toshiba.co.jp>
+
 -- owa
 
-diff -rup linux-rt8/include/asm-generic/bug.h rt/include/asm-generic/bug.h
---- linux-rt8/include/asm-generic/bug.h	2007-02-20 14:30:39.000000000 +0900
-+++ rt/include/asm-generic/bug.h	2007-02-20 15:48:42.000000000 +0900
-@@ -3,7 +3,9 @@
+diff -rup linux-rt8/arch/powerpc/kernel/time.c rt/arch/powerpc/kernel/time.c
+--- linux-rt8/arch/powerpc/kernel/time.c	2007-02-20 14:30:38.000000000 +0900
++++ rt/arch/powerpc/kernel/time.c	2007-03-05 10:27:26.000000000 +0900
+@@ -935,7 +935,7 @@ struct clocksource clocksource_timebase 
+ 	.mask		= (cycle_t)-1,
+ 	.mult		= 0,
+ 	.shift		= 22,
+-	.is_continuous	= 1,
++	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
+ };
  
- #include <linux/compiler.h>
  
-+#ifndef __ASSEMBLY__
- extern void __WARN_ON(const char *func, const char *file, const int line);
-+#endif /* __ASSEMBLY__ */
- 
- #ifdef CONFIG_BUG
- 
+
 
