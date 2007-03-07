@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932876AbXCGKK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932488AbXCGKMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932876AbXCGKK7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 05:10:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932868AbXCGKK7
+	id S932488AbXCGKMk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 05:12:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932883AbXCGKMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 05:10:59 -0500
-Received: from smtp19.orange.fr ([80.12.242.1]:49926 "EHLO smtp19.orange.fr"
+	Wed, 7 Mar 2007 05:12:40 -0500
+Received: from gate.crashing.org ([63.228.1.57]:34741 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932883AbXCGKK5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 05:10:57 -0500
-X-ME-UUID: 20070307101055649.9E8FD1C0009A@mwinf1902.orange.fr
-From: Julien RF <julien.rf@no-log.org>
-To: LKML <linux-kernel@vger.kernel.org>, Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: PROBLEM: Crash on device_shutdown
-Date: Wed, 7 Mar 2007 11:10:49 +0100
-User-Agent: KMail/1.9.5
-References: <200701290003.50918.julien.rf@no-log.org> <slrnes44am.m64.olecom@flower.upol.cz>
-In-Reply-To: <slrnes44am.m64.olecom@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703071110.50553.julien.rf@no-log.org>
+	id S932488AbXCGKMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 05:12:39 -0500
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
+	nonlinear)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070306225101.f393632c.akpm@linux-foundation.org>
+References: <20070221023656.6306.246.sendpatchset@linux.site>
+	 <20070221023735.6306.83373.sendpatchset@linux.site>
+	 <20070306225101.f393632c.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 11:05:48 +0100
+Message-Id: <1173261949.9349.37.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I still have the problem with 2.6.20.1 kernel :(
-Julien
+> > NOPAGE_REFAULT is removed. This should be implemented with ->fault, and
+> > no users have hit mainline yet.
+> 
+> Did benh agree with that?
 
-Le jeudi 01 février 2007 17:12, Oleg Verych a écrit :
-> > From: Julien RF
-> > Newsgroups: gmane.linux.kernel
-> > Subject: PROBLEM: Crash on device_shutdown
-> > Date: Mon, 29 Jan 2007 00:03:49 +0100
-> > Archived-At: <http://permalink.gmane.org/gmane.linux.kernel/487140>
->
-> Hallo, Julien.
->
-> Do you have such problem with more recent kernels, or mm one?
->
-> Also, if would be good to have at least some of the stack trace.
->
-> You can set up serial console for purpose of logging all information
-> to remote host.
->
-> > One line summary of the problem:
-> > Crash on device_shutdown
-> >
-> >
-> > Full description of the problem/report:
-> > When I shut down the system, I get a crash on the device_shutdown
-> > function (called by kernel_shutdown_prepare).
-> > Since the bug happens when the system is almost shutted down, I can't get
-> > the log...
-> > I partially copied it by hand, ask me if you need further details :
-> > Will now halt.
-> > BUG: unable to handle kernel NULL pointer dereference at virtual adress
-> > 00000128
-> > ...
-> > EIP is at device_shutdown + 0x49/0x6c
-> > ...
-> > Process halt
-> > ...
-> > /etc/rc0.d/S90halt: line 21: 11198 Segmentation fault halt -d -f
-> > $shutdown $poweroff $hddown
-> >
-> > Julien Richard-Foy
->
-> p.s. Please, care to honor "Mail-Followup-To" header information. Thanks.
-> ____
+I won't use NOPAGE_REFAULT, I use NOPFN_REFAULT and that has hit
+mainline. I will switch to ->fault when I have time to adapt the code,
+in the meantime, NOPFN_REFAULT should stay.
+
+Note that one thing we really want with the new ->fault (though I
+haven't looked at the patches lately to see if it's available) is to be
+able to differenciate faults coming from userspace from faults coming
+from the kernel. The major difference is that the former can be
+re-executed to handle signals, the later can't. Thus waiting in the
+fault handler can be made interruptible in the former case, not in the
+later case.
+
+Ben.
+
 
