@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422891AbXCGRYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422919AbXCGRYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422891AbXCGRYA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:24:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422900AbXCGRSd
+	id S1422919AbXCGRYK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:24:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422900AbXCGRYC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:18:33 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44485 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:24:02 -0500
+Received: from mail.suse.de ([195.135.220.2]:44517 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422917AbXCGRSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:18:25 -0500
-Message-Id: <20070307171647.525810803@mini.kroah.org>
+	id S1422919AbXCGRSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:18:36 -0500
+Message-Id: <20070307171657.461008445@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:12:09 -0800
+Date: Wed, 07 Mar 2007 09:12:12 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jeff@garzik.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, sam@ravnborg.org,
-       mingo@elte.hu
-Subject: [patch 094/101] fix section mismatch warning in lockdep
-Content-Disposition: inline; filename=fix-section-mismatch-warning-in-lockdep.patch
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org, thomas@archlinux.org,
+       val_henson@linux.intel.com, samuel.thibault@ens-lyon.org
+Subject: [patch 097/101] revert "drivers/net/tulip/dmfe: support basic carrier detection"
+Content-Disposition: inline; filename=revert-drivers-net-tulip-dmfe-support-basic-carrier-detection.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Sam Ravnborg <sam@ravnborg.org>
+From: Andrew Morton <akpm@linux-foundation.org>
 
-lockdep_init() is marked __init but used in several places
-outside __init code. This causes following warnings:
-$ scripts/mod/modpost kernel/lockdep.o
-WARNING: kernel/built-in.o - Section mismatch: reference to .init.text:lockdep_init from .text.lockdep_init_map after 'lockdep_init_map' (at offset 0x105)
-WARNING: kernel/built-in.o - Section mismatch: reference to .init.text:lockdep_init from .text.lockdep_reset_lock after 'lockdep_reset_lock' (at offset 0x35)
-WARNING: kernel/built-in.o - Section mismatch: reference to .init.text:lockdep_init from .text.__lock_acquire after '__lock_acquire' (at offset 0xb2)
+Revert 7628b0a8c01a02966d2228bdf741ddedb128e8f8.  Thomas Bachler
+reports:
 
-The warnings are less obviously due to heavy inlining by gcc - this is not
-altered.
+  Commit 7628b0a8c01a02966d2228bdf741ddedb128e8f8 (drivers/net/tulip/dmfe:
+  support basic carrier detection) breaks networking on my Davicom DM9009. 
+  ethtool always reports there is no link.  tcpdump shows incoming packets,
+  but TX is disabled.  Reverting the above patch fixes the problem.
 
-Fix the section mismatch warnings by removing the __init marking, which
-seems obviously wrong.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: Jeff Garzik <jeff@garzik.org>
+Cc: Valerie Henson <val_henson@linux.intel.com>
+Cc: Thomas Bachler <thomas@archlinux.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/lockdep.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/tulip/dmfe.c |    9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
---- linux-2.6.20.1.orig/kernel/lockdep.c
-+++ linux-2.6.20.1/kernel/lockdep.c
-@@ -2577,7 +2577,7 @@ out_restore:
- 	raw_local_irq_restore(flags);
- }
+--- linux-2.6.20.1.orig/drivers/net/tulip/dmfe.c
++++ linux-2.6.20.1/drivers/net/tulip/dmfe.c
+@@ -187,7 +187,7 @@ struct rx_desc {
+ struct dmfe_board_info {
+ 	u32 chip_id;			/* Chip vendor/Device ID */
+ 	u32 chip_revision;		/* Chip revision */
+-	struct DEVICE *dev;		/* net device */
++	struct DEVICE *next_dev;	/* next device */
+ 	struct pci_dev *pdev;		/* PCI device */
+ 	spinlock_t lock;
  
--void __init lockdep_init(void)
-+void lockdep_init(void)
- {
- 	int i;
+@@ -399,8 +399,6 @@ static int __devinit dmfe_init_one (stru
+ 	/* Init system & device */
+ 	db = netdev_priv(dev);
  
+-	db->dev = dev;
+-
+ 	/* Allocate Tx/Rx descriptor memory */
+ 	db->desc_pool_ptr = pci_alloc_consistent(pdev, sizeof(struct tx_desc) * DESC_ALL_CNT + 0x20, &db->desc_pool_dma_ptr);
+ 	db->buf_pool_ptr = pci_alloc_consistent(pdev, TX_BUF_ALLOC * TX_DESC_CNT + 4, &db->buf_pool_dma_ptr);
+@@ -428,7 +426,6 @@ static int __devinit dmfe_init_one (stru
+ 	dev->poll_controller = &poll_dmfe;
+ #endif
+ 	dev->ethtool_ops = &netdev_ethtool_ops;
+-	netif_carrier_off(db->dev);
+ 	spin_lock_init(&db->lock);
+ 
+ 	pci_read_config_dword(pdev, 0x50, &pci_pmr);
+@@ -1053,7 +1050,6 @@ static void netdev_get_drvinfo(struct ne
+ 
+ static const struct ethtool_ops netdev_ethtool_ops = {
+ 	.get_drvinfo		= netdev_get_drvinfo,
+-	.get_link               = ethtool_op_get_link,
+ };
+ 
+ /*
+@@ -1148,7 +1144,6 @@ static void dmfe_timer(unsigned long dat
+ 		/* Link Failed */
+ 		DMFE_DBUG(0, "Link Failed", tmp_cr12);
+ 		db->link_failed = 1;
+-		netif_carrier_off(db->dev);
+ 
+ 		/* For Force 10/100M Half/Full mode: Enable Auto-Nego mode */
+ 		/* AUTO or force 1M Homerun/Longrun don't need */
+@@ -1171,8 +1166,6 @@ static void dmfe_timer(unsigned long dat
+ 			if ( (db->media_mode & DMFE_AUTO) &&
+ 				dmfe_sense_speed(db) )
+ 				db->link_failed = 1;
+-			else
+-				netif_carrier_on(db->dev);
+ 			dmfe_process_mode(db);
+ 			/* SHOW_MEDIA_TYPE(db->op_mode); */
+ 		}
 
 --
