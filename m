@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161104AbXCGBSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161113AbXCGBTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161104AbXCGBSU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 20:18:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161107AbXCGBST
+	id S1161113AbXCGBTm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 20:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161107AbXCGBTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 20:18:19 -0500
-Received: from inet-tsb5.toshiba.co.jp ([202.33.96.24]:39580 "EHLO
-	inet-tsb5.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161104AbXCGBSS (ORCPT
+	Tue, 6 Mar 2007 20:19:42 -0500
+Received: from imx12.toshiba.co.jp ([61.202.160.132]:39360 "EHLO
+	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161106AbXCGBTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 20:18:18 -0500
-Date: Wed, 07 Mar 2007 10:18:05 +0900
-Message-ID: <yyiejo126nm.wl@toshiba.co.jp>
+	Tue, 6 Mar 2007 20:19:41 -0500
+Date: Wed, 07 Mar 2007 10:19:31 +0900
+Message-ID: <yyid53l26l8.wl@toshiba.co.jp>
 From: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 To: mingo@elte.hu
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        tsutomu.owa@toshiba.co.jp
-Subject: [patch 4/7] powerpc 2.6.20-rt8: fix compile error (futex.h)
+Subject: [patch 5/7 -rt] powerpc 2.6.20-rt8: fix compile error (spinlock.h)
 In-Reply-To: <yyik5xt27c0.wl@toshiba.co.jp>
 References: <yyik5xt27c0.wl@toshiba.co.jp>
 User-Agent: Wanderlust/2.8.1 (Something) Emacs/20.7 Mule/4.0 (HANANOEN)
@@ -27,54 +27,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-To fix the following compile error by adding dummy functions for now.
+  To fix the following compile error by changing names from
+__{read,write}_trylock to ___raw_{read,write}_trylock in asm-powerpc/spinlock.h
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-include/asm-powerpc/futex.h
-kernel/built-in.o: In function `fixup_pi_state_owner64':
-kernel/futex.c:2380: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
-kernel/built-in.o: In function `futex_lock_pi64':
-kernel/futex.c:3228: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
-kernel/futex.c:3273: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
-kernel/futex.c:3310: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
-kernel/built-in.o: In function `futex_requeue_pi64':
-kernel/futex.c:2756: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
-kernel/built-in.o: In function `do_futex64':
-kernel/futex.c:2547: undefined reference to `.futex_atomic_op_inuser64'
-kernel/futex.c:3446: undefined reference to `.futex_atomic_cmpxchg_inatomic64'
-	:
+include/asm-powerpc/spinlock.h
+include/linux/spinlock_api_smp.h:49: error: conflicting types for '__read_trylock'
+include/asm/spinlock.h:183: error: previous definition of '__read_trylock' was here
+include/linux/spinlock_api_smp.h:50: error: conflicting types for '__write_trylock'
+include/asm/spinlock.h:207: error: previous definition of '__write_trylock' was here
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Signed-off-by: Tsutomu Owa <tsutomu.owa@toshiba.co.jp>
 -- owa
 
-diff -rup linux-rt8/include/asm-powerpc/futex.h rt/include/asm-powerpc/futex.h
---- linux-rt8/include/asm-powerpc/futex.h	2007-02-20 09:37:26.000000000 +0900
-+++ rt/include/asm-powerpc/futex.h	2007-03-05 10:36:15.000000000 +0900
-@@ -113,5 +113,25 @@ futex_atomic_cmpxchg_inatomic(int __user
-         return prev;
+diff -rup linux-rt8/include/asm-powerpc/spinlock.h rt/include/asm-powerpc/spinlock.h
+--- linux-rt8/include/asm-powerpc/spinlock.h	2007-02-20 14:30:40.000000000 +0900
++++ rt/include/asm-powerpc/spinlock.h	2007-02-20 16:05:27.000000000 +0900
+@@ -179,7 +179,7 @@ extern void __raw_spin_unlock_wait(__raw
+  * This returns the old value in the lock + 1,
+  * so we got a read lock if the return value is > 0.
+  */
+-static long __inline__ __read_trylock(__raw_rwlock_t *rw)
++static long __inline__ ___raw_read_trylock(__raw_rwlock_t *rw)
+ {
+ 	long tmp;
+ 
+@@ -203,7 +203,7 @@ static long __inline__ __read_trylock(__
+  * This returns the old value in the lock,
+  * so we got the write lock if the return value is 0.
+  */
+-static __inline__ long __write_trylock(__raw_rwlock_t *rw)
++static __inline__ long ___raw_write_trylock(__raw_rwlock_t *rw)
+ {
+ 	long tmp, token;
+ 
+@@ -226,7 +226,7 @@ static __inline__ long __write_trylock(_
+ static void __inline__ __raw_read_lock(__raw_rwlock_t *rw)
+ {
+ 	while (1) {
+-		if (likely(__read_trylock(rw) > 0))
++		if (likely(___raw_read_trylock(rw) > 0))
+ 			break;
+ 		do {
+ 			HMT_low();
+@@ -240,7 +240,7 @@ static void __inline__ __raw_read_lock(_
+ static void __inline__ __raw_write_lock(__raw_rwlock_t *rw)
+ {
+ 	while (1) {
+-		if (likely(__write_trylock(rw) == 0))
++		if (likely(___raw_write_trylock(rw) == 0))
+ 			break;
+ 		do {
+ 			HMT_low();
+@@ -253,12 +253,12 @@ static void __inline__ __raw_write_lock(
+ 
+ static int __inline__ __raw_read_trylock(__raw_rwlock_t *rw)
+ {
+-	return __read_trylock(rw) > 0;
++	return ___raw_read_trylock(rw) > 0;
  }
  
-+static inline int
-+futex_atomic_op_inuser64 (int encoded_op, u64 __user *uaddr)
-+{
-+       /* FIXME: implement this at some point! */
-+	printk("futex_atomic_op_inuser64: not yet.\n");
-+       BUG();
-+
-+       return 0;
-+}
-+
-+static inline u64
-+futex_atomic_cmpxchg_inatomic64(u64 __user *uaddr, u64 oldval, u64 newval)
-+{
-+       /* FIXME: implement this at some point! */
-+	printk("futex_atomic_cmpxchg_inatomic64: not yet.\n");
-+       BUG();
-+
-+       return 0;
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_FUTEX_H */
+ static int __inline__ __raw_write_trylock(__raw_rwlock_t *rw)
+ {
+-	return __write_trylock(rw) == 0;
++	return ___raw_write_trylock(rw) == 0;
+ }
+ 
+ static void __inline__ __raw_read_unlock(__raw_rwlock_t *rw)
 
