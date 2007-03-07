@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992652AbXCGWRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965699AbXCGWRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992652AbXCGWRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 17:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992659AbXCGWRR
+	id S965699AbXCGWRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 17:17:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965698AbXCGWRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 17:17:17 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:58628 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992478AbXCGWRP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:17:15 -0500
-X-Sasl-enc: 70iYmvsC12X1S39xheEvBYDr4i42ybut0gTDrBSSETay 1173305834
-Subject: Re: [1/6] 2.6.21-rc2: known regressions
-From: Albert Hopkins <kernel@marduk.letterboxes.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 7 Mar 2007 17:17:24 -0500
+Received: from ozlabs.org ([203.10.76.45]:41789 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992661AbXCGWRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 17:17:19 -0500
+Date: Wed, 7 Mar 2007 16:14:02 -0600
+From: Anton Blanchard <anton@samba.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org,
-       maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
-       Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org
-In-Reply-To: <45EE9CBD.9040807@garzik.org>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015031.GF3441@stusta.de>  <45EE9CBD.9040807@garzik.org>
-Content-Type: text/plain
-Organization: A Myth
-Date: Wed, 07 Mar 2007 16:17:05 -0600
-Message-Id: <1173305825.6462.4.camel@blackwidow.nbk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [patch] epoll use a single inode ...
+Message-ID: <20070307221401.GA16938@kryten>
+References: <45ED1A3C.6030707@argo.co.il> <200703071906.58405.dada1@cosmosbay.com> <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org> <200703071952.13219.dada1@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703071952.13219.dada1@cosmosbay.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 06:06 -0500, Jeff Garzik wrote:
-> Adrian Bunk wrote:
-> > Subject    : forcedeth: skb_over_panic
-> > References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
-> > Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
-> > Status     : unknown
-> 
-> 
-> I think this is fixed by the recent forcedeth 3-patch patchset?  Can 
-> Albert or others confirm?
-> 
-> 	Jeff
-> 
 
-I'll reflect this in th bug report, but I recently tried the forcedeth
-driver in 2.6.21-rc3 and still get an oops.
+Hi,
 
---
-Albert W. Hopkins
+> Well, I hope a prefetch(NULL) is OK because we are doing millions of
+> them (see include/linux/list.h :) )
 
+Funny you mention this. We found some noticeable ppc64 regressions when
+moving the dcache to standard list macros and had to do this to fix it
+up:
+
+static inline void prefetch(const void *x)
+{
+        if (unlikely(!x))
+                return;
+
+        __asm__ __volatile__ ("dcbt 0,%0" : : "r" (x));
+}
+
+Urgh :)
+
+Anton
