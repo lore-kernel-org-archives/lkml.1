@@ -1,80 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161235AbXCGCgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030775AbXCGCxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161235AbXCGCgV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 21:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161250AbXCGCgU
+	id S1030775AbXCGCxp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 21:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030776AbXCGCxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 21:36:20 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55135 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1161235AbXCGCgS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 21:36:18 -0500
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@osdl.org
-Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Christoph Lameter <clameter@sgi.com>,
-       mpm@selenic.com, Manfred Spraul <manfred@colorfullife.com>
-Message-Id: <20070307023521.19658.80916.sendpatchset@schroedinger.engr.sgi.com>
-In-Reply-To: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
-References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
-Subject: [SLUB 3/3] Guarantee minimum number of objects in a slab
-Date: Tue,  6 Mar 2007 18:35:21 -0800 (PST)
+	Tue, 6 Mar 2007 21:53:45 -0500
+Received: from waste.org ([66.93.16.53]:40948 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030775AbXCGCxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 21:53:45 -0500
+Date: Tue, 6 Mar 2007 20:40:44 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@osdl.org, Marcelo Tosatti <marcelo@kvack.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: [SLUB 2/3] Large kmalloc pass through. Removal of large general slabs
+Message-ID: <20070307024043.GT23311@waste.org>
+References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com> <20070307023513.19658.81228.sendpatchset@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070307023513.19658.81228.sendpatchset@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guarantee a mininum number of objects per slab
+On Tue, Mar 06, 2007 at 06:35:16PM -0800, Christoph Lameter wrote:
+> Unlimited kmalloc size and removal of general caches >=4.
+> 
+> We can directly use the page allocator for all allocations 4K and larger. This
+> means that no general slabs are necessary and the size of the allocation passed
+> to kmalloc() can be arbitrarily large. Remove the useless general caches over 4k.
 
-The number of objects per slab is important for SLUB because it determines
-the number of allocations that can be performed without having to consult
-per node slab lists. Add another boot option "min_objects=xx" that
-allows the configuration of the objects per slab. This is similar
-to SLABS queue configurations.
+I've been meaning to do this in SLOB as well. Perhaps it warrants
+doing in stock kmalloc? I've got a grand total of 18 of these objects
+here.
 
-Set the default of objects to 4. This will increase the page order for
-certain slab objects.
+The downside is this makes them suddenly disappear off the slabinfo
+radar.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6.21-rc2-mm1/mm/slub.c
-===================================================================
---- linux-2.6.21-rc2-mm1.orig/mm/slub.c	2007-03-06 17:57:11.000000000 -0800
-+++ linux-2.6.21-rc2-mm1/mm/slub.c	2007-03-06 17:57:15.000000000 -0800
-@@ -1201,6 +1201,12 @@ static __always_inline struct page *get_
- static int slub_min_order = 0;
- 
- /*
-+ * Minumum number of objects per slab. This is necessary in order to
-+ * reduce locking overhead. Similar to the queue size in SLAB.
-+ */
-+static int slub_min_objects = 4;
-+
-+/*
-  * Merge control. If this is set then no merging of slab caches will occur.
-  */
- static int slub_nomerge = 0;
-@@ -1232,7 +1238,7 @@ static int calculate_order(int size)
- 			order < MAX_ORDER; order++) {
- 		unsigned long slab_size = PAGE_SIZE << order;
- 
--		if (slab_size < size)
-+		if (slab_size < slub_min_objects * size)
- 			continue;
- 
- 		rem = slab_size % size;
-@@ -1624,6 +1630,15 @@ static int __init setup_slub_min_order(c
- 
- __setup("slub_min_order=", setup_slub_min_order);
- 
-+static int __init setup_slub_min_objects(char *str)
-+{
-+	get_option (&str, &slub_min_objects);
-+
-+	return 1;
-+}
-+
-+__setup("slub_min_objects=", setup_slub_min_objects);
-+
- static int __init setup_slub_nomerge(char *str)
- {
- 	slub_nomerge = 1;
+-- 
+Mathematics is the supreme nostalgia of our time.
