@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965045AbXCGMgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965042AbXCGMhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965045AbXCGMgN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965042AbXCGMgM
+	id S965042AbXCGMhN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965133AbXCGMhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:36:12 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36430 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751299AbXCGMgM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:36:12 -0500
-Subject: Re: Wanted: simple, safe x86 stack overflow detection
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bill Irwin <bill.irwin@oracle.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070307064423.GH18774@holomorphy.com>
-References: <45E5913D.3080505@redhat.com>
-	 <20070228204144.GA32316@one.firstfloor.org>
-	 <20070304015031.GA4224@holomorphy.com> <45EDBA1B.8050007@redhat.com>
-	 <Pine.LNX.4.64.0703061937450.19813@blonde.wat.veritas.com>
-	 <20070306203432.GD18774@holomorphy.com>
-	 <1173241715.3236.16.camel@laptopd505.fenrus.org>
-	 <20070307064423.GH18774@holomorphy.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 07 Mar 2007 04:34:52 -0800
-Message-Id: <1173270892.3176.4.camel@laptopd505.fenrus.org>
+	Wed, 7 Mar 2007 07:37:12 -0500
+Received: from mx2.suse.de ([195.135.220.15]:52576 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965042AbXCGMhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 07:37:11 -0500
+Date: Wed, 7 Mar 2007 13:36:52 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Bill Irwin <bill.irwin@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+Message-ID: <20070307123652.GD18704@wotan.suse.de>
+References: <20070307094503.GD8609@wotan.suse.de> <20070307100430.GA5080@wotan.suse.de> <1173262002.6374.128.camel@twins> <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu> <20070307102106.GB5555@wotan.suse.de> <1173263085.6374.132.camel@twins> <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins> <20070307110035.GE5555@wotan.suse.de> <20070307122224.GP18774@holomorphy.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070307122224.GP18774@holomorphy.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 22:44 -0800, Bill Irwin wrote:
-> At some point in the past, I wrote:
-> >> I'm certainly in favor of the move; IRQ stacks could be made
-> >> rather deep and cheaply at that. I may get around to writing it this
-> >> week if no one else does it first.
+On Wed, Mar 07, 2007 at 04:22:24AM -0800, Bill Irwin wrote:
+> On Wed, Mar 07, 2007 at 11:47:42AM +0100, Peter Zijlstra wrote:
+> >> Well, now they don't, but it could be done or even exploited as a DoS.
 > 
-> On Tue, Mar 06, 2007 at 08:28:35PM -0800, Arjan van de Ven wrote:
-> > the irq stacks aren't the problem; RH at some point accidentally shipped
-> > a kernel with 4k *shared* irq/user context stack and even that gave
-> > almost no issues.
-> > irq's really shouldn't actually nest; it's bad for just about everything
-> > to do that (but that's another story, I would *love* to get rid of the
-> > "enable irqs" thing in the x86 irq path, it hurts just about anything in
-> > reality)
+> On Wed, Mar 07, 2007 at 12:00:36PM +0100, Nick Piggin wrote:
+> > But so could nonlinear page reclaim. I think we need to restrict nonlinear
+> > mappings to root if we're worried about that.
 > 
-> What do you see as the obstacle to eliminating nested IRQ's?
+> Please not root. The users really don't want to be privileged. UML
+> itself is at least partly for use as privilege isolation of the guest
+> workload. Oracle has some of the same concerns itself, which is part of
+> why it uses separate processes heavily, even: to isolate instances from
+> each other.
 
-political will, or maybe just the lack of convincing people so far
+Well non-root users could be allowed to work on mlocked regions on
+tmpfs/shm. That way they avoid the pathological nonlinear problems,
+and can work within the mlock ulimit.
 
->  It doesn't
-> seem so far out to test for being on the interrupt stack and defer the
-> call to do_IRQ() until after the currently-running instance of do_IRQ()
-> has returned, or to move to per-irq stacks modulo special arrangements
-> for the per-cpu IRQ's. Or did you have other methods in mind?
-
-it's simpler...
-
-irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
-{ 
-        irqreturn_t ret, retval = IRQ_NONE;
-        unsigned int status = 0;
-
-        handle_dynamic_tick(action);
-   
-        if (!(action->flags & IRQF_DISABLED))
-                local_irq_enable_in_hardirq();
-
-
-just removing the if() and the explicit IRQ enabling already makes irqs no longer nest...
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+That is, if we are worried about such a DoS.
