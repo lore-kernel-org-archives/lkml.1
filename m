@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992711AbXCGXHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992536AbXCGXIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992711AbXCGXHZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992716AbXCGXHZ
+	id S2992536AbXCGXIl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992700AbXCGXIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:07:25 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:38169 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992711AbXCGXHX (ORCPT
+	Wed, 7 Mar 2007 18:08:41 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:36865 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992536AbXCGXIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:07:23 -0500
-Subject: Re: 2.6.21-rc2-mm2 hang
-From: Dave Hansen <hansendc@us.ibm.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Wed, 7 Mar 2007 18:08:40 -0500
+Date: Wed, 7 Mar 2007 15:05:30 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Petr =?ISO-8859-1?Q?Tesa=5F?= =?ISO-8859-1?Q?=5F=EDk?= 
+	<ptesarik@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <20070307221628.GD26473@linux-os.sc.intel.com>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-	 <1173305536.868.8.camel@localhost.localdomain>
-	 <20070307221628.GD26473@linux-os.sc.intel.com>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 15:07:21 -0800
-Message-Id: <1173308841.868.14.camel@localhost.localdomain>
+Subject: Re: [PATCH] remove_arg_zero() rewrite
+Message-Id: <20070307150530.73463dc5.randy.dunlap@oracle.com>
+In-Reply-To: <1173308113.4868.11.camel@lappy>
+References: <1171978145.22720.21.camel@golias.tesarici.cz>
+	<20070221154159.d316d526.akpm@linux-foundation.org>
+	<1173305397.4868.4.camel@lappy>
+	<20070307144101.f97cfa53.akpm@linux-foundation.org>
+	<1173308113.4868.11.camel@lappy>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 14:16 -0800, Siddha, Suresh B wrote:
-> On Wed, Mar 07, 2007 at 02:12:16PM -0800, Dave Hansen wrote:
-> > I'm seeing weird hangs running ltp on 2.6.21-rc2-mm2.  It manifests
-> > itself by the waitpid06 test in LTP hanging.  This is very, very
-> > reproducible in about 5 seconds by adding '-s wait' to the ltp command
-> > line.
+On Wed, 07 Mar 2007 23:55:12 +0100 Peter Zijlstra wrote:
+
+> On Wed, 2007-03-07 at 14:41 -0800, Andrew Morton wrote:
+> > On Wed, 07 Mar 2007 23:09:57 +0100
+> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > > 
-> > I see 4 waitpid06 processes on my 4-way machine spinning in userspace.
-> > But, the weird part is that I can't ssh in once this happens, but I can
-> > log in to the console.  I've bisected it down to:
-> >         
-> >         sched-fix-idle-load-balancing-in-softirqd-context
+> > > On Wed, 2007-02-21 at 15:41 -0800, Andrew Morton wrote:
+> > > 
+> > > > I mean.... what the hell?
+> > > > 
+> > > > As you appear to have managed to work out what the sorry thing is trying to
+> > > > do, would you have time to simply rip it out and completely rewrite it,
+> > > > including a nice comment telling the world what this function's function is?
+> > > > 
+> > > > Because what we have there is beyond repairing.
+> > > 
+> > > Something like so?
+> > > Boots uml seemingly without errors.
+> > > 
+> > > ---
+> > > Rewrite remove_arg_zero() to be more parseable by untwisted minds.
+> > > 
+> > 
+> > Sorry, Nick already had a go at this:
 > 
-> This sounds like an issue in merge we recently had and 2.6.21-rc2-mm2 already
-> has a fix for this.
-> 
-> sched-fix-idle-load-balancing-in-softirqd-context-fix.patch  
-> 
-> Can you please apply both
-> sched-fix-idle-load-balancing-in-softirqd-context
-> sched-fix-idle-load-balancing-in-softirqd-context-fix.patch
-> and see if you still see this problem?
+> Darn, must've fell off of lkml... or I missed it catching up my 4000+
+> email backlog.
 
-I was confused that I couldn't find this fix in my patches directory,
-but I double-checked, and realized that I was still on 2.6.21-rc2-mm1.
-I must have grabbed the wrong broken-out tarball when I started the
-bisect.  Darn.
+Hm, I've had a similar issue.  Mail problems or what...
 
-Anyway, 2.6.21-rc2-mm2 appears to be OK.  Sorry for the false alarm.
-
--- Dave
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
