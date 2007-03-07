@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbXCGFR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932782AbXCGFTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932825AbXCGFR7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 00:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932838AbXCGFR7
+	id S932782AbXCGFTi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 00:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964865AbXCGFTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 00:17:59 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:37165 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932825AbXCGFR7 (ORCPT
+	Wed, 7 Mar 2007 00:19:38 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34201 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932782AbXCGFTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 00:17:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AHcSMRgy0f5QcrhJXFmWTxon+r4U4Bc2Xlem4WC2pCDx7SCNIodE1iL4Mf9w0tyPKfvPsv1j3jk3VnjfzQX1qwMz3KLFD637xzbHDzMbJx+4p92RN32+mVhdaW3bpEZrQe5LXI6ZNB/ZdqIWyAe+NgO2KNWedUIlk9YZNQMqTbw=
-Message-ID: <4e5ebad50703062117j5a6866d9x8580060ae0f83a94@mail.gmail.com>
-Date: Wed, 7 Mar 2007 13:17:57 +0800
-From: "Sonic Zhang" <sonic.adi@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
-Cc: bryan.wu@analog.com, khali@linux-fr.org, linux-kernel@vger.kernel.org,
-       mhfan@ustc.edu
-In-Reply-To: <20070305231846.d4a31502.akpm@linux-foundation.org>
+	Wed, 7 Mar 2007 00:19:37 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: michael@ellerman.id.au
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 2/3] msi:  Fixup the msi enable/disable logic
+References: <m1tzx7l7z2.fsf@ebiederm.dsl.xmission.com>
+	<m1ps7vl7rr.fsf@ebiederm.dsl.xmission.com>
+	<m1lkijl7ms.fsf_-_@ebiederm.dsl.xmission.com>
+	<1172802408.518.44.camel@concordia.ozlabs.ibm.com>
+Date: Tue, 06 Mar 2007 22:19:06 -0700
+In-Reply-To: <1172802408.518.44.camel@concordia.ozlabs.ibm.com> (Michael
+	Ellerman's message of "Fri, 02 Mar 2007 11:26:48 +0900")
+Message-ID: <m1wt1td41h.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1173164058.31825.16.camel@roc-desktop>
-	 <20070305231846.d4a31502.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/6/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 06 Mar 2007 14:54:18 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
->
-> > Hi folks,
-> >
-> > [PATCH] Blackfin: blackfin i2c driver
-> >
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-> > +     struct i2c_msg *pmsg;
-> > +     int i, ret;
-> > +     int rc = 0;
-> > +
-> > +     if (!(bfin_read_TWI_CONTROL() & TWI_ENA))
-> > +             return -ENXIO;
-> > +
-> > +     down(&iface->twi_lock);
-> > +
-> > +     while (bfin_read_TWI_MASTER_STAT() & BUSBUSY) {
-> > +             up(&iface->twi_lock);
-> > +             schedule();
-> > +             down(&iface->twi_lock);
-> > +     }
 >
-> That's a busy loop until this task's timeslice has expired.  It'll work,
-> but it'll suck a bit.  (Repeated in several places)
+> Hi Eric, comments below ..
 >
+>
+> I get the reasoning for disabling MSI before we start writing back the
+> config space, but don't we want to re-enable MSI on the way out?
 
-OK, I change it into yield(). So, current process will be move to the
-tail of the run queue. Is that OK with you?
+We are restoring the entire msi flags register which includes the enable bit,
+setting it a second time is gratuitous.
+
+In addition if we are restoring the register when the enable bit is not set.
+(because we don't have a mask bit) enabling the msi state is actually
+the wrong thing to do.    But I admit that case can only happen after
+the additions in my last patch.
+
+Eric
+
