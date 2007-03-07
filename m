@@ -1,79 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422747AbXCGRJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965412AbXCGRKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422747AbXCGRJb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:09:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422746AbXCGRJb
+	id S965412AbXCGRKY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965380AbXCGRKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:09:31 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:64096 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422745AbXCGRJ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:09:29 -0500
-Date: Wed, 7 Mar 2007 18:09:09 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Jean Delvare <khali@linux-fr.org>
-cc: Bodo Eggert <7eggert@gmx.de>, David Hubbard <david.c.hubbard@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
-       linux-acpi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf@atrpms.net
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-In-Reply-To: <20070307101758.8cf2c53d.khali@linux-fr.org>
-Message-ID: <Pine.LNX.4.58.0703071806340.2556@be1.lrz>
-References: <7PvLN-1cj-3@gated-at.bofh.it> <7TEGV-6Jy-39@gated-at.bofh.it>
- <7TUBX-6TN-5@gated-at.bofh.it> <7UeqX-4QO-17@gated-at.bofh.it>
- <7UeqZ-4QO-27@gated-at.bofh.it> <7UgM5-np-1@gated-at.bofh.it>
- <7UgM8-np-11@gated-at.bofh.it> <7UnaS-2xP-9@gated-at.bofh.it>
- <7UnkC-2JB-9@gated-at.bofh.it> <7Uzcd-49u-3@gated-at.bofh.it>
- <7UEEN-4xi-3@gated-at.bofh.it> <E1HODgC-0000h8-Vc@be1.lrz>
- <20070306161935.025a3ec1.khali@linux-fr.org> <Pine.LNX.4.58.0703061804360.2988@be1.lrz>
- <20070307101758.8cf2c53d.khali@linux-fr.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
-X-Provags-ID2: V01U2FsdGVkX18tnCFFUbvd3/CcP7Ytngi9Lp4hMEgRP75T/M1
- GwUnlqDRcGUfZFyk0Ua7k7yTSI46iZfaeIEa1ae/bnKb1Nm9l2
- Hwnj76tI/mXlWN65WaRIA==
+	Wed, 7 Mar 2007 12:10:23 -0500
+Received: from systemlinux.org ([83.151.29.59]:56992 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422750AbXCGRKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:10:22 -0500
+Date: Wed, 7 Mar 2007 18:09:55 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
+Message-ID: <20070307170955.GA4252@skl-net.de>
+References: <20070226133153.GC4095@skl-net.de> <20070226182617.GC9968@andrew-vasquezs-computer.local> <20070227101100.GA22572@skl-net.de> <20070227185134.GJ20397@andrew-vasquezs-computer.local> <20070228151829.GI22572@skl-net.de> <20070228153722.GJ22572@skl-net.de> <20070306203952.471218df.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
+Content-Disposition: inline
+In-Reply-To: <20070306203952.471218df.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007, Jean Delvare wrote:
-> On Tue, 6 Mar 2007 21:40:19 +0100 (CET), Bodo Eggert wrote:
 
-> > 1) I asume port allocations or ACPI foreign port acces to be rare, so
-> >    there would be little impact on (un)registering hardware. Off cause
-> >    there are some long ACPI calls (like reading the battery?), in these
-> >    cases it might be beneficial to release the global allocation lock
-> >    after gaining exclusive access to the driver's port range. (This can
-> >    only be done if the device driver is loaded.)
-> 
-> The problem is that the rarity of ACPI foreign port access doesn't
-> matter much, as you have to do all the tests first to find out that it
-> was a foreign port, and I suspect that these tests will cost more than
-> taking the lock itself.
+--45Z9DzgjV8m4Oswq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Testing for the internal ranges can be done by searching a list of about
-five ranges, that should be not much slower than taking an uncontended
-lock, and very much faster than waiting for smbus to finish it's current
-task in case the lock is contended. I'm more concerned about driver
-(un)loading being slowed down by ACPI.
+On 20:39, Andrew Morton wrote:
+> On Wed, 28 Feb 2007 16:37:22 +0100 Andre Noll <maan@systemlinux.org> wrot=
+e:
+>=20
+> > On 16:18, Andre Noll wrote:
+> >=20
+> > > With 2.6.21-rc2 I am unable to reproduce this BUG message. However,
+> > > writing to both raid systems at the same time via lvm still locks up
+> > > the system within minutes.
+> >=20
+> > Screenshot of the resulting kernel panic:
+> >=20
+> > 	http://systemlinux.org/~maan/shots/kernel-panic-21-rc2-huangho2.png
+> >=20
+>=20
+> It died in CFQ.  Please try a different IO scheduler.  Use something
+> like
+>=20
+> 	echo deadline > /sys/block/sda/queue/scheduler
+>=20
+> This could still be the old qla2xxx bug, or it could be a new qla2xxx bug,
+> or it could be a block bug, or it could be an LVM bug.
 
-[...]
-> We may be able to workaround the inter-driver exclusion though, if we
-> use a semaphore initialized to N, have ACPI take N, but other drivers
-> take just one. This would let ACPI be exclusive with all the other
-> drivers, but drivers themselves could otherwise run concurrently. That
-> being said, we do not appear to have the required primitives to take
-> more than 1 semaphore resource at once at the moment, so we'd need to
-> do that first.
+OK. I'm running with deadline right now. But I guess this kernel
+panic was caused by an LVM bug because lockdep reported problems with
+LVM. Nobody responded to my bug report on the LVM mailing list (see
+http://www.redhat.com/archives/linux-lvm/2007-February/msg00102.html).
 
-worst case I can imagine: IDE/graphic stalles while ACPI takes a second to
-read the battery state.
+Non-working snapshots and no help from the mailing list convinced me
+to ditch the lvm setup [1] in favour of linear software raid. This
+means I can't do lvm-related tests any more.
 
--- 
-Top 100 things you don't want the sysadmin to say:
-82. Where's the DIR command?
+BTW: Are ext3 filesystem sizes greater than 8T now officially
+supported?
+
+Thanks
+Andre
+
+[1] vg of two hardware raids, 10T together, a single lv and some snapshots
+--=20
+
+--45Z9DzgjV8m4Oswq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFF7vHjWto1QDEAkw8RAkZdAKCRiDjS3z62bHLfHqhbCDbBgTgJYwCfSA9O
+Chbn1P57DdIY8mvJ781K5rg=
+=EJJc
+-----END PGP SIGNATURE-----
+
+--45Z9DzgjV8m4Oswq--
