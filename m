@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030185AbXCGOZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965514AbXCGO1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030185AbXCGOZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 09:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXCGOZq
+	id S965514AbXCGO1E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 09:27:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965522AbXCGO1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 09:25:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37446 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030185AbXCGOZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 09:25:45 -0500
-Subject: [GFS2] fix hangup when multiple processes are trying to write to
-	the same file [4/12]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: Josef Whiter <jwhiter@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1173277501.11001.752.camel@quoit.chygwyn.com>
-References: <1173277501.11001.752.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd
-Date: Wed, 07 Mar 2007 14:28:49 +0000
-Message-Id: <1173277729.11001.760.camel@quoit.chygwyn.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+	Wed, 7 Mar 2007 09:27:04 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:19710 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965514AbXCGO1C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 09:27:02 -0500
+Message-ID: <45EECBAA.2020608@ru.mvista.com>
+Date: Wed, 07 Mar 2007 17:26:50 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
+Cc: mingo@elte.hu, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/6 -rt] powerpc 2.6.20-rt8: fix boot/runtime errors/warnings
+ for PowerPC(ppc64)
+References: <yyi8xe925vg.wl@toshiba.co.jp>
+In-Reply-To: <yyi8xe925vg.wl@toshiba.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From a13cbe375303585fec1425135ed54adb62be41fc Mon Sep 17 00:00:00 2001
-From: Josef Whiter <jwhiter@redhat.com>
-Date: Fri, 23 Feb 2007 12:49:51 -0500
-Subject: [PATCH] [GFS2] fix hangup when multiple processes are trying to write to the same file
+Tsutomu OWA wrote:
+> Hi Ingo,
 
-This fixes a problem I encountered while running bonnie++.  When you have one
-thread that opens a file and starts to write to it, and then another thread that
-tries to open and write to the same file, the second thread will loop forever
-trying to grab the inode lock for that inode.  Basically we come in through
-generic_buffered_file_write, which calls gfs2_prepare_write, which then attempts
-to grab the glock.  Because we don't own the lock, gfs2_prepare_write gets
-GLR_TRYFAILED, which returns AOP_TRUNCATED_PAGE to generic_buffered_file_write.
-At this point generic_buffered_file_write loops around again and immediately
-retries the prepare_write.  This means that the second process never gets off of
-the processor in order to allow the process that holds the lock to finish its
-work and let go of the lock.  This patch makes gfs2_glock_nq schedule() if it
-gets back a GLR_TRYFAILED, which resolves this problem.
+>   Please consider for inclusion in your rt tree.
 
-Signed-off-by: Josef Whiter <jwhiter@redhat.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+>   This series of patches fixes boot and runntime errors/warnings for
+> powerpc (esp. 64 bit).  This applies to linux-2.6.20, patch-2.6.20-rt8
+> and previous my patch set;
+>   http://ozlabs.org/pipermail/linuxppc-dev/2007-March/032640.html
+>   http://lkml.org/lkml/2007/3/6/503
 
-diff --git a/fs/gfs2/ops_address.c b/fs/gfs2/ops_address.c
-index 56e3359..b3b7e84 100644
---- a/fs/gfs2/ops_address.c
-+++ b/fs/gfs2/ops_address.c
-@@ -266,9 +266,11 @@ skip_lock:
- out:
- 	return error;
- out_unlock:
--	if (error == GLR_TRYFAILED)
--		error = AOP_TRUNCATED_PAGE;
- 	unlock_page(page);
-+	if (error == GLR_TRYFAILED) {
-+		error = AOP_TRUNCATED_PAGE;
-+		yield();
-+	}
- 	if (do_unlock)
- 		gfs2_holder_uninit(&gh);
- 	goto out;
-@@ -364,6 +366,7 @@ static int gfs2_prepare_write(struct file *file, struct page *page,
- 		if (error == GLR_TRYFAILED) {
- 			unlock_page(page);
- 			error = AOP_TRUNCATED_PAGE;
-+			yield();
- 		}
- 		goto out_uninit;
- 	}
--- 
-1.4.4.2
+>   Compile and boot tested on celleb (Cell Reference set) for both
+> PREEMPT_RT=y and PREEMPT_NONE=y.
 
+>   CONFIG_MCOUNT, CONFIG_LATENCY_TRACE and other tracing options nor
+> CONFIG_GENERIC_TIME,
 
+    There is PowerPC genTOD patch and it's incorporated into -rt (don't know 
+it works for Cell) but it breaks TOD vsyscalls. Several months ago I've posted 
+patches removing them for the time being:
 
+http://ozlabs.org/pipermail/linuxppc-dev/2006-November/027686.html
+
+and I've heard that this issue is being worked on now by John Stultz.
+    Here's also a patch implemeting read_persitent_clock():
+
+http://www.tglx.de/projects/hrtimers/2.6.18/broken-out/gtod-persistent-clock-support-ppc.patch
+
+> clockevents etc are not yet ported.
+
+    Note that there *is* PowerPC clockevents driver already (don't know if it 
+works for Cell) -- it just never got merged to -rt:
+
+http://ozlabs.org/pipermail/linuxppc-dev/2006-November/027794.html
+http://ozlabs.org/pipermail/linuxppc-dev/2006-November/027852.html
+
+>   Comments and suggestions are welcome.
+
+>   Thanks in advance.
+> -- owa
+> TOSHIBA, Software Engineering Center.
