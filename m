@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965261AbXCGNI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965330AbXCGNLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965261AbXCGNI4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 08:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965337AbXCGNI4
+	id S965330AbXCGNLh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 08:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965337AbXCGNLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 08:08:56 -0500
-Received: from mail.suse.de ([195.135.220.2]:52842 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965261AbXCGNIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 08:08:55 -0500
-Date: Wed, 7 Mar 2007 14:08:51 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, Jeff Dike <jdike@addtoit.com>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307130851.GE18704@wotan.suse.de>
-References: <1173262002.6374.128.camel@twins> <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu> <20070307102106.GB5555@wotan.suse.de> <1173263085.6374.132.camel@twins> <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins> <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins> <20070307121730.GC18704@wotan.suse.de> <1173271286.6374.166.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173271286.6374.166.camel@twins>
-User-Agent: Mutt/1.5.9i
+	Wed, 7 Mar 2007 08:11:37 -0500
+Received: from nz-out-0506.google.com ([64.233.162.235]:37733 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965330AbXCGNLg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 08:11:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=Y2jVYJNJKxZfObYZ8Xa+rRmot1e7CLz/YjBCXFfpD8QY6CYYf9WXSyiMsxoUakgVMlYQUGminTk5JA4DzbG8bTzXlQ6cVCBaWjuE9LrozET+tzenVL/pZq8nZ/YPPjywQfpCOPd3dyRE9+ydurxM/R/l5pCq4Mn83+0RgIWT4mo=
+Message-ID: <45EEB99D.7020406@googlemail.com>
+Date: Wed, 07 Mar 2007 14:09:49 +0100
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tim Waugh <tim@cyberelk.net>, linux-parport@lists.infradead.org
+Subject: Re: Linux v2.6.21-rc3
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 01:41:26PM +0100, Peter Zijlstra wrote:
-> On Wed, 2007-03-07 at 13:17 +0100, Nick Piggin wrote:
+Linus Torvalds napisał(a):
+> We've finally hopefully started to put a dent in the regressions, 
+> especially the suspend/resume problems introduced since 2.6.20.
 > 
-> > > Tracking these ranges on a per-vma basis would avoid taking the mm wide
-> > > mmap_sem and so would be cheaper than regular vmas.
-> > > 
-> > > Would that still be too expensive?
-> > 
-> > Well you can today remap N pages in a file, arbitrarily for
-> > sizeof(pte_t)*tiny bit for the upper page tables + small constant
-> > for the vma.
-> > 
-> > At best, you need an extra pointer to pte / vaddr, so you'd basically
-> > double memory overhead.
+> So 2.6.21-rc3 is out there now, and there's some hope that it will work 
+> more widely than -rc1 and -rc2 did. Please do give it a good testing, and 
+> update Adrian and the mailing list (and me) about any regressions 
+> (hopefully many more of the "it's fixed now" than other kinds, but all 
+> regressions are interesting).
 > 
-> I was hoping some form of range compression would gain something, but if
-> its a fully random mapping, then yes a shadow page table would be needed
-> (still looking into what a pte_chain is)
+> The appended shortlog gives a reasonable overview. In general we're 
+> definitely calming down, and most of the changes are fairly small and 
+> obvious fixes. 
 > 
-> > > > > Well, now they don't, but it could be done or even exploited as a DoS.
-> > > > 
-> > > > But so could nonlinear page reclaim. I think we need to restrict nonlinear
-> > > > mappings to root if we're worried about that.
-> > > 
-> > > Can't we just 'fix' it?
-> > 
-> > The thing is, I don't think anybody who uses these things cares
-> > about any of the 'problems' you want to fix, do they? We are
-> > interested in dirty pages only for the correctness issue, rather
-> > than performance. Same as reclaim.
+> Let's keep the fixes to a minimum, especially since I'm planning on biting 
+> peoples heads off if I get any more pull requests for things that aren't 
+> real and obvious fixes. 
 > 
-> If so, we can just stick to the dead slow but correct 'scan the full
-> vma' page_mkclean() and nobody would ever trigger it.
+> 		Linus
 
-Not if we restricted it to root and mlocked tmpfs. But then why
-wouldn't you just do it with the much more efficient msync walk,
-so that if root does want to do writeout via these things, it does
-not blow up?
+BTW. Does anyone care about parport console?
+console=lp0 hangs since at least 2.6.18
 
-> What is the DoS scenario wrt reclaim? We really ought to fix that if
-> real, those UML farms run on nothing but nonlinear reclaim I'd think.
+Calling initcall 0xc0438939: pty_init+0x0/0x231()
+Calling initcall 0xc0439235: lp_init_module+0x0/0x238()
+lp: driver loaded but no devices found
+Calling initcall 0xc043947f: mod_init+0x0/0x286()
+intel_rng: FWH not detected
+Calling initcall 0xc0439aa9: serial8250_init+0x0/0x114()
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+PM: Adding info for platform:serial8250
+serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+PM: Adding info for No Bus:ttyS0
+serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+PM: Adding info for No Bus:ttyS1
+PM: Adding info for No Bus:ttyS2
+PM: Adding info for No Bus:ttyS3
+Calling initcall 0xc0439c6c: serial8250_pnp_init+0x0/0xf()
+PM: Removing info for No Bus:ttyS0
+00:06: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+PM: Adding info for No Bus:ttyS0
+PM: Removing info for No Bus:ttyS1
+00:07: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+PM: Adding info for No Bus:ttyS1
+Calling initcall 0xc0439c7b: serial8250_pci_init+0x0/0x16()
+Calling initcall 0xc043a16d: parport_default_proc_register+0x0/0x16()
+Calling initcall 0xc043a250: parport_pc_init+0x0/0x196()
+parport: PnPBIOS parport detected.
+parport0: PC-style at 0x378, irq 7 [PCSPP,TRISTATE]
+lp0: using parport0 (interrupt-driven).
 
-I guess you can just increase the computational complexity of
-reclaim quite easily.
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc3/git-config
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
