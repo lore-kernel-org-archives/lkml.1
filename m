@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992710AbXCGWtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992714AbXCGWtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992710AbXCGWtb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 17:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992774AbXCGWta
+	id S2992714AbXCGWtf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 17:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992766AbXCGWte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 17:49:30 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40402 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992767AbXCGWt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:49:29 -0500
-Date: Wed, 7 Mar 2007 23:49:15 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
-       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
-       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
-       rjw@sisk.pl
-Subject: Re: [PATCH 16/20] swsusp: do not use virt_to_page on kernel data address
-Message-ID: <20070307224915.GG5956@elf.ucw.cz>
-References: <20070307065703.GA23412@in.ibm.com> <20070307072008.GQ23412@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307072008.GQ23412@in.ibm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Wed, 7 Mar 2007 17:49:34 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35872 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992758AbXCGWtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 17:49:32 -0500
+Date: Wed, 7 Mar 2007 14:49:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] swsusp: Disable nonboot CPUs before entering platform
+ suspend
+Message-Id: <20070307144903.6e196b88.akpm@linux-foundation.org>
+In-Reply-To: <200703072314.30265.rjw@sisk.pl>
+References: <200703072044.12021.rjw@sisk.pl>
+	<20070307131618.308d46e6.akpm@linux-foundation.org>
+	<200703072314.30265.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 7 Mar 2007 23:14:29 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> o virt_to_page() call should be used on kernel linear addresses and not
->   on kernel text and data addresses. Swsusp code uses it on kernel data
->   (statically allocated swsusp_header).
+> On Wednesday, 7 March 2007 22:16, Andrew Morton wrote:
+> > On Wed, 7 Mar 2007 20:44:11 +0100
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Prevent the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
+> > > from triggering by disabling nonboot CPUs before we finally enter the platform
+> > > suspend.
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  kernel/power/disk.c |    1 +
+> > >  kernel/power/user.c |    2 +-
+> > >  2 files changed, 2 insertions(+), 1 deletion(-)
+> > > 
+> > > Index: linux-2.6.21-rc2-mm2/kernel/power/disk.c
+> > > ===================================================================
+> > > --- linux-2.6.21-rc2-mm2.orig/kernel/power/disk.c
+> > > +++ linux-2.6.21-rc2-mm2/kernel/power/disk.c
+> > > @@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
+> > >  	switch(mode) {
+> > >  	case PM_DISK_PLATFORM:
+> > >  		if (pm_ops && pm_ops->enter) {
+> > > +			disable_nonboot_cpus();
+> > >  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+> > >  			pm_ops->enter(PM_SUSPEND_DISK);
+> > >  			break;
+> > > Index: linux-2.6.21-rc2-mm2/kernel/power/user.c
+> > > ===================================================================
+> > > --- linux-2.6.21-rc2-mm2.orig/kernel/power/user.c
+> > > +++ linux-2.6.21-rc2-mm2/kernel/power/user.c
+> > > @@ -398,9 +398,9 @@ static int snapshot_ioctl(struct inode *
+> > >  
+> > >  		case PMOPS_ENTER:
+> > >  			if (data->platform_suspend) {
+> > > +				disable_nonboot_cpus();
+> > >  				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+> > >  				error = pm_ops->enter(PM_SUSPEND_DISK);
+> > > -				error = 0;
+> > >  			}
+> > >  			break;
+> > 
+> > Is this considered 2.6.21 material?  If so why?
 > 
-> o Allocate swsusp_header dynamically so that virt_to_page() can be used
->   safely.
-> 
-> o I am changing this because in next few patches, __pa() on x86_64 will
->   no longer support kernel text and data addresses and hibernation breaks. 
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
+> Well, the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
+> triggers every time an SMP x86_64 box is suspended to disk using the platform
+> mode (default), which is quite annoying IMHO and users think something wrong is
+> going on.  This will probably cause them to report the problem and I'd rather
+> like to avoid handling these reports. ;-)
 
-> +static int swsusp_header_init(void)
-> +{
-> +	swsusp_header = (struct swsusp_header*) __get_free_page(GFP_KERNEL);
-> +	if (!swsusp_header)
-> +		panic("Could not allocate memory for swsusp_header\n");
-> +	return 0;
-> +}
-> +
-> +core_initcall(swsusp_header_init);
+Well sure - if patches were always error-free, we'd always apply them
+immediately.
 
-I do not like the panic, but I guess it is okay as we are running
-during boot? (Could you add a comment?) Otherwise ok.
+The question is: is the risk of this patch breaking things exceeded by the
+benefit which you describe?
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
