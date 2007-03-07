@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965478AbXCGSde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965424AbXCGSfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965478AbXCGSde (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:33:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965462AbXCGSde
+	id S965424AbXCGSfd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:35:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932287AbXCGSfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:33:34 -0500
-Received: from master.altlinux.org ([62.118.250.235]:4203 "EHLO
-	master.altlinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965486AbXCGSdd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:33:33 -0500
-X-Greylist: delayed 1409 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 13:33:32 EST
-Date: Wed, 7 Mar 2007 21:09:03 +0300
-From: Sergey Vlasov <vsu@altlinux.ru>
-To: "Luong Ngo" <luong.ngo@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Sleeping thread not receive signal until it wakes up
-Message-Id: <20070307210903.0988be8f.vsu@altlinux.ru>
-In-Reply-To: <1b2aacd80703062131g6c8578fgf200dd05a502c49f@mail.gmail.com>
-References: <1b2aacd80703062131g6c8578fgf200dd05a502c49f@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.6; x86_64-alt-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__7_Mar_2007_21_09_03_+0300_cQioILeHWtxLr55T"
+	Wed, 7 Mar 2007 13:35:33 -0500
+Received: from gw.goop.org ([64.81.55.164]:53007 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932771AbXCGSfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 13:35:32 -0500
+Message-ID: <45EF05F0.7090700@goop.org>
+Date: Wed, 07 Mar 2007 10:35:28 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: tglx@linutronix.de, Dan Hecht <dhecht@vmware.com>,
+       Zachary Amsden <zach@vmware.com>, akpm@linux-foundation.org, ak@suse.de,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <45EDD82F.90204@vmware.com> <1173225182.24738.507.camel@localhost.localdomain> <45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com> <1173228544.24738.514.camel@localhost.localdomain> <45EE0D10.7070807@vmware.com> <1173230305.24738.529.camel@localhost.localdomain> <45EE1EA3.90803@vmware.com> <1173256666.24738.576.camel@localhost.localdomain> <45EEF966.6060902@goop.org> <20070307174957.GA31371@elte.hu>
+In-Reply-To: <20070307174957.GA31371@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__7_Mar_2007_21_09_03_+0300_cQioILeHWtxLr55T
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Ingo Molnar wrote:
+> ugh. Please take it from me: i've watched the Linux time code walk its 
+> long, rocky 10+ years road. One of the first mistakes was when we made 
+> the TSC the center of the i386-time universe. (incidentally, it was me 
+> who did the first steps of that, as a rookie kernel hacker) We got cured 
+> out of that in v2.6.19, v2.6.20 and v2.6.21. Granted, Xen is only at the 
+> beginning of that same road. Meet in another 10 years? ;)
 
-On Tue, 6 Mar 2007 21:31:37 -0800 Luong Ngo wrote:
+Yep, the tsc has myriad problems; for Xen its the best of a bad lot. 
+Unfortunately in 10 years no clearly better alternative has appeared;
+maybe in 10 years there will be one.  It might even be the tsc.
 
-> I am having this problem. I have a process with 2 threads created. One
-> of the thread will keep calling IOCTL  to get information from the
-> kernel and will be blocked if there is no new information. If there is
-> information retured, the thread will be checked to see if any error
-> happens and trigger an action. Since we have no way to know if the
-> error is gone (Hardware provides no signal), so what we do is when
-> trigger an action for the error, we will set an timer using alarm()
-> and register a SIGALRM handler in the thread by using sigaction. After
-> setting the alarm, the thread will loop back and call IOCTL, which
-> could cause it to be put to sleep. The problem is the SIGALRM handler
-> does not receive the SIGALRM while the thread is being blocked by
-> IOCTL. And if we generated some event so that the IOCTL is returned
-> with new information, the SIGALRM handler is invoked right away.
-> However, as I read the manual, which says a thread/process should be
-> waken up even when it sleeps if there is a signal delivered to it. Am
-> I right?
-
-Probably the ioctl handler of the driver you are calling does not use
-interruptible sleeps, therefore it cannot be interrupted by a signal.
-In this case you need to fix the driver to use interruptible sleeps
-and return -ERESTARTSYS when some signal is pending.
-
---Signature=_Wed__7_Mar_2007_21_09_03_+0300_cQioILeHWtxLr55T
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
-
-iD8DBQFF7v/CW82GfkQfsqIRAlbNAJsFnV/wYAtsTripQBExSKqc2V8mYQCePhnK
-6NrfCvGQdcaR5aMVr1KfkIs=
-=ywnz
------END PGP SIGNATURE-----
-
---Signature=_Wed__7_Mar_2007_21_09_03_+0300_cQioILeHWtxLr55T--
+    J
