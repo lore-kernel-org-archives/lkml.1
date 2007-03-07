@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161310AbXCGHfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161287AbXCGHgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161310AbXCGHfQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:35:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161295AbXCGHba
+	id S1161287AbXCGHgA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:36:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161296AbXCGHf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:31:30 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:50163 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161279AbXCGH15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:27:57 -0500
-Date: Wed, 7 Mar 2007 12:51:29 +0530
+	Wed, 7 Mar 2007 02:35:59 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:57044 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161157AbXCGH1y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 02:27:54 -0500
+Date: Wed, 7 Mar 2007 12:39:32 +0530
 From: Vivek Goyal <vgoyal@in.ibm.com>
 To: linux kernel mailing list <linux-kernel@vger.kernel.org>
 Cc: Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
        akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
        magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
        pavel@suse.cz, rjw@sisk.pl
-Subject: [PATCH 17/20] x86_64: __pa and __pa_symbol address space separation
-Message-ID: <20070307072129.GR23412@in.ibm.com>
+Subject: [PATCH 8/20] x86_64: 64bit PIC SMP trampoline
+Message-ID: <20070307070932.GI23412@in.ibm.com>
 Reply-To: vgoyal@in.ibm.com
 References: <20070307065703.GA23412@in.ibm.com>
 Mime-Version: 1.0
@@ -30,374 +31,276 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Currently __pa_symbol is for use with symbols in the kernel address
-map and __pa is for use with pointers into the physical memory map.
-But the code is implemented so you can usually interchange the two.
+This modifies the SMP trampoline and all of the associated code so
+it can jump to a 64bit kernel loaded at an arbitrary address.
 
-__pa which is much more common can be implemented much more cheaply
-if it is it doesn't have to worry about any other kernel address
-spaces.  This is especially true with a relocatable kernel as
-__pa_symbol needs to peform an extra variable read to resolve
-the address.
+The dependencies on having an idenetity mapped page in the kernel
+page tables for SMP bootup have all been removed.
 
-There is a third macro that is added for the vsyscall data
-__pa_vsymbol for finding the physical addesses of vsyscall pages.
-
-Most of this patch is simply sorting through the references to
-__pa or __pa_symbol and using the proper one.  A little of
-it is continuing to use a physical address when we have it
-instead of recalculating it several times.
-
-swapper_pgd is now NULL.  leave_mm now uses init_mm.pgd
-and init_mm.pgd is initialized at boot (instead of compile time)
-to the physmem virtual mapping of init_level4_pgd.  The
-physical address changed.
-
-Except for the for EMPTY_ZERO page all of the remaining references
-to __pa_symbol appear to be during kernel initialization.  So this
-should reduce the cost of __pa in the common case, even on a relocated
-kernel.
-
-As this is technically a semantic change we need to be on the lookout
-for anything I missed.  But it works for me (tm).
+In addition the trampoline has been modified to verify
+that long mode is supported.  Asking if long mode is implemented is
+down right silly but we have traditionally had some of these checks,
+and they can't hurt anything.  So when the totally ludicrous happens
+we just might handle it correctly.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
 ---
 
- arch/i386/kernel/alternative.c     |    8 ++++----
- arch/i386/mm/init.c                |   15 ++++++++-------
- arch/x86_64/kernel/machine_kexec.c |   14 +++++++-------
- arch/x86_64/kernel/setup.c         |    9 +++++----
- arch/x86_64/kernel/smp.c           |    2 +-
- arch/x86_64/kernel/vsyscall.c      |    9 +++++++--
- arch/x86_64/mm/init.c              |   21 +++++++++++----------
- arch/x86_64/mm/pageattr.c          |   16 ++++++++--------
- include/asm-x86_64/page.h          |    6 ++----
- include/asm-x86_64/pgtable.h       |    4 ++--
- 10 files changed, 55 insertions(+), 49 deletions(-)
+ arch/x86_64/kernel/head.S       |    1 
+ arch/x86_64/kernel/setup.c      |    9 --
+ arch/x86_64/kernel/trampoline.S |  168 ++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 156 insertions(+), 22 deletions(-)
 
-diff -puN arch/i386/kernel/alternative.c~x86_64-__pa-and-__pa_symbol-address-space-separation arch/i386/kernel/alternative.c
---- linux-2.6.21-rc2-reloc/arch/i386/kernel/alternative.c~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/i386/kernel/alternative.c	2007-03-07 01:31:03.000000000 +0530
-@@ -389,8 +389,8 @@ void __init alternative_instructions(voi
- 	if (no_replacement) {
- 		printk(KERN_INFO "(SMP-)alternatives turned off\n");
- 		free_init_pages("SMP alternatives",
--				(unsigned long)__smp_alt_begin,
--				(unsigned long)__smp_alt_end);
-+				__pa_symbol(&__smp_alt_begin),
-+				__pa_symbol(&__smp_alt_end));
- 		return;
- 	}
- 
-@@ -419,8 +419,8 @@ void __init alternative_instructions(voi
- 						_text, _etext);
- 		}
- 		free_init_pages("SMP alternatives",
--				(unsigned long)__smp_alt_begin,
--				(unsigned long)__smp_alt_end);
-+				__pa_symbol(&__smp_alt_begin),
-+				__pa_symbol(&__smp_alt_end));
- 	} else {
- 		alternatives_smp_save(__smp_alt_instructions,
- 				      __smp_alt_instructions_end);
-diff -puN arch/i386/mm/init.c~x86_64-__pa-and-__pa_symbol-address-space-separation arch/i386/mm/init.c
---- linux-2.6.21-rc2-reloc/arch/i386/mm/init.c~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/i386/mm/init.c	2007-03-07 01:31:03.000000000 +0530
-@@ -774,10 +774,11 @@ void free_init_pages(char *what, unsigne
- 	unsigned long addr;
- 
- 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
--		ClearPageReserved(virt_to_page(addr));
--		init_page_count(virt_to_page(addr));
--		memset((void *)addr, POISON_FREE_INITMEM, PAGE_SIZE);
--		free_page(addr);
-+		struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
-+		ClearPageReserved(page);
-+		init_page_count(page);
-+		memset(page_address(page), POISON_FREE_INITMEM, PAGE_SIZE);
-+		__free_page(page);
- 		totalram_pages++;
- 	}
- 	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
-@@ -786,14 +787,14 @@ void free_init_pages(char *what, unsigne
- void free_initmem(void)
- {
- 	free_init_pages("unused kernel memory",
--			(unsigned long)(&__init_begin),
--			(unsigned long)(&__init_end));
-+			__pa_symbol(&__init_begin),
-+			__pa_symbol(&__init_end));
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
--	free_init_pages("initrd memory", start, end);
-+	free_init_pages("initrd memory", __pa(start), __pa(end));
- }
+diff -puN arch/x86_64/kernel/head.S~x86_64-64bit-PIC-SMP-trampoline arch/x86_64/kernel/head.S
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/head.S~x86_64-64bit-PIC-SMP-trampoline	2007-03-07 01:25:32.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/head.S	2007-03-07 01:25:32.000000000 +0530
+@@ -101,6 +101,7 @@ startup_32:
+ 	.org 0x100	
+ 	.globl startup_64
+ startup_64:
++ENTRY(secondary_startup_64)
+ 	/* We come here either from startup_32
+ 	 * or directly from a 64bit bootloader.
+ 	 * Since we may have come directly from a bootloader we
+diff -puN arch/x86_64/kernel/setup.c~x86_64-64bit-PIC-SMP-trampoline arch/x86_64/kernel/setup.c
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/setup.c~x86_64-64bit-PIC-SMP-trampoline	2007-03-07 01:25:32.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/setup.c	2007-03-07 01:25:32.000000000 +0530
+@@ -329,15 +329,8 @@ void __init setup_arch(char **cmdline_p)
  #endif
  
-diff -puN arch/x86_64/kernel/machine_kexec.c~x86_64-__pa-and-__pa_symbol-address-space-separation arch/x86_64/kernel/machine_kexec.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/machine_kexec.c~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/machine_kexec.c	2007-03-07 01:31:03.000000000 +0530
-@@ -191,19 +191,19 @@ NORET_TYPE void machine_kexec(struct kim
- 
- 	page_list[PA_CONTROL_PAGE] = __pa(control_page);
- 	page_list[VA_CONTROL_PAGE] = (unsigned long)relocate_kernel;
--	page_list[PA_PGD] = __pa(kexec_pgd);
-+	page_list[PA_PGD] = __pa_symbol(&kexec_pgd);
- 	page_list[VA_PGD] = (unsigned long)kexec_pgd;
--	page_list[PA_PUD_0] = __pa(kexec_pud0);
-+	page_list[PA_PUD_0] = __pa_symbol(&kexec_pud0);
- 	page_list[VA_PUD_0] = (unsigned long)kexec_pud0;
--	page_list[PA_PMD_0] = __pa(kexec_pmd0);
-+	page_list[PA_PMD_0] = __pa_symbol(&kexec_pmd0);
- 	page_list[VA_PMD_0] = (unsigned long)kexec_pmd0;
--	page_list[PA_PTE_0] = __pa(kexec_pte0);
-+	page_list[PA_PTE_0] = __pa_symbol(&kexec_pte0);
- 	page_list[VA_PTE_0] = (unsigned long)kexec_pte0;
--	page_list[PA_PUD_1] = __pa(kexec_pud1);
-+	page_list[PA_PUD_1] = __pa_symbol(&kexec_pud1);
- 	page_list[VA_PUD_1] = (unsigned long)kexec_pud1;
--	page_list[PA_PMD_1] = __pa(kexec_pmd1);
-+	page_list[PA_PMD_1] = __pa_symbol(&kexec_pmd1);
- 	page_list[VA_PMD_1] = (unsigned long)kexec_pmd1;
--	page_list[PA_PTE_1] = __pa(kexec_pte1);
-+	page_list[PA_PTE_1] = __pa_symbol(&kexec_pte1);
- 	page_list[VA_PTE_1] = (unsigned long)kexec_pte1;
- 
- 	page_list[PA_TABLE_PAGE] =
-diff -puN arch/x86_64/kernel/setup.c~x86_64-__pa-and-__pa_symbol-address-space-separation arch/x86_64/kernel/setup.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/setup.c~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/setup.c	2007-03-07 01:31:03.000000000 +0530
-@@ -243,11 +243,12 @@ void __init setup_arch(char **cmdline_p)
- 	init_mm.end_code = (unsigned long) &_etext;
- 	init_mm.end_data = (unsigned long) &_edata;
- 	init_mm.brk = (unsigned long) &_end;
-+	init_mm.pgd = __va(__pa_symbol(&init_level4_pgt));
- 
--	code_resource.start = virt_to_phys(&_text);
--	code_resource.end = virt_to_phys(&_etext)-1;
--	data_resource.start = virt_to_phys(&_etext);
--	data_resource.end = virt_to_phys(&_edata)-1;
-+	code_resource.start = __pa_symbol(&_text);
-+	code_resource.end = __pa_symbol(&_etext)-1;
-+	data_resource.start = __pa_symbol(&_etext);
-+	data_resource.end = __pa_symbol(&_edata)-1;
- 
- 	early_identify_cpu(&boot_cpu_data);
- 
-diff -puN arch/x86_64/kernel/smp.c~x86_64-__pa-and-__pa_symbol-address-space-separation arch/x86_64/kernel/smp.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/smp.c~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/smp.c	2007-03-07 01:31:03.000000000 +0530
-@@ -76,7 +76,7 @@ static inline void leave_mm(int cpu)
- 	if (read_pda(mmu_state) == TLBSTATE_OK)
- 		BUG();
- 	cpu_clear(cpu, read_pda(active_mm)->cpu_vm_mask);
--	load_cr3(swapper_pg_dir);
-+	load_cr3(init_mm.pgd);
- }
- 
- /*
-diff -puN arch/x86_64/kernel/vsyscall.c~x86_64-__pa-and-__pa_symbol-address-space-separation arch/x86_64/kernel/vsyscall.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/vsyscall.c~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/vsyscall.c	2007-03-07 01:31:03.000000000 +0530
-@@ -45,6 +45,11 @@
- 
- #define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
- #define __syscall_clobber "r11","rcx","memory"
-+#define __pa_vsymbol(x)			\
-+	({unsigned long v;  		\
-+	extern char __vsyscall_0; 	\
-+	  asm("" : "=r" (v) : "0" (x)); \
-+	  ((v - VSYSCALL_FIRST_PAGE) + __pa_symbol(&__vsyscall_0)); })
- 
- struct vsyscall_gtod_data_t {
- 	seqlock_t lock;
-@@ -224,10 +229,10 @@ static int vsyscall_sysctl_change(ctl_ta
- 		return ret;
- 	/* gcc has some trouble with __va(__pa()), so just do it this
- 	   way. */
--	map1 = ioremap(__pa_symbol(&vsysc1), 2);
-+	map1 = ioremap(__pa_vsymbol(&vsysc1), 2);
- 	if (!map1)
- 		return -ENOMEM;
--	map2 = ioremap(__pa_symbol(&vsysc2), 2);
-+	map2 = ioremap(__pa_vsymbol(&vsysc2), 2);
- 	if (!map2) {
- 		ret = -ENOMEM;
- 		goto out;
-diff -puN arch/x86_64/mm/init.c~x86_64-__pa-and-__pa_symbol-address-space-separation arch/x86_64/mm/init.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/mm/init.c~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/mm/init.c	2007-03-07 01:31:03.000000000 +0530
-@@ -565,11 +565,11 @@ void free_init_pages(char *what, unsigne
- 
- 	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
- 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
--		ClearPageReserved(virt_to_page(addr));
--		init_page_count(virt_to_page(addr));
--		memset((void *)(addr & ~(PAGE_SIZE-1)),
--			POISON_FREE_INITMEM, PAGE_SIZE);
--		free_page(addr);
-+		struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
-+		ClearPageReserved(page);
-+		init_page_count(page);
-+		memset(page_address(page), POISON_FREE_INITMEM, PAGE_SIZE);
-+		__free_page(page);
- 		totalram_pages++;
- 	}
- }
-@@ -579,17 +579,18 @@ void free_initmem(void)
- 	memset(__initdata_begin, POISON_FREE_INITDATA,
- 		__initdata_end - __initdata_begin);
- 	free_init_pages("unused kernel memory",
--			(unsigned long)(&__init_begin),
--			(unsigned long)(&__init_end));
-+			__pa_symbol(&__init_begin),
-+			__pa_symbol(&__init_end));
- }
- 
- #ifdef CONFIG_DEBUG_RODATA
- 
- void mark_rodata_ro(void)
- {
--	unsigned long addr = (unsigned long)__start_rodata;
-+	unsigned long addr = (unsigned long)__va(__pa_symbol(&__start_rodata));
-+	unsigned long end  = (unsigned long)__va(__pa_symbol(&__end_rodata));
- 
--	for (; addr < (unsigned long)__end_rodata; addr += PAGE_SIZE)
-+	for (; addr < end; addr += PAGE_SIZE)
- 		change_page_attr_addr(addr, 1, PAGE_KERNEL_RO);
- 
- 	printk ("Write protecting the kernel read-only data: %luk\n",
-@@ -608,7 +609,7 @@ void mark_rodata_ro(void)
- #ifdef CONFIG_BLK_DEV_INITRD
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
--	free_init_pages("initrd memory", start, end);
-+	free_init_pages("initrd memory", __pa(start), __pa(end));
- }
+ #ifdef CONFIG_SMP
+-	/*
+-	 * But first pinch a few for the stack/trampoline stuff
+-	 * FIXME: Don't need the extra page at 4K, but need to fix
+-	 * trampoline before removing it. (see the GDT stuff)
+-	 */
+-	reserve_bootmem_generic(PAGE_SIZE, PAGE_SIZE);
+-
+ 	/* Reserve SMP trampoline */
+-	reserve_bootmem_generic(SMP_TRAMPOLINE_BASE, PAGE_SIZE);
++	reserve_bootmem_generic(SMP_TRAMPOLINE_BASE, 2*PAGE_SIZE);
  #endif
  
-diff -puN arch/x86_64/mm/pageattr.c~x86_64-__pa-and-__pa_symbol-address-space-separation arch/x86_64/mm/pageattr.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/mm/pageattr.c~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/mm/pageattr.c	2007-03-07 01:31:03.000000000 +0530
-@@ -51,7 +51,6 @@ static struct page *split_large_page(uns
- 	SetPagePrivate(base);
- 	page_private(base) = 0;
- 
--	address = __pa(address);
- 	addr = address & LARGE_PAGE_MASK; 
- 	pbase = (pte_t *)page_address(base);
- 	for (i = 0; i < PTRS_PER_PTE; i++, addr += PAGE_SIZE) {
-@@ -101,13 +100,12 @@ static inline void save_page(struct page
-  * No more special protections in this 2/4MB area - revert to a
-  * large page again. 
+ #ifdef CONFIG_ACPI_SLEEP
+diff -puN arch/x86_64/kernel/trampoline.S~x86_64-64bit-PIC-SMP-trampoline arch/x86_64/kernel/trampoline.S
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/trampoline.S~x86_64-64bit-PIC-SMP-trampoline	2007-03-07 01:25:32.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/trampoline.S	2007-03-07 01:25:32.000000000 +0530
+@@ -3,6 +3,7 @@
+  *	Trampoline.S	Derived from Setup.S by Linus Torvalds
+  *
+  *	4 Jan 1997 Michael Chastain: changed to gnu as.
++ *	15 Sept 2005 Eric Biederman: 64bit PIC support
+  *
+  *	Entry: CS:IP point to the start of our code, we are 
+  *	in real mode with no stack, but the rest of the 
+@@ -17,15 +18,20 @@
+  *	and IP is zero.  Thus, data addresses need to be absolute
+  *	(no relocation) and are taken with regard to r_base.
+  *
++ *	With the addition of trampoline_level4_pgt this code can
++ *	now enter a 64bit kernel that lives at arbitrary 64bit
++ *	physical addresses.
++ *
+  *	If you work on this file, check the object module with objdump
+  *	--full-contents --reloc to make sure there are no relocation
+- *	entries. For the GDT entry we do hand relocation in smpboot.c
+- *	because of 64bit linker limitations.
++ *	entries.
   */
--static void revert_page(unsigned long address, pgprot_t ref_prot)
-+static void revert_page(unsigned long address, unsigned long pfn, pgprot_t ref_prot)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t large_pte;
--	unsigned long pfn;
  
- 	pgd = pgd_offset_k(address);
- 	BUG_ON(pgd_none(*pgd));
-@@ -115,7 +113,6 @@ static void revert_page(unsigned long ad
- 	BUG_ON(pud_none(*pud));
- 	pmd = pmd_offset(pud, address);
- 	BUG_ON(pmd_val(*pmd) & _PAGE_PSE);
--	pfn = (__pa(address) & LARGE_PAGE_MASK) >> PAGE_SHIFT;
- 	large_pte = pfn_pte(pfn, ref_prot);
- 	large_pte = pte_mkhuge(large_pte);
- 	set_pte((pte_t *)pmd, large_pte);
-@@ -141,7 +138,8 @@ __change_page_attr(unsigned long address
-  			 */
- 			struct page *split;
- 			ref_prot2 = pte_pgprot(pte_clrhuge(*kpte));
--			split = split_large_page(address, prot, ref_prot2);
-+			split = split_large_page(pfn << PAGE_SHIFT, prot,
-+							ref_prot2);
- 			if (!split)
- 				return -ENOMEM;
- 			set_pte(kpte, mk_pte(split, ref_prot2));
-@@ -160,7 +158,7 @@ __change_page_attr(unsigned long address
+ #include <linux/linkage.h>
+-#include <asm/segment.h>
++#include <asm/pgtable.h>
+ #include <asm/page.h>
++#include <asm/msr.h>
++#include <asm/segment.h>
  
- 	if (page_private(kpte_page) == 0) {
- 		save_page(kpte_page);
--		revert_page(address, ref_prot);
-+		revert_page(address, pfn, ref_prot);
-  	}
- 	return 0;
- } 
-@@ -180,6 +178,7 @@ __change_page_attr(unsigned long address
-  */
- int change_page_attr_addr(unsigned long address, int numpages, pgprot_t prot)
- {
-+	unsigned long phys_base_pfn = __pa_symbol(__START_KERNEL_map) >> PAGE_SHIFT;
- 	int err = 0; 
- 	int i; 
+ .data
  
-@@ -192,10 +191,11 @@ int change_page_attr_addr(unsigned long 
- 			break; 
- 		/* Handle kernel mapping too which aliases part of the
- 		 * lowmem */
--		if (__pa(address) < KERNEL_TEXT_SIZE) {
-+		if ((pfn >= phys_base_pfn) &&
-+			((pfn - phys_base_pfn) < (KERNEL_TEXT_SIZE >> PAGE_SHIFT))) {
- 			unsigned long addr2;
- 			pgprot_t prot2;
--			addr2 = __START_KERNEL_map + __pa(address);
-+			addr2 = __START_KERNEL_map + ((pfn - phys_base_pfn) << PAGE_SHIFT);
- 			/* Make sure the kernel mappings stay executable */
- 			prot2 = pte_pgprot(pte_mkexec(pfn_pte(0, prot)));
- 			err = __change_page_attr(addr2, pfn, prot2,
-diff -puN include/asm-x86_64/page.h~x86_64-__pa-and-__pa_symbol-address-space-separation include/asm-x86_64/page.h
---- linux-2.6.21-rc2-reloc/include/asm-x86_64/page.h~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/include/asm-x86_64/page.h	2007-03-07 01:31:03.000000000 +0530
-@@ -102,17 +102,15 @@ typedef struct { unsigned long pgprot; }
+@@ -33,15 +39,31 @@
  
- /* Note: __pa(&symbol_visible_to_c) should be always replaced with __pa_symbol.
-    Otherwise you risk miscompilation. */ 
--#define __pa(x)			(((unsigned long)(x)>=__START_KERNEL_map)?(unsigned long)(x) - (unsigned long)__START_KERNEL_map:(unsigned long)(x) - PAGE_OFFSET)
-+#define __pa(x)			((unsigned long)(x) - PAGE_OFFSET)
- /* __pa_symbol should be used for C visible symbols.
-    This seems to be the official gcc blessed way to do such arithmetic. */ 
- #define __pa_symbol(x)		\
- 	({unsigned long v;  \
- 	  asm("" : "=r" (v) : "0" (x)); \
--	  __pa(v); })
-+	  (v - __START_KERNEL_map); })
+ ENTRY(trampoline_data)
+ r_base = .
++	cli			# We should be safe anyway
+ 	wbinvd	
+ 	mov	%cs, %ax	# Code and data in the same place
+ 	mov	%ax, %ds
++	mov	%ax, %es
++	mov	%ax, %ss
  
- #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
--#define __boot_va(x)		__va(x)
--#define __boot_pa(x)		__pa(x)
- #ifdef CONFIG_FLATMEM
- #define pfn_valid(pfn)		((pfn) < end_pfn)
- #endif
-diff -puN include/asm-x86_64/pgtable.h~x86_64-__pa-and-__pa_symbol-address-space-separation include/asm-x86_64/pgtable.h
---- linux-2.6.21-rc2-reloc/include/asm-x86_64/pgtable.h~x86_64-__pa-and-__pa_symbol-address-space-separation	2007-03-07 01:31:03.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/include/asm-x86_64/pgtable.h	2007-03-07 01:31:03.000000000 +0530
-@@ -20,7 +20,7 @@ extern pmd_t level2_kernel_pgt[512];
- extern pgd_t init_level4_pgt[];
- extern unsigned long __supported_pte_mask;
+-	cli			# We should be safe anyway
  
--#define swapper_pg_dir init_level4_pgt
-+#define swapper_pg_dir ((pgd_t *)NULL)
+ 	movl	$0xA5A5A5A5, trampoline_data - r_base
+ 				# write marker for master knows we're running
  
- extern void paging_init(void);
- extern void clear_kernel_mapping(unsigned long addr, unsigned long size);
-@@ -30,7 +30,7 @@ extern void clear_kernel_mapping(unsigne
-  * for zero-mapped memory areas etc..
-  */
- extern unsigned long empty_zero_page[PAGE_SIZE/sizeof(unsigned long)];
--#define ZERO_PAGE(vaddr) (virt_to_page(empty_zero_page))
-+#define ZERO_PAGE(vaddr) (pfn_to_page(__pa_symbol(&empty_zero_page) >> PAGE_SHIFT))
++					# Setup stack
++	movw	$(trampoline_stack_end - r_base), %sp
++
++	call	verify_cpu		# Verify the cpu supports long mode
++
++	mov	%cs, %ax
++	movzx	%ax, %esi		# Find the 32bit trampoline location
++	shll	$4, %esi
++
++					# Fixup the vectors
++	addl	%esi, startup_32_vector - r_base
++	addl	%esi, startup_64_vector - r_base
++	addl	%esi, tgdt + 2 - r_base	# Fixup the gdt pointer
++
+ 	/*
+ 	 * GDT tables in non default location kernel can be beyond 16MB and
+ 	 * lgdt will not be able to load the address as in real mode default
+@@ -49,23 +71,141 @@ r_base = .
+ 	 * to 32 bit.
+ 	 */
  
- #endif /* !__ASSEMBLY__ */
+-	lidtl	idt_48 - r_base	# load idt with 0, 0
+-	lgdtl	gdt_48 - r_base	# load gdt with whatever is appropriate
++	lidtl	tidt - r_base	# load idt with 0, 0
++	lgdtl	tgdt - r_base	# load gdt with whatever is appropriate
  
+ 	xor	%ax, %ax
+ 	inc	%ax		# protected mode (PE) bit
+ 	lmsw	%ax		# into protected mode
+-	# flaush prefetch and jump to startup_32 in arch/x86_64/kernel/head.S
+-	ljmpl	$__KERNEL32_CS, $(startup_32-__START_KERNEL_map)
++
++	# flush prefetch and jump to startup_32
++	ljmpl	*(startup_32_vector - r_base)
++
++	.code32
++	.balign 4
++startup_32:
++	movl	$__KERNEL_DS, %eax	# Initialize the %ds segment register
++	movl	%eax, %ds
++
++	xorl	%eax, %eax
++	btsl	$5, %eax		# Enable PAE mode
++	movl	%eax, %cr4
++
++					# Setup trampoline 4 level pagetables
++	leal	(trampoline_level4_pgt - r_base)(%esi), %eax
++	movl	%eax, %cr3
++
++	movl	$MSR_EFER, %ecx
++	movl	$(1 << _EFER_LME), %eax	# Enable Long Mode
++	xorl	%edx, %edx
++	wrmsr
++
++	xorl	%eax, %eax
++	btsl	$31, %eax		# Enable paging and in turn activate Long Mode
++	btsl	$0, %eax		# Enable protected mode
++	movl	%eax, %cr0
++
++	/*
++	 * At this point we're in long mode but in 32bit compatibility mode
++	 * with EFER.LME = 1, CS.L = 0, CS.D = 1 (and in turn
++	 * EFER.LMA = 1). Now we want to jump in 64bit mode, to do that we use
++	 * the new gdt/idt that has __KERNEL_CS with CS.L = 1.
++	 */
++	ljmp	*(startup_64_vector - r_base)(%esi)
++
++	.code64
++	.balign 4
++startup_64:
++	# Now jump into the kernel using virtual addresses
++	movq	$secondary_startup_64, %rax
++	jmp	*%rax
++
++	.code16
++verify_cpu:
++	pushl	$0			# Kill any dangerous flags
++	popfl
++
++	/* minimum CPUID flags for x86-64 */
++	/* see http://www.x86-64.org/lists/discuss/msg02971.html */
++#define REQUIRED_MASK1 ((1<<0)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<8)|\
++			   (1<<13)|(1<<15)|(1<<24)|(1<<25)|(1<<26))
++#define REQUIRED_MASK2 (1<<29)
++
++	pushfl				# check for cpuid
++	popl	%eax
++	movl	%eax, %ebx
++	xorl	$0x200000,%eax
++	pushl	%eax
++	popfl
++	pushfl
++	popl	%eax
++	pushl	%ebx
++	popfl
++	cmpl	%eax, %ebx
++	jz	no_longmode
++
++	xorl	%eax, %eax		# See if cpuid 1 is implemented
++	cpuid
++	cmpl	$0x1, %eax
++	jb	no_longmode
++
++	movl	$0x01, %eax		# Does the cpu have what it takes?
++	cpuid
++	andl	$REQUIRED_MASK1, %edx
++	xorl	$REQUIRED_MASK1, %edx
++	jnz	no_longmode
++
++	movl	$0x80000000, %eax	# See if extended cpuid is implemented
++	cpuid
++	cmpl	$0x80000001, %eax
++	jb	no_longmode
++
++	movl	$0x80000001, %eax	# Does the cpu have what it takes?
++	cpuid
++	andl	$REQUIRED_MASK2, %edx
++	xorl	$REQUIRED_MASK2, %edx
++	jnz	no_longmode
++
++	ret				# The cpu supports long mode
++
++no_longmode:
++	hlt
++	jmp no_longmode
++
+ 
+ 	# Careful these need to be in the same 64K segment as the above;
+-idt_48:
++tidt:
+ 	.word	0			# idt limit = 0
+ 	.word	0, 0			# idt base = 0L
+ 
+-gdt_48:
+-	.short	GDT_ENTRIES*8 - 1	# gdt limit
+-	.long	cpu_gdt_table-__START_KERNEL_map
++	# Duplicate the global descriptor table
++	# so the kernel can live anywhere
++	.balign 4
++tgdt:
++	.short	tgdt_end - tgdt		# gdt limit
++	.long	tgdt - r_base
++	.short 0
++	.quad	0x00cf9b000000ffff	# __KERNEL32_CS
++	.quad	0x00af9b000000ffff	# __KERNEL_CS
++	.quad	0x00cf93000000ffff	# __KERNEL_DS
++tgdt_end:
++
++	.balign 4
++startup_32_vector:
++	.long	startup_32 - r_base
++	.word	__KERNEL32_CS, 0
++
++	.balign 4
++startup_64_vector:
++	.long	startup_64 - r_base
++	.word	__KERNEL_CS, 0
++
++trampoline_stack:
++	.org 0x1000
++trampoline_stack_end:
++ENTRY(trampoline_level4_pgt)
++	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
++	.fill	510,8,0
++	.quad	level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
+ 
+-.globl trampoline_end
+-trampoline_end:	
++ENTRY(trampoline_end)
 _
