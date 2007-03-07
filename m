@@ -1,38 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbXCHAzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbXCHAzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752053AbXCHAzm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 19:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXCHAzm
+	id S1752119AbXCHAzx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 19:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXCHAzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 19:55:42 -0500
-Received: from gw.goop.org ([64.81.55.164]:57354 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752053AbXCHAzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 19:55:42 -0500
-Message-ID: <45EF5F0C.5070102@goop.org>
-Date: Wed, 07 Mar 2007 16:55:40 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 7 Mar 2007 19:55:53 -0500
+Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:61050 "EHLO
+	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752119AbXCHAzw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 19:55:52 -0500
+X-Greylist: delayed 4150 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 19:55:52 EST
+Date: Thu, 8 Mar 2007 01:46:39 +0200
+From: Sami Farin <7atbggg02@sneakemail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch v2] epoll use a single inode ...
+Message-ID: <20070307234639.hkiaphqwtph6xg7q@m.safari.iki.fi>
+Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703060917500.5963@woody.linux-foundation.org> <200703061828.00253.dada1@cosmosbay.com> <200703061910.13431.dada1@cosmosbay.com> <45EDCD11.8070000@cosmosbay.com>
 MIME-Version: 1.0
-To: tim.c.chen@linux.intel.com
-CC: zach@vmware.com, linux-kernel@vger.kernel.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: system call time increase when turning on CONFIG_PARAVIRT
-References: <1172866274.4898.14.camel@localhost.localdomain>	 <45E89CFB.4090905@goop.org> <1172877111.8383.4.camel@localhost.localdomain>	  <45E8BE79.40200@goop.org> <1173312124.8383.35.camel@localhost.localdomain>
-In-Reply-To: <1173312124.8383.35.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EDCD11.8070000@cosmosbay.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Chen wrote:
-> It turned out that VDSO was turned off by CONFIG_PARAVIRT option,
-> causing the system call to use inefficient int 0x80 which led to the
-> increase system_call time I was seeing.  I noted that Ingo has caught
-> this problem and proposed a patch to correct this issue in another mail
-> thread.
+On Tue, Mar 06, 2007 at 21:20:33 +0100, Eric Dumazet wrote:
+...
+> I rewrote the reciprocal_div() for i386 so that one multiply is used.
+> 
+> static inline u32 reciprocal_divide(u32 A, u32 R)
+> {
+> #if __i386
+>         unsigned int edx, eax;
+>         asm("mul %2":"=a" (eax), "=d" (edx):"rm" (R), "0" (A));
+               ^^^
 
-Thanks for identifying this.  We'll be posting a more general fix for
-COMPAT_VDSO soon which will address this.
+mul does not work if R is memory operand.
+mull should be used instead.
 
-    J
+-- 
