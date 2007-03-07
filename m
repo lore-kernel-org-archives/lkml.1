@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161075AbXCGAwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161051AbXCGAxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161075AbXCGAwK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 19:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161070AbXCGAwK
+	id S1161051AbXCGAxe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 19:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161070AbXCGAxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 19:52:10 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40308 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161075AbXCGAwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 19:52:09 -0500
-Date: Tue, 6 Mar 2007 16:51:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [patch] epoll use a single inode ...
-In-Reply-To: <Pine.LNX.4.64.0703061635430.3661@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0703061644570.5963@woody.linux-foundation.org>
-References: <45ED1A3C.6030707@argo.co.il> <Pine.LNX.4.64.0703061635430.3661@alien.or.mcafeemobile.com>
+	Tue, 6 Mar 2007 19:53:34 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53016 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161051AbXCGAxd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 19:53:33 -0500
+Message-ID: <45EE0D10.7070807@vmware.com>
+Date: Tue, 06 Mar 2007 16:53:36 -0800
+From: Dan Hecht <dhecht@vmware.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: tglx@linutronix.de
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, ak@suse.de,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
+       Dan Hecht <dhecht@vmware.com>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>	 <1173178774.24738.311.camel@localhost.localdomain>	 <45EDD82F.90204@vmware.com>	 <1173225182.24738.507.camel@localhost.localdomain>	 <45EE0628.1080108@goop.org>  <45EE08E8.2020008@vmware.com> <1173228544.24738.514.camel@localhost.localdomain>
+In-Reply-To: <1173228544.24738.514.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Mar 2007 00:53:31.0577 (UTC) FILETIME=[06C98290:01C76053]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-[ Al Viro added to Cc: as the arbiter of good taste in the VFS layer. He 
-  has veto powers even over my proposals ;^]
-
-On Tue, 6 Mar 2007, Davide Libenzi wrote:
+On 03/06/2007 04:49 PM, Thomas Gleixner wrote:
+> On Tue, 2007-03-06 at 16:35 -0800, Dan Hecht wrote:
+>>>> There is no problem for realtime uses, as the reprogramming path is
+>>>> running with local interrupts disabled. I can see the point for paravirt
+>>>> and I'm not opposed to change / expand the interface for that. It might
+>>>> be done by an extra clockevents feature flag, which requests absolute
+>>>> time instead of relative time.
+>>>>   
+>>> I'm not sure how much different it makes overall.  It's true that
+>>> absolute time would be a more useful interface, but because the guest
+>>> vcpu can be preempted at any time, we could miss the timeout
+>>> regardless.  In Xen if you set a timeout for the past you get an
+>>> immediate interrupt; I presume the clockevent code can deal with that?
+>>>
+>> That's the problem though, you won't know to set it for the past since 
+>> the expiry is relative.  When the vcpu starts running again, it will set 
+>> the timer to expire X ns from now, not Xns from when the timer was 
+>> requested.
 > 
-> I currently have the dentry to carry the name of the file* class it is 
-> linked to. I'd prefer to keep it that way, unless there are huge factors 
-> against.
+> Ooops. I completely forgot, that you get the absolute expiry time
+> already in ktime_t format (nanoseconds) when dev->set_next_event() is
+> called.
+> 
+> 	dev->next_event = expires;
+> 
+> is done right before the call. 
+> 
+> So it's already there for free.
+> 
+>
 
-I assume that the *only* reason for having multiple dentries is really 
-just the output in /proc/<pid>/fd/, right? Or is there any other reason to 
-have separate dentries for these pseudo-files?
+Okay.  I noticed that but didn't think it was okay to use since it 
+didn't seem like it was set up for the clock_event_device code's use, so 
+seemed like a conceptual interface violation to go digging around in 
+there.
 
-It's a bit sad to waste that much memory (and time) on something like 
-that. I bet that the dentry setup is a noticeable part of the whole 
-sigfd()/timerfd() setup. It's likely also a big part of any memory 
-footprint if you have lots of them.
+Also, wasn't one of the points of clockevents to prevent the device code 
+from doing conversions between nanoseconds and clicks themselves?  Don't 
+we really want the clockevents generic layer to do this conversion 
+between monotonic nanonseconds to absolute device clicks and then give 
+the device code that value, so the device layer doesn't perform any 
+conversions?
 
-So how about just doing:
- - do a single dentry
- - make a "struct file_operations" member function that prints out the 
-   name of the thing in /proc/<pid>/fd/, and which *defaults* to just 
-   doing the d_path() on the dentry, but special filesystems like this 
-   could do something else (like print out a fake inode number from the 
-   "file->f_private_data" information)
 
-There seems to really be no downsides to that approach. No existing 
-filesystem will even notice (they'll all have NULL in the new f_op 
-member), and it would allow pipes etc to be sped up and use less memory.
+On an unrelated note, can you explain what the difference between 
+CLOCK_EVT_MODE_UNUSED and CLOCK_EVT_MODE_SHUTDOWN modes are and what the 
+legal state transitions are? (or point me to a document describing 
+this).  At least on i386, all clock event devices treat them the same; 
+do we really need both?
 
-			Linus
