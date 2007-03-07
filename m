@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965740AbXCGXiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945897AbXCGXkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965740AbXCGXiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964793AbXCGXiR
+	id S1945897AbXCGXkL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945911AbXCGXkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:38:17 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39242
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2992743AbXCGXiQ (ORCPT
+	Wed, 7 Mar 2007 18:40:11 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34340 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1945897AbXCGXkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:38:16 -0500
-Date: Wed, 07 Mar 2007 15:38:13 -0800 (PST)
-Message-Id: <20070307.153813.116350402.davem@davemloft.net>
-To: eparis@parisplace.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jamesm@namei.org,
-       vyekkirala@trustedcs.com, cxzhang@watson.ibm.com, sds@tycho.nsa.gov
-Subject: Re: [PATCH] xfrm_policy delete security check misplaced
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1172860190.31047.11.camel@localhost.localdomain>
-References: <1172860190.31047.11.camel@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 7 Mar 2007 18:40:08 -0500
+Message-ID: <45EF4D57.5030900@vmware.com>
+Date: Wed, 07 Mar 2007 15:40:07 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: tglx@linutronix.de,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	<45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	<20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com>	<1173178774.24738.311.camel@localhost.localdomain>	<45EDD82F.90204@vmware.com>	<1173225182.24738.507.camel@localhost.localdomain>	<45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com>	<1173228544.24738.514.camel@localhost.localdomain>	<45EE0D10.7070807@vmware.com>	<1173230305.24738.529.camel@localhost.localdomain>	<45EE1EA3.90803@vmware.com>	<1173256666.24738.576.camel@localhost.localdomain>	<45EEF966.6060902@goop.org>	<Line.LNX.4.64.0703071304080.1851@d.namei>	<45EF0CF5.5090305@goop.org>  <45EF175D.6030609@vmware.com>	<1173302503.24738.795.camel@localhost.localdomain>	<45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <45EF4C81.4000109@goop.org>
+In-Reply-To: <45EF4C81.4000109@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Paris <eparis@parisplace.org>
-Date: Fri, 02 Mar 2007 13:29:50 -0500
+Jeremy Fitzhardinge wrote:
+> Zachary Amsden wrote:
+>   
+>> Xen needs pieces of it too, but very select pieces for SMP boot.
+>>     
+>
+> We do?  Send the SMP Xen code over, because I don't have it here.
+>   
 
-> The security hooks to check permissions to remove an xfrm_policy were
-> actually done after the policy was removed.  Since the unlinking and
-> deletion are done in xfrm_policy_by* functions this moves the hooks
-> inside those 2 functions.  There we have all the information needed to
-> do the security check and it can be done before the deletion.  Since
-> auditing requires the result of that security check err has to be passed
-> back and forth from the xfrm_policy_by* functions.  
-> 
-> This patch also fixes a bug where a deletion that failed the security
-> check could cause improper accounting on the xfrm_policy
-> (xfrm_get_policy didn't have a put on the exit path for the hold taken
-> by xfrm_policy_by*)
-> 
-> It also fixes the return code when no policy is found in
-> xfrm_add_pol_expire.  In old code (at least back in the 2.6.18 days) err
-> wasn't used before the return when no policy is found and so the
-> initialization would cause err to be ENOENT.  But since err has since
-> been used above when we don't get a policy back from the xfrm_policy_by*
-> function we would always return 0 instead of the intended ENOENT.  Also
-> fixed some white space damage in the same area. 
-> 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
+s/do/will (smpboot.c)
 
-Applied.
