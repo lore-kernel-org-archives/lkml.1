@@ -1,87 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422838AbXCGSkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422992AbXCGSrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422838AbXCGSkR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:40:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422987AbXCGSkR
+	id S1422992AbXCGSrN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422978AbXCGSrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:40:17 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:48076 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422838AbXCGSkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:40:15 -0500
-Date: Wed, 7 Mar 2007 21:32:42 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Kirk Kuchov <kirk.kuchov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070307183242.GA29283@2ka.mipt.ru>
-References: <Pine.LNX.4.64.0703030945030.7075@alien.or.mcafeemobile.com> <20070303203140.GA756@2ka.mipt.ru> <Pine.LNX.4.64.0703031248450.7278@alien.or.mcafeemobile.com> <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com> <Pine.LNX.4.64.0703041129550.3300@alien.or.mcafeemobile.com> <ca9528de0703041449x695a4c4bpc133d9afd5524019@mail.gmail.com> <20070306081935.GB2040@elf.ucw.cz> <ca9528de0703070402r3d189348t78d27cf3b80b4623@mail.gmail.com> <20070307173953.GA27603@elte.hu> <ca9528de0703071021t2aeb19d9ve537b0447cfd310@mail.gmail.com>
+	Wed, 7 Mar 2007 13:47:13 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:62076 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422984AbXCGSrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 13:47:10 -0500
+Date: Wed, 7 Mar 2007 10:43:10 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Martin Peschke <mp3@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, Wu Fengguang <wfg@mail.ustc.edu.cn>
+Subject: Re: [Patch 1/2] add for_each_substring() and match_substring()
+Message-Id: <20070307104310.907f23fb.randy.dunlap@oracle.com>
+In-Reply-To: <1173208763.5266.8.camel@dix>
+References: <1173208763.5266.8.camel@dix>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <ca9528de0703071021t2aeb19d9ve537b0447cfd310@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 07 Mar 2007 21:33:04 +0300 (MSK)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 03:21:19PM -0300, Kirk Kuchov (kirk.kuchov@gmail.com) wrote:
-> On 3/7/07, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >* Kirk Kuchov <kirk.kuchov@gmail.com> wrote:
-> >
-> >> I don't believe I'm wasting my time explaining this. They don't exist
-> >> as /dev/null, they are just fucking _LINKS_.
-> >[...]
-> >> > Either stop flaming kernel developers or become one. It is that
-> >> > simple.
-> >>
-> >> If I were to become a kernel developer I would stick with FreeBSD.
-> >> [...]
-> >
-> >Hey, really, this is an excellent idea: what a boon you could become to
-> >FreeBSD, again! How much they must be longing for your insightful
-> >feedback, how much they must be missing your charming style and tactful
-> >approach! I bet they'll want to print your mails out, frame them and
-> >hang them over their fireplace, to remember the good old days on cold
-> >snowy winter days, with warmth in their hearts! Please?
-> >
+On Tue, 06 Mar 2007 20:19:23 +0100 Martin Peschke wrote:
+
+> This adds for_each_substring() and match_substring() to lib/parser.c.
+> Using these instead of strsep() and match_token() is more comfortable,
+> less error prone and safer.
 > 
-> http://www.totallytom.com/thecureforgayness.html
+> strsep() is destructive; it changes the string it is working on.
+> match_token() needs strsep() to chop a large string up into smaller
+> \0-terminated pieces. Callers might need to create a working copy
+> of the string to be parsed.  
+> 
+> In contrast, match_substring() contents itself with non-\0-terminated
+> substrings provided by for_each_substring().
+> 
+> Converting users of strsep() / match_token() to for_each_substring() /
+> match_substring(), e.g. all the stuff in fs/, should not be difficult.
+> 
+> Signed-off-by: Martin Peschke <mp3@de.ibm.com>
+> ---
 
-Fonts are a bit bad in my browser :)
+Hi,
+When a patch applies only to -mm, please let us know that.  Thanks.
 
-Kirk, I understand your frustration - yes, Linux is not the perfect
-place to include startups ideas, and yes it lacks some features modern
-(or old) systems support for years, but things change with time.
 
-I posted a patch which allows to poll for signals, it can be trivially
-adopted to support timers and essentially any other events.
-Kevent did that too, but some things are just too radical for immediate
-support, especially when majority of users do not require additional
-functionality.
+>  include/linux/parser.h |    7 +++++++
+>  lib/parser.c           |   45 ++++++++++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 51 insertions(+), 1 deletion(-)
+> 
+> Index: linux/include/linux/parser.h
+> ===================================================================
+> --- linux.orig/include/linux/parser.h
+> +++ linux/include/linux/parser.h
+> @@ -26,9 +26,16 @@ typedef struct {
+>  } substring_t;
+>  
+>  int match_token(char *, match_table_t table, substring_t args[]);
+> +int match_substring(substring_t *, match_table_t table, substring_t args[]);
+>  int match_int(substring_t *, int *result);
+>  int match_octal(substring_t *, int *result);
+>  int match_hex(substring_t *, int *result);
+>  void match_strcpy(char *, substring_t *);
+>  char *match_strdup(substring_t *);
+> +char *match_to(const char *cs, const char *ct);
+>  int match_s64(substring_t *, s64 *result, int);
+> +
+> +#define for_each_substring(s, start, delim) \
+> +	for ((s)->from = start, (s)->to = match_to((s)->from, delim); \
+> +	     (s)->to; \
+> +	     (s)->from = (s)->to + 1, (s)->to = match_to((s)->from, delim))
+> Index: linux/lib/parser.c
+> ===================================================================
+> --- linux.orig/lib/parser.c
+> +++ linux/lib/parser.c
+> @@ -27,7 +27,7 @@ static int match_one(char *s, char *p, s
+>  	char *meta;
+>  	int argc = 0;
+>  
+> -	if (!p)
+> +	if (!p || !s)
+>  		return 1;
+>  
+>  	while(1) {
+> @@ -111,6 +111,36 @@ int match_token(char *s, match_table_t t
+>  }
+>  
+>  /**
+> + * match_substring: - Find a token (and optional args) in a substring
+> + * @sub: the substring to examine for token/argument pairs
+> + * @table: match_table_t describing the set of allowed option tokens and the
+> + * arguments that may be associated with them. Must be terminated with a
+> + * &struct match_token whose pattern is set to the NULL pointer.
+> + * @args: array of %MAX_OPT_ARGS &substring_t elements. Used to return match
+> + * locations.
+> + *
+> + * Description: Detects which if any of a set of token strings has been passed
+> + * to it. Tokens can include up to MAX_OPT_ARGS instances of basic c-style
+> + * format identifiers which will be taken into account when matching the
+> + * tokens, and whose locations will be returned in the @args array.
+> + */
+> +int match_substring(substring_t *sub, match_table_t table, substring_t args[])
+> +{
+> +	char *s;
+> +	int token, i;
+> +
+> +	memset(args, 0, MAX_OPT_ARGS * sizeof(substring_t));
+> +	s = match_strdup(sub);
+> +	token = match_token(s, table, args);
+> +	for (i = 0; i < MAX_OPT_ARGS; i++) {
+> +		args[i].from += sub->from - s;
+> +		args[i].to += sub->from - s;
+> +	}
+> +	kfree(s);
+> +	return token;
+> +}
+> +
+> +/**
+>   * match_number: scan a number in the given base from a substring_t
+>   * @s: substring to be scanned
+>   * @result: resulting integer on success
+> @@ -237,6 +267,17 @@ char *match_strdup(substring_t *s)
+>  	return p;
+>  }
+>  
+> +char *match_to(const char *cs, const char *ct)
+> +{
+> +	char *delim = strpbrk(cs, ct);
+> +	if (delim)
+> +		return delim;
+> +	else if (*cs != '\0')
+> +		return (char *)(cs + strlen(cs));
+> +	else
+> +		return NULL;
+> +}
+> +
+>  EXPORT_SYMBOL(match_token);
+>  EXPORT_SYMBOL(match_int);
+>  EXPORT_SYMBOL(match_octal);
+> @@ -244,3 +285,5 @@ EXPORT_SYMBOL(match_hex);
+>  EXPORT_SYMBOL(match_strcpy);
+>  EXPORT_SYMBOL(match_strdup);
+>  EXPORT_SYMBOL(match_s64);
+> +EXPORT_SYMBOL(match_to);
+> +EXPORT_SYMBOL(match_substring);
 
-People do work, and a lot of them do really good work, so no need for
-rude talks about how things are bad. Things change - even I support
-that, although kevent ignorance should put me into the first line with
-you :)
 
-Be good, and be cool.
-
-> --
-> Kirk Kuchov
-
--- 
-	Evgeniy Polyakov
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
