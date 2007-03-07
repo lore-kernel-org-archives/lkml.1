@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161252AbXCGDrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161250AbXCGDtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161252AbXCGDrz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 22:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161253AbXCGDrz
+	id S1161250AbXCGDtg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 22:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161253AbXCGDtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 22:47:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46094 "EHLO smtp.osdl.org"
+	Tue, 6 Mar 2007 22:49:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51466 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161252AbXCGDrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 22:47:55 -0500
-Date: Tue, 6 Mar 2007 19:47:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch v2] epoll use a single inode ...
-In-Reply-To: <45EDCD11.8070000@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0703061944590.5963@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703060917500.5963@woody.linux-foundation.org>
- <200703061828.00253.dada1@cosmosbay.com> <200703061910.13431.dada1@cosmosbay.com>
- <45EDCD11.8070000@cosmosbay.com>
+	id S1161250AbXCGDtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 22:49:35 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/utrace
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: Alan Stern's message of  Tuesday, 6 March 2007 10:23:53 -0500 <Pine.LNX.4.44L0.0703061015100.3401-100000@iolanthe.rowland.org>
+X-Zippy-Says: I'm sitting on my SPEED QUEEN..  To me, it's ENJOYABLE..  I'm
+   WARM..  I'm VIBRATORY..
+Message-Id: <20070307034932.09F5A1801C4@magilla.sf.frob.com>
+Date: Tue,  6 Mar 2007 19:49:31 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 6 Mar 2007, Eric Dumazet wrote:
+> > Yeah, I guess that's right.  It should still return NOTIFY_STOP when
+> > args->err has no other bits set, so notifiers aren't called with zero.
 > 
-> I did a user space program, attached to this mail.
-> 
-> I rewrote the reciprocal_div() for i386 so that one multiply is used.
+> In practice that might not work.  On my machine, at least, reads of DR6
+> return ones in all the reserved bit positions.
 
-Ok, this is definitely faster on Core 2 as well, so "numbers talk, 
-bullshit walks". No more objections.
+Does that mean asm("mov %1,%%dr6; mov %%dr6,%0" : "=r" (mask) : "r" (0)); 
+puts in mask the set of reserved bits?  We could collect that value at CPU
+startup and mask it off args->err, then OR it back into vdr6.
 
-(That said, I bet you could do even better for octal and hex numbers, so 
-if you *really* want to speed things up, you should just make a 
-special-case routine for each base (there's just three of them), and you 
-can then also optimize the base-10 thing much better (you can do two 
-digits at a time by dividing by 100, etc)
 
-		Linus
+Thanks,
+Roland
