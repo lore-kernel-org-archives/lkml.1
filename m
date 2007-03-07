@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030621AbXCGOgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030622AbXCGOi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030621AbXCGOgJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 09:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030622AbXCGOgI
+	id S1030622AbXCGOi3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 09:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030628AbXCGOi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 09:36:08 -0500
-Received: from amsfep15-int.chello.nl ([62.179.120.10]:59853 "EHLO
-	amsfep15-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030621AbXCGOgG (ORCPT
+	Wed, 7 Mar 2007 09:38:29 -0500
+Received: from 195-13-16-24.net.novis.pt ([195.23.16.24]:34832 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1030622AbXCGOi2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 09:36:06 -0500
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
-	nonlinear)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, Jeff Dike <jdike@addtoit.com>
-In-Reply-To: <1173275532.6374.183.camel@twins>
-References: <20070307102106.GB5555@wotan.suse.de>
-	 <1173263085.6374.132.camel@twins> <20070307103842.GD5555@wotan.suse.de>
-	 <1173264462.6374.140.camel@twins> <20070307110035.GE5555@wotan.suse.de>
-	 <1173268086.6374.157.camel@twins> <20070307121730.GC18704@wotan.suse.de>
-	 <1173271286.6374.166.camel@twins> <20070307130851.GE18704@wotan.suse.de>
-	 <1173273562.6374.175.camel@twins>  <20070307133649.GF18704@wotan.suse.de>
-	 <1173275532.6374.183.camel@twins>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 15:34:27 +0100
-Message-Id: <1173278067.6374.188.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Wed, 7 Mar 2007 09:38:28 -0500
+Message-ID: <45EECE60.4010808@grupopie.com>
+Date: Wed, 07 Mar 2007 14:38:24 +0000
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+MIME-Version: 1.0
+To: Robert Peterson <rpeterso@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21-rc1] Extend print_symbol capability TRY #3
+References: <45EDCE67.3010902@redhat.com>
+In-Reply-To: <45EDCE67.3010902@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 14:52 +0100, Peter Zijlstra wrote:
+Robert Peterson wrote:
+>[...]
+> @@ -47,6 +52,11 @@ static inline const char *kallsyms_lookup(unsigned 
+> long addr,
+>     return NULL;
+> }
+> 
+> +static inline void sprint_symbol(char *buffer, unsigned long addr)
+> +{
+> +    return;
+> +}
 
-> True. We could even guesstimate the nonlinear dirty pages by subtracting
-> the result of page_mkclean() from page_mapcount() and force an
-> msync(MS_ASYNC) on said mapping (or all (nonlinear) mappings of the
-> related file) when some threshold gets exceeded.
+I'm really sorry for not replying sooner (I've been really busy), but 
+this function still doesn't seem right.
 
-Almost, but not quite, we'd need to extract another value from the
-page_mkclean() run, the actual number of mappings encountered. The
-return value only sums the number of dirty mappings encountered.
+If someone does something like:
 
-s390 would already work I guess.
+> void my_function(unsigned long addr)
+> {
+> 	char buffer[KSYM_SYMBOL_LEN];
+> 
+> 	sprint_symbol(buffer, addr);
+> 	...
+> 	// use buffer to print somewhere
+> 	...
+> }
 
-Certainly doable.
+which seems like a perfectly natural thing to do, it might just oops the 
+kernel if CONFIG_KALLSYMS is not set, because the buffer will be left 
+uninitialized.
 
+That is why I suggested to change it to something like "*buffer = '\0'" 
+instead.
+
+The really nice solution IMHO, would be to remove the print_symbol and 
+sprint_symbol functions from the the "#ifdef CONFIG_KALLSYMS" and just 
+let them be available even in a not CONFIG_KALLSYMS kernel.
+
+Since kallsyms_lookup is already #ifdef'ed to something sane, 
+sprint_symbol will just print out the symbol address in that case, but 
+it is better than not printing anything at all.
+
+-- 
+Paulo Marques - www.grupopie.com
+
+"Very funny Scotty. Now beam up my clothes."
