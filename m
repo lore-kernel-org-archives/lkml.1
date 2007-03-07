@@ -1,237 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992533AbXCGTxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992499AbXCGTyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992533AbXCGTxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 14:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992534AbXCGTxx
+	id S2992499AbXCGTyQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 14:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992538AbXCGTyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 14:53:53 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:53269 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992533AbXCGTxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 14:53:51 -0500
-Date: Wed, 7 Mar 2007 11:50:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Cc: "Randy Cushman" <rcushman_linux@earthlink.net>,
-       "Takashi Iwai" <tiwai@suse.de>, "Jaroslav Kysela" <perex@suse.cz>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: mm snapshot broken-out-2007-03-05-02-22.tar.gz uploaded
-Message-Id: <20070307115024.756c848f.akpm@linux-foundation.org>
-In-Reply-To: <6bffcb0e0703071141j42309702w793e4a76b1b23bfa@mail.gmail.com>
-References: <200703051024.l25AOIF3015951@shell0.pdx.osdl.net>
-	<45EC2DEB.1050108@googlemail.com>
-	<45EEA3C4.7000501@googlemail.com>
-	<20070307104746.f08a2e84.akpm@linux-foundation.org>
-	<6bffcb0e0703071141j42309702w793e4a76b1b23bfa@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Mar 2007 14:54:16 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50840 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992499AbXCGTyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 14:54:14 -0500
+Message-ID: <45EF175D.6030609@vmware.com>
+Date: Wed, 07 Mar 2007 11:49:49 -0800
+From: Dan Hecht <dhecht@vmware.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: James Morris <jmorris@namei.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Dan Hecht <dhecht@vmware.com>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	<45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	<20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com>	<1173178774.24738.311.camel@localhost.localdomain>	<45EDD82F.90204@vmware.com>	<1173225182.24738.507.camel@localhost.localdomain>	<45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com>	<1173228544.24738.514.camel@localhost.localdomain>	<45EE0D10.7070807@vmware.com>	<1173230305.24738.529.camel@localhost.localdomain>	<45EE1EA3.90803@vmware.com>	<1173256666.24738.576.camel@localhost.localdomain>	<45EEF966.6060902@goop.org>	<Line.LNX.4.64.0703071304080.1851@d.namei> <45EF0CF5.5090305@goop.org>
+In-Reply-To: <45EF0CF5.5090305@goop.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Mar 2007 19:54:11.0470 (UTC) FILETIME=[60246AE0:01C760F2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 20:41:30 +0100 "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
-
-> > > 831466f4ad2b5fe23dff77edbe6a7c244435e973 is first bad commit
-> > > commit 831466f4ad2b5fe23dff77edbe6a7c244435e973
-> > > Author: Randy Cushman <rcushman_linux@earthlink.net>
-> > > Date:   Tue Dec 19 18:42:16 2006 +0100
-> > >
-> > >     [ALSA] ac97 - fix microphone and line_in selection logic
-> > >
-> > >     This patch fixes the Microphone and LINE_IN select logic for
-> > >     Analog Devices surround codecs with shared jacks.  The existing
-> > >     code can never utilize the shared jacks for Microphone and LINE_IN
-> > >     due to the reversed jack selection logic.  The patched code
-> > >     correctly selects the shared jack for input if the 'Channel Mode'
-> > >     selector does not specify that the jack is to be used for output.
-> > >     Specifically, in '2ch' mode the Center/LFE jack is used for
-> > >     microphone input and the Surround jack is used for LINE_IN,
-> > >     in '4ch' mode the Center/LFE jack is used for microphone input
-> > >     and the Surround jack is used for output, and in '6ch' mode
-> > >     both jacks are used for output.
-> > >
-> > >     Signed-off-by: Randy Cushman <rcushman_linux@earthlink.net>
-> > >     Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > >     Signed-off-by: Jaroslav Kysela <perex@suse.cz>
-> > >
-> >
-> > Is 2.6.21-rc3 similarly broken?
+On 03/07/2007 11:05 AM, Jeremy Fitzhardinge wrote:
+> James Morris wrote:
+>> It seems to me that it could be useful to have a library of common virtual 
+>> time code (entirely separate from pv_ops), to avoid re-implementing some 
+>> apparently common requirements, such as: handling TSC frequency changes, 
+>> stolen time accounting, synthetic programmable clockevent etc.
+>>   
 > 
-> Yes.
+> Well, lets put our clock* implementations next to each other and see how
+> much common code there is to be factored out.
+> 
+> The Xen time code is pretty lean.  There's not much difference in
+> abstraction between the clocksource/event interface and the hypervisor
+> interface, so there's just not very much code there.
 > 
 
-OK.  Can you please confirm that applying the below fixes 2.6.21-rc3?
+Jeremy, I saw you sent out the Xen version earlier, thanks.  Here's ours 
+for reference (please excuse any formating issues); it's also lean. 
+We'll send out a proper patch later after some more testing:
 
-If so, I'll queue it up for application in a week or two if there is no
-progress on this.
-
-
-
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-Revert 831466f4ad2b5fe23dff77edbe6a7c244435e973: "Michal Piotrowski"
-<michal.k.k.piotrowski@gmail.com> reports that it broke his 3d surround.
-
-Cc:"Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Cc: Randy Cushman <rcushman_linux@earthlink.net>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Jaroslav Kysela <perex@suse.cz>
-Cc: Adrian Bunk <bunk@stusta.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- sound/pci/ac97/ac97_patch.c |   66 +++++++++++++---------------------
- 1 file changed, 26 insertions(+), 40 deletions(-)
-
-diff -puN sound/pci/ac97/ac97_patch.c~revert-ac97-fix-microphone-and-line_in-selection-logic sound/pci/ac97/ac97_patch.c
---- a/sound/pci/ac97/ac97_patch.c~revert-ac97-fix-microphone-and-line_in-selection-logic
-+++ a/sound/pci/ac97/ac97_patch.c
-@@ -178,28 +178,14 @@ static inline int is_clfe_on(struct snd_
- 	return ac97->channel_mode >= 2;
- }
- 
--/* system has shared jacks with surround out enabled */
--static inline int is_shared_surrout(struct snd_ac97 *ac97)
--{
--	return !ac97->indep_surround && is_surround_on(ac97);
--}
--
--/* system has shared jacks with center/lfe out enabled */
--static inline int is_shared_clfeout(struct snd_ac97 *ac97)
--{
--	return !ac97->indep_surround && is_clfe_on(ac97);
--}
--
--/* system has shared jacks with line in enabled */
- static inline int is_shared_linein(struct snd_ac97 *ac97)
- {
--	return !ac97->indep_surround && !is_surround_on(ac97);
-+	return ! ac97->indep_surround && is_surround_on(ac97);
- }
- 
--/* system has shared jacks with mic in enabled */
- static inline int is_shared_micin(struct snd_ac97 *ac97)
- {
--	return !ac97->indep_surround && !is_clfe_on(ac97);
-+	return ! ac97->indep_surround && is_clfe_on(ac97);
- }
- 
- 
-@@ -2473,12 +2459,12 @@ static void alc650_update_jacks(struct s
- {
- 	int shared;
- 	
--	/* shared Line-In / Surround Out */
--	shared = is_shared_surrout(ac97);
-+	/* shared Line-In */
-+	shared = is_shared_linein(ac97);
- 	snd_ac97_update_bits(ac97, AC97_ALC650_MULTICH, 1 << 9,
- 			     shared ? (1 << 9) : 0);
--	/* update shared Mic In / Center/LFE Out */
--	shared = is_shared_clfeout(ac97);
-+	/* update shared Mic */
-+	shared = is_shared_micin(ac97);
- 	/* disable/enable vref */
- 	snd_ac97_update_bits(ac97, AC97_ALC650_CLOCK, 1 << 12,
- 			     shared ? (1 << 12) : 0);
-@@ -2608,12 +2594,12 @@ static void alc655_update_jacks(struct s
- {
- 	int shared;
- 	
--	/* shared Line-In / Surround Out */
--	shared = is_shared_surrout(ac97);
-+	/* shared Line-In */
-+	shared = is_shared_linein(ac97);
- 	ac97_update_bits_page(ac97, AC97_ALC650_MULTICH, 1 << 9,
- 			      shared ? (1 << 9) : 0, 0);
--	/* update shared Mic In / Center/LFE Out */
--	shared = is_shared_clfeout(ac97);
-+	/* update shared mic */
-+	shared = is_shared_micin(ac97);
- 	/* misc control; vrefout disable */
- 	snd_ac97_update_bits(ac97, AC97_ALC650_CLOCK, 1 << 12,
- 			     shared ? (1 << 12) : 0);
-@@ -2757,16 +2743,16 @@ static void alc850_update_jacks(struct s
- {
- 	int shared;
- 	
--	/* shared Line-In / Surround Out */
--	shared = is_shared_surrout(ac97);
-+	/* shared Line-In */
-+	shared = is_shared_linein(ac97);
- 	/* SURR 1kOhm (bit4), Amp (bit5) */
- 	snd_ac97_update_bits(ac97, AC97_ALC850_MISC1, (1<<4)|(1<<5),
- 			     shared ? (1<<5) : (1<<4));
- 	/* LINE-IN = 0, SURROUND = 2 */
- 	snd_ac97_update_bits(ac97, AC97_ALC850_JACK_SELECT, 7 << 12,
- 			     shared ? (2<<12) : (0<<12));
--	/* update shared Mic In / Center/LFE Out */
--	shared = is_shared_clfeout(ac97);
-+	/* update shared mic */
-+	shared = is_shared_micin(ac97);
- 	/* Vref disable (bit12), 1kOhm (bit13) */
- 	snd_ac97_update_bits(ac97, AC97_ALC850_MISC1, (1<<12)|(1<<13),
- 			     shared ? (1<<12) : (1<<13));
-@@ -2839,9 +2825,9 @@ static int patch_alc850(struct snd_ac97 
+/*
+  * VMI paravirtual timer support routines.
+  *
+  * Copyright (C) 2007, VMware, Inc.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful, but
+  * WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+  * NON INFRINGEMENT.  See the GNU General Public License for more
+  * details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  *
   */
- static void cm9738_update_jacks(struct snd_ac97 *ac97)
- {
--	/* shared Line-In / Surround Out */
-+	/* shared Line-In */
- 	snd_ac97_update_bits(ac97, AC97_CM9738_VENDOR_CTRL, 1 << 10,
--			     is_shared_surrout(ac97) ? (1 << 10) : 0);
-+			     is_shared_linein(ac97) ? (1 << 10) : 0);
- }
- 
- static const struct snd_kcontrol_new snd_ac97_cm9738_controls[] = {
-@@ -2923,12 +2909,12 @@ static const struct snd_kcontrol_new snd
- 
- static void cm9739_update_jacks(struct snd_ac97 *ac97)
- {
--	/* shared Line-In / Surround Out */
-+	/* shared Line-In */
- 	snd_ac97_update_bits(ac97, AC97_CM9739_MULTI_CHAN, 1 << 10,
--			     is_shared_surrout(ac97) ? (1 << 10) : 0);
--	/* shared Mic In / Center/LFE Out **/
-+			     is_shared_linein(ac97) ? (1 << 10) : 0);
-+	/* shared Mic */
- 	snd_ac97_update_bits(ac97, AC97_CM9739_MULTI_CHAN, 0x3000,
--			     is_shared_clfeout(ac97) ? 0x1000 : 0x2000);
-+			     is_shared_micin(ac97) ? 0x1000 : 0x2000);
- }
- 
- static const struct snd_kcontrol_new snd_ac97_cm9739_controls[] = {
-@@ -3040,8 +3026,8 @@ static void cm9761_update_jacks(struct s
- 
- 	val |= surr_on[ac97->spec.dev_flags][is_surround_on(ac97)];
- 	val |= clfe_on[ac97->spec.dev_flags][is_clfe_on(ac97)];
--	val |= surr_shared[ac97->spec.dev_flags][is_shared_surrout(ac97)];
--	val |= clfe_shared[ac97->spec.dev_flags][is_shared_clfeout(ac97)];
-+	val |= surr_shared[ac97->spec.dev_flags][is_shared_linein(ac97)];
-+	val |= clfe_shared[ac97->spec.dev_flags][is_shared_micin(ac97)];
- 
- 	snd_ac97_update_bits(ac97, AC97_CM9761_MULTI_CHAN, 0x3c88, val);
- }
-@@ -3289,12 +3275,12 @@ static int patch_vt1617a(struct snd_ac97
-  */
- static void it2646_update_jacks(struct snd_ac97 *ac97)
- {
--	/* shared Line-In / Surround Out */
-+	/* shared Line-In */
- 	snd_ac97_update_bits(ac97, 0x76, 1 << 9,
--			     is_shared_surrout(ac97) ? (1<<9) : 0);
--	/* shared Mic / Center/LFE Out */
-+			     is_shared_linein(ac97) ? (1<<9) : 0);
-+	/* shared Mic */
- 	snd_ac97_update_bits(ac97, 0x76, 1 << 10,
--			     is_shared_clfeout(ac97) ? (1<<10) : 0);
-+			     is_shared_micin(ac97) ? (1<<10) : 0);
- }
- 
- static const struct snd_kcontrol_new snd_ac97_controls_it2646[] = {
-_
 
+#include <linux/smp.h>
+#include <linux/cpumask.h>
+#include <linux/clocksource.h>
+#include <linux/clockchips.h>
+
+#include <asm/vmi.h>
+#include <asm/vmi_time.h>
+#include <asm/apic.h>
+#include <asm/i8253.h>
+#include <asm/arch_hooks.h>
+
+#include <irq_vectors.h>
+
+#define VMI_ONESHOT  (VMI_ALARM_IS_ONESHOT  | VMI_CYCLES_REAL)
+#define VMI_PERIODIC (VMI_ALARM_IS_PERIODIC | VMI_CYCLES_REAL)
+
+static inline u32 vmi_counter(u32 flags)
+{
+	/* Given VMI_ONESHOT or VMI_PERIODIC, return the corresponding
+	 * cycle counter. */
+	return flags & VMI_ALARM_COUNTER_MASK;
+}
+
+/* paravirt_ops.get_wallclock = vmi_get_wallclock */
+unsigned long vmi_get_wallclock(void)
+{
+	unsigned long long wallclock;
+	wallclock = vmi_timer_ops.get_wallclock(); // nsec
+	(void)do_div(wallclock, 1000000000);       // sec
+
+	return wallclock;
+}
+
+/* paravirt_ops.set_wallclock = vmi_set_wallclock */
+int vmi_set_wallclock(unsigned long now)
+{
+	return 0;
+}
+
+/* paravirt_ops.get_scheduled_cycles = vmi_get_sched_cycles */
+unsigned long long vmi_get_sched_cycles(void)
+{
+	return vmi_timer_ops.get_cycle_counter(VMI_CYCLES_AVAILABLE);
+}
+
+/* paravirt_ops.get_cpu_khz = vmi_cpu_khz */
+unsigned long vmi_cpu_khz(void)
+{
+	unsigned long long khz;
+	khz = vmi_timer_ops.get_cycle_frequency();
+	(void)do_div(khz, 1000);
+	return khz;
+}
+
+/** vmi clockevent */
+
+static struct clock_event_device vmi_global_clockevent;
+
+static inline u32 vmi_alarm_wiring(struct clock_event_device *evt)
+{
+	return (evt == &vmi_global_clockevent) ?
+		VMI_ALARM_WIRED_IRQ0 : VMI_ALARM_WIRED_LVTT;
+}
+
+static void vmi_timer_set_mode(enum clock_event_mode mode,
+			       struct clock_event_device *evt)
+{
+	u32 wiring;
+	cycle_t now, cycles_per_hz;
+	BUG_ON(!irqs_disabled());
+
+	wiring = vmi_alarm_wiring(evt);
+	if (wiring == VMI_ALARM_WIRED_LVTT)
+		/* Route the interrupt to the correct vector */
+		apic_write_around(APIC_LVTT, LOCAL_TIMER_VECTOR);
+
+	switch (mode) {
+	case CLOCK_EVT_MODE_ONESHOT:
+		break;
+	case CLOCK_EVT_MODE_PERIODIC:
+		cycles_per_hz = vmi_timer_ops.get_cycle_frequency();
+		(void)do_div(cycles_per_hz, HZ);
+		now = vmi_timer_ops.get_cycle_counter(vmi_counter(VMI_PERIODIC));
+		vmi_timer_ops.set_alarm(wiring | VMI_PERIODIC,
+					now, cycles_per_hz);
+		break;
+	case CLOCK_EVT_MODE_UNUSED:
+	case CLOCK_EVT_MODE_SHUTDOWN:
+		switch (evt->mode) {
+		case CLOCK_EVT_MODE_ONESHOT:
+			vmi_timer_ops.cancel_alarm(VMI_ONESHOT);
+			break;
+		case CLOCK_EVT_MODE_PERIODIC:
+			vmi_timer_ops.cancel_alarm(VMI_PERIODIC);
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+static int vmi_timer_next_event(unsigned long delta,
+				struct clock_event_device *evt)
+{
+	/* Unfortunately, set_next_event interface only passes relative
+	 * expiry, but we want absolute expiry.  It'd be better if were
+	 * were passed an aboslute expiry, since a bunch of time may
+	 * have been stolen between the time the delta is computed and
+	 * when we set the alarm below. */
+	cycle_t now = vmi_timer_ops.get_cycle_counter(vmi_counter(VMI_ONESHOT));
+
+	BUG_ON(evt->mode != CLOCK_EVT_MODE_ONESHOT);
+	vmi_timer_ops.set_alarm(vmi_alarm_wiring(evt) | VMI_ONESHOT,
+				now + delta, 0);
+	return 0;
+}
+
+static struct clock_event_device vmi_clockevent = {
+	.name		= "vmi-timer",
+	.features	= CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
+	.shift		= 22,
+	.set_mode	= vmi_timer_set_mode,
+	.set_next_event = vmi_timer_next_event,
+	.rating         = 1000,
+	.irq		= -1,
+};
+
+/* Replacement for PIT/HPET global clock event.
+  * paravirt_ops.choose_time_init = vmi_time_init_clockevent
+  */
+void __init vmi_time_init_clockevent(void)
+{
+	cycle_t cycles_per_msec;
+
+	/* One time setup: initialize the vmi clockevent parameters.
+	 * These will be copied to the global and local clockevents. */
+
+	/* Use cycles_per_msec since div_sc params are 32-bits. */
+	cycles_per_msec = vmi_timer_ops.get_cycle_frequency();
+	(void)do_div(cycles_per_msec, 1000);
+
+	/* Must pick .shift such that .mult fits in 32-bits.  Choosing
+	 * .shift to be 22 allows 2^(32-22) cycles per nano-seconds
+	 * before overflow. */
+	vmi_clockevent.mult = div_sc(cycles_per_msec, NSEC_PER_MSEC,
+				     vmi_clockevent.shift);
+	/* Upper bound is clockevent's use of ulong for cycle deltas. */
+	vmi_clockevent.max_delta_ns =
+		clockevent_delta2ns(ULONG_MAX, &vmi_clockevent);
+	vmi_clockevent.min_delta_ns =
+		clockevent_delta2ns(1, &vmi_clockevent);
+
+	memcpy(&vmi_global_clockevent, &vmi_clockevent,
+	       sizeof(vmi_global_clockevent));
+	vmi_global_clockevent.name = "vmi-timer (boot)";
+	vmi_global_clockevent.cpumask = cpumask_of_cpu(0);
+	vmi_global_clockevent.irq = 0;
+
+	printk(KERN_WARNING "vmi: registering clock event %s. mult=%lu 
+shift=%u\n",
+	       vmi_global_clockevent.name, vmi_global_clockevent.mult,
+	       vmi_global_clockevent.shift);
+	clockevents_register_device(&vmi_global_clockevent);
+	global_clock_event = &vmi_global_clockevent;
+
+	/* We use normal irq0 handler on cpu0. */
+	time_init_hook();
+}
+
+#ifdef CONFIG_X86_LOCAL_APIC
+
+/* Replacement for lapic timer local clock event.
+  * paravirt_ops.setup_boot_clock      = vmi_nop
+  *       (continue using global_clock_event on cpu0)
+  * paravirt_ops.setup_secondary_clock = vmi_timer_setup_local_alarm
+  */
+void __devinit vmi_timer_setup_local_alarm(void)
+{
+	struct clock_event_device *evt = &__get_cpu_var(local_clock_events);
+
+	/* Then, start it back up as a local clockevent device. */
+	memcpy(evt, &vmi_clockevent, sizeof(*evt));
+	evt->cpumask = cpumask_of_cpu(smp_processor_id());
+
+	printk(KERN_WARNING "vmi: registering clock event %s. mult=%lu 
+shift=%u\n",
+	       evt->name, evt->mult, evt->shift);
+	clockevents_register_device(evt);
+}
+
+#endif
+
+/** vmi clocksource */
+
+static cycle_t read_real_cycles(void)
+{
+	return vmi_timer_ops.get_cycle_counter(VMI_CYCLES_REAL);
+}
+
+static struct clocksource clocksource_vmi = {
+	.name			= "vmi-timer",
+	.rating			= 450,
+	.read			= read_real_cycles,
+	.mask			= CLOCKSOURCE_MASK(64),
+	.mult			= 0, /* to be set */
+	.shift			= 22,
+	.flags			= CLOCK_SOURCE_IS_CONTINUOUS,
+};
+
+static int __init init_vmi_clocksource(void)
+{
+	cycle_t cycles_per_msec;
+
+	if (!vmi_timer_ops.get_cycle_frequency)
+		return 0;
+	/* Use khz2mult rather than hz2mult since hz arg is only 32-bits. */
+	cycles_per_msec = vmi_timer_ops.get_cycle_frequency();
+	(void)do_div(cycles_per_msec, 1000);
+	
+	/* Note that clocksource.{mult, shift} converts in the opposite direction
+	 * as clockevents.  */
+	clocksource_vmi.mult = clocksource_khz2mult(cycles_per_msec,
+						    clocksource_vmi.shift);
+
+	printk(KERN_WARNING "vmi: registering clock source khz=%lld\n", 
+cycles_per_msec);
+	return clocksource_register(&clocksource_vmi);
+
+}
+module_init(init_vmi_clocksource);
