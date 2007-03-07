@@ -1,133 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965727AbXCGXYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992731AbXCGXZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965727AbXCGXYQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965726AbXCGXYQ
+	id S2992731AbXCGXZb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992734AbXCGXZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:24:16 -0500
-Received: from mu-out-0910.google.com ([209.85.134.187]:29449 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965738AbXCGXYP (ORCPT
+	Wed, 7 Mar 2007 18:25:31 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:58531 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992731AbXCGXZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:24:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=SbyMyO0sZeZnyIWL0/y8hjfkAG6nX6f78ASzjlCmu0vh7vifyP65giOh4VpgrSog+YtjWE97G48FSH6h2I3123ol2Lx3a3RDNkLAmWslRXgAEiFNmaK9AxvOqvOSqKLtzyrla5pxdUmpOTTUPLDgB9mkg4NZf345pjFBnwKo2KY=
-Message-ID: <2a12af650703071524q222f9229m1d276995c577097d@mail.gmail.com>
-Date: Thu, 8 Mar 2007 01:24:11 +0200
-From: "Marti Raudsepp" <marti@juffo.org>
-To: "Kernel hackers" <linux-kernel@vger.kernel.org>
-Subject: PROBLEM: 'bio too big device' after moving to a USB disk
+	Wed, 7 Mar 2007 18:25:30 -0500
+Message-ID: <45EF49E9.7040509@vmware.com>
+Date: Wed, 07 Mar 2007 15:25:29 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
+To: tglx@linutronix.de
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	<45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	<20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com>	<1173178774.24738.311.camel@localhost.localdomain>	<45EDD82F.90204@vmware.com>	<1173225182.24738.507.camel@localhost.localdomain>	<45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com>	<1173228544.24738.514.camel@localhost.localdomain>	<45EE0D10.7070807@vmware.com>	<1173230305.24738.529.camel@localhost.localdomain>	<45EE1EA3.90803@vmware.com>	<1173256666.24738.576.camel@localhost.localdomain>	<45EEF966.6060902@goop.org>	<Line.LNX.4.64.0703071304080.1851@d.namei>	<45EF0CF5.5090305@goop.org>  <45EF175D.6030609@vmware.com>	<1173302503.24738.795.camel@localhost.localdomain>	<45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain>
+In-Reply-To: <1173308717.24738.898.camel@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 2a6838b042665749
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello LKML,
+Thomas Gleixner wrote:
+> On the other hand we yet see things like:
+>
+>         /* We use normal irq0 handler on cpu0. */
+>         time_init_hook();
+>
+> Which is just reaching into the kernel code directly and does not handle
+> the clock event interrupt self contained. clockevents is not bound to
+> IRQ0 and this kind of hackery is exactly what we need to avoid in order
+> to get this maintainable.
+>
+> Once this is used by paravirt implementations a change to the
+> mach-default implementation will break stuff left and right.
+>   
 
-PROBLEM: 'bio too big device' after moving to a USB disk
+We've fixed that already.  Thanks for pointing it out.  We were just 
+trying to re-use code.
 
-I. Summary
+> Also the whole LAPIC business is so horrible, that it hurts. The generic
+> interrupt layer is there since almost a year and we still see the crude
+> emulation of hardware and assumptions of irq0 setup all over the place.
+>
+> We carefully need to define, which existing kernel interfaces are used /
+> hooked in which way.
+>
+> If the paravirt implementations actually use the already available
+> abstractions in the way in which those abstractions are designed, then
+> we get into a maintainable design. If there are shortcomings on those
+> abstractions we need to fix them in a sane way or provide a _common_
+> workaround (e.g. 128 bit math back and forth library) without impacting
+> the main kernel code.
+>
+> Looking at vmitimer.c and the number of hardcoded assumptions are
+> telling me, that we are heading in exactly the opposite direction.
+>   
 
-After lvmove'ing an LVM volume from a SATA disk to a USB disk, reiserfs starts
-spewing I/O errors with "bio too big device dm-1 (256 > 240)" in dmesg; fsck
-reports no corruptions, and problems only occur at certain lengths in
-different files, such as 112k, 240k, 368k, and only with files that existed
-before, and not newly written files.  When copying the partition back to its
-original disk, everything works again.
+No, VMI timer is unique because for SMP, it is based on the APIC.  On 
+i386, SMP is hardwired to depend on the APIC, and so we simply re-use 
+the pieces of it which are there, with the same assumptions about irqs, 
+and hardware behavior, good or bad.  We just have a different way of 
+telling the LAPIC when to deliver interrupts.
 
-II. Further description
+The alternative is to pretty much completely copy apic.c into vmi.c or 
+vmitimer.c, which seems a rather bad idea, since now two copies of 
+nearly identical code need to be maintained.
 
-Recently, I got a new USB disk, and as I was starting to run out of space on
-my primary disk, I plugged it in and decided to lvmove a volume to it. While
-the migration process went without apparent problems, the file system started
-giving out I/O errors during reads, with the message "bio too big device dm-1
-(256 > 240)" appearing in dmesg each time. However, none of newly written
-files trigger this behavior, even after unmount-remount. To make the matters
-more confusing, I'm also using dm-crypt in addition to LVM on this volume.
-The file system is ReiserFS; A reiserfsck --check on the disk reported no
-problems.
+> Yes, if they are used in a sane and self contained way without reaching
+> all over the place and expecting that those functions, which are not
+> part of the paravirt interfaces will work for ever.
+>   
 
-Initial suspects include:
-* ReiserFS
-* dm-crypto
-* LVM
-* Generic block device code
-* usb-storage driver
+But we definitely need pieces of the core APIC dependent code.  Xen 
+needs pieces of it too, but very select pieces for SMP boot.  The 
+ugliness you point out is there, but the reason it is there is not 
+because the paravirt code is cluttered, it is because the i386 code is 
+so hardwired to use the APIC model that there is pain separating from it.
 
-As I had already allocated some of the space on the old disk, restoring the
-old volume was not an option; my bellyfeel told me that this was simply a
-software bug in the read code, so instead, I reorganized existing partitions
-on the older SATA disk to make enough space, and duplicated the whole volume.
-Everything worked perfectly again. Since then, I have only mounted each of the
-partitions read-only, and 'cmp' reports that the contents are equal.
+The correct solution here is to properly separate the APIC, SMP, and 
+timer code so the logic of it which we want to reuse is separated from 
+the hardware dependence.  Clock events and clocksources take care of 
+most of the timer issues, but there is still ugliness from SMP timer 
+events depending on having part of the APIC infrastructure for wiring 
+the interrupt gates.
 
-III. Problem inspection
+> No it's not an absolute blocker, as long as we can take care, that the
+> number of incarnations is 
+>
+> - designed to be shareable between hypervisors which have the same time
+> model
+> - common code like the 128 bit math is in a shared library
+> - self contained and not reaching out into core kernel code for no good
+> reason
+>   
+> Same goes for clock events, interrupts and other core facilities.
 
-Some inspection with dd revealed that a large part of files that are big
-enough, fail exactly at 114688 bytes; many others fail at 245760, at 376832,
-etc. It is always the same set of files and they fail exactly at the same
-point, regardless of how much the skip= parameter is set to as long as it's
-smaller than the failure point. However, after some playing around with the
-skip= argument, these failure points start to "shift" forward:
+I think that is what everyone wants.  This is an iterative process.  We 
+certainly don't want to reach out into core kernel code unless there is 
+a good reason to do so, and with every development of clock events, 
+sources, and interrupts, we have less of a reason to do so, and the code 
+gets cleaner and more maintainable.
 
-% dd if=FILENAME of=/dev/null bs=1 seek=0
-114688 bytes (115 kB) copied, 0.246294 s, 466 kB/s
-% dd if=FILENAME of=/dev/null bs=1 skip=114688
-0 bytes (0 B) copied, 0.000157 s, 0.0 kB/s
-% dd if=FILENAME of=/dev/null bs=1 skip=114790
-118682 bytes (119 kB) copied, 0.258896 s, 458 kB/s
-% dd if=FILENAME of=/dev/null bs=1 skip=0
-233472 bytes (233 kB) copied, 0.436577 s, 535 kB/s
-# echo 3 > /proc/sys/vm/drop_caches
-% dd if=FILENAME of=/dev/null bs=1 skip=0
-114688 bytes (115 kB) copied, 0.21658 s, 530 kB/s
-% dd if=FILENAME of=/dev/null bs=1 skip=114689
-0 bytes (0 B) copied, 0.000976 s, 0.0 kB/s
-% dd if=FILENAME of=/dev/null bs=1 skip=114690
-0 bytes (0 B) copied, 0.000976 s, 0.0 kB/s
-% dd if=FILENAME of=/dev/null bs=1 skip=233473
-0 bytes (0 B) copied, 0.000976 s, 0.0 kB/s
-# echo 3 > /proc/sys/vm/drop_caches
-% dd if=FILENAME of=/dev/null bs=1 skip=233473
-145460 bytes (145 kB) copied, 0.624043 s, 233 kB/s
-% dd if=FILENAME of=/dev/null bs=1 skip=0
-378933 bytes (379 kB) copied, 0.796276 s, 476 kB/s
-(the file is 378933 bytes long, so it hit EOF)
-
-I verified that these files weren't picking up garbage, but actual data that
-the file should contain. However, the skip trick doesn't seem to work for
-every file, or with every seek value, but it is important to skip beyond the
-failure points.
-
-IV. System information
-
-Here are some details of the system:
-* Kernel 2.6.19-gentoo-r6
-* Arch x86_64
-* USB disk 120GB Western Digital, model 00UE-00KVT0 (according to udev),
-* Serial DEF10CD7F64C,
-* Older SATA disk 200GB Seagate 7200.7, model ST3200822AS
-* Motherboard Asus A8N5X, nForce4 chipset
-* Offending file system: reiserfs v3.6, mounted with noatime,barrier=flush
-* dm-crypt using aes-256 with cbc-essiv:sha256; using assembly-optimized AES
-  (CONFIG_CRYPTO_AES_X86_64)
-* implementation (CONFIG_CRYPTO_AES_X86_64)
-* The partition is (exactly) 108GiB, 6912 LE * 16MiB
-* LVM utilities version: 2.02.17 (2006-12-14)
-* LVM library version: 1.02.12 (2006-10-13)
-* LVM driver version: 4.10.0
-
-I still have both disk images intact and can provide more details as
-necessary. I have not yet attempted to reproduce it on a test partition. Any
-extra information requests are welcome.
-
-I'm not subscribed to the list, so please keep me in Cc:. Excuse me if some
-parts of this e-mail don't make sense, I'm almost falling asleep here.
-
-Regards,
-Marti Raudsepp
+Zach
