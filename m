@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964826AbXCGFKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXCGFNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964826AbXCGFKk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 00:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965136AbXCGFKk
+	id S932690AbXCGFNN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 00:13:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932825AbXCGFNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 00:10:40 -0500
-Received: from gw.goop.org ([64.81.55.164]:45753 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964826AbXCGFKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 00:10:40 -0500
-Message-ID: <45EE494D.6090403@goop.org>
-Date: Tue, 06 Mar 2007 21:10:37 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 7 Mar 2007 00:13:13 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:31776 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932690AbXCGFNL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 00:13:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=o/ZWsmHlQ6vfepM8Eq7tFFGqp6bq0z50WxaUKAo2hIJesdGrW780SMDlj7l+tvVshtxpNinSa9WG4KgPJvVNxQZP20qZ7oNwJ/oC3kUhkaD0L5sqYEMgOstfg7jGaaG1ZscE2fmlIIfClqydy8NNNrIckulGpdcLApFqIFcucCw=
+Message-ID: <57354eff0703062113g11ca7d34o6ed82de8195353f1@mail.gmail.com>
+Date: Wed, 7 Mar 2007 06:13:10 +0100
+From: "Oleksiy Kebkal" <lesha@evologics.de>
+To: "Krzysztof Halasa" <khc@pm.waw.pl>
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>, rmk@arm.linux.org.uk,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org, "Robin Getz" <rgetz@blackfin.uclinux.org>
+In-Reply-To: <m3bqj6jebt.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: Dan Hecht <dhecht@vmware.com>, Zachary Amsden <zach@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, ak@suse.de,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>	 <1173178774.24738.311.camel@localhost.localdomain>	 <45EDD82F.90204@vmware.com>	 <1173225182.24738.507.camel@localhost.localdomain>	 <45EE0628.1080108@goop.org>  <45EE08E8.2020008@vmware.com> <1173228544.24738.514.camel@localhost.localdomain>
-In-Reply-To: <1173228544.24738.514.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
+	 <m3bqj6jebt.fsf@maximus.localdomain>
+X-Google-Sender-Auth: 47730b73a7393b97
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> Ooops. I completely forgot, that you get the absolute expiry time
-> already in ktime_t format (nanoseconds) when dev->set_next_event() is
-> called.
+> > shouldnt TIOCM_RTS be passed down only when the 'r' is appended to the
+> > boot cmdline ?
 >
-> 	dev->next_event = expires;
+> How would it be useful?
 >
-> is done right before the call. 
->
-> So it's already there for free.
->   
+> CRTSCTS is for CTS only (i.e., the transmission is paused when CTS is
+> inactive), not for RTS. DTR and RTS should be active when the port is
+> open even without CRTSCTS (= without handshaking), it's used for
+> various purposes such as providing +12V to the device (and two pins
+> can supply more power than one - sure, it isn't the best idea).
 
-OK, but a trap for young players (ie, me): the absolute time is in ns
-since kernel boot, but the hypervisor wants an absolute time in ns since
-system boot.  Everything works reasonably well for the first guest
-started early, so be sure to take a snapshot of hypervisor time early in
-order to get the correction...
+The name of the option is not CCTS, but CRTSCTS, isn't it? So, you may
+not only want to pause own transmission when CTS is inactive, but to
+control the transmission flow from the remote side. Why should RTS be
+active when the port is open even without CRTSCTS? You may still
+assert RTS manually if it is used to provide +12V to the device. But
+as I understand it is not common use of this pin, isn't it?
 
-    J
+And a question is not only about supporting legacy equipment but also
+about embedded hardware where RTS/CTS handshaking is handshaking, not
+something else...
 
+-Oleksiy
