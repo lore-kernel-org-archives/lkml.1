@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXCGQGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbXCGQNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932404AbXCGQGo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932529AbXCGQGo
+	id S932619AbXCGQNN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:13:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbXCGQNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:06:44 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35778 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932404AbXCGQGo (ORCPT
+	Wed, 7 Mar 2007 11:13:13 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:24636 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932619AbXCGQNL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:06:44 -0500
-Date: Wed, 7 Mar 2007 17:08:22 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] pata_hpt366: Cable detect methods
-Message-ID: <20070307170822.0c7d9c77@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Mar 2007 11:13:11 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ulok5OS/Cr7AWFMnGx61eMZwmjs9bFwgq/Gn/IAPI1ib6nKGPeFsK5vlBIuK5Ouvj
+	lZ9umxy3THzgF0VfxIj4A==
+Message-ID: <6599ad830703070812p6071487ay841c0985fd734159@mail.gmail.com>
+Date: Wed, 7 Mar 2007 08:12:20 -0800
+From: "Paul Menage" <menage@google.com>
+To: vatsa@in.ibm.com
+Subject: Re: [PATCH 2/7] containers (V7): Cpusets hooked into containers
+Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, winget@google.com,
+       containers@lists.osdl.org, devel@openvz.org
+In-Reply-To: <20070307145257.GD32105@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070212081521.808338000@menage.corp.google.com>
+	 <20070212085104.290909000@menage.corp.google.com>
+	 <20070307145257.GD32105@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+On 3/7/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+> On Mon, Feb 12, 2007 at 12:15:23AM -0800, menage@google.com wrote:
+> > -     mutex_lock(&callback_mutex);
+> > -     list_add(&cs->sibling, &cs->parent->children);
+> > +     cont->cpuset = cs;
+> > +     cs->container = cont;
+> >       number_of_cpusets++;
+> > -     mutex_unlock(&callback_mutex);
+>
+> What's the rule to read/write number_of_cpusets? The earlier cpuset code was
+> incrementing/decrementing under callback_mutex, but now we aren't. How safe is
+> that?
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc2-mm2/drivers/ata/pata_hpt366.c linux-2.6.21-rc2-mm2/drivers/ata/pata_hpt366.c
---- linux.vanilla-2.6.21-rc2-mm2/drivers/ata/pata_hpt366.c	2007-03-06 23:09:46.000000000 +0000
-+++ linux-2.6.21-rc2-mm2/drivers/ata/pata_hpt366.c	2007-03-06 23:35:15.000000000 +0000
-@@ -27,7 +27,7 @@
- #include <linux/libata.h>
- 
- #define DRV_NAME	"pata_hpt366"
--#define DRV_VERSION	"0.6.0"
-+#define DRV_VERSION	"0.6.1"
- 
- struct hpt_clock {
- 	u8	xfer_speed;
-@@ -210,24 +209,26 @@
- 	return 0xffffffffU;	/* silence compiler warning */
- }
- 
-+static int hpt36x_cable_detect(struct ata_port *ap)
-+{
-+	u8 ata66;
-+	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
-+
-+	pci_read_config_byte(pdev, 0x5A, &ata66);
-+	if (ata66 & (1 << ap->port_no))
-+		return ATA_CBL_PATA40;
-+	return ATA_CBL_PATA80;
-+}
-+
- static int hpt36x_pre_reset(struct ata_port *ap)
- {
- 	static const struct pci_bits hpt36x_enable_bits[] = {
- 		{ 0x50, 1, 0x04, 0x04 },
- 		{ 0x54, 1, 0x04, 0x04 }
- 	};
--
--	u8 ata66;
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--
- 	if (!pci_test_config_bits(pdev, &hpt36x_enable_bits[ap->port_no]))
- 		return -ENOENT;
--
--	pci_read_config_byte(pdev, 0x5A, &ata66);
--	if (ata66 & (1 << ap->port_no))
--		ap->cbl = ATA_CBL_PATA40;
--	else
--		ap->cbl = ATA_CBL_PATA80;
- 	return ata_std_prereset(ap);
- }
- 
-@@ -354,6 +355,7 @@
- 	.thaw		= ata_bmdma_thaw,
- 	.error_handler	= hpt36x_error_handler,
- 	.post_internal_cmd = ata_bmdma_post_internal_cmd,
-+	.cable_detect	= hpt36x_cable_detect,
- 
- 	.bmdma_setup 	= ata_bmdma_setup,
- 	.bmdma_start 	= ata_bmdma_start,
+We're still inside manage_mutex, so we guarantee that no-one else is
+changing it.
+
+>
+> The earlier cpuset code also was reading number_of_cpusets w/o the
+> callback_mutex held (atleast in cpuset_zone_allowed_softwall). Is that safe?
+
+Yes, I think so. Unless every memory allocator was to hold a lock for
+the duration of alloc_pages(), number_of_cpusets can theoretically be
+out of date by the time you're using it. But since the process could
+have allocated just before you created the first cpuset and moved it
+into that cpuset anywa, it's not really a race (and the consequences
+are inconsequential).
+
+Paul
