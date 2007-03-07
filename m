@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422844AbXCGRPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422857AbXCGRQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422844AbXCGRPr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422841AbXCGRPo
+	id S1422857AbXCGRQZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:16:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422862AbXCGRQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:15:44 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43256 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 12:16:24 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44043 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422822AbXCGRP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:15:26 -0500
-Message-Id: <20070307171341.990097701@mini.kroah.org>
+	id S1422853AbXCGRQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:16:15 -0500
+Message-Id: <20070307171437.505155171@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:19 -0800
+Date: Wed, 07 Mar 2007 09:11:35 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,41 +23,51 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, John Linville <linville@tuxdriver.com>,
-       Stefano Brivio <stefano.brivio@polimi.it>,
-       Larry Finger <larry.finger@lwfinger.net>, Michael Buesch <mb@bu3sch.de>
-Subject: [patch 044/101] bcm43xx: fix for 4309
-Content-Disposition: inline; filename=bcm43xx-fix-for-4309.patch
+       alan@lxorguk.ukuu.org.uk, <jgarzik@pobox.com>,
+       Tejun Heo <htejun@gmail.com>
+Subject: [patch 060/101] libata: add missing PM callbacks
+Content-Disposition: inline; filename=libata-add-missing-pm-callbacks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefano Brivio <stefano.brivio@polimi.it>
+From: Tejun Heo <htejun@gmail.com>
 
-BCM4309 devices aren't working properly as A PHYs aren't supported yet, but
-we probe 802.11a cores anyway. This fixes it, while still allowing for A PHY code
-to be developed in the future.
+Some LLDs were missing scsi device PM callbacks while having host/port
+suspend support.  Add missing ones.
 
-Signed-off-by: Stefano Brivio <stefano.brivio@polimi.it>
-Cc: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/bcm43xx/bcm43xx_main.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/ata/pata_jmicron.c |    4 ++++
+ drivers/ata/pata_sil680.c  |    4 ++++
+ 2 files changed, 8 insertions(+)
 
---- linux-2.6.20.1.orig/drivers/net/wireless/bcm43xx/bcm43xx_main.c
-+++ linux-2.6.20.1/drivers/net/wireless/bcm43xx/bcm43xx_main.c
-@@ -2736,8 +2736,9 @@ static int bcm43xx_probe_cores(struct bc
- 				 * dangling pins on the second core. Be careful
- 				 * and ignore these cores here.
- 				 */
--				if (bcm->pci_dev->device != 0x4324) {
--					dprintk(KERN_INFO PFX "Ignoring additional 802.11 core.\n");
-+				if (1 /*bcm->pci_dev->device != 0x4324*/ ) {
-+				/* TODO: A PHY */
-+					dprintk(KERN_INFO PFX "Ignoring additional 802.11a core.\n");
- 					continue;
- 				}
- 			}
+--- linux-2.6.20.1.orig/drivers/ata/pata_jmicron.c
++++ linux-2.6.20.1/drivers/ata/pata_jmicron.c
+@@ -137,6 +137,10 @@ static struct scsi_host_template jmicron
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	/* Use standard CHS mapping rules */
+ 	.bios_param		= ata_std_bios_param,
++#ifdef CONFIG_PM
++	.suspend		= ata_scsi_device_suspend,
++	.resume			= ata_scsi_device_resume,
++#endif
+ };
+ 
+ static const struct ata_port_operations jmicron_ops = {
+--- linux-2.6.20.1.orig/drivers/ata/pata_sil680.c
++++ linux-2.6.20.1/drivers/ata/pata_sil680.c
+@@ -226,6 +226,10 @@ static struct scsi_host_template sil680_
+ 	.slave_configure	= ata_scsi_slave_config,
+ 	.slave_destroy		= ata_scsi_slave_destroy,
+ 	.bios_param		= ata_std_bios_param,
++#ifdef CONFIG_PM
++	.suspend		= ata_scsi_device_suspend,
++	.resume			= ata_scsi_device_resume,
++#endif
+ };
+ 
+ static struct ata_port_operations sil680_port_ops = {
 
 --
