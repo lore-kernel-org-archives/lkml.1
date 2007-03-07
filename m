@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965673AbXCGVaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXCGVbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965673AbXCGVaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 16:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXCGVaf
+	id S965661AbXCGVbq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 16:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965674AbXCGVbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 16:30:35 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:29041 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965671AbXCGVad (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 16:30:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GNLP9P++1A2xn/P9eaRc/41rgJw5kVQ1Oec6c+4wlj2a07z7ha6fqicF9FGJ2zUkt8imedmsh+kyMdPvHYVvetTYot+7AaH05I32grhZTDs/4lTmY3QG+ljIEYR7x3J+MdgpOeF/Znl92PDstLMaIpLzPn8g8C2NGLCLe4Zc6dE=
-Message-ID: <57354eff0703071330k2395e9c8n58e12f2111dcb25a@mail.gmail.com>
-Date: Wed, 7 Mar 2007 22:30:31 +0100
-From: "Oleksiy Kebkal" <kebkal@gmail.com>
-To: "Robin Getz" <rgetz@blackfin.uclinux.org>
-Subject: Re: should RTS init in serial core be tied to CRTSCTS
-Cc: "Krzysztof Halasa" <khc@pm.waw.pl>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, rmk@arm.linux.org.uk,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-serial@vger.kernel.org
-In-Reply-To: <200703071019.55896.rgetz@blackfin.uclinux.org>
+	Wed, 7 Mar 2007 16:31:45 -0500
+Received: from ozlabs.org ([203.10.76.45]:38918 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965661AbXCGVbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 16:31:44 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
-	 <200703061824.08834.rgetz@blackfin.uclinux.org>
-	 <m3irddusp0.fsf@maximus.localdomain>
-	 <200703071019.55896.rgetz@blackfin.uclinux.org>
+Message-ID: <17903.12035.781782.317694@cargo.ozlabs.ibm.com>
+Date: Thu, 8 Mar 2007 08:30:43 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw
+ ones.
+In-Reply-To: <45EF2CD8.3050804@ru.mvista.com>
+References: <yyi8xe925vg.wl@toshiba.co.jp>
+	<yyi649d25qz.wl@toshiba.co.jp>
+	<45EECE5C.6030100@ru.mvista.com>
+	<17902.60669.945986.186995@cargo.ozlabs.ibm.com>
+	<45EEF6A4.9090807@ru.mvista.com>
+	<17903.4302.502364.126701@cargo.ozlabs.ibm.com>
+	<45EF2CD8.3050804@ru.mvista.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/3/7, Robin Getz <rgetz@blackfin.uclinux.org>:
-> Right - so the question is where to manage the default state? I was thinking
-> in the resource might be a good idea, but there isn't really a good place for
-> it. (You could re-use some bits if flags, but I think that would not be a
-> good idea).
+Sergei Shtylyov writes:
 
-/proc/tty/driver/uartN/settings?
+>     I've floowed up to my patch with such explanation. In the context of an-rt 
+> patch itself, it was just too clear, hence I didn't go into explanations in 
+> the patch itself. :-)
 
--Oleksiy
+Well, it might be clear, to you, now, with the context in your head.
+But if such a patch is to go into a git tree, and somebody comes along
+in 3 years time and wants to know exactly why you made that change
+(and maybe that somebody is you :), then they will need more detail -
+such as how you came to the conclusion that those locks and no others
+needed to be changed, for instance.
+
+At least give some of the reasoning behind your choice of which locks
+to convert, so that in future, if the patch turns out to have
+introduced a bug somehow, the person debugging it can either identify
+that there was a flaw in your logic, or else understand something that
+you have seen that they missed.
+
+Paul.
