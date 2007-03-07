@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161141AbXCGHZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161142AbXCGH1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161141AbXCGHZs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161142AbXCGHZs
+	id S1161142AbXCGH1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161020AbXCGH1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:25:48 -0500
-Received: from ns2.suse.de ([195.135.220.15]:33814 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 02:27:22 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:2797 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161141AbXCGHZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:25:47 -0500
-Date: Wed, 7 Mar 2007 08:25:46 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 3/6] mm: fix fault vs invalidate race for linear mappings
-Message-ID: <20070307072545.GC15877@wotan.suse.de>
-References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023724.6306.53097.sendpatchset@linux.site> <20070306223641.505db0e0.akpm@linux-foundation.org> <20070307065727.GA15877@wotan.suse.de> <20070306230841.69409ffc.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070306230841.69409ffc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	id S1161142AbXCGH1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 02:27:21 -0500
+Message-ID: <45EE6A00.2080507@sw.ru>
+Date: Wed, 07 Mar 2007 10:30:08 +0300
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@osdl.org>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, devel@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
+Subject: Re: [RFC][PATCH 0/7] Resource controllers based on process containers
+References: <45ED7DEC.7010403@sw.ru> <6599ad830703061802g37629faayf7cb2a94bd74ce25@mail.gmail.com>
+In-Reply-To: <6599ad830703061802g37629faayf7cb2a94bd74ce25@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 11:08:41PM -0800, Andrew Morton wrote:
-> On Wed, 7 Mar 2007 07:57:27 +0100 Nick Piggin <npiggin@suse.de> wrote:
+Paul Menage wrote:
+> On 3/6/07, Pavel Emelianov <xemul@sw.ru> wrote:
+>> 2. Extended containers may register themselves too late.
+>>    Kernel threads/helpers start forking, opening files
+>>    and touching pages much earlier. This patchset
+>>    workarounds this in not-so-cute manner and I'm waiting
+>>    for Paul's comments on this issue.
+>>
 > 
-> > > 
-> > > Why was truncate_inode_pages_range() altered to unmap the page if it got
-> > > mapped again?
-> > > 
-> > > Oh.  Because the unmap_mapping_range() call got removed from vmtruncate(). 
-> > > Why?  (Please send suitable updates to the changelog).
-> > 
-> > We have to ensure it is unmapped, and be prepared to unmap it while under
-> > the page lock.
+> Can we not make sure that each subsystem registers itself before any
+> of its resources become usable? So the file counting subsystem should
+
+Actually all the subsystems I've sent became usable very early.
+Much earlier that initcalls started. I didn't found where exactly
+but I can make it if we really need it.
+
+> register at some point before filp_open() becomes usable, and the
+> process counting subsystem should register before it's possible to
+> fork, etc.
 > 
-> But vmtruncate() dropped i_size, so nobody will map this page into
-> pagetables from then on.
-
-But there could be a fault in progress... the only way to know is
-locking the page.
-
-> > > I guess truncate of a mmapped area isn't sufficiently common to worry about
-> > > the inefficiency of this change.
-> > 
-> > Yeah, and it should be more efficient for files that aren't mmapped,
-> > because we don't have to take i_mmap_lock for them.
-> > 
-> > > Lots of memory barriers got removed in memory.c, unchangeloggedly.
-> > 
-> > Yeah they were all for the lockless truncate_count checks. Now that
-> > we use the page lock, we don't need barriers.
-> > 
-> > > Gratuitous renaming of locals in do_no_page() makes the change hard to
-> > > review.  Should have been a separate patch.
-> > > 
-> > > In fact, the patch would have been heaps clearer if that renaming had been
-> > > a separate patch.
-> > 
-> > Shall I?
+> Paul
 > 
-> If you don't have anything better to do, yes please ;)
 
-OK.
