@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422947AbXCGRUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422930AbXCGRVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422947AbXCGRUk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422930AbXCGRTG
+	id S1422930AbXCGRVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422907AbXCGRSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:19:06 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43927 "EHLO mx2.suse.de"
+	Wed, 7 Mar 2007 12:18:43 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44407 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422905AbXCGRSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:18:49 -0500
-Message-Id: <20070307171711.311565465@mini.kroah.org>
+	id S1422908AbXCGRSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:18:12 -0500
+Message-Id: <20070307171634.962881319@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:12:16 -0800
+Date: Wed, 07 Mar 2007 09:12:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       mm-commits@vger.kernel.org
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, jwhiter@redhat.com, swhiteho@redhat.com
-Subject: [patch 101/101] gfs2: fix locking mistake
-Content-Disposition: inline; filename=gfs2-fix-locking-mistake.patch
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       jirislaby@gmail.com
+Subject: [patch 090/101] Char: specialix, isr have 2 params
+Content-Disposition: inline; filename=char-specialix-isr-have-2-params.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Josef Whiter <jwhiter@redhat.com>
 
-Fix a locking mistake in the quota code, we do a mutex_lock instead of a
-mutex_unlock.
+From: Jiri Slaby <jirislaby@gmail.com>
 
-Signed-off-by: Josef Whiter <jwhiter@redhat.com>
-Cc: Steven Whitehouse <swhiteho@redhat.com>
+specialix, isr have 2 params
+
+pt_regs are no longer the third parameter of isr, call sx_interrupt without
+it.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- fs/gfs2/quota.c |    2 +-
+
+ drivers/char/specialix.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.20.1.orig/fs/gfs2/quota.c
-+++ linux-2.6.20.1/fs/gfs2/quota.c
-@@ -279,7 +279,7 @@ static int bh_get(struct gfs2_quota_data
- 		(bh->b_data + sizeof(struct gfs2_meta_header) +
- 		 offset * sizeof(struct gfs2_quota_change));
- 
--	mutex_lock(&sdp->sd_quota_mutex);
-+	mutex_unlock(&sdp->sd_quota_mutex);
- 
- 	return 0;
- 
+--- linux-2.6.20.1.orig/drivers/char/specialix.c
++++ linux-2.6.20.1/drivers/char/specialix.c
+@@ -459,7 +459,7 @@ void missed_irq (unsigned long data)
+ 	if (irq) {
+ 		printk (KERN_INFO "Missed interrupt... Calling int from timer. \n");
+ 		sx_interrupt (((struct specialix_board *)data)->irq,
+-		              (void*)data, NULL);
++				(void*)data);
+ 	}
+ 	missed_irq_timer.expires = jiffies + sx_poll;
+ 	add_timer (&missed_irq_timer);
 
 --
