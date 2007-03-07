@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbXCGEpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXCGEyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932696AbXCGEpr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 23:45:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXCGEpq
+	id S932768AbXCGEyQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 23:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964826AbXCGEyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 23:45:46 -0500
-Received: from wip-ec-wd.wipro.com ([203.91.193.32]:55645 "EHLO
-	wip-ec-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932696AbXCGEpq (ORCPT
+	Tue, 6 Mar 2007 23:54:16 -0500
+Received: from jenny.ondioline.org ([66.220.1.122]:2185 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932768AbXCGEyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 23:45:46 -0500
-Subject: [kj]Patch8:replace pci_find_device in drivers/telephony/ixj.c
-From: Surya <surya.prabhakar@wipro.com>
-To: eokerson@quicknet.net
-Cc: alan@lxorguk.ukuu.org.uk, kernel-janitors@lists.osdl.org,
-       linux-kernel@vger.kernel.org, trivial@kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Linux COE, Wipro Technologies, Bangalore, India.
-Date: Wed, 07 Mar 2007 10:15:39 +0530
-Message-Id: <1173242739.3931.0.camel@bluegenie>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-X-OriginalArrivalTime: 07 Mar 2007 04:45:43.0771 (UTC) FILETIME=[77059AB0:01C76073]
+	Tue, 6 Mar 2007 23:54:16 -0500
+From: Paul Collins <paul@briny.ondioline.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: francesco foresti <frafore@tiscali.it>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: PROBLEM: 2.6.20-1 not working on ibook g4 (BUG/Oops)
+References: <200703051414.15802.frafore@tiscali.it>
+	<1173143894.3461.240.camel@pmac.infradead.org>
+	<87tzwzqgrx.fsf@briny.internal.ondioline.org>
+	<1173177329.3461.291.camel@pmac.infradead.org>
+Date: Wed, 07 Mar 2007 17:53:41 +1300
+In-Reply-To: <1173177329.3461.291.camel@pmac.infradead.org> (David Woodhouse's
+	message of "Tue\, 06 Mar 2007 10\:35\:29 +0000")
+Message-ID: <873b4h64dm.fsf@briny.internal.ondioline.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.95 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   Cleaning up of pci_find_device in drivers/telephony/ixj.c.
-Applies and compiles clean on Linus tree. No hardware hence not tested!!
+David Woodhouse <dwmw2@infradead.org> writes:
 
-Unable to find a suitable Maintainer for the current subsection in the Maintainers file.
-I am not sure whether this is orphaned or maintained. 
+> On Tue, 2007-03-06 at 14:53 +1300, Paul Collins wrote:
+>> In case it's of interest, 2.6.20 has been running fine on my
+>> PowerBook5,4. 
+>
+> How much memory? What if you boot with mem=512M or mem=256M?
 
-Can somebody help me identify the actual maintainer.
-
-thank you.
-
-
-Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
---- 
-
-
-diff --git a/drivers/telephony/ixj.c b/drivers/telephony/ixj.c
-index 71cb64e..c7b0a35 100644
---- a/drivers/telephony/ixj.c
-+++ b/drivers/telephony/ixj.c
-@@ -7692,7 +7692,7 @@ static int __init ixj_probe_pci(int *cnt
- 	IXJ *j = NULL;
- 
- 	for (i = 0; i < IXJMAX - *cnt; i++) {
--		pci = pci_find_device(PCI_VENDOR_ID_QUICKNET,
-+		pci = pci_get_device(PCI_VENDOR_ID_QUICKNET,
- 				      PCI_DEVICE_ID_QUICKNET_XJ, pci);
- 		if (!pci)
- 			break;
-@@ -7712,6 +7712,7 @@ static int __init ixj_probe_pci(int *cnt
- 			printk(KERN_INFO "ixj: found Internet PhoneJACK PCI at 0x%x\n", j->DSPbase);
- 		++*cnt;
- 	}
-+	pci_dev_put(pci);
- 	return probe;
- }
- 
+1GB.  Also works fine when booted with those options.
 
 -- 
-surya.
+Paul Collins
+Wellington, New Zealand
+
+Dag vijandelijk luchtschip de huismeester is dood
