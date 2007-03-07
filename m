@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965482AbXCGVDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXCGVDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965482AbXCGVDh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 16:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965648AbXCGVDh
+	id S965645AbXCGVDu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 16:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965648AbXCGVDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 16:03:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59313 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965482AbXCGVDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 16:03:36 -0500
-Message-ID: <45EF0777.1000202@redhat.com>
-Date: Wed, 07 Mar 2007 13:41:59 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 7 Mar 2007 16:03:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:30208 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965645AbXCGVDs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 16:03:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hE49NySPWNPCryLkrJ8Ts/09jJ8lJFNmKbwUdwyIWAuu/qJBYBj6ipjVAElq+jkBPG5Qq5MvA8usrrxR9OjkhmIiFoZ1Jd1c5tRh6AQlAk0aQBwDzViiyHCDcYf9UVfLODUxy427tyvnIKbo/3NThyl2sj9QlB1sHzDJ36Mk/+0=
+Message-ID: <75b66ecd0703071303k24799f10ibc5c49dc69c5ee86@mail.gmail.com>
+Date: Wed, 7 Mar 2007 16:03:36 -0500
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: Sleeping thread not receive signal until it wakes up
+Cc: "Luong Ngo" <luong.ngo@gmail.com>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0703071457060.13923@chaos.analogic.com>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 000/101] 2.6.20-stable review
-References: <20070307171035.150802805@mini.kroah.org>
-In-Reply-To: <20070307171035.150802805@mini.kroah.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1b2aacd80703062131g6c8578fgf200dd05a502c49f@mail.gmail.com>
+	 <Pine.LNX.4.61.0703070813070.12338@chaos.analogic.com>
+	 <1b2aacd80703071128v5227382do2277d0b85ca3b20c@mail.gmail.com>
+	 <Pine.LNX.4.61.0703071457060.13923@chaos.analogic.com>
+X-Google-Sender-Auth: cdf97d263f32d4c8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> After many weeks of backlogs, I've finally flushed out all of the
-> pending -stable patches, bringing this series to a whopping 101 patches
-> pending for the next 2.6.20.2 release.
-> 
-> If everyone could please take the time to review them and let me know if
-> there are any issues with any of these being applied.
-> 
-> Also, if there are any patches that I am somehow missing that should go
-> into the 2.6.20-stable tree, please forward them on to the
-> stable@kernel.org alias.
-> 
+On 3/7/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+> Interruptible_sleep_on is interruptible, but for your task to
+> actually be awakened and your alarm handler to get some CPU,
+> it needs to be scheduled. If the BKL (big kernel lock) is
+> held, it won't be scheduled until it is released.
 
-What happened to jfs_fix_deadlock.patch?
+You can schedule while holding the BKL and it will be dropped and reacquired.
 
-It was there in the git tree and then it was deleted:
-
- delete mode 100644 queue-2.6.20/jfs_fix_deadlock.patch
-
+Lee
