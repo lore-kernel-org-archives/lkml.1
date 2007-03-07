@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbXCGGvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932830AbXCGGvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932706AbXCGGvO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 01:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932830AbXCGGvO
+	id S932830AbXCGGvz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 01:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbXCGGvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 01:51:14 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51590 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932739AbXCGGvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 01:51:11 -0500
-Date: Tue, 6 Mar 2007 22:51:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
- nonlinear)
-Message-Id: <20070306225101.f393632c.akpm@linux-foundation.org>
-In-Reply-To: <20070221023735.6306.83373.sendpatchset@linux.site>
-References: <20070221023656.6306.246.sendpatchset@linux.site>
-	<20070221023735.6306.83373.sendpatchset@linux.site>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Mar 2007 01:51:55 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:56775 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932830AbXCGGvy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 01:51:54 -0500
+Message-ID: <45EE6112.7050702@in.ibm.com>
+Date: Wed, 07 Mar 2007 12:22:02 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+MIME-Version: 1.0
+To: Pavel Emelianov <xemul@sw.ru>
+CC: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, devel@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
+Subject: Re: [RFC][PATCH 0/7] Resource controllers based on process containers
+References: <45ED7DEC.7010403@sw.ru>
+In-Reply-To: <45ED7DEC.7010403@sw.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Feb 2007 05:50:17 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
-
-> Nonlinear mappings are (AFAIKS) simply a virtual memory concept that
-> encodes the virtual address -> file offset differently from linear
-> mappings.
+Pavel Emelianov wrote:
+> This patchset adds RSS, accounting and control and
+> limiting the number of tasks and files within container.
 > 
-> I can't see why the filesystem/pagecache code should need to know anything
-> about it, except for the fact that the ->nopage handler didn't quite pass
-> down enough information (ie. pgoff). But it is more logical to pass pgoff
-> rather than have the ->nopage function calculate it itself anyway. And
-> having the nopage handler install the pte itself is sort of nasty.
+> Based on top of Paul Menage's container subsystem v7
 > 
-> This patch introduces a new fault handler that replaces ->nopage and
-> ->populate and (later) ->nopfn. Most of the old mechanism is still in place
-> so there is a lot of duplication and nice cleanups that can be removed if
-> everyone switches over.
+> RSS controller includes per-container RSS accounter,
+> reclamation and OOM killer. It behaves like standalone
+> machine - when container runs out of resources it tries
+> to reclaim some pages and if it doesn't succeed in it
+> kills some task which mm_struct belongs to container in
+> question.
 > 
-> The rationale for doing this in the first place is that nonlinear mappings
-> are subject to the pagefault vs invalidate/truncate race too, and it seemed
-> stupid to duplicate the synchronisation logic rather than just consolidate
-> the two.
+> Num tasks and files containers are very simple and
+> self-descriptive from code.
+> 
+> As discussed before when a task moves from one container
+> to another no resources follow it - they keep holding the
+> container they were allocated in.
 > 
 
-It's awkward to layer a largely do-nothing patch like this on top of a
-significant functional change.  Makes it harder to isolate the source of
-regressions, harder to revert the do-something patch.
+I have one problem with the patchset, I cannot compile
+the patches individually and some of the code is hard
+to read as it depends on functions from future patches.
+Patch 2, 3 and 4 fail to compile without patch 5 applied.
 
-> After this patch, MAP_NONBLOCK no longer sets up ptes for pages present in
-> pagecache. Seems like a fringe functionality anyway.
-
-Does Ingo agree?
-
-> NOPAGE_REFAULT is removed. This should be implemented with ->fault, and
-> no users have hit mainline yet.
-
-Did benh agree with that?
+Patch 1 failed to apply with a reject in kernel/Makefile
+I applied it on top of 2.6.20 with all of Paul Menage's
+patches (all 7).
 
 
-The patch unchangeloggedly adds a basic new structure to core mm
-(fault_data).  Would be nice to document its fields, especially `flags'.
 
-
-Please add less pointless blank lines.
-
-
-How well has this been tested?  The ocfs2 changes?  gfs2?  We should at
-least give those guys a heads-up.
-
-
-Does anybody really pass a NULL `type' arg into filemap_nopage()?
-
-
-This patch seems to churn things around an awful lot for minimal benefit.
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
