@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965051AbXCGLK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422735AbXCGLNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965051AbXCGLK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 06:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965057AbXCGLK4
+	id S1422735AbXCGLNJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 06:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965088AbXCGLNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 06:10:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40395 "EHLO mx1.redhat.com"
+	Wed, 7 Mar 2007 06:13:09 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:35644 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965051AbXCGLKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 06:10:55 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070307034216.472921801C4@magilla.sf.frob.com> 
-References: <20070307034216.472921801C4@magilla.sf.frob.com> 
-To: Roland McGrath <roland@redhat.com>
-Cc: bryan.wu@analog.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] utrace: nommu fixup support utrace 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 07 Mar 2007 11:10:37 +0000
-Message-ID: <7689.1173265837@redhat.com>
+	id S965057AbXCGLNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 06:13:05 -0500
+Message-ID: <45EE9E39.3010800@garzik.org>
+Date: Wed, 07 Mar 2007 06:12:57 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       =?UTF-8?B?TWF0?= =?UTF-8?B?aGlldSBCw6lyYXJk?= 
+	<Mathieu.Berard@crans.org>,
+       linux-ide@vger.kernel.org,
+       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>,
+       Lukas Hejtmanek <xhejtman@fi.muni.cz>, Meelis Roos <mroos@linux.ee>,
+       Olivier Mondoloni <darkcore71@yahoo.fr>,
+       Thomas Renninger <trenn@suse.de>, Robert Moore <robert.moore@intel.com>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [3/6] 2.6.21-rc2: known regressions
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015036.GH3441@stusta.de>
+In-Reply-To: <20070305015036.GH3441@stusta.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath <roland@redhat.com> wrote:
+Adrian Bunk wrote:
+> Subject    : NCQ problem with ahci and Hitachi drive
+> References : http://lkml.org/lkml/2007/3/4/178
+> Submitter  : Mathieu Bérard <Mathieu.Berard@crans.org>
+> Status     : unknown
 
-> That old ptrace check seems pretty questionable to me.  I think what you
-> want is for the nommu world's get_user_pages/access_process_vm when called
-> with force=1,write=1 on a read-only MAP_PRIVATE page to do something more
-> morally similar to the mmu world's COW than it does now.
+according to the last message in that thread, it sounds like ACPI and 
+interrupt problems
 
-Such as what?  You *can't* do COW without relocating all the pointers userspace
-may have into that VMA.  However, unless you force non-sharing of R/O
-MAP_PRIVATE VMAs, you will have text segments of executables and libraries
-shared with other processes.  Imagine: you set a breakpoint in uclibc read()
-and your whole system dies instantly.
 
-What I did is to say that if a process has PT_TRACED set then the MAP_PRIVATE
-VMAs start with their own copies.  The debugger can set this in a new process
-by cloning it with appropriate CLONE_xxx flags.
+> Subject    : SATA_ACPI errors during kernel boot
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
+>              http://bugzilla.kernel.org/show_bug.cgi?id=8046
+>              http://bugzilla.kernel.org/show_bug.cgi?id=8095
+>              http://lkml.org/lkml/2007/2/22/159
+> Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
+>              Lukas Hejtmanek <xhejtman@fi.muni.cz>
+>              Meelis Roos <mroos@linux.ee>
+>              Olivier Mondoloni <darkcore71@yahoo.fr>
+> Handled-By : Thomas Renninger <trenn@suse.de>
+>              Tejun Heo <htejun@gmail.com>
+>              Robert Moore <robert.moore@intel.com>
+> Status     : problem is being debugged
 
-It's not perfect, I know, but it's the best I could come up with as a solution
-to debugging things in a NOMMU environment that supports shared libraries and
-executables.
+Note that there WILL be an increase in ACPI diagnostic output.  The key 
+difference is whether the users are seeing scary printks, or whether the 
+boot is actually breaking.
 
-David
+	Jeff
+
+
