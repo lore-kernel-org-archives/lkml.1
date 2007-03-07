@@ -1,77 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992454AbXCGWCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992453AbXCGWDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992454AbXCGWCJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 17:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992464AbXCGWCI
+	id S2992453AbXCGWDE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 17:03:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965693AbXCGWDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 17:02:08 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:42759 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992454AbXCGWB7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:01:59 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 7 Mar 2007 14:01:56 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/4] signalfd v1 - signalfd core ...
-In-Reply-To: <Pine.LNX.4.64.0703071347380.5963@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703071353430.12756@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703061639370.3661@alien.or.mcafeemobile.com>
- <20070307155553.06c82ca1.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0703062301590.10398@alien.or.mcafeemobile.com>
- <20070307233833.f1482f86.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0703070854280.5963@woody.linux-foundation.org>
- <Pine.LNX.4.64.0703070943180.12283@alien.or.mcafeemobile.com>
- <45EF20F7.1050307@goop.org> <Pine.LNX.4.64.0703071241590.12756@alien.or.mcafeemobile.com>
- <45EF2DFF.4060209@goop.org> <Pine.LNX.4.64.0703071329080.12756@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703071347380.5963@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Mar 2007 17:03:03 -0500
+Received: from www.osadl.org ([213.239.205.134]:40227 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965692AbXCGWDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 17:03:00 -0500
+Subject: Re: Linux-2.6.21-rc3 : Dynticks and High resolution Timer hanging
+	the system
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Stephane Casset <sept@logidee.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20070307211659.GA8010@gromalin.logidee.com>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+	 <45EEB66C.9090901@googlemail.com>
+	 <Pine.LNX.4.64.0703070827490.5963@woody.linux-foundation.org>
+	 <20070307171230.GA21593@elte.hu>
+	 <20070307191252.GA6767@gromalin.logidee.com>
+	 <1173297130.24738.714.camel@localhost.localdomain>
+	 <20070307211659.GA8010@gromalin.logidee.com>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 23:09:10 +0100
+Message-Id: <1173305350.24738.842.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007, Linus Torvalds wrote:
-
+On Wed, 2007-03-07 at 22:16 +0100, Stephane Casset wrote:
+> > > What can I do to help find the bug ?
+> > 
+> > Can you capture a boot log with highres and/or dynticks enabled ? 
 > 
+> No, I can handcopy or take a picture of the last page (25 or 50 lines)
 > 
-> On Wed, 7 Mar 2007, Davide Libenzi wrote:
-> > 
-> > You have the *choice* to do that:
-> > 
-> > 1) You want standard delivery only:
-> > 
-> >    - Just dont use signalfd
-> > 
-> > 2) you want signalfd only:
-> > 
-> >    - Do a sigprocmask(SIG_BLOCK) of the same mask you pass to signalfd
-> > 
-> > If you want both, you can have it. Race free.
+> > Enable CONFIG_SERIAL_8250_CONSOLE and add "console=ttyS0,115200" to the
+> > commandline. Capture the output with minicom on a second box.
 > 
-> .. but maybe with more code and lots of confusion. I'm still unclear on 
-> any upsides here. 
+> The system is a laptop without serial port :(
 
-Ok, given that you have to place the notifiers (you had a direct call to 
-wake_up, same thing - but was not handling the "the sighand has been 
-detched" case), your queue_signal() call translates to:
+Hrmpf. Netconsole should work.
 
-	sq = list_entry(ctx->squeue.next, struct signalfd_sq, lnk);
-	list_del(&sq->lnk);
+Enable CONFIG_NETCONSOLE and compile the network driver into your
+kernel. See Documentation/networking/netconsole.txt for the kernel
+command line option.
 
-That's pretty much it. There is more code WRT your patch, but there are 
-more things handled too (reuse of the fd, notify detachment, send siginfo).
-And those has to be handled in any case.
+run 'netcat -u -l -p <portnr>' on the host.
 
+> > Also please enable CONFIG_MAGIC_SYSRQ and try to send a SysRq-T and a
+> > SysRq-Q to the machine via keyboard or the serial line.
+> 
+> When the system hangs, the keyboard is dead :(
 
+I feared that.
 
-- Davide
+> I just tried clocksource=acpi_pm and the hang disapears... 
+
+Aah.
+
+> I tested 2.6.21-rc1 which also hangs but not always, when it hangs I
+> tried Sysrq-T and got this, I noted in parenthesis some value when it does'nt
+> hang...
+> 
+> Tick Device: mode:     1
+> Clock Event Device: pit
+>  max_delta_ns:   27461866
+>  min_delta_ns:   12571
+>  mult:           5124677
+>  shift:          32
+>  mode:           3
+>  next_event:     9223372036854775807 nsecs
+>  set_next_event: pit_next_event
+>  set_mode:       init_pit_timer
+>  event_handler:  tick_handle_oneshot_broadcast
+> tick_broadcast_mask: 00000001
+
+------------------------------^
+
+ACPI does only take care of one CPU
+
+ACPI: processor limited to max C-state 1
+ACPI: CPU0 (power states: C1[C1] C3[C3])
+ACPI: Processor [CPU0] (supports 8 throttling states)
+
+but there is no entry for the second CPU.
+
+Also it seems that the power state limit is possibly ignored.
+
+That would explain the hang, as TSC and local APIC might get stuck.
+
+Broken BIOS/ACPI I fear. Can you please go to
+
+http://www.linuxfirmwarekit.org/download.php
+
+and run the CD on your laptop. It tests the BIOS / ACPI correctness.
+
+> tick_broadcast_oneshot_mask: 00000000
+
+> So it seems that the clock source selection is not working properly or the pit
+> (the default clock source right ?) is not correctly initialised...
+
+The broadcast mode is not set up for one shot.
+
+> If you need the complete SYSRQ-T trace for 2.6.21-rc1 hanging/not hanging I can
+> provide it but it is quiet long to handwrite it :(
+
+Not now.
+
+	tglx
 
 
