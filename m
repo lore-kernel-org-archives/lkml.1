@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992444AbXCGSZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992445AbXCGSZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992444AbXCGSZU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965416AbXCGSZU
+	id S2992445AbXCGSZi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992456AbXCGSZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:25:20 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:13428 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992444AbXCGSZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:25:17 -0500
-Date: Wed, 7 Mar 2007 19:24:06 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kirk Kuchov <kirk.kuchov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Eric Dumazet <dada1@cosmosbay.com>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070307182405.GX20362@kernel.dk>
-References: <Pine.LNX.4.64.0703030945030.7075@alien.or.mcafeemobile.com> <20070303203140.GA756@2ka.mipt.ru> <Pine.LNX.4.64.0703031248450.7278@alien.or.mcafeemobile.com> <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com> <Pine.LNX.4.64.0703041129550.3300@alien.or.mcafeemobile.com> <ca9528de0703041449x695a4c4bpc133d9afd5524019@mail.gmail.com> <20070306081935.GB2040@elf.ucw.cz> <ca9528de0703070402r3d189348t78d27cf3b80b4623@mail.gmail.com> <20070307173953.GA27603@elte.hu> <ca9528de0703071021t2aeb19d9ve537b0447cfd310@mail.gmail.com>
+	Wed, 7 Mar 2007 13:25:37 -0500
+Received: from amsfep15-int.chello.nl ([62.179.120.10]:63257 "EHLO
+	amsfep15-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S2992445AbXCGSZf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 13:25:35 -0500
+Subject: Re: [RFC][PATCH] mm: fix page_mkclean() vs non-linear vmas
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, Miklos Szeredi <miklos@szeredi.hu>,
+       akpm@linux-foundation.org, mingo@elte.hu, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       Jeff Dike <jdike@addtoit.com>, hugh <hugh@veritas.com>
+In-Reply-To: <1173291120.4718.40.camel@lappy>
+References: <1173264462.6374.140.camel@twins>
+	 <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins>
+	 <20070307121730.GC18704@wotan.suse.de> <1173271286.6374.166.camel@twins>
+	 <20070307130851.GE18704@wotan.suse.de> <1173273562.6374.175.camel@twins>
+	 <20070307133649.GF18704@wotan.suse.de> <1173275532.6374.183.camel@twins>
+	 <1173278067.6374.188.camel@twins>  <20070307150102.GH18704@wotan.suse.de>
+	 <1173286682.6374.191.camel@twins>
+	 <Pine.LNX.4.64.0703070959430.5963@woody.linux-foundation.org>
+	 <1173291120.4718.40.camel@lappy>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 19:24:39 +0100
+Message-Id: <1173291879.14351.3.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ca9528de0703071021t2aeb19d9ve537b0447cfd310@mail.gmail.com>
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07 2007, Kirk Kuchov wrote:
-> On 3/7/07, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >* Kirk Kuchov <kirk.kuchov@gmail.com> wrote:
-> >
-> >> I don't believe I'm wasting my time explaining this. They don't exist
-> >> as /dev/null, they are just fucking _LINKS_.
-> >[...]
-> >> > Either stop flaming kernel developers or become one. It is that
-> >> > simple.
-> >>
-> >> If I were to become a kernel developer I would stick with FreeBSD.
-> >> [...]
-> >
-> >Hey, really, this is an excellent idea: what a boon you could become to
-> >FreeBSD, again! How much they must be longing for your insightful
-> >feedback, how much they must be missing your charming style and tactful
-> >approach! I bet they'll want to print your mails out, frame them and
-> >hang them over their fireplace, to remember the good old days on cold
-> >snowy winter days, with warmth in their hearts! Please?
-> >
+On Wed, 2007-03-07 at 19:12 +0100, Peter Zijlstra wrote:
+> On Wed, 2007-03-07 at 10:00 -0800, Linus Torvalds wrote:
+> > 
+> > On Wed, 7 Mar 2007, Peter Zijlstra wrote:
+> > > 
+> > > I'm not at all happy with this, but plain disallowing remap_file_pages on bdis
+> > > without BDI_CAP_NO_WRITEBACK seems to offend some people, hence restrict it to
+> > > root only.
+> > 
+> > I don't think that's a viable approach. Nonlinear mappings would normally 
+> > be used by databases, and you don't want to limit databases to be run by 
+> > root only.
 > 
-> http://www.totallytom.com/thecureforgayness.html
+> It was claimed that they use it on tmpfs only, not on a 'real'
+> filesystem.
 
-Dude, get a life. But more importantly, go waste somebody elses time
-instead of lkml's.
+More specifically, databases want to use direct IO (I know you hate it)
+and use the nonlinear vma as buffer area to feed this direct IO
 
--- 
-Jens Axboe, updating killfile
+Mapped IO is unsuited for databases in its current form due to the way
+IO errors are handled.
 
