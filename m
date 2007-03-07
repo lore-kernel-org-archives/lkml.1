@@ -1,98 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751791AbXCGLni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674AbXCGLpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751791AbXCGLni (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 06:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbXCGLni
+	id S1751674AbXCGLpV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 06:45:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXCGLpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 06:43:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49791 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751791AbXCGLnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 06:43:37 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0703061913080.5963@woody.linux-foundation.org> 
-References: <Pine.LNX.4.64.0703061913080.5963@woody.linux-foundation.org>  <20070306173929.2708.37191.stgit@warthog.cambridge.redhat.com> 
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linux-foundation.org, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, johannes@sipsolutions.net
-Subject: Re: [PATCH] Fix get_order() 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 07 Mar 2007 11:43:06 +0000
-Message-ID: <8543.1173267786@redhat.com>
+	Wed, 7 Mar 2007 06:45:21 -0500
+Received: from aug.linbit.com ([212.69.162.22]:42614 "EHLO mail.linbit.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751674AbXCGLpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 06:45:19 -0500
+X-Greylist: delayed 1141 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 06:45:18 EST
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
+Subject: connector: Bugfix for cn_call_callback()
+Date: Wed, 7 Mar 2007 12:26:12 +0100
+User-Agent: KMail/1.9.4
+Cc: drbd-dev@linbit.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703071226.13088.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Hi Evgeniy,
 
-> > +#define ilog2_up(n) ((n) == 1 ? 0 : ilog2((n) - 1) + 1)
-> 
-> This is wrong. It uses "n" twice, which makes it unsafe as a macro.
+When one stresses the connector code, with sending many messages
+from userspace to kernel, one could get in the "unlikely()"
+part in cn_call_callback().
 
-Damn.  I missed that.
+There a new __cbq gets allocated, and a NULL pointer got assigned
+to the callback by dereferencing __cbq. This is the bug. The right
+thing is the dereference the original __cbq. Therefore the bugfix
+is to use a new variable for the newly allocated __cbq. 
 
-> Or it could use a "__builtin_constant_p()" (which gcc defines to not have 
-> side effects) to allow the multiple use for constant data.
+This is tested, and it fixes the issue.
 
-I should have, yes.
+Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
+Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
 
-> Or we could require that "ilog2(0)" returns -1, and then we could just say
-> 
-> 	#define ilog2_up(n) (ilog2((n)-1)+1)
+--- /usr/src/linux-2.6.20/drivers/connector/connector.c 2007-03-07 11:45:38.000000000 +0100
++++ /usr/src/linux-2.6.20-modified/drivers/connector/connector.c        2007-03-07 11:39:11.000000000 +0100
+@@ -128,7 +128,7 @@
+  */
+ static int cn_call_callback(struct cn_msg *msg, void (*destruct_data)(void *), void *data)
+ {
+-       struct cn_callback_entry *__cbq;
++       struct cn_callback_entry *__cbq, *__new_cbq;
+        struct cn_dev *dev = &cdev;
+        int err = -ENODEV;
 
-I'd rather not do that as the inline assembly variants then have to special
-case ilog2(0) rather than just having an undefined result.
+@@ -148,23 +148,23 @@
+                        } else {
+                                struct cn_callback_data *d;
 
-> The whole "get_order()" macro also has some serious lack of parenthesis. 
-> In general, commit 39d61db0edb34d60b83c5e0d62d0e906578cc707 just was 
-> pretty damn bad!
+-                               __cbq = kzalloc(sizeof(*__cbq), GFP_ATOMIC);
+-                               if (__cbq) {
+-                                       d = &__cbq->data;
++                               __new_cbq = kzalloc(sizeof(*__new_cbq), GFP_ATOMIC);
++                               if (__new_cbq) {
++                                       d = &__new_cbq->data;
+                                        d->callback_priv = msg;
+                                        d->callback = __cbq->data.callback;
+                                        d->ddata = data;
+                                        d->destruct_data = destruct_data;
+-                                       d->free = __cbq;
++                                       d->free = __new_cbq;
 
-Unfortunately, I can't disagree.
+-                                       INIT_WORK(&__cbq->work,
+-                                                       &cn_queue_wrapper);
++                                       INIT_WORK(&__new_cbq->work,
++                                                 &cn_queue_wrapper);
 
-> I'm becoming a bit disgruntled about this whole thing, I have to admit. 
-> I'm just not sure the bugs here are worth it. Especially considering that 
-> __get_order() has apparently never even tested these things to begin with, 
+                                        if (queue_work(dev->cbdev->cn_queue,
+-                                                   &__cbq->work))
++                                                   &__new_cbq->work))
+                                                err = 0;
+                                        else {
+-                                               kfree(__cbq);
++                                               kfree(__new_cbq);
+                                                err = -EINVAL;
+                                        }
+                                } else
 
-It was tested...  I've just re-examined my test program and I've realised I've
-only tested power-of-2 parameters.  Sigh.
 
-> since nobody but FRV has ever #defined the ARCH_HAS_ILOG2_U?? macros.
-
-Well, that should be CONFIG_ARCH_HAS_ILOG2_U?? macros, and powerpc defines
-those too.
-
->  - buggy
-
-True, for N being a non-power-of-two, unfortunately; and also where evaluating
-N has side-effects.
-
->  - untested
-
-Not true, just that my userspace test program isn't sufficiently exhaustive.
-
->  - has untrue comments
-
-Unfortunately so.
-
->  - makes no real sense
-
-Not true.
-
-Various archs (including i386, x86_64, powerpc and frv) have instructions that
-can be used to calculate integer log2(N).  The fallback position is to use a
-loop:
-
-	size = (size - 1) >> (PAGE_SHIFT - 1);
-	order = -1;
-	do {
-		size >>= 1;
-		order++;
-	} while (size);
-
-> and I'm inclined to just revert 39d61db0 instead of adding more and more 
-> breakage to it, since it's simply not going to help with the fundamental 
-> problems!
-
-Probably a good idea.  I'll work on it some more and improve my test program
-(which is actually quite simple to do).
-
-David
+-- 
+: Dipl-Ing Philipp Reisner                      Tel +43-1-8178292-50 :
+: LINBIT Information Technologies GmbH          Fax +43-1-8178292-82 :
+: Vivenotgasse 48, 1120 Vienna, Austria        http://www.linbit.com :
