@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965529AbXCGOYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965536AbXCGOYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965529AbXCGOYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 09:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965551AbXCGOYt
+	id S965536AbXCGOYz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 09:24:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965537AbXCGOYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 09:24:49 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37156 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965529AbXCGOYr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 09:24:47 -0500
-Date: Wed, 07 Mar 2007 08:24:44 -0600
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
-Message-ID: <45EECB2C.mailxEK515UYJW@eag09.americas.sgi.com>
-User-Agent: nail 11.4 8/29/04
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Mar 2007 09:24:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37118 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965563AbXCGOYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 09:24:54 -0500
+Subject: [GFS2] NFS filehandle check [3/12]
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: cluster-devel@redhat.com
+Cc: "S. Wendy Cheng" <wcheng@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1173277501.11001.752.camel@quoit.chygwyn.com>
+References: <1173277501.11001.752.camel@quoit.chygwyn.com>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd
+Date: Wed, 07 Mar 2007 14:27:59 +0000
+Message-Id: <1173277679.11001.758.camel@quoit.chygwyn.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
 Content-Transfer-Encoding: 7bit
-From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From a7d2b2bdc9a0b55d5b08e15756c7e65c48c4bca5 Mon Sep 17 00:00:00 2001
+From: Wendy Cheng <wcheng@redhat.com>
+Date: Fri, 23 Feb 2007 00:21:17 -0500
+Subject: [PATCH] [GFS2] NFS filehandle check
 
-From: Cliff Wickman <cpw@sgi.com>
+File handle checking error found in '07 NFS connectathon. The fh_type
+and fh_len are not necessarily identical. Some of the client machines
+could fail mount with stale filehandle without this patch.
 
-When a cpu is disabled, move_task_off_dead_cpu() is called for tasks
-that have been running on that cpu.
+Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-Currently, such a task is migrated:
- 1) to any cpu on the same node as the disabled cpu, which is both online
-    and among that task's cpus_allowed
- 2) to any cpu which is both online and among that task's cpus_allowed
-
-But the task's cpus_allowed may have been a single cpu.
-
-This patch would insert a preference to migrate such a task to a cpu within
-its cpuset (and set its cpus_allowed to its cpuset).
-
-With this patch, migrate the task to:
- 1) to any cpu on the same node as the disabled cpu, which is both online
-    and among that task's cpus_allowed
- 2) to any online cpu within the task's cpuset
- 3) to any cpu which is both online and among that task's cpus_allowed
-
-
-Diffed against 2.6.16.37
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-
----
- kernel/sched.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -4602,6 +4602,12 @@ static void move_task_off_dead_cpu(int d
- 	if (dest_cpu == NR_CPUS)
- 		dest_cpu = any_online_cpu(tsk->cpus_allowed);
+diff --git a/fs/gfs2/ops_export.c b/fs/gfs2/ops_export.c
+index 1de05b6..aad9183 100644
+--- a/fs/gfs2/ops_export.c
++++ b/fs/gfs2/ops_export.c
+@@ -38,14 +38,11 @@ static struct dentry *gfs2_decode_fh(struct super_block *sb,
+ 	struct gfs2_fh_obj fh_obj;
+ 	struct gfs2_inum_host *this, parent;
  
-+	/* try to stay on the same cpuset */
-+	if (dest_cpu == NR_CPUS) {
-+		tsk->cpus_allowed = cpuset_cpus_allowed(tsk);
-+		dest_cpu = any_online_cpu(tsk->cpus_allowed);
-+	}
-+
- 	/* No more Mr. Nice Guy. */
- 	if (dest_cpu == NR_CPUS) {
- 		cpus_setall(tsk->cpus_allowed);
+-	if (fh_type != fh_len)
+-		return NULL;
+-
+ 	this 		= &fh_obj.this;
+ 	fh_obj.imode 	= DT_UNKNOWN;
+ 	memset(&parent, 0, sizeof(struct gfs2_inum));
+ 
+-	switch (fh_type) {
++	switch (fh_len) {
+ 	case GFS2_LARGE_FH_SIZE:
+ 		parent.no_formal_ino = ((u64)be32_to_cpu(fh[4])) << 32;
+ 		parent.no_formal_ino |= be32_to_cpu(fh[5]);
+-- 
+1.4.4.2
+
+
+
