@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422688AbXCGJjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422689AbXCGJkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422688AbXCGJjy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422686AbXCGJjx
+	id S1422689AbXCGJkT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422686AbXCGJkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:39:53 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57391 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422681AbXCGJjv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:39:51 -0500
-Message-ID: <45EE8829.4060304@bull.net>
-Date: Wed, 07 Mar 2007 10:38:49 +0100
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       =?ISO-8859-15?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-Subject: How to distinguish original kernel vs -rt kernel
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 07/03/2007 10:41:34,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 07/03/2007 10:41:35,
-	Serialize complete at 07/03/2007 10:41:35
+	Wed, 7 Mar 2007 04:40:18 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:58862 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422683AbXCGJkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:40:15 -0500
+Date: Wed, 7 Mar 2007 01:39:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bill Irwin <bill.irwin@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
+ nonlinear)
+Message-Id: <20070307013942.5c0fadff.akpm@linux-foundation.org>
+In-Reply-To: <20070307092903.GJ18774@holomorphy.com>
+References: <20070221023656.6306.246.sendpatchset@linux.site>
+	<20070221023735.6306.83373.sendpatchset@linux.site>
+	<20070306225101.f393632c.akpm@linux-foundation.org>
+	<20070307070853.GB15877@wotan.suse.de>
+	<20070307081948.GA9563@wotan.suse.de>
+	<20070307082755.GA25733@elte.hu>
+	<20070307003520.08b1a082.akpm@linux-foundation.org>
+	<20070307092903.GJ18774@holomorphy.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 7 Mar 2007 01:29:03 -0800 Bill Irwin <bill.irwin@oracle.com> wrote:
 
-Supposing I have an external kernel module which I would like to compile against 
-both original kernel and -rt kernel, what is the proper/most elegant way to know 
-which kernel I'm compiling with ?
-I've only found the EXTRAVERSION define, am I missing a better way ?
+> On Wed, 7 Mar 2007 09:27:55 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> >> btw., if we decide that nonlinear isnt worth the continuing maintainance 
+> >> pain, we could internally implement/emulate sys_remap_file_pages() via a 
+> >> call to mremap() and essentially deprecate it, without breaking the ABI 
+> >> - and remove all the nonlinear code. (This would split fremap areas into 
+> >> separate vmas)
+> 
+> On Wed, Mar 07, 2007 at 12:35:20AM -0800, Andrew Morton wrote:
+> > I'm rather regretting having merged it - I don't think it has been used for
+> > much.
+> > Paolo's UML speedup patches might use nonlinear though.
+> 
+> Guess what major real-life application not only uses nonlinear daily
+> but would even be very happy to see it extended with non-vma-creating
+> protections and more?
 
-In fact, I'm facing the problem of HRTIMER_ABS/REL being renamed to 
-HRTIMER_MODE_ABS/REL with patch -rt. Is there a reason of this ?
+uh-oh.  SQL server?
 
-Does anyone have an objection of keeping it the same (let's say 
-HRTIMER_ABS/REL) in kernel -rt ?
+> It's not terribly typical for things to be
+> truncated while remap_file_pages() is doing its work, though it's been
+> proposed as a method of dynamism. It won't stress remap_file_pages() vs.
+> truncate() in any meaningful way, though, as userspace will be rather
+> diligent about clearing in-use data out of the file offset range to be
+> truncated away anyway, and all that via O_DIRECT.
 
-Thanks,
+The problem here isn't related to truncate or direct-IO.  It's just
+plain-old MAP_SHARED.  nonlinear VMAs are now using the old-style
+dirty-memory management.  msync() is basically a no-op and the code is
+wildly tricky and pretty much untested.  The chances that we broke it are
+considerable.
 
--- 
-Pierre
