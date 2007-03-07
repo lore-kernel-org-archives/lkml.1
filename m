@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161259AbXCGHcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161260AbXCGHcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161259AbXCGHcw (ORCPT <rfc822;w@1wt.eu>);
+	id S1161260AbXCGHcw (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 7 Mar 2007 02:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161260AbXCGHbn
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161290AbXCGHbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:31:43 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:59678 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161259AbXCGH1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 02:31:40 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51303 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161260AbXCGH1z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 7 Mar 2007 02:27:55 -0500
-Date: Wed, 7 Mar 2007 12:42:00 +0530
+Date: Wed, 7 Mar 2007 12:54:00 +0530
 From: Vivek Goyal <vgoyal@in.ibm.com>
 To: linux kernel mailing list <linux-kernel@vger.kernel.org>
 Cc: Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
        akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
        magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
        pavel@suse.cz, rjw@sisk.pl
-Subject: [PATCH 10/20] x86_64: wakeup.S rename registers to reflect right names
-Message-ID: <20070307071200.GK23412@in.ibm.com>
+Subject: [PATCH 19/20] x86_64: Extend bzImage protocol for relocatable bzImage
+Message-ID: <20070307072400.GT23412@in.ibm.com>
 Reply-To: vgoyal@in.ibm.com
 References: <20070307065703.GA23412@in.ibm.com>
 Mime-Version: 1.0
@@ -30,101 +31,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-o Use appropriate names for 64bit regsiters.
+o Extend the bzImage protocol (same as i386) to allow bzImage loaders to
+  load the protected mode kernel at non-1MB address. Now protected mode
+  component is relocatable and can be loaded at non-1MB addresses.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+o As of today kdump uses it to run a second kernel from a reserved memory
+  area.
+
+Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
 Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
 ---
 
- arch/x86_64/kernel/acpi/wakeup.S |   36 ++++++++++++++++++------------------
- include/asm-x86_64/suspend.h     |   12 ++++++------
- 2 files changed, 24 insertions(+), 24 deletions(-)
+ arch/x86_64/boot/setup.S |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff -puN arch/x86_64/kernel/acpi/wakeup.S~x86_64-wakeup.S-rename-registers-to-reflect-right-names arch/x86_64/kernel/acpi/wakeup.S
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/acpi/wakeup.S~x86_64-wakeup.S-rename-registers-to-reflect-right-names	2007-03-07 01:26:55.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/acpi/wakeup.S	2007-03-07 01:26:55.000000000 +0530
-@@ -211,16 +211,16 @@ wakeup_long64:
- 	movw	%ax, %es
- 	movw	%ax, %fs
- 	movw	%ax, %gs
--	movq	saved_esp, %rsp
-+	movq	saved_rsp, %rsp
+diff -puN arch/x86_64/boot/setup.S~x86_64-extend-bzImage-protocol-for-relocatable-bzImage arch/x86_64/boot/setup.S
+--- linux-2.6.21-rc2-reloc/arch/x86_64/boot/setup.S~x86_64-extend-bzImage-protocol-for-relocatable-bzImage	2007-03-07 01:32:01.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/boot/setup.S	2007-03-07 01:32:01.000000000 +0530
+@@ -80,7 +80,7 @@ start:
+ # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
  
- 	movw	$0x0e00 + 'x', %ds:(0xb8018)
--	movq	saved_ebx, %rbx
--	movq	saved_edi, %rdi
--	movq	saved_esi, %rsi
--	movq	saved_ebp, %rbp
-+	movq	saved_rbx, %rbx
-+	movq	saved_rdi, %rdi
-+	movq	saved_rsi, %rsi
-+	movq	saved_rbp, %rbp
+ 		.ascii	"HdrS"		# header signature
+-		.word	0x0204		# header version number (>= 0x0105)
++		.word	0x0205		# header version number (>= 0x0105)
+ 					# or else old loadlin-1.5 will fail)
+ realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
+ start_sys_seg:	.word	SYSSEG
+@@ -155,7 +155,16 @@ cmd_line_ptr:	.long 0			# (Header versio
+ 					# low memory 0x10000 or higher.
  
- 	movw	$0x0e00 + '!', %ds:(0xb801a)
--	movq	saved_eip, %rax
-+	movq	saved_rip, %rax
- 	jmp	*%rax
- 
- .code32
-@@ -408,13 +408,13 @@ do_suspend_lowlevel:
- 	movq %r15, saved_context_r15(%rip)
- 	pushfq ; popq saved_context_eflags(%rip)
- 
--	movq	$.L97, saved_eip(%rip)
-+	movq	$.L97, saved_rip(%rip)
- 
--	movq %rsp,saved_esp
--	movq %rbp,saved_ebp
--	movq %rbx,saved_ebx
--	movq %rdi,saved_edi
--	movq %rsi,saved_esi
-+	movq %rsp,saved_rsp
-+	movq %rbp,saved_rbp
-+	movq %rbx,saved_rbx
-+	movq %rdi,saved_rdi
-+	movq %rsi,saved_rsi
- 
- 	addq	$8, %rsp
- 	movl	$3, %edi
-@@ -461,12 +461,12 @@ do_suspend_lowlevel:
- 	
- .data
- ALIGN
--ENTRY(saved_ebp)	.quad	0
--ENTRY(saved_esi)	.quad	0
--ENTRY(saved_edi)	.quad	0
--ENTRY(saved_ebx)	.quad	0
-+ENTRY(saved_rbp)	.quad	0
-+ENTRY(saved_rsi)	.quad	0
-+ENTRY(saved_rdi)	.quad	0
-+ENTRY(saved_rbx)	.quad	0
- 
--ENTRY(saved_eip)	.quad	0
--ENTRY(saved_esp)	.quad	0
-+ENTRY(saved_rip)	.quad	0
-+ENTRY(saved_rsp)	.quad	0
- 
- ENTRY(saved_magic)	.quad	0
-diff -puN include/asm-x86_64/suspend.h~x86_64-wakeup.S-rename-registers-to-reflect-right-names include/asm-x86_64/suspend.h
---- linux-2.6.21-rc2-reloc/include/asm-x86_64/suspend.h~x86_64-wakeup.S-rename-registers-to-reflect-right-names	2007-03-07 01:26:55.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/include/asm-x86_64/suspend.h	2007-03-07 01:26:55.000000000 +0530
-@@ -45,12 +45,12 @@ extern unsigned long saved_context_eflag
- extern void fix_processor_context(void);
- 
- #ifdef CONFIG_ACPI_SLEEP
--extern unsigned long saved_eip;
--extern unsigned long saved_esp;
--extern unsigned long saved_ebp;
--extern unsigned long saved_ebx;
--extern unsigned long saved_esi;
--extern unsigned long saved_edi;
-+extern unsigned long saved_rip;
-+extern unsigned long saved_rsp;
-+extern unsigned long saved_rbp;
-+extern unsigned long saved_rbx;
-+extern unsigned long saved_rsi;
-+extern unsigned long saved_rdi;
- 
- /* routines for saving/restoring kernel state */
- extern int acpi_save_state_mem(void);
+ ramdisk_max:	.long 0xffffffff
+-	
++kernel_alignment:  .long 0x200000       # physical addr alignment required for
++					# protected mode relocatable kernel
++#ifdef CONFIG_RELOCATABLE
++relocatable_kernel:    .byte 1
++#else
++relocatable_kernel:    .byte 0
++#endif
++pad2:                  .byte 0
++pad3:                  .word 0
++
+ trampoline:	call	start_of_setup
+ 		.align 16
+ 					# The offset at this point is 0x240
 _
