@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992438AbXCGSUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992448AbXCGSVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992438AbXCGSUs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992443AbXCGSUs
+	id S2992448AbXCGSVX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992445AbXCGSVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:20:48 -0500
-Received: from nn7.de ([85.214.94.156]:43762 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992438AbXCGSUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:20:41 -0500
-Subject: Re: Linux v2.6.21-rc3
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: tglx@linutronix.de
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <1173277354.24738.620.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
-	 <1173277354.24738.620.camel@localhost.localdomain>
-Content-Type: text/plain
+	Wed, 7 Mar 2007 13:21:22 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:48254 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992448AbXCGSVU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 13:21:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Kw177zoqPRaxRONZIgSSeQ3RPfXj5UZ4/07LOeFvZhcXjnfiz3fbhMZL/Tx0huQ4odYdtcm2P5bxsxFEzWya9GOnEg2H4P6FvqTzPOCgsBeZ59pHBHzRE0Zhj1vM1/fR4tJsdDOPf/e8yQBG8IUYKv0d7YXrhs5H2Adkgx3u8fE=
+Message-ID: <ca9528de0703071021t2aeb19d9ve537b0447cfd310@mail.gmail.com>
+Date: Wed, 7 Mar 2007 15:21:19 -0300
+From: "Kirk Kuchov" <kirk.kuchov@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Davide Libenzi" <davidel@xmailserver.org>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Eric Dumazet" <dada1@cosmosbay.com>, "Theodore Tso" <tytso@mit.edu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@zip.com.au>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Zach Brown" <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Suparna Bhattacharya" <suparna@in.ibm.com>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20070307173953.GA27603@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 07 Mar 2007 18:42:47 +0100
-Message-Id: <1173289367.4368.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703020840120.1977@alien.or.mcafeemobile.com>
+	 <Pine.LNX.4.64.0703030945030.7075@alien.or.mcafeemobile.com>
+	 <20070303203140.GA756@2ka.mipt.ru>
+	 <Pine.LNX.4.64.0703031248450.7278@alien.or.mcafeemobile.com>
+	 <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com>
+	 <Pine.LNX.4.64.0703041129550.3300@alien.or.mcafeemobile.com>
+	 <ca9528de0703041449x695a4c4bpc133d9afd5524019@mail.gmail.com>
+	 <20070306081935.GB2040@elf.ucw.cz>
+	 <ca9528de0703070402r3d189348t78d27cf3b80b4623@mail.gmail.com>
+	 <20070307173953.GA27603@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 15:22 +0100, Thomas Gleixner wrote:
-> On Tue, 2007-03-06 at 20:59 -0800, Linus Torvalds wrote:
-> > We've finally hopefully started to put a dent in the regressions, 
-> > especially the suspend/resume problems introduced since 2.6.20.
-> 
-> Still having SATA breakage on resume:
-> 
-> Caught that one (from screen)
-> 
-> ATA: abnormal status 0x7F on port 0x000118cf
-> irq 21: nobody cared (try booting ......)
-> ...
-> Disabling IRQ #21
-> 
-> 
-> During normal boot I see the "ATA: abnormal status 0x7F on port
-> 0x000118cf" once, but there the system behaves normal
-> 
-> 	tglx
+On 3/7/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Kirk Kuchov <kirk.kuchov@gmail.com> wrote:
+>
+> > I don't believe I'm wasting my time explaining this. They don't exist
+> > as /dev/null, they are just fucking _LINKS_.
+> [...]
+> > > Either stop flaming kernel developers or become one. It is that
+> > > simple.
+> >
+> > If I were to become a kernel developer I would stick with FreeBSD.
+> > [...]
+>
+> Hey, really, this is an excellent idea: what a boon you could become to
+> FreeBSD, again! How much they must be longing for your insightful
+> feedback, how much they must be missing your charming style and tactful
+> approach! I bet they'll want to print your mails out, frame them and
+> hang them over their fireplace, to remember the good old days on cold
+> snowy winter days, with warmth in their hearts! Please?
+>
 
-maybe that is also causing the hang I am still seeing with the full
-config... :(
-(no display, no usb device activation, but I tend to think the mbp wants
-to access the hdd...)
+http://www.totallytom.com/thecureforgayness.html
 
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
-ata1: port is slow to respond, please be patient (Status 0x80)
-ata1: port failed to respond (30 secs, Status 0x80)
-ATA: abnormal status 0x80 on port 0x000101f7
-ATA: abnormal status 0x80 on port 0x000101f7
-ATA: abnormal status 0x80 on port 0x000101f7
-ATA: abnormal status 0x80 on port 0x000101f7
-ATA: abnormal status 0x80 on port 0x000101f7
-ata1.00: qc timeout (cmd 0xa1)
-ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-ata1.00: revalidation failed (errno=-5)
-ata1: failed to recover some devices, retrying in 5 secs
-ata1: port is slow to respond, please be patient (Status 0x80)
-ata1: port failed to respond (30 secs, Status 0x80)
-ATA: abnormal status 0x80 on port 0x000101f7
-ATA: abnormal status 0x80 on port 0x000101f7
-ATA: abnormal status 0x80 on port 0x000101f7
-ATA: abnormal status 0x80 on port 0x000101f7
-ATA: abnormal status 0x80 on port 0x000101f7
-
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+--
+Kirk Kuchov
