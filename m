@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965699AbXCGWRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965705AbXCGWRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965699AbXCGWRY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 17:17:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965698AbXCGWRY
+	id S965705AbXCGWRu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 17:17:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965702AbXCGWR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 7 Mar 2007 17:17:26 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:56292 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965695AbXCGWRY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 7 Mar 2007 17:17:24 -0500
-Received: from ozlabs.org ([203.10.76.45]:41789 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992661AbXCGWRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:17:19 -0500
-Date: Wed, 7 Mar 2007 16:14:02 -0600
-From: Anton Blanchard <anton@samba.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [patch] epoll use a single inode ...
-Message-ID: <20070307221401.GA16938@kryten>
-References: <45ED1A3C.6030707@argo.co.il> <200703071906.58405.dada1@cosmosbay.com> <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org> <200703071952.13219.dada1@cosmosbay.com>
+Message-ID: <45EF39F3.8050506@vmware.com>
+Date: Wed, 07 Mar 2007 14:17:23 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703071952.13219.dada1@cosmosbay.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: tglx@linutronix.de
+CC: Dan Hecht <dhecht@vmware.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, ak@suse.de,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>	 <1173178774.24738.311.camel@localhost.localdomain>	 <45EDD82F.90204@vmware.com>	 <1173225182.24738.507.camel@localhost.localdomain>	 <45EE0628.1080108@goop.org>  <45EE08E8.2020008@vmware.com>	 <1173228544.24738.514.camel@localhost.localdomain>	 <45EE0D10.7070807@vmware.com>	 <1173230305.24738.529.camel@localhost.localdomain>	 <45EE1EA3.90803@vmware.com>	 <1173256666.24738.576.camel@localhost.localdomain>	 <45EEF966.6060902@goop.org>	 <1173300032.24738.750.camel@localhost.localdomain>	 <45EF2991.1020204@goop.org>	 <1173303639.24738.814.camel@localhost.localdomain>	 <45EF2FFE.7010705@vmware.com> <1173305670.24738.849.camel@localhost.localdomain>
+In-Reply-To: <1173305670.24738.849.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas Gleixner wrote:
+> Simply because you _ABUSE_ timer_init_hook() to set it up. Keep it self
+> contained and do not impose restrictions on the kernel core code, which
+> we have to maintain.
+>   
 
-Hi,
+But time_init_hook is supposed to be abused.  That is its purpose - to 
+be a hook for different time devices on SGI Visual Workstation and 
+Voyager.  And we don't actually abuse it anymore, we just bypass it 
+because the default timer init path wants to setup the PIT or the HPET, 
+neither of which should be used in paravirt.
 
-> Well, I hope a prefetch(NULL) is OK because we are doing millions of
-> them (see include/linux/list.h :) )
+Zach
 
-Funny you mention this. We found some noticeable ppc64 regressions when
-moving the dcache to standard list macros and had to do this to fix it
-up:
 
-static inline void prefetch(const void *x)
-{
-        if (unlikely(!x))
-                return;
-
-        __asm__ __volatile__ ("dcbt 0,%0" : : "r" (x));
-}
-
-Urgh :)
-
-Anton
