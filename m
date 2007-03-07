@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422874AbXCGRaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965621AbXCGRa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422874AbXCGRaP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422858AbXCGRRL
+	id S965621AbXCGRa6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965607AbXCGRa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:17:11 -0500
-Received: from mail.suse.de ([195.135.220.2]:44152 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422877AbXCGRQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:16:56 -0500
-Message-Id: <20070307171519.186461943@mini.kroah.org>
-References: <20070307171035.150802805@mini.kroah.org>
-User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:45 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 070/101] Fix anycast procfs device leak
-Content-Disposition: inline; filename=fix-anycast-procfs-device-leak.patch
+	Wed, 7 Mar 2007 12:30:57 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:20820 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422903AbXCGRaW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:30:22 -0500
+Message-ID: <45EEF6A4.9090807@ru.mvista.com>
+Date: Wed, 07 Mar 2007 20:30:12 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Cc: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw
+ ones.
+References: <yyi8xe925vg.wl@toshiba.co.jp>	<yyi649d25qz.wl@toshiba.co.jp>	<45EECE5C.6030100@ru.mvista.com> <17902.60669.945986.186995@cargo.ozlabs.ibm.com>
+In-Reply-To: <17902.60669.945986.186995@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Stevens <dlstevens@us.ibm.com>
+Hello.
 
-[IPV6]: /proc/net/anycast6 unbalanced inet6_dev refcnt
+Paul Mackerras wrote:
 
-From: David Stevens <dlstevens@us.ibm.com>
+>>    I've already sent a patch fixing this one (along with many others) a month 
+>>ago:
 
-Reading /proc/net/anycast6 when there is no anycast address
-on an interface results in an ever-increasing inet6_dev reference
-count, as well as a reference to the netdevice you can't get rid of.
+>>http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031164.html
 
-From: David Stevens <dlstevens@us.ibm.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>>    I wonder iof it was ever considered... :-/
 
----
- net/ipv6/anycast.c |    1 +
- 1 file changed, 1 insertion(+)
+> The entire patch description was just this:
 
---- linux-2.6.20.1.orig/net/ipv6/anycast.c
-+++ linux-2.6.20.1/net/ipv6/anycast.c
-@@ -462,6 +462,7 @@ static inline struct ifacaddr6 *ac6_get_
- 			break;
- 		}
- 		read_unlock_bh(&idev->lock);
-+		in6_dev_put(idev);
- 	}
- 	return im;
- }
+>>Convert the spinlocks in the PowerPC interrupt related code into the raw ones,
+>>also convert the PURR and PMC related spinlocks...
 
---
+> which says what you did, but gives NO CLUE about why this might be a
+> good thing to do - what problem it fixes or what desirable outcome it
+> produces.  I will not apply patches with inadequate descriptions.
+
+    As I said, this was intended for the -rt patch, hence the question was for 
+Ingo. I CC'ed the list just to keep people here in a loop.
+
+> Paul.
+
+WBR, Sergei
