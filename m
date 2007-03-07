@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbXCGICf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030196AbXCGIQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751597AbXCGICf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 03:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXCGICf
+	id S1030196AbXCGIQL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 03:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965089AbXCGIQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 03:02:35 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50614 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751596AbXCGICe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 03:02:34 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Mar 2007 03:16:11 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:55266 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030196AbXCGIQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 03:16:11 -0500
+Date: Wed, 7 Mar 2007 09:16:03 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: <rol@as2917.net>
+Cc: "'David Brownell'" <david-b@pacbell.net>, "'Adrian Bunk'" <bunk@stusta.de>,
+       <linux-kernel@vger.kernel.org>, <a.zummo@towertech.it>,
+       <rtc-linux@googlegroups.com>
+Subject: Re: 2.6.21-rc2 : Oops in rtc_cmos...
+Message-ID: <20070307091603.717dae82@inspiron>
+In-Reply-To: <051e01c76072$fcdae290$4b00a8c0@donald>
+References: <200703061132.29331.david-b@pacbell.net>
+	<051e01c76072$fcdae290$4b00a8c0@donald>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Jeff Dike <jdike@addtoit.com>
-X-Fcc: ~/Mail/utrace
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH] UML utrace support, step 1
-In-Reply-To: Jeff Dike's message of  Monday, 5 March 2007 14:21:20 -0500 <20070305192120.GA7320@ccure.user-mode-linux.org>
-X-Windows: let it get in *your* way.
-Message-Id: <20070307080159.F27C41801C4@magilla.sf.frob.com>
-Date: Wed,  7 Mar 2007 00:01:59 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Feb 22, 2007 at 07:19:03PM -0800, Roland McGrath wrote:
-> > Your replacement patch still has utrace_regset stuff in it, so it doesn't
-> > compile without the later patches in the series.  Try applying only
-> > utrace-tracehook.patch from the series, then get it to build and make your
-> > utrace-tracehook-um.patch.
+On Wed, 7 Mar 2007 05:42:13 +0100
+"Paul Rolland" <rol@as2917.net> wrote:
+
+> Hello,
 > 
-> Below is a tracehook patch for UML which goes right after
-> utrace-utrace-tracehook.patch.
+> > > Yes, it does, so it's a Good One (tm),
+> > 
+> > And points out that $SUBJECT is misleading; the root cause of
+> > the oops isn't rtc_cmos.  Workaround, don't enable the legacy
+> > driver for this hardware.
+> 
+> Well, sorry for that, but my point was that without enabling
+> CONFIG_DRV_RTC_CMOS and only using CONFIG_RTC, my dmesg says :
+> 
+> drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
 
-It does not.  That patch has regset and ptrace stuff in it.  It indeed
-applies fine before or after utrace patches.  But it doesn't close to
-compile without utrace-regset.patch and utrace-core.patch applied,
-and even with utrace-ptrace-compat.patch it still doesn't compile for me
-with a lot of complaints about TIF_SINGLESTEP not being defined where
-it's used in asm/tracehook.h.
+ yep. the layer the copies the hw clock to the system clock
+ is saying that it cannot find any driver to work on. so
+ you made the correct move in searching a driver. :)
 
+> > > drivers/rtc/hctosys.c: unable to open rtc device (rtc0) 
+> > Because probing 00:03 failed, was never fully usable.
+> > So then rtc0 couldn't be found.  You'd get the same
+> > message if, say, the RTC was loaded as a module.
+> 
+> It seems to me that the DRV_RTC_CMOS and the "standard" CONFIG_RTC
+> shouldn't be used at the same time... Am I correct on that ? 
+> Wouldn't it be better to have this dependancy enforced ?
 
-Thanks,
-Roland
+ I will try to push a patch asap.
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
