@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422791AbXCGRvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422786AbXCGRvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422791AbXCGRvv (ORCPT <rfc822;w@1wt.eu>);
+	id S1422786AbXCGRvv (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 7 Mar 2007 12:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422786AbXCGROo
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422796AbXCGROm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:14:44 -0500
-Received: from ns.suse.de ([195.135.220.2]:43656 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:14:42 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43671 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422787AbXCGROb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:14:31 -0500
-Message-Id: <20070307171244.080136521@mini.kroah.org>
+	id S1422786AbXCGROd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:14:33 -0500
+Message-Id: <20070307171256.756095421@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:01 -0800
+Date: Wed, 07 Mar 2007 09:11:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,42 +22,60 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Julien BLACHE <jb@jblache.org>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 026/101] USB HID: Fix USB vendor and product IDs endianness for USB HID devices
-Content-Disposition: inline; filename=usb-hid-fix-usb-vendor-and-product-ids-endianness-for-usb-hid-devices.patch
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 030/101] EHCI: turn off remote wakeup during shutdown
+Content-Disposition: inline; filename=ehci-turn-off-remote-wakeup-during-shutdown.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julien BLACHE <jb@jblache.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-[PATCH] USB HID: Fix USB vendor and product IDs endianness for USB HID devices
+This patch (as850b) disables remote wakeup (and everything else!) on
+all EHCI ports when the shutdown() method is called.  If remote wakeup
+is left active then some systems will reboot instead of powering off.
+This fixes Bugzilla #7828.
 
-The USB vendor and product IDs are not byteswapped appropriately, and
-thus come out in the wrong endianness when fetched through the evdev
-using ioctl() on big endian platforms.
-
-Signed-off-by: Julien BLACHE <jb@jblache.org>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/usb/input/hid-core.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/host/ehci-hcd.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
---- linux-2.6.20.1.orig/drivers/usb/input/hid-core.c
-+++ linux-2.6.20.1/drivers/usb/input/hid-core.c
-@@ -1212,8 +1212,8 @@ static struct hid_device *usb_hid_config
- 			 le16_to_cpu(dev->descriptor.idProduct));
+--- linux-2.6.20.1.orig/drivers/usb/host/ehci-hcd.c
++++ linux-2.6.20.1/drivers/usb/host/ehci-hcd.c
+@@ -296,6 +296,18 @@ static void ehci_watchdog (unsigned long
+ 	spin_unlock_irqrestore (&ehci->lock, flags);
+ }
  
- 	hid->bus = BUS_USB;
--	hid->vendor = dev->descriptor.idVendor;
--	hid->product = dev->descriptor.idProduct;
-+	hid->vendor = le16_to_cpu(dev->descriptor.idVendor);
-+	hid->product = le16_to_cpu(dev->descriptor.idProduct);
++/* On some systems, leaving remote wakeup enabled prevents system shutdown.
++ * The firmware seems to think that powering off is a wakeup event!
++ * This routine turns off remote wakeup and everything else, on all ports.
++ */
++static void ehci_turn_off_all_ports(struct ehci_hcd *ehci)
++{
++	int	port = HCS_N_PORTS(ehci->hcs_params);
++
++	while (port--)
++		writel(PORT_RWC_BITS, &ehci->regs->port_status[port]);
++}
++
+ /* ehci_shutdown kick in for silicon on any bus (not just pci, etc).
+  * This forcibly disables dma and IRQs, helping kexec and other cases
+  * where the next system software may expect clean state.
+@@ -307,9 +319,13 @@ ehci_shutdown (struct usb_hcd *hcd)
  
- 	usb_make_path(dev, hid->phys, sizeof(hid->phys));
- 	strlcat(hid->phys, "/input", sizeof(hid->phys));
+ 	ehci = hcd_to_ehci (hcd);
+ 	(void) ehci_halt (ehci);
++	ehci_turn_off_all_ports(ehci);
+ 
+ 	/* make BIOS/etc use companion controller during reboot */
+ 	writel (0, &ehci->regs->configured_flag);
++
++	/* unblock posted writes */
++	readl(&ehci->regs->configured_flag);
+ }
+ 
+ static void ehci_port_power (struct ehci_hcd *ehci, int is_on)
 
 --
