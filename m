@@ -1,60 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932854AbXCGG5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbXCGG5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932854AbXCGG5Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 01:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932860AbXCGG5Y
+	id S932875AbXCGG5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 01:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932876AbXCGG5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 01:57:24 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:44616 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932854AbXCGG5Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 01:57:24 -0500
-Message-ID: <45EE624A.8040407@cosmosbay.com>
-Date: Wed, 07 Mar 2007 07:57:14 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch v2] epoll use a single inode ...
-References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703060917500.5963@woody.linux-foundation.org> <200703061828.00253.dada1@cosmosbay.com> <200703061910.13431.dada1@cosmosbay.com> <45EDCD11.8070000@cosmosbay.com> <Pine.LNX.4.64.0703061944590.5963@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703061944590.5963@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 07 Mar 2007 07:57:20 +0100 (CET)
+	Wed, 7 Mar 2007 01:57:41 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60451 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932860AbXCGG5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 01:57:34 -0500
+Date: Wed, 7 Mar 2007 07:57:27 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 3/6] mm: fix fault vs invalidate race for linear mappings
+Message-ID: <20070307065727.GA15877@wotan.suse.de>
+References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023724.6306.53097.sendpatchset@linux.site> <20070306223641.505db0e0.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306223641.505db0e0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds a écrit :
+On Tue, Mar 06, 2007 at 10:36:41PM -0800, Andrew Morton wrote:
+> On Wed, 21 Feb 2007 05:50:05 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
 > 
-> On Tue, 6 Mar 2007, Eric Dumazet wrote:
->> I did a user space program, attached to this mail.
->>
->> I rewrote the reciprocal_div() for i386 so that one multiply is used.
+> > Fix the race between invalidate_inode_pages and do_no_page.
+> > 
+> > Andrea Arcangeli identified a subtle race between invalidation of
+> > pages from pagecache with userspace mappings, and do_no_page.
+> > 
+> > The issue is that invalidation has to shoot down all mappings to the
+> > page, before it can be discarded from the pagecache. Between shooting
+> > down ptes to a particular page, and actually dropping the struct page
+> > from the pagecache, do_no_page from any process might fault on that
+> > page and establish a new mapping to the page just before it gets
+> > discarded from the pagecache.
+> > 
+> > The most common case where such invalidation is used is in file
+> > truncation. This case was catered for by doing a sort of open-coded
+> > seqlock between the file's i_size, and its truncate_count.
+> > 
+> > Truncation will decrease i_size, then increment truncate_count before
+> > unmapping userspace pages; do_no_page will read truncate_count, then
+> > find the page if it is within i_size, and then check truncate_count
+> > under the page table lock and back out and retry if it had
+> > subsequently been changed (ptl will serialise against unmapping, and
+> > ensure a potentially updated truncate_count is actually visible).
+> > 
+> > Complexity and documentation issues aside, the locking protocol fails
+> > in the case where we would like to invalidate pagecache inside i_size.
+> > do_no_page can come in anytime and filemap_nopage is not aware of the
+> > invalidation in progress (as it is when it is outside i_size). The
+> > end result is that dangling (->mapping == NULL) pages that appear to
+> > be from a particular file may be mapped into userspace with nonsense
+> > data. Valid mappings to the same place will see a different page.
+> > 
+> > Andrea implemented two working fixes, one using a real seqlock,
+> > another using a page->flags bit. He also proposed using the page lock
+> > in do_no_page, but that was initially considered too heavyweight.
+> > However, it is not a global or per-file lock, and the page cacheline
+> > is modified in do_no_page to increment _count and _mapcount anyway, so
+> > a further modification should not be a large performance hit.
+> > Scalability is not an issue.
+> > 
+> > This patch implements this latter approach. ->nopage implementations
+> > return with the page locked if it is possible for their underlying
+> > file to be invalidated (in that case, they must set a special vm_flags
+> > bit to indicate so). do_no_page only unlocks the page after setting
+> > up the mapping completely. invalidation is excluded because it holds
+> > the page lock during invalidation of each page (and ensures that the
+> > page is not mapped while holding the lock).
+> > 
+> > This also allows significant simplifications in do_no_page, because
+> > we have the page locked in the right place in the pagecache from the
+> > start.
+> > 
 > 
-> Ok, this is definitely faster on Core 2 as well, so "numbers talk, 
-> bullshit walks". No more objections.
-
-And the numbers were ? :)
-
+> Why was truncate_inode_pages_range() altered to unmap the page if it got
+> mapped again?
 > 
-> (That said, I bet you could do even better for octal and hex numbers, so 
-> if you *really* want to speed things up, you should just make a 
-> special-case routine for each base (there's just three of them), and you 
-> can then also optimize the base-10 thing much better (you can do two 
-> digits at a time by dividing by 100, etc)
+> Oh.  Because the unmap_mapping_range() call got removed from vmtruncate(). 
+> Why?  (Please send suitable updates to the changelog).
 
-Well, given that sprintf() is frequently called only for pipe/sockets 
-creation, we probably better :
+We have to ensure it is unmapped, and be prepared to unmap it while under
+the page lock.
 
-1) wait a very clever idea to suppress individual dentry per pipe/sockets (no 
-more sprintf() at pipe/socket setup)
+> I guess truncate of a mmapped area isn't sufficiently common to worry about
+> the inefficiency of this change.
 
-2) delay the sprintf() only if needed as you mentioned in a previous mail 
-(when someone wants ls -l /proc/pid/fd/....), since their dentries are not 
-anymore inserted in the global dcache hash, they could stay with a (nul) dname.
+Yeah, and it should be more efficient for files that aren't mmapped,
+because we don't have to take i_mmap_lock for them.
 
+> Lots of memory barriers got removed in memory.c, unchangeloggedly.
 
+Yeah they were all for the lockless truncate_count checks. Now that
+we use the page lock, we don't need barriers.
+
+> Gratuitous renaming of locals in do_no_page() makes the change hard to
+> review.  Should have been a separate patch.
+> 
+> In fact, the patch would have been heaps clearer if that renaming had been
+> a separate patch.
+
+Shall I?
