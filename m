@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965527AbXCGOYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965526AbXCGOY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965527AbXCGOYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 09:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965534AbXCGOYU
+	id S965526AbXCGOY1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 09:24:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965529AbXCGOY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 09:24:20 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36924 "EHLO mx1.redhat.com"
+	Wed, 7 Mar 2007 09:24:27 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:59421 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965527AbXCGOYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 09:24:19 -0500
-Subject: [GFS2] add newline to printk message [2/12]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: Richard Fearn <richardfearn@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1173277501.11001.752.camel@quoit.chygwyn.com>
-References: <1173277501.11001.752.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd
-Date: Wed, 07 Mar 2007 14:27:16 +0000
-Message-Id: <1173277636.11001.756.camel@quoit.chygwyn.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
-Content-Transfer-Encoding: 7bit
+	id S965526AbXCGOY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 09:24:26 -0500
+Date: Wed, 7 Mar 2007 06:22:33 -0800
+From: Greg KH <greg@kroah.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: Linux v2.6.21-rc3
+Message-ID: <20070307142233.GA9204@kroah.com>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <1173263132.9349.47.camel@localhost.localdomain> <20070307132621.GA8084@kroah.com> <45EEC90B.6030407@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EEC90B.6030407@rtr.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From d5a6751b32c79680da90eaa76919ffe6e5b8a94f Mon Sep 17 00:00:00 2001
-From: Richard Fearn <richardfearn@gmail.com>
-Date: Sat, 17 Feb 2007 17:29:15 +0000
-Subject: [PATCH] [GFS2] add newline to printk message
+On Wed, Mar 07, 2007 at 09:15:39AM -0500, Mark Lord wrote:
+> Greg / Adrian,
+> 
+> I didn't see anything in -rc3 to address the USB hub/serial crashes
+> reported here for -rc2.  What's the status for those, or who should
+> I be pinging to get them fixed?
 
-Patch for the 2.6.20 stable tree that adds a missing newline to one of
-the printk messages in fs/gfs2/ops_fstype.c.
+I have a series of USB bugfixes that need to get sent to Linus that
+should fix the serial issues.  I'll get to them after I drag this next
+-stable release out the door...
 
-Signed-off-by: Richard Fearn <richardfearn@gmail.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+thanks,
 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index ee80b8a..ee54cb6 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -840,7 +840,7 @@ static struct super_block* get_gfs2_sb(const char *dev_name)
- 	}
- 
- 	printk(KERN_WARNING "GFS2: Unrecognized block device or "
--	       "mount point %s", dev_name);
-+	       "mount point %s\n", dev_name);
- 
- free_nd:
- 	path_release(&nd);
--- 
-1.4.4.2
-
-
-
+greg k-h
