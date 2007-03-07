@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbXCGKBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932863AbXCGKCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751605AbXCGKBm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 05:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbXCGKBm
+	id S932863AbXCGKCp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 05:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932868AbXCGKCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 05:01:42 -0500
-Received: from smtp01.cdmon.com ([86.109.99.230]:59575 "EHLO smtp01.cdmon.com"
+	Wed, 7 Mar 2007 05:02:45 -0500
+Received: from ns2.suse.de ([195.135.220.15]:42693 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbXCGKBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 05:01:41 -0500
-Date: Wed, 7 Mar 2007 11:02:58 +0100
-From: DervishD <lkml@dervishd.net>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>
-Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
-Message-ID: <20070307100258.GA30270@DervishD>
-Mail-Followup-To: "Antonino A. Daplas" <adaplas@gmail.com>,
-	Linux-kernel <linux-kernel@vger.kernel.org>,
-	Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas> <20070226203223.GA161@DervishD> <1172617755.13422.0.camel@daplas> <20070301160139.GA102@DervishD> <1173144817.7219.1.camel@daplas> <20070306062528.GF20292@DervishD> <1173164006.6285.8.camel@daplas>
+	id S932863AbXCGKCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 05:02:44 -0500
+Date: Wed, 7 Mar 2007 11:02:42 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Bill Irwin <bill.irwin@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+Message-ID: <20070307100242.GG8609@wotan.suse.de>
+References: <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu> <20070307003520.08b1a082.akpm@linux-foundation.org> <20070307085323.GB27337@elte.hu> <20070307092821.GB8609@wotan.suse.de> <20070307094420.GL18774@holomorphy.com> <20070307094947.GE8609@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1173164006.6285.8.camel@daplas>
-User-Agent: Mutt/1.4.2.2i
-Organization: DervishD
+In-Reply-To: <20070307094947.GE8609@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Antonino :)
+On Wed, Mar 07, 2007 at 10:49:47AM +0100, Nick Piggin wrote:
+> On Wed, Mar 07, 2007 at 01:44:20AM -0800, Bill Irwin wrote:
+> > On Wed, Mar 07, 2007 at 10:28:21AM +0100, Nick Piggin wrote:
+> > > Depending on whether anyone wants it, and what features they want, we
+> > > could emulate the old syscall, and make a new restricted one which is
+> > > much less intrusive.
+> > > For example, if we can operate only on MAP_ANONYMOUS memory and specify
+> > > that nonlinear mappings effectively mlock the pages, then we can get
+> > > rid of all the objrmap and unmap_mapping_range handling, forget about
+> > > the writeout and msync problems...
+> > 
+> > Anonymous-only would make it a doorstop for Oracle, since its entire
+> > motive for using it is to window into objects larger than user virtual
+> 
+> Uh, duh yes I don't mean MAP_ANONYMOUS, I was just thinking of the shmem
+> inode that sits behind MAP_ANONYMOUS|MAP_SHARED. Of course if you don't
+> have a file descriptor to get a pgoff, then remap_file_pages is a doorstop
+> for everyone ;)
+> 
+> > address spaces (this likely also applies to UML, though they should
+> > really chime in to confirm). Restrictions to tmpfs and/or ramfs would
+> > likely be liveable, though I suspect some things might want to do it to
+> > shm segments (I'll ask about that one). There's definitely no need for a
+> > persistent backing store for the object to be remapped in Oracle's case,
+> > in any event. It's largely the in-core destination and source of IO, not
+> > something saved on-disk itself.
+> 
+> Yeah, tmpfs/shm segs are what I was thinking about. If UML can live with
+> that as well, then I think it might be a good option.
 
- * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> On Tue, 2007-03-06 at 07:25 +0100, DervishD wrote:
-> > > >     If you want me to test other patches, just tell :)
-> > > 
-> > > Can you change the mdelay to udelay and use higher/lower delay values
-> > > to see if there's any improvement?
+Oh, hmm.... if you can truncate these things then you still need to
+force unmap so you still need i_mmap_nonlinear.
 
-    Regarding the delay: I've discovered a weird thing. When the display
-is garbled, if I insist on outputting more text to the screen, sooner or
-later it de-garbles! In fact, once the display has been garbled (not
-easy to do, sometimes I can work for hours in a terminal before it gets
-garbled, I can't reproduce it always), a continous output makes it
-de-garble and garble again, in cycles.
-
-    Looks like an off-by-one error rather than a speed/sync error, am I
-completely clueless?
-
-    This happens with vanilla 2.6.19.5, not with the patched one, which
-I haven't been able to test yet (sorry...).
-
-    Raúl Núñez de Arenas Coronado
-
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+But come to think of it, I still don't think nonlinear mappings are
+too bad as they are ;)
