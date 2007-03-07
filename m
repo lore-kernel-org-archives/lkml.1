@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422933AbXCGRSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422938AbXCGRTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422933AbXCGRSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422924AbXCGRSl
+	id S1422938AbXCGRTF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:19:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422890AbXCGRSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:18:41 -0500
-Received: from ns.suse.de ([195.135.220.2]:44421 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:18:47 -0500
+Received: from ns2.suse.de ([195.135.220.15]:43735 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422907AbXCGRSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:18:13 -0500
-Message-Id: <20070307171621.859852338@mini.kroah.org>
+	id S1422905AbXCGRSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:18:09 -0500
+Message-Id: <20070307171624.981519442@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:12:01 -0800
+Date: Wed, 07 Mar 2007 09:12:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -23,73 +23,83 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       nish.aravamudan@gmail.com, wli@holomorphy.com, kenchen@google.com,
-       agl@us.ibm.com, hugh@veritas.com, david@gibson.dropbear.id.au,
-       William Irwin <bill.irwin@oracle.com>
-Subject: [patch 086/101] hugetlb: preserve hugetlb pte dirty state
-Content-Disposition: inline; filename=hugetlb-preserve-hugetlb-pte-dirty-state.patch
+       takata@linux-m32r.org
+Subject: [patch 087/101] m32r: build fix for processors without ISA_DSP_LEVEL2
+Content-Disposition: inline; filename=m32r-build-fix-for-processors-without-isa_dsp_level2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: "Ken Chen" <kenchen@google.com>
+From: Hirokazu Takata <takata@linux-m32r.org>
 
-__unmap_hugepage_range() is buggy that it does not preserve dirty state of
-huge_pte when unmapping hugepage range.  It causes data corruption in the
-event of dop_caches being used by sys admin.  For example, an application
-creates a hugetlb file, modify pages, then unmap it.  While leaving the
-hugetlb file alive, comes along sys admin doing a "echo 3 >
-/proc/sys/vm/drop_caches".
+Additional fixes for processors without ISA_DSP_LEVEL2.  sigcontext_t does not
+have dummy_acc1h, dummy_acc1l members any longer.
 
-drop_pagecache_sb() will happily free all pages that aren't marked dirty if
-there are no active mapping.  Later when application remaps the hugetlb
-file back and all data are gone, triggering catastrophic flip over on
-application.
-
-Not only that, the internal resv_huge_pages count will also get all messed
-up.  Fix it up by marking page dirty appropriately.
-
-Signed-off-by: Ken Chen <kenchen@google.com>
-Cc: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-Cc: Adam Litke <agl@us.ibm.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>
-Acked-by: William Irwin <bill.irwin@oracle.com>
-Cc: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Hirokazu Takata <takata@linux-m32r.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/hugetlbfs/inode.c |    5 ++++-
- mm/hugetlb.c         |    2 ++
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ arch/m32r/kernel/process.c |    2 +-
+ arch/m32r/kernel/signal.c  |   26 ++++----------------------
+ 2 files changed, 5 insertions(+), 23 deletions(-)
 
---- linux-2.6.20.1.orig/fs/hugetlbfs/inode.c
-+++ linux-2.6.20.1/fs/hugetlbfs/inode.c
-@@ -449,10 +449,13 @@ static int hugetlbfs_symlink(struct inod
- }
- 
- /*
-- * For direct-IO reads into hugetlb pages
-+ * mark the head page dirty
-  */
- static int hugetlbfs_set_page_dirty(struct page *page)
- {
-+	struct page *head = (struct page *)page_private(page);
-+
-+	SetPageDirty(head);
- 	return 0;
- }
- 
---- linux-2.6.20.1.orig/mm/hugetlb.c
-+++ linux-2.6.20.1/mm/hugetlb.c
-@@ -389,6 +389,8 @@ void __unmap_hugepage_range(struct vm_ar
- 			continue;
- 
- 		page = pte_page(pte);
-+		if (pte_dirty(pte))
-+			set_page_dirty(page);
- 		list_add(&page->lru, &page_list);
- 	}
- 	spin_unlock(&mm->page_table_lock);
+--- linux-2.6.20.1.orig/arch/m32r/kernel/process.c
++++ linux-2.6.20.1/arch/m32r/kernel/process.c
+@@ -174,7 +174,7 @@ void show_regs(struct pt_regs * regs)
+ 	  regs->acc1h, regs->acc1l);
+ #elif defined(CONFIG_ISA_M32R2) || defined(CONFIG_ISA_M32R)
+ 	printk("ACCH[%08lx]:ACCL[%08lx]\n", \
+-	  regs->acch, regs->accl);
++	  regs->acc0h, regs->acc0l);
+ #else
+ #error unknown isa configuration
+ #endif
+--- linux-2.6.20.1.orig/arch/m32r/kernel/signal.c
++++ linux-2.6.20.1/arch/m32r/kernel/signal.c
+@@ -109,19 +109,10 @@ restore_sigcontext(struct pt_regs *regs,
+ 	COPY(r10);
+ 	COPY(r11);
+ 	COPY(r12);
+-#if defined(CONFIG_ISA_M32R2) && defined(CONFIG_ISA_DSP_LEVEL2)
+ 	COPY(acc0h);
+ 	COPY(acc0l);
+-	COPY(acc1h);
+-	COPY(acc1l);
+-#elif defined(CONFIG_ISA_M32R2) || defined(CONFIG_ISA_M32R)
+-	COPY(acch);
+-	COPY(accl);
+-	COPY(dummy_acc1h);
+-	COPY(dummy_acc1l);
+-#else
+-#error unknown isa configuration
+-#endif
++	COPY(acc1h);		/* ISA_DSP_LEVEL2 only */
++	COPY(acc1l);		/* ISA_DSP_LEVEL2 only */
+ 	COPY(psw);
+ 	COPY(bpc);
+ 	COPY(bbpsw);
+@@ -196,19 +187,10 @@ setup_sigcontext(struct sigcontext __use
+ 	COPY(r10);
+ 	COPY(r11);
+ 	COPY(r12);
+-#if defined(CONFIG_ISA_M32R2) && defined(CONFIG_ISA_DSP_LEVEL2)
+ 	COPY(acc0h);
+ 	COPY(acc0l);
+-	COPY(acc1h);
+-	COPY(acc1l);
+-#elif defined(CONFIG_ISA_M32R2) || defined(CONFIG_ISA_M32R)
+-	COPY(acch);
+-	COPY(accl);
+-	COPY(dummy_acc1h);
+-	COPY(dummy_acc1l);
+-#else
+-#error unknown isa configuration
+-#endif
++	COPY(acc1h);		/* ISA_DSP_LEVEL2 only */
++	COPY(acc1l);		/* ISA_DSP_LEVEL2 only */
+ 	COPY(psw);
+ 	COPY(bpc);
+ 	COPY(bbpsw);
 
 --
