@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965617AbXCGR3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422885AbXCGR32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965617AbXCGR3Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965589AbXCGR2u
+	id S1422885AbXCGR32 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422853AbXCGRRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:28:50 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:44818 "EHLO smtp.osdl.org"
+	Wed, 7 Mar 2007 12:17:17 -0500
+Received: from mx2.suse.de ([195.135.220.15]:43485 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965597AbXCGR2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:28:46 -0500
-Date: Wed, 7 Mar 2007 09:26:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Kirk Kuchov <kirk.kuchov@gmail.com>
-cc: Pavel Machek <pavel@ucw.cz>, Davide Libenzi <davidel@xmailserver.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Theodore Tso <tytso@mit.edu>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <ca9528de0703070402r3d189348t78d27cf3b80b4623@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0703070925200.5963@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703011123200.23932@alien.or.mcafeemobile.com> 
- <Pine.LNX.4.64.0703020840120.1977@alien.or.mcafeemobile.com> 
- <20070303100625.GA22557@2ka.mipt.ru>  <Pine.LNX.4.64.0703030945030.7075@alien.or.mcafeemobile.com>
-  <20070303203140.GA756@2ka.mipt.ru>  <Pine.LNX.4.64.0703031248450.7278@alien.or.mcafeemobile.com>
-  <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com> 
- <Pine.LNX.4.64.0703041129550.3300@alien.or.mcafeemobile.com> 
- <ca9528de0703041449x695a4c4bpc133d9afd5524019@mail.gmail.com> 
- <20070306081935.GB2040@elf.ucw.cz> <ca9528de0703070402r3d189348t78d27cf3b80b4623@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1422821AbXCGRQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:16:46 -0500
+Message-Id: <20070307171507.521078125@mini.kroah.org>
+References: <20070307171035.150802805@mini.kroah.org>
+User-Agent: quilt/0.45-1
+Date: Wed, 07 Mar 2007 09:11:42 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 067/101] Fix %100 cpu spinning on sparc64
+Content-Disposition: inline; filename=fix-100-cpu-spinning-on-sparc64.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Miller <davem@davemloft.net>
 
+[SPARC64] bbc_i2c: Fix kenvctrld eating %100 cpu.
 
-On Wed, 7 Mar 2007, Kirk Kuchov wrote:
-> 
-> I don't believe I'm wasting my time explaining this. They don't exist
-> as /dev/null, they are just fucking _LINKS_. I could even "ln -s
-> /proc/self/fd/0 sucker". A real /dev/stdout can/could even exist, but
-> that's not the point!
+Based almost entirely upon a patch by Joerg Friedrich
 
-Actually, one large reason for /proc/self/ existing is exactly /dev/stdin 
-and friends.
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-And yes, /proc/self looks like a link too, but that doesn't change the 
-fact that it's a very special file. No different from /dev/null or 
-friends.
+---
+ drivers/sbus/char/bbc_i2c.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-		Linus
+--- linux-2.6.20.1.orig/drivers/sbus/char/bbc_i2c.c
++++ linux-2.6.20.1/drivers/sbus/char/bbc_i2c.c
+@@ -187,19 +187,20 @@ static int wait_for_pin(struct bbc_i2c_b
+ 	bp->waiting = 1;
+ 	add_wait_queue(&bp->wq, &wait);
+ 	while (limit-- > 0) {
+-		u8 val;
++		unsigned long val;
+ 
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		*status = val = readb(bp->i2c_control_regs + 0);
+-		if ((val & I2C_PCF_PIN) == 0) {
++		val = wait_event_interruptible_timeout(
++				bp->wq,
++				(((*status = readb(bp->i2c_control_regs + 0))
++				  & I2C_PCF_PIN) == 0),
++				msecs_to_jiffies(250));
++		if (val > 0) {
+ 			ret = 0;
+ 			break;
+ 		}
+-		msleep_interruptible(250);
+ 	}
+ 	remove_wait_queue(&bp->wq, &wait);
+ 	bp->waiting = 0;
+-	current->state = TASK_RUNNING;
+ 
+ 	return ret;
+ }
+@@ -340,7 +341,7 @@ static irqreturn_t bbc_i2c_interrupt(int
+ 	 */
+ 	if (bp->waiting &&
+ 	    !(readb(bp->i2c_control_regs + 0x0) & I2C_PCF_PIN))
+-		wake_up(&bp->wq);
++		wake_up_interruptible(&bp->wq);
+ 
+ 	return IRQ_HANDLED;
+ }
+
+--
