@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992709AbXCGXOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965735AbXCGXPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992709AbXCGXOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992719AbXCGXOU
+	id S965735AbXCGXPF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965730AbXCGXPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:14:20 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46265 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992709AbXCGXOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:14:17 -0500
-Date: Wed, 7 Mar 2007 15:12:05 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [patch 102/101] TCP: Fix minisock tcp_create_openreq_child() typo.
-Message-ID: <20070307231205.GP10574@sequoia.sous-sol.org>
-References: <20070307171035.150802805@mini.kroah.org> <20070307173420.GA24957@kroah.com>
+	Wed, 7 Mar 2007 18:15:04 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:42677 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965726AbXCGXPA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 18:15:00 -0500
+Subject: Re: [PATCH 0/20] x86_64 Relocatable bzImage support (V4)
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: vgoyal@in.ibm.com,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
+       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
+       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
+       pavel@suse.cz, rjw@sisk.pl
+In-Reply-To: <1173300597.3219.105.camel@nigel.suspend2.net>
+References: <20070307065703.GA23412@in.ibm.com>
+	 <1173280059.3540.5.camel@laptopd505.fenrus.org>
+	 <1173300597.3219.105.camel@nigel.suspend2.net>
+Content-Type: text/plain
+Date: Thu, 08 Mar 2007 10:15:02 +1100
+Message-Id: <1173309302.13442.0.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307173420.GA24957@kroah.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.9.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Hi.
 
-On 2/28/07, KOVACS Krisztian <hidden@balabit.hu> wrote:
->
->   Hi,
->
->   While reading TCP minisock code I've found this suspiciously looking
-> code fragment:
->
-> - 8< -
-> struct sock *tcp_create_openreq_child(struct sock *sk, struct request_sock *req, struct sk_buff *skb)
-> {
->         struct sock *newsk = inet_csk_clone(sk, req, GFP_ATOMIC);
->
->         if (newsk != NULL) {
->                 const struct inet_request_sock *ireq = inet_rsk(req);
->                 struct tcp_request_sock *treq = tcp_rsk(req);
->                 struct inet_connection_sock *newicsk = inet_csk(sk);
->                 struct tcp_sock *newtp;
-> - 8< -
->
->   The above code initializes newicsk to inet_csk(sk), isn't that supposed
-> to be inet_csk(newsk)?  As far as I can tell this might leave
-> icsk_ack.last_seg_size zero even if we do have received data.
+On Thu, 2007-03-08 at 07:49 +1100, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Wed, 2007-03-07 at 07:07 -0800, Arjan van de Ven wrote:
+> > On Wed, 2007-03-07 at 12:27 +0530, Vivek Goyal wrote:
+> > > Hi,
+> > > 
+> > > Here is another attempt on x86_64 relocatable bzImage patches(V4). This
+> > > patchset makes a bzImage relocatable and same kernel binary can be loaded
+> > > and run from different physical addresses.
+> > 
+> > 
+> > have these patches been extensively tested with various suspend
+> > scenarios? (S1,S3,S4 in acpi speak or s2ram and s2disk in Linux speak)
+> 
+> We did work on this for RHEL5, getting relocatable kernel support
+> working fine with S4. While doing it and since, I've been running
+> Suspend2 with the same patch.
+> 
+> Since that work, Vivek has done more modifications, but I can confirm
+> that the basic design is reliable with S4. Haven't tried S3, but can do.
+> Will report back shortly.
 
-Good catch!
+S3 works okay here with a relocatable x86_64 kernel (2.6.20).
 
-David, please apply the attached patch.
+Regards,
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Nigel
 
----
- net/ipv4/tcp_minisocks.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.20.1.orig/net/ipv4/tcp_minisocks.c
-+++ linux-2.6.20.1/net/ipv4/tcp_minisocks.c
-@@ -381,7 +381,7 @@ struct sock *tcp_create_openreq_child(st
- 	if (newsk != NULL) {
- 		const struct inet_request_sock *ireq = inet_rsk(req);
- 		struct tcp_request_sock *treq = tcp_rsk(req);
--		struct inet_connection_sock *newicsk = inet_csk(sk);
-+		struct inet_connection_sock *newicsk = inet_csk(newsk);
- 		struct tcp_sock *newtp;
- 
- 		/* Now setup tcp_sock */
