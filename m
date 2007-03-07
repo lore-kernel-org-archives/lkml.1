@@ -1,37 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422639AbXCGJLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422641AbXCGJO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422639AbXCGJLf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422637AbXCGJLf
+	id S1422641AbXCGJO2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422643AbXCGJO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:11:35 -0500
-Received: from mail.suse.de ([195.135.220.2]:36307 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 04:14:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34291 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422639AbXCGJLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:11:34 -0500
-Date: Wed, 7 Mar 2007 10:11:32 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307091132.GB17433@wotan.suse.de>
-References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu> <20070307085944.GA17433@wotan.suse.de>
+	id S1422641AbXCGJO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:14:27 -0500
+Date: Wed, 7 Mar 2007 10:13:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/6 -rt] powerpc 2.6.20-rt8: fix boot/runtime errors/warnings for PowerPC(ppc64)
+Message-ID: <20070307091340.GB1783@elte.hu>
+References: <yyi8xe925vg.wl@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070307085944.GA17433@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <yyi8xe925vg.wl@toshiba.co.jp>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 09:59:44AM +0100, Nick Piggin wrote:
-> Apart from a handful of trivial if (pte_file()) cases throughout mm/,
-> our maintainance burden basically now amounts to the following patch.
-> Even the rmap.c change looks bigger than it is because I split out
-> the nonlinear unmapping code from try_to_unmap_file. Not too bad, eh? :)
 
-Oh, there is a bit more nonlinear mmap list manipulation I'd forgotten
-about too... makes things a little bit worse, but not too much.
+* Tsutomu OWA <tsutomu.owa@toshiba.co.jp> wrote:
+
+> 
+> Hi Ingo,
+> 
+>   Please consider for inclusion in your rt tree.
+> 
+>   This series of patches fixes boot and runntime errors/warnings for
+> powerpc (esp. 64 bit).  This applies to linux-2.6.20, patch-2.6.20-rt8
+> and previous my patch set;
+>   http://ozlabs.org/pipermail/linuxppc-dev/2007-March/032640.html
+>   http://lkml.org/lkml/2007/3/6/503
+
+thanks, applied.
+
+	Ingo
