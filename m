@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992554AbXCGUri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992559AbXCGUt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992554AbXCGUri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 15:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992558AbXCGUri
+	id S2992559AbXCGUt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 15:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992560AbXCGUt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 15:47:38 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:40063 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992554AbXCGUrh (ORCPT
+	Wed, 7 Mar 2007 15:49:57 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:45641 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992559AbXCGUt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 15:47:37 -0500
-Date: Wed, 07 Mar 2007 15:47:32 -0500
-From: Eric Buddington <ebuddington@verizon.net>
-Subject: Re: [linux-usb-devel] khubd and ent:sda1 sucking CPU with reiser4 +
- USB HD
-In-reply-to: <Pine.LNX.4.44L0.0703071513490.8656-100000@iolanthe.rowland.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ebuddington@wesleyan.edu, Oliver Neukum <oneukum@suse.de>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Reply-to: ebuddington@wesleyan.edu
-Message-id: <20070307204722.GA3605@pool-71-123-121-36.spfdma.east.verizon.net>
-Organization: ECS Labs
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-References: <20070307163220.GC889@pool-71-123-121-36.spfdma.east.verizon.net>
- <Pine.LNX.4.44L0.0703071513490.8656-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Eric-conspiracy: there is no conspiracy
+	Wed, 7 Mar 2007 15:49:56 -0500
+Subject: Re: [PATCH 0/20] x86_64 Relocatable bzImage support (V4)
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: vgoyal@in.ibm.com,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
+       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
+       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
+       pavel@suse.cz, rjw@sisk.pl
+In-Reply-To: <1173280059.3540.5.camel@laptopd505.fenrus.org>
+References: <20070307065703.GA23412@in.ibm.com>
+	 <1173280059.3540.5.camel@laptopd505.fenrus.org>
+Content-Type: text/plain
+Date: Thu, 08 Mar 2007 07:49:57 +1100
+Message-Id: <1173300597.3219.105.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 03:22:05PM -0500, Alan Stern wrote:
-> On Wed, 7 Mar 2007, Eric Buddington,,, wrote:
+Hi.
+
+On Wed, 2007-03-07 at 07:07 -0800, Arjan van de Ven wrote:
+> On Wed, 2007-03-07 at 12:27 +0530, Vivek Goyal wrote:
+> > Hi,
+> > 
+> > Here is another attempt on x86_64 relocatable bzImage patches(V4). This
+> > patchset makes a bzImage relocatable and same kernel binary can be loaded
+> > and run from different physical addresses.
 > 
-> > > > So SysRq-t doesn't show anything about khubd, and SysRq-p doesn't give
-> > > > me anything at all. What else can I try?
 > 
-> How about SysRq-r?
+> have these patches been extensively tested with various suspend
+> scenarios? (S1,S3,S4 in acpi speak or s2ram and s2disk in Linux speak)
 
-SysRq : Keyboard mode set to XLATE
+We did work on this for RHEL5, getting relocatable kernel support
+working fine with S4. While doing it and since, I've been running
+Suspend2 with the same patch.
 
-> These problems start with some USB resets, right?  Did they occur with 
-> earlier kernel versions, or is this new behavior?
+Since that work, Vivek has done more modifications, but I can confirm
+that the basic design is reliable with S4. Haven't tried S3, but can do.
+Will report back shortly.
 
-Yes, the problem starts with USB resets (or USB errors that trigger a reset)
+Regards,
 
-> How often does the problem occur?
-
-Recently, the USB drive has choked up after several hours of moderate
-use. However, before this instance, it would consistently hang up my
-watchdog process and force a system reboot (no idea why; the watchdog
-process didn't use this drive at all). This may have changed when I
-upgraded from 2.6.20-rc6-mm3 to 2.6.20-mm2, but my sample size is to
-small to be sure.
-
--Eric
+Nigel
 
