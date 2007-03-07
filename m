@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750821AbXCGQ02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750992AbXCGQ1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750821AbXCGQ02 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 11:26:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXCGQ02
+	id S1750992AbXCGQ1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 11:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932143AbXCGQ1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 11:26:28 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42328 "EHLO smtp.osdl.org"
+	Wed, 7 Mar 2007 11:27:33 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:46725 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821AbXCGQ01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 11:26:27 -0500
-Date: Wed, 7 Mar 2007 08:25:54 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tim Waugh <tim@cyberelk.net>, linux-parport@lists.infradead.org
-Subject: Re: Linux v2.6.21-rc3
-In-Reply-To: <45EEB99D.7020406@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0703070813460.5963@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
- <45EEB99D.7020406@googlemail.com>
+	id S1750992AbXCGQ1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 11:27:32 -0500
+Date: Thu, 8 Mar 2007 01:24:46 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates
+Message-ID: <20070307162446.GA16079@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please pull from:
 
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-On Wed, 7 Mar 2007, Michal Piotrowski wrote:
-> 
-> BTW. Does anyone care about parport console?
+Which contains:
 
-I do think we care, but I don't think anybody in particular feels singled 
-out as a maintainer...
+Hideo Saito (1):
+      sh: Fix kernel thread stack corruption with preempt.
 
-> console=lp0 hangs since at least 2.6.18
+Paul Mundt (6):
+      doc: Add SH to vdso and earlyprintk in kernel-parameters.txt
+      sysctl: Support vdso_enabled sysctl on SH.
+      sh: Use L1_CACHE_BYTES for .data.cacheline_aligned.
+      sh: Enable SM501 support for RTS7751R2D.
+      sh: Revert lazy dcache writeback changes.
+      sh: Kill off I/O cruft for R7780RP.
 
-Ok, that's not exactly new then, which implies that not a *lot* of people 
-even care ;)
+Ryusuke Sakato (1):
+      sh: Fix sigmask trampling in signal delivery.
 
-Do you think you'd be willing to try to figure out when it started? You 
-seem to be the first one to have even noticed.
+Stuart Menefy (1):
+      sh: Clear UBC when not in use.
 
-(I tried to google it, and the most recent thing google finds is your 
-report, although I also saw a report of somebody trying it under qemu in 
-July last year and also reported a hang)
-
-Looking through the history of the last few years (it in git), I don't see 
-anything even *remotely* suspicious there, so it's probably either 
- (a) really old, and hasn't worked in a loong time and nobody just uses it
- (b) something really stupid that happened while doing other cleanups (but 
-     the changes in the last two years are *literally* just things like 
-     removing devfs support)
- (c) some infrastructure change that subtly broke lpconsole, probably 
-     causing an oops during printk, which obviously results in a printk 
-     itself, which thus hangs.
-
-It would be good to get it fixed, although for obvious reasons it's not a 
-huge priority..
-
-		Linus
+ Documentation/kernel-parameters.txt       |    5 
+ arch/sh/boards/renesas/r7780rp/Makefile   |    2 
+ arch/sh/boards/renesas/r7780rp/io.c       |  233 ------------------------------
+ arch/sh/boards/renesas/r7780rp/setup.c    |   24 ---
+ arch/sh/boards/renesas/rts7751r2d/setup.c |   26 +++
+ arch/sh/configs/rts7751r2d_defconfig      |  110 ++++++++++++--
+ arch/sh/kernel/entry-common.S             |    2 
+ arch/sh/kernel/io_generic.c               |    3 
+ arch/sh/kernel/process.c                  |    5 
+ arch/sh/kernel/ptrace.c                   |   45 ++++-
+ arch/sh/kernel/signal.c                   |    4 
+ arch/sh/kernel/vmlinux.lds.S              |    3 
+ arch/sh/mm/cache-sh4.c                    |   12 -
+ arch/sh/mm/cache-sh7705.c                 |    9 -
+ arch/sh/mm/pg-sh4.c                       |   22 ++
+ arch/sh/mm/pg-sh7705.c                    |   31 +++
+ arch/sh/mm/tlb-flush.c                    |   55 -------
+ arch/sh/mm/tlb-sh3.c                      |   63 +++++++-
+ arch/sh/mm/tlb-sh4.c                      |   68 ++++++++
+ include/asm-sh/cache.h                    |    3 
+ include/asm-sh/cacheflush.h               |    3 
+ include/asm-sh/cpu-sh3/cacheflush.h       |    2 
+ include/asm-sh/cpu-sh4/cacheflush.h       |    2 
+ include/asm-sh/pgtable.h                  |    5 
+ include/asm-sh/thread_info.h              |    2 
+ kernel/sysctl.c                           |    3 
+ 26 files changed, 371 insertions(+), 371 deletions(-)
