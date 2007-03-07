@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161291AbXCGH3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXCGH3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161291AbXCGH3E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:29:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161288AbXCGH2W
+	id S1161140AbXCGH3r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161287AbXCGH3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:28:22 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:48408 "EHLO e1.ny.us.ibm.com"
+	Wed, 7 Mar 2007 02:29:10 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:59729 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161287AbXCGH2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:28:09 -0500
-Date: Wed, 7 Mar 2007 12:43:20 +0530
+	id S1161140AbXCGH2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 02:28:00 -0500
+Date: Wed, 7 Mar 2007 12:48:50 +0530
 From: Vivek Goyal <vgoyal@in.ibm.com>
 To: linux kernel mailing list <linux-kernel@vger.kernel.org>
 Cc: Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
        akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
        magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
        pavel@suse.cz, rjw@sisk.pl
-Subject: [PATCH 11/20] x86_64: wakeup.S misc cleanups
-Message-ID: <20070307071320.GL23412@in.ibm.com>
+Subject: [PATCH 15/20] Move swsusp __pa() dependent code to arch portion
+Message-ID: <20070307071850.GP23412@in.ibm.com>
 Reply-To: vgoyal@in.ibm.com
 References: <20070307065703.GA23412@in.ibm.com>
 Mime-Version: 1.0
@@ -30,256 +30,166 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-o Various cleanups. One of the main purpose of cleanups is that make
-  wakeup.S as close as possible to trampoline.S.
+o __pa() should be used only on kernel linearly mapped virtual addresses
+  and not on kernel text and data addresses.
 
-o Following are the changes
-	- Indentations for comments.
-	- Changed the gdt table to compact form and to resemble the
-	  one in trampoline.S
-	- Take the jump to 32bit from real mode using ljmpl. Makes code
-	  more readable.
-	- After enabling long mode, directly take a long jump for 64bit
-	  mode. No need to take an extra jump to "reach_comaptibility_mode"
-	- Stack is not used after real mode. So don't load stack in
- 	  32 bit mode.
-	- No need to enable PGE here.
-	- No need to do extra EFER read, anyway we trash the read contents.
-	- No need to enable system call (EFER_SCE). Anyway it will be 
-	  enabled when original EFER is restored.
-	- No need to set MP, ET, NE, WP, AM bits in cr0. Very soon we will
-  	  reload the original cr0 while restroing the processor state.
+o Hibernation code needs to determine the physical address associated
+  with kernel symbol to mark a section boundary which contains pages which
+  don't have to be saved and restored during hibernate/resume operation.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+o Move this piece of code in arch dependent section. So that architectures
+  which don't have kernel text/data mapped into kernel linearly mapped
+  region can come up with their own ways of determining physical addresses
+  associated with a kernel text.
+
 Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
 ---
 
- arch/x86_64/kernel/acpi/wakeup.S |  112 +++++++++++++--------------------------
- 1 file changed, 40 insertions(+), 72 deletions(-)
+ arch/i386/power/suspend.c     |   14 ++++++++++++++
+ arch/powerpc/kernel/Makefile  |    1 +
+ arch/powerpc/kernel/suspend.c |   24 ++++++++++++++++++++++++
+ arch/x86_64/kernel/suspend.c  |   14 ++++++++++++++
+ kernel/power/power.h          |    5 ++---
+ kernel/power/snapshot.c       |   11 -----------
+ 6 files changed, 55 insertions(+), 14 deletions(-)
 
-diff -puN arch/x86_64/kernel/acpi/wakeup.S~x86_64-wakeup.S-misc-cleanups arch/x86_64/kernel/acpi/wakeup.S
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/acpi/wakeup.S~x86_64-wakeup.S-misc-cleanups	2007-03-07 01:27:32.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/acpi/wakeup.S	2007-03-07 01:27:32.000000000 +0530
-@@ -30,11 +30,12 @@ wakeup_code:
- 	cld
- 	# setup data segment
- 	movw	%cs, %ax
--	movw	%ax, %ds					# Make ds:0 point to wakeup_start
-+	movw	%ax, %ds		# Make ds:0 point to wakeup_start
- 	movw	%ax, %ss
--	mov	$(wakeup_stack - wakeup_code), %sp		# Private stack is needed for ASUS board
-+					# Private stack is needed for ASUS board
-+	mov	$(wakeup_stack - wakeup_code), %sp
+diff -puN arch/i386/power/suspend.c~move-swsusp-__pa-dependent-code-to-arch-portion arch/i386/power/suspend.c
+--- linux-2.6.21-rc2-reloc/arch/i386/power/suspend.c~move-swsusp-__pa-dependent-code-to-arch-portion	2007-03-07 01:30:18.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/i386/power/suspend.c	2007-03-07 01:30:18.000000000 +0530
+@@ -16,6 +16,9 @@
+ /* Defined in arch/i386/power/swsusp.S */
+ extern int restore_image(void);
  
--	pushl	$0						# Kill any dangerous flags
-+	pushl	$0			# Kill any dangerous flags
- 	popfl
- 
- 	movl	real_magic - wakeup_code, %eax
-@@ -45,7 +46,7 @@ wakeup_code:
- 	jz	1f
- 	lcall   $0xc000,$3
- 	movw	%cs, %ax
--	movw	%ax, %ds					# Bios might have played with that
-+	movw	%ax, %ds		# Bios might have played with that
- 	movw	%ax, %ss
- 1:
- 
-@@ -75,9 +76,12 @@ wakeup_code:
- 	jmp	1f
- 1:
- 
--	.byte 0x66, 0xea			# prefix + jmpi-opcode
--	.long	wakeup_32 - __START_KERNEL_map
--	.word	__KERNEL_CS
-+	ljmpl   *(wakeup_32_vector - wakeup_code)
++/* References to section boundaries */
++extern const void __nosave_begin, __nosave_end;
 +
-+	.balign 4
-+wakeup_32_vector:
-+	.long   wakeup_32 - __START_KERNEL_map
-+	.word   __KERNEL32_CS, 0
+ /* Pointer to the temporary resume page tables */
+ pgd_t *resume_pg_dir;
  
- 	.code32
- wakeup_32:
-@@ -96,65 +100,50 @@ wakeup_32:
- 	jnc	bogus_cpu
- 	movl	%edx,%edi
- 	
--	movw	$__KERNEL_DS, %ax
--	movw	%ax, %ds
--	movw	%ax, %es
--	movw	%ax, %fs
--	movw	%ax, %gs
-+	movl	$__KERNEL_DS, %eax
-+	movl	%eax, %ds
- 
--	movw	$__KERNEL_DS, %ax	
--	movw	%ax, %ss
--
--	mov	$(wakeup_stack - __START_KERNEL_map), %esp
- 	movl	saved_magic - __START_KERNEL_map, %eax
- 	cmpl	$0x9abcdef0, %eax
- 	jne	bogus_32_magic
- 
-+	movw	$0x0e00 + 'i', %ds:(0xb8012)
-+	movb	$0xa8, %al	;  outb %al, $0x80;
+@@ -156,3 +159,14 @@ int swsusp_arch_resume(void)
+ 	restore_image();
+ 	return 0;
+ }
 +
- 	/*
- 	 * Prepare for entering 64bits mode
- 	 */
- 
--	/* Enable PAE mode and PGE */
-+	/* Enable PAE */
- 	xorl	%eax, %eax
- 	btsl	$5, %eax
--	btsl	$7, %eax
- 	movl	%eax, %cr4
- 
- 	/* Setup early boot stage 4 level pagetables */
- 	movl	$(wakeup_level4_pgt - __START_KERNEL_map), %eax
- 	movl	%eax, %cr3
- 
--	/* Setup EFER (Extended Feature Enable Register) */
--	movl	$MSR_EFER, %ecx
--	rdmsr
--	/* Fool rdmsr and reset %eax to avoid dependences */
--	xorl	%eax, %eax
- 	/* Enable Long Mode */
-+	xorl    %eax, %eax
- 	btsl	$_EFER_LME, %eax
--	/* Enable System Call */
--	btsl	$_EFER_SCE, %eax
- 
--	/* No Execute supported? */	
-+	/* No Execute supported? */
- 	btl	$20,%edi
- 	jnc     1f
- 	btsl	$_EFER_NX, %eax
--1:	
- 				
- 	/* Make changes effective */
-+1:	movl    $MSR_EFER, %ecx
-+	xorl    %edx, %edx
- 	wrmsr
--	wbinvd
- 
- 	xorl	%eax, %eax
- 	btsl	$31, %eax			/* Enable paging and in turn activate Long Mode */
- 	btsl	$0, %eax			/* Enable protected mode */
--	btsl	$1, %eax			/* Enable MP */
--	btsl	$4, %eax			/* Enable ET */
--	btsl	$5, %eax			/* Enable NE */
--	btsl	$16, %eax			/* Enable WP */
--	btsl	$18, %eax			/* Enable AM */
- 
- 	/* Make changes effective */
- 	movl	%eax, %cr0
++/*
++ *	pfn_is_nosave - check if given pfn is in the 'nosave' section
++ */
 +
- 	/* At this point:
- 		CR4.PAE must be 1
- 		CS.L must be 0
-@@ -162,11 +151,6 @@ wakeup_32:
- 		Next instruction must be a branch
- 		This must be on identity-mapped page
- 	*/
--	jmp	reach_compatibility_mode
--reach_compatibility_mode:
--	movw	$0x0e00 + 'i', %ds:(0xb8012)
--	movb	$0xa8, %al	;  outb %al, $0x80; 	
--		
- 	/*
- 	 * At this point we're in long mode but in 32bit compatibility mode
- 	 * with EFER.LME = 1, CS.L = 0, CS.D = 1 (and in turn
-@@ -174,24 +158,19 @@ reach_compatibility_mode:
- 	 * the new gdt/idt that has __KERNEL_CS with CS.L = 1.
- 	 */
++int pfn_is_nosave(unsigned long pfn)
++{
++	unsigned long nosave_begin_pfn = __pa_symbol(&__nosave_begin) >> PAGE_SHIFT;
++	unsigned long nosave_end_pfn = PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
++	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
++}
+diff -puN arch/powerpc/kernel/Makefile~move-swsusp-__pa-dependent-code-to-arch-portion arch/powerpc/kernel/Makefile
+--- linux-2.6.21-rc2-reloc/arch/powerpc/kernel/Makefile~move-swsusp-__pa-dependent-code-to-arch-portion	2007-03-07 01:30:18.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/powerpc/kernel/Makefile	2007-03-07 01:30:18.000000000 +0530
+@@ -37,6 +37,7 @@ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
+ obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
++obj-$(CONFIG_SOFTWARE_SUSPEND) += suspend.o
+ obj32-$(CONFIG_MODULES)		+= module_32.o
  
--	movw	$0x0e00 + 'n', %ds:(0xb8014)
--	movb	$0xa9, %al	;  outb %al, $0x80
--	
--	/* Load new GDT with the 64bit segment using 32bit descriptor */
--	movl	$(pGDT32 - __START_KERNEL_map), %eax
--	lgdt	(%eax)
--
--	movl    $(wakeup_jumpvector - __START_KERNEL_map), %eax
- 	/* Finally jump in 64bit mode */
--	ljmp	*(%eax)
-+	ljmp	*(wakeup_long64_vector - __START_KERNEL_map)
- 
--wakeup_jumpvector:
--	.long	wakeup_long64 - __START_KERNEL_map
--	.word	__KERNEL_CS
-+	.balign 4
-+wakeup_long64_vector:
-+	.long   wakeup_long64 - __START_KERNEL_map
-+	.word   __KERNEL_CS, 0
- 
- .code64
- 
--	/*	Hooray, we are in Long 64-bit mode (but still running in low memory) */
-+	/* Hooray, we are in Long 64-bit mode (but still running in
-+	 * low memory)
-+	 */
- wakeup_long64:
- 	/*
- 	 * We must switch to a new descriptor in kernel space for the GDT
-@@ -201,6 +180,9 @@ wakeup_long64:
- 	 */
- 	lgdt	cpu_gdt_descr - __START_KERNEL_map
- 
-+	movw	$0x0e00 + 'n', %ds:(0xb8014)
-+	movb	$0xa9, %al	;  outb %al, $0x80
+ ifeq ($(CONFIG_PPC_MERGE),y)
+diff -puN /dev/null arch/powerpc/kernel/suspend.c
+--- /dev/null	2007-03-07 00:46:17.354096448 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/powerpc/kernel/suspend.c	2007-03-07 01:30:18.000000000 +0530
+@@ -0,0 +1,24 @@
++/*
++ * Suspend support specific for power.
++ *
++ * Distribute under GPLv2
++ *
++ * Copyright (c) 2002 Pavel Machek <pavel@suse.cz>
++ * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
++ */
 +
- 	movw	$0x0e00 + 'u', %ds:(0xb8016)
- 	
- 	nop
-@@ -227,33 +209,19 @@ wakeup_long64:
++#include <asm/page.h>
++
++/* References to section boundaries */
++extern const void __nosave_begin, __nosave_end;
++
++/*
++ *	pfn_is_nosave - check if given pfn is in the 'nosave' section
++ */
++
++int pfn_is_nosave(unsigned long pfn)
++{
++	unsigned long nosave_begin_pfn = __pa(&__nosave_begin) >> PAGE_SHIFT;
++	unsigned long nosave_end_pfn = PAGE_ALIGN(__pa(&__nosave_end)) >> PAGE_SHIFT;
++	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
++}
+diff -puN arch/x86_64/kernel/suspend.c~move-swsusp-__pa-dependent-code-to-arch-portion arch/x86_64/kernel/suspend.c
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/suspend.c~move-swsusp-__pa-dependent-code-to-arch-portion	2007-03-07 01:30:18.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/suspend.c	2007-03-07 01:30:18.000000000 +0530
+@@ -13,6 +13,9 @@
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
  
- 	.align	64	
- gdta:
-+	/* Its good to keep gdt in sync with one in trampoline.S */
- 	.word	0, 0, 0, 0			# dummy
++/* References to section boundaries */
++extern const void __nosave_begin, __nosave_end;
++
+ struct saved_context saved_context;
+ 
+ unsigned long saved_context_eax, saved_context_ebx, saved_context_ecx, saved_context_edx;
+@@ -220,4 +223,15 @@ int swsusp_arch_resume(void)
+ 	restore_image();
+ 	return 0;
+ }
++
++/*
++ *	pfn_is_nosave - check if given pfn is in the 'nosave' section
++ */
++
++int pfn_is_nosave(unsigned long pfn)
++{
++	unsigned long nosave_begin_pfn = __pa_symbol(&__nosave_begin) >> PAGE_SHIFT;
++	unsigned long nosave_end_pfn = PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
++	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
++}
+ #endif /* CONFIG_SOFTWARE_SUSPEND */
+diff -puN kernel/power/power.h~move-swsusp-__pa-dependent-code-to-arch-portion kernel/power/power.h
+--- linux-2.6.21-rc2-reloc/kernel/power/power.h~move-swsusp-__pa-dependent-code-to-arch-portion	2007-03-07 01:30:18.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/kernel/power/power.h	2007-03-07 01:30:18.000000000 +0530
+@@ -23,6 +23,8 @@ static inline int pm_suspend_disk(void)
+ }
+ #endif
+ 
++extern int pfn_is_nosave(unsigned long);
++
+ extern struct mutex pm_mutex;
+ 
+ #define power_attr(_name) \
+@@ -37,9 +39,6 @@ static struct subsys_attribute _name##_a
+ 
+ extern struct subsystem power_subsys;
+ 
+-/* References to section boundaries */
+-extern const void __nosave_begin, __nosave_end;
 -
--	.word	0, 0, 0, 0			# unused
+ /* Preferred image size in bytes (default 500 MB) */
+ extern unsigned long image_size;
+ extern int in_suspend;
+diff -puN kernel/power/snapshot.c~move-swsusp-__pa-dependent-code-to-arch-portion kernel/power/snapshot.c
+--- linux-2.6.21-rc2-reloc/kernel/power/snapshot.c~move-swsusp-__pa-dependent-code-to-arch-portion	2007-03-07 01:30:18.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/kernel/power/snapshot.c	2007-03-07 01:30:18.000000000 +0530
+@@ -651,17 +651,6 @@ static inline unsigned int count_highmem
+ #endif /* CONFIG_HIGHMEM */
+ 
+ /**
+- *	pfn_is_nosave - check if given pfn is in the 'nosave' section
+- */
 -
--	.word	0xFFFF				# 4Gb - (0x100000*0x1000 = 4Gb)
--	.word	0				# base address = 0
--	.word	0x9B00				# code read/exec. ??? Why I need 0x9B00 (as opposed to 0x9A00 in order for this to work?)
--	.word	0x00CF				# granularity = 4096, 386
--						#  (+5th nibble of limit)
+-static inline int pfn_is_nosave(unsigned long pfn)
+-{
+-	unsigned long nosave_begin_pfn = __pa(&__nosave_begin) >> PAGE_SHIFT;
+-	unsigned long nosave_end_pfn = PAGE_ALIGN(__pa(&__nosave_end)) >> PAGE_SHIFT;
+-	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
+-}
 -
--	.word	0xFFFF				# 4Gb - (0x100000*0x1000 = 4Gb)
--	.word	0				# base address = 0
--	.word	0x9200				# data read/write
--	.word	0x00CF				# granularity = 4096, 386
--						#  (+5th nibble of limit)
--# this is 64bit descriptor for code
--	.word	0xFFFF
--	.word	0
--	.word	0x9A00				# code read/exec
--	.word	0x00AF				# as above, but it is long mode and with D=0
-+	/* ??? Why I need the accessed bit set in order for this to work? */
-+	.quad   0x00cf9b000000ffff              # __KERNEL32_CS
-+	.quad   0x00af9b000000ffff              # __KERNEL_CS
-+	.quad   0x00cf93000000ffff              # __KERNEL_DS
- 
- idt_48a:
- 	.word	0				# idt limit = 0
- 	.word	0, 0				# idt base = 0L
- 
- gdt_48a:
--	.word	0x8000				# gdt limit=2048,
-+	.word	0x800				# gdt limit=2048,
- 						#  256 GDT entries
- 	.word	0, 0				# gdt base (filled in later)
- 	
-@@ -263,7 +231,7 @@ video_mode:	.quad 0
- video_flags:	.quad 0
- 
- bogus_real_magic:
--	movb	$0xba,%al	;  outb %al,$0x80		
-+	movb	$0xba,%al	;  outb %al,$0x80
- 	jmp bogus_real_magic
- 
- bogus_32_magic:
+-/**
+  *	saveable - Determine whether a non-highmem page should be included in
+  *	the suspend image.
+  *
 _
