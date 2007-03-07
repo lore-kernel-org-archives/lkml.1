@@ -1,97 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161151AbXCGBmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161159AbXCGBnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161151AbXCGBmr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 20:42:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161159AbXCGBmq
+	id S1161159AbXCGBnB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 20:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161161AbXCGBms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 20:42:46 -0500
-Received: from mail22.syd.optusnet.com.au ([211.29.133.160]:52547 "EHLO
-	mail22.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161151AbXCGBmk (ORCPT
+	Tue, 6 Mar 2007 20:42:48 -0500
+Received: from mail32.syd.optusnet.com.au ([211.29.132.63]:60403 "EHLO
+	mail32.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161148AbXCGBm3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 20:42:40 -0500
+	Tue, 6 Mar 2007 20:42:29 -0500
 From: Con Kolivas <kernel@kolivas.org>
 To: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-Subject: [PATCH] [RSDL-mm 4/6] sched: implement 180 bit sched bitmap
-Date: Wed, 7 Mar 2007 12:27:49 +1100
+Subject: [PATCH] [RSDL-mm 3/6] sched: remove noninteractive flag
+Date: Wed, 7 Mar 2007 12:27:37 +1100
 User-Agent: KMail/1.9.5
 MIME-Version: 1.0
 Content-Disposition: inline
-X-Length: 3059
+X-Length: 2098
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200703071227.49772.kernel@kolivas.org>
+Message-Id: <200703071227.37976.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Modify the sched_find_first_bit function to work on a 180bit long bitmap.
+Remove the TASK_NONINTERACTIVE flag as it will no longer be used.
 
 Signed-off-by: Con Kolivas <kernel@kolivas.org>
 
 ---
- include/asm-generic/bitops/sched.h |   10 ++++++----
- include/asm-s390/bitops.h          |   12 +-----------
- 2 files changed, 7 insertions(+), 15 deletions(-)
+ fs/pipe.c             |    7 +------
+ include/linux/sched.h |    3 +--
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
-Index: linux-2.6.21-rc2-mm2/include/asm-generic/bitops/sched.h
+Index: linux-2.6.21-rc2-mm2/fs/pipe.c
 ===================================================================
---- linux-2.6.21-rc2-mm2.orig/include/asm-generic/bitops/sched.h	2007-03-07 11:57:51.000000000 +1100
-+++ linux-2.6.21-rc2-mm2/include/asm-generic/bitops/sched.h	2007-03-07 11:58:22.000000000 +1100
-@@ -6,8 +6,8 @@
+--- linux-2.6.21-rc2-mm2.orig/fs/pipe.c	2007-03-07 11:20:58.000000000 +1100
++++ linux-2.6.21-rc2-mm2/fs/pipe.c	2007-03-07 11:22:59.000000000 +1100
+@@ -41,12 +41,7 @@ void pipe_wait(struct pipe_inode_info *p
+ {
+ 	DEFINE_WAIT(wait);
  
- /*
-  * Every architecture must define this function. It's the fastest
-- * way of searching a 140-bit bitmap where the first 100 bits are
-- * unlikely to be set. It's guaranteed that at least one of the 140
-+ * way of searching a 180-bit bitmap where the first 100 bits are
-+ * unlikely to be set. It's guaranteed that at least one of the 180
-  * bits is cleared.
-  */
- static inline int sched_find_first_bit(const unsigned long *b)
-@@ -15,7 +15,7 @@ static inline int sched_find_first_bit(c
- #if BITS_PER_LONG == 64
- 	if (unlikely(b[0]))
- 		return __ffs(b[0]);
--	if (likely(b[1]))
-+	if (b[1])
- 		return __ffs(b[1]) + 64;
- 	return __ffs(b[2]) + 128;
- #elif BITS_PER_LONG == 32
-@@ -27,7 +27,9 @@ static inline int sched_find_first_bit(c
- 		return __ffs(b[2]) + 64;
- 	if (b[3])
- 		return __ffs(b[3]) + 96;
--	return __ffs(b[4]) + 128;
-+	if (b[4])
-+		return __ffs(b[4]) + 128;
-+	return __ffs(b[5]) + 160;
- #else
- #error BITS_PER_LONG not defined
- #endif
-Index: linux-2.6.21-rc2-mm2/include/asm-s390/bitops.h
+-	/*
+-	 * Pipes are system-local resources, so sleeping on them
+-	 * is considered a noninteractive wait:
+-	 */
+-	prepare_to_wait(&pipe->wait, &wait,
+-			TASK_INTERRUPTIBLE | TASK_NONINTERACTIVE);
++	prepare_to_wait(&pipe->wait, &wait, TASK_INTERRUPTIBLE);
+ 	if (pipe->inode)
+ 		mutex_unlock(&pipe->inode->i_mutex);
+ 	schedule();
+Index: linux-2.6.21-rc2-mm2/include/linux/sched.h
 ===================================================================
---- linux-2.6.21-rc2-mm2.orig/include/asm-s390/bitops.h	2007-03-07 11:57:51.000000000 +1100
-+++ linux-2.6.21-rc2-mm2/include/asm-s390/bitops.h	2007-03-07 11:58:22.000000000 +1100
-@@ -729,17 +729,7 @@ find_next_bit (const unsigned long * add
- 	return offset + find_first_bit(p, size);
- }
+--- linux-2.6.21-rc2-mm2.orig/include/linux/sched.h	2007-03-07 11:21:15.000000000 +1100
++++ linux-2.6.21-rc2-mm2/include/linux/sched.h	2007-03-07 11:22:59.000000000 +1100
+@@ -150,8 +150,7 @@ extern unsigned long weighted_cpuload(co
+ #define EXIT_ZOMBIE		16
+ #define EXIT_DEAD		32
+ /* in tsk->state again */
+-#define TASK_NONINTERACTIVE	64
+-#define TASK_DEAD		128
++#define TASK_DEAD		64
  
--/*
-- * Every architecture must define this function. It's the fastest
-- * way of searching a 140-bit bitmap where the first 100 bits are
-- * unlikely to be set. It's guaranteed that at least one of the 140
-- * bits is cleared.
-- */
--static inline int sched_find_first_bit(unsigned long *b)
--{
--	return find_first_bit(b, 140);
--}
--
-+#include <asm-generic/bitops/sched.h>
- #include <asm-generic/bitops/ffs.h>
- 
- #include <asm-generic/bitops/fls.h>
+ #define __set_task_state(tsk, state_value)		\
+ 	do { (tsk)->state = (state_value); } while (0)
 
 -- 
 -ck
