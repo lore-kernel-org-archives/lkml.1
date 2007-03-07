@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751625AbXCGLfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbXCGLgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751625AbXCGLfZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 06:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbXCGLfZ
+	id S1751623AbXCGLgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 06:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbXCGLgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 06:35:25 -0500
-Received: from smtp.nokia.com ([131.228.20.172]:42347 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbXCGLfX convert rfc822-to-8bit (ORCPT
+	Wed, 7 Mar 2007 06:36:16 -0500
+Received: from customer.iplannetworks.net ([200.69.231.1]:54330 "EHLO
+	customer.iplannetworks.net" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751623AbXCGLgP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 06:35:23 -0500
-Subject: Re: [RFC] [PATCH] Kconfig: enlarge printk buffer size limit
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070302091113.1920ca0f.randy.dunlap@oracle.com>
-References: <1172842068.17031.55.camel@sauron>
-	 <20070302091113.1920ca0f.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 07 Mar 2007 13:33:48 +0200
-Message-Id: <1173267228.3886.0.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 07 Mar 2007 11:33:49.0312 (UTC) FILETIME=[798AA800:01C760AC]
-X-Nokia-AV: Clean
+	Wed, 7 Mar 2007 06:36:15 -0500
+X-Greylist: delayed 703 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 06:36:15 EST
+Date: Wed, 7 Mar 2007 08:24:22 -0300
+From: Marcos Dione <mdione@grulic.org.ar>
+To: linux-kernel@vger.kernel.org
+Subject: UUID support
+Message-ID: <20070307112422.GA19193@plantalta.homelinux.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-02 at 09:11 -0800, Randy Dunlap wrote:
-> That's simple enough, but you could also just add
-> 	log_buf_len=huge_number
 
-Yeah, thanks for the tip, although the Kconfig change would not hurt as
-well.
+    first of all, I'm not subscribed to the list, so please CC me the answers.
+    
+    I'm being forced by my distro to use UUDIs to specify the boot device by
+UUID. the problem is I don't know how to add UUID support to the kernl, that is,
+I don't know which option I should enable.
+
+    some might say �go fix your distro�, some might say �change your distro�.
+yes, those are options, but for me is more interesting to know what part in the
+kernel is responsible for this.
+
+    so, thanks in advance for any answer.
 
 -- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+(Not so) Random fortune:
+They were tecnicians, mechanics--and never thought of it in that manner [that
+they were taking all the power of desicion]. They just wanted to right an
+obvious wrong.
+            -- Harry Harrison, "To the stars".
