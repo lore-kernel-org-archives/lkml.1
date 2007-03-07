@@ -1,68 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422813AbXCGRo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422833AbXCGRpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422813AbXCGRo4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:44:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422826AbXCGRPa
+	id S1422833AbXCGRpw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:45:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422948AbXCGRpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:15:30 -0500
-Received: from mail.suse.de ([195.135.220.2]:43821 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:45:45 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:46489 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422820AbXCGRPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:15:16 -0500
-Message-Id: <20070307171338.291234774@mini.kroah.org>
-References: <20070307171035.150802805@mini.kroah.org>
-User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:18 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Beulich <jbeulich@novell.com>,
-       Andi Kleen <ak@suse.de>
-Subject: [patch 043/101] i386: Fix broken CONFIG_COMPAT_VDSO on i386
-Content-Disposition: inline; filename=i386-fix-broken-config_compat_vdso-on-i386.patch
+	id S1422954AbXCGRpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:45:11 -0500
+Date: Wed, 7 Mar 2007 11:43:46 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Paul Menage <menage@google.com>, ebiederm@xmission.com, sam@vilain.net,
+       akpm@linux-foundation.org, pj@sgi.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, containers@lists.osdl.org, winget@google.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070307174346.GA19521@sergelap.austin.ibm.com>
+References: <20070301133543.GK15509@in.ibm.com> <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com> <20070307173031.GC2336@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070307173031.GC2336@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Jan Beulich" <jbeulich@novell.com>
+Quoting Srivatsa Vaddagiri (vatsa@in.ibm.com):
+> On Tue, Mar 06, 2007 at 06:32:07PM -0800, Paul Menage wrote:
+> > I'm not really sure that I see the value of having this be part of
+> > nsproxy rather than the previous independent container (and
+> > container_group) structure. 
+> 
+> *shrug*
+> 
+> I wrote the patch mainly to see whether the stuff container folks (Sam Vilain
+> et al) were complaining abt (that container structure abstraction
+> inside the kernel is redundant/unnecessary) made sense or not. 
 
-After updating several machines to 2.6.20, I can't boot  anymore the single
-one of them that supports the NX bit and is configured as a 32-bit system.
+I still think the complaint was about terminology, not implementation.
+They just didn't want you calling them containers.
 
-My understanding is that the VDSO changes in 2.6.20-rc7 were not fully
-cooked, in that with that config option enabled VDSO_SYM(x) now equals
-x, meaning that an address in the fixmap area is now being passed to
-apps via AT_SYSINFO. However, the page is mapped with PAGE_READONLY
-rather than PAGE_READONLY_EXEC.
+> The rcfs patches demonstrate that it is possible to implement resource control
+> on top of just nsproxy -and- give the same interface that you now
+> have. In essense, I would say that the rcfs patches are about 70% same as your 
+> original V7 container patches.
+> 
+> However as I am converting over cpusets to work on top of nsproxy, I
+> have learnt few things:
+> 
+> container structure in your patches provides for these things:
+> 
+> a.  A way to group tasks
+> b.  A way to maintain several hierarchies of such groups
+> 
+> If you consider just a. then I agree that container abstraction is
+> redundant, esp for vserver resource control (nsproxy can already be used
+> to group tasks).
+> 
+> What nsproxy doesn't provide is b - a way to represent hierarchies of
+> groups. 
+> 
+> So we got several choices here.
+> 
+> 1. Introduce the container abstraction as is in your patches
+> 2. Extend nsproxy somehow to represent hierarchies
+> 3. Let individual resource controllers that -actually- support
+>    hierarchical resource management maintain hierarchy in their code.
+> 
+> In the last option, nsproxy still is unaware of any hierarchy. Some of
+> the resource objects it points to (for ex: cpuset) may maintain a
+> hierarchy. For ex: nsproxy->ctlr_data[cpuset_subsys.subsys_id] points to
+> a 'struct cpuset' structure which could maintains the hierarchical
+> relationship among cpuset objects.
+> 
+> If we consider that most resource controllers may not implement hierarchical 
+> resource management, then 3 may not be a bad compromise. OTOH if we
+> expect *most* resource controllers to support hierarchical resource
+> management, then we could be better of with option 1.
+> 
+> Anyway, summarizing on "why nsproxy", the main point (I think) is about
+> using existing abstraction in the kernel.
 
-I'm not certain whether having app code go through the fixmap area is
-intended, but in case it is here is the simple patch that makes things work
-again.
+But nsproxy is not an abstraction, it's an implementation
+detail/optimization.  I'm mostly being quiet because i don't
+particularly care if it gets expanded upon, but it's nothing more than
+that right now.
 
-Cc: Theodore Tso <tytso@mit.edu>
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/i386/kernel/sysenter.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.20.1.orig/arch/i386/kernel/sysenter.c
-+++ linux-2.6.20.1/arch/i386/kernel/sysenter.c
-@@ -77,7 +77,7 @@ int __init sysenter_setup(void)
- 	syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
- 
- #ifdef CONFIG_COMPAT_VDSO
--	__set_fixmap(FIX_VDSO, __pa(syscall_page), PAGE_READONLY);
-+	__set_fixmap(FIX_VDSO, __pa(syscall_page), PAGE_READONLY_EXEC);
- 	printk("Compat vDSO mapped to %08lx.\n", __fix_to_virt(FIX_VDSO));
- #endif
- 
-
---
+> > As far as I can see, you're putting the
+> > container subsystem state pointers and the various task namespace
+> > pointers into the same structure (nsproxy) but then they're remaining
+> > pretty much independent in terms of code.
+> > 
+> > The impression that I'm getting (correct me if I'm wrong) is:
+> > 
+> > - when you do a mkdir within an rcfs directory, the nsproxy associated
+> > with the parent is duplicated, and then each rcfs subsystem gets to
+> > set a subsystem-state pointer in that nsproxy
+> 
+> yes.
+> 
+> > - when you move a task into an rcfs container, you create a new
+> > nsproxy consisting of the task's old namespaces and its new subsystem
+> > pointers. Then you look through the current list of nsproxy objects to
+> > see if you find one that matches. If you do, you reuse it, else you
+> > create a new nsproxy and link it into the list
+> 
+> yes
+> 
+> > - when you do sys_unshare() or a clone that creates new namespaces,
+> > then the task (or its child) will get a new nsproxy that has the rcfs
+> > subsystem state associated with the old nsproxy, and one or more
+> > namespace pointers cloned to point to new namespaces. So this means
+> > that the nsproxy for the task is no longer the nsproxy associated with
+> > any directory in rcfs. (So the task will disappear from any "tasks"
+> > file in rcfs?)
+> 
+> it "should" disappear yes, although I haven't carefully studied the
+> unshare requirements yet.
+> 
+> > You seem to have lost some features, including fork/exit subsystem callbacks
+> 
+> That was mainly to keep it simple for a proof-of-concept patch! We can add it 
+> back later.
+> 
+> > >What follows is the core (big) patch and the cpu_acct subsystem to serve
+> > >as an example of how to use it. I suspect we can make cpusets also work
+> > >on top of this very easily.
+> > 
+> > I'd like to see that. I suspect it will be a bit more fiddly than the
+> > simple cpu_acct subsystem.
+> 
+> I am almost done with the conversion. And yes cpuset is a beast to
+> convert over! Will test and send the patches out tomorrow.
+> 
+> -- 
+> Regards,
+> vatsa
