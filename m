@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965522AbXCGRXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422942AbXCGRX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965522AbXCGRXN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965587AbXCGRW5
+	id S1422942AbXCGRX7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:23:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422917AbXCGRSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:22:57 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:44542 "EHLO smtp.osdl.org"
+	Wed, 7 Mar 2007 12:18:35 -0500
+Received: from ns2.suse.de ([195.135.220.15]:43816 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965398AbXCGRWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:22:38 -0500
-Date: Wed, 7 Mar 2007 09:21:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [patch] epoll use a single inode ...
-In-Reply-To: <45EE66BE.8020003@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0703070903420.5963@woody.linux-foundation.org>
-References: <45ED1A3C.6030707@argo.co.il> <Pine.LNX.4.64.0703061635430.3661@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703061644570.5963@woody.linux-foundation.org>
- <45EE6125.3010702@cosmosbay.com> <45EE66BE.8020003@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1422891AbXCGRSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:18:21 -0500
+Message-Id: <20070307171644.216202267@mini.kroah.org>
+References: <20070307171035.150802805@mini.kroah.org>
+User-Agent: quilt/0.45-1
+Date: Wed, 07 Mar 2007 09:12:08 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, randy.dunlap@oracle.com
+Subject: [patch 093/101] ueagle-atm.c needs sched.h
+Content-Disposition: inline; filename=ueagle-atm.c-needs-sched.h.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-On Wed, 7 Mar 2007, Eric Dumazet wrote:
-> 
-> Crazy ideas : (some readers are going to kill me)
+Driver needs sched.h for try_to_freeze().
 
-First off, as noted earlier, you don't need crazy ideas. 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-But:
+---
+ drivers/usb/atm/ueagle-atm.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-> 1) Use the low order bit of f_path.dentry to say : this pointer is not a
-> pointer to a dentry but the inode pointer (with the low order bit set to 1)
+--- linux-2.6.20.1.orig/drivers/usb/atm/ueagle-atm.c
++++ linux-2.6.20.1/drivers/usb/atm/ueagle-atm.c
+@@ -61,6 +61,7 @@
+ #include <linux/usb.h>
+ #include <linux/firmware.h>
+ #include <linux/ctype.h>
++#include <linux/sched.h>
+ #include <linux/kthread.h>
+ #include <linux/version.h>
+ #include <linux/mutex.h>
 
-No, we don't want to do that. There's a lot of code that wants to just 
-follow the dentry/inode chain unconditionally, and we want to have people 
-able to just do
-
-	i_size_read(file->f_path.dentry->d_inode);
-
-kind of thing, without having to check anything in between. It's costly 
-enough that we have a chain of pointers, it's much *worse* if we then have 
-to make conditionals etc (and forgetting is an oops).
-
-> 2) file->f_path.dentry set to NULL for this special files (so that we dont
-> need to dput() and cache line ping pong the common dentry each time we
-> __fput() a pipe/socket.
-
-I agree abot the ping pong, but I suspect it's a lot less than the current 
-pingpong on dcache_lock, which is a lot hotter than a pipe-dentry counter 
-would be.
-
-If it becomes a big issue, we could just have a fixed number of dentries, 
-and hash them out some way (to dilute the ping-ponging). So making things 
-NULL would just be horrible for everybody, since we have lots of generic 
-code that just looks up the dentry and inode, and we don't want to make 
-that worse.
-
-(I'm sure using "filp->f_private_data" has some downsides too, but it 
-seems fairly simple at least for pipes. The biggest problem is likely that 
-we currently use the mutex in the inode in "filp->f_dentry->d_inode" as a 
-way to protect the inode->i_pipe pointer itself, and there is no 
-equivalent locking at the "struct file *" level at all. We might have to 
-make the "f_ep_lock" spinlock be unconditional)
-
-		Linus
+--
