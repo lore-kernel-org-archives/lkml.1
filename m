@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161289AbXCGH2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161292AbXCGH2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161289AbXCGH2V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161288AbXCGH2B
+	id S1161292AbXCGH2g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161020AbXCGH22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:28:01 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:57042 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161172AbXCGH1x (ORCPT
+	Wed, 7 Mar 2007 02:28:28 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51330 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161285AbXCGH2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:27:53 -0500
-Date: Wed, 7 Mar 2007 12:47:17 +0530
+	Wed, 7 Mar 2007 02:28:00 -0500
+Date: Wed, 7 Mar 2007 12:32:36 +0530
 From: Vivek Goyal <vgoyal@in.ibm.com>
 To: linux kernel mailing list <linux-kernel@vger.kernel.org>
 Cc: Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
        akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
        magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
        pavel@suse.cz, rjw@sisk.pl
-Subject: [PATCH 14/20] x86_64: Remove the identity mapping as early as possible
-Message-ID: <20070307071717.GO23412@in.ibm.com>
+Subject: [PATCH 3/20] x86_64: Clean up the early boot page table
+Message-ID: <20070307070236.GD23412@in.ibm.com>
 Reply-To: vgoyal@in.ibm.com
 References: <20070307065703.GA23412@in.ibm.com>
 Mime-Version: 1.0
@@ -31,230 +31,154 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-With the rewrite of the SMP trampoline and the early page
-allocator there is nothing that needs identity mapped pages,
-once we start executing C code.
-
-So add zap_identity_mappings into head64.c and remove
-zap_low_mappings() from much later in the code.  The functions
- are subtly different thus the name change.
-
-This also kills boot_level4_pgt which was from an earlier
-attempt to move the identity mappings as early as possible,
-and is now no longer needed.  Essentially I have replaced
-boot_level4_pgt with trampoline_level4_pgt in trampoline.S
+- Merge physmem_pgt and ident_pgt, removing physmem_pgt.  The merge
+  is broken as soon as mm/init.c:init_memory_mapping is run.
+- As physmem_pgt is gone don't export it in pgtable.h.
+- Use defines from pgtable.h for page permissions.
+- Fix the physical memory identity mapping so it is at the correct
+  address.
+- Remove the physical memory mapping from wakeup_level4_pgt it
+  is at the wrong address so we can't possibly be usinging it.
+- Simply NEXT_PAGE the work to calculate the phys_ alias
+  of the labels was very cool.  Unfortuantely it was a brittle
+  special purpose hack that makes maitenance more difficult.
+  Instead just use label - __START_KERNEL_map like we do
+  everywhere else in assembly.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
 ---
 
- arch/x86_64/kernel/head.S    |   39 ++++++++++++++-------------------------
- arch/x86_64/kernel/head64.c  |   17 +++++++++++------
- arch/x86_64/kernel/setup.c   |    2 --
- arch/x86_64/kernel/setup64.c |    1 -
- arch/x86_64/mm/init.c        |   24 ------------------------
- include/asm-x86_64/pgtable.h |    1 -
- include/asm-x86_64/proto.h   |    2 --
- 7 files changed, 25 insertions(+), 61 deletions(-)
+ arch/x86_64/kernel/head.S    |   61 +++++++++++++++++++------------------------
+ include/asm-x86_64/pgtable.h |    1 
+ 2 files changed, 28 insertions(+), 34 deletions(-)
 
-diff -puN arch/x86_64/kernel/head64.c~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/kernel/head64.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/head64.c~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/head64.c	2007-03-07 01:29:50.000000000 +0530
-@@ -18,8 +18,16 @@
- #include <asm/setup.h>
+diff -puN arch/x86_64/kernel/head.S~x86_64-Cleanup-the-early-boot-page-table arch/x86_64/kernel/head.S
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/head.S~x86_64-Cleanup-the-early-boot-page-table	2007-03-07 01:22:07.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/head.S	2007-03-07 01:22:07.000000000 +0530
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
  #include <asm/desc.h>
- #include <asm/pgtable.h>
-+#include <asm/tlbflush.h>
- #include <asm/sections.h>
+ #include <asm/segment.h>
++#include <asm/pgtable.h>
+ #include <asm/page.h>
+ #include <asm/msr.h>
+ #include <asm/cache.h>
+@@ -260,52 +261,48 @@ ljumpvector:
+ ENTRY(stext)
+ ENTRY(_stext)
  
-+static void __init zap_identity_mappings(void)
-+{
-+	pgd_t *pgd = pgd_offset_k(0UL);
-+	pgd_clear(pgd);
-+	__flush_tlb();
-+}
+-	$page = 0
+ #define NEXT_PAGE(name) \
+-	$page = $page + 1; \
+-	.org $page * 0x1000; \
+-	phys_/**/name = $page * 0x1000 + __PHYSICAL_START; \
++	.balign	PAGE_SIZE; \
+ ENTRY(name)
+ 
++/* Automate the creation of 1 to 1 mapping pmd entries */
++#define PMDS(START, PERM, COUNT)		\
++	i = 0 ;					\
++	.rept (COUNT) ;				\
++	.quad	(START) + (i << 21) + (PERM) ;	\
++	i = i + 1 ;				\
++	.endr
 +
- /* Don't add a printk in there. printk relies on the PDA which is not initialized 
-    yet. */
- static void __init clear_bss(void)
-@@ -57,18 +65,15 @@ void __init x86_64_start_kernel(char * r
- 	/* clear bss before set_intr_gate with early_idt_handler */
- 	clear_bss();
- 
-+	/* Make NULL pointers segfault */
-+	zap_identity_mappings();
-+
- 	for (i = 0; i < IDT_ENTRIES; i++)
- 		set_intr_gate(i, early_idt_handler);
- 	asm volatile("lidt %0" :: "m" (idt_descr));
- 
- 	early_printk("Kernel alive\n");
- 
--	/*
--	 * switch to init_level4_pgt from boot_level4_pgt
--	 */
--	memcpy(init_level4_pgt, boot_level4_pgt, PTRS_PER_PGD*sizeof(pgd_t));
--	asm volatile("movq %0,%%cr3" :: "r" (__pa_symbol(&init_level4_pgt)));
--
-  	for (i = 0; i < NR_CPUS; i++)
-  		cpu_pda(i) = &boot_cpu_pda[i];
- 
-diff -puN arch/x86_64/kernel/head.S~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/kernel/head.S
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/head.S~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/head.S	2007-03-07 01:29:50.000000000 +0530
-@@ -71,7 +71,7 @@ startup_32:
- 	movl	%eax, %cr4
- 
- 	/* Setup early boot stage 4 level pagetables */
--	movl	$(boot_level4_pgt - __START_KERNEL_map), %eax
-+	movl	$(init_level4_pgt - __START_KERNEL_map), %eax
- 	movl	%eax, %cr3
- 
- 	/* Setup EFER (Extended Feature Enable Register) */
-@@ -115,7 +115,7 @@ ENTRY(secondary_startup_64)
- 	movq	%rax, %cr4
- 
- 	/* Setup early boot stage 4 level pagetables. */
--	movq	$(boot_level4_pgt - __START_KERNEL_map), %rax
-+	movq	$(init_level4_pgt - __START_KERNEL_map), %rax
- 	movq	%rax, %cr3
- 
- 	/* Check if nx is implemented */
-@@ -274,9 +274,19 @@ ENTRY(name)
- 	i = i + 1 ;				\
- 	.endr
- 
-+	/*
-+	 * This default setting generates an ident mapping at address 0x100000
-+	 * and a mapping for the kernel that precisely maps virtual address
-+	 * 0xffffffff80000000 to physical address 0x000000. (always using
-+	 * 2Mbyte large pages provided by PAE mode)
-+	 */
  NEXT_PAGE(init_level4_pgt)
--	/* This gets initialized in x86_64_start_kernel */
--	.fill	512,8,0
+ 	/* This gets initialized in x86_64_start_kernel */
+ 	.fill	512,8,0
+ 
+ NEXT_PAGE(level3_ident_pgt)
+-	.quad	phys_level2_ident_pgt | 0x007
++	.quad	level2_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+ 	.fill	511,8,0
+ 
+ NEXT_PAGE(level3_kernel_pgt)
+ 	.fill	510,8,0
+ 	/* (2^48-(2*1024*1024*1024)-((2^39)*511))/(2^30) = 510 */
+-	.quad	phys_level2_kernel_pgt | 0x007
++	.quad	level2_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
+ 	.fill	1,8,0
+ 
+ NEXT_PAGE(level2_ident_pgt)
+-	/* 40MB for bootup. 	*/
+-	i = 0
+-	.rept 20
+-	.quad	i << 21 | 0x083
+-	i = i + 1
+-	.endr
+-	.fill	492,8,0
++	/* Since I easily can, map the first 1G.
++	 * Don't set NX because code runs from these pages.
++	 */
++	PMDS(0x0000000000000000, __PAGE_KERNEL_LARGE_EXEC, PTRS_PER_PMD)
+ 	
+ NEXT_PAGE(level2_kernel_pgt)
+ 	/* 40MB kernel mapping. The kernel code cannot be bigger than that.
+ 	   When you change this change KERNEL_TEXT_SIZE in page.h too. */
+ 	/* (2^48-(2*1024*1024*1024)-((2^39)*511)-((2^30)*510)) = 0 */
+-	i = 0
+-	.rept 20
+-	.quad	i << 21 | 0x183
+-	i = i + 1
+-	.endr
++	PMDS(0x0000000000000000, __PAGE_KERNEL_LARGE_EXEC|_PAGE_GLOBAL,
++		KERNEL_TEXT_SIZE/PMD_SIZE)
+ 	/* Module mapping starts here */
+-	.fill	492,8,0
+-
+-NEXT_PAGE(level3_physmem_pgt)
+-	.quad	phys_level2_kernel_pgt | 0x007	/* so that __va works even before pagetable_init */
+-	.fill	511,8,0
++	.fill	(PTRS_PER_PMD - (KERNEL_TEXT_SIZE/PMD_SIZE)),8,0
+ 
++#undef PMDS
+ #undef NEXT_PAGE
+ 
+ 	.data
+@@ -313,12 +310,10 @@ NEXT_PAGE(level3_physmem_pgt)
+ #ifdef CONFIG_ACPI_SLEEP
+ 	.align PAGE_SIZE
+ ENTRY(wakeup_level4_pgt)
+-	.quad	phys_level3_ident_pgt | 0x007
+-	.fill	255,8,0
+-	.quad	phys_level3_physmem_pgt | 0x007
+-	.fill	254,8,0
++	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
++	.fill	510,8,0
+ 	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
+-	.quad	phys_level3_kernel_pgt | 0x007
++	.quad	level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
+ #endif
+ 
+ #ifndef CONFIG_HOTPLUG_CPU
+@@ -332,12 +327,12 @@ ENTRY(wakeup_level4_pgt)
+ 	 */
+ 	.align PAGE_SIZE
+ ENTRY(boot_level4_pgt)
+-	.quad	phys_level3_ident_pgt | 0x007
+-	.fill	255,8,0
+-	.quad	phys_level3_physmem_pgt | 0x007
+-	.fill	254,8,0
 +	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
 +	.fill	257,8,0
 +	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
 +	.fill	252,8,0
-+	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
+ 	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
+-	.quad	phys_level3_kernel_pgt | 0x007
 +	.quad	level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE
  
- NEXT_PAGE(level3_ident_pgt)
- 	.quad	level2_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
-@@ -307,27 +317,6 @@ NEXT_PAGE(level2_kernel_pgt)
- #undef NEXT_PAGE
- 
  	.data
--
--#ifndef CONFIG_HOTPLUG_CPU
--	__INITDATA
--#endif
--	/*
--	 * This default setting generates an ident mapping at address 0x100000
--	 * and a mapping for the kernel that precisely maps virtual address
--	 * 0xffffffff80000000 to physical address 0x000000. (always using
--	 * 2Mbyte large pages provided by PAE mode)
--	 */
--	.align PAGE_SIZE
--ENTRY(boot_level4_pgt)
--	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
--	.fill	257,8,0
--	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
--	.fill	252,8,0
--	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
--	.quad	level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE
--
--	.data
--
- 	.align 16
- 	.globl cpu_gdt_descr
- cpu_gdt_descr:
-diff -puN arch/x86_64/kernel/setup64.c~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/kernel/setup64.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/setup64.c~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/setup64.c	2007-03-07 01:29:50.000000000 +0530
-@@ -201,7 +201,6 @@ void __cpuinit cpu_init (void)
- 	/* CPU 0 is initialised in head64.c */
- 	if (cpu != 0) {
- 		pda_init(cpu);
--		zap_low_mappings(cpu);
- 	} else 
- 		estacks = boot_exception_stacks; 
  
-diff -puN arch/x86_64/kernel/setup.c~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/kernel/setup.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/setup.c~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/setup.c	2007-03-07 01:29:50.000000000 +0530
-@@ -274,8 +274,6 @@ void __init setup_arch(char **cmdline_p)
+diff -puN include/asm-x86_64/pgtable.h~x86_64-Cleanup-the-early-boot-page-table include/asm-x86_64/pgtable.h
+--- linux-2.6.21-rc2-reloc/include/asm-x86_64/pgtable.h~x86_64-Cleanup-the-early-boot-page-table	2007-03-07 01:22:07.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/include/asm-x86_64/pgtable.h	2007-03-07 01:22:07.000000000 +0530
+@@ -15,7 +15,6 @@
+ #include <asm/pda.h>
  
- 	dmi_scan_machine();
- 
--	zap_low_mappings(0);
--
- #ifdef CONFIG_ACPI
- 	/*
- 	 * Initialize the ACPI boot-time table parser (gets the RSDP and SDT).
-diff -puN arch/x86_64/mm/init.c~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/mm/init.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/mm/init.c~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/mm/init.c	2007-03-07 01:29:50.000000000 +0530
-@@ -378,21 +378,6 @@ void __meminit init_memory_mapping(unsig
- 	__flush_tlb_all();
- }
- 
--void __cpuinit zap_low_mappings(int cpu)
--{
--	if (cpu == 0) {
--		pgd_t *pgd = pgd_offset_k(0UL);
--		pgd_clear(pgd);
--	} else {
--		/*
--		 * For AP's, zap the low identity mappings by changing the cr3
--		 * to init_level4_pgt and doing local flush tlb all
--		 */
--		asm volatile("movq %0,%%cr3" :: "r" (__pa_symbol(&init_level4_pgt)));
--	}
--	__flush_tlb_all();
--}
--
- #ifndef CONFIG_NUMA
- void __init paging_init(void)
- {
-@@ -569,15 +554,6 @@ void __init mem_init(void)
- 		reservedpages << (PAGE_SHIFT-10),
- 		datasize >> 10,
- 		initsize >> 10);
--
--#ifdef CONFIG_SMP
--	/*
--	 * Sync boot_level4_pgt mappings with the init_level4_pgt
--	 * except for the low identity mappings which are already zapped
--	 * in init_level4_pgt. This sync-up is essential for AP's bringup
--	 */
--	memcpy(boot_level4_pgt+1, init_level4_pgt+1, (PTRS_PER_PGD-1)*sizeof(pgd_t));
--#endif
- }
- 
- void free_init_pages(char *what, unsigned long begin, unsigned long end)
-diff -puN include/asm-x86_64/pgtable.h~x86_64-Remove-the-identity-mapping-as-early-as-possible include/asm-x86_64/pgtable.h
---- linux-2.6.21-rc2-reloc/include/asm-x86_64/pgtable.h~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/include/asm-x86_64/pgtable.h	2007-03-07 01:29:50.000000000 +0530
-@@ -18,7 +18,6 @@ extern pud_t level3_kernel_pgt[512];
+ extern pud_t level3_kernel_pgt[512];
+-extern pud_t level3_physmem_pgt[512];
  extern pud_t level3_ident_pgt[512];
  extern pmd_t level2_kernel_pgt[512];
  extern pgd_t init_level4_pgt[];
--extern pgd_t boot_level4_pgt[];
- extern unsigned long __supported_pte_mask;
- 
- #define swapper_pg_dir init_level4_pgt
-diff -puN include/asm-x86_64/proto.h~x86_64-Remove-the-identity-mapping-as-early-as-possible include/asm-x86_64/proto.h
---- linux-2.6.21-rc2-reloc/include/asm-x86_64/proto.h~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/include/asm-x86_64/proto.h	2007-03-07 01:29:50.000000000 +0530
-@@ -11,8 +11,6 @@ struct pt_regs;
- extern void start_kernel(void);
- extern void pda_init(int); 
- 
--extern void zap_low_mappings(int cpu);
--
- extern void early_idt_handler(void);
- 
- extern void mcheck_init(struct cpuinfo_x86 *c);
 _
