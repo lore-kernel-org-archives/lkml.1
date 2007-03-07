@@ -1,78 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965694AbXCGWL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992656AbXCGWMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965694AbXCGWL7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 17:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965693AbXCGWL6
+	id S2992656AbXCGWMc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 17:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992654AbXCGWMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 17:11:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51551 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965694AbXCGWL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:11:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Wed, 7 Mar 2007 17:12:32 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:50199 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992656AbXCGWMa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 17:12:30 -0500
+Subject: Re: 2.6.21-rc2-mm2 hang
+From: Dave Hansen <hansendc@us.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] swsusp: Disable nonboot CPUs before entering platform suspend
-Date: Wed, 7 Mar 2007 23:14:29 +0100
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <200703072044.12021.rjw@sisk.pl> <20070307131618.308d46e6.akpm@linux-foundation.org>
-In-Reply-To: <20070307131618.308d46e6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 14:12:16 -0800
+Message-Id: <1173305536.868.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703072314.30265.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 7 March 2007 22:16, Andrew Morton wrote:
-> On Wed, 7 Mar 2007 20:44:11 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Prevent the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
-> > from triggering by disabling nonboot CPUs before we finally enter the platform
-> > suspend.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  kernel/power/disk.c |    1 +
-> >  kernel/power/user.c |    2 +-
-> >  2 files changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.21-rc2-mm2/kernel/power/disk.c
-> > ===================================================================
-> > --- linux-2.6.21-rc2-mm2.orig/kernel/power/disk.c
-> > +++ linux-2.6.21-rc2-mm2/kernel/power/disk.c
-> > @@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
-> >  	switch(mode) {
-> >  	case PM_DISK_PLATFORM:
-> >  		if (pm_ops && pm_ops->enter) {
-> > +			disable_nonboot_cpus();
-> >  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-> >  			pm_ops->enter(PM_SUSPEND_DISK);
-> >  			break;
-> > Index: linux-2.6.21-rc2-mm2/kernel/power/user.c
-> > ===================================================================
-> > --- linux-2.6.21-rc2-mm2.orig/kernel/power/user.c
-> > +++ linux-2.6.21-rc2-mm2/kernel/power/user.c
-> > @@ -398,9 +398,9 @@ static int snapshot_ioctl(struct inode *
-> >  
-> >  		case PMOPS_ENTER:
-> >  			if (data->platform_suspend) {
-> > +				disable_nonboot_cpus();
-> >  				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-> >  				error = pm_ops->enter(PM_SUSPEND_DISK);
-> > -				error = 0;
-> >  			}
-> >  			break;
-> 
-> Is this considered 2.6.21 material?  If so why?
+I'm seeing weird hangs running ltp on 2.6.21-rc2-mm2.  It manifests
+itself by the waitpid06 test in LTP hanging.  This is very, very
+reproducible in about 5 seconds by adding '-s wait' to the ltp command
+line.
 
-Well, the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
-triggers every time an SMP x86_64 box is suspended to disk using the platform
-mode (default), which is quite annoying IMHO and users think something wrong is
-going on.  This will probably cause them to report the problem and I'd rather
-like to avoid handling these reports. ;-)
+I see 4 waitpid06 processes on my 4-way machine spinning in userspace.
+But, the weird part is that I can't ssh in once this happens, but I can
+log in to the console.  I've bisected it down to:
+        
+        sched-fix-idle-load-balancing-in-softirqd-context
+
+http://sr71.net/~dave/linux/elm3b82-config
+
+sysrq-t:
+
+bash          S 00000001     0  1670   1667  1676               (NOTLB)
+       f761ff18 00000086 00000000 00000001 f7afb3ac c16f5f6c f761ff1c c0146eb5
+       e93d3067 fffb8000 f761ff20 c2d922e0 f7ec4030 f7ec413c 00006db1 1457ab10
+       00000025 c038eb60 fffffe00 f7ec4030 f7ec40e4 f761ff88 c011bc38 c014800d
+Call Trace:
+ [<c011bc38>] do_wait+0x271/0x316
+ [<c011bd86>] sys_wait4+0x2f/0x31
+ [<c011bdaf>] sys_waitpid+0x27/0x2c
+ [<c010265c>] syscall_call+0x7/0xb
+ =======================
+runltp        S 00000001     0  1676   1670  1780               (NOTLB)
+       f7625f18 00000082 00000000 00000001 f7adf3ac c16f5bec f7625f1c c0146eb5
+       e8cf4067 fffab000 f7625f20 c2d9a2e0 c30ee050 c30ee15c 00007d8f 3c8acf22
+       00000025 c309e560 fffffe00 c30ee050 c30ee104 f7625f88 c011bc38 c014800d
+Call Trace:
+ [<c011bc38>] do_wait+0x271/0x316
+ [<c011bd86>] sys_wait4+0x2f/0x31
+ [<c011bdaf>] sys_waitpid+0x27/0x2c
+ [<c010265c>] syscall_call+0x7/0xb
+ =======================
+pan           S 00000000     0  1780   1676  1831               (NOTLB)
+       f7639f30 00000086 00000000 00000000 00000000 00000246 f7ad095c f7f0e760
+       00000000 f7639f0c c0162748 c2d922e0 f7a0aab0 f7a0abbc 0000edaf abaf1d13
+       00000026 c038eb60 fffffe00 f7a0aab0 f7a0ab64 f7639fa0 c011bc38 e97e7065
+Call Trace:
+ [<c011bc38>] do_wait+0x271/0x316
+ [<c011bd86>] sys_wait4+0x2f/0x31
+ [<c010265c>] syscall_call+0x7/0xb
+ =======================
+waitpid06     S 00000001     0  1831   1780  1832               (NOTLB)
+       f7637f18 00000082 00000000 00000001 f769b134 c16ed36c f7637f1c c0146eb5
+       f7a38c80 00000000 f7bce030 c2d9a2e0 f7e78030 f7e7813c 00000f64 abdcd3a1
+       00000026 f7bce030 fffffe00 f7e78030 f7e780e4 f7637f88 c011bc38 c014800d
+Call Trace:
+ [<c011bc38>] do_wait+0x271/0x316
+ [<c011bd86>] sys_wait4+0x2f/0x31
+ [<c011bdaf>] sys_waitpid+0x27/0x2c
+ [<c010265c>] syscall_call+0x7/0xb
+ =======================
+
+-- Dave
+
