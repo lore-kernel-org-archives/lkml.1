@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965622AbXCGUVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992547AbXCGUWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965622AbXCGUVV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 15:21:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965625AbXCGUVV
+	id S2992547AbXCGUWL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 15:22:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992546AbXCGUWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 15:21:21 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:34761 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965622AbXCGUVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 15:21:20 -0500
-Date: Wed, 7 Mar 2007 21:20:33 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-cc: Luong Ngo <luong.ngo@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Sleeping thread not receive signal until it wakes up
-In-Reply-To: <Pine.LNX.4.61.0703070813070.12338@chaos.analogic.com>
-Message-ID: <Pine.LNX.4.61.0703072119290.2448@yvahk01.tjqt.qr>
-References: <1b2aacd80703062131g6c8578fgf200dd05a502c49f@mail.gmail.com>
- <Pine.LNX.4.61.0703070813070.12338@chaos.analogic.com>
+	Wed, 7 Mar 2007 15:22:11 -0500
+Received: from wr-out-0506.google.com ([64.233.184.239]:51259 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965632AbXCGUWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 15:22:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Htbuplf73s55pxs0KQJY5DZRZatBa5mMXkXaLMhFpAYyyxfWtprzq9xgeID4IFLcA6/6vm6v15cx3nJi7R08Fr02vHqRSByX95zbkgRm5WjtZlhUaDowQ40T/AGA2NR+5m5seKWbMNFox1kDN2c6AxJxdBAtngZhsW6V+KFzcYE=
+Message-ID: <d120d5000703071215w5d08d2b2ve3519f73bdd39b7e@mail.gmail.com>
+Date: Wed, 7 Mar 2007 15:15:29 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: PS/2 mouse port missing with kernel >=2.6.19, Sis chipset
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <45EF1AAB.40104@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45EF1AAB.40104@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 3/7/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+> We have multiple reports of PS/2 mouse port not being found
+> on Sis 630 and 730 chipsets, starting with Fedora kernel 2.6.19:
+>
+> 2.6.18:
+> Jan 19 08:59:39 mtranch kernel: PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M]
+> at 0x60,0x64 irq 1,12
+> Jan 19 08:59:39 mtranch kernel: serio: i8042 AUX port at 0x60,0x64 irq 12
+> Jan 19 08:59:39 mtranch kernel: serio: i8042 KBD port at 0x60,0x64 irq 1
+> Jan 19 08:59:39 mtranch kernel: mice: PS/2 mouse device common for all mice
+>
+> 2.6.19:
+> Jan 20 09:22:30 mtranch kernel: PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M]
+> at 0x60,0x64 irq 1,12
+> Jan 20 09:22:30 mtranch kernel: serio: i8042 KBD port at 0x60,0x64 irq 1
+> Jan 20 09:22:30 mtranch kernel: mice: PS/2 mouse device common for all mice
+>
+> I'm pretty sure Fedora doesn't patch any input code, so I wonder
+> if some change was made here that could cause this?
 
-On Mar 7 2007 08:19, linux-os (Dick Johnson) wrote:
->
->Later versions of the kernel lock the kernel when an ioctl() is
->entered. This means that if you sleep in the ioctl(), nothing
->will get scheduled.
+There were some issues with AUX IRQ delivery test that is part of AUX
+port probe. They should be fixed in the latest mainline. You might be
+inetrested in this commit:
 
-Later versions of the kernel also have an ->unlocked_ioctl method,
-which is probably better than below's approach [which is akin to
-FreeBSD's DROP_GIANT/PICKUP_GIANT].
+1e4865f8d469b1...
 
->You can do the following (possibly unsafe) in your ioctl():
->
->     int locked = kernel_locked();
->
->     ......... code
->     ......... code
->
->     if(locked)  // Before sleeping section
->        unlock_kernel();
->     .......... sleeping code
->     if(locked)  // After sleeping section
->         lock_kernel();
->
->
-
-Jan
 -- 
+Dmitry
