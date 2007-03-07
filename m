@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422853AbXCGR33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXCGRaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422853AbXCGR33 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422874AbXCGRRP
+	id S965576AbXCGRaO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:30:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422874AbXCGR33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:17:15 -0500
-Received: from mx1.suse.de ([195.135.220.2]:44128 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:29:29 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43615 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422853AbXCGRQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:16:49 -0500
-Message-Id: <20070307171511.258148132@mini.kroah.org>
+	id S1422821AbXCGRRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:17:20 -0500
+Message-Id: <20070307171536.462274845@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:43 -0800
+Date: Wed, 07 Mar 2007 09:11:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,104 +22,52 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 068/101] Fix TCP MD5 locking.
-Content-Disposition: inline; filename=fix-tcp-md5-locking.patch
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 075/101] sched: fix SMT scheduler bug
+Content-Disposition: inline; filename=sched-fix-smt-scheduler-bug.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
+From: Ingo Molnar <mingo@elte.hu>
 
-[TCP]: Fix MD5 signature pool locking.
+[PATCH] sched: fix SMT scheduler bug
 
-The locking calls assumed that these code paths were only
-invoked in software interrupt context, but that isn't true.
+The SMT scheduler incorrectly skips kernel threads even if they are
+runnable (but they are preempted by a higher-prio user-space task which got
+SMT-delayed by an even higher-priority task running on a sibling CPU).
 
-Therefore we need to use spin_{lock,unlock}_bh() throughout.
+Fix this for now by only doing the SMT-nice optimization if the
+to-be-delayed task is the only runnable task.  (This should cover most of
+the real-life cases anyway.)
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+This bug has been in the SMT scheduler since 2.6.17 or so, but has only
+been noticed now by the active check in the dynticks code.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
 ---
- net/ipv4/tcp.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ kernel/sched.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.20.1.orig/net/ipv4/tcp.c
-+++ linux-2.6.20.1/net/ipv4/tcp.c
-@@ -2266,12 +2266,12 @@ void tcp_free_md5sig_pool(void)
- {
- 	struct tcp_md5sig_pool **pool = NULL;
- 
--	spin_lock(&tcp_md5sig_pool_lock);
-+	spin_lock_bh(&tcp_md5sig_pool_lock);
- 	if (--tcp_md5sig_users == 0) {
- 		pool = tcp_md5sig_pool;
- 		tcp_md5sig_pool = NULL;
- 	}
--	spin_unlock(&tcp_md5sig_pool_lock);
-+	spin_unlock_bh(&tcp_md5sig_pool_lock);
- 	if (pool)
- 		__tcp_free_md5sig_pool(pool);
- }
-@@ -2314,36 +2314,36 @@ struct tcp_md5sig_pool **tcp_alloc_md5si
- 	int alloc = 0;
- 
- retry:
--	spin_lock(&tcp_md5sig_pool_lock);
-+	spin_lock_bh(&tcp_md5sig_pool_lock);
- 	pool = tcp_md5sig_pool;
- 	if (tcp_md5sig_users++ == 0) {
- 		alloc = 1;
--		spin_unlock(&tcp_md5sig_pool_lock);
-+		spin_unlock_bh(&tcp_md5sig_pool_lock);
- 	} else if (!pool) {
- 		tcp_md5sig_users--;
--		spin_unlock(&tcp_md5sig_pool_lock);
-+		spin_unlock_bh(&tcp_md5sig_pool_lock);
- 		cpu_relax();
- 		goto retry;
- 	} else
--		spin_unlock(&tcp_md5sig_pool_lock);
-+		spin_unlock_bh(&tcp_md5sig_pool_lock);
- 
- 	if (alloc) {
- 		/* we cannot hold spinlock here because this may sleep. */
- 		struct tcp_md5sig_pool **p = __tcp_alloc_md5sig_pool();
--		spin_lock(&tcp_md5sig_pool_lock);
-+		spin_lock_bh(&tcp_md5sig_pool_lock);
- 		if (!p) {
- 			tcp_md5sig_users--;
--			spin_unlock(&tcp_md5sig_pool_lock);
-+			spin_unlock_bh(&tcp_md5sig_pool_lock);
- 			return NULL;
- 		}
- 		pool = tcp_md5sig_pool;
- 		if (pool) {
- 			/* oops, it has already been assigned. */
--			spin_unlock(&tcp_md5sig_pool_lock);
-+			spin_unlock_bh(&tcp_md5sig_pool_lock);
- 			__tcp_free_md5sig_pool(p);
- 		} else {
- 			tcp_md5sig_pool = pool = p;
--			spin_unlock(&tcp_md5sig_pool_lock);
-+			spin_unlock_bh(&tcp_md5sig_pool_lock);
+--- linux-2.6.20.1.orig/kernel/sched.c
++++ linux-2.6.20.1/kernel/sched.c
+@@ -3528,7 +3528,7 @@ need_resched_nonpreemptible:
  		}
  	}
- 	return pool;
-@@ -2354,11 +2354,11 @@ EXPORT_SYMBOL(tcp_alloc_md5sig_pool);
- struct tcp_md5sig_pool *__tcp_get_md5sig_pool(int cpu)
- {
- 	struct tcp_md5sig_pool **p;
--	spin_lock(&tcp_md5sig_pool_lock);
-+	spin_lock_bh(&tcp_md5sig_pool_lock);
- 	p = tcp_md5sig_pool;
- 	if (p)
- 		tcp_md5sig_users++;
--	spin_unlock(&tcp_md5sig_pool_lock);
-+	spin_unlock_bh(&tcp_md5sig_pool_lock);
- 	return (p ? *per_cpu_ptr(p, cpu) : NULL);
- }
- 
+ 	next->sleep_type = SLEEP_NORMAL;
+-	if (dependent_sleeper(cpu, rq, next))
++	if (rq->nr_running == 1 && dependent_sleeper(cpu, rq, next))
+ 		next = rq->idle;
+ switch_tasks:
+ 	if (next == rq->idle)
 
 --
