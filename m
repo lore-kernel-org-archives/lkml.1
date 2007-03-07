@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbXCGMMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbXCGMOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964824AbXCGMMt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXCGMMt
+	id S1751218AbXCGMOT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXCGMOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:12:49 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49120 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751221AbXCGMMs (ORCPT
+	Wed, 7 Mar 2007 07:14:19 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:34151 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbXCGMOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:12:48 -0500
-Date: Wed, 7 Mar 2007 13:12:46 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@linux-foundation.org, rkuhn@e18.physik.tu-muenchen.de,
-       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp_cubic: faster cube root
-Message-ID: <20070307121246.GA7728@one.firstfloor.org>
-References: <20070306102941.32471d57@freekitty> <20070306.135834.26100913.davem@davemloft.net> <20070306144706.4585c079@freekitty> <20070306.202052.03980320.davem@davemloft.net>
+	Wed, 7 Mar 2007 07:14:18 -0500
+Date: Wed, 7 Mar 2007 17:51:17 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: menage@google.com
+Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, winget@google.com,
+       containers@lists.osdl.org, devel@openvz.org
+Subject: Re: [PATCH 1/7] containers (V7): Generic container system abstracted from cpusets code
+Message-ID: <20070307122117.GB2336@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.130746000@menage.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070306.202052.03980320.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070212085104.130746000@menage.corp.google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 08:20:52PM -0800, David Miller wrote:
-> From: Stephen Hemminger <shemminger@linux-foundation.org>
-> Date: Tue, 6 Mar 2007 14:47:06 -0800
-> 
-> > The Newton-Raphson method is quadratically convergent so
-> > only a small fixed number of steps are necessary.
-> > Therefore it is faster to unroll the loop. Since div64_64 is no longer
-> > inline it won't cause code explosion.
-> > 
-> > Also fixes a bug that can occur if x^2 was bigger than 32 bits.
-> > 
-> > Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-> 
-> Applied, thanks Stephen.
+On Mon, Feb 12, 2007 at 12:15:22AM -0800, menage@google.com wrote:
+> +/**
+> + * container_lock - lock out any changes to container structures
+> + *
+> + * The out of memory (oom) code needs to mutex_lock containers
+> + * from being changed while it scans the tasklist looking for a
+> + * task in an overlapping container.
 
-Well that still needs the ugly div64_64 function. At least my goal was to 
-eliminate that, not make it faster (I don't see any evidence this function 
-is particularly performance critical). You prefer to keep div64_64? 
+Which specific portion of oom code cares abt container structure being
+intact? 
 
--Andi
+If I understand correctly, only cpuset requires this double locking.
+More specifically, cpusets cares about walking cpuset->parent list
+safely with callback_mutex held correct?
+
+If that is the case, I think we can push container_lock entirely inside 
+cpuset.c and not have others exposed to this double-lock complexity.
+This is possible because cpuset.c (build on top of containers) still has
+cpuset->parent and walking cpuset->parent list safely can be made
+possible with a second lock which is local to only cpuset.c.
+
+-- 
+Regards,
+vatsa
