@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932716AbXCGEn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932687AbXCGEne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932716AbXCGEn1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 23:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXCGEn1
+	id S932687AbXCGEne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 23:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932773AbXCGEnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 23:43:27 -0500
-Received: from tag.witbe.net ([81.88.96.48]:47016 "EHLO tag.witbe.net"
+	Tue, 6 Mar 2007 23:43:33 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47641 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932716AbXCGEn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 23:43:26 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'David Brownell'" <david-b@pacbell.net>
-Cc: "'Adrian Bunk'" <bunk@stusta.de>, <linux-kernel@vger.kernel.org>,
-       <a.zummo@towertech.it>, <rtc-linux@googlegroups.com>
-Subject: RE: 2.6.21-rc2 : Oops in rtc_cmos...
-Date: Wed, 7 Mar 2007 05:42:13 +0100
-Organization: AS2917.net
-Message-ID: <051e01c76072$fcdae290$4b00a8c0@donald>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	id S932696AbXCGEnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 23:43:31 -0500
+Date: Tue, 6 Mar 2007 20:39:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andre Noll <maan@systemlinux.org>
+Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
+Message-Id: <20070306203952.471218df.akpm@linux-foundation.org>
+In-Reply-To: <20070228153722.GJ22572@skl-net.de>
+References: <20070226133153.GC4095@skl-net.de>
+	<20070226182617.GC9968@andrew-vasquezs-computer.local>
+	<20070227101100.GA22572@skl-net.de>
+	<20070227185134.GJ20397@andrew-vasquezs-computer.local>
+	<20070228151829.GI22572@skl-net.de>
+	<20070228153722.GJ22572@skl-net.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <200703061132.29331.david-b@pacbell.net>
-Thread-Index: AcdgKnkaLcRhCJGdTXipoZtimkp0ZAAR79fQ
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 28 Feb 2007 16:37:22 +0100 Andre Noll <maan@systemlinux.org> wrote:
 
-> > Yes, it does, so it's a Good One (tm),
+> On 16:18, Andre Noll wrote:
 > 
-> And points out that $SUBJECT is misleading; the root cause of
-> the oops isn't rtc_cmos.  Workaround, don't enable the legacy
-> driver for this hardware.
-
-Well, sorry for that, but my point was that without enabling
-CONFIG_DRV_RTC_CMOS and only using CONFIG_RTC, my dmesg says :
-
-drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-
-Having seem that, I got thru all the options, trying to find what I
-could have forgot as an option, and added the RTC_CMOS one, that resulted
-in an Oops... 
-
-> One of the good things about getting rtc-cmos merged:  it
-> exposes this new RTC framework to new mistakes, which helps
-> fix some of the remaining rough spots.  
-
-Good ;)
- 
-> > pnp: Device 00:03 does not support disabling.
+> > With 2.6.21-rc2 I am unable to reproduce this BUG message. However,
+> > writing to both raid systems at the same time via lvm still locks up
+> > the system within minutes.
 > 
-> Blame the PNP stack for that particular useless message.
-> I'l send a fix for that one too.
-OK, ready to test ! 
+> Screenshot of the resulting kernel panic:
+> 
+> 	http://systemlinux.org/~maan/shots/kernel-panic-21-rc2-huangho2.png
+> 
 
-> > drivers/rtc/hctosys.c: unable to open rtc device (rtc0) 
-> Because probing 00:03 failed, was never fully usable.
-> So then rtc0 couldn't be found.  You'd get the same
-> message if, say, the RTC was loaded as a module.
+It died in CFQ.  Please try a different IO scheduler.  Use something
+like
 
-It seems to me that the DRV_RTC_CMOS and the "standard" CONFIG_RTC
-shouldn't be used at the same time... Am I correct on that ? 
-Wouldn't it be better to have this dependancy enforced ?
+	echo deadline > /sys/block/sda/queue/scheduler
 
-Regards,
-Paul
+This could still be the old qla2xxx bug, or it could be a new qla2xxx bug,
+or it could be a block bug, or it could be an LVM bug.
 
+Adrian, can we please track this as a regression?
