@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992435AbXCGSRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992436AbXCGSUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992435AbXCGSRz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992438AbXCGSRy
+	id S2992436AbXCGSUG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:20:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992438AbXCGSUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:17:54 -0500
-Received: from waste.org ([66.93.16.53]:40972 "EHLO waste.org"
+	Wed, 7 Mar 2007 13:20:05 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47006 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992437AbXCGSRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:17:53 -0500
-Date: Wed, 7 Mar 2007 12:03:59 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, akpm@osdl.org,
-       Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Manfred Spraul <manfred@colorfullife.com>
-Subject: Re: [SLUB 2/3] Large kmalloc pass through. Removal of large general slabs
-Message-ID: <20070307180359.GU23311@waste.org>
-References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com> <20070307023513.19658.81228.sendpatchset@schroedinger.engr.sgi.com> <1173258077.6374.120.camel@twins> <Pine.LNX.4.64.0703070732130.9460@schroedinger.engr.sgi.com>
+	id S2992436AbXCGSUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 13:20:01 -0500
+Date: Wed, 7 Mar 2007 10:14:44 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jeff@garzik.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org, thomas@archlinux.org,
+       val_henson@linux.intel.com, samuel.thibault@ens-lyon.org
+Subject: Re: [patch 097/101] revert "drivers/net/tulip/dmfe: support basic
+ carrier detection"
+Message-ID: <20070307101444.52cb2146@freekitty>
+In-Reply-To: <20070307171657.461008445@mini.kroah.org>
+References: <20070307171035.150802805@mini.kroah.org>
+	<20070307171657.461008445@mini.kroah.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703070732130.9460@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 07:34:38AM -0800, Christoph Lameter wrote:
-> On Wed, 7 Mar 2007, Peter Zijlstra wrote:
-> 
-> > >  	return -1;
-> > >  }
-> > 
-> > Perhaps so something with PAGE_SIZE here, as you know there are
-> > platforms/configs where PAGE_SIZE != 4k :-)
-> 
-> Any allocation > 2k just uses a regular allocation which will waste space.
-> 
-> I have a patch here to make this dependent on page size using a loop. The 
-> problem is that it does not work with some versions of gcc. On the 
-> other hand we really need this since one arch can 
-> actually have an order 22 page size!
+On Wed, 07 Mar 2007 09:12:12 -0800
+Greg KH <gregkh@suse.de> wrote:
 
-You don't need a loop, you need an if (s >= PAGE_SIZE) at the head of
-your static list.
+> 
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> Revert 7628b0a8c01a02966d2228bdf741ddedb128e8f8.  Thomas Bachler
+> reports:
+> 
+>   Commit 7628b0a8c01a02966d2228bdf741ddedb128e8f8 (drivers/net/tulip/dmfe:
+>   support basic carrier detection) breaks networking on my Davicom DM9009. 
+>   ethtool always reports there is no link.  tcpdump shows incoming packets,
+>   but TX is disabled.  Reverting the above patch fixes the problem.
+> 
+
+Carrier detection support is important and should be fixed rather than removed.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Stephen Hemminger <shemminger@linux-foundation.org>
