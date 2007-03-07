@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965486AbXCGTK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422978AbXCGTLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965486AbXCGTK0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 14:10:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965502AbXCGTK0
+	id S1422978AbXCGTLG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 14:11:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422630AbXCGTLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 14:10:26 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51581 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965486AbXCGTKZ (ORCPT
+	Wed, 7 Mar 2007 14:11:06 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35266 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965563AbXCGTLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 14:10:25 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: vgoyal@in.ibm.com,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Reloc Kernel List <fastboot@lists.osdl.org>, akpm@linux-foundation.org,
-       ak@suse.de, hpa@zytor.com, magnus.damm@gmail.com, lwang@redhat.com,
-       dzickus@redhat.com, pavel@suse.cz, rjw@sisk.pl
-Subject: Re: [PATCH 0/20] x86_64 Relocatable bzImage support (V4)
-References: <20070307065703.GA23412@in.ibm.com>
-	<1173280059.3540.5.camel@laptopd505.fenrus.org>
-Date: Wed, 07 Mar 2007 12:08:28 -0700
-In-Reply-To: <1173280059.3540.5.camel@laptopd505.fenrus.org> (Arjan van de
-	Ven's message of "Wed, 07 Mar 2007 07:07:39 -0800")
-Message-ID: <m1abyodg7n.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 7 Mar 2007 14:11:03 -0500
+Date: Wed, 7 Mar 2007 14:11:00 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Roland McGrath <roland@redhat.com>
+cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: <20070307034932.09F5A1801C4@magilla.sf.frob.com>
+Message-ID: <Pine.LNX.4.44L0.0703071127530.6624-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
+On Tue, 6 Mar 2007, Roland McGrath wrote:
 
-> On Wed, 2007-03-07 at 12:27 +0530, Vivek Goyal wrote:
->> Hi,
->> 
->> Here is another attempt on x86_64 relocatable bzImage patches(V4). This
->> patchset makes a bzImage relocatable and same kernel binary can be loaded
->> and run from different physical addresses.
+> > > Yeah, I guess that's right.  It should still return NOTIFY_STOP when
+> > > args->err has no other bits set, so notifiers aren't called with zero.
+> > 
+> > In practice that might not work.  On my machine, at least, reads of DR6
+> > return ones in all the reserved bit positions.
+> 
+> Does that mean asm("mov %1,%%dr6; mov %%dr6,%0" : "=r" (mask) : "r" (0)); 
+> puts in mask the set of reserved bits?  We could collect that value at CPU
+> startup and mask it off args->err, then OR it back into vdr6.
+
+That sounds like a rather fragile approach to avoiding a minimal amount of 
+work.  Debug exceptions don't occur very often, and when they do it won't 
+matter too much if we go through some extra notifier-chain callouts.
+
+
+Back to a previous topic:
+
+> > The actual guarantee I need is that nobody will switch_to() the task while
+> > my routines are running.
 >
->
-> have these patches been extensively tested with various suspend
-> scenarios? (S1,S3,S4 in acpi speak or s2ram and s2disk in Linux speak)
+> You can't get that.  It can always be woken for SIGKILL (which is a good
+> thing).  What you are guaranteed is that if it does, it will never return
+> to user mode.  So it has to be ok for switching in to use the bits in any
+> intermediate state you might get them, meaning any possible garbage state
+> is harmful only to user mode or is otherwise recoverable (worst case
+> perhaps the exception handler has to know to ignore some traps).  This is
+> already true with ptrace and ->thread.debugreg, as well as the normal user
+> registers.  In your case, if you wanted to be paranoid you could clear
+> TIF_DEBUG before you touch anything, and set it again only after you're
+> done (with memory barriers as needed).
 
-It should be noted what broke was the non-portable constructs in the generic
-suspend code.
+It turns out that this won't work correctly unless I use something
+stronger, like a spinlock or RCU.  Either one seems like overkill.
 
-In particular using __pa() outside of architecture code is not allowed.
-Using virt_to_phys() on addresses not part of the kernel's linear mapping is
-not generically supported.
+Is there any way to find out from within the
+switch_to_thread_hw_breakpoint routine whether the task is in this unusual
+state?  (By which I mean the task is being debugged and the debugger
+hasn't told it to start running.)  Would (tsk->exit_code == SIGKILL) work?  
+If not, can we add a TIF_DEBUG_STOPPED flag?  Or should I just go with a 
+spinlock?
 
-text/data are not required to be part of the kernel's linear mapping.
+Is SIGKILL the only way this can happen?
 
-This patchset now causes all code using these non-portable constructs to
-fail on x86_64.  Which I think is a good thing so we can more easily
-spot these kinds of problems.
+In a similar vein, I need a reliable way to know whether a task has gone 
+through exit_thread().  If it has, then its hw_breakpoint area has been 
+deallocated and a new one must not be allocated.  Will (tsk->flags & 
+PF_EXITING) always be true once that happens?
 
-Patches 15 and 16 appear to make the swpsuspend code rely on portable
-constructs.   I will let Vivek reply to the amount of testing he has
-done in this area.
+Alan Stern
 
-Eric
