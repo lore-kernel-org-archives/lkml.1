@@ -1,200 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965578AbXCGR2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965617AbXCGR3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965578AbXCGR2p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:28:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422903AbXCGR2D
+	id S965617AbXCGR3Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965589AbXCGR2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:28:03 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44330 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:28:50 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:44818 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422895AbXCGRRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:17:50 -0500
-Message-Id: <20070307171611.982262000@mini.kroah.org>
-References: <20070307171035.150802805@mini.kroah.org>
-User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:58 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, dushistov@mail.ru
-Subject: [patch 083/101] ufs: restore back support of openstep
-Content-Disposition: inline; filename=ufs-restore-back-support-of-openstep.patch
+	id S965597AbXCGR2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:28:46 -0500
+Date: Wed, 7 Mar 2007 09:26:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Kirk Kuchov <kirk.kuchov@gmail.com>
+cc: Pavel Machek <pavel@ucw.cz>, Davide Libenzi <davidel@xmailserver.org>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Theodore Tso <tytso@mit.edu>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+In-Reply-To: <ca9528de0703070402r3d189348t78d27cf3b80b4623@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0703070925200.5963@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703011123200.23932@alien.or.mcafeemobile.com> 
+ <Pine.LNX.4.64.0703020840120.1977@alien.or.mcafeemobile.com> 
+ <20070303100625.GA22557@2ka.mipt.ru>  <Pine.LNX.4.64.0703030945030.7075@alien.or.mcafeemobile.com>
+  <20070303203140.GA756@2ka.mipt.ru>  <Pine.LNX.4.64.0703031248450.7278@alien.or.mcafeemobile.com>
+  <ca9528de0703040823x340b0b7fw923b9bae8bcf0e7@mail.gmail.com> 
+ <Pine.LNX.4.64.0703041129550.3300@alien.or.mcafeemobile.com> 
+ <ca9528de0703041449x695a4c4bpc133d9afd5524019@mail.gmail.com> 
+ <20070306081935.GB2040@elf.ucw.cz> <ca9528de0703070402r3d189348t78d27cf3b80b4623@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Evgeniy Dushistov <dushistov@mail.ru>
 
-This is a fix of regression, which triggered by ~2.6.16.
+On Wed, 7 Mar 2007, Kirk Kuchov wrote:
+> 
+> I don't believe I'm wasting my time explaining this. They don't exist
+> as /dev/null, they are just fucking _LINKS_. I could even "ln -s
+> /proc/self/fd/0 sucker". A real /dev/stdout can/could even exist, but
+> that's not the point!
 
-Patch with name ufs-directory-and-page-cache-from-blocks-to-pages.patch: in
-additional to conversation from block to page cache mechanism added new
-checks of directory integrity, one of them that directory entry do not
-across directory chunks.
+Actually, one large reason for /proc/self/ existing is exactly /dev/stdin 
+and friends.
 
-But some kinds of UFS: OpenStep UFS and Apple UFS (looks like these are the
-same filesystems) have different directory chunk size, then common
-UFSes(BSD and Solaris UFS).
+And yes, /proc/self looks like a link too, but that doesn't change the 
+fact that it's a very special file. No different from /dev/null or 
+friends.
 
-So this patch adds ability to works with variable size of directory chunks,
-and set it for ufstype=openstep to right size.
-
-Tested on darwin ufs.
-
-Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/ufs/dir.c           |   21 ++++++++++++---------
- fs/ufs/super.c         |    5 ++++-
- include/linux/ufs_fs.h |    1 +
- 3 files changed, 17 insertions(+), 10 deletions(-)
-
---- linux-2.6.20.1.orig/fs/ufs/dir.c
-+++ linux-2.6.20.1/fs/ufs/dir.c
-@@ -106,12 +106,13 @@ static void ufs_check_page(struct page *
- 	char *kaddr = page_address(page);
- 	unsigned offs, rec_len;
- 	unsigned limit = PAGE_CACHE_SIZE;
-+	const unsigned chunk_mask = UFS_SB(sb)->s_uspi->s_dirblksize - 1;
- 	struct ufs_dir_entry *p;
- 	char *error;
- 
- 	if ((dir->i_size >> PAGE_CACHE_SHIFT) == page->index) {
- 		limit = dir->i_size & ~PAGE_CACHE_MASK;
--		if (limit & (UFS_SECTOR_SIZE - 1))
-+		if (limit & chunk_mask)
- 			goto Ebadsize;
- 		if (!limit)
- 			goto out;
-@@ -126,7 +127,7 @@ static void ufs_check_page(struct page *
- 			goto Ealign;
- 		if (rec_len < UFS_DIR_REC_LEN(ufs_get_de_namlen(sb, p)))
- 			goto Enamelen;
--		if (((offs + rec_len - 1) ^ offs) & ~(UFS_SECTOR_SIZE-1))
-+		if (((offs + rec_len - 1) ^ offs) & ~chunk_mask)
- 			goto Espan;
- 		if (fs32_to_cpu(sb, p->d_ino) > (UFS_SB(sb)->s_uspi->s_ipg *
- 						  UFS_SB(sb)->s_uspi->s_ncg))
-@@ -310,6 +311,7 @@ int ufs_add_link(struct dentry *dentry, 
- 	int namelen = dentry->d_name.len;
- 	struct super_block *sb = dir->i_sb;
- 	unsigned reclen = UFS_DIR_REC_LEN(namelen);
-+	const unsigned int chunk_size = UFS_SB(sb)->s_uspi->s_dirblksize;
- 	unsigned short rec_len, name_len;
- 	struct page *page = NULL;
- 	struct ufs_dir_entry *de;
-@@ -342,8 +344,8 @@ int ufs_add_link(struct dentry *dentry, 
- 			if ((char *)de == dir_end) {
- 				/* We hit i_size */
- 				name_len = 0;
--				rec_len = UFS_SECTOR_SIZE;
--				de->d_reclen = cpu_to_fs16(sb, UFS_SECTOR_SIZE);
-+				rec_len = chunk_size;
-+				de->d_reclen = cpu_to_fs16(sb, chunk_size);
- 				de->d_ino = 0;
- 				goto got_it;
- 			}
-@@ -431,7 +433,7 @@ ufs_readdir(struct file *filp, void *dir
- 	unsigned int offset = pos & ~PAGE_CACHE_MASK;
- 	unsigned long n = pos >> PAGE_CACHE_SHIFT;
- 	unsigned long npages = ufs_dir_pages(inode);
--	unsigned chunk_mask = ~(UFS_SECTOR_SIZE - 1);
-+	unsigned chunk_mask = ~(UFS_SB(sb)->s_uspi->s_dirblksize - 1);
- 	int need_revalidate = filp->f_version != inode->i_version;
- 	unsigned flags = UFS_SB(sb)->s_flags;
- 
-@@ -511,7 +513,7 @@ int ufs_delete_entry(struct inode *inode
- 	struct super_block *sb = inode->i_sb;
- 	struct address_space *mapping = page->mapping;
- 	char *kaddr = page_address(page);
--	unsigned from = ((char*)dir - kaddr) & ~(UFS_SECTOR_SIZE - 1);
-+	unsigned from = ((char*)dir - kaddr) & ~(UFS_SB(sb)->s_uspi->s_dirblksize - 1);
- 	unsigned to = ((char*)dir - kaddr) + fs16_to_cpu(sb, dir->d_reclen);
- 	struct ufs_dir_entry *pde = NULL;
- 	struct ufs_dir_entry *de = (struct ufs_dir_entry *) (kaddr + from);
-@@ -556,6 +558,7 @@ int ufs_make_empty(struct inode * inode,
- 	struct super_block * sb = dir->i_sb;
- 	struct address_space *mapping = inode->i_mapping;
- 	struct page *page = grab_cache_page(mapping, 0);
-+	const unsigned int chunk_size = UFS_SB(sb)->s_uspi->s_dirblksize;
- 	struct ufs_dir_entry * de;
- 	char *base;
- 	int err;
-@@ -563,7 +566,7 @@ int ufs_make_empty(struct inode * inode,
- 	if (!page)
- 		return -ENOMEM;
- 	kmap(page);
--	err = mapping->a_ops->prepare_write(NULL, page, 0, UFS_SECTOR_SIZE);
-+	err = mapping->a_ops->prepare_write(NULL, page, 0, chunk_size);
- 	if (err) {
- 		unlock_page(page);
- 		goto fail;
-@@ -584,11 +587,11 @@ int ufs_make_empty(struct inode * inode,
- 		((char *)de + fs16_to_cpu(sb, de->d_reclen));
- 	de->d_ino = cpu_to_fs32(sb, dir->i_ino);
- 	ufs_set_de_type(sb, de, dir->i_mode);
--	de->d_reclen = cpu_to_fs16(sb, UFS_SECTOR_SIZE - UFS_DIR_REC_LEN(1));
-+	de->d_reclen = cpu_to_fs16(sb, chunk_size - UFS_DIR_REC_LEN(1));
- 	ufs_set_de_namlen(sb, de, 2);
- 	strcpy (de->d_name, "..");
- 
--	err = ufs_commit_chunk(page, 0, UFS_SECTOR_SIZE);
-+	err = ufs_commit_chunk(page, 0, chunk_size);
- fail:
- 	kunmap(page);
- 	page_cache_release(page);
---- linux-2.6.20.1.orig/fs/ufs/super.c
-+++ linux-2.6.20.1/fs/ufs/super.c
-@@ -649,7 +649,7 @@ static int ufs_fill_super(struct super_b
- 		kmalloc (sizeof(struct ufs_sb_private_info), GFP_KERNEL);
- 	if (!uspi)
- 		goto failed;
--
-+	uspi->s_dirblksize = UFS_SECTOR_SIZE;
- 	super_block_offset=UFS_SBLOCK;
- 
- 	/* Keep 2Gig file limit. Some UFS variants need to override 
-@@ -718,6 +718,7 @@ static int ufs_fill_super(struct super_b
- 		break;
- 	
- 	case UFS_MOUNT_UFSTYPE_NEXTSTEP:
-+		/*TODO: check may be we need set special dir block size?*/
- 		UFSD("ufstype=nextstep\n");
- 		uspi->s_fsize = block_size = 1024;
- 		uspi->s_fmask = ~(1024 - 1);
-@@ -733,6 +734,7 @@ static int ufs_fill_super(struct super_b
- 		break;
- 	
- 	case UFS_MOUNT_UFSTYPE_NEXTSTEP_CD:
-+		/*TODO: check may be we need set special dir block size?*/
- 		UFSD("ufstype=nextstep-cd\n");
- 		uspi->s_fsize = block_size = 2048;
- 		uspi->s_fmask = ~(2048 - 1);
-@@ -754,6 +756,7 @@ static int ufs_fill_super(struct super_b
- 		uspi->s_fshift = 10;
- 		uspi->s_sbsize = super_block_size = 2048;
- 		uspi->s_sbbase = 0;
-+		uspi->s_dirblksize = 1024;
- 		flags |= UFS_DE_44BSD | UFS_UID_44BSD | UFS_ST_44BSD | UFS_CG_44BSD;
- 		if (!(sb->s_flags & MS_RDONLY)) {
- 			if (!silent)
---- linux-2.6.20.1.orig/include/linux/ufs_fs.h
-+++ linux-2.6.20.1/include/linux/ufs_fs.h
-@@ -789,6 +789,7 @@ struct ufs_sb_private_info {
- 
- 	__u32	s_maxsymlinklen;/* upper limit on fast symlinks' size */
- 	__s32	fs_magic;       /* filesystem magic */
-+	unsigned int s_dirblksize;
- };
- 
- /*
-
---
+		Linus
