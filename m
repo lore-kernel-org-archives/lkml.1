@@ -1,93 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674AbXCGLpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751749AbXCGLu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751674AbXCGLpV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 06:45:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXCGLpV
+	id S1751749AbXCGLu1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 06:50:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbXCGLu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 06:45:21 -0500
-Received: from aug.linbit.com ([212.69.162.22]:42614 "EHLO mail.linbit.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751674AbXCGLpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 06:45:19 -0500
-X-Greylist: delayed 1141 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 06:45:18 EST
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-Subject: connector: Bugfix for cn_call_callback()
-Date: Wed, 7 Mar 2007 12:26:12 +0100
-User-Agent: KMail/1.9.4
-Cc: drbd-dev@linbit.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 7 Mar 2007 06:50:27 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:6744 "EHLO
+	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751749AbXCGLu0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 06:50:26 -0500
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
+	nonlinear)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org
+In-Reply-To: <20070307110035.GE5555@wotan.suse.de>
+References: <20070307010756.b31c8190.akpm@linux-foundation.org>
+	 <1173259942.6374.125.camel@twins> <20070307094503.GD8609@wotan.suse.de>
+	 <20070307100430.GA5080@wotan.suse.de> <1173262002.6374.128.camel@twins>
+	 <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu>
+	 <20070307102106.GB5555@wotan.suse.de> <1173263085.6374.132.camel@twins>
+	 <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins>
+	 <20070307110035.GE5555@wotan.suse.de>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 12:48:06 +0100
+Message-Id: <1173268086.6374.157.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703071226.13088.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Evgeniy,
+On Wed, 2007-03-07 at 12:00 +0100, Nick Piggin wrote:
+> On Wed, Mar 07, 2007 at 11:47:42AM +0100, Peter Zijlstra wrote:
+> > On Wed, 2007-03-07 at 11:38 +0100, Nick Piggin wrote:
+> > 
+> > > > > There are real users who want these fast, though.
+> > > > 
+> > > > Yeah, why don't we have a tree per nonlinear vma to find these pages?
+> > > > 
+> > > > wli mentions shadow page tables..
+> > > 
+> > > We could do something more efficient, but I thought that half the point
+> > > was that they didn't carry any of this extra memory, and they could be
+> > > really fast to set up at the expense of efficiency elsewhere.
+> > 
+> > I'm failing to understand this :-(
+> > 
+> > That extra memory, and apparently they don't want the inefficiency
 
-When one stresses the connector code, with sending many messages
-from userspace to kernel, one could get in the "unlikely()"
-part in cn_call_callback().
+s/T/W/
 
-There a new __cbq gets allocated, and a NULL pointer got assigned
-to the callback by dereferencing __cbq. This is the bug. The right
-thing is the dereference the original __cbq. Therefore the bugfix
-is to use a new variable for the newly allocated __cbq. 
+> > either.
+> 
+> Sorry, I didn't understand your misunderstandings ;)
 
-This is tested, and it fixes the issue.
+Bah, my brain is thick and foggy today. Let us try again;
 
-Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
-Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
+Nonlinear vmas exist because many vmas are expensive somehow, right?
+Nonlinear vmas keep the page mapping in the page tables and screw rmaps.
 
---- /usr/src/linux-2.6.20/drivers/connector/connector.c 2007-03-07 11:45:38.000000000 +0100
-+++ /usr/src/linux-2.6.20-modified/drivers/connector/connector.c        2007-03-07 11:39:11.000000000 +0100
-@@ -128,7 +128,7 @@
-  */
- static int cn_call_callback(struct cn_msg *msg, void (*destruct_data)(void *), void *data)
- {
--       struct cn_callback_entry *__cbq;
-+       struct cn_callback_entry *__cbq, *__new_cbq;
-        struct cn_dev *dev = &cdev;
-        int err = -ENODEV;
+This 'extra memory' you mentioned would be the overhead of tracking the
+actual ranges?
 
-@@ -148,23 +148,23 @@
-                        } else {
-                                struct cn_callback_data *d;
+And apparently now we want it to not suck on the rmap case :-(
 
--                               __cbq = kzalloc(sizeof(*__cbq), GFP_ATOMIC);
--                               if (__cbq) {
--                                       d = &__cbq->data;
-+                               __new_cbq = kzalloc(sizeof(*__new_cbq), GFP_ATOMIC);
-+                               if (__new_cbq) {
-+                                       d = &__new_cbq->data;
-                                        d->callback_priv = msg;
-                                        d->callback = __cbq->data.callback;
-                                        d->ddata = data;
-                                        d->destruct_data = destruct_data;
--                                       d->free = __cbq;
-+                                       d->free = __new_cbq;
+Anyway, if used on a non writeback capable backing store (ramfs)
+page_mkclean will never be called. If also mlocked (I think oracle does
+this) then page reclaim will pass over too.
 
--                                       INIT_WORK(&__cbq->work,
--                                                       &cn_queue_wrapper);
-+                                       INIT_WORK(&__new_cbq->work,
-+                                                 &cn_queue_wrapper);
+So we're only interested in the bdi_cap_accounting_dirty and VM_SHARED
+case, right?
 
-                                        if (queue_work(dev->cbdev->cn_queue,
--                                                   &__cbq->work))
-+                                                   &__new_cbq->work))
-                                                err = 0;
-                                        else {
--                                               kfree(__cbq);
-+                                               kfree(__new_cbq);
-                                                err = -EINVAL;
-                                        }
-                                } else
+Tracking these ranges on a per-vma basis would avoid taking the mm wide
+mmap_sem and so would be cheaper than regular vmas.
 
+Would that still be too expensive?
 
--- 
-: Dipl-Ing Philipp Reisner                      Tel +43-1-8178292-50 :
-: LINBIT Information Technologies GmbH          Fax +43-1-8178292-82 :
-: Vivenotgasse 48, 1120 Vienna, Austria        http://www.linbit.com :
+> > Well, now they don't, but it could be done or even exploited as a DoS.
+> 
+> But so could nonlinear page reclaim. I think we need to restrict nonlinear
+> mappings to root if we're worried about that.
+
+Can't we just 'fix' it?
+
