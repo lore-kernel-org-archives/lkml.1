@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992449AbXCGSwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992481AbXCGTCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992449AbXCGSwM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:52:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422978AbXCGSwM
+	id S2992481AbXCGTCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 14:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992475AbXCGTB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:52:12 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:59712 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422998AbXCGSwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 13:52:10 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] epoll use a single inode ...
-Date: Wed, 7 Mar 2007 19:52:13 +0100
-User-Agent: KMail/1.9.5
-Cc: Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-References: <45ED1A3C.6030707@argo.co.il> <200703071906.58405.dada1@cosmosbay.com> <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org>
+	Wed, 7 Mar 2007 14:01:59 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:8877 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992481AbXCGTB6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 14:01:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=KsbReoRARRzEAyBbVfpc9FASciyEhgzf8e2/XPWcmsXVZxOOyeqr4WkNZT3KaxftqE+CNtwTH3hzINRYd9O85/TiDPeRPJyc3oMaIoM+jZiGGbu2syFSWal8EmuKeoDkyjEexVIeUMdNhNIH9DaG1VdP87dZJezOPnGwEdxsuxg=
+Message-ID: <a44ae5cd0703071101q16188b9pc5e8dbc226a7283d@mail.gmail.com>
+Date: Wed, 7 Mar 2007 11:01:55 -0800
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Joerg Roedel" <joerg.roedel@amd.com>, "Andi Kleen" <ak@suse.de>
+Subject: 2.6.21-rc2-mm2 -- hot-fix "revert-optimize-and-simplify-get_cycles_sync.patch" broke my build
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703071952.13219.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Not only might memcpy() do a "prefetch for read" on the source for some
-> architectures (which in turn may end up being slow for an address that
-> isn't in the TLB, like NULL), but you depend on a very much internal
-
-Well, I hope a prefetch(NULL) is OK because we are doing millions of them (see 
-include/linux/list.h :) )
-
-> detail, since it *could* have been using something like
->
-> 	memcpy(dname, name->name, name->len+1);
->
-
-Yes very true, I will change that and push to Andrew for mm testing
-
-I was thinking about being able to cache the name into the dentry, do you 
-think it's worth the pain ? (its not SMP safe for example...)
-
-static char * pipefs_dname(struct dentry *dentry, char *buffer, int buflen)
-{
-        if (!dentry->d_iname[0])
-                snprintf(dentry->d_iname,
-			DNAME_INLINE_LEN_MIN,
-			"pipe:[%lu]",
-			dentry->d_inode->i_ino);
-        strlcpy(buffer, dentry->d_iname, buflen);
-        return buffer;
-}
+In file included from include/asm/timex.h:10,
+                 from include/linux/timex.h:187,
+                 from include/linux/sched.h:50,
+                 from include/linux/utsname.h:35,
+                 from include/asm/elf.h:12,
+                 from include/linux/elf.h:7,
+                 from include/linux/module.h:15,
+                 from include/linux/crypto.h:21,
+                 from arch/i386/kernel/asm-offsets.c:7:
+include/asm/tsc.h: In function 'get_cycles_sync':
+include/asm/tsc.h:45: warning: implicit declaration of function 'alternative_io'
+include/asm/tsc.h:46: error: called object '"=a"' is not a function
+include/asm/tsc.h:46: error: called object '"0"' is not a function
+include/asm/tsc.h:46: error: expected ')' before ':' token
+make[1]: *** [arch/i386/kernel/asm-offsets.s] Error 1
