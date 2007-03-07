@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422689AbXCGJkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422669AbXCGJmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422689AbXCGJkT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422686AbXCGJkS
+	id S1422669AbXCGJmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422682AbXCGJmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:40:18 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:58862 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422683AbXCGJkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:40:15 -0500
-Date: Wed, 7 Mar 2007 01:39:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bill Irwin <bill.irwin@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
- nonlinear)
-Message-Id: <20070307013942.5c0fadff.akpm@linux-foundation.org>
-In-Reply-To: <20070307092903.GJ18774@holomorphy.com>
-References: <20070221023656.6306.246.sendpatchset@linux.site>
-	<20070221023735.6306.83373.sendpatchset@linux.site>
-	<20070306225101.f393632c.akpm@linux-foundation.org>
-	<20070307070853.GB15877@wotan.suse.de>
-	<20070307081948.GA9563@wotan.suse.de>
-	<20070307082755.GA25733@elte.hu>
-	<20070307003520.08b1a082.akpm@linux-foundation.org>
-	<20070307092903.GJ18774@holomorphy.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 7 Mar 2007 04:42:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35104 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422669AbXCGJmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:42:31 -0500
+Date: Wed, 7 Mar 2007 09:42:29 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Deepak Saxena <dsaxena@plexity.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix building kernel under Solaris
+Message-ID: <20070307094229.GG14863@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Deepak Saxena <dsaxena@plexity.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070306180940.GA3240@plexity.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306180940.GA3240@plexity.net>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 01:29:03 -0800 Bill Irwin <bill.irwin@oracle.com> wrote:
+On Tue, Mar 06, 2007 at 10:09:40AM -0800, Deepak Saxena wrote:
+> @@ -16,8 +16,10 @@
+>  #include <sys/time.h>
+>  #include <sys/ioctl.h>
+>  #include <sys/types.h>
+> +#ifndef __sun__
+>  #include <asm/types.h>
+>  #endif
+> +#endif
 
-> On Wed, 7 Mar 2007 09:27:55 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> >> btw., if we decide that nonlinear isnt worth the continuing maintainance 
-> >> pain, we could internally implement/emulate sys_remap_file_pages() via a 
-> >> call to mremap() and essentially deprecate it, without breaking the ABI 
-> >> - and remove all the nonlinear code. (This would split fremap areas into 
-> >> separate vmas)
-> 
-> On Wed, Mar 07, 2007 at 12:35:20AM -0800, Andrew Morton wrote:
-> > I'm rather regretting having merged it - I don't think it has been used for
-> > much.
-> > Paolo's UML speedup patches might use nonlinear though.
-> 
-> Guess what major real-life application not only uses nonlinear daily
-> but would even be very happy to see it extended with non-vma-creating
-> protections and more?
+So if solaris doesn't need it, why do we need it on Linux?
 
-uh-oh.  SQL server?
+> +/*
+> + * Solaris does not strsep
+> + */
+> +#ifndef __sun__
+>  	while ((fname = strsep(&sources, " ")) != NULL) {
+>  		if (!*fname)
+>  			continue;
+> +#else
+> +	for (fname = strtok(sources, " "); fname; fname = strtok(NULL, " ")) {
+> +#endif
+>  		if (!parse_source_files(fname, &md))
+>  			goto release;
+>  	}
 
-> It's not terribly typical for things to be
-> truncated while remap_file_pages() is doing its work, though it's been
-> proposed as a method of dynamism. It won't stress remap_file_pages() vs.
-> truncate() in any meaningful way, though, as userspace will be rather
-> diligent about clearing in-use data out of the file offset range to be
-> truncated away anyway, and all that via O_DIRECT.
+Please either provide a strsep for solaris, or use strtok unconditionally.
+ut this ifdef mess is not acceptable.
 
-The problem here isn't related to truncate or direct-IO.  It's just
-plain-old MAP_SHARED.  nonlinear VMAs are now using the old-style
-dirty-memory management.  msync() is basically a no-op and the code is
-wildly tricky and pretty much untested.  The chances that we broke it are
-considerable.
-
+>
