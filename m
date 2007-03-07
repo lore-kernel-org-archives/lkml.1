@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965389AbXCGNVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965351AbXCGNV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965389AbXCGNVA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 08:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965437AbXCGNVA
+	id S965351AbXCGNV5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 08:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965425AbXCGNV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 08:21:00 -0500
-Received: from amsfep15-int.chello.nl ([62.179.120.10]:57362 "EHLO
-	amsfep15-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965389AbXCGNU7 (ORCPT
+	Wed, 7 Mar 2007 08:21:57 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1157 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965351AbXCGNV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 08:20:59 -0500
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
-	nonlinear)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, Jeff Dike <jdike@addtoit.com>
-In-Reply-To: <20070307130851.GE18704@wotan.suse.de>
-References: <1173262002.6374.128.camel@twins>
-	 <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu>
-	 <20070307102106.GB5555@wotan.suse.de> <1173263085.6374.132.camel@twins>
-	 <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins>
-	 <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins>
-	 <20070307121730.GC18704@wotan.suse.de> <1173271286.6374.166.camel@twins>
-	 <20070307130851.GE18704@wotan.suse.de>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 14:19:22 +0100
-Message-Id: <1173273562.6374.175.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Mar 2007 08:21:56 -0500
+From: Andy Whitcroft <apw@shadowen.org>
+To: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+Cc: Andrew Morton <akpm@osdl.org>, Andy Whitcroft <apw@shadowen.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] i386 alternative_io implementation
+References: <200703071254.03014.marc.dietrich@ap.physik.uni-giessen.de>
+InReply-To: <200703071254.03014.marc.dietrich@ap.physik.uni-giessen.de>
+Message-ID: <8aa4496d067c1f95c7bacb0849cacf50@pinky>
+Date: Wed, 07 Mar 2007 13:21:46 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-07 at 14:08 +0100, Nick Piggin wrote:
 
-> > > The thing is, I don't think anybody who uses these things cares
-> > > about any of the 'problems' you want to fix, do they? We are
-> > > interested in dirty pages only for the correctness issue, rather
-> > > than performance. Same as reclaim.
-> > 
-> > If so, we can just stick to the dead slow but correct 'scan the full
-> > vma' page_mkclean() and nobody would ever trigger it.
-> 
-> Not if we restricted it to root and mlocked tmpfs. But then why
-> wouldn't you just do it with the much more efficient msync walk,
-> so that if root does want to do writeout via these things, it does
-> not blow up?
+Add an i386 implementation of alternative_io modelled on
+the x86_64 version.
 
-This is all used on ram based filesystems right, they all have
-BDI_CAP_NO_WRITEBACK afaik, so page_mkclean will never get called
-anyway. Mlock doesn't avoid getting page_mkclean called.
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
 
-Those who use this on a 'real' filesystem will get hit in the face by a
-linear scanning page_mkclean(), but AFAIK nobody does this anyway.
+	Ok, this seems to fix things up here.  I have only boot
+	tested this on an SMP so I'd not call that 'heavily tested'
+	in any real sense but it might get you going until akpm
+	has a chance to comment.
 
-Restricting it to root for such filesystems is unwanted, that'd severely
-handicap both UML and Oracle as I understand it (are there other users
-of this feature around?)
+	-apw
 
-msync() might never get called and then we're back with the old
-behaviour where we can surprise the VM with a ton of dirty pages.
-
-> > What is the DoS scenario wrt reclaim? We really ought to fix that if
-> > real, those UML farms run on nothing but nonlinear reclaim I'd think.
-> 
-> I guess you can just increase the computational complexity of
-> reclaim quite easily.
-
-Right, on first glance it doesn't look to be too bad, but I should take
-a closer look.
-
+---
+diff --git a/include/asm-i386/alternative.h b/include/asm-i386/alternative.h
+index 4a77e93..8b6d9ed 100644
+--- a/include/asm-i386/alternative.h
++++ b/include/asm-i386/alternative.h
+@@ -100,6 +100,23 @@ static inline void alternatives_smp_switch(int smp) {}
+ 		      "663:\n\t" newinstr "\n664:\n"   /* replacement */\
+ 		      ".previous" :: "i" (feature), ##input)
+ 
++#define alternative_io(oldinstr, newinstr, feature, output, input...)	\
++	asm volatile ("661:\n\t" oldinstr "\n662:\n"			\
++		      ".section .altinstructions,\"a\"\n"		\
++		      "  .align 4\n"					\
++		      "  .long 661b\n"            /* label */		\
++		      "  .long 663f\n"		  /* new instruction */ \
++		      "  .long 0x00\n"					\
++		      "  .byte %c[feat]\n"        /* feature bit */	\
++		      "  .byte 0x00\n"					\
++		      "  .byte 662b-661b\n"       /* sourcelen */	\
++		      "  .byte 664f-663f\n"       /* replacementlen */ 	\
++		      "  .byte 0x00\n"					\
++		      ".previous\n"					\
++		      ".section .altinstr_replacement,\"ax\"\n"		\
++		      "663:\n\t" newinstr "\n664:\n"   /* replacement */\
++		      ".previous" : output : [feat] "i" (feature), ##input)
++
+ /* Like alternative_io, but supports 2 possible alternatives */
+ #define alternative_io_two(oldinstr, newinstr, feat, newinstr2, feat2,\
+ 		output, input...) \
+diff --git a/include/asm-i386/tsc.h b/include/asm-i386/tsc.h
+index 3469766..a031b56 100644
+--- a/include/asm-i386/tsc.h
++++ b/include/asm-i386/tsc.h
+@@ -6,6 +6,7 @@
+ #ifndef _ASM_i386_TSC_H
+ #define _ASM_i386_TSC_H
+ 
++#include <asm/alternative.h>
+ #include <asm/processor.h>
+ 
+ /*
