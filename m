@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422755AbXCGR7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422752AbXCGR77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422755AbXCGR7G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:59:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422767AbXCGRNe
+	id S1422752AbXCGR77 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:59:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422750AbXCGR76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:13:34 -0500
-Received: from mail.suse.de ([195.135.220.2]:43354 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:59:58 -0500
+Received: from ns2.suse.de ([195.135.220.15]:42735 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422755AbXCGRN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:13:29 -0500
-Message-Id: <20070307171136.733769722@mini.kroah.org>
+	id S1422752AbXCGRNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:13:33 -0500
+Message-Id: <20070307171149.652275862@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:10:41 -0800
+Date: Wed, 07 Mar 2007 09:10:45 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@osdl.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,211 +22,64 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, nfs@lists.sourceforge.net,
-       Neil Brown <neilb@suse.de>
-Subject: [patch 006/101] knfsd: Fix a race in closing NFSd connections.
-Content-Disposition: inline; filename=knfsd-fix-a-race-in-closing-nfsd-connections.patch
+       alan@lxorguk.ukuu.org.uk, Michael Buesch <mb@bu3sch.de>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Subject: [patch 010/101] bcm43xx: Fix for oops on ampdu status
+Content-Disposition: inline; filename=bcm43xx-fix-for-oops-on-ampdu-status.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you lose this race, it can iput a socket inode twice and you
-get a BUG in fs/inode.c
 
-When I added the option for user-space to close a socket,
-I added some cruft to svc_delete_socket so that I could call
-that function when closing a socket per user-space request.
+From: Michael Buesch <mb@bu3sch.de>
 
-This was the wrong thing to do.  I should have just set SK_CLOSE
-and let normal mechanisms do the work.
+If bcm43xx were to process an afterburner (ampdu) status response, Linux would oops. The
+ampdu and intermediate status bits are properly named.
 
-Not only wrong, but buggy.  The locking is all wrong and it openned
-up a race where-by a socket could be closed twice.
-
-So this patch:
-  Introduces svc_close_socket which sets SK_CLOSE then either leave
-  the close up to a thread, or calls svc_delete_socket if it can
-  get SK_BUSY.
-
-  Adds a bias to sk_busy which is removed when SK_DEAD is set,
-  This avoid races around shutting down the socket.
-
-  Changes several 'spin_lock' to 'spin_lock_bh' where the _bh 
-  was missing.
-
-Bugzilla-url: http://bugzilla.kernel.org/show_bug.cgi?id=7916
-
-Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- include/linux/sunrpc/svcsock.h |    2 -
- net/sunrpc/svc.c               |    4 +--
- net/sunrpc/svcsock.c           |   52 +++++++++++++++++++++++++++++------------
- 3 files changed, 41 insertions(+), 17 deletions(-)
+ drivers/net/wireless/bcm43xx/bcm43xx_main.c |    8 +++-----
+ drivers/net/wireless/bcm43xx/bcm43xx_xmit.h |   10 ++--------
+ 2 files changed, 5 insertions(+), 13 deletions(-)
 
---- linux-2.6.20.1.orig/include/linux/sunrpc/svcsock.h
-+++ linux-2.6.20.1/include/linux/sunrpc/svcsock.h
-@@ -63,7 +63,7 @@ struct svc_sock {
-  * Function prototypes.
-  */
- int		svc_makesock(struct svc_serv *, int, unsigned short);
--void		svc_delete_socket(struct svc_sock *);
-+void		svc_close_socket(struct svc_sock *);
- int		svc_recv(struct svc_rqst *, long);
- int		svc_send(struct svc_rqst *);
- void		svc_drop(struct svc_rqst *);
---- linux-2.6.20.1.orig/net/sunrpc/svc.c
-+++ linux-2.6.20.1/net/sunrpc/svc.c
-@@ -386,7 +386,7 @@ svc_destroy(struct svc_serv *serv)
- 		svsk = list_entry(serv->sv_tempsocks.next,
- 				  struct svc_sock,
- 				  sk_list);
--		svc_delete_socket(svsk);
-+		svc_close_socket(svsk);
- 	}
- 	if (serv->sv_shutdown)
- 		serv->sv_shutdown(serv);
-@@ -395,7 +395,7 @@ svc_destroy(struct svc_serv *serv)
- 		svsk = list_entry(serv->sv_permsocks.next,
- 				  struct svc_sock,
- 				  sk_list);
--		svc_delete_socket(svsk);
-+		svc_close_socket(svsk);
- 	}
- 	
- 	cache_clean_deferred(serv);
---- linux-2.6.20.1.orig/net/sunrpc/svcsock.c
-+++ linux-2.6.20.1/net/sunrpc/svcsock.c
-@@ -62,6 +62,12 @@
-  *		after a clear, the socket must be read/accepted
-  *		 if this succeeds, it must be set again.
-  *	SK_CLOSE can set at any time. It is never cleared.
-+ *      sk_inuse contains a bias of '1' until SK_DEAD is set.
-+ *             so when sk_inuse hits zero, we know the socket is dead
-+ *             and no-one is using it.
-+ *      SK_DEAD can only be set while SK_BUSY is held which ensures
-+ *             no other thread will be using the socket or will try to
-+ *	       set SK_DEAD.
-  *
-  */
+--- linux-2.6.20.1.orig/drivers/net/wireless/bcm43xx/bcm43xx_main.c
++++ linux-2.6.20.1/drivers/net/wireless/bcm43xx/bcm43xx_main.c
+@@ -1453,12 +1453,10 @@ static void handle_irq_transmit_status(s
  
-@@ -70,6 +76,7 @@
+ 		bcm43xx_debugfs_log_txstat(bcm, &stat);
  
- static struct svc_sock *svc_setup_socket(struct svc_serv *, struct socket *,
- 					 int *errp, int pmap_reg);
-+static void		svc_delete_socket(struct svc_sock *svsk);
- static void		svc_udp_data_ready(struct sock *, int);
- static int		svc_udp_recvfrom(struct svc_rqst *);
- static int		svc_udp_sendto(struct svc_rqst *);
-@@ -329,8 +336,9 @@ void svc_reserve(struct svc_rqst *rqstp,
- static inline void
- svc_sock_put(struct svc_sock *svsk)
- {
--	if (atomic_dec_and_test(&svsk->sk_inuse) &&
--			test_bit(SK_DEAD, &svsk->sk_flags)) {
-+	if (atomic_dec_and_test(&svsk->sk_inuse)) {
-+		BUG_ON(! test_bit(SK_DEAD, &svsk->sk_flags));
-+
- 		dprintk("svc: releasing dead socket\n");
- 		if (svsk->sk_sock->file)
- 			sockfd_put(svsk->sk_sock);
-@@ -520,7 +528,7 @@ svc_sock_names(char *buf, struct svc_ser
+-		if (stat.flags & BCM43xx_TXSTAT_FLAG_IGNORE)
++		if (stat.flags & BCM43xx_TXSTAT_FLAG_AMPDU)
++			continue;
++		if (stat.flags & BCM43xx_TXSTAT_FLAG_INTER)
+ 			continue;
+-		if (!(stat.flags & BCM43xx_TXSTAT_FLAG_ACK)) {
+-			//TODO: packet was not acked (was lost)
+-		}
+-		//TODO: There are more (unknown) flags to test. see bcm43xx_main.h
  
- 	if (!serv)
- 		return 0;
--	spin_lock(&serv->sv_lock);
-+	spin_lock_bh(&serv->sv_lock);
- 	list_for_each_entry(svsk, &serv->sv_permsocks, sk_list) {
- 		int onelen = one_sock_name(buf+len, svsk);
- 		if (toclose && strcmp(toclose, buf+len) == 0)
-@@ -528,12 +536,12 @@ svc_sock_names(char *buf, struct svc_ser
- 		else
- 			len += onelen;
- 	}
--	spin_unlock(&serv->sv_lock);
-+	spin_unlock_bh(&serv->sv_lock);
- 	if (closesk)
- 		/* Should unregister with portmap, but you cannot
- 		 * unregister just one protocol...
- 		 */
--		svc_delete_socket(closesk);
-+		svc_close_socket(closesk);
- 	else if (toclose)
- 		return -ENOENT;
- 	return len;
-@@ -683,6 +691,11 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
- 		return svc_deferred_recv(rqstp);
- 	}
+ 		if (bcm43xx_using_pio(bcm))
+ 			bcm43xx_pio_handle_xmitstatus(bcm, &stat);
+--- linux-2.6.20.1.orig/drivers/net/wireless/bcm43xx/bcm43xx_xmit.h
++++ linux-2.6.20.1/drivers/net/wireless/bcm43xx/bcm43xx_xmit.h
+@@ -137,14 +137,8 @@ struct bcm43xx_xmitstatus {
+ 	u16 unknown; //FIXME
+ };
  
-+	if (test_bit(SK_CLOSE, &svsk->sk_flags)) {
-+		svc_delete_socket(svsk);
-+		return 0;
-+	}
-+
- 	clear_bit(SK_DATA, &svsk->sk_flags);
- 	while ((skb = skb_recv_datagram(svsk->sk_sk, 0, 1, &err)) == NULL) {
- 		if (err == -EAGAIN) {
-@@ -1176,7 +1189,8 @@ svc_tcp_sendto(struct svc_rqst *rqstp)
- 		       rqstp->rq_sock->sk_server->sv_name,
- 		       (sent<0)?"got error":"sent only",
- 		       sent, xbufp->len);
--		svc_delete_socket(rqstp->rq_sock);
-+		set_bit(SK_CLOSE, &rqstp->rq_sock->sk_flags);
-+		svc_sock_enqueue(rqstp->rq_sock);
- 		sent = -EAGAIN;
- 	}
- 	return sent;
-@@ -1495,7 +1509,7 @@ svc_setup_socket(struct svc_serv *serv, 
- 	svsk->sk_odata = inet->sk_data_ready;
- 	svsk->sk_owspace = inet->sk_write_space;
- 	svsk->sk_server = serv;
--	atomic_set(&svsk->sk_inuse, 0);
-+	atomic_set(&svsk->sk_inuse, 1);
- 	svsk->sk_lastrecv = get_seconds();
- 	spin_lock_init(&svsk->sk_defer_lock);
- 	INIT_LIST_HEAD(&svsk->sk_deferred);
-@@ -1618,7 +1632,7 @@ bummer:
- /*
-  * Remove a dead socket
-  */
--void
-+static void
- svc_delete_socket(struct svc_sock *svsk)
- {
- 	struct svc_serv	*serv;
-@@ -1644,16 +1658,26 @@ svc_delete_socket(struct svc_sock *svsk)
- 	 * while still attached to a queue, the queue itself
- 	 * is about to be destroyed (in svc_destroy).
- 	 */
--	if (!test_and_set_bit(SK_DEAD, &svsk->sk_flags))
-+	if (!test_and_set_bit(SK_DEAD, &svsk->sk_flags)) {
-+		BUG_ON(atomic_read(&svsk->sk_inuse)<2);
-+		atomic_dec(&svsk->sk_inuse);
- 		if (test_bit(SK_TEMP, &svsk->sk_flags))
- 			serv->sv_tmpcnt--;
-+	}
+-#define BCM43xx_TXSTAT_FLAG_ACK		0x01
+-//TODO #define BCM43xx_TXSTAT_FLAG_???	0x02
+-//TODO #define BCM43xx_TXSTAT_FLAG_???	0x04
+-//TODO #define BCM43xx_TXSTAT_FLAG_???	0x08
+-//TODO #define BCM43xx_TXSTAT_FLAG_???	0x10
+-#define BCM43xx_TXSTAT_FLAG_IGNORE	0x20
+-//TODO #define BCM43xx_TXSTAT_FLAG_???	0x40
+-//TODO #define BCM43xx_TXSTAT_FLAG_???	0x80
++#define BCM43xx_TXSTAT_FLAG_AMPDU	0x10
++#define BCM43xx_TXSTAT_FLAG_INTER	0x20
  
--	/* This atomic_inc should be needed - svc_delete_socket
--	 * should have the semantic of dropping a reference.
--	 * But it doesn't yet....
--	 */
--	atomic_inc(&svsk->sk_inuse);
- 	spin_unlock_bh(&serv->sv_lock);
-+}
-+
-+void svc_close_socket(struct svc_sock *svsk)
-+{
-+	set_bit(SK_CLOSE, &svsk->sk_flags);
-+	if (test_and_set_bit(SK_BUSY, &svsk->sk_flags))
-+		/* someone else will have to effect the close */
-+		return;
-+
-+	atomic_inc(&svsk->sk_inuse);
-+	svc_delete_socket(svsk);
-+	clear_bit(SK_BUSY, &svsk->sk_flags);
- 	svc_sock_put(svsk);
- }
- 
+ u8 bcm43xx_plcp_get_ratecode_cck(const u8 bitrate);
+ u8 bcm43xx_plcp_get_ratecode_ofdm(const u8 bitrate);
 
 --
