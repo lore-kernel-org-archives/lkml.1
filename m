@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964845AbXCGMXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751294AbXCGM1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964845AbXCGMXn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 07:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXCGMXn
+	id S1751294AbXCGM1f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 07:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXCGM1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 07:23:43 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:15915 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751233AbXCGMXm (ORCPT
+	Wed, 7 Mar 2007 07:27:34 -0500
+Received: from wx-out-0506.google.com ([66.249.82.238]:10417 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751294AbXCGM1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 07:23:42 -0500
-Date: Wed, 7 Mar 2007 04:22:24 -0800
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307122224.GP18774@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Nick Piggin <npiggin@suse.de>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-	mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	benh@kernel.crashing.org
-References: <1173259942.6374.125.camel@twins> <20070307094503.GD8609@wotan.suse.de> <20070307100430.GA5080@wotan.suse.de> <1173262002.6374.128.camel@twins> <E1HOt96-0008V6-00@dorka.pomaz.szeredi.hu> <20070307102106.GB5555@wotan.suse.de> <1173263085.6374.132.camel@twins> <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins> <20070307110035.GE5555@wotan.suse.de>
+	Wed, 7 Mar 2007 07:27:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=dZnCm+bkdHvff7PWy4rYyf7WVHeAs4s8BgcZzRVHFrn5yU+KaEzug/X+f2qcEPt+7gV884P+xmG/8wdGI2Sh3/9eNqmvsYZypc5LrGxm0iWwC10RMNRh7fNOdC3LMjcrP61FKiUxX3tfAr9aRcbc14jtMGpEsLfcEsBVLSryERs=
+Message-ID: <45EEAFB4.3060306@gmail.com>
+Date: Wed, 07 Mar 2007 21:27:32 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307110035.GE5555@wotan.suse.de>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Conke Hu <conke.hu@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] ATAPI command TEST_UNIT_READY never succeeds!
+References: <5767b9100703070409o3e094420rf7ccffc436332184@mail.gmail.com> <5767b9100703070423y194bf492wad28ddc66ab98775@mail.gmail.com>
+In-Reply-To: <5767b9100703070423y194bf492wad28ddc66ab98775@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 11:47:42AM +0100, Peter Zijlstra wrote:
->> Well, now they don't, but it could be done or even exploited as a DoS.
+Conke Hu wrote:
+> On 3/7/07, Conke Hu <conke.hu@gmail.com> wrote:
+>> Hi,
+>>     Do you ever noticed that the ATAPI command TEST_UNIT_READY always
+>> fails to execute !?
+>>     I debugged in the following environments:
+>>         piix + Intel ICH6/ICH7 PATA
+>>         atiixp + ATI SB600 PATA
+>>         libata + ata_piix + Intel ICH6/ICH7 PATA
+>>         libata + sata_sil24 + Silicon Image 3132
+>>         libata + ahci + ATI SB600 SATA
+>>         libata + ahci + Intel AHCI
+>>     but none of them can execute TEST_UNIT_READY command successfully.
+>>     For example, in ahci driver, ahci_interrupt() reads port status as
+>> 0x4000_0000, which indicates an taskfile error.
+> ~~~~~~~~~~~~~~~~~~
+> 
+> 0x4000_0001, not 0x4000_0000, sorry.
+> 
+> more precisely speaking, ahci_host_intr() reads PORT_IRQ_STAT as
+> 0x4000_0001, not the  expected 0x0000_0001.
 
-On Wed, Mar 07, 2007 at 12:00:36PM +0100, Nick Piggin wrote:
-> But so could nonlinear page reclaim. I think we need to restrict nonlinear
-> mappings to root if we're worried about that.
+I've read your last posting about this, but forgot to follow up.  TUR is
+supposed to fail if ATAPI device doesn't have media loaded.  TUR fails
+and sense data returns device not ready - media not present.  That's the
+normal operation.  Does TUR fail even with media loaded or is sense data
+not properly fetched?
 
-Please not root. The users really don't want to be privileged. UML
-itself is at least partly for use as privilege isolation of the guest
-workload. Oracle has some of the same concerns itself, which is part of
-why it uses separate processes heavily, even: to isolate instances from
-each other.
-
-
--- wli
+-- 
+tejun
