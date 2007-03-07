@@ -1,86 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965607AbXCGUK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992541AbXCGULs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965607AbXCGUK7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 15:10:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965597AbXCGUK6
+	id S2992541AbXCGULs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 15:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992543AbXCGULr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 15:10:58 -0500
-Received: from ozlabs.org ([203.10.76.45]:52526 "EHLO ozlabs.org"
+	Wed, 7 Mar 2007 15:11:47 -0500
+Received: from gw.goop.org ([64.81.55.164]:59014 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965607AbXCGUK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 15:10:57 -0500
-Date: Wed, 7 Mar 2007 14:10:18 -0600
-From: Anton Blanchard <anton@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/12] Syslets, Threadlets, generic AIO support, v5
-Message-ID: <20070307201018.GA8485@kryten>
-References: <20070228213938.GA945@elte.hu>
+	id S2992540AbXCGULq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 15:11:46 -0500
+Message-ID: <45EF1C80.50900@goop.org>
+Date: Wed, 07 Mar 2007 12:11:44 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070228213938.GA945@elte.hu>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Dan Hecht <dhecht@vmware.com>
+CC: James Morris <jmorris@namei.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	<45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	<20070306084647.GA16280@elte.hu> <45ED2C82.3080008@vmware.com>	<1173178774.24738.311.camel@localhost.localdomain>	<45EDD82F.90204@vmware.com>	<1173225182.24738.507.camel@localhost.localdomain>	<45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com>	<1173228544.24738.514.camel@localhost.localdomain>	<45EE0D10.7070807@vmware.com>	<1173230305.24738.529.camel@localhost.localdomain>	<45EE1EA3.90803@vmware.com>	<1173256666.24738.576.camel@localhost.localdomain>	<45EEF966.6060902@goop.org>	<Line.LNX.4.64.0703071304080.1851@d.namei> <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com>
+In-Reply-To: <45EF175D.6030609@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dan Hecht wrote:
+> Jeremy, I saw you sent out the Xen version earlier, thanks.  Here's
+> ours for reference (please excuse any formating issues); it's also
+> lean. We'll send out a proper patch later after some more testing:
 
-Hi Ingo,
+So the interrupt side of the clockevent comes through the virtual apic? 
+Where does evt->handle_event get called?
 
-> this is the v5 release of the syslet/threadlet subsystem:
-> 
->    http://redhat.com/~mingo/syslet-patches/
-
-Nice!
-
-I tried to port this to ppc64 but found a few problems:
-
-The 64bit powerpc ABI has the concept of a TOC (r2) which is used for
-per function data. This means this wont work:
-
-        if (ah->restore_stack) {
-                set_task_stack_reg(new_task, ah->restore_stack);
-                task_ip_reg(new_task) = ah->restore_ip;
-                /*
-                 * The return code 0 is needed to tell the
-                 * head user-context that the threadlet went async:
-                 */
-                task_ret_reg(new_task) = 0;
-        }
-
-I think we would want to change restore_ip to restore_function, and then
-create a per arch helper, perhaps:
-
-void set_user_context(struct task_struct *task, unsigned long stack,
-		      unsigned long function, unsigned long retval);
-
-ppc64 could then grab the ip and r2 values from the function descriptor.
-
-The other issue involves the syscall table:
-
-asmlinkage struct syslet_uatom __user *
-sys_async_exec(struct syslet_uatom __user *uatom,
-               struct async_head_user __user *ahu)
-{
-        return __sys_async_exec(uatom, ahu, sys_call_table, NR_syscalls);
-}
-
-This exposes the layout of the syscall table. Unfortunately it wont work
-on ppc64. In arch/powerpc/kernel/systbl.S:
-
-#define COMPAT_SYS(func)        .llong  .sys_##func,.compat_sys_##func
-
-Both syscall tables are overlaid.
-
-Anton
+    J
