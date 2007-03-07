@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965735AbXCGXPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965730AbXCGXPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965735AbXCGXPF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965730AbXCGXPE
+	id S965730AbXCGXPK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:15:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965731AbXCGXPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:15:04 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:42677 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965726AbXCGXPA (ORCPT
+	Wed, 7 Mar 2007 18:15:09 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42689 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965726AbXCGXPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:15:00 -0500
-Subject: Re: [PATCH 0/20] x86_64 Relocatable bzImage support (V4)
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: vgoyal@in.ibm.com,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
-       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
-       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
-       pavel@suse.cz, rjw@sisk.pl
-In-Reply-To: <1173300597.3219.105.camel@nigel.suspend2.net>
-References: <20070307065703.GA23412@in.ibm.com>
-	 <1173280059.3540.5.camel@laptopd505.fenrus.org>
-	 <1173300597.3219.105.camel@nigel.suspend2.net>
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 10:15:02 +1100
-Message-Id: <1173309302.13442.0.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Mar 2007 18:15:05 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Dave Hansen <hansendc@us.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, pj@sgi.com, winget@google.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+References: <20070301133543.GK15509@in.ibm.com>
+	<6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com>
+	<20070307173031.GC2336@in.ibm.com>
+	<20070307174346.GA19521@sergelap.austin.ibm.com>
+	<20070307180055.GC17151@in.ibm.com>
+	<20070307205846.GB7010@sergelap.austin.ibm.com>
+	<6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
+	<20070307215919.GA2110@sergelap.austin.ibm.com>
+	<1173305626.868.10.camel@localhost.localdomain>
+Date: Wed, 07 Mar 2007 16:13:15 -0700
+In-Reply-To: <1173305626.868.10.camel@localhost.localdomain> (Dave Hansen's
+	message of "Wed, 07 Mar 2007 14:13:46 -0800")
+Message-ID: <m1abyobqb8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Dave Hansen <hansendc@us.ibm.com> writes:
 
-On Thu, 2007-03-08 at 07:49 +1100, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Wed, 2007-03-07 at 07:07 -0800, Arjan van de Ven wrote:
-> > On Wed, 2007-03-07 at 12:27 +0530, Vivek Goyal wrote:
-> > > Hi,
-> > > 
-> > > Here is another attempt on x86_64 relocatable bzImage patches(V4). This
-> > > patchset makes a bzImage relocatable and same kernel binary can be loaded
-> > > and run from different physical addresses.
-> > 
-> > 
-> > have these patches been extensively tested with various suspend
-> > scenarios? (S1,S3,S4 in acpi speak or s2ram and s2disk in Linux speak)
-> 
-> We did work on this for RHEL5, getting relocatable kernel support
-> working fine with S4. While doing it and since, I've been running
-> Suspend2 with the same patch.
-> 
-> Since that work, Vivek has done more modifications, but I can confirm
-> that the basic design is reliable with S4. Haven't tried S3, but can do.
-> Will report back shortly.
+> On Wed, 2007-03-07 at 15:59 -0600, Serge E. Hallyn wrote:
+>> Space saving was the only reason for nsproxy to exist.
+>> 
+>> Now of course it also provides the teensiest reduction in # instructions
+>> since every clone results in just one reference count inc for the
+>> nsproxy rather than one for each namespace. 
+>
+> If we have 7 or 8 namespaces, then it can save us a significant number
+> of atomic instructions on _each_ of the refcounts, plus touching all of
+> the cachelines, etc...
 
-S3 works okay here with a relocatable x86_64 kernel (2.6.20).
+Well we still have a global lock on the fork path so there is only so
+much we can do to improve things.  The global process list, and there
+are some interesting posix signal handling rules that limit how much
+we can relax that restriction.
 
-Regards,
+However with namespaces we have a natural limit on how many we will
+have.  There aren't that many spaces for global names.
 
-Nigel
+I don't know the situation well enough for resource controllers but I
+suspect we might not have any kind of natural limit (except what a
+single person can comprehend) to the kind of resource we will
+ultimately want to control which tends to imply we will have more of those.  
 
+Eric
