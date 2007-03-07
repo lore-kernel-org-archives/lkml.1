@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932517AbXCGE3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932654AbXCGEmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932517AbXCGE3w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 23:29:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbXCGE3w
+	id S932654AbXCGEmd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 23:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbXCGEmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 23:29:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54341 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932517AbXCGE3v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 23:29:51 -0500
-Subject: Re: Wanted: simple, safe x86 stack overflow detection
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bill Irwin <bill.irwin@oracle.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070306203432.GD18774@holomorphy.com>
-References: <45E5913D.3080505@redhat.com>
-	 <20070228204144.GA32316@one.firstfloor.org>
-	 <20070304015031.GA4224@holomorphy.com> <45EDBA1B.8050007@redhat.com>
-	 <Pine.LNX.4.64.0703061937450.19813@blonde.wat.veritas.com>
-	 <20070306203432.GD18774@holomorphy.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 06 Mar 2007 20:28:35 -0800
-Message-Id: <1173241715.3236.16.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Tue, 6 Mar 2007 23:42:32 -0500
+Received: from mail.queued.net ([207.210.101.209]:2242 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932654AbXCGEmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 23:42:32 -0500
+Message-ID: <45EE42BC.6030209@debian.org>
+Date: Tue, 06 Mar 2007 23:42:36 -0500
+From: Andres Salomon <dilinger@debian.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Andres Salomon <dilinger@debian.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: don't use ZONE_DMA unless CONFIG_ZONE_DMA is set
+ in setup.c
+References: <45EDFEDB.3000507@debian.org> <20070306175246.b1253ec3.akpm@linux-foundation.org> <20070307040248.GA30278@redhat.com>
+In-Reply-To: <20070307040248.GA30278@redhat.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm certainly in favor of the move; IRQ stacks could be made
-> rather deep and cheaply at that. I may get around to writing it this
-> week if no one else does it first.
+Dave Jones wrote:
+> On Tue, Mar 06, 2007 at 05:52:46PM -0800, Andrew Morton wrote:
+>  > On Tue, 06 Mar 2007 18:52:59 -0500
+>  > Andres Salomon <dilinger@debian.org> wrote:
+>  > 
+>  > > If CONFIG_ZONE_DMA is ever undefined, ZONE_DMA will also not be defined,
+>  > > and setup.c won't compile.  This wraps it with an #ifdef.
+>  > > 
+>  > 
+>  > I guess if anyone tries to disable ZONE_DMA on i386 they'll pretty quickly
+>  > discover that.  But I don't think we need to "fix" it yet?
 
-the irq stacks aren't the problem; RH at some point accidentally shipped
-a kernel with 4k *shared* irq/user context stack and even that gave
-almost no issues.
+Oh, it's certainly not urgent.  I sent it simply for correctness reasons.
 
-irq's really shouldn't actually nest; it's bad for just about everything
-to do that (but that's another story, I would *love* to get rid of the
-"enable irqs" thing in the x86 irq path, it hurts just about anything in
-reality)
+It would've been nice to see the ZONE_DMA removal patches just #define
+ZONE_DMA regardless, and include less #ifdefs scattered about; but at
+this point, I'd just as soon prefer to see a proper way to allocate
+things based on address constraints (as discussed in
+http://www.gelato.unsw.edu.au/archives/linux-ia64/0609/19036.html).
+
+
+> 
+> CONFIG_ZONE_DMA isn't even optional on i386, so I'm curious how
+> you could hit this compile failure.
+> 
+
+Why, with custom code of course ;)
 
