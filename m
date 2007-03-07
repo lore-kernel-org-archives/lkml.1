@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422927AbXCGRdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422847AbXCGRdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422927AbXCGRdk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422847AbXCGRQn
+	id S1422847AbXCGRdo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:33:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422863AbXCGRQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:16:43 -0500
-Received: from ns1.suse.de ([195.135.220.2]:43969 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 12:16:41 -0500
+Received: from ns2.suse.de ([195.135.220.15]:43377 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422822AbXCGRP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:15:58 -0500
-Message-Id: <20070307171416.481686283@mini.kroah.org>
+	id S1422847AbXCGRQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:16:03 -0500
+Message-Id: <20070307171423.452794906@mini.kroah.org>
 References: <20070307171035.150802805@mini.kroah.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:11:29 -0800
+Date: Wed, 07 Mar 2007 09:11:31 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,78 +22,95 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Stefan Seyfried <seife@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch 054/101] swsusp: Fix possible oops in userland interface
-Content-Disposition: inline; filename=swsusp-fix-possible-oops-in-userland-interface.patch
+       alan@lxorguk.ukuu.org.uk, Chris Wright <chrisw@sous-sol.org>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Andreas Gruenbacher <agruen@suse.de>, Hugh Dickins <hugh@veritas.com>
+Subject: [patch 056/101] fix umask when noACL kernel meets extN tuned for ACLs
+Content-Disposition: inline; filename=fix-umask-when-noacl-kernel-meets-extn-tuned-for-acls.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Seyfried <seife@suse.de>
+From: Hugh Dickins <hugh@veritas.com>
 
-Fix the Oops occuring when SNAPSHOT_PMOPS or SNAPSHOT_S2RAM ioctl is called on
-a system without pm_ops defined (eg. a non-ACPI kernel on x86 PC).
+Fix insecure default behaviour reported by Tigran Aivazian: if an ext2
+or ext3 or ext4 filesystem is tuned to mount with "acl", but mounted by
+a kernel built without ACL support, then umask was ignored when creating
+inodes - though root or user has umask 022, touch creates files as 0666,
+and mkdir creates directories as 0777.
 
-Signed-off-by: Stefan Seyfried <seife@suse.de>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+This appears to have worked right until 2.6.11, when a fix to the default
+mode on symlinks (always 0777) assumed VFS applies umask: which it does,
+unless the mount is marked for ACLs; but ext[234] set MS_POSIXACL in
+s_flags according to s_mount_opt set according to def_mount_opts.
+
+We could revert to the 2.6.10 ext[234]_init_acl (adding an S_ISLNK test);
+but other filesystems only set MS_POSIXACL when ACLs are configured.  We
+could fix this at another level; but it seems most robust to avoid setting
+the s_mount_opt flag in the first place (at the expense of more ifdefs).
+
+Likewise don't set the XATTR_USER flag when built without XATTR support.
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Acked-by: Andreas Gruenbacher <agruen@suse.de>
+Cc: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- kernel/power/user.c |   19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+ fs/ext2/super.c |    4 ++++
+ fs/ext3/super.c |    4 ++++
+ fs/ext4/super.c |    4 ++++
+ 3 files changed, 12 insertions(+)
 
---- linux-2.6.20.1.orig/kernel/power/user.c
-+++ linux-2.6.20.1/kernel/power/user.c
-@@ -292,7 +292,7 @@ static int snapshot_ioctl(struct inode *
- 			break;
- 		}
- 
--		if (pm_ops->prepare) {
-+		if (pm_ops && pm_ops->prepare) {
- 			error = pm_ops->prepare(PM_SUSPEND_MEM);
- 			if (error)
- 				goto OutS3;
-@@ -311,7 +311,7 @@ static int snapshot_ioctl(struct inode *
- 			device_resume();
- 		}
- 		resume_console();
--		if (pm_ops->finish)
-+		if (pm_ops && pm_ops->finish)
- 			pm_ops->finish(PM_SUSPEND_MEM);
- 
-  OutS3:
-@@ -322,20 +322,25 @@ static int snapshot_ioctl(struct inode *
- 		switch (arg) {
- 
- 		case PMOPS_PREPARE:
--			if (pm_ops->prepare) {
-+			if (pm_ops && pm_ops->prepare)
- 				error = pm_ops->prepare(PM_SUSPEND_DISK);
--			}
-+			else
-+				error = -ENOSYS;
- 			break;
- 
- 		case PMOPS_ENTER:
- 			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
--			error = pm_ops->enter(PM_SUSPEND_DISK);
-+			if (pm_ops && pm_ops->enter)
-+				error = pm_ops->enter(PM_SUSPEND_DISK);
-+			else
-+				error = -ENOSYS;
- 			break;
- 
- 		case PMOPS_FINISH:
--			if (pm_ops && pm_ops->finish) {
-+			if (pm_ops && pm_ops->finish)
- 				pm_ops->finish(PM_SUSPEND_DISK);
--			}
-+			else
-+				error = -ENOSYS;
- 			break;
- 
- 		default:
+--- linux-2.6.20.1.orig/fs/ext2/super.c
++++ linux-2.6.20.1/fs/ext2/super.c
+@@ -708,10 +708,14 @@ static int ext2_fill_super(struct super_
+ 		set_opt(sbi->s_mount_opt, GRPID);
+ 	if (def_mount_opts & EXT2_DEFM_UID16)
+ 		set_opt(sbi->s_mount_opt, NO_UID32);
++#ifdef CONFIG_EXT2_FS_XATTR
+ 	if (def_mount_opts & EXT2_DEFM_XATTR_USER)
+ 		set_opt(sbi->s_mount_opt, XATTR_USER);
++#endif
++#ifdef CONFIG_EXT2_FS_POSIX_ACL
+ 	if (def_mount_opts & EXT2_DEFM_ACL)
+ 		set_opt(sbi->s_mount_opt, POSIX_ACL);
++#endif
+ 	
+ 	if (le16_to_cpu(sbi->s_es->s_errors) == EXT2_ERRORS_PANIC)
+ 		set_opt(sbi->s_mount_opt, ERRORS_PANIC);
+--- linux-2.6.20.1.orig/fs/ext3/super.c
++++ linux-2.6.20.1/fs/ext3/super.c
+@@ -1459,10 +1459,14 @@ static int ext3_fill_super (struct super
+ 		set_opt(sbi->s_mount_opt, GRPID);
+ 	if (def_mount_opts & EXT3_DEFM_UID16)
+ 		set_opt(sbi->s_mount_opt, NO_UID32);
++#ifdef CONFIG_EXT3_FS_XATTR
+ 	if (def_mount_opts & EXT3_DEFM_XATTR_USER)
+ 		set_opt(sbi->s_mount_opt, XATTR_USER);
++#endif
++#ifdef CONFIG_EXT3_FS_POSIX_ACL
+ 	if (def_mount_opts & EXT3_DEFM_ACL)
+ 		set_opt(sbi->s_mount_opt, POSIX_ACL);
++#endif
+ 	if ((def_mount_opts & EXT3_DEFM_JMODE) == EXT3_DEFM_JMODE_DATA)
+ 		sbi->s_mount_opt |= EXT3_MOUNT_JOURNAL_DATA;
+ 	else if ((def_mount_opts & EXT3_DEFM_JMODE) == EXT3_DEFM_JMODE_ORDERED)
+--- linux-2.6.20.1.orig/fs/ext4/super.c
++++ linux-2.6.20.1/fs/ext4/super.c
+@@ -1518,10 +1518,14 @@ static int ext4_fill_super (struct super
+ 		set_opt(sbi->s_mount_opt, GRPID);
+ 	if (def_mount_opts & EXT4_DEFM_UID16)
+ 		set_opt(sbi->s_mount_opt, NO_UID32);
++#ifdef CONFIG_EXT4DEV_FS_XATTR
+ 	if (def_mount_opts & EXT4_DEFM_XATTR_USER)
+ 		set_opt(sbi->s_mount_opt, XATTR_USER);
++#endif
++#ifdef CONFIG_EXT4DEV_FS_POSIX_ACL
+ 	if (def_mount_opts & EXT4_DEFM_ACL)
+ 		set_opt(sbi->s_mount_opt, POSIX_ACL);
++#endif
+ 	if ((def_mount_opts & EXT4_DEFM_JMODE) == EXT4_DEFM_JMODE_DATA)
+ 		sbi->s_mount_opt |= EXT4_MOUNT_JOURNAL_DATA;
+ 	else if ((def_mount_opts & EXT4_DEFM_JMODE) == EXT4_DEFM_JMODE_ORDERED)
 
 --
