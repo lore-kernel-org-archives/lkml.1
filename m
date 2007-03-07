@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422722AbXCGOu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965549AbXCGOy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422722AbXCGOu4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 09:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422731AbXCGOu4
+	id S965549AbXCGOy5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 09:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXCGOy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 09:50:56 -0500
-Received: from cantor.suse.de ([195.135.220.2]:32944 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422722AbXCGOuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 09:50:55 -0500
-Date: Wed, 7 Mar 2007 15:50:42 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org, mingo@elte.hu,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, jdike@addtoit.com
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307145042.GG18704@wotan.suse.de>
-References: <20070307103842.GD5555@wotan.suse.de> <1173264462.6374.140.camel@twins> <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins> <20070307121730.GC18704@wotan.suse.de> <1173271286.6374.166.camel@twins> <20070307130851.GE18704@wotan.suse.de> <1173273562.6374.175.camel@twins> <20070307133649.GF18704@wotan.suse.de> <E1HOwZn-0000TI-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HOwZn-0000TI-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.9i
+	Wed, 7 Mar 2007 09:54:57 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:19915 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965549AbXCGOy4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 09:54:56 -0500
+Message-ID: <45EED235.9010509@ru.mvista.com>
+Date: Wed, 07 Mar 2007 17:54:45 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to	raw
+ ones.
+References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi649d25qz.wl@toshiba.co.jp>	 <45EECE5C.6030100@ru.mvista.com> <1173278589.8635.4.camel@localhost.localdomain>
+In-Reply-To: <1173278589.8635.4.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 02:53:07PM +0100, Miklos Szeredi wrote:
-> > > msync() might never get called and then we're back with the old
-> > > behaviour where we can surprise the VM with a ton of dirty pages.
-> > 
-> > But we're root. With your patch, root *can't* do nonlinear writeback
-> > well. Ever. With msync, at least you give them enough rope.
-> 
-> Restricting to root doesn't buy you much, nobody wants to be root.
-> Restricting to mlock is similarly pointless.  UML _will_ want to get
-> swapped out if there's no activity.
+Hello.
 
-They could always not use nonlinear, or we could add a ulimit to the
-size of nonlinear vaddr allowed. 
+Benjamin Herrenschmidt wrote:
 
-> Restricting to tmpfs makes sense, but it's probably not what UML
-> wants.
+>>>--- linux-rt8/arch/powerpc/kernel/irq.c	2007-02-20 14:30:38.000000000 +0900
+>>>+++ rt/arch/powerpc/kernel/irq.c	2007-03-05 18:54:34.000000000 +0900
+>>>@@ -392,7 +392,7 @@ EXPORT_SYMBOL(do_softirq);
+>>> #ifdef CONFIG_PPC_MERGE
+>>> 
+>>> static LIST_HEAD(irq_hosts);
+>>>-static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
+>>>+static DEFINE_RAW_SPINLOCK(irq_big_lock);
+>>> static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
+>>> static unsigned int irq_radix_writer;
+>>> struct irq_map_entry irq_map[NR_IRQS];
 
-I think it is OK. They might want some persistent storage to migrate
-or something, but that can always be done by copying from tmpfs to
-a block based filesystem.
+>>    I've already sent a patch fixing this one (along with many others) a month 
+>>ago:
+
+>>http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031164.html
+
+>>    I wonder iof it was ever considered... :-/
+
+> It was but not for 2.6.21 timeframe due to people lack of time/bandwidth
+> among others :-)
+
+    I was asking Ingo, basically. :-)
+
+> I intend to try to spend some time before the 2.6.22 merge window to
+> gather those -rt related patches that can be merged already and push
+> them to powerpc.git.
+
+> (Note to mingo: that means that we might end up with patches both in
+> your tree and being push via powerpc, I hope that's not too much of a
+> problem).
+
+    Well, this is happening every -rc1 now -- part of -rt getting merged to 
+mainline.
+
+> I can't promise I'll have time to do much, but I'd like to do it, so
+> find me on irc every now and then to "poke" if you don't see anything
+> happening...
+
+    My purpose was only to get this into -rt patch for now.
+
+> Cheers,
+> Ben.
+
+WBR, Sergei
