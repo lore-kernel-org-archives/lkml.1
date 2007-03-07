@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161054AbXCGAox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161065AbXCGApO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161054AbXCGAox (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 19:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161065AbXCGAow
+	id S1161065AbXCGApO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 19:45:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161068AbXCGApO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 19:44:52 -0500
-Received: from ozlabs.org ([203.10.76.45]:53281 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161051AbXCGAot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 19:44:49 -0500
-Subject: Re: Xen & VMI?
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Nakajima, Jun" <jun.nakajima@intel.com>,
-       virtualization <virtualization@lists.osdl.org>,
-       Roland McGrath <roland@redhat.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>
-In-Reply-To: <20070306203712.GC21736@elte.hu>
-References: <45ED82D9.6050204@codemonkey.ws>
-	 <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com>
-	 <20070306203712.GC21736@elte.hu>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 11:44:06 +1100
-Message-Id: <1173228246.4644.85.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Tue, 6 Mar 2007 19:45:14 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:53546 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161062AbXCGApM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 19:45:12 -0500
+Message-ID: <45EE0AF7.70502@zytor.com>
+Date: Tue, 06 Mar 2007 16:44:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 6/8] Allow per-cpu variables to be page-aligned
+References: <1173184747.4644.23.camel@localhost.localdomain>	 <1173185592.4644.28.camel@localhost.localdomain>	 <1173185666.4644.30.camel@localhost.localdomain>	 <1173185734.4644.32.camel@localhost.localdomain>	 <1173185827.4644.34.camel@localhost.localdomain>	 <1173185909.4644.36.camel@localhost.localdomain>	 <1173186021.4644.38.camel@localhost.localdomain>	 <20070306131522.GC9031@elte.hu> <1173226608.4644.59.camel@localhost.localdomain>
+In-Reply-To: <1173226608.4644.59.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 21:37 +0100, Ingo Molnar wrote:
-> maybe i shouldnt call it 'VMI' but 'the paravirt ABI'. I dont mind if 
-> it's the Xen ABI or the VMWare ABI or a mesh of the two - everyone can 
-> map their own internals to that /one/ ABI.
+Rusty Russell wrote:
+> 
+> AFAICT, we could save the wasted partial page in three ways: by trying
+> to link it first, if it's only a case of one file, by having a special
+> page-aligned percpu data section, or by having a smarter linker.
+> 
 
-I think it's an excellent aim, but it's *HARD*.  I rejected this
-approach earlier because I'm just not smart enough.  (Yet?)
+We already do the second of those for conventional data, so it would 
+make sense for percpu as well.  Smarter linker would be better, but ugh, 
+I don't see that happening any time soon.
 
-The Linux side is fairly stable.  The hardware side is changing, and the
-hypervisor side is changing.  This means the ABI will churn fairly fast.
-The hypervisors are very different, which means the ABI will be very
-wide.
-
-We could start with VMI and try to support Xen, KVM and lguest.  It
-would at least give us a better idea of the scope of the problem.  But
-IMHO it's a *huge* job.
-
-Rusty.
-
-
+	-hpa
