@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161218AbXCGCId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161201AbXCGCQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161218AbXCGCId (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 21:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161219AbXCGCId
+	id S1161201AbXCGCQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 21:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161217AbXCGCQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 21:08:33 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:41694 "EHLO
+	Tue, 6 Mar 2007 21:16:27 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53831 "EHLO
 	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161218AbXCGCIc (ORCPT
+	by vger.kernel.org with ESMTP id S1161201AbXCGCQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 21:08:32 -0500
-Message-ID: <45EE1EA3.90803@vmware.com>
-Date: Tue, 06 Mar 2007 18:08:35 -0800
-From: Dan Hecht <dhecht@vmware.com>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Tue, 6 Mar 2007 21:16:26 -0500
+Message-ID: <45EE2079.1060200@vmware.com>
+Date: Tue, 06 Mar 2007 18:16:25 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: tglx@linutronix.de
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, ak@suse.de,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
-       Dan Hecht <dhecht@vmware.com>
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>	 <1173178774.24738.311.camel@localhost.localdomain>	 <45EDD82F.90204@vmware.com>	 <1173225182.24738.507.camel@localhost.localdomain>	 <45EE0628.1080108@goop.org>  <45EE08E8.2020008@vmware.com>	 <1173228544.24738.514.camel@localhost.localdomain>	 <45EE0D10.7070807@vmware.com> <1173230305.24738.529.camel@localhost.localdomain>
-In-Reply-To: <1173230305.24738.529.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Xen & VMI?
+References: <20070306081909.GA9331@elte.hu> <45ED2837.3020108@suse.de>	<20070306085222.GA17002@elte.hu> <45ED3121.8090308@suse.de>	<20070306093436.GA30239@elte.hu> <45ED3F29.6000705@suse.de>	<20070306102658.GA7478@elte.hu> <45ED4AD8.6020504@suse.de>	<20070306115937.GA25313@elte.hu> <45ED9678.5050907@goop.org> <20070306171130.GA13403@elte.hu>
+In-Reply-To: <20070306171130.GA13403@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Mar 2007 02:08:30.0199 (UTC) FILETIME=[802CC070:01C7605D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/06/2007 05:18 PM, Thomas Gleixner wrote:
-> On Tue, 2007-03-06 at 16:53 -0800, Dan Hecht wrote:
->>> Ooops. I completely forgot, that you get the absolute expiry time
->>> already in ktime_t format (nanoseconds) when dev->set_next_event() is
->>> called.
->>>
->>> 	dev->next_event = expires;
->>>
->>> is done right before the call. 
->>>
->>> So it's already there for free.
->>>
->>>
->> Okay.  I noticed that but didn't think it was okay to use since it 
->> didn't seem like it was set up for the clock_event_device code's use, so 
->> seemed like a conceptual interface violation to go digging around in 
->> there.
-> 
-> Yes it is. 
-> 
-> I just wanted to point out that you can use it until I'm awake enough to
-> implement it proper.
-> 
+Ingo Molnar wrote:
 
-Well, we'll probably just live with using the relative expiry for the 
-first pass, and then revisit this later once that is working, rather 
-than resort to hacking it out by reading ->next_event.
+> We do not let OpenOffice or Evolution have its own separate ABI to Linux 
+> so that they 'can evolve at their own pace'... We want them to cooperate 
+> and come up with a common ABI (or rather, we try to come up with the 
+> right syscalls ourselves), because divering, overlapping ABIs are a huge 
+> PITA.
+>   
 
->> Also, wasn't one of the points of clockevents to prevent the device code 
->> from doing conversions between nanoseconds and clicks themselves?  Don't 
->> we really want the clockevents generic layer to do this conversion 
->> between monotonic nanonseconds to absolute device clicks and then give 
->> the device code that value, so the device layer doesn't perform any 
->> conversions?
-> 
-> Right. But this applies only to deltas, as the conversion of absolute
-> time values gets ugly, i.e. 128bit math
-> 
+OpenOffice or Evolution are the completely wrong example.  They disprove 
+your point more than they prove it.  Consider any significantly large 
+cross-platform software like OpenOffice, Evolution, Firefox.  You don't 
+let or restrict what these pieces of software do at all.  They evolve at 
+their own pace, and they all build their very complicated and divergent 
+cross platform compatibility layers, with huge, overlapping APIs, 
+converging in places, diverging in others.
 
-Yeah, hopefully we can come up with a clean way to do this.  But, like I 
-said early, until we do, we'll stick with the relative expiry.
+> We do not unify their pointlessly diverging ABIs to within the kernel 
+> via say office_ops (while we could) because that's crappy on its face. 
+> Hypervisors arent in any way different, they just _think_ they are 
+> special because they are relatively new. But hey, i dont expect you to 
+> concede this point ;)
 
-> IMO the paravirt interfaces should use nanoseconds anyway for both
-> readout and next event programming. That way the conversion is done in
-> the hypervisor once and the clocksources and clockevents are simple and
-> unified (except for the underlying hypervisor calls).
-> 
+No, you don't.  The developers of Office and Evolution and Firefox do 
+that for you.  And it's not crappy on its face because it provides real 
+value to them - the ability to run heterogeneously in multiple different 
+environments and across many different platforms and operating systems.
 
-I disagree.  The clocksource/clockevents layer are always going to have 
-to convert nanoseconds to/from hardware units, so why not use it?  And, 
-some guests (say, a future version of linux that does trace-based 
-process accounting) may want higher resolution than nanoseconds for 
-certain uses.  In any case, this is beside the point; I'd prefer to 
-stick to using the clockevents interface in the way it was intended 
-rather than reaching into ->next_event.
+Where your analogy is wrong is that in this case, Linux is very much 
+like one of those large software systems.  It has complicated features 
+that require special plugins to work efficiently in different hypervisor 
+environments.  And paravirt-ops is providing that functionality to 
+Linux, just as the platform layer of any large software system does and 
+very much should do.
 
-thanks,
-Dan
+Zach
