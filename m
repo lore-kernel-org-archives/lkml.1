@@ -1,44 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030472AbXCGIff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965185AbXCGIje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030472AbXCGIff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 03:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030481AbXCGIff
+	id S965185AbXCGIje (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 03:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965190AbXCGIje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 03:35:35 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56910 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030472AbXCGIfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 03:35:34 -0500
-Date: Wed, 7 Mar 2007 00:35:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
- nonlinear)
-Message-Id: <20070307003520.08b1a082.akpm@linux-foundation.org>
-In-Reply-To: <20070307082755.GA25733@elte.hu>
-References: <20070221023656.6306.246.sendpatchset@linux.site>
-	<20070221023735.6306.83373.sendpatchset@linux.site>
-	<20070306225101.f393632c.akpm@linux-foundation.org>
-	<20070307070853.GB15877@wotan.suse.de>
-	<20070307081948.GA9563@wotan.suse.de>
-	<20070307082755.GA25733@elte.hu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Mar 2007 03:39:34 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:37789 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965185AbXCGIjd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 03:39:33 -0500
+To: mingo@elte.hu
+CC: npiggin@suse.de, akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+In-reply-to: <20070307082755.GA25733@elte.hu> (message from Ingo Molnar on
+	Wed, 7 Mar 2007 09:27:55 +0100)
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu>
+Message-Id: <E1HOrfO-0008AW-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 07 Mar 2007 09:38:34 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 09:27:55 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Nick Piggin <npiggin@suse.de> wrote:
-> 
 > > If it doesn't look very impressive, it could be because it leaves all 
 > > the old crud around for backwards compatibility (the worst offenders 
 > > are removed in patch 6/6).
@@ -65,9 +49,9 @@ On Wed, 7 Mar 2007 09:27:55 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 > call to mremap() and essentially deprecate it, without breaking the ABI 
 > - and remove all the nonlinear code. (This would split fremap areas into 
 > separate vmas)
-> 
 
-I'm rather regretting having merged it - I don't think it has been used for
-much.
+That would make sense.  Dirty page accounting doesn't work either on
+non-linear mappings, and I can't see how that could be fixed in any
+other way.
 
-Paolo's UML speedup patches might use nonlinear though.
+Miklos
