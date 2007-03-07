@@ -1,92 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965412AbXCGRKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422753AbXCGRLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965412AbXCGRKY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 12:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965380AbXCGRKX
+	id S1422753AbXCGRLL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 12:11:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422750AbXCGRLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 12:10:23 -0500
-Received: from systemlinux.org ([83.151.29.59]:56992 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422750AbXCGRKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:10:22 -0500
-Date: Wed, 7 Mar 2007 18:09:55 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
-Message-ID: <20070307170955.GA4252@skl-net.de>
-References: <20070226133153.GC4095@skl-net.de> <20070226182617.GC9968@andrew-vasquezs-computer.local> <20070227101100.GA22572@skl-net.de> <20070227185134.GJ20397@andrew-vasquezs-computer.local> <20070228151829.GI22572@skl-net.de> <20070228153722.GJ22572@skl-net.de> <20070306203952.471218df.akpm@linux-foundation.org>
+	Wed, 7 Mar 2007 12:11:10 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:64724 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422748AbXCGRLJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 12:11:09 -0500
+Date: Wed, 7 Mar 2007 09:07:19 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: NZG <ngustavson@emacinc.com>
+Cc: Ben Nizette <ben.nizette@iinet.net.au>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: passing function pointers through platform devices?
+Message-Id: <20070307090719.0bf99e3a.randy.dunlap@oracle.com>
+In-Reply-To: <200703071037.00322.ngustavson@emacinc.com>
+References: <200703061246.29615.ngustavson@emacinc.com>
+	<45EE373B.80606@iinet.net.au>
+	<200703071037.00322.ngustavson@emacinc.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
-In-Reply-To: <20070306203952.471218df.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 7 Mar 2007 10:37:00 -0600 NZG wrote:
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > Once the generic GPIO framework migrates upstream from -mm
+> Thank you,  but I've reorganized my system to pass platform resources to a 
+> driver, which then registers simple gpio/pwm/quadencoder type devices as 
+> standard classes declared in a subdirectory.  Specific methods are then 
+> simple exported by stackable drivers.
+> It's unlikely I will adopt the GPIO interface at this point unless they really 
+> bring something new to the table.
+> 
+> I googled extensively and requested information on any current work here 
+> before I began this project and got zip. (see forwarded email paste)
+> 
+> I also emailed Robert Schwebel directly and he told me to ask VGER as it was 
+> being developed by someone else.
+> 
+> I don't mean to sound rude, but I really tried to build on existing work and 
+> it wasn't made available, so I've gone my own way, I had not other choice.
+> 
+> P.S. Forgive my VGER newbness, but what is "-mm" ?
 
-On 20:39, Andrew Morton wrote:
-> On Wed, 28 Feb 2007 16:37:22 +0100 Andre Noll <maan@systemlinux.org> wrot=
-e:
->=20
-> > On 16:18, Andre Noll wrote:
-> >=20
-> > > With 2.6.21-rc2 I am unable to reproduce this BUG message. However,
-> > > writing to both raid systems at the same time via lvm still locks up
-> > > the system within minutes.
-> >=20
-> > Screenshot of the resulting kernel panic:
-> >=20
-> > 	http://systemlinux.org/~maan/shots/kernel-panic-21-rc2-huangho2.png
-> >=20
->=20
-> It died in CFQ.  Please try a different IO scheduler.  Use something
-> like
->=20
-> 	echo deadline > /sys/block/sda/queue/scheduler
->=20
-> This could still be the old qla2xxx bug, or it could be a new qla2xxx bug,
-> or it could be a block bug, or it could be an LVM bug.
+See http://kernel.org/patchtypes/mm.html:
 
-OK. I'm running with deadline right now. But I guess this kernel
-panic was caused by an LVM bug because lockdep reported problems with
-LVM. Nobody responded to my bug report on the LVM mailing list (see
-http://www.redhat.com/archives/linux-lvm/2007-February/msg00102.html).
+"""
+The -mm patches to the Linux kernel
+The -mm patches are a set of patches, released by Andrew Morton, against the official kernel series. They are frequently more experimental in nature than the official series. These patches are available in Andrew's kernel directory:
 
-Non-working snapshots and no help from the mailing list convinced me
-to ditch the lvm setup [1] in favour of linear software raid. This
-means I can't do lvm-related tests any more.
+    /pub/linux/kernel/people/akpm/
+"""
 
-BTW: Are ext3 filesystem sizes greater than 8T now officially
-supported?
+> thx,
+> NZG
+> 
+> > ----------  Forwarded Message  ----------
+> >
+> > Subject: GPIO device class driver
+> > Date: Tuesday 20 February 2007 10:40 am
+> > From: NZG <ngustavson@emacinc.com>
+> > To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> >
+> > I am currently developing support for an ep9xx based SBC and want to export
+> > it's GPIO through sysfs in a simple and standard way,
+> > without adding yet another platform specific gpio driver to the kernel.
+> >
+> > As I understand it, a gpio class has already been begun by Robert Schwebel
+> > in but has not as of yet become part of the mainstream kernel.
+> >
+> > Searching the archives for this yields no results since 2006.
+> >
+> > Can anyone point me to a current patch?
+> > I'd like to start from there.
+> >
+> > thank you,
+> > NZG
+> >
+> > -------------------------------------------------
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Thanks
-Andre
 
-[1] vg of two hardware raids, 10T together, a single lv and some snapshots
---=20
-
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFF7vHjWto1QDEAkw8RAkZdAKCRiDjS3z62bHLfHqhbCDbBgTgJYwCfSA9O
-Chbn1P57DdIY8mvJ781K5rg=
-=EJJc
------END PGP SIGNATURE-----
-
---45Z9DzgjV8m4Oswq--
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
