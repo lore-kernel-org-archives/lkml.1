@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161328AbXCGItY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161329AbXCGIwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161328AbXCGItY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 03:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161329AbXCGItY
+	id S1161329AbXCGIwE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 03:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161334AbXCGIwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 03:49:24 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57173 "EHLO smtp.osdl.org"
+	Wed, 7 Mar 2007 03:52:04 -0500
+Received: from ozlabs.org ([203.10.76.45]:46061 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161328AbXCGItX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 03:49:23 -0500
-Date: Wed, 7 Mar 2007 00:49:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?B?U+liYXN0aWVuIER1Z3Xp?= <sebastien.dugue@bull.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm2
-Message-Id: <20070307004919.b5b8b7da.akpm@linux-foundation.org>
-In-Reply-To: <20070307093948.188ac51c@frecb000686.frec.bull.fr>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-	<20070307093948.188ac51c@frecb000686.frec.bull.fr>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1161329AbXCGIwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 03:52:03 -0500
+Subject: Re: [PATCH 2/3] msi:  Fixup the msi enable/disable logic
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <m1wt1td41h.fsf@ebiederm.dsl.xmission.com>
+References: <m1tzx7l7z2.fsf@ebiederm.dsl.xmission.com>
+	 <m1ps7vl7rr.fsf@ebiederm.dsl.xmission.com>
+	 <m1lkijl7ms.fsf_-_@ebiederm.dsl.xmission.com>
+	 <1172802408.518.44.camel@concordia.ozlabs.ibm.com>
+	 <m1wt1td41h.fsf@ebiederm.dsl.xmission.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-TKacp1DN+6MWkH/ELCV2"
+Date: Wed, 07 Mar 2007 09:51:56 +0100
+Message-Id: <1173257516.5101.13.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.8.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 09:39:48 +0100 Sébastien Dugué <sebastien.dugue@bull.net> wrote:
 
-> 
->   Hi Andrew,
-> 
-> On Tue, 6 Mar 2007 00:44:08 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > 
-> > Temporarily at
-> > 
-> >   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
-> > 
-> > Will appear later at
-> > 
-> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc2/2.6.20-rc2-mm2/
-> > 
-> > 
-> > - git-block.patch is having problems which are getting in the way - it has
-> >   been dropped.
-> > 
-> > - As a consequence all the AIO patches were dropped
-> > 
-> 
->   Why? The aio notification and listio patches have nothing to do with
-> git-block.patch.
+--=-TKacp1DN+6MWkH/ELCV2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes, I could have retained those with a little bit of jiggling.  But...
+On Tue, 2007-03-06 at 22:19 -0700, Eric W. Biederman wrote:
+> Michael Ellerman <michael@ellerman.id.au> writes:
+>=20
+> >
+> > Hi Eric, comments below ..
+> >
+> >
+> > I get the reasoning for disabling MSI before we start writing back the
+> > config space, but don't we want to re-enable MSI on the way out?
+>=20
+> We are restoring the entire msi flags register which includes the enable =
+bit,
+> setting it a second time is gratuitous.
+>=20
+> In addition if we are restoring the register when the enable bit is not s=
+et.
+> (because we don't have a mask bit) enabling the msi state is actually
+> the wrong thing to do.    But I admit that case can only happen after
+> the additions in my last patch.
 
->   If you think those patches will be rendered obsolete by the new
-> syslet/fibril/whatever approach, then fine.
+Yeah, duh.
 
-Until this is sorted out I don't think we can add new core AIO code. 
-Particularly not new syscalls.
+cheers
 
-> Otherwise do you expect me to
-> resubmit?
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Is OK for now, I think.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-TKacp1DN+6MWkH/ELCV2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBF7n0sdSjSd0sB4dIRAohDAKCExMkrXIuGIkrPuQvidwPHRdA8fgCcDj8G
+qxpu9LDrLyrtCauJoOPYFbQ=
+=xX1j
+-----END PGP SIGNATURE-----
+
+--=-TKacp1DN+6MWkH/ELCV2--
+
