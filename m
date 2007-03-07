@@ -1,81 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965714AbXCGXSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992723AbXCGXUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965714AbXCGXSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 18:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965725AbXCGXSk
+	id S2992723AbXCGXUB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 18:20:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992719AbXCGXUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 18:18:40 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:13272 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965714AbXCGXSi (ORCPT
+	Wed, 7 Mar 2007 18:20:00 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:48870 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992723AbXCGXT7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 18:18:38 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=rpIaX+CBJN0Lj2oly0NONvgh4OAWR/rFNGRmM0y9ZWLd2Ud7i3gMNXOotwshz2ZeG
-	lvVufSCWgF8ady783BPTg==
-Message-ID: <6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
-Date: Wed, 7 Mar 2007 15:18:25 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, sam@vilain.net,
-       akpm@linux-foundation.org, pj@sgi.com, dev@sw.ru, xemul@sw.ru,
-       containers@lists.osdl.org, winget@google.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
+	Wed, 7 Mar 2007 18:19:59 -0500
+Message-ID: <45EF4890.6020806@nortel.com>
+Date: Wed, 07 Mar 2007 17:19:44 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
+To: Robert Love <rml@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Con Kolivas <kernel@kolivas.org>
+Subject: resend: KERNEL BUG: nice level should not affect SCHED_RR timeslice
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070301133543.GK15509@in.ibm.com>
-	 <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com>
-	 <20070307173031.GC2336@in.ibm.com>
-	 <20070307174346.GA19521@sergelap.austin.ibm.com>
-	 <20070307180055.GC17151@in.ibm.com>
-	 <20070307205846.GB7010@sergelap.austin.ibm.com>
-	 <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
-	 <m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
+X-OriginalArrivalTime: 07 Mar 2007 23:19:48.0151 (UTC) FILETIME=[19608C70:01C7610F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> > Effectively, container_group is to container as nsproxy is to namespace.
->
-> The statement above nicely summarizes the confusion in terminology.
->
-> In the namespace world when we say container we mean roughly at the level
-> of nsproxy and container_group.
+I still haven't seen any replies, so I'm resending with a few more 
+people directly in the TO list.
 
-So you're saying that a task can only be in a single system-wide container.
+The timeslice of a SCHED_RR process currently varies with nice level the 
+same way that it does for SCHED_OTHER.  I've included a small app below 
+that demonstrates the issue.  So while niceness doesn't affect the 
+priority of a SCHED_RR task, it does impact how much cpu it gets 
+relative to other SCHED_RR tasks.
 
-My patch provides multiple potentially-independent ways of dividing up
-the tasks on the system - if the "container" is the set of all
-divisions that the process is in, what's an appropriate term for the
-sub-units?
+SUSv3 indicates, "Any processes or threads using SCHED_FIFO or SCHED_RR 
+shall be unaffected by a call to setpriority()."
 
->
-> You are calling something that is on par with a namespace a container.
+In addition, the code in set_user_nice() has a comment that leads me to 
+believe the current behaviour is accidental (although I think the "not" 
+in the last line of the comment isn't meant to be there):
 
-Yes.
+/*
+  * The RT priorities are set via sched_setscheduler(), but we still
+  * allow the 'normal' nice value to be set - but as expected
+  * it wont have any effect on scheduling until the task is
+  * not SCHED_NORMAL/SCHED_BATCH:
+  */
 
-> Which
-> seriously muddies the waters.  About as much as calling as referring to your
-> shoe as your whole outfit.
-> Without fixing the terminology it is going to be very hard to
-> successfully communicate.
+It appears that the desired behaviour is to allow setting the nice level 
+of a realtime task, but to not have it affect anything until (and 
+unless) it drops that realtime status.  This seems reasonable, but 
+doesn't match current behaviour.
 
-That assumes the viewpoint that your terminology is "correct" and
-other people's needs "fixing". :-)
+Chris
 
-But as I've said I'm not particularly wedded to the term "container"
-if that really turned out to be what's blocking acceptance from people
-like Andrew or Linus. Do you have a suggestion for a better name? To
-me, "process container" seems like the ideal name, since it's an
-abstraction that "contains" processes and associates them with some
-(subsystem-provided) state.
 
-Paul
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sched.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/syscall.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+#define THRESHOLD_USEC 2000
+
+unsigned long long stamp()
+{
+	struct timeval tv;
+	gettimeofday(&tv, 0);
+	return (unsigned long long) tv.tv_usec + ((unsigned long long) 
+tv.tv_sec)*1000000;
+}
+
+void chewcpu(int cpu)
+{
+	unsigned long long thresh_ticks = THRESHOLD_USEC;
+	unsigned long long cur,last;
+	
+	last = stamp();
+	while(1) {
+		cur = stamp();
+		unsigned long long delta = cur-last;
+		if (delta > thresh_ticks) {
+			printf("pid %d, out for %llu ms\n", getpid(), delta/1000);
+			cur = stamp();
+		}
+		last = cur;
+	}
+		
+}
+
+
+int main()
+{
+	int cpu;
+         cpu_set_t cpumask;
+         CPU_ZERO(&cpumask);
+         CPU_SET(0, &cpumask);
+
+	int kidpid = fork();	
+	
+	struct sched_param p;
+	p.sched_priority = 1;
+	sched_setscheduler(0, SCHED_RR, &p);
+
+	struct timespec ts;
+	
+	if (kidpid) {
+		setpriority(PRIO_PROCESS, 0, 19);
+		printf("pid %d, prio of %d\n", getpid(), getpriority(PRIO_PROCESS, 0));
+		sched_rr_get_interval(0, &ts);
+		printf("pid %d, interval of %d nsec\n", getpid(), ts.tv_nsec);
+	} else {
+		setpriority(PRIO_PROCESS, 0, -19);
+		printf("pid %d, prio of %d\n", getpid(), getpriority(PRIO_PROCESS, 0));
+		sched_rr_get_interval(0, &ts);
+		printf("pid %d, interval of %d nsec\n", getpid(), ts.tv_nsec);
+	}
+		
+	int rc = syscall(__NR_sched_setaffinity, 0, sizeof(cpumask), &cpumask);
+         if (rc < 0)
+                 printf("unable to set affinity: %m\n");
+	
+
+	sleep(1);
+	
+	chewcpu(cpu);
+	return 0;
+}
