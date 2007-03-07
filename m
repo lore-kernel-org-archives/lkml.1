@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992721AbXCGWmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992694AbXCGWnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992721AbXCGWmv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 17:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992713AbXCGWmT
+	id S2992694AbXCGWnA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 17:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992717AbXCGWmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 17:42:19 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52718 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992698AbXCGWlP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 17:41:15 -0500
-Date: Wed, 7 Mar 2007 23:41:16 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, jgarzik@pobox.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: 2.6.21-rc2-mm2: drivers/net/wireless/libertas/debugfs.c addr bogosity
-Message-ID: <20070307224116.GE3441@stusta.de>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+	Wed, 7 Mar 2007 17:42:55 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44079 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992716AbXCGWmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 17:42:51 -0500
+Date: Wed, 7 Mar 2007 23:41:57 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Vivek Goyal <vgoyal@in.ibm.com>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
+       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
+       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
+       rjw@sisk.pl
+Subject: Re: [PATCH 11/20] x86_64: wakeup.S misc cleanups
+Message-ID: <20070307224157.GD5956@elf.ucw.cz>
+References: <20070307065703.GA23412@in.ibm.com> <20070307071320.GL23412@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070307071320.GL23412@in.ibm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 12:44:08AM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.20-rc2-mm1:
->...
->  git-netdev-all.patch
->...
->  git trees
->...
+Hi!
 
-drivers/net/wireless/libertas/debugfs.c contains:
-  #define item_addr(n) ((u32) &((wlan_adapter *)0)->n)
+> +	movw	$0x0e00 + 'i', %ds:(0xb8012)
+> +	movb	$0xa8, %al	;  outb %al, $0x80;
+> +
 
-This is wrong on 64bit architectures.
+> -	movw	$0x0e00 + 'i', %ds:(0xb8012)
+> -	movb	$0xa8, %al	;  outb %al, $0x80; 	
 
-cu
-Adrian
+Outbs were my debugging hacks, perhaps you can simply remove them at
+this point? Not sure how useful "Linux" debug print is, it can
+probably be removed, too.
+
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
