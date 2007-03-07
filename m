@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbXCGTHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965486AbXCGTK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932771AbXCGTHl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 14:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965486AbXCGTHl
+	id S965486AbXCGTK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 14:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965502AbXCGTK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 14:07:41 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:50124 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932771AbXCGTHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 14:07:40 -0500
-Date: Wed, 7 Mar 2007 11:07:00 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [patch] epoll use a single inode ...
-In-Reply-To: <200703071952.13219.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0703071059030.5963@woody.linux-foundation.org>
-References: <45ED1A3C.6030707@argo.co.il> <200703071906.58405.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org>
- <200703071952.13219.dada1@cosmosbay.com>
+	Wed, 7 Mar 2007 14:10:26 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51581 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965486AbXCGTKZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 14:10:25 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: vgoyal@in.ibm.com,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, akpm@linux-foundation.org,
+       ak@suse.de, hpa@zytor.com, magnus.damm@gmail.com, lwang@redhat.com,
+       dzickus@redhat.com, pavel@suse.cz, rjw@sisk.pl
+Subject: Re: [PATCH 0/20] x86_64 Relocatable bzImage support (V4)
+References: <20070307065703.GA23412@in.ibm.com>
+	<1173280059.3540.5.camel@laptopd505.fenrus.org>
+Date: Wed, 07 Mar 2007 12:08:28 -0700
+In-Reply-To: <1173280059.3540.5.camel@laptopd505.fenrus.org> (Arjan van de
+	Ven's message of "Wed, 07 Mar 2007 07:07:39 -0800")
+Message-ID: <m1abyodg7n.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven <arjan@infradead.org> writes:
 
+> On Wed, 2007-03-07 at 12:27 +0530, Vivek Goyal wrote:
+>> Hi,
+>> 
+>> Here is another attempt on x86_64 relocatable bzImage patches(V4). This
+>> patchset makes a bzImage relocatable and same kernel binary can be loaded
+>> and run from different physical addresses.
+>
+>
+> have these patches been extensively tested with various suspend
+> scenarios? (S1,S3,S4 in acpi speak or s2ram and s2disk in Linux speak)
 
-On Wed, 7 Mar 2007, Eric Dumazet wrote:
-> 
-> I was thinking about being able to cache the name into the dentry, do you 
-> think it's worth the pain ? (its not SMP safe for example...)
+It should be noted what broke was the non-portable constructs in the generic
+suspend code.
 
-Actually, it *can* be SMP-safe, if you do it right. Something like
+In particular using __pa() outside of architecture code is not allowed.
+Using virt_to_phys() on addresses not part of the kernel's linear mapping is
+not generically supported.
 
-	len = dentry->d_name.len;
+text/data are not required to be part of the kernel's linear mapping.
 
-	if (!len) {
-		len = snprintf(dentry->d_iname,
-			DNAME_INLINE_LEN_MIN,
-			"pipe:[%lu]",
-			dentry->d_inode->i_ino);
-		smp_wmb();
-		dentry->d_name.len = len;
-	}
-	if (len >= buflen)
-		len = buflen-1;
-	memcpy(buffer, dentry->d_iname, len);
-	buffer[len] = 0;
-	return buffer;
+This patchset now causes all code using these non-portable constructs to
+fail on x86_64.  Which I think is a good thing so we can more easily
+spot these kinds of problems.
 
-should work, although it depends on the fact that our snprintf() 
-implementation should be "stable" (ie if snprintf() modifies the buffer 
-temporarily as it goes along, that would break, but I think our 
-vsnprintf is good in that respect).
+Patches 15 and 16 appear to make the swpsuspend code rely on portable
+constructs.   I will let Vivek reply to the amount of testing he has
+done in this area.
 
-So you could have two different CPU's doing the snprintf() on the same 
-buffer at the same time (and assigning the length at the same time), but 
-since they'll write the same thing, you don't really care.
-
-It's a bit subtle, though. And probably not really worth it.
-
-		Linus
+Eric
