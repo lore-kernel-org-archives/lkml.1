@@ -1,54 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXCGVbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992594AbXCGVdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965661AbXCGVbq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 16:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965674AbXCGVbp
+	id S2992594AbXCGVdh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 16:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992622AbXCGVdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 16:31:45 -0500
-Received: from ozlabs.org ([203.10.76.45]:38918 "EHLO ozlabs.org"
+	Wed, 7 Mar 2007 16:33:37 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:59426 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965661AbXCGVbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 16:31:44 -0500
+	id S2992594AbXCGVdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 16:33:35 -0500
+Date: Wed, 7 Mar 2007 13:33:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Nick Piggin <npiggin@suse.de>, miklos@szeredi.hu,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 8/6] mm: fix cpdfio vs fault race
+In-Reply-To: <20070307130214.56d4b03b.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703071310180.5963@woody.linux-foundation.org>
+References: <20070307110429.GF5555@wotan.suse.de>
+ <20070307032038.f08333a8.akpm@linux-foundation.org> <20070307113121.GA18704@wotan.suse.de>
+ <20070307130214.56d4b03b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17903.12035.781782.317694@cargo.ozlabs.ibm.com>
-Date: Thu, 8 Mar 2007 08:30:43 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>, linuxppc-dev@ozlabs.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw
- ones.
-In-Reply-To: <45EF2CD8.3050804@ru.mvista.com>
-References: <yyi8xe925vg.wl@toshiba.co.jp>
-	<yyi649d25qz.wl@toshiba.co.jp>
-	<45EECE5C.6030100@ru.mvista.com>
-	<17902.60669.945986.186995@cargo.ozlabs.ibm.com>
-	<45EEF6A4.9090807@ru.mvista.com>
-	<17903.4302.502364.126701@cargo.ozlabs.ibm.com>
-	<45EF2CD8.3050804@ru.mvista.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov writes:
 
->     I've floowed up to my patch with such explanation. In the context of an-rt 
-> patch itself, it was just too clear, hence I didn't go into explanations in 
-> the patch itself. :-)
 
-Well, it might be clear, to you, now, with the context in your head.
-But if such a patch is to go into a git tree, and somebody comes along
-in 3 years time and wants to know exactly why you made that change
-(and maybe that somebody is you :), then they will need more detail -
-such as how you came to the conclusion that those locks and no others
-needed to be changed, for instance.
+On Wed, 7 Mar 2007, Andrew Morton wrote:
+> 
+> now that's scary - applying this on top of your
+> lock-the-page-in-the-fault-handler patches gives:
 
-At least give some of the reasoning behind your choice of which locks
-to convert, so that in future, if the patch turns out to have
-introduced a bug somehow, the person debugging it can either identify
-that there was a flaw in your logic, or else understand something that
-you have seen that they missed.
+This is why you should never use plain "patch" with defaultl arguments in 
+a script (and probably not even from an interactive command line).
 
-Paul.
+I've said this before, and I'll say it again: "'patch' is incredibly 
+unsafe by default".
+
+Please use
+
+	patch -p1 --fuzz=0
+
+rather than the defaults (adding "-E -u -f" is also often a good idea, 
+depending on the source of the patches). And that's *especially* true in 
+scripts.
+
+Yeah, "--fuzz=0" means that patch will reject more patches, but the 
+patches it rejects tends to be patches it *should* reject, and you should 
+take a look at manually (and then you can decide to not use --fuzz=0 if 
+you think patch does the right thing by mistake).
+
+Also, *never* use "-l" or some of the other flags that make patch even 
+less reliable. It's already guessing enough. Again, "-l" can be useful if 
+you're going to check the result manually and fix up whatever bad stuff it 
+does, but if it's needed, I can almost guarantee that it *will* need 
+fixing up, which is why using those things in automated scripts is not a 
+good idea.
+
+If you have git installed, "git apply" has saner defaults than "patch" 
+does (with "git apply" you have to explicitly loosen any rules, and it 
+doesn't guess by default). "git apply" also checks the whole patch 
+"atomically" when applying, so that if there are rejects it won't apply 
+things partially and force you to clean up.
+
+The "git apply" behaviour is particularly useful, because since it by 
+default doesn't change anything at all on failure, you can start off with 
+the strict defaults, and then *if* something goes wrong you can try it 
+with less strict settings without having to undo some partial patch mess.
+
+Of course, you can do the same with GNU patch by starting off with a 
+dry-run application and seeing that was ok:
+
+	# is it clean
+	if patch --dry-run --fuzz=0 -p1 < ...
+	then
+		# all ok, just patch, no need to ask the user
+		patch -p1 < ....
+	else
+		# this may do bad things, but let's try, and 
+		# then tell the user to check the end result
+		patch < 
+		
+		.. generate diff, ask user to check it for sanity ! ..
+		.. But *require* manual checking! ..
+	fi
+
+My original patch applicator script had
+
+	patch -E -u --no-backup-if-mismatch -f -p1 --fuzz=0
+
+(where that "--no-backup-if-mismatch" is just because with an SCM backing 
+the setup up, there's just no point - but it depends on your setup, of 
+course). That was because I had (over painful errors) realized that 
+allowing fuzz is just a guaranteed way to silently get merge errors.
+
+You can get merge errors even with a zero fuzz (if it happens to find 
+another place to apply the patch - especially true in very structured 
+files that have lots of identical line snipptes), but it's a lot less 
+likely.
+
+			Linus
