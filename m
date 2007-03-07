@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422655AbXCGJ3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422646AbXCGJaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422655AbXCGJ3f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422660AbXCGJ3f
+	id S1422646AbXCGJaH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422660AbXCGJaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:29:35 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:54255 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422655AbXCGJ3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:29:32 -0500
-Date: Wed, 7 Mar 2007 01:29:03 -0800
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307092903.GJ18774@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-	Linux Memory Management <linux-mm@kvack.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
-References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu> <20070307003520.08b1a082.akpm@linux-foundation.org>
+	Wed, 7 Mar 2007 04:30:07 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:41204 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422646AbXCGJaD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:30:03 -0500
+Message-ID: <45EE8950.7070103@sw.ru>
+Date: Wed, 07 Mar 2007 12:43:44 +0300
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
+To: Pavel Emelianov <xemul@sw.ru>
+CC: balbir@in.ibm.com, Andrew Morton <akpm@osdl.org>,
+       Paul Menage <menage@google.com>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       devel@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org
+Subject: Re: [RFC][PATCH 0/7] Resource controllers based on process containers
+References: <45ED7DEC.7010403@sw.ru> <45EE6112.7050702@in.ibm.com> <45EE6A77.7070002@sw.ru>
+In-Reply-To: <45EE6A77.7070002@sw.ru>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307003520.08b1a082.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 09:27:55 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->> btw., if we decide that nonlinear isnt worth the continuing maintainance 
->> pain, we could internally implement/emulate sys_remap_file_pages() via a 
->> call to mremap() and essentially deprecate it, without breaking the ABI 
->> - and remove all the nonlinear code. (This would split fremap areas into 
->> separate vmas)
+Pavel Emelianov wrote:
+> Balbir Singh wrote:
+> 
+>>Pavel Emelianov wrote:
+>>
+>>>This patchset adds RSS, accounting and control and
+>>>limiting the number of tasks and files within container.
+>>>
+>>>Based on top of Paul Menage's container subsystem v7
+>>>
+>>>RSS controller includes per-container RSS accounter,
+>>>reclamation and OOM killer. It behaves like standalone
+>>>machine - when container runs out of resources it tries
+>>>to reclaim some pages and if it doesn't succeed in it
+>>>kills some task which mm_struct belongs to container in
+>>>question.
+>>>
+>>>Num tasks and files containers are very simple and
+>>>self-descriptive from code.
+>>>
+>>>As discussed before when a task moves from one container
+>>>to another no resources follow it - they keep holding the
+>>>container they were allocated in.
+>>>
+>>
+>>I have one problem with the patchset, I cannot compile
+>>the patches individually and some of the code is hard
+>>to read as it depends on functions from future patches.
+>>Patch 2, 3 and 4 fail to compile without patch 5 applied.
+>>
+>>Patch 1 failed to apply with a reject in kernel/Makefile
+>>I applied it on top of 2.6.20 with all of Paul Menage's
+>>patches (all 7).
+maybe Paul's patch should be taken w/o subsystems examples
+(CKRM, UBC), i.e. first 3 patches only?
 
-On Wed, Mar 07, 2007 at 12:35:20AM -0800, Andrew Morton wrote:
-> I'm rather regretting having merged it - I don't think it has been used for
-> much.
-> Paolo's UML speedup patches might use nonlinear though.
-
-Guess what major real-life application not only uses nonlinear daily
-but would even be very happy to see it extended with non-vma-creating
-protections and more? It's not terribly typical for things to be
-truncated while remap_file_pages() is doing its work, though it's been
-proposed as a method of dynamism. It won't stress remap_file_pages() vs.
-truncate() in any meaningful way, though, as userspace will be rather
-diligent about clearing in-use data out of the file offset range to be
-truncated away anyway, and all that via O_DIRECT.
-
-
--- wli
+Kirill
