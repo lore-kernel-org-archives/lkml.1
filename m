@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161323AbXCGImX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161327AbXCGIq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161323AbXCGImX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 03:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161325AbXCGImX
+	id S1161327AbXCGIq2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 03:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161325AbXCGIq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 03:42:23 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39335 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161323AbXCGImW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 03:42:22 -0500
-Date: Wed, 7 Mar 2007 09:39:48 +0100
-From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm2
-Message-ID: <20070307093948.188ac51c@frecb000686.frec.bull.fr>
-In-Reply-To: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 07/03/2007 09:44:04,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 07/03/2007 09:44:05,
-	Serialize complete at 07/03/2007 09:44:05
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 7 Mar 2007 03:46:28 -0500
+Received: from styx.suse.cz ([82.119.242.94]:39071 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161327AbXCGIq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 03:46:27 -0500
+Date: Wed, 7 Mar 2007 09:51:35 +0100
+From: Jan Kara <jack@suse.cz>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Ulrich Drepper <drepper@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Mingming Cao <cmm@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, nscott@aconex.com,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
+       suzuki@in.ibm.com
+Subject: Re: [RFC] Heads up on sys_fallocate()
+Message-ID: <20070307085135.GB29373@duck.suse.cz>
+References: <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com> <20070305122742.GA11486@atrey.karlin.mff.cuni.cz> <45EC7773.7020603@us.ibm.com> <20070306072850.GA23081@infradead.org> <45ED7C59.4050508@redhat.com> <20070306145009.GB3661@duck.suse.cz> <45EDB19A.6030103@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45EDB19A.6030103@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 06-03-07 12:23:22, Eric Sandeen wrote:
+> Jan Kara wrote:
+> > On Tue 06-03-07 06:36:09, Ulrich Drepper wrote:
+> >> Christoph Hellwig wrote:
+> >>> fallocate with the whence argument and flags is already quite complicated,
+> >>> I'd rather have another call for placement decisions, that would
+> >>> be called on an fd to do placement decissions for any further allocations
+> >>> (prealloc, write, etc)
+> >> Yes, posix_fallocate shouldn't be made more complicated.  But I don't
+> >> understand why requesting linear layout of the blocks should be an
+> >> option.  It's always an advantage if the blocks requested this way are
+> >> linear on disk.  So, the kernel should always do its best to make this
+> >> happen, without needing an additional option.
+> >   Actually, it's not that simple. You want linear layout of blocks you are
+> > going to read. That is not necessary a linear layout of blocks in a single
+> > file - trace sometime a start of some complicated app like KDE. You find
+> > it's seeking like a hell because it needs a few blocks from a ton of
+> > distinct files (shared libs, config files, etc). As these files are mostly
+> > read only, it's advantageous to interleave them on disk or at least keep
+> > them close.
+> 
+> At some point shouldn't the apps be fixed, rather than do crazy things
+> with the filesystem?  :)
+  Yes :) That's basically what we told KDE developpers when they were
+complaining ;) But it's hard to fix it for them too (because of some
+desktop specs requiring lots of different text config files which can
+change anytime - don't ask me who designed it). Moreover for example for
+loading shared libraries from which you need just a few blocks scattered
+all over the place the problem is in ELF itself.
+  I'll probably first write some userspace fs-reorganizer to find out how
+much these changes in layout are able to give you in performance (i.e.
+whether it's worth the effort of more complicated kernel online
+defragmenter).
 
-  Hi Andrew,
-
-On Tue, 6 Mar 2007 00:44:08 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> 
-> Temporarily at
-> 
->   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
-> 
-> Will appear later at
-> 
->   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc2/2.6.20-rc2-mm2/
-> 
-> 
-> - git-block.patch is having problems which are getting in the way - it has
->   been dropped.
-> 
-> - As a consequence all the AIO patches were dropped
-> 
-
-  Why? The aio notification and listio patches have nothing to do with
-git-block.patch.
-
-  If you think those patches will be rendered obsolete by the new
-syslet/fibril/whatever approach, then fine. Otherwise do you expect me to
-resubmit?
-
-  Thanks,
-
-  Sébastien.
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
