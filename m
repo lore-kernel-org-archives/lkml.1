@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422675AbXCGJjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422688AbXCGJjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422675AbXCGJjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422682AbXCGJjK
+	id S1422688AbXCGJjy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422686AbXCGJjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:39:10 -0500
-Received: from mx1.suse.de ([195.135.220.2]:38422 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422675AbXCGJit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:38:49 -0500
-Date: Wed, 7 Mar 2007 10:38:48 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, mingo@elte.hu, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
-Message-ID: <20070307093848.GC8609@wotan.suse.de>
-References: <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu> <E1HOrfO-0008AW-00@dorka.pomaz.szeredi.hu> <20070307004709.432ddf97.akpm@linux-foundation.org> <E1HOrsL-0008Dv-00@dorka.pomaz.szeredi.hu> <20070307010756.b31c8190.akpm@linux-foundation.org> <20070307091823.GA8609@wotan.suse.de> <20070307012638.793d9a9f.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307012638.793d9a9f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 7 Mar 2007 04:39:53 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57391 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422681AbXCGJjv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:39:51 -0500
+Message-ID: <45EE8829.4060304@bull.net>
+Date: Wed, 07 Mar 2007 10:38:49 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       =?ISO-8859-15?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+Subject: How to distinguish original kernel vs -rt kernel
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 07/03/2007 10:41:34,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 07/03/2007 10:41:35,
+	Serialize complete at 07/03/2007 10:41:35
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 01:26:38AM -0800, Andrew Morton wrote:
-> On Wed, 7 Mar 2007 10:18:23 +0100 Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > 
-> > msync breakage is bad, but otherwise I don't know that we care about
-> > dirty page writeout efficiency.
-> 
-> Well.  We made so many changes to support the synchronous
-> dirty-the-page-when-we-dirty-the-pte thing that I'm rather doubtful that
-> the old-style approach still works.  It might seem to, most of the time. 
-> But if it _is_ subtly broken, boy it's going to take a long time for us to
-> find out.
+Hi,
 
-I can't think of anything that should have caused breakage (except for
-the msync thing). We're still careful about not dropping pte dirty bits.
+Supposing I have an external kernel module which I would like to compile against 
+both original kernel and -rt kernel, what is the proper/most elegant way to know 
+which kernel I'm compiling with ?
+I've only found the EXTRAVERSION define, am I missing a better way ?
 
-> > But I think we discovered that those msync changes are bogus anyway
-> > becuase there is a small race window where pte could be dirtied without
-> > page being set dirty?
-> 
-> Dunno, I don't recall that.  We dirty the page before the pte...
+In fact, I'm facing the problem of HRTIMER_ABS/REL being renamed to 
+HRTIMER_MODE_ABS/REL with patch -rt. Is there a reason of this ?
 
-I don't think it isn't really that simple. There is a big comment in
-clear_page_dirty_for_io.
+Does anyone have an objection of keeping it the same (let's say 
+HRTIMER_ABS/REL) in kernel -rt ?
 
+Thanks,
+
+-- 
+Pierre
