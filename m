@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992547AbXCGUWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992546AbXCGUWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992547AbXCGUWL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 15:22:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992546AbXCGUWL
+	id S2992546AbXCGUWO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 15:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992549AbXCGUWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 15:22:11 -0500
-Received: from wr-out-0506.google.com ([64.233.184.239]:51259 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965632AbXCGUWI (ORCPT
+	Wed, 7 Mar 2007 15:22:13 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:43743 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965635AbXCGUWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 15:22:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Htbuplf73s55pxs0KQJY5DZRZatBa5mMXkXaLMhFpAYyyxfWtprzq9xgeID4IFLcA6/6vm6v15cx3nJi7R08Fr02vHqRSByX95zbkgRm5WjtZlhUaDowQ40T/AGA2NR+5m5seKWbMNFox1kDN2c6AxJxdBAtngZhsW6V+KFzcYE=
-Message-ID: <d120d5000703071215w5d08d2b2ve3519f73bdd39b7e@mail.gmail.com>
-Date: Wed, 7 Mar 2007 15:15:29 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>
-Subject: Re: PS/2 mouse port missing with kernel >=2.6.19, Sis chipset
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <45EF1AAB.40104@redhat.com>
+	Wed, 7 Mar 2007 15:22:09 -0500
+Date: Wed, 7 Mar 2007 15:22:05 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: ebuddington@wesleyan.edu
+cc: Oliver Neukum <oneukum@suse.de>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] khubd and ent:sda1 sucking CPU with reiser4
+ + USB HD
+In-Reply-To: <20070307163220.GC889@pool-71-123-121-36.spfdma.east.verizon.net>
+Message-ID: <Pine.LNX.4.44L0.0703071513490.8656-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45EF1AAB.40104@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/07, Chuck Ebbert <cebbert@redhat.com> wrote:
-> We have multiple reports of PS/2 mouse port not being found
-> on Sis 630 and 730 chipsets, starting with Fedora kernel 2.6.19:
->
-> 2.6.18:
-> Jan 19 08:59:39 mtranch kernel: PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M]
-> at 0x60,0x64 irq 1,12
-> Jan 19 08:59:39 mtranch kernel: serio: i8042 AUX port at 0x60,0x64 irq 12
-> Jan 19 08:59:39 mtranch kernel: serio: i8042 KBD port at 0x60,0x64 irq 1
-> Jan 19 08:59:39 mtranch kernel: mice: PS/2 mouse device common for all mice
->
-> 2.6.19:
-> Jan 20 09:22:30 mtranch kernel: PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M]
-> at 0x60,0x64 irq 1,12
-> Jan 20 09:22:30 mtranch kernel: serio: i8042 KBD port at 0x60,0x64 irq 1
-> Jan 20 09:22:30 mtranch kernel: mice: PS/2 mouse device common for all mice
->
-> I'm pretty sure Fedora doesn't patch any input code, so I wonder
-> if some change was made here that could cause this?
+On Wed, 7 Mar 2007, Eric Buddington,,, wrote:
 
-There were some issues with AUX IRQ delivery test that is part of AUX
-port probe. They should be fixed in the latest mainline. You might be
-inetrested in this commit:
+> > > So SysRq-t doesn't show anything about khubd, and SysRq-p doesn't give
+> > > me anything at all. What else can I try?
 
-1e4865f8d469b1...
+How about SysRq-r?
 
--- 
-Dmitry
+> > I'm baffled.  khubd should have shown up as the process with ID 163.  Is 
+> > that process listed under a different name?
+> 
+> It does show up under /proc/163, for whatever that's worth.
+
+Maybe that means the process is dying but isn't completely dead yet, and 
+it's stuck running something inside the reiser4 driver.  Unless we can 
+find out what it is, though, there isn't much we can do.
+
+> Going through the list of processes dumped by SysRq-t, here are the
+> ones I didn't knowingly start myself:
+> 
+> aio/0
+> ata/0
+> ata_aux
+> ent:md1.
+> events/0
+> ib_addr
+> ib_cm/0
+> ib_mcast
+> iw_cm_wq
+> kacpid
+> kblockd/0
+> kcryptd/0
+> khelper
+> khpsbpkt
+> kmirrord
+> kmpathd/0
+> kprefetchd
+> kpsmoused
+> kseriod
+> ksnapd
+> ksuspend_usbd
+> kswapd0
+> kthread
+> ktxnmgrd:md1:
+> ktxnmgrd:sda1
+> md2_raid1
+> pdflush
+> rdma_cm
+> reiserfs/0
+> scsi_eh_0 
+> watchdog/0
+
+Most of those (maybe all of them) are built-in kernel threads.
+
+> And khubd is still showing up as a major CPU consumer.  Interestingly,
+> ent:sda1! is also absent from the SysRq-t listing, though present (and
+> using lost of CPU) according to 'top' (ps, oddly, hangs in 'D' state
+> after listing some processes).
+
+Something is badly messed up somewhere, but I have no idea what it could 
+be.
+
+These problems start with some USB resets, right?  Did they occur with 
+earlier kernel versions, or is this new behavior?
+
+How often does the problem occur?
+
+Alan Stern
+
