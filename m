@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161065AbXCGApO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161075AbXCGAwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161065AbXCGApO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 19:45:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161068AbXCGApO
+	id S1161075AbXCGAwK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 19:52:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161070AbXCGAwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 19:45:14 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:53546 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161062AbXCGApM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 19:45:12 -0500
-Message-ID: <45EE0AF7.70502@zytor.com>
-Date: Tue, 06 Mar 2007 16:44:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Tue, 6 Mar 2007 19:52:10 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:40308 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161075AbXCGAwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Mar 2007 19:52:09 -0500
+Date: Tue, 6 Mar 2007 16:51:50 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Avi Kivity <avi@argo.co.il>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [patch] epoll use a single inode ...
+In-Reply-To: <Pine.LNX.4.64.0703061635430.3661@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0703061644570.5963@woody.linux-foundation.org>
+References: <45ED1A3C.6030707@argo.co.il> <Pine.LNX.4.64.0703061635430.3661@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 6/8] Allow per-cpu variables to be page-aligned
-References: <1173184747.4644.23.camel@localhost.localdomain>	 <1173185592.4644.28.camel@localhost.localdomain>	 <1173185666.4644.30.camel@localhost.localdomain>	 <1173185734.4644.32.camel@localhost.localdomain>	 <1173185827.4644.34.camel@localhost.localdomain>	 <1173185909.4644.36.camel@localhost.localdomain>	 <1173186021.4644.38.camel@localhost.localdomain>	 <20070306131522.GC9031@elte.hu> <1173226608.4644.59.camel@localhost.localdomain>
-In-Reply-To: <1173226608.4644.59.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> 
-> AFAICT, we could save the wasted partial page in three ways: by trying
-> to link it first, if it's only a case of one file, by having a special
-> page-aligned percpu data section, or by having a smarter linker.
-> 
 
-We already do the second of those for conventional data, so it would 
-make sense for percpu as well.  Smarter linker would be better, but ugh, 
-I don't see that happening any time soon.
+[ Al Viro added to Cc: as the arbiter of good taste in the VFS layer. He 
+  has veto powers even over my proposals ;^]
 
-	-hpa
+On Tue, 6 Mar 2007, Davide Libenzi wrote:
+> 
+> I currently have the dentry to carry the name of the file* class it is 
+> linked to. I'd prefer to keep it that way, unless there are huge factors 
+> against.
+
+I assume that the *only* reason for having multiple dentries is really 
+just the output in /proc/<pid>/fd/, right? Or is there any other reason to 
+have separate dentries for these pseudo-files?
+
+It's a bit sad to waste that much memory (and time) on something like 
+that. I bet that the dentry setup is a noticeable part of the whole 
+sigfd()/timerfd() setup. It's likely also a big part of any memory 
+footprint if you have lots of them.
+
+So how about just doing:
+ - do a single dentry
+ - make a "struct file_operations" member function that prints out the 
+   name of the thing in /proc/<pid>/fd/, and which *defaults* to just 
+   doing the d_path() on the dentry, but special filesystems like this 
+   could do something else (like print out a fake inode number from the 
+   "file->f_private_data" information)
+
+There seems to really be no downsides to that approach. No existing 
+filesystem will even notice (they'll all have NULL in the new f_op 
+member), and it would allow pipes etc to be sped up and use less memory.
+
+			Linus
