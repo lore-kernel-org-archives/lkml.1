@@ -1,101 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422757AbXCGSCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422750AbXCGSDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422757AbXCGSCt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 13:02:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422750AbXCGSAM
+	id S1422750AbXCGSDM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 13:03:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422956AbXCGSCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 13:00:12 -0500
-Received: from ns.suse.de ([195.135.220.2]:43408 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422766AbXCGRNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 12:13:33 -0500
-Message-Id: <20070307171152.798046861@mini.kroah.org>
-References: <20070307171035.150802805@mini.kroah.org>
-User-Agent: quilt/0.45-1
-Date: Wed, 07 Mar 2007 09:10:46 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Eric Piel <Eric.Piel@tremplin-utc.net>
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Wang Zhenyu <zhenyu.z.wang@intel.com>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: [patch 011/101] AGP: intel-agp bugfix
-Content-Disposition: inline; filename=agp-intel-agp-bugfix.patch
+	Wed, 7 Mar 2007 13:02:49 -0500
+Received: from 64.221.212.177.ptr.us.xo.net ([64.221.212.177]:21078 "EHLO
+	ext.agami.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422757AbXCGSCo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 13:02:44 -0500
+X-Greylist: delayed 3479 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Mar 2007 13:02:43 EST
+Message-ID: <45EEF0B5.40905@agami.com>
+Date: Wed, 07 Mar 2007 09:04:53 -0800
+From: Michael Nishimoto <miken@agami.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.2) Gecko/20040804 Netscape/7.2 (ax)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@lst.de>
+CC: xfs@oss.sgi.com, ecashin@coraid.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] xfs: stop using kmalloc in xfs_buf_get_noaddr
+References: <20070307101324.GC30587@lst.de>
+In-Reply-To: <20070307101324.GC30587@lst.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Mar 2007 17:04:47.0821 (UTC) FILETIME=[B622A7D0:01C760DA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Jones <davej@redhat.com>
+Incore log buffers are not always a power of two of the page size.
+In particular, when xfs is running over software raid devices, the
+log buffers are allocated to match the size of a stripe.
 
-On Sun, Feb 04, 2007 at 04:51:38PM +0100, Eric Piel wrote:
- > Hello,
- > 
- > I've got a regression in 2.6.20-rc7 (-rc6 was fine) due to commit 
- > 4b95320fc4d21b0ff2f8604305dd6c851aff6096 ([AGPGART] intel_agp: restore 
- > graphics device's pci space early in resume).
+However, they are always a multiple of PAGE_SIZE, so we are still safe.
 
-I think the key to this failure is the last line here ..
+   Michael
 
- > agpgart-intel 0000:00:00.0: resuming
- > PM: Writing back config space on device 0000:00:02.0 at offset f (was 10b, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset d (was dc, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset b (was 10161025, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 5 (was f4000000, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 4 (was f8000008, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 2 (was 3000011, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 1 (was 2b00007, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 0 (was 11328086, writing 0)
- > agpgart: Unable to remap memory.
+Christoph Hellwig wrote:
 
-This then blows up the next access to intel_i810_private.registers, which happens to
-be intel_i810_insert_entries.
+>Currently xfs_buf_get_noaddr allocates memory using kmem_alloc which
+>can end up either in kmalloc or vmalloc and assigns it to the buffer.
+>This patch changes it to allocate individual pages and if there is
+>more then one maps it into kernel virtual space using vmap.
+>
+>This means the minimum buffer allocation is PAGE_SIZE now.  For two
+>of the three caller (log buffers, log recovery) that is perfectly
+>fine, because they always allocate buffers that are a power of two
+>of the page size anyway.  For xfs_zero_remaining_bytes the minimum
+>allocation goes up from blocksize to pagesize and thus there is
+>a potential waste of memory for blocksize < pagesize allocations,
+>which is unfortunate but not directly solveable when block
+>drivers expect reference countable pages.  To fix this waste
+>xfs_zero_remaining_bytes could be rewritten to zero more than
+>a single block at a time, which sounds like a good idea in general.
+>
+>
+>Signed-off-by: Christoph Hellwig <hch@lst.de>
+>
+>Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+>===================================================================
+>--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c	2007-03-05 15:54:40.000000000 +0100
+>+++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c	2007-03-05 15:54:47.000000000 +0100
+>@@ -314,7 +314,7 @@
+> 
+> 	ASSERT(list_empty(&bp->b_hash_list));
+> 
+>-	if (bp->b_flags & _XBF_PAGE_CACHE) {
+>+	if (bp->b_flags & (_XBF_PAGE_CACHE|_XBF_PAGES)) {
+> 		uint		i;
+> 
+> 		if ((bp->b_flags & XBF_MAPPED) && (bp->b_page_count > 1))
+>@@ -323,18 +323,11 @@
+> 		for (i = 0; i < bp->b_page_count; i++) {
+> 			struct page	*page = bp->b_pages[i];
+> 
+>-			ASSERT(!PagePrivate(page));
+>+			if (bp->b_flags & _XBF_PAGE_CACHE)
+>+				ASSERT(!PagePrivate(page));
+> 			page_cache_release(page);
+> 		}
+> 		_xfs_buf_free_pages(bp);
+>-	} else if (bp->b_flags & _XBF_KMEM_ALLOC) {
+>-		 /*
+>-		  * XXX(hch): bp->b_count_desired might be incorrect (see
+>-		  * xfs_buf_associate_memory for details), but fortunately
+>-		  * the Linux version of kmem_free ignores the len argument..
+>-		  */
+>-		kmem_free(bp->b_addr, bp->b_count_desired);
+>-		_xfs_buf_free_pages(bp);
+> 	}
+> 
+> 	xfs_buf_deallocate(bp);
+>@@ -764,41 +757,41 @@
+> 	size_t			len,
+> 	xfs_buftarg_t		*target)
+> {
+>-	size_t			malloc_len = len;
+>+	unsigned long		page_count = PAGE_ALIGN(len) >> PAGE_SHIFT;
+>+	int			error, i;
+> 	xfs_buf_t		*bp;
+>-	void			*data;
+>-	int			error;
+> 
+> 	bp = xfs_buf_allocate(0);
+> 	if (unlikely(bp == NULL))
+> 		goto fail;
+> 	_xfs_buf_initialize(bp, target, 0, len, 0);
+> 
+>- try_again:
+>-	data = kmem_alloc(malloc_len, KM_SLEEP | KM_MAYFAIL | KM_LARGE);
+>-	if (unlikely(data == NULL))
+>+	error = _xfs_buf_get_pages(bp, page_count, 0);
+>+	if (error)
+> 		goto fail_free_buf;
+> 
+>-	/* check whether alignment matches.. */
+>-	if ((__psunsigned_t)data !=
+>-	    ((__psunsigned_t)data & ~target->bt_smask)) {
+>-		/* .. else double the size and try again */
+>-		kmem_free(data, malloc_len);
+>-		malloc_len <<= 1;
+>-		goto try_again;
+>-	}
+>-
+>-	error = xfs_buf_associate_memory(bp, data, len);
+>-	if (error)
+>+	for (i = 0; i < page_count; i++) {
+>+		bp->b_pages[i] = alloc_page(GFP_KERNEL);
+>+		if (!bp->b_pages[i])
+>+			goto fail_free_mem;
+>+	}
+>+	bp->b_flags |= _XBF_PAGES;
+>+
+>+	error = _xfs_buf_map_pages(bp, XBF_MAPPED);
+>+	if (unlikely(error)) {
+>+		printk(KERN_WARNING "%s: failed to map pages\n",
+>+				__FUNCTION__);
+> 		goto fail_free_mem;
+>-	bp->b_flags |= _XBF_KMEM_ALLOC;
+>+	}
+> 
+> 	xfs_buf_unlock(bp);
+> 
+> 	XB_TRACE(bp, "no_daddr", data);
+> 	return bp;
+>+
+>  fail_free_mem:
+>-	kmem_free(data, malloc_len);
+>+ 	for ( ; i >= 0; i++)
+>+		__free_page(bp->b_pages[i]);
+>  fail_free_buf:
+> 	xfs_buf_free(bp);
+>  fail:
+>Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.h
+>===================================================================
+>--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.h	2007-03-05 15:54:40.000000000 +0100
+>+++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.h	2007-03-05 15:55:06.000000000 +0100
+>@@ -63,7 +63,7 @@
+> 
+> 	/* flags used only internally */
+> 	_XBF_PAGE_CACHE = (1 << 17),/* backed by pagecache		   */
+>-	_XBF_KMEM_ALLOC = (1 << 18),/* backed by kmem_alloc()		   */
+>+	_XBF_PAGES = (1 << 18),	    /* backed by refcounted pages	   */
+> 	_XBF_RUN_QUEUES = (1 << 19),/* run block device task queue	   */
+> 	_XBF_DELWRI_Q = (1 << 21),   /* buffer on delwri queue		   */
+> } xfs_buf_flags_t;
+>
+>
+>  
+>
 
-Either we need .suspend methods which unmap these regions, or we need
-to skip trying to map them a second time on resume.
-
-There's an ugly patch below which does the latter. Give it a try?
-
-The intel-agp suspend/resume code has really grown into something
-of a monster, and could use some refactoring in a big way.
-
-		Dave
-
-
-From: Dave Jones <davej@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/char/agp/intel-agp.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
-
---- linux-2.6.20.1.orig/drivers/char/agp/intel-agp.c
-+++ linux-2.6.20.1/drivers/char/agp/intel-agp.c
-@@ -117,13 +117,15 @@ static int intel_i810_configure(void)
- 
- 	current_size = A_SIZE_FIX(agp_bridge->current_size);
- 
--	pci_read_config_dword(intel_i810_private.i810_dev, I810_MMADDR, &temp);
--	temp &= 0xfff80000;
--
--	intel_i810_private.registers = ioremap(temp, 128 * 4096);
- 	if (!intel_i810_private.registers) {
--		printk(KERN_ERR PFX "Unable to remap memory.\n");
--		return -ENOMEM;
-+		pci_read_config_dword(intel_i810_private.i810_dev, I810_MMADDR, &temp);
-+		temp &= 0xfff80000;
-+
-+		intel_i810_private.registers = ioremap(temp, 128 * 4096);
-+		if (!intel_i810_private.registers) {
-+			printk(KERN_ERR PFX "Unable to remap memory.\n");
-+			return -ENOMEM;
-+		}
- 	}
- 
- 	if ((readl(intel_i810_private.registers+I810_DRAM_CTL)
-
---
