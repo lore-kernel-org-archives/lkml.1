@@ -1,139 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932493AbXCGGYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932487AbXCGGZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932493AbXCGGYN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 01:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932487AbXCGGYM
+	id S932487AbXCGGZS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 01:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932469AbXCGGZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 01:24:12 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41726 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932469AbXCGGYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 01:24:09 -0500
-Date: Wed, 7 Mar 2007 15:23:17 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "tony.luck@intel.com" <tony.luck@intel.com>, rientjes@google.com,
-       "kaneshige.kenji@soft.fujitsu.com" <kaneshige.kenji@soft.fujitsu.com>
-Subject: [BUGFIX][PATCH] fix NULL pointer in ia64/irq_chip-mask/unmask
- function
-Message-Id: <20070307152317.18159bdb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070306203542.e9b3e133.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
-	<20070306192718.999e114d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070306030927.bc2f15fc.akpm@linux-foundation.org>
-	<20070306203542.e9b3e133.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Wed, 7 Mar 2007 01:25:18 -0500
+Received: from 1wt.eu ([62.212.114.60]:4989 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932317AbXCGGZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 01:25:16 -0500
+Date: Wed, 7 Mar 2007 07:21:57 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Bill Davidsen <davidsen@tmr.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22 patch] the scheduled removal of OBSOLETE_OSS options
+Message-ID: <20070307062157.GJ943@1wt.eu>
+References: <20070305014956.GE3441@stusta.de> <45EDA8EE.1060308@tmr.com> <20070306175504.GW3441@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070306175504.GW3441@stusta.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes boot failure because irq_desc->mask() is NULL.
+On Tue, Mar 06, 2007 at 06:55:04PM +0100, Adrian Bunk wrote:
+> On Tue, Mar 06, 2007 at 12:46:22PM -0500, Bill Davidsen wrote:
+> > Adrian Bunk wrote:
+> > >This patch contains the scheduled removal of the OBSOLETE_OSS options 
+> > >for 2.6.22.
+> > >
+> > If these are drivers for which there are thought to be useful ALSA 
+> > drivers, would it be reasonable to leave a stub for a help file naming 
+> > the driver which claims to support the hardware?
+> > 
+> > I'm not objection to the removal of the drivers, just noting that 
+> > identifying the new drivers can be made easier.
+> 
+> People compiling their own kernels aren't completely dumb - if you know 
+> about people having problems finding the right ALSA driver for their 
+> hardware, please name the concrete problems so that we can improve the 
+> description and/or help text of these ALSA options.
 
-- Added mask/unmask functions to ia64's irq desc function table.
-  But I'm not sure this fix is correct or not. please review.
+Real problem is that we can expect several "sound does not work anymore"
+because people doing "make oldconfig" will get no warning at all about
+the removed options. Remember people complaining about keyboard not working ?
+Perhaps the real problem is more Kconfig than OSS, but it would be fine if
+we found a solution to enumerate the list of options which have been removed
+when they do their make oldconfig.
 
-- rename hw_interrupt_type to irq_chip. hw_interrupt_type is old name.
-
-Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-Original BUG I met (following) was caused at irq 57:uhci_hcd:usb3.
- xxBUG DESCRIPTIONxx
- Unable to handle kernel NULL pointer dereference (address 0000000000000000)
-yum-updatesd[3461]: Oops 11012296146944 [1]
-Modules linked in: autofs4 hidp rfcomm l2cap bluetooth sunrpc ipv6 vfat fat dm_mirror dm_mod button parport_pc lp parport sg tg3 e100 shpchp mii usb_storage lpfc scsi_transport_fc mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd
-
-Pid: 3461, CPU 5, comm:         yum-updatesd
-psr : 0000121008022018 ifs : 8000000000000286 ip  : [<a0000001000e02b1>]    Not tainted
-ip is at move_native_irq+0x91/0x140
-unat: 0000000000000000 pfs : 0000000000000205 rsc : 0000000000000003
-rnat: 0000000000000000 bsps: 0000000000000000 pr  : 00000000005a56a9
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c0270033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a000000100050430 b6  : a00000021b49d0c0 b7  : a000000100050400
-f6  : 1003e0000000000000de0 f7  : 1003e0000000000000060
-f8  : 1003e0000000000000025 f9  : 1003e00000000000022e0
-f10 : 1003e0000000000000060 f11 : 1003e000000000000005d
-r1  : a000000100d8d230 r2  : a0000001009f8c30 r3  : 0000000000005580
-r8  : a000000100b8e178 r9  : 00000000000000ab r10 : 0000000000000039
-r11 : 0000000000200000 r12 : e00001404b6f7e30 r13 : e00001404b6f0000
-r14 : 0000000000200000 r15 : a0000001009f8c00 r16 : a000000100b5b160
-r17 : 00000000dead4ead r18 : a0000001009f8c4c r19 : 0000000000000000
-r20 : a000000100b5b110 r21 : a000000100b5b140 r22 : a000000100b5b110
-r23 : 0050200500000874 r24 : a000000100ba98c0 r25 : a00000021b53d768
-r26 : e00000018007e030 r27 : a000000100786238 r28 : e000000040004ae0
-r29 : a0000001009f8c50 r30 : 0000000000000005 r31 : a0000001009f8c58
-
-Call Trace:
- [<a000000100013e20>] show_stack+0x40/0xa0
-                                sp=e00001404b6f79c0 bsp=e00001404b6f1030
- [<a0000001000147e0>] show_regs+0x840/0x880
-                                sp=e00001404b6f7b90 bsp=e00001404b6f0fd0
- [<a000000100037de0>] die+0x1c0/0x2a0
-                                sp=e00001404b6f7b90 bsp=e00001404b6f0f88
- [<a000000100647630>] ia64_do_page_fault+0x8d0/0xa00
-                                sp=e00001404b6f7bb0 bsp=e00001404b6f0f38
- [<a00000010000bf80>] ia64_leave_kernel+0x0/0x270
-                                sp=e00001404b6f7c60 bsp=e00001404b6f0f38
- [<a0000001000e02b0>] move_native_irq+0x90/0x140
-                                sp=e00001404b6f7e30 bsp=e00001404b6f0f08
- [<a000000100050430>] iosapic_end_level_irq+0x30/0xe0
-                                sp=e00001404b6f7e30 bsp=e00001404b6f0ee8
- [<a0000001000dac30>] __do_IRQ+0x390/0x3c0
-                                sp=e00001404b6f7e30 bsp=e00001404b6f0ea8
- [<a000000100011620>] ia64_handle_irq+0x1e0/0x2e0
-                                sp=e00001404b6f7e30 bsp=e00001404b6f0e78
- [<a00000010000bf80>] ia64_leave_kernel+0x0/0x270
-                                sp=e00001404b6f7e30 bsp=e00001404b6f0e78
-Kernel panic - not syncing: Aiee, killing interrupt handler!
-
-
----
- arch/ia64/kernel/iosapic.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-Index: devel-tree/arch/ia64/kernel/iosapic.c
-===================================================================
---- devel-tree.orig/arch/ia64/kernel/iosapic.c
-+++ devel-tree/arch/ia64/kernel/iosapic.c
-@@ -446,7 +446,7 @@ iosapic_end_level_irq (unsigned int irq)
- #define iosapic_disable_level_irq	mask_irq
- #define iosapic_ack_level_irq		nop
- 
--struct hw_interrupt_type irq_type_iosapic_level = {
-+struct irq_chip irq_type_iosapic_level = {
- 	.name =		"IO-SAPIC-level",
- 	.startup =	iosapic_startup_level_irq,
- 	.shutdown =	iosapic_shutdown_level_irq,
-@@ -454,6 +454,8 @@ struct hw_interrupt_type irq_type_iosapi
- 	.disable =	iosapic_disable_level_irq,
- 	.ack =		iosapic_ack_level_irq,
- 	.end =		iosapic_end_level_irq,
-+	.mask =		mask_irq,
-+	.unmask =	unmask_irq,
- 	.set_affinity =	iosapic_set_affinity
- };
- 
-@@ -493,7 +495,7 @@ iosapic_ack_edge_irq (unsigned int irq)
- #define iosapic_disable_edge_irq	nop
- #define iosapic_end_edge_irq		nop
- 
--struct hw_interrupt_type irq_type_iosapic_edge = {
-+struct irq_chip irq_type_iosapic_edge = {
- 	.name =		"IO-SAPIC-edge",
- 	.startup =	iosapic_startup_edge_irq,
- 	.shutdown =	iosapic_disable_edge_irq,
-@@ -501,6 +503,8 @@ struct hw_interrupt_type irq_type_iosapi
- 	.disable =	iosapic_disable_edge_irq,
- 	.ack =		iosapic_ack_edge_irq,
- 	.end =		iosapic_end_edge_irq,
-+	.mask =		mask_irq,
-+	.unmask =	unmask_irq,
- 	.set_affinity =	iosapic_set_affinity
- };
- 
+Regards,
+Willy
 
