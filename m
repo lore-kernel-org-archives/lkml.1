@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161177AbXCGH1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161289AbXCGH2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161177AbXCGH1y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161178AbXCGH1x
+	id S1161289AbXCGH2V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161288AbXCGH2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:27:53 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:58874 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161157AbXCGH1u (ORCPT
+	Wed, 7 Mar 2007 02:28:01 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:57042 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161172AbXCGH1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:27:50 -0500
-Date: Wed, 7 Mar 2007 12:44:58 +0530
+	Wed, 7 Mar 2007 02:27:53 -0500
+Date: Wed, 7 Mar 2007 12:47:17 +0530
 From: Vivek Goyal <vgoyal@in.ibm.com>
 To: linux kernel mailing list <linux-kernel@vger.kernel.org>
 Cc: Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
        akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
        magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
        pavel@suse.cz, rjw@sisk.pl
-Subject: [PATCH 12/20] x86_64: 64bit ACPI wakeup trampoline
-Message-ID: <20070307071458.GM23412@in.ibm.com>
+Subject: [PATCH 14/20] x86_64: Remove the identity mapping as early as possible
+Message-ID: <20070307071717.GO23412@in.ibm.com>
 Reply-To: vgoyal@in.ibm.com
 References: <20070307065703.GA23412@in.ibm.com>
 Mime-Version: 1.0
@@ -31,256 +31,230 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-o Moved wakeup_level4_pgt into the wakeup routine so we can
-  run the kernel above 4G.
+With the rewrite of the SMP trampoline and the early page
+allocator there is nothing that needs identity mapped pages,
+once we start executing C code.
 
-o Now we first go to 64bit mode and continue to run from trampoline and
-  then then start accessing kernel symbols and restore processor context.
-  This enables us to resume even in relocatable kernel context when 
-  kernel might not be loaded at physical addr it has been compiled for.
+So add zap_identity_mappings into head64.c and remove
+zap_low_mappings() from much later in the code.  The functions
+ are subtly different thus the name change.
 
-o Removed the need for modifying any existing kernel page table.
-
-o Increased the size of the wakeup routine to 8K. This is required as
-  wake page tables are on trampoline itself and they got to be at 4K
-  boundary, hence one page is not sufficient.
+This also kills boot_level4_pgt which was from an earlier
+attempt to move the identity mappings as early as possible,
+and is now no longer needed.  Essentially I have replaced
+boot_level4_pgt with trampoline_level4_pgt in trampoline.S
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
 ---
 
- arch/x86_64/kernel/acpi/sleep.c  |   22 ++------------
- arch/x86_64/kernel/acpi/wakeup.S |   59 ++++++++++++++++++++++++---------------
- arch/x86_64/kernel/head.S        |    9 -----
- 3 files changed, 41 insertions(+), 49 deletions(-)
+ arch/x86_64/kernel/head.S    |   39 ++++++++++++++-------------------------
+ arch/x86_64/kernel/head64.c  |   17 +++++++++++------
+ arch/x86_64/kernel/setup.c   |    2 --
+ arch/x86_64/kernel/setup64.c |    1 -
+ arch/x86_64/mm/init.c        |   24 ------------------------
+ include/asm-x86_64/pgtable.h |    1 -
+ include/asm-x86_64/proto.h   |    2 --
+ 7 files changed, 25 insertions(+), 61 deletions(-)
 
-diff -puN arch/x86_64/kernel/acpi/sleep.c~x86_64-64bit-ACPI-wakeup-trampoline arch/x86_64/kernel/acpi/sleep.c
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/acpi/sleep.c~x86_64-64bit-ACPI-wakeup-trampoline	2007-03-07 01:28:11.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/acpi/sleep.c	2007-03-07 01:28:11.000000000 +0530
-@@ -60,17 +60,6 @@ extern char wakeup_start, wakeup_end;
+diff -puN arch/x86_64/kernel/head64.c~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/kernel/head64.c
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/head64.c~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/head64.c	2007-03-07 01:29:50.000000000 +0530
+@@ -18,8 +18,16 @@
+ #include <asm/setup.h>
+ #include <asm/desc.h>
+ #include <asm/pgtable.h>
++#include <asm/tlbflush.h>
+ #include <asm/sections.h>
  
- extern unsigned long acpi_copy_wakeup_routine(unsigned long);
- 
--static pgd_t low_ptr;
--
--static void init_low_mapping(void)
--{
--	pgd_t *slot0 = pgd_offset(current->mm, 0UL);
--	low_ptr = *slot0;
--	set_pgd(slot0, *pgd_offset(current->mm, PAGE_OFFSET));
--	WARN_ON(num_online_cpus() != 1);
--	local_flush_tlb();
--}
--
- /**
-  * acpi_save_state_mem - save kernel state
-  *
-@@ -79,8 +68,6 @@ static void init_low_mapping(void)
-  */
- int acpi_save_state_mem(void)
- {
--	init_low_mapping();
--
- 	memcpy((void *)acpi_wakeup_address, &wakeup_start,
- 	       &wakeup_end - &wakeup_start);
- 	acpi_copy_wakeup_routine(acpi_wakeup_address);
-@@ -93,8 +80,6 @@ int acpi_save_state_mem(void)
-  */
- void acpi_restore_state_mem(void)
- {
--	set_pgd(pgd_offset(current->mm, 0UL), low_ptr);
--	local_flush_tlb();
- }
- 
- /**
-@@ -107,10 +92,11 @@ void acpi_restore_state_mem(void)
-  */
- void __init acpi_reserve_bootmem(void)
- {
--	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE);
--	if ((&wakeup_end - &wakeup_start) > PAGE_SIZE)
-+	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE*2);
-+	if ((&wakeup_end - &wakeup_start) > (PAGE_SIZE*2))
- 		printk(KERN_CRIT
--		       "ACPI: Wakeup code way too big, will crash on attempt to suspend\n");
-+		       "ACPI: Wakeup code way too big, will crash on attempt"
-+		       " to suspend\n");
- }
- 
- static int __init acpi_sleep_setup(char *str)
-diff -puN arch/x86_64/kernel/acpi/wakeup.S~x86_64-64bit-ACPI-wakeup-trampoline arch/x86_64/kernel/acpi/wakeup.S
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/acpi/wakeup.S~x86_64-64bit-ACPI-wakeup-trampoline	2007-03-07 01:28:11.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/acpi/wakeup.S	2007-03-07 01:28:11.000000000 +0530
-@@ -1,6 +1,7 @@
- .text
- #include <linux/linkage.h>
- #include <asm/segment.h>
-+#include <asm/pgtable.h>
- #include <asm/page.h>
- #include <asm/msr.h>
- 
-@@ -62,12 +63,15 @@ wakeup_code:
- 
- 	movb	$0xa2, %al	;  outb %al, $0x80
- 	
--	lidt	%ds:idt_48a - wakeup_code
--	xorl	%eax, %eax
--	movw	%ds, %ax			# (Convert %ds:gdt to a linear ptr)
--	shll	$4, %eax
--	addl	$(gdta - wakeup_code), %eax
--	movl	%eax, gdt_48a +2 - wakeup_code
-+	mov	%ds, %ax			# Find 32bit wakeup_code addr
-+	movzx   %ax, %esi			# (Convert %ds:gdt to a liner ptr)
-+	shll    $4, %esi
-+						# Fix up the vectors
-+	addl    %esi, wakeup_32_vector - wakeup_code
-+	addl    %esi, wakeup_long64_vector - wakeup_code
-+	addl    %esi, gdt_48a + 2 - wakeup_code # Fixup the gdt pointer
++static void __init zap_identity_mappings(void)
++{
++	pgd_t *pgd = pgd_offset_k(0UL);
++	pgd_clear(pgd);
++	__flush_tlb();
++}
 +
-+	lidtl	%ds:idt_48a - wakeup_code
- 	lgdtl	%ds:gdt_48a - wakeup_code	# load gdt with whatever is
- 						# appropriate
+ /* Don't add a printk in there. printk relies on the PDA which is not initialized 
+    yet. */
+ static void __init clear_bss(void)
+@@ -57,18 +65,15 @@ void __init x86_64_start_kernel(char * r
+ 	/* clear bss before set_intr_gate with early_idt_handler */
+ 	clear_bss();
  
-@@ -80,7 +84,7 @@ wakeup_code:
++	/* Make NULL pointers segfault */
++	zap_identity_mappings();
++
+ 	for (i = 0; i < IDT_ENTRIES; i++)
+ 		set_intr_gate(i, early_idt_handler);
+ 	asm volatile("lidt %0" :: "m" (idt_descr));
  
- 	.balign 4
- wakeup_32_vector:
--	.long   wakeup_32 - __START_KERNEL_map
-+	.long   wakeup_32 - wakeup_code
- 	.word   __KERNEL32_CS, 0
+ 	early_printk("Kernel alive\n");
  
- 	.code32
-@@ -103,10 +107,6 @@ wakeup_32:
- 	movl	$__KERNEL_DS, %eax
- 	movl	%eax, %ds
- 
--	movl	saved_magic - __START_KERNEL_map, %eax
--	cmpl	$0x9abcdef0, %eax
--	jne	bogus_32_magic
+-	/*
+-	 * switch to init_level4_pgt from boot_level4_pgt
+-	 */
+-	memcpy(init_level4_pgt, boot_level4_pgt, PTRS_PER_PGD*sizeof(pgd_t));
+-	asm volatile("movq %0,%%cr3" :: "r" (__pa_symbol(&init_level4_pgt)));
 -
- 	movw	$0x0e00 + 'i', %ds:(0xb8012)
- 	movb	$0xa8, %al	;  outb %al, $0x80;
+  	for (i = 0; i < NR_CPUS; i++)
+  		cpu_pda(i) = &boot_cpu_pda[i];
  
-@@ -120,7 +120,7 @@ wakeup_32:
+diff -puN arch/x86_64/kernel/head.S~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/kernel/head.S
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/head.S~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/head.S	2007-03-07 01:29:50.000000000 +0530
+@@ -71,7 +71,7 @@ startup_32:
  	movl	%eax, %cr4
  
  	/* Setup early boot stage 4 level pagetables */
--	movl	$(wakeup_level4_pgt - __START_KERNEL_map), %eax
-+	leal    (wakeup_level4_pgt - wakeup_code)(%esi), %eax
+-	movl	$(boot_level4_pgt - __START_KERNEL_map), %eax
++	movl	$(init_level4_pgt - __START_KERNEL_map), %eax
  	movl	%eax, %cr3
  
- 	/* Enable Long Mode */
-@@ -159,11 +159,11 @@ wakeup_32:
- 	 */
+ 	/* Setup EFER (Extended Feature Enable Register) */
+@@ -115,7 +115,7 @@ ENTRY(secondary_startup_64)
+ 	movq	%rax, %cr4
  
- 	/* Finally jump in 64bit mode */
--	ljmp	*(wakeup_long64_vector - __START_KERNEL_map)
-+        ljmp    *(wakeup_long64_vector - wakeup_code)(%esi)
+ 	/* Setup early boot stage 4 level pagetables. */
+-	movq	$(boot_level4_pgt - __START_KERNEL_map), %rax
++	movq	$(init_level4_pgt - __START_KERNEL_map), %rax
+ 	movq	%rax, %cr3
  
- 	.balign 4
- wakeup_long64_vector:
--	.long   wakeup_long64 - __START_KERNEL_map
-+	.long   wakeup_long64 - wakeup_code
- 	.word   __KERNEL_CS, 0
+ 	/* Check if nx is implemented */
+@@ -274,9 +274,19 @@ ENTRY(name)
+ 	i = i + 1 ;				\
+ 	.endr
  
- .code64
-@@ -178,11 +178,16 @@ wakeup_long64:
- 	 * addresses where we're currently running on. We have to do that here
- 	 * because in 32bit we couldn't load a 64bit linear address.
- 	 */
--	lgdt	cpu_gdt_descr - __START_KERNEL_map
-+	lgdt	cpu_gdt_descr
- 
- 	movw	$0x0e00 + 'n', %ds:(0xb8014)
- 	movb	$0xa9, %al	;  outb %al, $0x80
- 
-+	movq    saved_magic, %rax
-+	movq    $0x123456789abcdef0, %rdx
-+	cmpq    %rdx, %rax
-+	jne     bogus_64_magic
-+
- 	movw	$0x0e00 + 'u', %ds:(0xb8016)
- 	
- 	nop
-@@ -223,20 +228,21 @@ idt_48a:
- gdt_48a:
- 	.word	0x800				# gdt limit=2048,
- 						#  256 GDT entries
--	.word	0, 0				# gdt base (filled in later)
--	
-+	.long   gdta - wakeup_code              # gdt base (relocated in later)
- 	
- real_magic:	.quad 0
- video_mode:	.quad 0
- video_flags:	.quad 0
- 
-+.code16
- bogus_real_magic:
- 	movb	$0xba,%al	;  outb %al,$0x80
- 	jmp bogus_real_magic
- 
--bogus_32_magic:
-+.code64
-+bogus_64_magic:
- 	movb	$0xb3,%al	;  outb %al,$0x80
--	jmp bogus_32_magic
-+	jmp bogus_64_magic
- 
- bogus_cpu:
- 	movb	$0xbc,%al	;  outb %al,$0x80
-@@ -263,6 +269,7 @@ bogus_cpu:
- #define VIDEO_FIRST_V7 0x0900
- 
- # Setting of user mode (AX=mode ID) => CF=success
-+.code16
- mode_seta:
- 	movw	%ax, %bx
- #if 0
-@@ -313,6 +320,13 @@ wakeup_stack_begin:	# Stack grows down
- .org	0xff0
- wakeup_stack:		# Just below end of page
- 
-+.org   0x1000
-+ENTRY(wakeup_level4_pgt)
-+	.quad   level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
-+	.fill   510,8,0
++	/*
++	 * This default setting generates an ident mapping at address 0x100000
++	 * and a mapping for the kernel that precisely maps virtual address
++	 * 0xffffffff80000000 to physical address 0x000000. (always using
++	 * 2Mbyte large pages provided by PAE mode)
++	 */
+ NEXT_PAGE(init_level4_pgt)
+-	/* This gets initialized in x86_64_start_kernel */
+-	.fill	512,8,0
++	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
++	.fill	257,8,0
++	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
++	.fill	252,8,0
 +	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
-+	.quad   level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
-+
- ENTRY(wakeup_end)
- 	
- ##
-@@ -338,9 +352,10 @@ ENTRY(acpi_copy_wakeup_routine)
- 	movq	$0x123456789abcdef0, %rdx
- 	movq	%rdx, saved_magic
++	.quad	level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE
  
--	movl	saved_magic - __START_KERNEL_map, %eax
--	cmpl	$0x9abcdef0, %eax
--	jne	bogus_32_magic
-+	movq    saved_magic, %rax
-+	movq    $0x123456789abcdef0, %rdx
-+	cmpq    %rdx, %rax
-+	jne     bogus_64_magic
- 
- 	# restore the regs we used
- 	popq	%rdx
-diff -puN arch/x86_64/kernel/head.S~x86_64-64bit-ACPI-wakeup-trampoline arch/x86_64/kernel/head.S
---- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/head.S~x86_64-64bit-ACPI-wakeup-trampoline	2007-03-07 01:28:11.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/head.S	2007-03-07 01:28:11.000000000 +0530
-@@ -308,15 +308,6 @@ NEXT_PAGE(level2_kernel_pgt)
+ NEXT_PAGE(level3_ident_pgt)
+ 	.quad	level2_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+@@ -307,27 +317,6 @@ NEXT_PAGE(level2_kernel_pgt)
+ #undef NEXT_PAGE
  
  	.data
- 
--#ifdef CONFIG_ACPI_SLEEP
--	.align PAGE_SIZE
--ENTRY(wakeup_level4_pgt)
--	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
--	.fill	510,8,0
--	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
--	.quad	level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
--#endif
 -
- #ifndef CONFIG_HOTPLUG_CPU
- 	__INITDATA
- #endif
+-#ifndef CONFIG_HOTPLUG_CPU
+-	__INITDATA
+-#endif
+-	/*
+-	 * This default setting generates an ident mapping at address 0x100000
+-	 * and a mapping for the kernel that precisely maps virtual address
+-	 * 0xffffffff80000000 to physical address 0x000000. (always using
+-	 * 2Mbyte large pages provided by PAE mode)
+-	 */
+-	.align PAGE_SIZE
+-ENTRY(boot_level4_pgt)
+-	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+-	.fill	257,8,0
+-	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+-	.fill	252,8,0
+-	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
+-	.quad	level3_kernel_pgt - __START_KERNEL_map + _PAGE_TABLE
+-
+-	.data
+-
+ 	.align 16
+ 	.globl cpu_gdt_descr
+ cpu_gdt_descr:
+diff -puN arch/x86_64/kernel/setup64.c~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/kernel/setup64.c
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/setup64.c~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/setup64.c	2007-03-07 01:29:50.000000000 +0530
+@@ -201,7 +201,6 @@ void __cpuinit cpu_init (void)
+ 	/* CPU 0 is initialised in head64.c */
+ 	if (cpu != 0) {
+ 		pda_init(cpu);
+-		zap_low_mappings(cpu);
+ 	} else 
+ 		estacks = boot_exception_stacks; 
+ 
+diff -puN arch/x86_64/kernel/setup.c~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/kernel/setup.c
+--- linux-2.6.21-rc2-reloc/arch/x86_64/kernel/setup.c~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/kernel/setup.c	2007-03-07 01:29:50.000000000 +0530
+@@ -274,8 +274,6 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	dmi_scan_machine();
+ 
+-	zap_low_mappings(0);
+-
+ #ifdef CONFIG_ACPI
+ 	/*
+ 	 * Initialize the ACPI boot-time table parser (gets the RSDP and SDT).
+diff -puN arch/x86_64/mm/init.c~x86_64-Remove-the-identity-mapping-as-early-as-possible arch/x86_64/mm/init.c
+--- linux-2.6.21-rc2-reloc/arch/x86_64/mm/init.c~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/arch/x86_64/mm/init.c	2007-03-07 01:29:50.000000000 +0530
+@@ -378,21 +378,6 @@ void __meminit init_memory_mapping(unsig
+ 	__flush_tlb_all();
+ }
+ 
+-void __cpuinit zap_low_mappings(int cpu)
+-{
+-	if (cpu == 0) {
+-		pgd_t *pgd = pgd_offset_k(0UL);
+-		pgd_clear(pgd);
+-	} else {
+-		/*
+-		 * For AP's, zap the low identity mappings by changing the cr3
+-		 * to init_level4_pgt and doing local flush tlb all
+-		 */
+-		asm volatile("movq %0,%%cr3" :: "r" (__pa_symbol(&init_level4_pgt)));
+-	}
+-	__flush_tlb_all();
+-}
+-
+ #ifndef CONFIG_NUMA
+ void __init paging_init(void)
+ {
+@@ -569,15 +554,6 @@ void __init mem_init(void)
+ 		reservedpages << (PAGE_SHIFT-10),
+ 		datasize >> 10,
+ 		initsize >> 10);
+-
+-#ifdef CONFIG_SMP
+-	/*
+-	 * Sync boot_level4_pgt mappings with the init_level4_pgt
+-	 * except for the low identity mappings which are already zapped
+-	 * in init_level4_pgt. This sync-up is essential for AP's bringup
+-	 */
+-	memcpy(boot_level4_pgt+1, init_level4_pgt+1, (PTRS_PER_PGD-1)*sizeof(pgd_t));
+-#endif
+ }
+ 
+ void free_init_pages(char *what, unsigned long begin, unsigned long end)
+diff -puN include/asm-x86_64/pgtable.h~x86_64-Remove-the-identity-mapping-as-early-as-possible include/asm-x86_64/pgtable.h
+--- linux-2.6.21-rc2-reloc/include/asm-x86_64/pgtable.h~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/include/asm-x86_64/pgtable.h	2007-03-07 01:29:50.000000000 +0530
+@@ -18,7 +18,6 @@ extern pud_t level3_kernel_pgt[512];
+ extern pud_t level3_ident_pgt[512];
+ extern pmd_t level2_kernel_pgt[512];
+ extern pgd_t init_level4_pgt[];
+-extern pgd_t boot_level4_pgt[];
+ extern unsigned long __supported_pte_mask;
+ 
+ #define swapper_pg_dir init_level4_pgt
+diff -puN include/asm-x86_64/proto.h~x86_64-Remove-the-identity-mapping-as-early-as-possible include/asm-x86_64/proto.h
+--- linux-2.6.21-rc2-reloc/include/asm-x86_64/proto.h~x86_64-Remove-the-identity-mapping-as-early-as-possible	2007-03-07 01:29:50.000000000 +0530
++++ linux-2.6.21-rc2-reloc-root/include/asm-x86_64/proto.h	2007-03-07 01:29:50.000000000 +0530
+@@ -11,8 +11,6 @@ struct pt_regs;
+ extern void start_kernel(void);
+ extern void pda_init(int); 
+ 
+-extern void zap_low_mappings(int cpu);
+-
+ extern void early_idt_handler(void);
+ 
+ extern void mcheck_init(struct cpuinfo_x86 *c);
 _
