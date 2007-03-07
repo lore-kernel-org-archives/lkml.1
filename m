@@ -1,137 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161276AbXCGHeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161277AbXCGHeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161276AbXCGHeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161133AbXCGHbc
+	id S1161277AbXCGHeW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161279AbXCGHeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:31:32 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:44322 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161276AbXCGH14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:27:56 -0500
-Date: Wed, 7 Mar 2007 12:50:08 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Cc: Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
-       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
-       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
-       pavel@suse.cz, rjw@sisk.pl
-Subject: [PATCH 16/20] swsusp: do not use virt_to_page on kernel data address
-Message-ID: <20070307072008.GQ23412@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070307065703.GA23412@in.ibm.com>
+	Wed, 7 Mar 2007 02:34:18 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49355 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161325AbXCGHeF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 02:34:05 -0500
+Date: Wed, 7 Mar 2007 16:32:48 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com, rientjes@google.com,
+       kaneshige.kenji@soft.fujitsu.com
+Subject: Re: [BUGFIX][PATCH] fix NULL pointer in ia64/irq_chip-mask/unmask
+ function
+Message-Id: <20070307163248.7c46f2d8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070306225710.f14ef163.akpm@linux-foundation.org>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+	<20070306192718.999e114d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070306030927.bc2f15fc.akpm@linux-foundation.org>
+	<20070306203542.e9b3e133.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070307152317.18159bdb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070306225710.f14ef163.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307065703.GA23412@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 Mar 2007 22:57:10 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> On Wed, 7 Mar 2007 15:23:17 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > This patch fixes boot failure because irq_desc->mask() is NULL.
+> > 
+> > - Added mask/unmask functions to ia64's irq desc function table.
+> >   But I'm not sure this fix is correct or not. please review.
+> > 
+> > - rename hw_interrupt_type to irq_chip. hw_interrupt_type is old name.
+> 
+> Thanks.
+> 
+> This bug is present in mainline too, isn't it?
+> 
+Yes, I confirmed rc3 has this bug.
 
-o virt_to_page() call should be used on kernel linear addresses and not
-  on kernel text and data addresses. Swsusp code uses it on kernel data
-  (statically allocated swsusp_header).
+-Kame
 
-o Allocate swsusp_header dynamically so that virt_to_page() can be used
-  safely.
-
-o I am changing this because in next few patches, __pa() on x86_64 will
-  no longer support kernel text and data addresses and hibernation breaks. 
-
-Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
----
-
- kernel/power/swap.c |   42 +++++++++++++++++++++++++++---------------
- 1 file changed, 27 insertions(+), 15 deletions(-)
-
-diff -puN kernel/power/swap.c~swsusp-do-not-use-virt_to_page-on-kernel-data-addr kernel/power/swap.c
---- linux-2.6.21-rc2-reloc/kernel/power/swap.c~swsusp-do-not-use-virt_to_page-on-kernel-data-addr	2007-03-07 01:30:43.000000000 +0530
-+++ linux-2.6.21-rc2-reloc-root/kernel/power/swap.c	2007-03-07 01:30:43.000000000 +0530
-@@ -33,12 +33,14 @@ extern char resume_file[];
- 
- #define SWSUSP_SIG	"S1SUSPEND"
- 
--static struct swsusp_header {
-+struct swsusp_header {
- 	char reserved[PAGE_SIZE - 20 - sizeof(sector_t)];
- 	sector_t image;
- 	char	orig_sig[10];
- 	char	sig[10];
--} __attribute__((packed, aligned(PAGE_SIZE))) swsusp_header;
-+} __attribute__((packed));
-+
-+static struct swsusp_header *swsusp_header;
- 
- /*
-  * General things
-@@ -141,14 +143,14 @@ static int mark_swapfiles(sector_t start
- {
- 	int error;
- 
--	bio_read_page(swsusp_resume_block, &swsusp_header, NULL);
--	if (!memcmp("SWAP-SPACE",swsusp_header.sig, 10) ||
--	    !memcmp("SWAPSPACE2",swsusp_header.sig, 10)) {
--		memcpy(swsusp_header.orig_sig,swsusp_header.sig, 10);
--		memcpy(swsusp_header.sig,SWSUSP_SIG, 10);
--		swsusp_header.image = start;
-+	bio_read_page(swsusp_resume_block, swsusp_header, NULL);
-+	if (!memcmp("SWAP-SPACE",swsusp_header->sig, 10) ||
-+	    !memcmp("SWAPSPACE2",swsusp_header->sig, 10)) {
-+		memcpy(swsusp_header->orig_sig,swsusp_header->sig, 10);
-+		memcpy(swsusp_header->sig,SWSUSP_SIG, 10);
-+		swsusp_header->image = start;
- 		error = bio_write_page(swsusp_resume_block,
--					&swsusp_header, NULL);
-+					swsusp_header, NULL);
- 	} else {
- 		printk(KERN_ERR "swsusp: Swap header not found!\n");
- 		error = -ENODEV;
-@@ -564,7 +566,7 @@ int swsusp_read(void)
- 	if (error < PAGE_SIZE)
- 		return error < 0 ? error : -EFAULT;
- 	header = (struct swsusp_info *)data_of(snapshot);
--	error = get_swap_reader(&handle, swsusp_header.image);
-+	error = get_swap_reader(&handle, swsusp_header->image);
- 	if (!error)
- 		error = swap_read_page(&handle, header, NULL);
- 	if (!error)
-@@ -591,17 +593,17 @@ int swsusp_check(void)
- 	resume_bdev = open_by_devnum(swsusp_resume_device, FMODE_READ);
- 	if (!IS_ERR(resume_bdev)) {
- 		set_blocksize(resume_bdev, PAGE_SIZE);
--		memset(&swsusp_header, 0, sizeof(swsusp_header));
-+		memset(swsusp_header, 0, sizeof(PAGE_SIZE));
- 		error = bio_read_page(swsusp_resume_block,
--					&swsusp_header, NULL);
-+					swsusp_header, NULL);
- 		if (error)
- 			return error;
- 
--		if (!memcmp(SWSUSP_SIG, swsusp_header.sig, 10)) {
--			memcpy(swsusp_header.sig, swsusp_header.orig_sig, 10);
-+		if (!memcmp(SWSUSP_SIG, swsusp_header->sig, 10)) {
-+			memcpy(swsusp_header->sig, swsusp_header->orig_sig, 10);
- 			/* Reset swap signature now */
- 			error = bio_write_page(swsusp_resume_block,
--						&swsusp_header, NULL);
-+						swsusp_header, NULL);
- 		} else {
- 			return -EINVAL;
- 		}
-@@ -632,3 +634,13 @@ void swsusp_close(void)
- 
- 	blkdev_put(resume_bdev);
- }
-+
-+static int swsusp_header_init(void)
-+{
-+	swsusp_header = (struct swsusp_header*) __get_free_page(GFP_KERNEL);
-+	if (!swsusp_header)
-+		panic("Could not allocate memory for swsusp_header\n");
-+	return 0;
-+}
-+
-+core_initcall(swsusp_header_init);
-_
