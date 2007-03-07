@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030470AbXCGIbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030472AbXCGIff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030470AbXCGIbk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 03:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965190AbXCGIbk
+	id S1030472AbXCGIff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 03:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030481AbXCGIff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 03:31:40 -0500
-Received: from www.osadl.org ([213.239.205.134]:56623 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965185AbXCGIbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 03:31:39 -0500
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Dan Hecht <dhecht@vmware.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, ak@suse.de,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <45EE1EA3.90803@vmware.com>
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>
-	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>
-	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>
-	 <1173178774.24738.311.camel@localhost.localdomain>
-	 <45EDD82F.90204@vmware.com>
-	 <1173225182.24738.507.camel@localhost.localdomain>
-	 <45EE0628.1080108@goop.org>  <45EE08E8.2020008@vmware.com>
-	 <1173228544.24738.514.camel@localhost.localdomain>
-	 <45EE0D10.7070807@vmware.com>
-	 <1173230305.24738.529.camel@localhost.localdomain>
-	 <45EE1EA3.90803@vmware.com>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 09:37:46 +0100
-Message-Id: <1173256666.24738.576.camel@localhost.localdomain>
+	Wed, 7 Mar 2007 03:35:35 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:56910 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030472AbXCGIfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 03:35:34 -0500
+Date: Wed, 7 Mar 2007 00:35:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
+ nonlinear)
+Message-Id: <20070307003520.08b1a082.akpm@linux-foundation.org>
+In-Reply-To: <20070307082755.GA25733@elte.hu>
+References: <20070221023656.6306.246.sendpatchset@linux.site>
+	<20070221023735.6306.83373.sendpatchset@linux.site>
+	<20070306225101.f393632c.akpm@linux-foundation.org>
+	<20070307070853.GB15877@wotan.suse.de>
+	<20070307081948.GA9563@wotan.suse.de>
+	<20070307082755.GA25733@elte.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 18:08 -0800, Dan Hecht wrote:
-> > IMO the paravirt interfaces should use nanoseconds anyway for both
-> > readout and next event programming. That way the conversion is done in
-> > the hypervisor once and the clocksources and clockevents are simple and
-> > unified (except for the underlying hypervisor calls).
-> > 
+On Wed, 7 Mar 2007 09:27:55 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> I disagree.  The clocksource/clockevents layer are always going to have 
-> to convert nanoseconds to/from hardware units, so why not use it?  And, 
-> some guests (say, a future version of linux that does trace-based 
-> process accounting) may want higher resolution than nanoseconds for 
-> certain uses. 
+> * Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > If it doesn't look very impressive, it could be because it leaves all 
+> > the old crud around for backwards compatibility (the worst offenders 
+> > are removed in patch 6/6).
+> > 
+> > If you look at the patchset as a whole, it removes about 250 lines, 
+> > mostly of (non trivial) duplicated code in filemap.c memory.c shmem.c 
+> > fremap.c, that is nonlinear pages specific and doesn't get anywhere 
+> > near the testing that the linear fault path does.
+> > 
+> > A minimal fix for nonlinear pages would have required changing all 
+> > ->populate handlers, which I simply thought was not very productive 
+> > considering the testing and coverage issues, and that I was going to 
+> > rewrite the nonlinear path anyway.
+> > 
+> > If you like, you can consider patches 1,2,3 as the fix, and ignore 
+> > nonlinear (hey, it doesn't even bother checking truncate_count 
+> > today!).
+> > 
+> > Then 4,5,6 is the fault/nonlinear rewrite, take it or leave it. I 
+> > thought you would have liked the patches...
+> 
+> btw., if we decide that nonlinear isnt worth the continuing maintainance 
+> pain, we could internally implement/emulate sys_remap_file_pages() via a 
+> call to mremap() and essentially deprecate it, without breaking the ABI 
+> - and remove all the nonlinear code. (This would split fremap areas into 
+> separate vmas)
+> 
 
-That's a pure academic exercise. When we are at the point where
-nanoseconds are to coarse - sometimes after we both retired - the
-internal resolution will be femtoseconds or whatever fits.
+I'm rather regretting having merged it - I don't think it has been used for
+much.
 
-Again: paravirt should use a common infrastructure for this. Virtual
-clocksource and virtual clockevent devices, which operate on ktime_t and
-not on some artificial clock chip emulation frequency. The backend
-implementation will be still per hypervisor, but we have _ONE_ device
-emulation model, which is exposed to the kernel instead of five.
-
-On a Linux based host, you probably end up with a hrtimer on the host
-side to schedule the next event on the guest. So why do we need to
-convert ktime_t to some virtual frequency in the guest so we can convert
-it back into ktime_t on the host ?
-
-Abstractions for the abstractions sake are braindead. There is no real
-reason to implement 128 bit math into that path just to make the virtual
-clockevent device look like real hardware.
-
-The abstraction of clockevents helps you to get rid of hardwired
-hardware assumptions, but you insist on creating them artificially for
-reasons which are beyond my grasp.
-
-> In any case, this is beside the point; I'd prefer to 
-> stick to using the clockevents interface in the way it was intended 
-> rather than reaching into ->next_event.
-
-Sigh. The gain is, that you still have a good reason, why you can't move
-to the clockevents interface.
-
-Jeremy spent a couple of hours to get NO_HZ running for Xen yesterday
-instead of writing up lengthy excuses, why it is soooo hard and takes
-sooo much time and the current interface is sooo insufficient.
-
-	tglx
-
-
+Paolo's UML speedup patches might use nonlinear though.
