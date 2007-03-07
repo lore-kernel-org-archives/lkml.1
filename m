@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030622AbXCGOi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030628AbXCGOic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030622AbXCGOi3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 09:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030628AbXCGOi3
+	id S1030628AbXCGOic (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 09:38:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030630AbXCGOic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 09:38:29 -0500
-Received: from 195-13-16-24.net.novis.pt ([195.23.16.24]:34832 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1030622AbXCGOi2 (ORCPT
+	Wed, 7 Mar 2007 09:38:32 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:19807 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030628AbXCGOia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 09:38:28 -0500
-Message-ID: <45EECE60.4010808@grupopie.com>
-Date: Wed, 07 Mar 2007 14:38:24 +0000
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+	Wed, 7 Mar 2007 09:38:30 -0500
+Message-ID: <45EECE5C.6030100@ru.mvista.com>
+Date: Wed, 07 Mar 2007 17:38:20 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Robert Peterson <rpeterso@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21-rc1] Extend print_symbol capability TRY #3
-References: <45EDCE67.3010902@redhat.com>
-In-Reply-To: <45EDCE67.3010902@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
+Cc: mingo@elte.hu, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw
+ ones.
+References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi649d25qz.wl@toshiba.co.jp>
+In-Reply-To: <yyi649d25qz.wl@toshiba.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Peterson wrote:
->[...]
-> @@ -47,6 +52,11 @@ static inline const char *kallsyms_lookup(unsigned 
-> long addr,
->     return NULL;
-> }
-> 
-> +static inline void sprint_symbol(char *buffer, unsigned long addr)
-> +{
-> +    return;
-> +}
+Hello.
 
-I'm really sorry for not replying sooner (I've been really busy), but 
-this function still doesn't seem right.
+Tsutomu OWA wrote:
 
-If someone does something like:
+> --- linux-rt8/arch/powerpc/kernel/irq.c	2007-02-20 14:30:38.000000000 +0900
+> +++ rt/arch/powerpc/kernel/irq.c	2007-03-05 18:54:34.000000000 +0900
+> @@ -392,7 +392,7 @@ EXPORT_SYMBOL(do_softirq);
+>  #ifdef CONFIG_PPC_MERGE
+>  
+>  static LIST_HEAD(irq_hosts);
+> -static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
+> +static DEFINE_RAW_SPINLOCK(irq_big_lock);
+>  static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
+>  static unsigned int irq_radix_writer;
+>  struct irq_map_entry irq_map[NR_IRQS];
 
-> void my_function(unsigned long addr)
-> {
-> 	char buffer[KSYM_SYMBOL_LEN];
-> 
-> 	sprint_symbol(buffer, addr);
-> 	...
-> 	// use buffer to print somewhere
-> 	...
-> }
+    I've already sent a patch fixing this one (along with many others) a month 
+ago:
 
-which seems like a perfectly natural thing to do, it might just oops the 
-kernel if CONFIG_KALLSYMS is not set, because the buffer will be left 
-uninitialized.
+http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031164.html
 
-That is why I suggested to change it to something like "*buffer = '\0'" 
-instead.
+    I wonder iof it was ever considered... :-/
 
-The really nice solution IMHO, would be to remove the print_symbol and 
-sprint_symbol functions from the the "#ifdef CONFIG_KALLSYMS" and just 
-let them be available even in a not CONFIG_KALLSYMS kernel.
-
-Since kallsyms_lookup is already #ifdef'ed to something sane, 
-sprint_symbol will just print out the symbol address in that case, but 
-it is better than not printing anything at all.
-
--- 
-Paulo Marques - www.grupopie.com
-
-"Very funny Scotty. Now beam up my clothes."
+WBR, Sergei
