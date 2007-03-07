@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932753AbXCGBiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161137AbXCGBkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932753AbXCGBiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Mar 2007 20:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbXCGBiT
+	id S1161137AbXCGBkQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Mar 2007 20:40:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161139AbXCGBkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Mar 2007 20:38:19 -0500
-Received: from imx12.toshiba.co.jp ([61.202.160.132]:42152 "EHLO
+	Tue, 6 Mar 2007 20:40:16 -0500
+Received: from imx12.toshiba.co.jp ([61.202.160.132]:42362 "EHLO
 	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161135AbXCGBiM (ORCPT
+	with ESMTP id S1161137AbXCGBkN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Mar 2007 20:38:12 -0500
-Date: Wed, 07 Mar 2007 10:37:40 +0900
-Message-ID: <yyi649d25qz.wl@toshiba.co.jp>
+	Tue, 6 Mar 2007 20:40:13 -0500
+Date: Wed, 07 Mar 2007 10:39:42 +0900
+Message-ID: <yyi4pox25nl.wl@toshiba.co.jp>
 From: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 To: mingo@elte.hu
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        tsutomu.owa@toshiba.co.jp
-Subject: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw ones.
+Subject: [patch 3/6 -rt] powerpc 2.6.20-rt8: fix a runtime warning for smp_processor_id()
 In-Reply-To: <yyi8xe925vg.wl@toshiba.co.jp>
 References: <yyi8xe925vg.wl@toshiba.co.jp>
 User-Agent: Wanderlust/2.8.1 (Something) Emacs/20.7 Mule/4.0 (HANANOEN)
@@ -27,88 +27,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  To convert the spinlocks into the raw onces to fix the following warnings/errors.
+  To fix the following runtime warning.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-Badness at arch/powerpc/kernel/entry_64.S:651
+BUG: using smp_processor_id() in preemptible [00000000] code: init/371
+caller is .pgtable_free_tlb+0x2c/0x14c
 Call Trace:
-[C0000000006133E0] [C00000000000FAAC] show_stack+0x68/0x1b0 (unreliable)
-[C000000000613480] [C0000000001EF004] .repor000001EF004] .report_bug+0x94/0xe8
-[C000000000613510] [C0000000003EAD58] .program_check_exception+0x170/0x5a8
-[C00000000000487C] program_check_common+0xfc/0x100
---- Exception: 700 at .exception: 700 at .enter_rtas+0xa0/0x10c
-    LR = .rtas_call+0x144/0x1e8
-[C0000000006138D0] [C000000000613980] 0xc000000000613980 (unreliabl0064a0d8 (unreliable)
-[C000000000613AB0] [C00000000001DFA8] .rtas_call+0x144/0x1etas_call+0x144/0x1e8
-	:
-
+[C00000000FF6B770] [C00000000000FAAC] .show_stack+0x68/0x1b0 (unreliable)
+[C00000000FF6B810] [C0000000001F7190] .debug_smp_processor_id+0xc8/0xf8
+[C00000000FF6B8A0] [C00000000002C52C] .pgtable_free_tlb+0x2c/0x14c
+[C00000000FF6B940] [C0000000000B6528] .free_pgd_range+0x234/0x3bc
+[C00000000FF6BA40] [C0000000000B6AB8] .free_pgtables+0x224/0x260
+[C00000000FF6BB00] [C0000000000B7FE8] .exit_mmap+0x100/0x208
+[C00000000FF6BBC0] [C000000000055FB0] .mmput+0x70/0x12c
+[C00000000FF6BC50] [C00000000005B728] .exit_mm+0x150/0x170
+[C00000000FF6BCE0] [C00000000005D80C] .do_exit+0x28c/0x9bc
+[C00000000FF6BDA0] [C00000000005DFF0] .sys_exit_group+0x0/0x8
+[C00000000FF6BE30] [C000000000008634] syscall_exit+0x0/0x40
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-BUG: scheduling with irqs disabled: ash/0x00000000/462
-caller is .rt_spin_lock_slowlock+0x14c/0x234
-Call Trace:
-[C00000001FE87580] [C00000000000FAAC] .show_stack+0x68/0x1b0 (unreliable)
-[C00000001FE87620] [C0000000003E796C] .schedule+0x78/0x128
-[C00000001FE876A0] [C0000000003E9378] .rt_spin_lock_slowlock+0x14c/0x234
-[C00000001FE877B0] [C00000000002E3C4] .native_hpte_updatepp+0x158/0x274
-[C00000001FE87850] [C00000000002C374] .htab_call_hpte_updatepp+0x4/0x18
-[C00000001FE87950] [C00000000002BC74] .hash_preload+0x150/0x198
-[C00000001FE87A00] [C00000000002A9E8] .update_mmu_cache+0x13c/0x1a4
-[C00000001FE87A90] [C0000000000B28A0] .do_wp_page+0x7d0/0x888
-[C00000001FE87B60] [C0000000000B4CB8] .__handle_mm_fault+0xee4/0x1004
-[C00000001FE87C50] [C0000000003EC288] .do_page_fault+0x474/0x65c
-[C00000001FE87E30] [C000000000004CFC] handle_page_fault+0x20/0x58
-	:
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  Would it be better to just use raw_smp_processor_id() rather than tlb->cpu?
 
 Signed-off-by: Tsutomu Owa <tsutomu.owa@toshiba.co.jp>
 -- owa
 
-diff -rup linux-rt8/include/asm-powerpc/rtas.h rt/include/asm-powerpc/rtas.h
---- linux-rt8/include/asm-powerpc/rtas.h	2007-02-20 09:37:27.000000000 +0900
-+++ rt/include/asm-powerpc/rtas.h	2007-03-05 11:49:41.000000000 +0900
-@@ -58,7 +58,7 @@ struct rtas_t {
- 	unsigned long entry;		/* physical address pointer */
- 	unsigned long base;		/* physical address pointer */
- 	unsigned long size;
--	spinlock_t lock;
-+	raw_spinlock_t lock;
- 	struct rtas_args args;
- 	struct device_node *dev;	/* virtual address pointer */
- };
-diff -rup linux-rt8/arch/powerpc/kernel/rtas.c rt/arch/powerpc/kernel/rtas.c
---- linux-rt8/arch/powerpc/kernel/rtas.c	2007-02-20 09:38:52.000000000 +0900
-+++ rt/arch/powerpc/kernel/rtas.c	2007-03-05 11:50:58.000000000 +0900
-@@ -36,7 +36,7 @@
- #include <asm/syscalls.h>
+diff -rup linux-rt8/arch/powerpc/mm/tlb_64.c rt/arch/powerpc/mm/tlb_64.c
+--- linux-rt8/arch/powerpc/mm/tlb_64.c	2007-02-20 14:30:38.000000000 +0900
++++ rt/arch/powerpc/mm/tlb_64.c	2007-03-05 13:31:24.000000000 +0900
+@@ -94,8 +94,11 @@ static void pte_free_submit(struct pte_f
  
- struct rtas_t rtas = {
--	.lock = SPIN_LOCK_UNLOCKED
-+	.lock = RAW_SPIN_LOCK_UNLOCKED(lock)
- };
- EXPORT_SYMBOL(rtas);
- 
-diff -rup linux-rt8/arch/powerpc/mm/hash_native_64.c rt/arch/powerpc/mm/hash_native_64.c
---- linux-rt8/arch/powerpc/mm/hash_native_64.c	2007-02-20 09:38:58.000000000 +0900
-+++ rt/arch/powerpc/mm/hash_native_64.c	2007-03-05 15:40:12.000000000 +0900
-@@ -35,7 +35,7 @@
- 
- #define HPTE_LOCK_BIT 3
- 
--static DEFINE_SPINLOCK(native_tlbie_lock);
-+static DEFINE_RAW_SPINLOCK(native_tlbie_lock);
- 
- static inline void __tlbie(unsigned long va, unsigned int psize)
+ void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
  {
---- linux-rt8/arch/powerpc/kernel/irq.c	2007-02-20 14:30:38.000000000 +0900
-+++ rt/arch/powerpc/kernel/irq.c	2007-03-05 18:54:34.000000000 +0900
-@@ -392,7 +392,7 @@ EXPORT_SYMBOL(do_softirq);
- #ifdef CONFIG_PPC_MERGE
+-	/* This is safe since tlb_gather_mmu has disabled preemption */
+-        cpumask_t local_cpumask = cpumask_of_cpu(smp_processor_id());
++	/*
++	 * This is safe since tlb_gather_mmu has disabled preemption.
++	 * tlb->cpu is set by tlb_gather_mmu as well.
++	 */
++        cpumask_t local_cpumask = cpumask_of_cpu(tlb->cpu);
+ 	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
  
- static LIST_HEAD(irq_hosts);
--static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_RAW_SPINLOCK(irq_big_lock);
- static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
- static unsigned int irq_radix_writer;
- struct irq_map_entry irq_map[NR_IRQS];
+ 	if (atomic_read(&tlb->mm->mm_users) < 2 ||
 
