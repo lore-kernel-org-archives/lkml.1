@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965518AbXCGUD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965560AbXCGUE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965518AbXCGUD6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 15:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965560AbXCGUD6
+	id S965560AbXCGUE3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 15:04:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965589AbXCGUE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 15:03:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47779 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965518AbXCGUD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 15:03:57 -0500
-Message-ID: <45EF1AAB.40104@redhat.com>
-Date: Wed, 07 Mar 2007 15:03:55 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 7 Mar 2007 15:04:28 -0500
+Received: from an-out-0708.google.com ([209.85.132.241]:27821 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965516AbXCGUE1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 15:04:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GtbJcV1MJztQcafUBapoWJlAQx3tdTwPjLJXDB3qh45+r5ikC+jAcqQjBO+DHl5FpDbxkCcceFJBWyyVMbAeK+RlMWqM6lXDcXlTItREoFkeIE+OsvA3ibUEkZu2wt2Oj0ysuhb3I34GuU+dm/oiuEV1hjuHOfrmrXZynedHWkE=
+Message-ID: <8bd0f97a0703071204j3d60476boeccd2c1d573ddedf@mail.gmail.com>
+Date: Wed, 7 Mar 2007 15:04:26 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Krzysztof Halasa" <khc@pm.waw.pl>
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+Cc: "Oleksiy Kebkal" <kebkal@gmail.com>,
+       "Robin Getz" <rgetz@blackfin.uclinux.org>, rmk@arm.linux.org.uk,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org
+In-Reply-To: <m3649durx1.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: PS/2 mouse port missing with kernel >=2.6.19, Sis chipset
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
+	 <m3bqj6jebt.fsf@maximus.localdomain>
+	 <200703061824.08834.rgetz@blackfin.uclinux.org>
+	 <57354eff0703070454u24e97309j55ec9de584ced71e@mail.gmail.com>
+	 <m3649durx1.fsf@maximus.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have multiple reports of PS/2 mouse port not being found
-on Sis 630 and 730 chipsets, starting with Fedora kernel 2.6.19:
+On 3/7/07, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> "Oleksiy Kebkal" <kebkal@gmail.com> writes:
+> > May be it would be good idea to develop some tty control driver which
+> > provides a
+> > possibility to change default setting of the drivers?
+>
+> If there is a real need for it (such as a real existing device)...
+> then sure (it wouldn't be a "default setting" anymore, of course).
 
-2.6.18:
-Jan 19 08:59:39 mtranch kernel: PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M]
-at 0x60,0x64 irq 1,12
-Jan 19 08:59:39 mtranch kernel: serio: i8042 AUX port at 0x60,0x64 irq 12
-Jan 19 08:59:39 mtranch kernel: serio: i8042 KBD port at 0x60,0x64 irq 1
-Jan 19 08:59:39 mtranch kernel: mice: PS/2 mouse device common for all mice
+if there wasnt a real need to control this behavior (as in existing
+devices), then i wouldnt have spawned this thread in the first place
+:)
 
-2.6.19:
-Jan 20 09:22:30 mtranch kernel: PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M]
-at 0x60,0x64 irq 1,12
-Jan 20 09:22:30 mtranch kernel: serio: i8042 KBD port at 0x60,0x64 irq 1
-Jan 20 09:22:30 mtranch kernel: mice: PS/2 mouse device common for all mice
-
-I'm pretty sure Fedora doesn't patch any input code, so I wonder
-if some change was made here that could cause this?
+i dont muck around in serial core for fun
+-mike
