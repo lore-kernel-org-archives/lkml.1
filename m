@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161204AbXCGHmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161304AbXCGHpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161204AbXCGHmc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 02:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161304AbXCGHmc
+	id S1161304AbXCGHpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 02:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161309AbXCGHpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 02:42:32 -0500
-Received: from www.osadl.org ([213.239.205.134]:58763 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161204AbXCGHmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 02:42:31 -0500
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Dan Hecht <dhecht@vmware.com>
-Cc: Zachary Amsden <zach@vmware.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, ak@suse.de,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <45EE190E.4060904@vmware.com>
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>
-	 <45ED16D2.3000202@vmware.com> <20070306084258.GA15745@elte.hu>
-	 <20070306084647.GA16280@elte.hu>  <45ED2C82.3080008@vmware.com>
-	 <1173178774.24738.311.camel@localhost.localdomain>
-	 <45EDD82F.90204@vmware.com>
-	 <1173225182.24738.507.camel@localhost.localdomain>
-	 <45EE0A68.6010406@vmware.com>
-	 <1173230571.24738.534.camel@localhost.localdomain>
-	 <45EE190E.4060904@vmware.com>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 08:48:36 +0100
-Message-Id: <1173253716.24738.540.camel@localhost.localdomain>
+	Wed, 7 Mar 2007 02:45:52 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54809 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161304AbXCGHpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 02:45:51 -0500
+Date: Tue, 6 Mar 2007 23:45:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: bryan.wu@analog.com
+Cc: Jean Delvare <khali@linux-fr.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Sonic Zhang <sonic.adi@gmail.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
+       mhfan@ustc.edu
+Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
+Message-Id: <20070306234529.3ce4cf3b.akpm@linux-foundation.org>
+In-Reply-To: <1173253167.28531.41.camel@roc-desktop>
+References: <1173164058.31825.16.camel@roc-desktop>
+	<20070306214301.GA5590@martell.zuzino.mipt.ru>
+	<1173247078.28531.24.camel@roc-desktop>
+	<20070307075822.53e53c42.khali@linux-fr.org>
+	<20070306231423.4231c99b.akpm@linux-foundation.org>
+	<1173253167.28531.41.camel@roc-desktop>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-06 at 17:44 -0800, Dan Hecht wrote:
-> >>> 2) As I said above. The time accounting for virtualization needs to be
-> >>> fixed in a generic way.
-> >>>
-> >>> I'm not going to accept some weird hackery for virtualization, which is
-> >>> of exactly ZERO value for the kernel itself. Quite the contrary it will
-> >>> make the cleanup harder and introduce another hard to remove thing,
-> >>> which will in the worst case last for ever.
-> >>>
-> >> Okay, to confirm I'm on the same page as you, you want to move process 
-> >> time accounting from being periodic sampled based to being trace based? 
-> >> i.e. at the system-call/interrupt boundaries, read clocksource and 
-> >> compute directly the amount of system/user/process time?
-> > 
-> > At least for the paravirt guests this is the correct approach. Once the
-> > CPU vendors come up with a sane solution for a reliable and fast clock
-> > source we might use that on real hardware as well.
-> > 
-> 
-> I thought your preference was to not do things differently from real 
-> hardware?  I guess this case you are okay with since you'd like to see 
-> the real hardware case follow eventually?
+On Wed, 07 Mar 2007 15:39:27 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
 
-Real hardware _IS_ broken and slow. If we add the facilities for
-virtualization we want it in a way, which is usable by real hardware as
-well.
-
-> > Yes, with todays hardware it is simply a PITA. PowerPC has some basic
-> > support for this though, IIRC.
-> > 
-> 
-> I think S390 maybe too.
-
-One more reason to make it a generic solution rather than some extra
-hackery.
-
-	tglx
+> Thanks a lot, could you please give me a script just to kill this
+> whitespace? So I can do it before sending you patches.
 
 
+Is pretty simple:
+
+#!/bin/sh
+#
+# Strip any trailing whitespace which a unified diff adds.
+#
+
+strip1()
+{
+	TMP=$(mktemp /tmp/XXXXXX)
+	cp $1 $TMP
+	sed -e '/^+/s/[ 	]*$//' < $TMP > $1
+	rm $TMP
+}
+
+for i in $*
+do
+	strip1 $i
+done
+
+
+that'll be in
+http://www.zip.com.au/~akpm/linux/patches/patch-scripts-0.20/patch-scripts-0.20.tar.gz
+too
