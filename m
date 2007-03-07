@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932511AbXCGGor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbXCGGvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932511AbXCGGor (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 01:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932706AbXCGGor
+	id S932706AbXCGGvO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 01:51:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932830AbXCGGvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 01:44:47 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:38076 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932739AbXCGGoq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 01:44:46 -0500
-Date: Tue, 6 Mar 2007 22:44:23 -0800
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Bill Irwin <bill.irwin@oracle.com>, Hugh Dickins <hugh@veritas.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Wanted: simple, safe x86 stack overflow detection
-Message-ID: <20070307064423.GH18774@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Hugh Dickins <hugh@veritas.com>, Chuck Ebbert <cebbert@redhat.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <45E5913D.3080505@redhat.com> <20070228204144.GA32316@one.firstfloor.org> <20070304015031.GA4224@holomorphy.com> <45EDBA1B.8050007@redhat.com> <Pine.LNX.4.64.0703061937450.19813@blonde.wat.veritas.com> <20070306203432.GD18774@holomorphy.com> <1173241715.3236.16.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173241715.3236.16.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 7 Mar 2007 01:51:14 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:51590 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932739AbXCGGvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 01:51:11 -0500
+Date: Tue, 6 Mar 2007 22:51:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
+ nonlinear)
+Message-Id: <20070306225101.f393632c.akpm@linux-foundation.org>
+In-Reply-To: <20070221023735.6306.83373.sendpatchset@linux.site>
+References: <20070221023656.6306.246.sendpatchset@linux.site>
+	<20070221023735.6306.83373.sendpatchset@linux.site>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At some point in the past, I wrote:
->> I'm certainly in favor of the move; IRQ stacks could be made
->> rather deep and cheaply at that. I may get around to writing it this
->> week if no one else does it first.
+On Wed, 21 Feb 2007 05:50:17 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
 
-On Tue, Mar 06, 2007 at 08:28:35PM -0800, Arjan van de Ven wrote:
-> the irq stacks aren't the problem; RH at some point accidentally shipped
-> a kernel with 4k *shared* irq/user context stack and even that gave
-> almost no issues.
-> irq's really shouldn't actually nest; it's bad for just about everything
-> to do that (but that's another story, I would *love* to get rid of the
-> "enable irqs" thing in the x86 irq path, it hurts just about anything in
-> reality)
+> Nonlinear mappings are (AFAIKS) simply a virtual memory concept that
+> encodes the virtual address -> file offset differently from linear
+> mappings.
+> 
+> I can't see why the filesystem/pagecache code should need to know anything
+> about it, except for the fact that the ->nopage handler didn't quite pass
+> down enough information (ie. pgoff). But it is more logical to pass pgoff
+> rather than have the ->nopage function calculate it itself anyway. And
+> having the nopage handler install the pte itself is sort of nasty.
+> 
+> This patch introduces a new fault handler that replaces ->nopage and
+> ->populate and (later) ->nopfn. Most of the old mechanism is still in place
+> so there is a lot of duplication and nice cleanups that can be removed if
+> everyone switches over.
+> 
+> The rationale for doing this in the first place is that nonlinear mappings
+> are subject to the pagefault vs invalidate/truncate race too, and it seemed
+> stupid to duplicate the synchronisation logic rather than just consolidate
+> the two.
+> 
 
-What do you see as the obstacle to eliminating nested IRQ's? It doesn't
-seem so far out to test for being on the interrupt stack and defer the
-call to do_IRQ() until after the currently-running instance of do_IRQ()
-has returned, or to move to per-irq stacks modulo special arrangements
-for the per-cpu IRQ's. Or did you have other methods in mind?
+It's awkward to layer a largely do-nothing patch like this on top of a
+significant functional change.  Makes it harder to isolate the source of
+regressions, harder to revert the do-something patch.
+
+> After this patch, MAP_NONBLOCK no longer sets up ptes for pages present in
+> pagecache. Seems like a fringe functionality anyway.
+
+Does Ingo agree?
+
+> NOPAGE_REFAULT is removed. This should be implemented with ->fault, and
+> no users have hit mainline yet.
+
+Did benh agree with that?
 
 
--- wli
+The patch unchangeloggedly adds a basic new structure to core mm
+(fault_data).  Would be nice to document its fields, especially `flags'.
+
+
+Please add less pointless blank lines.
+
+
+How well has this been tested?  The ocfs2 changes?  gfs2?  We should at
+least give those guys a heads-up.
+
+
+Does anybody really pass a NULL `type' arg into filemap_nopage()?
+
+
+This patch seems to churn things around an awful lot for minimal benefit.
+
