@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030792AbXCGJRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030793AbXCGJSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030792AbXCGJRN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:17:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030793AbXCGJRM
+	id S1030793AbXCGJSa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:18:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030797AbXCGJSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:17:12 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:56509 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030792AbXCGJRK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:17:10 -0500
-Message-ID: <45EE8315.3020800@vmware.com>
-Date: Wed, 07 Mar 2007 01:17:09 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       virtualization <virtualization@lists.osdl.org>,
-       Roland McGrath <roland@redhat.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: Xen & VMI?
-References: <45ED82D9.6050204@codemonkey.ws> <8FFF7E42E93CC646B632AB40643802A80229779B@scsmsx412.amr.corp.intel.com> <20070306203712.GC21736@elte.hu> <1173228246.4644.85.camel@localhost.localdomain> <20070307081510.GB15111@elte.hu>
-In-Reply-To: <20070307081510.GB15111@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Mar 2007 04:18:30 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39120 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030793AbXCGJS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:18:28 -0500
+Date: Wed, 7 Mar 2007 10:18:23 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, mingo@elte.hu, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+Message-ID: <20070307091823.GA8609@wotan.suse.de>
+References: <20070221023656.6306.246.sendpatchset@linux.site> <20070221023735.6306.83373.sendpatchset@linux.site> <20070306225101.f393632c.akpm@linux-foundation.org> <20070307070853.GB15877@wotan.suse.de> <20070307081948.GA9563@wotan.suse.de> <20070307082755.GA25733@elte.hu> <E1HOrfO-0008AW-00@dorka.pomaz.szeredi.hu> <20070307004709.432ddf97.akpm@linux-foundation.org> <E1HOrsL-0008Dv-00@dorka.pomaz.szeredi.hu> <20070307010756.b31c8190.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070307010756.b31c8190.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> For example, VMI_CALL_SetAlarm takes a 'cycles' argument. Cycles is a 
-> quite bad unit for an API, it should be absolute time, nanosec or 
-> picosec based instead. We could easily see CPUs that have /no concept of 
->   
+On Wed, Mar 07, 2007 at 01:07:56AM -0800, Andrew Morton wrote:
+> On Wed, 07 Mar 2007 09:51:57 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> 
+> > > > Dirty page accounting doesn't work either on
+> > > > non-linear mappings
+> > > 
+> > > It doesn't?  Confused - these things don't have anything to do with each
+> > > other do they?
+> > 
+> > Look in page_mkclean().  Where does it handle non-linear mappings?
+> > 
+> 
+> OK, I'd forgotten about that.  It won't break dirty memory accounting,
+> but it'll potentially break dirty memory balancing.
+> 
+> If we have the wrong page (due to nonlinear), page_check_address() will
+> fail and we'll leave the pte dirty.  That puts us back to the pre-2.6.17
+> algorithms and I guess it'll break the msync guarantees.
+> 
+> Peter, I thought we went through the nonlinear problem ages ago and decided
+> it was OK?
 
-Actually, putting the unit in terms of cycles is more portable and 
-flexible.  Rather than perform a conversion from cycles to 
-nano/femto/pico seconds, the raw cycle count is exposed, along with the 
-current clock frequency.  This allows the timer infrastructure to merely 
-do one conversion, from cycles to real time, rather than converting to 
-an arbitrary time unit which may change with operating systems and time 
-and thus break the ABI.
+msync breakage is bad, but otherwise I don't know that we care about
+dirty page writeout efficiency.
 
-Zach
+But I think we discovered that those msync changes are bogus anyway
+becuase there is a small race window where pte could be dirtied without
+page being set dirty?
+
+
