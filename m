@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422638AbXCGJIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422636AbXCGJKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422638AbXCGJIZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 04:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422639AbXCGJIY
+	id S1422636AbXCGJKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 04:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422637AbXCGJKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 04:08:24 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57746 "EHLO smtp.osdl.org"
+	Wed, 7 Mar 2007 04:10:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38994 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422638AbXCGJIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 04:08:21 -0500
-Date: Wed, 7 Mar 2007 01:07:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mingo@elte.hu, npiggin@suse.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes
- nonlinear)
-Message-Id: <20070307010756.b31c8190.akpm@linux-foundation.org>
-In-Reply-To: <E1HOrsL-0008Dv-00@dorka.pomaz.szeredi.hu>
-References: <20070221023656.6306.246.sendpatchset@linux.site>
-	<20070221023735.6306.83373.sendpatchset@linux.site>
-	<20070306225101.f393632c.akpm@linux-foundation.org>
-	<20070307070853.GB15877@wotan.suse.de>
-	<20070307081948.GA9563@wotan.suse.de>
-	<20070307082755.GA25733@elte.hu>
-	<E1HOrfO-0008AW-00@dorka.pomaz.szeredi.hu>
-	<20070307004709.432ddf97.akpm@linux-foundation.org>
-	<E1HOrsL-0008Dv-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1422636AbXCGJKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 04:10:40 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alexey Dobriyan <adobriyan@openvz.org>
+X-Fcc: ~/Mail/utrace
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: utrace regressions (was: -mm merge plans for 2.6.21)
+In-Reply-To: Alexey Dobriyan's message of  Wednesday, 21 February 2007 16:37:42 +0300 <20070221133742.GA11162@localhost.sw.ru>
+X-Windows: more than enough rope.
+Message-Id: <20070307091032.483341801C4@magilla.sf.frob.com>
+Date: Wed,  7 Mar 2007 01:10:29 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Mar 2007 09:51:57 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> > > Dirty page accounting doesn't work either on
-> > > non-linear mappings
-> > 
-> > It doesn't?  Confused - these things don't have anything to do with each
-> > other do they?
+> On Sat, Feb 17, 2007 at 06:35:31PM -0800, Roland McGrath wrote:
+> > > Looking at mainline x86_64 ptrace code I think hole for u_debugreg[4]
+> > > and [5] is also needed.
+> >
+> > It's not.  The utrace_regset for the debugregs already has that behavior
+> > for those two words, so mapping all 8 uarea words to the regset is fine.
 > 
-> Look in page_mkclean().  Where does it handle non-linear mappings?
+> Sorry, I don't get it. Choosing segment from x86_64_uarea is done before
+> calling regset->set and regset->get as well as before zero-filling. No
+> segment for u_debugreg[4] and [5] means -EIO before segment handlers
+> will have a chance to be called.
 > 
+> Do you want to consolidate these two?
+> 
+>     {offsetof(struct user, u_debugreg[0]), offsetof(struct user, u_debugreg[4]), 3, 0},
+>     {offsetof(struct user, u_debugreg[6]), offsetof(struct user, u_debugreg[8]), 3, 6 * sizeof(long)},
 
-OK, I'd forgotten about that.  It won't break dirty memory accounting,
-but it'll potentially break dirty memory balancing.
+Oops!  I was misremembering what was in x86_64_uarea when I wrote that.
+I've indeed fixed it to match what I thought it was:
 
-If we have the wrong page (due to nonlinear), page_check_address() will
-fail and we'll leave the pte dirty.  That puts us back to the pre-2.6.17
-algorithms and I guess it'll break the msync guarantees.
+	{offsetof(struct user, u_debugreg[0]),
+	 offsetof(struct user, u_debugreg[8]), 3, 0},
 
-Peter, I thought we went through the nonlinear problem ages ago and decided
-it was OK?
+
+Thanks,
+Roland
