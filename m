@@ -1,54 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030854AbXCHW7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030812AbXCHXBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030854AbXCHW7N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 17:59:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030856AbXCHW7N
+	id S1030812AbXCHXBR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 18:01:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030843AbXCHXBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 17:59:13 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:43927 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030854AbXCHW7L (ORCPT
+	Thu, 8 Mar 2007 18:01:17 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44597 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030812AbXCHXBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 17:59:11 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 8 Mar 2007 14:59:08 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
-In-Reply-To: <Pine.LNX.4.64.0703081410180.10832@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703081458190.4882@alien.or.mcafeemobile.com>
-References: <20070308204353.GA6733@tv-sign.ru>
- <Pine.LNX.4.64.0703081259560.7515@alien.or.mcafeemobile.com>
- <20070308215653.GA6744@tv-sign.ru> <Pine.LNX.4.64.0703081410180.10832@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Mar 2007 18:01:16 -0500
+Subject: [PATCH] Complain about missing system calls.
+From: David Woodhouse <dwmw2@infradead.org>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       rmk@arm.linux.org.uk, sam@ravnborg.org
+Content-Type: text/plain
+Date: Thu, 08 Mar 2007 23:01:13 +0000
+Message-Id: <1173394873.3461.510.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007, Linus Torvalds wrote:
+Most system calls seem to get added to i386 first. This patch
+automatically generates a warning for any new system call which is
+implemented on i386 but not the architecture currently being compiled.
+On PowerPC at the moment, for example, it results in these warnings:
+init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
+init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
+init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
 
-> 
-> 
-> On Fri, 9 Mar 2007, Oleg Nesterov wrote:
-> > 
-> > Also. A malicious user can eat all memory, signalfd_deliver()->kmem_cache_alloc()
-> > doesn't check any limits.
-> 
-> This, btw, is one reason I *really* think signalfd() should just use the 
-> same old signal queue, and not try to make its own.
-> 
-> Signal queueing and unqueuing simply isn't that simple. 
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-Alrighty. Back to the dequeue_signal ...
+index 0154aea..826433b 100644
+--- a/init/Makefile
++++ b/init/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the linux kernel.
+ #
+ 
+-obj-y                          := main.o version.o mounts.o
++obj-y                          := main.o version.o mounts.o missing_syscalls.o
+ ifneq ($(CONFIG_BLK_DEV_INITRD),y)
+ obj-y                          += noinitramfs.o
+ else
+@@ -16,11 +16,12 @@ mounts-$(CONFIG_BLK_DEV_INITRD)	+= do_mounts_initrd.o
+ mounts-$(CONFIG_BLK_DEV_MD)	+= do_mounts_md.o
+ 
+ # files to be removed upon make clean
+-clean-files := ../include/linux/compile.h
++clean-files := ../include/linux/compile.h $(obj)/missing_syscalls.h
+ 
+ # dependencies on generated files need to be listed explicitly
+ 
+ $(obj)/version.o: include/linux/compile.h
++$(obj)/missing_syscalls.o: $(obj)/missing_syscalls.h include/linux/compile.h FORCE
+ 
+ # compile.h changes depending on hostname, generation number, etc,
+ # so we regenerate it always.
+@@ -31,3 +32,13 @@ include/linux/compile.h: FORCE
+ 	@echo '  CHK     $@'
+ 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkcompile_h $@ \
+ 	"$(UTS_MACHINE)" "$(CONFIG_SMP)" "$(CONFIG_PREEMPT)" "$(CC) $(CFLAGS)"
++
++
++quiet_cmd_missing_syscalls = GEN     $@
++      cmd_missing_syscalls = sed -n '/^\#define/s/[^_]*__NR_\([^[:space:]]*\).*/\
++	\#if !defined (__NR_\1) \&\& !defined (__IGNORE_\1)\n\
++	\#warning syscall \1 not implemented\n\
++	\#endif/p' $(srctree)/include/asm-i386/unistd.h >$@
++targets += missing_syscalls.h
++$(obj)/missing_syscalls.h: include/asm-i386/unistd.h
++	$(call if_changed,missing_syscalls)
+--- /dev/null	2007-03-08 11:51:40.542628703 +0000
++++ b/init/missing_syscalls.c	2007-03-08 22:48:27.000000000 +0000
+@@ -0,0 +1,57 @@
++#include <asm/types.h>
++#include <asm/unistd.h>
++
++/* Force recompilation (and thus warnings) every time we rebuild the kernel */
++#include <linux/compile.h>
++
++/* System calls for 32-bit kernels only */
++#if BITS_PER_LONG == 64
++#define __IGNORE_sendfile64
++#define __IGNORE_ftruncate64
++#define __IGNORE_truncate64
++#define __IGNORE_stat64
++#define __IGNORE_lstat64
++#define __IGNORE_fstat64
++#define __IGNORE_fcntl64
++#define __IGNORE_fadvise64_64
++#define __IGNORE_fstatat64
++#endif
++
++/* i386-specific or historical system calls */
++#define __IGNORE_mmap2
++#define __IGNORE_vm86
++#define __IGNORE_vm86old
++#define __IGNORE_set_thread_area
++#define __IGNORE_get_thread_area
++#define __IGNORE_madvise1
++#define __IGNORE_oldstat
++#define __IGNORE_oldfstat
++#define __IGNORE_oldlstat
++#define __IGNORE_oldolduname
++#define __IGNORE_olduname
++#define __IGNORE_umount2
++/* ... including the "new" 32-bit uid syscalls */
++#define __IGNORE_lchown32
++#define __IGNORE_getuid32
++#define __IGNORE_getgid32
++#define __IGNORE_geteuid32
++#define __IGNORE_getegid32
++#define __IGNORE_setreuid32
++#define __IGNORE_setregid32
++#define __IGNORE_getgroups32
++#define __IGNORE_setgroups32
++#define __IGNORE_fchown32
++#define __IGNORE_setresuid32
++#define __IGNORE_getresuid32
++#define __IGNORE_setresgid32
++#define __IGNORE_getresgid32
++#define __IGNORE_chown32
++#define __IGNORE_setuid32
++#define __IGNORE_setgid32
++#define __IGNORE_setfsuid32
++#define __IGNORE_setfsgid32
++
++/* Not yet upstream */
++#define __IGNORE_vserver
++
++#include "missing_syscalls.h"
 
 
-
-- Davide
-
+-- 
+dwmw2
 
