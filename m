@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030279AbXCHIc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXCHIfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030279AbXCHIc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 03:32:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030280AbXCHIc7
+	id S1030284AbXCHIfz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 03:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030288AbXCHIfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 03:32:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36115 "EHLO
+	Thu, 8 Mar 2007 03:35:55 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41846 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030279AbXCHIc6 (ORCPT
+	with ESMTP id S1030284AbXCHIfy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 03:32:58 -0500
-Date: Thu, 8 Mar 2007 08:32:56 +0000
+	Thu, 8 Mar 2007 03:35:54 -0500
+Date: Thu, 8 Mar 2007 08:35:43 +0000
 From: Christoph Hellwig <hch@infradead.org>
-To: David Brown <dmlb2000@gmail.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PAGE_SIZE Availability Inconsistency
-Message-ID: <20070308083256.GB3532@infradead.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Christoph Hellwig <hch@infradead.org>, Deepak Saxena <dsaxena@plexity.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix building kernel under Solaris
+Message-ID: <20070308083543.GA5213@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	David Brown <dmlb2000@gmail.com>,
-	Roman Zippel <zippel@linux-m68k.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com> <20070306092917.GA5226@infradead.org> <200703080318.04631.zippel@linux-m68k.org> <9c21eeae0703072128i3c63b31em3d132a6691976bf4@mail.gmail.com>
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Deepak Saxena <dsaxena@plexity.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070306180940.GA3240@plexity.net> <20070307094229.GG14863@infradead.org> <Pine.LNX.4.61.0703072342310.2448@yvahk01.tjqt.qr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <9c21eeae0703072128i3c63b31em3d132a6691976bf4@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.61.0703072342310.2448@yvahk01.tjqt.qr>
 User-Agent: Mutt/1.4.2.2i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 09:28:15PM -0800, David Brown wrote:
-> >While I agree, NBPG is a bit of a problem, although it's only needed for 
-> >aout
-> >coredumps AFAICT, but still needed to compile e.g. gdb.
+On Wed, Mar 07, 2007 at 11:45:11PM +0100, Jan Engelhardt wrote:
 > 
-> Well then how does gdb deal with ia64? because PAGE_SIZE and friends
-> aren't available for that arch same with ppc.
+> On Mar 7 2007 09:42, Christoph Hellwig wrote:
+> >>  #include <sys/time.h>
+> >>  #include <sys/ioctl.h>
+> >>  #include <sys/types.h>
+> >> +#ifndef __sun__
+> >>  #include <asm/types.h>
+> >>  #endif
+> >> +#endif
+> >
+> >So if solaris doesn't need it, why do we need it on Linux?
+> 
+> For __s32 and __s16.
 
-Neither of them support aout core dumps.
-
+We shouldn't use those from asm/types.h on Linux either, but
+get them consitantly by defining them to the C99 or BSD types
+from the libc headers.
