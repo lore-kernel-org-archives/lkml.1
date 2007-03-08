@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933245AbXCHT5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933239AbXCHT7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933245AbXCHT5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 14:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933242AbXCHT5Q
+	id S933239AbXCHT7y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 14:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933242AbXCHT7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 14:57:16 -0500
-Received: from p02c11o143.mxlogic.net ([208.65.145.66]:43335 "EHLO
-	p02c11o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933236AbXCHT5O (ORCPT
+	Thu, 8 Mar 2007 14:59:54 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58315 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933239AbXCHT7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 14:57:14 -0500
-Date: Thu, 8 Mar 2007 21:57:35 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 8 Mar 2007 14:59:53 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Adrian Bunk <bunk@stusta.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Message-ID: <20070308195735.GG17114@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       <linux-pci@atrey.karlin.mff.cuni.cz>, michael@ellerman.id.au
+Subject: [PATCH 0/2] Repair pci_restore_state when used with device resets
+References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
+	<20070305084257.GA4464@mellanox.co.il>
+	<20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org>
+	<45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>
+	<45ED8A12.5040803@intel.com>
+	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
+	<45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com>
+	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>
+	<20070307185317.5601d452.akpm@linux-foundation.org>
+	<m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
+	<45EFDD8C.3070702@garzik.org>
+	<m1abyn7iin.fsf@ebiederm.dsl.xmission.com>
+Date: Thu, 08 Mar 2007 12:58:02 -0700
+In-Reply-To: <m1abyn7iin.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
+	message of "Thu, 08 Mar 2007 10:27:28 -0700")
+Message-ID: <m1tzwv5wz9.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
-X-OriginalArrivalTime: 08 Mar 2007 19:59:45.0689 (UTC) FILETIME=[51C3F090:01C761BC]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1526-3.6.1039-15042.000
-X-TM-AS-Result: No--8.101200-4.000000-4
-X-Spam: [F=0.4550880124; S=0.455(2007030701)]
-X-MAIL-FROM: <mst@mellanox.co.il>
-X-SOURCE-IP: [194.90.237.34]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 2. First disk access after resume takes a couple of minutes
-> >    (seemed instant with 2.6.20) during this time no new messages show on console
-> 
-> Yeah, there is some problem with SATA resume. It would be beautiful if the 
-> people who actually see this could narrow it down with bisection. "It 
-> works for me" is clearly the case for many people, but not all.
 
-Problem is, there seem to be multiple problems some of which got
-fixed between rc2 and rc3.
-With rc2 I didn't get as far as getting to console.
+Well this is clearly a weird tangent from the topic of this thread but
+it looks to have found some real bugs even if they aren't the ones we
+are looking for.
 
--- 
-MST
+In short pci_save_state and pci_restore_state are used to two primary
+was:  As a pair called from the suspend and restore routines.  One save
+to multiple restores usually present in hardware reset routines.
+
+The additions to save/restore msi, pci-e and pci-x state failed to take
+this second usage scenario into account.
+
+The next two patches address this problem.
+
+This should directly fix the issue observed with the tg3, with multiple
+saves and a single restore.
+
+It happens that to handle the reset case cleanly we also need to support
+the odd usage model of the current e1000 driver.  
+
+I have never have figured out how to get suspend/resume actually
+working on any of my machines so the code path is untested.   But the
+patches are trivial and pretty much obviously correct.
+
+So if a couple people could do a quick suspend/resume test on these
+patches to confirm I'm not blind that would be great.
+
+Eric
