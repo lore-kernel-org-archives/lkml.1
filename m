@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXCHTrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbXCHTwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933174AbXCHTrJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 14:47:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933231AbXCHTrJ
+	id S933102AbXCHTwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 14:52:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXCHTwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 14:47:09 -0500
-Received: from p02c11o144.mxlogic.net ([208.65.145.67]:55268 "EHLO
-	p02c11o144.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933144AbXCHTrG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 14:47:06 -0500
-Date: Thu, 8 Mar 2007 21:47:23 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Message-ID: <20070308194723.GF17114@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308190642.GA30517@elte.hu>
+	Thu, 8 Mar 2007 14:52:44 -0500
+Received: from gw.goop.org ([64.81.55.164]:50572 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933102AbXCHTwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 14:52:43 -0500
+Message-ID: <45F06989.8030207@goop.org>
+Date: Thu, 08 Mar 2007 11:52:41 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070308190642.GA30517@elte.hu>
-User-Agent: Mutt/1.5.11
-X-OriginalArrivalTime: 08 Mar 2007 19:49:33.0951 (UTC) FILETIME=[E52420F0:01C761BA]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1526-3.6.1039-15042.000
-X-TM-AS-Result: No--13.358200-4.000000-31
-X-Spam: [F=0.2815231650; S=0.281(2007030701)]
-X-MAIL-FROM: <mst@mellanox.co.il>
-X-SOURCE-IP: [194.90.237.34]
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Daniel Arai <arai@vmware.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com> <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F06720.8080901@goop.org> <20070308194740.GJ10574@sequoia.sous-sol.org>
+In-Reply-To: <20070308194740.GJ10574@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Ingo Molnar <mingo@elte.hu>:
-> Subject: Re: [2/6] 2.6.21-rc2: known regressions
-> 
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > > 3. When I switch to X (CTRL-ALT-F7), X hangs after drawing a couple of windows
-> > >    after waiting for some 10 min, I rebooted. no new messages showed 
-> > >    up in /var/log/messages
-> > 
-> > I think this is likely just more of the disk being buggered, but it 
-> > could again be related to NO_HZ (people report time not advancing, and 
-> > that would make any X timeout taking forever, and you'd see exactly 
-> > your behaviour).
-> 
-> Michael - does your 'date' output advance after resume? If not then i'd 
-> say it's a NO_HZ related problem. If yes then i'd guess it's the SATA 
-> problem.
+Chris Wright wrote:
+> I agree with that, but I think that's esp. for things like create and launch
+> new vcpu.  The IPI bit I'm not as clear on, nor running this all on native
+> as well.
+>   
 
-I'll test, but I have NO_HZ off for now.
+Well, native would fall back to using the existing arch/i386 versions of
+those functions, so that's reasonably straightforward.  There'll need to
+be a bit of internal rearrangement so that the Xen code can call in to
+do things like set up the pda/gdt and other bits of CPU state.
 
--- 
-MST
+I don't think IPI is especially interesting in itself, is it?   It's a
+necessary mechanism to implement smp_call_function(), but Xen can do IPI
+without having to invoke any of the existing apic-based IPI code.  The
+other main user of IPI is cross-cpu tlb shootdown, but Xen has much more
+efficient mechanisms than IPI for that (so we'll need to make the tlb
+pv_ops interface a little wider to pass down a cpuset).
+
+    J
