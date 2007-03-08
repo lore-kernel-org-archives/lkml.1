@@ -1,103 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030637AbXCHKGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030555AbXCHKGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030637AbXCHKGL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 05:06:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030658AbXCHKGL
+	id S1030555AbXCHKGv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 05:06:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030665AbXCHKGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 05:06:11 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52968 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030637AbXCHKGJ (ORCPT
+	Thu, 8 Mar 2007 05:06:50 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:44663 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030555AbXCHKGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 05:06:09 -0500
-Message-ID: <45EFE010.7080108@vmware.com>
-Date: Thu, 08 Mar 2007 02:06:08 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: tglx@linutronix.de, Jeremy Fitzhardinge <jeremy@goop.org>,
-       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pratap Subrahmanyam <pratap@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Daniel Hecht <dhecht@vmware.com>, Daniel Arai <arai@vmware.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: hardwired VMI crap
-References: <45EE1EA3.90803@vmware.com> <1173256666.24738.576.camel@localhost.localdomain> <45EEF966.6060902@goop.org> <Line.LNX.4.64.0703071304080.1851@d.namei> <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com> <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <20070308091019.GA19460@elte.hu>
-In-Reply-To: <20070308091019.GA19460@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Mar 2007 05:06:48 -0500
+Date: Thu, 8 Mar 2007 15:43:47 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: menage@google.com, sam@vilain.net, akpm@linux-foundation.org, pj@sgi.com,
+       dev@sw.ru, xemul@sw.ru, serue@us.ibm.com, containers@lists.osdl.org,
+       winget@google.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH 1/2] rcfs core patch
+Message-ID: <20070308101347.GA29051@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Zachary Amsden <zach@vmware.com> wrote:
->
->   
->> The correct solution here is to properly separate the APIC, SMP, and 
->> timer code so the logic of it which we want to reuse is separated from 
->> the hardware dependence.  Clock events and clocksources take care of 
->> most of the timer issues, but there is still ugliness from SMP timer 
->> events depending on having part of the APIC infrastructure for wiring 
->> the interrupt gates.
->>     
->
-> what are you talking about? A clockevents driver does not need to know 
-> about lapic details, at all. In terms of interrupt gates for the 
-> hypervisor to notify about clock events - use a virtual interrupt 
-> controller via genirq.
->   
+On Wed, Mar 07, 2007 at 08:12:00PM -0700, Eric W. Biederman wrote:
+> The review is still largely happening at the why level but no
+> one is addressing that yet.  So please can we have a why.
 
-See my last e-mail.  It is not possible on i386, since local per-cpu 
-interrupts are only supported via the APIC.
+Here's a brief summary of what's happening and why. If its not clear, pls get 
+back to us with specific questions.
 
-> if you want to use hardwired hardware details as your API: DO IT WITHOUT 
-> MODIFYING LINUX. If you want anything more intelligent, something more 
-> 'paravirtual' - WORK WITH US AND WORK WITH THE OTHER HYPERVISORS. So far 
-> all i've seen from you was excuses and stonewalling on every step! We 
->   
+There have been various projects attempting to provide resource
+management support in Linux, including CKRM/Resource Groups and UBC.
+Each had its own task-grouping mechanism. 
 
-So far, all you have done is not complain about our code until it was 
-merged, the pursue every tactic possible to break it.  It is not us that 
-are stonewalling.
+Paul Menage observed [1] that cpusets in the kernel already has a grouping
+mechanism which was working well for cpusets. He went ahead and
+generalized the grouping code in cpusets so that it could be used for
+overall resource management purpose. With his patches, it is possible to
+even create multiple hierarchies of groups (see [2] on why multiple
+hierarchies) as follows:
 
-> told you about the need to do VMI-timer ontop of clockevents last year 
-> already! You resisted virtually EVERY SINGLE cleanup suggestion since 
-> your stuff got upstream and you ONLY acted when a change was force-fed 
-> to you. Just count the number of emails you wrote, versus the patches 
-> you did. And your code is barely 2 weeks in! That is unacceptable.
+mount -t container -o cpuset none /dev/cpuset	<- cpuset hierarchy
+mount -t container -o mem,cpu none /dev/mem	<- memory/cpu hierarchy
+mount -t container -o disk none /dev/disk	<- disk hierarchy
 
-Which cleanups have we resisted in particular?  I can't recall any.  
-Just count the number of emails you wrote versus the patches and helpful 
-suggestions you made.  No, instead, you broke our code, in many ways, 
-with the untouchable aim of cleaning up the kernel source to do things 
-the way you think they should be done in a future release.
+In each hierarchy, you can create task groups and manipulate the
+resource parameters of each group. You can also move tasks between
+groups at run-time (see [3] on why this is required). Each hierarchy is also 
+manipulated independent of the other. 
 
-Our code is in the tree now, and any attempts to break it using such 
-justifications as easing maintenance for kernel developers in future 
-releases are flat out false and improper.  We are working to correct 
-flaws that we have and properly conform to the changing interfaces such 
-as the timer subsystem, and also to interoperate properly with the full 
-set of available configurations.
+Paul's patches also introduced a 'struct container' in the kernel, which
+serves these key purposes:
 
-In the meantime, having code that uses slightly older interfaces in the 
-kernel tree is not wrong in any way - it is pragmatic, because that code 
-is working today, and not only that, the sanest thing to do in a release 
-cycle.  And our code in the tree to be released imposes zero burden on 
-anyone except for us.  Are we stopping you from rewriting the timer 
-subsystem in the -rc tree?  How?  Because this code is supposed to be 
-settled.  Your deliberate breaking of our code forces us to come up with 
-workarounds that might be considered inappropriate, but nevertheless, 
-necessary.  Who has to deal with and adapt to this?  Certainly not you.  
-The burden to maintain the correctness of our code is on us.
+- Task-grouping
+	'struct container' represents a task-group created in each hierarchy. 
+	So every directory created under /dev/cpuset or /dev/mem above will
+	have a corresponding 'struct container' inside the kernel.
+	All tasks pointing to the same 'struct container' are considered
+	to be part of a group
 
-Working together to make sure that this code completely integrates with 
-all this new development is the right thing to do - in the development 
-tree.  Why you insist on stopping our code in the tip kernel release 
-tree is beyond me, as there is no purpose to it other than to block our 
-code.
+	The 'struct container' in turn has pointers to resource objects 
+	which store actual resource parameters for that group. In above
+	example, 'struct container' created under /dev/cpuset will have a 
+	pointer to 'struct cpuset' while 'struct container' created
+	under /dev/disk will have pointer to 'struct disk_quota_or_whatever'.
 
-Zach
+- Maintain hierarchical information
+	The 'struct container' also keeps track of hierarchical relationship 
+	between groups.
+
+The filesystem interface in the patches essentially serves these
+purposes:
+
+	- Provide an interface to manipulate task-groups. This includes
+	  creating/deleting groups, listing tasks present in a group and 
+	  moving tasks across groups
+
+	- Provdes an interface to manipulate the resource objects
+	  (limits etc) pointed to by 'struct container'.
+
+As you know, the introduction of 'struct container' was objected to and
+was felt redundant as a means to group tasks. Thats where I took a shot
+at converting over Paul Menage's patch to avoid 'struct container'
+abstraction and insead work with 'struct nsproxy'. In the rcfs patch,
+each directory (in /dev/cpuset or /dev/disk) is associated with a
+'struct nsproxy' instead. The most important need of the filesystem
+interface is not to manipulate the nsproxy objects directly, but to manipulate
+the resource objects (nsproxy->ctlr_data[] in the patches) which store 
+information like limit etc.
+
+> I have a question?  What does rcfs look like if we start with
+> the code that is in the kernel?  That is start with namespaces
+> and nsproxy and just build a filesystem to display/manipulate them?
+> With the code built so it will support adding resource controllers
+> when they are ready?
+
+If I am not mistaken, Serge did attempt something in that direction,
+only that it was based on Paul's container patches. rcfs can no doubt
+support the same feature.
+
+> >  	struct ipc_namespace *ipc_ns;
+> >  	struct mnt_namespace *mnt_ns;
+> >  	struct pid_namespace *pid_ns;
+> > +#ifdef CONFIG_RCFS
+> > +	struct list_head list;
+> 
+> This extra list of nsproxy's is unneeded and a performance problem the
+> way it is used.  In general we want to talk about the individual resource
+> controllers not the nsproxy.
+
+I think if you consider the multiple hierarchy picture, the need becomes
+obvious.
+
+Lets say that you had these hierarchies : /dev/cpuset, /dev/mem, /dev/disk
+and the various resource classes (task-groups) under them as below:
+
+	/dev/cpuset/C1, /dev/cpuset/C1/C11, /dev/cpuset/C2
+	/dev/mem/M1, /dev/mem/M2, /dev/mem/M3
+	/dev/disk/D1, /dev/disk/D2, /dev/disk/D3
+
+The nsproxy structure basically has pointers to a resource objects in
+each of these hierarchies. 
+
+	nsproxy { ..., C1, M1, D1} could be one nsproxy
+	nsproxy { ..., C1, M2, D3} could be another nsproxy and so on
+
+So you see, because of multi-hierachies, we can have different
+combinations of resource classes.
+
+When we support task movement across resource classes, we need to find a
+nsproxy which has the right combination of resource classes that the
+task's nsproxy can be hooked to.
+
+That's where we need the nsproxy list. Hope this makes it clear.
+
+> > +	void *ctlr_data[CONFIG_MAX_RC_SUBSYS];
+> 
+> I still don't understand why these pointers are so abstract,
+> and why we need an array lookup into them?
+
+we can avoid these abstract pointers and instead have a set of pointers
+like this:
+
+	struct nsproxy {
+		...
+		struct cpu_limit *cpu;	/* cpu control namespace */
+		struct rss_limit *rss;	/* rss control namespace */
+		struct cpuset *cs;	/* cpuset namespace */
+
+	}
+
+But that will make some code (like searching for a right nsproxy when a
+task moves across classes/groups) very awkward.
+
+> I'm still inclined to think this should be part of /proc, instead of a purely
+> separate fs.  But I might be missing something.
+
+A separate filesystem would give us more flexibility like the
+implementing multi-hierarchy support described above.
+
+-- 
+Regards,
+vatsa
+
+
+References:
+
+1. http://lkml.org/lkml/2006/09/20/200 
+2. http://lkml.org/lkml/2006/11/6/95
+3. http://lkml.org/lkml/2006/09/5/178
+
