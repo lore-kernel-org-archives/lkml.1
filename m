@@ -1,250 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965758AbXCHHv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751416AbXCHH7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965758AbXCHHv5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 02:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965211AbXCHHv5
+	id S1751416AbXCHH7y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 02:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbXCHH7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 02:51:57 -0500
-Received: from mx33.mail.ru ([194.67.23.194]:27259 "EHLO mx33.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965164AbXCHHvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 02:51:55 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
-Date: Thu, 8 Mar 2007 10:51:42 +0300
-User-Agent: KMail/1.9.6
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@ucw.cz>
-References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411> <200702252014.26110.arvidjaar@mail.ru> <200703052307.58499.rjw@sisk.pl>
-In-Reply-To: <200703052307.58499.rjw@sisk.pl>
+	Thu, 8 Mar 2007 02:59:54 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:44969 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbXCHH7x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 02:59:53 -0500
+Message-ID: <45EFC246.4050807@linux.vnet.ibm.com>
+Date: Thu, 08 Mar 2007 13:29:02 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2080766.JnLvlFGA27";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: bert hubert <bert.hubert@netherlabs.nl>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: userspace pagecache management tool
+References: <20070303122935.f1ab0067.akpm@linux-foundation.org> <45E9DD4A.2060806@redhat.com> <20070303131204.6706a95c.akpm@linux-foundation.org> <45E9E910.2070804@redhat.com> <20070303214108.GA28961@outpost.ds9a.nl> <20070303141448.1ed70e6d.akpm@linux-foundation.org> <45E9F454.2080600@redhat.com> <20070303142609.d3bc9cc3.akpm@linux-foundation.org> <20070303230155.GA475@outpost.ds9a.nl> <20070303154541.70aed9df.akpm@linux-foundation.org>
+In-Reply-To: <20070303154541.70aed9df.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200703081051.44272.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2080766.JnLvlFGA27
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Tuesday 06 March 2007, Rafael J. Wysocki wrote:
-> [changed Cc list]
->
-> On Sunday, 25 February 2007 18:14, Andrey Borzenkov wrote:
-> > On =D0=92=D0=BE=D1=81=D0=BA=D1=80=D0=B5=D1=81=D0=B5=D0=BD=D1=8C=D0=B5 2=
-5 =D1=84=D0=B5=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki wrote:
-> > > On Sunday, 25 February 2007 11:37, Andrey Borzenkov wrote:
-> > > > On =D0=92=D0=BE=D1=81=D0=BA=D1=80=D0=B5=D1=81=D0=B5=D0=BD=D1=8C=D0=
-=B5 25 =D1=84=D0=B5=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki w=
-rote:
-> > > > > On Sunday, 25 February 2007 00:26, Andrey Borzenkov wrote:
-> > > > > > On =D0=A1=D1=83=D0=B1=D0=B1=D0=BE=D1=82=D0=B0 24 =D1=84=D0=B5=
-=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki wrote:
-> > > > > > > Hi,
-> > > > > > >
-> > > > > > > On Saturday, 24 February 2007 10:55, Andrey Borzenkov wrote:
-> > > > > > > > On =D0=92=D1=82=D0=BE=D1=80=D0=BD=D0=B8=D0=BA 13 =D1=84=D0=
-=B5=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Andrey Borzenkov wrote:
-> > > > > > > > > On =D0=A7=D0=B5=D1=82=D0=B2=D0=B5=D1=80=D0=B3 07 =D0=B4=
-=D0=B5=D0=BA=D0=B0=D0=B1=D1=80=D1=8F 2006, Lebedev, Vladimir P wrote:
-> > > > > > > > > > Please register new bug, attach acpidump and dmesg.
-> > > > > > > > >
-> > > > > > > > > http://bugzilla.kernel.org/show_bug.cgi?id=3D7995
-> > > > > > > > >
-> > > > > > > > > regards
-> > > > > > > >
-> > > > > > > > Well, this starts looking like ACPI is not at fault.
-> > > > > > > >
-> > > > > > > > When reporting AC state ACPI just reads contents of system
-> > > > > > > > memory (I presume it gets updated by BIOS/ACPI when AC state
-> > > > > > > > changes). It looks like this memory area is restored during
-> > > > > > > > resume from STD. I updated mentioned bug report with more
-> > > > > > > > detailed description. Now if someone could suggest a way to
-> > > > > > > > catch if specific physical address gets saved/restored this
-> > > > > > > > would finally explain it.
-> > > > > > >
-> > > > > > > First, if you want the reserved memory areas to be left alone
-> > > > > > > by swsusp, you need to mark them as 'nosave'.  On x86_64 this
-> > > > > > > is done by the function e820_mark_nosave_range() in
-> > > > > > > arch/x86_64/kernel/e820.c that can be ported to i386 with no
-> > > > > > > problems.  However, we haven't found that very useful, so far,
-> > > > > > > since no one has ever reported any problems with the current
-> > > > > > > approach, which is to save and restore them.
-> > > > > >
-> > > > > > Well, the following proof of concept patch fixes this issue for
-> > > > > > me. Please notice that original version of
-> > > > > > e820_mark_nosave_range() could fail to exclude some areas due to
-> > > > > > alignment issues (exactly what happened to me on first try) so =
-it
-> > > > > > still can explain your problem too.
-> > > > >
-> > > > > Great job, thanks for the patch!  It looks good, so I'm going to
-> > > > > forward it for merging.
-> > > >
-> > > > Please no; I'm currently testing slightly more polished version; I
-> > > > will send it later.
-> > >
-> > > OK
-> > >
-> > > > Could anybody explain (or give pointer to) what happens which region
-> > > > that is not page-aligned? In particular, the very first one:
-> > > >
-> > > >  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-> > > >  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-> > > >
-> > > > Will the kernel allocate partial page (how?) or will the kernel
-> > > > ignore last (first) incomplete page? In the former case how those
-> > > > incomplete pages can be detected?
-> > >
-> > > Well, on x86_64, if I understand e820_register_active_regions()
-> > > correctly, the partial pages won't be registered.
-> >
-> > It appears that for low memory kernel will ignore incomplete pages for
-> > sure. I hope it does the same for high memory - but for now I just throw
-> > this in and pray :) This also significantly simplifies patch.
->
-> Well, can you please check if the appended modification of your patch sti=
-ll
-> works?
->
-
-It works for me with caveat
-
-/home/bor/src/linux-git/arch/i386/kernel/e820.c: In=20
-function =E2=80=98e820_mark_nosave_range=E2=80=99:
-/home/bor/src/linux-git/arch/i386/kernel/e820.c:328: warning: format =E2=80=
-=98%016Lx=E2=80=99=20
-expects type =E2=80=98long long unsigned int=E2=80=99, but argument 2 has t=
-ype =E2=80=98long unsigned=20
-int=E2=80=99
-/home/bor/src/linux-git/arch/i386/kernel/e820.c:328: warning: format =E2=80=
-=98%016Lx=E2=80=99=20
-expects type =E2=80=98long long unsigned int=E2=80=99, but argument 3 has t=
-ype =E2=80=98long unsigned=20
-int=E2=80=99
-
-regards=20
-
-=2Dandrey
-
-> Thanks,
-> Rafael
->
->
-> ---
->  arch/i386/kernel/e820.c  |   47
-> +++++++++++++++++++++++++++++++++++++++++++++++ arch/i386/kernel/setup.c =
-|=20
->   1 +
->  include/asm-i386/e820.h  |    1 +
->  3 files changed, 49 insertions(+)
->
-> Index: linux-2.6.21-rc2/arch/i386/kernel/e820.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.21-rc2.orig/arch/i386/kernel/e820.c
-> +++ linux-2.6.21-rc2/arch/i386/kernel/e820.c
-> @@ -313,6 +313,53 @@ static int __init request_standard_resou
->
->  subsys_initcall(request_standard_resources);
->
-> +/*
-> + * Mark pages corresponding to given pfn range as 'nosave'.
-> + */
-> +static void __init
-> +e820_mark_nosave_range(unsigned long start_pfn, unsigned long end_pfn)
-> +{
-> +	unsigned long pfn;
-> +
-> +	if (start_pfn >=3D end_pfn)
-> +		return;
-> +
-> +	printk("Nosave address range: %016Lx - %016Lx\n",
-> +				PFN_PHYS(start_pfn), PFN_PHYS(end_pfn));
-> +	for (pfn =3D start_pfn; pfn < end_pfn; pfn++)
-> +		if (pfn_valid(pfn))
-> +			SetPageNosave(pfn_to_page(pfn));
-> +}
-> +
-> +/*
-> + * Find the ranges of physical addresses that do not correspond to
-> + * e820 RAM areas and mark the corresponding pages as nosave for software
-> + * suspend and suspend to RAM.
-> + *
-> + * This function requires the e820 map to be sorted and without any
-> + * overlapping entries and assumes the first e820 area to be RAM.
-> + */
-> +void __init e820_mark_nosave_regions(void)
-> +{
-> +	int i;
-> +	unsigned long pfn;
-> +
-> +	pfn =3D PFN_DOWN(e820.map[0].addr + e820.map[0].size);
-> +	for (i =3D 1; i < e820.nr_map; i++) {
-> +		struct e820entry *ei =3D &e820.map[i];
-> +
-> +		if (pfn < PFN_UP(ei->addr))
-> +			e820_mark_nosave_range(pfn, PFN_UP(ei->addr));
-> +
-> +		pfn =3D PFN_DOWN(ei->addr + ei->size);
-> +		if (ei->type !=3D E820_RAM)
-> +			e820_mark_nosave_range(PFN_UP(ei->addr), pfn);
-> +
-> +		if (pfn >=3D max_low_pfn)
-> +			break;
-> +	}
-> +}
-> +
->  void __init add_memory_region(unsigned long long start,
->  			      unsigned long long size, int type)
->  {
-> Index: linux-2.6.21-rc2/arch/i386/kernel/setup.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.21-rc2.orig/arch/i386/kernel/setup.c
-> +++ linux-2.6.21-rc2/arch/i386/kernel/setup.c
-> @@ -648,6 +648,7 @@ void __init setup_arch(char **cmdline_p)
->  #endif
->
->  	e820_register_memory();
-> +	e820_mark_nosave_regions();
->
->  #ifdef CONFIG_VT
->  #if defined(CONFIG_VGA_CONSOLE)
-> Index: linux-2.6.21-rc2/include/asm-i386/e820.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.21-rc2.orig/include/asm-i386/e820.h
-> +++ linux-2.6.21-rc2/include/asm-i386/e820.h
-> @@ -43,6 +43,7 @@ extern void register_bootmem_low_pages(u
->  extern void e820_register_memory(void);
->  extern void limit_regions(unsigned long long size);
->  extern void print_memory_map(char *who);
-> +extern void e820_mark_nosave_regions(void);
->
->  #endif/*!__ASSEMBLY__*/
 
 
+Andrew Morton wrote:
+> On Sun, 4 Mar 2007 00:01:55 +0100 bert hubert <bert.hubert@netherlabs.nl> wrote:
+> 
+>> On Sat, Mar 03, 2007 at 02:26:09PM -0800, Andrew Morton wrote:
+>>>>> It is *not* a global instruction.  It uses setenv, so the user's policy
+>>>>> affects only the target process and its forked children.
+>>>> ... and all other processes accessing the same file(s)!
+>>>>
+>>>> Your library and the system calls may be limited to one process,
+>>>> but the consequences are global.
+>>> Yes.  So what?  If the user wants to go and evict libc.so from pagecache
+>>> then he can do so - the kernel has provided syscalls with which this can be
+>>> done for at least seven years.  Bad user, shouldn't do that.
+>> While I agree with your sentiments that userspace can have a good idea on
+>> how to deal with the page cache, your program does more than it claims to
+>> do - because of how linux implements posix_fadvise.
+>>
+>> I don't think anybody expects or desires your program to actually *evict*
+>> the stuff from the cache you are trying access, which happens in case the
+>> data was in the cache prior to starting your program.
+>>
+>> What people expect is that a solution such as you wrote it simply won't
+>> *add* anything to the cache. They don't expect it will actually globally
+>> *remove* stuff from the cache.
+>>
+>> Making a backup this way would hurt even worse than usual with your
+>> pagecache management tool if the file being backupped was still being read.
+>>
+>> This is not your fault, but in practice, it makes your program less useful
+>> than it could be.
+> 
+> yup.  As I said, it's a proof-of-concept.  It's a project.  And I have about one
+> free femtosecond per fortnight :(
+> 
+>> One could conceivably fix that up using mincore and simply not fadvise if a
+>> page was in core already.
+> 
+> Yes.  Let's flesh it out the backup program policy some more:
+> 
+> - Unconditionally invalidate output files
+> 
+> - on entry to read(), probe pagecache, record which pages in the range are present
+> 
+> - on entry to next read(), shoot down those pages from the previous read
+>   which weren't in pagecache.
+> 
+> - But we can do better!  LRU the page's files up to a certain number of pages.
+> 
+> - Once that point is exceeded, we need to reclaim some pages.  Which
+>   ones?  Well, we've been observing all reads, so we can record which pages
+>   were referenced once, and which ones were referenced multiple times so we
+>   can do arbitrarily complex page aging in there.
+> 
+> - On close(), nuke all pages which weren't in core during open(), even if
+>   this app referenced them multiple times.
+> 
+> - If the backup program decided to read its input files with mmap we're
+>   rather screwed.  We can't intercept pagefaults so the best we can do is
+>   to restore the file's pagecache to its previous state on close().
+> 
+>   Or if it's really a problem, get control in there somehow and
+>   periodically poll the pagecache occupancy via mincore(), use madvise()
+>   then fadvise() to trim it back.
+> 
+> That all sounds reasonably doable.  It'd be pretty complex to do it
+> in-kernel but we could do it there too.  Problem is if course that the
+> above strategy is explicitly optimised for the backup program and if it's
+> in-kernel it becomes applicable to all other workloads.
 
---nextPart2080766.JnLvlFGA27
-Content-Type: application/pgp-signature
+This strategy looks very good.  However we are not considering the
+performance impact on the 'backup' application as such.  By removing
+pagecache pages brought in by the application without the knowledge of
+the applications usage and behavior may severely affect its performance.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Certainly we are interested in improving system performance at the
+cost certain applications, but not to an extend that the backup
+process will drag on and on to an unreasonable amount of time.
 
-iD8DBQBF78CQR6LMutpd94wRAsuEAJ9d3DWUQhSR2Wf2RPtvX7a7225KvACfUnPZ
-BwLtqCGQzogg9aeRn5c5D8w=
-=sOQc
------END PGP SIGNATURE-----
+Also backup processes may consist of a group of applications working
+on the same stream of data.  Like compression program, encryption
+program etc which could be independent applications.
 
---nextPart2080766.JnLvlFGA27--
+We should consider having a limit on pagecache usage rather than
+denying any space in the pagecache for these applications.
+
+Can fadvice() be enhanced to have a limit on pagecache usage and
+reclaim used pages in LRU order?  This way data stays for a little
+while for other applications to pickup from pagecache.
+
+Pages already in memory or brought in by other applications need not
+be placed in this list and hence we prevent any collateral pageouts.
+
+
