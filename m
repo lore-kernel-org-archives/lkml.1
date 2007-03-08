@@ -1,76 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965109AbXCHHnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965194AbXCHHsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965109AbXCHHnw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 02:43:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965071AbXCHHnw
+	id S965194AbXCHHsz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 02:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965071AbXCHHsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 02:43:52 -0500
-Received: from mx2.go2.pl ([193.17.41.42]:52645 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964978AbXCHHnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 02:43:51 -0500
-Date: Thu, 8 Mar 2007 08:47:51 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Simon Arlott <simon@arlott.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sridhar Samudrala <sri@us.ibm.com>, netdev@vger.kernel.org,
-       lksctp-developers@lists.sourceforge.net
-Subject: [PATCH][SCTP] Re: lockdep: inconsistent lock state ipv6_add_addr/sctp_v6_copy_addrlist (2.6.21-rc1)
-Message-ID: <20070308074751.GA2085@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E15215.4070600@simon.arlott.org.uk>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 8 Mar 2007 02:48:55 -0500
+Received: from mtaout1.012.net.il ([84.95.2.1]:12299 "EHLO mtaout1.012.net.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965194AbXCHHsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 02:48:54 -0500
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Mar 2007 02:48:54 EST
+Date: Thu, 08 Mar 2007 09:43:47 +0200
+From: Avi Kivity <avi@argo.co.il>
+Subject: Re: Wanted: simple, safe x86 stack overflow detection
+In-reply-to: <20070307144816.GQ18774@holomorphy.com>
+To: Bill Irwin <bill.irwin@oracle.com>, Arjan van de Ven <arjan@infradead.org>,
+       Hugh Dickins <hugh@veritas.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <45EFBEB3.20708@argo.co.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+X-Greylist: Sender IP whitelisted,
+ not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Thu,
+ 08 Mar 2007 09:43:47 +0200 (IST)
+References: <45E5913D.3080505@redhat.com>
+ <20070228204144.GA32316@one.firstfloor.org>
+ <20070304015031.GA4224@holomorphy.com> <45EDBA1B.8050007@redhat.com>
+ <Pine.LNX.4.64.0703061937450.19813@blonde.wat.veritas.com>
+ <20070306203432.GD18774@holomorphy.com>
+ <1173241715.3236.16.camel@laptopd505.fenrus.org>
+ <20070307064423.GH18774@holomorphy.com>
+ <1173270892.3176.4.camel@laptopd505.fenrus.org>
+ <20070307144816.GQ18774@holomorphy.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25-02-2007 10:08, Simon Arlott wrote:
-> This happens on every boot if more information is needed:
-> 
-> [   37.393715] =================================
-> [   37.393830] [ INFO: inconsistent lock state ]
-> [   37.393881] 2.6.21-rc1-git #146
-> [   37.393929] ---------------------------------
-> [   37.393979] inconsistent {softirq-on-R} -> {in-softirq-W} usage.
-> [   37.394040] hotplug/1072 [HC0[0]:SC1[2]:HE1:SE0] takes:
-> [   37.394092]  (&ndev->lock){-+-?}, at: [<b04a7944>] ipv6_add_addr+0x164/0x1e0
-> [   37.394308] {softirq-on-R} state was registered at:
-> [   37.394359]   [<b013fc42>] __lock_acquire+0x622/0xbb0
-> [   37.394515]   [<b0140652>] lock_acquire+0x62/0x80
-> [   37.394678]   [<b0511c65>] _read_lock+0x35/0x50
-> [   37.394834]   [<b050e200>] sctp_v6_copy_addrlist+0x30/0xc0
-...
+Bill Irwin wrote:
+> On Tue, 2007-03-06 at 22:44 -0800, Bill Irwin wrote:
+>   
+>>> What do you see as the obstacle to eliminating nested IRQ's?
+>>>       
+>
+> On Wed, Mar 07, 2007 at 04:34:52AM -0800, Arjan van de Ven wrote:
+>   
+>> political will, or maybe just the lack of convincing people so far
+>>     
+>
+> Political issues are significantly more difficult to resolve than
+> technical ones.
+>
+>
+> On Tue, 2007-03-06 at 22:44 -0800, Bill Irwin wrote:
+>   
+>>>  It doesn't
+>>> seem so far out to test for being on the interrupt stack and defer the
+>>> call to do_IRQ() until after the currently-running instance of do_IRQ()
+>>> has returned, or to move to per-irq stacks modulo special arrangements
+>>> for the per-cpu IRQ's. Or did you have other methods in mind?
+>>>       
+>
+> On Wed, Mar 07, 2007 at 04:34:52AM -0800, Arjan van de Ven wrote:
+>   
+>> it's simpler...
+>> irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+>> { 
+>>         irqreturn_t ret, retval = IRQ_NONE;
+>>         unsigned int status = 0;
+>>
+>>         handle_dynamic_tick(action);
+>>    
+>>         if (!(action->flags & IRQF_DISABLED))
+>>                 local_irq_enable_in_hardirq();
+>>
+>> just removing the if() and the explicit IRQ enabling already makes irqs no longer nest...
+>>     
+>
+> I can see why that would raise eyebrows. I can see getting bashed
+> mercilessly with interrupt latency concerns as a result here. Can you
+> suggest any defenses?
+>   
 
-[SCTP] ipv6: inconsistent lock state ipv6_add_addr/sctp_v6_copy_addrlist
+I don't understand why interrupt latency suffers.  Sure, the interrupt 
+that's being masked is delayed, but on the other hand the interrupt 
+that's doing the masking is not.  We're moving the latency from the 
+first interrupt to the second, probably with a slight gain in overall 
+throughput.
 
-lockdep found that dev->lock taken from softirq in ipv6_add_addr
-is also taken in sctp_v6_copy_addrlist with softirqs enabled, so
-lockup is possible.
+It *does* matter if the interrupts have meaningful priorities.  Is that 
+the case here?
 
-Noticed-by: Simon Arlott <simon@arlott.org>
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
----
-
-diff -Nurp linux-2.6.21-rc2-mm2-/net/sctp/ipv6.c linux-2.6.21-rc2-mm2/net/sctp/ipv6.c
---- linux-2.6.21-rc2-mm2-/net/sctp/ipv6.c	2007-02-21 19:46:49.000000000 +0100
-+++ linux-2.6.21-rc2-mm2/net/sctp/ipv6.c	2007-03-07 21:57:37.000000000 +0100
-@@ -360,7 +360,7 @@ static void sctp_v6_copy_addrlist(struct
- 		return;
- 	}
- 
--	read_lock(&in6_dev->lock);
-+	read_lock_bh(&in6_dev->lock);
- 	for (ifp = in6_dev->addr_list; ifp; ifp = ifp->if_next) {
- 		/* Add the address to the local list.  */
- 		addr = t_new(struct sctp_sockaddr_entry, GFP_ATOMIC);
-@@ -374,7 +374,7 @@ static void sctp_v6_copy_addrlist(struct
- 		}
- 	}
- 
--	read_unlock(&in6_dev->lock);
-+	read_unlock_bh(&in6_dev->lock);
- 	rcu_read_unlock();
- }
- 
