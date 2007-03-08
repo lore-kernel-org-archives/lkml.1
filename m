@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbXCHUKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbXCHUNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411AbXCHUKt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:10:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXCHUKs
+	id S1752628AbXCHUNt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXCHUNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:10:48 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:54686 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752411AbXCHUKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:10:47 -0500
-Date: Thu, 8 Mar 2007 12:10:33 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Daniel Arai <arai@vmware.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
-       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-Message-ID: <20070308201033.GK10574@sequoia.sous-sol.org>
-References: <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F06720.8080901@goop.org> <20070308194740.GJ10574@sequoia.sous-sol.org> <45F06989.8030207@goop.org>
+	Thu, 8 Mar 2007 15:13:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46501 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752628AbXCHUNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:13:46 -0500
+Date: Thu, 8 Mar 2007 21:10:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Message-ID: <20070308201019.GA10782@elte.hu>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308190642.GA30517@elte.hu> <20070308194723.GF17114@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45F06989.8030207@goop.org>
+In-Reply-To: <20070308194723.GF17114@mellanox.co.il>
 User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Chris Wright wrote:
-> > I agree with that, but I think that's esp. for things like create and launch
-> > new vcpu.  The IPI bit I'm not as clear on, nor running this all on native
-> > as well.
-> >   
+
+* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+
+> > Michael - does your 'date' output advance after resume? If not then 
+> > i'd say it's a NO_HZ related problem. If yes then i'd guess it's the 
+> > SATA problem.
 > 
-> Well, native would fall back to using the existing arch/i386 versions of
-> those functions, so that's reasonably straightforward.
+> I'll test, but I have NO_HZ off for now.
 
-It's the fact that we need to leave code in the kernel to run on native,
-but also do something dynamically with that same code when running
-paravirt that I'm referring to.  Xen punts on this right now by
-#ifdef'ing away as happy as can be.
+there can still be effects of it (the regression we fixed in -rc3 was 
+such an effect too), so please test it.
 
-> There'll need to
-> be a bit of internal rearrangement so that the Xen code can call in to
-> do things like set up the pda/gdt and other bits of CPU state.
-> 
-> I don't think IPI is especially interesting in itself, is it?   It's a
-> necessary mechanism to implement smp_call_function(), but Xen can do IPI
-> without having to invoke any of the existing apic-based IPI code.  The
-> other main user of IPI is cross-cpu tlb shootdown, but Xen has much more
-> efficient mechanisms than IPI for that (so we'll need to make the tlb
-> pv_ops interface a little wider to pass down a cpuset).
-
-No, it's not the IPI itself, it's the way it's often accessed by the rest of
-the kernel (which is intertwined with genapic).  I'm happy to avoid apic
-altogether since it's effectively worthless for Xen other than
-integrating into the existing infrastructure.
+	Ingo
