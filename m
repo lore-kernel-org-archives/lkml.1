@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933332AbXCHVP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933358AbXCHVQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933332AbXCHVP4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933353AbXCHVPz
+	id S933358AbXCHVQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933357AbXCHVQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:15:55 -0500
-Received: from gw.goop.org ([64.81.55.164]:44975 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933332AbXCHVPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:15:54 -0500
-Message-ID: <45F07D07.5090003@goop.org>
-Date: Thu, 08 Mar 2007 13:15:51 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 8 Mar 2007 16:16:18 -0500
+Received: from mylar.outflux.net ([69.93.193.226]:58146 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933358AbXCHVQQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:16:16 -0500
+X-Greylist: delayed 1243 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Mar 2007 16:16:16 EST
+Date: Thu, 8 Mar 2007 12:55:25 -0800
+From: Kees Cook <kees@outflux.net>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: maps protection
+Message-ID: <20070308205525.GJ6805@outflux.net>
+References: <20070307012234.GN9621@outflux.net> <20070306175609.267bd7a9.akpm@linux-foundation.org> <20070307021335.GR9621@outflux.net> <20070306185942.585e7cd1.akpm@linux-foundation.org> <20070307031429.GU9621@outflux.net> <1173241331.3236.10.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pratap Subrahmanyam <pratap@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Daniel Hecht <dhecht@vmware.com>, Daniel Arai <arai@vmware.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: hardwired VMI crap
-References: <45EE1EA3.90803@vmware.com>	 <1173256666.24738.576.camel@localhost.localdomain>	 <45EEF966.6060902@goop.org> <Line.LNX.4.64.0703071304080.1851@d.namei>	 <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com>	 <1173302503.24738.795.camel@localhost.localdomain>	 <45EF372E.7030600@goop.org>	 <1173308717.24738.898.camel@localhost.localdomain>	 <45EF49E9.7040509@vmware.com> <20070308091019.GA19460@elte.hu>	 <45EFE010.7080108@vmware.com> <1173352154.24738.1023.camel@localhost.localdomain> <45F0761C.6060107@vmware.com>
-In-Reply-To: <45F0761C.6060107@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173241331.3236.10.camel@laptopd505.fenrus.org>
+Organization: Outflux
+X-HELO: gorgon.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> We faithfully emulate lapic, io_apic, the pit, pic, and a normal
-> interrupt subsystem.
+On Tue, Mar 06, 2007 at 08:22:11PM -0800, Arjan van de Ven wrote:
+> > [Adding Cc:lkml]
+> 
+> > How about using a reduced check, as is done for fd and environ?  This 
+> > would allow root-running system monitors to still do their job.  
+> > Effectively, this changes the test from "is ptracing" to just "can 
+> > ptrace".
+> > 
+> > If this still isn't considered safe, I'll add the maps_protect file...
+> 
+> btw I consider it an information leak that any user can see which
+> files/libraries any other user and root has mmap'd. (and with glibc's
+> stdio mmap feature that goes even beyond direct mmap to fopen()'d).
+> 
+> If root or some other user wants to watch
+> hillary-vs-obama-in-the-mud.avi, no other user has ANY business even
+> seeing that. So at minimum it's a privacy issue showing the filenames...
 
-Can you not just use the apic clock driver directly then?  Do you need
-to do anything special?
+So, what's the state of this?  Is the reduced "allowed to ptrace" check 
+good enough for inclusion?  What is needed for some form of this patch 
+to be included?  I'm happy to try new approaches if I can get some 
+further input.
 
-    J
+Another suggestion was to make this an ELF header toggle, and I'm 
+generally against that idea.  If a toggle is needed, I'd rather it be a 
+system-wide one.
+
+-- 
+Kees Cook
