@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbXCHHe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932932AbXCHHgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932899AbXCHHe1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 02:34:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932932AbXCHHe1
+	id S932932AbXCHHgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 02:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932949AbXCHHgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 02:34:27 -0500
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:40492 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932899AbXCHHe0 (ORCPT
+	Thu, 8 Mar 2007 02:36:52 -0500
+Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:3786 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932932AbXCHHgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 02:34:26 -0500
-Message-ID: <45EFBC73.2030005@blueyonder.co.uk>
-Date: Thu, 08 Mar 2007 07:34:11 +0000
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
+	Thu, 8 Mar 2007 02:36:52 -0500
+Date: Thu, 8 Mar 2007 08:35:47 +0100
+From: Jean Delvare <khali@linux-fr.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: auxsvr@gmail.com, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
-References: <45E59D64.3070202@blueyonder.co.uk>	<200702281805.13822.auxsvr@gmail.com> <20070307214730.87859590.akpm@linux-foundation.org>
-In-Reply-To: <20070307214730.87859590.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Bryan Wu <bryan.wu@analog.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Sonic Zhang <sonic.adi@gmail.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
+       mhfan@ustc.edu
+Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
+Message-Id: <20070308083547.38908b6c.khali@linux-fr.org>
+In-Reply-To: <20070306234529.3ce4cf3b.akpm@linux-foundation.org>
+References: <1173164058.31825.16.camel@roc-desktop>
+	<20070306214301.GA5590@martell.zuzino.mipt.ru>
+	<1173247078.28531.24.camel@roc-desktop>
+	<20070307075822.53e53c42.khali@linux-fr.org>
+	<20070306231423.4231c99b.akpm@linux-foundation.org>
+	<1173253167.28531.41.camel@roc-desktop>
+	<20070306234529.3ce4cf3b.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> (cc restored.  Please always do reply-to-all)
->
->   
->> On Wed, 28 Feb 2007 18:05:13 +0200 auxsvr@gmail.com wrote:
->> On Wednesday 28 February 2007 17:19, Sid Boyce wrote:
->>     
->>> openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to
->>> require a password to unlock, but it asks for password. When the screen
->>> unlocks, kwin is gone with no errors logged in /var/log/kdm or
->>> /var/log/messages. No problems with 2.6.20.
->>>
->>> Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2.
->>> Regards
->>> Sid.
->>>       
->> This is the linux kernel mailing list. Perhaps you should post your problem to 
->> the opensuse mailing list.
->>     
->
-> 2.6.20 worked.
->
-> 2.6.20-rc2 did not.
->
-> Working theory: the kernel broke.
->
-> Sid, the chances that anyone can work out what caused this are pretty low. 
-> It would be great if you could perform a git bisection search sometime in
-> the next few weeks, work out which commit caused this.
->
-> Thanks.
->
->
->
->   
-I shall go back to 2.6.20-git3 and work forward. Up to 2.6.20-git2 was OK.
-Regards
-Sid.
+On Tue, 6 Mar 2007 23:45:29 -0800, Andrew Morton wrote:
+> On Wed, 07 Mar 2007 15:39:27 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
+> 
+> > Thanks a lot, could you please give me a script just to kill this
+> > whitespace? So I can do it before sending you patches.
+> 
+> 
+> Is pretty simple:
+> 
+> #!/bin/sh
+> #
+> # Strip any trailing whitespace which a unified diff adds.
+> #
+> 
+> strip1()
+> {
+> 	TMP=$(mktemp /tmp/XXXXXX)
+> 	cp $1 $TMP
+> 	sed -e '/^+/s/[ 	]*$//' < $TMP > $1
+> 	rm $TMP
+> }
+> 
+> for i in $*
+> do
+> 	strip1 $i
+> done
+> 
+> 
+> that'll be in
+> http://www.zip.com.au/~akpm/linux/patches/patch-scripts-0.20/patch-scripts-0.20.tar.gz
+> too
+
+Alternatively, you can use quilt [1] to manage your patches and enable
+the --strip-trailing-whitespace option by default.
+
+[1] http://savannah.nongnu.org/projects/quilt/
 
 -- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
-
+Jean Delvare
