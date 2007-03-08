@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751786AbXCHNH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbXCHNQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751786AbXCHNH3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 08:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXCHNH3
+	id S1751799AbXCHNQs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 08:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXCHNQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 08:07:29 -0500
-Received: from postfix1-g20.free.fr ([212.27.60.42]:48345 "EHLO
-	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbXCHNH2 (ORCPT
+	Thu, 8 Mar 2007 08:16:48 -0500
+Received: from kepler.fjfi.cvut.cz ([147.32.6.11]:33295 "EHLO
+	kepler.fjfi.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbXCHNQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 08:07:28 -0500
-Date: Thu, 8 Mar 2007 14:06:08 +0100
-From: Thibaut VARENE <T-Bone@parisc-linux.org>
-To: axboe@kernel.dk
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] make elv_register() output atomic
-Message-ID: <20070308140608.2b034013@Alucard.r3z0>
-Organization: PA/Linux
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; powerpc-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Mar 2007 08:16:47 -0500
+Date: Thu, 8 Mar 2007 14:16:20 +0100 (CET)
+From: Martin Drab <drab@kepler.fjfi.cvut.cz>
+To: hugh@veritas.com
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Question about memory mapping mechanism
+Message-ID: <Pine.LNX.4.64.0703081345010.21317@kepler.fjfi.cvut.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-Booting 2.6.21-rc3-g45592145 I noticed the following on one of my
-machines in the bootlog:
+I'm writing a driver for a sampling device that is constantly delivering a 
+relatively high amount of data (about 16 MB/s) and I need to deliver the 
+data to the user-space ASAP. To prevent data loss I create a queue of 
+buffers (consisting of few pages each) which are more or less directly 
+filled by the device and then mapped to the user-space via mmap().
 
-io scheduler noop registered<6>Time: jiffies clocksource has been installed.
+The thing is that I'd like to prevent kernel to swap these pages out, 
+because then I may loose some data when they are not available in time 
+for the next round.
 
-io scheduler deadline registered (default)
+My original idea (that used to work in the past) was to allocate the 
+buffers using __get_free_pages(), then pin the pages down by setting their 
+PG_reserved bit in the page flags before using them. And then set the 
+VM_RESERVED flag of the appropriate VMA when mmap() is called for these 
+pages that are then mapped using nopage() mechanism.
 
+But this way no longer seems to work correctly, it kind of works, but I'm 
+getting following messages for each mmapped page upon munmap() call:
 
-Looking at block/elevator.c, it appears that elv_register() uses two
-consecutive printks in a non-atomic way, leading to the above glitch. The
-attached trivial patch fixes this issue, by using a single printk.
+--------------------------------------
+[19172.939248] Bad page state in process 'dtrtest'
+[19172.939249] page:ffff81000160a978 flags:0x001a000000000404 mapping:0000000000000000 mapcount:0 count:0
+[19172.939251] Trying to fix it up, but a reboot is needed
+[19172.939253] Backtrace:
+[19172.939256]
+[19172.939257] Call Trace:
+[19172.939273]  [<ffffffff802adc37>] bad_page+0x57/0x90
+[19172.939280]  [<ffffffff8020b92f>] free_hot_cold_page+0x7f/0x180
+[19172.939287]  [<ffffffff80207a90>] unmap_vmas+0x450/0x750
+[19172.939308]  [<ffffffff80212867>] unmap_region+0xb7/0x160
+[19172.939318]  [<ffffffff80211918>] do_munmap+0x238/0x2f0
+[19172.939325]  [<ffffffff802656c5>] __down_write_nested+0x35/0xf0
+[19172.939334]  [<ffffffff80215ffd>] sys_munmap+0x4d/0x80
+[19172.939341]  [<ffffffff8025f11e>] system_call+0x7e/0x83
+-------------------------------
 
-HTH
+Aparently due to the PG_reserved bit set.
 
-T-Bone
+So my question is: What is currently a proper way to do all this cleanly?
 
-PS: please CC-me in replies.
-
-Signed-off-by: Thibaut VARENE <varenet@parisc-linux.org>
-
--- 
-Thibaut VARENE
-http://www.parisc-linux.org/~varenet/
-
-
-diff --git a/block/elevator.c b/block/elevator.c
-index 25f6ef2..96a00c8 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -964,17 +964,18 @@ void elv_unregister_queue(struct request_queue *q)
- 
- int elv_register(struct elevator_type *e)
- {
-+	char *def = "";
- 	spin_lock_irq(&elv_list_lock);
- 	BUG_ON(elevator_find(e->elevator_name));
- 	list_add_tail(&e->list, &elv_list);
- 	spin_unlock_irq(&elv_list_lock);
- 
--	printk(KERN_INFO "io scheduler %s registered", e->elevator_name);
- 	if (!strcmp(e->elevator_name, chosen_elevator) ||
- 			(!*chosen_elevator &&
- 			 !strcmp(e->elevator_name, CONFIG_DEFAULT_IOSCHED)))
--				printk(" (default)");
--	printk("\n");
-+				def = " (default)";
-+
-+	printk(KERN_INFO "io scheduler %s registered%s\n", e->elevator_name, def);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(elv_register);
+Thanks,
+Martin
