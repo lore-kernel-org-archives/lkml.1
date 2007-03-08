@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbXCHGDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbXCHGEC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932113AbXCHGDv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 01:03:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932240AbXCHGDv
+	id S932240AbXCHGEC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 01:04:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932327AbXCHGEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 01:03:51 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:50594 "EHLO smtp.osdl.org"
+	Thu, 8 Mar 2007 01:04:01 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:34331 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932113AbXCHGDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 01:03:50 -0500
-Date: Wed, 7 Mar 2007 22:03:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-Subject: Re: [PATCH] [RSDL-mm 0/6] RSDL cpu scheduler for -mm
-Message-Id: <20070307220333.1d6fff96.akpm@linux-foundation.org>
-In-Reply-To: <200703081625.06383.kernel@kolivas.org>
-References: <200703071226.43238.kernel@kolivas.org>
-	<20070307185430.31fb48b8.akpm@linux-foundation.org>
-	<20070307201502.4e93c5d5.akpm@linux-foundation.org>
-	<200703081625.06383.kernel@kolivas.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	id S932240AbXCHGEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 01:04:00 -0500
+Date: Thu, 8 Mar 2007 11:31:39 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
+       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
+       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
+       pavel@suse.cz, rjw@sisk.pl
+Subject: Re: [PATCH 1/20] x86_64: Assembly safe page.h and pgtable.h
+Message-ID: <20070308060139.GJ6000@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070307065703.GA23412@in.ibm.com> <20070307065920.GB23412@in.ibm.com> <20070307192404.GA31826@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070307192404.GA31826@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 8 Mar 2007 16:25:05 +1100 Con Kolivas <kernel@kolivas.org> wrote:
-> > It also boots OK on a very similar but somewhat older Nocona machine. 
-> > Perhaps due to config changes: 
-> > http://userweb.kernel.org/~akpm/ck/config-ok.txt
+On Wed, Mar 07, 2007 at 08:24:04PM +0100, Sam Ravnborg wrote:
+> On Wed, Mar 07, 2007 at 12:29:20PM +0530, Vivek Goyal wrote:
+> > 
+> > 
+> > This patch makes pgtable.h and page.h safe to include
+> > in assembly files like head.S.  Allowing us to use
+> > symbolic constants instead of hard coded numbers when
+> > refering to the page tables.
+> > 
+> > This patch copies asm-sparc64/const.h to asm-x86_64 to
+> > get a definition of _AC() a very convinient macro that
+> > allows us to force the type when we are compiling the
+> > code in C and to drop all of the type information when
+> > we are using the constant in assembly.
+> Should this file not live in asm-generic and be useable
+> for all architectures?
 > 
-> Ok I just remembered that not only did I expect the cpu task to never be 
-> scheduled and it _might_ be scheduled on sched_init, it is actually 
-> _consciously_ scheduled on hotplug cpu which I have no way of handling at the 
-> moment. On both your configs I noticed you had hotplug cpu enabled, but 
-> perhaps it isn't really being used on the more conservative config. So this 
-> is something I already know I need to handle. Did your ppc that had 
-> the "bitmap error" have hotplug cpu enabled? It might be an unrelated 
-> bug^Wphenomenon.
 
-The powerpc config has CONFIG_HOTPLUG_CPU=n
+Hi Sam,
+
+Thanks for the review. This makes sense to me. Move const.h into
+asm-generic and let everybody use it.
+
+This is more of a small cleanup issue and involves changing few header files
+in asm-sparc64 and make sure nothing is broken on sparc64. This patchset
+is already becoming big and complex. Is it ok if we let the patch 
+remain unmodified for now and once this gets in and settles down, I can
+post another patch to do above modification?
+
+Thanks
+Vivek
