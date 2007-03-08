@@ -1,113 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030873AbXCHXJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030849AbXCHXOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030873AbXCHXJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 18:09:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030849AbXCHXJo
+	id S1030849AbXCHXOH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 18:14:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030859AbXCHXOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 18:09:44 -0500
-Received: from yvrmail01.intrinsyc.com ([209.139.192.246]:14945 "EHLO
-	yvrmail01.intrinsyc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030873AbXCHXJn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 18:09:43 -0500
-X-Greylist: delayed 848 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Mar 2007 18:09:43 EST
-Subject: [PATCH] Software Suspend: Fix suspend when console is in
-	VT_AUTO/KD_GRAPHICS mode
-From: Andrew Johnson <ajohnson@intrinsyc.com>
-To: pavel@suse.cz
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 14:54:45 -0800
-Message-Id: <1173394485.28589.17.camel@localhost.localdomain>
+	Thu, 8 Mar 2007 18:14:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55493 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030849AbXCHXOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 18:14:05 -0500
+Date: Fri, 9 Mar 2007 00:12:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Message-ID: <20070308231246.GA6267@elte.hu>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Mar 2007 22:55:45.0219 (UTC) FILETIME=[E7BC5930:01C761D4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070308230705.GA4611@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
 
-When the console is in VT_AUTO/KD_GRAPHICS mode, switching to the
-SUSPEND_CONSOLE fails, resulting in vt_waitactive() waiting indefinately
-or until the task is interrupted.  The following patch tests if a
-console switch can occur in set_console() and returns early if a console
-switch is not possible.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Andrew Johnson <ajohnson@intrinsyc.com>
+> Here's another suspend/resume artifact: one of my boxes wouldnt 
+> resume, it hangs at:
+> 
+> [    1.456633] pci 0000:00:18.2: resuming
+> [    1.456641] pci 0000:00:18.3: resuming
+> [    1.456648] 8139too 0000:05:07.0: resuming
+> [    1.456667] radeonfb 0000:01:00.0: resuming
+> 
+> the box is pingable but otherwise no console and it's hung as well. [I 
+> got the log above via netconsole]
 
-diff -rup linux-2.6.20.1/drivers/char/vt.c linux/drivers/char/vt.c
---- linux-2.6.20.1/drivers/char/vt.c	2007-02-19 22:34:32.000000000 -0800
-+++ linux/drivers/char/vt.c	2007-03-08 14:15:41.000000000 -0800
-@@ -2188,10 +2188,20 @@ static void console_callback(struct work
- 	release_console_sem();
- }
- 
--void set_console(int nr)
-+extern char vt_dont_switch;
-+
-+int set_console(int nr)
- {
-+	struct vc_data *vc = vc_cons[fg_console].d;
-+
-+	if(!vc_cons_allocated(nr) || vt_dont_switch || vc->vc_mode ==
-KD_GRAPHICS) {
-+		return -EINVAL;
-+	}
-+
- 	want_console = nr;
- 	schedule_console_callback();
-+
-+	return 0;
- }
- 
- struct tty_driver *console_driver;
-diff -rup linux-2.6.20.1/drivers/char/vt_ioctl.c
-linux/drivers/char/vt_ioctl.c
---- linux-2.6.20.1/drivers/char/vt_ioctl.c	2007-02-19 22:34:32.000000000
--0800
-+++ linux/drivers/char/vt_ioctl.c	2007-03-08 14:15:41.000000000 -0800
-@@ -34,7 +34,7 @@
- #include <linux/kbd_diacr.h>
- #include <linux/selection.h>
- 
--static char vt_dont_switch;
-+char vt_dont_switch;
- extern struct tty_driver *console_driver;
- 
- #define VT_IS_IN_USE(i)	(console_driver->ttys[i] &&
-console_driver->ttys[i]->count)
-diff -rup linux-2.6.20.1/include/linux/kbd_kern.h
-linux/include/linux/kbd_kern.h
---- linux-2.6.20.1/include/linux/kbd_kern.h	2007-02-19
-22:34:32.000000000 -0800
-+++ linux/include/linux/kbd_kern.h	2007-03-08 14:15:41.000000000 -0800
-@@ -75,7 +75,7 @@ extern int do_poke_blanked_console;
- 
- extern void (*kbd_ledfunc)(unsigned int led);
- 
--extern void set_console(int nr);
-+extern int set_console(int nr);
- extern void schedule_console_callback(void);
- 
- static inline void set_leds(void)
-diff -rup linux-2.6.20.1/kernel/power/console.c
-linux/kernel/power/console.c
---- linux-2.6.20.1/kernel/power/console.c	2007-02-19 22:34:32.000000000
--0800
-+++ linux/kernel/power/console.c	2007-03-08 14:15:41.000000000 -0800
-@@ -27,7 +27,11 @@ int pm_prepare_console(void)
- 		return 1;
- 	}
- 
--	set_console(SUSPEND_CONSOLE);
-+	if (set_console(SUSPEND_CONSOLE)) {
-+		/* Unable to change to the new console */
-+		release_console_sem();
-+		return 1;
-+	}
- 	release_console_sem();
- 
- 	if (vt_waitactive(SUSPEND_CONSOLE)) {
+unfortunately there's no way to get any backtrace out of the system at 
+this point - the timer interrupts are not active yet here, so i cannot 
+use the softlockup_tick patch to sample the lockup. Since it's pingable 
+i'll try to hack a dump_stack() into icmp_reply() ;-)
 
-
+	Ingo
