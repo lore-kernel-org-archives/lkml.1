@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750755AbXCHK1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750863AbXCHKaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750755AbXCHK1q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 05:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbXCHK1p
+	id S1750863AbXCHKaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 05:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbXCHKaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 05:27:45 -0500
-Received: from ozlabs.org ([203.10.76.45]:44044 "EHLO ozlabs.org"
+	Thu, 8 Mar 2007 05:30:11 -0500
+Received: from systemlinux.org ([83.151.29.59]:41406 "EHLO m18s25.vlinux.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbXCHK1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 05:27:44 -0500
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, tglx@linutronix.de,
-       Dan Hecht <dhecht@vmware.com>, Zachary Amsden <zach@vmware.com>,
-       akpm@linux-foundation.org, ak@suse.de,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
-       James Morris <jmorris@namei.org>
-In-Reply-To: <20070308080131.GB9295@elte.hu>
-References: <45EE0628.1080108@goop.org> <45EE08E8.2020008@vmware.com>
-	 <1173228544.24738.514.camel@localhost.localdomain>
-	 <45EE0D10.7070807@vmware.com>
-	 <1173230305.24738.529.camel@localhost.localdomain>
-	 <45EE1EA3.90803@vmware.com>
-	 <1173256666.24738.576.camel@localhost.localdomain>
-	 <45EEF966.6060902@goop.org>
-	 <1173300032.24738.750.camel@localhost.localdomain>
-	 <45EF2991.1020204@goop.org>  <20070308080131.GB9295@elte.hu>
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 21:26:54 +1100
-Message-Id: <1173349614.32234.23.camel@localhost.localdomain>
+	id S1750833AbXCHKaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 05:30:09 -0500
+Date: Thu, 8 Mar 2007 11:29:36 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
+Message-ID: <20070308102936.GD4252@skl-net.de>
+References: <20070226182617.GC9968@andrew-vasquezs-computer.local> <20070227101100.GA22572@skl-net.de> <20070227185134.GJ20397@andrew-vasquezs-computer.local> <20070228151829.GI22572@skl-net.de> <20070228153722.GJ22572@skl-net.de> <20070307184641.GY20362@kernel.dk> <20070308085209.GB4252@skl-net.de> <20070308090247.GB9671@kernel.dk> <20070308093331.GC4252@skl-net.de> <20070308093651.GC9671@kernel.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="F8dlzb82+Fcn6AgP"
+Content-Disposition: inline
+In-Reply-To: <20070308093651.GC9671@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-08 at 09:01 +0100, Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > > Your implementation is almost the perfect prototype, if you move the 
-> > > 128 bit hackery into the hypervisor and hide it away from the kernel 
-> > > :)
-> > 
-> > The point is to use the tsc to avoid making any hypercalls, so dealing 
-> > with the tsc->ns conversion has to happen on the guest side somehow.
-> 
-> you are obsessed with avoiding a hypercall, but why? Granted it's slow 
-> especially on things like SVN/VMX, but it's not fundamentally slow. We 
-> definitely do not want to design our whole APIs and abstractions around 
-> the temporary notion that 'hypercalls are slow'. I'd expect hypercalls 
-> to be put into silicon just as much as SYSENTER was put into silicon. 
 
-Indeed, I expect them to fall somewhere between system calls and context
-switches.  Perhaps not slow, but definitely worth minimising.
+--F8dlzb82+Fcn6AgP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Anyway, in terms of guest time code, a /big/ amount of design junk can 
-> be avoided by not trying to do sillynesses like 'virtual time'. The TSC 
-> is awfully unreliable.
+On 10:36, Jens Axboe wrote:
+> - Edit .config and set CONFIG_DEBUG_INFO=3Dy (near the bottom)
+> - make oldconfig
+> - rm block/cfq-iosched.o
+> - make block/cfq-iosched.o
+> - gdb block/cfq-iosched.o
+>=20
+> (gdb) l *cfq_dispatch_insert+0x28
+>=20
+> and see what that says. Should not take you more than a minute or so,
+> would appreciate it!
 
-You mean stolen time?
+No problem, here we go:
 
-I find this whole discussion really irritating, to be honest.  I just
-want Thomas to implement the timer code for lguest, because that code
-scares me...
+# gdb block/cfq-iosched.o
+GNU gdb 6.4-debian
+Copyright 2005 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain condition=
+s.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu"...Using host libthread_db lib=
+rary "/lib/libthread_db.so.1".
 
-I look forward to your patch 8)
-Rusty.
+(gdb) l *cfq_dispatch_insert+0x28
+0xcf8 is in cfq_dispatch_insert (block/cfq-iosched.c:865).
+860     }
+861
+862     static void cfq_dispatch_insert(request_queue_t *q, struct request =
+*rq)
+863     {
+864             struct cfq_data *cfqd =3D q->elevator->elevator_data;
+865             struct cfq_queue *cfqq =3D RQ_CFQQ(rq);
+866
+867             cfq_remove_request(rq);
+868             cfqq->on_dispatch[rq_is_sync(rq)]++;
+869             elv_dispatch_sort(q, rq);
 
+Regards
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
 
+--F8dlzb82+Fcn6AgP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFF7+WQWto1QDEAkw8RAkhrAJ9hdhcp4Hpl/oRH7BmPC46HD/RpGACdHA1+
+pwrhp8LGW5UnKm90ObormtY=
+=bJAt
+-----END PGP SIGNATURE-----
+
+--F8dlzb82+Fcn6AgP--
