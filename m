@@ -1,140 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933354AbXCHVZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030274AbXCHVZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933354AbXCHVZF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:25:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030274AbXCHVZF
+	id S1030274AbXCHVZQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030319AbXCHVZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:25:05 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60856 "EHLO pasmtpA.tele.dk"
+	Thu, 8 Mar 2007 16:25:15 -0500
+Received: from main.gmane.org ([80.91.229.2]:44289 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933354AbXCHVZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:25:03 -0500
-Date: Thu, 8 Mar 2007 22:25:12 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>, dmitry.torokhov@gmail.com
-Cc: Christoph Hellwig <hch@infradead.org>, Deepak Saxena <dsaxena@plexity.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix building kernel under Solaris
-Message-ID: <20070308212512.GA10584@uranus.ravnborg.org>
-References: <20070306180940.GA3240@plexity.net> <20070307094229.GG14863@infradead.org> <Pine.LNX.4.61.0703072342310.2448@yvahk01.tjqt.qr> <20070308083543.GA5213@infradead.org> <Pine.LNX.4.61.0703082142240.521@yvahk01.tjqt.qr>
+	id S1030274AbXCHVZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:25:13 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Marko Macek <Marko.Macek@gmx.net>
+Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
+Date: Thu, 08 Mar 2007 21:48:24 +0100
+Message-ID: <45F07698.1010502@gmx.net>
+References: <Pine.LNX.4.64.0703071712210.3672@alien.or.mcafeemobile.com> <1173364264.6891.3.camel@localhost> <Pine.LNX.4.64.0703080742220.7015@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703080812290.10832@woody.linux-foundation.org> <Pine.LNX.4.64.0703080825420.7015@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703080852170.10832@woody.linux-foundation.org> <Pine.LNX.4.64.0703081113060.7515@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703081123210.10832@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0703082142240.521@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       "David M. Lloyd" <dmlloyd@flurg.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+X-Gmane-NNTP-Posting-Host: bsn-250-23-60.dial-up.dsl.siol.net
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+In-Reply-To: <Pine.LNX.4.64.0703081123210.10832@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 08, 2007 at 09:43:46PM +0100, Jan Engelhardt wrote:
+Linus Torvalds wrote:
 > 
-> On Mar 8 2007 08:35, Christoph Hellwig wrote:
-> >On Wed, Mar 07, 2007 at 11:45:11PM +0100, Jan Engelhardt wrote:
-> >> 
-> >> On Mar 7 2007 09:42, Christoph Hellwig wrote:
-> >> >>  #include <sys/time.h>
-> >> >>  #include <sys/ioctl.h>
-> >> >>  #include <sys/types.h>
-> >> >> +#ifndef __sun__
-> >> >>  #include <asm/types.h>
-> >> >>  #endif
-> >> >> +#endif
-> >> >
-> >> >So if solaris doesn't need it, why do we need it on Linux?
-> >> 
-> >> For __s32 and __s16.
-> >
-> >We shouldn't use those from asm/types.h on Linux either, but
-> >get them consitantly by defining them to the C99 or BSD types
-> >from the libc headers.
+> On Thu, 8 Mar 2007, Davide Libenzi wrote:
+>> So, to cut it short, I can do the pseudo-siginfo read(2), but I don't 
+>> like it too much (little, actually). The siginfo, as bad as it is, is a 
+>> standard used in many POSIX APIs (hence even in kernel), and IMO if we 
+>> want to send that back, a struct siginfo should be.
+>> No?
 > 
-> It's a bit icky. file2alias.c includes "../../include/linux/input.h" and it is
-> _input.h_ that requires __s16/__s32 and hence includes <asm/types.h>.
-> If you ask me, it's file2alias.c that's broken.
-Took a closer look and agree on that.
-I have queued up below patch to fix it.
-I expect to see an updated patch on the other issues from Deepak.
+> I think it's perfectly fine if you make it "struct siginfo" (even though I 
+> think it's a singularly ugly struct). It's just that then you'd have to 
+> make your read() know whether it's a compat-read or not, which you really 
+> can't.
+> 
+> Which is why you introduced a new system call, but that leads to all the 
+> problems with the file descriptor no longer being *usable*.
+> 
+> Think scripts. It's easy to do reads in perl scripts, and parse the 
+> output. In contrast, making perl use a new system call is quite 
+> challenging.
 
-	Sam
+Probably, but someone will have to add the 'signalfd' system call anyway.
 
-diff --git a/include/linux/input.h b/include/linux/input.h
-index bde65c8..13d510c 100644
---- a/include/linux/input.h
-+++ b/include/linux/input.h
-@@ -1010,6 +1010,10 @@ struct input_dev {
- #error "EV_MAX and INPUT_DEVICE_ID_EV_MAX do not match"
- #endif
- 
-+#if KEY_MIN_INTERESTING != INPUT_DEVICE_ID_KEY_MIN_INTERESTING
-+#error "KEY_MIN_INTERESTING and INPUT_DEVICE_ID_KEY_MIN_INTERESTING do not match"
-+#endif
-+
- #if KEY_MAX != INPUT_DEVICE_ID_KEY_MAX
- #error "KEY_MAX and INPUT_DEVICE_ID_KEY_MAX do not match"
- #endif
-diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-index e0c393c..5e89204 100644
---- a/include/linux/mod_devicetable.h
-+++ b/include/linux/mod_devicetable.h
-@@ -262,6 +262,7 @@ struct i2c_device_id {
- 
- /* Input */
- #define INPUT_DEVICE_ID_EV_MAX		0x1f
-+#define INPUT_DEVICE_ID_KEY_MIN_INTERESTING	0x71
- #define INPUT_DEVICE_ID_KEY_MAX		0x1ff
- #define INPUT_DEVICE_ID_REL_MAX		0x0f
- #define INPUT_DEVICE_ID_ABS_MAX		0x3f
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index f61c9cc..96319eb 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -37,7 +37,6 @@ typedef unsigned char	__u8;
-  * even potentially has different endianness and word sizes, since
-  * we handle those differences explicitly below */
- #include "../../include/linux/mod_devicetable.h"
--#include "../../include/linux/input.h"
- 
- #define ADD(str, sep, cond, field)                              \
- do {                                                            \
-@@ -416,31 +415,33 @@ static int do_input_entry(const char *filename, struct input_device_id *id,
- 
- 	sprintf(alias + strlen(alias), "-e*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_EVBIT)
--		do_input(alias, id->evbit, 0, EV_MAX);
-+		do_input(alias, id->evbit, 0, INPUT_DEVICE_ID_EV_MAX);
- 	sprintf(alias + strlen(alias), "k*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_KEYBIT)
--		do_input(alias, id->keybit, KEY_MIN_INTERESTING, KEY_MAX);
-+		do_input(alias, id->keybit,
-+			 INPUT_DEVICE_ID_KEY_MIN_INTERESTING,
-+			 INPUT_DEVICE_ID_KEY_MAX);
- 	sprintf(alias + strlen(alias), "r*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_RELBIT)
--		do_input(alias, id->relbit, 0, REL_MAX);
-+		do_input(alias, id->relbit, 0, INPUT_DEVICE_ID_REL_MAX);
- 	sprintf(alias + strlen(alias), "a*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_ABSBIT)
--		do_input(alias, id->absbit, 0, ABS_MAX);
-+		do_input(alias, id->absbit, 0, INPUT_DEVICE_ID_ABS_MAX);
- 	sprintf(alias + strlen(alias), "m*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_MSCIT)
--		do_input(alias, id->mscbit, 0, MSC_MAX);
-+		do_input(alias, id->mscbit, 0, INPUT_DEVICE_ID_MSC_MAX);
- 	sprintf(alias + strlen(alias), "l*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_LEDBIT)
--		do_input(alias, id->ledbit, 0, LED_MAX);
-+		do_input(alias, id->ledbit, 0, INPUT_DEVICE_ID_LED_MAX);
- 	sprintf(alias + strlen(alias), "s*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_SNDBIT)
--		do_input(alias, id->sndbit, 0, SND_MAX);
-+		do_input(alias, id->sndbit, 0, INPUT_DEVICE_ID_SND_MAX);
- 	sprintf(alias + strlen(alias), "f*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_FFBIT)
--		do_input(alias, id->ffbit, 0, FF_MAX);
-+		do_input(alias, id->ffbit, 0, INPUT_DEVICE_ID_FF_MAX);
- 	sprintf(alias + strlen(alias), "w*");
- 	if (id->flags & INPUT_DEVICE_ID_MATCH_SWBIT)
--		do_input(alias, id->swbit, 0, SW_MAX);
-+		do_input(alias, id->swbit, 0, INPUT_DEVICE_ID_SW_MAX);
- 	return 1;
- }
- 
+> And *that* is why "everything is a stream of bytes" is so important. You 
+> don't know where the file descriptor has been, or who uses it. Special 
+> system calls for special file descriptors are just *wrong*.
+> 
+> After all, that's why we'd have a signalfd() in the first place: exactly 
+> so that you do *not* have to use special system calls, but can just pass 
+> it on to any event waiting mechanism like select, poll, epoll. The same is 
+> just *even*more*true* when it comes to reading the data!
+
+The problem with read() returning arbitrary unstructured data is that 
+there is hard to do versioning/extensibility, since the userspace can't 
+specify the requested/expected format. The only way it could be done is 
+by the (nbytes) parameter to read() which is not very nice (and useless 
+for scripts).
+
+This is the same problem that makes sysfs/procfs fragile unless the
+file format is very well specified for extensibility (and it's easy to
+f-it up, since there seems to be little consistency there... using
+the XML horror would actually be an improvement). Breaking sysfs/procfs
+might be acceptable once every few years, but signal handling will be
+part of every application event loop and there is no room for breaking 
+anything.
+
+(although, one could to the versioning the ugly way by creating the new 
+'signalfd' syscall instead).
+
+I'd say: make read() return the signal number (probably as 4-byte int, 
+in network byte order), but for everything else, use the system call.
+
+Mark
+
+P.S. I'm currently worried if the fact that FUTEX_FD is being deprecated 
+is a problem :)
+
