@@ -1,904 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbXCHGgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932516AbXCHGrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932451AbXCHGgI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 01:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932453AbXCHGgI
+	id S932516AbXCHGrS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 01:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932535AbXCHGrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 01:36:08 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:58653 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932451AbXCHGgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 01:36:05 -0500
-Date: Thu, 8 Mar 2007 07:35:05 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: kaber@trash.net
-cc: Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] chaostables
-Message-ID: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
+	Thu, 8 Mar 2007 01:47:17 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44005 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932516AbXCHGrQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 01:47:16 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Sam Vilain <sam@vilain.net>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, ckrm-tech@lists.sourceforge.net,
+       xemul@sw.ru, linux-kernel@vger.kernel.org, pj@sgi.com,
+       winget@google.com, containers@lists.osdl.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, akpm@linux-foundation.org,
+       dev@sw.ru
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+References: <20070301133543.GK15509@in.ibm.com>
+	<20070307205846.GB7010@sergelap.austin.ibm.com>
+	<6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
+	<m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
+	<6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
+	<45EF5A62.8000103@vilain.net>
+	<6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com>
+	<45EF5E71.7090101@vilain.net>
+	<6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
+	<45EF793C.1000700@vilain.net>
+	<6599ad830703071857yf711921ja3440c4276bbe58e@mail.gmail.com>
+	<45EF83CB.9080903@vilain.net>
+	<1173334209.13172.61.camel@localhost.localdomain>
+Date: Wed, 07 Mar 2007 23:44:58 -0700
+In-Reply-To: <1173334209.13172.61.camel@localhost.localdomain> (Matt Helsley's
+	message of "Wed, 07 Mar 2007 22:10:09 -0800")
+Message-ID: <m11wk08c9h.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello netfilter-devel,
+Matt Helsley <matthltc@us.ibm.com> writes:
 
+> On Thu, 2007-03-08 at 16:32 +-1300, Sam Vilain wrote:
+>
+> +ADw-snip+AD4
+>
+> +AD4 Kirill, 06032418:36+-03:
+> +AD4 +AD4 I propose to use +ACI-namespace+ACI naming.
+> +AD4 +AD4 1. This is already used in fs.
+> +AD4 +AD4 2. This is what IMHO suites at least OpenVZ/Eric
+> +AD4 +AD4 3. it has good acronym +ACI-ns+ACI.
+> +AD4 
+> +AD4 Right.  So, now I'll also throw into the mix:
+> +AD4 
+> +AD4   - resource groups (I get a strange feeling of d+AOk-j+AOA v+APo there)
+>
+> +ADw-offtopic+AD4
+> Re: d+AOk-j+AOA v+APo: yes+ACE
+>
+> It's like that Star Trek episode ... except we can't agree on the name
+> of the impossible particle we will invent which solves all our problems.
+> +ADw-/offtopic+AD4
+>
+> At the risk of prolonging the agony I hate to ask: are all of these
+> groupings really concerned with +ACI-resources+ACI?
+>
+> +AD4   - supply chains (think supply and demand)
+> +AD4   - accounting classes
+>
+> CKRM's use of the term +ACI-class+ACI drew negative comments from Paul Jackson
+> and Andrew Morton about this time last year. That led to my suggestion
+> of +ACI-Resource Groups+ACI. Unless they've changed their minds...
+>
+> +AD4 Do any of those sound remotely close?  If not, your turn :)
+>
+> I'll butt in here: task groups? task sets? confuselets? +ADs)
 
-I would like to submit chaostables (v0.5_svn23) for inclusion. Primary 
-use is to detect, spoof and slowdown various sorts of port scans.
-Implementation details can be found at http://jengelh.hopto.org/p/chaostables/
+Generically we can use subsystem now for the individual pieces without
+confusing anyone.
 
-If you have any comments or suggestions, do not hestitate to 
-let me know.
+I really don't much care as long as we don't start redefining
+container as something else.  I think the IBM guys took it from
+solaris originally which seems to define a zone as a set of
+isolated processes (for us all separate namespaces).  And a container
+as a set of as a zone that uses resource control.  Not exactly how
+we have been using the term but close enough not to confuse someone.
 
+As long as we don't go calling the individual subsystems or the
+process groups they need to function a container I really don't care.
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+I just know that if we use container for just the subsystem level
+it makes effective communication impossible, and code reviews
+essentially impossible.  As the description says one thing the
+reviewer reads it as another and then the patch does not match
+the description.  Leading to NAKs.
 
----
+Resource groups at least for subset of subsystems that aren't
+namespaces sounds reasonable.  Heck resource group, resource
+controller, resource subsystem, resource just about anything seems
+sane to me.
 
- include/linux/netfilter/x_tables.h    |    2 
- include/linux/netfilter/xt_CHAOS.h    |   14 +
- include/linux/netfilter/xt_portscan.h |    8 +
- net/netfilter/Kconfig                 |   12 +
- net/netfilter/Makefile                |    3 
- net/netfilter/x_tables.c              |   12 +
- net/netfilter/xt_CHAOS.c              |  184 +++++++++++++++++++++++
- net/netfilter/xt_DELUDE.c             |  259 ++++++++++++++++++++++++++++++++
- net/netfilter/xt_portscan.c           |  271 ++++++++++++++++++++++++++++++++++
- 9 files changed, 765 insertions(+)
+The important part is that we find a vocabulary without doubly
+defined words so we can communicate and a small common set we can
+agree on so people can work on and implement the individual
+resource controllers/groups, and get the individual pieces merged
+as they are reading.
 
-Index: linux-2.6.21-rc3/include/linux/netfilter/x_tables.h
-===================================================================
---- linux-2.6.21-rc3.orig/include/linux/netfilter/x_tables.h
-+++ linux-2.6.21-rc3/include/linux/netfilter/x_tables.h
-@@ -292,6 +292,8 @@ extern struct xt_table_info *xt_replace_
- 					      int *error);
- 
- extern struct xt_match *xt_find_match(int af, const char *name, u8 revision);
-+extern struct xt_match *xt_request_find_match(int af, const char *name,
-+						u8 revision);
- extern struct xt_target *xt_find_target(int af, const char *name, u8 revision);
- extern struct xt_target *xt_request_find_target(int af, const char *name, 
- 						u8 revision);
-Index: linux-2.6.21-rc3/include/linux/netfilter/xt_CHAOS.h
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3/include/linux/netfilter/xt_CHAOS.h
-@@ -0,0 +1,14 @@
-+#ifndef _LINUX_XT_CHAOS_H
-+#define _LINUX_XT_CHAOS_H 1
-+
-+enum xt_chaos_variant {
-+	XTCHAOS_NORMAL,
-+	XTCHAOS_TARPIT,
-+	XTCHAOS_DELUDE,
-+};
-+
-+struct xt_chaos_info {
-+	enum xt_chaos_variant variant;
-+};
-+
-+#endif /* _LINUX_XT_CHAOS_H */
-Index: linux-2.6.21-rc3/include/linux/netfilter/xt_portscan.h
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3/include/linux/netfilter/xt_portscan.h
-@@ -0,0 +1,8 @@
-+#ifndef _LINUX_XT_PORTSCAN_H
-+#define _LINUX_XT_PORTSCAN_H 1
-+
-+struct xt_portscan_info {
-+	unsigned int match_stealth, match_syn, match_cn, match_gr;
-+};
-+
-+#endif /* _LINUX_XT_PORTSCAN_H */
-Index: linux-2.6.21-rc3/net/netfilter/Kconfig
-===================================================================
---- linux-2.6.21-rc3.orig/net/netfilter/Kconfig
-+++ linux-2.6.21-rc3/net/netfilter/Kconfig
-@@ -286,6 +286,14 @@ config NETFILTER_XTABLES
- 
- # alphabetically ordered list of targets
- 
-+config NETFILTER_XT_TARGET_CHAOS
-+	tristate '"CHAOS" target support'
-+	depends on NETFILTER_XTABLES
-+
-+config NETFILTER_XT_TARGET_DELUDE
-+	tristate '"DELUDE" target support'
-+	depends on NETFILTER_XTABLES
-+
- config NETFILTER_XT_TARGET_CLASSIFY
- 	tristate '"CLASSIFY" target support'
- 	depends on NETFILTER_XTABLES
-@@ -562,6 +570,10 @@ config NETFILTER_XT_MATCH_POLICY
- 
- 	  To compile it as a module, choose M here.  If unsure, say N.
- 
-+config NETFILTER_XT_MATCH_PORTSCAN
-+	tristate '"portscan" match support'
-+	depends on NETFILTER_XTABLES && NF_CONNTRACK
-+
- config NETFILTER_XT_MATCH_MULTIPORT
- 	tristate "Multiple port match support"
- 	depends on NETFILTER_XTABLES
-Index: linux-2.6.21-rc3/net/netfilter/Makefile
-===================================================================
---- linux-2.6.21-rc3.orig/net/netfilter/Makefile
-+++ linux-2.6.21-rc3/net/netfilter/Makefile
-@@ -37,8 +37,10 @@ obj-$(CONFIG_NF_CONNTRACK_TFTP) += nf_co
- obj-$(CONFIG_NETFILTER_XTABLES) += x_tables.o xt_tcpudp.o
- 
- # targets
-+obj-$(CONFIG_NETFILTER_XT_TARGET_CHAOS) += xt_CHAOS.o
- obj-$(CONFIG_NETFILTER_XT_TARGET_CLASSIFY) += xt_CLASSIFY.o
- obj-$(CONFIG_NETFILTER_XT_TARGET_CONNMARK) += xt_CONNMARK.o
-+obj-$(CONFIG_NETFILTER_XT_TARGET_DELUDE) += xt_DELUDE.o
- obj-$(CONFIG_NETFILTER_XT_TARGET_DSCP) += xt_DSCP.o
- obj-$(CONFIG_NETFILTER_XT_TARGET_MARK) += xt_MARK.o
- obj-$(CONFIG_NETFILTER_XT_TARGET_NFQUEUE) += xt_NFQUEUE.o
-@@ -63,6 +65,7 @@ obj-$(CONFIG_NETFILTER_XT_MATCH_MAC) += 
- obj-$(CONFIG_NETFILTER_XT_MATCH_MARK) += xt_mark.o
- obj-$(CONFIG_NETFILTER_XT_MATCH_MULTIPORT) += xt_multiport.o
- obj-$(CONFIG_NETFILTER_XT_MATCH_POLICY) += xt_policy.o
-+obj-$(CONFIG_NETFILTER_XT_MATCH_PORTSCAN) += xt_portscan.o
- obj-$(CONFIG_NETFILTER_XT_MATCH_PKTTYPE) += xt_pkttype.o
- obj-$(CONFIG_NETFILTER_XT_MATCH_QUOTA) += xt_quota.o
- obj-$(CONFIG_NETFILTER_XT_MATCH_REALM) += xt_realm.o
-Index: linux-2.6.21-rc3/net/netfilter/x_tables.c
-===================================================================
---- linux-2.6.21-rc3.orig/net/netfilter/x_tables.c
-+++ linux-2.6.21-rc3/net/netfilter/x_tables.c
-@@ -206,6 +206,18 @@ struct xt_match *xt_find_match(int af, c
- }
- EXPORT_SYMBOL(xt_find_match);
- 
-+struct xt_match *xt_request_find_match(int af, const char *name, u8 revision)
-+{
-+	struct xt_match *match;
-+
-+	match = try_then_request_module(xt_find_match(af, name, revision),
-+					"%st_%s", xt_prefix[af], name);
-+	if(IS_ERR(match) || match == NULL)
-+		return NULL;
-+	return match;
-+}
-+EXPORT_SYMBOL_GPL(xt_request_find_match);
-+
- /* Find target, grabs ref.  Returns ERR_PTR() on error. */
- struct xt_target *xt_find_target(int af, const char *name, u8 revision)
- {
-Index: linux-2.6.21-rc3/net/netfilter/xt_CHAOS.c
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3/net/netfilter/xt_CHAOS.c
-@@ -0,0 +1,184 @@
-+/*
-+	CHAOS target for netfilter
-+
-+	Copyright © Jan Engelhardt <jengelh [at] gmx de>, 2006 - 2007
-+	This program is free software; you can redistribute it and/or modify
-+	it under the terms of the GNU General Public License version 2 as
-+	published by the Free Software Foundation.
-+*/
-+#include <linux/icmp.h>
-+#include <linux/in.h>
-+#include <linux/ip.h>
-+#include <linux/module.h>
-+#include <linux/skbuff.h>
-+#include <linux/stat.h>
-+#include <linux/netfilter/x_tables.h>
-+#include <linux/netfilter/xt_tcpudp.h>
-+#include <linux/netfilter_ipv4/ipt_REJECT.h>
-+#include <net/ip.h>
-+#include <linux/netfilter/xt_CHAOS.h>
-+#define PFX KBUILD_MODNAME ": "
-+
-+/* Module parameters */
-+static unsigned int reject_percentage = ~0U * .01;
-+static unsigned int delude_percentage = ~0U * .0101;
-+module_param(reject_percentage, uint, S_IRUGO | S_IWUSR);
-+module_param(delude_percentage, uint, S_IRUGO | S_IWUSR);
-+
-+/* References to other matches/targets */
-+static struct xt_match *xm_tcp;
-+static struct xt_target *xt_delude, *xt_reject, *xt_tarpit;
-+
-+static int have_delude, have_tarpit;
-+
-+/* Static data for other matches/targets */
-+static const struct ipt_reject_info reject_params = {
-+	.with = ICMP_HOST_UNREACH,
-+};
-+
-+static const struct xt_tcp tcp_params = {
-+	.spts = {0, ~0},
-+	.dpts = {0, ~0},
-+};
-+
-+/* CHAOS functions */
-+static void xt_chaos_total(const struct xt_chaos_info *info,
-+    struct sk_buff **pskb, const struct net_device *in,
-+    const struct net_device *out, unsigned int hooknum)
-+{
-+	const int protoff = 4 * (*pskb)->nh.iph->ihl;
-+	const int offset  = ntohs((*pskb)->nh.iph->frag_off) & IP_OFFSET;
-+	const struct xt_target *destiny;
-+	int hotdrop = 0, ret;
-+
-+	ret = xm_tcp->match(*pskb, in, out, xm_tcp, &tcp_params,
-+	                    offset, protoff, &hotdrop);
-+	if(!ret || hotdrop || (unsigned int)net_random() > delude_percentage)
-+		return;
-+
-+	destiny = (info->variant == XTCHAOS_TARPIT) ? xt_tarpit : xt_delude;
-+	destiny->target(pskb, in, out, hooknum, destiny, NULL);
-+	return;
-+}
-+
-+static unsigned int xt_chaos_target(struct sk_buff **pskb,
-+    const struct net_device *in, const struct net_device *out,
-+    unsigned int hooknum, const struct xt_target *target, const void *targinfo)
-+{
-+	/* Equivalent to:
-+	 * -A chaos -m statistic --mode random --probability \
-+	 *         $reject_percentage -j REJECT --reject-with host-unreach;
-+	 * -A chaos -m statistic --mode random --probability \
-+	 *         $delude_percentage -j DELUDE;
-+	 * -A chaos -j DROP;
-+	 */
-+	const struct xt_chaos_info *info = targinfo;
-+
-+	if((unsigned int)net_random() <= reject_percentage)
-+		return xt_reject->target(pskb, in, out, hooknum, target,
-+		       &reject_params);
-+
-+	/* TARPIT/DELUDE may not be called from the OUTPUT chain */
-+	if((*pskb)->nh.iph->protocol == IPPROTO_TCP &&
-+	  info->variant != XTCHAOS_NORMAL && hooknum != NF_IP_LOCAL_OUT)
-+		xt_chaos_total(info, pskb, in, out, hooknum);
-+
-+	return NF_DROP;
-+}
-+
-+static int xt_chaos_checkentry(const char *tablename, const void *entry,
-+    const struct xt_target *target, void *targinfo, unsigned int hook_mask)
-+{
-+	const struct xt_chaos_info *info = targinfo;
-+	if(info->variant == XTCHAOS_DELUDE && !have_delude) {
-+		printk(KERN_WARNING PFX "Error: Cannot use --delude when "
-+		       "DELUDE module not available\n");
-+		return 0;
-+	}
-+	if(info->variant == XTCHAOS_TARPIT && !have_tarpit) {
-+		printk(KERN_WARNING PFX "Error: Cannot use --tarpit when "
-+		       "TARPIT module not available\n");
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static struct xt_target xt_chaos_info = {
-+	.name       = "CHAOS",
-+	.target     = xt_chaos_target,
-+	.checkentry = xt_chaos_checkentry,
-+	.table      = "filter",
-+	.targetsize = sizeof(struct xt_chaos_info),
-+	.hooks      = (1 << NF_IP_LOCAL_IN) | (1 << NF_IP_FORWARD) |
-+	              (1 << NF_IP_LOCAL_OUT),
-+	.family     = AF_INET,
-+	.me         = THIS_MODULE,
-+};
-+
-+static int __init xt_chaos_init(void)
-+{
-+	int ret = -EINVAL;
-+
-+	xm_tcp = xt_request_find_match(AF_INET, "tcp", 0);
-+	if(xm_tcp == NULL) {
-+		printk(KERN_WARNING PFX "Error: Could not find or load "
-+		       "\"tcp\" match\n");
-+		return -EINVAL;
-+	}
-+
-+	xt_reject = xt_request_find_target(AF_INET, "REJECT", 0);
-+	if(xt_reject == NULL) {
-+		printk(KERN_WARNING PFX "Error: Could not find or load "
-+		       "\"REJECT\" target\n");
-+		goto out2;
-+	}
-+
-+	xt_tarpit   = xt_request_find_target(AF_INET, "TARPIT", 0);
-+	have_tarpit = xt_tarpit != NULL;
-+	if(!have_tarpit)
-+		printk(KERN_WARNING PFX "Warning: Could not find or load "
-+		       "\"TARPIT\" target\n");
-+
-+	xt_delude   = xt_request_find_target(AF_INET, "DELUDE", 0);
-+	have_delude = xt_delude != NULL;
-+	if(!have_delude)
-+		printk(KERN_WARNING PFX "Warning: Could not find or load "
-+		       "\"DELUDE\" target\n");
-+
-+	if((ret = xt_register_target(&xt_chaos_info)) != 0) {
-+		printk(KERN_WARNING PFX "xt_register_target returned "
-+		       "error %d\n", ret);
-+		goto out3;
-+	}
-+
-+	return 0;
-+
-+ out3:
-+ 	if(have_delude)
-+ 		module_put(xt_delude->me);
-+	if(have_tarpit)
-+		module_put(xt_tarpit->me);
-+	module_put(xt_reject->me);
-+ out2:
-+	module_put(xm_tcp->me);
-+	return ret;
-+}
-+
-+static void __exit xt_chaos_exit(void)
-+{
-+	xt_unregister_target(&xt_chaos_info);
-+	module_put(xm_tcp->me);
-+	module_put(xt_reject->me);
-+	if(have_delude)
-+		module_put(xt_delude->me);
-+	if(have_tarpit)
-+		module_put(xt_tarpit->me);
-+	return;
-+}
-+
-+module_init(xt_chaos_init);
-+module_exit(xt_chaos_exit);
-+MODULE_AUTHOR("Jan Engelhardt <jengelh@gmx.de>");
-+MODULE_DESCRIPTION("netfilter CHAOS target");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("ipt_CHAOS");
-Index: linux-2.6.21-rc3/net/netfilter/xt_DELUDE.c
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3/net/netfilter/xt_DELUDE.c
-@@ -0,0 +1,259 @@
-+/*
-+	DELUDE target
-+	Copyright © Jan Engelhardt <jengelh [at] gmx de>, 2007
-+
-+	Based upon linux-2.6.18.5/net/ipv4/netfilter/ipt_REJECT.c:
-+	(C) 1999-2001 Paul `Rusty' Russell
-+	(C) 2002-2004 Netfilter Core Team <coreteam@netfilter.org>
-+
-+	This program is free software; you can redistribute it and/or modify
-+	it under the terms of the GNU General Public License version 2 as
-+	published by the Free Software Foundation.
-+*/
-+#include <linux/module.h>
-+#include <linux/skbuff.h>
-+#include <linux/ip.h>
-+#include <linux/tcp.h>
-+#include <linux/udp.h>
-+#include <linux/icmp.h>
-+#include <net/icmp.h>
-+#include <net/ip.h>
-+#include <net/tcp.h>
-+#include <net/route.h>
-+#include <net/dst.h>
-+#include <linux/netfilter_ipv4/ip_tables.h>
-+#ifdef CONFIG_BRIDGE_NETFILTER
-+#	include <linux/netfilter_bridge.h>
-+#endif
-+#define PFX KBUILD_MODNAME ": "
-+
-+static inline struct rtable *route_reverse(struct sk_buff *skb,
-+					   struct tcphdr *tcph, int hook)
-+{
-+	struct iphdr *iph = skb->nh.iph;
-+	struct dst_entry *odst;
-+	struct flowi fl = {};
-+	struct rtable *rt;
-+
-+	/* We don't require ip forwarding to be enabled to be able to
-+	 * send a RST reply for bridged traffic. */
-+	if (hook != NF_IP_FORWARD
-+#ifdef CONFIG_BRIDGE_NETFILTER
-+	    || (skb->nf_bridge && skb->nf_bridge->mask & BRNF_BRIDGED)
-+#endif
-+	   ) {
-+		fl.nl_u.ip4_u.daddr = iph->saddr;
-+		if (hook == NF_IP_LOCAL_IN)
-+			fl.nl_u.ip4_u.saddr = iph->daddr;
-+		fl.nl_u.ip4_u.tos = RT_TOS(iph->tos);
-+
-+		if (ip_route_output_key(&rt, &fl) != 0)
-+			return NULL;
-+	} else {
-+		/* non-local src, find valid iif to satisfy
-+		 * rp-filter when calling ip_route_input. */
-+		fl.nl_u.ip4_u.daddr = iph->daddr;
-+		if (ip_route_output_key(&rt, &fl) != 0)
-+			return NULL;
-+
-+		odst = skb->dst;
-+		if (ip_route_input(skb, iph->saddr, iph->daddr,
-+		                   RT_TOS(iph->tos), rt->u.dst.dev) != 0) {
-+			dst_release(&rt->u.dst);
-+			return NULL;
-+		}
-+		dst_release(&rt->u.dst);
-+		rt = (struct rtable *)skb->dst;
-+		skb->dst = odst;
-+
-+		fl.nl_u.ip4_u.daddr = iph->saddr;
-+		fl.nl_u.ip4_u.saddr = iph->daddr;
-+		fl.nl_u.ip4_u.tos = RT_TOS(iph->tos);
-+	}
-+
-+	if (rt->u.dst.error) {
-+		dst_release(&rt->u.dst);
-+		return NULL;
-+	}
-+
-+	fl.proto = IPPROTO_TCP;
-+	fl.fl_ip_sport = tcph->dest;
-+	fl.fl_ip_dport = tcph->source;
-+
-+	xfrm_lookup((struct dst_entry **)&rt, &fl, NULL, 0);
-+
-+	return rt;
-+}
-+
-+static void send_reset(struct sk_buff *oldskb, int hook)
-+{
-+	struct sk_buff *nskb;
-+	struct iphdr *iph = oldskb->nh.iph;
-+	struct tcphdr _otcph, *oth, *tcph;
-+	struct rtable *rt;
-+	u_int16_t tmp_port;
-+	u_int32_t tmp_addr;
-+	int hh_len;
-+
-+	/* IP header checks: fragment. */
-+	if (oldskb->nh.iph->frag_off & htons(IP_OFFSET))
-+		return;
-+
-+	oth = skb_header_pointer(oldskb, oldskb->nh.iph->ihl * 4,
-+				 sizeof(_otcph), &_otcph);
-+	if (oth == NULL)
-+ 		return;
-+
-+	/* DELUDE only answers SYN. */
-+	if(!oth->syn || oth->ack || oth->fin || oth->rst)
-+		return;
-+
-+	/* Check checksum */
-+	if (nf_ip_checksum(oldskb, hook, iph->ihl * 4, IPPROTO_TCP))
-+		return;
-+
-+	if ((rt = route_reverse(oldskb, oth, hook)) == NULL)
-+		return;
-+
-+	hh_len = LL_RESERVED_SPACE(rt->u.dst.dev);
-+
-+	/* We need a linear, writeable skb.  We also need to expand
-+	   headroom in case hh_len of incoming interface < hh_len of
-+	   outgoing interface */
-+	nskb = skb_copy_expand(oldskb, hh_len, skb_tailroom(oldskb),
-+			       GFP_ATOMIC);
-+	if (!nskb) {
-+		dst_release(&rt->u.dst);
-+		return;
-+	}
-+
-+	dst_release(nskb->dst);
-+	nskb->dst = &rt->u.dst;
-+
-+	/* This packet will not be the same as the other: clear nf fields */
-+	nf_reset(nskb);
-+	nskb->mark = 0;
-+	skb_init_secmark(nskb);
-+
-+	skb_shinfo(nskb)->gso_size = 0;
-+	skb_shinfo(nskb)->gso_segs = 0;
-+	skb_shinfo(nskb)->gso_type = 0;
-+
-+	tcph = (struct tcphdr *)((u_int32_t*)nskb->nh.iph + nskb->nh.iph->ihl);
-+
-+	/* Swap source and dest */
-+	tmp_addr = nskb->nh.iph->saddr;
-+	nskb->nh.iph->saddr = nskb->nh.iph->daddr;
-+	nskb->nh.iph->daddr = tmp_addr;
-+	tmp_port = tcph->source;
-+	tcph->source = tcph->dest;
-+	tcph->dest = tmp_port;
-+
-+	/* Truncate to length (no data) */
-+	tcph->doff = sizeof(struct tcphdr)/4;
-+	skb_trim(nskb, nskb->nh.iph->ihl*4 + sizeof(struct tcphdr));
-+	nskb->nh.iph->tot_len = htons(nskb->len);
-+
-+	tcph->seq = oth->ack_seq;
-+	tcph->ack_seq = 0;
-+
-+	/* Reset flags */
-+	((u_int8_t *)tcph)[13] = 0;
-+	tcph->syn = tcph->ack = 1;
-+
-+	tcph->window = 0;
-+	tcph->urg_ptr = 0;
-+
-+	/* Adjust TCP checksum */
-+	tcph->check = 0;
-+	tcph->check = tcp_v4_check(sizeof(struct tcphdr),
-+				   nskb->nh.iph->saddr,
-+				   nskb->nh.iph->daddr,
-+				   csum_partial((char *)tcph,
-+						sizeof(struct tcphdr), 0));
-+
-+	/* Adjust IP TTL, DF */
-+	nskb->nh.iph->ttl = dst_metric(nskb->dst, RTAX_HOPLIMIT);
-+	/* Set DF, id = 0 */
-+	nskb->nh.iph->frag_off = htons(IP_DF);
-+	nskb->nh.iph->id = 0;
-+
-+	/* Adjust IP checksum */
-+	nskb->nh.iph->check = 0;
-+	nskb->nh.iph->check = ip_fast_csum((unsigned char *)nskb->nh.iph,
-+					   nskb->nh.iph->ihl);
-+
-+	/* "Never happens" */
-+	if (nskb->len > dst_mtu(nskb->dst))
-+		goto free_nskb;
-+
-+	nf_ct_attach(nskb, oldskb);
-+
-+	NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, nskb, NULL, nskb->dst->dev,
-+		dst_output);
-+	return;
-+
-+ free_nskb:
-+	kfree_skb(nskb);
-+	return;
-+}
-+
-+static unsigned int xt_delude_target(struct sk_buff **pskb,
-+    const struct net_device *in, const struct net_device *out,
-+    unsigned int hooknum, const struct xt_target *target, const void *targinfo
-+#ifdef HAVE_TARGUSERINFO
-+    ,
-+    void *userinfo
-+#endif
-+    )
-+{
-+	/* WARNING: This code causes reentry within iptables.
-+	   This means that the iptables jump stack is now crap.  We
-+	   must return an absolute verdict. --RR */
-+	send_reset(*pskb, hooknum);
-+	return NF_DROP;
-+}
-+
-+static int xt_delude_check(const char *tablename, const void *e_void,
-+    const struct xt_target *target, void *targinfo,
-+#ifdef HAVE_TARGINFOSIZE
-+    unsigned int targinfosize,
-+#endif
-+    unsigned int hook_mask)
-+{
-+	if(hook_mask & ~((1 << NF_IP_LOCAL_IN) | (1 << NF_IP_FORWARD))) {
-+		printk(KERN_WARNING PFX "DELUDE may not be used in chains "
-+		       "other than INPUT and FORWARD\n");
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static struct xt_target xt_delude_info = {
-+	.name       = "DELUDE",
-+	.target     = xt_delude_target,
-+	.checkentry = xt_delude_check,
-+	.table      = "filter",
-+	.hooks      = (1 << NF_IP_LOCAL_IN) | (1 << NF_IP_FORWARD) |
-+	              (1 << NF_IP_LOCAL_OUT),
-+	.proto      = IPPROTO_TCP,
-+	.family     = AF_INET,
-+	.me         = THIS_MODULE,
-+};
-+
-+static int __init xt_delude_init(void)
-+{
-+	return xt_register_target(&xt_delude_info);
-+}
-+
-+static void __exit xt_delude_exit(void)
-+{
-+	xt_unregister_target(&xt_delude_info);
-+}
-+
-+module_init(xt_delude_init);
-+module_exit(xt_delude_exit);
-+MODULE_AUTHOR("Jan Engelhardt <jengelh@gmx.de>");
-+MODULE_DESCRIPTION("netfilter DELUDE target");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("ipt_DELUDE");
-Index: linux-2.6.21-rc3/net/netfilter/xt_portscan.c
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3/net/netfilter/xt_portscan.c
-@@ -0,0 +1,271 @@
-+/*
-+	portscan match for netfilter
-+
-+	Written by Jan Engelhardt, 2006 - 2007
-+	This program is free software; you can redistribute it and/or modify
-+	it under the terms of the GNU General Public License version 2 as
-+	published by the Free Software Foundation.
-+*/
-+#include <linux/in.h>
-+#include <linux/ip.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/skbuff.h>
-+#include <linux/stat.h>
-+#include <linux/tcp.h>
-+#include <linux/types.h>
-+#include <linux/version.h>
-+#include <linux/netfilter/x_tables.h>
-+#include <linux/netfilter/xt_tcpudp.h>
-+#include <linux/netfilter/xt_portscan.h>
-+#include <net/netfilter/nf_nat_rule.h>
-+#define PFX KBUILD_MODNAME ": "
-+
-+enum {
-+	TCP_FLAGS_ALL3 = TCP_FLAG_FIN | TCP_FLAG_RST | TCP_FLAG_SYN,
-+	TCP_FLAGS_ALL4 = TCP_FLAGS_ALL3 | TCP_FLAG_ACK,
-+	TCP_FLAGS_ALL6 = TCP_FLAGS_ALL4 | TCP_FLAG_PSH | TCP_FLAG_URG,
-+};
-+
-+/* Module parameters */
-+static unsigned int
-+	connmark_mask = ~0,
-+	packet_mask   = ~0,
-+	mark_seen     = 0x9,
-+	mark_synrcv   = 0x1,
-+	mark_closed   = 0x2,
-+	mark_synscan  = 0x3,
-+	mark_estab1   = 0x4,
-+	mark_estab2   = 0x5,
-+	mark_cnscan   = 0x6,
-+	mark_grscan   = 0x7,
-+	mark_valid    = 0x8;
-+
-+module_param(connmark_mask, uint, S_IRUGO | S_IWUSR);
-+module_param(packet_mask,   uint, S_IRUGO | S_IWUSR);
-+module_param(mark_seen,     uint, S_IRUGO | S_IWUSR);
-+module_param(mark_synrcv,   uint, S_IRUGO | S_IWUSR);
-+module_param(mark_closed,   uint, S_IRUGO | S_IWUSR);
-+module_param(mark_synscan,  uint, S_IRUGO | S_IWUSR);
-+module_param(mark_estab1,   uint, S_IRUGO | S_IWUSR);
-+module_param(mark_estab2,   uint, S_IRUGO | S_IWUSR);
-+module_param(mark_cnscan,   uint, S_IRUGO | S_IWUSR);
-+module_param(mark_grscan,   uint, S_IRUGO | S_IWUSR);
-+module_param(mark_valid,    uint, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(connmark_mask, "only set specified bits in connection mark");
-+MODULE_PARM_DESC(packet_mask,   "only set specified bits in packet mark");
-+MODULE_PARM_DESC(mark_seen,     "nfmark value for packet-seen state");
-+MODULE_PARM_DESC(mark_synrcv,   "connmark value for SYN Received state");
-+MODULE_PARM_DESC(mark_closed,   "connmark value for closed state");
-+MODULE_PARM_DESC(mark_synscan,  "connmark value for SYN Scan state");
-+MODULE_PARM_DESC(mark_estab1,   "connmark value for Established-1 state");
-+MODULE_PARM_DESC(mark_estab2,   "connmark value for Established-2 state");
-+MODULE_PARM_DESC(mark_cnscan,   "connmark value for Connect Scan state");
-+MODULE_PARM_DESC(mark_grscan,   "connmark value for Grab Scan state");
-+MODULE_PARM_DESC(mark_valid,    "connmark value for Valid state");
-+
-+/* TCP flag functions */
-+static inline int tflg_ack4(const struct tcphdr *th)
-+{
-+	return (tcp_flag_word(th) & TCP_FLAGS_ALL4) == TCP_FLAG_ACK;
-+}
-+
-+static inline int tflg_ack6(const struct tcphdr *th)
-+{
-+	return (tcp_flag_word(th) & TCP_FLAGS_ALL6) == TCP_FLAG_ACK;
-+}
-+
-+static inline int tflg_fin(const struct tcphdr *th)
-+{
-+	return (tcp_flag_word(th) & TCP_FLAGS_ALL3) == TCP_FLAG_FIN;
-+}
-+
-+static inline int tflg_rst(const struct tcphdr *th)
-+{
-+	return (tcp_flag_word(th) & TCP_FLAGS_ALL3) == TCP_FLAG_RST;
-+}
-+
-+static inline int tflg_rstack(const struct tcphdr *th)
-+{
-+	return (tcp_flag_word(th) & TCP_FLAGS_ALL4) ==
-+	       (TCP_FLAG_ACK | TCP_FLAG_RST);
-+}
-+
-+static inline int tflg_syn(const struct tcphdr *th)
-+{
-+	return (tcp_flag_word(th) & TCP_FLAGS_ALL4) == TCP_FLAG_SYN;
-+}
-+
-+static inline int tflg_synack(const struct tcphdr *th)
-+{
-+	return (tcp_flag_word(th) & TCP_FLAGS_ALL4) ==
-+	       (TCP_FLAG_SYN | TCP_FLAG_ACK);
-+}
-+
-+/* portscan functions */
-+static inline int xt_portscan_stealth(const struct tcphdr *th)
-+{
-+	/*
-+	 * "Connection refused" replies to our own probes must not be matched.
-+	 */
-+	if(tflg_rstack(th))
-+		return 0;
-+
-+	if(tflg_rst(th) && printk_ratelimit()) {
-+		printk(KERN_WARNING PFX "Warning: Pure RST received\n");
-+		return 0;
-+	}
-+
-+	/*
-+	 * -p tcp ! --syn -m conntrack --ctstate INVALID: Looking for non-start
-+	 * packets that are not associated with any connection -- this will
-+	 * match most scan types (NULL, XMAS, FIN) and ridiculous flag
-+	 * combinations (SYN-RST, SYN-FIN, SYN-FIN-RST, FIN-RST, etc.).
-+	 */
-+	return !tflg_syn(th);
-+}
-+
-+static inline int xt_portscan_full(int mark, enum ip_conntrack_info ctstate,
-+    int loopback, const struct tcphdr *tcph, int payload_len)
-+{
-+	if(mark == mark_estab2) {
-+		/*
-+		 * -m connmark --mark $ESTAB2
-+		 */
-+		if(tflg_ack4(tcph) && payload_len == 0)
-+			return mark; /* keep mark */
-+		else if(tflg_rst(tcph) || tflg_fin(tcph))
-+			return mark_grscan;
-+		else
-+			return mark_valid;
-+	} else if(mark == mark_estab1) {
-+		/*
-+		 * -m connmark --mark $ESTAB1
-+		 */
-+		if(tflg_rst(tcph) || tflg_fin(tcph))
-+			return mark_cnscan;
-+		else if(!loopback && tflg_ack4(tcph) && payload_len == 0)
-+			return mark_estab2;
-+		else
-+			return mark_valid;
-+	} else if(mark == mark_synrcv) {
-+		/*
-+		 * -m connmark --mark $SYN
-+		 */
-+		if(loopback && tflg_synack(tcph))
-+			return mark; /* keep mark */
-+		else if(loopback && tflg_rstack(tcph))
-+			return mark_closed;
-+		else if(tflg_ack6(tcph))
-+			return mark_estab1;
-+		else
-+			return mark_synscan;
-+	} else if(ctstate == IP_CT_NEW && tflg_syn(tcph)) {
-+		/*
-+		 * -p tcp --syn --ctstate NEW
-+		 */
-+		return mark_synrcv;
-+	}
-+	return mark;
-+}
-+
-+static int xt_portscan_match(const struct sk_buff *skb,
-+    const struct net_device *in, const struct net_device *out,
-+    const struct xt_match *match, const void *matchinfo, int offset,
-+    unsigned int protoff, int *hotdrop)
-+{
-+	const struct xt_portscan_info *info = matchinfo;
-+	enum ip_conntrack_info ctstate;
-+	struct ip_conntrack *ctdata;
-+	const struct tcphdr *tcph;
-+	struct tcphdr tcph_buf;
-+
-+	tcph = skb_header_pointer(skb, protoff, sizeof(tcph_buf), &tcph_buf);
-+	if(tcph == NULL)
-+		return 0;
-+
-+	/* Check for invalid packets: -m conntrack --ctstate INVALID */
-+	if((ctdata = ip_conntrack_get(skb, &ctstate)) == NULL) {
-+		if(info->match_stealth)
-+			return xt_portscan_stealth(tcph);
-+		/*
-+		 * If @ctdata is NULL, we cannot match the other scan
-+		 * types, return.
-+		 */
-+		return 0;
-+	}
-+
-+	/*
-+	 * If -m portscan was previously applied to this packet, the rules we
-+	 * simulate must not be run through again. And for speedup, do not call
-+	 * it either when the connection is already VALID.
-+	 */
-+	if((ctdata->mark & connmark_mask) == mark_valid ||
-+	  (skb->mark & packet_mask) != mark_seen)
-+	{
-+		unsigned int n;
-+		n = xt_portscan_full(ctdata->mark & connmark_mask, ctstate,
-+		    in == &loopback_dev, tcph,
-+		    skb->len - protoff - 4 * tcph->doff);
-+
-+		ctdata->mark = (ctdata->mark & ~connmark_mask) | n;
-+		((struct sk_buff *)skb)->mark =
-+			(skb->mark & ~packet_mask) | mark_seen;
-+	}
-+
-+	return (info->match_syn && ctdata->mark == mark_synscan) ||
-+	       (info->match_cn && ctdata->mark == mark_cnscan) ||
-+	       (info->match_gr && ctdata->mark == mark_grscan);
-+}
-+
-+static int xt_portscan_checkentry(const char *tablename, const void *entry,
-+    const struct xt_match *match, void *matchinfo,
-+#ifdef HAVE_MATCHINFOSIZE
-+    unsigned int matchinfosize,
-+#endif
-+    unsigned int hook_mask)
-+{
-+	const struct xt_portscan_info *info = matchinfo;
-+#ifdef HAVE_MATCHINFOSIZE
-+	if(matchinfosize != XT_ALIGN(sizeof(struct xt_portscan_info))) {
-+		printk(KERN_WARNING PFX "matchinfosize %u != %Zu\n",
-+		       matchinfosize,
-+		       XT_ALIGN(sizeof(struct xt_portscan_info)));
-+		return 0;
-+	}
-+#endif
-+	if((info->match_stealth & ~1) || (info->match_syn & ~1) ||
-+	  (info->match_cn & ~1) || (info->match_gr & ~1)) {
-+		printk(KERN_WARNING PFX "Invalid flags\n");
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static struct xt_match xt_portscan = {
-+	.name       = "portscan",
-+	.match      = xt_portscan_match,
-+	.checkentry = xt_portscan_checkentry,
-+	.matchsize  = sizeof(struct xt_portscan_info),
-+	.proto      = IPPROTO_TCP,
-+	.family     = AF_INET,
-+	.me         = THIS_MODULE,
-+};
-+
-+static int __init xt_portscan_init(void)
-+{
-+	return xt_register_match(&xt_portscan);
-+}
-+
-+static void __exit xt_portscan_exit(void)
-+{
-+	xt_unregister_match(&xt_portscan);
-+	return;
-+}
-+
-+module_init(xt_portscan_init);
-+module_exit(xt_portscan_exit);
-+MODULE_AUTHOR("Jan Engelhardt <jengelh@gmx.de>");
-+MODULE_DESCRIPTION("netfilter portscan match module");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("ipt_portscan");
-#<EOF>
+Eric
