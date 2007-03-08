@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbXCHRah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbXCHRgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932192AbXCHRah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:30:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbXCHRah
+	id S1752524AbXCHRgL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:36:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXCHRgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:30:37 -0500
-Received: from contrabass.post.ru ([85.21.78.5]:52692 "EHLO contrabass.post.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932244AbXCHRaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:30:35 -0500
-X-Greylist: delayed 1789 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Mar 2007 12:30:33 EST
-Date: Thu, 08 Mar 2007 02:41:32 +0300
-From: "Audra A Carlson" <offset7mentor@aera.net>
-To: dychairman_hal@portofcalcutta.com, rearnest@armsolutions.biz,
-       linux-kernel@vger.kernel.org
-Subject: brand new lists in: radiology, surgery, orthapedics, cardiology, anesthesiology, pediatrics
-Message-ID: <AAC67EE3.7684.3515C2D5@localhost>
+	Thu, 8 Mar 2007 12:36:11 -0500
+Received: from outmx001.isp.belgacom.be ([195.238.5.51]:60596 "EHLO
+	outmx001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbXCHRgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 12:36:09 -0500
+From: Jan De Luyck <ml_linuxkernel_20060528@kcore.org>
+Subject: EXT3-fs warning (device sdd2): dx_probe: Unrecognised inode hash code 232
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-X-OriginalArrivalTime: 07 Mar 2007 23:44:59.0672 (UTC) FILETIME=[9E505980:01C76112]
+Content-Disposition: inline
+To: linux-kernel@vger.kernel.org
+Date: Thu, 8 Mar 2007 18:35:54 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703081835.54380.ml_linuxkernel_20060528@kcore.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+
+Running 2.6.19.1 on AMD64.
+
+While copying some files on an ext3 partition, I got this in the logs:
+
+EXT3-fs warning (device sdd2): dx_probe: Unrecognised inode hash code 232
+Assertion failure in dx_probe() at fs/ext3/namei.c:384: "dx_get_limit(entries) 
+== dx_root_limit(dir, root->info.info_length)"
+----------- [cut here ] --------- [please bite here ] ---------
+Kernel BUG at fs/ext3/namei.c:384
+invalid opcode: 0000 [1] PREEMPT SMP
+CPU 0
+Modules linked in: xt_multiport iptable_filter ip_tables x_tables binfmt_misc 
+fuse parport_pc lp parport thermal fan button nls_iso8859_15 ntfs kqemu(P) 
+tcp_diag inet_diag w83627ehf i2c_isa cpufreq_ondemand powernow_k8 freq_table 
+processor snd_hda_intel snd_hda_codec snd_pcm evdev snd_timer psmouse snd 
+pcspkr floppy ehci_hcd soundcore snd_page_alloc usbcore k8temp hwmon ohci1394 
+ieee1394 forcedeth i2c_nforce2 i2c_core sg sr_mod cdrom
+Pid: 4018, comm: find Tainted: P      2.6.19.5 #1
+RIP: 0010:[<ffffffff802efe2b>]  [<ffffffff802efe2b>] dx_probe+0x18b/0x320
+RSP: 0018:ffff81006b789d28  EFLAGS: 00010292
+RAX: 0000000000000081 RBX: ffff810066f07018 RCX: 00000000c0000100
+RDX: ffff81006b788000 RSI: ffff81006b5c62c0 RDI: 00000000ffffffff
+RBP: 0000000000000000 R08: ffff81006b788000 R09: 0000000000000001
+R10: 0000000000000000 R11: ffffffff80212a20 R12: ffff810066e6f8e8
+R13: 0000000000000000 R14: 0000000000000000 R15: ffff810066f06730
+FS:  00002ae8c9f5c6d0(0000) GS:ffffffff80586000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00002af535db8086 CR3: 000000006b7b2000 CR4: 00000000000006e0
+Process find (pid: 4018, threadinfo ffff81006b788000, task ffff81006b5c62c0)
+Stack:  ffff81006b789dd4 ffff81006b789d88 ffff81007f79d750 ffff810066e6acc0
+ 0000000000000000 ffff810066f06730 ffff810066f06730 0000000000000000
+ ffff81007efca580 ffffffff802f13ab ffff810066e6ace8 000000007ff98780
+Call Trace:
+ [<ffffffff802f13ab>] ext3_htree_fill_tree+0xab/0x1e0
+ [<ffffffff802e8d69>] ext3_readdir+0x1a9/0x530
+ [<ffffffff802359b3>] vfs_readdir+0x73/0xc0
+ [<ffffffff802bea1f>] sys_getdents64+0x7f/0xd0
+ [<ffffffff802607fe>] system_call+0x7e/0x83
+ [<00002ae8c9dad41a>]
 
 
-7 new databases for the medical profession just released!
+Code: 0f 0b 68 f0 0c 48 80 c2 80 01 48 8b 54 24 08 48 89 54 24 10
+RIP  [<ffffffff802efe2b>] dx_probe+0x18b/0x320
+ RSP <ffff81006b789d28>
 
---> All New American Nurses Database: Over 59,000 nurses complete with addresses, phone and fax numbers
-All data is in Excel format and sortable by 30 specialties. MSA and CMSA fields also included.
-**Special Price Until March 15 $299**
+Yeah, I know it's tainted - just wanted to hear if anyone saw this one before. 
+System seems to be fine otherwise, I'll run a fsck on the filesystem lateron.
 
---> All New Radiologist Database :	  34,763 records for the USA  **Price Until March 15 $199**
---> All New Database of Surgeons : 	  39,517 records for the USA  **Price Until March 15 $199**
---> All New Orthapedics Database : 	  24,145 records for the USA  **Price Until March 15 $199**
---> All New Database of Cardiologists: 	  24,577 records for the USA  **Price Until March 15 $199**
---> All New Database of Anesthesiologists:38,155 records for the USA  **Price Until March 15 $199**
---> All New Pediatrics Database :	  60,684 records for the USA  **Price Until March 15 $249**
+Jan
 
-For more information or to place an order please call 206-600-5313 or for faster service send an
-email to sourcemd@hotmail.com
-
-Please accept our sincerest apologies if you did not request this email and rest assured that
-by sending us an email with "unlist" in the subject heading we will never contact you again.
-
-
+-- 
+Common sense is instinct, and enough of it is genius.
+		-- Josh Billings
