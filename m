@@ -1,123 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbXCHQsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbXCHQvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbXCHQsk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXCHQsj
+	id S1752546AbXCHQvg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:51:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbXCHQvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:48:39 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55506 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752545AbXCHQsi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:48:38 -0500
-Date: Thu, 8 Mar 2007 08:48:35 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: akpm@osdl.org, Marcelo Tosatti <marcelo@kvack.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mpm@selenic.com,
-       Manfred Spraul <manfred@colorfullife.com>
-Subject: Re: [SLUB 0/3] SLUB: The unqueued slab allocator V4
-In-Reply-To: <Pine.LNX.4.64.0703081022040.1615@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0703080836300.27191@schroedinger.engr.sgi.com>
-References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0703081022040.1615@skynet.skynet.ie>
+	Thu, 8 Mar 2007 11:51:36 -0500
+Received: from khc.piap.pl ([195.187.100.11]:39350 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752546AbXCHQvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 11:51:35 -0500
+To: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Oleksiy Kebkal <kebkal@gmail.com>,
+       Mike Frysinger <vapier.adi@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
+	<200703071019.55896.rgetz@blackfin.uclinux.org>
+	<57354eff0703071330k2395e9c8n58e12f2111dcb25a@mail.gmail.com>
+	<200703080844.32157.rgetz@blackfin.uclinux.org>
+	<20070308134800.GA30023@flint.arm.linux.org.uk>
+	<45F01AA8.7010608@gmx.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 08 Mar 2007 17:51:28 +0100
+In-Reply-To: <45F01AA8.7010608@gmx.net> (Carl-Daniel Hailfinger's message of "Thu, 08 Mar 2007 15:16:08 +0100")
+Message-ID: <m3r6rz3chb.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007, Mel Gorman wrote:
+Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net> writes:
 
-> On x86_64, it completed successfully and looked reliable. There was a 5%
-> performance loss on kernbench and aim9 figures were way down. However, with
-> slub_debug enabled, I would expect that so it's not a fair comparison
-> performance wise. I'll rerun the tests without debug and see what it looks
-> like if you're interested and do not think it's too early to worry about
-> performance instead of clarity. This is what I have for bl6-13 (machine
-> appears on test.kernel.org so additional details are there).
+> Unless you want two machines to monitor each other via serial console and
+> each of them has only one serial port. It's not perfect, but it works well
+> enough despite all claims to the contrary.
 
-No its good to start worrying about performance now. There are still some 
-performance issues to be ironed out in particular on NUMA. I am not sure
-f.e. how the reduction of partial lists affect performance.
+Sure, if you don't need "input" (only "console logger" function and
+not "initial input/output terminal"). It has nothing to do with the
+RTS "problem", though.
 
-> IA64 (machine not visible on TKO) curiously did not exhibit the same problems
-> on kernbench for Total CPU time which is very unexpected but you can see the
-> System CPU times. The AIM9 figures were a bit of an upset but again, I blame
-> slub_debug being enabled
+BTW: reasonably working, standard-compliant USB-RS232 converters
+cost $15 or so. Unfortunately not that all machines have USB ports.
 
-This was a single node box? Note that the 16kb page size has a major 
-impact on SLUB performance. On IA64 slub will use only 1/4th the locking 
-overhead as on 4kb platforms.
+I agree with Russell - mixing kernel console and application's
+port is asking for trouble.
 
-> (as an aside, the succes rates for high-order allocations are lower with SLUB.
-> Again, I blame slub_debug. I know that enabling SLAB_DEBUG has similar effects
-> because of red-zoning and the like)
+OTOH I wonder what does the device in question require WRT the
+serial port and WRT RTS line in particular.
+I know there are some half-duplex converters which drive RTS only
+while sending and which require CTS to send. They are perhaps a bit
+broken and require some CSMA-alike retransmissions etc.
 
-We have some additional patches here that reduce the max order for some 
-allocs. I believe the task_struct gets to be an order 2 alloc with V4,
-
-> Now, the bad news. This exploded on ppc64. It started going wrong early in the
-> boot process and got worse. I haven't looked closely as to why yet as there is
-> other stuff on my plate but I've included a console log that might be some use
-> to you. If you think you have a fix for it, feel free to send it on and I'll
-> give it a test.
-
-Hmmm... Looks like something is zapping an object. Try to rerun with 
-a kernel compiled with CONFIG_SLAB_DEBUG. I would expect similar results.
-
-> Brought up 4 CPUs
-> Node 0 CPUs: 0-3
-> mm/memory.c:111: bad pud c0000000050e4480.
-> could not vmalloc 20971520 bytes for cache!
-
-Hmmm... a bad pud? I need to look at how the puds are managed on power.
-
-> migration_cost=0,1000
-> *** SLUB: Redzone Inactive check fails in kmalloc-64@c0000000050de0f0 Slab
-
-An object was overwritten with zeros after it was freed.
-
-> RTAS daemon started
-> RTAS: event: 1, Type: Platform Error, Severity: 2
-> audit: initializing netlink socket (disabled)
-> audit(1173335571.256:1): initialized
-> Total HugeTLB memory allocated, 0
-> VFS: Disk quotas dquot_6.5.1
-> Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
-> JFS: nTxBlock = 8192, nTxLock = 65536
-> SELinux:  Registering netfilter hooks
-> io scheduler noop registered
-> io scheduler anticipatory registered (default)
-> io scheduler deadline registered
-> io scheduler cfq registered
-> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-> rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
-> rpaphp: Slot [0000:00:02.2](PCI location=U7879.001.DQD0T7T-P1-C4) registered
-> vio_register_driver: driver hvc_console registering
-> ------------[ cut here ]------------
-> Badness at mm/slub.c:1701
-
-Someone did a kmalloc(0, ...). Zero sized allocation are not flagged
-by SLAB but SLUB does.
-
-> Call Trace:
-> [C00000000506B730] [C000000000011188] .show_stack+0x6c/0x1a0 (unreliable)
-> [C00000000506B7D0] [C0000000001EE9F4] .report_bug+0x94/0xe8
-> [C00000000506B860] [C00000000038C85C] .program_check_exception+0x16c/0x5f4
-> [C00000000506B930] [C0000000000046F4] program_check_common+0xf4/0x100
-> --- Exception: 700 at .get_slab+0xbc/0x18c
->     LR = .__kmalloc+0x28/0x104
-> [C00000000506BC20] [C00000000506BCC0] 0xc00000000506bcc0 (unreliable)
-> [C00000000506BCD0] [C0000000000CE2EC] .__kmalloc+0x28/0x104
-> [C00000000506BD60] [C00000000022E724] .tty_register_driver+0x5c/0x23c
-> [C00000000506BE10] [C000000000477910] .hvsi_init+0x154/0x1b4
-> [C00000000506BEC0] [C000000000451B7C] .init+0x1c4/0x2f8
-> [C00000000506BF90] [C0000000000275D0] .kernel_thread+0x4c/0x68
-> mm/memory.c:111: bad pud c000000005762900.
-> mm/memory.c:111: bad pud c000000005762480.
-> ------------[ cut here ]------------
-> kernel BUG at mm/mmap.c:1999!
-
-More page table trouble.
-
+I don't know if one can expect RTS to stay low all the time. Even
+a simple /sbin/setserial from /etc/rc.* would drive it high for
+a moment. I'm afraid the only way which makes sense may be using
+a customized plug.
+-- 
+Krzysztof Halasa
