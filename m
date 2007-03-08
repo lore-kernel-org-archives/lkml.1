@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932738AbXCHHY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbXCHHe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932738AbXCHHY5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 02:24:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932942AbXCHHY5
+	id S932899AbXCHHe1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 02:34:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932932AbXCHHe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 02:24:57 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:58001 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932738AbXCHHY4 (ORCPT
+	Thu, 8 Mar 2007 02:34:27 -0500
+Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:40492 "EHLO
+	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932899AbXCHHe0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 02:24:56 -0500
-Message-ID: <45EFBA14.9090307@cosmosbay.com>
-Date: Thu, 08 Mar 2007 08:24:04 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Thu, 8 Mar 2007 02:34:26 -0500
+Message-ID: <45EFBC73.2030005@blueyonder.co.uk>
+Date: Thu, 08 Mar 2007 07:34:11 +0000
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Kyle Moffett <mrmacman_g4@mac.com>
-CC: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Anton Blanchard <anton@samba.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [patch] epoll use a single inode ...
-References: <45ED1A3C.6030707@argo.co.il> <200703071906.58405.dada1@cosmosbay.com> <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org> <200703071952.13219.dada1@cosmosbay.com> <20070307221401.GA16938@kryten> <Pine.LNX.4.64.0703071453080.5963@woody.linux-foundation.org> <f2b55d220703071725w7c09b93bgbf357aeb25a21c2b@mail.gmail.com> <6E1C86DF-D512-418C-B270-BC5C4316BC0A@mac.com>
-In-Reply-To: <6E1C86DF-D512-418C-B270-BC5C4316BC0A@mac.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: auxsvr@gmail.com, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
+References: <45E59D64.3070202@blueyonder.co.uk>	<200702281805.13822.auxsvr@gmail.com> <20070307214730.87859590.akpm@linux-foundation.org>
+In-Reply-To: <20070307214730.87859590.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 08 Mar 2007 08:24:06 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett a écrit :
-> 
-> Prefetching is also fairly critical on a Power4 or G5 PowerPC system as 
-> they have a long memory latency; an L2-cache miss can cost 200+ cycles.  
-> On such systems the "dcbt" prefetch instruction brings in a single 
-> 128-byte cacheline and has no serializing effects whatsoever, making it 
-> ideal for use in a linked-list-traversal inner loop.
+Andrew Morton wrote:
+> (cc restored.  Please always do reply-to-all)
+>
+>   
+>> On Wed, 28 Feb 2007 18:05:13 +0200 auxsvr@gmail.com wrote:
+>> On Wednesday 28 February 2007 17:19, Sid Boyce wrote:
+>>     
+>>> openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to
+>>> require a password to unlock, but it asks for password. When the screen
+>>> unlocks, kwin is gone with no errors logged in /var/log/kdm or
+>>> /var/log/messages. No problems with 2.6.20.
+>>>
+>>> Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2.
+>>> Regards
+>>> Sid.
+>>>       
+>> This is the linux kernel mailing list. Perhaps you should post your problem to 
+>> the opensuse mailing list.
+>>     
+>
+> 2.6.20 worked.
+>
+> 2.6.20-rc2 did not.
+>
+> Working theory: the kernel broke.
+>
+> Sid, the chances that anyone can work out what caused this are pretty low. 
+> It would be great if you could perform a git bisection search sometime in
+> the next few weeks, work out which commit caused this.
+>
+> Thanks.
+>
+>
+>
+>   
+I shall go back to 2.6.20-git3 and work forward. Up to 2.6.20-git2 was OK.
+Regards
+Sid.
 
-OK, 200 cycles...
-
-But what is the cost of the conditional branch you added in prefetch(x) ?
-
-if (!x) return;
-
-(correctly predicted or not, but do powerPC have a BTB ?)
-
-About the NULL 'potential problem', maybe we could use a dummy nil (but 
-mapped) object, and use its address in lists, ie compare for &nil instead of 
-NULL. This would avoid :
-
-- The conditional test in some prefetch() implementations
-- The potential TLB problem with the NULL value.
-
-
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
 
