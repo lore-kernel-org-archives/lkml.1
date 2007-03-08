@@ -1,53 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbXCHQqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbXCHQsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752535AbXCHQqI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:46:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXCHQqH
+	id S1752545AbXCHQsk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXCHQsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:46:07 -0500
-Received: from nevyn.them.org ([66.93.172.17]:57787 "EHLO nevyn.them.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752535AbXCHQqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:46:06 -0500
-X-Greylist: delayed 1430 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Mar 2007 11:46:06 EST
-Date: Thu, 8 Mar 2007 11:21:58 -0500
-From: Daniel Jacobowitz <dan@debian.org>
-To: Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>, David Brown <dmlb2000@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gdb@sourceware.org
-Subject: Re: PAGE_SIZE Availability Inconsistency
-Message-ID: <20070308162158.GA5702@caradoc.them.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Roman Zippel <zippel@linux-m68k.org>,
-	David Brown <dmlb2000@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	gdb@sourceware.org
-References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com> <20070306092917.GA5226@infradead.org> <200703080318.04631.zippel@linux-m68k.org> <20070308090031.GB7373@infradead.org> <1173369229.3550.2.camel@laptopd505.fenrus.org> <20070308160852.GB9916@infradead.org>
+	Thu, 8 Mar 2007 11:48:39 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55506 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752545AbXCHQsi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 11:48:38 -0500
+Date: Thu, 8 Mar 2007 08:48:35 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: akpm@osdl.org, Marcelo Tosatti <marcelo@kvack.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mpm@selenic.com,
+       Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: [SLUB 0/3] SLUB: The unqueued slab allocator V4
+In-Reply-To: <Pine.LNX.4.64.0703081022040.1615@skynet.skynet.ie>
+Message-ID: <Pine.LNX.4.64.0703080836300.27191@schroedinger.engr.sgi.com>
+References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0703081022040.1615@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070308160852.GB9916@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 08, 2007 at 04:08:52PM +0000, Christoph Hellwig wrote:
-> No, no no.  We should never export PAGE_SIZE.  We might export NBPG
-> as deprecated symbol for gdb if it really needs it, but that should
-> happen only on a.out systems, and it it should be a true constant,
-> not depending on PAGE_SIZE.
-> 
-> I've Cc'ed the gdb list on whether they have any comments on this
-> issue.
+On Thu, 8 Mar 2007, Mel Gorman wrote:
 
-Sounds reasonable.  I do not believe that GDB has any dependence on
-PAGE_SIZE; bfd (i.e. both gdb and binutils) use NBPG on a large number
-of systems.  Looks like i386, alpha, m68k, s390, vax - but don't quote
-me on that, I had to guess from the configure script.
+> On x86_64, it completed successfully and looked reliable. There was a 5%
+> performance loss on kernbench and aim9 figures were way down. However, with
+> slub_debug enabled, I would expect that so it's not a fair comparison
+> performance wise. I'll rerun the tests without debug and see what it looks
+> like if you're interested and do not think it's too early to worry about
+> performance instead of clarity. This is what I have for bl6-13 (machine
+> appears on test.kernel.org so additional details are there).
 
--- 
-Daniel Jacobowitz
-CodeSourcery
+No its good to start worrying about performance now. There are still some 
+performance issues to be ironed out in particular on NUMA. I am not sure
+f.e. how the reduction of partial lists affect performance.
+
+> IA64 (machine not visible on TKO) curiously did not exhibit the same problems
+> on kernbench for Total CPU time which is very unexpected but you can see the
+> System CPU times. The AIM9 figures were a bit of an upset but again, I blame
+> slub_debug being enabled
+
+This was a single node box? Note that the 16kb page size has a major 
+impact on SLUB performance. On IA64 slub will use only 1/4th the locking 
+overhead as on 4kb platforms.
+
+> (as an aside, the succes rates for high-order allocations are lower with SLUB.
+> Again, I blame slub_debug. I know that enabling SLAB_DEBUG has similar effects
+> because of red-zoning and the like)
+
+We have some additional patches here that reduce the max order for some 
+allocs. I believe the task_struct gets to be an order 2 alloc with V4,
+
+> Now, the bad news. This exploded on ppc64. It started going wrong early in the
+> boot process and got worse. I haven't looked closely as to why yet as there is
+> other stuff on my plate but I've included a console log that might be some use
+> to you. If you think you have a fix for it, feel free to send it on and I'll
+> give it a test.
+
+Hmmm... Looks like something is zapping an object. Try to rerun with 
+a kernel compiled with CONFIG_SLAB_DEBUG. I would expect similar results.
+
+> Brought up 4 CPUs
+> Node 0 CPUs: 0-3
+> mm/memory.c:111: bad pud c0000000050e4480.
+> could not vmalloc 20971520 bytes for cache!
+
+Hmmm... a bad pud? I need to look at how the puds are managed on power.
+
+> migration_cost=0,1000
+> *** SLUB: Redzone Inactive check fails in kmalloc-64@c0000000050de0f0 Slab
+
+An object was overwritten with zeros after it was freed.
+
+> RTAS daemon started
+> RTAS: event: 1, Type: Platform Error, Severity: 2
+> audit: initializing netlink socket (disabled)
+> audit(1173335571.256:1): initialized
+> Total HugeTLB memory allocated, 0
+> VFS: Disk quotas dquot_6.5.1
+> Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+> JFS: nTxBlock = 8192, nTxLock = 65536
+> SELinux:  Registering netfilter hooks
+> io scheduler noop registered
+> io scheduler anticipatory registered (default)
+> io scheduler deadline registered
+> io scheduler cfq registered
+> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+> rpaphp: Slot [0000:00:02.2](PCI location=U7879.001.DQD0T7T-P1-C4) registered
+> vio_register_driver: driver hvc_console registering
+> ------------[ cut here ]------------
+> Badness at mm/slub.c:1701
+
+Someone did a kmalloc(0, ...). Zero sized allocation are not flagged
+by SLAB but SLUB does.
+
+> Call Trace:
+> [C00000000506B730] [C000000000011188] .show_stack+0x6c/0x1a0 (unreliable)
+> [C00000000506B7D0] [C0000000001EE9F4] .report_bug+0x94/0xe8
+> [C00000000506B860] [C00000000038C85C] .program_check_exception+0x16c/0x5f4
+> [C00000000506B930] [C0000000000046F4] program_check_common+0xf4/0x100
+> --- Exception: 700 at .get_slab+0xbc/0x18c
+>     LR = .__kmalloc+0x28/0x104
+> [C00000000506BC20] [C00000000506BCC0] 0xc00000000506bcc0 (unreliable)
+> [C00000000506BCD0] [C0000000000CE2EC] .__kmalloc+0x28/0x104
+> [C00000000506BD60] [C00000000022E724] .tty_register_driver+0x5c/0x23c
+> [C00000000506BE10] [C000000000477910] .hvsi_init+0x154/0x1b4
+> [C00000000506BEC0] [C000000000451B7C] .init+0x1c4/0x2f8
+> [C00000000506BF90] [C0000000000275D0] .kernel_thread+0x4c/0x68
+> mm/memory.c:111: bad pud c000000005762900.
+> mm/memory.c:111: bad pud c000000005762480.
+> ------------[ cut here ]------------
+> kernel BUG at mm/mmap.c:1999!
+
+More page table trouble.
+
