@@ -1,105 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXCHTV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXCHTZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112AbXCHTV6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 14:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXCHTV5
+	id S933106AbXCHTZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 14:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933114AbXCHTZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 14:21:57 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:43861 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933112AbXCHTV4 (ORCPT
+	Thu, 8 Mar 2007 14:25:31 -0500
+Received: from pne-smtpout1-sn1.fre.skanova.net ([81.228.11.98]:39999 "EHLO
+	pne-smtpout1-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933106AbXCHTZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 14:21:56 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 8 Mar 2007 11:21:18 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "David M. Lloyd" <dmlloyd@flurg.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
-In-Reply-To: <Pine.LNX.4.64.0703080852170.10832@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703081113060.7515@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703071712210.3672@alien.or.mcafeemobile.com>
- <1173364264.6891.3.camel@localhost> <Pine.LNX.4.64.0703080742220.7015@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703080812290.10832@woody.linux-foundation.org>
- <Pine.LNX.4.64.0703080825420.7015@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703080852170.10832@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 8 Mar 2007 14:25:30 -0500
+Message-ID: <45F062E1.8050007@gmail.com>
+Date: Thu, 08 Mar 2007 20:24:17 +0100
+From: johan henriksson <jhn98032@gmail.com>
+User-Agent: Mozilla Thunderbird 1.0 (Windows/20041206)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [patch 2.6.20-1] radeonfb: Add support for Radeon xpress 200m
+References: <45ECB2D0.3080205@telia.com> <45EEEBC9.1010002@redhat.com> <45EF275E.4060300@gmail.com> <45F03305.8040507@redhat.com>
+In-Reply-To: <45F03305.8040507@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007, Linus Torvalds wrote:
-
-> 
-> 
-> On Thu, 8 Mar 2007, Davide Libenzi wrote:
-> > 
-> > The reason for the special function, was not to provide a non-blocking 
-> > behaviour with zero timeout (that just a side effect), but to read the 
-> > siginfo. I was all about using read(2) (and v1 used it), but when you have 
-> > to transfer complex structures over it, it becomes hell. How do you 
-> > cleanly compat over a f_op->read callback for example?
-> 
-> I agree that it gets a bit "interesting", and one option might be that the 
-> "read()" interface just gets the signal number and the minimal siginfo 
-> information, which is, after all, what 99% of all apps actually care
-> about.
-> 
-> But "siginfo_t" is really a *horrible* structure. Nobody sane should ever 
-> use siginfo_t, and the designer of that thing was so high on LSD that it's 
-> not even funny. Re-using fields in a union? Values that depend on other 
-> bits in the thing in random manners? 
-> 
-> In other words, I bet that we could just make it a *lot* better by making 
-> the read structure be:
-> 
->  - 16 4-byte fields (fixed 64-byte packet), where each field is an 
->    uint32_t (we could even do it in network byte order if we care and if 
->    you want to just pipe the information from one machine to another, but 
->    that sounds a bit excessive ;)
-> 
->  - Just put the fields people actually use at fixed offsets: si_signo, 
->    si_errno, si_pid, si_uid, si_band, si_fd.
-> 
->  - that still leaves room for the other cases if anybody ever wants them 
->    (but I doubt it - things like si_addr are really only useful for 
->    synchronous signals that are actually done as *signals*, since you 
->    cannot defer a SIGBUS/SIGSEGV/SIGILL *anyway*).
-> 
-> So I bet 99% of users actually just want si_signo, while some small subset 
-> might want the SIGCHLD info and some of the special cases (eg we migth 
-> want to add si_addr as a 64-bit thing just because the USB stack sends a 
-> SI_ASYNCIO thing for completed URB's, so a libusb might want it, but 
-> that's probably the only such user).
-> 
-> And it would be *cleaner* than the mess that is siginfo_t..
-> 
-> (I realize that siginfo_t is ugly because it built up over time, using the 
-> same buffer for many different things. I'm just saying that we can 
-> probably do better by *not* using it, and just laying things out in a 
-> cleaner manner to begin with, which also solves any compatibility issues)
-
-I can do that, no problem. But isn't it better to recognize that this kind 
-of data just can't be shipped through a non compat-able function?
-Like, for example, the current trend to say "just use u64 for a pointer, 
-it'll be fine". I remeber, a long time ago when the i386 architecture came 
-out, to say "Wow! 4GB is gonna last *forever*!", let's use u32 for 
-pointers. Well, forever is almost here in my watches. And all the 
-userspace code using APIs assuming to cleanly store a pointer in a u32 
-will have to be re-factored.
-So, to cut it short, I can do the pseudo-siginfo read(2), but I don't 
-like it too much (little, actually). The siginfo, as bad as it is, is a 
-standard used in many POSIX APIs (hence even in kernel), and IMO if we 
-want to send that back, a struct siginfo should be.
-No?
+Added support for radeon xpress 200m(rs480).
+Note that the card doesn't like dynclk turned on.
 
 
+Please CC replies to jhn98032@gmail.com
 
-- Davide
 
+Signed-off-by: Johan Henriksson <jhn98032@gmail.com>
+---
 
+diff -upr linux-2.6.20.1-vanilla/drivers/video/aty/ati_ids.h linux-2.6.20.1/drivers/video/aty/ati_ids.h
+--- linux-2.6.20.1-vanilla/drivers/video/aty/ati_ids.h	Tue Feb 20 07:34:32 2007
++++ linux-2.6.20.1/drivers/video/aty/ati_ids.h	Thu Mar  8 19:13:04 2007
+@@ -209,4 +209,4 @@
+ #define PCI_CHIP_R423_5D57              0x5D57
+ #define PCI_CHIP_RS350_7834             0x7834
+ #define PCI_CHIP_RS350_7835             0x7835
+-
++#define PCI_CHIP_RS480_5955             0x5955
+diff -upr linux-2.6.20.1-vanilla/drivers/video/aty/radeon_base.c linux-2.6.20.1/drivers/video/aty/radeon_base.c
+--- linux-2.6.20.1-vanilla/drivers/video/aty/radeon_base.c	Tue Feb 20 07:34:32 2007
++++ linux-2.6.20.1/drivers/video/aty/radeon_base.c	Thu Mar  8 19:13:04 2007
+@@ -100,6 +100,8 @@
+ 	{ PCI_VENDOR_ID_ATI, id, PCI_ANY_ID, PCI_ANY_ID, 0, 0, (flags) | (CHIP_FAMILY_##family) }
+ 
+ static struct pci_device_id radeonfb_pci_table[] = {
++        /* Radeon Xpress 200m */
++	CHIP_DEF(PCI_CHIP_RS480_5955,   RS480,  CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
+ 	/* Mobility M6 */
+ 	CHIP_DEF(PCI_CHIP_RADEON_LY, 	RV100,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+ 	CHIP_DEF(PCI_CHIP_RADEON_LZ,	RV100,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+@@ -1990,7 +1992,8 @@ static void radeon_identify_vram(struct 
+ 	/* framebuffer size */
+         if ((rinfo->family == CHIP_FAMILY_RS100) ||
+             (rinfo->family == CHIP_FAMILY_RS200) ||
+-            (rinfo->family == CHIP_FAMILY_RS300)) {
++            (rinfo->family == CHIP_FAMILY_RS300) ||
++	    (rinfo->family == CHIP_FAMILY_RS480) ) {
+           u32 tom = INREG(NB_TOM);
+           tmp = ((((tom >> 16) - (tom & 0xffff) + 1) << 6) * 1024);
+ 
+@@ -2329,7 +2332,7 @@ static int __devinit radeonfb_pci_regist
+ 		/* -2 is special: means  ON on mobility chips and do not
+ 		 * change on others
+ 		 */
+-		radeonfb_pm_init(rinfo, rinfo->is_mobility ? 1 : -1, ignore_devlist, force_sleep);
++		radeonfb_pm_init(rinfo, rinfo->is_mobility && rinfo->family != CHIP_FAMILY_RS480 ? 1 : -1, ignore_devlist, force_sleep);
+ 	} else
+ 		radeonfb_pm_init(rinfo, default_dynclk, ignore_devlist, force_sleep);
+ 
+diff -upr linux-2.6.20.1-vanilla/drivers/video/aty/radeonfb.h linux-2.6.20.1/drivers/video/aty/radeonfb.h
+--- linux-2.6.20.1-vanilla/drivers/video/aty/radeonfb.h	Tue Feb 20 07:34:32 2007
++++ linux-2.6.20.1/drivers/video/aty/radeonfb.h	Thu Mar  8 19:13:04 2007
+@@ -48,6 +48,7 @@ enum radeon_family {
+ 	CHIP_FAMILY_RV350,
+ 	CHIP_FAMILY_RV380,    /* RV370/RV380/M22/M24 */
+ 	CHIP_FAMILY_R420,     /* R420/R423/M18 */
++	CHIP_FAMILY_RS480,
+ 	CHIP_FAMILY_LAST,
+ };
+ 
+@@ -64,7 +65,8 @@ enum radeon_family {
+ 				((rinfo)->family == CHIP_FAMILY_RV350) || \
+ 				((rinfo)->family == CHIP_FAMILY_R350)  || \
+ 				((rinfo)->family == CHIP_FAMILY_RV380) || \
+-				((rinfo)->family == CHIP_FAMILY_R420))
++				((rinfo)->family == CHIP_FAMILY_R420)  || \
++		                ((rinfo)->family == CHIP_FAMILY_RS480) )
+ 
+ /*
+  * Chip flags
