@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933316AbXCHUyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933333AbXCHUzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933316AbXCHUyh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933315AbXCHUyh
+	id S933333AbXCHUzy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933338AbXCHUzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:54:37 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:52746 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933316AbXCHUyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:54:36 -0500
-Date: Thu, 8 Mar 2007 14:54:32 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com,
-       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-Subject: Re: [RFC][Patch 1/6] integrity: new hooks
-Message-ID: <20070308205431.GA2750@sergelap.austin.ibm.com>
-References: <20070308170001.GA17304@sergelap.austin.ibm.com> <33939.11500.qm@web36612.mail.mud.yahoo.com> <20070308184646.GC21099@sergelap.austin.ibm.com> <200703082038.l28Kcowq023278@turing-police.cc.vt.edu>
-MIME-Version: 1.0
+	Thu, 8 Mar 2007 15:55:54 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:42343 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933333AbXCHUzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:55:53 -0500
+Date: Thu, 8 Mar 2007 12:42:21 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Daniel Arai <arai@vmware.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+Message-ID: <20070308204221.GM10574@sequoia.sous-sol.org>
+References: <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F06720.8080901@goop.org> <20070308194740.GJ10574@sequoia.sous-sol.org> <45F06989.8030207@goop.org> <20070308201033.GK10574@sequoia.sous-sol.org> <45F06FB3.105@goop.org> <20070308202350.GL10574@sequoia.sous-sol.org> <45F07334.7010207@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200703082038.l28Kcowq023278@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <45F07334.7010207@goop.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Valdis.Kletnieks@vt.edu (Valdis.Kletnieks@vt.edu):
-> On Thu, 08 Mar 2007 12:46:47 CST, "Serge E. Hallyn" said:
-> > I think it should be done as both.  The part which measures the
-> > integrity of files should be an integrity subsystem.  The part which
-> > uses those results to either allow/refuse actions or take some other
-> > action (i.e. shut down the system) should be an lsm.
-> 
-> That would be good - the allow/deny parts, being security, can use the
-> existing LSM hooks, and the integrity part can use the LIM hooks.
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Maybe hooking into genapic is the right way to mop up all the uses of
+> send_IPI and its variants.  But from a quick grep it doesn't look like
+> they get called from too many places...  Most of the callers seem to be
+> in arch/i386/kernek/smp.c, so they should be pretty easy to isolate.
 
-Yes, the only problem is that there will still be 'duplication' at some
-call sites.  For instance even if something is only doing measurements, at
-setxattr, for instance, it still needs to be able to refuse a change if
-it can't allocate memory to store measurement data.  So we still might
-need an fsnotify-like approach to consolidate security and integrity
-hooks.  (As Mimi pointed out, I guess it'll have to make sure to call
-the security ones first)
-
-I suppose something more clever might be doable - for instance since we
-are pairing the measurement module with an enforcement module, the
-enforcement module could kmalloc() what the measurement module will need
-for data and return -ENOMEM if need be, then the measurement module just
-fills the data in.  If there's no place for it to store the data, then
-it knows that the enforcement module must be ok not having that data.
-
-> Umm... wait a minute - *what* Linux Integrity Module hooks? :)
-
--serge
+Yeah, we'll see once we are crashing and debugging some code ;-)
