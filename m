@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbXCHHFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXCHHRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932798AbXCHHFH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 02:05:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbXCHHFH
+	id S932819AbXCHHRV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 02:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXCHHRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 02:05:07 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53530 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932798AbXCHHFF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 02:05:05 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>,
-       Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
-	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
-	<20070305084257.GA4464@mellanox.co.il>
-	<20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org>
-	<45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>
-	<45ED8A12.5040803@intel.com>
-	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
-	<45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com>
-	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>
-	<20070307185317.5601d452.akpm@linux-foundation.org>
-Date: Wed, 07 Mar 2007 23:58:22 -0700
-In-Reply-To: <20070307185317.5601d452.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 7 Mar 2007 18:53:17 -0800")
-Message-ID: <m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 8 Mar 2007 02:17:21 -0500
+Received: from mtwmail.mindtree.com.60.200.203.in-addr.arpa ([203.200.60.136]:48680
+	"EHLO mailwo11.mindtree.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932819AbXCHHRU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 02:17:20 -0500
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.2826
+Content-Class: urn:content-classes:message
+Importance: normal
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Locking function (interrupt handler) in the L1/L2 cache
+Date: Thu, 8 Mar 2007 12:47:19 +0530
+Message-ID: <2C15D00D262B7245B1D8D1799F04D88F04A5874B@mtw01ex01.mindtree.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Locking function (interrupt handler) in the L1/L2 cache
+thread-index: AcdhUc8b+CHq1c7cR3CrYGHlULDo8Q==
+From: "Parav K Pandit" <parav_pandit@mindtree.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 08 Mar 2007 07:17:21.0710 (UTC) FILETIME=[D03AACE0:01C76151]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Hi,
 
->
-> That's:
->
->         pci_restore_pcix_state(dev);
->         pci_restore_msi_state(dev);
->         WARN_ON(!hlist_empty(&dev->saved_cap_space));
->
->         return 0;
+I have MPC8548 Linux based firewall which will mostly do packet processing
+for 80% time.
+So obviously most of the time it will RX and TX packets through gianfar
+Ethernet driver.
 
-Hmm.  Either I am confused of I just found an unanticipated leak.
+I want to lock my interrupt handler of this driver in the L1 cache.
 
-pci_restore_msi_state should be out of the picture as we don't yet
-have ppc msi support and I don't think the g5 generation hardware
-supported it either.
+1. Are there any kernel APIs to lock any function and data in the L1/L2
+cache?
 
-The only case I can see which might trigger this is if we saved
-pci-X state and then didn't restore it because we could not find
-the capability on restore.
+2. How can I use "icbtls" - Instruction Cache Block Touch and Lock Set" for
+locking my interrupt handler?
 
-Any chance you could walk that list and find the cap_nr of the remaining
-element?  
+3. Is "icbtls" is the correct instruction at which I am looking at?
 
-Something like:
-{
-	struct pci_cap_saved_state *tmp;
-	struct hlist_node *pos;
+4. How do I find end address of the interrupt handler or any other function
+and how do we pass it to cache locking instructions? (Because it can happen
+that interrupt handler size is more than a cache line, not aligned etc)?
 
-	hlist_for_each_entry(tmp, pos, &pci_dev->saved_cap_space, next)
-        	printk(KERN_INFO "saved_cap: 0x%02x\n", tmp->cap_nr);
-}
+5. Can we enhance request_irq() function to take an additional parameter to
+lock the interrupt handler in the cache?
 
-Until I get the best scenario I can come up with is a tg3 hardware bug
-that doesn't renable the pci-X capability after a restore of power state.
+I understand that if my interrupt handler is going to be called most of the
+time then it is very likely to happen that OS will not flush the same, but
+there is no guarantee for it.
 
-Getting that cap_nr will at least allow me to be certain if I am dealing
-with msi, pci-X or pci-e.
+Regards,
+Parav Pandit
 
-Unanticipated bugs aren't supposed to be this easy to find!
 
-Eric
-
+DISCLAIMER:
+This message (including attachment if any) is confidential and may be privileged. Before opening attachments please check them for viruses and defects. MindTree Consulting Limited (MindTree) will not be responsible for any viruses or defects or any forwarded attachments emanating either from within MindTree or outside. If you have received this message by mistake please notify the sender by return  e-mail and delete this message from your system. Any unauthorized use or dissemination of this message in whole or in part is strictly prohibited.  Please note that e-mails are susceptible to change and MindTree shall not be liable for any improper, untimely or incomplete transmission.
