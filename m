@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933045AbXCHUj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933056AbXCHUkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933045AbXCHUj7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933056AbXCHUj7
+	id S933056AbXCHUkj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbXCHUki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:39:59 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34340 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933045AbXCHUj6 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:39:58 -0500
-Message-Id: <200703082038.l28Kcowq023278@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com,
-       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-Subject: Re: [RFC][Patch 1/6] integrity: new hooks
-In-Reply-To: Your message of "Thu, 08 Mar 2007 12:46:47 CST."
-             <20070308184646.GC21099@sergelap.austin.ibm.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070308170001.GA17304@sergelap.austin.ibm.com> <33939.11500.qm@web36612.mail.mud.yahoo.com>
-            <20070308184646.GC21099@sergelap.austin.ibm.com>
+	Thu, 8 Mar 2007 15:40:38 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4568 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933065AbXCHUkh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:40:37 -0500
+Date: Thu, 8 Mar 2007 20:40:21 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Oleksiy Kebkal <kebkal@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Mike Frysinger <vapier.adi@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org
+Subject: Re: should RTS init in serial core be tied to CRTSCTS
+Message-ID: <20070308204020.GE30023@flint.arm.linux.org.uk>
+Mail-Followup-To: Robin Getz <rgetz@blackfin.uclinux.org>,
+	Oleksiy Kebkal <kebkal@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+	Mike Frysinger <vapier.adi@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-serial@vger.kernel.org
+References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com> <200703080844.32157.rgetz@blackfin.uclinux.org> <20070308134800.GA30023@flint.arm.linux.org.uk> <200703081523.39698.rgetz@blackfin.uclinux.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1173386330_10421P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 08 Mar 2007 15:38:50 -0500
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703081523.39698.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1173386330_10421P
-Content-Type: text/plain; charset=us-ascii
+On Thu, Mar 08, 2007 at 03:23:39PM -0500, Robin Getz wrote:
+> On Thu 8 Mar 2007 08:48, Russell King pondered:
+> > On Thu, Mar 08, 2007 at 08:44:31AM -0500, Robin Getz wrote:
+> > > That would let you change things are run time, but the problem is at
+> > > boot time. A default setting needs to be set, so when things initialize,
+> > > and proc does not exist yet, it is still set properly...
+> >
+> > I disagree.  "proc does not exist yet" - the only time that applies is
+> > long before userspace as active.
+> 
+> Right - We both agree - And setting console=/dev/null in the bootargs still 
+> does not help.
 
-On Thu, 08 Mar 2007 12:46:47 CST, "Serge E. Hallyn" said:
-> I think it should be done as both.  The part which measures the
-> integrity of files should be an integrity subsystem.  The part which
-> uses those results to either allow/refuse actions or take some other
-> action (i.e. shut down the system) should be an lsm.
+Ok, good.
 
-That would be good - the allow/deny parts, being security, can use the
-existing LSM hooks, and the integrity part can use the LIM hooks.
+> When the kernel initializes the UART Port, it asserts RTS - which confuses
+> the host it is attached to (in this case, the Linux system is the serial 
+> peripheral).
 
-Umm... wait a minute - *what* Linux Integrity Module hooks? :)
+... which occurs /after/ userspace is up and running, when sysfs is
+available.  So putting it in sysfs is reasonable.
 
---==_Exmh_1173386330_10421P
-Content-Type: application/pgp-signature
+> How about adding a module_param to serial core, which the default is to
+> assert RTS (as is today), and someone (like me) can override with
+> serial_core.RTS=0
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+So all ports change behaviour with a single parameter?  That'll stop
+NULL modem cables with hardware flow control enabled working on other
+ports without compensatory tweaking.
 
-iD8DBQFF8HRacC3lWbTT17ARAj8WAJsHuuDA4SzMJuPbWLRQssyafUU6WQCgqXoE
-VVsLi7Z1znXkS+vOmAdTc5E=
-=RfDQ
------END PGP SIGNATURE-----
+No, doing a system-wide change like that is _not_ a solution - it just
+moves the problem elsewhere.
 
---==_Exmh_1173386330_10421P--
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
