@@ -1,58 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbXCHR5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbXCHR7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932332AbXCHR5F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932370AbXCHR5E
+	id S1752379AbXCHR7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbXCHR7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:57:04 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34876 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932332AbXCHR5D (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:57:03 -0500
-Message-Id: <200703081756.l28HuwDD016018@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc3-mm1
-In-Reply-To: Your message of "Wed, 07 Mar 2007 20:18:39 PST."
-             <20070307201839.6f45735b.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070307201839.6f45735b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1173376618_10421P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 08 Mar 2007 12:56:58 -0500
+	Thu, 8 Mar 2007 12:59:20 -0500
+Received: from ozlabs.org ([203.10.76.45]:52498 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752379AbXCHR7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 12:59:20 -0500
+Date: Thu, 8 Mar 2007 11:57:29 -0600
+From: Anton Blanchard <anton@samba.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>, David Brown <dmlb2000@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gdb@sourceware.org
+Subject: Re: PAGE_SIZE Availability Inconsistency
+Message-ID: <20070308175729.GA7054@kryten>
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com> <20070306092917.GA5226@infradead.org> <200703080318.04631.zippel@linux-m68k.org> <20070308090031.GB7373@infradead.org> <1173369229.3550.2.camel@laptopd505.fenrus.org> <20070308160852.GB9916@infradead.org> <45F0426C.8000009@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F0426C.8000009@zytor.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1173376618_10421P
-Content-Type: text/plain; charset=us-ascii
 
-On Wed, 07 Mar 2007 20:18:39 PST, Andrew Morton said:
->   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm1/
+> By the way, it's a massive snafu that the swap area magic number is 
+> dependent on PAGE_SIZE.  There is absolutely no good reason for that.
 
-Mostly working for me.
+Agreed, its been a big problem booting between 4kB and 64kB kernels on
+ppc64.
 
-> - The wireless changes in here need a lot of testers, please.  It is major
->   rework.
-
-Working on it - the new MAC80211 stack landed in the -mm tree, but the matching
-iwlwifi driver for the Intel 3945ABG is still out-of-tree and acting wonky
-for me.  The card comes up, 'iwlist scanning' sees 4 access points, but it
-won't associate.  Not sure what I borked up.
-
---==_Exmh_1173376618_10421P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFF8E5qcC3lWbTT17ARAskJAKCnwMX+7BwBCgZfDKDHxoIoV7OvMwCfR0Hf
-FxdW42be1n+V87jTXBYTmHs=
-=Li6F
------END PGP SIGNATURE-----
-
---==_Exmh_1173376618_10421P--
+Anton
