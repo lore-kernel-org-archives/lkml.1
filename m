@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbXCHGSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbXCHGcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752266AbXCHGSD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 01:18:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbXCHGSB
+	id S932424AbXCHGcB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 01:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXCHGcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 01:18:01 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33475 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752266AbXCHGSA (ORCPT
+	Thu, 8 Mar 2007 01:32:01 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47722 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932424AbXCHGcA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 01:18:00 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: vgoyal@in.ibm.com
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Reloc Kernel List <fastboot@lists.osdl.org>, akpm@linux-foundation.org,
-       ak@suse.de, hpa@zytor.com, magnus.damm@gmail.com, lwang@redhat.com,
-       dzickus@redhat.com, pavel@suse.cz, rjw@sisk.pl
-Subject: Re: [PATCH 1/20] x86_64: Assembly safe page.h and pgtable.h
-References: <20070307065703.GA23412@in.ibm.com>
-	<20070307065920.GB23412@in.ibm.com>
-	<20070307192404.GA31826@uranus.ravnborg.org>
-	<20070308060139.GJ6000@in.ibm.com>
-Date: Wed, 07 Mar 2007 23:16:30 -0700
-In-Reply-To: <20070308060139.GJ6000@in.ibm.com> (Vivek Goyal's message of
-	"Thu, 8 Mar 2007 11:31:39 +0530")
-Message-ID: <m1d53k8dkx.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 8 Mar 2007 01:32:00 -0500
+Reply-To: <kmpark@infradead.org>
+From: "Kyungmin Park" <kmpark@infradead.org>
+To: <drzeus-mmc@drzeus.cx>
+Cc: <linux-kernel@vger.kernel.org>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <20070307224111.GD3441@stusta.de>
+Subject: MMC: Fix typo in mmc highspeed
+Date: Thu, 8 Mar 2007 15:31:53 +0900
+Message-ID: <006301c7614b$790f8450$c7a3580a@swcenter.sec.samsung.co.kr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-reply-to: <20070307224111.GD3441@stusta.de>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Thread-index: AcdhCdzH2+6hzKr3TheYDQ6rZKP4HwAQU1lA
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@in.ibm.com> writes:
+MMC: Fix typo in mmc highspeed
 
-> Hi Sam,
->
-> Thanks for the review. This makes sense to me. Move const.h into
-> asm-generic and let everybody use it.
->
-> This is more of a small cleanup issue and involves changing few header files
-> in asm-sparc64 and make sure nothing is broken on sparc64. This patchset
-> is already becoming big and complex. Is it ok if we let the patch 
-> remain unmodified for now and once this gets in and settles down, I can
-> post another patch to do above modification?
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+--
+diff --git a/drivers/mmc/mmc.c b/drivers/mmc/mmc.c
+index 4a73e8b..3b8f7af 100644
+--- a/drivers/mmc/mmc.c
++++ b/drivers/mmc/mmc.c
+@@ -1134,7 +1134,7 @@ static void mmc_process_ext_csds(struct mmc_host
+*host)
+ 
+ 			mmc_card_set_highspeed(card);
+ 
+-			host->ios.timing = MMC_TIMING_SD_HS;
++			host->ios.timing = MMC_TIMING_MMC_HS;
+ 			mmc_set_ios(host);
+ 		}
 
-Actually unless there is a reason not to, we can probably move this
-into include/linux instead of include/asm-generic.  I don't see anything
-in that header file that is architecture specific in any way.  Except
-that it happens to only be used in architecture specific code.
-
-Eric
