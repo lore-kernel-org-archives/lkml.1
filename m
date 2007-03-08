@@ -1,69 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965756AbXCHBL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965757AbXCHBVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965756AbXCHBL5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 20:11:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965763AbXCHBL4
+	id S965757AbXCHBVc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 20:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965758AbXCHBVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 20:11:56 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:43107 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965756AbXCHBLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 20:11:55 -0500
-Date: Wed, 7 Mar 2007 17:07:31 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>
-Cc: rkuhn@e18.physik.tu-muenchen.de, andi@firstfloor.org, dada1@cosmosbay.com,
-       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH] tcp_cubic: use 32 bit math
-Message-ID: <20070307170731.2b4397e3@freekitty>
-In-Reply-To: <20070307060838.GI943@1wt.eu>
-References: <20070306144529.GA2004@one.firstfloor.org>
-	<84C47260-4B57-4568-8197-58F438A6F737@e18.physik.tu-muenchen.de>
-	<20070306102941.32471d57@freekitty>
-	<20070306.135834.26100913.davem@davemloft.net>
-	<20070306144706.4585c079@freekitty>
-	<20070306145842.7d7fea84@freekitty>
-	<20070307060838.GI943@1wt.eu>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Mar 2007 20:21:32 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:42804 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965757AbXCHBVb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 20:21:31 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 7 Mar 2007 17:21:19 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [patch 1/5] signalfd v2 - anonymous inode source ...
+Message-ID: <Pine.LNX.4.64.0703071718030.3672@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The basic calculation has to be done in 32 bits to avoid
-doing 64 bit divide by 3. The value x is only 22bits max
-so only need full 64 bits only for x^2.
+This patch add an anonymous inode source, to be used for files that need 
+and inode only in order to create a file*. We do not care of having an 
+inode for each file, and we do not even care of having different names in 
+the associated dentries (dentry names will be same for classes of file*).
+This allow code reuse, and will be used by epoll, signalfd and timerfd 
+(and whatever else there'll be).
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+(Andrew already has this in -mm)
 
----
- net/ipv4/tcp_cubic.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- net-2.6.22.orig/net/ipv4/tcp_cubic.c	2007-03-07 15:51:37.000000000 -0800
-+++ net-2.6.22/net/ipv4/tcp_cubic.c	2007-03-07 17:06:02.000000000 -0800
-@@ -96,7 +96,7 @@
-  */
- static u32 cubic_root(u64 a)
- {
--	u64 x;
-+	u32 x;
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+
+- Davide
+
+
+
+Index: linux-2.6.20.ep2/fs/anon_inodes.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20.ep2/fs/anon_inodes.c	2007-03-07 15:58:01.000000000 -0800
+@@ -0,0 +1,203 @@
++/*
++ *  fs/anon_inodes.c
++ *
++ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
++ *
++ */
++
++#include <linux/file.h>
++#include <linux/poll.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/fs.h>
++#include <linux/mount.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/magic.h>
++#include <linux/anon_inodes.h>
++
++#include <asm/uaccess.h>
++
++
++
++static int ainofs_delete_dentry(struct dentry *dentry);
++static struct inode *aino_getinode(void);
++static struct inode *aino_mkinode(void);
++static int ainofs_get_sb(struct file_system_type *fs_type, int flags,
++			 const char *dev_name, void *data, struct vfsmount *mnt);
++
++
++
++static struct vfsmount *aino_mnt __read_mostly;
++static struct inode *aino_inode;
++static struct file_operations aino_fops = { };
++static struct file_system_type aino_fs_type = {
++	.name		= "ainofs",
++	.get_sb		= ainofs_get_sb,
++	.kill_sb	= kill_anon_super,
++};
++static struct dentry_operations ainofs_dentry_operations = {
++	.d_delete	= ainofs_delete_dentry,
++};
++
++
++
++int aino_getfd(int *pfd, struct inode **pinode, struct file **pfile,
++	       char const *name, const struct file_operations *fops, void *priv)
++{
++	struct qstr this;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct file *file;
++	int error, fd;
++
++	error = -ENFILE;
++	file = get_empty_filp();
++	if (!file)
++		goto eexit_1;
++
++	inode = aino_getinode();
++	if (IS_ERR(inode)) {
++		error = PTR_ERR(inode);
++		goto eexit_2;
++	}
++
++	error = get_unused_fd();
++	if (error < 0)
++		goto eexit_3;
++	fd = error;
++
++	/*
++	 * Link the inode to a directory entry by creating a unique name
++	 * using the inode sequence number.
++	 */
++	error = -ENOMEM;
++	this.name = name;
++	this.len = strlen(name);
++	this.hash = 0;
++	dentry = d_alloc(aino_mnt->mnt_sb->s_root, &this);
++	if (!dentry)
++		goto eexit_4;
++	dentry->d_op = &ainofs_dentry_operations;
++	/* Do not publish this dentry inside the global dentry hash table */
++	dentry->d_flags &= ~DCACHE_UNHASHED;
++	d_instantiate(dentry, inode);
++
++	file->f_path.mnt = mntget(aino_mnt);
++	file->f_path.dentry = dentry;
++	file->f_mapping = inode->i_mapping;
++
++	file->f_pos = 0;
++	file->f_flags = O_RDONLY;
++	file->f_op = fops;
++	file->f_mode = FMODE_READ;
++	file->f_version = 0;
++	file->private_data = priv;
++
++	fd_install(fd, file);
++
++	*pfd = fd;
++	*pinode = inode;
++	*pfile = file;
++	return 0;
++
++eexit_4:
++	put_unused_fd(fd);
++eexit_3:
++	iput(inode);
++eexit_2:
++	put_filp(file);
++eexit_1:
++	return error;
++}
++
++
++static int ainofs_delete_dentry(struct dentry *dentry)
++{
++	/*
++	 * We faked vfs to believe the dentry was hashed when we created it.
++	 * Now we restore the flag so that dput() will work correctly.
++	 */
++	dentry->d_flags |= DCACHE_UNHASHED;
++	return 1;
++}
++
++
++static struct inode *aino_getinode(void)
++{
++	return igrab(aino_inode);
++}
++
++
++/*
++ * A single inode exist for all aino files. On the contrary of pipes,
++ * aino inodes has no per-instance data associated, so we can avoid
++ * the allocation of multiple of them.
++ */
++static struct inode *aino_mkinode(void)
++{
++	int error = -ENOMEM;
++	struct inode *inode = new_inode(aino_mnt->mnt_sb);
++
++	if (!inode)
++		goto eexit_1;
++
++	inode->i_fop = &aino_fops;
++
++	/*
++	 * Mark the inode dirty from the very beginning,
++	 * that way it will never be moved to the dirty
++	 * list because mark_inode_dirty() will think
++	 * that it already _is_ on the dirty list.
++	 */
++	inode->i_state = I_DIRTY;
++	inode->i_mode = S_IRUSR | S_IWUSR;
++	inode->i_uid = current->fsuid;
++	inode->i_gid = current->fsgid;
++	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
++	return inode;
++
++eexit_1:
++	return ERR_PTR(error);
++}
++
++
++static int ainofs_get_sb(struct file_system_type *fs_type, int flags,
++			 const char *dev_name, void *data, struct vfsmount *mnt)
++{
++	return get_sb_pseudo(fs_type, "aino:", NULL, AINOFS_MAGIC, mnt);
++}
++
++
++static int __init aino_init(void)
++{
++
++	if (register_filesystem(&aino_fs_type))
++		goto epanic;
++
++	aino_mnt = kern_mount(&aino_fs_type);
++	if (IS_ERR(aino_mnt))
++		goto epanic;
++
++	aino_inode = aino_mkinode();
++	if (IS_ERR(aino_inode))
++		goto epanic;
++
++	return 0;
++
++epanic:
++	panic("aino_init() failed\n");
++}
++
++
++static void __exit aino_exit(void)
++{
++	iput(aino_inode);
++	unregister_filesystem(&aino_fs_type);
++	mntput(aino_mnt);
++}
++
++module_init(aino_init);
++module_exit(aino_exit);
++
++MODULE_LICENSE("GPL");
+Index: linux-2.6.20.ep2/include/linux/anon_inodes.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20.ep2/include/linux/anon_inodes.h	2007-03-06 11:12:23.000000000 -0800
+@@ -0,0 +1,15 @@
++/*
++ *  include/linux/anon_inodes.h
++ *
++ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
++ *
++ */
++
++#ifndef _LINUX_ANON_INODES_H
++#define _LINUX_ANON_INODES_H
++
++int aino_getfd(int *pfd, struct inode **pinode, struct file **pfile,
++	       char const *name, const struct file_operations *fops, void *priv);
++
++#endif /* _LINUX_ANON_INODES_H */
++
+Index: linux-2.6.20.ep2/fs/Makefile
+===================================================================
+--- linux-2.6.20.ep2.orig/fs/Makefile	2007-03-06 11:09:00.000000000 -0800
++++ linux-2.6.20.ep2/fs/Makefile	2007-03-07 15:55:43.000000000 -0800
+@@ -11,7 +11,7 @@
+ 		attr.o bad_inode.o file.o filesystems.o namespace.o aio.o \
+ 		seq_file.o xattr.o libfs.o fs-writeback.o \
+ 		pnode.o drop_caches.o splice.o sync.o utimes.o \
+-		stack.o
++		stack.o anon_inodes.o
  
- 	/* Initial estimate is based on:
- 	 * cbrt(x) = exp(log(x) / 3)
-@@ -104,9 +104,9 @@
- 	x = 1u << (fls64(a)/3);
+ ifeq ($(CONFIG_BLOCK),y)
+ obj-y +=	buffer.o bio.o block_dev.o direct-io.o mpage.o ioprio.o
+Index: linux-2.6.20.ep2/include/linux/magic.h
+===================================================================
+--- linux-2.6.20.ep2.orig/include/linux/magic.h	2007-03-07 15:57:01.000000000 -0800
++++ linux-2.6.20.ep2/include/linux/magic.h	2007-03-07 15:57:27.000000000 -0800
+@@ -13,6 +13,7 @@
+ #define HPFS_SUPER_MAGIC	0xf995e849
+ #define ISOFS_SUPER_MAGIC	0x9660
+ #define JFFS2_SUPER_MAGIC	0x72b6
++#define AINOFS_MAGIC		0x09041934
  
- 	/* converges to 32 bits in 3 iterations */
--	x = (2 * x + div64_64(a, x*x)) / 3;
--	x = (2 * x + div64_64(a, x*x)) / 3;
--	x = (2 * x + div64_64(a, x*x)) / 3;
-+	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
-+	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
-+	x = (2 * x + (u32)div64_64(a, (u64)x*(u64)x)) / 3;
- 
- 	return x;
- }
+ #define MINIX_SUPER_MAGIC	0x137F		/* original minix fs */
+ #define MINIX_SUPER_MAGIC2	0x138F		/* minix fs, 30 char names */
