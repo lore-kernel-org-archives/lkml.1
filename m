@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbXCHIHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965775AbXCHIIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751448AbXCHIHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 03:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXCHIHa
+	id S965775AbXCHIIx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 03:08:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965776AbXCHIIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 03:07:30 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:38822 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbXCHIH3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 03:07:29 -0500
-Subject: Re: [PATCH 0/20] x86_64 Relocatable bzImage support (V4)
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: vgoyal@in.ibm.com
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
-       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
-       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
-       pavel@suse.cz, rjw@sisk.pl
-In-Reply-To: <20070308044013.GE6000@in.ibm.com>
-References: <20070307065703.GA23412@in.ibm.com>
-	 <1173280059.3540.5.camel@laptopd505.fenrus.org>
-	 <1173300597.3219.105.camel@nigel.suspend2.net>
-	 <1173309302.13442.0.camel@nigel.suspend2.net>
-	 <20070308044013.GE6000@in.ibm.com>
+	Thu, 8 Mar 2007 03:08:53 -0500
+Received: from gate.crashing.org ([63.228.1.57]:46078 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965775AbXCHIIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 03:08:52 -0500
+Subject: Re: Linux v2.6.21-rc3
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0703070735240.5963@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+	 <1173263132.9349.47.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703070735240.5963@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Thu, 08 Mar 2007 19:07:23 +1100
-Message-Id: <1173341244.7913.5.camel@nigel.suspend2.net>
+Date: Thu, 08 Mar 2007 09:08:43 +0100
+Message-Id: <1173341323.8635.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Thu, 2007-03-08 at 10:10 +0530, Vivek Goyal wrote:
-> On Thu, Mar 08, 2007 at 10:15:02AM +1100, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Thu, 2007-03-08 at 07:49 +1100, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Wed, 2007-03-07 at 07:07 -0800, Arjan van de Ven wrote:
-> > > > On Wed, 2007-03-07 at 12:27 +0530, Vivek Goyal wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > Here is another attempt on x86_64 relocatable bzImage patches(V4). This
-> > > > > patchset makes a bzImage relocatable and same kernel binary can be loaded
-> > > > > and run from different physical addresses.
-> > > > 
-> > > > 
-> > > > have these patches been extensively tested with various suspend
-> > > > scenarios? (S1,S3,S4 in acpi speak or s2ram and s2disk in Linux speak)
-> > > 
-> > > We did work on this for RHEL5, getting relocatable kernel support
-> > > working fine with S4. While doing it and since, I've been running
-> > > Suspend2 with the same patch.
-> > > 
-> > > Since that work, Vivek has done more modifications, but I can confirm
-> > > that the basic design is reliable with S4. Haven't tried S3, but can do.
-> > > Will report back shortly.
-> > 
-> > S3 works okay here with a relocatable x86_64 kernel (2.6.20).
-> > 
+On Wed, 2007-03-07 at 07:39 -0800, Linus Torvalds wrote:
 > 
-> Hi Nigel,
+> On Wed, 7 Mar 2007, Benjamin Herrenschmidt wrote:
+> >
+> > On Tue, 2007-03-06 at 20:59 -0800, Linus Torvalds wrote:
+> > 
+> > > Linus Torvalds (2):
+> > >       Revert "[PATCH] LOG2: Alter get_order() so that it can make use of ilog2() on a constant"
+> > >       Linux 2.6.21-rc3
+> > 
+> > Greg, I think we should revert that patch in 2.6.20.x stable serie too
+> > as get_order is broken there as well, causing random kernel memory
+> > corruption every now and then among others.
 > 
-> Is it possible to test S3 with 2.6.21-rc2 kernels also. Right now I don't 
-> have access to any machine supporting S3. I tested it at the time of my last
-> posting and it had worked well. Appreciate your help.
+> Did you confirm that that was indeed the cause of the problem you saw?
 
-Tested with rc3 (rc2 wouldn't compile), and it works fine.
+Well, at least one of the problem I caught with my ppc32 implementation
+of DEBUG_PAGEALLOC yes. PowerPC dma_alloc_coherent, on machines with
+cache consistent PCI DMA, would use get_order to allocate pages and then
+memset over the size passed in. The ide-pmac driver, among others, would
+trigger that bug by asking for 0x1020 bytes while get_order only
+returned 0. (I should look into making the ide-pmac driver allocate <=
+4K but that's a different matter).
+ 
+I think it fixed David Woodhouse random crashes too.
 
-If you're willing, please add
+> As far as I can tell, the bug (because it tested the wrong #define) would 
+> only affect the constant-size case, and only for something larger than a 
+> single page, and only for a non-power-of-two size. So it looked fairly 
+> hard to trigger, if only because all the obvious constants I saw seemed 
+> to already be powers-of-two..
+> 
+> So did you hunt it down to a particular cases where it triggers?
 
-Signed-off-by: Nigel Cunningham <ncunning@redhat.com>
+Yup, the above. Calls to dma_alloc_consistent with a constant size that
+is not a multiple of the page size and larger than one page. (Our
+dma_alloc_consistent implementation on 32 bits is inline).
 
-or
-
-Acked-by: Nigel Cunningham <ncunning@redhat.com>
-
-to the hibernation related parts as you see appropriate, since I helped
-(albeit in a minor way compared to your work and Eric's work) with
-preparing and testing them for RHEL5 and have confirmed they're still ok
-in this version.
-
-Regards,
-
-Nigel
+Ben.
 
