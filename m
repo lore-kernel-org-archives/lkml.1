@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932069AbXCHRYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbXCHR1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932069AbXCHRYG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:24:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932074AbXCHRYG
+	id S1752587AbXCHR1j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbXCHR1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:24:06 -0500
-Received: from mail.suse.de ([195.135.220.2]:38494 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932069AbXCHRYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:24:03 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH] x86_64 RESTORE_CONTEXT missing '\n'
-Date: Thu, 8 Mar 2007 18:14:52 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, trini@kernel.crashing.org,
-       sshtylyov@ru.mvista.com
-References: <20070307204516.GA24095@blade.az.mvista.com>
-In-Reply-To: <20070307204516.GA24095@blade.az.mvista.com>
+	Thu, 8 Mar 2007 12:27:39 -0500
+Received: from nz-out-0506.google.com ([64.233.162.235]:12267 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752587AbXCHR1i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 12:27:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=CK9RkJPamO8F0DqWJyAn266wJ0FkAjmsCYUuMHHu2cNZnzBW736/54be2LZHNfr30OD4lZ4LuxVgSreEIcrK6VSaoUi9K+dFvLgbAqaIsO0juL+/xfLrjdv1dc+rtXvnKEJgkdnu68r8I6wDkoAZkRhUeSiLU0tteH6LfooOTmM=
+Message-ID: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
+Date: Thu, 8 Mar 2007 17:27:37 +0000
+From: "Catalin Marinas" <catalin.marinas@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Possible "struct pid" leak from tty_io.c
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703081814.53153.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 March 2007 21:45, Dave Jiang wrote:
-> 
-> The RESTORE_CONTEXT macro is missing the '\n' at the end. It was removed in the
-> previous patch that touched system.h. It causes compile failure if any
-> inline asm is added after the macro. Discovered this when playing with
-> kgdb.
+Hi Eric,
 
-We went through this several times. kgdb has no business to poke 
-into kernel private macros like this and it shouldn't do that. 
-So fixing kgdb to not require touching the context switch is the right
-change.
+I'm trying to track down a kmemleak report (on an ARM platform) which
+seems to have appeared with commit
+ab521dc0f8e117fd808d3e425216864d60390500. As I'm not familiar with the
+TTY layer at all, is it possible that the above commit missed a
+put_pid() call on some path?
 
--Andi
+The /sbin/init application calls sys_clone() a few times but only one
+leak is reported (see below). Looking at the reported pid object (at
+0xc7c14500), count is 2 and nr is 296 but no process with pid 296
+exists any more.
+
+unreferenced object 0xc7c14500 (size 36):
+  comm "init", pid 245, jiffies 4294939289
+  backtrace:
+    [<c0070c18>] kmem_cache_alloc
+    [<c003a528>] alloc_pid
+    [<c0026468>] do_fork
+    [<c00153b0>] sys_clone
+    [<c0010f80>] ret_fast_syscall
+
+Thanks.
+
+-- 
+Catalin
