@@ -1,73 +1,833 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933374AbXCHVgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbXCHVgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933374AbXCHVgF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:36:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933369AbXCHVgD
+	id S933368AbXCHVgJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:36:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933380AbXCHVgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:36:03 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39058 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933364AbXCHVgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:36:00 -0500
-Date: Thu, 8 Mar 2007 22:34:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Zachary Amsden <zach@vmware.com>, tglx@linutronix.de,
-       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pratap Subrahmanyam <pratap@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Daniel Hecht <dhecht@vmware.com>, Daniel Arai <arai@vmware.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: hardwired VMI crap
-Message-ID: <20070308213458.GA24634@elte.hu>
-References: <45EF175D.6030609@vmware.com> <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <20070308091019.GA19460@elte.hu> <45EFE010.7080108@vmware.com> <1173352154.24738.1023.camel@localhost.localdomain> <45F0761C.6060107@vmware.com> <45F07D07.5090003@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F07D07.5090003@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 8 Mar 2007 16:36:09 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:43900 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933368AbXCHVgB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:36:01 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 8 Mar 2007 13:35:59 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [patch 2/5] signalfd v3 - signalfd core ...
+Message-ID: <Pine.LNX.4.64.0703081329230.4882@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch series implements the new signalfd() and signalfd_dequeue()
+system calls. I took part of the original Linus code (and you know how
+badly it can be broken :), and I added even more breakage ;)
+The patch had to be almost completely changed. This patch allows multiple 
+signalfd to listen for signals on the same sighand, w/out raing with 
+dequeue_signal. Plus other changes that I don't remember (see here for the 
+original patch http://tinyurl.com/3yuna5 ).
+This seems to be working fine on my Dual Opteron machine. I made a quick 
+test program for it:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+http://www.xmailserver.org/signafd-test.c
 
-> Zachary Amsden wrote:
-> > We faithfully emulate lapic, io_apic, the pit, pic, and a normal
-> > interrupt subsystem.
-> 
-> Can you not just use the apic clock driver directly then?  Do you need 
-> to do anything special?
+The signalfd() system call implements signal delivery into a file 
+descriptor receiver. The signalfd file descriptor if created with the 
+following API:
 
-exactly. There are only two variants Linux wants to care about:
+int signalfd(int ufd, const sigset_t *mask, size_t masksize);
 
- - native hardware ABIs. If a hypervisor (like KVM) happens to do its
-   stuff based on those, more power to them - we dont (and cannot) care.
+The "ufd" parameter allows to change an existing signalfd sigmask, w/out 
+going to close/create cycle (Linus idea). Use "ufd" == -1 if you want a 
+brand new signalfd file.
+The "mask" allows to specify the signal mask of signals that we are 
+interested in. The "masksize" parameter is the size of "mask".
+Note that signalfd delivery and standard signal delivery can go in 
+parallel. So you can receive signals on the signalfd file, and on the 
+signal handlers. This makes the system more flexible IMO. If you don't 
+want to see standard delivery, just pass the same "mask" to 
+sigprocmask(SIG_BLOCK).
+The signalfd fd supports the poll(2) and read(2) system calls. The poll(2)
+will return POLLIN when signals are available to be dequeued. As a direct
+consequence of supporting the Linux poll subsystem, the signalfd fd can use
+used together with epoll(2) too.
+The read(2) system call will return a "struct signalfd_siginfo" structure
+in the userspace supplied buffer. The return value is the number of bytes
+copied in the supplied buffer, or -1 in case of error. The read(2) call
+can also return 0, in case the sighand structure to which the signalfd
+was attached, has been orphaned. The O_NONBLOCK flag is also supported, and
+read(2) will return -EAGAIN in case no signal is available.
+The format of the struct signalfd_siginfo is, and the valid fields depends
+of the (->code & __SI_MASK) value, in the same way a struct siginfo would:
 
- - /One/ _intelligent_ higher-level virtualization API/ABI. Xen's API is 
-   quite advanced on this front. This would be shared by /all/ 
-   hypervisors and could occasionally be reused by other hardware 
-   platforms as well. It can be morphed via small wrappers into some
-   'hypervisor personality' kind of hypervisor backends, but no
-   fundamental transformation happens.
+struct signalfd_siginfo {
+	__u32 signo;	/* si_signo */
+	__s32 errno;	/* si_errno */
+	__s32 code;	/* si_code */
+	__u32 pid;	/* si_pid */
+	__u32 uid;	/* si_uid */
+	__s32 fd;	/* si_fd */
+	__u32 tid;	/* si_fd */
+	__u32 band;	/* si_band */
+	__u32 overrun;	/* si_overrun */
+	__u32 trapno;	/* si_trapno */
+	__s32 status;	/* si_status */
+	__s32 svint;	/* si_int */
+	__u64 svptr;	/* si_ptr */
+	__u64 utime;	/* si_utime */
+	__u64 stime;	/* si_stime */
+	__u64 addr;	/* si_addr */
+};
 
-what we do _NOT_ want is some mixture of 'simplified' and 'hardwired' 
-native hardware access mixed with hypercalls that somehow ends up 
-creating a Frankenstein mixture of 'virtual silicon', which is specified 
-nowhere else but in VMWare's proprietary hypervisor source code that we 
-have no way to fix and no way to even see!
 
-it's hard enough to get native silicon support right.
 
-	Ingo
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+
+- Davide
+
+
+
+Index: linux-2.6.20.ep2/fs/signalfd.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20.ep2/fs/signalfd.c	2007-03-08 12:58:55.000000000 -0800
+@@ -0,0 +1,421 @@
++/*
++ *  fs/signalfd.c
++ *
++ *  Copyright (C) 2003  Linus Torvalds
++ *
++ *  Mon Mar 5, 2007: Davide Libenzi <davidel@xmailserver.org>
++ *      Changed signal delivery and de-queueing.
++ *      Now using anonymous inode source.
++ */
++
++#include <linux/file.h>
++#include <linux/poll.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/fs.h>
++#include <linux/mount.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/signal.h>
++#include <linux/list.h>
++#include <linux/anon_inodes.h>
++#include <linux/signalfd.h>
++
++#include <asm/uaccess.h>
++
++
++
++struct signalfd_ctx {
++	struct list_head lnk;
++	wait_queue_head_t wqh;
++	sigset_t sigmask;
++	sigset_t pending;
++	struct list_head squeue[_NSIG];
++	long lost_sigs;
++	struct task_struct *tsk;
++	struct sighand_struct *sighand;
++};
++
++struct signalfd_sq {
++	struct list_head lnk;
++	siginfo_t info;
++};
++
++
++
++static void signalfd_cleanup(struct signalfd_ctx *ctx);
++static int signalfd_close(struct inode *inode, struct file *file);
++static unsigned int signalfd_poll(struct file *file, poll_table *wait);
++static struct signalfd_sq *signalfd_fetchsig(struct signalfd_ctx *ctx);
++static int signalfd_copyinfo(struct signalfd_siginfo __user *uinfo,
++			     siginfo_t const *kinfo);
++static ssize_t signalfd_read(struct file *file, char *buf, size_t count,
++			     loff_t *ppos);
++
++
++
++static const struct file_operations signalfd_fops = {
++	.release	= signalfd_close,
++	.poll		= signalfd_poll,
++	.read		= signalfd_read,
++};
++static struct kmem_cache *signalfd_ctx_cachep;
++static struct kmem_cache *signalfd_sq_cachep;
++
++
++/*
++ * This must be called with the sighand lock held.
++ */
++int signalfd_deliver(struct sighand_struct *sighand, int sig,
++		     struct siginfo *info)
++{
++	int nsig = 0;
++	struct list_head *pos;
++	struct signalfd_ctx *ctx;
++	struct signalfd_sq *sq;
++
++	list_for_each(pos, &sighand->sfdlist) {
++		ctx = list_entry(pos, struct signalfd_ctx, lnk);
++		/*
++		 * We use a negative signal value as a way to broadcast that the
++		 * sighand has been orphaned, so that we can notify all the
++		 * listeners about this.
++		 */
++		if (sig < 0)
++			__wake_up_locked(&ctx->wqh,
++					 TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE);
++		else if (sigismember(&ctx->sigmask, sig) &&
++			 (sig >= SIGRTMIN || !sigismember(&ctx->pending, sig))) {
++			sigaddset(&ctx->pending, sig);
++			sq = kmem_cache_alloc(signalfd_sq_cachep, GFP_ATOMIC);
++			if (sq) {
++				signal_fill_info(&sq->info, sig, info);
++				list_add_tail(&sq->lnk, &ctx->squeue[sig - 1]);
++			} else
++				ctx->lost_sigs++;
++			__wake_up_locked(&ctx->wqh,
++					 TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE);
++			nsig++;
++		}
++	}
++
++	return nsig;
++}
++
++
++/*
++ * Create a file descriptor that is associated with our signal
++ * state. We can pass it around to others if we want to, but
++ * it will always be _our_ signal state.
++ */
++asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask)
++{
++	int i, error;
++	sigset_t sigmask;
++	struct signalfd_ctx *ctx;
++	struct file *file;
++	struct inode *inode;
++
++	error = -EINVAL;
++	if (sizemask != sizeof(sigset_t) ||
++	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
++		goto err_exit;
++	sigdelsetmask(&sigmask, sigmask(SIGKILL) | sigmask(SIGSTOP));
++
++	if (ufd == -1) {
++		error = -ENOMEM;
++		ctx = kmem_cache_alloc(signalfd_ctx_cachep, GFP_KERNEL);
++		if (!ctx)
++			goto err_exit;
++
++		init_waitqueue_head(&ctx->wqh);
++		for (i = 0; i < _NSIG; i++)
++			INIT_LIST_HEAD(&ctx->squeue[i]);
++		ctx->lost_sigs = 0;
++		memset(&ctx->pending, 0, sizeof(ctx->pending));
++		ctx->sigmask = sigmask;
++		ctx->tsk = current;
++		get_task_struct(current);
++
++		/*
++		 * We also increment the sighand count to make sure
++		 * it doesn't go away from us in poll() when the task
++		 * exits (which can happen if the fd is passed to
++		 * another process with unix domain sockets.
++		 *
++		 * This also guarantees that an execve() will reallocate
++		 * the signal state, and thus avoids security concerns
++		 * with a untrusted process that passes off the signal
++		 * queue fd to another, and then does a suid execve.
++		 */
++		ctx->sighand = current->sighand;
++		atomic_inc(&ctx->sighand->count);
++
++		/*
++		 * Add this fd to the list of signal listeners.
++		 */
++		spin_lock_irq(&ctx->sighand->siglock);
++		list_add_tail(&ctx->lnk, &ctx->sighand->sfdlist);
++		spin_unlock_irq(&ctx->sighand->siglock);
++
++		/*
++		 * When we call this, the initialization must be complete, since
++		 * aino_getfd() will install the fd.
++		 */
++		error = aino_getfd(&ufd, &inode, &file, "[signalfd]",
++				   &signalfd_fops, ctx);
++		if (error)
++			goto err_fdalloc;
++	} else {
++		error = -EBADF;
++		file = fget(ufd);
++		if (!file)
++			goto err_exit;
++		ctx = file->private_data;
++		error = -EINVAL;
++		if (file->f_op != &signalfd_fops) {
++			fput(file);
++			goto err_exit;
++		}
++		spin_lock_irq(&ctx->sighand->siglock);
++		ctx->sigmask = sigmask;
++		spin_unlock_irq(&ctx->sighand->siglock);
++		wake_up(&ctx->wqh);
++		fput(file);
++	}
++
++	return ufd;
++
++err_fdalloc:
++	signalfd_cleanup(ctx);
++err_exit:
++	return error;
++}
++
++
++static void signalfd_cleanup(struct signalfd_ctx *ctx)
++{
++	int i;
++	struct list_head *head;
++	struct signalfd_sq *sq;
++
++	spin_lock_irq(&ctx->sighand->siglock);
++	list_del(&ctx->lnk);
++	spin_unlock_irq(&ctx->sighand->siglock);
++	__cleanup_sighand(ctx->sighand);
++	put_task_struct(ctx->tsk);
++
++	for (i = 0; i < _NSIG; i++) {
++		head = &ctx->squeue[i];
++		while (!list_empty(head)) {
++			sq = list_entry(head->next, struct signalfd_sq, lnk);
++			list_del(&sq->lnk);
++			kmem_cache_free(signalfd_sq_cachep, sq);
++		}
++	}
++
++	kmem_cache_free(signalfd_ctx_cachep, ctx);
++}
++
++
++static int signalfd_close(struct inode *inode, struct file *file)
++{
++	signalfd_cleanup(file->private_data);
++	return 0;
++}
++
++
++static unsigned int signalfd_poll(struct file *file, poll_table *wait)
++{
++	struct signalfd_ctx *ctx = file->private_data;
++	int i;
++	unsigned int events = 0;
++	unsigned long const *pending, *mask;
++
++	poll_wait(file, &ctx->wqh, wait);
++
++	if (ctx->lost_sigs)
++		events |= POLLERR;
++	/*
++	 * Let the caller get a POLLIN in this case, ala socket recv() when
++	 * the peer disconnect.
++	 */
++	if (ctx->sighand != ctx->tsk->sighand)
++		events |= POLLIN;
++
++	pending = ctx->pending.sig;
++	mask = ctx->sigmask.sig;
++	for (i = 0; i < _NSIG_WORDS; i++, pending++, mask++)
++		if (*pending & *mask)
++			break;
++
++	return i == _NSIG_WORDS ? events: events | POLLIN;
++}
++
++
++static struct signalfd_sq *signalfd_fetchsig(struct signalfd_ctx *ctx)
++{
++	int i, bsig, sig;
++	unsigned long isig;
++	unsigned long *pending, *mask;
++	struct signalfd_sq *sq;
++
++	pending = ctx->pending.sig;
++	mask = ctx->sigmask.sig;
++	for (i = 0; i < _NSIG_WORDS; i++, pending++, mask++) {
++		if ((isig = *pending & *mask) != 0) {
++			bsig = ffz(~isig);
++			sig = bsig + i * _NSIG_BPW;
++			BUG_ON(list_empty(&ctx->squeue[sig]));
++			sq = list_entry(ctx->squeue[sig].next, struct signalfd_sq, lnk);
++			list_del(&sq->lnk);
++			if (list_empty(&ctx->squeue[sig]))
++				*pending &= ~(1UL << bsig);
++
++			return sq;
++		}
++	}
++	return NULL;
++}
++
++
++/*
++ * Copied from copy_siginfo_to_user() in kernel/signal.c
++ */
++static int signalfd_copyinfo(struct signalfd_siginfo __user *uinfo,
++			     siginfo_t const *kinfo)
++{
++	long err;
++
++	err = __clear_user(uinfo, sizeof(*uinfo));
++
++	/*
++	 * If you change siginfo_t structure, please be sure
++	 * this code is fixed accordingly.
++	 */
++	err |= __put_user(kinfo->si_signo, &uinfo->signo);
++	err |= __put_user(kinfo->si_errno, &uinfo->errno);
++	err |= __put_user((short)kinfo->si_code, &uinfo->code);
++	switch (kinfo->si_code & __SI_MASK) {
++	case __SI_KILL:
++		err |= __put_user(kinfo->si_pid, &uinfo->pid);
++		err |= __put_user(kinfo->si_uid, &uinfo->uid);
++		break;
++	case __SI_TIMER:
++		 err |= __put_user(kinfo->si_tid, &uinfo->tid);
++		 err |= __put_user(kinfo->si_overrun, &uinfo->overrun);
++		 err |= __put_user(kinfo->si_ptr, &uinfo->svptr);
++		break;
++	case __SI_POLL:
++		err |= __put_user(kinfo->si_band, &uinfo->band);
++		err |= __put_user(kinfo->si_fd, &uinfo->fd);
++		break;
++	case __SI_FAULT:
++		err |= __put_user(kinfo->si_addr, &uinfo->addr);
++#ifdef __ARCH_SI_TRAPNO
++		err |= __put_user(kinfo->si_trapno, &uinfo->trapno);
++#endif
++		break;
++	case __SI_CHLD:
++		err |= __put_user(kinfo->si_pid, &uinfo->pid);
++		err |= __put_user(kinfo->si_uid, &uinfo->uid);
++		err |= __put_user(kinfo->si_status, &uinfo->status);
++		err |= __put_user(kinfo->si_utime, &uinfo->utime);
++		err |= __put_user(kinfo->si_stime, &uinfo->stime);
++		break;
++	case __SI_RT: /* This is not generated by the kernel as of now. */
++	case __SI_MESGQ: /* But this is */
++		err |= __put_user(kinfo->si_pid, &uinfo->pid);
++		err |= __put_user(kinfo->si_uid, &uinfo->uid);
++		err |= __put_user(kinfo->si_ptr, &uinfo->svptr);
++		break;
++	default: /* this is just in case for now ... */
++		err |= __put_user(kinfo->si_pid, &uinfo->pid);
++		err |= __put_user(kinfo->si_uid, &uinfo->uid);
++		break;
++	}
++
++	return err ? -EFAULT: sizeof(*uinfo);
++}
++
++
++static ssize_t signalfd_read(struct file *file, char *buf, size_t count,
++			     loff_t *ppos)
++{
++	struct signalfd_ctx *ctx = file->private_data;
++	struct sighand_struct *sighand = ctx->sighand;
++	ssize_t res;
++	struct signalfd_sq *sq;
++	DECLARE_WAITQUEUE(wait, current);
++
++	if (count < sizeof(struct signalfd_siginfo))
++		return -EINVAL;
++	spin_lock_irq(&sighand->siglock);
++	res = -EAGAIN;
++	if ((sq = signalfd_fetchsig(ctx)) == NULL &&
++	    !(file->f_flags & O_NONBLOCK)) {
++		__add_wait_queue(&ctx->wqh, &wait);
++		for (;;) {
++			set_current_state(TASK_INTERRUPTIBLE);
++			if ((sq = signalfd_fetchsig(ctx)) != NULL)
++				break;
++			if (sighand != ctx->tsk->sighand) {
++				/*
++				 * Let the caller read zero byte, ala socket recv()
++				 * when the peer disconnect.
++				 */
++				res = -ENOTCONN;
++				break;
++			}
++			if (signal_pending(current)) {
++				res = -EINTR;
++				break;
++			}
++			spin_unlock_irq(&sighand->siglock);
++			schedule();
++			spin_lock_irq(&sighand->siglock);
++		}
++		__remove_wait_queue(&ctx->wqh, &wait);
++		set_current_state(TASK_RUNNING);
++	}
++	spin_unlock_irq(&sighand->siglock);
++	if (likely(sq)) {
++		res = signalfd_copyinfo((struct signalfd_siginfo __user *) buf,
++					  &sq->info);
++		if (unlikely(res < 0)) {
++			spin_lock_irq(&sighand->siglock);
++			sigaddset(&ctx->pending, sq->info.si_signo);
++			list_add(&sq->lnk, &ctx->squeue[sq->info.si_signo - 1]);
++			__wake_up_locked(&ctx->wqh,
++					 TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE);
++			spin_unlock_irq(&sighand->siglock);
++		} else
++			kmem_cache_free(signalfd_sq_cachep, sq);
++	}
++
++	return res;
++}
++
++
++static int __init signalfd_init(void)
++{
++	signalfd_ctx_cachep = kmem_cache_create("signalfd_ctx_cache",
++						sizeof(struct signalfd_ctx),
++						0, SLAB_PANIC, NULL, NULL);
++	signalfd_sq_cachep = kmem_cache_create("signalfd_sq_cache",
++					       sizeof(struct signalfd_sq),
++					       0, SLAB_PANIC, NULL, NULL);
++	return 0;
++}
++
++
++static void __exit signalfd_exit(void)
++{
++	kmem_cache_destroy(signalfd_ctx_cachep);
++	kmem_cache_destroy(signalfd_sq_cachep);
++}
++
++module_init(signalfd_init);
++module_exit(signalfd_exit);
++
++MODULE_LICENSE("GPL");
+Index: linux-2.6.20.ep2/include/linux/init_task.h
+===================================================================
+--- linux-2.6.20.ep2.orig/include/linux/init_task.h	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/include/linux/init_task.h	2007-03-07 15:59:01.000000000 -0800
+@@ -84,6 +84,7 @@
+ 	.count		= ATOMIC_INIT(1), 				\
+ 	.action		= { { { .sa_handler = NULL, } }, },		\
+ 	.siglock	= __SPIN_LOCK_UNLOCKED(sighand.siglock),	\
++	.sfdlist	= LIST_HEAD_INIT(sighand.sfdlist),		\
+ }
+ 
+ extern struct group_info init_groups;
+Index: linux-2.6.20.ep2/include/linux/sched.h
+===================================================================
+--- linux-2.6.20.ep2.orig/include/linux/sched.h	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/include/linux/sched.h	2007-03-07 15:59:01.000000000 -0800
+@@ -379,6 +379,7 @@
+ 	atomic_t		count;
+ 	struct k_sigaction	action[_NSIG];
+ 	spinlock_t		siglock;
++	struct list_head        sfdlist;
+ };
+ 
+ struct pacct_struct {
+Index: linux-2.6.20.ep2/kernel/fork.c
+===================================================================
+--- linux-2.6.20.ep2.orig/kernel/fork.c	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/kernel/fork.c	2007-03-07 15:59:01.000000000 -0800
+@@ -1422,8 +1422,10 @@
+ 	struct sighand_struct *sighand = data;
+ 
+ 	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) ==
+-					SLAB_CTOR_CONSTRUCTOR)
++					SLAB_CTOR_CONSTRUCTOR) {
+ 		spin_lock_init(&sighand->siglock);
++		INIT_LIST_HEAD(&sighand->sfdlist);
++	}
+ }
+ 
+ void __init proc_caches_init(void)
+Index: linux-2.6.20.ep2/include/linux/syscalls.h
+===================================================================
+--- linux-2.6.20.ep2.orig/include/linux/syscalls.h	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/include/linux/syscalls.h	2007-03-08 11:36:41.000000000 -0800
+@@ -602,6 +602,7 @@
+ asmlinkage long sys_set_robust_list(struct robust_list_head __user *head,
+ 				    size_t len);
+ asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
++asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+Index: linux-2.6.20.ep2/fs/Makefile
+===================================================================
+--- linux-2.6.20.ep2.orig/fs/Makefile	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/fs/Makefile	2007-03-07 15:59:01.000000000 -0800
+@@ -11,7 +11,7 @@
+ 		attr.o bad_inode.o file.o filesystems.o namespace.o aio.o \
+ 		seq_file.o xattr.o libfs.o fs-writeback.o \
+ 		pnode.o drop_caches.o splice.o sync.o utimes.o \
+-		stack.o anon_inodes.o
++		stack.o anon_inodes.o signalfd.o
+ 
+ ifeq ($(CONFIG_BLOCK),y)
+ obj-y +=	buffer.o bio.o block_dev.o direct-io.o mpage.o ioprio.o
+Index: linux-2.6.20.ep2/include/linux/signalfd.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20.ep2/include/linux/signalfd.h	2007-03-08 12:33:09.000000000 -0800
+@@ -0,0 +1,47 @@
++/*
++ *  include/linux/signalfd.h
++ *
++ *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
++ *
++ */
++
++#ifndef _LINUX_SIGNALFD_H
++#define _LINUX_SIGNALFD_H
++
++
++struct signalfd_siginfo {
++	__u32 signo;
++	__s32 errno;
++	__s32 code;
++	__u32 pid;
++	__u32 uid;
++	__s32 fd;
++	__u32 tid;
++	__u32 band;
++	__u32 overrun;
++	__u32 trapno;
++	__s32 status;
++	__s32 svint;
++	__u64 svptr;
++	__u64 utime;
++	__u64 stime;
++	__u64 addr;
++};
++
++
++int signalfd_deliver(struct sighand_struct *sighand, int sig, struct siginfo *info);
++
++/*
++ * No need to fall inside signalfd_deliver() and get/release a spinlock,
++ * if no signal listeners are available.
++ */
++static inline int signalfd_notify(struct sighand_struct *sighand, int sig,
++				  struct siginfo *info)
++{
++	if (likely(list_empty(&sighand->sfdlist)))
++		return 0;
++	return signalfd_deliver(sighand, sig, info);
++}
++
++#endif /* _LINUX_SIGNALFD_H */
++
+Index: linux-2.6.20.ep2/kernel/signal.c
+===================================================================
+--- linux-2.6.20.ep2.orig/kernel/signal.c	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/kernel/signal.c	2007-03-08 13:10:35.000000000 -0800
+@@ -26,6 +26,7 @@
+ #include <linux/freezer.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/nsproxy.h>
++#include <linux/signalfd.h>
+ 
+ #include <asm/param.h>
+ #include <asm/uaccess.h>
+@@ -709,6 +710,28 @@
+ 	}
+ }
+ 
++void signal_fill_info(struct siginfo *dinfo, int sig, struct siginfo *sinfo)
++{
++	switch ((unsigned long) sinfo) {
++	case (unsigned long) SEND_SIG_NOINFO:
++		dinfo->si_signo = sig;
++		dinfo->si_errno = 0;
++		dinfo->si_code = SI_USER;
++		dinfo->si_pid = current->pid;
++		dinfo->si_uid = current->uid;
++		break;
++	case (unsigned long) SEND_SIG_PRIV:
++		dinfo->si_signo = sig;
++		dinfo->si_errno = 0;
++		dinfo->si_code = SI_KERNEL;
++		dinfo->si_pid = 0;
++		dinfo->si_uid = 0;
++		break;
++	default:
++		copy_siginfo(dinfo, sinfo);
++	}
++}
++
+ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+ 			struct sigpending *signals)
+ {
+@@ -735,25 +758,7 @@
+ 					      info->si_code >= 0)));
+ 	if (q) {
+ 		list_add_tail(&q->list, &signals->list);
+-		switch ((unsigned long) info) {
+-		case (unsigned long) SEND_SIG_NOINFO:
+-			q->info.si_signo = sig;
+-			q->info.si_errno = 0;
+-			q->info.si_code = SI_USER;
+-			q->info.si_pid = current->pid;
+-			q->info.si_uid = current->uid;
+-			break;
+-		case (unsigned long) SEND_SIG_PRIV:
+-			q->info.si_signo = sig;
+-			q->info.si_errno = 0;
+-			q->info.si_code = SI_KERNEL;
+-			q->info.si_pid = 0;
+-			q->info.si_uid = 0;
+-			break;
+-		default:
+-			copy_siginfo(&q->info, info);
+-			break;
+-		}
++		signal_fill_info(&q->info, sig, info);
+ 	} else if (!is_si_special(info)) {
+ 		if (sig >= SIGRTMIN && info->si_code != SI_USER)
+ 		/*
+@@ -780,6 +785,11 @@
+ 	BUG_ON(!irqs_disabled());
+ 	assert_spin_locked(&t->sighand->siglock);
+ 
++	/*
++	 * Deliver the signal to listening signalfds ...
++	 */
++	signalfd_notify(t->sighand, sig, info);
++
+ 	/* Short-circuit ignored signals.  */
+ 	if (sig_ignored(t, sig))
+ 		goto out;
+@@ -968,6 +978,11 @@
+ 	assert_spin_locked(&p->sighand->siglock);
+ 	handle_stop_signal(sig, p);
+ 
++	/*
++	 * Deliver the signal to listening signalfds ...
++	 */
++	signalfd_notify(p->sighand, sig, info);
++
+ 	/* Short-circuit ignored signals.  */
+ 	if (sig_ignored(p, sig))
+ 		return ret;
+@@ -1385,6 +1400,11 @@
+ 		goto out_err;
+ 	}
+ 
++	/*
++	 * Deliver the signal to listening signalfds ...
++	 */
++	signalfd_notify(p->sighand, sig, &q->info);
++
+ 	if (unlikely(!list_empty(&q->list))) {
+ 		/*
+ 		 * If an SI_TIMER entry is already queue just increment
+@@ -1394,6 +1414,7 @@
+ 		q->info.si_overrun++;
+ 		goto out;
+ 	}
++
+ 	/* Short-circuit ignored signals.  */
+ 	if (sig_ignored(p, sig)) {
+ 		ret = 1;
+@@ -1426,6 +1447,11 @@
+ 	spin_lock_irqsave(&p->sighand->siglock, flags);
+ 	handle_stop_signal(sig, p);
+ 
++	/*
++	 * Deliver the signal to listening signalfds ...
++	 */
++	signalfd_notify(p->sighand, sig, &q->info);
++
+ 	/* Short-circuit ignored signals.  */
+ 	if (sig_ignored(p, sig)) {
+ 		ret = 1;
+Index: linux-2.6.20.ep2/fs/exec.c
+===================================================================
+--- linux-2.6.20.ep2.orig/fs/exec.c	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/fs/exec.c	2007-03-07 15:59:01.000000000 -0800
+@@ -50,6 +50,7 @@
+ #include <linux/tsacct_kern.h>
+ #include <linux/cn_proc.h>
+ #include <linux/audit.h>
++#include <linux/signalfd.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/mmu_context.h>
+@@ -755,11 +756,18 @@
+ 		recalc_sigpending();
+ 
+ 		spin_unlock(&newsighand->siglock);
++
++		/*
++		 * Tell all the sighand listeners that this sighand has
++		 * been detached. Needs to be called with the sighand lock
++		 * held.
++		 */
++		signalfd_notify(oldsighand, -1, NULL);
++
+ 		spin_unlock(&oldsighand->siglock);
+ 		write_unlock_irq(&tasklist_lock);
+ 
+-		if (atomic_dec_and_test(&oldsighand->count))
+-			kmem_cache_free(sighand_cachep, oldsighand);
++		__cleanup_sighand(oldsighand);
+ 	}
+ 
+ 	BUG_ON(!thread_group_leader(tsk));
+Index: linux-2.6.20.ep2/kernel/exit.c
+===================================================================
+--- linux-2.6.20.ep2.orig/kernel/exit.c	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/kernel/exit.c	2007-03-07 15:59:01.000000000 -0800
+@@ -42,6 +42,7 @@
+ #include <linux/audit.h> /* for audit_free() */
+ #include <linux/resource.h>
+ #include <linux/blkdev.h>
++#include <linux/signalfd.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -120,6 +121,10 @@
+ 
+ 	tsk->signal = NULL;
+ 	tsk->sighand = NULL;
++	/*
++	 * Notify that this sighand has been detached.
++	 */
++	signalfd_notify(sighand, -1, NULL);
+ 	spin_unlock(&sighand->siglock);
+ 	rcu_read_unlock();
+ 
+Index: linux-2.6.20.ep2/include/linux/signal.h
+===================================================================
+--- linux-2.6.20.ep2.orig/include/linux/signal.h	2007-03-07 15:55:43.000000000 -0800
++++ linux-2.6.20.ep2/include/linux/signal.h	2007-03-07 15:59:01.000000000 -0800
+@@ -233,6 +233,7 @@
+ 	return sig <= _NSIG ? 1 : 0;
+ }
+ 
++extern void signal_fill_info(struct siginfo *dinfo, int sig, struct siginfo *sinfo);
+ extern int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p);
+ extern int __group_send_sig_info(int, struct siginfo *, struct task_struct *);
+ extern long do_sigpending(void __user *, unsigned long);
