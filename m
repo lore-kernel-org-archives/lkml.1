@@ -1,50 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750994AbXCHBXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992820AbXCHBZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750994AbXCHBXm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 20:23:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbXCHBXm
+	id S2992820AbXCHBZU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 20:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992818AbXCHBZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 20:23:42 -0500
-Received: from gw.goop.org ([64.81.55.164]:37909 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750994AbXCHBXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 20:23:41 -0500
-Message-ID: <45EF6597.5060104@goop.org>
-Date: Wed, 07 Mar 2007 17:23:35 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 7 Mar 2007 20:25:19 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:48507 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992819AbXCHBZQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 20:25:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J9B8u1dicNQ8DB59fNNWpc4zlAprY897kwFkgDD51x0Y1IexcY1el3VG4tWxxQDyVIXys87bo/I545iecV+F4FsrDrv3M/vBtvdWp4tTD34Z8uEJBZJHx9SE9R2DqaxrhnGwJa3iB86ibgl19DwRR91EAktXNJTmhp1Gb8UEw3Q=
+Message-ID: <f2b55d220703071725w7c09b93bgbf357aeb25a21c2b@mail.gmail.com>
+Date: Wed, 7 Mar 2007 17:25:14 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [patch] epoll use a single inode ...
+Cc: "Anton Blanchard" <anton@samba.org>, "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Avi Kivity" <avi@argo.co.il>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0703071453080.5963@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Daniel Arai <arai@vmware.com>
-CC: tglx@linutronix.de,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-References: <200703060654.l266sVxr014860@shell0.pdx.osdl.net>	<45ED16D2.3000202@vmware.com>	<20070306084258.GA15745@elte.hu>	<20070306084647.GA16280@elte.hu>	<45ED2C82.3080008@vmware.com>	<1173178774.24738.311.camel@localhost.localdomain>	<45EDD82F.90204@vmware.com>	<1173225182.24738.507.camel@localhost.localdomain>	<45EE0628.1080108@goop.org>	<45EE08E8.2020008@vmware.com>	<1173228544.24738.514.camel@localhost.localdomain>	<45EE0D10.7070807@vmware.com>	<1173230305.24738.529.camel@localhost.localdomain>	<45EE1EA3.90803@vmware.com>	<1173256666.24738.576.camel@localhost.localdomain>	<45EEF966.6060902@goop.org>	<Line.LNX.4.64.0703071304080.1851@d.namei>	<45EF0CF5.5090305@goop.org>	<45EF175D.6030609@vmware.com>	<1173302503.24738.795.camel@localhost.localdomain>	<45EF372E.7030600@goop.org>	<1173308717.24738.898.camel@localhost.localdomain>	<45EF49E9.7040509@vmware.com>	<1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com>
-In-Reply-To: <45EF6077.9090302@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45ED1A3C.6030707@argo.co.il>
+	 <200703071906.58405.dada1@cosmosbay.com>
+	 <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org>
+	 <200703071952.13219.dada1@cosmosbay.com>
+	 <20070307221401.GA16938@kryten>
+	 <Pine.LNX.4.64.0703071453080.5963@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Arai wrote:
-> But more importantly, we want a kernel that can run both on native hardware and 
-> in a paravirtualized environment.  Linux doesn't really provide abstractions for 
->   replacing the appropriate code.  We tried to hook into the source code at a 
-> level that seemed possible.
->   
+On 3/7/07, Linus Torvalds <torvalds@linux-foundation.org> wrote
+> Yeah, I'm not at all surprised. Any implementation of "prefetch" that
+> doesn't just turn into a no-op if the TLB entry doesn't exist (which makes
+> them weaker for *actual* prefetching) will generally have a hard time with
+> a NULL pointer. Exactly because it will try to do a totally unnecessary
+> TLB fill - and since most CPU's will not cache negative TLB entries, that
+> unnecessary TLB fill will be done over and over and over again..
 
-Xen doesn't support any kind of apic emulation, so we'll need to hook
-anything which relies on an apic.  The ipi code you quote below will
-probably be one of those.
+Data prefetch instructions should indeed avoid page table walks.
+(Instruction prefetch mechanisms often do induce table walks on ITLB
+miss.)  Not just because of the null pointer case, but because it's
+quite normal to run off the end of an array in a loop with an embedded
+prefetch instruction.  If you have an extra instruction issue unit
+that shares the same DTLB, and you know you will really want that
+data, you can sometimes use it to force DTLB preloads by doing an
+actual data fetch from the foreseeable page.  This is potentially one
+of the best uses of chip multi-threading on an architecture like Sun's
+Niagara.
 
-My opinion is that pv_ops shouldn't have raw apic operations, but
-instead have appropriate high-level interfaces to achieve the same
-ends.  Zach's counter-argument was basically your's: that the VMI code
-will use a lot of the native code except for the actual apic operations.
+(I don't think Intel's hyper-threading works for this purpose; the
+DTLB is shared but the entries are marked as owned by one thread or
+the other.  HT can be used for L2 cache prefetching, although the
+results so far seem to be mixed:
+http://www.cgo.org/cgo2004/papers/02_80_Kim_D_REVISED.pdf)
 
-I can live with VMI emulating apics if it wants, so long as it does it
-in private and doesn't make a big scene about it.  We'll need the
-high-level interfaces regardless.
+> In general, using software prefetching is just a stupid idea, unless
+>
+>  - the prefetch really is very strict (ie for a linked list you do exactly
+>    the above kinds of things to make sure that you don't try to prefetch
+>    the non-existent end entry)
+> AND
+>  - the CPU is stupid (in-order in particular).
+>
+> I think Intel even suggests in their optimization manuals to *not* do
+> software prefetching, because hw can usually simply do better without it.
 
-    J
+Not the XScale -- it performs quite poorly without prefetch, as people
+who have run ARMv5-optimized binaries on it can testify.  From the
+XScale Core Developer's Manual:
+
+<quote>
+The Intel XScale(r) core has a true prefetch load instruction (PLD).
+The purpose of this instruction is to preload data into the data and
+mini-data caches. Data prefetching allows hiding of memory transfer
+latency while the processor continues to execute instructions. The
+prefetch is important to compiler and assembly code because judicious
+use of the prefetch instruction can enormously improve throughput
+performance of the core. Data prefetch can be applied not only to
+loops but also to any data references within a block of code. Prefetch
+also applies to data writing when the memory type is enabled as write
+allocate
+
+The Intel XScale(r) core prefetch load instruction is a true prefetch
+instruction because the load destination is the data or mini-data
+cache and not a register. Compilers for processors which have data
+caches, but do not support prefetch, sometimes use a load instruction
+to preload the data cache. This technique has the disadvantages of
+using a register to load data and requiring additional registers for
+subsequent preloads and thus increasing register pressure. By
+contrast, the prefetch can be used to reduce register pressure instead
+of increasing it.
+
+The prefetch load is a hint instruction and does not guarantee that
+the data will be loaded. Whenever the load would cause a fault or a
+table walk, then the processor will ignore the prefetch instruction,
+the fault or table walk, and continue processing the next instruction.
+This is particularly advantageous in the case where a linked list or
+recursive data structure is terminated by a NULL pointer. Prefetching
+the NULL pointer will not fault program flow.
+</quote>
+
+People's prejudices against prefetch instructions are sometimes
+traceable to the 3DNow! prefetch(w) botch, which some processors
+"support" as no-ops and others are too aggressive about (Opteron
+prefetches are reputed to be "strong", i. e., not dropped on DTLB
+miss).  XScale gets it right.  So do most Pentium 4's using the SSE
+prefetches, according to the IA-32 optimization manual.  (Oddly,
+Prescott seems to have initiated a page table walk on DTLB miss during
+software prefetch -- just one of many weird Prescott flaws.)  I'm
+guessing Pentium M and its descendants (Core Solo and Duo) get it
+right but I'm having a hell of a time finding out for sure.  Can any
+of the x86 experts answer this?
+
+Cheers,
+- Michael
