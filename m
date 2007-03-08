@@ -1,172 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752336AbXCHPw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752351AbXCHPxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752336AbXCHPw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 10:52:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbXCHPwZ
+	id S1752351AbXCHPxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 10:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbXCHPxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 10:52:25 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42001 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752244AbXCHPvw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 10:51:52 -0500
-Subject: [RFC][Patch 5/6] integrity: mtime patch for mmap files
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: safford@watson.ibm.com, serue@linux.vnet.ibm.com,
-       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 11:04:13 -0500
-Message-Id: <1173369853.5981.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Mar 2007 10:53:17 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49901 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752351AbXCHPxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 10:53:16 -0500
+Date: Thu, 8 Mar 2007 07:52:27 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [patch] epoll use a single inode ...
+In-Reply-To: <200703081211.20662.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0703080751490.10832@woody.linux-foundation.org>
+References: <45ED1A3C.6030707@argo.co.il> <200703081042.21454.dada1@cosmosbay.com>
+ <20070308102105.GA21119@infradead.org> <200703081211.20662.dada1@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a minimal subset of Peter Staubach's July patch, updated to
-apply to the latest kernel. The subset was chosen to demonstrate that
-mmaped files are hashed and hmac properly by EVM after being modified
-when a file's mtime is updated correctly.
-
-Index: linux-2.6.21-rc3-mm2/fs/inode.c
-===================================================================
---- linux-2.6.21-rc3-mm2.orig/fs/inode.c
-+++ linux-2.6.21-rc3-mm2/fs/inode.c
-@@ -1209,8 +1209,8 @@ void touch_atime(struct vfsmount *mnt, s
- EXPORT_SYMBOL(touch_atime);
- 
- /**
-- *	file_update_time	-	update mtime and ctime time
-- *	@file: file accessed
-+ *	inode_update_time	-	update mtime and ctime time
-+ *	@inode: file accessed
-  *
-  *	Update the mtime and ctime members of an inode and mark the inode
-  *	for writeback.  Note that this function is meant exclusively for
-@@ -1220,9 +1220,8 @@ EXPORT_SYMBOL(touch_atime);
-  *	timestamps are handled by the server.
-  */
- 
--void file_update_time(struct file *file)
-+void inode_update_time(struct inode *inode)
- {
--	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct timespec now;
- 	int sync_it = 0;
- 
-@@ -1246,7 +1245,7 @@ void file_update_time(struct file *file)
- 		mark_inode_dirty_sync(inode);
- }
- 
--EXPORT_SYMBOL(file_update_time);
-+EXPORT_SYMBOL(inode_update_time);
- 
- int inode_needs_sync(struct inode *inode)
- {
-Index: linux-2.6.21-rc3-mm2/fs/fs-writeback.c
-===================================================================
---- linux-2.6.21-rc3-mm2.orig/fs/fs-writeback.c
-+++ linux-2.6.21-rc3-mm2/fs/fs-writeback.c
-@@ -167,6 +167,9 @@ __sync_single_inode(struct inode *inode,
- 
- 	spin_unlock(&inode_lock);
- 
-+	if (test_and_clear_bit(AS_MCTIME, &mapping->flags))
-+		inode_update_time(inode);
-+
- 	ret = do_writepages(mapping, wbc);
- 
- 	/* Don't write the inode if only I_DIRTY_PAGES was set */
-Index: linux-2.6.21-rc3-mm2/fs/buffer.c
-===================================================================
---- linux-2.6.21-rc3-mm2.orig/fs/buffer.c
-+++ linux-2.6.21-rc3-mm2/fs/buffer.c
-@@ -734,8 +734,11 @@ int __set_page_dirty_buffers(struct page
- 	}
- 	spin_unlock(&mapping->private_lock);
- 
--	if (TestSetPageDirty(page))
-+	if (TestSetPageDirty(page)) {
-+		if (page_mapped(page))
-+			set_bit(AS_MCTIME, &mapping->flags);
- 		return 0;
-+	}
- 
- 	write_lock_irq(&mapping->tree_lock);
- 	if (page->mapping) {	/* Race with truncate? */
-@@ -749,6 +752,8 @@ int __set_page_dirty_buffers(struct page
- 	}
- 	write_unlock_irq(&mapping->tree_lock);
- 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-+	if (page_mapped(page))
-+		set_bit(AS_MCTIME, &mapping->flags);
- 	return 1;
- }
- EXPORT_SYMBOL(__set_page_dirty_buffers);
-Index: linux-2.6.21-rc3-mm2/include/linux/fs.h
-===================================================================
---- linux-2.6.21-rc3-mm2.orig/include/linux/fs.h
-+++ linux-2.6.21-rc3-mm2/include/linux/fs.h
-@@ -1944,7 +1944,12 @@ extern int buffer_migrate_page(struct ad
- extern int inode_change_ok(struct inode *, struct iattr *);
- extern int __must_check inode_setattr(struct inode *, struct iattr *);
- 
--extern void file_update_time(struct file *file);
-+extern void inode_update_time(struct inode *);
-+
-+static inline void file_update_time(struct file *file)
-+{
-+	inode_update_time(file->f_dentry->d_inode);
-+}
- 
- static inline ino_t parent_ino(struct dentry *dentry)
- {
-Index: linux-2.6.21-rc3-mm2/include/linux/pagemap.h
-===================================================================
---- linux-2.6.21-rc3-mm2.orig/include/linux/pagemap.h
-+++ linux-2.6.21-rc3-mm2/include/linux/pagemap.h
-@@ -17,8 +17,9 @@
-  * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
-  * allocation mode flags.
-  */
--#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
-+#define AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
- #define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
-+#define AS_MCTIME	(__GFP_BITS_SHIFT + 2)	/* need m/ctime change */
- 
- static inline void mapping_set_error(struct address_space *mapping, int error)
- {
-Index: linux-2.6.21-rc3-mm2/mm/page-writeback.c
-===================================================================
---- linux-2.6.21-rc3-mm2.orig/mm/page-writeback.c
-+++ linux-2.6.21-rc3-mm2/mm/page-writeback.c
-@@ -815,8 +815,10 @@ int __set_page_dirty_no_writeback(struct
-  */
- int __set_page_dirty_nobuffers(struct page *page)
- {
-+	struct address_space *mapping = page_mapping(page);
-+	int ret = 0;
-+
- 	if (!TestSetPageDirty(page)) {
--		struct address_space *mapping = page_mapping(page);
- 		struct address_space *mapping2;
- 
- 		if (!mapping)
-@@ -840,9 +842,11 @@ int __set_page_dirty_nobuffers(struct pa
- 			/* !PageAnon && !swapper_space */
- 			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
- 		}
--		return 1;
-+		ret = 1;
- 	}
--	return 0;
-+	if (page_mapped(page))
-+		set_bit(AS_MCTIME, &mapping->flags);
-+	return ret;
- }
- EXPORT_SYMBOL(__set_page_dirty_nobuffers);
- 
 
 
+On Thu, 8 Mar 2007, Eric Dumazet wrote:
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> CC: Christoph Hellwig <hch@infradead.org>
+> CC: Linus Torvalds <torvalds@linux-foundation.org>
 
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+Except you should fix the subject line when you send it out to Andrew ;)
+
+		Linus
