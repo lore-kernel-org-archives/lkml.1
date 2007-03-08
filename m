@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXCHT4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933245AbXCHT5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933232AbXCHT4A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 14:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933239AbXCHTz7
+	id S933245AbXCHT5R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 14:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933242AbXCHT5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 14:55:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46166 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933232AbXCHTz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 14:55:58 -0500
-Date: Thu, 8 Mar 2007 20:54:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Daniel Arai <arai@vmware.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
-       tglx@linutronix.de, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-Message-ID: <20070308195413.GA6570@elte.hu>
-References: <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com> <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F06720.8080901@goop.org>
-Mime-Version: 1.0
+	Thu, 8 Mar 2007 14:57:16 -0500
+Received: from p02c11o143.mxlogic.net ([208.65.145.66]:43335 "EHLO
+	p02c11o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933236AbXCHT5O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 14:57:14 -0500
+Date: Thu, 8 Mar 2007 21:57:35 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Message-ID: <20070308195735.GG17114@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45F06720.8080901@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.11
+X-OriginalArrivalTime: 08 Mar 2007 19:59:45.0689 (UTC) FILETIME=[51C3F090:01C761BC]
+X-TM-AS-Product-Ver: SMEX-7.0.0.1526-3.6.1039-15042.000
+X-TM-AS-Result: No--8.101200-4.000000-4
+X-Spam: [F=0.4550880124; S=0.455(2007030701)]
+X-MAIL-FROM: <mst@mellanox.co.il>
+X-SOURCE-IP: [194.90.237.34]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> > While that's basically what we did in Xen, it would make more sense 
-> > to build it into genapic which would give us one common abstraction 
-> > to base from.  We should avoid adding pv_ops when existing 
-> > infrastructure exists.
+> > 2. First disk access after resume takes a couple of minutes
+> >    (seemed instant with 2.6.20) during this time no new messages show on console
 > 
-> I was looking at cutting in at a much higher level.  The interface in 
-> <linux/smp.h> is a good match for Xen, so I was going to investigate 
-> making pv_ops at that level and see how it falls out.
+> Yeah, there is some problem with SATA resume. It would be beautiful if the 
+> people who actually see this could narrow it down with bisection. "It 
+> works for me" is clearly the case for many people, but not all.
 
-yes, yes, yes. Finally someone with a clue about APIs ;-)
+Problem is, there seem to be multiple problems some of which got
+fixed between rc2 and rc3.
+With rc2 I didn't get as far as getting to console.
 
-Basically, we want to think about the hypercall API more like a system 
-call API, not like a hardware API! There will probably still be lowlevel 
-details like ptes for a long time - but even those are not quite 
-necessary.
-
-And the reason is really fundamental: those system-call alike APIs are 
-going to be the /most stable ones/ over time! 'Send stuff from A to B' 
-or 'notify X about event Y' is /ALOT/ more stable across hardware 
-variations than 'IDTs, vectors, apics or ptes'. And that is so precisely 
-because these are fundamental actions that physical matter can do, and 
-those do not get changed when new silicon comes out. In that sense Xen's 
-hypervisor API is saner than VMI.
-
-the most highlevel API is what UML uses today (and it clearly overdoes 
-abstraction), still i was able to get basic UML performance close to 
-native performance, via extending a few Linux system calls to enable the 
-management of multiple sets of pagetables (each represented by a 
-separate fd) via a single hypervisor-level process, and feeding back raw 
-pagefault events to the hypervisor. (that was UML's SKAS concept 
-combined with sys_remap_file_pages_prot() and sys_vcpu())
-
-Now the practical problem with UML is that nobody has tried to make an 
-UML native+guest 'shared kernel image', and hence it's unusable for 
-distros. But there is no conceptual problem with UML's virtualization 
-model.
-
-	Ingo
+-- 
+MST
