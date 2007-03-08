@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbXCHFSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbXCHFU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752190AbXCHFSn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 00:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbXCHFSn
+	id S1752279AbXCHFU0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 00:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbXCHFUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 00:18:43 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:50897 "EHLO tmailer.gwdg.de"
+	Thu, 8 Mar 2007 00:20:25 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:44253 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752190AbXCHFSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 00:18:42 -0500
-Date: Thu, 8 Mar 2007 06:16:39 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: dean gaudet <dean@arctic.org>
-cc: Marc Perkel <mperkel@yahoo.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-raid@vger.kernel.org
-Subject: Re: Raid 10 Problems?
-In-Reply-To: <Pine.LNX.4.64.0703071010260.8538@twinlark.arctic.org>
-Message-ID: <Pine.LNX.4.61.0703080610580.2448@yvahk01.tjqt.qr>
-References: <708349.8753.qm@web52513.mail.yahoo.com>
- <Pine.LNX.4.64.0703071010260.8538@twinlark.arctic.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1752277AbXCHFUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 00:20:24 -0500
+Date: Thu, 8 Mar 2007 10:47:30 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
+       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
+       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
+       rjw@sisk.pl
+Subject: Re: [PATCH 16/20] swsusp: do not use virt_to_page on kernel data address
+Message-ID: <20070308051730.GH6000@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070307065703.GA23412@in.ibm.com> <20070307072008.GQ23412@in.ibm.com> <20070307224915.GG5956@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070307224915.GG5956@elf.ucw.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 07, 2007 at 11:49:15PM +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > o virt_to_page() call should be used on kernel linear addresses and not
+> >   on kernel text and data addresses. Swsusp code uses it on kernel data
+> >   (statically allocated swsusp_header).
+> > 
+> > o Allocate swsusp_header dynamically so that virt_to_page() can be used
+> >   safely.
+> > 
+> > o I am changing this because in next few patches, __pa() on x86_64 will
+> >   no longer support kernel text and data addresses and hibernation breaks. 
+> > 
+> > Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
+> 
+> > +static int swsusp_header_init(void)
+> > +{
+> > +	swsusp_header = (struct swsusp_header*) __get_free_page(GFP_KERNEL);
+> > +	if (!swsusp_header)
+> > +		panic("Could not allocate memory for swsusp_header\n");
+> > +	return 0;
+> > +}
+> > +
+> > +core_initcall(swsusp_header_init);
+> 
+> I do not like the panic, but I guess it is okay as we are running
+> during boot? (Could you add a comment?) Otherwise ok.
+> 
 
-On Mar 7 2007 10:20, dean gaudet wrote:
->>> http://gentoo-wiki.com/HOWTO_Install_on_Software_RAID#Write-intent_bitmap
->> 
->> That information has been extremely useful. Thanks a
->> lot. I fund a command to do the bitmap internal after
->> the array was made so I added that. Seems like some of
->> these features should be default. Maybe it's time for
->> the raid folks to update what is default?
->
->the bitmap has performance implications... for example:
->http://www.mail-archive.com/linux-raid@vger.kernel.org/msg07229.html
+Hi Pavel,
 
-I wonder if bitmapping a raid1 volume is faster than bmp.ing raid5.
+Yes, it is an initcall and this memory page will be allocated during
+boot time. Not very sure what comment to put there. To me it seems
+pretty obivious with "core_initcall".
 
-The other thing is, the bitmap is supposed to be written out at intervals,
-not at every write, so the extra head movement for bitmap updates should
-be really low, and not making the tar -xjf process slower by half a
-minute.
-Is there a way to tweak the write-bitmap-to-disk interval? Perhaps 
-something in /sys or ye olde /proc. Maybe linux-raid@ knows 8)
-
-
->note that unless you tweak your init scripts you'll need to put external 
->bitmaps on your root partition, see this thread:
-
-Huh? That statement does not make sense. But I think you meant: when using
-external bitmaps, adjust the init scripts. Because internal bitmaps are good
-for one thing: you don't need to change anything.
-
-
-Jan
--- 
+Thanks
+Vivek
