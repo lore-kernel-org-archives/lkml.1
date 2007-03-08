@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751405AbXCHLjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXCHLny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751405AbXCHLjB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 06:39:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXCHLjA
+	id S1751385AbXCHLny (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 06:43:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXCHLny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 06:39:00 -0500
-Received: from amsfep16-int.chello.nl ([62.179.120.11]:38602 "EHLO
-	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbXCHLjA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 06:39:00 -0500
-Subject: Re: [RFC][PATCH] mm: fix page_mkclean() vs non-linear vmas
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: npiggin@suse.de, akpm@linux-foundation.org, mingo@elte.hu,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, jdike@addtoit.com, hugh@veritas.com,
-       torvalds@linux-foundation.org
-In-Reply-To: <E1HPGg9-00039z-00@dorka.pomaz.szeredi.hu>
-References: <1173264462.6374.140.camel@twins>
-	 <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins>
-	 <20070307121730.GC18704@wotan.suse.de> <1173271286.6374.166.camel@twins>
-	 <20070307130851.GE18704@wotan.suse.de> <1173273562.6374.175.camel@twins>
-	 <20070307133649.GF18704@wotan.suse.de> <1173275532.6374.183.camel@twins>
-	 <1173278067.6374.188.camel@twins>  <20070307150102.GH18704@wotan.suse.de>
-	 <1173286682.6374.191.camel@twins>
-	 <E1HPGg9-00039z-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 12:37:04 +0100
-Message-Id: <1173353824.9438.15.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Mar 2007 06:43:54 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39417 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751385AbXCHLnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 06:43:53 -0500
+Date: Thu, 8 Mar 2007 12:43:35 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Vivek Goyal <vgoyal@in.ibm.com>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
+       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
+       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
+       rjw@sisk.pl
+Subject: Re: [PATCH 11/20] x86_64: wakeup.S misc cleanups
+Message-ID: <20070308114335.GD5953@elf.ucw.cz>
+References: <20070307065703.GA23412@in.ibm.com> <20070307071320.GL23412@in.ibm.com> <20070307224157.GD5956@elf.ucw.cz> <20070308042908.GD6000@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070308042908.GD6000@in.ibm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-08 at 12:21 +0100, Miklos Szeredi wrote:
-> > Partial revert of commit: 204ec841fbea3e5138168edbc3a76d46747cc987
+Hi!
+
+> > > +	movw	$0x0e00 + 'i', %ds:(0xb8012)
+> > > +	movb	$0xa8, %al	;  outb %al, $0x80;
+> > > +
 > > 
-> > Non-linear vmas aren't properly handled by page_mkclean() and fixing that
-> > would result in linear scans of all related non-linear vmas per page_mkclean()
-> > invocation.
+> > > -	movw	$0x0e00 + 'i', %ds:(0xb8012)
+> > > -	movb	$0xa8, %al	;  outb %al, $0x80; 	
 > > 
-> > This is deemed too costly, hence re-instate the msync scan for non-linear vmas.
+> > Outbs were my debugging hacks, perhaps you can simply remove them at
+> > this point? Not sure how useful "Linux" debug print is, it can
+> > probably be removed, too.
 > > 
-> > However this can lead to double IO:
-> > 
-> >  - pages get instanciated with RO mapping
-> >  - page takes write fault, and gets marked with PG_dirty
-> >  - page gets tagged for writeout and calls page_mkclean()
-> >  - page_mkclean() fails to find the dirty pte (and clean it)
-> >  - writeout happens and PG_dirty gets cleared.
-> >  - user calls msync, the dirty pte is found and the page marked with PG_dirty
-> >  - the page gets writen out _again_ even though its not re-dirtied.
-> > 
-> > To minimize this reset the protection when creating a nonlinear vma.
-> > 
-> > I'm not at all happy with this, but plain disallowing
-> > remap_file_pages on bdis without BDI_CAP_NO_WRITEBACK seems to
-> > offend some people, hence restrict it to root only.
 > 
-> Root only for !BDI_CAP_NO_WRITEBACK mappings doesn't make sense
-> because:
+> Hi Pavel,
 > 
->   - just encourages insecure applications
-> 
->   - there are no current users that want this and presumable no future
->     uses either
+> I found these debugging hacks useful while debugging some problem with 
+> my changes in this code. It helps to find out till what poing code flow
+> as reached in this assembly code. So I think its not a bad idea to let
+> this piece code be there.
 
-AFAIK no other OS does this against regular filesystems (hear-say)
+Ok. (I was not sure how common are displays of port 0x80).
 
->   - it's a maintenance burden: I'll have to layer the m/ctime update
->     patch on top of this
-> 
->   - the only pro for this has been that Nick thinks it cool ;)
-> 
-> I think the proper way to deal with this is to
-> 
->   - allow BDI_CAP_NO_WRITEBACK (tmpfs/ramfs) uses, makes database
->     people happy
 
-And UML once the remap_file_pages_prot() stuff is merged.
-
->   - for !BDI_CAP_NO_WRITEBACK emulate using do_mmap_pgoff(), should be
->     trivial, no userspace ABI breakage
-
-I can live with that.
-
-However this still leaves the non-linear reclaim (Nick pointed it out as
-a potential DoS and other people have corroborated this). I have no idea
-on that to do about that.
-
-Oracle seems to mlock these things anyway, but UML surely would not.
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
