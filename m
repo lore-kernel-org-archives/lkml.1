@@ -1,62 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030799AbXCHWTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030803AbXCHWYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030799AbXCHWTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 17:19:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030802AbXCHWTQ
+	id S1030803AbXCHWYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 17:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030805AbXCHWYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 17:19:16 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:39095 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030799AbXCHWTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 17:19:14 -0500
-Date: Thu, 8 Mar 2007 16:19:11 -0600
-To: Bino.Sebastian@Emulex.Com, James Smart <james.smart@Emulex.Com>
-Cc: linuxppc-dev@ozlabs.org, linux-scsi@vger.kernel.org,
-       James.Bottomley@SteelEye.com, rlary@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] lpfc: avoid double-free during PCI error failure
-Message-ID: <20070308221911.GC30703@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+	Thu, 8 Mar 2007 17:24:19 -0500
+Received: from mse2fe2.mse2.exchange.ms ([66.232.26.194]:38831 "EHLO
+	mse2fe2.mse2.exchange.ms" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030803AbXCHWYS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 17:24:18 -0500
+Subject: Permanent Kgdb integration into the kernel - lets get with it.
+From: Piet Delaney <piet@bluelane.com>
+Reply-To: piet@bluelane.com
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Piet Delaney <piet@bluelane.com>, Andi Kleen <ak@suse.de>,
+       Dave Jiang <djiang@mvista.com>, linux-kernel@vger.kernel.org,
+       sshtylyov@ru.mvista.com, Andrew Morton <akpm@osdl.org>,
+       George Anzinger <george@wildturkeyranch.net>,
+       "David O'Brien" <obrien@FreeBSD.org>
+In-Reply-To: <20070308184940.GP11626@smtp.west.cox.net>
+References: <20070307204516.GA24095@blade.az.mvista.com>
+	 <200703081814.53153.ak@suse.de> <45F04B6E.9000703@mvista.com>
+	 <200703081937.56167.ak@suse.de>  <20070308184940.GP11626@smtp.west.cox.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lISMxxOV0mk+qMGVR5Bb"
+Organization: Blue Lane Technologies
+Date: Thu, 08 Mar 2007 14:24:10 -0800
+Message-Id: <1173392650.8912.236.camel@piet2.bluelane.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4-3mdk 
+X-OriginalArrivalTime: 08 Mar 2007 22:24:16.0972 (UTC) FILETIME=[8240B8C0:01C761D0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Bino, James,
-Please review, sign-off and forward upstream.
+--=-lISMxxOV0mk+qMGVR5Bb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
---linas
+On Thu, 2007-03-08 at 11:49 -0700, Tom Rini wrote:
+> On Thu, Mar 08, 2007 at 07:37:56PM +0100, Andi Kleen wrote:
+> > On Thursday 08 March 2007 18:44, Dave Jiang wrote:
+> >=20
+> > > In spite of kgdb, shouldn't it have that \n anyways in case some othe=
+r code
+> > > gets added in the future after the macro? Or are you saying that ther=
+e should
+> > > never be any code ever after that macro?
+> >=20
+> > Sure if there is mainline code added after that macro we add the \n.
+> > But only if it makes sense to add code there, which it didn't in kgdb.
+>=20
+> Was that because with recent enough tools and config options there was
+> enough annotations so GDB could finally figure out where things had
+> stopped?  Thanks.
 
+The reason Linus said he didn't allow George's kgdb mm patch to=20
+be integrating into the kernel a year or two ago was that Amit and
+George had significantly different implementations. So Amit, Tom,=20
+George, and the rest of the kgdb development gang worked together=20
+and came up with a unified version that we now support on SourceForge.=20
 
-If a PCI error is detected that cannot be recovered from, there
-will be a double call of lpfc_pci_remove_one(), with the second call
-resulting in a null-pointer dereference. The first call occurs in 
-lpfc_io_error_detected(), and the second call during pci device 
-remove. This patch eliminates the first call; its un-needed.
+Tom rolled up a mm patch back in December for Andrew and then the
+integration process stopped. I suggest we work together on getting
+the kgdb patch back into the mm series and permanently into the kernel
+like the kexec code and then we can avoid this kernel development
+obfuscation.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+-piet
 
-----
- drivers/scsi/lpfc/lpfc_init.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+=20
+>=20
+--=20
+Piet Delaney                                    Phone: (408) 200-5256
+Blue Lane Technologies                          Fax:   (408) 200-5299
+10450 Bubb Rd.
+Cupertino, Ca. 95014                            Email: piet@bluelane.com
 
-Index: linux-2.6.20-git16/drivers/scsi/lpfc/lpfc_init.c
-===================================================================
---- linux-2.6.20-git16.orig/drivers/scsi/lpfc/lpfc_init.c	2007-03-08 15:57:40.000000000 -0600
-+++ linux-2.6.20-git16/drivers/scsi/lpfc/lpfc_init.c	2007-03-08 16:03:18.000000000 -0600
-@@ -1817,10 +1817,9 @@ static pci_ers_result_t lpfc_io_error_de
- 	struct lpfc_sli *psli = &phba->sli;
- 	struct lpfc_sli_ring  *pring;
- 
--	if (state == pci_channel_io_perm_failure) {
--		lpfc_pci_remove_one(pdev);
-+	if (state == pci_channel_io_perm_failure)
- 		return PCI_ERS_RESULT_DISCONNECT;
--	}
-+
- 	pci_disable_device(pdev);
- 	/*
- 	 * There may be I/Os dropped by the firmware.
+--=-lISMxxOV0mk+qMGVR5Bb
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQBF8I0KJICwm/rv3hoRAqPgAJ9aFa6kCZXJKMdR8nQoGw+K9Y+CrwCdEq3n
+KxKz+XgKuEhTP0AUucJ4dtU=
+=xP13
+-----END PGP SIGNATURE-----
+
+--=-lISMxxOV0mk+qMGVR5Bb--
+
