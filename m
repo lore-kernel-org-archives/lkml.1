@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030822AbXCHWgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030823AbXCHWge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030822AbXCHWgW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 17:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030826AbXCHWgW
+	id S1030823AbXCHWge (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 17:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030812AbXCHWge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 17:36:22 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:55610 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030822AbXCHWgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 17:36:21 -0500
-Message-ID: <45F08FE4.5090909@vmware.com>
-Date: Thu, 08 Mar 2007 14:36:20 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 8 Mar 2007 17:36:34 -0500
+Received: from ns1.suse.de ([195.135.220.2]:57967 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030823AbXCHWgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 17:36:33 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Tom Rini <trini@kernel.crashing.org>
+Subject: Re: [PATCH] x86_64 RESTORE_CONTEXT missing '\n'
+Date: Thu, 8 Mar 2007 23:36:14 +0100
+User-Agent: KMail/1.9.5
+Cc: Dave Jiang <djiang@mvista.com>, linux-kernel@vger.kernel.org,
+       sshtylyov@ru.mvista.com
+References: <20070307204516.GA24095@blade.az.mvista.com> <200703081937.56167.ak@suse.de> <20070308184940.GP11626@smtp.west.cox.net>
+In-Reply-To: <20070308184940.GP11626@smtp.west.cox.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <ak@suse.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       tglx@linutronix.de, john stultz <johnstul@us.ibm.com>,
-       akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pratap Subrahmanyam <pratap@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Daniel Hecht <dhecht@vmware.com>,
-       Daniel Arai <arai@vmware.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: hardwired VMI crap
-References: <45EF175D.6030609@vmware.com> <45F07D07.5090003@goop.org> <20070308213458.GA24634@elte.hu> <200703082243.31659.ak@suse.de> <20070308223041.GB30113@elte.hu>
-In-Reply-To: <20070308223041.GB30113@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703082336.14436.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->   
->> [...] And apparently the VMI version is the same, just with some short 
->> cuts. Are you just worried about the ->apic_write() hooks or about 
->> something else too?
->>     
->
-> i'm worried about those "shot cuts" (which in essence create software 
-> variants of silicon), the hooks, the hardwirings combined with the 
-> hypervisor-side ABIs creating a rigid mess that is harmful to Linux. 
-> paravirt_ops and the hooks gives a license for all hypervisor 'backends' 
-> to deviate into random arbitrary directions and to create all their 
-> separate 'virtual silicon' playgrounds with no regard to Linux 
-> maintainability. And once this gets released, Linux has no choice but to 
-> play along.
->   
+On Thursday 08 March 2007 19:49, Tom Rini wrote:
+> On Thu, Mar 08, 2007 at 07:37:56PM +0100, Andi Kleen wrote:
+> > On Thursday 08 March 2007 18:44, Dave Jiang wrote:
+> > 
+> > > In spite of kgdb, shouldn't it have that \n anyways in case some other code
+> > > gets added in the future after the macro? Or are you saying that there should
+> > > never be any code ever after that macro?
+> > 
+> > Sure if there is mainline code added after that macro we add the \n.
+> > But only if it makes sense to add code there, which it didn't in kgdb.
+> 
+> Was that because with recent enough tools and config options there was
+> enough annotations so GDB could finally figure out where things had
+> stopped?  
 
-What?  And creating a high level API which allows you to implement 
-totally random silicon with oodles of quirks and obfuscated 
-implementation requirements creates more maintainability how?  We tried 
-to stay as close as possible to the hardware ABI on purpose, 
-specifically so we don't need to introduce 100 new concepts into the kernel.
+The x86 kernels are fully dwarf2 annotiated yes.
 
-Zaccch
+-Andi
