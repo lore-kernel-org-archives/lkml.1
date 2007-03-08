@@ -1,142 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030812AbXCHXBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030865AbXCHXFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030812AbXCHXBR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 18:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030843AbXCHXBR
+	id S1030865AbXCHXFF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 18:05:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030864AbXCHXFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 18:01:17 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44597 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030812AbXCHXBQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 18:01:16 -0500
-Subject: [PATCH] Complain about missing system calls.
-From: David Woodhouse <dwmw2@infradead.org>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       rmk@arm.linux.org.uk, sam@ravnborg.org
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 23:01:13 +0000
-Message-Id: <1173394873.3461.510.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
+	Thu, 8 Mar 2007 18:05:05 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:22842 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030863AbXCHXFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 18:05:01 -0500
+Message-ID: <45F09698.7090606@tls.msk.ru>
+Date: Fri, 09 Mar 2007 02:04:56 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: dean gaudet <dean@arctic.org>, Marc Perkel <mperkel@yahoo.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-raid@vger.kernel.org
+Subject: Re: Raid 10 Problems?
+References: <708349.8753.qm@web52513.mail.yahoo.com> <Pine.LNX.4.64.0703071010260.8538@twinlark.arctic.org> <Pine.LNX.4.61.0703080610580.2448@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0703080610580.2448@yvahk01.tjqt.qr>
+X-Enigmail-Version: 0.94.1.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most system calls seem to get added to i386 first. This patch
-automatically generates a warning for any new system call which is
-implemented on i386 but not the architecture currently being compiled.
-On PowerPC at the moment, for example, it results in these warnings:
-init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
-init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
-init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
+Jan Engelhardt wrote:
+[]
+> The other thing is, the bitmap is supposed to be written out at intervals,
+> not at every write, so the extra head movement for bitmap updates should
+> be really low, and not making the tar -xjf process slower by half a minute.
+> Is there a way to tweak the write-bitmap-to-disk interval? Perhaps 
+> something in /sys or ye olde /proc. Maybe linux-raid@ knows 8)
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Hmm.  Bitmap is supposed to be written before actual data write, to mark
+the to-be-written areas of the array as "being written", so that those
+areas can be detected and recovered in case of power failure during
+actual write.
 
-index 0154aea..826433b 100644
---- a/init/Makefile
-+++ b/init/Makefile
-@@ -2,7 +2,7 @@
- # Makefile for the linux kernel.
- #
- 
--obj-y                          := main.o version.o mounts.o
-+obj-y                          := main.o version.o mounts.o missing_syscalls.o
- ifneq ($(CONFIG_BLK_DEV_INITRD),y)
- obj-y                          += noinitramfs.o
- else
-@@ -16,11 +16,12 @@ mounts-$(CONFIG_BLK_DEV_INITRD)	+= do_mounts_initrd.o
- mounts-$(CONFIG_BLK_DEV_MD)	+= do_mounts_md.o
- 
- # files to be removed upon make clean
--clean-files := ../include/linux/compile.h
-+clean-files := ../include/linux/compile.h $(obj)/missing_syscalls.h
- 
- # dependencies on generated files need to be listed explicitly
- 
- $(obj)/version.o: include/linux/compile.h
-+$(obj)/missing_syscalls.o: $(obj)/missing_syscalls.h include/linux/compile.h FORCE
- 
- # compile.h changes depending on hostname, generation number, etc,
- # so we regenerate it always.
-@@ -31,3 +32,13 @@ include/linux/compile.h: FORCE
- 	@echo '  CHK     $@'
- 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkcompile_h $@ \
- 	"$(UTS_MACHINE)" "$(CONFIG_SMP)" "$(CONFIG_PREEMPT)" "$(CC) $(CFLAGS)"
-+
-+
-+quiet_cmd_missing_syscalls = GEN     $@
-+      cmd_missing_syscalls = sed -n '/^\#define/s/[^_]*__NR_\([^[:space:]]*\).*/\
-+	\#if !defined (__NR_\1) \&\& !defined (__IGNORE_\1)\n\
-+	\#warning syscall \1 not implemented\n\
-+	\#endif/p' $(srctree)/include/asm-i386/unistd.h >$@
-+targets += missing_syscalls.h
-+$(obj)/missing_syscalls.h: include/asm-i386/unistd.h
-+	$(call if_changed,missing_syscalls)
---- /dev/null	2007-03-08 11:51:40.542628703 +0000
-+++ b/init/missing_syscalls.c	2007-03-08 22:48:27.000000000 +0000
-@@ -0,0 +1,57 @@
-+#include <asm/types.h>
-+#include <asm/unistd.h>
-+
-+/* Force recompilation (and thus warnings) every time we rebuild the kernel */
-+#include <linux/compile.h>
-+
-+/* System calls for 32-bit kernels only */
-+#if BITS_PER_LONG == 64
-+#define __IGNORE_sendfile64
-+#define __IGNORE_ftruncate64
-+#define __IGNORE_truncate64
-+#define __IGNORE_stat64
-+#define __IGNORE_lstat64
-+#define __IGNORE_fstat64
-+#define __IGNORE_fcntl64
-+#define __IGNORE_fadvise64_64
-+#define __IGNORE_fstatat64
-+#endif
-+
-+/* i386-specific or historical system calls */
-+#define __IGNORE_mmap2
-+#define __IGNORE_vm86
-+#define __IGNORE_vm86old
-+#define __IGNORE_set_thread_area
-+#define __IGNORE_get_thread_area
-+#define __IGNORE_madvise1
-+#define __IGNORE_oldstat
-+#define __IGNORE_oldfstat
-+#define __IGNORE_oldlstat
-+#define __IGNORE_oldolduname
-+#define __IGNORE_olduname
-+#define __IGNORE_umount2
-+/* ... including the "new" 32-bit uid syscalls */
-+#define __IGNORE_lchown32
-+#define __IGNORE_getuid32
-+#define __IGNORE_getgid32
-+#define __IGNORE_geteuid32
-+#define __IGNORE_getegid32
-+#define __IGNORE_setreuid32
-+#define __IGNORE_setregid32
-+#define __IGNORE_getgroups32
-+#define __IGNORE_setgroups32
-+#define __IGNORE_fchown32
-+#define __IGNORE_setresuid32
-+#define __IGNORE_getresuid32
-+#define __IGNORE_setresgid32
-+#define __IGNORE_getresgid32
-+#define __IGNORE_chown32
-+#define __IGNORE_setuid32
-+#define __IGNORE_setgid32
-+#define __IGNORE_setfsuid32
-+#define __IGNORE_setfsgid32
-+
-+/* Not yet upstream */
-+#define __IGNORE_vserver
-+
-+#include "missing_syscalls.h"
+So in case of writing to a clean array, head movement always takes place -
+first got to bitmap area, and second to the actual data area.
 
+That "written at intervals" is about clearing the bitmaps after some idle
+time.
 
--- 
-dwmw2
+In other words, dirtying bitmap bits occurs right before actual write,
+and clearing bits occurs at intervals.
 
+Sure, if you write to (or near) the same place again and again, without
+giving a chance to md subsystem to actually clean the bitmap, there will
+be no additional head movement.  And that means, for example, tar -xjf
+sometimes, since filesystem will place the files being extracted close to
+each other, thus hitting the same bit in the bitmap, hence md will skip
+repeated bitmap updates in this case.
+
+/mjt
