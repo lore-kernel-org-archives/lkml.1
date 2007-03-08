@@ -1,250 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030748AbXCHWF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030757AbXCHWG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030748AbXCHWF4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 17:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030749AbXCHWFz
+	id S1030757AbXCHWG1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 17:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030755AbXCHWG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 17:05:55 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:56664 "EHLO tmailer.gwdg.de"
+	Thu, 8 Mar 2007 17:06:26 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:54180 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030748AbXCHWFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 17:05:54 -0500
-Date: Thu, 8 Mar 2007 23:01:57 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: dmitry.torokhov@gmail.com, Christoph Hellwig <hch@infradead.org>,
-       Deepak Saxena <dsaxena@plexity.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix building kernel under Solaris 11_snv
-In-Reply-To: <20070308212512.GA10584@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.61.0703082242020.521@yvahk01.tjqt.qr>
-References: <20070306180940.GA3240@plexity.net> <20070307094229.GG14863@infradead.org>
- <Pine.LNX.4.61.0703072342310.2448@yvahk01.tjqt.qr> <20070308083543.GA5213@infradead.org>
- <Pine.LNX.4.61.0703082142240.521@yvahk01.tjqt.qr> <20070308212512.GA10584@uranus.ravnborg.org>
+	id S1030757AbXCHWGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 17:06:25 -0500
+Message-ID: <45F088DD.3030308@simon.arlott.org.uk>
+Date: Thu, 08 Mar 2007 22:06:21 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: ebiederm@xmission.com
+Subject: SysRq SAK panic on tty2
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have no idea when this broke, I was checking SAK worked at all since 
+it's not on another box's serial console.
 
-On Mar 8 2007 22:25, Sam Ravnborg wrote:
->Subject: Re: [PATCH] Fix building kernel under Solaris
+[    0.000000] Linux version 2.6.21-rc3-git (byte@redrum) (gcc version 3.4.6 (Gentoo 3.4.6-r1, ssp-3.4.5-1.0, pie-8.7.9)) #170 PREEMPT Thu Mar 8 21:19:28 GMT 2007
 
-Since Solaris seems to be on the run, I did myself try compile it. 
-However, unlike the original poster who said he did so on SunOS 4.8, I 
-did it on 5.11_snv39, yielding a bigger changeset. I thought I just 
-share the diff that piled up so far. It needs a lot of hacks on the 
-Solaris side - prioritizing GNU names, then, second, gnu ld has a 
-glitch, then, gcc has a missing file... it's fun fun fun!
+tty1 (console):
+[  111.879184] SysRq : SAK
+[  111.879417] SAK: killed process 6231 (agetty): process_session(p)==tty->session
+[  111.879589] SAK: killed process 6231 (agetty): process_session(p)==tty->session
 
-Well, I will iterate the key problem with the missing file:
+tty2:
+[  122.983282] SysRq : SAK
+[  122.983459] ------------[ cut here ]------------
+[  122.983507] kernel BUG at kernel/workqueue.c:212!
+[  122.983618] invalid opcode: 0000 [#1]
+[  122.983661] PREEMPT
+[  122.983736] Modules linked in: capability commoncap mt352 saa7134_dvb dvb_pll video_buf_dvb dvb_core
+[  122.984245] CPU:    0
+[  122.984247] EIP:    0060:[<b0130bf1>]    Not tainted VLI
+[  122.984249] EFLAGS: 00010017   (2.6.21-rc3-git #170)
+[  122.984385] EIP is at queue_work+0x51/0x60
+[  122.984494] eax: b0967c7c   ebx: 00000000   ecx: effec7a0   edx: b0967c78
+[  122.984545] esi: 00000001   edi: 0000006b   ebp: b06bbdb8   esp: b06bbdb4
+[  122.984595] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+[  122.984644] Process swapper (pid: 0, ti=b06ba000 task=b0660ca0 task.ti=b06ba000)
+[  122.984751] Stack: b0967c78 b06bbdc0 b01313ff b06bbdd8 b03084c1 b06047fd 00000001 b0967c78
+[  122.985232]        b0678210 b06bbe00 b0308778 b0603fdf b060481c 00000082 00000009 ebb83000
+[  122.985776]        ebb83000 0000006b ebb83000 b06bbe10 b0308841 b0967a45 00000025 b06bbe48
+[  122.986264] Call Trace:
+[  122.986410]  [<b0104f4a>] show_trace_log_lvl+0x1a/0x30
+[  122.986504]  [<b010500b>] show_stack_log_lvl+0x8b/0xb0
+[  122.986650]  [<b0105253>] show_registers+0x1c3/0x320
+[  122.986739]  [<b0105536>] die+0x106/0x230
+[  122.986883]  [<b01056e2>] do_trap+0x82/0xc0
+[  122.986970]  [<b01059f3>] do_invalid_op+0xa3/0xb0
+[  122.987116]  [<b0510f04>] error_code+0x74/0x7c
+[  122.987212]  [<b01313ff>] schedule_work+0xf/0x20
+[  122.987357]  [<b03084c1>] sysrq_handle_SAK+0x31/0x40
+[  122.987452]  [<b0308778>] __handle_sysrq+0x88/0x120
+[  122.987599]  [<b0308841>] handle_sysrq+0x31/0x40
+[  122.987687]  [<b0302e35>] kbd_keycode+0x335/0x3b0
+[  122.987833]  [<b0302f8a>] kbd_event+0xda/0xf0
+[  122.987920]  [<b03d4222>] input_event+0x152/0x430
+[  122.988069]  [<b03d8f4e>] atkbd_interrupt+0x21e/0x520
+[  122.988161]  [<b03d1e32>] serio_interrupt+0x42/0x80
+[  122.988307]  [<b03d2845>] i8042_interrupt+0x105/0x250
+[  122.988396]  [<b014b618>] handle_IRQ_event+0x28/0x60
+[  122.988550]  [<b014c6f0>] handle_level_irq+0x70/0x100
+[  122.988639]  [<b010692c>] do_IRQ+0x3c/0x80
+[  122.988784]  [<b0104be2>] common_interrupt+0x2e/0x34
+[  122.988873]  [<b01020e6>] cpu_idle+0x46/0x80
+[  122.989017]  [<b0101037>] rest_init+0x37/0x40
+[  122.989104]  [<b06bcbb5>] start_kernel+0x1c5/0x210
+[  122.989257]  [<00000000>] 0x0
+[  122.989342]  =======================
+[  122.989391] Code: bb 01 00 00 00 e8 60 ff ff ff 89 e0 25 00 e0 ff ff ff 48 14 8b 40 08 a8 08 75 05 89 d8 5b c9 c3 e8 45 d6 3d 00 89 d8 5b c9 90 c3 <0f> 0b eb fe 8d 74 26 00 8d bc 27 00 00 00 00 55 8b 10 89 e5 83
+[  122.992739] EIP: [<b0130bf1>] queue_work+0x51/0x60 SS:ESP 0068:b06bbdb4
+[  122.992928] Kernel panic - not syncing: Fatal exception in interrupt
+[  122.992985] Rebooting in 10 seconds...
 
-  *  include/linux/kernel.h (and many others) include <stdarg.h>
-     BUT - since we are using -nostdinc, /usr/include/stdarg.h is not
-     considered. And gcc's stdarg.h (which lives at
-     /usr/lib/gcc/i586-suse-linux/4.1.2/include/stdarg.h in Linux land)
-     is missing in Solaris' GCC (which is version 3.4.3).
-
-Hack #1:
-	ln -s \
-	/usr/sfw/lib/gcc/i386-pc-solaris2.11/3.4.3/install-tools/include/stdarg.h \
-	/usr/sfw/lib/gcc/i386-pc-solaris2.11/3.4.3/include/stdarg.h
-
-Hack #2: GNU programs...
-
-	mkdir -p ~/gnulink;
-	for i in addr2line ar as egrep grep ld make nm objcopy objdump \
-	  ranlib readelf size string strip tar; do
-		ln -s "/usr/sfw/bin/$i" "~/gnulink/$i";
-	done;
-
-	for i in cat chgrp chmod chown chroot cksum cmp cp cut date \
-	  dd df diff du echo env expand expr false fgrep find fold \
-	  getopt groups head hostid install join ln locate ls mkdir \
-	  mkfifo mknod mv nice nohup od pwd rm rmdir sed seq shred \
-	  sleep sort split stty tac tail tee touch tr true uname \
-	  uniq uptime wc who whoami xargs yes gawk; do
-		ln -s "/opt/csw/bin/$i" "~/gnulink/$i";
-	done;
-
-Hack #3: Diff file...
-
-Hack #4: GNU ld glitch workaround (GNU ld looks in the current dir...)
-
-	cd linux-2.6.21-rc3
-	ln -s /usr/sfw/i386-sun-solaris2.11/lib/ldscripts ldscripts
-
-Fun #1:
-
-	export PATH="$HOME/gnulink:$PATH";
-	make ARCH=i386
-
-Oddity #1:
-
-	ARCH=i386 required because the Makefiles seem to use `uname -m`
-	(which returns "i86pc") rather than `uname -p`. I think we are
-	at odds here though...
-
-		uname -m	uname -p
-	SOL	i86pc		i386
-	LINUX	i686		athlon
-
-
-Expect compiler failures, especially with assembler code.
-
-
-Jan
-
-<<< PATCH BELOW <<<
-
-Index: linux-2.6.21-rc3/include/linux/input.h
-===================================================================
---- linux-2.6.21-rc3.orig/include/linux/input.h	2007-03-07 05:41:20.000000000 +0100
-+++ linux-2.6.21-rc3/include/linux/input.h	2007-03-07 23:40:39.417339000 +0100
-@@ -16,7 +16,9 @@
- #include <sys/time.h>
- #include <sys/ioctl.h>
- #include <sys/types.h>
--#include <asm/types.h>
-+#ifndef __sun__
-+#	include <asm/types.h>
-+#endif
- #endif
- 
- /*
-Index: linux-2.6.21-rc3/scripts/genksyms/genksyms.c
-===================================================================
---- linux-2.6.21-rc3.orig/scripts/genksyms/genksyms.c	2007-03-07 05:41:20.000000000 +0100
-+++ linux-2.6.21-rc3/scripts/genksyms/genksyms.c	2007-03-07 23:28:35.659555000 +0100
-@@ -21,6 +21,7 @@
-    along with this program; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
- 
-+#include <alloca.h>
- #include <stdio.h>
- #include <string.h>
- #include <stdlib.h>
-Index: linux-2.6.21-rc3/scripts/kallsyms.c
-===================================================================
---- linux-2.6.21-rc3.orig/scripts/kallsyms.c	2007-03-07 05:41:20.000000000 +0100
-+++ linux-2.6.21-rc3/scripts/kallsyms.c	2007-03-07 23:46:46.249005000 +0100
-@@ -378,6 +378,40 @@
- 	table_cnt = pos;
- }
- 
-+#ifdef __sun__
-+/* Return the first occurrence of NEEDLE in HAYSTACK.  */
-+void *
-+memmem (haystack, haystack_len, needle, needle_len)
-+     const void *haystack;
-+     size_t haystack_len;
-+     const void *needle;
-+     size_t needle_len;
-+{
-+  const char *begin;
-+  const char *const last_possible
-+    = (const char *) haystack + haystack_len - needle_len;
-+
-+  if (needle_len == 0)
-+    /* The first occurrence of the empty string is deemed to occur at
-+       the beginning of the string.  */
-+    return (void *) haystack;
-+
-+  /* Sanity check, otherwise the loop might search through the whole
-+     memory.  */
-+  if (__builtin_expect (haystack_len < needle_len, 0))
-+    return NULL;
-+
-+  for (begin = (const char *) haystack; begin <= last_possible; ++begin)
-+    if (begin[0] == ((const char *) needle)[0] &&
-+        !memcmp ((const void *) &begin[1],
-+                 (const void *) ((const char *) needle + 1),
-+                 needle_len - 1))
-+      return (void *) begin;
-+
-+  return NULL;
-+}
-+#endif
-+
- /* replace a given token in all the valid symbols. Use the sampled symbols
-  * to update the counts */
- static void compress_symbols(unsigned char *str, int idx)
-Index: linux-2.6.21-rc3/scripts/kconfig/Makefile
-===================================================================
---- linux-2.6.21-rc3.orig/scripts/kconfig/Makefile	2007-03-07 05:41:20.000000000 +0100
-+++ linux-2.6.21-rc3/scripts/kconfig/Makefile	2007-03-07 23:21:19.730679000 +0100
-@@ -88,7 +88,7 @@
- HOST_EXTRACFLAGS = $(shell $(CONFIG_SHELL) $(check-lxdialog) -ccflags)
- HOST_LOADLIBES   = $(shell $(CONFIG_SHELL) $(check-lxdialog) -ldflags $(HOSTCC))
- 
--HOST_EXTRACFLAGS += -DLOCALE
-+HOST_EXTRACFLAGS += -DLOCALE -std=c99 -D__EXTENSIONS__
- 
- PHONY += $(obj)/dochecklxdialog
- $(obj)/dochecklxdialog:
-Index: linux-2.6.21-rc3/scripts/kconfig/lxdialog/dialog.h
-===================================================================
---- linux-2.6.21-rc3.orig/scripts/kconfig/lxdialog/dialog.h	2007-03-07 05:41:20.000000000 +0100
-+++ linux-2.6.21-rc3/scripts/kconfig/lxdialog/dialog.h	2007-03-07 23:14:48.462956000 +0100
-@@ -222,3 +222,7 @@
-  *   -- uppercase chars are used to invoke the button (M_EVENT + 'O')
-  */
- #define M_EVENT (KEY_MAX+1)
-+
-+#ifndef KEY_RESIZE
-+#	define KEY_RESIZE 0632
-+#endif
-Index: linux-2.6.21-rc3/scripts/mod/file2alias.c
-===================================================================
---- linux-2.6.21-rc3.orig/scripts/mod/file2alias.c	2007-03-07 05:41:20.000000000 +0100
-+++ linux-2.6.21-rc3/scripts/mod/file2alias.c	2007-03-07 23:41:23.772026000 +0100
-@@ -32,6 +32,8 @@
- typedef uint32_t	__u32;
- typedef uint16_t	__u16;
- typedef unsigned char	__u8;
-+typedef int32_t		__s32;
-+typedef int16_t		__s16;
- 
- /* Big exception to the "don't include kernel headers into userspace, which
-  * even potentially has different endianness and word sizes, since
-Index: linux-2.6.21-rc3/scripts/mod/modpost.h
-===================================================================
---- linux-2.6.21-rc3.orig/scripts/mod/modpost.h	2007-03-07 05:41:20.000000000 +0100
-+++ linux-2.6.21-rc3/scripts/mod/modpost.h	2007-03-07 23:37:01.315290000 +0100
-@@ -41,6 +41,11 @@
- #define ELF_R_TYPE  ELF64_R_TYPE
- #endif
- 
-+#ifdef __sun__
-+typedef uint16_t Elf32_Section;
-+typedef uint16_t Elf64_Section;
-+#endif
-+
- /* The 64-bit MIPS ELF ABI uses an unusual reloc format. */
- typedef struct
- {
-Index: linux-2.6.21-rc3/scripts/mod/sumversion.c
-===================================================================
---- linux-2.6.21-rc3.orig/scripts/mod/sumversion.c	2007-03-07 05:41:20.000000000 +0100
-+++ linux-2.6.21-rc3/scripts/mod/sumversion.c	2007-03-07 23:43:55.668334000 +0100
-@@ -6,6 +6,7 @@
- #endif
- #include <ctype.h>
- #include <errno.h>
-+#include <limits.h>
- #include <string.h>
- #include "modpost.h"
- 
-@@ -417,7 +418,8 @@
- 	*end = '\0';
- 
- 	md4_init(&md);
--	while ((fname = strsep(&sources, " ")) != NULL) {
-+	for(fname = strtok(sources, " "); fname != NULL;
-+	  fname = strtok(NULL, " ")) {
- 		if (!*fname)
- 			continue;
- 		if (!parse_source_files(fname, &md))
-#<EOF>
+-- 
+Simon Arlott
