@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933133AbXCHVHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbXCHVKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933133AbXCHVHH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:07:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933327AbXCHVHH
+	id S933327AbXCHVKE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933334AbXCHVKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:07:07 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:44846 "EHLO e1.ny.us.ibm.com"
+	Thu, 8 Mar 2007 16:10:04 -0500
+Received: from mtaout3.012.net.il ([84.95.2.7]:19120 "EHLO mtaout3.012.net.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933133AbXCHVHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:07:04 -0500
-Date: Thu, 8 Mar 2007 15:07:00 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com,
-       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-Subject: Re: [RFC][Patch 2/6] integrity: fs hook placement
-Message-ID: <20070308210700.GB2750@sergelap.austin.ibm.com>
-References: <1173369812.5981.2.camel@localhost.localdomain> <20070308164132.GL6602@sequoia.sous-sol.org> <20070308170733.GA21099@sergelap.austin.ibm.com> <20070308174036.GF10574@sequoia.sous-sol.org> <20070308180136.GB21099@sergelap.austin.ibm.com> <1173381749.3241.41.camel@moss-spartans.epoch.ncsc.mil>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173381749.3241.41.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S933327AbXCHVKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:10:03 -0500
+Date: Thu, 08 Mar 2007 23:08:51 +0200
+From: Avi Kivity <avi@argo.co.il>
+Subject: Re: PAGE_SIZE Availability Inconsistency
+In-reply-to: <45ECD03F.2040008@zytor.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: David Miller <davem@davemloft.net>, dmlb2000@gmail.com,
+       linux-kernel@vger.kernel.org
+Message-id: <45F07B63.1000105@argo.co.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+X-Greylist: Sender IP whitelisted,
+ not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Thu,
+ 08 Mar 2007 23:08:51 +0200 (IST)
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
+ <20070305.160303.59493440.davem@davemloft.net>
+ <9c21eeae0703051604l20a029c3r8cf09d792ba523be@mail.gmail.com>
+ <20070305.162620.04006691.davem@davemloft.net> <45ECD03F.2040008@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Stephen Smalley (sds@tycho.nsa.gov):
-> On Thu, 2007-03-08 at 12:01 -0600, Serge E. Hallyn wrote:
-> > Quoting Chris Wright (chrisw@sous-sol.org):
-> > > * Serge E. Hallyn (serue@us.ibm.com) wrote:
-> > > > Are you objecting only to the duplication at the callsites, so that an
-> > > > fsnotify-type of consolidation of security and integrity hooks would be
-> > > > ok?  Or are you complaining that the security_inode_setxattr and
-> > > > integrity_inode_setxattr hooks are too similar anyway, and integrity
-> > > > modules should just use some lsm hooks for anything which will be
-> > > > authoritative?
-> > > 
-> > > It's duplication of callsites with many identical implementations
-> > > that's the problem.
-> > 
-> > Yes it's ugly...
-> > 
-> > But I guess it gets a point across :)
-> > 
-> > > > (I could see an argument that integirty subsystem should be purely for
-> > > > measuring and hence its hooks should never return a value.  Only hitch
-> > > > there is that if integrity subsystem hits ENOMEM it should be able to
-> > > > refuse the action...)
-> > > 
-> > > Right, that's what I was expecting to see, just the measurement
-> > > infrastructure.
-> > 
-> > So what you are saying is EVM would stay an LSM, with a cooperating
-> > integrity subsystem *just* doing measurements?
-> > 
-> > That's kind of what i was expecting too, however that doesn't fit as
-> > well with the idea that an integrity subsystem prevents the need for lsm
-> > stacking.  I think the idea was that evm would still be able to enforce
-> > integrity of selinux xattrs without it stack with selinux.  So I can see
-> > where this approach came from.
-> 
-> The enforcement mechanism should be directly integrated into SELinux,
-> not stacked as a separate module.
+H. Peter Anvin wrote:
+> David Miller wrote:
+>>>>
+>>> Thanks, but that still leaves PAGE_SIZE available for some
+>>> architectures and not for others shouldn't this be moved inside
+>>> __KERNEL__ in i386 and x86_64 then?
+>>
+>> I definitely think so.
+>
+> It definitely should, especially on x86-64, where the page size isn't 
+> guaranteed by the ABI (on i386, the ABI guarantees a 4K page size; on 
+> x86-64 it can be up to 64K.)
+>
 
-And a big plus of splitting it up as I was describing is that anyone
-who wanted could make use of the measurement module to add such
-functionality to SELinux, as an alternative to the EVM LSM module.
+Wouldn't that be ia64?
 
--serge
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
