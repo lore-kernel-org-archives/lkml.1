@@ -1,126 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbXCHQl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbXCHQmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752461AbXCHQl5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXCHQl5
+	id S1752522AbXCHQmO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXCHQmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:41:57 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:38661 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752461AbXCHQlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:41:55 -0500
-Date: Thu, 8 Mar 2007 17:39:16 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: James Morris <jmorris@namei.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       kaber@trash.net
-Subject: Re: [PATCH] chaostables
-In-Reply-To: <Line.LNX.4.64.0703080955060.8029@d.namei>
-Message-ID: <Pine.LNX.4.61.0703081652310.2448@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
- <20070308131412.08d9973e@lxorguk.ukuu.org.uk> <Line.LNX.4.64.0703080955060.8029@d.namei>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Thu, 8 Mar 2007 11:42:14 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:57651 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752522AbXCHQmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 11:42:08 -0500
+Date: Thu, 8 Mar 2007 08:41:32 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
+Subject: Re: [RFC][Patch 2/6] integrity: fs hook placement
+Message-ID: <20070308164132.GL6602@sequoia.sous-sol.org>
+References: <1173369812.5981.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173369812.5981.2.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Mimi Zohar (zohar@linux.vnet.ibm.com) wrote:
+> +	integrity_d_instantiate(entry, inode);
+>  	security_d_instantiate(entry, inode);
+
+> +		integrity_d_instantiate(entry, inode);
+>  		security_d_instantiate(entry, inode);
+
+>  			spin_unlock(&dcache_lock);
+> +			integrity_d_instantiate(new, inode);
+>  			security_d_instantiate(new, inode);
+>  			d_rehash(dentry);
+
+>  			d_move(new, dentry);
+> +			integrity_d_instantiate(dentry, inode);
+>  			security_d_instantiate(dentry, inode);
+>  			d_rehash(dentry);
+
+>  	if (actual == dentry) {
+> +		integrity_d_instantiate(dentry, inode);
+>  		security_d_instantiate(dentry, inode);
 
 
-(I suspect a mailserver issue on my side, since I did not receive the 
-replies from Alan or Patrick. But lkml.org has them, so I will be 
-replying to both them there.)
-
-On Mar 8 2007 09:55, James Morris wrote:
->On Thu, 8 Mar 2007, Alan Cox wrote:
->
->> Any chance of tweaking the name - it's just there is/was a chaosnet 
->> protocol/network system and you don't want people to assume that 
->> since its a chaosfilter its for chaosnet ?
->
->That's exactly what I thought it was from the subject line.
-
-Suggest something. (And then convince everyone who already set 
-chaostables in stone to use the new name, namely search engines, 
-bloggers, LWN, openwrt.) I don't think anyone seriously uses chaosnet 
-nowadays. And just because there is a "quicktables" project does not 
-mean there is a quick protocol filter.
-
-Also note that the word 'chaostables' does not even appear in the patch, 
-though xt_CHAOS does. Since we know that {xt,ipt}_[A-Z]+ are targets, we 
-can safely assume that CHAOS does what it says - make fun of nmap.
+>  		file->f_op->release(inode, file);
+>  	security_file_free(file);
+> +	integrity_file_free(file);
 
 
->> Index: linux-2.6.21-rc3/net/netfilter/xt_CHAOS.c
->> ===================================================================
->> --- /dev/null
->> +++ linux-2.6.21-rc3/net/netfilter/xt_CHAOS.c
->> @@ -0,0 +1,184 @@
->> +
->> +static unsigned int xt_chaos_target(struct sk_buff **pskb,
->> +    const struct net_device *in, const struct net_device *out,
->> +    unsigned int hooknum, const struct xt_target *target, const void *targinfo)
->> +{
->> +	/* Equivalent to:
->> +	 * -A chaos -m statistic --mode random --probability \
->> +	 *         $reject_percentage -j REJECT --reject-with host-unreach;
->> +	 * -A chaos -m statistic --mode random --probability \
->> +	 *         $delude_percentage -j DELUDE;
->> +	 * -A chaos -j DROP;
->> +	 */
->
->What does this do that can't be done by simply adding those individual 
->rules?
-
-It "wraps it all up", reducing the overall number of rules and user 
-chains required in the filtering tables to implement the wanted logic. 
-Reducing the number of filtering rules also reduces the time process a 
-packet. These two are, in my opinion, a good thing.
-
-Take xt_portscan as an example, which would require a minimum of 23 
-filtering rules (which cannot reproduce the module's action in its 
-fullest). 23 rules means we will be looping a bit in ipt_do_table() for 
-a single packet, repeatedly checking for "-p tcp", i.e. calling into 
-xt_tcpudp, checking for port ranges and perhaps other TCP fields that 
-are never examined in xt_portscan.
+>  		security_file_free(file);
+> +		integrity_file_free(file);
 
 
->> Index: linux-2.6.21-rc3/net/netfilter/xt_DELUDE.c
->> ===================================================================
->> --- /dev/null
->> +++ linux-2.6.21-rc3/net/netfilter/xt_DELUDE.c
->
->Looks like a copy of the REJECT target. What does it do,
->why can't you use REJECT?
+> 		if (security_inode_alloc(inode)) {
+...
+> +		if (integrity_inode_alloc(inode)) {
+> +			if (inode->i_sb->s_op->destroy_inode)
+> +				inode->i_sb->s_op->destroy_inode(inode);
 
-Looking only at TCP,
-REJECT sends a RST for any packet (if requested), or ICMP otherwise.
-DELUDE sends a SYN-ACK on SYN, otherwise RST.
-(And TARPIT, for reference, keeps the connection open anytime. Its code
-is also quite a replication of REJECT.)
+>  	security_inode_free(inode);
+> +	integrity_inode_free(inode);
 
-If you think it is better to merge the respond-with-SYNACK into REJECT 
-rather than having DELUDE, say so.
+>  	error = security_inode_setxattr(dentry, name, value, size, flags);
+>  	if (error)
+>  		goto out;
+> +
+> +	error = integrity_inode_setxattr(dentry, name, value, size, flags);
 
+>  			fsnotify_xattr(dentry);
+> +			integrity_inode_post_setxattr(dentry, name);
+>  			security_inode_post_setxattr(dentry, name, value,
 
->> Index: linux-2.6.21-rc3/net/netfilter/xt_portscan.c
->> ===================================================================
->> --- /dev/null
->> +++ linux-2.6.21-rc3/net/netfilter/xt_portscan.c
->
->We already have the psd match for years, but decided against merging it.
-
-On what basis? As far as I flew over psd's code, it uses a heuristic 
-like "how often did that client recently connect" for match decision. 
-(P2P clients randomly port knocking, anyone?) I would not think of that 
-as a reliable way to tell portscans either. However, half-open TCP 
-connect for example is a more clear action to define a portscan.
-
-
-
-Jan
--- 
+I know there's some slightly different goals, but this just doesn't make
+sense.  Need to get back to defining and expressing just the differences.
