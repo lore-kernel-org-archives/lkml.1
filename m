@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbXCHOz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbXCHO6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752036AbXCHOz3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 09:55:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXCHOz3
+	id S1752057AbXCHO6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 09:58:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXCHO6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 09:55:29 -0500
-Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:43984 "EHLO
-	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752041AbXCHOz2 (ORCPT
+	Thu, 8 Mar 2007 09:58:09 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55264 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752060AbXCHO6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 09:55:28 -0500
-Date: Thu, 8 Mar 2007 09:55:25 -0500 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, kaber@trash.net,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] chaostables
-In-Reply-To: <20070308131412.08d9973e@lxorguk.ukuu.org.uk>
-Message-ID: <Line.LNX.4.64.0703080955060.8029@d.namei>
-References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
- <20070308131412.08d9973e@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Mar 2007 09:58:08 -0500
+Date: Thu, 8 Mar 2007 16:01:35 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: libata: Fix host->simplex_claimed != ap typo
+Message-ID: <20070308160135.78bdef53@lxorguk.ukuu.org.uk>
+In-Reply-To: <87lki7zuoz.fsf@duaron.myhome.or.jp>
+References: <87lki7zuoz.fsf@duaron.myhome.or.jp>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007, Alan Cox wrote:
+On Thu, 08 Mar 2007 23:17:00 +0900
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
 
-> Any chance of tweaking the name - it's just there is/was a chaosnet
-> protocol/network system and you don't want people to assume that since
-> its a chaosfilter its for chaosnet  ?
+> Hi,
+> 
+> the following patch is needed to boot my laptop using pata_ali.ko, at least.
+> Please apply.
 
-That's exactly what I thought it was from the subject line.
+NAK - correct fix is to check != && != NULL. The correct fix was posted
+to the list earlier by Vojtech.
 
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+Alan
