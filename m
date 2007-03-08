@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbXCHNQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbXCHNf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751799AbXCHNQs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 08:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXCHNQs
+	id S1751811AbXCHNf5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 08:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbXCHNf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 08:16:48 -0500
-Received: from kepler.fjfi.cvut.cz ([147.32.6.11]:33295 "EHLO
-	kepler.fjfi.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbXCHNQr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 08:16:47 -0500
-Date: Thu, 8 Mar 2007 14:16:20 +0100 (CET)
-From: Martin Drab <drab@kepler.fjfi.cvut.cz>
-To: hugh@veritas.com
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Question about memory mapping mechanism
-Message-ID: <Pine.LNX.4.64.0703081345010.21317@kepler.fjfi.cvut.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Mar 2007 08:35:57 -0500
+Received: from vsmtp12.tin.it ([212.216.176.206]:53878 "EHLO vsmtp12.tin.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751811AbXCHNf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 08:35:56 -0500
+Subject: Re: Problem with libata-pata, ATAPI DVD reader and a
+	"copy-protected" audio cd
+From: GhePeU <ghepeu@virgilio.it>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1172919624.23576.31.camel@KazeNoTani>
+References: <1172919624.23576.31.camel@KazeNoTani>
+Content-Type: text/plain
+Date: Thu, 08 Mar 2007 14:35:55 +0100
+Message-Id: <1173360956.24659.3.camel@KazeNoTani>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Il giorno sab, 03/03/2007 alle 12.00 +0100, GhePeU ha scritto:
+> Hello,
+> 
+> when kernel 2.6.20 was released I switched to the new libata-pata
+> infrastructure for my EIDE hard disk and ATAPI dvd-reader. 
+> 
+> Until yesterday I didn't have any problem, then I tried to play an audio
+> CD and my media player hanged. Looking to the logs, I found that the DVD
+> reader (a Toshiba SD-M1612) was having problems reading the disk and
+> that the kernel dropped its speed from UDMA/33 to PIO3 before I could
+> eject the CD. Attached to this mail are the relevant lines of the system
+> log.
+> 
+> After a careful scrutiny of the box, I noticed that the disk was one of
+> those "Copy protected" non-standard CD. With the old ide driver I could
+> play and rip the CD without problems, so from a user point of view this
+> is a regression.
+> 
+> Besides, with the reduced speed the DVD reader was almost unusable, and
+> since the new libata layer doesn't support forcing the driver speed with
+> hdparm, I had to reboot the machine.
+> 
+> So my questions are:
+> 
+> 1) it is possible to implement a command to force re-detection of the
+> better transfer mode available? I suppose that by unloading and
+> reloading the module, the transfer mode should become again the better
+> available, but when the driver is compiled in-kernel, this is not
+> possible.
+> 
+> 2) is there a way to access copy protected audio CD again? the only
+> change here was ide -> libata, so there has to be some difference in the
+> error handling of the two layer that caused this pseudo-regression.
+> 
+> Thank you in advance
+> 
+> Giacomo
+> 
+> PS. I'm not subscribed to the list. I'm going to regularly check the
+> archives in the next days to see if there are responses, CC me if you
+> can. Thank you.
+> 
+> 
 
-I'm writing a driver for a sampling device that is constantly delivering a 
-relatively high amount of data (about 16 MB/s) and I need to deliver the 
-data to the user-space ASAP. To prevent data loss I create a queue of 
-buffers (consisting of few pages each) which are more or less directly 
-filled by the device and then mapped to the user-space via mmap().
+Well, it happened again, with a different cd, and this time I never
+started the player: hal/g-v-m tried to access the CD and now my driver
+is in PIO2 mode and pretty much unusable. Is there a way to fix this
+without rebooting?
 
-The thing is that I'd like to prevent kernel to swap these pages out, 
-because then I may loose some data when they are not available in time 
-for the next round.
+Giacomo
 
-My original idea (that used to work in the past) was to allocate the 
-buffers using __get_free_pages(), then pin the pages down by setting their 
-PG_reserved bit in the page flags before using them. And then set the 
-VM_RESERVED flag of the appropriate VMA when mmap() is called for these 
-pages that are then mapped using nopage() mechanism.
-
-But this way no longer seems to work correctly, it kind of works, but I'm 
-getting following messages for each mmapped page upon munmap() call:
-
---------------------------------------
-[19172.939248] Bad page state in process 'dtrtest'
-[19172.939249] page:ffff81000160a978 flags:0x001a000000000404 mapping:0000000000000000 mapcount:0 count:0
-[19172.939251] Trying to fix it up, but a reboot is needed
-[19172.939253] Backtrace:
-[19172.939256]
-[19172.939257] Call Trace:
-[19172.939273]  [<ffffffff802adc37>] bad_page+0x57/0x90
-[19172.939280]  [<ffffffff8020b92f>] free_hot_cold_page+0x7f/0x180
-[19172.939287]  [<ffffffff80207a90>] unmap_vmas+0x450/0x750
-[19172.939308]  [<ffffffff80212867>] unmap_region+0xb7/0x160
-[19172.939318]  [<ffffffff80211918>] do_munmap+0x238/0x2f0
-[19172.939325]  [<ffffffff802656c5>] __down_write_nested+0x35/0xf0
-[19172.939334]  [<ffffffff80215ffd>] sys_munmap+0x4d/0x80
-[19172.939341]  [<ffffffff8025f11e>] system_call+0x7e/0x83
--------------------------------
-
-Aparently due to the PG_reserved bit set.
-
-So my question is: What is currently a proper way to do all this cleanly?
-
-Thanks,
-Martin
