@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751538AbXCHMKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751537AbXCHMLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751538AbXCHMKw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 07:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXCHMKw
+	id S1751537AbXCHMLB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 07:11:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXCHMLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 07:10:52 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50887 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751537AbXCHMKv (ORCPT
+	Thu, 8 Mar 2007 07:11:01 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:54509 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751537AbXCHMLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 07:10:51 -0500
-Date: Thu, 8 Mar 2007 13:14:12 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: kaber@trash.net,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] chaostables
-Message-ID: <20070308131412.08d9973e@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Mar 2007 07:11:00 -0500
+To: npiggin@suse.de
+CC: a.p.zijlstra@chello.nl, akpm@linux-foundation.org, mingo@elte.hu,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org, jdike@addtoit.com, hugh@veritas.com,
+       torvalds@linux-foundation.org
+In-reply-to: <20070308115843.GA22781@wotan.suse.de> (message from Nick Piggin
+	on Thu, 8 Mar 2007 12:58:44 +0100)
+Subject: Re: [RFC][PATCH] mm: fix page_mkclean() vs non-linear vmas
+References: <20070307121730.GC18704@wotan.suse.de> <1173271286.6374.166.camel@twins> <20070307130851.GE18704@wotan.suse.de> <1173273562.6374.175.camel@twins> <20070307133649.GF18704@wotan.suse.de> <1173275532.6374.183.camel@twins> <1173278067.6374.188.camel@twins> <20070307150102.GH18704@wotan.suse.de> <1173286682.6374.191.camel@twins> <E1HPGg9-00039z-00@dorka.pomaz.szeredi.hu> <20070308115843.GA22781@wotan.suse.de>
+Message-Id: <E1HPHRK-0003EV-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 08 Mar 2007 13:09:46 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007 07:35:05 +0100 (MET)
-Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-
-> Hello netfilter-devel,
+> >   - it's a maintenance burden: I'll have to layer the m/ctime update
+> >     patch on top of this
 > 
+> But you have to update m/ctime for BDI_CAP_NO_WRITEBACK mappings anyway
+> don't you?
+
+Yes, but that's a different aspect of msync(), not about the data
+writeback issues that nonlinear mappings have.
+
+So a solution that solves both these problems would probably be more
+complex.
+
+> >   - the only pro for this has been that Nick thinks it cool ;)
 > 
-> I would like to submit chaostables (v0.5_svn23) for inclusion. Primary 
-> use is to detect, spoof and slowdown various sorts of port scans.
-> Implementation details can be found at http://jengelh.hopto.org/p/chaostables/
+> Nonlinear in general, rather than this specifically.
 
+Fair enough.
 
-Any chance of tweaking the name - it's just there is/was a chaosnet
-protocol/network system and you don't want people to assume that since
-its a chaosfilter its for chaosnet  ?
+Miklos
