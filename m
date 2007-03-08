@@ -1,119 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751566AbXCHMSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751592AbXCHMTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751566AbXCHMSy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 07:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbXCHMSy
+	id S1751592AbXCHMTq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 07:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbXCHMTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 07:18:54 -0500
-Received: from smtp003.mail.ukl.yahoo.com ([217.12.11.34]:34015 "HELO
-	smtp003.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751553AbXCHMSx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 07:18:53 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
-  b=Iyfzqi7rBWI/p3ADas/1H/VEDmdXRrOhBe8ElKpQWsRAmVcvqYajlN/7luefsVHw82G/3hBT/eo6K6JJtSL/PpQ3tISU9H6ZvAA8KedEJ9mGGkz+qCr/JfTdACXq9awP3Tfxc2FXIxRs71EGLFgwzt8VY211il3LScpGK+eV9ww=  ;
-X-YMail-OSG: 325M20UVM1leKOhkfYcv5vk1WgkrEzDSawMUT2hwjsp_lYWGTczBe_ElShWKkwbFISEXNIqunEGwcGdfhvbVOXfpZqDIPhG7zueh60ZPcU2xD3cdZHA5dIQEXRqYcJnqJgImBpR0qEhdC_mRA2pmrZ15al_cyM0jyCgiVphfsJ8tC4NKO28z6soZOVWk
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [patch 027/101] Kconfig: FAULT_INJECTION can be selected only if LOCKDEP is enabled.
-Date: Thu, 8 Mar 2007 13:17:36 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@osdl.org>, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-References: <20070307171035.150802805@mini.kroah.org> <20070307171247.038163039@mini.kroah.org>
-In-Reply-To: <20070307171247.038163039@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_h7/7F4mDk9ihSP1"
-Message-Id: <200703081317.37646.blaisorblade@yahoo.it>
+	Thu, 8 Mar 2007 07:19:46 -0500
+Received: from ns2.suse.de ([195.135.220.15]:37238 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751580AbXCHMTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 07:19:45 -0500
+Date: Thu, 8 Mar 2007 13:19:30 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org, jdike@addtoit.com, hugh@veritas.com,
+       torvalds@linux-foundation.org
+Subject: Re: [RFC][PATCH] mm: fix page_mkclean() vs non-linear vmas
+Message-ID: <20070308121930.GB22781@wotan.suse.de>
+References: <1173273562.6374.175.camel@twins> <20070307133649.GF18704@wotan.suse.de> <1173275532.6374.183.camel@twins> <1173278067.6374.188.camel@twins> <20070307150102.GH18704@wotan.suse.de> <1173286682.6374.191.camel@twins> <E1HPGg9-00039z-00@dorka.pomaz.szeredi.hu> <1173353824.9438.15.camel@twins> <E1HPH6v-0003CT-00@dorka.pomaz.szeredi.hu> <1173355903.9438.18.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173355903.9438.18.camel@twins>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_h7/7F4mDk9ihSP1
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, Mar 08, 2007 at 01:11:43PM +0100, Peter Zijlstra wrote:
+> On Thu, 2007-03-08 at 12:48 +0100, Miklos Szeredi wrote:
+> > > However this still leaves the non-linear reclaim (Nick pointed it out as
+> > > a potential DoS and other people have corroborated this). I have no idea
+> > > on that to do about that.
+> > 
+> > OK, but that is a completely different problem, not affecting
+> > page_mkclean() or msync().
+> > 
+> > And it doesn't sound too hard to solve: when current algorithm doesn't
+> > seem to be making progress, then it will have to be done the hard way,
+> > searching for for all nonlinear ptes of a page to unmap.
+> 
+> Ah, you see, but that is when you've already lost.
+> 
+> The DoS is about the computational complexity of the reclaim, not if it
+> will ever come out of it with free pages.
 
-On Wednesday 07 March 2007 18:11, Greg KH wrote:
-> From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
->
-> There is no prompt for STACKTRACE, so it is enabled only when 'select'ed.
-> FAULT_INJECTION depends on it, while LOCKDEP selects it. So FAULT_INJECTION
-> becomes visible in Kconfig only when LOCKDEP is enabled.
+If we really want to, we could limit it to mlock for !root. This is
+a reasonable way to solve the problem, and UML could fall back on
+vma emulated version if they didn't want to use mlock memory...
 
-Please replace with the attached patch, sorry for being late (I thought it had 
-been dropped). Otherwise a regression would be caused for archs like ia64 on 
-allyesconfig; the change is needed, as discussed with Roman Zippel.
+Or we could limit the size/number of nonlinear vmas that could be
+created.
 
-> Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->
-> ---
->  lib/Kconfig.debug |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- linux-2.6.20.1.orig/lib/Kconfig.debug
-> +++ linux-2.6.20.1/lib/Kconfig.debug
-> @@ -400,7 +400,7 @@ config LKDTM
->  config FAULT_INJECTION
->  	bool "Fault-injection framework"
->  	depends on DEBUG_KERNEL
-> -	depends on STACKTRACE
-> +	select STACKTRACE
->  	select FRAME_POINTER
->  	help
->  	  Provide fault-injection framework.
->
-> --
+But just quietly, I think there are probably a lot of other ways to
+perform a local DoS anyway ;) 
 
--- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
-
---Boundary-00=_h7/7F4mDk9ihSP1
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="fix-dependency-to-select-fault-inject.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="fix-dependency-to-select-fault-inject.diff"
-
-[PATCH] Kconfig: FAULT_INJECTION can be selected only if LOCKDEP is enabled.
-
-There is no prompt for STACKTRACE, so it is enabled only when 'select'ed.
-FAULT_INJECTION depends on it, while LOCKDEP selects it. So FAULT_INJECTION
-becomes visible in Kconfig only when LOCKDEP is enabled.
-
-Update: fixed for architectures not supporting STACKTRACE_SUPPORT.
-
-Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
-Index: linux-2.6.git/lib/Kconfig.debug
-===================================================================
---- linux-2.6.git.orig/lib/Kconfig.debug
-+++ linux-2.6.git/lib/Kconfig.debug
-@@ -399,8 +399,8 @@ config LKDTM
- 
- config FAULT_INJECTION
- 	bool "Fault-injection framework"
--	depends on DEBUG_KERNEL
--	depends on STACKTRACE
-+	depends on DEBUG_KERNEL && STACKTRACE_SUPPORT
-+	select STACKTRACE
- 	select FRAME_POINTER
- 	help
- 	  Provide fault-injection framework.
-
---Boundary-00=_h7/7F4mDk9ihSP1--
-Chiacchiera con i tuoi amici in tempo reale! 
- http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
