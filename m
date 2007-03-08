@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbXCHU5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933310AbXCHVDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933041AbXCHU5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbXCHU5V
+	id S933310AbXCHVDx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933315AbXCHVDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:57:21 -0500
-Received: from mail15.syd.optusnet.com.au ([211.29.132.196]:34827 "EHLO
-	mail15.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933041AbXCHU5U (ORCPT
+	Thu, 8 Mar 2007 16:03:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:56707 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933310AbXCHVDw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:57:20 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: "Fabio Comolli" <fabio.comolli@gmail.com>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Date: Fri, 9 Mar 2007 07:57:14 +1100
-User-Agent: KMail/1.9.5
-Cc: "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "ck list" <ck@vds.kolivas.org>
-References: <200703041800.53360.kernel@kolivas.org> <b637ec0b0703081225n49d9aa56h3e21c0f9c9bc7039@mail.gmail.com>
-In-Reply-To: <b637ec0b0703081225n49d9aa56h3e21c0f9c9bc7039@mail.gmail.com>
+	Thu, 8 Mar 2007 16:03:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UFuy28bUjuW6fbGCqr+HUFZX1uJkAyj6k5t5Dgup/rkRM1S1RzgVkUIqpJ6/zht+paxXwTgI09wL/75ppZboFNZbCMJuleHzw+G8xqjBuRSngd9SydC6+hDsDEM1vi9jiZ/rrcoaqrQubRfHkV4vobpcmnDIhzjD3TqXjqzT4cw=
+Message-ID: <9c21eeae0703081303t576e8757t259380092894ced5@mail.gmail.com>
+Date: Thu, 8 Mar 2007 13:03:48 -0800
+From: "David Brown" <dmlb2000@gmail.com>
+To: "Anton Blanchard" <anton@samba.org>
+Subject: Re: PAGE_SIZE Availability Inconsistency
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Christoph Hellwig" <hch@infradead.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       gdb@sourceware.org
+In-Reply-To: <20070308175729.GA7054@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703090757.14917.kernel@kolivas.org>
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
+	 <20070306092917.GA5226@infradead.org>
+	 <200703080318.04631.zippel@linux-m68k.org>
+	 <20070308090031.GB7373@infradead.org>
+	 <1173369229.3550.2.camel@laptopd505.fenrus.org>
+	 <20070308160852.GB9916@infradead.org> <45F0426C.8000009@zytor.com>
+	 <20070308175729.GA7054@kryten>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 March 2007 07:25, Fabio Comolli wrote:
-> Hi Con
-> It would be nice if you could rebase this patch to latest git or at
-> least to 2.6.21-rc3.
-> Regards,
+On 3/8/07, Anton Blanchard <anton@samba.org> wrote:
+>
+> > By the way, it's a massive snafu that the swap area magic number is
+> > dependent on PAGE_SIZE.  There is absolutely no good reason for that.
+>
+> Agreed, its been a big problem booting between 4kB and 64kB kernels on
+> ppc64.
 
-Check in http://ck.kolivas.org/patches/staircase-deadline/
-There's an -rc3 patch there.
+Okay this really seems like a couple of things need to happen, first
+change swap dependency on PAGE_SIZE, then move the __KERNEL__ define
+above the PAGE_SIZE and friends defines in the appropriate
+asm-*/page.h files.
 
--- 
--ck
+Do these tasks need to happen in this order? I haven't really looked
+at the swap code at all...
+
+Also, I'd be willing to help I've done kernel coding for experimental
+projects and such but nothing for kernel.org so I might need some
+shepherding.
+
+- David Brown
