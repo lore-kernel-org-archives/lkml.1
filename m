@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbXCHRMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbXCHRMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752593AbXCHRMJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:12:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbXCHRMJ
+	id S1752570AbXCHRMS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbXCHRMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:12:09 -0500
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:50681 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752570AbXCHRMH (ORCPT
+	Thu, 8 Mar 2007 12:12:18 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33835 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbXCHRMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:12:07 -0500
-Date: Thu, 8 Mar 2007 12:12:04 -0500 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Eric Paris <eparis@parisplace.org>
-cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, vyekkirala@trustedcs.com,
-       cxzhang@watson.ibm.com, sds@tycho.nsa.gov
-Subject: Re: [PATCH] Add xfrm policy change auditing to pfkey_spdget
-In-Reply-To: <1173370815.31047.134.camel@localhost.localdomain>
-Message-ID: <Line.LNX.4.64.0703081159490.9412@d.namei>
-References: <1172861484.31047.26.camel@localhost.localdomain> 
- <20070307.154316.68038380.davem@davemloft.net>  <20070307.160740.77057241.davem@davemloft.net>
- <1173370815.31047.134.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Mar 2007 12:12:14 -0500
+Date: Thu, 8 Mar 2007 17:12:12 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>, David Brown <dmlb2000@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gdb@sourceware.org
+Subject: Re: PAGE_SIZE Availability Inconsistency
+Message-ID: <20070308171212.GA19872@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Roman Zippel <zippel@linux-m68k.org>,
+	David Brown <dmlb2000@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	gdb@sourceware.org
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com> <20070306092917.GA5226@infradead.org> <200703080318.04631.zippel@linux-m68k.org> <20070308090031.GB7373@infradead.org> <1173369229.3550.2.camel@laptopd505.fenrus.org> <20070308160852.GB9916@infradead.org> <45F0426C.8000009@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F0426C.8000009@zytor.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007, Eric Paris wrote:
+On Thu, Mar 08, 2007 at 09:05:48AM -0800, H. Peter Anvin wrote:
+> Christoph Hellwig wrote:
+> >No, no no.  We should never export PAGE_SIZE.  We might export NBPG
+> >as deprecated symbol for gdb if it really needs it, but that should
+> >happen only on a.out systems, and it it should be a true constant,
+> >not depending on PAGE_SIZE.
+> >
+> >I've Cc'ed the gdb list on whether they have any comments on this
+> >issue.
+> 
+> By the way, it's a massive snafu that the swap area magic number is 
+> dependent on PAGE_SIZE.  There is absolutely no good reason for that.
 
-> which didn't have my fix up because i didn't commit it to my local
-> branch.  Is there a better way to get a diff between my miller tree and
-> 'everything in the branch I have checked out even if it is not
-> committed'?
-
-I'd suggest you commit all your changes in local branches, then export 
-them as emails via git-format-patch for posting.
-
-Something like:
-
- davem-upstream         [1]
-  +- for-davem          [2]
-     +- for-davem-prep  [3]
-
-Do all of your work in [3], so you can manage the queue of patches there 
-before merging/applying them into [2] as a final patch series.
-
-So, if one of the commits in [3] needs fixing, you can, for example, 
-export commits up to that with git-format-patch, git-reset --hard to the 
-broken commit, fix, compile, test then reapply the exported commits.  
-Then, once it's all ready, merge into [2] (or export & apply to avoid 
-merge commits).
-
-This is just one possible workflow.  There are probably several better.
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+Yeah, now that you mention it I remember having problems with that
+in the past.  We should probably create a new swap format that avoids
+this problem.  I'll put it on my ever growing todo list.
