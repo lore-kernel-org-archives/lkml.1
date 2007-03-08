@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbXCHVat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933372AbXCHVbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933351AbXCHVat (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:30:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933364AbXCHVat
+	id S933372AbXCHVbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXCHVbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:30:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56921 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933351AbXCHVar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:30:47 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug 8136] 2.6.21-rc2-mm2 won't boot
-Date: Thu, 8 Mar 2007 22:33:12 +0100
-User-Agent: KMail/1.9.5
-Cc: Nicolas.Mailhot@laposte.net, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-References: <200703062336.l26NaTZA026385@fire-2.osdl.org> <20070306161559.e0c7ee71.akpm@linux-foundation.org> <200703070132.08217.rjw@sisk.pl>
-In-Reply-To: <200703070132.08217.rjw@sisk.pl>
+	Thu, 8 Mar 2007 16:31:17 -0500
+Received: from an-out-0708.google.com ([209.85.132.247]:26701 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933372AbXCHVbN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:31:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SB78FhcmagIUNO8ah4/5/djnML5KjsYLgd6bFsa5SYCtQnjewB0RTDF1P3YDK7ietKPF4ZlNkuyc1iMikE9JAK7dfyQcuS+ME3LRSdnx77xpFa72gfaAbnEzE9z/LTHm8WHbuhcUTbrKELhDePm9/3iEkLcONpMUGV9j1B7uLZ4=
+Message-ID: <b637ec0b0703081331v4292c977j31cee7457c306880@mail.gmail.com>
+Date: Thu, 8 Mar 2007 22:31:13 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Con Kolivas" <kernel@kolivas.org>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Cc: "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "ck list" <ck@vds.kolivas.org>
+In-Reply-To: <200703090757.14917.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703082233.13728.rjw@sisk.pl>
+References: <200703041800.53360.kernel@kolivas.org>
+	 <b637ec0b0703081225n49d9aa56h3e21c0f9c9bc7039@mail.gmail.com>
+	 <200703090757.14917.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 7 March 2007 01:32, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Wednesday, 7 March 2007 01:15, Andrew Morton wrote:
-> > On Tue, 6 Mar 2007 15:36:29 -0800
-> > bugme-daemon@bugzilla.kernel.org wrote:
-> > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=8136
-> > > 
-> > 
-> > Let's take this to email.
-> > 
-> > > 
-> > > 
-> > > 
-> > > ------- Additional Comments From Nicolas.Mailhot@LaPoste.net  2007-03-06 15:36 -------
-> > > Created an attachment (id=10631)
-> > >  --> (http://bugzilla.kernel.org/attachment.cgi?id=10631&action=view)
-> > > Printscreen with vesfg disabled and earlyprintk=vga
-> > > 
-> > 
-> > So rc2-mm2 panics due to "MP-BIOS bug: 8254 timer not connected to IO-APIC" and
-> > rc2-mm1 does not.
-> 
-> I'm observing a similar thing on my dual-core AMD64 testbed desktop.  Still,
-> another dual-core AMD64 machine I have runs -rc2-mm2 just fine.
-> 
-> One of the differences between them is that the failing one uses gcc 4.1.0 (sigh).
-> 
-> > Could be ACPI, could be x86_64 timer changes, could be something else.
-> > 
-> > Would you have time to bisect it? 
-> > http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
-> > explains how.
-> > 
-> > If so, I'd suggest you drill in on the patches between
-> > x86_64-mm-defconfig-update.patch and
-> > optimize-and-simplify-get_cycles_sync.patch: the x86 changes.
-> 
-> I'll try to debug it tomorrow.
+Well, downloaded - compiled - booted: initng measures 17.369 seconds
+to complete the boot process; without the patch the same kernel booted
+in 21.553 seconds.
 
-OK, this seems to be fixed in 2.6.21-rc3-mm2.
+Very impressive.
+Many thanks for your work.
+
+Fabio
+
+
+
+
+
+
+On 3/8/07, Con Kolivas <kernel@kolivas.org> wrote:
+> On Friday 09 March 2007 07:25, Fabio Comolli wrote:
+> > Hi Con
+> > It would be nice if you could rebase this patch to latest git or at
+> > least to 2.6.21-rc3.
+> > Regards,
+>
+> Check in http://ck.kolivas.org/patches/staircase-deadline/
+> There's an -rc3 patch there.
+>
+> --
+> -ck
+>
