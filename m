@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbXCHQ3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbXCHQg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbXCHQ3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbXCHQ3f
+	id S1752424AbXCHQg3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbXCHQg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:29:35 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:43810 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbXCHQ3e (ORCPT
+	Thu, 8 Mar 2007 11:36:29 -0500
+Received: from web52506.mail.yahoo.com ([206.190.48.189]:20230 "HELO
+	web52506.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752424AbXCHQg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:29:34 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 8 Mar 2007 08:29:32 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "David M. Lloyd" <dmlloyd@flurg.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
-In-Reply-To: <Pine.LNX.4.64.0703080812290.10832@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703080825420.7015@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703071712210.3672@alien.or.mcafeemobile.com>
- <1173364264.6891.3.camel@localhost> <Pine.LNX.4.64.0703080742220.7015@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703080812290.10832@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 8 Mar 2007 11:36:29 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=HcpP12YBub5/ls63ZWmob6kHPQ42+TrqI3G1zm2F0Xqgoc6RHLY3qoHVnbJNMSnhICD2VWGFbG0bGUe91myQNrKiBgHqXsMNbt/njKo4eSVEL9GhXXWIl5APpWo1S8XiQ0sLsT9tpauN3KYVzLIYThuMVCO6kMH9bzNCQ/wQOkI=;
+X-YMail-OSG: 5a8oYbEVM1mmc2Ql7p_apbKNhvCKUNSLTW6gM916CQabYNjIC_8PU2nphObEGm44AwPE4GEp_PVijJ0WrwMZc42fjsxksLMv35beZyaQBXU_OIx6rux_f8k5SPggkGFDKip4nCeyJwhOkVJbbLtv7O23W2LTyr0lqK.uN5fG.QRZ.n55x7uFPGUba_pS
+Date: Thu, 8 Mar 2007 08:36:23 -0800 (PST)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Networking Question [ot]
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <502137.93252.qm@web52506.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007, Linus Torvalds wrote:
+This may be a little off topic but I know there's
+people here that can give me a quick answer.
 
-> You missed David's worry, I think.
-> 
-> Not only is POLLIN potentially an edge event (depending on the interface 
-> you use to fetch it), but even as a level-triggered one you generally want 
-> to read as much as possible per POLLIN event, and go back to the event 
-> loop only when you get EAGAIN.
-> 
-> So that's in addition to the read/signal race with other 
-> threads/processes.
-> 
-> You solved it by having a separate system call, but since it's a regular 
-> file descriptor, why have a new system call at all, and not just make it 
-> be a "read()"? In which case you definitely want O_NONBLOCK support.
-> 
-> The UNIX philosophy is often quoted as "everything is a file", but that 
-> really means "everything is a stream of bytes".
-> 
-> In Windows, you have 15 different versions of "read()" with sockets and 
-> files and pipes all having strange special cases and special system calls. 
-> That's not the UNIX way. It should be just a "read()", and then people can 
-> use general libraries and treat all sources the same.
-> 
-> For example, the main select/poll/epoll loop may be the one doing all the 
-> reading, and then pass off "full buffers only" to the individual per-fd 
-> "action routines". And that kind of model really very fundamentally wants 
-> an fd to be an fd to be an fd - not "some file descriptors need 
-> 'read_from_sigfd()', and some file descriptors need 'read()', and some 
-> file descriptors need 'recvmsg()'" etc.
-> 
-> So I think you should get rid of signalfd_dequeue(), and just replace it 
-> with a "read()" function.
+I'm running Fedora Core 6 and I have two blocks of IP
+addresses on eth0.
 
-The reason for the special function, was not to provide a non-blocking 
-behaviour with zero timeout (that just a side effect), but to read the 
-siginfo. I was all about using read(2) (and v1 used it), but when you have 
-to transfer complex structures over it, it becomes hell. How do you 
-cleanly compat over a f_op->read callback for example?
+69.50.231.0/28
+69.50.231.128/26
+
+Do I need to set some kind of static route so that IPs
+in one set can talk to the other? If so - how do I do
+that?
+
+Thanks in advance.
 
 
 
-- Davide
-
-
+ 
+____________________________________________________________________________________
+Food fight? Enjoy some healthy debate 
+in the Yahoo! Answers Food & Drink Q&A.
+http://answers.yahoo.com/dir/?link=list&sid=396545367
