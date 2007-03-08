@@ -1,43 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbXCHPro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbXCHPs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbXCHPro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 10:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXCHPro
+	id S1752280AbXCHPs0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 10:48:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbXCHPs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 10:47:44 -0500
-Received: from vsmtp14.tin.it ([212.216.176.118]:37289 "EHLO vsmtp14.tin.it"
+	Thu, 8 Mar 2007 10:48:26 -0500
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:42871 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206AbXCHPrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 10:47:43 -0500
-Subject: Re: Problem with libata-pata, ATAPI DVD reader and a
-	"copy-protected" audio cd
-From: GhePeU <ghepeu@virgilio.it>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <1173360956.24659.3.camel@KazeNoTani>
-References: <1172919624.23576.31.camel@KazeNoTani>
-	 <1173360956.24659.3.camel@KazeNoTani>
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 16:47:40 +0100
-Message-Id: <1173368860.24659.7.camel@KazeNoTani>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+	id S1752276AbXCHPsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 10:48:24 -0500
+Date: Thu, 8 Mar 2007 17:48:22 +0200 (EET)
+From: Meelis Roos <mroos@linux.ee>
+To: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.21-rc1: more ACPI errors (EC__)
+In-Reply-To: <45EAA003.7020504@linux.intel.com>
+Message-ID: <Pine.SOC.4.64.0703081743160.17040@math>
+References: <Pine.SOC.4.64.0702260842260.9705@math> <45EAA003.7020504@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il giorno gio, 08/03/2007 alle 14.35 +0100, GhePeU ha scritto:
-> > 
-> 
-> Well, it happened again, with a different cd, and this time I never
-> started the player: hal/g-v-m tried to access the CD and now my driver
-> is in PIO2 mode and pretty much unusable. Is there a way to fix this
-> without rebooting?
-> 
-> Giacomo
+> please take a look at 8066 bug and patches there.
 
-I examined this cd and it is not "copy-protected". It is an "Enhanced
-CD" and it works without issues with another os or with Linux with the
-old "ide" driver.
+Tried patch from #9 there (with 21-rc3) and it seems to cure the problem 
+for me (with IBM X20). Thanks!
 
-Giacomo
-
+-- 
+Meelis Roos (mroos@linux.ee)
