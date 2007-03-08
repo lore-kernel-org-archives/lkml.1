@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbXCHUJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbXCHUKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbXCHUJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:09:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXCHUJ4
+	id S1752411AbXCHUKt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXCHUKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:09:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50854 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752623AbXCHUJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:09:54 -0500
-Date: Thu, 8 Mar 2007 21:08:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>,
-       Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz,
-       michael@ellerman.id.au
-Subject: Re: [PATCH 0/2] Repair pci_restore_state when used with device resets
-Message-ID: <20070308200809.GA10088@elte.hu>
-References: <45ED8A12.5040803@intel.com> <m1ejo1elj6.fsf@ebiederm.dsl.xmission.com> <45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com> <m1649cdfas.fsf@ebiederm.dsl.xmission.com> <20070307185317.5601d452.akpm@linux-foundation.org> <m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com> <45EFDD8C.3070702@garzik.org> <m1abyn7iin.fsf@ebiederm.dsl.xmission.com> <m1tzwv5wz9.fsf_-_@ebiederm.dsl.xmission.com>
+	Thu, 8 Mar 2007 15:10:48 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:54686 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752411AbXCHUKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:10:47 -0500
+Date: Thu, 8 Mar 2007 12:10:33 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Daniel Arai <arai@vmware.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+Message-ID: <20070308201033.GK10574@sequoia.sous-sol.org>
+References: <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F06720.8080901@goop.org> <20070308194740.GJ10574@sequoia.sous-sol.org> <45F06989.8030207@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1tzwv5wz9.fsf_-_@ebiederm.dsl.xmission.com>
+In-Reply-To: <45F06989.8030207@goop.org>
 User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Chris Wright wrote:
+> > I agree with that, but I think that's esp. for things like create and launch
+> > new vcpu.  The IPI bit I'm not as clear on, nor running this all on native
+> > as well.
+> >   
+> 
+> Well, native would fall back to using the existing arch/i386 versions of
+> those functions, so that's reasonably straightforward.
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+It's the fact that we need to leave code in the kernel to run on native,
+but also do something dynamically with that same code when running
+paravirt that I'm referring to.  Xen punts on this right now by
+#ifdef'ing away as happy as can be.
 
-> I have never have figured out how to get suspend/resume actually 
-> working on any of my machines [...]
+> There'll need to
+> be a bit of internal rearrangement so that the Xen code can call in to
+> do things like set up the pda/gdt and other bits of CPU state.
+> 
+> I don't think IPI is especially interesting in itself, is it?   It's a
+> necessary mechanism to implement smp_call_function(), but Xen can do IPI
+> without having to invoke any of the existing apic-based IPI code.  The
+> other main user of IPI is cross-cpu tlb shootdown, but Xen has much more
+> efficient mechanisms than IPI for that (so we'll need to make the tlb
+> pv_ops interface a little wider to pass down a cpuset).
 
-ouch! Are you interested in getting it work?
-
-	Ingo
+No, it's not the IPI itself, it's the way it's often accessed by the rest of
+the kernel (which is intertwined with genapic).  I'm happy to avoid apic
+altogether since it's effectively worthless for Xen other than
+integrating into the existing infrastructure.
