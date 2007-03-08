@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933312AbXCHUxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933316AbXCHUyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933312AbXCHUxn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:53:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933313AbXCHUxl
+	id S933316AbXCHUyh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:54:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933315AbXCHUyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:53:41 -0500
-Received: from elvis.mu.org ([192.203.228.196]:53441 "EHLO elvis.mu.org"
+	Thu, 8 Mar 2007 15:54:37 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:52746 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933310AbXCHUxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:53:39 -0500
-In-Reply-To: <200703082134.47530.bzolnier@gmail.com>
-References: <20070221012304.GC1777@freefall.freebsd.org> <200703072216.08295.bzolnier@gmail.com> <B2D4536E-D449-4D10-B745-30D25CAC40A4@freebsd.org> <200703082134.47530.bzolnier@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AD2A17AC-83C6-4CCB-9452-A07DF2F8D821@freebsd.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Suleiman Souhlal <ssouhlal@freebsd.org>
-Subject: Re: [PATCH 3/3] Use correct IDE error recovery
-Date: Thu, 8 Mar 2007 12:53:07 -0800
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-X-Mailer: Apple Mail (2.752.3)
+	id S933316AbXCHUyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:54:36 -0500
+Date: Thu, 8 Mar 2007 14:54:32 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       safford@watson.ibm.com, serue@linux.vnet.ibm.com,
+       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
+Subject: Re: [RFC][Patch 1/6] integrity: new hooks
+Message-ID: <20070308205431.GA2750@sergelap.austin.ibm.com>
+References: <20070308170001.GA17304@sergelap.austin.ibm.com> <33939.11500.qm@web36612.mail.mud.yahoo.com> <20070308184646.GC21099@sergelap.austin.ibm.com> <200703082038.l28Kcowq023278@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703082038.l28Kcowq023278@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Valdis.Kletnieks@vt.edu (Valdis.Kletnieks@vt.edu):
+> On Thu, 08 Mar 2007 12:46:47 CST, "Serge E. Hallyn" said:
+> > I think it should be done as both.  The part which measures the
+> > integrity of files should be an integrity subsystem.  The part which
+> > uses those results to either allow/refuse actions or take some other
+> > action (i.e. shut down the system) should be an lsm.
+> 
+> That would be good - the allow/deny parts, being security, can use the
+> existing LSM hooks, and the integrity part can use the LIM hooks.
 
-On Mar 8, 2007, at 12:34 PM, Bartlomiej Zolnierkiewicz wrote:
+Yes, the only problem is that there will still be 'duplication' at some
+call sites.  For instance even if something is only doing measurements, at
+setxattr, for instance, it still needs to be able to refuse a change if
+it can't allocate memory to store measurement data.  So we still might
+need an fsnotify-like approach to consolidate security and integrity
+hooks.  (As Mimi pointed out, I guess it'll have to make sure to call
+the security ones first)
 
->
-> Hi,
->
-> On Thursday 08 March 2007, Suleiman Souhlal wrote:
->>
->> On Mar 7, 2007, at 1:16 PM, Bartlomiej Zolnierkiewicz wrote:
->>
->>>
->>> Hi,
->>>
->>> (sorry for the long delay)
->>>
->>> On Wednesday 21 February 2007, Suleiman Souhlal wrote:
->>>> IDE error recovery is using WIN_IDLEIMMEDIATE which was only  
->>>> valid for
->>>> IDE V1 and IDE V2.  Modern drives will not be able to recover using
->>>> this error handling.  The correct thing to do is issue a SRST  
->>>> followed
->>>> by a SET_FEATURES.
->>>
->>> This change looks fine, indeed we are better of using SRST +
->>> SET_FEATURES than IDLE_IMMEDIATE.
->>>
->>>> Signed-off-by:	Suleiman Souhlal <suleiman@google.com>
->>>>
->>>> ---
->>>>  drivers/ide/ide-io.c   |   35 +++++++++++-----
->>>>  drivers/ide/ide-iops.c |  105 +++++++++++++++++++++++++++ 
->>>> +--------------------
->>>>  include/linux/ide.h    |    2 +
->>>>  3 files changed, 88 insertions(+), 54 deletions(-)
->>>>
->>>> diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
->>>> index c193553..2f05b4d 100644
->>>> --- a/drivers/ide/ide-io.c
->>>> +++ b/drivers/ide/ide-io.c
->>>> @@ -519,21 +519,21 @@ static ide_startstop_t ide_ata_error(ide
->>>>  	if ((stat & DRQ_STAT) && rq_data_dir(rq) == READ && hwif-
->>>>> err_stops_fifo == 0)
->>>>  		try_to_flush_leftover_data(drive);
->>>>
->>>> +	if (rq->errors >= ERROR_MAX || blk_noretry_request(rq)) {
->>>> +		ide_kill_rq(drive, rq);
->>>> +		return ide_stopped;
->>>> +	}
->>>> +
->>>>  	if (hwif->INB(IDE_STATUS_REG) & (BUSY_STAT|DRQ_STAT))
->>>> -		/* force an abort */
->>>> -		hwif->OUTB(WIN_IDLEIMMEDIATE, IDE_COMMAND_REG);
->>>> +		rq->errors |= ERROR_RESET;
->>>>
->>>> -	if (rq->errors >= ERROR_MAX || blk_noretry_request(rq))
->>>> -		ide_kill_rq(drive, rq);
->>>> -	else {
->>>> -		if ((rq->errors & ERROR_RESET) == ERROR_RESET) {
->>>> -			++rq->errors;
->>>> -			return ide_do_reset(drive);
->>>> -		}
->>>> -		if ((rq->errors & ERROR_RECAL) == ERROR_RECAL)
->>>> -			drive->special.b.recalibrate = 1;
->>>
->>> Is the removal of ERROR_RECAL handling intentional?
->>> There is nothing about it in the patch description...
->>
->> Yes, it was intentional, but I forgot to add "while there remove some
->
-> Why is it useless?  What am I missing?
+I suppose something more clever might be doable - for instance since we
+are pairing the measurement module with an enforcement module, the
+enforcement module could kmalloc() what the measurement module will need
+for data and return -ENOMEM if need be, then the measurement module just
+fills the data in.  If there's no place for it to store the data, then
+it knows that the enforcement module must be ok not having that data.
 
-I thought the recalibration code didn't do anything, but upon  
-rereading the code I'm not so sure anymore..
+> Umm... wait a minute - *what* Linux Integrity Module hooks? :)
 
--- Suleiman
-
-
+-serge
