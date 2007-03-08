@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXCHHRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932837AbXCHHUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932819AbXCHHRV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 02:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXCHHRV
+	id S932837AbXCHHUL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 02:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932895AbXCHHUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 02:17:21 -0500
-Received: from mtwmail.mindtree.com.60.200.203.in-addr.arpa ([203.200.60.136]:48680
-	"EHLO mailwo11.mindtree.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932819AbXCHHRU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 02:17:20 -0500
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.2826
-Content-Class: urn:content-classes:message
-Importance: normal
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Locking function (interrupt handler) in the L1/L2 cache
-Date: Thu, 8 Mar 2007 12:47:19 +0530
-Message-ID: <2C15D00D262B7245B1D8D1799F04D88F04A5874B@mtw01ex01.mindtree.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Locking function (interrupt handler) in the L1/L2 cache
-thread-index: AcdhUc8b+CHq1c7cR3CrYGHlULDo8Q==
-From: "Parav K Pandit" <parav_pandit@mindtree.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 08 Mar 2007 07:17:21.0710 (UTC) FILETIME=[D03AACE0:01C76151]
+	Thu, 8 Mar 2007 02:20:11 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36240 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932837AbXCHHUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 02:20:09 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+F+VRKcrSFDfsHTNP/Gomo+SYGd6h7TvOwlGagFf
+	6/otSDCcgvU+QX
+Subject: Re: 2.6.21-rc2-mm2
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070307115230.727abe3e.akpm@linux-foundation.org>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org>
+	 <20070307164620.536fc7ff@localhost>
+	 <20070307115230.727abe3e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 08 Mar 2007 08:20:00 +0100
+Message-Id: <1173338400.6734.9.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-03-07 at 11:52 -0800, Andrew Morton wrote:
+> On Wed, 7 Mar 2007 16:46:20 -0300 "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br> wrote:
+> 
+> > Em Tue, 6 Mar 2007 00:44:08 -0800
+> > Andrew Morton <akpm@linux-foundation.org> escreveu:
+> > 
+> > | 
+> > | Temporarily at
+> > | 
+> > |   http://userweb.kernel.org/~akpm/2.6.21-rc2-mm2/
+> > | 
+> > | Will appear later at
+> > | 
+> > |   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc2/2.6.20-rc2-mm2/
+> > 
+> >  Getting this while rebooting:
+> > 
+> > [  166.588469] BUG: atomic counter underflow at:
+> > [  166.588527]  [<c01047fa>] show_trace_log_lvl+0x1a/0x30
+> > [  166.588632]  [<c0104f12>] show_trace+0x12/0x20
+> > [  166.588730]  [<c0104fc6>] dump_stack+0x16/0x20
+> > [  166.588828]  [<c01eaf41>] kref_put+0xa1/0x100
+> > [  166.588927]  [<c01ea084>] kobject_put+0x14/0x20
+> > [  166.589027]  [<c01ea222>] kobject_unregister+0x22/0x30
+> > [  166.589127]  [<c025ed69>] bus_remove_driver+0x79/0x90
+> > [  166.589227]  [<c025f9bb>] driver_unregister+0xb/0x20
+> > [  166.589327]  [<c0205c03>] pci_unregister_driver+0x13/0x70
+> > [  166.589428]  [<dc951c9d>] alsa_card_via82xx_exit+0xd/0xf [snd_via82xx]
+> > [  166.589534]  [<c0140c10>] sys_delete_module+0x140/0x1b0
+> > [  166.589635]  [<c01040ce>] sysenter_past_esp+0x5f/0x99
+> > [  166.589734]  =======================
+> > 
+> 
+> Me too.  Greg has reverted the offenging commit, so now rmmod of the IPMI
+> driver locks the machine again.
+
 Hi,
 
-I have MPC8548 Linux based firewall which will mostly do packet processing
-for 80% time.
-So obviously most of the time it will RX and TX packets through gianfar
-Ethernet driver.
+The hang (which /me screwed up fixing) isn't upon rmmod, it's when IPMI
+is built-in and ipmi_si finds nobody home.  Driver tries to back out,
+and waits forever for completion. (about 0.7 seconds into boot)
 
-I want to lock my interrupt handler of this driver in the L1 cache.
+	-Mike
 
-1. Are there any kernel APIs to lock any function and data in the L1/L2
-cache?
-
-2. How can I use "icbtls" - Instruction Cache Block Touch and Lock Set" for
-locking my interrupt handler?
-
-3. Is "icbtls" is the correct instruction at which I am looking at?
-
-4. How do I find end address of the interrupt handler or any other function
-and how do we pass it to cache locking instructions? (Because it can happen
-that interrupt handler size is more than a cache line, not aligned etc)?
-
-5. Can we enhance request_irq() function to take an additional parameter to
-lock the interrupt handler in the cache?
-
-I understand that if my interrupt handler is going to be called most of the
-time then it is very likely to happen that OS will not flush the same, but
-there is no guarantee for it.
-
-Regards,
-Parav Pandit
-
-
-DISCLAIMER:
-This message (including attachment if any) is confidential and may be privileged. Before opening attachments please check them for viruses and defects. MindTree Consulting Limited (MindTree) will not be responsible for any viruses or defects or any forwarded attachments emanating either from within MindTree or outside. If you have received this message by mistake please notify the sender by return  e-mail and delete this message from your system. Any unauthorized use or dissemination of this message in whole or in part is strictly prohibited.  Please note that e-mails are susceptible to change and MindTree shall not be liable for any improper, untimely or incomplete transmission.
