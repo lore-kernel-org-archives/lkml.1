@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030670AbXCHVys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030693AbXCHV4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030670AbXCHVys (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030693AbXCHVyr
+	id S1030693AbXCHV4V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030698AbXCHV4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:54:47 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45559 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030670AbXCHVyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:54:47 -0500
-Date: Thu, 8 Mar 2007 13:54:44 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: akpm@osdl.org, Marcelo Tosatti <marcelo@kvack.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mpm@selenic.com,
-       Manfred Spraul <manfred@colorfullife.com>
-Subject: Re: [SLUB 0/3] SLUB: The unqueued slab allocator V4
-In-Reply-To: <20070308174004.GB12958@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0703081135280.3130@schroedinger.engr.sgi.com>
-References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0703081022040.1615@skynet.skynet.ie>
- <Pine.LNX.4.64.0703080836300.27191@schroedinger.engr.sgi.com>
- <20070308174004.GB12958@skynet.ie>
+	Thu, 8 Mar 2007 16:56:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57009 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030693AbXCHV4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:56:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: swsusp: platform notifications not properly undone in case of error
+Date: Thu, 8 Mar 2007 22:58:54 +0100
+User-Agent: KMail/1.9.5
+Cc: kernel list <linux-kernel@vger.kernel.org>
+References: <20070308164143.GA1766@elf.ucw.cz>
+In-Reply-To: <20070308164143.GA1766@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703082258.55186.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Note that I am amazed that the kernbench even worked. On small machine I 
-seem to be getting into trouble with order 1 allocations. SLAB seems to be 
-able to avoid the situation by keeping higher order pages on a freelist 
-and reduce the alloc/frees of higher order pages that the page allocator
-has to deal with. Maybe we need per order queues in the page allocator? 
+On Thursday, 8 March 2007 17:41, Pavel Machek wrote:
+> Hi!
+> 
+> 
+> Using IPI No-Shortcut mode
+> swsusp: Resume From Partition /dev/sda1
+> PM: Checking swsusp image.
+> swsusp: Signature found, resuming
+> PM: Preparing processes for restore.
+> Stopping tasks ... done.
+> PM: Reading swsusp image.
+> Loading image data pages (125285 pages) ...     <3>swsusp: Resume
+> mismatch: version
+> Read 501140 kbytes in 0.01 seconds (50114.00 MB/s)
+> swsusp: Error -1 resuming
+> PM: Restore failed, recovering.
+> Restarting tasks ... done.
+> PM: Resume from disk failed.
+> md: Autodetecting RAID arrays.
+> 
+> ...and machine boots, but moon icon keeps blinking.
 
-There must be something fundamentally wrong in the page allocator if the 
-SLAB queues fix this issue. I was able to fix the issue in V5 by forcing 
-SLUB to keep a mininum number of objects around regardless of the fit to
-a page order page. Pass through is deadly since the crappy page allocator 
-cannot handle it.
+Does the appended patch help?
 
-Higher order page allocation failures can be avoided by using kmalloc. 
-Yuck! Hopefully your patches fix that fundamental problem.
+Rafael
 
+---
+ kernel/power/disk.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6.21-rc3/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21-rc3.orig/kernel/power/disk.c
++++ linux-2.6.21-rc3/kernel/power/disk.c
+@@ -261,6 +261,7 @@ static int software_resume(void)
+ 	error = swsusp_read();
+ 	if (error) {
+ 		swsusp_free();
++		platform_finish();
+ 		goto Thaw;
+ 	}
+ 
