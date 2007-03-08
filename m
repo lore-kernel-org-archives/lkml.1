@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbXCHQCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbXCHQDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbXCHQCZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:02:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXCHQCY
+	id S1752431AbXCHQDK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbXCHQDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:02:24 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:44764 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752420AbXCHQCY (ORCPT
+	Thu, 8 Mar 2007 11:03:10 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52496 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752431AbXCHQDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:02:24 -0500
-Date: Thu, 8 Mar 2007 11:02:21 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oneukum@suse.de>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-In-Reply-To: <200703081405.01087.oneukum@suse.de>
-Message-ID: <Pine.LNX.4.44L0.0703081101230.4086-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Mar 2007 11:03:09 -0500
+Date: Thu, 8 Mar 2007 17:07:31 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: GhePeU <ghepeu@virgilio.it>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problem with libata-pata, ATAPI DVD reader and a
+ "copy-protected" audio cd
+Message-ID: <20070308170731.458fe407@lxorguk.ukuu.org.uk>
+In-Reply-To: <1173360956.24659.3.camel@KazeNoTani>
+References: <1172919624.23576.31.camel@KazeNoTani>
+	<1173360956.24659.3.camel@KazeNoTani>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007, Oliver Neukum wrote:
+> Well, it happened again, with a different cd, and this time I never
+> started the player: hal/g-v-m tried to access the CD and now my driver
+> is in PIO2 mode and pretty much unusable. Is there a way to fix this
+> without rebooting?
 
-> Hi,
-> 
-> after a lightning bolt from high above I've been looking into refcounting
-> the data structures drivers use to provide the data used to refill sysfs
-> buffers. I've come to the following conclusion.
-> 
-> 1. struct sysfs_buffer must have a struct kref * and probably a destructor
-> pointer
-> 2. drivers must be able to pass these pointers through an extended
-> device_create_file()
-> 3. Drivers must use refcounting if they want to use attributes
-> 4. read/write/poll must do refcounting
-> 
-> I am not sure where to store the pointers. struct sysfs_dirent() looks
-> like the obvious choice. Comments?
+Hard to tell. If it happens again then a "dmesg" after it misbehaves and
+an lspci -vxx might provide enough information to begin to debug it.
 
-Can you explain the reasoning that led to these conclusions?  And what 
-exactly was your lightning bolt?
-
-Alan Stern
-
+Alan
