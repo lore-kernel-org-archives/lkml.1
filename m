@@ -1,40 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXCHTOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933097AbXCHTS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933090AbXCHTOJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 14:14:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933095AbXCHTOJ
+	id S933097AbXCHTS0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 14:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXCHTS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 14:14:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42035 "EHLO mx2.mail.elte.hu"
+	Thu, 8 Mar 2007 14:18:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32846 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933084AbXCHTOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 14:14:06 -0500
-Date: Thu, 8 Mar 2007 20:10:47 +0100
+	id S933097AbXCHTS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 14:18:26 -0500
+Date: Thu, 8 Mar 2007 20:17:12 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Message-ID: <20070308191047.GA636@elte.hu>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308190642.GA30517@elte.hu>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Daniel Arai <arai@vmware.com>, tglx@linutronix.de,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+Message-ID: <20070308191712.GA794@elte.hu>
+References: <45EF175D.6030609@vmware.com> <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F05999.20803@vmware.com> <20070308191409.GI10574@sequoia.sous-sol.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070308190642.GA30517@elte.hu>
+In-Reply-To: <20070308191409.GI10574@sequoia.sous-sol.org>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -48,15 +36,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Chris Wright <chrisw@sous-sol.org> wrote:
 
-> Michael - does your 'date' output advance after resume? If not then 
-> i'd say it's a NO_HZ related problem. [...]
+> > Chris, would you like to work together on this?  I don't know what 
+> > Xen's requirements are for the APIC interface.  Do you think we 
+> > could come up with something that would fit both of our needs, and 
+> > maybe also be usable for some of the subarch-specific code?
+> 
+> Sure, we just have a pretty small genapic_xen, and then enough 
+> (hackery, this should be sorted out) to use that genapic and have an 
+> effective override for __send_IPI_shortcut.
 
-in that case please do this on such a 'frozen date' system:
-
-	echo q > /proc/sysrq-trigger
-
-and then send us the hw-timers info.
+genapic is still too lowlevel: as Thomas mentioned what we want is a 
+virtual interrupt controller used by /all/ hypervisors (and mapped to 
+their respective hypervisor ABIs via the backend).
 
 	Ingo
