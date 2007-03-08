@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbXCHBeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752173AbXCHBgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752169AbXCHBeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 20:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXCHBeV
+	id S1752173AbXCHBgL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 20:36:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbXCHBgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 20:34:21 -0500
-Received: from mga03.intel.com ([143.182.124.21]:41835 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752169AbXCHBeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 20:34:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,262,1170662400"; 
-   d="scan'208"; a="192059683:sNHT18241475"
-Date: Wed, 7 Mar 2007 17:07:50 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm2 hang
-Message-ID: <20070308010750.GB19790@linux-os.sc.intel.com>
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <1173305536.868.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Mar 2007 20:36:11 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:27676 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbXCHBgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 20:36:09 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=vovXne8vRgWa+LCY4kT+6VGIb/k0VD9nvfZrhz/w8oAEKxnqsi1GCVhe3KR3EO+vP
+	KfZ1bqFPQSdybXaUmRa6A==
+Message-ID: <6599ad830703071735m222e26b7v47a54ca0aaffd902@mail.gmail.com>
+Date: Wed, 7 Mar 2007 17:35:58 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Cc: "Sam Vilain" <sam@vilain.net>, "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, dev@sw.ru, pj@sgi.com, winget@google.com,
+       containers@lists.osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
+       akpm@linux-foundation.org
+In-Reply-To: <m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1173305536.868.8.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+References: <20070301133543.GK15509@in.ibm.com>
+	 <20070307205846.GB7010@sergelap.austin.ibm.com>
+	 <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
+	 <m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
+	 <6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
+	 <45EF5A62.8000103@vilain.net>
+	 <6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com>
+	 <45EF5E71.7090101@vilain.net>
+	 <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
+	 <m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 02:12:16PM -0800, Dave Hansen wrote:
-> I'm seeing weird hangs running ltp on 2.6.21-rc2-mm2.  It manifests
-> itself by the waitpid06 test in LTP hanging.  This is very, very
-> reproducible in about 5 seconds by adding '-s wait' to the ltp command
-> line.
-> 
-> I see 4 waitpid06 processes on my 4-way machine spinning in userspace.
-> But, the weird part is that I can't ssh in once this happens, but I can
-> log in to the console.  I've bisected it down to:
->         
->         sched-fix-idle-load-balancing-in-softirqd-context
+On 3/7/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> Pretty much.  For most of the other cases I think we are safe referring
+> to them as resource controls or resource limits.    I know that roughly covers
+> what cpusets and beancounters and ckrm currently do.
 
-[having some mailer issues. Pl ignore if this is a duplicate]
+Plus resource monitoring (which may often be a subset of resource
+control/limits).
 
-This sounds like an issue in merge we recently had and 2.6.21-rc2-mm2 already
-has a fix for this.
+>
+> The real trick is that I believe these groupings are designed to be something
+> you can setup on login and then not be able to switch out of.
 
-sched-fix-idle-load-balancing-in-softirqd-context-fix.patch  
+That's going to to be the case for most resource controllers - is that
+the case for namespaces? (e.g. can any task unshare say its mount
+namespace?)
 
-Can you please apply both
-sched-fix-idle-load-balancing-in-softirqd-context
-sched-fix-idle-load-balancing-in-softirqd-context-fix.patch
-and see if you still see this problem?
-
-thanks,
-suresh
+Paul
