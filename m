@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752397AbXCHSGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbXCHSLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752397AbXCHSGo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 13:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXCHSGn
+	id S1752414AbXCHSLV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 13:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXCHSLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 13:06:43 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:60038 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbXCHSGn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 13:06:43 -0500
-Message-ID: <45F05040.4090602@zytor.com>
-Date: Thu, 08 Mar 2007 10:04:48 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-CC: Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>, David Brown <dmlb2000@gmail.com>,
+	Thu, 8 Mar 2007 13:11:21 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:56689 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752413AbXCHSLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 13:11:20 -0500
+Date: Thu, 8 Mar 2007 10:01:45 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gdb@sourceware.org
-Subject: Re: PAGE_SIZE Availability Inconsistency
-References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com> <20070306092917.GA5226@infradead.org> <200703080318.04631.zippel@linux-m68k.org> <20070308090031.GB7373@infradead.org> <1173369229.3550.2.camel@laptopd505.fenrus.org> <20070308160852.GB9916@infradead.org> <45F0426C.8000009@zytor.com> <20070308175729.GA7054@kryten>
-In-Reply-To: <20070308175729.GA7054@kryten>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+In-Reply-To: <20070308123143.GF5149@mellanox.co.il>
+Message-ID: <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+ <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Blanchard wrote:
->> By the way, it's a massive snafu that the swap area magic number is 
->> dependent on PAGE_SIZE.  There is absolutely no good reason for that.
+
+[ Eric, Ingo, can you double-check the timer initialization after resume? 
+  We appear to have several reports of date not advancing, and while this 
+  could be some SATA issue, it could easily be a timer tick issue too ]
+
+On Thu, 8 Mar 2007, Michael S. Tsirkin wrote:
 > 
-> Agreed, its been a big problem booting between 4kB and 64kB kernels on
-> ppc64.
+> Here's the status with -rc3: better, but still does not work as well as 2.6.20.
 
-The easiest way to fix this would be to always park the swap magic at 
-the offset of the smallest page size in use, which is 4K.  This is 
-analogous how the offset for the ext2/3 superblock got fixed at 1K -- 
-for 1K blocks, it's the second block, but for larger blocks, it's part 
-of the first block.  If we fix the offset of the swap magic at 4096 
-minus the offset that's already there, it will always fall in the first 
-page regardless of page size.
+Ok. I think we mostly solved the irq-related stuff, but you might want to 
+check whether you have CONFIG_NOHZ on or off and whether that makes a 
+difference.
 
-	-hpa
+> 2. First disk access after resume takes a couple of minutes
+>    (seemed instant with 2.6.20) during this time no new messages show on console
+
+Yeah, there is some problem with SATA resume. It would be beautiful if the 
+people who actually see this could narrow it down with bisection. "It 
+works for me" is clearly the case for many people, but not all.
+
+But before blaming SATA, check if you have NO_HZ enabled and whether 
+disabling that makes it work ok. If timeouts don't work right (or are 
+*extremely* slow) things that should be instant won't be.
+
+> 3. When I switch to X (CTRL-ALT-F7), X hangs after drawing a couple of windows
+>    after waiting for some 10 min, I rebooted.
+>    no new messages showed up in /var/log/messages
+
+I think this is likely just more of the disk being buggered, but it could 
+again be related to NO_HZ (people report time not advancing, and that 
+would make any X timeout taking forever, and you'd see exactly your 
+behaviour).
+
+		Linus
