@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXCHPQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094AbXCHPSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752083AbXCHPQY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 10:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXCHPQY
+	id S1752094AbXCHPSa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 10:18:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXCHPS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 10:16:24 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3700 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbXCHPQY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 10:16:24 -0500
-Date: Thu, 8 Mar 2007 15:16:12 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Rob Prowel <prowel@kuchera.com>
-Cc: Stuart MacDonald <stuartm@connecttech.com>, linux-kernel@vger.kernel.org
-Subject: Re: questions about 8250 uart support for adhoc boards
-Message-ID: <20070308151612.GD30023@flint.arm.linux.org.uk>
-Mail-Followup-To: Rob Prowel <prowel@kuchera.com>,
-	Stuart MacDonald <stuartm@connecttech.com>,
-	linux-kernel@vger.kernel.org
-References: <028501c75aa2$54ae9d80$294b82ce@stuartm> <45E49759.6050301@kuchera.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E49759.6050301@kuchera.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 8 Mar 2007 10:18:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:46785 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752094AbXCHPS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 10:18:29 -0500
+Message-ID: <45F02940.5010605@garzik.org>
+Date: Thu, 08 Mar 2007 10:18:24 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Alan Cox <alan@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: libata: Fix host->simplex_claimed != ap typo
+References: <87lki7zuoz.fsf@duaron.myhome.or.jp> <20070308160135.78bdef53@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070308160135.78bdef53@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27, 2007 at 03:40:57PM -0500, Rob Prowel wrote:
-> Stuart MacDonald wrote:
-> >Would it be more intuitive to give ports the default uartclk of
-> >1843200 at init time? That would avoid this issue, but would make the
-> >baud rates come out wrong on hardware with a non-standard clock, if a
-> >base baud wasn't specified.
-> >
-> >  
+Alan Cox wrote:
+> On Thu, 08 Mar 2007 23:17:00 +0900
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
 > 
-> I prefer the option to specify the base baud rate in setserial from a 
-> startup script.  Having the additional ports at BAUD 0 (unusable) until 
-> some explicit action is taken strikes me as a safer option, provided 
-> this gets properly documented in the kernel Documentation directory and 
-> in Linux HOWTO docs.
+>> Hi,
+>>
+>> the following patch is needed to boot my laptop using pata_ali.ko, at least.
+>> Please apply.
+> 
+> NAK - correct fix is to check != && != NULL. The correct fix was posted
+> to the list earlier by Vojtech.
 
-Is someone going to do that?  Who volunteers?
+You mean Petr Vandrovec I presume?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	Jeff
+
+
+
