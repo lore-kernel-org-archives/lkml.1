@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750827AbXCHCyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750913AbXCHCzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750827AbXCHCyi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 21:54:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXCHCyi
+	id S1750913AbXCHCzm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 21:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbXCHCzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 21:54:38 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45207 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750827AbXCHCyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 21:54:38 -0500
-Date: Wed, 7 Mar 2007 18:54:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org
-Subject: Re: [PATCH] [RSDL-mm 0/6] RSDL cpu scheduler for -mm
-Message-Id: <20070307185430.31fb48b8.akpm@linux-foundation.org>
-In-Reply-To: <20070307174345.4c398171.akpm@linux-foundation.org>
-References: <200703071226.43238.kernel@kolivas.org>
-	<20070307174345.4c398171.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 7 Mar 2007 21:55:42 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54762
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750913AbXCHCzl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 21:55:41 -0500
+Date: Wed, 07 Mar 2007 18:55:39 -0800 (PST)
+Message-Id: <20070307.185539.48527371.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: w@1wt.eu, rkuhn@e18.physik.tu-muenchen.de, andi@firstfloor.org,
+       dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] tcp_cubic: use 32 bit math
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070307170731.2b4397e3@freekitty>
+References: <20070306145842.7d7fea84@freekitty>
+	<20070307060838.GI943@1wt.eu>
+	<20070307170731.2b4397e3@freekitty>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 17:43:45 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Wed, 7 Mar 2007 17:07:31 -0800
 
-> On Wed, 7 Mar 2007 12:26:42 +1100
-> Con Kolivas <kernel@kolivas.org> wrote:
+> The basic calculation has to be done in 32 bits to avoid
+> doing 64 bit divide by 3. The value x is only 22bits max
+> so only need full 64 bits only for x^2.
 > 
-> > What follows is the same patch series that constitutes the RDSL "Rotating 
-> > Staircase DeadLine" cpu scheduler resynced for 2.6.21-rc2-mm2.
-> 
-> Big oops early in boot on x86_64 SMP, in rq_bitmap_error+0x97/0x9f.
-> 
-> I stubbed it out with a `return MAX_RT_PRIO;' (I think) but it then oopsed
-> differently.  Before netconsole had come up, no serial console, no digital
-> camera.
-> 
-> There's stuff in http://userweb.kernel.org/~akpm/ck/ - you can probably
-> boot that kernel on your own machine.
-> 
-> I need to do rc3-mm1 now.  I might find some time to poke at this
-> further after that, but I have to leave for a week in .jp and it'll be
-> squeezy, sorry.
+> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-well it boots os dual pIII and quad powerpc.
+Applied, thanks Stephen.
 
-The powerpc says
-
-Scheduler bitmap error - bitmap being reconstructed..
-
-during bootup.  But it didn't crash like the Nocona machine.
+What about Willy Tarreau's supposedly even faster variant?
+Or does this incorporate that set of improvements?
