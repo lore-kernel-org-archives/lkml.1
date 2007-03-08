@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbXCHRLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbXCHRMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752579AbXCHRLs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXCHRLs
+	id S1752593AbXCHRMJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:12:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbXCHRMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:11:48 -0500
-Received: from nijmegen.renzel.net ([195.243.213.130]:38862 "EHLO
-	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752579AbXCHRLr (ORCPT
+	Thu, 8 Mar 2007 12:12:09 -0500
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:50681 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbXCHRMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:11:47 -0500
-From: Mws <mws@twisted-brains.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: irq nobody cared issue on 2.6.2x
-Date: Thu, 8 Mar 2007 18:11:31 +0100
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-References: <200703072048.49637.mws@twisted-brains.org> <Pine.LNX.4.64.0703071204290.5963@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703071204290.5963@woody.linux-foundation.org>
+	Thu, 8 Mar 2007 12:12:07 -0500
+Date: Thu, 8 Mar 2007 12:12:04 -0500 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Eric Paris <eparis@parisplace.org>
+cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, vyekkirala@trustedcs.com,
+       cxzhang@watson.ibm.com, sds@tycho.nsa.gov
+Subject: Re: [PATCH] Add xfrm policy change auditing to pfkey_spdget
+In-Reply-To: <1173370815.31047.134.camel@localhost.localdomain>
+Message-ID: <Line.LNX.4.64.0703081159490.9412@d.namei>
+References: <1172861484.31047.26.camel@localhost.localdomain> 
+ <20070307.154316.68038380.davem@davemloft.net>  <20070307.160740.77057241.davem@davemloft.net>
+ <1173370815.31047.134.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703081811.32190.mws@twisted-brains.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 March 2007, Linus Torvalds wrote:
-> 
-> On Wed, 7 Mar 2007, Mws wrote:
-> >
-> > if you would be so kind to provide me some infos,
-> > 
-> > how i would be able to track the problem down _and_ maybe how to fix it.
-> 
-> The first step is to figure out as exactly as possible _when_ it started 
-> happening.
-> 
-> > please find two snippets of dmesg after booting 2.6.21-rc3-git 
-> > (2.6.20-1 has got the same results) 
-> 
-> So is 2.6.19 good? 2.6.20-rc1? -rc2?
+On Thu, 8 Mar 2007, Eric Paris wrote:
 
-went down to 2.6.17 - earlier is lacking due to correctly booting my machine.
+> which didn't have my fix up because i didn't commit it to my local
+> branch.  Is there a better way to get a diff between my miller tree and
+> 'everything in the branch I have checked out even if it is not
+> committed'?
 
-> If you're a git user (or even just marginally interested in learning), the 
-> best thing to do is to find some good kernel (the more recent, the better, 
-> but the keyword is *some* kernel that works well), and a bad kernel (the 
-> older the better, just to avoid unnecessary work, but again, you can just 
-> take the most recent too), and then just use "git bisect".
-> 
-> If you bisect it down to one particular commit, that will help us a lot, 
-> but even if you only bisect it down by booting a handful of kernels (say, 
-> 5-6), it will already have cut things down a lot, and probably more easily 
-> and efficiently than if you just downloaded daily snapshots and tried to 
-> narrow it down that way.
-> 
-> 		Linus
-i started to bring in a load of printk's into v4l dvb repository to find out what exactly 
-is causing the interrupt to appear and why it is not handled.
+I'd suggest you commit all your changes in local branches, then export 
+them as emails via git-format-patch for posting.
 
-the bug is reproducible by insmod/rmmod dvb_ttpci over and over.
-yesterday late night i tried a bit too much and my machine freezed as a whole.
+Something like:
 
-even kernel sysrq didn't work anymore.
+ davem-upstream         [1]
+  +- for-davem          [2]
+     +- for-davem-prep  [3]
 
-i found some point, that after fireware load the interrupt is fired again.
+Do all of your work in [3], so you can manage the queue of patches there 
+before merging/applying them into [2] as a final patch series.
 
-will check if there is a solution to create a workaround and try to fix it afterwards.
+So, if one of the commits in [3] needs fixing, you can, for example, 
+export commits up to that with git-format-patch, git-reset --hard to the 
+broken commit, fix, compile, test then reapply the exported commits.  
+Then, once it's all ready, merge into [2] (or export & apply to avoid 
+merge commits).
 
-it does NOT appear on a different computer same card. i think it is a problem
-in combination chipset - card - bios.... dunno by now, but will find out.
+This is just one possible workflow.  There are probably several better.
 
-thanks for your information, linus.
 
-marcel
+- James
+-- 
+James Morris
+<jmorris@namei.org>
