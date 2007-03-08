@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbXCHQXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXCHQXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbXCHQXK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbXCHQXJ
+	id S1752463AbXCHQXj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbXCHQXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:23:09 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51277 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752457AbXCHQXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:23:08 -0500
-Date: Thu, 8 Mar 2007 08:22:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: "David M. Lloyd" <dmlloyd@flurg.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
-In-Reply-To: <Pine.LNX.4.64.0703080742220.7015@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0703080812290.10832@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703071712210.3672@alien.or.mcafeemobile.com>
- <1173364264.6891.3.camel@localhost> <Pine.LNX.4.64.0703080742220.7015@alien.or.mcafeemobile.com>
+	Thu, 8 Mar 2007 11:23:39 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:36181 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbXCHQXh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 11:23:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nyYmizXN8Fn6IPMUKmPMde1g6Se+V28YYRIcg4beLi4AYN3HWiClRh/VFUe3CTyHqBvOPMKyyEqVbVgb0YezEpSHt3niIs8AE7uA4gJeJPcF7XxBpkD66SIaVP2uiqhvkvVXzsZXwcLsxBdtLHDrBswBV4LjDSDDUInrbekQsHU=
+Message-ID: <6bffcb0e0703080823ybb4ceaasd229ba17cb2d40d6@mail.gmail.com>
+Date: Thu, 8 Mar 2007 17:23:34 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: mm snapshot broken-out-2007-03-05-02-22.tar.gz uploaded
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Randy Cushman" <rcushman_linux@earthlink.net>,
+       "Jaroslav Kysela" <perex@suse.cz>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@stusta.de>
+In-Reply-To: <s5hbqj3ohgb.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703051024.l25AOIF3015951@shell0.pdx.osdl.net>
+	 <45EEA3C4.7000501@googlemail.com>
+	 <20070307104746.f08a2e84.akpm@linux-foundation.org>
+	 <6bffcb0e0703071141j42309702w793e4a76b1b23bfa@mail.gmail.com>
+	 <20070307115024.756c848f.akpm@linux-foundation.org>
+	 <s5hvehcrdod.wl%tiwai@suse.de> <45EF3B2C.9060801@googlemail.com>
+	 <s5hfy8gbrmj.wl%tiwai@suse.de> <45F02EE2.6040606@googlemail.com>
+	 <s5hbqj3ohgb.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/03/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Thu, 08 Mar 2007 16:42:26 +0100,
+> Michal Piotrowski wrote:
+> >
+> > > Also, it'd be helpful if you compare
+> > > /proc/asound/card0/codec97#0/ac97#0-0+regs file before and after the
+> > > patch.  This reveals which register bits differ actually.
+> >
+> > a2.txt is form 2.6.21-rc3 witchout 831466f4ad2b5fe23dff77edbe6a7c244435e973
+>
+> Just to make sure: it means that a2.txt is a working one and the
+> anoter is non-working, right?
 
+Right.
 
-On Thu, 8 Mar 2007, Davide Libenzi wrote:
-> 
-> This patch, if you get a POLLIN, you have a signal to read for sure (well, 
-> unless you another thread/task reads it before you - but that's just 
-> somthing you have to take care). There is not explicit check for 
-> O_NONBLOCK now, but a zero timeout would do exactly the same thing.
+>
+>
+> Takashi
+>
 
-You missed David's worry, I think.
+Regards,
+Michal
 
-Not only is POLLIN potentially an edge event (depending on the interface 
-you use to fetch it), but even as a level-triggered one you generally want 
-to read as much as possible per POLLIN event, and go back to the event 
-loop only when you get EAGAIN.
-
-So that's in addition to the read/signal race with other 
-threads/processes.
-
-You solved it by having a separate system call, but since it's a regular 
-file descriptor, why have a new system call at all, and not just make it 
-be a "read()"? In which case you definitely want O_NONBLOCK support.
-
-The UNIX philosophy is often quoted as "everything is a file", but that 
-really means "everything is a stream of bytes".
-
-In Windows, you have 15 different versions of "read()" with sockets and 
-files and pipes all having strange special cases and special system calls. 
-That's not the UNIX way. It should be just a "read()", and then people can 
-use general libraries and treat all sources the same.
-
-For example, the main select/poll/epoll loop may be the one doing all the 
-reading, and then pass off "full buffers only" to the individual per-fd 
-"action routines". And that kind of model really very fundamentally wants 
-an fd to be an fd to be an fd - not "some file descriptors need 
-'read_from_sigfd()', and some file descriptors need 'read()', and some 
-file descriptors need 'recvmsg()'" etc.
-
-So I think you should get rid of signalfd_dequeue(), and just replace it 
-with a "read()" function.
-
-		Linus
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
