@@ -1,62 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933310AbXCHVDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933315AbXCHVEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933310AbXCHVDx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:03:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933315AbXCHVDx
+	id S933315AbXCHVEA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:04:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933322AbXCHVEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:03:53 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:56707 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933310AbXCHVDw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:03:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UFuy28bUjuW6fbGCqr+HUFZX1uJkAyj6k5t5Dgup/rkRM1S1RzgVkUIqpJ6/zht+paxXwTgI09wL/75ppZboFNZbCMJuleHzw+G8xqjBuRSngd9SydC6+hDsDEM1vi9jiZ/rrcoaqrQubRfHkV4vobpcmnDIhzjD3TqXjqzT4cw=
-Message-ID: <9c21eeae0703081303t576e8757t259380092894ced5@mail.gmail.com>
-Date: Thu, 8 Mar 2007 13:03:48 -0800
-From: "David Brown" <dmlb2000@gmail.com>
-To: "Anton Blanchard" <anton@samba.org>
-Subject: Re: PAGE_SIZE Availability Inconsistency
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Christoph Hellwig" <hch@infradead.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       gdb@sourceware.org
-In-Reply-To: <20070308175729.GA7054@kryten>
+	Thu, 8 Mar 2007 16:04:00 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49336 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933315AbXCHVD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:03:59 -0500
+X-Authenticated: #420190
+X-Provags-ID: V01U2FsdGVkX1+YgwZNAGGY4x8pNVXzhRopNLCRbKL5q1oKPCOJsF
+	pxpQHabKRmjxxb
+Message-ID: <45F07A3C.4090600@gmx.net>
+Date: Thu, 08 Mar 2007 22:03:56 +0100
+From: Marko Macek <marko.macek@gmx.net>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       "David M. Lloyd" <dmlloyd@flurg.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
+References: <Pine.LNX.4.64.0703071712210.3672@alien.or.mcafeemobile.com> <1173364264.6891.3.camel@localhost> <Pine.LNX.4.64.0703080742220.7015@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703080812290.10832@woody.linux-foundation.org> <Pine.LNX.4.64.0703080825420.7015@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703080852170.10832@woody.linux-foundation.org> <Pine.LNX.4.64.0703081113060.7515@alien.or.mcafeemobile.com> <Pine.LNX.4.64.0703081123210.10832@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703081123210.10832@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com>
-	 <20070306092917.GA5226@infradead.org>
-	 <200703080318.04631.zippel@linux-m68k.org>
-	 <20070308090031.GB7373@infradead.org>
-	 <1173369229.3550.2.camel@laptopd505.fenrus.org>
-	 <20070308160852.GB9916@infradead.org> <45F0426C.8000009@zytor.com>
-	 <20070308175729.GA7054@kryten>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/8/07, Anton Blanchard <anton@samba.org> wrote:
->
-> > By the way, it's a massive snafu that the swap area magic number is
-> > dependent on PAGE_SIZE.  There is absolutely no good reason for that.
->
-> Agreed, its been a big problem booting between 4kB and 64kB kernels on
-> ppc64.
+Linus Torvalds wrote:
+> 
+> On Thu, 8 Mar 2007, Davide Libenzi wrote:
+>> So, to cut it short, I can do the pseudo-siginfo read(2), but I don't 
+>> like it too much (little, actually). The siginfo, as bad as it is, is a 
+>> standard used in many POSIX APIs (hence even in kernel), and IMO if we 
+>> want to send that back, a struct siginfo should be.
+>> No?
+> 
+> I think it's perfectly fine if you make it "struct siginfo" (even though I 
+> think it's a singularly ugly struct). It's just that then you'd have to 
+> make your read() know whether it's a compat-read or not, which you really 
+> can't.
+> 
+> Which is why you introduced a new system call, but that leads to all the 
+> problems with the file descriptor no longer being *usable*.
+> 
+> Think scripts. It's easy to do reads in perl scripts, and parse the 
+> output. In contrast, making perl use a new system call is quite 
+> challenging.
 
-Okay this really seems like a couple of things need to happen, first
-change swap dependency on PAGE_SIZE, then move the __KERNEL__ define
-above the PAGE_SIZE and friends defines in the appropriate
-asm-*/page.h files.
+Probably, but someone will have to add the 'signalfd' system call anyway.
 
-Do these tasks need to happen in this order? I haven't really looked
-at the swap code at all...
+> And *that* is why "everything is a stream of bytes" is so important. You 
+> don't know where the file descriptor has been, or who uses it. Special 
+> system calls for special file descriptors are just *wrong*.
+> 
+> After all, that's why we'd have a signalfd() in the first place: exactly 
+> so that you do *not* have to use special system calls, but can just pass 
+> it on to any event waiting mechanism like select, poll, epoll. The same is 
+> just *even*more*true* when it comes to reading the data!
 
-Also, I'd be willing to help I've done kernel coding for experimental
-projects and such but nothing for kernel.org so I might need some
-shepherding.
+The problem with read() returning arbitrary unstructured data is that 
+there is hard to do versioning/extensibility, since the userspace can't 
+specify the requested/expected format. The only way it could be done is 
+by the (nbytes) parameter to read() which is not very nice (and useless 
+for scripts).
 
-- David Brown
+This is the same problem that makes sysfs/procfs fragile unless the
+file format is very well specified for extensibility (and it's easy to
+f-it up, since there seems to be little consistency there... using
+the XML horror would actually be an improvement). Breaking sysfs/procfs
+might be acceptable once every few years, but signal handling will be
+part of every application event loop and there is no room for breaking 
+anything.
+
+(although, one could to the versioning the ugly way by creating the new 
+'signalfd' syscall instead).
+
+I'd say: make read() return the signal number (probably as 4-byte int, 
+in network byte order), but for everything else, use the system call.
+
+Mark
+
+P.S. I'm currently worried if the fact that FUTEX_FD is being deprecated 
+is a problem :)
+
