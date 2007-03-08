@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933056AbXCHUkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbXCHUnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933056AbXCHUkj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbXCHUki
+	id S933069AbXCHUnA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933074AbXCHUnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:40:38 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4568 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933065AbXCHUkh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:40:37 -0500
-Date: Thu, 8 Mar 2007 20:40:21 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Oleksiy Kebkal <kebkal@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-serial@vger.kernel.org
-Subject: Re: should RTS init in serial core be tied to CRTSCTS
-Message-ID: <20070308204020.GE30023@flint.arm.linux.org.uk>
-Mail-Followup-To: Robin Getz <rgetz@blackfin.uclinux.org>,
-	Oleksiy Kebkal <kebkal@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-serial@vger.kernel.org
-References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com> <200703080844.32157.rgetz@blackfin.uclinux.org> <20070308134800.GA30023@flint.arm.linux.org.uk> <200703081523.39698.rgetz@blackfin.uclinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703081523.39698.rgetz@blackfin.uclinux.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 8 Mar 2007 15:43:00 -0500
+Received: from gw.goop.org ([64.81.55.164]:34684 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933069AbXCHUm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:42:59 -0500
+Message-ID: <45F07551.6040604@goop.org>
+Date: Thu, 08 Mar 2007 12:42:57 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Daniel Arai <arai@vmware.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F06720.8080901@goop.org> <20070308194740.GJ10574@sequoia.sous-sol.org> <45F06989.8030207@goop.org> <20070308201033.GK10574@sequoia.sous-sol.org> <45F06FB3.105@goop.org> <20070308202350.GL10574@sequoia.sous-sol.org> <45F07334.7010207@goop.org> <20070308204221.GM10574@sequoia.sous-sol.org>
+In-Reply-To: <20070308204221.GM10574@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 08, 2007 at 03:23:39PM -0500, Robin Getz wrote:
-> On Thu 8 Mar 2007 08:48, Russell King pondered:
-> > On Thu, Mar 08, 2007 at 08:44:31AM -0500, Robin Getz wrote:
-> > > That would let you change things are run time, but the problem is at
-> > > boot time. A default setting needs to be set, so when things initialize,
-> > > and proc does not exist yet, it is still set properly...
-> >
-> > I disagree.  "proc does not exist yet" - the only time that applies is
-> > long before userspace as active.
-> 
-> Right - We both agree - And setting console=/dev/null in the bootargs still 
-> does not help.
+Chris Wright wrote:
+> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+>   
+>> Maybe hooking into genapic is the right way to mop up all the uses of
+>> send_IPI and its variants.  But from a quick grep it doesn't look like
+>> they get called from too many places...  Most of the callers seem to be
+>> in arch/i386/kernek/smp.c, so they should be pretty easy to isolate.
+>>     
+>
+> Yeah, we'll see once we are crashing and debugging some code ;-)
+>   
+It's the Linux way (tm).
 
-Ok, good.
-
-> When the kernel initializes the UART Port, it asserts RTS - which confuses
-> the host it is attached to (in this case, the Linux system is the serial 
-> peripheral).
-
-... which occurs /after/ userspace is up and running, when sysfs is
-available.  So putting it in sysfs is reasonable.
-
-> How about adding a module_param to serial core, which the default is to
-> assert RTS (as is today), and someone (like me) can override with
-> serial_core.RTS=0
-
-So all ports change behaviour with a single parameter?  That'll stop
-NULL modem cables with hardware flow control enabled working on other
-ports without compensatory tweaking.
-
-No, doing a system-wide change like that is _not_ a solution - it just
-moves the problem elsewhere.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+    J
