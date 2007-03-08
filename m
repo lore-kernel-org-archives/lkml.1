@@ -1,255 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161093AbXCHXQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161053AbXCHXVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161093AbXCHXQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 18:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161068AbXCHXQz
+	id S1161053AbXCHXVr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 18:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161060AbXCHXVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 18:16:55 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:12993 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161042AbXCHXQx (ORCPT
+	Thu, 8 Mar 2007 18:21:47 -0500
+Received: from kepler.fjfi.cvut.cz ([147.32.6.11]:59862 "EHLO
+	kepler.fjfi.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161053AbXCHXVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 18:16:53 -0500
-Date: Thu, 8 Mar 2007 15:08:39 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-security-module@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [Patch 1/1] IBAC Patch
-Message-Id: <20070308150839.7c191323.randy.dunlap@oracle.com>
-In-Reply-To: <1173394696.5981.12.camel@localhost.localdomain>
-References: <1173394696.5981.12.camel@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Thu, 8 Mar 2007 18:21:45 -0500
+Date: Fri, 9 Mar 2007 00:21:35 +0100 (CET)
+From: Martin Drab <drab@kepler.fjfi.cvut.cz>
+To: hugh@veritas.com
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Question about memory mapping mechanism
+In-Reply-To: <Pine.LNX.4.64.0703081345010.21317@kepler.fjfi.cvut.cz>
+Message-ID: <Pine.LNX.4.64.0703082354530.25365@kepler.fjfi.cvut.cz>
+References: <Pine.LNX.4.64.0703081345010.21317@kepler.fjfi.cvut.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 Mar 2007 17:58:16 -0500 Mimi Zohar wrote:
+On Thu, 8 Mar 2007, Martin Drab wrote:
 
-> This is a request for comments for a new Integrity Based Access
-> Control(IBAC) LSM module which bases access control decisions
-> on the new integrity framework services. 
+> Hi,
 > 
-> (Hopefully this will help clarify the interaction between an LSM 
-> module and LIM module.)
+> I'm writing a driver for a sampling device that is constantly delivering a 
+> relatively high amount of data (about 16 MB/s) and I need to deliver the 
+> data to the user-space ASAP. To prevent data loss I create a queue of 
+> buffers (consisting of few pages each) which are more or less directly 
+> filled by the device and then mapped to the user-space via mmap().
 > 
-> Index: linux-2.6.21-rc3-mm2/security/ibac/Kconfig
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6.21-rc3-mm2/security/ibac/Kconfig
-> @@ -0,0 +1,36 @@
-> +config SECURITY_IBAC
-> +	boolean "IBAC support"
-> +	depends on SECURITY && SECURITY_NETWORK && INTEGRITY
-> +	help
-> +	  Integrity Based Access Control(IBAC) implements integrity
-> +	  based access control.
+> The thing is that I'd like to prevent kernel to swap these pages out, 
+> because then I may loose some data when they are not available in time 
+> for the next round.
+> 
+> My original idea (that used to work in the past) was to allocate the 
+> buffers using __get_free_pages(), then pin the pages down by setting their 
+> PG_reserved bit in the page flags before using them. And then set the 
+> VM_RESERVED flag of the appropriate VMA when mmap() is called for these 
+> pages that are then mapped using nopage() mechanism.
+> 
+> But this way no longer seems to work correctly, it kind of works, but I'm 
+> getting following messages for each mmapped page upon munmap() call:
+> 
+> --------------------------------------
+> [19172.939248] Bad page state in process 'dtrtest'
+> [19172.939249] page:ffff81000160a978 flags:0x001a000000000404 mapping:0000000000000000 mapcount:0 count:0
+> [19172.939251] Trying to fix it up, but a reboot is needed
+> [19172.939253] Backtrace:
+> [19172.939256]
+> [19172.939257] Call Trace:
+> [19172.939273]  [<ffffffff802adc37>] bad_page+0x57/0x90
+> [19172.939280]  [<ffffffff8020b92f>] free_hot_cold_page+0x7f/0x180
+> [19172.939287]  [<ffffffff80207a90>] unmap_vmas+0x450/0x750
+> [19172.939308]  [<ffffffff80212867>] unmap_region+0xb7/0x160
+> [19172.939318]  [<ffffffff80211918>] do_munmap+0x238/0x2f0
+> [19172.939325]  [<ffffffff802656c5>] __down_write_nested+0x35/0xf0
+> [19172.939334]  [<ffffffff80215ffd>] sys_munmap+0x4d/0x80
+> [19172.939341]  [<ffffffff8025f11e>] system_call+0x7e/0x83
+> -------------------------------
+> 
+> Aparently due to the PG_reserved bit set.
+> 
+> So my question is: What is currently a proper way to do all this cleanly?
 
-Please make the help text do more than repeat the words I B A C...
-Put a short explanation or say something like:
-	  See Documentation/security/foobar.txt for more information.
-(and add that file)
+Ah, OK, so as I found here:
 
+http://www-gatago.com/linux/kernel/14660780.html
 
-> +config SECURITY_IBAC_BOOTPARAM
-> +	bool "IBAC boot parameter"
-> +	depends on SECURITY_IBAC
-> +	default y
-> +	help
-> +	  This option adds a kernel parameter 'ibac', which allows IBAC
-> +	  to be disabled at boot.  If this option is selected, IBAC
-> +	  functionality can be disabled with ibac=0 on the kernel
-> +	  command line.  The purpose of this option is to allow a
-> +	  single kernel image to be distributed with IBAC built in,
-> +	  but not necessarily enabled.
-> +
-> +	  If you are unsure how to answer this question, answer N.
+I do not need to worry about the just-in-kernel pages being swapped out 
+and thus need not set the PG_reserved. Good.
 
-What's the downside to having this always builtin instead of
-yet another config option?
+On the other hand, if I understand it correctly, then the buffer may 
+potentionally become the lru if it is not used for a long time (which may 
+happen, since there may be buffers that are used just from time to time to 
+compensate a temporal disability of the application to process the data 
+for some time. Or is it not the case?
 
-> +config SECURITY_IBAC_BOOTPARAM_VALUE
-> +	int "IBAC boot parameter default value"
-> +	depends on SECURITY_IBAC_BOOTPARAM
-> +	range 0 1
-> +	default 0
-> +	help
-> +	  This option sets the default value for the kernel parameter
-> +	  'ibac', which allows IBAC to be disabled at boot.  If this
-> +	  option is set to 0 (zero), the IBAC kernel parameter will
-> +	  default to 0, disabling IBAC at bootup.  If this option is
-> +	  set to 1 (one), the IBAC kernel parameter will default to 1,
-> +	  enabling IBAC at bootup.
-> +
-> +	  If you are unsure how to answer this question, answer 0.
-> +
+How does a page get onto an lru list? Is there a way to prevent that at 
+all costs? Or do I just need to hope that all the buffers will be used 
+every now and then to prevent getting there.
 
-> Index: linux-2.6.21-rc3-mm2/security/ibac/ibac_main.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6.21-rc3-mm2/security/ibac/ibac_main.c
-> @@ -0,0 +1,126 @@
-> +/*
-> + * Integrity Based Access Control (IBAC)
-> + *
-> + * Copyright (C) 2007 IBM Corporation
-> + * Author: Mimi Zohar <zohar@us.ibm.com>
-> + *
-> + *      This program is free software; you can redistribute it and/or modify
-> + *      it under the terms of the GNU General Public License as published by
-> + *      the Free Software Foundation, version 2 of the License.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/moduleparam.h>
-> +#include <linux/kernel.h>
-> +#include <linux/security.h>
-> +#include <linux/integrity.h>
-> +
-> +#ifdef CONFIG_SECURITY_IBAC_BOOTPARAM
-> +int ibac_enabled = CONFIG_SECURITY_IBAC_BOOTPARAM_VALUE;
+I thought I would store the free waiting-to-be-used buffers in a LIFO 
+stack rather then a classical FIFO ring queue to restrict the accesses to 
+as little amount of memory as possible (for better caching perhaps?) and 
+also perhaps to be able to keep some statistics about the usage of the 
+buffers on the buffer stack, so that if some buffers are not going to 
+be used for a long time (meaning that the application can process the data 
+quickly without big problems), some buffers may be freed to free the 
+memory (there may potentially be a huge amount of buffers consuming a 
+lot of memory to prevent loosing any of the constantly incomming data if 
+the application is temporally unable to process them for some reason).
 
-static int ?
+That means, that the buffers at the bottom of the stack can be there 
+unused for quite some while. Does it mean that they can potentially be 
+automatically placed on the lru list? Because then when they would really 
+be needed and they were swapped out, that would be a problem.
 
-> +static int __init ibac_enabled_setup(char *str)
-> +{
-> +	ibac_enabled = simple_strtol(str, NULL, 0);
-> +	return 1;
-> +}
-> +
-> +__setup("ibac=", ibac_enabled_setup);
-> +#else
-> +int ibac_enabled = 0;
+And about the user-space VMA mapping: Do I need to set the VM_RESERVED on 
+the VMA when mmapping? I suppose I do. Or do I?
 
-static int ?
-
-> +#endif
-> +
-> +static unsigned int integrity_enforce = 0;
-
-Don't init to 0 (not needed, consumes some binary file space).
-
-> +static int __init integrity_enforce_setup(char *str)
-> +{
-> +	integrity_enforce = simple_strtol(str, NULL, 0);
-> +	return 1;
-> +}
-> +
-> +__setup("ibac_enforce=", integrity_enforce_setup);
-> +
-> +#define XATTR_NAME "security.evm.hash"
-> +
-> +static inline int is_kernel_thread(struct task_struct *tsk)
-> +{
-> +	return (!tsk->mm) ? 1 : 0;
-> +}
-> +
-> +static int ibac_bprm_check_security(struct linux_binprm *bprm)
-> +{
-> +	struct dentry *dentry = bprm->file->f_dentry;
-> +	int xattr_len;
-> +	char *xattr_value = NULL;
-> +	int rc, status;
-> +
-> +	rc = integrity_verify_metadata(dentry, XATTR_NAME,
-> +				       &xattr_value, &xattr_len, &status);
-> +	if (rc < 0 && rc == -EOPNOTSUPP) {
-
-just	if (rc == -EOPNOTSUPP)
-?
-
-> +		kfree(xattr_value);
-> +		return 0;
-> +	}
-> +
-> +	if (rc < 0) {
-> +		printk(KERN_INFO "verify_metadata %s failed "
-> +		       "(rc: %d - status: %d)\n", bprm->filename, rc, status);
-
-How about adding "ibac: " to the beginning of each printk string,
-so that someone will know the general source of these messages?
-
-
-> +		if (!integrity_enforce)
-> +			rc = 0;
-> +		goto out;
-> +	}
-> +	if (status != INTEGRITY_PASS) {	/* FAIL | NO_LABEL */
-> +		if (!is_kernel_thread(current)) {
-> +			printk(KERN_INFO "verify_metadata %s "
-> +			       "(Integrity status: FAIL)\n", bprm->filename);
-> +			if (integrity_enforce) {
-> +				rc = -EACCES;
-> +				goto out;
-> +			}
-> +		}
-> +	}
-> +
-> +	rc = integrity_verify_data(dentry, &status);
-> +	if (rc < 0) {
-> +		printk(KERN_INFO "%s verify_data failed "
-> +		       "(rc: %d - status: %d)\n", bprm->filename, rc, status);
-> +		if (!integrity_enforce)
-> +			rc = 0;
-> +		goto out;
-> +	}
-> +	if (status != INTEGRITY_PASS) {
-> +		if (!is_kernel_thread(current)) {
-> +			printk(KERN_INFO "verify_data %s "
-> +			       "(Integrity status: FAIL)\n", bprm->filename);
-> +			if (integrity_enforce) {
-> +				rc = -EACCES;
-> +				goto out;
-> +			}
-> +		}
-> +	}
-> +
-> +	kfree(xattr_value);
-> +
-> +	/* measure all integrity level executables */
-> +	integrity_measure(dentry, bprm->filename, MAY_EXEC);
-> +	return 0;
-> +      out:
-
-Don't "hide" labels by indenting them so much.  You don't need to
-indent them at all, or maybe 1 character/column.
-
-> +	kfree(xattr_value);
-> +	return rc;
-> +}
-> +
-> +static struct security_operations ibac_security_ops = {
-> +	.bprm_check_security = ibac_bprm_check_security
-> +};
-> +
-> +static int __init init_ibac(void)
-> +{
-> +	int rc;
-> +
-> +	if (!ibac_enabled)
-> +		return 0;
-> +
-> +	rc = register_security(&ibac_security_ops);
-> +	if (rc != 0)
-> +		panic("IBAC: Unable to register with kernel\n");
-
-Normally we would not want to see a panic() from a register_xyz()
-failure, but I guess you are arguing that an ibac register_security()
-failure needs to halt everything??
-
-> +	return rc;
-> +}
-> +
-> +security_initcall(init_ibac);
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Martin
