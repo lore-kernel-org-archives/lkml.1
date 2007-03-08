@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbXCHDU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751379AbXCHD1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751341AbXCHDU7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 22:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbXCHDU6
+	id S1751379AbXCHD1M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 22:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbXCHD1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 22:20:58 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45900 "EHLO smtp.osdl.org"
+	Wed, 7 Mar 2007 22:27:12 -0500
+Received: from ozlabs.org ([203.10.76.45]:55106 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751442AbXCHDU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 22:20:58 -0500
-Date: Wed, 7 Mar 2007 19:20:12 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-cc: Anton Blanchard <anton@samba.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [patch] epoll use a single inode ...
-In-Reply-To: <f2b55d220703071725w7c09b93bgbf357aeb25a21c2b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0703071911330.10832@woody.linux-foundation.org>
-References: <45ED1A3C.6030707@argo.co.il>  <200703071906.58405.dada1@cosmosbay.com>
-  <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org> 
- <200703071952.13219.dada1@cosmosbay.com>  <20070307221401.GA16938@kryten> 
- <Pine.LNX.4.64.0703071453080.5963@woody.linux-foundation.org>
- <f2b55d220703071725w7c09b93bgbf357aeb25a21c2b@mail.gmail.com>
+	id S1751379AbXCHD1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 22:27:11 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17903.33399.786962.498809@cargo.ozlabs.ibm.com>
+Date: Thu, 8 Mar 2007 14:26:47 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Bill Huey (hui) <billh@gnuppy.monkey.org>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Tsutomu OWA <tsutomu.owa@toshiba.co.jp>, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw ones.
+In-Reply-To: <20070308004344.GA23200@gnuppy.monkey.org>
+References: <yyi8xe925vg.wl@toshiba.co.jp>
+	<yyi649d25qz.wl@toshiba.co.jp>
+	<45EECE5C.6030100@ru.mvista.com>
+	<17902.60669.945986.186995@cargo.ozlabs.ibm.com>
+	<45EEF6A4.9090807@ru.mvista.com>
+	<17903.4302.502364.126701@cargo.ozlabs.ibm.com>
+	<45EF2CD8.3050804@ru.mvista.com>
+	<17903.12035.781782.317694@cargo.ozlabs.ibm.com>
+	<20070308004344.GA23200@gnuppy.monkey.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bill Huey (hui) writes:
 
+> The places that need to be reverted to raw spinlocks are generally either
+> acquired by function calls that allocate the spinlock at a terminal of the
+> kernel's lock graph or isolated from other callers completely (parts of the
+> timer for logic for instance). It's all about the collision of various lock
+> (preemptive and non-preemptive) subtrees and how to avoid scheduling within
+> atomic violations that lead to deadlocks. The -rt patch gets arbitrary
+> preemption abilities by shrinking the non-preemptive sub-tree bit to the bare
+> essentials of what will let a system to run yet still preserve all of
+> the expected locking semantics of a critical section.
 
-On Wed, 7 Mar 2007, Michael K. Edwards wrote:
-> 
-> People's prejudices against prefetch instructions are sometimes
-> traceable to the 3DNow! prefetch(w) botch, which some processors
-> "support" as no-ops and others are too aggressive about (Opteron
-> prefetches are reputed to be "strong", i. e., not dropped on DTLB
-> miss).
+Thanks; that's an interesting explanation.
 
-No, I just checked, and Intel's own optimization manual makes it clear 
-that you should be careful. They talk about performance penalties due to 
-resource constraints - which makes tons of sense with a core that is good 
-at handling its own resources and could quite possibly use those resources 
-better to actually execute the loads and stores deeper down the 
-instruction pipeline.
+It misses the point of what I was saying to Sergei, though, which was
+*not* "I don't understand your patch", it was "if this patch goes into
+a git tree, someone coming along in 3 years time won't understand the
+patch."  In other words I was ranting about the need for a decent
+description to accompany the patch itself, so it would go into the
+permanent record.
 
-So it's not just 3DNow! making AMD look bad, or Intel would obviously 
-suggest people use it out of the wazoo ;)
-
-> XScale gets it right.
-
-Blah. XScale isn't even an OoO CPU, *of*course* it needs prefetching. 
-Calling that "getting it right" is ludicrous. If anything, it gets things 
-so wrong that prefetching is *required* for good performance.
-
-I'm talking about real CPU's with real memory pipelines that already do 
-prefetching in hardware. The better the core is, the less the prefetch 
-helps (and often the more it hurts in comparison to how much it helps).
-
-But if you mean "doesn't try to fill the TLB on data prefetches", then 
-yes, that's generally the right thing to do.
-
-> (Oddly, Prescott seems to have initiated a page table walk on DTLB miss 
-> during software prefetch -- just one of many weird Prescott flaws.)  
-
-Netburst in general is *very* happy to do speculative TLB fills, I think.
-
-> I'm guessing Pentium M and its descendants (Core Solo and Duo) get it 
-> right but I'm having a hell of a time finding out for sure.  Can any of 
-> the x86 experts answer this?
-
-I just suspect that the upside for Core 2 Due is likely fairly low. The L2 
-cache is good, the memory re-ordering is working.. I doubt "prefetch" 
-helps in generic code that much for things like linked list following, you 
-should probably limit it to code that has *known* access patterns and you 
-know it's not going to be in the cache.
-
-(In other words, I bet prefetching can help a lot with MMX/media kind of 
-code, I doubt it's a huge win for "for_each_entry()")
-
-		Linus
+Regards,
+Paul.
