@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030354AbXCHJKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030383AbXCHJLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030354AbXCHJKm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 04:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030380AbXCHJKl
+	id S1030383AbXCHJLK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 04:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030381AbXCHJLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 04:10:41 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:38730 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030354AbXCHJKh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 04:10:37 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=WcwQAkSyyBA2nGKyutLHWX3P3BjLZqmcLYYnHZS773IlKNGuAHZukIWQKKWy8j6rS
-	ioBN2fyN5Qn0JEp1lmDTw==
-Message-ID: <6599ad830703080110i33405501tb12bf8e58bf829c9@mail.gmail.com>
-Date: Thu, 8 Mar 2007 01:10:27 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Sam Vilain" <sam@vilain.net>
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Cc: "Srivatsa Vaddagiri" <vatsa@in.ibm.com>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru, pj@sgi.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, winget@google.com,
-       containers@lists.osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
-       akpm@linux-foundation.org
-In-Reply-To: <45EF83CB.9080903@vilain.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Thu, 8 Mar 2007 04:11:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52799 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030380AbXCHJLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 04:11:00 -0500
+Date: Thu, 8 Mar 2007 10:10:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Zachary Amsden <zach@vmware.com>
+Cc: tglx@linutronix.de, Jeremy Fitzhardinge <jeremy@goop.org>,
+       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: hardwired VMI crap 
+Message-ID: <20070308091019.GA19460@elte.hu>
+References: <45EE1EA3.90803@vmware.com> <1173256666.24738.576.camel@localhost.localdomain> <45EEF966.6060902@goop.org> <Line.LNX.4.64.0703071304080.1851@d.namei> <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com> <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070301133543.GK15509@in.ibm.com>
-	 <m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
-	 <6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
-	 <45EF5A62.8000103@vilain.net>
-	 <6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com>
-	 <45EF5E71.7090101@vilain.net>
-	 <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
-	 <45EF793C.1000700@vilain.net>
-	 <6599ad830703071857yf711921ja3440c4276bbe58e@mail.gmail.com>
-	 <45EF83CB.9080903@vilain.net>
+In-Reply-To: <45EF49E9.7040509@vmware.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/07, Sam Vilain <sam@vilain.net> wrote:
->
-> Ok, they share this characteristic with namespaces: that they group
-> processes.  So, they conceptually hang off task_struct.  But we put them
-> on ns_proxy because we've got this vague notion that things might be
-> better that way.
 
-Remember that I'm not the one pushing to move them into ns_proxy.
-These patches are all Srivatsa's work. Despite that fact that they say
-"Signed-off-by: Paul Menage", I'd never seen them before they were
-posted to LKML, and I'm not sure that they're the right approach.
-(Although some form of unification might be good).
+* Zachary Amsden <zach@vmware.com> wrote:
 
->
-> >> about this you still insist on calling this sub-system specific stuff
-> >> the "container",
-> >>
-> > Uh, no. I'm trying to call a *grouping* of processes a container.
-> >
->
-> Ok, so is this going to supplant the namespaces too?
+> The correct solution here is to properly separate the APIC, SMP, and 
+> timer code so the logic of it which we want to reuse is separated from 
+> the hardware dependence.  Clock events and clocksources take care of 
+> most of the timer issues, but there is still ugliness from SMP timer 
+> events depending on having part of the APIC infrastructure for wiring 
+> the interrupt gates.
 
-I don't know. It would be nice to have a single object hanging off the
-task struct that contains all the various grouping pointers. Having
-something that was flexible enough to handle all the required
-behaviours, or else allowing completely different behaviours for
-different subsets of that structure, could be the fiddly bit.
+what are you talking about? A clockevents driver does not need to know 
+about lapic details, at all. In terms of interrupt gates for the 
+hypervisor to notify about clock events - use a virtual interrupt 
+controller via genirq.
 
-See my expanded reply to Eric' earlier post for a possible way of
-unifying them, and simplifying the nsproxy and container.c code in the
-process.
+if you want to use hardwired hardware details as your API: DO IT WITHOUT 
+MODIFYING LINUX. If you want anything more intelligent, something more 
+'paravirtual' - WORK WITH US AND WORK WITH THE OTHER HYPERVISORS. So far 
+all i've seen from you was excuses and stonewalling on every step! We 
+told you about the need to do VMI-timer ontop of clockevents last year 
+already! You resisted virtually EVERY SINGLE cleanup suggestion since 
+your stuff got upstream and you ONLY acted when a change was force-fed 
+to you. Just count the number of emails you wrote, versus the patches 
+you did. And your code is barely 2 weeks in! That is unacceptable.
 
->
->   - resource groups (I get a strange feeling of déjà vú there)
-
-Resource groups isn't a terrible name for them (although I'd be
-wondering whether the BeanCounters folks would object :-) ) but the
-intention is that they're more generic than purely for resource
-accounting. (E.g. see my other email where I suggested that things
-like task->mempolicy and task->user could potentially be treated in
-the same way)
-
-Task Group is a good name, except for the fact that it's too easily
-confused with process group.
-
->
-> And do we bother changing IPC namespaces or let that one slide?
->
-
-I think that "namespace" is a fine term for the IPC id
-virtualization/restriction that ipc_ns provides. (Unless I'm totally
-misunderstanding the concept).
-
-Paul
+	Ingo
