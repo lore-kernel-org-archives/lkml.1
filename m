@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbXCHQvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbXCHQwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752546AbXCHQvg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbXCHQvg
+	id S1752548AbXCHQwr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbXCHQwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:51:36 -0500
-Received: from khc.piap.pl ([195.187.100.11]:39350 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbXCHQvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:51:35 -0500
-To: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Oleksiy Kebkal <kebkal@gmail.com>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-serial@vger.kernel.org
-Subject: Re: should RTS init in serial core be tied to CRTSCTS
-References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
-	<200703071019.55896.rgetz@blackfin.uclinux.org>
-	<57354eff0703071330k2395e9c8n58e12f2111dcb25a@mail.gmail.com>
-	<200703080844.32157.rgetz@blackfin.uclinux.org>
-	<20070308134800.GA30023@flint.arm.linux.org.uk>
-	<45F01AA8.7010608@gmx.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 08 Mar 2007 17:51:28 +0100
-In-Reply-To: <45F01AA8.7010608@gmx.net> (Carl-Daniel Hailfinger's message of "Thu, 08 Mar 2007 15:16:08 +0100")
-Message-ID: <m3r6rz3chb.fsf@maximus.localdomain>
+	Thu, 8 Mar 2007 11:52:47 -0500
+Received: from ik-out-1112.google.com ([66.249.90.178]:34851 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752548AbXCHQwp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 11:52:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qTz8aTs0hpWUFR2oxvWt8TtVagiRQ8z2sTNO7sTp6SU07PZ3mSNg7zrFmtqrPWe2oON1KrZuH1Dw47h4W/rOzZjjSrukaBN+Bu/Zqp5kHr7gdQumKipMKwgh7NFClO2LYoWZzlgu3r3K9ZcOIu5GBRX1hsukBF6VMT8B3hNtpHU=
+Message-ID: <6bffcb0e0703080852l4a06c0f9qeb51044a7a1a68a@mail.gmail.com>
+Date: Thu, 8 Mar 2007 17:52:43 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: mm snapshot broken-out-2007-03-05-02-22.tar.gz uploaded
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Randy Cushman" <rcushman_linux@earthlink.net>,
+       "Jaroslav Kysela" <perex@suse.cz>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@stusta.de>
+In-Reply-To: <s5h8xe7ognj.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200703051024.l25AOIF3015951@shell0.pdx.osdl.net>
+	 <45EEA3C4.7000501@googlemail.com>
+	 <20070307104746.f08a2e84.akpm@linux-foundation.org>
+	 <6bffcb0e0703071141j42309702w793e4a76b1b23bfa@mail.gmail.com>
+	 <20070307115024.756c848f.akpm@linux-foundation.org>
+	 <s5hvehcrdod.wl%tiwai@suse.de> <45EF3B2C.9060801@googlemail.com>
+	 <s5hfy8gbrmj.wl%tiwai@suse.de> <45F02EE2.6040606@googlemail.com>
+	 <s5h8xe7ognj.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net> writes:
+On 08/03/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Thu, 08 Mar 2007 16:42:26 +0100,
+> Michal Piotrowski wrote:
+> >
+> > > Also, it'd be helpful if you compare
+> > > /proc/asound/card0/codec97#0/ac97#0-0+regs file before and after the
+> > > patch.  This reveals which register bits differ actually.
+> >
+> > a2.txt is form 2.6.21-rc3 witchout 831466f4ad2b5fe23dff77edbe6a7c244435e973
+> >
+> > diff -uprN a2.txt /proc/asound/card0/codec97#0/ac97#0-0+regs
+> > --- a2.txt      2007-03-08 16:36:47.000000000 +0100
+> > +++ /proc/asound/card0/codec97#0/ac97#0-0+regs  2007-03-08 16:36:49.447083597 +0100
+> > @@ -56,8 +56,8 @@
+> >  0:6e = 0000
+> >  0:70 = 0000
+> >  0:72 = 0004
+> > -0:74 = 1001
+> > -0:76 = 64a4
+> > +0:74 = 1201
+> > +0:76 = 7ca4
+> >  0:78 = 000c
+> >  0:7a = 0000
+> >  0:7c = 4144
+>
+> OK, some wrong bits there.  Could you try the patch below?
 
-> Unless you want two machines to monitor each other via serial console and
-> each of them has only one serial port. It's not perfect, but it works well
-> enough despite all claims to the contrary.
+Problem fixed. Thanks!
 
-Sure, if you don't need "input" (only "console logger" function and
-not "initial input/output terminal"). It has nothing to do with the
-RTS "problem", though.
+(speaker-test -c6 -Dplug:surround51 is still broken)
 
-BTW: reasonably working, standard-compliant USB-RS232 converters
-cost $15 or so. Unfortunately not that all machines have USB ports.
+Regards,
+Michal
 
-I agree with Russell - mixing kernel console and application's
-port is asking for trouble.
-
-OTOH I wonder what does the device in question require WRT the
-serial port and WRT RTS line in particular.
-I know there are some half-duplex converters which drive RTS only
-while sending and which require CTS to send. They are perhaps a bit
-broken and require some CSMA-alike retransmissions etc.
-
-I don't know if one can expect RTS to stay low all the time. Even
-a simple /sbin/setserial from /etc/rc.* would drive it high for
-a moment. I'm afraid the only way which makes sense may be using
-a customized plug.
 -- 
-Krzysztof Halasa
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
