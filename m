@@ -1,46 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751450AbXCHLta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751493AbXCHLyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751450AbXCHLta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 06:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXCHLt3
+	id S1751493AbXCHLyz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 06:54:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXCHLyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 06:49:29 -0500
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:57106 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbXCHLt3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 06:49:29 -0500
-To: a.p.zijlstra@chello.nl
-CC: npiggin@suse.de, akpm@linux-foundation.org, mingo@elte.hu,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, jdike@addtoit.com, hugh@veritas.com,
-       torvalds@linux-foundation.org
-In-reply-to: <1173353824.9438.15.camel@twins> (message from Peter Zijlstra on
-	Thu, 08 Mar 2007 12:37:04 +0100)
-Subject: Re: [RFC][PATCH] mm: fix page_mkclean() vs non-linear vmas
-References: <1173264462.6374.140.camel@twins>
-	 <20070307110035.GE5555@wotan.suse.de> <1173268086.6374.157.camel@twins>
-	 <20070307121730.GC18704@wotan.suse.de> <1173271286.6374.166.camel@twins>
-	 <20070307130851.GE18704@wotan.suse.de> <1173273562.6374.175.camel@twins>
-	 <20070307133649.GF18704@wotan.suse.de> <1173275532.6374.183.camel@twins>
-	 <1173278067.6374.188.camel@twins>  <20070307150102.GH18704@wotan.suse.de>
-	 <1173286682.6374.191.camel@twins>
-	 <E1HPGg9-00039z-00@dorka.pomaz.szeredi.hu> <1173353824.9438.15.camel@twins>
-Message-Id: <E1HPH6v-0003CT-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 08 Mar 2007 12:48:41 +0100
+	Thu, 8 Mar 2007 06:54:55 -0500
+Received: from hermes1.dur.ac.uk ([129.234.8.20]:43867 "EHLO hermes1.dur.ac.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751452AbXCHLyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 06:54:54 -0500
+Date: Thu, 8 Mar 2007 11:58:43 +0000
+From: Ash Milsted <thatistosayiseenem@gawab.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
+       dmitry.torokhov@gmail.com
+Subject: Re: 2.6.21-rc2 regression vs. 2.6.20: AT keyboard only works with
+ pci=noacpi
+Message-Id: <20070308115843.8d264f91.thatistosayiseenem@gawab.com>
+In-Reply-To: <20070307234914.430caffa.thatistosayiseenem@gawab.com>
+References: <20070303151424.3b08c33e.thatistosayiseenem@gawab.com>
+	<20070304142350.7c3c79af.thatistosayiseenem@gawab.com>
+	<20070307120004.0bab0f76.thatistosayiseenem@gawab.com>
+	<20070307212534.325f2f32.thatistosayiseenem@gawab.com>
+	<20070307234914.430caffa.thatistosayiseenem@gawab.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-DurhamAcUk-MailScanner: Found to be clean, Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> However this still leaves the non-linear reclaim (Nick pointed it out as
-> a potential DoS and other people have corroborated this). I have no idea
-> on that to do about that.
+On Wed, 7 Mar 2007 23:49:14 +0000
+Ash Milsted <thatistosayiseenem@gawab.com> wrote:
 
-OK, but that is a completely different problem, not affecting
-page_mkclean() or msync().
+> On Wed, 7 Mar 2007 21:25:34 +0000
+> Ash Milsted <thatistosayiseenem@gawab.com> wrote:
+> 
+> > On Wed, 7 Mar 2007 12:00:04 +0000
+> > Ash Milsted <thatistosayiseenem@gawab.com> wrote:
+> > 
+> > > On Sun, 4 Mar 2007 14:23:50 +0000
+> > > Ash Milsted <thatistosayiseenem@gawab.com> wrote:
+> > > 
+> > > > On Sat, 3 Mar 2007 15:14:24 +0000
+> > > > Ash Milsted <thatistosayiseenem@gawab.com> wrote:
+> > > > 
+> > > > > Hi,
+> > > > > With 2.6.21-rc2-git1 I have a problem with my ps/2 port keyboard - it only works
+> > > > > with one of the following on the command-line:
+> > > > >  - nolapic
+> > > > >  - irqfixup
+> > > > >  - pci=noacpi
+> > > > > Otherwise it gets stuck with the numlock on.
+> > > > > The following options have no effect:
+> > > > >  - nohz=off (who knows eh?)
+> > > > >  - pci=nomsi
+> > > > > 
+> > > snip
+> > > > > 
+> > > > > Ash
+> > > > 
+> > > > Just checked 2.6.21-rc2-mm1, still has the problem.
+> > > > Also, acpi=noirq fixes it too.
+> > > > To clarify, the problem is that my ps/2 port keyboard is completely frozen
+> > > > on boot - usually it gets activated when udev probes for hardware (my kernel
+> > > > config is highly modular). It worked fine with 2.6.20 and earlier with acpi 
+> > > > taking care of interrupt routing.
+> > > > 
+> > > > Ash
+> > > 
+> > > Any thoughts on this? It still occurs with 2.6.21-rc3. Here's my config
+> > > in case that helps. You'll see that I have swap-prefetch patched in (I
+> > > also have RDSL and some VM changes in there), but I have confirmed that
+> > > the problem occurs with no extra patches. By the way, I tested mm1 with
+> > > a rather different config (I used my distro package) and still saw the
+> > > problem.
+> > > 
+> > > Also, you should probably ignore that bit above where I suggest the
+> > > keyboard driver is being loaded as a module, because of course it
+> > > isn't.. Yet it does start responding (with pci=noacpi) at about that
+> > > time that udev does its thing.
+> > > 
+> > schnip
+> > 
+> > So, I tracked this down to 2.6.21-git7, the first snapshot that gives me
+> > this problem. Tellingly it does contain an input tree merge. I would git bisect
+> > but I don't have a local copy of the tree - I tried to get one, but it stopped
+> > halfway through the clone, probably because I had to use http... So, I hope that
+> > helps.
+> > 
+> > Ash
+> > 
+> > PS: I should have said I'm not subscribed, so please CC me on reply.
+> > PPS: That almost rhymes. Almost.
+> 
+> Apologies for only replying to my own mails, but I need to be CC'd if
+> any alternative is to be convenient :)
+> 
+> Linus, thanks for your detailed messages. I will try to get a bisect done, but 
+> the university firewall is likely to put up a fight against rsync as much as it
+> does with the git protocol. We will see. And yeah, that 2.6.21-git7 business was
+> a typo, should've been 2.6.20-git7, natch.
+> 
+ker-cut
 
-And it doesn't sound too hard to solve: when current algorithm doesn't
-seem to be making progress, then it will have to be done the hard way,
-searching for for all nonlinear ptes of a page to unmap.
+>Argh, I can't believe I forgot to get this into my tree. Could you
+>please tell me if the patch below fixes ytour issue?
 
-Miklos
+Yup, that patch really hit the spot. Now I don't have to bisect :)
+
+Thanks for your help (both of you),
+
+Ash
