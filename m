@@ -1,38 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbXCHQDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbXCHQD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752431AbXCHQDK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:03:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbXCHQDK
+	id S1752436AbXCHQD1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbXCHQD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:03:10 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52496 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752431AbXCHQDJ (ORCPT
+	Thu, 8 Mar 2007 11:03:26 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:46673 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752433AbXCHQDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:03:09 -0500
-Date: Thu, 8 Mar 2007 17:07:31 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: GhePeU <ghepeu@virgilio.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with libata-pata, ATAPI DVD reader and a
- "copy-protected" audio cd
-Message-ID: <20070308170731.458fe407@lxorguk.ukuu.org.uk>
-In-Reply-To: <1173360956.24659.3.camel@KazeNoTani>
-References: <1172919624.23576.31.camel@KazeNoTani>
-	<1173360956.24659.3.camel@KazeNoTani>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Thu, 8 Mar 2007 11:03:24 -0500
+Subject: Re: [PATCH] [scsi]: Add offline state checking while dispatch a
+	scsi cmd
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Joe Jin <joe.jin@oracle.com>
+Cc: akpm@osdl.org, dgilbert@interlog.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, haobo.zhou@oracle.com
+In-Reply-To: <20070308092207.GA17141@joejin-pc.cn.oracle.com>
+References: <20070308092207.GA17141@joejin-pc.cn.oracle.com>
+Content-Type: text/plain
+Date: Thu, 08 Mar 2007 08:02:39 -0800
+Message-Id: <1173369759.3683.1.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, it happened again, with a different cd, and this time I never
-> started the player: hal/g-v-m tried to access the CD and now my driver
-> is in PIO2 mode and pretty much unusable. Is there a way to fix this
-> without rebooting?
+On Thu, 2007-03-08 at 17:22 +0800, Joe Jin wrote:
+> While a scsi device hw error occured, device's status maybe setting 
+> to SDEV_OFFLINE, So at scsi_dispatch_cmd function, we should checking
+> if device have offline, if yes, do nothing and just return error to
+> user directly.
 
-Hard to tell. If it happens again then a "dmesg" after it misbehaves and
-an lspci -vxx might provide enough information to begin to debug it.
+What's the error you're trying to fix?  scsi_dispatch_cmd() is only
+called from scsi_request_fn() which already has an equivalent of this
+check in it just prior to calling dispatch.
 
-Alan
+James
+
+
