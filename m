@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbXCHR27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXCHR3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932162AbXCHR27 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932173AbXCHR27
+	id S932178AbXCHR3P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:29:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbXCHR3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:28:59 -0500
-Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:1607 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932162AbXCHR26 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:28:58 -0500
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux v2.6.21-rc3
-User-Agent: KMail/1.9.5
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
-MIME-Version: 1.0
+	Thu, 8 Mar 2007 12:29:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59169 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932173AbXCHR3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 12:29:12 -0500
+Date: Thu, 8 Mar 2007 18:29:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [rfc][patch] futex: restartable futex_wait?
+Message-ID: <20070308172902.GA16834@elte.hu>
+References: <20070307153349.GA32404@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 2456
-Date: Thu, 8 Mar 2007 17:28:54 +0000
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200703081728.54188.s0348365@sms.ed.ac.uk>
+In-Reply-To: <20070307153349.GA32404@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Dropped LKML, whoops.)
 
-On Wednesday 07 March 2007 04:59, you wrote:
-> We've finally hopefully started to put a dent in the regressions,
-> especially the suspend/resume problems introduced since 2.6.20.
->
-> So 2.6.21-rc3 is out there now, and there's some hope that it will work
-> more widely than -rc1 and -rc2 did. Please do give it a good testing, and
-> update Adrian and the mailing list (and me) about any regressions
-> (hopefully many more of the "it's fixed now" than other kinds, but all
-> regressions are interesting).
+* Nick Piggin <npiggin@suse.de> wrote:
 
-Robert and Jeff already know about these, but I thought I'd send out a
-reminder.
+> Hi Ingo,
+> 
+> I'm seeing an LTP test fail for ltp test sigaction_16_24. Basically, 
+> it tests whether the SA_RESTART flag works for the sem_wait operation.
+> 
+> I see sem_wait is implemented with futex_wait, so I wonder whether we 
+> can make it restartable? Am I going about it the right way? (Seems to 
+> fix the testcase here).
 
-ata2: EH in ADMA mode, notifier 0x0 notifier_error 0x0 gen_ctl 0x1501000 
-status 0x500 next cpb count 0x0 next cpb idx 0x0
-ata2: CPB 0: ctl_flags 0xd, resp_flags 0x1
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd 35/00:30:b5:c1:8f/00:01:01:00:00/e0 tag 0 cdb 0x0 data 155648 out
-         res 40/00:00:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata2.00: configured for UDMA/133
-ata2: EH complete
-SCSI device sdb: 488397168 512-byte hdwr sectors (250059 MB)
-sdb: Write Protect is off
-sdb: Mode Sense: 00 3a 00 00
-SCSI device sdb: write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
+i think that's quite right. I'm wondering why this never came up before? 
+But your fix is not complete i think:
 
-They didn't happen (or didn't happen as frequently) in 2.6.20; it's a serious
-bug. Happened in -rc2 and -rc3. A patch from Robert reverting
-721449bf0d51213fe3abf0ac3e3561ef9ea7827a seems to make them go away.
+> +             restart->arg2 = time;
+> +             return -ERESTART_RESTARTBLOCK;
+> +     }
 
--- 
-Cheers,
-Alistair.
+'time' here is relative, so the restarted syscall will do a /full/ wait 
+again.
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+maybe we should rather convert futex timed-waits to hrtimers? Thomas?
+
+	Ingo
