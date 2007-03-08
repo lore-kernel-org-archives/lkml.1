@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbXCHQFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752421AbXCHQIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752439AbXCHQFX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbXCHQFX
+	id S1752421AbXCHQIy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:08:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbXCHQIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:05:23 -0500
-Received: from mga06.intel.com ([134.134.136.21]:21329 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752439AbXCHQFW (ORCPT
+	Thu, 8 Mar 2007 11:08:54 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41660 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752421AbXCHQIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:05:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,264,1170662400"; 
-   d="scan'208"; a="206043604:sNHT21783615"
-Date: Thu, 8 Mar 2007 08:45:29 -0800
-From: "Lombard, David N" <dnlombar@ichips.intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Vivek Goyal <vgoyal@in.ibm.com>, rjw@sisk.pl, ebiederm@xmission.com,
-       hpa@zytor.com, magnus.damm@gmail.com, akpm@linux-foundation.org,
-       Reloc Kernel List <fastboot@lists.osdl.org>, ak@suse.de,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [Fastboot] [PATCH 11/20] x86_64: wakeup.S misc cleanups
-Message-ID: <20070308164529.GA5308@nlxdcldnl2.cl.intel.com>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	Vivek Goyal <vgoyal@in.ibm.com>, rjw@sisk.pl, ebiederm@xmission.com,
-	hpa@zytor.com, magnus.damm@gmail.com, akpm@linux-foundation.org,
-	Reloc Kernel List <fastboot@lists.osdl.org>, ak@suse.de,
-	linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <20070307065703.GA23412@in.ibm.com> <20070307071320.GL23412@in.ibm.com> <20070307224157.GD5956@elf.ucw.cz> <20070308042908.GD6000@in.ibm.com> <20070308114335.GD5953@elf.ucw.cz>
+	Thu, 8 Mar 2007 11:08:53 -0500
+Date: Thu, 8 Mar 2007 16:08:52 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>, David Brown <dmlb2000@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gdb@sourceware.org
+Subject: Re: PAGE_SIZE Availability Inconsistency
+Message-ID: <20070308160852.GB9916@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Roman Zippel <zippel@linux-m68k.org>,
+	David Brown <dmlb2000@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	gdb@sourceware.org
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com> <20070306092917.GA5226@infradead.org> <200703080318.04631.zippel@linux-m68k.org> <20070308090031.GB7373@infradead.org> <1173369229.3550.2.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070308114335.GD5953@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1173369229.3550.2.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 08, 2007 at 12:43:35PM +0100, Pavel Machek wrote:
-> > > > +	movw	$0x0e00 + 'i', %ds:(0xb8012)
-> > > > +	movb	$0xa8, %al	;  outb %al, $0x80;
-> > > > +
+On Thu, Mar 08, 2007 at 07:53:49AM -0800, Arjan van de Ven wrote:
+> > > > PAGE_SIZE should not be available at all.  Please use getpagesize()
+> > > > instead.
 > > > 
-> > > > -	movw	$0x0e00 + 'i', %ds:(0xb8012)
-> > > > -	movb	$0xa8, %al	;  outb %al, $0x80; 	
-> > > 
-> > > Outbs were my debugging hacks, perhaps you can simply remove them at
-> > > this point? Not sure how useful "Linux" debug print is, it can
-> > > probably be removed, too.
-> > > 
-> > I found these debugging hacks useful while debugging some problem with 
-> > my changes in this code. It helps to find out till what poing code flow
-> > as reached in this assembly code. So I think its not a bad idea to let
-> > this piece code be there.
+> > > While I agree, NBPG is a bit of a problem, although it's only needed for aout 
+> > > coredumps AFAICT, but still needed to compile e.g. gdb.
+> > 
+> > So we should export this one with an arbitrary value (on multiple page
+> > size architectures) and a warning, maybe even an __deprecated attached to
+> > it.
 > 
-> Ok. (I was not sure how common are displays of port 0x80).
+> if we think the kernel should export this one, we could do
+> 
+> #ifndef __KERNEL__
+> #define PAGE_SIZE getpagesize()
+> #endif
 
-They're now typically available in reasonably well stocked stores; I picked
-one up from CompUSA about a year ago...
+No, no no.  We should never export PAGE_SIZE.  We might export NBPG
+as deprecated symbol for gdb if it really needs it, but that should
+happen only on a.out systems, and it it should be a true constant,
+not depending on PAGE_SIZE.
 
--- 
-David N. Lombard, Intel, Irvine, CA
-I do not speak for Intel Corporation; all comments are strictly my own.
+I've Cc'ed the gdb list on whether they have any comments on this
+issue.
