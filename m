@@ -1,79 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbXCHBlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbXCHBn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752182AbXCHBlf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 20:41:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXCHBlf
+	id S1752191AbXCHBn4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 20:43:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXCHBn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 20:41:35 -0500
-Received: from ns.suse.de ([195.135.220.2]:49121 "EHLO mx1.suse.de"
+	Wed, 7 Mar 2007 20:43:56 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:44024 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752182AbXCHBle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 20:41:34 -0500
-From: Neil Brown <neilb@suse.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Date: Thu, 8 Mar 2007 12:41:24 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752191AbXCHBnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 20:43:55 -0500
+Date: Wed, 7 Mar 2007 17:43:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+Subject: Re: [PATCH] [RSDL-mm 0/6] RSDL cpu scheduler for -mm
+Message-Id: <20070307174345.4c398171.akpm@linux-foundation.org>
+In-Reply-To: <200703071226.43238.kernel@kolivas.org>
+References: <200703071226.43238.kernel@kolivas.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <17903.27076.860958.900374@notabene.brown>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Replace misspelled "PRINTK" with "CONFIG_PRINTK".
-In-Reply-To: message from Robert P. J. Day on Wednesday March 7
-References: <Pine.LNX.4.64.0703071836420.3888@CPE00045a9c397f-CM001225dbafb6>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday March 7, rpjday@mindspring.com wrote:
-> 
->   Replace the apparently misspelled preprocessor variable "PRINTK"
-> with "CONFIG_PRINTK".
+On Wed, 7 Mar 2007 12:26:42 +1100
+Con Kolivas <kernel@kolivas.org> wrote:
 
-No, it is meant to be "PRINTK".
-It dates way way back before my time, but presumably the idea was you
-could -DPRINTK=something and if you didn't do that, it would figure
-out what it thought you wanted.
+> What follows is the same patch series that constitutes the RDSL "Rotating 
+> Staircase DeadLine" cpu scheduler resynced for 2.6.21-rc2-mm2.
 
-Definitely not meant to be CONFIG_PRINTK.
+Big oops early in boot on x86_64 SMP, in rq_bitmap_error+0x97/0x9f.
 
-NeilBrown
+I stubbed it out with a `return MAX_RT_PRIO;' (I think) but it then oopsed
+differently.  Before netconsole had come up, no serial console, no digital
+camera.
 
+There's stuff in http://userweb.kernel.org/~akpm/ck/ - you can probably
+boot that kernel on your own machine.
 
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> 
-> ---
-> 
->   not sure who the official maintainer here is, sorry.
-> 
-> diff --git a/drivers/md/bitmap.c b/drivers/md/bitmap.c
-> index 5554ada..0c09772 100644
-> --- a/drivers/md/bitmap.c
-> +++ b/drivers/md/bitmap.c
-> @@ -53,7 +53,7 @@
->  //#define DPRINTK PRINTK /* set this NULL to avoid verbose debug output */
->  #define DPRINTK(x...) do { } while(0)
-> 
-> -#ifndef PRINTK
-> +#ifndef CONFIG_PRINTK
->  #  if DEBUG > 0
->  #    define PRINTK(x...) printk(KERN_DEBUG x)
->  #  else
-> 
-> -- 
-> ========================================================================
-> Robert P. J. Day
-> Linux Consulting, Training and Annoying Kernel Pedantry
-> Waterloo, Ontario, CANADA
-> 
-> http://fsdev.net/wiki/index.php?title=Main_Page
-> ========================================================================
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I need to do rc3-mm1 now.  I might find some time to poke at this
+further after that, but I have to leave for a week in .jp and it'll be
+squeezy, sorry.
