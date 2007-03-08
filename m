@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbXCHHln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965109AbXCHHnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932950AbXCHHln (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 02:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932961AbXCHHln
+	id S965109AbXCHHnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 02:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965071AbXCHHnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 02:41:43 -0500
-Received: from fgwmail9.fujitsu.co.jp ([192.51.44.39]:46432 "EHLO
-	fgwmail9.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932950AbXCHHlm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 02:41:42 -0500
-Date: Thu, 08 Mar 2007 16:39:43 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] fix BUG_ON check at move_freepages() (Re: 2.6.21-rc3-mm2)
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <20070307201915.4d579113.akpm@linux-foundation.org>
-References: <20070307201915.4d579113.akpm@linux-foundation.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070308162944.FB7F.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+	Thu, 8 Mar 2007 02:43:52 -0500
+Received: from mx2.go2.pl ([193.17.41.42]:52645 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964978AbXCHHnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 02:43:51 -0500
+Date: Thu, 8 Mar 2007 08:47:51 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Simon Arlott <simon@arlott.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sridhar Samudrala <sri@us.ibm.com>, netdev@vger.kernel.org,
+       lksctp-developers@lists.sourceforge.net
+Subject: [PATCH][SCTP] Re: lockdep: inconsistent lock state ipv6_add_addr/sctp_v6_copy_addrlist (2.6.21-rc1)
+Message-ID: <20070308074751.GA2085@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E15215.4070600@simon.arlott.org.uk>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 25-02-2007 10:08, Simon Arlott wrote:
+> This happens on every boot if more information is needed:
+> 
+> [   37.393715] =================================
+> [   37.393830] [ INFO: inconsistent lock state ]
+> [   37.393881] 2.6.21-rc1-git #146
+> [   37.393929] ---------------------------------
+> [   37.393979] inconsistent {softirq-on-R} -> {in-softirq-W} usage.
+> [   37.394040] hotplug/1072 [HC0[0]:SC1[2]:HE1:SE0] takes:
+> [   37.394092]  (&ndev->lock){-+-?}, at: [<b04a7944>] ipv6_add_addr+0x164/0x1e0
+> [   37.394308] {softirq-on-R} state was registered at:
+> [   37.394359]   [<b013fc42>] __lock_acquire+0x622/0xbb0
+> [   37.394515]   [<b0140652>] lock_acquire+0x62/0x80
+> [   37.394678]   [<b0511c65>] _read_lock+0x35/0x50
+> [   37.394834]   [<b050e200>] sctp_v6_copy_addrlist+0x30/0xc0
+...
 
-Hello.
+[SCTP] ipv6: inconsistent lock state ipv6_add_addr/sctp_v6_copy_addrlist
 
-The BUG_ON() check at move_freepages() is wrong.
-Its end_page is start_page + MAX_ORDER_NR_PAGES. So, it can be 
-next zone. BUG_ON() should check "end_page - 1".
+lockdep found that dev->lock taken from softirq in ipv6_add_addr
+is also taken in sctp_v6_copy_addrlist with softirqs enabled, so
+lockup is possible.
 
-This is fix of 2.6.21-rc3-mm2 for it.
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+Noticed-by: Simon Arlott <simon@arlott.org>
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
 
 ---
- mm/page_alloc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: current_test/mm/page_alloc.c
-===================================================================
---- current_test.orig/mm/page_alloc.c	2007-03-08 15:44:10.000000000 +0900
-+++ current_test/mm/page_alloc.c	2007-03-08 16:17:29.000000000 +0900
-@@ -707,7 +707,7 @@ int move_freepages(struct zone *zone,
- 	unsigned long order;
- 	int blocks_moved = 0;
+diff -Nurp linux-2.6.21-rc2-mm2-/net/sctp/ipv6.c linux-2.6.21-rc2-mm2/net/sctp/ipv6.c
+--- linux-2.6.21-rc2-mm2-/net/sctp/ipv6.c	2007-02-21 19:46:49.000000000 +0100
++++ linux-2.6.21-rc2-mm2/net/sctp/ipv6.c	2007-03-07 21:57:37.000000000 +0100
+@@ -360,7 +360,7 @@ static void sctp_v6_copy_addrlist(struct
+ 		return;
+ 	}
  
--	BUG_ON(page_zone(start_page) != page_zone(end_page));
-+	BUG_ON(page_zone(start_page) != page_zone(end_page - 1));
+-	read_lock(&in6_dev->lock);
++	read_lock_bh(&in6_dev->lock);
+ 	for (ifp = in6_dev->addr_list; ifp; ifp = ifp->if_next) {
+ 		/* Add the address to the local list.  */
+ 		addr = t_new(struct sctp_sockaddr_entry, GFP_ATOMIC);
+@@ -374,7 +374,7 @@ static void sctp_v6_copy_addrlist(struct
+ 		}
+ 	}
  
- 	for (page = start_page; page < end_page;) {
- 		if (!PageBuddy(page)) {
-
--- 
-Yasunori Goto 
-
-
+-	read_unlock(&in6_dev->lock);
++	read_unlock_bh(&in6_dev->lock);
+ 	rcu_read_unlock();
+ }
+ 
