@@ -1,84 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965211AbXCHIFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbXCHIHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965211AbXCHIFj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 03:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965771AbXCHIFj
+	id S1751448AbXCHIHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 03:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXCHIHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 03:05:39 -0500
-Received: from nz-out-0506.google.com ([64.233.162.232]:15135 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965763AbXCHIFh (ORCPT
+	Thu, 8 Mar 2007 03:07:30 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:38822 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751448AbXCHIH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 03:05:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=aSOUz3g9Rla36oXw636TyHiCFx3yKUsuCd0D2Bxt15tFd7kIDnW+rj6VbafvqMNuNhtRk1znq7OTzoWex6ucT4gx+MwdVQfxwr+/fqcShz2qOZtMkvS67X71ejQc6dJBmmweLog30cgy2LA2Q/FV7VQC97oILaSQlI8O5IIDDmI=
-Message-ID: <45EFC3D1.208@gmail.com>
-Date: Thu, 08 Mar 2007 17:05:37 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: linux-ide@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: OOPS with 2.6.21rc2-git (ata: conflict with ide0/1)
-References: <45EC9A67.8070204@intel.com>
-In-Reply-To: <45EC9A67.8070204@intel.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Mar 2007 03:07:29 -0500
+Subject: Re: [PATCH 0/20] x86_64 Relocatable bzImage support (V4)
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: vgoyal@in.ibm.com
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, ebiederm@xmission.com,
+       akpm@linux-foundation.org, ak@suse.de, hpa@zytor.com,
+       magnus.damm@gmail.com, lwang@redhat.com, dzickus@redhat.com,
+       pavel@suse.cz, rjw@sisk.pl
+In-Reply-To: <20070308044013.GE6000@in.ibm.com>
+References: <20070307065703.GA23412@in.ibm.com>
+	 <1173280059.3540.5.camel@laptopd505.fenrus.org>
+	 <1173300597.3219.105.camel@nigel.suspend2.net>
+	 <1173309302.13442.0.camel@nigel.suspend2.net>
+	 <20070308044013.GE6000@in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 08 Mar 2007 19:07:23 +1100
+Message-Id: <1173341244.7913.5.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc'ing Greg, Hi]
+Hi.
 
-Kok, Auke wrote:
+On Thu, 2007-03-08 at 10:10 +0530, Vivek Goyal wrote:
+> On Thu, Mar 08, 2007 at 10:15:02AM +1100, Nigel Cunningham wrote:
+> > Hi.
+> > 
+> > On Thu, 2007-03-08 at 07:49 +1100, Nigel Cunningham wrote:
+> > > Hi.
+> > > 
+> > > On Wed, 2007-03-07 at 07:07 -0800, Arjan van de Ven wrote:
+> > > > On Wed, 2007-03-07 at 12:27 +0530, Vivek Goyal wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > Here is another attempt on x86_64 relocatable bzImage patches(V4). This
+> > > > > patchset makes a bzImage relocatable and same kernel binary can be loaded
+> > > > > and run from different physical addresses.
+> > > > 
+> > > > 
+> > > > have these patches been extensively tested with various suspend
+> > > > scenarios? (S1,S3,S4 in acpi speak or s2ram and s2disk in Linux speak)
+> > > 
+> > > We did work on this for RHEL5, getting relocatable kernel support
+> > > working fine with S4. While doing it and since, I've been running
+> > > Suspend2 with the same patch.
+> > > 
+> > > Since that work, Vivek has done more modifications, but I can confirm
+> > > that the basic design is reliable with S4. Haven't tried S3, but can do.
+> > > Will report back shortly.
+> > 
+> > S3 works okay here with a relocatable x86_64 kernel (2.6.20).
+> > 
 > 
-> Attached dmesg. config.gz. here's the OOPS part.
+> Hi Nigel,
 > 
-> ata_piix 0000:00:1f.2: version 2.10
-> ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
-> ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 19 (level, low) -> IRQ 19
-> ata: 0x1F0 IDE port busy
-> ata: conflict with ide0
-> BUG: at drivers/pci/pci.c:846 pcim_pin_device()
->  [<c023838c>] pcim_pin_device+0x4c/0x60
->  [<c0371af6>] ata_pci_init_one+0x2d6/0x380
->  [<c023b968>] pci_get_device+0x18/0x20
->  [<c0378651>] piix_check_450nx_errata+0x31/0x110
->  [<c0238b90>] pci_intx+0x20/0x90
->  [<c0378a97>] piix_init_one+0x117/0x200
->  [<c023afca>] pci_call_probe+0xa/0x10
->  [<c023b01e>] __pci_device_probe+0x4e/0x60
->  [<c023b056>] pci_device_probe+0x26/0x60
->  [<c0295a94>] really_probe+0xb4/0x170
->  [<c023afa8>] pci_match_device+0xa8/0xc0
->  [<c0295c28>] driver_probe_device+0xc8/0xd0
->  [<c0465521>] klist_next+0x61/0xc0
->  [<c0295d30>] __driver_attach+0x80/0x90
->  [<c0294d0a>] bus_for_each_dev+0x3a/0x60
->  [<c0295d56>] driver_attach+0x16/0x20
->  [<c0295cb0>] __driver_attach+0x0/0x90
->  [<c029532f>] bus_add_driver+0x5f/0x110
->  [<c023b3d2>] __pci_register_driver+0x82/0xc0
->  [<c05c0b91>] piix_init+0x11/0x20
->  [<c059ab11>] do_initcalls+0x41/0x130
->  [<c0158acc>] register_irq_proc+0x9c/0xc0
->  [<c01b4462>] proc_mkdir_mode+0x42/0x60
->  [<c059ac30>] init+0x0/0xa0
->  [<c059ac7c>] init+0x4c/0xa0
->  [<c0104e7f>] kernel_thread_helper+0x7/0x18
->  =======================
-> ata: 0x170 IDE port busy
-> ata: conflict with ide1
-> ata_piix: probe of 0000:00:1f.2 failed with error -16
-> ata_piix 0000:00:1f.5: MAP [ P0 P2 P1 P3 ]
+> Is it possible to test S3 with 2.6.21-rc2 kernels also. Right now I don't 
+> have access to any machine supporting S3. I tested it at the time of my last
+> posting and it had worked well. Appreciate your help.
 
-Patch pending in Greg's queue.
+Tested with rc3 (rc2 wouldn't compile), and it works fine.
 
-Thanks.
+If you're willing, please add
 
--- 
-tejun
+Signed-off-by: Nigel Cunningham <ncunning@redhat.com>
+
+or
+
+Acked-by: Nigel Cunningham <ncunning@redhat.com>
+
+to the hibernation related parts as you see appropriate, since I helped
+(albeit in a minor way compared to your work and Eric's work) with
+preparing and testing them for RHEL5 and have confirmed they're still ok
+in this version.
+
+Regards,
+
+Nigel
+
