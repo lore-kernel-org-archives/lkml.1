@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965268AbXCHV5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030740AbXCHWBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965268AbXCHV5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965259AbXCHV5b
+	id S1030740AbXCHWBw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 17:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030736AbXCHWBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:57:31 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:31822 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965136AbXCHV52 (ORCPT
+	Thu, 8 Mar 2007 17:01:52 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55173
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1030705AbXCHWBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:57:28 -0500
-X-IronPort-AV: i="4.14,264,1170662400"; 
-   d="scan'208"; a="398915208:sNHT339420444"
-To: "David Brown" <dmlb2000@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: KVM and rtc missing interupts 2.6.21-rc3
-X-Message-Flag: Warning: May contain useful information
-References: <9c21eeae0703081348i713c996bked9ebe2af76bc2db@mail.gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 08 Mar 2007 13:57:21 -0800
-In-Reply-To: <9c21eeae0703081348i713c996bked9ebe2af76bc2db@mail.gmail.com> (David Brown's message of "Thu, 8 Mar 2007 13:48:43 -0800")
-Message-ID: <adatzwvxuta.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Mar 2007 21:57:21.0439 (UTC) FILETIME=[BF51F2F0:01C761CC]
-Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim7002 verified; ); 
+	Thu, 8 Mar 2007 17:01:51 -0500
+Date: Thu, 08 Mar 2007 14:01:51 -0800 (PST)
+Message-Id: <20070308.140151.95057712.davem@davemloft.net>
+To: 7atbggg02@sneakemail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: asm volatile
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070308182357.nnpvhqqj5qqk2vsx@m.safari.iki.fi>
+References: <20070306215349.hquin7d6pfy2n5d2@m.safari.iki.fi>
+	<20070306222435.cbpv63ltximq6lrf@m.safari.iki.fi>
+	<20070308182357.nnpvhqqj5qqk2vsx@m.safari.iki.fi>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > When ever I try and start a guest OS with kvm I get a lot of these rtc
- > missing interupt messages from the kernel
- > 
- > [  468.510878] rtc: lost some interrupts at 1024Hz.
+From: Sami Farin <7atbggg02@sneakemail.com>
+Date: Thu, 8 Mar 2007 20:23:57 +0200
 
-I started to debug this a little while ago but I never got too far.
-However it doesn't seem connected with kvm -- it is something to do
-with tun/tap or bridging holding a lock too long I think.
+> On Wed, Mar 07, 2007 at 00:24:35 +0200, Sami Farin wrote:
+> > On Tue, Mar 06, 2007 at 23:53:49 +0200, Sami Farin wrote:
+> > ...
+> > > And I found bug in gcc-4.1.2, it gave 0 for ncubic results
+> > > when doing 1000 loops test... gcc-4.0.3 works.
+> > 
+> > Found it.
+> > 
+> > --- cbrt-test.c~	2007-03-07 00:20:54.735248105 +0200
+> > +++ cbrt-test.c	2007-03-07 00:21:03.964864343 +0200
+> > @@ -209,7 +209,7 @@
+> >  
+> >  	__asm__("bsrl %1,%0\n\t"
+> >  		"cmovzl %2,%0"
+> > -		: "=&r" (r) : "rm" (x), "rm" (-1));
+> > +		: "=&r" (r) : "rm" (x), "rm" (-1) : "memory");
+> >  	return r+1;
+> >  }
+> >  
+> > Now Linux 2.6 does not have "memory" in fls, maybe it causes
+> > some gcc funnies some people are seeing.
+> 
+> It also works without "memory" if I do "__asm__ volatile".
+> 
+> Why some functions have volatile and some have not in include/asm-*/*.h ?
 
-Try running your guest with -no-kvm (and even with the kvm module not
-loaded, just to be sure).  In my case I still saw the messages.
-However, removing the "-net tap" line from my command line did get rid
-of the messages.
+"volatile" is really only needed if there is some side effect
+that cannot be expressed to gcc which makes ordering over
+the asm wrt. other pieces of code important.
 
- - R.
+But in these case it should absolutely not be needed.  It's
+simply computing an interger result from some inputs and
+some values in memory.  GCC should see perfectly fine what
+is memory is read by the asm and therefore what ordering
+constraints there are wrt. writes to the same memory location.
