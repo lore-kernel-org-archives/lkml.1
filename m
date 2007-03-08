@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbXCHU2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933307AbXCHU2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933305AbXCHU2Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXCHU2Z
+	id S933307AbXCHU2y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:28:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXCHU2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:28:25 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49702 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933305AbXCHU2X (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:28:23 -0500
-Message-Id: <200703082027.l28KRi4I022669@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc3-mm1
-In-Reply-To: Your message of "Thu, 08 Mar 2007 13:34:04 EST."
-             <20070308183404.GC5323@tuxdriver.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070307201839.6f45735b.akpm@linux-foundation.org> <200703081756.l28HuwDD016018@turing-police.cc.vt.edu>
-            <20070308183404.GC5323@tuxdriver.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1173385664_10421P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 08 Mar 2007 15:27:44 -0500
+	Thu, 8 Mar 2007 15:28:53 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:39748 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933307AbXCHU2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:28:50 -0500
+Date: Thu, 8 Mar 2007 21:26:13 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Patrick McHardy <kaber@trash.net>
+cc: James Morris <jmorris@namei.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>
+Subject: Re: [PATCH] chaostables
+In-Reply-To: <45F044A0.50001@trash.net>
+Message-ID: <Pine.LNX.4.61.0703082112300.521@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
+ <20070308131412.08d9973e@lxorguk.ukuu.org.uk> <Line.LNX.4.64.0703080955060.8029@d.namei>
+ <Pine.LNX.4.61.0703081652310.2448@yvahk01.tjqt.qr> <45F044A0.50001@trash.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1173385664_10421P
-Content-Type: text/plain; charset=us-ascii
 
-On Thu, 08 Mar 2007 13:34:04 EST, "John W. Linville" said:
-> On Thu, Mar 08, 2007 at 12:56:58PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> > On Wed, 07 Mar 2007 20:18:39 PST, Andrew Morton said:
-> > >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm1/
-> > 
-> > Mostly working for me.
-> > 
-> > > - The wireless changes in here need a lot of testers, please.  It is major
-> > >   rework.
-> > 
-> > Working on it - the new MAC80211 stack landed in the -mm tree, but the matching
-> > iwlwifi driver for the Intel 3945ABG is still out-of-tree and acting wonky
-> > for me.  The card comes up, 'iwlist scanning' sees 4 access points, but it
-> > won't associate.  Not sure what I borked up.
-> 
-> FWIW, I have had best results w/ that driver by manually selecting
-> the freq and ap as well as essid.
+On Mar 8 2007 18:15, Patrick McHardy wrote:
+>
+>> Take xt_portscan as an example, which would require a minimum of 23 
+>> filtering rules (which cannot reproduce the module's action in its 
+>> fullest). 23 rules means we will be looping a bit in ipt_do_table() for 
+>> a single packet, repeatedly checking for "-p tcp", i.e. calling into 
+>> xt_tcpudp, checking for port ranges and perhaps other TCP fields that 
+>> are never examined in xt_portscan.
+>
+>
+>I'm guessing xt_portscan tries to detect and match on portscans, but
+>its not obvious why it looks at and changes skb->mark and nfct->ctmark,
+>so I suggest you start by explaining what it really does.
 
-Confirmed - if I used 'iwconfig ap <mac address> channel <n>' to match something
-I found via 'iwlist scan', it was able to associate and connect.
+xt_portscan needs to keep track of what packets the machine has already 
+seen. So on the first SYN, the connection is marked with "1". (Then we 
+send our SYN-ACK... and the connection turns ESTABLISHED.) The next 
+packet that is received will be an ACK or an RST. But it must come 
+_exactly after_ the SYN, so just using --tcp-flags ACK will not work. A 
+state which can be remembered is required. For that, an automaton is 
+used, whose state is saved in the connection mark.
 
---==_Exmh_1173385664_10421P
-Content-Type: application/pgp-signature
+If you would like to find out more about the implementation, please have 
+a look at http://jengelh.hopto.org/p/chaostables/fw.html section 3, 4, 
+and perhaps 5.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+As for the packet mark, refer to section 6. But for you: xt_portscan 
+consists of "two" parts, one is "detect-and-mark" and the other is 
+"match it". To have the following do the right thing
 
-iD8DBQFF8HHAcC3lWbTT17ARAnmeAKCwMkLNVC4+wNO34+Fc+f60DamYewCfatD5
-ryfeYvQ4MDK16Ww9fJhEtlQ=
-=71vx
------END PGP SIGNATURE-----
+  -m portscan --cnscan  -j LOG --log-prefix "[evil user] "
+  -m portscan --stealth -j LOG --log-prefix "[hideous evil user] "
 
---==_Exmh_1173385664_10421P--
+the "detect-and-mark" code _must_ (in its common RFC meaning) only be 
+executed once per packet.
+
+
+>>>We already have the psd match for years, but decided against merging it.
+>> 
+>> On what basis? As far as I flew over psd's code, it uses a heuristic 
+>> like "how often did that client recently connect" for match decision. 
+>> (P2P clients randomly port knocking, anyone?) I would not think of that 
+>> as a reliable way to tell portscans either. However, half-open TCP 
+>> connect for example is a more clear action to define a portscan.
+>
+>The question is what we gain by being able to detect portscans.
+
+You have a point with that. But then we could argue on hours about what 
+we gain with life.
+
+>So far my opinion is thats its close to nothing. Besides that,
+>it should be possible to do this by using the recent match.
+
+Perhaps. I'll just provide this little example of what is good for to 
+check for portscans:
+
+  -N block_it
+  -A block_it -m recent --name block_it --update --seconds 60;
+
+  -A INPUT -m portscan --cnscan -j block_it;
+  -A INPUT -m recent --name block_it --rcheck -j DROP;
+
+that is, to drop everything from evil hosts doing half-open scans for 
+some time.
+
+[ Ok, I used "recent", now I don't get what you meant by "Besides that,
+  it should be possible to do this by using the recent match." -
+  recent alone does not check for half-opens, nor connect-scans. It 
+  checks for recentness of anything. I hope you can clarify. ]
+
+
+
+Thank you,
+Jan
+-- 
