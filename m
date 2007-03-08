@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbXCHGQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbXCHGSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750999AbXCHGQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 01:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbXCHGQA
+	id S1752266AbXCHGSD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 01:18:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbXCHGSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 01:16:00 -0500
-Received: from an-out-0708.google.com ([209.85.132.242]:4652 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbXCHGP7 (ORCPT
+	Thu, 8 Mar 2007 01:18:01 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33475 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbXCHGSA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 01:15:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=g+CRHbLdvKkvYAXoSRNTHBGphCVyncskZLzEuI/qzA5comfa3Yc7Itmu6yFmWHm3OvrOpQuLZDmrdmeAYcKbcibOSxT5lhtBlRNFVK+tVMzbH6oXACutU7By08dkiG/z7gF778izR6C4H1qUqms3cQnsfM8FsFVfoU+UBxyjOTk=
-Message-ID: <4c348ac20703072215x63a7a315kd018e433c7a197d2@mail.gmail.com>
-Date: Thu, 8 Mar 2007 11:45:58 +0530
-From: "Kanhu Rauta" <choiskanhu@gmail.com>
-To: netfilter-devel@lists.netfilter.org, linux-net@vger.kernel.org,
-       kernelnewbies@nl.linux.org, linux-kernel@vger.kernel.org
-Subject: IP Defragmentation
+	Thu, 8 Mar 2007 01:18:00 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: vgoyal@in.ibm.com
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Reloc Kernel List <fastboot@lists.osdl.org>, akpm@linux-foundation.org,
+       ak@suse.de, hpa@zytor.com, magnus.damm@gmail.com, lwang@redhat.com,
+       dzickus@redhat.com, pavel@suse.cz, rjw@sisk.pl
+Subject: Re: [PATCH 1/20] x86_64: Assembly safe page.h and pgtable.h
+References: <20070307065703.GA23412@in.ibm.com>
+	<20070307065920.GB23412@in.ibm.com>
+	<20070307192404.GA31826@uranus.ravnborg.org>
+	<20070308060139.GJ6000@in.ibm.com>
+Date: Wed, 07 Mar 2007 23:16:30 -0700
+In-Reply-To: <20070308060139.GJ6000@in.ibm.com> (Vivek Goyal's message of
+	"Thu, 8 Mar 2007 11:31:39 +0530")
+Message-ID: <m1d53k8dkx.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
+Vivek Goyal <vgoyal@in.ibm.com> writes:
 
-I am using kernel 2.6.20.1. I have written a module,which will
-register a function at local_in hook, i have found a strange behavior
-with the packets getting in my callback function i.e
+> Hi Sam,
+>
+> Thanks for the review. This makes sense to me. Move const.h into
+> asm-generic and let everybody use it.
+>
+> This is more of a small cleanup issue and involves changing few header files
+> in asm-sparc64 and make sure nothing is broken on sparc64. This patchset
+> is already becoming big and complex. Is it ok if we let the patch 
+> remain unmodified for now and once this gets in and settles down, I can
+> post another patch to do above modification?
 
-[let say i am sending 1500 bytes to this machine from the network]
-ping -s 1500 <ip>
+Actually unless there is a reason not to, we can probably move this
+into include/linux instead of include/asm-generic.  I don't see anything
+in that header file that is architecture specific in any way.  Except
+that it happens to only be used in architecture specific code.
 
-1>in case of fragmention i am getting only one packet at the
-hook,While analyzing the ip header it says this is the assembled
-packet(skb->len=1528,offset=0,MF=0).
-
-While dumping the data(for 0 to 1528 print skb->data[i]) it shows that
-only 1472 bytes are valid data and rest 28 bytes are something
-garbage.
-I verified this with ethereal.
-
-2>I have dumped these packets in ip_local_deliver function after
-ip_defrag and before NF_HOOK,But the result is same.
-
-Can Anybody let me know why i am not getting the complete data ?
-
-Regards,
-kanhu
+Eric
