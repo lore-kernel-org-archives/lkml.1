@@ -1,100 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933353AbXCHVVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933354AbXCHVZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933353AbXCHVVP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:21:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933354AbXCHVVP
+	id S933354AbXCHVZF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:25:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030274AbXCHVZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:21:15 -0500
-Received: from z2.cat.iki.fi ([212.16.98.133]:36573 "EHLO z2.cat.iki.fi"
+	Thu, 8 Mar 2007 16:25:05 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60856 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933353AbXCHVVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:21:14 -0500
-Date: Thu, 8 Mar 2007 23:21:13 +0200
-From: Matti Aarnio <matti.aarnio@zmailer.org>
-To: Marc Perkel <mperkel@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: More nVidia 4gb ram problems
-Message-ID: <20070308212113.GC3883@mea-ext.zmailer.org>
-References: <447507.15233.qm@web52510.mail.yahoo.com>
+	id S933354AbXCHVZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:25:03 -0500
+Date: Thu, 8 Mar 2007 22:25:12 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>, dmitry.torokhov@gmail.com
+Cc: Christoph Hellwig <hch@infradead.org>, Deepak Saxena <dsaxena@plexity.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix building kernel under Solaris
+Message-ID: <20070308212512.GA10584@uranus.ravnborg.org>
+References: <20070306180940.GA3240@plexity.net> <20070307094229.GG14863@infradead.org> <Pine.LNX.4.61.0703072342310.2448@yvahk01.tjqt.qr> <20070308083543.GA5213@infradead.org> <Pine.LNX.4.61.0703082142240.521@yvahk01.tjqt.qr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <447507.15233.qm@web52510.mail.yahoo.com>
+In-Reply-To: <Pine.LNX.4.61.0703082142240.521@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, Mar 08, 2007 at 12:07:16PM -0800, Marc Perkel wrote:
-> Running FC6. When I try to format a Raid 1 device the
-> server locks up when it creates the journal. However
-> if I use just 2 gigs of ram then it doesn't lock up.
-> Asus motherboard.
+On Thu, Mar 08, 2007 at 09:43:46PM +0100, Jan Engelhardt wrote:
 > 
-> Please CC me as I'm not a list member.
+> On Mar 8 2007 08:35, Christoph Hellwig wrote:
+> >On Wed, Mar 07, 2007 at 11:45:11PM +0100, Jan Engelhardt wrote:
+> >> 
+> >> On Mar 7 2007 09:42, Christoph Hellwig wrote:
+> >> >>  #include <sys/time.h>
+> >> >>  #include <sys/ioctl.h>
+> >> >>  #include <sys/types.h>
+> >> >> +#ifndef __sun__
+> >> >>  #include <asm/types.h>
+> >> >>  #endif
+> >> >> +#endif
+> >> >
+> >> >So if solaris doesn't need it, why do we need it on Linux?
+> >> 
+> >> For __s32 and __s16.
+> >
+> >We shouldn't use those from asm/types.h on Linux either, but
+> >get them consitantly by defining them to the C99 or BSD types
+> >from the libc headers.
+> 
+> It's a bit icky. file2alias.c includes "../../include/linux/input.h" and it is
+> _input.h_ that requires __s16/__s32 and hence includes <asm/types.h>.
+> If you ask me, it's file2alias.c that's broken.
+Took a closer look and agree on that.
+I have queued up below patch to fix it.
+I expect to see an updated patch on the other issues from Deepak.
 
-Took some digging out of your log..
+	Sam
 
- AMD Athlon(tm)64 X2 Dual Core Processor  4800+ stepping 02
-
-I have same CPU, though possibly a bit different board.
-I didn't have success with 4 GB RAM until couple months
-ago, when Asus did publish a new (beta) BIOS version that
-did correctly configure memory hoisting in the system.
-
-I don't override the  pci=  and  iommu=  options, they
-should work just fine -- if the BIOS isn't entirely rotten.
-
-I have used   mem=3000M  which lets system to work, but
-of course wastes a gigabyte of memory..
-
-  /Matti Aarnio
-
-> Linux version 2.6.19-1.2911.6.5.fc6 (brewbuilder@hs20-bc1-6.build.redhat.com) (gcc version 4.1.1 20070105 (Red Hat 4.1.1-51)) #1 SMP Sun Mar 4 16:05:34 EST 2007
-> Command line: ro root=LABEL=/ vga=1 pci=nommconf iommu=soft
-> BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
->  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000e5000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 00000000abfc0000 (usable)
->  BIOS-e820: 00000000abfc0000 - 00000000abfce000 (ACPI data)
->  BIOS-e820: 00000000abfce000 - 00000000abff0000 (ACPI NVS)
->  BIOS-e820: 00000000abff0000 - 00000000ac000000 (reserved)
->  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
->  BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
->  BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
-> Entering add_active_range(0, 0, 159) 0 entries of 3200 used
-> Entering add_active_range(0, 256, 704448) 1 entries of 3200 used
-> end_pfn_map = 1048576
-> DMI 2.3 present.
-> ACPI: RSDP (v002 ACPIAM                                ) @ 0x00000000000fb870
-> ACPI: XSDT (v001 A M I  OEMXSDT  0x04000619 MSFT 0x00000097) @ 0x00000000abfc0100
-> ACPI: FADT (v003 A M I  OEMFACP  0x04000619 MSFT 0x00000097) @ 0x00000000abfc0290
-> ACPI: MADT (v001 A M I  OEMAPIC  0x04000619 MSFT 0x00000097) @ 0x00000000abfc0390
-> ACPI: MCFG (v001 A M I  OEMMCFG  0x04000619 MSFT 0x00000097) @ 0x00000000abfc0400
-> ACPI: OEMB (v001 A M I  AMI_OEM  0x04000619 MSFT 0x00000097) @ 0x00000000abfce040
-> ACPI: DSDT (v001  A0368 A0368001 0x00000001 INTL 0x02002026) @ 0x0000000000000000
-> Scanning NUMA topology in Northbridge 24
-> Number of nodes 1
-> Node 0 MemBase 0000000000000000 Limit 00000000abfc0000
-> Entering add_active_range(0, 0, 159) 0 entries of 3200 used
-> Entering add_active_range(0, 256, 704448) 1 entries of 3200 used
-> NUMA: Using 63 for the hash shift.
-> Using node hash shift of 63
-> Bootmem setup node 0 0000000000000000-00000000abfc0000
-> Zone PFN ranges:
->   DMA             0 ->     4096
->   DMA32        4096 ->  1048576
->   Normal    1048576 ->  1048576
-> early_node_map[2] active PFN ranges
->     0:        0 ->      159
->     0:      256 ->   704448
-> On node 0 totalpages: 704351
->   DMA zone: 64 pages used for memmap
->   DMA zone: 1449 pages reserved
->   DMA zone: 2486 pages, LIFO batch:0
->   DMA32 zone: 10943 pages used for memmap
->   DMA32 zone: 689409 pages, LIFO batch:31
->   Normal zone: 0 pages used for memmap
-> Nvidia board detected. Ignoring ACPI timer override.
-> If you got timer trouble try acpi_use_timer_override
-......
+diff --git a/include/linux/input.h b/include/linux/input.h
+index bde65c8..13d510c 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -1010,6 +1010,10 @@ struct input_dev {
+ #error "EV_MAX and INPUT_DEVICE_ID_EV_MAX do not match"
+ #endif
+ 
++#if KEY_MIN_INTERESTING != INPUT_DEVICE_ID_KEY_MIN_INTERESTING
++#error "KEY_MIN_INTERESTING and INPUT_DEVICE_ID_KEY_MIN_INTERESTING do not match"
++#endif
++
+ #if KEY_MAX != INPUT_DEVICE_ID_KEY_MAX
+ #error "KEY_MAX and INPUT_DEVICE_ID_KEY_MAX do not match"
+ #endif
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index e0c393c..5e89204 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -262,6 +262,7 @@ struct i2c_device_id {
+ 
+ /* Input */
+ #define INPUT_DEVICE_ID_EV_MAX		0x1f
++#define INPUT_DEVICE_ID_KEY_MIN_INTERESTING	0x71
+ #define INPUT_DEVICE_ID_KEY_MAX		0x1ff
+ #define INPUT_DEVICE_ID_REL_MAX		0x0f
+ #define INPUT_DEVICE_ID_ABS_MAX		0x3f
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index f61c9cc..96319eb 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -37,7 +37,6 @@ typedef unsigned char	__u8;
+  * even potentially has different endianness and word sizes, since
+  * we handle those differences explicitly below */
+ #include "../../include/linux/mod_devicetable.h"
+-#include "../../include/linux/input.h"
+ 
+ #define ADD(str, sep, cond, field)                              \
+ do {                                                            \
+@@ -416,31 +415,33 @@ static int do_input_entry(const char *filename, struct input_device_id *id,
+ 
+ 	sprintf(alias + strlen(alias), "-e*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_EVBIT)
+-		do_input(alias, id->evbit, 0, EV_MAX);
++		do_input(alias, id->evbit, 0, INPUT_DEVICE_ID_EV_MAX);
+ 	sprintf(alias + strlen(alias), "k*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_KEYBIT)
+-		do_input(alias, id->keybit, KEY_MIN_INTERESTING, KEY_MAX);
++		do_input(alias, id->keybit,
++			 INPUT_DEVICE_ID_KEY_MIN_INTERESTING,
++			 INPUT_DEVICE_ID_KEY_MAX);
+ 	sprintf(alias + strlen(alias), "r*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_RELBIT)
+-		do_input(alias, id->relbit, 0, REL_MAX);
++		do_input(alias, id->relbit, 0, INPUT_DEVICE_ID_REL_MAX);
+ 	sprintf(alias + strlen(alias), "a*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_ABSBIT)
+-		do_input(alias, id->absbit, 0, ABS_MAX);
++		do_input(alias, id->absbit, 0, INPUT_DEVICE_ID_ABS_MAX);
+ 	sprintf(alias + strlen(alias), "m*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_MSCIT)
+-		do_input(alias, id->mscbit, 0, MSC_MAX);
++		do_input(alias, id->mscbit, 0, INPUT_DEVICE_ID_MSC_MAX);
+ 	sprintf(alias + strlen(alias), "l*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_LEDBIT)
+-		do_input(alias, id->ledbit, 0, LED_MAX);
++		do_input(alias, id->ledbit, 0, INPUT_DEVICE_ID_LED_MAX);
+ 	sprintf(alias + strlen(alias), "s*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_SNDBIT)
+-		do_input(alias, id->sndbit, 0, SND_MAX);
++		do_input(alias, id->sndbit, 0, INPUT_DEVICE_ID_SND_MAX);
+ 	sprintf(alias + strlen(alias), "f*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_FFBIT)
+-		do_input(alias, id->ffbit, 0, FF_MAX);
++		do_input(alias, id->ffbit, 0, INPUT_DEVICE_ID_FF_MAX);
+ 	sprintf(alias + strlen(alias), "w*");
+ 	if (id->flags & INPUT_DEVICE_ID_MATCH_SWBIT)
+-		do_input(alias, id->swbit, 0, SW_MAX);
++		do_input(alias, id->swbit, 0, INPUT_DEVICE_ID_SW_MAX);
+ 	return 1;
+ }
+ 
