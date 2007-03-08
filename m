@@ -1,67 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030868AbXCHXFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030864AbXCHXIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030868AbXCHXFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 18:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030870AbXCHXFa
+	id S1030864AbXCHXIW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 18:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030869AbXCHXIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 18:05:30 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:43933 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030864AbXCHXFZ (ORCPT
+	Thu, 8 Mar 2007 18:08:22 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:42162 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030864AbXCHXIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 18:05:25 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 8 Mar 2007 15:05:20 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
-In-Reply-To: <20070308215653.GA6744@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0703081459350.4882@alien.or.mcafeemobile.com>
-References: <20070308204353.GA6733@tv-sign.ru>
- <Pine.LNX.4.64.0703081259560.7515@alien.or.mcafeemobile.com>
- <20070308215653.GA6744@tv-sign.ru>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 8 Mar 2007 18:08:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=OzsXH25CiVJZzq+2eGJsioRHoDAVfxIM5iA9kWwThr3kIvrYSwyexsSq5CuuFtFguYBSw5hfhXE1SgeblUYQSkrdMtgWLezj9IB7zsd5++memId253SN8iR/JdxQk9c3wFnW691420UQyS7kalH9y0iK6iTHE6c4FS2Mh8rNU5o=
+Message-ID: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com>
+Date: Thu, 8 Mar 2007 15:08:17 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: sys_write() racy for multi-threaded append?
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007, Oleg Nesterov wrote:
+from sys_write():
 
-> > Logic is, if it's not an RT signal, queue only one, otherwise multiple.
-> > The bit on the ->pending mask is clealer only when the queue slot becomes empty.
-> 
-> Yes, I see what the code does, but I don't undestand why. For example, SIGCHLD was
-> delivered to the process _and_ handled several times, then sys_signalfd_dequeue()
-> comes and finds only one siginfo. Isn't this strange?
+        file = fget_light(fd, &fput_needed);
+        if (file) {
+                loff_t pos = file_pos_read(file);
+                ret = vfs_write(file, buf, count, &pos);
+                file_pos_write(file, pos);
+                fput_light(file, fput_needed);
+        }
 
-That's the same logic the kernel folows for non-RT signals. 
-
-
-> > The two trasports can rely on different masks. The signalfd_notify() does 
-> > not even go in signalfd_deliver() if no signalfds are attached to the 
-> > sighand.
-> 
-> Sorry, I don't understand. The masks are different, yes, but ->sighand is the
-> same? How this can make any difference for "if no signalfds are attached" ?
-
-The list_empty() che would not make you fall inside signalfd_deliver(), 
-hence the fast path really lives up to its name ;)
-
-
-> Also. A malicious user can eat all memory, signalfd_deliver()->kmem_cache_alloc()
-> doesn't check any limits.
-
-I'll make that use the std dequeu_signal, so everything is handled in there.
-
-
-
-- Davide
-
-
+Surely that's racy when two threads write to the same fd and the first
+vfs_write call blocks or is preempted.  Or does fget_light take some
+per-file lock that I'm not seeing?
