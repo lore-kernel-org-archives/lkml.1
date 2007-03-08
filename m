@@ -1,279 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbXCHPwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752336AbXCHPw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330AbXCHPwX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 10:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbXCHPwX
+	id S1752336AbXCHPw0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 10:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbXCHPwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 10:52:23 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:38912 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752312AbXCHPwL (ORCPT
+	Thu, 8 Mar 2007 10:52:25 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:42001 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbXCHPvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 10:52:11 -0500
-Subject: [RFC][Patch 6/6] integrity: TPM internal kernel interface
+	Thu, 8 Mar 2007 10:51:52 -0500
+Subject: [RFC][Patch 5/6] integrity: mtime patch for mmap files
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: safford@watson.ibm.com, serue@linux.vnet.ibm.com,
        kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
 Content-Type: text/plain
-Date: Thu, 08 Mar 2007 11:04:28 -0500
-Message-Id: <1173369868.5981.6.camel@localhost.localdomain>
+Date: Thu, 08 Mar 2007 11:04:13 -0500
+Message-Id: <1173369853.5981.5.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Index: linux-2.6.21-rc3-mm2/drivers/char/tpm/tpm.c
+This is a minimal subset of Peter Staubach's July patch, updated to
+apply to the latest kernel. The subset was chosen to demonstrate that
+mmaped files are hashed and hmac properly by EVM after being modified
+when a file's mtime is updated correctly.
+
+Index: linux-2.6.21-rc3-mm2/fs/inode.c
 ===================================================================
---- linux-2.6.21-rc3-mm2.orig/drivers/char/tpm/tpm.c
-+++ linux-2.6.21-rc3-mm2/drivers/char/tpm/tpm.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2004 IBM Corporation
-+ * Copyright (C) 2004,2007 IBM Corporation
+--- linux-2.6.21-rc3-mm2.orig/fs/inode.c
++++ linux-2.6.21-rc3-mm2/fs/inode.c
+@@ -1209,8 +1209,8 @@ void touch_atime(struct vfsmount *mnt, s
+ EXPORT_SYMBOL(touch_atime);
+ 
+ /**
+- *	file_update_time	-	update mtime and ctime time
+- *	@file: file accessed
++ *	inode_update_time	-	update mtime and ctime time
++ *	@inode: file accessed
   *
-  * Authors:
-  * Leendert van Doorn <leendert@watson.ibm.com>
-@@ -25,6 +25,12 @@
- 
- #include <linux/poll.h>
- #include <linux/spinlock.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/crypto.h>
-+#include <linux/fs.h>
-+#include <asm/scatterlist.h>
- #include "tpm.h"
- 
- enum tpm_const {
-@@ -47,6 +53,8 @@ enum tpm_duration {
- static LIST_HEAD(tpm_chip_list);
- static DEFINE_SPINLOCK(driver_lock);
- static DECLARE_BITMAP(dev_mask, TPM_NUM_DEVICES);
-+#define TPM_CHIP_NUM_MASK       0x0000ffff
-+#define TPM_CHIP_TYPE_SHIFT     16
- 
- /*
-  * Array with one entry per ordinal defining the maximum amount
-@@ -363,7 +371,7 @@ EXPORT_SYMBOL_GPL(tpm_calc_ordinal_durat
- /*
-  * Internal kernel interface to transmit TPM commands
+  *	Update the mtime and ctime members of an inode and mark the inode
+  *	for writeback.  Note that this function is meant exclusively for
+@@ -1220,9 +1220,8 @@ EXPORT_SYMBOL(touch_atime);
+  *	timestamps are handled by the server.
   */
--static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
-+ssize_t tpm_transmit(struct tpm_chip *chip, char *buf,
- 			    size_t bufsiz)
+ 
+-void file_update_time(struct file *file)
++void inode_update_time(struct inode *inode)
  {
- 	ssize_t rc;
-@@ -422,6 +430,7 @@ out:
- 	up(&chip->tpm_mutex);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(tpm_transmit);
+-	struct inode *inode = file->f_path.dentry->d_inode;
+ 	struct timespec now;
+ 	int sync_it = 0;
  
- #define TPM_DIGEST_SIZE 20
- #define TPM_ERROR_SIZE 10
-@@ -665,6 +674,7 @@ ssize_t tpm_show_temp_deactivated(struct
+@@ -1246,7 +1245,7 @@ void file_update_time(struct file *file)
+ 		mark_inode_dirty_sync(inode);
  }
- EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
  
-+#define READ_PCR_RESULT_SIZE 30
- static const u8 pcrread[] = {
- 	0, 193,			/* TPM_TAG_RQU_COMMAND */
- 	0, 0, 0, 14,		/* length */
-@@ -713,6 +723,93 @@ out:
- }
- EXPORT_SYMBOL_GPL(tpm_show_pcrs);
+-EXPORT_SYMBOL(file_update_time);
++EXPORT_SYMBOL(inode_update_time);
  
-+static struct tpm_chip* tpm_chip_lookup(int chip_num, int chip_typ)
-+{
-+        struct tpm_chip *pos;
-+
-+        spin_lock(&driver_lock);
-+        list_for_each_entry(pos, &tpm_chip_list, list)
-+                if ((chip_num == TPM_ANY_NUM ||
-+                        pos->dev_num == chip_num ) &&
-+                        (chip_typ == TPM_ANY_TYPE)){
-+                        spin_unlock(&driver_lock);
-+                        return pos;
-+                }
-+
-+        spin_unlock(&driver_lock);
-+        return NULL;
-+}
-+
-+/*
-+ * Return 0 on success.  On error pass along error code.
-+ * chip_id Upper 2 bytes equal ANY, HW_ONLY or SW_ONLY
-+ * Lower 2 bytes equal tpm idx # or AN&
-+ * res_buf must fit a TPM_PCR (20 bytes) or NULL if you don't care
-+ */
-+int tpm_pcr_read( u32 chip_id, int pcr_idx, u8* res_buf, int res_buf_size )
-+{
-+        u8 data[READ_PCR_RESULT_SIZE];
-+        int rc;
-+        __be32 index;
-+        int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-+        struct tpm_chip* chip;
-+
-+        if ( res_buf && res_buf_size < TPM_DIGEST_SIZE )
-+                return -ENOSPC;
-+
-+        if ( (chip = tpm_chip_lookup( chip_num,
-+                                chip_id >> TPM_CHIP_TYPE_SHIFT ) ) == NULL )
-+                return -ENODEV;
-+
-+        memcpy(data, pcrread, sizeof(pcrread));
-+        index = cpu_to_be32(pcr_idx);
-+        memcpy(data + 10, &index, 4);
-+        if ((rc = tpm_transmit(chip, data, sizeof(data))) > 0 )
-+                rc = be32_to_cpu(*((u32*)(data+6)));
-+
-+        if ( rc == 0 && res_buf )
-+                memcpy(res_buf, data+10, TPM_DIGEST_SIZE);
-+
-+        return rc;
-+
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_read);
-+
-+#define EXTEND_PCR_SIZE 34
-+static const u8 pcrextend[] = {
-+        0, 193,                 /* TPM_TAG_RQU_COMMAND */
-+        0, 0, 0, 34,            /* length */
-+        0, 0, 0, 20,            /* TPM_ORD_Extend */
-+        0, 0, 0, 0              /* PCR index */
-+};
-+
-+/*
-+ * Return 0 on success.  On error pass along error code.
-+ * chip_id Upper 2 bytes equal ANY, HW_ONLY or SW_ONLY
-+ * Lower 2 bytes equal tpm idx # or ANY
-+ */
-+int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8* hash)
-+{
-+        u8 data[EXTEND_PCR_SIZE];
-+        int rc;
-+        __be32 index;
-+        int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-+        struct tpm_chip* chip;
-+
-+        if ( (chip = tpm_chip_lookup( chip_num,
-+                        chip_id >> TPM_CHIP_TYPE_SHIFT )) == NULL )
-+                return -ENODEV;
-+
-+        memcpy(data, pcrextend, sizeof(pcrextend));
-+        index = cpu_to_be32(pcr_idx);
-+        memcpy(data + 10, &index, 4);
-+        memcpy( data + 14, hash, TPM_DIGEST_SIZE );
-+        if ((rc = tpm_transmit(chip, data, sizeof(data))) > 0 )
-+                rc = be32_to_cpu(*((u32*)(data+6)));
-+        return rc;
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_extend);
-+
- #define  READ_PUBEK_RESULT_SIZE 314
- static const u8 readpubek[] = {
- 	0, 193,			/* TPM_TAG_RQU_COMMAND */
-@@ -944,13 +1041,13 @@ int tpm_release(struct inode *inode, str
- 
- 	spin_lock(&driver_lock);
- 	file->private_data = NULL;
-+	spin_unlock(&driver_lock);
- 	chip->num_opens--;
- 	del_singleshot_timer_sync(&chip->user_read_timer);
- 	flush_scheduled_work();
- 	atomic_set(&chip->data_pending, 0);
- 	put_device(chip->dev);
- 	kfree(chip->data_buffer);
--	spin_unlock(&driver_lock);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(tpm_release);
-Index: linux-2.6.21-rc3-mm2/drivers/char/tpm/tpm.h
+ int inode_needs_sync(struct inode *inode)
+ {
+Index: linux-2.6.21-rc3-mm2/fs/fs-writeback.c
 ===================================================================
---- linux-2.6.21-rc3-mm2.orig/drivers/char/tpm/tpm.h
-+++ linux-2.6.21-rc3-mm2/drivers/char/tpm/tpm.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2004 IBM Corporation
-+ * Copyright (C) 2004, 2007 IBM Corporation
-  *
-  * Authors:
-  * Leendert van Doorn <leendert@watson.ibm.com>
-@@ -25,6 +25,7 @@
- #include <linux/miscdevice.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
-+#include <linux/tpm.h>
+--- linux-2.6.21-rc3-mm2.orig/fs/fs-writeback.c
++++ linux-2.6.21-rc3-mm2/fs/fs-writeback.c
+@@ -167,6 +167,9 @@ __sync_single_inode(struct inode *inode,
  
- enum tpm_timeout {
- 	TPM_TIMEOUT = 5,	/* msecs */
-Index: linux-2.6.21-rc3-mm2/include/linux/tpm.h
+ 	spin_unlock(&inode_lock);
+ 
++	if (test_and_clear_bit(AS_MCTIME, &mapping->flags))
++		inode_update_time(inode);
++
+ 	ret = do_writepages(mapping, wbc);
+ 
+ 	/* Don't write the inode if only I_DIRTY_PAGES was set */
+Index: linux-2.6.21-rc3-mm2/fs/buffer.c
 ===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3-mm2/include/linux/tpm.h
-@@ -0,0 +1,60 @@
-+/*
-+ * Copyright (C) 2004,2007 IBM Corporation
-+ *
-+ * Authors:
-+ * Leendert van Doorn <leendert@watson.ibm.com>
-+ * Dave Safford <safford@watson.ibm.com>
-+ * Reiner Sailer <sailer@watson.ibm.com>
-+ * Kylene Hall <kjhall@us.ibm.com>
-+ *
-+ * Maintained by: <tpmdd_devel@lists.sourceforge.net>
-+ *
-+ * Device driver for TCG/TCPA TPM (trusted platform module).
-+ * Specifications at www.trustedcomputinggroup.org
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ */
-+#ifndef __LINUX_TPM_H__
-+#define __LINUX_TPM_H__
+--- linux-2.6.21-rc3-mm2.orig/fs/buffer.c
++++ linux-2.6.21-rc3-mm2/fs/buffer.c
+@@ -734,8 +734,11 @@ int __set_page_dirty_buffers(struct page
+ 	}
+ 	spin_unlock(&mapping->private_lock);
+ 
+-	if (TestSetPageDirty(page))
++	if (TestSetPageDirty(page)) {
++		if (page_mapped(page))
++			set_bit(AS_MCTIME, &mapping->flags);
+ 		return 0;
++	}
+ 
+ 	write_lock_irq(&mapping->tree_lock);
+ 	if (page->mapping) {	/* Race with truncate? */
+@@ -749,6 +752,8 @@ int __set_page_dirty_buffers(struct page
+ 	}
+ 	write_unlock_irq(&mapping->tree_lock);
+ 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
++	if (page_mapped(page))
++		set_bit(AS_MCTIME, &mapping->flags);
+ 	return 1;
+ }
+ EXPORT_SYMBOL(__set_page_dirty_buffers);
+Index: linux-2.6.21-rc3-mm2/include/linux/fs.h
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/include/linux/fs.h
++++ linux-2.6.21-rc3-mm2/include/linux/fs.h
+@@ -1944,7 +1944,12 @@ extern int buffer_migrate_page(struct ad
+ extern int inode_change_ok(struct inode *, struct iattr *);
+ extern int __must_check inode_setattr(struct inode *, struct iattr *);
+ 
+-extern void file_update_time(struct file *file);
++extern void inode_update_time(struct inode *);
 +
-+#define CONFIG_TCG_TPM 1
-+#define PCI_DEVICE_ID_AMD_8111_LPC    0x7468
-+
-+/*
-+ * Chip type is one of these values in the upper two bytes of chip_id
-+ */
-+enum tpm_chip_type {
-+	TPM_HW_TYPE = 0x0,
-+	TPM_SW_TYPE = 0x1,
-+	TPM_ANY_TYPE = 0xFFFF,
-+};
-+
-+/*
-+ * Chip num is this value or a valid tpm idx in lower two bytes of chip_id
-+ */
-+enum tpm_chip_num {
-+	TPM_ANY_NUM = 0xFFFF,
-+};
-+
-+
-+#ifdef CONFIG_TCG_TPM
-+extern int tpm_pcr_read(u32 chip_id, int pcr_idx, u8* res_buf, int res_buf_size);
-+extern int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8* hash);
-+#else
-+static inline int tpm_pcr_read(u32 chip_id, int pcr_idx, u8* res_buf,
-+				int res_buf_size)
++static inline void file_update_time(struct file *file)
 +{
-+	return -1;
++	inode_update_time(file->f_dentry->d_inode);
 +}
+ 
+ static inline ino_t parent_ino(struct dentry *dentry)
+ {
+Index: linux-2.6.21-rc3-mm2/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/include/linux/pagemap.h
++++ linux-2.6.21-rc3-mm2/include/linux/pagemap.h
+@@ -17,8 +17,9 @@
+  * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
+  * allocation mode flags.
+  */
+-#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
++#define AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
+ #define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
++#define AS_MCTIME	(__GFP_BITS_SHIFT + 2)	/* need m/ctime change */
+ 
+ static inline void mapping_set_error(struct address_space *mapping, int error)
+ {
+Index: linux-2.6.21-rc3-mm2/mm/page-writeback.c
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/mm/page-writeback.c
++++ linux-2.6.21-rc3-mm2/mm/page-writeback.c
+@@ -815,8 +815,10 @@ int __set_page_dirty_no_writeback(struct
+  */
+ int __set_page_dirty_nobuffers(struct page *page)
+ {
++	struct address_space *mapping = page_mapping(page);
++	int ret = 0;
 +
-+static inline int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8* hash)
-+{
-+	return -1;
-+}
-+#endif
-+#endif
-+
+ 	if (!TestSetPageDirty(page)) {
+-		struct address_space *mapping = page_mapping(page);
+ 		struct address_space *mapping2;
+ 
+ 		if (!mapping)
+@@ -840,9 +842,11 @@ int __set_page_dirty_nobuffers(struct pa
+ 			/* !PageAnon && !swapper_space */
+ 			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+ 		}
+-		return 1;
++		ret = 1;
+ 	}
+-	return 0;
++	if (page_mapped(page))
++		set_bit(AS_MCTIME, &mapping->flags);
++	return ret;
+ }
+ EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+ 
+
 
 
