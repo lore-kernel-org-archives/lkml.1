@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbXCHQnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbXCHQqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752527AbXCHQnr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbXCHQnr
+	id S1752535AbXCHQqI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:46:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXCHQqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:43:47 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:44446 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbXCHQnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:43:46 -0500
-X-Greylist: delayed 1719 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Mar 2007 11:43:46 EST
-Date: Thu, 8 Mar 2007 17:15:02 +0100
-From: Bastian Blank <bastian@waldi.eu.org>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: Re: [Patch 1/2] add for_each_substring() and match_substring()
-Message-ID: <20070308161502.GA19326@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-References: <1173208763.5266.8.camel@dix>
+	Thu, 8 Mar 2007 11:46:07 -0500
+Received: from nevyn.them.org ([66.93.172.17]:57787 "EHLO nevyn.them.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752535AbXCHQqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 11:46:06 -0500
+X-Greylist: delayed 1430 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Mar 2007 11:46:06 EST
+Date: Thu, 8 Mar 2007 11:21:58 -0500
+From: Daniel Jacobowitz <dan@debian.org>
+To: Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>, David Brown <dmlb2000@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gdb@sourceware.org
+Subject: Re: PAGE_SIZE Availability Inconsistency
+Message-ID: <20070308162158.GA5702@caradoc.them.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Roman Zippel <zippel@linux-m68k.org>,
+	David Brown <dmlb2000@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	gdb@sourceware.org
+References: <9c21eeae0703051555x1884fd7cse7968a71ec04eb27@mail.gmail.com> <20070306092917.GA5226@infradead.org> <200703080318.04631.zippel@linux-m68k.org> <20070308090031.GB7373@infradead.org> <1173369229.3550.2.camel@laptopd505.fenrus.org> <20070308160852.GB9916@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173208763.5266.8.camel@dix>
+In-Reply-To: <20070308160852.GB9916@infradead.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 08:19:23PM +0100, Martin Peschke wrote:
-> +char *match_to(const char *cs, const char *ct)
-> +{
-> +	char *delim = strpbrk(cs, ct);
-> +	if (delim)
-> +		return delim;
-> +	else if (*cs != '\0')
-> +		return (char *)(cs + strlen(cs));
+On Thu, Mar 08, 2007 at 04:08:52PM +0000, Christoph Hellwig wrote:
+> No, no no.  We should never export PAGE_SIZE.  We might export NBPG
+> as deprecated symbol for gdb if it really needs it, but that should
+> happen only on a.out systems, and it it should be a true constant,
+> not depending on PAGE_SIZE.
+> 
+> I've Cc'ed the gdb list on whether they have any comments on this
+> issue.
 
-This disallows the use of match_to with a real constant char array,
-please remove the const from the prototyp.
-
-Bastian
+Sounds reasonable.  I do not believe that GDB has any dependence on
+PAGE_SIZE; bfd (i.e. both gdb and binutils) use NBPG on a large number
+of systems.  Looks like i386, alpha, m68k, s390, vax - but don't quote
+me on that, I had to guess from the configure script.
 
 -- 
-	"Get back to your stations!"
-	"We're beaming down to the planet, sir."
-		-- Kirk and Mr. Leslie, "This Side of Paradise",
-		   stardate 3417.3
+Daniel Jacobowitz
+CodeSourcery
