@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbXCHTwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbXCHTym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933102AbXCHTwo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 14:52:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXCHTwo
+	id S933230AbXCHTym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 14:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933232AbXCHTym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 14:52:44 -0500
-Received: from gw.goop.org ([64.81.55.164]:50572 "EHLO mail.goop.org"
+	Thu, 8 Mar 2007 14:54:42 -0500
+Received: from mtaout4.012.net.il ([84.95.2.10]:60993 "EHLO mtaout4.012.net.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933102AbXCHTwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 14:52:43 -0500
-Message-ID: <45F06989.8030207@goop.org>
-Date: Thu, 08 Mar 2007 11:52:41 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Daniel Arai <arai@vmware.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
-       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
-References: <45EF0CF5.5090305@goop.org> <45EF175D.6030609@vmware.com> <1173302503.24738.795.camel@localhost.localdomain> <45EF372E.7030600@goop.org> <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F06720.8080901@goop.org> <20070308194740.GJ10574@sequoia.sous-sol.org>
-In-Reply-To: <20070308194740.GJ10574@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S933230AbXCHTyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 14:54:41 -0500
+Date: Thu, 08 Mar 2007 21:44:38 +0200
+From: Avi Kivity <avi@argo.co.il>
+Subject: Re: [patch] disable NMI watchdog by default
+In-reply-to: <45EC3F25.5060308@tmr.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Message-id: <45F067A6.8090707@argo.co.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+X-Greylist: Sender IP whitelisted,
+ not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Thu,
+ 08 Mar 2007 21:44:38 +0200 (IST)
+References: <20070114092926.GA14465@elte.hu> <45EC3F25.5060308@tmr.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> I agree with that, but I think that's esp. for things like create and launch
-> new vcpu.  The IPI bit I'm not as clear on, nor running this all on native
-> as well.
->   
+Bill Davidsen wrote:
+>>
+>> there's a new NMI watchdog related problem: KVM crashes on certain 
+>> bzImages because ... we enable the NMI watchdog by default (even if 
+>> the user does not ask for it) , and no other OS on this planet does 
+>> that so KVM doesnt have emulation for that yet. So KVM injects a #GP, 
+>> which crashes the Linux guest:
+>>
+> I'm missing something, what limits this to systems running under kvm?
+>
 
-Well, native would fall back to using the existing arch/i386 versions of
-those functions, so that's reasonably straightforward.  There'll need to
-be a bit of internal rearrangement so that the Xen code can call in to
-do things like set up the pda/gdt and other bits of CPU state.
+Most likely kvm doesn't implement the msrs which drive the nmi 
+watchdog.  That makes it a kvm bug, not a problem with the nmi 
+watchdog.  Emulating it correctly is fairly difficult, though, 
+especially if we want to migrate virtual machines between different 
+processor models, so I hope this goes in.
 
-I don't think IPI is especially interesting in itself, is it?   It's a
-necessary mechanism to implement smp_call_function(), but Xen can do IPI
-without having to invoke any of the existing apic-based IPI code.  The
-other main user of IPI is cross-cpu tlb shootdown, but Xen has much more
-efficient mechanisms than IPI for that (so we'll need to make the tlb
-pv_ops interface a little wider to pass down a cpuset).
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-    J
