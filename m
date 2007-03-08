@@ -1,87 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXCHR36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbXCHRab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbXCHR36 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXCHR35
+	id S932149AbXCHRab (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbXCHRaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:29:57 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48282 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752595AbXCHR34 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:29:56 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>,
-       Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
-	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
-	<20070305084257.GA4464@mellanox.co.il>
-	<20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org>
-	<45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>
-	<45ED8A12.5040803@intel.com>
-	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
-	<45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com>
-	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>
-	<20070307185317.5601d452.akpm@linux-foundation.org>
-	<m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
-	<45EFDD8C.3070702@garzik.org>
-Date: Thu, 08 Mar 2007 10:27:28 -0700
-In-Reply-To: <45EFDD8C.3070702@garzik.org> (Jeff Garzik's message of "Thu, 08
-	Mar 2007 04:55:24 -0500")
-Message-ID: <m1abyn7iin.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 8 Mar 2007 12:30:30 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:56661 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932149AbXCHRa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 12:30:28 -0500
+Date: Thu, 8 Mar 2007 09:30:06 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
+Subject: Re: [RFC][Patch 5/6] integrity: mtime patch for mmap files
+Message-ID: <20070308173006.GO6602@sequoia.sous-sol.org>
+References: <1173369853.5981.5.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173369853.5981.5.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+* Mimi Zohar (zohar@linux.vnet.ibm.com) wrote:
+> This is a minimal subset of Peter Staubach's July patch, updated to
+> apply to the latest kernel. The subset was chosen to demonstrate that
+> mmaped files are hashed and hmac properly by EVM after being modified
+> when a file's mtime is updated correctly.
 
-> Eric W. Biederman wrote:
->> Until I get the best scenario I can come up with is a tg3 hardware bug
->> that doesn't renable the pci-X capability after a restore of power state.
->
->
-> Speaking of tg3, make sure you are aware that the number of calls to save-state
-> functions may not match the number of calls to the restore-state functions.
-> ISTR seeing some memleak bugs in PCI related to this.
+Would make sense to Cc Peter on fsdevel on this.
 
-Thanks that looks like the problem, multiple calls to save before one
-call to restore when you have a pci-x capability would easily trigger
-this problem.  I just surveyed a bunch of the pci_save_state and
-pci_restore_state users and this appears to be a common idiom not just
-a tg3 thing....
+> Index: linux-2.6.21-rc3-mm2/fs/inode.c
+> ===================================================================
+> --- linux-2.6.21-rc3-mm2.orig/fs/inode.c
+> +++ linux-2.6.21-rc3-mm2/fs/inode.c
+> @@ -1209,8 +1209,8 @@ void touch_atime(struct vfsmount *mnt, s
+>  EXPORT_SYMBOL(touch_atime);
+>  
+>  /**
+> - *	file_update_time	-	update mtime and ctime time
+> - *	@file: file accessed
+> + *	inode_update_time	-	update mtime and ctime time
+> + *	@inode: file accessed
+>   *
+>   *	Update the mtime and ctime members of an inode and mark the inode
+>   *	for writeback.  Note that this function is meant exclusively for
+> @@ -1220,9 +1220,8 @@ EXPORT_SYMBOL(touch_atime);
+>   *	timestamps are handled by the server.
+>   */
+>  
+> -void file_update_time(struct file *file)
+> +void inode_update_time(struct inode *inode)
+>  {
+> -	struct inode *inode = file->f_path.dentry->d_inode;
+>  	struct timespec now;
+>  	int sync_it = 0;
+>  
+> @@ -1246,7 +1245,7 @@ void file_update_time(struct file *file)
+>  		mark_inode_dirty_sync(inode);
+>  }
+>  
+> -EXPORT_SYMBOL(file_update_time);
+> +EXPORT_SYMBOL(inode_update_time);
+>  
+>  int inode_needs_sync(struct inode *inode)
+>  {
+> Index: linux-2.6.21-rc3-mm2/fs/fs-writeback.c
+> ===================================================================
+> --- linux-2.6.21-rc3-mm2.orig/fs/fs-writeback.c
+> +++ linux-2.6.21-rc3-mm2/fs/fs-writeback.c
+> @@ -167,6 +167,9 @@ __sync_single_inode(struct inode *inode,
+>  
+>  	spin_unlock(&inode_lock);
+>  
+> +	if (test_and_clear_bit(AS_MCTIME, &mapping->flags))
+> +		inode_update_time(inode);
+> +
+>  	ret = do_writepages(mapping, wbc);
+>  
+>  	/* Don't write the inode if only I_DIRTY_PAGES was set */
+> Index: linux-2.6.21-rc3-mm2/fs/buffer.c
+> ===================================================================
+> --- linux-2.6.21-rc3-mm2.orig/fs/buffer.c
+> +++ linux-2.6.21-rc3-mm2/fs/buffer.c
+> @@ -734,8 +734,11 @@ int __set_page_dirty_buffers(struct page
+>  	}
+>  	spin_unlock(&mapping->private_lock);
+>  
+> -	if (TestSetPageDirty(page))
+> +	if (TestSetPageDirty(page)) {
+> +		if (page_mapped(page))
+> +			set_bit(AS_MCTIME, &mapping->flags);
+>  		return 0;
+> +	}
+>  
+>  	write_lock_irq(&mapping->tree_lock);
+>  	if (page->mapping) {	/* Race with truncate? */
+> @@ -749,6 +752,8 @@ int __set_page_dirty_buffers(struct page
+>  	}
+>  	write_unlock_irq(&mapping->tree_lock);
+>  	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> +	if (page_mapped(page))
+> +		set_bit(AS_MCTIME, &mapping->flags);
+>  	return 1;
+>  }
+>  EXPORT_SYMBOL(__set_page_dirty_buffers);
+> Index: linux-2.6.21-rc3-mm2/include/linux/fs.h
+> ===================================================================
+> --- linux-2.6.21-rc3-mm2.orig/include/linux/fs.h
+> +++ linux-2.6.21-rc3-mm2/include/linux/fs.h
+> @@ -1944,7 +1944,12 @@ extern int buffer_migrate_page(struct ad
+>  extern int inode_change_ok(struct inode *, struct iattr *);
+>  extern int __must_check inode_setattr(struct inode *, struct iattr *);
+>  
+> -extern void file_update_time(struct file *file);
+> +extern void inode_update_time(struct inode *);
+> +
+> +static inline void file_update_time(struct file *file)
+> +{
+> +	inode_update_time(file->f_dentry->d_inode);
 
-It looks like when code was added to save/restore the msi capability
-was added to pci_save/restore_state that an assumption was added that
-pci_save_state and pci_restore state were only used for suspend and
-only used in pairs.  There is even a partial bug fix that removed the
-worst of the symptoms of that assumption from the msi code but failed
-to recognize the core problem.
+s/f_dentry/f_path.dentry/
 
-Now that we have code to work with pcie and pcix capabilities as well
-as msi this problem is much easier to hit.
+> +}
+>  
+>  static inline ino_t parent_ino(struct dentry *dentry)
+>  {
+> Index: linux-2.6.21-rc3-mm2/include/linux/pagemap.h
+> ===================================================================
+> --- linux-2.6.21-rc3-mm2.orig/include/linux/pagemap.h
+> +++ linux-2.6.21-rc3-mm2/include/linux/pagemap.h
+> @@ -17,8 +17,9 @@
+>   * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
+>   * allocation mode flags.
+>   */
+> -#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
+> +#define AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
+>  #define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
+> +#define AS_MCTIME	(__GFP_BITS_SHIFT + 2)	/* need m/ctime change */
+>  
+>  static inline void mapping_set_error(struct address_space *mapping, int error)
+>  {
+> Index: linux-2.6.21-rc3-mm2/mm/page-writeback.c
+> ===================================================================
+> --- linux-2.6.21-rc3-mm2.orig/mm/page-writeback.c
+> +++ linux-2.6.21-rc3-mm2/mm/page-writeback.c
+> @@ -815,8 +815,10 @@ int __set_page_dirty_no_writeback(struct
+>   */
+>  int __set_page_dirty_nobuffers(struct page *page)
+>  {
+> +	struct address_space *mapping = page_mapping(page);
+> +	int ret = 0;
+> +
+>  	if (!TestSetPageDirty(page)) {
+> -		struct address_space *mapping = page_mapping(page);
+>  		struct address_space *mapping2;
+>  
+>  		if (!mapping)
+> @@ -840,9 +842,11 @@ int __set_page_dirty_nobuffers(struct pa
+>  			/* !PageAnon && !swapper_space */
+>  			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+>  		}
+> -		return 1;
+> +		ret = 1;
+>  	}
+> -	return 0;
+> +	if (page_mapped(page))
+> +		set_bit(AS_MCTIME, &mapping->flags);
 
-All of pci_save_state and pci_restore_state is going to have to be
-restructured to fix this, and it is late in the game.  Ugh.
-Oh well, better to fix it now 
-
-At least I get my answer about if what pci_save_state is doing
-is reasonable. It is not.  pci_save_state no longer supports being
-used in conjunction with hardware reset and has become a
-suspend/resume specific function.
-
-Now I'm off to wite some patches to fix this.
-
-Eric
+Don't you want 'if (mapping)' here?  And why update mctime when the
+page isn't dirty?
