@@ -1,81 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbXCHRgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbXCHRkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbXCHRgL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:36:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXCHRgL
+	id S1752603AbXCHRkJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbXCHRkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:36:11 -0500
-Received: from outmx001.isp.belgacom.be ([195.238.5.51]:60596 "EHLO
-	outmx001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752524AbXCHRgJ (ORCPT
+	Thu, 8 Mar 2007 12:40:09 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:37944 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752603AbXCHRkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:36:09 -0500
-From: Jan De Luyck <ml_linuxkernel_20060528@kcore.org>
-Subject: EXT3-fs warning (device sdd2): dx_probe: Unrecognised inode hash code 232
-User-Agent: KMail/1.9.6
-MIME-Version: 1.0
+	Thu, 8 Mar 2007 12:40:07 -0500
+Date: Thu, 8 Mar 2007 17:40:04 +0000
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@osdl.org, Marcelo Tosatti <marcelo@kvack.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, mpm@selenic.com,
+       Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: [SLUB 0/3] SLUB: The unqueued slab allocator V4
+Message-ID: <20070308174004.GB12958@skynet.ie>
+References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0703081022040.1615@skynet.skynet.ie> <Pine.LNX.4.64.0703080836300.27191@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-To: linux-kernel@vger.kernel.org
-Date: Thu, 8 Mar 2007 18:35:54 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200703081835.54380.ml_linuxkernel_20060528@kcore.org>
+In-Reply-To: <Pine.LNX.4.64.0703080836300.27191@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On (08/03/07 08:48), Christoph Lameter didst pronounce:
+> On Thu, 8 Mar 2007, Mel Gorman wrote:
+> 
+> > On x86_64, it completed successfully and looked reliable. There was a 5%
+> > performance loss on kernbench and aim9 figures were way down. However, with
+> > slub_debug enabled, I would expect that so it's not a fair comparison
+> > performance wise. I'll rerun the tests without debug and see what it looks
+> > like if you're interested and do not think it's too early to worry about
+> > performance instead of clarity. This is what I have for bl6-13 (machine
+> > appears on test.kernel.org so additional details are there).
+> 
+> No its good to start worrying about performance now. There are still some 
+> performance issues to be ironed out in particular on NUMA. I am not sure
+> f.e. how the reduction of partial lists affect performance.
+> 
 
-Running 2.6.19.1 on AMD64.
+Ok, I've sent off a bunch of tests - two of which are on NUMA (numaq and
+x86_64). It'll take them a long time to complete though as there is a
+lot of testing going on right now.
 
-While copying some files on an ext3 partition, I got this in the logs:
+> > IA64 (machine not visible on TKO) curiously did not exhibit the same problems
+> > on kernbench for Total CPU time which is very unexpected but you can see the
+> > System CPU times. The AIM9 figures were a bit of an upset but again, I blame
+> > slub_debug being enabled
+> 
+> This was a single node box?
 
-EXT3-fs warning (device sdd2): dx_probe: Unrecognised inode hash code 232
-Assertion failure in dx_probe() at fs/ext3/namei.c:384: "dx_get_limit(entries) 
-== dx_root_limit(dir, root->info.info_length)"
------------ [cut here ] --------- [please bite here ] ---------
-Kernel BUG at fs/ext3/namei.c:384
-invalid opcode: 0000 [1] PREEMPT SMP
-CPU 0
-Modules linked in: xt_multiport iptable_filter ip_tables x_tables binfmt_misc 
-fuse parport_pc lp parport thermal fan button nls_iso8859_15 ntfs kqemu(P) 
-tcp_diag inet_diag w83627ehf i2c_isa cpufreq_ondemand powernow_k8 freq_table 
-processor snd_hda_intel snd_hda_codec snd_pcm evdev snd_timer psmouse snd 
-pcspkr floppy ehci_hcd soundcore snd_page_alloc usbcore k8temp hwmon ohci1394 
-ieee1394 forcedeth i2c_nforce2 i2c_core sg sr_mod cdrom
-Pid: 4018, comm: find Tainted: P      2.6.19.5 #1
-RIP: 0010:[<ffffffff802efe2b>]  [<ffffffff802efe2b>] dx_probe+0x18b/0x320
-RSP: 0018:ffff81006b789d28  EFLAGS: 00010292
-RAX: 0000000000000081 RBX: ffff810066f07018 RCX: 00000000c0000100
-RDX: ffff81006b788000 RSI: ffff81006b5c62c0 RDI: 00000000ffffffff
-RBP: 0000000000000000 R08: ffff81006b788000 R09: 0000000000000001
-R10: 0000000000000000 R11: ffffffff80212a20 R12: ffff810066e6f8e8
-R13: 0000000000000000 R14: 0000000000000000 R15: ffff810066f06730
-FS:  00002ae8c9f5c6d0(0000) GS:ffffffff80586000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00002af535db8086 CR3: 000000006b7b2000 CR4: 00000000000006e0
-Process find (pid: 4018, threadinfo ffff81006b788000, task ffff81006b5c62c0)
-Stack:  ffff81006b789dd4 ffff81006b789d88 ffff81007f79d750 ffff810066e6acc0
- 0000000000000000 ffff810066f06730 ffff810066f06730 0000000000000000
- ffff81007efca580 ffffffff802f13ab ffff810066e6ace8 000000007ff98780
-Call Trace:
- [<ffffffff802f13ab>] ext3_htree_fill_tree+0xab/0x1e0
- [<ffffffff802e8d69>] ext3_readdir+0x1a9/0x530
- [<ffffffff802359b3>] vfs_readdir+0x73/0xc0
- [<ffffffff802bea1f>] sys_getdents64+0x7f/0xd0
- [<ffffffff802607fe>] system_call+0x7e/0x83
- [<00002ae8c9dad41a>]
+Yes, memory looks like this;
 
+Zone PFN ranges:
+  DMA          1024 ->   262144
+  Normal     262144 ->   262144
+Movable zone start PFN for each node
+early_node_map[3] active PFN ranges
+    0:     1024 ->    30719
+    0:    32768 ->    65413
+    0:    65440 ->    65505
+On node 0 totalpages: 62405
+Node 0 memmap at 0xe000000001126000 size 3670016 first pfn 0xe000000001134000
+  DMA zone: 220 pages used for memmap
+  DMA zone: 0 pages reserved
+  DMA zone: 62185 pages, LIFO batch:7
+  Normal zone: 0 pages used for memmap
+  Movable zone: 0 pages used for memmap
 
-Code: 0f 0b 68 f0 0c 48 80 c2 80 01 48 8b 54 24 08 48 89 54 24 10
-RIP  [<ffffffff802efe2b>] dx_probe+0x18b/0x320
- RSP <ffff81006b789d28>
+> Note that the 16kb page size has a major 
+> impact on SLUB performance. On IA64 slub will use only 1/4th the locking 
+> overhead as on 4kb platforms.
+> 
 
-Yeah, I know it's tainted - just wanted to hear if anyone saw this one before. 
-System seems to be fine otherwise, I'll run a fsck on the filesystem lateron.
+It'll be interesting to see the kernbench tests then with debugging
+disabled.
 
-Jan
+> > (as an aside, the succes rates for high-order allocations are lower with SLUB.
+> > Again, I blame slub_debug. I know that enabling SLAB_DEBUG has similar effects
+> > because of red-zoning and the like)
+> 
+> We have some additional patches here that reduce the max order for some 
+> allocs. I believe the task_struct gets to be an order 2 alloc with V4,
+> 
+
+Should make a difference for slab fragmentation
+
+> > Now, the bad news. This exploded on ppc64. It started going wrong early in the
+> > boot process and got worse. I haven't looked closely as to why yet as there is
+> > other stuff on my plate but I've included a console log that might be some use
+> > to you. If you think you have a fix for it, feel free to send it on and I'll
+> > give it a test.
+> 
+> Hmmm... Looks like something is zapping an object. Try to rerun with 
+> a kernel compiled with CONFIG_SLAB_DEBUG. I would expect similar results.
+> 
+
+I've queued up a few tests. One completed as I wrote this and it didn't
+explode with SLAB_DEBUG set. Maybe the others will be different. I'll
+kick it around for a bit.
+
+It could be a real bug that slab is just not catuching.
+
+> > Brought up 4 CPUs
+> > Node 0 CPUs: 0-3
+> > mm/memory.c:111: bad pud c0000000050e4480.
+> > could not vmalloc 20971520 bytes for cache!
+> 
+> Hmmm... a bad pud? I need to look at how the puds are managed on power.
+> 
+> > migration_cost=0,1000
+> > *** SLUB: Redzone Inactive check fails in kmalloc-64@c0000000050de0f0 Slab
+> 
+> An object was overwritten with zeros after it was freed.
+
+> > RTAS daemon started
+> > RTAS: event: 1, Type: Platform Error, Severity: 2
+> > audit: initializing netlink socket (disabled)
+> > audit(1173335571.256:1): initialized
+> > Total HugeTLB memory allocated, 0
+> > VFS: Disk quotas dquot_6.5.1
+> > Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+> > JFS: nTxBlock = 8192, nTxLock = 65536
+> > SELinux:  Registering netfilter hooks
+> > io scheduler noop registered
+> > io scheduler anticipatory registered (default)
+> > io scheduler deadline registered
+> > io scheduler cfq registered
+> > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> > rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+> > rpaphp: Slot [0000:00:02.2](PCI location=U7879.001.DQD0T7T-P1-C4) registered
+> > vio_register_driver: driver hvc_console registering
+> > ------------[ cut here ]------------
+> > Badness at mm/slub.c:1701
+> 
+> Someone did a kmalloc(0, ...). Zero sized allocation are not flagged
+> by SLAB but SLUB does.
+> 
+
+I'll chase up what's happening here. It will be "reproducable" independent
+of SLUB by adding a similar check.
+
+> > Call Trace:
+> > [C00000000506B730] [C000000000011188] .show_stack+0x6c/0x1a0 (unreliable)
+> > [C00000000506B7D0] [C0000000001EE9F4] .report_bug+0x94/0xe8
+> > [C00000000506B860] [C00000000038C85C] .program_check_exception+0x16c/0x5f4
+> > [C00000000506B930] [C0000000000046F4] program_check_common+0xf4/0x100
+> > --- Exception: 700 at .get_slab+0xbc/0x18c
+> >     LR = .__kmalloc+0x28/0x104
+> > [C00000000506BC20] [C00000000506BCC0] 0xc00000000506bcc0 (unreliable)
+> > [C00000000506BCD0] [C0000000000CE2EC] .__kmalloc+0x28/0x104
+> > [C00000000506BD60] [C00000000022E724] .tty_register_driver+0x5c/0x23c
+> > [C00000000506BE10] [C000000000477910] .hvsi_init+0x154/0x1b4
+> > [C00000000506BEC0] [C000000000451B7C] .init+0x1c4/0x2f8
+> > [C00000000506BF90] [C0000000000275D0] .kernel_thread+0x4c/0x68
+> > mm/memory.c:111: bad pud c000000005762900.
+> > mm/memory.c:111: bad pud c000000005762480.
+> > ------------[ cut here ]------------
+> > kernel BUG at mm/mmap.c:1999!
+> 
+> More page table trouble.
 
 -- 
-Common sense is instinct, and enough of it is genius.
-		-- Josh Billings
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
