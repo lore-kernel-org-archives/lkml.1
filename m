@@ -1,991 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbXCHPvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbXCHPwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbXCHPvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 10:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXCHPvr
+	id S1752330AbXCHPwX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 10:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbXCHPwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 10:51:47 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38630 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbXCHPvm (ORCPT
+	Thu, 8 Mar 2007 10:52:23 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:38912 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752312AbXCHPwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 10:51:42 -0500
-Subject: [RFC][Patch 4/6] integrity: IMA integrity_measure() support
+	Thu, 8 Mar 2007 10:52:11 -0500
+Subject: [RFC][Patch 6/6] integrity: TPM internal kernel interface
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: safford@watson.ibm.com, serue@linux.vnet.ibm.com,
-       kjhall@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com
+       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
 Content-Type: text/plain
-Date: Thu, 08 Mar 2007 11:04:04 -0500
-Message-Id: <1173369844.5981.4.camel@localhost.localdomain>
+Date: Thu, 08 Mar 2007 11:04:28 -0500
+Message-Id: <1173369868.5981.6.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a re-release of Integrity Measurement Architecture(IMA) as a
-method of providing support for the integrity service framework API
-integrity_measure() call. When integrity_measure() is called, IMA
-submits the measurement (hash) of the file to the TPM chip, for
-inclusion in one of the chip's Platform Configuration Registers (PCR).
-IMA also keeps a list of all file names and hashes that have been
-submitted to the TPM, which can be viewed through securityfs. By
-separately requesting a TPM_Quote from the chip, an application can
-get a chip-signed value of the PCR, which, along with the list of
-measurements from IMA, can be used to attest, or prove to a third
-party, the validity of the hash list.  (The tpm-3.2.1 package includes
-example TPM applications for creating keys, and performing the
-TPM_Quote operation.) 
-
-IMA can be included or excluded in the kernel configuration. If
-included in the kernel, IMA can also be enabled or disabled on the
-kernel command line with evm_enable_ima=0.
-
-Index: linux-2.6.21-rc3-mm2/security/evm/Kconfig
+Index: linux-2.6.21-rc3-mm2/drivers/char/tpm/tpm.c
 ===================================================================
---- linux-2.6.21-rc3-mm2.orig/security/evm/Kconfig
-+++ linux-2.6.21-rc3-mm2/security/evm/Kconfig
-@@ -15,3 +15,4 @@ config INTEGRITY_EVM
+--- linux-2.6.21-rc3-mm2.orig/drivers/char/tpm/tpm.c
++++ linux-2.6.21-rc3-mm2/drivers/char/tpm/tpm.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2004 IBM Corporation
++ * Copyright (C) 2004,2007 IBM Corporation
+  *
+  * Authors:
+  * Leendert van Doorn <leendert@watson.ibm.com>
+@@ -25,6 +25,12 @@
  
- 	  If you are unsure how to answer this question, answer N.
- 
-+source security/evm/ima/Kconfig
-Index: linux-2.6.21-rc3-mm2/security/evm/Makefile
-===================================================================
---- linux-2.6.21-rc3-mm2.orig/security/evm/Makefile
-+++ linux-2.6.21-rc3-mm2/security/evm/Makefile
-@@ -3,3 +3,6 @@ obj-$(CONFIG_INTEGRITY_EVM) += evm.o
- 
- evm-y := evm_main.o evm_config.o evm_crypto.o evm_secfs.o
- 
-+ifeq ($(CONFIG_IMA_MEASURE), y)
-+evm-y += ima/ima_fs.o ima/ima_queue.o ima/ima_init.o ima/ima_main.o
-+endif
-Index: linux-2.6.21-rc3-mm2/security/evm/evm_integrity.h
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3-mm2/security/evm/evm_integrity.h
-@@ -0,0 +1,49 @@
-+/*
-+ * These functions enable EVM to be compiled with/without IMA.
-+ * The configuration parameter "evm_enable_ima" enables/disables
-+ * at runtime.
-+ */
-+
-+#include "ima/ima_evm.h"
-+
-+extern unsigned int evm_enable_ima;
-+
-+#ifdef CONFIG_IMA_MEASURE
-+static inline int evm_ima_init(void)
-+{
-+	if (evm_enable_ima)
-+		return ima_init();
-+}
-+
-+static inline void evm_ima_measure(const unsigned char *name, int hash_len,
-+				   char *hash)
-+{
-+	if (evm_enable_ima)
-+		ima_measure(name, hash_len, hash);
-+}
-+
-+static inline void evm_ima_cleanup(void)
-+{
-+	if (evm_enable_ima)
-+		ima_cleanup();
-+	evm_enable_ima = 0;
-+}
-+
-+#else
-+static inline int evm_ima_init(void)
-+{
-+	evm_enable_ima = 0;
-+	return 0;
-+}
-+
-+static inline void evm_ima_measure(const unsigned char *name, int hash_len,
-+				   char *hash)
-+{
-+	return;
-+}
-+
-+static inline void evm_ima_cleanup(void)
-+{
-+	evm_enable_ima = 0;
-+}
-+#endif
-Index: linux-2.6.21-rc3-mm2/security/evm/evm_secfs.c
-===================================================================
---- linux-2.6.21-rc3-mm2.orig/security/evm/evm_secfs.c
-+++ linux-2.6.21-rc3-mm2/security/evm/evm_secfs.c
-@@ -20,7 +20,7 @@
- extern int evm_initialized;
- 
- static struct dentry *evm_secdir, *evm_config;
--static struct dentry *evm_dir, *evm_cache, *evm_crypto, *evm_xattr;
-+static struct dentry *evm_dir, *evm_cache, *evm_crypto, *evm_xattr, *evm_ima;
- 
- static int evm_open_debug(struct inode *inode, struct file *file)
- {
-@@ -62,6 +62,10 @@ static ssize_t evm_read_debug(struct fil
- 		len = sprintf(page, "evm_debug: crypto: %s\n",
- 			      ((evm_debug & EVM_CRYPTO) == EVM_CRYPTO)
- 			      ? "ON" : "OFF");
-+	else if (strcmp(file->private_data, "ima") == 0)
-+		len = sprintf(page, "evm_debug: ima: %s\n",
-+			      ((evm_debug & EVM_IMA) == EVM_IMA)
-+			      ? "ON" : "OFF");
- 	else
- 		len = sprintf(page, "unknown evm_debug option\n");
- 
-@@ -87,6 +91,9 @@ static ssize_t evm_write_debug(struct fi
- 	else if (strcmp(file->private_data, "crypto") == 0)
- 		evm_debug = (flag == '0') ? evm_debug & ~EVM_CRYPTO :
- 		    evm_debug | EVM_CRYPTO;
-+	else if (strcmp(file->private_data, "ima") == 0)
-+		evm_debug = (flag == '0') ? evm_debug & ~EVM_IMA :
-+		    evm_debug | EVM_IMA;
- 	return buflen;
- }
- 
-@@ -169,12 +176,20 @@ int __init evm_init_secfs(void)
- 	if (!evm_crypto || IS_ERR(evm_crypto))
- 		goto out_del_cache;
- 
-+	evm_ima = debugfs_create_file("ima", S_IRUSR | S_IRGRP, evm_dir,
-+				      "ima", &evm_debug_ops);
-+	if (!evm_ima || IS_ERR(evm_ima))
-+		goto out_del_crypto;
-+
- 	evm_xattr = debugfs_create_file("xattr", S_IRUSR | S_IRGRP, evm_dir,
- 					"xattr", &evm_debug_ops);
- 	if (!evm_xattr || IS_ERR(evm_xattr))
--		goto out_del_crypto;
-+		goto out_del_ima;
-+
- 	return 0;
- 
-+out_del_ima:
-+	debugfs_remove(evm_ima);
- out_del_crypto:
- 	debugfs_remove(evm_crypto);
- out_del_cache:
-@@ -192,6 +207,7 @@ void __exit evm_cleanup_secfs(void)
- {
- 	debugfs_remove(evm_xattr);
- 	debugfs_remove(evm_crypto);
-+	debugfs_remove(evm_ima);
- 	debugfs_remove(evm_cache);
- 	debugfs_remove(evm_dir);
- 	if (evm_config)
-Index: linux-2.6.21-rc3-mm2/security/evm/ima/Kconfig
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3-mm2/security/evm/ima/Kconfig
-@@ -0,0 +1,31 @@
-+#
-+# IBM Integrity Measurement Architecture
-+#
-+
-+#menu "TPM-based Integrity Measurement Architecture"
-+
-+config IMA_MEASURE
-+	bool "TCG run-time Integrity Measurement Architecture"
-+	depends on SECURITY && (CRYPTO_SHA1=y) && INTEGRITY_EVM
-+	depends on ACPI
-+	help
-+	  IMA maintains a list of hash values of executables and
-+	  other sensitive system files loaded into the run-time
-+	  of this system. If your system has a TPM chip, then IMA
-+	  also maintains an aggregate integrity value over this
-+	  list inside the TPM hardware.  These measurements and
-+	  the aggregate (signed inside the TPM) can be retrieved
-+	  and presented to remote parties to establish system
-+	  properties. If unsure, say N.
-+
-+config IMA_MEASURE_PCR_IDX
-+	int "PCR for Aggregate (8<= Index <= 14)"
-+	depends on IMA_MEASURE
-+	range 8 14
-+	default 10
-+	help
-+	  IMA_MEASURE_PCR_IDX determines the TPM PCR register index
-+	  that IMA uses to maintain the integrity aggregate of the
-+	  measurement list.  If unsure, use the default 10.
-+#endmenu
-+
-Index: linux-2.6.21-rc3-mm2/security/evm/ima/ima.h
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3-mm2/security/evm/ima/ima.h
-@@ -0,0 +1,104 @@
-+/*
-+ * Copyright (C) 2005,2006,2007 IBM Corporation
-+ *
-+ * Reiner Sailer <sailer@watson.ibm.com>
-+ *
-+ * IBM Integrity Measurement Architecture for evm/slim.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ * File: ima.h
-+ *		internal ima definitions
-+ */
-+
-+#ifndef __LINUX_IMA_H
-+#define __LINUX_IMA_H
-+
-+#include <linux/types.h>
+ #include <linux/poll.h>
+ #include <linux/spinlock.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/string.h>
 +#include <linux/crypto.h>
-+#include <linux/security.h>
-+#include <linux/hash.h>
-+#include <linux/tpm.h>
-+
-+#define ima_printk(level, format, arg...)		\
-+	printk(level "ima (%s): " format ,__func__, ## arg)
-+
-+#define ima_error(format, arg...)	\
-+	ima_printk(KERN_ERR, format, ## arg)
-+
-+#define ima_info(format, arg...)	\
-+	ima_printk(KERN_INFO, format, ## arg)
-+
-+/* digest size for IMA, fits SHA1 or MD5 */
-+#define IMA_DIGEST_SIZE		20
-+#define TCG_EVENT_NAME_LEN_MAX	255
-+
-+#define IMA_HASH_BITS 9
-+#define MEASURE_HTABLE_SIZE (1 << IMA_HASH_BITS)
-+#define HASH_KEY(digest) (hash_long( \
-+	(unsigned long)(*digest), IMA_HASH_BITS));
-+
-+/* set during initialization */
-+extern int ima_used_chip;
-+
-+struct measure_entry {
-+	u32 measure_flags;
-+	u8 digest[IMA_DIGEST_SIZE];	/* sha1 or md5 measurement hash */
-+	char file_name[TCG_EVENT_NAME_LEN_MAX + 1];	/* name + \0 */
-+};
-+
-+struct queue_entry {
-+	struct hlist_node hnext;	/* place in hash collision list */
-+	struct list_head later;	/* place in ima_measurements list */
-+	struct measure_entry *entry;
-+};
-+
-+extern struct list_head ima_measurements;	/* list of all measurements */
-+
-+/* declarations */
-+int ima_fs_init(void);
-+void ima_fs_cleanup(void);
-+void create_htable(void);
-+void ima_invalidate_pcr(char *);
-+int ima_add_measure_entry(struct measure_entry *entry);
-+struct queue_entry *ima_lookup_digest_entry(u8 * digest);
-+
-+/*
-+ * used to protect h_table and sha_table
-+ */
-+extern spinlock_t ima_queue_lock;
-+
-+struct ima_h_table {
-+	atomic_t len;	/* number of stored measurements in the list */
-+	atomic_t violations;
-+	unsigned int max_htable_size;
-+	struct hlist_head queue[MEASURE_HTABLE_SIZE];
-+	atomic_t queue_len[MEASURE_HTABLE_SIZE];
-+};
-+extern struct ima_h_table ima_htable;
-+
-+/* TPM "Glue" definitions */
-+
-+#define IMA_TPM ((TPM_ANY_TYPE<<16)| TPM_ANY_NUM)
-+static inline void ima_extend(const u8 * hash)
-+{
-+	if (!ima_used_chip)
-+		return;
-+
-+	if (tpm_pcr_extend(IMA_TPM, CONFIG_IMA_MEASURE_PCR_IDX, hash) != 0)
-+		ima_error("Error Communicating to TPM chip\n");
-+}
-+
-+static inline void ima_pcrread(int idx, u8 * pcr, int pcr_size)
-+{
-+	if (!ima_used_chip)
-+		return;
-+
-+	if (tpm_pcr_read(IMA_TPM, idx, pcr, pcr_size) != 0) {
-+		ima_error("Error Communicating to TPM chip\n");
-+	}
-+}
-+#endif
-Index: linux-2.6.21-rc3-mm2/security/evm/ima/ima_evm.h
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3-mm2/security/evm/ima/ima_evm.h
-@@ -0,0 +1,18 @@
-+/*
-+ * Copyright (C) 2005,2007 IBM Corporation
-+ *
-+ * Reiner Sailer <sailer@watson.ibm.com>
-+ *
-+ * IBM Integrity Measurement Architecture for evm/slim.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ * File: ima_evm.h
-+ *		exported ima functions
-+ */
-+int ima_init(void);
-+void ima_cleanup(void);
-+void ima_measure(const unsigned char *name, int hash_len, char *hash);
-Index: linux-2.6.21-rc3-mm2/security/evm/ima/ima_fs.c
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3-mm2/security/evm/ima/ima_fs.c
-@@ -0,0 +1,284 @@
-+/*
-+ * Copyright (C) 2005,2006,2007 IBM Corporation
-+ *
-+ * Kylene Hall <kjhall@us.ibm.com>
-+ * Reiner Sailer <sailer@us.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ * File: ima_fs.c
-+ *		implemenents security file system for reporting
-+ *              current measurement list and IMA statistics
-+ */
-+#include <linux/module.h>
-+#include <linux/seq_file.h>
-+
-+#include "ima.h"
-+
-+#define TMPBUFLEN 12
-+static ssize_t ima_show_htable_value(char __user * buf, size_t count,
-+				     loff_t * ppos, atomic_t * val)
-+{
-+	char tmpbuf[TMPBUFLEN];
-+	ssize_t len;
-+
-+	len = scnprintf(tmpbuf, TMPBUFLEN, "%i\n", atomic_read(val));
-+	return simple_read_from_buffer(buf, count, ppos, tmpbuf, len);
-+}
-+
-+static ssize_t ima_show_htable_violations(struct file *filp,
-+					  char __user * buf,
-+					  size_t count, loff_t * ppos)
-+{
-+	return ima_show_htable_value(buf, count, ppos, &ima_htable.violations);
-+}
-+
-+static struct file_operations ima_htable_violations_ops = {
-+	.read = ima_show_htable_violations
-+};
-+
-+static ssize_t ima_show_measurements_count(struct file *filp,
-+					   char __user * buf,
-+					   size_t count, loff_t * ppos)
-+{
-+	return ima_show_htable_value(buf, count, ppos, &ima_htable.len);
-+
-+}
-+
-+static struct file_operations ima_measurements_count_ops = {
-+	.read = ima_show_measurements_count
-+};
-+
-+/* returns pointer to hlist_node */
-+static void *ima_measurements_start(struct seq_file *m, loff_t * pos)
-+{
-+	struct list_head *lpos;
-+	loff_t l = *pos;
-+	/* we need a lock since pos could point beyond last element */
-+	rcu_read_lock();
-+	list_for_each_rcu(lpos, &ima_measurements) {
-+		if (!l--) {
-+			rcu_read_unlock();
-+			return lpos;
-+		}
-+	}
-+	rcu_read_unlock();
-+	return NULL;
-+}
-+
-+static void *ima_measurements_next(struct seq_file *m, void *v,
-+				   loff_t * pos)
-+{
-+	/* lock protects when reading beyond last element
-+	 * against concurrent list-extension */
-+	struct list_head *lpos = (struct list_head *) v;
-+
-+	rcu_read_lock();
-+	lpos = rcu_dereference(lpos->next);
-+	rcu_read_unlock();
-+	(*pos)++;
-+
-+	return (lpos == &ima_measurements) ? NULL : lpos;
-+}
-+
-+static void ima_measurements_stop(struct seq_file *m, void *v)
-+{
-+}
-+
-+
-+/* print format:
-+ *       32bit-le=pcr#
-+ *       32bit-le=type# << flag
-+ *       char[20]=digest
-+ *       32bit-le=eventDataSize n
-+ *       eventdata[n] = filename
-+ *
-+ *       flags bits:
-+ *         31-16 application flags,
-+ *         15-3  kernel flags,
-+ *          2-0  hook
-+ */
-+static int ima_measurements_show(struct seq_file *m, void *v)
-+{
-+	/* the list never shrinks, so we don't need a lock here */
-+	struct list_head *lpos = v;
-+	struct queue_entry *qe;
-+	struct measure_entry *e;
-+	int filename_len;
-+	int i;
-+	u32 pcr = CONFIG_IMA_MEASURE_PCR_IDX;
-+	char data[4];
-+
-+	/* get entry */
-+	qe = list_entry(lpos, struct queue_entry, later);
-+	e = qe->entry;
-+	if (e == NULL)
-+		return -1;
-+
-+	/*
-+	 * 1st: PCRIndex
-+	 * PCR used is always the same (config option) in
-+	 * little-endian format
-+	 */
-+	memcpy(data, &pcr, 4);
-+	for (i = 0; i < 4; i++)
-+		seq_putc(m, data[i]);
-+
-+	/* 2nd: eventtype (=flags) */
-+	memcpy(data, &e->measure_flags, 4);
-+	for (i = 0; i < 4; i++)
-+		seq_putc(m, data[i]);
-+
-+	/* 3rd: digest */
-+	for (i = 0; i < 20; i++)
-+		seq_putc(m, e->digest[i]);
-+
-+	/* 4th: eventDataSize */
-+	filename_len = strlen(e->file_name);
-+	if (filename_len > TCG_EVENT_NAME_LEN_MAX)
-+		filename_len = TCG_EVENT_NAME_LEN_MAX;
-+
-+	memcpy(data, &filename_len, 4);
-+	for (i = 0; i < 4; i++)
-+		seq_putc(m, data[i]);
-+
-+	/* 5th:  filename  */
-+
-+	for (i = 0; i < filename_len; i++)
-+		seq_putc(m, e->file_name[i]);
-+
-+	return 0;
-+}
-+
-+static struct seq_operations ima_measurments_seqops = {
-+	.start = ima_measurements_start,
-+	.next = ima_measurements_next,
-+	.stop = ima_measurements_stop,
-+	.show = ima_measurements_show
-+};
-+
-+static int ima_measurements_open(struct inode *inode, struct file *file)
-+{
-+	return seq_open(file, &ima_measurments_seqops);
-+}
-+
-+static struct file_operations ima_measurements_ops = {
-+	.open = ima_measurements_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = seq_release,
-+};
-+
-+
-+/* print in ascii */
-+static int ima_ascii_measurements_show(struct seq_file *m, void *v)
-+{
-+	/* the list never shrinks, so we don't need a lock here */
-+	struct list_head *lpos = v;
-+	struct queue_entry *qe;
-+	struct measure_entry *e;
-+	int i;
-+
-+	/* get entry */
-+	qe = list_entry(lpos, struct queue_entry, later);
-+	e = qe->entry;
-+	if (e == NULL)
-+		return -1;
-+
-+	/* 1st: PCR used (config option) */
-+	seq_printf(m, "%2d ", CONFIG_IMA_MEASURE_PCR_IDX);
-+
-+	/* 2nd: SHA1 */
-+	for (i = 0; i < 20; i++)
-+		seq_printf(m, "%02x", e->digest[i]);
-+
-+	/* 3th:  filename <= max + \'0' delimiter */
-+	seq_printf(m, " %s\n", e->file_name);
-+
-+	return 0;
-+}
-+
-+static struct seq_operations ima_ascii_measurements_seqops = {
-+	.start = ima_measurements_start,
-+	.next = ima_measurements_next,
-+	.stop = ima_measurements_stop,
-+	.show = ima_ascii_measurements_show
-+};
-+
-+static int ima_ascii_measurements_open(struct inode *inode,
-+				       struct file *file)
-+{
-+	return seq_open(file, &ima_ascii_measurements_seqops);
-+}
-+
-+static struct file_operations ima_ascii_measurements_ops = {
-+	.open = ima_ascii_measurements_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = seq_release,
-+};
-+
-+static struct dentry
-+		*ima_dir = NULL,
-+		*binary_runtime_measurements = NULL,
-+    		*ascii_runtime_measurements = NULL,
-+		*runtime_measurements_count = NULL,
-+		*violations = NULL;
-+
-+int ima_fs_init(void)
-+{
-+
-+	ima_dir = securityfs_create_dir("ima", NULL);
-+	if (!ima_dir || IS_ERR(ima_dir))
-+		return -1;
-+
-+
-+	binary_runtime_measurements =
-+	    securityfs_create_file("binary_runtime_measurements",
-+				   S_IRUSR | S_IRGRP, ima_dir, NULL,
-+				   &ima_measurements_ops);
-+	if (!binary_runtime_measurements || IS_ERR(binary_runtime_measurements))
-+		goto out;
-+
-+	ascii_runtime_measurements =
-+	    securityfs_create_file("ascii_runtime_measurements",
-+				   S_IRUSR | S_IRGRP, ima_dir, NULL,
-+				   &ima_ascii_measurements_ops);
-+	if (!ascii_runtime_measurements || IS_ERR(ascii_runtime_measurements))
-+		goto out;
-+
-+	runtime_measurements_count =
-+	    securityfs_create_file("runtime_measurements_count",
-+				   S_IRUSR | S_IRGRP, ima_dir, NULL,
-+				   &ima_measurements_count_ops);
-+	if (!runtime_measurements_count || IS_ERR(runtime_measurements_count))
-+		goto out;
-+
-+	violations =
-+	    securityfs_create_file("violations", S_IRUSR | S_IRGRP,
-+				   ima_dir, NULL,
-+				   &ima_htable_violations_ops);
-+	if (!violations || IS_ERR(violations))
-+		goto out;
-+	return 0;
-+
-+
-+out:
-+	securityfs_remove(runtime_measurements_count);
-+	securityfs_remove(ascii_runtime_measurements);
-+	securityfs_remove(binary_runtime_measurements);
-+	securityfs_remove(ima_dir);
-+    return -1;
-+}
-+
-+void __exit ima_fs_cleanup(void)
-+{
-+	securityfs_remove(violations);
-+	securityfs_remove(runtime_measurements_count);
-+	securityfs_remove(ascii_runtime_measurements);
-+	securityfs_remove(binary_runtime_measurements);
-+	securityfs_remove(ima_dir);
-+}
-Index: linux-2.6.21-rc3-mm2/security/evm/ima/ima_init.c
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3-mm2/security/evm/ima/ima_init.c
-@@ -0,0 +1,117 @@
-+/*
-+ * Copyright (C) 2005,2006,2007 IBM Corporation
-+ *
-+ * Reiner Sailer      <sailer@watson.ibm.com>
-+ * Leendert van Doorn <leendert@watson.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ * File: ima_init.c
-+ *             initialization and cleanup functions
-+ */
-+#include <linux/module.h>
++#include <linux/fs.h>
 +#include <asm/scatterlist.h>
-+#include <linux/scatterlist.h>
-+#include "ima.h"
-+#include "ima_evm.h"
-+
-+/* name for boot aggregate entry */
-+static char *boot_aggregate_name = "boot_aggregate";
-+static const char version[] = "v7.6 02/27/2007";
-+static const char illegal_pcr[20] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-+
-+int ima_used_chip = 0;
-+
-+static void ima_add_boot_aggregate(void)
+ #include "tpm.h"
+ 
+ enum tpm_const {
+@@ -47,6 +53,8 @@ enum tpm_duration {
+ static LIST_HEAD(tpm_chip_list);
+ static DEFINE_SPINLOCK(driver_lock);
+ static DECLARE_BITMAP(dev_mask, TPM_NUM_DEVICES);
++#define TPM_CHIP_NUM_MASK       0x0000ffff
++#define TPM_CHIP_TYPE_SHIFT     16
+ 
+ /*
+  * Array with one entry per ordinal defining the maximum amount
+@@ -363,7 +371,7 @@ EXPORT_SYMBOL_GPL(tpm_calc_ordinal_durat
+ /*
+  * Internal kernel interface to transmit TPM commands
+  */
+-static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
++ssize_t tpm_transmit(struct tpm_chip *chip, char *buf,
+ 			    size_t bufsiz)
+ {
+ 	ssize_t rc;
+@@ -422,6 +430,7 @@ out:
+ 	up(&chip->tpm_mutex);
+ 	return rc;
+ }
++EXPORT_SYMBOL_GPL(tpm_transmit);
+ 
+ #define TPM_DIGEST_SIZE 20
+ #define TPM_ERROR_SIZE 10
+@@ -665,6 +674,7 @@ ssize_t tpm_show_temp_deactivated(struct
+ }
+ EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
+ 
++#define READ_PCR_RESULT_SIZE 30
+ static const u8 pcrread[] = {
+ 	0, 193,			/* TPM_TAG_RQU_COMMAND */
+ 	0, 0, 0, 14,		/* length */
+@@ -713,6 +723,93 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(tpm_show_pcrs);
+ 
++static struct tpm_chip* tpm_chip_lookup(int chip_num, int chip_typ)
 +{
-+	/* cumulative sha1 over tpm registers 0-7 */
-+	struct measure_entry *entry;
-+	size_t count;
-+	int err;
++        struct tpm_chip *pos;
 +
-+	/* create new entry for boot aggregate */
-+	entry = (struct measure_entry *)
-+	    kzalloc(sizeof(struct measure_entry), GFP_ATOMIC);
-+	if (entry == NULL) {
-+		ima_invalidate_pcr("error allocating new measurement entry");
-+		return;
-+	}
-+	if ((count = strlen(boot_aggregate_name)) > TCG_EVENT_NAME_LEN_MAX)
-+		count = TCG_EVENT_NAME_LEN_MAX;
-+	memcpy(entry->file_name, boot_aggregate_name, count);
-+	entry->file_name[count] = '\0';
-+	if (ima_used_chip) {
-+		int i;
-+		u8 pcr_i[20];
-+		struct hash_desc desc;
-+		struct crypto_hash *tfm;
-+		struct scatterlist sg;
++        spin_lock(&driver_lock);
++        list_for_each_entry(pos, &tpm_chip_list, list)
++                if ((chip_num == TPM_ANY_NUM ||
++                        pos->dev_num == chip_num ) &&
++                        (chip_typ == TPM_ANY_TYPE)){
++                        spin_unlock(&driver_lock);
++                        return pos;
++                }
 +
-+		tfm = crypto_alloc_hash("sha1", 0, CRYPTO_ALG_ASYNC);
-+		if (!tfm || IS_ERR(tfm)) {
-+			kfree(entry);
-+			ima_error("error initializing digest.\n");
-+			return;
-+		}
-+		desc.tfm = tfm;
-+		desc.flags = 0;
-+		crypto_hash_init(&desc);
-+
-+		for (i = 0; i < 8; i++) {
-+			ima_pcrread(i, pcr_i, sizeof(pcr_i));
-+			/* now accumulate with current aggregate */
-+			sg_init_one(&sg, (u8 *)pcr_i, 20);
-+			crypto_hash_update(&desc, &sg, 20);
-+		}
-+		crypto_hash_final(&desc, entry->digest);
-+		crypto_free_hash(tfm);
-+	} else
-+		memset(entry->digest, 0xff, 20);
-+
-+	/* now add measurement; if TPM bypassed, we have a ff..ff entry */
-+	err = ima_add_measure_entry(entry);
-+	if (err < 0) {
-+		kfree(entry);
-+		if (err != -EEXIST)
-+			ima_invalidate_pcr("error adding boot aggregate");
-+	}
++        spin_unlock(&driver_lock);
++        return NULL;
 +}
 +
-+/* general invalidation function called by the measurement code */
-+void ima_invalidate_pcr(char *cause)
++/*
++ * Return 0 on success.  On error pass along error code.
++ * chip_id Upper 2 bytes equal ANY, HW_ONLY or SW_ONLY
++ * Lower 2 bytes equal tpm idx # or AN&
++ * res_buf must fit a TPM_PCR (20 bytes) or NULL if you don't care
++ */
++int tpm_pcr_read( u32 chip_id, int pcr_idx, u8* res_buf, int res_buf_size )
 +{
-+	/* extend pcr with illegal digest (no digest yields 0) */
-+	/* extending twice is obviously flagging the exception condition. */
-+	ima_error("INVALIDATING PCR AGGREGATE. Cause=%s.\n", cause);
-+	ima_extend(illegal_pcr);
-+	ima_extend(illegal_pcr);
-+	atomic_inc(&ima_htable.violations);	/* can overflow; indicator only */
-+}
++        u8 data[READ_PCR_RESULT_SIZE];
++        int rc;
++        __be32 index;
++        int chip_num = chip_id & TPM_CHIP_NUM_MASK;
++        struct tpm_chip* chip;
 +
-+int ima_init(void)
++        if ( res_buf && res_buf_size < TPM_DIGEST_SIZE )
++                return -ENOSPC;
++
++        if ( (chip = tpm_chip_lookup( chip_num,
++                                chip_id >> TPM_CHIP_TYPE_SHIFT ) ) == NULL )
++                return -ENODEV;
++
++        memcpy(data, pcrread, sizeof(pcrread));
++        index = cpu_to_be32(pcr_idx);
++        memcpy(data + 10, &index, 4);
++        if ((rc = tpm_transmit(chip, data, sizeof(data))) > 0 )
++                rc = be32_to_cpu(*((u32*)(data+6)));
++
++        if ( rc == 0 && res_buf )
++                memcpy(res_buf, data+10, TPM_DIGEST_SIZE);
++
++        return rc;
++
++}
++EXPORT_SYMBOL_GPL(tpm_pcr_read);
++
++#define EXTEND_PCR_SIZE 34
++static const u8 pcrextend[] = {
++        0, 193,                 /* TPM_TAG_RQU_COMMAND */
++        0, 0, 0, 34,            /* length */
++        0, 0, 0, 20,            /* TPM_ORD_Extend */
++        0, 0, 0, 0              /* PCR index */
++};
++
++/*
++ * Return 0 on success.  On error pass along error code.
++ * chip_id Upper 2 bytes equal ANY, HW_ONLY or SW_ONLY
++ * Lower 2 bytes equal tpm idx # or ANY
++ */
++int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8* hash)
 +{
-+	int rc;
++        u8 data[EXTEND_PCR_SIZE];
++        int rc;
++        __be32 index;
++        int chip_num = chip_id & TPM_CHIP_NUM_MASK;
++        struct tpm_chip* chip;
 +
-+	ima_used_chip = 0;
-+	rc = tpm_pcr_read(IMA_TPM, 0, NULL, 0);
-+	if (rc == 0)
-+		ima_used_chip = 1;
++        if ( (chip = tpm_chip_lookup( chip_num,
++                        chip_id >> TPM_CHIP_TYPE_SHIFT )) == NULL )
++                return -ENODEV;
 +
-+	if (!ima_used_chip)
-+		ima_info("No TPM chip found(rc = %d), activating TPM-bypass!\n", rc);
-+
-+	create_htable();	/* for measurements */
-+
-+	/* boot aggregate must be very first entry */
-+	ima_add_boot_aggregate();
-+
-+	return ima_fs_init();
++        memcpy(data, pcrextend, sizeof(pcrextend));
++        index = cpu_to_be32(pcr_idx);
++        memcpy(data + 10, &index, 4);
++        memcpy( data + 14, hash, TPM_DIGEST_SIZE );
++        if ((rc = tpm_transmit(chip, data, sizeof(data))) > 0 )
++                rc = be32_to_cpu(*((u32*)(data+6)));
++        return rc;
 +}
++EXPORT_SYMBOL_GPL(tpm_pcr_extend);
 +
-+void ima_cleanup(void)
-+{
-+	ima_fs_cleanup();
-+}
-Index: linux-2.6.21-rc3-mm2/security/evm/ima/ima_main.c
+ #define  READ_PUBEK_RESULT_SIZE 314
+ static const u8 readpubek[] = {
+ 	0, 193,			/* TPM_TAG_RQU_COMMAND */
+@@ -944,13 +1041,13 @@ int tpm_release(struct inode *inode, str
+ 
+ 	spin_lock(&driver_lock);
+ 	file->private_data = NULL;
++	spin_unlock(&driver_lock);
+ 	chip->num_opens--;
+ 	del_singleshot_timer_sync(&chip->user_read_timer);
+ 	flush_scheduled_work();
+ 	atomic_set(&chip->data_pending, 0);
+ 	put_device(chip->dev);
+ 	kfree(chip->data_buffer);
+-	spin_unlock(&driver_lock);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(tpm_release);
+Index: linux-2.6.21-rc3-mm2/drivers/char/tpm/tpm.h
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/drivers/char/tpm/tpm.h
++++ linux-2.6.21-rc3-mm2/drivers/char/tpm/tpm.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2004 IBM Corporation
++ * Copyright (C) 2004, 2007 IBM Corporation
+  *
+  * Authors:
+  * Leendert van Doorn <leendert@watson.ibm.com>
+@@ -25,6 +25,7 @@
+ #include <linux/miscdevice.h>
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
++#include <linux/tpm.h>
+ 
+ enum tpm_timeout {
+ 	TPM_TIMEOUT = 5,	/* msecs */
+Index: linux-2.6.21-rc3-mm2/include/linux/tpm.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-rc3-mm2/security/evm/ima/ima_main.c
-@@ -0,0 +1,87 @@
++++ linux-2.6.21-rc3-mm2/include/linux/tpm.h
+@@ -0,0 +1,60 @@
 +/*
-+ * Copyright (C) 2005,2006,2007 IBM Corporation
++ * Copyright (C) 2004,2007 IBM Corporation
 + *
 + * Authors:
++ * Leendert van Doorn <leendert@watson.ibm.com>
++ * Dave Safford <safford@watson.ibm.com>
 + * Reiner Sailer <sailer@watson.ibm.com>
-+ * Serge Hallyn <serue@us.ibm.com>
-+ * Kylene Hall <kylene@us.ibm.com>
++ * Kylene Hall <kjhall@us.ibm.com>
++ *
++ * Maintained by: <tpmdd_devel@lists.sourceforge.net>
++ *
++ * Device driver for TCG/TCPA TPM (trusted platform module).
++ * Specifications at www.trustedcomputinggroup.org
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License as
 + * published by the Free Software Foundation, version 2 of the
 + * License.
 + *
-+ * File: ima_main.c
-+ *             implements file measurements and their storage
 + */
-+#include <linux/module.h>
++#ifndef __LINUX_TPM_H__
++#define __LINUX_TPM_H__
 +
-+#include "ima.h"
-+#include "ima_evm.h"
++#define CONFIG_TCG_TPM 1
++#define PCI_DEVICE_ID_AMD_8111_LPC    0x7468
 +
-+/**
-+ * ima_measure - collect and protect measurements
-+ * @name:ascii file name associated with the measurement hash
-+ * @hash_len:length of hash value in bytes (16 for MD5, 20 for SHA1)
-+ * @hash:actual hash value pre-calculated by evm/slim
-+ *
-+ * Description:ima_measure creates a new measurement entry out of @hash
-+ *		and @name and adds this entry to an ordered list of
-+ *		measurements entries maintained inside the kernel. If
-+ *		@hash_len is less than 20 then the remaining digest bytes
-+ *		will be zero. It also updates the aggregate integrity value
-+ *		(maintained inside the configured TPM PCR) over the hashes
-+ *		of the current list of measurement entries.
-+ *
-+ *		Applications retrieve the current kernel-held measurement
-+ *		list through the securityfs entries in
-+ *		/sys/kernel/security/ima. The signed aggregate TPM PCR
-+ *		(called quote) can be retrieved using a TPM user space
-+ *		library and is used to validate the measurement list.
-+ */
-+void ima_measure(const unsigned char *name, int hash_len, char *hash)
-+{
-+	struct measure_entry *entry;
-+	u8 digest[IMA_DIGEST_SIZE];
-+	int err = 0, count;
-+
-+	if (hash_len > IMA_DIGEST_SIZE) {
-+		ima_info
-+		    ("%s: SLIM digest too long. Cutting to %x bytes.\n",
-+		     __func__, IMA_DIGEST_SIZE);
-+		hash_len = IMA_DIGEST_SIZE;
-+	}
-+
-+	memset(digest, 0, IMA_DIGEST_SIZE);
-+
-+	if (!memcmp(digest, hash, IMA_DIGEST_SIZE))
-+		ima_error("Error, NULL hash value!\n");
-+
-+	memcpy(digest, hash, hash_len);
-+
-+	/* hash exists already? */
-+	if (ima_lookup_digest_entry(digest))
-+		return;
-+
-+	/* create new entry and add to measurement list */
-+	entry = kzalloc(sizeof(struct measure_entry), GFP_ATOMIC);
-+	if (!entry) {
-+		ima_error("Error allocating new measurement entry");
-+		return;		/* invalidate pcr */
-+	}
-+
-+	entry->measure_flags = 0;
-+	if ((count = strlen(name)) > TCG_EVENT_NAME_LEN_MAX)
-+		count = TCG_EVENT_NAME_LEN_MAX;
-+
-+	memcpy(entry->file_name, name, count);
-+	entry->file_name[count] = '\0';
-+	memcpy(entry->digest, digest, IMA_DIGEST_SIZE);
-+
-+	err = ima_add_measure_entry(entry);
-+	if (err < 0) {
-+		kfree(entry);
-+		if (err != -EEXIST)
-+			ima_error("Error adding measurement entry");
-+	}
-+}
-Index: linux-2.6.21-rc3-mm2/security/evm/ima/ima_queue.c
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc3-mm2/security/evm/ima/ima_queue.c
-@@ -0,0 +1,128 @@
 +/*
-+ * Copyright (C) 2005,2006,2007 IBM Corporation
-+ *
-+ * Serge Hallyn <serue@us.ibm.com>
-+ * Reiner Sailer <sailer@watson.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ * File: ima_queue.c
-+ *             implements queues that store IMA measurements and
-+ *             maintains aggregate over the stored measurements
-+ *             in the pre-configured TPM PCR (if available)
-+ *             The measurement list is append-only. No entry is
-+ *             ever removed or changed during the boot-cycle.
++ * Chip type is one of these values in the upper two bytes of chip_id
 + */
-+#include <linux/module.h>
++enum tpm_chip_type {
++	TPM_HW_TYPE = 0x0,
++	TPM_SW_TYPE = 0x1,
++	TPM_ANY_TYPE = 0xFFFF,
++};
 +
-+#include "ima.h"
-+
-+struct list_head ima_measurements;	/* list of all measurements */
-+struct ima_h_table ima_htable;	/* key: inode (before secure-hashing a file) */
-+
-+/* Spinlock protects list for rarely occurring, critical operations
-+ * (extend, dirty-flag). For scalability, we use RCU protection during
-+ * normal operation (lookup entries). */
-+DEFINE_SPINLOCK(ima_queue_lock);
-+
-+/* mutex protects atomicity of extending measurement list
-+ * and extending the TPM PCR aggregate. Since tpm_extend can take
-+ * long (and the tpm driver uses a mutex), we can't use the spinlock.
++/*
++ * Chip num is this value or a valid tpm idx in lower two bytes of chip_id
 + */
-+static DECLARE_MUTEX(ima_extend_list_mutex);
++enum tpm_chip_num {
++	TPM_ANY_NUM = 0xFFFF,
++};
 +
-+void create_htable(void)
++
++#ifdef CONFIG_TCG_TPM
++extern int tpm_pcr_read(u32 chip_id, int pcr_idx, u8* res_buf, int res_buf_size);
++extern int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8* hash);
++#else
++static inline int tpm_pcr_read(u32 chip_id, int pcr_idx, u8* res_buf,
++				int res_buf_size)
 +{
-+	int i;
-+
-+	spin_lock(&ima_queue_lock);
-+	INIT_LIST_HEAD(&ima_measurements);
-+	atomic_set(&ima_htable.len, 0);
-+	atomic_set(&ima_htable.violations, 0);
-+	ima_htable.max_htable_size = MEASURE_HTABLE_SIZE;
-+
-+	for (i = 0; i < ima_htable.max_htable_size; i++) {
-+		INIT_HLIST_HEAD(&ima_htable.queue[i]);
-+		atomic_set(&ima_htable.queue_len[i], 0);
-+	}
-+
-+	init_MUTEX(&ima_extend_list_mutex);
-+	spin_unlock(&ima_queue_lock);
++	return -1;
 +}
 +
-+struct queue_entry *ima_lookup_digest_entry(u8 * digest_value)
++static inline int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8* hash)
 +{
-+	struct queue_entry *qe, *ret = NULL;
-+	unsigned int key;
-+	struct hlist_node *pos;
-+
-+	key = HASH_KEY(digest_value);
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(qe, pos, &ima_htable.queue[key], hnext) {
-+		if (memcmp(qe->entry->digest, digest_value, 20) == 0) {
-+			ret = qe;
-+			break;
-+		}
-+	}
-+	rcu_read_unlock();
-+	return ret;
++	return -1;
 +}
++#endif
++#endif
 +
-+/* Called with ima_queue_lock held */
-+static int ima_add_digest_entry(struct measure_entry *entry)
-+{
-+	struct queue_entry *qe;
-+	unsigned int key;
-+
-+	key = HASH_KEY(entry->digest);
-+	qe = kmalloc(sizeof(struct queue_entry), GFP_ATOMIC);
-+	if (qe == NULL) {
-+		ima_error("OUT OF MEMORY ERROR creating queue entry.\n");
-+		return -ENOMEM;
-+	}
-+	qe->entry = entry;
-+
-+	hlist_add_head_rcu(&qe->hnext, &ima_htable.queue[key]);
-+	atomic_inc(&ima_htable.queue_len[key]);
-+	return 0;
-+}
-+
-+int ima_add_measure_entry(struct measure_entry *entry)
-+{
-+	struct queue_entry *qe;
-+	int error = 0;
-+
-+	down(&ima_extend_list_mutex);
-+	spin_lock(&ima_queue_lock);
-+	if (ima_lookup_digest_entry(entry->digest)) {
-+		error = -EEXIST;
-+		spin_unlock(&ima_queue_lock);
-+		goto out;
-+	}
-+	qe = kmalloc(sizeof(struct queue_entry), GFP_ATOMIC);
-+	if (qe == NULL) {
-+		ima_error("OUT OF MEMORY in %s.\n", __func__);
-+		error = -ENOMEM;
-+		spin_unlock(&ima_queue_lock);
-+		goto out;
-+	}
-+	qe->entry = entry;
-+
-+	INIT_LIST_HEAD(&qe->later);
-+	list_add_tail_rcu(&qe->later, &ima_measurements);
-+
-+	atomic_inc(&ima_htable.len);
-+	if (ima_add_digest_entry(entry)) {
-+		error = -ENOMEM;
-+		spin_unlock(&ima_queue_lock);
-+		goto out;
-+	}
-+	spin_unlock(&ima_queue_lock);
-+	ima_extend(entry->digest);
-+      out:
-+	up(&ima_extend_list_mutex);
-+	return error;
-+}
-
-
-
 
 
