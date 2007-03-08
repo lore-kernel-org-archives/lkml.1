@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbXCHEVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667AbXCHEWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751700AbXCHEVH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 23:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbXCHEVH
+	id S1751667AbXCHEWL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 23:22:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXCHEWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 23:21:07 -0500
-Received: from 1wt.eu ([62.212.114.60]:1067 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751647AbXCHEVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 23:21:06 -0500
-Date: Thu, 8 Mar 2007 05:16:28 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, rkuhn@e18.physik.tu-muenchen.de,
-       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp_cubic: use 32 bit math
-Message-ID: <20070308041628.GA24530@1wt.eu>
-References: <20070306145842.7d7fea84@freekitty> <20070307060838.GI943@1wt.eu> <20070307170731.2b4397e3@freekitty> <20070307.185539.48527371.davem@davemloft.net> <45EF7EB7.8040806@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Mar 2007 23:22:11 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:12773 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbXCHEWJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 23:22:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=qN/2PVTN9pgaLfVp1NCTcXXrZ66lYGMICh2ha4kwO0Jwn6jWCnReVCr3pzK/UQyoUk0xLQZkbOJQ8BCFawVdqvQpVgiAFXh4OtsVtgEnOGxGeR7+RY8c6kpygrFH8BB6z5y7Nsa+gnASwataEN+BNYKRFugXzBfwtL8/mMnD67Q=
+Message-ID: <8cd998d50703072022v2bbf1fd9y41b5496f90062e6@mail.gmail.com>
+Date: Thu, 8 Mar 2007 15:22:08 +1100
+From: "Con Kolivas" <kernel@kolivas.org>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [RSDL-mm 0/6] RSDL cpu scheduler for -mm
+Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+In-Reply-To: <20070307185430.31fb48b8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45EF7EB7.8040806@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+References: <200703071226.43238.kernel@kolivas.org>
+	 <20070307174345.4c398171.akpm@linux-foundation.org>
+	 <20070307185430.31fb48b8.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 3533f25650179311
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 07:10:47PM -0800, Stephen Hemminger wrote:
-> David Miller wrote:
-> >From: Stephen Hemminger <shemminger@linux-foundation.org>
-> >Date: Wed, 7 Mar 2007 17:07:31 -0800
+On 08/03/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 7 Mar 2007 17:43:45 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> > On Wed, 7 Mar 2007 12:26:42 +1100
+> > Con Kolivas <kernel@kolivas.org> wrote:
 > >
-> >  
-> >>The basic calculation has to be done in 32 bits to avoid
-> >>doing 64 bit divide by 3. The value x is only 22bits max
-> >>so only need full 64 bits only for x^2.
-> >>
-> >>Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-> >>    
+> > > What follows is the same patch series that constitutes the RDSL "Rotating
+> > > Staircase DeadLine" cpu scheduler resynced for 2.6.21-rc2-mm2.
 > >
-> >Applied, thanks Stephen.
+> > Big oops early in boot on x86_64 SMP, in rq_bitmap_error+0x97/0x9f.
 > >
-> >What about Willy Tarreau's supposedly even faster variant?
-> >Or does this incorporate that set of improvements?
-> >  
-> That's what this is:
->    x = (2 * x + (uint32_t)div64_64(a, (uint64_t)x*(uint64_t)x)) / 3;
+> > I stubbed it out with a `return MAX_RT_PRIO;' (I think) but it then oopsed
+> > differently.  Before netconsole had come up, no serial console, no digital
+> > camera.
+> >
+> > There's stuff in http://userweb.kernel.org/~akpm/ck/ - you can probably
+> > boot that kernel on your own machine.
+> >
+> > I need to do rc3-mm1 now.  I might find some time to poke at this
+> > further after that, but I have to leave for a week in .jp and it'll be
+> > squeezy, sorry.
+>
+> well it boots os dual pIII and quad powerpc.
+>
+> The powerpc says
+>
+> Scheduler bitmap error - bitmap being reconstructed..
+>
+> during bootup.  But it didn't crash like the Nocona machine.
 
-Confirmed, it's the same. BTW, has someone tested on a 64bit system if
-it brings any difference ?
+Ah thanks. Sorry I have a very busy day at work and am unable to do
+anything about it till tonight. I could imagine on nocona this would
+be due to the idle task being scheduled on init - which it is not
+supposed to do but if you read the comment in sched_init it says it
+*might. I have no way of handling that at the moment because I wasn't
+sure it ever happened any more.  As for the powerpc.. I have no idea
+(from where I am at the moment which it would be totally inappopriate
+for me to try to debug :P), sorry.
 
-Willy
-
+--
+-ck
