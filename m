@@ -1,65 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXCHTKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933082AbXCHTLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933080AbXCHTKu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 14:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbXCHTKu
+	id S933082AbXCHTLs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 14:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbXCHTLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 14:10:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35616 "EHLO mx2.mail.elte.hu"
+	Thu, 8 Mar 2007 14:11:48 -0500
+Received: from mail.tnnet.fi ([217.112.240.26]:35642 "EHLO mail.tnnet.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933058AbXCHTKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 14:10:48 -0500
-Date: Thu, 8 Mar 2007 20:06:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Message-ID: <20070308190642.GA30517@elte.hu>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
-Mime-Version: 1.0
+	id S933083AbXCHTLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 14:11:47 -0500
+Message-ID: <45F05FEB.9AED3D31@users.sourceforge.net>
+Date: Thu, 08 Mar 2007 21:11:39 +0200
+From: Jari Ruusu <jariruusu@users.sourceforge.net>
+To: Kandan Venkataraman <kven709@cse.unsw.EDU.AU>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Loop device - Tracking page writes made to a loop 
+ devicethrough mmap
+References: <Pine.LNX.4.64.0703081342000.21734@williams.orchestra.cse.unsw.EDU.AU>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kandan Venkataraman wrote:
+> All comments have been taken care of.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Your patch still does not do conversions of existing user space visible
+'struct loop_info64' which is pretty much cast in stone. Blindly overwriting
+larger structure over smaller user space buffer of existing userspace
+binaries is the wrong way to do this.
 
-> > 3. When I switch to X (CTRL-ALT-F7), X hangs after drawing a couple of windows
-> >    after waiting for some 10 min, I rebooted. no new messages showed 
-> >    up in /var/log/messages
-> 
-> I think this is likely just more of the disk being buggered, but it 
-> could again be related to NO_HZ (people report time not advancing, and 
-> that would make any X timeout taking forever, and you'd see exactly 
-> your behaviour).
+There was a time when folks at least pretended that breaking user space ABI
+was not tolerable.
 
-Michael - does your 'date' output advance after resume? If not then i'd 
-say it's a NO_HZ related problem. If yes then i'd guess it's the SATA 
-problem.
-
-	Ingo
+-- 
+Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
