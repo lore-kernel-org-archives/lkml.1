@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030852AbXCHWuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030853AbXCHWuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030852AbXCHWuv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 17:50:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030843AbXCHWut
+	id S1030853AbXCHWuw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 17:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030851AbXCHWuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 17:50:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35761 "EHLO mx1.redhat.com"
+	Thu, 8 Mar 2007 17:50:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35781 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030812AbXCHWue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 17:50:34 -0500
+	id S1030841AbXCHWui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 17:50:38 -0500
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 3/5] AF_RXRPC: Make it possible to merely try to cancel timers
-	and delayed work
+Subject: [PATCH 4/5] AF_RXRPC: Key facility changes for AF_RXRPC
 To: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org,
        dhowells@redhat.com
-Date: Thu, 08 Mar 2007 22:48:54 +0000
-Message-ID: <20070308224854.17456.71874.stgit@warthog.cambridge.redhat.com>
+Date: Thu, 08 Mar 2007 22:49:11 +0000
+Message-ID: <20070308224910.17456.10596.stgit@warthog.cambridge.redhat.com>
 In-Reply-To: <20070308224806.17456.13944.stgit@warthog.cambridge.redhat.com>
 References: <20070308224806.17456.13944.stgit@warthog.cambridge.redhat.com>
 User-Agent: StGIT/0.12.1
@@ -26,59 +25,42 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export try_to_del_timer_sync() for use by the RxRPC module.
+Export the keyring key type definition.
 
-Add a try_to_cancel_delayed_work() so that it is possible to merely attempt to
-cancel a delayed work timer.
+Add extra alternative types into the key's type_data union to make it more
+useful.
 
 Signed-Off-By: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/workqueue.h |   21 +++++++++++++++++++++
- kernel/timer.c            |    2 ++
- 2 files changed, 23 insertions(+), 0 deletions(-)
+ include/linux/key.h     |    2 ++
+ security/keys/keyring.c |    2 ++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 2a7b38d..40a61ae 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -204,4 +204,25 @@ static inline int cancel_delayed_work(struct delayed_work *work)
- 	return ret;
- }
+diff --git a/include/linux/key.h b/include/linux/key.h
+index 169f05e..a9220e7 100644
+--- a/include/linux/key.h
++++ b/include/linux/key.h
+@@ -160,6 +160,8 @@ struct key {
+ 	 */
+ 	union {
+ 		struct list_head	link;
++		unsigned long		x[2];
++		void			*p[2];
+ 	} type_data;
  
-+/**
-+ * try_to_cancel_delayed_work - Try to kill pending scheduled, delayed work
-+ * @work: the work to cancel
-+ *
-+ * Try to kill off a pending schedule_delayed_work().
-+ * - The timer may still be running afterwards, and if so, the work may still
-+ *   be pending
-+ * - Returns -1 if timer still active, 1 if timer removed, 0 if not scheduled
-+ * - Can be called from the work routine; if it's still pending, just return
-+ *   and it'll be called again.
-+ */
-+static inline int try_to_cancel_delayed_work(struct delayed_work *work)
-+{
-+	int ret;
-+
-+	ret = try_to_del_timer_sync(&work->timer);
-+	if (ret > 0)
-+		work_release(&work->work);
-+	return ret;
-+}
-+
- #endif
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 797cccb..447506a 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -505,6 +505,8 @@ out:
- 	return ret;
- }
+ 	/* key data
+diff --git a/security/keys/keyring.c b/security/keys/keyring.c
+index ad45ce7..88292e3 100644
+--- a/security/keys/keyring.c
++++ b/security/keys/keyring.c
+@@ -66,6 +66,8 @@ struct key_type key_type_keyring = {
+ 	.read		= keyring_read,
+ };
  
-+EXPORT_SYMBOL(try_to_del_timer_sync);
++EXPORT_SYMBOL(key_type_keyring);
 +
- /**
-  * del_timer_sync - deactivate a timer and wait for the handler to finish.
-  * @timer: the timer to be deactivated
+ /*
+  * semaphore to serialise link/link calls to prevent two link calls in parallel
+  * introducing a cycle
 
