@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854AbXCHNsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751831AbXCHNth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751854AbXCHNsP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 08:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXCHNsP
+	id S1751831AbXCHNth (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 08:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXCHNth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 08:48:15 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3766 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751854AbXCHNsO (ORCPT
+	Thu, 8 Mar 2007 08:49:37 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:62777 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751831AbXCHNtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 08:48:14 -0500
-Date: Thu, 8 Mar 2007 13:48:00 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Oleksiy Kebkal <kebkal@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-serial@vger.kernel.org
-Subject: Re: should RTS init in serial core be tied to CRTSCTS
-Message-ID: <20070308134800.GA30023@flint.arm.linux.org.uk>
-Mail-Followup-To: Robin Getz <rgetz@blackfin.uclinux.org>,
-	Oleksiy Kebkal <kebkal@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-serial@vger.kernel.org
-References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com> <200703071019.55896.rgetz@blackfin.uclinux.org> <57354eff0703071330k2395e9c8n58e12f2111dcb25a@mail.gmail.com> <200703080844.32157.rgetz@blackfin.uclinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 8 Mar 2007 08:49:36 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=f1djJDEBX47lV2ngeoTxhu0R4BJKV6Hd79BVeGtK0sBF9ewi8lnUM8FKLvZu1Umw/
+	6phGptPwr5Fv9D7wLQmWw==
+Message-ID: <6599ad830703080549t70e66f92ua345f9fe59c44df4@mail.gmail.com>
+Date: Thu, 8 Mar 2007 05:49:27 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Pavel Emelianov" <xemul@sw.ru>
+Subject: Re: [RFC][PATCH 6/7] Account for the number of tasks within container
+Cc: "Andrew Morton" <akpm@osdl.org>, "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       "Balbir Singh" <balbir@in.ibm.com>, devel@openvz.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org, "Kirill Korotaev" <dev@sw.ru>
+In-Reply-To: <45EE6601.4070107@sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200703080844.32157.rgetz@blackfin.uclinux.org>
-User-Agent: Mutt/1.4.2.1i
+References: <45ED7DEC.7010403@sw.ru> <45ED831A.5030108@sw.ru>
+	 <6599ad830703061800n38244a8fp68b29fa0290d18d7@mail.gmail.com>
+	 <45EE6601.4070107@sw.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 08, 2007 at 08:44:31AM -0500, Robin Getz wrote:
-> On Wed 7 Mar 2007 16:30, Oleksiy Kebkal pondered:
-> > 2007/3/7, Robin Getz <rgetz@blackfin.uclinux.org>:
-> > > Right - so the question is where to manage the default state? I was
-> > > thinking in the resource might be a good idea, but there isn't really a
-> > > good place for it. (You could re-use some bits if flags, but I think that
-> > > would not be a good idea).
-> >
-> > /proc/tty/driver/uartN/settings?
-> >
-> 
-> That would let you change things are run time, but the problem is at boot 
-> time. A default setting needs to be set, so when things initialize, and proc 
-> does not exist yet, it is still set properly...
+On 3/6/07, Pavel Emelianov <xemul@sw.ru> wrote:
+> The idea is:
+>
+> Task may be "the entity that allocates the resources" and "the
+> entity that is a resource allocated".
+>
+> When task is the first entity it may move across containers
+> (that is implemented in your patches). When task is a resource
+> it shouldn't move across containers like files or pages do.
+>
+> More generally - allocated resources hold reference to original
+> container till they die. No resource migration is performed.
+>
+> Did I express my idea cleanly?
 
-I disagree.  "proc does not exist yet" - the only time that applies is
-long before userspace as active.
+Yes, but I disagree with the premise. The title of your patch is
+"Account for the number of tasks within container", but that's not
+what the subsystem does, it accounts for the number of forks within
+the container that aren't directly accompanied by an exit.
 
-As I've said already, having a console on the same port as your application
-program is just asking for trouble.  All bets are off - the kernel _will_
-corrupt your data stream in random places.
+Ideally, resources like files and pages would be able to follow tasks
+as well. The reason that files and pages aren't easily migrated from
+one container to another is that there could be sharing involved;
+figuring out the sharing can be expensive, and it's not clear what to
+do if two users are in different containers.
 
-Don't do it - it will _NEVER_ be reliable.
+But in the case of a task count, there are no such issues with
+sharing, so it seems to me to be more sensible (and more efficient) to
+just limit the number of tasks in a container.
 
-Never, ever, mix kernel consoles with application serial ports.
+i.e. when moving a task into a container or forking a task within a
+container, increment the count; when moving a task out of a container
+or when it exits, decrement the count.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+With your approach, if you were to set the task limit of an empty
+container A to 1, and then move a process P from B into A, P would be
+able to fork a new child, since the "task count" would be 0 (as P was
+being charged to B still). Surely the fact that there's 1 process in A
+should prevent P from forking?
+
+Paul
