@@ -1,138 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbXCHU2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbXCHU2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933298AbXCHU2A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:28:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbXCHU17
+	id S933305AbXCHU2Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXCHU2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:27:59 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:1042 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933298AbXCHU16 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:27:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=C/hPgPAWFjyv39XtG0ZVRO08y7/T0D7Zzfr2Se6YzRR+MJYMkNlE5B8zT1ThKKQWJGBX+TGc2KiwHTgemjzEAFpPZtBZq6oEtLqELcj2mDe8ZfDokoIRHZr4M6tUPILyxsLgYT9GeRSuqjghUqevMRh8QXdaULotFjvgpeapCeM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Suleiman Souhlal <ssouhlal@freebsd.org>
-Subject: Re: [PATCH 3/3] Use correct IDE error recovery
-Date: Thu, 8 Mar 2007 21:34:47 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070221012304.GC1777@freefall.freebsd.org> <200703072216.08295.bzolnier@gmail.com> <B2D4536E-D449-4D10-B745-30D25CAC40A4@freebsd.org>
-In-Reply-To: <B2D4536E-D449-4D10-B745-30D25CAC40A4@freebsd.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 8 Mar 2007 15:28:25 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49702 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933305AbXCHU2X (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:28:23 -0500
+Message-Id: <200703082027.l28KRi4I022669@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc3-mm1
+In-Reply-To: Your message of "Thu, 08 Mar 2007 13:34:04 EST."
+             <20070308183404.GC5323@tuxdriver.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070307201839.6f45735b.akpm@linux-foundation.org> <200703081756.l28HuwDD016018@turing-police.cc.vt.edu>
+            <20070308183404.GC5323@tuxdriver.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1173385664_10421P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703082134.47530.bzolnier@gmail.com>
+Date: Thu, 08 Mar 2007 15:27:44 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1173385664_10421P
+Content-Type: text/plain; charset=us-ascii
 
-Hi,
-
-On Thursday 08 March 2007, Suleiman Souhlal wrote:
+On Thu, 08 Mar 2007 13:34:04 EST, "John W. Linville" said:
+> On Thu, Mar 08, 2007 at 12:56:58PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> > On Wed, 07 Mar 2007 20:18:39 PST, Andrew Morton said:
+> > >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm1/
+> > 
+> > Mostly working for me.
+> > 
+> > > - The wireless changes in here need a lot of testers, please.  It is major
+> > >   rework.
+> > 
+> > Working on it - the new MAC80211 stack landed in the -mm tree, but the matching
+> > iwlwifi driver for the Intel 3945ABG is still out-of-tree and acting wonky
+> > for me.  The card comes up, 'iwlist scanning' sees 4 access points, but it
+> > won't associate.  Not sure what I borked up.
 > 
-> On Mar 7, 2007, at 1:16 PM, Bartlomiej Zolnierkiewicz wrote:
-> 
-> >
-> > Hi,
-> >
-> > (sorry for the long delay)
-> >
-> > On Wednesday 21 February 2007, Suleiman Souhlal wrote:
-> >> IDE error recovery is using WIN_IDLEIMMEDIATE which was only valid for
-> >> IDE V1 and IDE V2.  Modern drives will not be able to recover using
-> >> this error handling.  The correct thing to do is issue a SRST followed
-> >> by a SET_FEATURES.
-> >
-> > This change looks fine, indeed we are better of using SRST +  
-> > SET_FEATURES than IDLE_IMMEDIATE.
-> >
-> >> Signed-off-by:	Suleiman Souhlal <suleiman@google.com>
-> >>
-> >> ---
-> >>  drivers/ide/ide-io.c   |   35 +++++++++++-----
-> >>  drivers/ide/ide-iops.c |  105 ++++++++++++++++++++++++++++--------------------
-> >>  include/linux/ide.h    |    2 +
-> >>  3 files changed, 88 insertions(+), 54 deletions(-)
-> >>
-> >> diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-> >> index c193553..2f05b4d 100644
-> >> --- a/drivers/ide/ide-io.c
-> >> +++ b/drivers/ide/ide-io.c
-> >> @@ -519,21 +519,21 @@ static ide_startstop_t ide_ata_error(ide
-> >>  	if ((stat & DRQ_STAT) && rq_data_dir(rq) == READ && hwif- 
-> >> >err_stops_fifo == 0)
-> >>  		try_to_flush_leftover_data(drive);
-> >>
-> >> +	if (rq->errors >= ERROR_MAX || blk_noretry_request(rq)) {
-> >> +		ide_kill_rq(drive, rq);
-> >> +		return ide_stopped;
-> >> +	}
-> >> +
-> >>  	if (hwif->INB(IDE_STATUS_REG) & (BUSY_STAT|DRQ_STAT))
-> >> -		/* force an abort */
-> >> -		hwif->OUTB(WIN_IDLEIMMEDIATE, IDE_COMMAND_REG);
-> >> +		rq->errors |= ERROR_RESET;
-> >>
-> >> -	if (rq->errors >= ERROR_MAX || blk_noretry_request(rq))
-> >> -		ide_kill_rq(drive, rq);
-> >> -	else {
-> >> -		if ((rq->errors & ERROR_RESET) == ERROR_RESET) {
-> >> -			++rq->errors;
-> >> -			return ide_do_reset(drive);
-> >> -		}
-> >> -		if ((rq->errors & ERROR_RECAL) == ERROR_RECAL)
-> >> -			drive->special.b.recalibrate = 1;
-> >
-> > Is the removal of ERROR_RECAL handling intentional?
-> > There is nothing about it in the patch description...
-> 
-> Yes, it was intentional, but I forgot to add "while there remove some  
+> FWIW, I have had best results w/ that driver by manually selecting
+> the freq and ap as well as essid.
 
-Why is it useless?  What am I missing?
+Confirmed - if I used 'iwconfig ap <mac address> channel <n>' to match something
+I found via 'iwlist scan', it was able to associate and connect.
 
-> useless code" to the description. Maybe it's better if I send this as  
-> a separate patch.
+--==_Exmh_1173385664_10421P
+Content-Type: application/pgp-signature
 
-Yes, please do so.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-[ ... ]
+iD8DBQFF8HHAcC3lWbTT17ARAnmeAKCwMkLNVC4+wNO34+Fc+f60DamYewCfatD5
+ryfeYvQ4MDK16Ww9fJhEtlQ=
+=71vx
+-----END PGP SIGNATURE-----
 
-> > The patch fixes code in ide_ata_error() and updates the comment
-> > for ide_error() but ide_atapi_error() is not left untouched
-> > (it still uses IDLE IMMEDIATE).
-> >
-> > I suppose that ide_atapi_error() (for ATAPI devices) needs similar  
-> > fix?
-> 
-> I'm not sure.. I don't have any ATAPI hardware to test this on  
-> either, so I preferred not to touch it.
-
-OK, this could be fixed later in the incremental patch.
-
-> >>  ide_startstop_t ide_error (ide_drive_t *drive, const char *msg, u8 stat)
-> >> @@ -1004,6 +1011,12 @@ #endif
-> >>  		goto kill_rq;
-> >>  	}
-> >>
-> >> +	/* We reset the drive so we need to issue a SETFEATURES. */
-> >> +	if ((drive->current_speed == 0xff) &&
-> >> +	    ((rq->cmd_type == REQ_TYPE_ATA_CMD) ||
-> >> +	    (rq->cmd_type == REQ_TYPE_ATA_TASK)))
-> >> +		ide_config_drive_speed_irq(drive, drive->desired_speed);
-> >
-> > Please update the patch to not depend on ide_config_drive_speed() fixes
-> > [PATCH 2/3] which need more work (shouldn't be a problem as the code here
-> > uses _irq variant anyway).
-> >
-> > Please respin the patch so I could merge it.
-> 
-> Ok.
-
-Thanks,
-Bart
+--==_Exmh_1173385664_10421P--
