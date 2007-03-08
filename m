@@ -1,54 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbXCHQkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbXCHQl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbXCHQkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 11:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbXCHQkS
+	id S1752461AbXCHQl5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 11:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXCHQl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 11:40:18 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:2780 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbXCHQkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 11:40:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=e00XJ2PP7oSnf3WBasBMw2L2lKNgy76OQlT0GQ1mIghB0ZoMYmPu1x9ZLN9b7K/5PStmznhtq/U4LLqjNeIr1gKWo84gmivcm7tb5lW337J+Jf9IYh1WP4WoNzc1p+tnOe5K8yzNPp0K06/5FWCFCs3/C4s32D6vRXZLd9rHzHw=
-Message-ID: <f2b55d220703080840xb0a1da0w41051a7c4a7ac4e3@mail.gmail.com>
-Date: Thu, 8 Mar 2007 08:40:12 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "David M. Lloyd" <dmlloyd@flurg.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703080825420.7015@alien.or.mcafeemobile.com>
+	Thu, 8 Mar 2007 11:41:57 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:38661 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752461AbXCHQlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 11:41:55 -0500
+Date: Thu, 8 Mar 2007 17:39:16 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: James Morris <jmorris@namei.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>,
+       kaber@trash.net
+Subject: Re: [PATCH] chaostables
+In-Reply-To: <Line.LNX.4.64.0703080955060.8029@d.namei>
+Message-ID: <Pine.LNX.4.61.0703081652310.2448@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
+ <20070308131412.08d9973e@lxorguk.ukuu.org.uk> <Line.LNX.4.64.0703080955060.8029@d.namei>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703071712210.3672@alien.or.mcafeemobile.com>
-	 <1173364264.6891.3.camel@localhost>
-	 <Pine.LNX.4.64.0703080742220.7015@alien.or.mcafeemobile.com>
-	 <Pine.LNX.4.64.0703080812290.10832@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0703080825420.7015@alien.or.mcafeemobile.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/8/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> The reason for the special function, was not to provide a non-blocking
-> behaviour with zero timeout (that just a side effect), but to read the
-> siginfo. I was all about using read(2) (and v1 used it), but when you have
-> to transfer complex structures over it, it becomes hell. How do you
-> cleanly compat over a f_op->read callback for example?
 
-Make it a netlink socket and fetch your structures using recvmsg().
-siginfo_t belongs in ancillary data.
 
-The UNIX philosophy is "everything's a file".  The Berkeley philosophy
-is "everything's a socket, except for files, which are feeble
-mini-sockets".  I'd go with the Berkeley crowd here.
+(I suspect a mailserver issue on my side, since I did not receive the 
+replies from Alan or Patrick. But lkml.org has them, so I will be 
+replying to both them there.)
 
-Cheers,
-- Michael
+On Mar 8 2007 09:55, James Morris wrote:
+>On Thu, 8 Mar 2007, Alan Cox wrote:
+>
+>> Any chance of tweaking the name - it's just there is/was a chaosnet 
+>> protocol/network system and you don't want people to assume that 
+>> since its a chaosfilter its for chaosnet ?
+>
+>That's exactly what I thought it was from the subject line.
+
+Suggest something. (And then convince everyone who already set 
+chaostables in stone to use the new name, namely search engines, 
+bloggers, LWN, openwrt.) I don't think anyone seriously uses chaosnet 
+nowadays. And just because there is a "quicktables" project does not 
+mean there is a quick protocol filter.
+
+Also note that the word 'chaostables' does not even appear in the patch, 
+though xt_CHAOS does. Since we know that {xt,ipt}_[A-Z]+ are targets, we 
+can safely assume that CHAOS does what it says - make fun of nmap.
+
+
+>> Index: linux-2.6.21-rc3/net/netfilter/xt_CHAOS.c
+>> ===================================================================
+>> --- /dev/null
+>> +++ linux-2.6.21-rc3/net/netfilter/xt_CHAOS.c
+>> @@ -0,0 +1,184 @@
+>> +
+>> +static unsigned int xt_chaos_target(struct sk_buff **pskb,
+>> +    const struct net_device *in, const struct net_device *out,
+>> +    unsigned int hooknum, const struct xt_target *target, const void *targinfo)
+>> +{
+>> +	/* Equivalent to:
+>> +	 * -A chaos -m statistic --mode random --probability \
+>> +	 *         $reject_percentage -j REJECT --reject-with host-unreach;
+>> +	 * -A chaos -m statistic --mode random --probability \
+>> +	 *         $delude_percentage -j DELUDE;
+>> +	 * -A chaos -j DROP;
+>> +	 */
+>
+>What does this do that can't be done by simply adding those individual 
+>rules?
+
+It "wraps it all up", reducing the overall number of rules and user 
+chains required in the filtering tables to implement the wanted logic. 
+Reducing the number of filtering rules also reduces the time process a 
+packet. These two are, in my opinion, a good thing.
+
+Take xt_portscan as an example, which would require a minimum of 23 
+filtering rules (which cannot reproduce the module's action in its 
+fullest). 23 rules means we will be looping a bit in ipt_do_table() for 
+a single packet, repeatedly checking for "-p tcp", i.e. calling into 
+xt_tcpudp, checking for port ranges and perhaps other TCP fields that 
+are never examined in xt_portscan.
+
+
+>> Index: linux-2.6.21-rc3/net/netfilter/xt_DELUDE.c
+>> ===================================================================
+>> --- /dev/null
+>> +++ linux-2.6.21-rc3/net/netfilter/xt_DELUDE.c
+>
+>Looks like a copy of the REJECT target. What does it do,
+>why can't you use REJECT?
+
+Looking only at TCP,
+REJECT sends a RST for any packet (if requested), or ICMP otherwise.
+DELUDE sends a SYN-ACK on SYN, otherwise RST.
+(And TARPIT, for reference, keeps the connection open anytime. Its code
+is also quite a replication of REJECT.)
+
+If you think it is better to merge the respond-with-SYNACK into REJECT 
+rather than having DELUDE, say so.
+
+
+>> Index: linux-2.6.21-rc3/net/netfilter/xt_portscan.c
+>> ===================================================================
+>> --- /dev/null
+>> +++ linux-2.6.21-rc3/net/netfilter/xt_portscan.c
+>
+>We already have the psd match for years, but decided against merging it.
+
+On what basis? As far as I flew over psd's code, it uses a heuristic 
+like "how often did that client recently connect" for match decision. 
+(P2P clients randomly port knocking, anyone?) I would not think of that 
+as a reliable way to tell portscans either. However, half-open TCP 
+connect for example is a more clear action to define a portscan.
+
+
+
+Jan
+-- 
