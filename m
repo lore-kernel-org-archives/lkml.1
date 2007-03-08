@@ -1,329 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933266AbXCHUZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbXCHU1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933266AbXCHUZb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933289AbXCHUZb
+	id S933294AbXCHU1c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933295AbXCHU1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:25:31 -0500
-Received: from an-out-0708.google.com ([209.85.132.247]:47712 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933266AbXCHUZ3 (ORCPT
+	Thu, 8 Mar 2007 15:27:32 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55862 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933294AbXCHU1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:25:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sRI9j/pkOrPdsNe/WrshR+DgTG3fkfPXZcDJc37yLOLnd9Y3j/zLrsQmxFZaF/E/c33JNutMiu3jkPTcqVmDz46gwYcvWty69wn+pOELscG1r+ljqHXrsf9MQGr5YXs9TMmwy1ET71BNTL+H/j0Zi9+voPEZM+JgFtEewX5Z3q8=
-Message-ID: <b637ec0b0703081225n49d9aa56h3e21c0f9c9bc7039@mail.gmail.com>
-Date: Thu, 8 Mar 2007 21:25:28 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Con Kolivas" <kernel@kolivas.org>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Cc: "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "ck list" <ck@vds.kolivas.org>
-In-Reply-To: <200703041800.53360.kernel@kolivas.org>
+	Thu, 8 Mar 2007 15:27:31 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>,
+       Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz,
+       michael@ellerman.id.au
+Subject: Re: [PATCH 0/2] Repair pci_restore_state when used with device resets
+References: <45ED8A12.5040803@intel.com>
+	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
+	<45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com>
+	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>
+	<20070307185317.5601d452.akpm@linux-foundation.org>
+	<m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
+	<45EFDD8C.3070702@garzik.org>
+	<m1abyn7iin.fsf@ebiederm.dsl.xmission.com>
+	<m1tzwv5wz9.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070308200809.GA10088@elte.hu>
+Date: Thu, 08 Mar 2007 13:26:12 -0700
+In-Reply-To: <20070308200809.GA10088@elte.hu> (Ingo Molnar's message of "Thu,
+	8 Mar 2007 21:08:09 +0100")
+Message-ID: <m1ejnz5vob.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703041800.53360.kernel@kolivas.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Con
-It would be nice if you could rebase this patch to latest git or at
-least to 2.6.21-rc3.
-Regards,
-Fabio
+Ingo Molnar <mingo@elte.hu> writes:
 
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+>> I have never have figured out how to get suspend/resume actually 
+>> working on any of my machines [...]
+>
+> ouch! Are you interested in getting it work?
 
+I haven't even seriously tried. I don't yet have a laptop and I like
+staying logged.  The first time I rolled the jiffie counter it was a
+happened after I had realized that if I kept my machine up for another
+couple of months my jiffie counter would roll and I said why not  So
+basically suspend hasn't been a feature I'm been interested in using.
+I get more annoyed at my UPS failing..
 
+I will probably get around to figuring out the whole suspend/resume
+thing one of these days and it will probably take me a day or two.
+But that doesn't result in bug fixes being delivered in a timely manner.
 
-On 3/4/07, Con Kolivas <kernel@kolivas.org> wrote:
-> This message is to announce the first general public release of the "Rotating
-> Staircase DeadLine" cpu scheduler.
->
-> Based on previous work from the staircase cpu scheduler I set out to design,
-> from scratch, a new scheduling policy design which satisfies every
-> requirement for SCHED_NORMAL (otherwise known as SCHED_OTHER) task management.
->
-> Available for download are:
->
->  A full rollup of the patch for 2.6.20:
-> http://ck.kolivas.org/patches/staircase-deadline/sched-rsdl-0.26.patch
->
->  Split patches for 2.6.20(which will follow this email):
-> http://ck.kolivas.org/patches/staircase-deadline/split-out/
->
->  The readme (which will also constitute the rest of this email):
-> http://ck.kolivas.org/patches/staircase-deadline/rsdl_scheduler.readme
->
->
-> The following readme is also included as documentation in
-> Documentation/sched-design.txt
->
->
-> Rotating Staircase Deadline cpu scheduler policy
-> ================================================
->
-> Design summary
-> ==============
->
-> A novel design which incorporates a foreground-background descending priority
-> system (the staircase) with runqueue managed minor and major epochs (rotation
-> and deadline).
->
->
-> Features
-> ========
->
-> A starvation free, strict fairness O(1) scalable design with interactivity
-> as good as the above restrictions can provide. There is no interactivity
-> estimator, no sleep/run measurements and only simple fixed accounting.
-> The design has strict enough a design and accounting that task behaviour
-> can be modelled and maximum scheduling latencies can be predicted by
-> the virtual deadline mechanism that manages runqueues. The prime concern
-> in this design is to maintain fairness at all costs determined by nice level,
-> yet to maintain as good interactivity as can be allowed within the
-> constraints of strict fairness.
->
->
-> Design description
-> ==================
->
-> RSDL works off the principle of providing each task a quota of runtime that
-> it is allowed to run at each priority level equal to its static priority
-> (ie. its nice level) and every priority below that. When each task is queued,
-> the cpu that it is queued onto also keeps a record of that quota. If the
-> task uses up its quota it is decremented one priority level. Also, if the cpu
-> notices a quota full has been used for that priority level, it pushes
-> everything remaining at that priority level to the next lowest priority
-> level. Once every runtime quota has been consumed of every priority level,
-> a task is queued on the "expired" array. When no other tasks exist with
-> quota, the expired array is activated and fresh quotas are handed out. This
-> is all done in O(1).
->
->
-> Design details
-> ==============
->
-> Each cpu has its own runqueue which micromanages its own epochs, and each
-> task keeps a record of its own entitlement of cpu time. Most of the rest
-> of these details apply to non-realtime tasks as rt task management is
-> straight forward.
->
-> Each runqueue keeps a record of what major epoch it is up to in the
-> rq->prio_rotation field which is incremented on each major epoch. It also
-> keeps a record of quota available to each priority value valid for that
-> major epoch in rq->prio_quota[].
->
-> Each task keeps a record of what major runqueue epoch it was last running
-> on in p->rotation. It also keeps a record of what priority levels it has
-> already been allocated quota from during this epoch in a bitmap p->bitmap.
->
-> The only tunable that determines all other details is the RR_INTERVAL. This
-> is set to 6ms (minimum on 1000HZ, higher at different HZ values).
->
-> All tasks are initially given a quota based on RR_INTERVAL. This is equal to
-> RR_INTERVAL between nice values of 0 and 19, and progressively larger for
-> nice values from -1 to -20. This is assigned to p->quota and only changes
-> with changes in nice level.
->
-> As a task is first queued, it checks in recalc_task_prio to see if it has
-> run at this runqueue's current priority rotation. If it has not, it will
-> have its p->prio level set to equal its p->static_prio (nice level) and will
-> be given a p->time_slice equal to the p->quota, and has its allocation
-> bitmap bit set in p->bitmap for its static priority (nice value). This
-> quota is then also added to the current runqueue's rq->prio_quota[p->prio].
-> It is then queued on the current active priority array.
->
-> If a task has already been running during this major epoch, if it has
-> p->time_slice left and the rq->prio_quota for the task's p->prio still
-> has quota, it will be placed back on the active array, but no more quota
-> will be added to either the task or the runqueue quota.
->
-> If a task has been running during this major epoch, but does not have
-> p->time_slice left or the runqueue's prio_quota for this task's p->prio
-> does not have quota, it will find the next lowest priority in its bitmap
-> that it has not been allocated quota from. It then gets the a full quota
-> in p->time_slice and adds that to the quota value for the relevant priority
-> rq->prio_quota. It is then queued on the current active priority array at
-> the newly determined lower priority.
->
-> If a task has been running during this major epoch, and does not have
-> any entitlement left in p->bitmap and no time_slice left, it will have its
-> bitmap cleared, and be queued at its p->static_prio again, but on the expired
-> priority array. No quota will be allocated until this task is scheduled.
->
-> When a task is queued, it has its static_prio bit set in the current
-> runqueue's rq->static_bitmap, and the relevant bit in the rq->dyn_bitmap.
-> In order to minimise the number of bitmap lookups, the bitmap of queued
-> tasks on the expired array is at the end of the same bitmap as the active
-> array. The number of tasks queued at the current static_prio is kept in
-> rq->prio_queued[].
->
-> During a scheduler_tick where a task is running, the p->time_slice is
-> decremented, and if it reaches zero then the recalc_task_prio is readjusted
-> and the task rescheduled.
->
-> During a task running tick, the runqueue prio_quota is also decremented. If
-> it empties then a priority rotation occurs (a major or minor epoch). If the
-> current runqueue's priority level is better than that of nice 19 tasks, a
-> minor rotation is performed, otherwise a major rotation will occur.
->
-> A minor rotation takes the remaining tasks at this priority level queue and
-> merges them with a list_splice_tail with the queue from the next lowest
-> priority level. At this time, any tasks that have been merged will now
-> have invalid values in p->prio so this must be considered when dequeueing
-> the task, and for testing for preemption.
->
-> A major rotation takes the remaining tasks at this priority level queue and
-> merges them with a list_splice_tail with the best priority task running on
-> the expired array, and swaps the priority arrays. The priority quotas are
-> reset at this time. Any tasks that have been merged will now have invalid
-> values in p->array and possibly p->prio so this must be considered. The
-> rq->prio_rotation is incremented at this time.
->
-> When a task is dequeued, the dyn_bitmap bit is unset only after testing
-> that the relevant queue is actually empty since p->prio may be inaccurate
-> and no hard accounting of the number of tasks at that level is possible.
->
-> When selecting a new task for scheduling, after the first dynamic bit is
-> found on the dyn_bitmap, it is checked to see that a task is really queued
-> at that priority or if it is a false positive due to the task being
-> dequeued at a time when its p->prio does not match which queue it is on
-> after some form of priority rotation. This is a rare occurrence as it tends
-> to only occur if a task that is already waiting on a runqueue gets dequeued.
-> If the bitmap value is in the expired array range, a major priority rotation
-> is performed. If the chosen task has not been running during this major or
-> minor rotation it has new quota allocated at this time, and added to the
-> runqueue's quota.
->
->
-> Modelling deadline behaviour
-> ============================
->
-> As the accounting in this design is hard and not modified by sleep average
-> calculations or interactivity modifiers, it is possible to accurately
-> predict the maximum latency that a task may experience under different
-> conditions. This is a virtual deadline mechanism enforced by mandatory
-> runqueue epochs, and not by trying to keep complicated accounting of each
-> task.
->
-> The maximum duration a task can run during one major epoch is determined
-> by its nice value. Nice 0 tasks can run at 19 different priority levels
-> for RR_INTERVAL duration during each epoch (the equivalent of nice 0 to nice
-> 19). Nice 10 tasks can run at 9 priority levels for each epoch, and so on.
->
-> Therefore the maximum duration a runqueue epoch can take is determined by
-> the number of tasks running, and their nice level. After that, the maximum
-> duration it can take before a task can wait before it get scheduled is
-> determined by the difference between its nice value and the nice value of
-> the highest priority task queued.
->
-> In the following examples, these are _worst case scenarios_ and would rarely
-> occur, but can be modelled nonetheless to determine the maximum possible
-> latency.
->
-> So for example, if two nice 0 tasks are running, and one has just expired as
-> another is activated for the first time receiving a full quota for this
-> runqueue rotation, the first task will wait:
->
-> nr_tasks * max_duration + nice_difference * rr_interval
-> 1 * 19 * RR_INTERVAL + 0 = 114ms
->
-> In the presence of a nice 10 task, a nice 0 task would wait a maximum of
-> 1 * 10 * RR_INTERVAL + 0 = 60ms
->
-> In the presence of a nice 0 task, a nice 10 task would wait a maximum of
-> 1 * 19 * RR_INTERVAL + 9 * RR_INTERVAL = 168ms
->
-> Using a more complicated example, if there are 4 tasks running fully cpu
-> bound, one each at nice -20, nice 0, nice 10 and nice 19, we can calculate
-> the maximum latency possible for the nice 10 task. Note that -20 tasks are
-> heavily biased for so this will be a long time, but can be modelled.
->
-> The nice -20 task has quota = RR_INTERVAL + 20*RR_INTERVAL = 21*RR_INTERVAL.
-> It can run at 39 priority levels so its maximum duration =
-> 39 * 21 * RR_INTERVAL.
-> The nice 0 task works out to
-> 19 * RR_INTERVAL
-> The nice 19 task works out to
-> RR_INTERVAL.
->
-> So major epoch can take up a maximum of
-> 39 * 21 * RR_INTERVAL + 19 * RR_INTERVAL + RR_INTERVAL = 1229 * RR_INTERVAL;
->
-> Then before the nice 10 task will run, the nice -20 and nice 0 task will
-> run for 28 * 21 * RR_INTERVAL and 9 * RR_INTERVAL respectively for a total
-> of 597 * RR_INTERVAL.
->
-> This means the maximum duration a nice 10 task can wait in the presence of
-> these other tasks is 1826*RR_INTERVAL. This is a long time of course and is
-> heavily penalised by the presence of nice -20 tasks which would not be part
-> of a normal environment.
->
-> While this section describes the maximum latency a task can have, this size
-> latencies will only be seen by fully cpu bound tasks.
->
->
-> Achieving interactivity
-> =======================
->
-> A requirement of this scheduler design was to achieve good interactivity
-> despite being a completely fair deadline based design. The disadvantage of
-> designs that try to achieve interactivity is that they usually do so at
-> the expense of maintaining fairness. As cpu speeds increase, the requirement
-> for some sort of metered unfairness towards interactive tasks becomes a less
-> desirable phenomenon, but low latency and fairness remains mandatory to
-> good interactive performance.
->
-> This design relies on the fact that interactive tasks, by their nature,
-> sleep often. Most fair scheduling designs end up penalising such tasks
-> indirectly giving them less than their fair possible share because of the
-> sleep, and have to use a mechanism of bonusing their priority to offset
-> this based on the duration they sleep. This becomes increasingly inaccurate
-> as the number of running tasks rises and more tasks spend time waiting on
-> runqueues rather than sleeping, and it is impossible to tell whether the
-> task that's waiting on a runqueue only intends to run for a short period and
-> then sleep again after than runqueue wait. Furthermore, all such designs rely
-> on a period of time to pass to accumulate some form of statistic on the task
-> before deciding on how much to give them preference. The shorter this period,
-> the more rapidly bursts of cpu ruin the interactive tasks behaviour. The
-> longer this period, the longer it takes for interactive tasks to get low
-> scheduling latencies and fair cpu.
->
-> This design does not measure sleep time at all. Interactive tasks that sleep
-> often will wake up having consumed very little if any of their quota for
-> the current major priority rotation. The longer they have slept, the less
-> likely they are to even be on the current major priority rotation. Once
-> woken up, though, they get to use up a their full quota for that epoch,
-> whether part of a quota remains or a full quota. Overall, however, they
-> can still only run as much cpu time for that epoch as any other task of the
-> same nice level. This means that two tasks behaving completely differently
-> from fully cpu bound to waking/sleeping extremely frequently will still
-> get the same quota of cpu, but the latter will be using its quota for that
-> epoch in bursts rather than continuously. This guarantees that interactive
-> tasks get the same amount of cpu as cpu bound ones.
->
-> The other requirement of interactive tasks is also to obtain low latencies
-> for when they are scheduled. Unlike fully cpu bound tasks and the maximum
-> latencies possible described in the modelling deadline behaviour section
-> above, tasks that sleep will wake up with quota available usually at the
-> current runqueue's priority_level or better. This means that the most latency
-> they are likely to see is one RR_INTERVAL, and often they will preempt the
-> current task if it is not of a sleeping nature. This then guarantees very
-> low latency for interactive tasks, and the lowest latencies for the least
-> cpu bound tasks.
->
-> Sunday, 4th March 2007
-> Con Kolivas
->
-> --
-> -ck
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Eric
