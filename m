@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbXCHRmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbXCHRnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbXCHRmF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:42:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932260AbXCHRmF
+	id S1752608AbXCHRnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbXCHRnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:42:05 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:56965 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbXCHRmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:42:04 -0500
-Date: Thu, 8 Mar 2007 09:40:36 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
-Subject: Re: [RFC][Patch 2/6] integrity: fs hook placement
-Message-ID: <20070308174036.GF10574@sequoia.sous-sol.org>
-References: <1173369812.5981.2.camel@localhost.localdomain> <20070308164132.GL6602@sequoia.sous-sol.org> <20070308170733.GA21099@sergelap.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070308170733.GA21099@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 8 Mar 2007 12:43:51 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:41242 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752608AbXCHRnv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 12:43:51 -0500
+Message-ID: <45F04B6E.9000703@mvista.com>
+Date: Thu, 08 Mar 2007 10:44:14 -0700
+From: Dave Jiang <djiang@mvista.com>
+Organization: MontaVista Software, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, trini@kernel.crashing.org,
+       sshtylyov@ru.mvista.com
+Subject: Re: [PATCH] x86_64 RESTORE_CONTEXT missing '\n'
+References: <20070307204516.GA24095@blade.az.mvista.com> <200703081814.53153.ak@suse.de>
+In-Reply-To: <200703081814.53153.ak@suse.de>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Serge E. Hallyn (serue@us.ibm.com) wrote:
-> Are you objecting only to the duplication at the callsites, so that an
-> fsnotify-type of consolidation of security and integrity hooks would be
-> ok?  Or are you complaining that the security_inode_setxattr and
-> integrity_inode_setxattr hooks are too similar anyway, and integrity
-> modules should just use some lsm hooks for anything which will be
-> authoritative?
+Andi Kleen wrote:
+> On Wednesday 07 March 2007 21:45, Dave Jiang wrote:
+>> The RESTORE_CONTEXT macro is missing the '\n' at the end. It was removed in the
+>> previous patch that touched system.h. It causes compile failure if any
+>> inline asm is added after the macro. Discovered this when playing with
+>> kgdb.
+> 
+> We went through this several times. kgdb has no business to poke 
+> into kernel private macros like this and it shouldn't do that. 
+> So fixing kgdb to not require touching the context switch is the right
+> change.
+> 
+> -Andi
 
-It's duplication of callsites with many identical implementations
-that's the problem.
+In spite of kgdb, shouldn't it have that \n anyways in case some other code
+gets added in the future after the macro? Or are you saying that there should
+never be any code ever after that macro?
 
-> (I could see an argument that integirty subsystem should be purely for
-> measuring and hence its hooks should never return a value.  Only hitch
-> there is that if integrity subsystem hits ENOMEM it should be able to
-> refuse the action...)
+-- 
 
-Right, that's what I was expecting to see, just the measurement
-infrastructure.
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
 
-thanks,
--chris
