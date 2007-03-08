@@ -1,121 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569AbXCHRF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbXCHRHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569AbXCHRF4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 12:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbXCHRF4
+	id S1752575AbXCHRHi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 12:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbXCHRHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 12:05:56 -0500
-Received: from mta9.adelphia.net ([68.168.78.199]:64587 "EHLO
-	mta9.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbXCHRFz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 12:05:55 -0500
-Message-ID: <45F0426D.6020408@earthlink.net>
-Date: Thu, 08 Mar 2007 12:05:49 -0500
-From: Randy Cushman <rcushman_linux@earthlink.net>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Thu, 8 Mar 2007 12:07:38 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58867 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752575AbXCHRHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 12:07:37 -0500
+Date: Thu, 8 Mar 2007 11:07:33 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       safford@watson.ibm.com, serue@linux.vnet.ibm.com,
+       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com
+Subject: Re: [RFC][Patch 2/6] integrity: fs hook placement
+Message-ID: <20070308170733.GA21099@sergelap.austin.ibm.com>
+References: <1173369812.5981.2.camel@localhost.localdomain> <20070308164132.GL6602@sequoia.sous-sol.org>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Jaroslav Kysela <perex@suse.cz>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: mm snapshot broken-out-2007-03-05-02-22.tar.gz uploaded
-References: <200703051024.l25AOIF3015951@shell0.pdx.osdl.net>	<45EEA3C4.7000501@googlemail.com>	<20070307104746.f08a2e84.akpm@linux-foundation.org>	<6bffcb0e0703071141j42309702w793e4a76b1b23bfa@mail.gmail.com>	<20070307115024.756c848f.akpm@linux-foundation.org>	<s5hvehcrdod.wl%tiwai@suse.de>	<45EF3B2C.9060801@googlemail.com>	<s5hfy8gbrmj.wl%tiwai@suse.de>	<45F02EE2.6040606@googlemail.com>	<s5h8xe7ognj.wl%tiwai@suse.de>	<6bffcb0e0703080852l4a06c0f9qeb51044a7a1a68a@mail.gmail.com> <s5hwt1rn0aj.wl%tiwai@suse.de>
-In-Reply-To: <s5hwt1rn0aj.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070308164132.GL6602@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> At Thu, 8 Mar 2007 17:52:43 +0100,
-> Michal Piotrowski wrote:
->   
->> On 08/03/07, Takashi Iwai <tiwai@suse.de> wrote:
->>     
->>> At Thu, 08 Mar 2007 16:42:26 +0100,
->>> Michal Piotrowski wrote:
->>>       
->>>>> Also, it'd be helpful if you compare
->>>>> /proc/asound/card0/codec97#0/ac97#0-0+regs file before and after the
->>>>> patch.  This reveals which register bits differ actually.
->>>>>           
->>>> a2.txt is form 2.6.21-rc3 witchout 831466f4ad2b5fe23dff77edbe6a7c244435e973
->>>>
->>>> diff -uprN a2.txt /proc/asound/card0/codec97#0/ac97#0-0+regs
->>>> --- a2.txt      2007-03-08 16:36:47.000000000 +0100
->>>> +++ /proc/asound/card0/codec97#0/ac97#0-0+regs  2007-03-08 16:36:49.447083597 +0100
->>>> @@ -56,8 +56,8 @@
->>>>  0:6e = 0000
->>>>  0:70 = 0000
->>>>  0:72 = 0004
->>>> -0:74 = 1001
->>>> -0:76 = 64a4
->>>> +0:74 = 1201
->>>> +0:76 = 7ca4
->>>>  0:78 = 000c
->>>>  0:7a = 0000
->>>>  0:7c = 4144
->>>>         
->>> OK, some wrong bits there.  Could you try the patch below?
->>>       
->> Problem fixed. Thanks!
->>
->> (speaker-test -c6 -Dplug:surround51 is still broken)
->>     
->
-> Hm, how about turning off "Spread Front To..." control and run
-> speaker-test?
->
->
-> Takashi
->
->
->   
-Michal and Takashi,
+Quoting Chris Wright (chrisw@sous-sol.org):
+> * Mimi Zohar (zohar@linux.vnet.ibm.com) wrote:
+> > +	integrity_d_instantiate(entry, inode);
+> >  	security_d_instantiate(entry, inode);
+> 
+> > +		integrity_d_instantiate(entry, inode);
+> >  		security_d_instantiate(entry, inode);
+> 
+> >  			spin_unlock(&dcache_lock);
+> > +			integrity_d_instantiate(new, inode);
+> >  			security_d_instantiate(new, inode);
+> >  			d_rehash(dentry);
+> 
+> >  			d_move(new, dentry);
+> > +			integrity_d_instantiate(dentry, inode);
+> >  			security_d_instantiate(dentry, inode);
+> >  			d_rehash(dentry);
+> 
+> >  	if (actual == dentry) {
+> > +		integrity_d_instantiate(dentry, inode);
+> >  		security_d_instantiate(dentry, inode);
+> 
+> 
+> >  		file->f_op->release(inode, file);
+> >  	security_file_free(file);
+> > +	integrity_file_free(file);
+> 
+> 
+> >  		security_file_free(file);
+> > +		integrity_file_free(file);
+> 
+> 
+> > 		if (security_inode_alloc(inode)) {
+> ...
+> > +		if (integrity_inode_alloc(inode)) {
+> > +			if (inode->i_sb->s_op->destroy_inode)
+> > +				inode->i_sb->s_op->destroy_inode(inode);
+> 
+> >  	security_inode_free(inode);
+> > +	integrity_inode_free(inode);
+> 
+> >  	error = security_inode_setxattr(dentry, name, value, size, flags);
+> >  	if (error)
+> >  		goto out;
+> > +
+> > +	error = integrity_inode_setxattr(dentry, name, value, size, flags);
+> 
+> >  			fsnotify_xattr(dentry);
+> > +			integrity_inode_post_setxattr(dentry, name);
+> >  			security_inode_post_setxattr(dentry, name, value,
+> 
+> I know there's some slightly different goals, but this just doesn't make
+> sense.  Need to get back to defining and expressing just the differences.
 
-I've been researching your issue this morning.  I just noticed that your 
-exchange had ensued.
+Are you objecting only to the duplication at the callsites, so that an
+fsnotify-type of consolidation of security and integrity hooks would be
+ok?  Or are you complaining that the security_inode_setxattr and
+integrity_inode_setxattr hooks are too similar anyway, and integrity
+modules should just use some lsm hooks for anything which will be
+authoritative?
 
-I configured my AD1986-based system as closely as I could to match your 
-AD1985 mixer settings.  In doing so, I experienced results similar to 
-what I'm assuming you described:  Only front channel sound came out of 
-the surround and c/lfe jacks.
+(I could see an argument that integirty subsystem should be purely for
+measuring and hence its hooks should never return a value.  Only hitch
+there is that if integrity subsystem hits ENOMEM it should be able to
+refuse the action...)
 
-Here is what I had to change to get the appropriate multichannel sound:
-
-1) The command "speaker-test -c6" does not work on my system.  I have to 
-use "speaker-test -Dsurround51 -c6"  (Perhaps this is related to running 
-an old version of speaker-test.)
-
-2) I disabled "Spread Front to Surround and Center/LFE"
-
-The explanation for 2) is this:  There can be only one source for each 
-of the Surround and Center/LFE jacks active at one time.  When "Spread 
-Front to Surround and Center/LFE" is disabled, the surround channels go 
-to the the jacks; when this control is enabled, ONLY the front channels 
-go to the surround and c/lfe jacks.
-
-Considering the register values Michal provided and Takashi's patch:
-
-The logic of the code is as follows:  (Slightly simplifying,) functions 
-is_shared_linein() and is_shared_micin() return TRUE if the mixer is 
-configured for shared jacks AND NOT for 6 channel mode.  In this case it 
-is appropriate to
-set these bits (LODIS and CLDIS).
-
-Please double-check your mixer settings.  I added a byte to a structure, 
-so the mixer settings can get messed up switching between alsa-kernel 
-versions.
-
-I don't understand why the other bit (OMS, 0x74 bit D9) is set.  This 
-may have been an oversight on my part.
-
-I am modifying alsa-kernel to run as an AD1985 on my system, to try to 
-check these bits.
-
-Randy Cushman
-
-
+-serge
