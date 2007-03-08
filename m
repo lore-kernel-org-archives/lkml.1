@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933085AbXCHTNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXCHTOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933085AbXCHTNT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 14:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbXCHTNT
+	id S933090AbXCHTOJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 14:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933095AbXCHTOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 14:13:19 -0500
-Received: from smtp22.msg.oleane.net ([62.161.4.22]:34695 "EHLO
-	smtp22.msg.oleane.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933079AbXCHTNS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 14:13:18 -0500
-X-Greylist: delayed 1778 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Mar 2007 14:13:17 EST
-From: "Tosoni" <jp.tosoni@acksys.fr>
-To: "'Krzysztof Halasa'" <khc@pm.waw.pl>,
-       "'Carl-Daniel Hailfinger'" <c-d.hailfinger.devel.2006@gmx.net>
-Cc: "'Robin Getz'" <rgetz@blackfin.uclinux.org>,
-       "'Oleksiy Kebkal'" <kebkal@gmail.com>,
-       "'Mike Frysinger'" <vapier.adi@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       <linux-serial@vger.kernel.org>
-Subject: RE: should RTS init in serial core be tied to CRTSCTS
-Date: Thu, 8 Mar 2007 19:43:15 +0100
-Message-ID: <000201c761b1$a281cdf0$2e01a8c0@acksys.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook CWS, Build 9.0.2416 (9.0.2910.0)
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-In-Reply-To: <m3r6rz3chb.fsf@maximus.localdomain>
+	Thu, 8 Mar 2007 14:14:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42035 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933084AbXCHTOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 14:14:06 -0500
+Date: Thu, 8 Mar 2007 20:10:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Message-ID: <20070308191047.GA636@elte.hu>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308190642.GA30517@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070308190642.GA30517@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
 
-> OTOH I wonder what does the device in question require WRT the
-> serial port and WRT RTS line in particular.
-> I know there are some half-duplex converters which drive RTS only
-> while sending and which require CTS to send.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-As far as I know in the old times this was the *standard* way to use a modem
-(per CCITT V24), and even nowadays many modems can handle this method for
-transmit, to stay compatible with the standard.
+> Michael - does your 'date' output advance after resume? If not then 
+> i'd say it's a NO_HZ related problem. [...]
 
-Think of radio modems. Some are inherently half duplex.
+in that case please do this on such a 'frozen date' system:
 
-> They are perhaps a bit broken <snip>
-No, no, they apply an old standard. Probably they are old as well.
->
-> I don't know if one can expect RTS to stay low all the time. Even
-> a simple /sbin/setserial from /etc/rc.* would drive it high for
-> a moment. I'm afraid the only way which makes sense may be using
-> a customized plug.
+	echo q > /proc/sysrq-trigger
 
-It's a pity that Linux (or Unixes) never handled RTS this way.
-I feel that the /proc or sysfs solutions are the best to alter this well
-established default in this driver. It would not break existing installed
-hardware.
+and then send us the hw-timers info.
 
+	Ingo
