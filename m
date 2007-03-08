@@ -1,112 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030698AbXCHV46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030702AbXCHV4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030698AbXCHV46 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 16:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030714AbXCHV46
+	id S1030702AbXCHV4z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 16:56:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030698AbXCHV4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 16:56:58 -0500
-Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:50940 "EHLO
-	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030698AbXCHV44 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 16:56:56 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: 2.6.21-rc3: /proc broken
-Date: Fri, 9 Mar 2007 08:56:44 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20070307201915.4d579113.akpm@linux-foundation.org> <200703090152.49253.kernel@kolivas.org>
-In-Reply-To: <200703090152.49253.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Mar 2007 16:56:54 -0500
+Received: from mail.screens.ru ([213.234.233.54]:37275 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030702AbXCHV4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 16:56:53 -0500
+Date: Fri, 9 Mar 2007 00:56:53 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Avi Kivity <avi@argo.co.il>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
+Message-ID: <20070308215653.GA6744@tv-sign.ru>
+References: <20070308204353.GA6733@tv-sign.ru> <Pine.LNX.4.64.0703081259560.7515@alien.or.mcafeemobile.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703090856.45386.kernel@kolivas.org>
+In-Reply-To: <Pine.LNX.4.64.0703081259560.7515@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 March 2007 01:52, Con Kolivas wrote:
-> On Thursday 08 March 2007 15:19, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/
-> >2. 6.21-rc3-mm2/
-> >
-> > - This is the same as 2.6.21-rc3-mm1, except Con's CPU scheduler changes
-> >   were dropped.
-
-> So on qemu I can reproduce the oops you're getting with your config (make
-> oldconfig all default on top of your config), but I'm getting other
-> wonderful related problems too on rc3-mm2. On qemu -mm1 boots mostly
-> without error and then crashes nicely when I type 'ps' with a long pause
-> for about twenty seconds and then a combination of soft lockups, bitmap
-> errors, and eventually hits the BUG_ON I put in bitmap_error(). However,
-> -mm2 also vomits on typing 'ps'.
+On 03/08, Davide Libenzi wrote:
 >
-> It pauses and then spits out (fun lines selected from ps output):
->
->     7 ?        serial8250: too much work for irq4
-> 00:00:00 watchdog/1
->    88 ?        00:00:0serial8250: too much work for irq4
-> 0 cqueue/1
->   137 ?        00:00serial8250: too much work for irq4
->
-> :00 aio/0
->
-> Checking a few /proc files I see that "serial83250" info littered
-> throughout /proc/stat as well. -mm2 does not oops but the proc output is
-> variously corrupted.
->
-> Interestingly if I don't type 'ps' in the -mm1 qemu it runs fine with no
-> sign of a bug... In summary, here I can only reproduce your big fat oops by
-> it being triggered by some corruption elsewhere on this config related to
-> /proc breakage that I haven't managed to track down. I checked the
-> broken-out patches to see which touched /proc and it was oh, most of them.
-> I tried on rc3 and had the same thing happen. I haven't tried rc3 without
-> rsdl (your config takes too darn long to build!).
+> On Thu, 8 Mar 2007, Oleg Nesterov wrote:
+> 
+> > Davide Libenzi wrote:
+> > >
+> > > +int signalfd_deliver(struct sighand_struct *sighand, int sig, struct siginfo *info)
+> > > +{
+> > > +	int nsig = 0;
+> > > +	struct list_head *pos;
+> > > +	struct signalfd_ctx *ctx;
+> > > +	struct signalfd_sq *sq;
+> > > +
+> > > +	list_for_each(pos, &sighand->sfdlist) {
+> > > +		ctx = list_entry(pos, struct signalfd_ctx, lnk);
+> > > +		/*
+> > > +		 * We use a negative signal value as a way to broadcast that the
+> > > +		 * sighand has been orphaned, so that we can notify all the
+> > > +		 * listeners about this.
+> > > +		 */
+> > > +		if (sig < 0)
+> > > +			__wake_up_locked(&ctx->wqh, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE);
+> > > +		else if (sigismember(&ctx->sigmask, sig) &&
+> > > +			 (sig >= SIGRTMIN || !sigismember(&ctx->pending, sig))) {
+> > > +			sigaddset(&ctx->pending, sig);
+> > 
+> > I don't understand the "(sig >= SIGRTMIN || !sigismember(&ctx->pending, sig))"
+> > check. This mimics the LEGACY_QUEUE() check, but seems strange. The signal may
+> > be pending in ctx->pending just because it was not signalfd_fetchsig()ed, yes?
+> 
+> Logic is, if it's not an RT signal, queue only one, otherwise multiple.
+> The bit on the ->pending mask is clealer only when the queue slot becomes empty.
 
-/proc appears broken on vanilla -rc3 as well.
+Yes, I see what the code does, but I don't undestand why. For example, SIGCHLD was
+delivered to the process _and_ handled several times, then sys_signalfd_dequeue()
+comes and finds only one siginfo. Isn't this strange?
 
-I did make oldconfig from http://userweb.kernel.org/~akpm/ck/config.txt and 
-chose all the defaults. Then building your fat config with -rc3, 'ps' hangs 
-on qemu for almost 30 seconds and then at last produces a broken output
+> > > @@ -780,6 +785,11 @@
+> > >  	BUG_ON(!irqs_disabled());
+> > >  	assert_spin_locked(&t->sighand->siglock);
+> > >  
+> > > +	/*
+> > > +	 * Deliver the signal to listening signalfds ...
+> > > +	 */
+> > > +	signalfd_notify(t->sighand, sig, info);
+> > > +
+> > >  	/* Short-circuit ignored signals.  */
+> > >  	if (sig_ignored(t, sig))
+> > >  		goto out;
+> > > @@ -968,6 +978,11 @@
+> > >  	assert_spin_locked(&p->sighand->siglock);
+> > >  	handle_stop_signal(sig, p);
+> > >  
+> > > +	/*
+> > > +	 * Deliver the signal to listening signalfds ...
+> > > +	 */
+> > > +	signalfd_notify(p->sighand, sig, info);
+> > > +
+> > >  	/* Short-circuit ignored signals.  */
+> > >  	if (sig_ignored(p, sig))
+> > >  		return ret;
+> > 
+> > It is strange that we are doing signalfd_notify() even if the signal is ignored.
+> > Isn't it better to shift signalfd_notify() into send_signal() ? This way we do
+> > not need the special check in signalfd_deliver() above.
+> 
+> The two trasports can rely on different masks. The signalfd_notify() does 
+> not even go in signalfd_deliver() if no signalfds are attached to the 
+> sighand.
 
-  PID TTY          TIME CMD
-    1 ?        00:00:00 init
-    2 ?        00:00:00 migration/0
-    3 ?        00:00:00 ksoftirqd/0
-    4 ?        00:00:00 watchdog/0
-    5 ?        00:00:00 migration/1
-    6 ?        00:00:00 ksoftirqd/1
-    7 ?        serial8250: too much work for irq4
-00:00:00 watchdog/1
-    8 ?        00:00:00 events/0
-    9 ?        00:00:00 events/1
-   10 ?        00:00:00 khelper
-   11 ?        00:00:00 kthread
-   52 ?        00:00:00 kblockd/0
-   53 ?        00:00:00 kblockd/1
-   54 ?        00:00:00 kacpid
-   87 ?        00:00:00 cqueue/0
-   88 ?        00:00:00 cqueue/1
-   89 ?        00:00:00 ata/0
-   90 ?        00:00:00 ata/1
-   91 ?        00:00:00 ata_aux
-   92 ?        00:00:00 ksuspend_usbd
-   95 ?        00:00:00 khubd
-   97 ?        00:00:00 kseriod
-  133 ?        00:00:00 pdflush
-  134 ?        00:00:00 pdflush
-  135 ?        00:00:00 kserial8250: too much work for irq4
-swapd0
-  136 ?        00:00:00 aio/0
-  137 ?        00:00:00 aio/1
-  287 ?        00:00:00 kpsmoused
-  311 ?        00:00:00 sh
-  312 ?        00:00:00 ps
+Sorry, I don't understand. The masks are different, yes, but ->sighand is the
+same? How this can make any difference for "if no signalfds are attached" ?
 
-It's random where this happens too. Sometimes it goes away, other times it's 
-different tasks, and it happens to /proc/stat too
+OK. What is the purpose of signalfd? Should it record the signals which were
+sent to the process, or only those which were delivered? The latter looks
+more natural for me. But inn any case, I don't see a reason to check ->pending
+mask in signalfd_deliver().
 
--- 
--ck
+BTW, sys_signalfd_dequeue() re-queues signalfd_sq if copy_siginfo_to_user()
+fails. Why not -EFAULT?
+
+Also. A malicious user can eat all memory, signalfd_deliver()->kmem_cache_alloc()
+doesn't check any limits.
+
+> > Also, this patch doesn't take send_sigqueue/send_group_sigqueue into account.
+> 
+> I added that too. but I noticed something strange, dunno if intentional or 
+> not. In send_sigqueue and send_group_sigqueue, the check for the 
+> timer-special and the ignored is inverted. This lead to two different 
+> behaviours. Is there a reason for that?
+
+I was wondering about that too.
+
+Oleg.
+
