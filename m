@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbXCHBn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbXCHBuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752191AbXCHBn4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Mar 2007 20:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXCHBn4
+	id S1752185AbXCHBuK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Mar 2007 20:50:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbXCHBuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Mar 2007 20:43:56 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:44024 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbXCHBnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Mar 2007 20:43:55 -0500
-Date: Wed, 7 Mar 2007 17:43:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-Subject: Re: [PATCH] [RSDL-mm 0/6] RSDL cpu scheduler for -mm
-Message-Id: <20070307174345.4c398171.akpm@linux-foundation.org>
-In-Reply-To: <200703071226.43238.kernel@kolivas.org>
-References: <200703071226.43238.kernel@kolivas.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Mar 2007 20:50:09 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:17771 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbXCHBuI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Mar 2007 20:50:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dDwd7IyDHbp0AmYqiF5F6huOCedB4xkjEeDJL7M4QxIuyUYTz3DOj+XsYjcD0q/bTA+5ADHBZuYsXwqAa+PZyTWG/oWMO+toUE1HoZhbaPeL0iWpf487Q0IjAJJCC+gEhin10ytmU9386o9WM1HY6oqeixj2y69QIuSQyFgokc8=
+Message-ID: <f2b55d220703071750h1a47c432ife7f39c575a4303c@mail.gmail.com>
+Date: Wed, 7 Mar 2007 17:50:05 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: f_owner.lock and file->pos updates
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070308004853.4f5a090c@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f2b55d220703071117n474f02f7rcc630f0415530aed@mail.gmail.com>
+	 <20070308004853.4f5a090c@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Mar 2007 12:26:42 +1100
-Con Kolivas <kernel@kolivas.org> wrote:
+On 3/7/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> The right way IMHO would be to do the work that was done for pread/pwrite
+> and implement preadv/pwritev. The moment you want to do atomic things
+> with the file->f_pos instead of doing it with a local passed pos value it
+> gets ugly.. why do you need to do it with f_pos ?
 
-> What follows is the same patch series that constitutes the RDSL "Rotating 
-> Staircase DeadLine" cpu scheduler resynced for 2.6.21-rc2-mm2.
+I didn't see any clean way to intersperse overwrites and appends to a
+record-structured file without using vfs_llseek, which steps on f_pos.
+ Actually, we may already have a problem with append races in
+sys_write/sys_writev.  If it's possible for two threads to write() to
+the same file in different threads (both intending to append), they
+may wind up passing the same "pos" value into vfs_write().  Or does
+fget_light/fput_light do some sort of locking that I'm not seeing?
 
-Big oops early in boot on x86_64 SMP, in rq_bitmap_error+0x97/0x9f.
-
-I stubbed it out with a `return MAX_RT_PRIO;' (I think) but it then oopsed
-differently.  Before netconsole had come up, no serial console, no digital
-camera.
-
-There's stuff in http://userweb.kernel.org/~akpm/ck/ - you can probably
-boot that kernel on your own machine.
-
-I need to do rc3-mm1 now.  I might find some time to poke at this
-further after that, but I have to leave for a week in .jp and it'll be
-squeezy, sorry.
+Cheers,
+- Michael
