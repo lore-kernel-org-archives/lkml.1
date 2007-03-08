@@ -1,107 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933307AbXCHU2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbXCHUeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933307AbXCHU2y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 15:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXCHU2x
+	id S1752145AbXCHUeA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 15:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbXCHUeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 15:28:53 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:39748 "EHLO tmailer.gwdg.de"
+	Thu, 8 Mar 2007 15:34:00 -0500
+Received: from gw.goop.org ([64.81.55.164]:42373 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933307AbXCHU2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 15:28:50 -0500
-Date: Thu, 8 Mar 2007 21:26:13 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Patrick McHardy <kaber@trash.net>
-cc: James Morris <jmorris@namei.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>
-Subject: Re: [PATCH] chaostables
-In-Reply-To: <45F044A0.50001@trash.net>
-Message-ID: <Pine.LNX.4.61.0703082112300.521@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
- <20070308131412.08d9973e@lxorguk.ukuu.org.uk> <Line.LNX.4.64.0703080955060.8029@d.namei>
- <Pine.LNX.4.61.0703081652310.2448@yvahk01.tjqt.qr> <45F044A0.50001@trash.net>
+	id S1752145AbXCHUd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 15:33:59 -0500
+Message-ID: <45F07334.7010207@goop.org>
+Date: Thu, 08 Mar 2007 12:33:56 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Daniel Arai <arai@vmware.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       akpm@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
+       tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: + stupid-hack-to-make-mainline-build.patch added to -mm tree
+References: <1173308717.24738.898.camel@localhost.localdomain> <45EF49E9.7040509@vmware.com> <1173313373.24738.937.camel@localhost.localdomain> <45EF6077.9090302@vmware.com> <20070308182456.GH19575@sequoia.sous-sol.org> <45F06720.8080901@goop.org> <20070308194740.GJ10574@sequoia.sous-sol.org> <45F06989.8030207@goop.org> <20070308201033.GK10574@sequoia.sous-sol.org> <45F06FB3.105@goop.org> <20070308202350.GL10574@sequoia.sous-sol.org>
+In-Reply-To: <20070308202350.GL10574@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mar 8 2007 18:15, Patrick McHardy wrote:
+Chris Wright wrote:
+> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+>   
+>> I guess by "rest of the kernel" you mean other stuff in arch/i386.  Yes,
+>> that's a concern, but maybe we can tease it apart in a sensible way.
+>>     
 >
->> Take xt_portscan as an example, which would require a minimum of 23 
->> filtering rules (which cannot reproduce the module's action in its 
->> fullest). 23 rules means we will be looping a bit in ipt_do_table() for 
->> a single packet, repeatedly checking for "-p tcp", i.e. calling into 
->> xt_tcpudp, checking for port ranges and perhaps other TCP fields that 
->> are never examined in xt_portscan.
->
->
->I'm guessing xt_portscan tries to detect and match on portscans, but
->its not obvious why it looks at and changes skb->mark and nfct->ctmark,
->so I suggest you start by explaining what it really does.
+> Yes, that's exactly what I'm saying.  Same with above (the native stuff), since
+> we don't want a bunch of apic_read type of pv_ops (oh, wait... ;-)  Of course,
+> dom0 will be another can of worms, but one at a time.
+>   
 
-xt_portscan needs to keep track of what packets the machine has already 
-seen. So on the first SYN, the connection is marked with "1". (Then we 
-send our SYN-ACK... and the connection turns ESTABLISHED.) The next 
-packet that is received will be an ACK or an RST. But it must come 
-_exactly after_ the SYN, so just using --tcp-flags ACK will not work. A 
-state which can be remembered is required. For that, an automaton is 
-used, whose state is saved in the connection mark.
+Yeah, well we're already talking about a two-level model to accomodate
+VMI, since it wants the mostly native SMP stuff except for the actual
+apic operations.
 
-If you would like to find out more about the implementation, please have 
-a look at http://jengelh.hopto.org/p/chaostables/fw.html section 3, 4, 
-and perhaps 5.
+Maybe hooking into genapic is the right way to mop up all the uses of
+send_IPI and its variants.  But from a quick grep it doesn't look like
+they get called from too many places...  Most of the callers seem to be
+in arch/i386/kernek/smp.c, so they should be pretty easy to isolate.
 
-As for the packet mark, refer to section 6. But for you: xt_portscan 
-consists of "two" parts, one is "detect-and-mark" and the other is 
-"match it". To have the following do the right thing
-
-  -m portscan --cnscan  -j LOG --log-prefix "[evil user] "
-  -m portscan --stealth -j LOG --log-prefix "[hideous evil user] "
-
-the "detect-and-mark" code _must_ (in its common RFC meaning) only be 
-executed once per packet.
-
-
->>>We already have the psd match for years, but decided against merging it.
->> 
->> On what basis? As far as I flew over psd's code, it uses a heuristic 
->> like "how often did that client recently connect" for match decision. 
->> (P2P clients randomly port knocking, anyone?) I would not think of that 
->> as a reliable way to tell portscans either. However, half-open TCP 
->> connect for example is a more clear action to define a portscan.
->
->The question is what we gain by being able to detect portscans.
-
-You have a point with that. But then we could argue on hours about what 
-we gain with life.
-
->So far my opinion is thats its close to nothing. Besides that,
->it should be possible to do this by using the recent match.
-
-Perhaps. I'll just provide this little example of what is good for to 
-check for portscans:
-
-  -N block_it
-  -A block_it -m recent --name block_it --update --seconds 60;
-
-  -A INPUT -m portscan --cnscan -j block_it;
-  -A INPUT -m recent --name block_it --rcheck -j DROP;
-
-that is, to drop everything from evil hosts doing half-open scans for 
-some time.
-
-[ Ok, I used "recent", now I don't get what you meant by "Besides that,
-  it should be possible to do this by using the recent match." -
-  recent alone does not check for half-opens, nor connect-scans. It 
-  checks for recentness of anything. I hope you can clarify. ]
-
-
-
-Thank you,
-Jan
--- 
+    J
