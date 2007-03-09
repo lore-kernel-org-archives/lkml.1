@@ -1,144 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030844AbXCIDMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992918AbXCIDNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030844AbXCIDMb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 22:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992917AbXCIDMb
+	id S2992918AbXCIDNU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 22:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992917AbXCIDNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 22:12:31 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:55529 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030844AbXCIDM3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 22:12:29 -0500
-Date: Thu, 8 Mar 2007 22:12:27 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, mbligh@google.com, linux-kernel@vger.kernel.org,
-       wli@holomorphy.com, sparclinux@vger.kernel.org
-Subject: [PATCH] Fix sparc TIF_USEDFPU flag atomicity
-Message-ID: <20070309031227.GC9462@Krystal>
+	Thu, 8 Mar 2007 22:13:19 -0500
+Received: from ozlabs.org ([203.10.76.45]:45410 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992918AbXCIDNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 22:13:18 -0500
+Subject: [PATCH 3/9] lguest: cleanup: allocate separate pages for switcher
+	code
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Andi Kleen <ak@muc.de>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1173409696.32234.69.camel@localhost.localdomain>
+References: <1173409524.32234.67.camel@localhost.localdomain>
+	 <1173409696.32234.69.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 14:12:18 +1100
+Message-Id: <1173409939.32234.73.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 22:10:05 up 34 days, 17:17,  6 users,  load average: 1.30, 1.38, 1.34
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix sparc TIF_USEDFPU flag atomicity
+We don't need physically-contiguous pages for the hypervisor, since we
+use map_vm_area anyway.
 
-Non atomic update of TIF can be very dangerous, except at thread structure
-creation time. Here I standardize the TIF_USEDFPU usage of the sparc arch.
+Two other related cleanups: pass the number of pages to
+init_pagetables() so we can remove the constant from the header, and
+call populate_hypervisor_pte_page() on each page as we allocate it,
+rather than as a separate loop.
 
-Applies on 2.6.20.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
---- a/arch/sparc/kernel/process.c
-+++ b/arch/sparc/kernel/process.c
-@@ -348,7 +348,7 @@ void exit_thread(void)
- #ifndef CONFIG_SMP
- 	if(last_task_used_math == current) {
- #else
--	if(current_thread_info()->flags & _TIF_USEDFPU) {
-+	if(test_tsk_thread_flag(current, TIF_USEDFPU)) {
- #endif
- 		/* Keep process from leaving FPU in a bogon state. */
- 		put_psr(get_psr() | PSR_EF);
-@@ -357,7 +357,7 @@ void exit_thread(void)
- #ifndef CONFIG_SMP
- 		last_task_used_math = NULL;
- #else
--		current_thread_info()->flags &= ~_TIF_USEDFPU;
-+		clear_tsk_thread_flag(current, TIF_USEDFPU);
- #endif
+diff -r 9fea34a28460 arch/i386/lguest/core.c
+--- a/arch/i386/lguest/core.c	Thu Mar 08 16:09:00 2007 +1100
++++ b/arch/i386/lguest/core.c	Thu Mar 08 16:21:42 2007 +1100
+@@ -24,17 +24,21 @@ static char __initdata hypervisor_blob[]
+ #include "hypervisor-blob.c"
+ };
+ 
+-#define MAX_LGUEST_GUESTS						  \
+-	(((PAGE_SIZE << HYPERVISOR_PAGE_ORDER) - sizeof(hypervisor_blob)) \
++/* 64k ought to be enough for anybody! */
++#define HYPERVISOR_PAGES (65536 / PAGE_SIZE)
++
++#define MAX_LGUEST_GUESTS						\
++	(((HYPERVISOR_PAGES * PAGE_SIZE) - sizeof(hypervisor_blob))	\
+ 	 / sizeof(struct lguest_state))
+ 
+ static struct vm_struct *hypervisor_vma;
++/* Pages for hypervisor itself */
++static struct page *hype_page[HYPERVISOR_PAGES];
+ static int cpu_had_pge;
+ static struct {
+ 	unsigned long offset;
+ 	unsigned short segment;
+ } lguest_entry __attribute_used__;
+-struct page *hype_pages; /* Contiguous pages. */
+ struct lguest lguests[MAX_LGUEST_GUESTS];
+ DEFINE_MUTEX(lguest_lock);
+ 
+@@ -58,15 +62,19 @@ struct lguest_state *__lguest_states(voi
+ 
+ static __init int map_hypervisor(void)
+ {
+-	unsigned int i;
+-	int err;
+-	struct page *pages[HYPERVISOR_PAGES], **pagep = pages;
+-
+-	hype_pages = alloc_pages(GFP_KERNEL|__GFP_ZERO, HYPERVISOR_PAGE_ORDER);
+-	if (!hype_pages)
+-		return -ENOMEM;
+-
+-	hypervisor_vma = __get_vm_area(PAGE_SIZE << HYPERVISOR_PAGE_ORDER,
++	int i, err;
++	struct page **pagep = hype_page;
++
++	for (i = 0; i < ARRAY_SIZE(hype_page); i++) {
++		unsigned long addr = get_zeroed_page(GFP_KERNEL);
++		if (!addr) {
++			err = -ENOMEM;
++			goto free_some_pages;
++		}
++		hype_page[i] = virt_to_page(addr);
++	}
++
++	hypervisor_vma = __get_vm_area(ARRAY_SIZE(hype_page) * PAGE_SIZE,
+ 				       VM_ALLOC, HYPE_ADDR, VMALLOC_END);
+ 	if (!hypervisor_vma) {
+ 		err = -ENOMEM;
+@@ -74,9 +82,6 @@ static __init int map_hypervisor(void)
+ 		goto free_pages;
  	}
+ 
+-	for (i = 0; i < HYPERVISOR_PAGES; i++)
+-		pages[i] = hype_pages + i;
+-
+ 	err = map_vm_area(hypervisor_vma, PAGE_KERNEL, &pagep);
+ 	if (err) {
+ 		printk("lguest: map_vm_area failed: %i\n", err);
+@@ -100,14 +105,20 @@ free_vma:
+ free_vma:
+ 	vunmap(hypervisor_vma->addr);
+ free_pages:
+-	__free_pages(hype_pages, HYPERVISOR_PAGE_ORDER);
++	i = ARRAY_SIZE(hype_page);
++free_some_pages:
++	for (--i; i >= 0; i--)
++		__free_pages(hype_page[i], 0);
+ 	return err;
  }
-@@ -371,7 +371,7 @@ void flush_thread(void)
- #ifndef CONFIG_SMP
- 	if(last_task_used_math == current) {
- #else
--	if(current_thread_info()->flags & _TIF_USEDFPU) {
-+	if(test_tsk_thread_flag(current, TIF_USEDFPU)) {
- #endif
- 		/* Clean the fpu. */
- 		put_psr(get_psr() | PSR_EF);
-@@ -380,7 +380,7 @@ void flush_thread(void)
- #ifndef CONFIG_SMP
- 		last_task_used_math = NULL;
- #else
--		current_thread_info()->flags &= ~_TIF_USEDFPU;
-+		clear_tsk_thread_flag(current, TIF_USEDFPU);
- #endif
- 	}
  
-@@ -466,13 +466,13 @@ int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
- #ifndef CONFIG_SMP
- 	if(last_task_used_math == current) {
- #else
--	if(current_thread_info()->flags & _TIF_USEDFPU) {
-+	if(test_tsk_thread_flag(current, TIF_USEDFPU)) {
- #endif
- 		put_psr(get_psr() | PSR_EF);
- 		fpsave(&p->thread.float_regs[0], &p->thread.fsr,
- 		       &p->thread.fpqueue[0], &p->thread.fpqdepth);
- #ifdef CONFIG_SMP
--		current_thread_info()->flags &= ~_TIF_USEDFPU;
-+		clear_tsk_thread_flag(current, TIF_USEDFPU);
- #endif
- 	}
+ static __exit void unmap_hypervisor(void)
+ {
++	unsigned int i;
++
+ 	vunmap(hypervisor_vma->addr);
+-	__free_pages(hype_pages, HYPERVISOR_PAGE_ORDER);
++	for (i = 0; i < ARRAY_SIZE(hype_page); i++)
++		__free_pages(hype_page[i], 0);
+ }
  
-@@ -609,13 +609,13 @@ int dump_fpu (struct pt_regs * regs, elf_fpregset_t * fpregs)
- 		return 1;
- 	}
- #ifdef CONFIG_SMP
--	if (current_thread_info()->flags & _TIF_USEDFPU) {
-+	if (test_tsk_thread_flag(current, TIF_USEDFPU)) {
- 		put_psr(get_psr() | PSR_EF);
- 		fpsave(&current->thread.float_regs[0], &current->thread.fsr,
- 		       &current->thread.fpqueue[0], &current->thread.fpqdepth);
- 		if (regs != NULL) {
- 			regs->psr &= ~(PSR_EF);
--			current_thread_info()->flags &= ~(_TIF_USEDFPU);
-+			clear_tsk_thread_flag(current, TIF_USEDFPU);
+ /* IN/OUT insns: enough to get us past boot-time probing. */
+@@ -390,7 +401,7 @@ static int __init init(void)
+ 	if (err)
+ 		return err;
+ 
+-	err = init_pagetables(hype_pages);
++	err = init_pagetables(hype_page, HYPERVISOR_PAGES);
+ 	if (err) {
+ 		unmap_hypervisor();
+ 		return err;
+diff -r 9fea34a28460 arch/i386/lguest/lg.h
+--- a/arch/i386/lguest/lg.h	Thu Mar 08 16:09:00 2007 +1100
++++ b/arch/i386/lguest/lg.h	Thu Mar 08 16:21:42 2007 +1100
+@@ -2,9 +2,6 @@
+ #define _LGUEST_H
+ 
+ #include <asm/desc.h>
+-/* 64k ought to be enough for anybody! */
+-#define HYPERVISOR_PAGE_ORDER (16 - PAGE_SHIFT)
+-#define HYPERVISOR_PAGES (1 << HYPERVISOR_PAGE_ORDER)
+ 
+ #define GDT_ENTRY_LGUEST_CS	10
+ #define GDT_ENTRY_LGUEST_DS	11
+@@ -43,7 +40,7 @@ struct lguest_regs
+ };
+ 
+ __exit void free_pagetables(void);
+-__init int init_pagetables(struct page *hype_pages);
++__init int init_pagetables(struct page **hype_page, int pages);
+ 
+ /* Full 4G segment descriptors, suitable for CS and DS. */
+ #define FULL_EXEC_SEGMENT ((struct desc_struct){0x0000ffff, 0x00cf9b00})
+@@ -122,7 +119,6 @@ struct lguest
+ 	struct host_trap interrupt[LGUEST_IRQS];
+ };
+ 
+-extern struct page *hype_pages; /* Contiguous pages. */
+ extern struct lguest lguests[];
+ extern struct mutex lguest_lock;
+ 
+diff -r 9fea34a28460 arch/i386/lguest/page_tables.c
+--- a/arch/i386/lguest/page_tables.c	Thu Mar 08 16:09:00 2007 +1100
++++ b/arch/i386/lguest/page_tables.c	Thu Mar 08 16:24:56 2007 +1100
+@@ -328,9 +328,23 @@ static void free_hypervisor_pte_pages(vo
+ 		free_page((long)hypervisor_pte_page(i));
+ }
+ 
+-static __init int alloc_hypervisor_pte_pages(void)
++static __init void populate_hypervisor_pte_page(int cpu,
++						struct page *hype_page[],
++						int pages)
+ {
+ 	int i;
++	u32 *pte = hypervisor_pte_page(cpu);
++
++	for (i = 0; i < pages; i++) {
++		/* First entry set dynamically in map_trap_page */
++		pte[i+1] = ((page_to_pfn(hype_page[i]) << PAGE_SHIFT) 
++			    | _PAGE_KERNEL_EXEC);
++	}
++}
++
++__init int init_pagetables(struct page **hype_page, int pages)
++{
++	unsigned int i;
+ 
+ 	for_each_possible_cpu(i) {
+ 		hypervisor_pte_page(i) = (u32 *)get_zeroed_page(GFP_KERNEL);
+@@ -338,36 +352,11 @@ static __init int alloc_hypervisor_pte_p
+ 			free_hypervisor_pte_pages();
+ 			return -ENOMEM;
  		}
++		populate_hypervisor_pte_page(i, hype_page, pages);
  	}
- #else
-diff --git a/arch/sparc/kernel/traps.c b/arch/sparc/kernel/traps.c
-index 6a70d21..7a7ad05 100644
---- a/arch/sparc/kernel/traps.c
-+++ b/arch/sparc/kernel/traps.c
-@@ -259,7 +259,7 @@ void do_fpd_trap(struct pt_regs *regs, unsigned long pc, unsigned long npc,
- 	} else {
- 		fpload(&current->thread.float_regs[0], &current->thread.fsr);
- 	}
--	current_thread_info()->flags |= _TIF_USEDFPU;
-+	set_tsk_thread_flag(current, TIF_USEDFPU);
- #endif
+ 	return 0;
  }
  
-@@ -290,7 +290,7 @@ void do_fpe_trap(struct pt_regs *regs, unsigned long pc, unsigned long npc,
- #ifndef CONFIG_SMP
- 	if(!fpt) {
- #else
--        if(!(task_thread_info(fpt)->flags & _TIF_USEDFPU)) {
-+        if(!test_tsk_thread_flag(fpt, TIF_USEDFPU)) {
- #endif
- 		fpsave(&fake_regs[0], &fake_fsr, &fake_queue[0], &fake_depth);
- 		regs->psr &= ~PSR_EF;
-@@ -333,7 +333,7 @@ void do_fpe_trap(struct pt_regs *regs, unsigned long pc, unsigned long npc,
- 	/* nope, better SIGFPE the offending process... */
- 	       
- #ifdef CONFIG_SMP
--	task_thread_info(fpt)->flags &= ~_TIF_USEDFPU;
-+	clear_tsk_thread_flag(fpt, TIF_USEDFPU);
- #endif
- 	if(psr & PSR_PS) {
- 		/* The first fsr store/load we tried trapped,
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-static __init void populate_hypervisor_pte_page(int cpu)
+-{
+-	int i;
+-	u32 *pte = hypervisor_pte_page(cpu);
+-
+-	for (i = 0; i < HYPERVISOR_PAGES; i++) {
+-		/* First entry set dynamically in map_trap_page */
+-		pte[i+1] = ((page_to_pfn(&hype_pages[i]) << PAGE_SHIFT)
+-			    | _PAGE_KERNEL_EXEC);
+-	}
+-}
+-
+-__init int init_pagetables(struct page hype_pages[])
+-{
+-	int ret;
+-	unsigned int i;
+-
+-	ret = alloc_hypervisor_pte_pages();
+-	if (ret)
+-		return ret;
+-
+-	for_each_possible_cpu(i)
+-		populate_hypervisor_pte_page(i);
+-	return 0;
+-}
+-
+ __exit void free_pagetables(void)
+ {
+ 	free_hypervisor_pte_pages();
+
+
