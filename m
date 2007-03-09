@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767650AbXCIXab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767652AbXCIXdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767650AbXCIXab (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 18:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767649AbXCIXab
+	id S1767652AbXCIXdY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 18:33:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767654AbXCIXdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 18:30:31 -0500
-Received: from proxima.lp0.eu ([85.158.45.36]:38921 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767646AbXCIXaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 18:30:30 -0500
-Message-ID: <45F1EE12.2070605@simon.arlott.org.uk>
-Date: Fri, 09 Mar 2007 23:30:26 +0000
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	Fri, 9 Mar 2007 18:33:24 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:54080 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767652AbXCIXdW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 18:33:22 -0500
+Date: Fri, 9 Mar 2007 15:33:01 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2/3] fs: introduce perform_write aop
+Message-ID: <20070309233301.GC18555@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070208105458.26443.41479.sendpatchset@linux.site> <20070309103913.GA4503@infradead.org>
 MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: netconsole system freeze when cable unplugged
-References: <45F1B6FD.1060902@simon.arlott.org.uk> <20070309204243.GA28441@electric-eye.fr.zoreil.com>
-In-Reply-To: <20070309204243.GA28441@electric-eye.fr.zoreil.com>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309103913.GA4503@infradead.org>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/07 20:42, Francois Romieu wrote:
-> Simon Arlott <simon@fire.lp0.eu> :
->> When I unplug the cable the system just stops responding to anything, 
->> at all. No message is printed to the console when the cable is plugged 
->> back in.
+On Fri, Mar 09, 2007 at 10:39:13AM +0000, Christoph Hellwig wrote:
+> > One problem with this interface is that it cannot be used to write into the
+> > filesystem by any means other than already-initialised buffers via iovecs. So
+> > prepare/commit have to stay around for non-user data... 
 > 
-> rtl8139_interrupt (spin_lock(&tp->lock))
-> -> rtl8139_weird_interrupt
->    -> rtl_check_media
->       -> mii_check_media (printk(KERN_INFO "%s: link down\n", ...))
->          [netpoll stuff here]
->          -> rtl8139_poll_controller
->             -> rtl8139_interrupt
->                *deadlock*
+> Actually I think that's a a good thing to a certain extent.  It reminds
+> us that all other users are horrible abuse of the interface.  I'd even
+> go so far as to make batch_write a callback that the filesystem passes
+> to generic_file_aio_write to make clear it's not a generic thing but
+> a helper.  (It's not a generic thing because it's the upper layer writing
+> into the pagecache, not a pagecache to fs below operation).
 > 
-> See below for my random stuff of the day. Feel free to open a PR at
-> bugzilla.kernel.org if the issue does not go away.
+> The still leaves open on how to get rid of ->prepare_write and ->commit_write
+> compltely, and for that we'll probably need ->kernel_read and ->kernel_write
+> file operations.  But that's a step you shouldn't consider yet when doing
+> this work.
 
-The patch doesn't fix it, nothing changes. I'm not sure how this can 
-be debugged if printk won't work...
+->kernel_write() as opposed to genericizing ->perform_write() would be fine
+with me. Just so long as we get rid of ->prepare_write and ->commit_write in
+that other kernel code doesn't call them directly. That interface just
+doesn't work for Ocfs2. There, we have the triple whammy of having to order
+cluster locks with page locks, avoiding nesting cluster locks in the case
+that the user data has to be paged in (causing a lock in ->readpage()) and
+grabbing / zeroing adjacent pages to fill holes.
 
-> --------8<-----------------------------------------------------------------
-> 
-> 8139too: netconsole breakage when link changes
-> 
-> rtl8139_interrupt is not supposed to be reentrant but its link
-> management part can emit printk.
-> 
-> Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
-> 
-> diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
-> index 99304b2..64467ad 100644
-> --- a/drivers/net/8139too.c
-> +++ b/drivers/net/8139too.c
-> @@ -2215,9 +2215,16 @@ static irqreturn_t rtl8139_interrupt (int irq, void *dev_instance)
->   */
->  static void rtl8139_poll_controller(struct net_device *dev)
->  {
-> -	disable_irq(dev->irq);
-> +	struct rtl8139_private *tp = netdev_priv(dev);
-> +	unsigned long flags;
-> +	int rc;
-> +
-> +	rc = spin_trylock_irqsave(&tp->lock, flags);
-> +	if (!rc)
-> +		return;
-> +	spin_unlock(&tp->lock);
->  	rtl8139_interrupt(dev->irq, dev);
-> -	enable_irq(dev->irq);
-> +	local_irq_restore(flags);
->  }
->  #endif
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+So, a combination of ->perform_write and ->kernel_write() could really help
+me solve my write woes.
 
+Right now I've got Ocfs2 implementing it's own lowest-level buffered write
+code - think generic_file_buffered_write() replacement for Ocfs2. With some
+duplicated code above that layer. What's nice is that I can abstract away
+the "copy data into some target pages" bits such that the majority of that
+code is re-usable for ocfs2's splice write operation. I'm not sure we could
+have that low a level of abstraction for anyhing above individual the file
+system though which also has to deal with non-kernel writes though. That's
+where a ->kernel_write() might come in handy.
+	--Mark
 
--- 
-Simon Arlott
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
