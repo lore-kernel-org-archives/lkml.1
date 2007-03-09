@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993015AbXCIGwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993023AbXCIHEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993015AbXCIGwN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 01:52:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993016AbXCIGwN
+	id S2993023AbXCIHEz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 02:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993024AbXCIHEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 01:52:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42732 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993015AbXCIGwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 01:52:12 -0500
+	Fri, 9 Mar 2007 02:04:55 -0500
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:46621
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993023AbXCIHEy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 02:04:54 -0500
+Date: Thu, 8 Mar 2007 23:04:46 -0800
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bill Davidsen <davidsen@tmr.com>, Ed Tomlinson <edt@aei.ca>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Revell <rlrevell@joe-job.com>,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Message-ID: <20070309070446.GA3487@gnuppy.monkey.org>
+References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com> <200703051419.25814.gene.heskett@gmail.com> <200703052123.29421.edt@aei.ca> <Pine.LNX.4.64.0703051849410.3998@woody.linux-foundation.org> <45F0DCB7.5020908@tmr.com> <Pine.LNX.4.64.0703082226530.10832@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-X-Fcc: ~/Mail/utrace
-Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
-In-Reply-To: Alan Stern's message of  Wednesday, 7 March 2007 14:11:00 -0500 <Pine.LNX.4.44L0.0703071127530.6624-100000@iolanthe.rowland.org>
-X-Zippy-Says: I'm having a RELIGIOUS EXPERIENCE..  and I don't take any DRUGS
-Message-Id: <20070309065203.3A81A180063@magilla.sf.frob.com>
-Date: Thu,  8 Mar 2007 22:52:03 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703082226530.10832@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That sounds like a rather fragile approach to avoiding a minimal amount of 
-> work.  Debug exceptions don't occur very often, and when they do it won't 
-> matter too much if we go through some extra notifier-chain callouts.
+On Thu, Mar 08, 2007 at 10:31:48PM -0800, Linus Torvalds wrote:
+> On Thu, 8 Mar 2007, Bill Davidsen wrote:
+> > Please, could you now rethink plugable scheduler as well? Even if one had to
+> > be chosen at boot time and couldn't be change thereafter, it would still allow
+> > a few new thoughts to be included.
+> 
+> No. Really.
+> 
+> I absolutely *detest* pluggable schedulers. They have a huge downside: 
+> they allow people to think that it's ok to make special-case schedulers. 
+> And I simply very fundamentally disagree.
 
-When single-stepping occurs it happens repeatedly many times, and that
-doesn't need any more overhead than it already has.  
+Linus,
 
-> It turns out that this won't work correctly unless I use something
-> stronger, like a spinlock or RCU.  Either one seems like overkill.
+This is where I have to respectfully disagree. There are types of loads
+that aren't covered in SCHED_OTHER. They are typically certain real time
+loads and those folks (regardless of -rt patch) would benefit greatly
+from having something like that in place. Those scheduler developers can
+plug in (at compile time) their work without having to track and forward
+port their code constantly so that non-SCHED_OTHER policies can be
+experimented with easily.
 
-What is the problem with just clearing TIF_DEBUG?  It just means that in
-the SIGKILL case, the dying thread won't switch in its local debugregs.
-The global kernel allocations will already be set in the processor from the
-previous context, and old user-address allocations do no harm since we
-won't run in user mode again before switching out at the end of do_exit.
+This is especially so with rate monotonic influenced schedulers that are
+in the works by real time folks, stock kernel or not. This is about
+making Linux generally accessible to those folks and not folks doing
+SCHED_OTHER work. They are orthogonal.
 
-> Is there any way to find out from within the
-> switch_to_thread_hw_breakpoint routine whether the task is in this unusual
-> state?  (By which I mean the task is being debugged and the debugger
-> hasn't told it to start running.)  Would (tsk->exit_code == SIGKILL) work?  
-
-That won't necessarily work.  There isn't any cheap check that won't also
-catch a task preempted on its way to stopping for the debugger.  
-
-> If not, can we add a TIF_DEBUG_STOPPED flag?  
-
-I'm not clear on what that would mean, but it's probably not an idea I like.
-
-> Or should I just go with a spinlock?
-
-If it's really necessary, but it hasn't proved so for any other switched
-per-thread state.  As long as you aren't doing per-thread kernel-mode
-allocations, I don't see why you need anything other than TIF_DEBUG.
-
-> Is SIGKILL the only way this can happen?
-
-It should be, but there might be some stray wake_up_process calls in the
-kernel that can violate [up]trace's supposed monopoly on TASK_TRACED (or
-duopoly with SIGKILL, I suppose I should say).  If there is no SIGKILL,
-then the task will just call schedule again nearly immediately to go back
-to blocking, which will switch out unless there is a second wakeup right
-then.
-
-> In a similar vein, I need a reliable way to know whether a task has gone 
-> through exit_thread().  If it has, then its hw_breakpoint area has been 
-> deallocated and a new one must not be allocated.  Will (tsk->flags & 
-> PF_EXITING) always be true once that happens?
-
-PF_EXITING it set after there is no possibility of returning to user mode,
-but a while before exit_thread, when you might still want kernel-mode
-breakpoints.  If the only per-thread allocations you support are for user
-mode, then you can certainly refuse to do any when PF_EXITING is set.
-
-
-Thanks,
-Roland
+bill
 
