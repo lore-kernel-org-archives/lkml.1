@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965814AbXCIUjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767493AbXCIUkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965814AbXCIUjq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965812AbXCIUjq
+	id S1767493AbXCIUkm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:40:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767495AbXCIUkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:39:46 -0500
-Received: from mail.suse.de ([195.135.220.2]:43759 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965814AbXCIUjg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:39:36 -0500
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-Date: Fri, 9 Mar 2007 21:39:33 +0100
-User-Agent: KMail/1.9.1
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0703091509560.5094-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0703091509560.5094-100000@iolanthe.rowland.org>
+	Fri, 9 Mar 2007 15:40:42 -0500
+Received: from [212.12.190.74] ([212.12.190.74]:32921 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767493AbXCIUkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 15:40:40 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: Pluggable Schedulers (was: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler)
+Date: Fri, 9 Mar 2007 23:43:46 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200703091625.55361.a1426z@gawab.com> <20070309135751.GE2986@holomorphy.com>
+In-Reply-To: <20070309135751.GE2986@holomorphy.com>
 MIME-Version: 1.0
+Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703092139.35184.oneukum@suse.de>
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703092343.46276.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 9. März 2007 21:27 schrieb Alan Stern:
-> On Fri, 9 Mar 2007, Oliver Neukum wrote:
-> 
-> > > Adding a new release() callback would solve the problem by creating 
-> > > another.  Drivers need to release their data as soon as possible after
-> > > they unbind from a device, not when the device itself goes away.  Think
-> > 
-> > Wait, the callback from closing the file in sysfs is the earliest we can safely
-> > free the data structure. How do you want to free earlier?
-> 
-> It is _not_ the earliest we can safely free the data structure.
-> 
-> Dmitry's callback occurs when _all_ the sysfs attributes have been
-> released -- including ones that don't have anything to do with the
-> driver's private data structure.  Think of the bInterfaceClass attribute,
-> for example.
+William Lee Irwin III wrote:
+> William Lee Irwin III wrote:
+> >> I consider policy issues to be hopeless political quagmires and
+> >> therefore stick to mechanism. So even though I may have started the
+> >> code in question, I have little or nothing to say about that sort of
+> >> use for it.
+> >> There's my longwinded excuse for having originated that tidbit of code.
+>
+> On Fri, Mar 09, 2007 at 04:25:55PM +0300, Al Boldi wrote:
+> > I've no idea what both of you are talking about.
+>
+> The short translation of my message for you is "Linus, please don't
+> LART me too hard."
 
-Ok, yes I see. It is by far too late.
+Right.
 
-	Regards
-		Oliver
+> On Fri, Mar 09, 2007 at 04:25:55PM +0300, Al Boldi wrote:
+> > How can giving people the freedom of choice be in any way
+> > counter-productive?
+>
+> This sort of concern is too subjective for me to have an opinion on it.
+
+How diplomatic.
+
+> My preferred sphere of operation is the Manichean domain of faster vs.
+> slower, functionality vs. non-functionality, and the like. For me, such
+> design concerns are like the need for a kernel to format pagetables so
+> the x86 MMU decodes what was intended, or for a compiler to emit valid
+> assembly instructions, or for a programmer to write C the compiler
+> won't reject with parse errors.
+
+Sure, but I think, even from a technical point of view, competition is a good 
+thing to have.  Pluggable schedulers give us this kind of competition, that 
+forces each scheduler to refine or become obsolete.  Think evolution.
+
+> If Linus, akpm, et al object to the
+> design, then invalid output was produced. Please refer to Linus, akpm,
+> et al for these sorts of design concerns.
+
+Point taken.
+
+Linus Torvalds wrote:
+> And hey, you can try to prove me wrong. Code talks. So far, nobody has
+> really ever come close.
+>
+> So go and code it up, and show the end result. So far, nobody who actually
+> *does* CPU schedulers have really wanted to do it, because they all want
+> to muck around with their own private versions of the data structures.
+
+What about PlugSched?
+
+
+Thanks!
+
+--
+Al
+
