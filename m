@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbXCIJiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752671AbXCIJjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbXCIJiU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 04:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993086AbXCIJiU
+	id S1752671AbXCIJjI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 04:39:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993079AbXCIJjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 04:38:20 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45505 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752663AbXCIJiT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 04:38:19 -0500
-Date: Fri, 9 Mar 2007 01:38:17 -0800
-From: Paul Jackson <pj@sgi.com>
-To: Kirill Korotaev <dev@sw.ru>
-Cc: herbert@13thfloor.at, vatsa@in.ibm.com, menage@google.com,
-       ebiederm@xmission.com, winget@google.com, containers@lists.osdl.org,
-       akpm@linux-foundation.org, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru
-Subject: Re: [PATCH 1/2] rcfs core patch
-Message-Id: <20070309013817.5b9b4374.pj@sgi.com>
-In-Reply-To: <45F127AB.5070704@sw.ru>
-References: <20070301133543.GK15509@in.ibm.com>
-	<20070301134528.GL15509@in.ibm.com>
-	<m1slcg8m4f.fsf@ebiederm.dsl.xmission.com>
-	<20070308101347.GA29051@in.ibm.com>
-	<20070309004816.GB4506@MAIL.13thfloor.at>
-	<45F127AB.5070704@sw.ru>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Fri, 9 Mar 2007 04:39:08 -0500
+Received: from www.osadl.org ([213.239.205.134]:39809 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752674AbXCIJjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 04:39:06 -0500
+Subject: Re: [rfc][patch] futex: restartable futex_wait?
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070309051038.GA12479@wotan.suse.de>
+References: <20070307153349.GA32404@wotan.suse.de>
+	 <20070308172902.GA16834@elte.hu>  <20070309051038.GA12479@wotan.suse.de>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 10:38:35 +0100
+Message-Id: <1173433115.3999.2.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kirill, responding to Herbert:
-> > do we need or even want that? IMHO the hierarchical
-> > concept CKRM was designed with, was also the reason
-> > for it being slow, unuseable and complicated
-> 1. cpusets are hierarchical already. So hierarchy is required.
+On Fri, 2007-03-09 at 06:10 +0100, Nick Piggin wrote:
+> > i think that's quite right. I'm wondering why this never came up before? 
+> > But your fix is not complete i think:
+> > 
+> > > +             restart->arg2 = time;
+> > > +             return -ERESTART_RESTARTBLOCK;
+> > > +     }
+> > 
+> > 'time' here is relative, so the restarted syscall will do a /full/ wait 
+> > again.
+> 
+> But it has been modified by schedule_timeout?
 
-I think that CKRM has a harder time doing a hierarchy than cpusets.
+But this does not change the syscall registers, so it is restarted in
+the same way. We need a new futex OP for this, which takes absolute time
+like the PI futex op does.
 
-CKRM is trying to account for and control how much of an amorphous
-resource is used, whereas cpusets is trying to control whether a
-specifically identifiable resource is used, or not used, not how
-much of it is used.
+	tglx
 
-A child cpuset gets configured to allow certain CPUs and Nodes, and
-then does not need to dynamically pass back any information about
-what is actually used - it's a one-way control with no feedback.
-That's a relatively easier problem.
 
-CKRM (as I recall it, from long ago ...) has to track the amount
-of usage dynamically, across parent and child groups (whatever they
-were called.)  That's a harder problem.
-
-So, yes, as Kirill observes, we need the hierarchy because cpusets
-has it, cpuset users make good use of the hierarchy, and the hierarchy
-works fine in that case, even if a hierarchy is more difficult for CKRM.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
