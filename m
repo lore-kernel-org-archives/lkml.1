@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965196AbXCIBcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992861AbXCIBe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965196AbXCIBcH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 20:32:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992861AbXCIBcH
+	id S2992861AbXCIBe0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 20:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992865AbXCIBe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 20:32:07 -0500
-Received: from kepler.fjfi.cvut.cz ([147.32.6.11]:53720 "EHLO
-	kepler.fjfi.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965196AbXCIBcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 20:32:06 -0500
-Date: Fri, 9 Mar 2007 02:31:54 +0100 (CET)
-From: Martin Drab <drab@kepler.fjfi.cvut.cz>
-To: Carsten Otte <cotte.de@gmail.com>
-cc: hugh@veritas.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question about memory mapping mechanism
-In-Reply-To: <Pine.LNX.4.64.0703090103020.25365@kepler.fjfi.cvut.cz>
-Message-ID: <Pine.LNX.4.64.0703090227490.27568@kepler.fjfi.cvut.cz>
-References: <Pine.LNX.4.64.0703081345010.21317@kepler.fjfi.cvut.cz>
- <5c77e7070703080617r63cbccfevd2c6d678f16c2b03@mail.gmail.com>
- <Pine.LNX.4.64.0703082143370.25365@kepler.fjfi.cvut.cz>
- <Pine.LNX.4.64.0703090103020.25365@kepler.fjfi.cvut.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Mar 2007 20:34:26 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:48577 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992861AbXCIBeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 20:34:25 -0500
+Date: Thu, 8 Mar 2007 20:34:05 -0500
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sys_write() racy for multi-threaded append?
+Message-ID: <20070309013405.GI6209@kvack.org>
+References: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com> <45F09F9C.4030801@cosmosbay.com> <f2b55d220703081557k8101e68g1a3556e42f68416@mail.gmail.com> <45F0A71C.2000800@cosmosbay.com> <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007, Martin Drab wrote:
+> Actually, I think it would make the kernel (negligibly) faster to bump
+> f_pos before the vfs_write() call.  Unless fget_light sets fput_needed
+> or the write doesn't complete cleanly, you won't have to touch the
+> file table entry again after vfs_write() returns.  You can adjust
 
-> On Thu, 8 Mar 2007, Martin Drab wrote:
-> 
-> > On Thu, 8 Mar 2007, Carsten Otte wrote:
-> > 
-> > > On 3/8/07, Martin Drab <drab@kepler.fjfi.cvut.cz> wrote:
-> > > > 
-> > > > The thing is that I'd like to prevent kernel to swap these pages out,
-> > > > because then I may loose some data when they are not available in time
-> > > > for the next round.
-> > > 
-> > > One think you could do is grab a reference to the pages upfront.
-> > 
-> > I'm not really sure what exactly do you mean by "grab a reference 
-> > upfront"?
-> 
-> I seem to get it now. So instead of setting PG_reserved upon allocation of 
-> the buffer pages, I should increase the referrence of the pages by calling 
-> get_page() on them and that would prevent the pages to get on the lru list 
-> and thus preventing them to be swapped out. Is that it?
+Any number of things can cause a short write to occur, and rewinding the 
+file position after the fact is just as bad.  A sane app has to either 
+serialise the writes itself or use a thread safe API like pwrite().
 
-Well, so I tried it. Truth is that the "Bad page" messages upon munmap(2) 
-are gone. But whether the pages are really prevented from being swapped 
-out? I don't know. I don't know how to find out.
-
-Martin
+		-ben
+-- 
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
