@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767533AbXCIUyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992494AbXCIU5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767533AbXCIUyn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:54:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767532AbXCIUyn
+	id S2992494AbXCIU5B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:57:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992550AbXCIU5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:54:43 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:4501 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767531AbXCIUyl (ORCPT
+	Fri, 9 Mar 2007 15:57:01 -0500
+Received: from mga09.intel.com ([134.134.136.24]:41490 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992494AbXCIU46 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:54:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=F5iZA6qmVTQAXJOnhUhYTeIKFbygvL+2UHIU9y0iX+6iYuN4CYp55R0alNZ459sjvhpU7caA0gUm9I5nEAOKNcFoaUu+HaAXLUs3FGGiNYBoCjIt6m8nW51tYM4n+PVOSdqa0UHV+Zu3nLVXqcwiOA/pPMw64qmJUOlEbvl3Tz4=
-Message-ID: <d120d5000703091254t350216b3wfb679a53294b0e5a@mail.gmail.com>
-Date: Fri, 9 Mar 2007 15:54:39 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Pete Zaitcev" <zaitcev@redhat.com>
-Subject: Re: Fix locking in mousedev
-Cc: linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz
-In-Reply-To: <20070309103656.cd681677.zaitcev@redhat.com>
+	Fri, 9 Mar 2007 15:56:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,268,1170662400"; 
+   d="scan'208"; a="55847603:sNHT101710917"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070228110631.86a150e4.zaitcev@redhat.com>
-	 <d120d5000703090628p46556d52qb94b523fda4e947d@mail.gmail.com>
-	 <20070309103656.cd681677.zaitcev@redhat.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Date: Fri, 9 Mar 2007 12:56:45 -0800
+Message-ID: <B28E9812BAF6E2498B7EC5C427F293A4020CD426@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <20070309071855.GA5148@ucw.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Thread-Index: AcdiHcqa2kGP+/YNRK2SOQxCSRQzgQAb2B1g
+From: "Moore, Robert" <robert.moore@intel.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: "Jean Delvare" <khali@linux-fr.org>,
+       "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Rudolf Marek" <r.marek@assembler.cz>, <linux-acpi@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       <lm-sensors@lm-sensors.org>, "Therien, Guy" <guy.therien@intel.com>,
+       "Walz, Michael" <michael.walz@intel.com>
+X-OriginalArrivalTime: 09 Mar 2007 20:56:46.0438 (UTC) FILETIME=[731A9060:01C7628D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/9/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
-> On Fri, 9 Mar 2007 09:28:49 -0500, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
-> > On 2/28/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
->
-> > > Dmitry, please consider getting rid of the list of handles entirely.
-> > > The other major user is drivers/char/keyboard.c.
-> >
-> > I agree that handlers should not access h_list nad use their own
-> > private lists instead. However input core still needs that list to
-> > maintain its books.
->
-> Hmm. So it appears that my patch wastes 2 ulongs per input handle
-> then, in the name of preventing oopses. OK.
->
+Included the Intel ACPI spec representative.
 
-Think about the time when everyone switches to evdev-based input
-drivers. Then we can forget about mousedev wasting some extra memory
-;)
+I have heard that Windows is somehow restricting the ports and memory
+locations that are accessible via AML; I don't know any of the details.
+Also, there are fears of an "AML virus" attacking the machine.
 
--- 
-Dmitry
+Bob
+
+
+> -----Original Message-----
+> From: Pavel Machek [mailto:pavel@ucw.cz]
+> Sent: Thursday, March 08, 2007 11:19 PM
+> To: Moore, Robert
+> Cc: Jean Delvare; Matthew Garrett; Chuck Ebbert; Rudolf Marek; linux-
+> acpi@vger.kernel.org; linux-kernel; lm-sensors@lm-sensors.org
+> Subject: Re: [lm-sensors] Could the k8temp driver be interfering with
+> ACPI?
+> 
+> Hi!
+> 
+> > Port (and memory) addresses can be dynamically generated by the AML
+code
+> > and thus, there is no way that the ACPI subsystem can statically
+predict
+> > any addresses that will be accessed by the AML.
+> 
+> Can you take this as a wishlist item?
+> 
+> It would be nice if next version of acpi specs supported table
+> 
+> 'AML / SMM BIOS will access these ports'
+> 
+> ...so we can get it correct with acpi4 or something..?
+> 
+> 							Pavel
+> 
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures)
+> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
