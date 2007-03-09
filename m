@@ -1,93 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767328AbXCIOvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750925AbXCIO66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767328AbXCIOvt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 09:51:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767330AbXCIOvt
+	id S1750925AbXCIO66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 09:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932529AbXCIO66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 09:51:49 -0500
-Received: from mail.tmr.com ([64.65.253.246]:33718 "EHLO gaimboi.tmr.com"
+	Fri, 9 Mar 2007 09:58:58 -0500
+Received: from mivlgu.ru ([81.18.140.87]:47366 "EHLO mail.mivlgu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767328AbXCIOvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 09:51:48 -0500
-Message-ID: <45F17514.5070509@tmr.com>
-Date: Fri, 09 Mar 2007 09:54:12 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ed Tomlinson <edt@aei.ca>, Gene Heskett <gene.heskett@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Revell <rlrevell@joe-job.com>,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
-   scheduler
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com> <200703051419.25814.gene.heskett@gmail.com> <200703052123.29421.edt@aei.ca> <Pine.LNX.4.64.0703051849410.3998@woody.linux-foundation.org> <45F0DCB7.5020908@tmr.com> <Pine.LNX.4.64.0703082226530.10832@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703082226530.10832@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750925AbXCIO65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 09:58:57 -0500
+Date: Fri, 9 Mar 2007 17:58:52 +0300
+From: Sergey Vlasov <vsu@altlinux.ru>
+To: "Luong Ngo" <luong.ngo@gmail.com>
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: Sleeping thread not receive signal until it wakes up
+Message-Id: <20070309175852.581a6162.vsu@altlinux.ru>
+In-Reply-To: <1b2aacd80703081452s2fff09b7lea97245e337b1d2b@mail.gmail.com>
+References: <1b2aacd80703062131g6c8578fgf200dd05a502c49f@mail.gmail.com>
+	<Pine.LNX.4.61.0703070813070.12338@chaos.analogic.com>
+	<1b2aacd80703071128v5227382do2277d0b85ca3b20c@mail.gmail.com>
+	<Pine.LNX.4.61.0703071457060.13923@chaos.analogic.com>
+	<1b2aacd80703071628y29b7d862h84eb5e853dd6f4d7@mail.gmail.com>
+	<Pine.LNX.4.61.0703080752570.17167@chaos.analogic.com>
+	<1173362032.24738.1058.camel@localhost.localdomain>
+	<1b2aacd80703081452s2fff09b7lea97245e337b1d2b@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.6; i586-alt-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Thu, 8 Mar 2007, Bill Davidsen wrote:
->   
->> Please, could you now rethink plugable scheduler as well? Even if one had to
->> be chosen at boot time and couldn't be change thereafter, it would still allow
->> a few new thoughts to be included.
->>     
->
-> No. Really.
->
-> I absolutely *detest* pluggable schedulers. They have a huge downside: 
-> they allow people to think that it's ok to make special-case schedulers. 
->   
-But it IS okay for people to make special-case schedulers. Because it's 
-MY machine, and how it behaves under mixed load is not a technical 
-issue, it's a POLICY issue, and therefore the only way you can allow the 
-admin to implement that policy is to either provide several schedulers 
-or to provide all sorts of tunable knobs. And by having a few schedulers 
-which have been heavily tested and reviewed, you can define the policy 
-the scheduler implements and document it. Instead of people writing 
-their own, or hacking the code, they could have a few well-tested 
-choices, with known policy goals.
-> And I simply very fundamentally disagree.
->
-> If you want to play with a scheduler of your own, go wild. It's easy 
-> (well, you'll find out that getting good results isn't, but that's a 
-> different thing). But actual pluggable schedulers just cause people to 
-> think that "oh, the scheduler performs badly under circumstance X, so 
-> let's tell people to use special scheduler Y for that case".
->   
-And has that been a problem with io schedulers? I don't see any vast 
-proliferation of them, I don't see contentious exchanges on LKML, or 
-people asking how to get yet another into mainline. In fact, I would say 
-that the io scheduler situation is as right as anything can be, choices 
-for special cases, lack of requests for something else.
-> And CPU scheduling really isn't that complicated. It's *way* simpler than 
-> IO scheduling. There simply is *no*excuse* for not trying to do it well 
-> enough for all cases, or for having special-case stuff.
->   
-This supposes that the desired behavior, the policy, is the same on all 
-machines or that there is currently a way to set the target. If I want 
-interactive response with no consideration to batch (and can't trust 
-users to use nice), I want one policy. If I want a compromise, the 
-current scheduler or RSDL are candidates, but they do different things.
-> But even IO scheduling actually ends up being largely the same. Yes, we 
-> have pluggable schedulers, and we even allow switching them, but in the 
-> end, we don't want people to actually do it. It's much better to have a 
-> scheduler that is "good enough" than it is to have five that are "perfect" 
-> for five particular cases.
->   
-We not only have multiple io schedulers, we have many tunable io 
-parameters, all of which allow people to make their system behave the 
-way they think is best. It isn't causing complaint, confusion, or 
-instability. We have many people requesting a different scheduler, so 
-obviously what we have isn't "good enough" and I doubt any one scheduler 
-can be, given that the target behavior is driven by non-technical choices.
+On Thu, 8 Mar 2007 14:52:07 -0800 Luong Ngo wrote:
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+[...]
+> static irqreturn board_isr(int irq, void *dev_id, struct pt_regs* regs)
+> {
+>  spin_lock(&dev->lock);
+>    if (dev->irqMask & (1 << irqBit)) {
+>     // Set the interrupt event mask
+>     dev->irqEvent |= (1 << irqBit);
+> 
+>     // Disable this irq, it will be reenabled after processed by board task
+>     disable_irq(irq);
 
+I assume that your device does not support shared interrupts?  If it
+does (and a PCI device is required to support them), you cannot use
+disable_irq() here (and you need to check a register in the device to
+find out if it really did generate an IRQ)...
+
+>     // Wake up Board thread that calling IOCTL
+>     wake_up(&(dev->boardIRQWaitQueue));
+>   }
+>   spin_unlock(&dev->lock);
+> 
+>   return IRQ_HANDLED;
+
+...and return IRQ_NONE here if the IRQ is not from your device.
+
+> 
+> }
+> 
+> static int ats89_ioctl(struct inode *inode, struct file *file, u_int
+> cmd, u_long arg)
+> {
+> 
+>           switch(cmd){
+>            case GET_IRQ_CMD: {
+>             u32  regMask32;
+> 
+>            spin_lock_irq(dev->lock);
+>            while ((dev->irqMask & dev->irqEvent) == 0) {
+>                  // Sleep until board interrupt happens
+>                  spin_unlock_irq(dev->lock);
+>                  interruptible_sleep_on(&(dev->boardIRQWaitQueue));
+>                  if (uncond_wakeup) {
+>                      /* don't go back to loop */
+>                      break;
+>                  }
+>                  spin_lock_irq(dev->lock);
+>              }
+> 
+>             uncond_wakeup = 0;
+> 
+>              // Board interrupt happened
+>             regMask32 = dev->irqMask & dev->irqEvent;
+>              if(copy_to_user(&(((ATS89_IOCTL_S *)arg)->mask32),
+> &regMask32, sizeof(u32))) {
+>                  spin_unlock_irq(dev->lock);
+>                  return -EAGAIN;
+>              }
+> 
+>              // Clear the event mask
+>              dev->irqEvent = 0;
+>              spin_unlock_irq(dev->lock);
+>         }
+>         break;
+> 
+> 
+>            }
+> }
+
+And this code is full of bugs:
+
+ 1) As you have been told already, interruptible_sleep_on() and
+    sleep_on() functions are broken and should not be used (they are
+    left in the kernel only to support some obsolete code).  Either
+    use wait_event_interruptible() or work with wait queues directly
+    (prepare_to_wait(), finish_wait(), ...).
+
+ 2) The code to handle pending signals is missing - you need to have
+    this after wait_event_interruptible():
+
+		if (signal_pending(current))
+			return -ERESTARTSYS;
+
+    (but be careful - you might need to clean up something before
+    returning).
+
+    This is what causes your problem - interruptible_sleep_on()
+    returns if a signal is pending, but your code does not check for
+    signals and therefore invokes interruptible_sleep_on() again; but
+    if a signal is pending, interruptible_sleep_on() returns
+    immediately, causing your driver to eat 100% CPU looping in kernel
+    mode until some device event finally happens.
+
+ 3) If uncond_wakeup is set, you break out of the loop with dev->lock
+    unlocked; however, if dev->irqEvent gets set, you exit the loop
+    with dev->lock locked.  The subsequent code always unlocks
+    dev->lock, so in the uncond_wakeup case you have double unlock.
+
+ 4) You are doing copy_to_user() while holding a spinlock - this is
+    prohibited (as any other form of sleep inside a spinlock).
+
+ 5) The return code for the copy_to_user() failure is wrong - it
+    should be -EFAULT (this is not a fatal bug, but an annoyance for
+    users of your driver, who might get such nonstandard error codes
+    while debugging their programs and wonder what is going on).
