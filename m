@@ -1,70 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992921AbXCIDVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992923AbXCIDYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992921AbXCIDVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 22:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992927AbXCIDVk
+	id S2992923AbXCIDYO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 22:24:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992927AbXCIDYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 22:21:40 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:38459 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992923AbXCIDVj (ORCPT
+	Thu, 8 Mar 2007 22:24:14 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:52376 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992923AbXCIDYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 22:21:39 -0500
-Date: Thu, 8 Mar 2007 22:21:37 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, mbligh@google.com, linux-kernel@vger.kernel.org,
-       hskinnemoen@atmel.com
-Subject: [PATCH] Fix avr32 TIF atomicity in do_debug_priv
-Message-ID: <20070309032137.GD9462@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 8 Mar 2007 22:24:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oAgGqqhItsd8WCkCR9tL3YewqrMvW4OHknj5c8pHOFD5wC8nF/uZ9xkdl522ySuWcIPWJsHF0gmzHCLUfWiByE6KlFXbAXLooIYQdnnB1xNFwOZnxuOV2y1qQ0T4nieKp/NOv40fwNkdLxR/ssFFaHDA6Ca4oc2Kc673o2lUngg=
+Message-ID: <1b2aacd80703081924w44652c71yb8a16e005247a55a@mail.gmail.com>
+Date: Thu, 8 Mar 2007 19:24:10 -0800
+From: "Luong Ngo" <luong.ngo@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: Sleeping thread not receive signal until it wakes up
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de
+In-Reply-To: <45F0B40F.7070301@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 22:19:01 up 34 days, 17:26,  6 users,  load average: 1.20, 1.29, 1.29
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <fa.kb3wuhac4W+1DqK61+sKe9uZwto@ifi.uio.no>
+	 <fa.cyXmbtXvYymKHdI0rEXZCxyk+KE@ifi.uio.no>
+	 <fa.zPDT1vfJF5MjVXXQH/l+YSaLl84@ifi.uio.no>
+	 <fa.HmQN7RhZNBRsiJYADMOsY8DL67k@ifi.uio.no>
+	 <fa.PDmHwxZ3arhmED5SLuEONyxUlz4@ifi.uio.no>
+	 <fa.ygLhZcCLgDxnwAYYVse/Xshr9IE@ifi.uio.no> <45F0B40F.7070301@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix avr32 TIF atomicity in do_debug_priv
+On 3/8/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> Luong Ngo wrote:
+> > Hi Thomas and Dick,
+> > I appreciate all the responses. They are very good information to me.
+> > Actually, it wasn't me working on the driver but it's been there long
+> > time. I thought I just need to add the signal and signal handling
+> > part, not expecting it would lead me to the driver space.
+> > Here is what I have in the driver. Maybe racing condition could happen
+> > in scenario that the ioctl realease the lock but befor going to sleep,
+> > the ISR is invoked and call waking up on the queue, hence the ioctl
+> > will not be waken up since the wak up cal already executed. But I
+> > believe in our system, this could be tolerant since the hardware would
+> > keep raising interrupt if the abnormal condition still exists (Due to
+> > the ioctl being blocked so user app nevers get a chance to service the
+> > device). But is this the reason why my signal handler not get executed
+> > at all? Theoretically, according to the Richard Stevens book, I think
+> > the process should be waken up and received the signal even if it gets
+> > blocked in the IOCTL call, am i right?
+>
+> ..
+>
+> > static int ats89_ioctl(struct inode *inode, struct file *file, u_int
+> > cmd, u_long arg)
+> > {
+> >
+> >          switch(cmd){
+> >           case GET_IRQ_CMD: {
+> >            u32  regMask32;
+> >
+> >           spin_lock_irq(dev->lock);
+> >           while ((dev->irqMask & dev->irqEvent) == 0) {
+> >                 // Sleep until board interrupt happens
+> >                 spin_unlock_irq(dev->lock);
+> >                 interruptible_sleep_on(&(dev->boardIRQWaitQueue));
+> >                 if (uncond_wakeup) {
+> >                     /* don't go back to loop */
+> >                     break;
+> >                 }
+> >                 spin_lock_irq(dev->lock);
+> >             }
+>
+> Kernel code does not get pre-empted by signals. If the code needs to be
+> interruptible by signals this has to be handled explicitly.
+> interruptible_sleep on will stop waiting if your task gets a signal, but
+> your code doesn't check the signal_pending flag to know whether it
+> should exit the loop. If signal_pending(current) is set after the sleep
+> you should likely be returning -ERESTARTSYS to allow the task to handle
+> the signal. Then after the signal handler from the task returns, the
+> ioctl will get called again.
+>
+> Also, as was pointed out, you should not use the sleep_on family of
+> functions, use the wait_event functions intead. sleep_on is racy, if the
+> interrupt happened just before you do the sleep, you'll sit there
+> waiting for something that already occurred.
+>
+> --
+> Robert Hancock      Saskatoon, SK, Canada
+> To email, remove "nospam" from hancockr@nospamshaw.ca
+> Home Page: http://www.roberthancock.com/
+>
+>
+Robert, thanks a lot for your suggestion
+But I have added the signal_pending(current) check and signal handler
+is not invoked
 
-avr32 updates the thread flags 1 - non atomically and 2 - with the wrong value
-(for TIF_SINGLE_STEP) in this function.
+           spin_lock_irq(dev->lock);
+           while ((dev->irqMask & dev->irqEvent) == 0) {
+                 // Sleep until board interrupt happens
+                 spin_unlock_irq(dev->lock);
+                 interruptible_sleep_on(&(dev->boardIRQWaitQueue));
 
-It applies to 2.6.20.
+                 if(signal_pending(current) {
+                           return -ERESTARTSYS;
+                 }
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
---- a/arch/avr32/kernel/ptrace.c
-+++ b/arch/avr32/kernel/ptrace.c
-@@ -306,14 +306,12 @@ asmlinkage void do_debug_priv(struct pt_regs *regs)
- 	if (likely(ds & DS_SSS)) {
- 		extern void itlb_miss(void);
- 		extern void tlb_miss_common(void);
--		struct thread_info *ti;
- 
- 		dc = __mfdr(DBGREG_DC);
- 		dc &= ~DC_SS;
- 		__mtdr(DBGREG_DC, dc);
- 
--		ti = current_thread_info();
--		ti->flags |= _TIF_BREAKPOINT;
-+		set_tsk_thread_flag(tsk, TIF_BREAKPOINT);
- 
- 		/* The TLB miss handlers don't check thread flags */
- 		if ((regs->pc >= (unsigned long)&itlb_miss)
-@@ -328,7 +326,7 @@ asmlinkage void do_debug_priv(struct pt_regs *regs)
- 		 * single step.
- 		 */
- 		if ((regs->sr & MODE_MASK) != MODE_SUPERVISOR)
--			ti->flags |= TIF_SINGLE_STEP;
-+			set_tsk_thread_flag(tsk, TIF_SINGLE_STEP);
- 	} else {
- 		panic("Unable to handle debug trap at pc = %08lx\n",
- 		      regs->pc);
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+                 if (uncond_wakeup) {
+                     /* don't go back to loop */
+                     break;
+                 }
+                 spin_lock_irq(dev->lock);
+             }
+Still no luck yet.
+LNgo
