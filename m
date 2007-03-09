@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbXCIADo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbXCIAHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbXCIADo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 19:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXCIADn
+	id S1752159AbXCIAHS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 19:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXCIAHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 19:03:43 -0500
-Received: from mail20.syd.optusnet.com.au ([211.29.132.201]:60807 "EHLO
-	mail20.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752184AbXCIADm (ORCPT
+	Thu, 8 Mar 2007 19:07:17 -0500
+Received: from kepler.fjfi.cvut.cz ([147.32.6.11]:35092 "EHLO
+	kepler.fjfi.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbXCIAHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 19:03:42 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: RSDL test
-Date: Fri, 9 Mar 2007 11:03:34 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20070308140822.GA3392@kernel.dk>
-In-Reply-To: <20070308140822.GA3392@kernel.dk>
+	Thu, 8 Mar 2007 19:07:16 -0500
+Date: Fri, 9 Mar 2007 01:07:04 +0100 (CET)
+From: Martin Drab <drab@kepler.fjfi.cvut.cz>
+To: Carsten Otte <cotte.de@gmail.com>
+cc: hugh@veritas.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Question about memory mapping mechanism
+In-Reply-To: <Pine.LNX.4.64.0703082143370.25365@kepler.fjfi.cvut.cz>
+Message-ID: <Pine.LNX.4.64.0703090103020.25365@kepler.fjfi.cvut.cz>
+References: <Pine.LNX.4.64.0703081345010.21317@kepler.fjfi.cvut.cz>
+ <5c77e7070703080617r63cbccfevd2c6d678f16c2b03@mail.gmail.com>
+ <Pine.LNX.4.64.0703082143370.25365@kepler.fjfi.cvut.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703091103.34775.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 March 2007 01:08, Jens Axboe wrote:
-> Hi Con,
->
-> One thing that has annoyed me greatly lately, is that scrolling in
-> firefox very quickly becomes a huge pain if you have any load on your
-> box. I typically do make -j4 kernel builds on my laptop (core duo), and
-> try to stay out of firefox for that period simply because it's not very
-> responsive (to the point of being really annoying). A pseudo test of
-> running two
->
-> $ while true; do a=1; done
->
-> produces the same result, firefox is unusable.
->
-> So seeing your post, I gave it a spin. Works great for me, much better
-> than the stock 2.6.21-rc3 wrt interactive feel. I know this is a
-> subjective test, but believe me, there's a world of difference.
+On Thu, 8 Mar 2007, Martin Drab wrote:
 
-Great! Sometimes there are things that simply cannot be benchmarked 
-objectively and subjectively is all we have to go on as you're no doubt well 
-aware. Interbench simply confirms that rsdl is _less unfair_ than mainline. 
-It doesn't tell us about getting the rest of the picture right as often as 
-possible which is really what rsdl is all about.
+> On Thu, 8 Mar 2007, Carsten Otte wrote:
+> 
+> > On 3/8/07, Martin Drab <drab@kepler.fjfi.cvut.cz> wrote:
+> > > 
+> > > The thing is that I'd like to prevent kernel to swap these pages out,
+> > > because then I may loose some data when they are not available in time
+> > > for the next round.
+> > 
+> > One think you could do is grab a reference to the pages upfront.
+> 
+> I'm not really sure what exactly do you mean by "grab a reference 
+> upfront"?
 
-Thanks for your feedback :)
+I seem to get it now. So instead of setting PG_reserved upon allocation of 
+the buffer pages, I should increase the referrence of the pages by calling 
+get_page() on them and that would prevent the pages to get on the lru list 
+and thus preventing them to be swapped out. Is that it?
 
--- 
--ck
+Martin
