@@ -1,88 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993067AbXCIION@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbXCIIOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993067AbXCIION (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 03:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXCIION
+	id S1752048AbXCIIOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 03:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXCIIOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 03:14:13 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44308 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbXCIIOM (ORCPT
+	Fri, 9 Mar 2007 03:14:19 -0500
+Received: from cantor.suse.de ([195.135.220.2]:53873 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752048AbXCIIOS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 03:14:12 -0500
-Date: Fri, 9 Mar 2007 10:14:09 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       serue@us.ibm.com
-Subject: [PATCH 1/7] revoke: special mmap handling
-Message-ID: <Pine.LNX.4.64.0703091012530.32320@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Mar 2007 03:14:18 -0500
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Amit Choudhary <amit2030@gmail.com>
+Subject: Re: [PATCH] drivers/usb/serial/mos7840.c: check kmalloc() return value.
+Date: Fri, 9 Mar 2007 09:14:24 +0100
+User-Agent: KMail/1.9.1
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070308231833.69b0611e.amit2030@gmail.com>
+In-Reply-To: <20070308231833.69b0611e.amit2030@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703090914.24242.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Am Freitag, 9. März 2007 08:18 schrieb Amit Choudhary:
+> Description: Check the return value of kmalloc() in function mos7840_get_reg(), in file drivers/usb/serial/mos7840.c.
 
-This adds special handling for revoked memory mappings.  We want to
-raise SIGBUS when accessing revoked mappings and return ENODEV when
-trying to remap with mmap(2).
+No, this is wrong. You must catch this at the source. The driver
+cannot function if this function always returns -ENOMEM. It makes
+no sense to start up the device under these circumstances.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- include/linux/mm.h |    2 ++
- mm/memory.c        |    3 +++
- mm/mmap.c          |   12 ++++++++----
- 3 files changed, 13 insertions(+), 4 deletions(-)
+	Regards
+		Oliver
 
-Index: uml-2.6/include/linux/mm.h
-===================================================================
---- uml-2.6.orig/include/linux/mm.h	2007-03-08 10:24:24.000000000 +0200
-+++ uml-2.6/include/linux/mm.h	2007-03-08 10:24:25.000000000 +0200
-@@ -170,6 +170,8 @@
- #define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it */
- #define VM_ALWAYSDUMP	0x04000000	/* Always include in core dumps */
- 
-+#define VM_REVOKED	0x04000000	/* Mapping has been revoked */
-+
- #ifndef VM_STACK_DEFAULT_FLAGS		/* arch can override this */
- #define VM_STACK_DEFAULT_FLAGS VM_DATA_DEFAULT_FLAGS
- #endif
-Index: uml-2.6/mm/memory.c
-===================================================================
---- uml-2.6.orig/mm/memory.c	2007-03-08 10:24:24.000000000 +0200
-+++ uml-2.6/mm/memory.c	2007-03-08 10:24:25.000000000 +0200
-@@ -2504,6 +2504,9 @@
- 	if (unlikely(is_vm_hugetlb_page(vma)))
- 		return hugetlb_fault(mm, vma, address, write_access);
- 
-+	if (unlikely(vma->vm_flags & VM_REVOKED))
-+		return VM_FAULT_SIGBUS;
-+
- 	pgd = pgd_offset(mm, address);
- 	pud = pud_alloc(mm, pgd, address);
- 	if (!pud)
-Index: uml-2.6/mm/mmap.c
-===================================================================
---- uml-2.6.orig/mm/mmap.c	2007-03-08 10:24:24.000000000 +0200
-+++ uml-2.6/mm/mmap.c	2007-03-08 10:24:25.000000000 +0200
-@@ -1030,10 +1030,14 @@
- 	error = -ENOMEM;
- munmap_back:
- 	vma = find_vma_prepare(mm, addr, &prev, &rb_link, &rb_parent);
--	if (vma && vma->vm_start < addr + len) {
--		if (do_munmap(mm, addr, len))
--			return -ENOMEM;
--		goto munmap_back;
-+	if (vma) {
-+		if (unlikely(vma->vm_flags & VM_REVOKED))
-+			return -ENODEV;
-+		if (vma->vm_start < addr + len) {
-+			if (do_munmap(mm, addr, len))
-+				return -ENOMEM;
-+			goto munmap_back;
-+		}
- 	}
- 
- 	/* Check against address space limit. */
