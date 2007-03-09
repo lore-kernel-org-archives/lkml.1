@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993085AbXCIJfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbXCIJiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993085AbXCIJfv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 04:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXCIJfv
+	id S1752663AbXCIJiU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 04:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993086AbXCIJiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 04:35:51 -0500
-Received: from main.gmane.org ([80.91.229.2]:60446 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbXCIJfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 04:35:50 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Amin Azez <azez@ufomechanic.net>
-Subject: Re: [PATCH] chaostables
-Date: Fri, 09 Mar 2007 09:35:37 +0000
-Message-ID: <45F12A69.1060406@ufomechanic.net>
-References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr> <20070308131412.08d9973e@lxorguk.ukuu.org.uk> <Line.LNX.4.64.0703080955060.8029@d.namei> <Pine.LNX.4.61.0703081652310.2448@yvahk01.tjqt.qr> <45F044A0.50001@trash.net> <Pine.LNX.4.61.0703082112300.521@yvahk01.tjqt.qr>
+	Fri, 9 Mar 2007 04:38:20 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45505 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752663AbXCIJiT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 04:38:19 -0500
+Date: Fri, 9 Mar 2007 01:38:17 -0800
+From: Paul Jackson <pj@sgi.com>
+To: Kirill Korotaev <dev@sw.ru>
+Cc: herbert@13thfloor.at, vatsa@in.ibm.com, menage@google.com,
+       ebiederm@xmission.com, winget@google.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru
+Subject: Re: [PATCH 1/2] rcfs core patch
+Message-Id: <20070309013817.5b9b4374.pj@sgi.com>
+In-Reply-To: <45F127AB.5070704@sw.ru>
+References: <20070301133543.GK15509@in.ibm.com>
+	<20070301134528.GL15509@in.ibm.com>
+	<m1slcg8m4f.fsf@ebiederm.dsl.xmission.com>
+	<20070308101347.GA29051@in.ibm.com>
+	<20070309004816.GB4506@MAIL.13thfloor.at>
+	<45F127AB.5070704@sw.ru>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 82.153.158.114
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-In-Reply-To: <Pine.LNX.4.61.0703082112300.521@yvahk01.tjqt.qr>
-Cc: netfilter-devel@lists.netfilter.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jan Engelhardt wrote, On 08/03/07 20:26:
-> xt_portscan needs to keep track of what packets the machine has already 
-> seen. So on the first SYN, the connection is marked with "1". (Then we 
-> send our SYN-ACK... and the connection turns ESTABLISHED.) The next 
-> packet that is received will be an ACK or an RST. But it must come 
-> _exactly after_ the SYN, so just using --tcp-flags ACK will not work. A 
-> state which can be remembered is required. For that, an automaton is 
-> used, whose state is saved in the connection mark.
+Kirill, responding to Herbert:
+> > do we need or even want that? IMHO the hierarchical
+> > concept CKRM was designed with, was also the reason
+> > for it being slow, unuseable and complicated
+> 1. cpusets are hierarchical already. So hierarchy is required.
 
-There would me more point in having this as a new match if it didn't
-trample on the connection mark, but used it's own slot or flag-bit.
+I think that CKRM has a harder time doing a hierarchy than cpusets.
 
-Sam
+CKRM is trying to account for and control how much of an amorphous
+resource is used, whereas cpusets is trying to control whether a
+specifically identifiable resource is used, or not used, not how
+much of it is used.
 
+A child cpuset gets configured to allow certain CPUs and Nodes, and
+then does not need to dynamically pass back any information about
+what is actually used - it's a one-way control with no feedback.
+That's a relatively easier problem.
+
+CKRM (as I recall it, from long ago ...) has to track the amount
+of usage dynamically, across parent and child groups (whatever they
+were called.)  That's a harder problem.
+
+So, yes, as Kirill observes, we need the hierarchy because cpusets
+has it, cpuset users make good use of the hierarchy, and the hierarchy
+works fine in that case, even if a hierarchy is more difficult for CKRM.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
