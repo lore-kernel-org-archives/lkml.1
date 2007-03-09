@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767626AbXCIXLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767631AbXCIXMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767626AbXCIXLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 18:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767629AbXCIXLf
+	id S1767631AbXCIXMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 18:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767627AbXCIXMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 18:11:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46205 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767626AbXCIXLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 18:11:34 -0500
-Date: Sat, 10 Mar 2007 00:10:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+	Fri, 9 Mar 2007 18:12:17 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:1179 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767582AbXCIXMP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 18:12:15 -0500
+X-IronPort-AV: i="4.14,268,1170662400"; 
+   d="scan'208"; a="399478129:sNHT61891568"
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
-Message-ID: <20070309231041.GA712@elte.hu>
-References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org> <20070309201257.GA5761@elte.hu> <Pine.LNX.4.64.0703091305090.10832@woody.linux-foundation.org> <20070309213607.GA16796@elte.hu>
-Mime-Version: 1.0
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
+X-Message-Flag: Warning: May contain useful information
+References: <1173419792.32234.131.camel@localhost.localdomain>
+	<1173481052.32234.137.camel@localhost.localdomain>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 09 Mar 2007 15:12:13 -0800
+In-Reply-To: <1173481052.32234.137.camel@localhost.localdomain> (Rusty Russell's message of "Sat, 10 Mar 2007 09:57:32 +1100")
+Message-ID: <ada3b4evwoi.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070309213607.GA16796@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 09 Mar 2007 23:12:13.0497 (UTC) FILETIME=[5F355A90:01C762A0]
+Authentication-Results: sj-dkim-6; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim6002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> [...] If that is the case then my ABI worries would indeed be wrong 
-> and i'd owe Zach a big fat apology [and more] for my flames ;-)
-
-that apology i very much owe to Zach no matter what the outcome of the 
-discussion. Zach, some of my mindless characterisations of the quality 
-of VMI code (and of your intentions) were really out of bound and were 
-unfair, and i'd like to apologize for that :-/
-
-	Ingo
+Perhaps this patch can go into Wesnoth for testing for a while before
+we merge it into the kernel?
