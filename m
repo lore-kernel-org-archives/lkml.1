@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767522AbXCITgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767517AbXCITgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767522AbXCITgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 14:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767521AbXCITgW
+	id S1767517AbXCITgq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 14:36:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767519AbXCITgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 14:36:22 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51772 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767513AbXCITgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 14:36:21 -0500
-Date: Fri, 9 Mar 2007 11:36:23 -0800
-From: Paul Jackson <pj@sgi.com>
-To: vatsa@in.ibm.com
-Cc: ebiederm@xmission.com, menage@google.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, winget@google.com,
-       containers@lists.osdl.org, akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka
- containers on top of nsproxy!
-Message-Id: <20070309113623.51de3f5f.pj@sgi.com>
-In-Reply-To: <20070309181908.GC21661@in.ibm.com>
-References: <20070307205846.GB7010@sergelap.austin.ibm.com>
-	<6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
-	<m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
-	<6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
-	<45EF5A62.8000103@vilain.net>
-	<6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com>
-	<45EF5E71.7090101@vilain.net>
-	<6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
-	<m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
-	<20070309005357.GC4506@MAIL.13thfloor.at>
-	<20070309181908.GC21661@in.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 Mar 2007 14:36:46 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33463 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767517AbXCITgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 14:36:44 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH] swsusp: Disable nonboot CPUs before entering platform suspend
+Date: Fri, 9 Mar 2007 20:39:19 +0100
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200703072044.12021.rjw@sisk.pl> <20070307210716.GA4913@ucw.cz> <20070309122934.GA8412@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20070309122934.GA8412@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703092039.20131.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert wrote (and vatsa quoted):
-> precisely, once you are inside a resource container, you
-> must not have the ability to modify its limits, and to
-> some degree, you should not know about the actual available
-> resources, but only about the artificial limits
+On Friday, 9 March 2007 13:29, Heiko Carstens wrote:
+> On Wed, Mar 07, 2007 at 09:07:17PM +0000, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > Prevent the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
+> > > from triggering by disabling nonboot CPUs before we finally enter the platform
+> > > suspend.
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  kernel/power/disk.c |    1 +
+> > >  kernel/power/user.c |    2 +-
+> > >  2 files changed, 2 insertions(+), 1 deletion(-)
+> > > 
+> > > Index: linux-2.6.21-rc2-mm2/kernel/power/disk.c
+> > > ===================================================================
+> > > --- linux-2.6.21-rc2-mm2.orig/kernel/power/disk.c
+> > > +++ linux-2.6.21-rc2-mm2/kernel/power/disk.c
+> > > @@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
+> > >  	switch(mode) {
+> > >  	case PM_DISK_PLATFORM:
+> > >  		if (pm_ops && pm_ops->enter) {
+> > > +			disable_nonboot_cpus();
+> > >  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+> > >  			pm_ops->enter(PM_SUSPEND_DISK);
+> > >  			break;
+> > 
+> > ...so, if pm_ops is non-null, power_down does nonboot cpu disabling,
+> > otherwise we proceed with cpus enabled?
+> > 
+> > That looks ugly.
+> > 
+> > Is the warning bogus? Or maybe we should *always* disable nonboot cpus
+> > in powerdown path?
+> 
+> Is disable_nonboot_cpus() assuming that first_cpu(cpu_present_map) is
+> the boot cpu? Just wondering why disable_nonboot_cpus() isn't using just
+> any_online_cpu(cpu_online_map)...
 
-Not necessarily.  Depending on the resource we are managing, and on how
-all encompassing one chooses to make the virtualization, this might be
-an overly Draconian permission model.
+Is your question related to the code in kernel/cpu.c?
 
-Certainly in cpusets, any task can see the the whole system view, if
-there are fairly typical permissions on some /dev/cpuset files.  A task
-might even be able to change those limits for any task on the system,
-if it has stronger priviledge.
-
-Whether or not to really virtualize something, so that the contained
-task can't tell it is in side a cacoon, is a somewhat separate question
-from whether or not to limit a tasks use of a particular precious
-resource.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Rafael
