@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbXCIVg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766898AbXCIVi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbXCIVg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:36:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbXCIVg3
+	id S1766898AbXCIVi7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:38:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767553AbXCIVi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:36:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52290 "EHLO mx2.mail.elte.hu"
+	Fri, 9 Mar 2007 16:38:59 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46092 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752387AbXCIVg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:36:28 -0500
-Date: Fri, 9 Mar 2007 22:36:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
-Message-ID: <20070309213607.GA16796@elte.hu>
-References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org> <20070309201257.GA5761@elte.hu> <Pine.LNX.4.64.0703091305090.10832@woody.linux-foundation.org>
-Mime-Version: 1.0
+	id S1766898AbXCIVi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 16:38:58 -0500
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703091305090.10832@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kernel threads
+In-Reply-To: Oleg Nesterov's message of  Friday, 9 March 2007 23:52:05 +0300 <20070309205205.GA173@tv-sign.ru>
+Emacs: a real time environment for simulating molasses-based life forms.
+Message-Id: <20070309213852.059FC1801C4@magilla.sf.frob.com>
+Date: Fri,  9 Mar 2007 13:38:51 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Yes sure, this change shoud be tested in -mm tree (I'll send the patch
+> on Sunday after some testing). The only (afaics) problem is that with
+> this change a kernel thread must not do do_fork(CLONE_THREAD). 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+To clarify, the danger here is that an exit_signal=-1 leader would
+self-reap and leave behind live threads with dangling ->group_leader
+pointers.  This danger doesn't exist for normal user group leaders with
+parents ignoring SIGCHLD, because exit_signal is never set to -1 until
+do_notify_parent, which is never called until the last thread in the group
+dies (except when ptrace'd, but then do_notify_parent never resets
+exit_signal at all).  Is that right?
 
-> If we change paravirt_ops to be higher-level ops (as we should), yes, 
-> the paravirt->VMI layer needs to be extended to have the 
-> "higher->lower" translation. But at no point did we break the 
-> hypervisor.
+> I think it should not, but currently this is technically
+> possible. Perhaps it makes sense to add BUG_ON(CLONE_THREAD &&
+> group_leader->exit_signal==-1) in copy_process().
 
-hm. So your point is that VMI is in essence a Turing machine (a 
-near-complete one)? No matter what redesign we do on the Linux side, the 
-VMI paravirt_ops will always be able to adopt to it? If that is the case 
-then my ABI worries would indeed be wrong and i'd owe Zach a big fat 
-apology [and more] for my flames ;-)
+It probably wouldn't hurt to make it:
 
-but what if the transformation is not just a top-down transformation, 
-but something more conceptual, introducing something that VMI does not 
-cover today, like: 'elimination of the APIC concept from guest mode 
-(replacing it with a virtual interrupt controller)', or 'elimination of 
-the concept of IRQ vectors from guest mode (virtual irq controller)'. Or 
-'elimination of pagetables stored in the guest (all paravirt hooks would 
-be vma-based)'?
+	if (user_mode(regs))
+		BUG_ON(current->group_leader->exit_signal == -1);
+	else
+		BUG_ON((clone_flags & (CLONE_THREAD|CLONE_UNTRACED))
+		       != CLONE_UNTRACED);
 
-but ... maybe because VMI is so lowlevel and covers /all/ of x86 today, 
-it will always be able to emulate whatever different concept we can come 
-up with? Do we really know this absolutely sure?
+> 	zap_other_threads:
+> 
+> 		if (t != p->group_leader)
+> 			t->exit_signal = -1;
+> 
+> looks like another leftover to me, we already depend on the fact that
+> all sub-threads have ->exit_signal == -1 (otherwise, for example, a
+> thread group just can't exit properly).
 
-	Ingo
+Yes, I agree it looks superfluous.
+
+> While we are talking about kernel threads, there is something I can't
+> undestand. kthread/daemonize use sigprocmask(SIG_BLOCK) to protect
+> against signals. This doesn't look right to me, because this doesn't
+> prevent the signal delivery, this only blocks signal_wake_up(). Every
+> "killall -33 khelper" means a "struct siginfo" leak.
+
+It does prevent the delivery (signal_pending() never set), but not the queuing.
+
+> Imho, the kernel thread shouldn't play with ->blocked at all. Instead
+> it should set SIG_IGN for all handlers. If it really needs, say, SIGCHLD,
+> it should call allow_signal() anyway. Do you see any problems with this
+> approach?
+
+That sounds reasonable to me generally.  However, if kernel threads ever
+spawn user children, they may not want the self-reaping behavior of
+ignoring SIGCHLD even if they never dequeue the signal (because they want
+to call do_wait).  There might be other strange caveats like that I'm not
+thinking of.  
+
+
+Thanks,
+Roland
+
