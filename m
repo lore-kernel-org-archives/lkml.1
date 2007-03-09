@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767493AbXCIUkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965820AbXCIUnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767493AbXCIUkm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767495AbXCIUkm
+	id S965820AbXCIUnV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965818AbXCIUnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:40:42 -0500
-Received: from [212.12.190.74] ([212.12.190.74]:32921 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767493AbXCIUkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:40:40 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: Pluggable Schedulers (was: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler)
-Date: Fri, 9 Mar 2007 23:43:46 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200703091625.55361.a1426z@gawab.com> <20070309135751.GE2986@holomorphy.com>
-In-Reply-To: <20070309135751.GE2986@holomorphy.com>
-MIME-Version: 1.0
+	Fri, 9 Mar 2007 15:43:21 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:59485 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965817AbXCIUnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 15:43:20 -0500
+Date: Fri, 9 Mar 2007 21:42:43 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: netconsole system freeze when cable unplugged
+Message-ID: <20070309204243.GA28441@electric-eye.fr.zoreil.com>
+References: <45F1B6FD.1060902@simon.arlott.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200703092343.46276.a1426z@gawab.com>
+In-Reply-To: <45F1B6FD.1060902@simon.arlott.org.uk>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> William Lee Irwin III wrote:
-> >> I consider policy issues to be hopeless political quagmires and
-> >> therefore stick to mechanism. So even though I may have started the
-> >> code in question, I have little or nothing to say about that sort of
-> >> use for it.
-> >> There's my longwinded excuse for having originated that tidbit of code.
->
-> On Fri, Mar 09, 2007 at 04:25:55PM +0300, Al Boldi wrote:
-> > I've no idea what both of you are talking about.
->
-> The short translation of my message for you is "Linus, please don't
-> LART me too hard."
+Simon Arlott <simon@fire.lp0.eu> :
+> When I unplug the cable the system just stops responding to anything, 
+> at all. No message is printed to the console when the cable is plugged 
+> back in.
 
-Right.
+rtl8139_interrupt (spin_lock(&tp->lock))
+-> rtl8139_weird_interrupt
+   -> rtl_check_media
+      -> mii_check_media (printk(KERN_INFO "%s: link down\n", ...))
+         [netpoll stuff here]
+         -> rtl8139_poll_controller
+            -> rtl8139_interrupt
+               *deadlock*
 
-> On Fri, Mar 09, 2007 at 04:25:55PM +0300, Al Boldi wrote:
-> > How can giving people the freedom of choice be in any way
-> > counter-productive?
->
-> This sort of concern is too subjective for me to have an opinion on it.
+See below for my random stuff of the day. Feel free to open a PR at
+bugzilla.kernel.org if the issue does not go away.
 
-How diplomatic.
+--------8<-----------------------------------------------------------------
 
-> My preferred sphere of operation is the Manichean domain of faster vs.
-> slower, functionality vs. non-functionality, and the like. For me, such
-> design concerns are like the need for a kernel to format pagetables so
-> the x86 MMU decodes what was intended, or for a compiler to emit valid
-> assembly instructions, or for a programmer to write C the compiler
-> won't reject with parse errors.
+8139too: netconsole breakage when link changes
 
-Sure, but I think, even from a technical point of view, competition is a good 
-thing to have.  Pluggable schedulers give us this kind of competition, that 
-forces each scheduler to refine or become obsolete.  Think evolution.
+rtl8139_interrupt is not supposed to be reentrant but its link
+management part can emit printk.
 
-> If Linus, akpm, et al object to the
-> design, then invalid output was produced. Please refer to Linus, akpm,
-> et al for these sorts of design concerns.
+Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
 
-Point taken.
-
-Linus Torvalds wrote:
-> And hey, you can try to prove me wrong. Code talks. So far, nobody has
-> really ever come close.
->
-> So go and code it up, and show the end result. So far, nobody who actually
-> *does* CPU schedulers have really wanted to do it, because they all want
-> to muck around with their own private versions of the data structures.
-
-What about PlugSched?
-
-
-Thanks!
-
---
-Al
-
+diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
+index 99304b2..64467ad 100644
+--- a/drivers/net/8139too.c
++++ b/drivers/net/8139too.c
+@@ -2215,9 +2215,16 @@ static irqreturn_t rtl8139_interrupt (int irq, void *dev_instance)
+  */
+ static void rtl8139_poll_controller(struct net_device *dev)
+ {
+-	disable_irq(dev->irq);
++	struct rtl8139_private *tp = netdev_priv(dev);
++	unsigned long flags;
++	int rc;
++
++	rc = spin_trylock_irqsave(&tp->lock, flags);
++	if (!rc)
++		return;
++	spin_unlock(&tp->lock);
+ 	rtl8139_interrupt(dev->irq, dev);
+-	enable_irq(dev->irq);
++	local_irq_restore(flags);
+ }
+ #endif
+ 
