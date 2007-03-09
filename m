@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992891AbXCICfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992895AbXCICfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992891AbXCICfK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 21:35:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992892AbXCICfK
+	id S2992895AbXCICfh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 21:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992897AbXCICfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 21:35:10 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59110 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2992891AbXCICfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 21:35:08 -0500
-Date: Thu, 8 Mar 2007 18:35:07 -0800
-From: Paul Jackson <pj@sgi.com>
-To: Herbert Poetzl <herbert@13thfloor.at>
-Cc: vatsa@in.ibm.com, ebiederm@xmission.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, winget@google.com,
-       containers@lists.osdl.org, akpm@linux-foundation.org, menage@google.com
-Subject: Re: [PATCH 1/2] rcfs core patch
-Message-Id: <20070308183507.51454499.pj@sgi.com>
-In-Reply-To: <20070309004816.GB4506@MAIL.13thfloor.at>
-References: <20070301133543.GK15509@in.ibm.com>
-	<20070301134528.GL15509@in.ibm.com>
-	<m1slcg8m4f.fsf@ebiederm.dsl.xmission.com>
-	<20070308101347.GA29051@in.ibm.com>
-	<20070309004816.GB4506@MAIL.13thfloor.at>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 8 Mar 2007 21:35:37 -0500
+Received: from mail.tmr.com ([64.65.253.246]:33273 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992895AbXCICff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 21:35:35 -0500
+Message-ID: <45F0C87A.9000400@tmr.com>
+Date: Thu, 08 Mar 2007 21:37:46 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Andy Isaacson <adi@hexapodia.org>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Neil Brown <neilb@suse.de>, linux-raid@vger.kernel.org
+Subject: Re: [PATCH] fix read past end of array in md/linear.c
+References: <20070308205204.GA12152@hexapodia.org>
+In-Reply-To: <20070308205204.GA12152@hexapodia.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert wrote:
-> why is the filesystem approach so favored for this
-> kind of manipulations?
+Andy Isaacson wrote:
+> When iterating through an array, one must be careful to test one's index
+> variable rather than another similarly-named variable.  
+>
+> The loop will read off the end of conf->disks[] in the following
+> (pathological) case:
+>
+> % dd bs=1 seek=840716287 if=/dev/zero of=d1 count=1
+> % for i in 2 3 4; do dd if=/dev/zero of=d$i bs=1k count=$(($i+150)); done
+> % ./vmlinux ubd0=root ubd1=d1 ubd2=d2 ubd3=d3 ubd4=d4
+> # mdadm -C /dev/md0 --level=linear --raid-devices=4 /dev/ubd[1234]
+>
+> adding some printks, I saw this:
+> [42949374.960000] hash_spacing = 821120
+> [42949374.960000] cnt          = 4
+> [42949374.960000] min_spacing  = 801
+> [42949374.960000] j=0 size=820928 sz=820928
+> [42949374.960000] i=0 sz=820928 hash_spacing=820928
+> [42949374.960000] j=1 size=64 sz=64
+> [42949374.960000] j=2 size=64 sz=128
+> [42949374.960000] j=3 size=64 sz=192
+> [42949374.960000] j=4 size=1515870810 sz=1515871002
+>
+> Index: linus/drivers/md/linear.c
+> ===================================================================
+> --- linus.orig/drivers/md/linear.c	2007-03-02 11:35:55.000000000 -0800
+> +++ linus/drivers/md/linear.c	2007-03-07 13:10:30.000000000 -0800
+> @@ -188,7 +188,7 @@
+>  	for (i=0; i < cnt-1 ; i++) {
+>  		sector_t sz = 0;
+>  		int j;
+> -		for (j=i; i<cnt-1 && sz < min_spacing ; j++)
+> +		for (j=i; j<cnt-1 && sz < min_spacing ; j++)
+>  			sz += conf->disks[j].size;
+>  		if (sz >= min_spacing && sz < conf->hash_spacing)
+>  			conf->hash_spacing = sz;
 
-I don't have any clear sense of whether the additional uses of file
-systems being considered here are a good idea or not, but the use of a
-file system for cpusets has turned out quite well, in my (vain and
-biased ;) view.
-
-Cpusets are subsets of the CPUs and memory nodes on a system.
-
-These subsets naturally form a partial ordering, where one cpuset is
-below another if its CPUs and nodes are a subset of the other ones.
-
-This forms a natural hierarchical space.  It is quite convenient to be
-able to add names and file system like attributes, so that one can do
-things like -name- the set of CPUs to which you are attaching a job, as
-in "this job is to run on the CPUs in cpuset /foo/bar", and to further
-have file system like permissions on these subsets, to control who can
-access or modify them.
-
-For such hierarchical data structures, especially ones where names and
-permissions are useful, file systems are a more natural interface than
-traditional system call usage patterns.
-
-The key, in my view, is the 'shape' of the data.  If the data schema is
-basically a single table, with uniform rows having a few fields each,
-where each field is a simple integer or string (not a fancy formatted
-string encoding some more elaborate shape) then classic system call
-patterns work well.  If the schema is tree shaped, and especially if
-the usual file system attributes such as a hierarchical name space and
-permissions are useful, then a file system based API is probably best.
+After looking at that code, I have to wonder how this ever worked, or if 
+in fact anyone ever took this path. I assume that the value of sz caused 
+the loop exit in all cases, since this has been in the code at least 
+since 2.6.15, oldest thing I have handy.
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
+
