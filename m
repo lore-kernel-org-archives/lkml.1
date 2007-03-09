@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993080AbXCIIQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993071AbXCIIRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993080AbXCIIQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 03:16:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993081AbXCIIQ7
+	id S2993071AbXCIIRt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 03:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993077AbXCIIRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 03:16:59 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44308 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993080AbXCIIQ5 (ORCPT
+	Fri, 9 Mar 2007 03:17:49 -0500
+Received: from szxga03-in.huawei.com ([61.144.161.55]:60710 "EHLO
+	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993071AbXCIIRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 03:16:57 -0500
-Date: Fri, 9 Mar 2007 10:16:56 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       serue@us.ibm.com
-Subject: [PATCH 7/7] revoke: wire up s390 system calls
-Message-ID: <Pine.LNX.4.64.0703091016340.32320@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Mar 2007 03:17:47 -0500
+X-Greylist: delayed 608 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Mar 2007 03:17:46 EST
+Date: Fri, 09 Mar 2007 13:37:30 +0530
+From: jimmy <jimmyb@huawei.com>
+Subject: Re: [PATCH] chaostables
+In-reply-to: <20070308181401.1b58ba24@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, James Morris <jmorris@namei.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>,
+       kaber@trash.net
+Message-id: <45F115C2.1080908@huawei.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
+ <20070308131412.08d9973e@lxorguk.ukuu.org.uk>
+ <Line.LNX.4.64.0703080955060.8029@d.namei>
+ <Pine.LNX.4.61.0703081652310.2448@yvahk01.tjqt.qr>
+ <20070308181401.1b58ba24@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+Alan Cox wrote:
+>> Also note that the word 'chaostables' does not even appear in the patch, 
+>> though xt_CHAOS does. Since we know that {xt,ipt}_[A-Z]+ are targets, we 
+>> can safely assume that CHAOS does what it says - make fun of nmap.
+> 
+> "entropy" ?
+> "randomness"
 
-Make revokeat and frevoke system calls available to user-space on s390.
+fuzztables?
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- arch/s390/kernel/compat_wrapper.S |   11 +++++++++++
- arch/s390/kernel/syscalls.S       |    2 ++
- include/asm-s390/unistd.h         |    4 +++-
- 3 files changed, 16 insertions(+), 1 deletion(-)
+:-)
 
-Index: uml-2.6/arch/s390/kernel/compat_wrapper.S
-===================================================================
---- uml-2.6.orig/arch/s390/kernel/compat_wrapper.S	2007-03-08 10:24:23.000000000 +0200
-+++ uml-2.6/arch/s390/kernel/compat_wrapper.S	2007-03-08 10:24:34.000000000 +0200
-@@ -1665,3 +1665,14 @@
- 	llgtr	%r3,%r3			# unsigned *
- 	llgtr	%r4,%r4			# struct getcpu_cache *
- 	jg	sys_getcpu
-+
-+	.globl sys_revokeat_wrapper
-+sys_revokeat_wrapper:
-+	lgfr	%r2,%r2			# int
-+	llgtr	%r3,%r3			# const char *
-+	jg	sys_revokeat
-+
-+	.globl sys_frevoke_wrapper
-+sys_frevoke_wrapper:
-+	llgfr	%r2,%r2			# unsigned int
-+	jg	sys_frevoke
-Index: uml-2.6/arch/s390/kernel/syscalls.S
-===================================================================
---- uml-2.6.orig/arch/s390/kernel/syscalls.S	2007-03-08 10:24:23.000000000 +0200
-+++ uml-2.6/arch/s390/kernel/syscalls.S	2007-03-08 10:24:34.000000000 +0200
-@@ -321,3 +321,5 @@
- NI_SYSCALL							/* 310 sys_move_pages */
- SYSCALL(sys_getcpu,sys_getcpu,sys_getcpu_wrapper)
- SYSCALL(sys_epoll_pwait,sys_epoll_pwait,sys_ni_syscall)
-+SYSCALL(sys_revokeat,sys_revokeat,sys_revokeat_wrapper)
-+SYSCALL(sys_frevoke,sys_frevoke,sys_frevoke_wrapper)
-Index: uml-2.6/include/asm-s390/unistd.h
-===================================================================
---- uml-2.6.orig/include/asm-s390/unistd.h	2007-03-08 10:24:23.000000000 +0200
-+++ uml-2.6/include/asm-s390/unistd.h	2007-03-08 10:24:34.000000000 +0200
-@@ -250,8 +250,10 @@
- /* Number 310 is reserved for new sys_move_pages */
- #define __NR_getcpu		311
- #define __NR_epoll_pwait	312
-+#define __NR_revokeat		313
-+#define __NR_frevoke		314
- 
--#define NR_syscalls 313
-+#define NR_syscalls 315
- 
- /* 
-  * There are some system calls that are not present on 64 bit, some
