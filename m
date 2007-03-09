@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767148AbXCIKke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767144AbXCIKnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767148AbXCIKke (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 05:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767144AbXCIKke
+	id S1767144AbXCIKnF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 05:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767153AbXCIKnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 05:40:34 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37468 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767148AbXCIKkc (ORCPT
+	Fri, 9 Mar 2007 05:43:05 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:18492 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767144AbXCIKnC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 05:40:32 -0500
-Date: Fri, 9 Mar 2007 10:40:30 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Nate Diller <nate.diller@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>, Christoph Hellwig <hch@infradead.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/3] fs: add an iovec iterator
-Message-ID: <20070309104030.GB4503@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Nate Diller <nate.diller@gmail.com>, Nick Piggin <npiggin@suse.de>,
-	Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070208105446.26443.35864.sendpatchset@linux.site> <20070208194953.GA4118@infradead.org> <20070209014626.GB17334@wotan.suse.de> <5c49b0ed0702081803o6d2ba99ct5703f76465c524f4@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Mar 2007 05:43:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=F0HSI2mkvI0hYXmEHN6cmSmqcVZ8sjapVJkErdYbSGH5f8dURT996MGzF4jrL5TScyHkcbcq+P/6kc3gJotCjeXhmD0su6A4B54egPhjYAQAd/ot3e2mP8HuIZQJh3rILclYNHdlvW3eRq1QGcGjuJkgtSlCoNgh4N+zAoY5Drc=
+Message-ID: <85e0e3140703090243n36fd467dwc83aff0d7b6fb004@mail.gmail.com>
+Date: Fri, 9 Mar 2007 16:13:00 +0530
+From: Niklaus <niklaus@gmail.com>
+Subject: Re: more than 65535 outbound connections
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.63.0703090027310.30949@qynat.qvtvafvgr.pbz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <5c49b0ed0702081803o6d2ba99ct5703f76465c524f4@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <85e0e3140703090016h609ecc5t504121a99bcd3e44@mail.gmail.com>
+	 <82d53izucg.fsf@mid.bfk.de>
+	 <Pine.LNX.4.63.0703090027310.30949@qynat.qvtvafvgr.pbz>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 06:03:50PM -0800, Nate Diller wrote:
-> i had a patch integrating the iodesc idea, but after some thought, had
-> decided to call it struct file_io.  That name reflects the fact that
-> it's doing I/O in arbitrary lengths with byte offsets, and struct
-> file_io *fio contrasts well with struct bio (block_io).  I also had
-> used the field ->nbytes instead of ->count, to clarify the difference
-> between segment iterators, segment offsets, and absolute bytecount.
+On 3/9/07, David Lang <david.lang@digitalinsight.com> wrote:
+> On Fri, 9 Mar 2007, Florian Weimer wrote:
+>
+> >> i read on the web that terry lambert has got 1.6 million simultaneous
+> >> connection ? how is the way it is done.
+> >
+> > Multiple IP addresses, I guess.
+>
+> what must be unique is the four-parts of a connection
+> source IP, source port, destination IP, destination port
+>
+> as long as the set is unique any element can be re-used (a big webserver has one
+> IP and port on the server side, but many IPs and ports on the client side)
+>
+> when you make a connection you have the option of not specifying the source IP
+> and port (letting the OS/library pick ones for you). some libraries will not
+> re-use the same source port for multiple connections, others will (with the
+> appropriate options)
+>
+> if you want to have your program assign the source IPs and port itself you can
+> do so (you may have to also give the library/os a flag that tells it you know
+> what you're doing, and it's ok to let you re-use ports)
+>
 
-struct file_io sounds rather ugly to me, I don't know why.  And it's
-really user I/O so we could call it struct uio (historical punt intended) :)
+yes now lets take 2 dest machines , source ip is fixed , source port (2^16 - 1)
+destip is fixed (a.a.a.a and b.b.b.b) ,dest port(2^16 -1) each ,
 
+for a connection we have one port used , say connection 1 is
+
+source ip,port 1 , a.a.a.a port 1
+source ip,port 2 , a.a.a.a port 2
+.
+.
+.
+source ip,port 65535 , a.a.a.a port 65535
+
+so total of 65535 connections (assume traffic is still going on, a
+movie on a slow line dialup or 1kbps )
+
+now if i try to open another connection (assume lots of file
+descriptors are present) to a.a.a.a what happens
+
+to b.b.b.b what happens
+
+i think both will not get established as the OS doesn't have any free
+source ports or am i wrong
+
+> David Lang
+>
