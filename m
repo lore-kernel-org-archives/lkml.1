@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbXCIJqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993089AbXCIJsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbXCIJqL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 04:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbXCIJqL
+	id S2993089AbXCIJsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 04:48:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993092AbXCIJsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 04:46:11 -0500
-Received: from systemlinux.org ([83.151.29.59]:58254 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752669AbXCIJqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 04:46:09 -0500
-Date: Fri, 9 Mar 2007 10:36:10 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
-Message-ID: <20070309093610.GE4252@skl-net.de>
-References: <20070226133153.GC4095@skl-net.de> <20070226182617.GC9968@andrew-vasquezs-computer.local> <20070227101100.GA22572@skl-net.de> <20070227185134.GJ20397@andrew-vasquezs-computer.local> <20070228151829.GI22572@skl-net.de> <20070228153722.GJ22572@skl-net.de> <20070306203952.471218df.akpm@linux-foundation.org> <20070307170955.GA4252@skl-net.de> <20070307114525.08265c33.akpm@linux-foundation.org> <1173297911.3769.3.camel@dyn9047017103.beaverton.ibm.com>
+	Fri, 9 Mar 2007 04:48:24 -0500
+Received: from smtp-105-friday.nerim.net ([62.4.16.105]:2275 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2993089AbXCIJsX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 04:48:23 -0500
+Date: Fri, 9 Mar 2007 10:47:06 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Sonic Zhang" <sonic.adi@gmail.com>
+Cc: "Bryan Wu" <bryan.wu@analog.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
+       mhfan@ustc.edu
+Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
+Message-Id: <20070309104706.53ea82ba.khali@linux-fr.org>
+In-Reply-To: <4e5ebad50703082004s6cd34ccbp34e6f8b2c2273389@mail.gmail.com>
+References: <1173164058.31825.16.camel@roc-desktop>
+	<20070306214301.GA5590@martell.zuzino.mipt.ru>
+	<1173247078.28531.24.camel@roc-desktop>
+	<20070307075822.53e53c42.khali@linux-fr.org>
+	<1173261197.28531.60.camel@roc-desktop>
+	<20070308102738.2ec69c60.khali@linux-fr.org>
+	<4e5ebad50703082004s6cd34ccbp34e6f8b2c2273389@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UnaWdueM1EBWVRzC"
-Content-Disposition: inline
-In-Reply-To: <1173297911.3769.3.camel@dyn9047017103.beaverton.ibm.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 9 Mar 2007 12:04:59 +0800, Sonic Zhang wrote:
+> On 3/8/07, Jean Delvare <khali@linux-fr.org> wrote:
+> > i2c-core can emulate SMBus transactions using master_xfer, so in
+> > general when you have a complete master_xfer implementation you do not
+> > need to define a separate smbus_xfer function. This would save a lot of
+> > code.
+> 
+> Actually the i2c-core can't emulate SMBus transactions using the
+> master_xfer function, because the blackfin TWI controller provide
+> hardware support to the SMBus transactions and the combination of
+> master_xfer operations can't generate proper signal for SMBus.
 
---UnaWdueM1EBWVRzC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Did you try? I can't think of any valid reason why it wouldn't work.
+All SMBus transactions are compatible with I2C by definition.
 
-On 12:05, Mingming Cao wrote:
-> > > BTW: Are ext3 filesystem sizes greater than 8T now officially
-> > > supported?
-> >=20
-> > I think so, but I don't know how much 16TB testing developers and
-> > distros are doing - perhaps the linux-ext4 denizens can tell us?
-> > -
->=20
-> IBM has done some testing (dbench, fsstress, fsx, tiobench, iozone etc)
-> on 10TB ext3, I think RedHat and BULL have done similar test on >8TB
-> ext3 too.
+Now performance might be better with dedicated code if the hardware
+accelerate SMBus transactions, that's a different issue. If you prefer
+to keep the smbus_xfer method for performance reasons, that's OK with
+me. After all you're the one who will have to maintain the driver ;)
 
-Thanks. I'm asking because some days ago I tried to create a 10T ext3
-filesytem on a linear software raid over two hardware raids, and it
-failed horribly. mke2fs from e2fsprogs-1.39 refused to create such a
-large filesystem but did it with -F, and I could mount it afterwards.
-But writing data immediately produced zillions of errors and only
-power-cycling the box helped.
-
-We're now using a 7.9T filesystem on the same hardware. That seems
-to work fine on 2.6.21-rc2, so I think this is an ext3 problem. I
-cannot completely rule out other reasons though as the underlying
-qla2xxx driver also had some problems on earlier kernels.
-
-We'd much rather have a 10T filesystem if possible. So if you have
-time to look into the issue I would be willing to recreate the 10T
-filesystem and send details.
-
-Regards
-Andre
---=20
-The only person who always got his work done by Friday was Robinson Crusoe
-
---UnaWdueM1EBWVRzC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFF8SqKWto1QDEAkw8RAqWDAJ9OXQZs1bDAgFoBmq9VYRtZMFpWMgCfRFQn
-Jv2+/8tA8+1bTwJdgeVfZWg=
-=Majh
------END PGP SIGNATURE-----
-
---UnaWdueM1EBWVRzC--
+-- 
+Jean Delvare
