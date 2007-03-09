@@ -1,80 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964883AbXCILwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965047AbXCILw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964883AbXCILwR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 06:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964935AbXCILwQ
+	id S965047AbXCILw7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 06:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965219AbXCILw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 06:52:16 -0500
-Received: from hempcity.net ([81.171.100.190]:50286 "EHLO hempcity.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964883AbXCILwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 06:52:15 -0500
-X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Mar 2007 06:52:15 EST
-Message-ID: <36417.84.81.1.164.1173440696.squirrel@webmail.coolzero.info>
-Date: Fri, 9 Mar 2007 12:44:56 +0100 (CET)
-Subject: Re: PCI failures during boot
-From: "Jim van Wel" <jim@coolzero.info>
-To: linux-kernel@vger.kernel.org
-Reply-To: jim@coolzero.info
-User-Agent: SquirrelMail/1.4.8-4.el4
+	Fri, 9 Mar 2007 06:52:58 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:57250 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965047AbXCILw4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 06:52:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d/9Y3YIxShseYbuVTOyBleQ1XoxHzAsq8fAK/Ns8KcD6f6bfzJ/Sjrmgs6GJ/ZdiQyLttBRegmV01CKWHkO5pNQRlaXFLwZ4BjjewVgDHq/CLlwdGav7dNAiJKUS3aWeahw8dk8FLCjcsE60wFPIrb6fjWNbvXhYSWEHX0G+rsQ=
+Message-ID: <f2b55d220703090352x7f07e1bgc94193f500c10e12@mail.gmail.com>
+Date: Fri, 9 Mar 2007 03:52:54 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: sys_write() racy for multi-threaded append?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <45F0F644.6020705@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com>
+	 <45F09F9C.4030801@cosmosbay.com>
+	 <f2b55d220703081557k8101e68g1a3556e42f68416@mail.gmail.com>
+	 <45F0A71C.2000800@cosmosbay.com>
+	 <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com>
+	 <45F0F644.6020705@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
-
-Please try first a newer kernel of FC6.
-
-2.6.19-1.2911.6.5.fc6
-
-That's 2.6.19.7.
-
-That's the newest one.
-
-Greetings,
-Jim,
-
-> Hi,
+On 3/8/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> Dont even try, you *cannot* do that, without breaking the standards, or
+> without a performance drop.
 >
-> I just bought a brand new notebook and wanted to install FC6 on it.
-Unfornately there are some issues reported by the console during boot.
-Here are some reported errors, I attached the full dmesg and other
-information just in case.
->
-> ACPI: bus type pci registered
-> PCI: Using MMCONFIG at e0000000
-> ACPI: Interpreter enabled
-> ACPI: Using IOAPIC for interrupt routing
-> ACPI: PCI Root Bridge [PCI0] (0000:00)
-> PCI: Probing PCI hardware (bus 00)
-> PCI: Ignoring BAR0-3 of IDE controller 0000:00:1f.2
-> Boot video device is 0000:01:00.0
-> PCI: Transparent bridge - 0000:00:1e.0
-> PCI: Bus #07 (-#0a) is hidden behind transparent bridge #06 (-#07) (try
-'pci=assign-busses')
-> Please report the result to linux-kernel to fix this permanently
->
-> and later:
->
-> PCI: Using ACPI for IRQ routing
-> PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a
-report
-> PCI: Cannot allocate resource region 7 of bridge 0000:00:1c.0
-> PCI: Cannot allocate resource region 8 of bridge 0000:00:1c.0
-> NetLabel: Initializing
-> NetLabel:  domain hash size = 128
->
-> I currently can't update my kernel version and I'm running a
-> 2.6.18-1.2798.fc6 kernel.
->
-> Could anybody give me some advices please ?
-> --
-> Francis
->
+> The only safe way would be to lock the file during the whole read()/write()
+> syscall, and we dont want this (this would be more expensive than current)
+> Dont forget 'file' may be some sockets/tty/whatever, not a regular file.
 
+I'm not trying to provide full serialization of concurrent
+multi-threaded read()/write() in all exceptional scenarios.  I am
+trying to think through the semantics of pipelined I/O operations on
+struct file.  In the _absence_ of an exception, something sane should
+happen -- and when you start at f_pos == 1000 and write 100 bytes each
+from two threads (successfully), leaving f_pos at 1100 is not sane.
 
+> Standards are saying :
+>
+> If an error occurs, file pointer remains unchanged.
 
+>From 1003.1, 2004 edition:
+
+<standard>
+This volume of IEEE Std 1003.1-2001 does not specify the value of the
+file offset after an error is returned; there are too many cases. For
+programming errors, such as [EBADF], the concept is meaningless since
+no file is involved. For errors that are detected immediately, such as
+[EAGAIN], clearly the pointer should not change. After an interrupt or
+hardware error, however, an updated value would be very useful and is
+the behavior of many implementations.
+
+This volume of IEEE Std 1003.1-2001 does not specify behavior of
+concurrent writes to a file from multiple processes. Applications
+should use some form of concurrency control.
+</standard>
+
+The effect on f_pos of an error during concurrent writes is therefore
+doubly unconstrained.  In the absence of concurrent writes, it is
+quite harmless for f_pos to have transiently contained, at some point
+during the execution of write(), an overestimate of the file position
+after the write().  In the presence of concurrent writes (let us say
+two 100-byte writes to a file whose f_pos starts at 1000), it is
+conceivable that the second write will succeed at f_pos == 1100 but
+the first will be short (let us say only 50 bytes are written),
+leaving f_pos at 1150 and no bytes written in the range 1050 to 1099.
+That would suck -- but the standard does not oblige you to avoid it
+unless the destination is a pipe or FIFO with O_NONBLOCK clear, in
+which case partial writes are flat out verboten.
+
+> You cannot know for sure how many bytes will be written, since write() can
+> returns a count that is different than buflen.
+
+Of course (except in the pipe/FIFO case).  But if it does, and you're
+writing concurrently to the fd, you're not obliged to do anything sane
+at all.  If you're not writing concurrently, the fact that you
+overshot and then fixed it up after vfs_write() returned is _totally_
+invisible.  f_pos is local to the struct file.
+
+> So you cannot update fpos before calling vfs_write()
+
+You can speculatively update it, and in the common case you don't have
+to touch it again.  That's a win.
+
+> About your L1 'miss', dont forget that multi-threaded apps are going to
+> atomic_dec_and_test(&file->f_count) anyway when fput() is done at the end of
+> syscall. And you were concerned about multi-threaded apps, didnt you ?
+
+That does indeed interfere with the optimization for multi-threaded
+apps.  Which doesn't mean it isn't worth having for single-threaded
+apps.  And if we get to the point that that atomic_dec_and_test is the
+only thing left (in the common case) that touches the struct file
+after a VFS operation completes, then we can evaluate whether f_count
+ought to be split out of the struct file and put somewhere else.  In
+fact, if I understand the calls inside vfs_write() correctly, f_count
+is (usually?) the only member of struct file that is written to during
+a call to sys_pwrite64(); so moving it out of struct file and into
+some place where it has to be kept cache-coherent anyway would also
+improve the performance on SMP of distributed pwrite() calls to a
+process-global fd.
+
+Cheers,
+- Michael
