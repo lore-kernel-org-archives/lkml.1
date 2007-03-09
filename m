@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767341AbXCIQIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767344AbXCIQKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767341AbXCIQIN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 11:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767340AbXCIQIN
+	id S1767344AbXCIQKy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 11:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767345AbXCIQKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 11:08:13 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:57319 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767339AbXCIQIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 11:08:12 -0500
-Message-ID: <45F18669.5070400@garzik.org>
-Date: Fri, 09 Mar 2007 11:08:09 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 9 Mar 2007 11:10:54 -0500
+Received: from yvrmail01.intrinsyc.com ([209.139.192.246]:24155 "EHLO
+	yvrmail01.intrinsyc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767344AbXCIQKx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 11:10:53 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+Subject: RE: [PATCH] Software Suspend: Fix suspend when console is in VT_AUTO/KD_GRAPHICS mode
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2.6.22] remove Intel combined mode quirk
-References: <20070309160127.GA10226@havoc.gtf.org>
-In-Reply-To: <20070309160127.GA10226@havoc.gtf.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Date: Fri, 9 Mar 2007 08:10:56 -0800
+Message-ID: <DBC923D919FAB345973A94E6E194E849043808E0@yvrmail01.itc.intrinsyc.com>
+In-Reply-To: <20070309153456.GA28664@srcf.ucam.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Software Suspend: Fix suspend when console is in VT_AUTO/KD_GRAPHICS mode
+Thread-Index: AcdiYJWh+IyBoGirQLqgvDy76EolswAA8xgQ
+References: <1173394485.28589.17.camel@localhost.localdomain> <20070309090805.GA5822@atrey.karlin.mff.cuni.cz> <20070309153456.GA28664@srcf.ucam.org>
+From: "Andrew Johnson" <ajohnson@intrinsyc.com>
+To: "Matthew Garrett" <mjg59@srcf.ucam.org>, "Pavel Machek" <pavel@ucw.cz>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-> index 066689c..0a19466 100644
-> --- a/drivers/ata/libata-sff.c
-> +++ b/drivers/ata/libata-sff.c
-> @@ -779,40 +779,16 @@ int ata_pci_init_one (struct pci_dev *pdev, struct ata_port_info **port_info,
->  		/* Deal with combined mode hack. This side of the logic all
->  		   goes away once the combined mode hack is killed in 2.6.21 */
->  		if (!devm_request_region(dev, ATA_PRIMARY_CMD, 8, "libata")) {
-> -			struct resource *conflict, res;
-> -			res.start = ATA_PRIMARY_CMD;
-> -			res.end = ATA_PRIMARY_CMD + 8 - 1;
-> -			conflict = ____request_resource(&ioport_resource, &res);
-> -			while (conflict->child)
-> -				conflict = ____request_resource(conflict, &res);
-> -			if (!strcmp(conflict->name, "libata"))
-> -				legacy_mode |= ATA_PORT_PRIMARY;
-> -			else {
-> -				pcim_pin_device(pdev);
-> -				printk(KERN_WARNING "ata: 0x%0X IDE port busy\n" \
-> -						    "ata: conflict with %s\n",
-> -						    ATA_PRIMARY_CMD,
-> -						    conflict->name);
-> -			}
-> +			pcim_pin_device(pdev);
-> +			printk(KERN_WARNING "ata: 0x%0X IDE port busy\n",
-> +					    ATA_PRIMARY_CMD);
->  		} else
->  			legacy_mode |= ATA_PORT_PRIMARY;
->  
->  		if (!devm_request_region(dev, ATA_SECONDARY_CMD, 8, "libata")) {
-> -			struct resource *conflict, res;
-> -			res.start = ATA_SECONDARY_CMD;
-> -			res.end = ATA_SECONDARY_CMD + 8 - 1;
-> -			conflict = ____request_resource(&ioport_resource, &res);
-> -			while (conflict->child)
-> -				conflict = ____request_resource(conflict, &res);
-> -			if (!strcmp(conflict->name, "libata"))
-> -				legacy_mode |= ATA_PORT_SECONDARY;
-> -			else {
-> -				pcim_pin_device(pdev);
-> -				printk(KERN_WARNING "ata: 0x%X IDE port busy\n" \
-> -						    "ata: conflict with %s\n",
-> -						    ATA_SECONDARY_CMD,
-> -						    conflict->name);
-> -			}
-> +			pcim_pin_device(pdev);
-> +			printk(KERN_WARNING "ata: 0x%X IDE port busy\n",
-> +					    ATA_SECONDARY_CMD);
->  		} else
->  			legacy_mode |= ATA_PORT_SECONDARY;
+Matthew Garrett wrote: 
+> On Fri, Mar 09, 2007 at 10:08:05AM +0100, Pavel Machek wrote:
+> 
+> > So... if current console is graphical, we leave X accessing the
+> > console... That's bad, because video state is not going to be
+> > restored...?
+> 
+> A graphical console is not necessarily X. Is there any requirement for
+> there to be a single VT that isn't in text mode? The vt switching is
+> a hack, we shouldn't make life difficult for people who have their own
+> userspace code that's entirely capable of restoring video state on its
+> own.
 
-I presume this will lend itself to further devres cleanups, now that 
-this code is gone.  I just did the main change.
+The problem actually comes about when using Qtopia Phone Edition (QPE)
+on a PXA270. QPE puts the console into VT_AUTO+KD_GRAPHICS mode and
+writes directly to the framebuffer from then on.  In this mode the
+kernel correctly disallows a console change, as QPE is not getting
+notification of a console change and thus does not know when to repaint
+the screen. 
 
-This will also affect the new init model stuff just posted.
+AFAIK, X uses VT_PROCESS+KD_GRAPHICS mode, so it gets notification of a
+change to and from the X console, thus it knows when to repaint the
+screen.
 
+I think you can test this by changing the mode of a text console to
+KD_GRAPHICS using the KDSETMODE ioctl, then attempting to change to
+another text console using chvt.
+
+-- Andrew
