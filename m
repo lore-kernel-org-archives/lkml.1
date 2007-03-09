@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbXCIEFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992943AbXCIESu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbXCIEFD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 23:05:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXCIEFD
+	id S2992943AbXCIESu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 23:18:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992944AbXCIESu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 23:05:03 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:55926 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752555AbXCIEFB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 23:05:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mrp/UrptbGVGvsSeVGcoq8R8yypLsgkk8xjHrOErZztRRcanTx2EimVYUWHAbw4RxO9Qmjaqy4YpC8IGK/cSYNW0IEiyP/lc67amaKq5CEdN4yVv5p7LG2f+SV+uBt8d86mP69DK6sO5yruBSQN20BrPGmuVpOZQ+tIyxwIEco4=
-Message-ID: <4e5ebad50703082004s6cd34ccbp34e6f8b2c2273389@mail.gmail.com>
-Date: Fri, 9 Mar 2007 12:04:59 +0800
-From: "Sonic Zhang" <sonic.adi@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
-Cc: "Bryan Wu" <bryan.wu@analog.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       mhfan@ustc.edu
-In-Reply-To: <20070308102738.2ec69c60.khali@linux-fr.org>
+	Thu, 8 Mar 2007 23:18:50 -0500
+Received: from mail.tmr.com ([64.65.253.246]:33386 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992943AbXCIESt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 23:18:49 -0500
+Message-ID: <45F0E0BD.2090204@tmr.com>
+Date: Thu, 08 Mar 2007 23:21:17 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Con Kolivas <kernel@kolivas.org>
+CC: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+   scheduler
+References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <200703050453.08154.gene.heskett@gmail.com> <45EDA9DF.6030305@tmr.com> <200703070706.41676.kernel@kolivas.org>
+In-Reply-To: <200703070706.41676.kernel@kolivas.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1173164058.31825.16.camel@roc-desktop>
-	 <20070306214301.GA5590@martell.zuzino.mipt.ru>
-	 <1173247078.28531.24.camel@roc-desktop>
-	 <20070307075822.53e53c42.khali@linux-fr.org>
-	 <1173261197.28531.60.camel@roc-desktop>
-	 <20070308102738.2ec69c60.khali@linux-fr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/8/07, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi Brian,
->
-> Thanks for the quick update.
+Con Kolivas wrote:
+> On Wednesday 07 March 2007 04:50, Bill Davidsen wrote:
 
+>> With luck I'll get to shake out that patch in combination with kvm later
+>> today.
+> 
+> Great thanks!. I've appreciated all the feedback so far.
+> 
+I did try, the 2.6.21-rc3-git3 doesn't want to kvm for me, and your 
+patch may not be doing what it should. I'm falling back to 2.6.20 and 
+will retest after I document my kvm issues.
 
-
-> > +
-> > +     rc = (iface->result >= 0) ? 0 : -1;
-> > +
-> > +     /* Release mutex */
-> > +     mutex_unlock(&iface->twi_lock);
-> > +
-> > +     return rc;
-> > +}
->
-> i2c-core can emulate SMBus transactions using master_xfer, so in
-> general when you have a complete master_xfer implementation you do not
-> need to define a separate smbus_xfer function. This would save a lot of
-> code.
->
-
-Actually the i2c-core can't emulate SMBus transactions using the
-master_xfer function, because the blackfin TWI controller provide
-hardware support to the SMBus transactions and the combination of
-master_xfer operations can't generate proper signal for SMBus.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
