@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767317AbXCIOVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767320AbXCIOXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767317AbXCIOVo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 09:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767318AbXCIOVo
+	id S1767320AbXCIOXn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 09:23:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767323AbXCIOXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 09:21:44 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:50417 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767317AbXCIOVn (ORCPT
+	Fri, 9 Mar 2007 09:23:43 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:53810 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767320AbXCIOXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 09:21:43 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Fri, 9 Mar 2007 09:19:05 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Artem Bityutskiy <dedekind@yandex.ru>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: the usage of DEBUG_DRIVER seems ambiguous
-In-Reply-To: <45F169CA.3000106@yandex.ru>
-Message-ID: <Pine.LNX.4.64.0703090916410.3143@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0703071941200.14336@CPE00045a9c397f-CM001225dbafb6>
- <20070308111858.9352f51d.randy.dunlap@oracle.com> <45F169CA.3000106@yandex.ru>
+	Fri, 9 Mar 2007 09:23:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YmaXMR1YnW7JmZiCkO9nkCNuCxDE3K27Y7F5JPfznahwiiCnHeulzFEo839/AJhbaUB/Xl6r3+88F0dVMKu/P7b+tmA2EQvHUi4YR+dG4jMeexMXNAvSw6oGfWnBOWQIDVC9qKyELZmM9tWeLgsVEWsMrxykMvjhTt9fn/Wpjo8=
+Message-ID: <d120d5000703090623w614328e3p7378dd92cfde4b05@mail.gmail.com>
+Date: Fri, 9 Mar 2007 09:23:39 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Andres Salomon" <dilinger@debian.org>
+Subject: Re: [patch 1/3] Input: psmouse - create PS/2 protocol options for Kconfig
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <45F13EBE.5040804@debian.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45D43115.6060806@debian.org> <45D50101.60802@debian.org>
+	 <20070215173024.adc54d6c.akpm@linux-foundation.org>
+	 <200702160028.09251.dtor@insightbb.com> <45D54260.7080302@debian.org>
+	 <d120d5000702160742v14ac197eica567a15cc1e85d4@mail.gmail.com>
+	 <45F13EBE.5040804@debian.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007, Artem Bityutskiy wrote:
-
-> Randy Dunlap wrote:
-> > >   it's clearly a configuration variable, but it's also being used by
-> > > itself in a few drivers/net/ source files.  is that deliberate?
-> >
-> > The ones in drivers/net/ are just local driver debug controls.
-> > They happen to have the same name as a (likely newer) kconfig symbol.
-> >
-> > Is there a real problem that needs to be fixed?
+On 3/9/07, Andres Salomon <dilinger@debian.org> wrote:
 >
-> Renaming them just for the sake of being less confusing makes sense.
+> I haven't seen patches in your tree; are you waiting for me to do the
+> cleanups and resend?
+>
 
-that's kind of what i had in mind.  i have a script that peruses the
-source tree, checking for apparent typoes in preprocessor directives
-when someone forgets the leading "CONFIG_", and as long as that macro
-name is the way it is, that example is going to be flagged every time
-for no good reason.
-
-if someone wants to make a suggestion, i can submit a simple renaming
-patch.
-
-rday
+Still in my private tree; will try to push out over the weekend.
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Dmitry
