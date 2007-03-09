@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161347AbXCIAOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161348AbXCIAOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161347AbXCIAOK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 19:14:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161353AbXCIAOK
+	id S1161348AbXCIAOM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 19:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161349AbXCIAOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 19:14:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57692
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1161347AbXCIAOI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 19:14:08 -0500
-Date: Thu, 08 Mar 2007 16:14:07 -0800 (PST)
-Message-Id: <20070308.161407.63995586.davem@davemloft.net>
-To: dwmw2@infradead.org
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       rmk@arm.linux.org.uk, sam@ravnborg.org
-Subject: Re: [PATCH] Complain about missing system calls.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1173394873.3461.510.camel@pmac.infradead.org>
-References: <1173394873.3461.510.camel@pmac.infradead.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 8 Mar 2007 19:14:11 -0500
+Received: from mail.screens.ru ([213.234.233.54]:58471 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161348AbXCIAOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 19:14:09 -0500
+Date: Fri, 9 Mar 2007 03:14:08 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Avi Kivity <avi@argo.co.il>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
+Message-ID: <20070309001408.GA6801@tv-sign.ru>
+References: <20070308204353.GA6733@tv-sign.ru> <Pine.LNX.4.64.0703081259560.7515@alien.or.mcafeemobile.com> <20070308215653.GA6744@tv-sign.ru> <Pine.LNX.4.64.0703081459350.4882@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703081459350.4882@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Thu, 08 Mar 2007 23:01:13 +0000
-
-> Most system calls seem to get added to i386 first. This patch
-> automatically generates a warning for any new system call which is
-> implemented on i386 but not the architecture currently being compiled.
-> On PowerPC at the moment, for example, it results in these warnings:
-> init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
-> init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
-> init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
+On 03/08, Davide Libenzi wrote:
+>
+> On Fri, 9 Mar 2007, Oleg Nesterov wrote:
 > 
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> > > Logic is, if it's not an RT signal, queue only one, otherwise multiple.
+> > > The bit on the ->pending mask is clealer only when the queue slot becomes empty.
+> > 
+> > Yes, I see what the code does, but I don't undestand why. For example, SIGCHLD was
+> > delivered to the process _and_ handled several times, then sys_signalfd_dequeue()
+> > comes and finds only one siginfo. Isn't this strange?
+> 
+> That's the same logic the kernel folows for non-RT signals. 
 
-David, thanks for this __incredibly__ __useful__ patch.  I kicked it
-around on sparc64 and found some more ignores to add, see below.
+Yes, specific_send_sig_info/__group_send_sig_info "ignores" the non-RT signal
 
-The vast majority of them vector to sys_ni_syscall in the i386 syscall
-table.
+	- if we already have a pending one (blocked, or not yet handled)
 
-sys_ugetrlimit is only necessary if the platform started out
-using the non-SuS compliant sys_old_getrlimit()
+	- the only reason is backward compatibility
 
-The rest, like ioperm, iopl, modify_ldt, et al. are i386
-specific.
+signalfd:
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+	- if the same signr was not fetched via sys_signalfd_dequeue()
 
---- a/init/missing_syscalls.c.ORIG	2007-03-08 16:11:00.000000000 -0800
-+++ b/init/missing_syscalls.c	2007-03-08 16:02:30.000000000 -0800
-@@ -18,6 +18,22 @@
- #endif
- 
- /* i386-specific or historical system calls */
-+#define __IGNORE_break
-+#define __IGNORE_stty
-+#define __IGNORE_gtty
-+#define __IGNORE_ftime
-+#define __IGNORE_prof
-+#define __IGNORE_lock
-+#define __IGNORE_mpx
-+#define __IGNORE_ulimit
-+#define __IGNORE_profil
-+#define __IGNORE_ioperm
-+#define __IGNORE_iopl
-+#define __IGNORE_idle
-+#define __IGNORE_modify_ldt
-+#define __IGNORE_getpmsg
-+#define __IGNORE_putpmsg
-+#define __IGNORE_ugetrlimit
- #define __IGNORE_mmap2
- #define __IGNORE_vm86
- #define __IGNORE_vm86old
+	- the reason is ????
+
+Suppose we are doing a simple application which just logs all signals
+which were sent to this process. Now, we can miss the signal if the
+logging blocks.
+
+Think about sub-threads. We can send the same non-RT signal to T1, T2, T3
+via specific_send_sig_info(). All 3 signals will be delivered, but signalfd
+(which is process wide) will see only the first.
+
+> > > The two trasports can rely on different masks. The signalfd_notify() does 
+> > > not even go in signalfd_deliver() if no signalfds are attached to the 
+> > > sighand.
+> > 
+> > Sorry, I don't understand. The masks are different, yes, but ->sighand is the
+> > same? How this can make any difference for "if no signalfds are attached" ?
+> 
+> The list_empty() che would not make you fall inside signalfd_deliver(), 
+> hence the fast path really lives up to its name ;)
+
+Ugh. Still can't understand, probably I missed something or misread this patch.
+
+If we shift signalfd_notify() from specific_send_sig_info/__group_send_sig_info
+to send_signal(), we have the same "list_empty()" fastpath if no signalfds are
+attached to the sighand. The difference is that we don't count sig_ignored()
+signals, which looks right to me.
+
+Oleg.
+
