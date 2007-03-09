@@ -1,93 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992887AbXCICP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965157AbXCICRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992887AbXCICP4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 21:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992888AbXCICP4
+	id S965157AbXCICRo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 21:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965199AbXCICRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 21:15:56 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:62844 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992887AbXCICPz (ORCPT
+	Thu, 8 Mar 2007 21:17:44 -0500
+Received: from mga01.intel.com ([192.55.52.88]:2863 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965157AbXCICRm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 21:15:55 -0500
-Date: Thu, 8 Mar 2007 21:15:53 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Rebecca Schultz <rschultz@google.com>
-Cc: Andi Kleen <ak@suse.de>, "Martin J. Bligh" <mbligh@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix atomicity of TIF update in flush_thread() for x86_64
-Message-ID: <20070309021553.GA8387@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 21:13:03 up 34 days, 16:20,  5 users,  load average: 1.27, 1.44, 1.52
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 8 Mar 2007 21:17:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,265,1170662400"; 
+   d="scan'208"; a="209209352:sNHT20637365"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] NET: Add packet sock option to return orig_dev to userspace when bonded
+Date: Thu, 8 Mar 2007 18:17:39 -0800
+Message-ID: <D5C1322C3E673F459512FB59E0DDC329026E9753@orsmsx414.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] NET: Add packet sock option to return orig_dev to userspace when bonded
+thread-index: Acdh8Rw3cgqJvTELRDSYiIQr3vkaqg==
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "David Miller" <davem@davemloft.net>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Leech, Christopher" <christopher.leech@intel.com>, <jgarzik@pobox.com>
+X-OriginalArrivalTime: 09 Mar 2007 02:17:40.0098 (UTC) FILETIME=[1CC42E20:01C761F1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix atomicity of TIF update in flush_thread() for x86_64
+This patch applies against commit
+704e0b01791bfcb75355f269a6f0054a75c9c563
+of branch 'master' from davem/net-2.6.22
 
-Race :
+---
+Summary:
 
-parent process executing :
-sys_ptrace()
- (lock_kernel())
- (ptrace_get_task_struct(pid))
- arch_ptrace()
-   ptrace_detach()
-     ptrace_disable(child);
-       clear_singlestep(child);
-         clear_tsk_thread_flag(child, TIF_SINGLESTEP);
-         (which clears the TIF_SINGLESTEP flag atomically from a different
-	  process)
- (put_task_struct(child))
- (unlock_kernel())
+Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
+	NET: Add packet sock option to return orig_dev to userspace when
+bonded
 
-And at the same time, in the child process :
-sys_execve()
- do_execve()
-   search_binary_handler()
-     load_elf_binary()
-       flush_old_exec()
-         flush_thread()
-           doing a non-atomic thread flag update 
+---
+Add a packet socket option to allow the orig_dev index to be returned to
+userspace when passing traffic through a bonded device.  This is very
+useful
+for layer 2 traffic being able to report which physical device actually
+received the traffic, instead of having the bond hide that information.
 
-It applies on 2.6.20.
+The new option is called PACKET_BONDED_ORIGDEV.
 
-Signed-off-by: Rebecca Schultz <rschultz@google.com>
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
 
---- a/arch/x86_64/kernel/process.c
-+++ b/arch/x86_64/kernel/process.c
-@@ -385,14 +385,17 @@ void exit_thread(void)
- void flush_thread(void)
+---
+ include/linux/if_packet.h |    1 +
+ net/packet/af_packet.c    |   34 +++++++++++++++++++++++++++++++---
+ 2 files changed, 32 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/if_packet.h b/include/linux/if_packet.h
+index f3de05c..b68c177 100644
+--- a/include/linux/if_packet.h
++++ b/include/linux/if_packet.h
+@@ -42,6 +42,7 @@ struct sockaddr_ll
+ #define PACKET_STATISTICS		6
+ #define PACKET_COPY_THRESH		7
+ #define PACKET_AUXDATA			8
++#define PACKET_BONDED_ORIGDEV		9
+ 
+ struct tpacket_stats
  {
- 	struct task_struct *tsk = current;
--	struct thread_info *t = current_thread_info();
+diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+index f9866a8..05e53a0 100644
+--- a/net/packet/af_packet.c
++++ b/net/packet/af_packet.c
+@@ -201,7 +201,8 @@ struct packet_sock {
+ 	struct packet_type	prot_hook;
+ 	spinlock_t		bind_lock;
+ 	unsigned int		running:1,	/* prot_hook is
+attached*/
+-				auxdata:1;
++				auxdata:1,
++				origdev:1;	/* return orig_dev for
+bonds */
+ 	int			ifindex;	/* bound device
+*/
+ 	__be16			num;
+ #ifdef CONFIG_PACKET_MULTICAST
+@@ -528,7 +529,11 @@ static int packet_rcv(struct sk_buff *sk
+ 	sll->sll_hatype = dev->type;
+ 	sll->sll_protocol = skb->protocol;
+ 	sll->sll_pkttype = skb->pkt_type;
+-	sll->sll_ifindex = dev->ifindex;
++	/* Look at all traffic types bound for us - includes BC and MC
+*/
++	if (unlikely(po->origdev) && skb->pkt_type == PACKET_HOST)
++		sll->sll_ifindex = orig_dev->ifindex;
++	else
++		sll->sll_ifindex = dev->ifindex;
+ 	sll->sll_halen = 0;
  
--	if (t->flags & _TIF_ABI_PENDING) {
--		t->flags ^= (_TIF_ABI_PENDING | _TIF_IA32);
--		if (t->flags & _TIF_IA32)
-+	if (test_tsk_thread_flag(tsk, TIF_ABI_PENDING)) {
-+		clear_tsk_thread_flag(tsk, TIF_ABI_PENDING);
-+		if (test_tsk_thread_flag(tsk, TIF_IA32)) {
-+			clear_tsk_thread_flag(tsk, TIF_IA32);
-+		} else {
-+			set_tsk_thread_flag(tsk, TIF_IA32);
- 			current_thread_info()->status |= TS_COMPAT;
-+		}
+ 	if (dev->hard_header_parse)
+@@ -673,7 +678,11 @@ static int tpacket_rcv(struct sk_buff *s
+ 	sll->sll_hatype = dev->type;
+ 	sll->sll_protocol = skb->protocol;
+ 	sll->sll_pkttype = skb->pkt_type;
+-	sll->sll_ifindex = dev->ifindex;
++	/* Look at all traffic types bound for us - includes BC and MC
+*/
++	if (unlikely(po->origdev) && skb->pkt_type == PACKET_HOST)
++		sll->sll_ifindex = orig_dev->ifindex;
++	else
++		sll->sll_ifindex = dev->ifindex;
+ 
+ 	h->tp_status = status;
+ 	smp_mb();
+@@ -1413,6 +1422,18 @@ packet_setsockopt(struct socket *sock, i
+ 		po->auxdata = !!val;
+ 		return 0;
  	}
--	t->flags &= ~_TIF_DEBUG;
-+	clear_tsk_thread_flag(tsk, TIF_DEBUG);
++	case PACKET_BONDED_ORIGDEV:
++	{
++		int val;
++
++		if (optlen < sizeof(val))
++			return -EINVAL;
++		if (copy_from_user(&val, optval, sizeof(val)))
++			return -EFAULT;
++
++		po->origdev = !!val;
++		return 0;
++	}
+ 	default:
+ 		return -ENOPROTOOPT;
+ 	}
+@@ -1456,6 +1477,13 @@ static int packet_getsockopt(struct sock
  
- 	tsk->thread.debugreg0 = 0;
- 	tsk->thread.debugreg1 = 0;
+ 		data = &val;
+ 		break;
++	case PACKET_BONDED_ORIGDEV:
++		if (len > sizeof(int))
++			len = sizeof(int);
++		val = po->origdev;
++
++		data = &val;
++		break;
+ 	default:
+ 		return -ENOPROTOOPT;
+ 	}
+
+
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
