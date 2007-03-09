@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992943AbXCIESu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992944AbXCIEUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992943AbXCIESu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 23:18:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992944AbXCIESu
+	id S2992944AbXCIEUi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 23:20:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992947AbXCIEUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 23:18:50 -0500
-Received: from mail.tmr.com ([64.65.253.246]:33386 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992943AbXCIESt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 23:18:49 -0500
-Message-ID: <45F0E0BD.2090204@tmr.com>
-Date: Thu, 08 Mar 2007 23:21:17 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 8 Mar 2007 23:20:38 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:55270 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992944AbXCIEUh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 23:20:37 -0500
+Message-ID: <45F0E014.8060907@zytor.com>
+Date: Thu, 08 Mar 2007 20:18:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
-   scheduler
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <200703050453.08154.gene.heskett@gmail.com> <45EDA9DF.6030305@tmr.com> <200703070706.41676.kernel@kolivas.org>
-In-Reply-To: <200703070706.41676.kernel@kolivas.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Anton Blanchard <anton@samba.org>
+CC: David Miller <davem@davemloft.net>, hch@infradead.org, arjan@infradead.org,
+       zippel@linux-m68k.org, dmlb2000@gmail.com, linux-kernel@vger.kernel.org,
+       gdb@sourceware.org
+Subject: Re: PAGE_SIZE Availability Inconsistency
+References: <20070308175729.GA7054@kryten> <45F05040.4090602@zytor.com> <20070308214236.GA4154@kryten> <20070308.134825.45514445.davem@davemloft.net> <20070309024324.GA24695@kryten>
+In-Reply-To: <20070309024324.GA24695@kryten>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> On Wednesday 07 March 2007 04:50, Bill Davidsen wrote:
-
->> With luck I'll get to shake out that patch in combination with kvm later
->> today.
+Anton Blanchard wrote:
+> Hi,
 > 
-> Great thanks!. I've appreciated all the feedback so far.
+>> I might be missing something but doesn't this break every
+>> SWAP partition that was created with something other than
+>> MIN_PAGE_SIZE?
 > 
-I did try, the 2.6.21-rc3-git3 doesn't want to kvm for me, and your 
-patch may not be doing what it should. I'm falling back to 2.6.20 and 
-will retest after I document my kvm issues.
+> It does. I was thinking we could work around it in ppc64 (64kB is quite
+> new), but I forgot there are options on sparc64 to change the page size :)
+> 
+> The other option is to create a v3 swap format that doesnt use any
+> PAGE_SIZE parameters.
+> 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+The best thing to do would be to look for the magic both at PAGE_SIZE 
+(for compatibility) and MIN_PAGE_SIZE (for sanity.)
+
+	-hpa
