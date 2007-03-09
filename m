@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbXCIReb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbXCIRel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752693AbXCIReb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 12:34:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbXCIRea
+	id S1752699AbXCIRel (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 12:34:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbXCIRel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 12:34:30 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:55107 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752693AbXCIRe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 12:34:29 -0500
-Date: Fri, 9 Mar 2007 18:30:32 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Amin Azez <azez@ufomechanic.net>
-cc: Patrick McHardy <kaber@trash.net>, James Morris <jmorris@namei.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>
-Subject: Re: [PATCH] chaostables
-In-Reply-To: <45F14AE9.90009@ufomechanic.net>
-Message-ID: <Pine.LNX.4.61.0703091523200.8799@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr>
- <20070308131412.08d9973e@lxorguk.ukuu.org.uk> <Line.LNX.4.64.0703080955060.8029@d.namei>
- <Pine.LNX.4.61.0703081652310.2448@yvahk01.tjqt.qr> <45F044A0.50001@trash.net>
- <Pine.LNX.4.61.0703082112300.521@yvahk01.tjqt.qr> <45F12A69.1060406@ufomechanic.net>
- <Pine.LNX.4.61.0703091106280.8799@yvahk01.tjqt.qr> <45F14AE9.90009@ufomechanic.net>
+	Fri, 9 Mar 2007 12:34:41 -0500
+Received: from wr-out-0506.google.com ([64.233.184.235]:7775 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752699AbXCIRej convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 12:34:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=G7mupmqae0pjw7o0Iv2l/v6UJUfoU7rAQHtcfV53eF/eI5nU8t2TT1/04tP6VYKlerQJ1vvP/WxkEQyHgDM8EVCyJWyce/IjiaaUsVRAublVTbISJwj7geHAE51guYnukzvINKC74/YLiYWzmgv7gGb5wtqyQQAHTU/GgFwwo8k=
+Message-ID: <d120d5000703090934r45c39f74l2a51eda986b1f07b@mail.gmail.com>
+Date: Fri, 9 Mar 2007 12:34:38 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Oliver Neukum" <oneukum@suse.de>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Maneesh Soni" <maneesh@in.ibm.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200703091818.57456.oneukum@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <Pine.LNX.4.44L0.0703091124570.2611-100000@iolanthe.rowland.org>
+	 <200703091745.00169.oneukum@suse.de>
+	 <d120d5000703090902v6ae88c75ibe18ff0de3e5276d@mail.gmail.com>
+	 <200703091818.57456.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-
-On Mar 9 2007 11:54, Amin Azez wrote:
->> Adding a member to the ip_conntrack/nf_conntrack and sk_buff struct
->> would increase the struct sizes, and that would penalize users who do
->> not intend to use xt_portscan.
+On 3/9/07, Oliver Neukum <oneukum@suse.de> wrote:
+> Am Freitag, 9. März 2007 18:02 schrieb Dmitry Torokhov:
 >
->I understand what you say but it sounds a bit like saying: "but we didn't
->make it very good because so few people would use it anyway" which of
->course makes it even less attractive. I realise you have your own
->interpretation but this is how it reads to me.
-
-I just gave the reason why I designed it the way it is now. If you 
-really feel it needs to be changed, well, I don't really object to that. 
-chaostables has only seen like.. 1 1/2 version announcements (urls to 
-tarballs, no patches) to mailing lists, and except for the few users who 
-definitely tried it (based on questions I received), there have not been 
-any suggestions for changes yet, which either tells me that nobody is 
-interested or everything is fine.
-
->> I do not see why the packet/connection marks should not be used to record
->> additional information
->...
->> Almost never I required connection marking myself 
->I guessed as much. I use it heavily, with my xml rule generators.
->> except for this
->> portscanning automaton and perhaps a little MARK here and there for
->> finely-tuned SNAT. Again, things might look different on your side(s).
+> > I think we already have all refcounting that is needed. What is
+> > missing is subsystem-provided ->release() hooks for drivers to release
+> > driver-specific resources when a device finally goes away.
 >
->There's too many things fighting over the same few bits of the mark, and
->in your case you are using it to track internal state of a connection
->that has no relevance to the rest of the iptables/ebtables rules.
+> This is an interesting idea. Is it nice to pass through release()
+> but not open() ?
 >
->I'm suggesting that some of the people who would want to use the chaos
->match, won't because of the mark issue.
->
->This is not a new problem.
->
->http://article.gmane.org/gmane.comp.security.firewalls.netfilter.devel/16217
 
-	"""netfilter marks are the solution of last resort. This is
-	becoming very painful for those of us who produce general
-	Netfilter configuration tools.""" -Toam Eastep
+Not sure if I follow... Generally speaking open is not a mandatory
+operation; however every object in driver model has a release method.
+What I am saying is that certain drivers need to have their disconnect
+method split in 2 parts - one that shuts down the device and second is
+releases resources that might be accesses through sysfs (and other
+kernel parts). That second part will have to be called from
+subsystem's core ->release() method se we need a release() hook.
 
-I see. Thank you for the link. I think you are on the way to have me 
-convinced.
-
-
-
-Jan
 -- 
+Dmitry
