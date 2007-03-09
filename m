@@ -1,98 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993083AbXCIJHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbXCIJIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993083AbXCIJHO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 04:07:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXCIJHO
+	id S1752666AbXCIJIJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 04:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXCIJII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 04:07:14 -0500
-Received: from depni.sinp.msu.ru ([213.131.7.21]:42977 "EHLO depni.sinp.msu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752662AbXCIJHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 04:07:10 -0500
-To: Matt Mackall <mpm@selenic.com>
-Cc: Con Kolivas <kernel@kolivas.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-References: <20070309053931.GA10459@waste.org>
-	<200703091728.03978.kernel@kolivas.org>
-	<20070309075358.GA10394@waste.org>
-	<200703091936.47128.kernel@kolivas.org>
-From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Date: Fri, 09 Mar 2007 12:07:06 +0300
-In-Reply-To: <200703091936.47128.kernel@kolivas.org> (Con Kolivas's message of "Fri\, 9 Mar 2007 19\:36\:46 +1100")
-Message-ID: <87slce945h.fsf@depni.sinp.msu.ru>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
-MIME-Version: 1.0
+	Fri, 9 Mar 2007 04:08:08 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:42427 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752666AbXCIJIG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 04:08:06 -0500
+Date: Fri, 9 Mar 2007 10:08:05 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Johnson <ajohnson@intrinsyc.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Software Suspend: Fix suspend when console is in VT_AUTO/KD_GRAPHICS mode
+Message-ID: <20070309090805.GA5822@atrey.karlin.mff.cuni.cz>
+References: <1173394485.28589.17.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173394485.28589.17.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas <kernel@kolivas.org> writes:
+Hi!
 
-> On Friday 09 March 2007 18:53, Matt Mackall wrote:
-...
->>
->> With a single non-parallel make running (all in cache, mind you), the
->> system kicks up into just about 100% CPU usage at full speed. Desktop
->> spinning becomes between 10x to 100x slower (from ~30fps to < 1fps).
->> Galeon scrolling pauses for as much as a second. Mouse movement pauses
->> for as much as a second. Typing in terminals lags noticeably.
->>
->> This is not the expected behavior of a fair, low-latency scheduler.
->
-> No indeed it does not sound right at all to me either. Last time I encountered 
-> something like this we traced it and hit sched_yield calls somewhere in the 
-> graphic pipeline. So first question is, how does mainline perform with the 
-> same testcase, and second question is umm whatever it is that is slow is 
-> there a way to trace it to see if it yields?
+> When the console is in VT_AUTO/KD_GRAPHICS mode, switching to the
+> SUSPEND_CONSOLE fails, resulting in vt_waitactive() waiting indefinately
+> or until the task is interrupted.  The following patch tests if a
+> console switch can occur in set_console() and returns early if a console
+> switch is not possible.
 
-Matt, some 3d drivers are known to do sched_yield() behind user's back,
+Your mailer wraps lines...
 
-(notably dri radeon ones, grep for sched_yield:
-http://webcvs.freedesktop.org/mesa/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c?revision=1.37&view=markup
-http://webcvs.freedesktop.org/mesa/Mesa/src/mesa/drivers/dri/r300/radeon_ioctl.c?revision=1.14&view=markup)
+How do I reproduce this? Suspending from X works for me...?
 
-thus absolutely killing any desktop interactivity whatsoever.
+> Signed-off-by: Andrew Johnson <ajohnson@intrinsyc.com>
+> 
+> diff -rup linux-2.6.20.1/drivers/char/vt.c linux/drivers/char/vt.c
+> --- linux-2.6.20.1/drivers/char/vt.c	2007-02-19 22:34:32.000000000 -0800
+> +++ linux/drivers/char/vt.c	2007-03-08 14:15:41.000000000 -0800
+> @@ -2188,10 +2188,20 @@ static void console_callback(struct work
+>  	release_console_sem();
+>  }
+>  
+> -void set_console(int nr)
+> +extern char vt_dont_switch;
+> +
+> +int set_console(int nr)
+>  {
+> +	struct vc_data *vc = vc_cons[fg_console].d;
+> +
+> +	if(!vc_cons_allocated(nr) || vt_dont_switch || vc->vc_mode ==
+> KD_GRAPHICS) {
+> +		return -EINVAL;
+> +	}
+> +
 
-If you see sched_yield() when stracing any 3d program, I suggest you
-to try this bruteforce workaround, which works fine for me,
-disable sched_yield():
-
-
- kernel/sched.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -4285,7 +4285,7 @@ asmlinkage long sys_sched_getaffinity(pi
-  * This function yields the current CPU by dropping the priority of current
-  * to the lowest priority.
-  */
--asmlinkage long sys_sched_yield(void)
-+static long sys_sched_yield1(void)
- {
- 	struct rq *rq = this_rq_lock();
- 	struct task_struct *p = current;
-@@ -4312,6 +4312,11 @@ asmlinkage long sys_sched_yield(void)
- 	return 0;
- }
- 
-+asmlinkage long sys_sched_yield(void)
-+{
-+	return 0;
-+}
-+
- static void __cond_resched(void)
- {
- #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
-@@ -4395,7 +4400,7 @@ EXPORT_SYMBOL(cond_resched_softirq);
- void __sched yield(void)
- {
- 	set_current_state(TASK_RUNNING);
--	sys_sched_yield();
-+	sys_sched_yield1();
- }
- EXPORT_SYMBOL(yield);
- 
+So... if current console is graphical, we leave X accessing the
+console... That's bad, because video state is not going to be
+restored...?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
