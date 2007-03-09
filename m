@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767153AbXCIKxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767158AbXCIKyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767153AbXCIKxF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 05:53:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767158AbXCIKxF
+	id S1767158AbXCIKyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 05:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767165AbXCIKyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 05:53:05 -0500
-Received: from wr-out-0506.google.com ([64.233.184.237]:60331 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767153AbXCIKxC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 05:53:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jwuoEorFZVOzkRtSxb9YxBt81iQekaom0/PPbMLLIyddOfUsAylcXxr0pJqpDs4VELv6x0lQy6W42l4DJ5Y0yibtVOG3G9oUKGZrVg+3lRV5tA1oamKPpvfHrTatjqtnMwoWqXV8ALNVnxzhqkD+Ys12+5kkMxhLmvo0Z2/3D+Q=
-Message-ID: <b0943d9e0703090253r690e1f21qf8d7a1edfd08561b@mail.gmail.com>
-Date: Fri, 9 Mar 2007 10:53:01 +0000
-From: "Catalin Marinas" <catalin.marinas@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: Possible "struct pid" leak from tty_io.c
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
+	Fri, 9 Mar 2007 05:54:20 -0500
+Received: from holomorphy.com ([66.93.40.71]:37302 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767158AbXCIKyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 05:54:19 -0500
+Date: Fri, 9 Mar 2007 02:54:11 -0800
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bill Davidsen <davidsen@tmr.com>, Ed Tomlinson <edt@aei.ca>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Revell <rlrevell@joe-job.com>,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Message-ID: <20070309105411.GD2986@holomorphy.com>
+References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com> <200703051419.25814.gene.heskett@gmail.com> <200703052123.29421.edt@aei.ca> <Pine.LNX.4.64.0703051849410.3998@woody.linux-foundation.org> <45F0DCB7.5020908@tmr.com> <Pine.LNX.4.64.0703082226530.10832@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
-	 <m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <Pine.LNX.4.64.0703082226530.10832@woody.linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> "Catalin Marinas" <catalin.marinas@gmail.com> writes:
-> > I'm trying to track down a kmemleak report (on an ARM platform) which
-> > seems to have appeared with commit
-> > ab521dc0f8e117fd808d3e425216864d60390500. As I'm not familiar with the
-> > TTY layer at all, is it possible that the above commit missed a
-> > put_pid() call on some path?
->
-> I won't arbitrarily rule a missing put_pid out.  I have been know to
-> goof up upon occasion.
+On Thu, Mar 08, 2007 at 10:31:48PM -0800, Linus Torvalds wrote:
+> No. Really.
+> I absolutely *detest* pluggable schedulers. They have a huge downside: 
+> they allow people to think that it's ok to make special-case schedulers. 
+> And I simply very fundamentally disagree.
+> If you want to play with a scheduler of your own, go wild. It's easy 
+> (well, you'll find out that getting good results isn't, but that's a 
+> different thing). But actual pluggable schedulers just cause people to 
+> think that "oh, the scheduler performs badly under circumstance X, so 
+> let's tell people to use special scheduler Y for that case".
+> And CPU scheduling really isn't that complicated. It's *way* simpler than 
+> IO scheduling. There simply is *no*excuse* for not trying to do it well 
+> enough for all cases, or for having special-case stuff.
+> But even IO scheduling actually ends up being largely the same. Yes, we 
+> have pluggable schedulers, and we even allow switching them, but in the 
+> end, we don't want people to actually do it. It's much better to have a 
+> scheduler that is "good enough" than it is to have five that are "perfect" 
+> for five particular cases.
 
-I'm not entirely sure it's this part of the code, I would have to do
-some more investigations (I didn't get this leak before). An
-"unscientific" test shows that if I define get_pid/put_pid in the
-tty_io.c file so that pid->count is not affected, the leak disappears.
-This doesn't necessarily prove that the fault is here though.
+For the most part I was trying to assist development, but ran out of
+patience and interest before getting much of anywhere. The basic idea
+was to be able to fork over a kernel to a benchmark team and have them
+run head-to-head comparisons, switching schedulers on the fly,
+particularly on machines that took a very long time to boot. The
+concept ideally involved making observations and loading fresh
+schedulers based on them as kernel modules on the fly. I was more
+interested in rapid incremental changes than total rewrites, though I
+considered total rewrites to be tests of adequacy, since somewhere in
+the back of my mind I had thoughts about experimenting with gang
+scheduling policies on those machines taking very long times to boot.
 
-> I just did a quick look to see what kmemleak is.  A conservative
-> tracing leak detector sounds interesting.  Except for all of the list
-> heads which lead to container_of calls I don't know of anything in the
-> struct pid implementation that would be difficult for it to work with.
-> Well that and there is some rcu access protection which can delay the
-> free by a bit.
+What actually got written, the result of it being picked up by others,
+and how it's getting used are all rather far from what I had in mind,
+not that I'm offended in the least by any of it. I also had little or
+no interest in mainline for it. The intention was more on the order of
+an elaborate instrumentation patch for systems where the time required
+to reboot is prohibitive and the duration of access strictly limited.
+(In fact, downward-revised estimates of the likelihood of such access
+also factored into the abandonment of the codebase.)
 
-Kmemleak can cope with list heads and rcu delayed freeing as it also
-checks for pointer aliases (those accessible via container_of).
+I consider policy issues to be hopeless political quagmires and
+therefore stick to mechanism. So even though I may have started the
+code in question, I have little or nothing to say about that sort of
+use for it.
 
-> > The /sbin/init application calls sys_clone() a few times but only one
-> > leak is reported (see below). Looking at the reported pid object (at
-> > 0xc7c14500), count is 2 and nr is 296 but no process with pid 296
-> > exists any more.
->
-> It could still be a valid session or a process group id.
-> If you examine the struct pid you can test for this be examining all
-> of the list heads it keeps.  If there is something on any of the
-> lists that would account a count of 1.  How we have a count of 2
-> I don't have enough information to guess.
+There's my longwinded excuse for having originated that tidbit of code.
 
-I think it's only the pid_chain and rcu member that could be placed in
-a list and kmemleak scans the memory for these two offsets as well.
-I'll check those lists anyway but I doubt it's a more fundamental
-problem with how kmemleak handles struct pid as I should've probably
-got more reports.
 
-> In most any other layer we cache pids indefinitely and a situation
-> where we have a pointer to a struct pid with a ref count of 1 long
-> after the process goes away is expected.
-
-Yes, indeed, but what kmemleak reports is that the pid structure
-wasn't freed yet and there is no way to determine its pointer directly
-or via container_of on members (by scanning the memory), hence it is
-considered a leak.
-
-> I don't understand your situation enough to guess what is going wrong
-> yet.  Hopefully I have given you enough information to get started.
-
-Yes, many thanks. I'll dig further and let you know.
-
--- 
-Catalin
+-- wli
