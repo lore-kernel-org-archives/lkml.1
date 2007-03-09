@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993040AbXCIHhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993061AbXCIHht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993040AbXCIHhP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 02:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993061AbXCIHhP
+	id S2993061AbXCIHht (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 02:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993072AbXCIHhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 02:37:15 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2524 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993040AbXCIHhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 02:37:12 -0500
-Date: Wed, 7 Mar 2007 21:07:17 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] swsusp: Disable nonboot CPUs before entering platform suspend
-Message-ID: <20070307210716.GA4913@ucw.cz>
-References: <200703072044.12021.rjw@sisk.pl>
-Mime-Version: 1.0
+	Fri, 9 Mar 2007 02:37:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50994 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993067AbXCIHhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 02:37:22 -0500
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703072044.12021.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: David Howells <dhowells@redhat.com>
+X-Fcc: ~/Mail/utrace
+Cc: bryan.wu@analog.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] utrace: nommu fixup support utrace 
+In-Reply-To: David Howells's message of  Wednesday, 7 March 2007 11:10:37 +0000 <7689.1173265837@redhat.com>
+X-Shopping-List: (1) Courteous non-reloading hay
+   (2) Religious aspersions
+   (3) Neurotic dice
+   (4) Delicious expectation hatred
+Message-Id: <20070309073711.7105B180063@magilla.sf.frob.com>
+Date: Thu,  8 Mar 2007 23:37:11 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+I understand the NOMMU situation, and you are already screwed by
+PTRACE_ATTACH.  What I meant to suggest is that I would start from a
+safety point of view with get_user_pages/access_process_vm refusing to
+do force&&write to MAP_PRIVATE pages that are in fact being shared
+(ETXTBSY or something).  (When it's not being shared, it should do
+whatever is necessary to make sure that page is known dirty and not
+hand it out for later mappings.)  Then you can go about trying to make
+the safe (no sharing) case come about when you want it.  You still
+won't win with PTRACE_ATTACH and the like unless you happen not to
+have sharing in the places you insert your breakpoints at the time.
+But at least the debugger will just lose, instead of breaking
+unsuspecting processes.  With the utrace patches, you can approximate
+the ptrace check you had with something like:
 
-> Prevent the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
-> from triggering by disabling nonboot CPUs before we finally enter the platform
-> suspend.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/disk.c |    1 +
->  kernel/power/user.c |    2 +-
->  2 files changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.21-rc2-mm2/kernel/power/disk.c
-> ===================================================================
-> --- linux-2.6.21-rc2-mm2.orig/kernel/power/disk.c
-> +++ linux-2.6.21-rc2-mm2/kernel/power/disk.c
-> @@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
->  	switch(mode) {
->  	case PM_DISK_PLATFORM:
->  		if (pm_ops && pm_ops->enter) {
-> +			disable_nonboot_cpus();
->  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
->  			pm_ops->enter(PM_SUSPEND_DISK);
->  			break;
+	if (tracehook_consider_fatal_signal(current, SIGTRAP))
 
-...so, if pm_ops is non-null, power_down does nonboot cpu disabling,
-otherwise we proceed with cpus enabled?
+or whatever signal you think poking text might result in that the
+debugger will be looking for (atm it doesn't actually matter what
+signo you pass).  This returns true when ptrace is in use, and
+probably also for later utrace-based ways a debugger attaches if it is
+expecting ahead of time to be debugging heavily as with breakpoints.
+(And that's about the best you can do for a single address space system.)
 
-That looks ugly.
 
-Is the warning bogus? Or maybe we should *always* disable nonboot cpus
-in powerdown path?
-
-> Index: linux-2.6.21-rc2-mm2/kernel/power/user.c
-> ===================================================================
-> --- linux-2.6.21-rc2-mm2.orig/kernel/power/user.c
-> +++ linux-2.6.21-rc2-mm2/kernel/power/user.c
-> @@ -398,9 +398,9 @@ static int snapshot_ioctl(struct inode *
->  
->  		case PMOPS_ENTER:
->  			if (data->platform_suspend) {
-> +				disable_nonboot_cpus();
->  				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
->  				error = pm_ops->enter(PM_SUSPEND_DISK);
-> -				error = 0;
->  			}
->  			break;
-
-Foe an userland application, disabling cpus during pmops_enter is at
-least surprising.......
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Roland
