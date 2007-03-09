@@ -1,48 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993059AbXCIH3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993064AbXCIHbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993059AbXCIH3P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 02:29:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993064AbXCIH3L
+	id S2993064AbXCIHbG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 02:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993065AbXCIHbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 02:29:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46271
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2993058AbXCIH3I (ORCPT
+	Fri, 9 Mar 2007 02:31:05 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:8693 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993064AbXCIHbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 02:29:08 -0500
-Date: Thu, 08 Mar 2007 23:29:08 -0800 (PST)
-Message-Id: <20070308.232908.92582631.davem@davemloft.net>
-To: amit2030@gmail.com
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] [REVISED] net/ipv4/multipath_wrandom.c: check
- kmalloc() return value.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070308232215.aa512aaa.amit2030@gmail.com>
-References: <20070308232215.aa512aaa.amit2030@gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 9 Mar 2007 02:31:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=qE1YgEA52XzZhKlaF83nZjqKg9rCjjxZWv1QMWQ6bTYCym59/Yq5FVwQDojWpar6ZeBxA1krdMjWYKJ5d3N2MfhroHGxoXfveKfWxHmdHES4LK0fxiQaqE+h5gkWkHSngUHWVUHReAktVsJWyDmAZV2/xasiowostK4T/pfGOtY=
+Date: Thu, 8 Mar 2007 23:30:49 -0800
+From: Amit Choudhary <amit2030@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] drivers/media/video/se401.c: check kmalloc() return value.
+Message-Id: <20070308233049.1c1f850c.amit2030@gmail.com>
+Organization: X
+X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.8.15; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amit Choudhary <amit2030@gmail.com>
-Date: Thu, 8 Mar 2007 23:22:15 -0800
+Description: Check the return value of kmalloc() in function se401_start_stream(), in file drivers/media/video/se401.c.
 
-> Description: Check the return value of kmalloc() in function wrandom_set_nhinfo(), in file net/ipv4/multipath_wrandom.c.
-> 
-> Signed-off-by: Amit Choudhary <amit2030@gmail.com>
+Signed-off-by: Amit Choudhary <amit2030@gmail.com>
 
-This kind of patch has been submitted several times before and it's
-never accepted because you have to do much more than this to recover
-from the allocation error.
-
-There is no error status returned to the caller, so the callers assume
-the operation succeeded, and will either OOPS or crash in some other
-way.
-
-Therefore, just adding some NULL pointer checks and returning is not
-going to fix this bug.
-
-The whole cahce-multipath subsystem has to have it's guts revamped for
-proper error handling.
+diff --git a/drivers/media/video/se401.c b/drivers/media/video/se401.c
+index 7aeec57..006c818 100644
+--- a/drivers/media/video/se401.c
++++ b/drivers/media/video/se401.c
+@@ -450,6 +450,13 @@ static int se401_start_stream(struct usb
+ 	}
+ 	for (i=0; i<SE401_NUMSBUF; i++) {
+ 		se401->sbuf[i].data=kmalloc(SE401_PACKETSIZE, GFP_KERNEL);
++		if (!se401->sbuf[i].data) {
++			for(i = i - 1; i >= 0; i--) {
++				kfree(se401->sbuf[i].data);
++				se401->sbuf[i].data = NULL;
++			}
++			return -ENOMEM;
++		}
+ 	}
+ 
+ 	se401->bayeroffset=0;
+@@ -458,13 +465,26 @@ static int se401_start_stream(struct usb
+ 	se401->scratch_overflow=0;
+ 	for (i=0; i<SE401_NUMSCRATCH; i++) {
+ 		se401->scratch[i].data=kmalloc(SE401_PACKETSIZE, GFP_KERNEL);
++		if (!se401->scratch[i].data) {
++			for(i = i - 1; i >= 0; i--) {
++				kfree(se401->scratch[i].data);
++				se401->scratch[i].data = NULL;
++			}
++			goto nomem_sbuf;
++		}
+ 		se401->scratch[i].state=BUFFER_UNUSED;
+ 	}
+ 
+ 	for (i=0; i<SE401_NUMSBUF; i++) {
+ 		urb=usb_alloc_urb(0, GFP_KERNEL);
+-		if(!urb)
+-			return -ENOMEM;
++		if(!urb) {
++			for(i = i - 1; i >= 0; i--) {
++				usb_kill_urb(se401->urb[i]);
++				usb_free_urb(se401->urb[i]);
++				se401->urb[i] = NULL;
++			}
++			goto nomem_scratch;
++		}
+ 
+ 		usb_fill_bulk_urb(urb, se401->dev,
+ 			usb_rcvbulkpipe(se401->dev, SE401_VIDEO_ENDPOINT),
+@@ -482,6 +502,18 @@ static int se401_start_stream(struct usb
+ 	se401->framecount=0;
+ 
+ 	return 0;
++
++ nomem_scratch:
++	for (i=0; i<SE401_NUMSCRATCH; i++) {
++		kfree(se401->scratch[i].data);
++		se401->scratch[i].data = NULL;
++	}
++ nomem_sbuf:
++	for (i=0; i<SE401_NUMSBUF; i++) {
++		kfree(se401->sbuf[i].data);
++		se401->sbuf[i].data = NULL;
++	}
++	return -ENOMEM;
+ }
+ 
+ static int se401_stop_stream(struct usb_se401 *se401)
