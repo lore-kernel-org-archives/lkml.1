@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767196AbXCILUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767198AbXCILVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767196AbXCILUu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 06:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767174AbXCILUu
+	id S1767198AbXCILVd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 06:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767199AbXCILVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 06:20:50 -0500
-Received: from holomorphy.com ([66.93.40.71]:48177 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767196AbXCILUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 06:20:49 -0500
-Date: Fri, 9 Mar 2007 03:20:18 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: David Miller <davem@davemloft.net>
-Cc: mathieu.desnoyers@polymtl.ca, akpm@linux-foundation.org, mbligh@google.com,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH] Fix sparc TIF_USEDFPU flag atomicity
-Message-ID: <20070309112018.GB2994@holomorphy.com>
-References: <20070309031227.GC9462@Krystal> <20070308.212523.45514581.davem@davemloft.net>
+	Fri, 9 Mar 2007 06:21:32 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42667 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767197AbXCILVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 06:21:30 -0500
+Date: Fri, 9 Mar 2007 12:21:18 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-ID: <20070309112118.GC3925@elf.ucw.cz>
+References: <20070302220454.a0c66d04.khali@linux-fr.org> <B28E9812BAF6E2498B7EC5C427F293A402021B07@orsmsx415.amr.corp.intel.com> <20070309071855.GA5148@ucw.cz> <20070309112420.42420cf2.khali@linux-fr.org> <45F13965.2030709@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070308.212523.45514581.davem@davemloft.net>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <45F13965.2030709@linux.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007 22:12:27 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
->> Fix sparc TIF_USEDFPU flag atomicity
->> Non atomic update of TIF can be very dangerous, except at thread structure
->> creation time. Here I standardize the TIF_USEDFPU usage of the sparc arch.
->> Applies on 2.6.20.
->> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Hi!
 
-On Thu, Mar 08, 2007 at 09:25:23PM -0800, David Miller wrote:
-> Also applied, thanks a lot.
+> >>Can you take this as a wishlist item?
+> >>
+> >>It would be nice if next version of acpi specs supported table
+> >>
+> >>'AML / SMM BIOS will access these ports'
+> >>
+> >>...so we can get it correct with acpi4 or something..?
+> >>    
+> >
+> >I can only second Pavel's wish here. This would be highly convenient
+> >for OS developers to at least know which resources are accessed by AML
+> >and SMM. Without this information, we can never be sure that OS-level
+> >code won't conflict with ACPI or SMM.
+> >
+> >  
+> BIOS vendors are not required to support latest and greatest ACPI spec. 
+> So even if some future spec version
+> will include this ports description, we will still have majority of 
+> hardware not exporting it...
 
-Thanks again for doing just about everything here while I get my act
-back together (never mind how preposterously long it's taking).
-
-Acked-by: William Irwin <wli@holomorphy.com>
-
-
--- wli
+That's okay... vendors are not required to support _ACPI_, but they
+mostly do. Can we get the "ports used by BIOS" table to the spec?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
