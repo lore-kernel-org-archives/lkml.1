@@ -1,138 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992882AbXCICLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992887AbXCICP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992882AbXCICLu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 21:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992883AbXCICLt
+	id S2992887AbXCICP4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 21:15:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992888AbXCICP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 21:11:49 -0500
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:32835 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992882AbXCICLs (ORCPT
+	Thu, 8 Mar 2007 21:15:56 -0500
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:62844 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992887AbXCICPz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 21:11:48 -0500
-Date: Fri, 9 Mar 2007 13:11:46 +1100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, jgarzik@pobox.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm2: drivers/net/wireless/libertas/debugfs.c addr bogosity
-Message-ID: <20070309021146.GL4575@bakeyournoodle.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Adrian Bunk <bunk@stusta.de>, jgarzik@pobox.com,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <20070307224116.GE3441@stusta.de> <20070307150057.4e6342dc.akpm@linux-foundation.org>
+	Thu, 8 Mar 2007 21:15:55 -0500
+Date: Thu, 8 Mar 2007 21:15:53 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Rebecca Schultz <rschultz@google.com>
+Cc: Andi Kleen <ak@suse.de>, "Martin J. Bligh" <mbligh@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix atomicity of TIF update in flush_thread() for x86_64
+Message-ID: <20070309021553.GA8387@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070307150057.4e6342dc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
-From: tony@bakeyournoodle.com (Tony Breeds)
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 21:13:03 up 34 days, 16:20,  5 users,  load average: 1.27, 1.44, 1.52
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 03:00:57PM -0800, Andrew Morton wrote:
-> On Wed, 7 Mar 2007 23:41:16 +0100
-> Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> > On Tue, Mar 06, 2007 at 12:44:08AM -0800, Andrew Morton wrote:
-> > >...
-> > > Changes since 2.6.20-rc2-mm1:
-> > >...
-> > >  git-netdev-all.patch
-> > >...
-> > >  git trees
-> > >...
-> > 
-> > drivers/net/wireless/libertas/debugfs.c contains:
-> >   #define item_addr(n) ((u32) &((wlan_adapter *)0)->n)
-> > 
-> > This is wrong on 64bit architectures.
-> 
-> Is OK - it is simply yet another reimplementation of offsetof().  Hint.
+Fix atomicity of TIF update in flush_thread() for x86_64
 
-Perhaps something like?
+Race :
 
-Against 2.6.21-rc3-mm2
+parent process executing :
+sys_ptrace()
+ (lock_kernel())
+ (ptrace_get_task_struct(pid))
+ arch_ptrace()
+   ptrace_detach()
+     ptrace_disable(child);
+       clear_singlestep(child);
+         clear_tsk_thread_flag(child, TIF_SINGLESTEP);
+         (which clears the TIF_SINGLESTEP flag atomically from a different
+	  process)
+ (put_task_struct(child))
+ (unlock_kernel())
 
-From: Tony Breeds <tony@bakeyournoodle.com>
+And at the same time, in the child process :
+sys_execve()
+ do_execve()
+   search_binary_handler()
+     load_elf_binary()
+       flush_old_exec()
+         flush_thread()
+           doing a non-atomic thread flag update 
 
-Cleanup drivers/net/wireless/libertas/debugfs.c to use standard kernel macros and functions.
+It applies on 2.6.20.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Signed-off-by: Rebecca Schultz <rschultz@google.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
----
-only compile tested on x86
-
- debugfs.c |   41 ++++-------------------------------------
- 1 file changed, 4 insertions(+), 37 deletions(-)
-
-diff --git a/drivers/net/wireless/libertas/debugfs.c b/drivers/net/wireless/libertas/debugfs.c
-index 3ad1e03..51dfd20 100644
---- a/drivers/net/wireless/libertas/debugfs.c
-+++ b/drivers/net/wireless/libertas/debugfs.c
-@@ -1772,8 +1772,8 @@ void libertas_debugfs_remove_one(wlan_private *priv)
+--- a/arch/x86_64/kernel/process.c
++++ b/arch/x86_64/kernel/process.c
+@@ -385,14 +385,17 @@ void exit_thread(void)
+ void flush_thread(void)
+ {
+ 	struct task_struct *tsk = current;
+-	struct thread_info *t = current_thread_info();
  
- /* debug entry */
+-	if (t->flags & _TIF_ABI_PENDING) {
+-		t->flags ^= (_TIF_ABI_PENDING | _TIF_IA32);
+-		if (t->flags & _TIF_IA32)
++	if (test_tsk_thread_flag(tsk, TIF_ABI_PENDING)) {
++		clear_tsk_thread_flag(tsk, TIF_ABI_PENDING);
++		if (test_tsk_thread_flag(tsk, TIF_IA32)) {
++			clear_tsk_thread_flag(tsk, TIF_IA32);
++		} else {
++			set_tsk_thread_flag(tsk, TIF_IA32);
+ 			current_thread_info()->status |= TS_COMPAT;
++		}
+ 	}
+-	t->flags &= ~_TIF_DEBUG;
++	clear_tsk_thread_flag(tsk, TIF_DEBUG);
  
--#define item_size(n) (sizeof ((wlan_adapter *)0)->n)
--#define item_addr(n) ((u32) &((wlan_adapter *)0)->n)
-+#define item_size(n)	(FIELD_SIZEOF(wlan_adapter, n))
-+#define item_addr(n)	(offsetof(wlan_adapter, n))
- 
- struct debug_data {
- 	char name[32];
-@@ -1789,40 +1789,7 @@ static struct debug_data items[] = {
- 	{"psstate", item_size(psstate), item_addr(psstate)},
- };
- 
--static int num_of_items = sizeof(items) / sizeof(items[0]);
--
--/**
-- *  @brief convert string to number
-- *
-- *  @param s   	   pointer to numbered string
-- *  @return 	   converted number from string s
-- */
--static int string_to_number(char *s)
--{
--	int r = 0;
--	int base = 0;
--
--	if ((strncmp(s, "0x", 2) == 0) || (strncmp(s, "0X", 2) == 0))
--		base = 16;
--	else
--		base = 10;
--
--	if (base == 16)
--		s += 2;
--
--	for (s = s; *s != 0; s++) {
--		if ((*s >= 48) && (*s <= 57))
--			r = (r * base) + (*s - 48);
--		else if ((*s >= 65) && (*s <= 70))
--			r = (r * base) + (*s - 55);
--		else if ((*s >= 97) && (*s <= 102))
--			r = (r * base) + (*s - 87);
--		else
--			break;
--	}
--
--	return r;
--}
-+static int num_of_items = ARRAY_SIZE(items);
- 
- /**
-  *  @brief proc read function
-@@ -1912,7 +1879,7 @@ static int wlan_debugfs_write(struct file *f, const char __user *buf,
- 			if (!p2)
- 				break;
- 			p2++;
--			r = string_to_number(p2);
-+			r = simple_strtoul(p2, NULL, 0);
- 			if (d[i].size == 1)
- 				*((u8 *) d[i].addr) = (u8) r;
- 			else if (d[i].size == 2)
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-
+ 	tsk->thread.debugreg0 = 0;
+ 	tsk->thread.debugreg1 = 0;
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
