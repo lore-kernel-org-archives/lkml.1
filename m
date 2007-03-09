@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965805AbXCIUJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767473AbXCIUNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965805AbXCIUJP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965516AbXCIUJP
+	id S1767473AbXCIUNU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767474AbXCIUNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:09:15 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4307 "EHLO
+	Fri, 9 Mar 2007 15:13:20 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4311 "EHLO
 	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767471AbXCIUJO (ORCPT
+	with ESMTP id S1767473AbXCIUNT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:09:14 -0500
-Date: Fri, 9 Mar 2007 20:08:50 +0000
+	Fri, 9 Mar 2007 15:13:19 -0500
+Date: Fri, 9 Mar 2007 20:13:08 +0000
 From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Jean Delvare <khali@linux-fr.org>, Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070309200850.GA8444@flint.arm.linux.org.uk>
-Mail-Followup-To: David Brownell <david-b@pacbell.net>,
-	Haavard Skinnemoen <hskinnemoen@atmel.com>,
-	Jean Delvare <khali@linux-fr.org>, Bryan Wu <bryan.wu@analog.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-References: <200703090945.38880.david-b@pacbell.net> <11734661281633-git-send-email-hskinnemoen@atmel.com> <200703091130.13547.david-b@pacbell.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       sam@ravnborg.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] Complain about missing system calls.
+Message-ID: <20070309201308.GB8444@flint.arm.linux.org.uk>
+Mail-Followup-To: "H. Peter Anvin" <hpa@zytor.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	sam@ravnborg.org, linux-arch@vger.kernel.org
+References: <1173394873.3461.510.camel@pmac.infradead.org> <p737itqbdnl.fsf@bingen.suse.de> <20070309163805.GV18564@lug-owl.de> <45F1B818.4090007@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200703091130.13547.david-b@pacbell.net>
+In-Reply-To: <45F1B818.4090007@zytor.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 11:30:12AM -0800, David Brownell wrote:
-> On Friday 09 March 2007 10:48 am, Haavard Skinnemoen wrote:
-> > This is a very simple bitbanging i2c bus driver utilizing the new
-> > arch-neutral GPIO API. Useful for chips that don't have a built-in
-> > i2c controller, additional i2c busses, or testing purposes.
+On Fri, Mar 09, 2007 at 11:40:08AM -0800, H. Peter Anvin wrote:
+> Jan-Benedict Glaw wrote:
+> >
+> >Not everybody has a simple indexed list of pointers :)  For example,
+> >for vax-linux, we use a struct per syscall with the expected number of
+> >on-stack longwords for the call.
+> >
+> >So if something "new" is coming up, please keep in mind that it should
+> >be flexible enough to represent that. :)
+> >
 > 
-> That's the right idea!  But remember that not all GPIOs support
-> reading back the actual value on SCL (it's an OUT pin, so lacking
-> multidrive capability the values "should" be what you wrote), so
-> getscl() support should depend on a flag in platform data.  In
-> the same vein, if SCL is an output-only pin, you won't be able
-> to change its direction ... but then, I'm not sure why you were
-> changing its direction in setscl() rather than just its value.
+> I discussed with Al Viro a while ago about using something like the 
+> SYSCALLS.def file from klibc as the source format for the system calls. 
+>  That would deal very flexibly with almost all kinds of stub generation.
 
-That's a more correct I2C implementation.  If you read the specs, the
-SDA and SCL signals are supposed to be driven by open-collector or
-open-drain drivers, such that devices only pull the bus low.  Pull-up
-resistors pull the signals high when undriven.
+Hopefully with this idea in place, we can spot new syscalls before
+the final release of the kernel (maybe kautobuild can help there)
+and fix any silly system call argument ordering which requires
+different architectures to have different syscall prototypes (eg,
+sys_arm_fadvise64_64 vs sys_fadvise64_64, sys_arm_sync_file_range vs
+sys_sync_file_range).
 
-This avoids the possibility of damage caused when one device drives
-a signal low and another device tries to drive it high.
-
-Therefore, the correct I2C GPIO implementation is one where you drive
-both SDA and SCL low by using a combination of the data direction
-register and the output level register, but avoid driving the output
-high.
+Otherwise the SYSCALLS.def file will probably end up being full of
+ifdefs.
 
 -- 
 Russell King
