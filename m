@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767169AbXCILBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767163AbXCILCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767169AbXCILBG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 06:01:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767167AbXCILBG
+	id S1767163AbXCILCR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 06:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767170AbXCILCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 06:01:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37145 "EHLO mx2.mail.elte.hu"
+	Fri, 9 Mar 2007 06:02:17 -0500
+Received: from mail.queued.net ([207.210.101.209]:3007 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767166AbXCILBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 06:01:03 -0500
-Date: Fri, 9 Mar 2007 11:56:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Message-ID: <20070309105635.GA11635@elte.hu>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1767163AbXCILCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 06:02:16 -0500
+Message-ID: <45F13EBE.5040804@debian.org>
+Date: Fri, 09 Mar 2007 06:02:22 -0500
+From: Andres Salomon <dilinger@debian.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] Input: psmouse - create PS/2 protocol options for
+ Kconfig
+References: <45D43115.6060806@debian.org> <45D50101.60802@debian.org>	 <20070215173024.adc54d6c.akpm@linux-foundation.org>	 <200702160028.09251.dtor@insightbb.com> <45D54260.7080302@debian.org> <d120d5000702160742v14ac197eica567a15cc1e85d4@mail.gmail.com>
+In-Reply-To: <d120d5000702160742v14ac197eica567a15cc1e85d4@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > disabling the following radeonfb options in the .config made resume 
-> > work again:
+Dmitry Torokhov wrote:
+> On 2/16/07, Andres Salomon <dilinger@debian.org> wrote:
+>> Dmitry Torokhov wrote:
+>> > On Thursday 15 February 2007 20:30, Andrew Morton wrote:
+>> >> On Thu, 15 Feb 2007 19:55:29 -0500
+>> >> Andres Salomon <dilinger@debian.org> wrote:
+>> [...]
+>> >> Perhaps a nicer implementation would be to have a separate .c file
+>> for each
+>> >> variant.
+>> >>
+>> >
+>> > Having completely separate sub-drivers is very hard because of very
+>> delicate
+>> > PS/2 protocol probing....
+>> >
+>> > What do you think about patch below? It somewhat reduces #ifdef
+>> clutter in main
+>> > module moving it in .h files...
+>> >
+>>
+>> Normally, I'm a fan of that sort of thing.  However, in this case, I
+>> think it makes sense to have the #ifdefs right in the probe function; at
+>> least for me, it makes it easier to understand what's going on.  The
+>> synaptics stuff is especially tricky; with a cursory glance over the
+>> code, one might assume that all the synaptics functions disappear when
+>> CONFIG_MOUSE_PS2_SYNAPTICS is unset.  However, if the #ifdef's are in
+>> the probe function, it's pretty clear that some synaptics functions
+>> still get called even when CONFIG_MOUSE_PS2_SYNAPTICS is unset.
+>>
 > 
-> In general, don't even *try* to use radeonfb for suspend/resume.
+> Thit is a valid point but #ifdef maze in the middle of already messy
+> psmouse-extensions() is too much for me. I guess I will just add a
+> comment explaining that synaptics probing is really special.
 > 
-> I don't think it has ever worked, except on some very rare laptops 
-> (largely PPC Macs) where people had enough information to set up the 
-> PLL's.
-> 
-> I don't think the other framebuffer drivers are much better.
-> 
-> You're better off using the VGA console, and lettign X re-initialize 
-> the graphics device. That generally at least has a reasonably good 
-> chance of working.
-> 
-> Re-initializing graphics modes really is very hard. You can try with 
-> the BIOS video hack (I forget the kernel command line to turn it on), 
-> but we really do end up depending on X doing it better.
 
-it's the s3_sleep boot option and /proc/sys/kernel/acpi_video_mode, but 
-that didnt make a difference.
+I haven't seen patches in your tree; are you waiting for me to do the
+cleanups and resend?
 
-> Some day we may have modesetting support in the kernel for some 
-> graphics hw, right now it's pretty damn spotty.
 
-having no video is what i'd have expected - but getting a /hang/ is not 
-what i'd have expected.
-
-	Ingo
