@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767632AbXCIXQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767629AbXCIXSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767632AbXCIXQE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 18:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767629AbXCIXQE
+	id S1767629AbXCIXSo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 18:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767635AbXCIXSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 18:16:04 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:52719 "EHLO smtp.osdl.org"
+	Fri, 9 Mar 2007 18:18:44 -0500
+Received: from waste.org ([66.93.16.53]:54822 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767632AbXCIXQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 18:16:01 -0500
-Date: Fri, 9 Mar 2007 15:15:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: David Howells <dhowells@redhat.com>, Al Viro <viro@ftp.linux.org.uk>,
-       akpm@linux-foundation.org, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, johannes@sipsolutions.net
-Subject: Re: ALIGN (Re: [PATCH] Fix get_order())
-In-Reply-To: <20070309231334.GB17084@flower.upol.cz>
-Message-ID: <Pine.LNX.4.64.0703091509180.10832@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703061913080.5963@woody.linux-foundation.org>
- <20070306173929.2708.37191.stgit@warthog.cambridge.redhat.com>
- <8543.1173267786@redhat.com> <E1HOybN-00031m-6M@flower>
- <Pine.LNX.4.64.0703070836220.5963@woody.linux-foundation.org>
- <20070309231334.GB17084@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1767629AbXCIXSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 18:18:43 -0500
+Date: Fri, 9 Mar 2007 17:06:13 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+Message-ID: <20070309230612.GL10394@waste.org>
+References: <20070309053931.GA10459@waste.org> <200703100918.05547.kernel@kolivas.org> <20070309222923.GK10394@waste.org> <200703101002.37920.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703101002.37920.kernel@kolivas.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 10 Mar 2007, Oleg Verych wrote:
+On Sat, Mar 10, 2007 at 10:02:37AM +1100, Con Kolivas wrote:
+> On Saturday 10 March 2007 09:29, Matt Mackall wrote:
+> > On Sat, Mar 10, 2007 at 09:18:05AM +1100, Con Kolivas wrote:
+> > > On Saturday 10 March 2007 08:57, Con Kolivas wrote:
+> > > > On Saturday 10 March 2007 08:39, Matt Mackall wrote:
+> > > > > So what's different between makes in parallel and make -j 5? Make's
+> > > > > job server uses pipe I/O to control how many jobs are running.
+> > > >
+> > > > Hmm it must be those deep pipes again then. I removed any quirks
+> > > > testing for those from mainline as I suspected it would be ok. Guess
+> > > > I"m wrong.
+> > >
+> > > I shouldn't blame this straight up though if NO_HZ makes it better.
+> > > Something else is going wrong... wtf though?
+> >
+> > Just so we're clear, dynticks has only 'fixed' the single non-parallel
+> > make load so far.
 > 
-> OTOH, if i would write it this way
-> 
-> #define BALIGN(x,bits)      ((((x) >> (bits)) + 1) << (bits))
+> Ok, back to the pipe idea. Without needing a kernel recompile, can you try 
+> running the make -j5 as a SCHED_BATCH task?
 
-But that's *wrong*. It aligns something that is *already* aligned to 
-something else.
+Seems the same.
 
-So you'd have to do it as something like
+Oddly, nice make -j 5 is better than batch (but not quite up to stock).
 
-	#define ALIGN_TO_POW2(x,pow) \
-		((((x)+(1<<(pow))-1)>>(pow))<<(pow))
-
-and the thing is, that's actually both (a) less readable than what ALIGN() 
-already does (b) unless the compiler notices that what you really want is 
-a "bitwise and", it's really inefficient too because shifts are generally 
-much more expensive than simple bitops.
-
-So you're simply better off doing it as
-
-	#define ALIGN_TO_POW2(x,pow) ALIGN(x, (1ull << pow))
-
-but then you'd still have to depend on the "typeof()" magic in ALIGN() to 
-turn the final end result back to the type of "x".
-
-(the "1ull" is necessary exactly because you don't know what type "x" is 
-beforehand, so you need to make sure that the mask is at *least* as big a 
-type as x, and not overflow to undefined C semantics).
-
-			Linus
+-- 
+Mathematics is the supreme nostalgia of our time.
