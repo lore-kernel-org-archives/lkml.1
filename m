@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbXCIUjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965814AbXCIUjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbXCIUjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXCIUjS
+	id S965814AbXCIUjq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965812AbXCIUjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:39:18 -0500
-Received: from khc.piap.pl ([195.187.100.11]:37145 "EHLO khc.piap.pl"
+	Fri, 9 Mar 2007 15:39:46 -0500
+Received: from mail.suse.de ([195.135.220.2]:43759 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752444AbXCIUjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:39:17 -0500
-To: "Tosoni" <jp.tosoni@acksys.fr>
-Cc: "'Carl-Daniel Hailfinger'" <c-d.hailfinger.devel.2006@gmx.net>,
-       "'Robin Getz'" <rgetz@blackfin.uclinux.org>,
-       "'Oleksiy Kebkal'" <kebkal@gmail.com>,
-       "'Mike Frysinger'" <vapier.adi@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       <linux-serial@vger.kernel.org>
-Subject: Re: should RTS init in serial core be tied to CRTSCTS
-References: <000201c761b1$a281cdf0$2e01a8c0@acksys.local>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 09 Mar 2007 21:39:14 +0100
-In-Reply-To: <000201c761b1$a281cdf0$2e01a8c0@acksys.local> (Tosoni's message of "Thu, 8 Mar 2007 19:43:15 +0100")
-Message-ID: <m3irdaywwd.fsf@maximus.localdomain>
+	id S965814AbXCIUjg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 15:39:36 -0500
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+Date: Fri, 9 Mar 2007 21:39:33 +0100
+User-Agent: KMail/1.9.1
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0703091509560.5094-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0703091509560.5094-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703092139.35184.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Tosoni" <jp.tosoni@acksys.fr> writes:
+Am Freitag, 9. März 2007 21:27 schrieb Alan Stern:
+> On Fri, 9 Mar 2007, Oliver Neukum wrote:
+> 
+> > > Adding a new release() callback would solve the problem by creating 
+> > > another.  Drivers need to release their data as soon as possible after
+> > > they unbind from a device, not when the device itself goes away.  Think
+> > 
+> > Wait, the callback from closing the file in sysfs is the earliest we can safely
+> > free the data structure. How do you want to free earlier?
+> 
+> It is _not_ the earliest we can safely free the data structure.
+> 
+> Dmitry's callback occurs when _all_ the sysfs attributes have been
+> released -- including ones that don't have anything to do with the
+> driver's private data structure.  Think of the bInterfaceClass attribute,
+> for example.
 
->> OTOH I wonder what does the device in question require WRT the
->> serial port and WRT RTS line in particular.
->> I know there are some half-duplex converters which drive RTS only
->> while sending and which require CTS to send.
->
-> As far as I know in the old times this was the *standard* way to use a modem
-> (per CCITT V24), and even nowadays many modems can handle this method for
-> transmit, to stay compatible with the standard.
+Ok, yes I see. It is by far too late.
 
-I think it wasn't standard for real modems as they were full-duplex
-(even these 1200/75 or what was that) but it was for other devices
-such as current loops (which were frequently half-duplex).
-
-I've seen such devices quite recently, perhaps ~ 10 years ago.
-OTOH I think even "current" PC BIOSes use such signaling.
-
-> Think of radio modems. Some are inherently half duplex.
-
-Sure. But /dev/ttyS* ports are full-duplex, with CRTSCTS or without,
-so they don't use such handshaking.
-
->> They are perhaps a bit broken <snip>
-> No, no, they apply an old standard. Probably they are old as well.
-
-I was thinking of a particular piece of hardware and it was definitely
-broken a bit. "Selective compliance", maybe.
-
-> It's a pity that Linux (or Unixes) never handled RTS this way.
-> I feel that the /proc or sysfs solutions are the best to alter this well
-> established default in this driver. It would not break existing installed
-> hardware.
-
-/proc is probably no-no.
-
-For such signaling, it would perhaps be better to invent another flag,
-similar to CRTSCTS. The driver would, of course, need some real code
-for that.
--- 
-Krzysztof Halasa
+	Regards
+		Oliver
