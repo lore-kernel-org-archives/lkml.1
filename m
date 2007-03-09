@@ -1,99 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbXCIJkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbXCIJqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752670AbXCIJkH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 04:40:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbXCIJkG
+	id S1752669AbXCIJqL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 04:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbXCIJqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 04:40:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42387 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752670AbXCIJkE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 04:40:04 -0500
-Date: Fri, 9 Mar 2007 09:40:00 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, Michael Halcrow <mhalcrow@us.ibm.com>
-Subject: Re: [PATCH 1/2] eCryptfs: convert lookup_one_len() to lookup_one_len_nd()
-Message-ID: <20070309094000.GA28599@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	akpm@linux-foundation.org, Michael Halcrow <mhalcrow@us.ibm.com>
-References: <11717026161843-git-send-email-jsipek@cs.sunysb.edu> <11717026163831-git-send-email-jsipek@cs.sunysb.edu>
+	Fri, 9 Mar 2007 04:46:11 -0500
+Received: from systemlinux.org ([83.151.29.59]:58254 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752669AbXCIJqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 04:46:09 -0500
+Date: Fri, 9 Mar 2007 10:36:10 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Adrian Bunk <bunk@stusta.de>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
+Message-ID: <20070309093610.GE4252@skl-net.de>
+References: <20070226133153.GC4095@skl-net.de> <20070226182617.GC9968@andrew-vasquezs-computer.local> <20070227101100.GA22572@skl-net.de> <20070227185134.GJ20397@andrew-vasquezs-computer.local> <20070228151829.GI22572@skl-net.de> <20070228153722.GJ22572@skl-net.de> <20070306203952.471218df.akpm@linux-foundation.org> <20070307170955.GA4252@skl-net.de> <20070307114525.08265c33.akpm@linux-foundation.org> <1173297911.3769.3.camel@dyn9047017103.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UnaWdueM1EBWVRzC"
 Content-Disposition: inline
-In-Reply-To: <11717026163831-git-send-email-jsipek@cs.sunysb.edu>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1173297911.3769.3.camel@dyn9047017103.beaverton.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 03:56:55AM -0500, Josef 'Jeff' Sipek wrote:
-> From: Michael Halcrow <mhalcrow@us.ibm.com>
-> 
-> Call the new lookup_one_len_nd() rather than lookup_one_len().  This fixes an
-> oops when stacked on NFS.
-> 
-> Note that there are still some issues with eCryptfs on NFS having to do with
-> directory deletion (I'm not getting an oops, just an -EBUSY).
 
-Biug NACK here.  This is just working around the broken lookup intents
-code.  lookup_one_len still is a hack for some network filesystems that
-unfortunately grew a few too many users.
+--UnaWdueM1EBWVRzC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There is a valid case for in-kernel lookups from an arbitrary point,
-but lookup_one_len* is the wrong API for this.  The righ API for that
-is a variant of path?lookup that takes a vfsmount + dentry pair.
-Implementing this might be a good idea anyway to clean up the mess
-do_path_lookup is currently.
+On 12:05, Mingming Cao wrote:
+> > > BTW: Are ext3 filesystem sizes greater than 8T now officially
+> > > supported?
+> >=20
+> > I think so, but I don't know how much 16TB testing developers and
+> > distros are doing - perhaps the linux-ext4 denizens can tell us?
+> > -
+>=20
+> IBM has done some testing (dbench, fsstress, fsx, tiobench, iozone etc)
+> on 10TB ext3, I think RedHat and BULL have done similar test on >8TB
+> ext3 too.
 
-> 
-> Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
-> ---
->  fs/ecryptfs/inode.c |   10 ++++++++--
->  1 files changed, 8 insertions(+), 2 deletions(-)
-> 
-> diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-> index 11f5e50..4c3d786 100644
-> --- a/fs/ecryptfs/inode.c
-> +++ b/fs/ecryptfs/inode.c
-> @@ -283,7 +283,9 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
->  	int rc = 0;
->  	struct dentry *lower_dir_dentry;
->  	struct dentry *lower_dentry;
-> +	struct dentry *dentry_save;
->  	struct vfsmount *lower_mnt;
-> +	struct vfsmount *mnt_save;
->  	char *encoded_name;
->  	unsigned int encoded_namelen;
->  	struct ecryptfs_crypt_stat *crypt_stat = NULL;
-> @@ -310,9 +312,13 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
->  	}
->  	ecryptfs_printk(KERN_DEBUG, "encoded_name = [%s]; encoded_namelen "
->  			"= [%d]\n", encoded_name, encoded_namelen);
-> -	lower_dentry = lookup_one_len(encoded_name, lower_dir_dentry,
-> -				      encoded_namelen - 1);
-> +	dentry_save = nd->dentry;
-> +	mnt_save = nd->mnt;
-> +	lower_dentry = lookup_one_len_nd(encoded_name, lower_dir_dentry,
-> +					 (encoded_namelen - 1), nd);
->  	kfree(encoded_name);
-> +	nd->mnt = mnt_save;
-> +	nd->dentry = dentry_save;
->  	if (IS_ERR(lower_dentry)) {
->  		ecryptfs_printk(KERN_ERR, "ERR from lower_dentry\n");
->  		rc = PTR_ERR(lower_dentry);
-> -- 
-> 1.5.0.19.gddff
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
----end quoted text---
+Thanks. I'm asking because some days ago I tried to create a 10T ext3
+filesytem on a linear software raid over two hardware raids, and it
+failed horribly. mke2fs from e2fsprogs-1.39 refused to create such a
+large filesystem but did it with -F, and I could mount it afterwards.
+But writing data immediately produced zillions of errors and only
+power-cycling the box helped.
+
+We're now using a 7.9T filesystem on the same hardware. That seems
+to work fine on 2.6.21-rc2, so I think this is an ext3 problem. I
+cannot completely rule out other reasons though as the underlying
+qla2xxx driver also had some problems on earlier kernels.
+
+We'd much rather have a 10T filesystem if possible. So if you have
+time to look into the issue I would be willing to recreate the 10T
+filesystem and send details.
+
+Regards
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
+
+--UnaWdueM1EBWVRzC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFF8SqKWto1QDEAkw8RAqWDAJ9OXQZs1bDAgFoBmq9VYRtZMFpWMgCfRFQn
+Jv2+/8tA8+1bTwJdgeVfZWg=
+=Majh
+-----END PGP SIGNATURE-----
+
+--UnaWdueM1EBWVRzC--
