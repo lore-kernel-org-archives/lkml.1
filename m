@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767499AbXCIUwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767501AbXCIUyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767499AbXCIUwD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767501AbXCIUwB
+	id S1767501AbXCIUyK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:54:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767529AbXCIUyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:52:01 -0500
-Received: from mail.screens.ru ([213.234.233.54]:46979 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767499AbXCIUwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:52:00 -0500
-Date: Fri, 9 Mar 2007 23:52:05 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Kernel threads
-Message-ID: <20070309205205.GA173@tv-sign.ru>
-References: <20070308163844.GA6638@tv-sign.ru> <20070309003100.9893B180063@magilla.sf.frob.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070309003100.9893B180063@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.11
+	Fri, 9 Mar 2007 15:54:10 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:46353 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767501AbXCIUyI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 15:54:08 -0500
+Message-ID: <45F1C8FF.9040600@zytor.com>
+Date: Fri, 09 Mar 2007 12:52:15 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, sam@ravnborg.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] Complain about missing system calls.
+References: <1173394873.3461.510.camel@pmac.infradead.org> <p737itqbdnl.fsf@bingen.suse.de> <20070309163805.GV18564@lug-owl.de> <45F1B818.4090007@zytor.com> <20070309201308.GB8444@flint.arm.linux.org.uk>
+In-Reply-To: <20070309201308.GB8444@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/08, Roland McGrath wrote:
->
-> Your change seems fine to me.  I certainly concur that it seems insane
-> for init to be responsible for tasks created magically inside the
-> kernel.  The history I've found says that the setting to SIGCHLD was
-> introduced as part of "v2.5.1.9 -> v2.5.1.10", without detailed
-> commentary in the log.  This was probably before the auto-reaping
-> semantics worked as they do now.  So like the man said, at the time,
-> it seemed the logical thing to do.
->
-> To be paranoid, I wouldn't make this change in any stable kernel series.
-> It changes behavior visible to userland (init) from how it has been
-> consistently for five years, so, who knows, something might notice.
-> The old behavior is pretty harmless, albeit changing it seems both
-> preferable and harmless.
+Russell King wrote:
+> On Fri, Mar 09, 2007 at 11:40:08AM -0800, H. Peter Anvin wrote:
+>> Jan-Benedict Glaw wrote:
+>>> Not everybody has a simple indexed list of pointers :)  For example,
+>>> for vax-linux, we use a struct per syscall with the expected number of
+>>> on-stack longwords for the call.
+>>>
+>>> So if something "new" is coming up, please keep in mind that it should
+>>> be flexible enough to represent that. :)
+>>>
+>> I discussed with Al Viro a while ago about using something like the 
+>> SYSCALLS.def file from klibc as the source format for the system calls. 
+>>  That would deal very flexibly with almost all kinds of stub generation.
+> 
+> Hopefully with this idea in place, we can spot new syscalls before
+> the final release of the kernel (maybe kautobuild can help there)
+> and fix any silly system call argument ordering which requires
+> different architectures to have different syscall prototypes (eg,
+> sys_arm_fadvise64_64 vs sys_fadvise64_64, sys_arm_sync_file_range vs
+> sys_sync_file_range).
 
-Yes sure, this change shoud be tested in -mm tree (I'll send the patch
-on Sunday after some testing). The only (afaics) problem is that with
-this change a kernel thread must not do do_fork(CLONE_THREAD). I think
-it should not, but currently this is technically possible. Perhaps it
-makes sense to add BUG_ON(CLONE_THREAD && group_leader->exit_signal==-1)
-in copy_process().
+That would definitely be nice.
 
-On a related note,
+> Otherwise the SYSCALLS.def file will probably end up being full of
+> ifdefs.
 
-	zap_other_threads:
+... which exactly mirrors the pain and suffering which libc maintainers 
+have to deal with.  The amount of time I spent per line of code in klibc 
+is quite high, in part because I wanted it to be as self-porting as was 
+possible.  I've really tried to avoid arch-specific hacks, and yet there 
+are more there than there should be, in large part because of unusable 
+or missing kernel header exports.
 
-		if (t != p->group_leader)
-			t->exit_signal = -1;
-
-looks like another leftover to me, we already depend on the fact that
-all sub-threads have ->exit_signal == -1 (otherwise, for example, a
-thread group just can't exit properly).
-
-
-While we are talking about kernel threads, there is something I can't
-undestand. kthread/daemonize use sigprocmask(SIG_BLOCK) to protect
-against signals. This doesn't look right to me, because this doesn't
-prevent the signal delivery, this only blocks signal_wake_up(). Every
-"killall -33 khelper" means a "struct siginfo" leak.
-
-Imho, the kernel thread shouldn't play with ->blocked at all. Instead
-it should set SIG_IGN for all handlers. If it really needs, say, SIGCHLD,
-it should call allow_signal() anyway. Do you see any problems with this
-approach?
-
-Oleg.
-
+	-hpa
