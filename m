@@ -1,100 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767668AbXCIXpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767596AbXCIXxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767668AbXCIXpy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 18:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767669AbXCIXpx
+	id S1767596AbXCIXxE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 18:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767597AbXCIXxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 18:45:53 -0500
-Received: from mail.screens.ru ([213.234.233.54]:47893 "EHLO mail.screens.ru"
+	Fri, 9 Mar 2007 18:53:04 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53880 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767668AbXCIXpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 18:45:52 -0500
-Date: Sat, 10 Mar 2007 02:46:02 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Kernel threads
-Message-ID: <20070309234602.GA188@tv-sign.ru>
-References: <20070309205205.GA173@tv-sign.ru> <20070309213852.059FC1801C4@magilla.sf.frob.com>
+	id S1767596AbXCIXxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 18:53:01 -0500
+Date: Fri, 9 Mar 2007 15:46:40 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] dma_ops as const
+Message-ID: <20070309154640.7d01bf68@dxpl.pdx.osdl.net>
+Organization: The Linux Foundation
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070309213852.059FC1801C4@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09, Roland McGrath wrote:
->
-> > Yes sure, this change shoud be tested in -mm tree (I'll send the patch
-> > on Sunday after some testing). The only (afaics) problem is that with
-> > this change a kernel thread must not do do_fork(CLONE_THREAD). 
-> 
-> To clarify, the danger here is that an exit_signal=-1 leader would
-> self-reap and leave behind live threads with dangling ->group_leader
-> pointers.  This danger doesn't exist for normal user group leaders with
-> parents ignoring SIGCHLD, because exit_signal is never set to -1 until
-> do_notify_parent, which is never called until the last thread in the group
-> dies (except when ptrace'd, but then do_notify_parent never resets
-> exit_signal at all).  Is that right?
+The dma_ops structure can be const since it never changes
+after boot.
 
-I think yes.
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+---
+ arch/x86_64/kernel/pci-calgary.c |    2 +-
+ arch/x86_64/kernel/pci-gart.c    |    2 +-
+ arch/x86_64/kernel/pci-nommu.c   |    2 +-
+ arch/x86_64/kernel/pci-swiotlb.c |    2 +-
+ arch/x86_64/mm/init.c            |    2 +-
+ include/asm-x86_64/dma-mapping.h |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-> > I think it should not, but currently this is technically
-> > possible. Perhaps it makes sense to add BUG_ON(CLONE_THREAD &&
-> > group_leader->exit_signal==-1) in copy_process().
->
-> It probably wouldn't hurt to make it:
->
-> 	if (user_mode(regs))
-> 		BUG_ON(current->group_leader->exit_signal == -1);
-
-Well, this is of course right, but a bit strange. Because we can add
-this check to any function which can't be called after exit_notify().
-
-> 	else
-> 		BUG_ON((clone_flags & (CLONE_THREAD|CLONE_UNTRACED))
-> 		       != CLONE_UNTRACED);
-
-I think this _should_ be right, but please note that fork_idle() does
-copy_process(CLONE_VM). Also, we may have some external driver which
-plays with do_fork/copy_process.
-
-> > While we are talking about kernel threads, there is something I can't
-> > undestand. kthread/daemonize use sigprocmask(SIG_BLOCK) to protect
-> > against signals. This doesn't look right to me, because this doesn't
-> > prevent the signal delivery, this only blocks signal_wake_up(). Every
-> > "killall -33 khelper" means a "struct siginfo" leak.
->
-> It does prevent the delivery (signal_pending() never set), but not the queuing.
-
-Yep.
-
-> > Imho, the kernel thread shouldn't play with ->blocked at all. Instead
-> > it should set SIG_IGN for all handlers. If it really needs, say, SIGCHLD,
-> > it should call allow_signal() anyway. Do you see any problems with this
-> > approach?
->
-> That sounds reasonable to me generally.  However, if kernel threads ever
-> spawn user children, they may not want the self-reaping behavior of
-> ignoring SIGCHLD even if they never dequeue the signal (because they want
-> to call do_wait).
-
-Yes. That is why wait_for_helper() does allow_signal(SIGCHLD). I think a
-kernel thread must not make any assumption about ->action[SIGCHLD] if it
-wants to call wait4, but we may break some "buggy" external driver.
-
-In fact, most threads inherit action[SIGCHLD] == SIG_IGN from worker_thread().
-
-BTW, wait_for_helper() does do_sigaction() before allow_signal(). Looks
-unneeded to me.
-
->                    There might be other strange caveats like that I'm not
-> thinking of.
-
-Yes, this makes me worry too :)
-
-Oleg.
+diff --git a/arch/x86_64/kernel/pci-calgary.c b/arch/x86_64/kernel/pci-calgary.c
+index 04480c3..5bd20b5 100644
+--- a/arch/x86_64/kernel/pci-calgary.c
++++ b/arch/x86_64/kernel/pci-calgary.c
+@@ -507,7 +507,7 @@ error:
+ 	return ret;
+ }
+ 
+-static struct dma_mapping_ops calgary_dma_ops = {
++static const struct dma_mapping_ops calgary_dma_ops = {
+ 	.alloc_coherent = calgary_alloc_coherent,
+ 	.map_single = calgary_map_single,
+ 	.unmap_single = calgary_unmap_single,
+diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
+index 030eb37..f7723e6 100644
+--- a/arch/x86_64/kernel/pci-gart.c
++++ b/arch/x86_64/kernel/pci-gart.c
+@@ -552,7 +552,7 @@ static __init int init_k8_gatt(struct agp_kern_info *info)
+ 
+ extern int agp_amd64_init(void);
+ 
+-static struct dma_mapping_ops gart_dma_ops = {
++static const struct dma_mapping_ops gart_dma_ops = {
+ 	.mapping_error = NULL,
+ 	.map_single = gart_map_single,
+ 	.map_simple = gart_map_simple,
+diff --git a/arch/x86_64/kernel/pci-nommu.c b/arch/x86_64/kernel/pci-nommu.c
+index df09ab0..6dade0c 100644
+--- a/arch/x86_64/kernel/pci-nommu.c
++++ b/arch/x86_64/kernel/pci-nommu.c
+@@ -79,7 +79,7 @@ void nommu_unmap_sg(struct device *dev, struct scatterlist *sg,
+ {
+ }
+ 
+-struct dma_mapping_ops nommu_dma_ops = {
++const struct dma_mapping_ops nommu_dma_ops = {
+ 	.map_single = nommu_map_single,
+ 	.unmap_single = nommu_unmap_single,
+ 	.map_sg = nommu_map_sg,
+diff --git a/arch/x86_64/kernel/pci-swiotlb.c b/arch/x86_64/kernel/pci-swiotlb.c
+index eb18be5..4b4569a 100644
+--- a/arch/x86_64/kernel/pci-swiotlb.c
++++ b/arch/x86_64/kernel/pci-swiotlb.c
+@@ -12,7 +12,7 @@
+ int swiotlb __read_mostly;
+ EXPORT_SYMBOL(swiotlb);
+ 
+-struct dma_mapping_ops swiotlb_dma_ops = {
++const struct dma_mapping_ops swiotlb_dma_ops = {
+ 	.mapping_error = swiotlb_dma_mapping_error,
+ 	.alloc_coherent = swiotlb_alloc_coherent,
+ 	.free_coherent = swiotlb_free_coherent,
+diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
+index ec31534..5ca6173 100644
+--- a/arch/x86_64/mm/init.c
++++ b/arch/x86_64/mm/init.c
+@@ -46,7 +46,7 @@
+ #define Dprintk(x...)
+ #endif
+ 
+-struct dma_mapping_ops* dma_ops;
++const struct dma_mapping_ops* dma_ops;
+ EXPORT_SYMBOL(dma_ops);
+ 
+ static unsigned long dma_reserve __initdata;
+diff --git a/include/asm-x86_64/dma-mapping.h b/include/asm-x86_64/dma-mapping.h
+index d2af227..6897e2a 100644
+--- a/include/asm-x86_64/dma-mapping.h
++++ b/include/asm-x86_64/dma-mapping.h
+@@ -52,7 +52,7 @@ struct dma_mapping_ops {
+ };
+ 
+ extern dma_addr_t bad_dma_address;
+-extern struct dma_mapping_ops* dma_ops;
++extern const struct dma_mapping_ops* dma_ops;
+ extern int iommu_merge;
+ 
+ static inline int dma_mapping_error(dma_addr_t dma_addr)
+-- 
+1.5.0.2
 
