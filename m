@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767425AbXCIRMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767422AbXCIRMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767425AbXCIRMU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 12:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767422AbXCIRMU
+	id S1767422AbXCIRMl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 12:12:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767426AbXCIRMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 12:12:20 -0500
-Received: from mga01.intel.com ([192.55.52.88]:5704 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767403AbXCIRMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 12:12:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,268,1170662400"; 
-   d="scan'208"; a="209585430:sNHT64247743"
-Message-ID: <45F1954D.4000506@intel.com>
-Date: Fri, 09 Mar 2007 09:11:41 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+	Fri, 9 Mar 2007 12:12:41 -0500
+Received: from smtp.nokia.com ([131.228.20.171]:48935 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767422AbXCIRMj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 12:12:39 -0500
+Message-ID: <45F19555.30904@yandex.ru>
+Date: Fri, 09 Mar 2007 19:11:49 +0200
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, john.ronciak@intel.com,
-       jesse.brandeburg@intel.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] e1000: FIX: be ready for incoming irq at pci_request_irq
-References: <20070306165721.27434.23796.stgit@localhost.localdomain> <45F18F7C.3030801@garzik.org>
-In-Reply-To: <45F18F7C.3030801@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Mar 2007 17:11:41.0580 (UTC) FILETIME=[0194C4C0:01C7626E]
+To: Amit Choudhary <amit2030@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] fs/jffs2/scan.c: Fix error-path leak
+References: <20070308232747.1605e81c.amit2030@gmail.com>
+In-Reply-To: <20070308232747.1605e81c.amit2030@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 09 Mar 2007 17:11:50.0562 (UTC) FILETIME=[06EF5020:01C7626E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Auke Kok wrote:
->> From: Auke Kok <auke-jan.h.kok@intel.com>
->>
->> DEBUG_SHIRQ code exposed that e1000 was not ready for incoming interrupts
->> after having called pci_request_irq. This obviously requires us to finish
->> our software setup which assigns the irq handler before we request the
->> irq.
->>
->> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
->> ---
->>
->>  drivers/net/e1000/e1000_main.c |   66 +++++++++++++++++++++++++++-------------
->>  1 files changed, 45 insertions(+), 21 deletions(-)
+Please, do not forget look at MAINTAINERS and CC the maintainer. David is CCed.
+
+Amit Choudhary wrote:
+> Description: Fix error-path leak in function jffs2_scan_medium(), in file fs/jffs2/scan.c
 > 
-> All these do indeed look like fixes to me.  But they look like low 
-> priority fixes that would need some public testing behind them, and it's 
-> pretty late in the 2.6.21-rc game.
+> Signed-off-by: Amit Choudhary <amit2030@gmail.com>
 > 
-> I'll merge them into an e1000-fixes branch for now (and propagates 
-> through #ALL to akpm's -mm).  If replies to this email indicate we 
-> really should push these upstream for 2.6.21-rc, it will be easy enough 
-> to do so via #e1000-fixes.
+> diff --git a/fs/jffs2/scan.c b/fs/jffs2/scan.c
+> index e241346..cd9ed6e 100644
+> --- a/fs/jffs2/scan.c
+> +++ b/fs/jffs2/scan.c
+> @@ -130,6 +130,8 @@ #endif
+>  	if (jffs2_sum_active()) {
+>  		s = kmalloc(sizeof(struct jffs2_summary), GFP_KERNEL);
+>  		if (!s) {
+> +			free(flashbuf);
+> +			flashbuf = NULL;
+>  			JFFS2_WARNING("Can't allocate memory for summary\n");
+>  			return -ENOMEM;
+>  		}
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Personally, I think this is really really needed. I'm surprised that you already 
-didn't push this considering Andrew pulled this into -mm immediately.
-
-We've also been crunching this patch in our labs for a whole week now doing all 
-sorts of load/unload up/down torture and it's a real improvement. Especially 
-ESB2 systems were hit with this bug irregardless of the DEBUG_SHIRQ code active 
-or not, so it's a real bug with real fix.
-
-but hey, it doesn't fix a new problem :)
-
-Auke
-
-
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
