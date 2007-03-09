@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbXCIEBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbXCIEFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751881AbXCIEBq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 23:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXCIEBq
+	id S1752555AbXCIEFD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 23:05:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXCIEFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 23:01:46 -0500
-Received: from mail.tmr.com ([64.65.253.246]:33337 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbXCIEBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 23:01:45 -0500
-Message-ID: <45F0DCB7.5020908@tmr.com>
-Date: Thu, 08 Mar 2007 23:04:07 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 8 Mar 2007 23:05:03 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:55926 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbXCIEFB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 23:05:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mrp/UrptbGVGvsSeVGcoq8R8yypLsgkk8xjHrOErZztRRcanTx2EimVYUWHAbw4RxO9Qmjaqy4YpC8IGK/cSYNW0IEiyP/lc67amaKq5CEdN4yVv5p7LG2f+SV+uBt8d86mP69DK6sO5yruBSQN20BrPGmuVpOZQ+tIyxwIEco4=
+Message-ID: <4e5ebad50703082004s6cd34ccbp34e6f8b2c2273389@mail.gmail.com>
+Date: Fri, 9 Mar 2007 12:04:59 +0800
+From: "Sonic Zhang" <sonic.adi@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
+Cc: "Bryan Wu" <bryan.wu@analog.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
+       mhfan@ustc.edu
+In-Reply-To: <20070308102738.2ec69c60.khali@linux-fr.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ed Tomlinson <edt@aei.ca>, Gene Heskett <gene.heskett@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Revell <rlrevell@joe-job.com>,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
-   scheduler
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org> <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com> <200703051419.25814.gene.heskett@gmail.com> <200703052123.29421.edt@aei.ca> <Pine.LNX.4.64.0703051849410.3998@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703051849410.3998@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1173164058.31825.16.camel@roc-desktop>
+	 <20070306214301.GA5590@martell.zuzino.mipt.ru>
+	 <1173247078.28531.24.camel@roc-desktop>
+	 <20070307075822.53e53c42.khali@linux-fr.org>
+	 <1173261197.28531.60.camel@roc-desktop>
+	 <20070308102738.2ec69c60.khali@linux-fr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 5 Mar 2007, Ed Tomlinson wrote:
->> The patch _does_ make a difference.  For instance reading mail with freenet working 
->> hard  (threaded java application) and gentoo's emerge triggering compiles to update the 
->> box is much smoother.
->>
->> Think this scheduler needs serious looking at.  
-> 
-> I agree, partly because it's obviously been getting rave reviews so far, 
-> but mainly because it looks like you can think about behaviour a lot 
-> better, something that was always very hard with the interactivity 
-> boosters with process state history.
-> 
-> I'm not at all opposed to this, but we do need:
->  - to not do it at this stage in the stable kernel
->  - to let it sit in -mm for at least a short while
->  - and generally more people testing more loads.
-> 
-Please, could you now rethink plugable scheduler as well? Even if one 
-had to be chosen at boot time and couldn't be change thereafter, it 
-would still allow a few new thoughts to be included.
-
-> I don't actually worry too much about switching out a CPU scheduler: those 
-> things are places where you *can* largely read the source code and get an 
-> idea for them (although with the kind of history state that we currently 
-> have, it's really really hard). But at the very least they aren't likely 
-> to have subtle bugs that show up elsewhere, so...
-> 
-I confess that the default scheduler works for me most of the time, i/o 
-tuning is more productive. I want tot test with kvm load, but 
-2.6.21-rc3-git3 doesn't want to run kvm at all, I'm looking to see what 
-I broke, since nbd doesn't work, either.
-
-I'm collecting OOPS now, will forward when I have a few more.
-
-> So as long as the generic concerns above are under control, I'll happily 
-> try something like this if it can be merged early in a merge window..
-> 
-> 			Linus
+On 3/8/07, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi Brian,
+>
+> Thanks for the quick update.
 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+
+> > +
+> > +     rc = (iface->result >= 0) ? 0 : -1;
+> > +
+> > +     /* Release mutex */
+> > +     mutex_unlock(&iface->twi_lock);
+> > +
+> > +     return rc;
+> > +}
+>
+> i2c-core can emulate SMBus transactions using master_xfer, so in
+> general when you have a complete master_xfer implementation you do not
+> need to define a separate smbus_xfer function. This would save a lot of
+> code.
+>
+
+Actually the i2c-core can't emulate SMBus transactions using the
+master_xfer function, because the blackfin TWI controller provide
+hardware support to the SMBus transactions and the combination of
+master_xfer operations can't generate proper signal for SMBus.
