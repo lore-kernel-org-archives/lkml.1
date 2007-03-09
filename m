@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767395AbXCIQtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767398AbXCIQtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767395AbXCIQtO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 11:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767394AbXCIQtN
+	id S1767398AbXCIQtt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 11:49:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767400AbXCIQtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 11:49:13 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:57742 "EHLO mail.dvmed.net"
+	Fri, 9 Mar 2007 11:49:49 -0500
+Received: from gate.crashing.org ([63.228.1.57]:34583 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767395AbXCIQtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 11:49:12 -0500
-Message-ID: <45F19006.9060607@garzik.org>
-Date: Fri, 09 Mar 2007 11:49:10 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Josh Triplett <josh@freedesktop.org>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Allow pktgen to work with loopback devices.
-References: <45EEB011.5020606@freedesktop.org>
-In-Reply-To: <45EEB011.5020606@freedesktop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1767398AbXCIQtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 11:49:47 -0500
+Subject: Re: [PATCH] Complain about missing system calls.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, sam@ravnborg.org, rmk@arm.linux.org.uk
+In-Reply-To: <p737itqbdnl.fsf@bingen.suse.de>
+References: <1173394873.3461.510.camel@pmac.infradead.org>
+	 <p737itqbdnl.fsf@bingen.suse.de>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 17:47:34 +0100
+Message-Id: <1173458854.24454.27.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Josh Triplett wrote:
-> pktgen currently only works on network devices with type ARPHRD_ETHER.  Add
-> support for the loopback device, type ARPHRD_LOOPBACK.
+On Fri, 2007-03-09 at 17:11 +0100, Andi Kleen wrote:
+> David Woodhouse <dwmw2@infradead.org> writes:
 > 
-> I've tested this on my system, using a modified pktgen.conf-1-1 with
-> s/eth1/lo/g, and it works fine; the network device statistics confirm packet
-> transmission and receipt.
+> > Most system calls seem to get added to i386 first. This patch
+> > automatically generates a warning for any new system call which is
+> > implemented on i386 but not the architecture currently being compiled.
+> > On PowerPC at the moment, for example, it results in these warnings:
+> > init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
+> > init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
+> > init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
 > 
-> Thanks to Sarah Bailey for discovering and tracking down the problem.
+> I think a better solution would be to finally switch to auto generated
+> system call tables for newer system calls. The original reason why the
+> architectures have different system call numbers -- compatibility with
+> another "native" Unix -- is completely obsolete now. This leaves only
+> minor differences of compat stub vs non compat stub and a few
+> architecture specific calls.
 > 
-> Signed-off-by: Josh Triplett <josh@freedesktop.org>
-> ---
+> Of course the existing syscall numbers can't be changed, but for all new 
+> calls one could just add automatically for everybody.
 > 
-> I intentionally didn't change the error message "not an ethernet device".  For
-> the purposes of pktgen, loopback devices act like ethernet devices.
-> 
->  net/core/pktgen.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/core/pktgen.c b/net/core/pktgen.c
-> index 74a9a32..6fc6f9d 100644
-> --- a/net/core/pktgen.c
-> +++ b/net/core/pktgen.c
-> @@ -1930,7 +1930,7 @@ static struct net_device *pktgen_setup_dev(struct pktgen_dev *pkt_dev)
->  		printk("pktgen: no such netdevice: \"%s\"\n", pkt_dev->ifname);
->  		goto out;
->  	}
-> -	if (odev->type != ARPHRD_ETHER) {
-> +	if (odev->type != ARPHRD_LOOPBACK && odev->type != ARPHRD_ETHER) {
->  		printk("pktgen: not an ethernet device: \"%s\"\n",
->  		       pkt_dev->ifname);
+> A global table with two entries (compat and non compat) and a per arch 
+> override table should be sufficient.
 
-I'll let DaveM queue this (or not)
+We need additional gunk for syscalls that can be called from SPEs on
+cell
+
+Ben.
 
 
