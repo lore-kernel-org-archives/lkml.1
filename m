@@ -1,107 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767291AbXCINoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767295AbXCINzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767291AbXCINoG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 08:44:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767292AbXCINoG
+	id S1767295AbXCINzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 08:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767296AbXCINzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 08:44:06 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:35147 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767291AbXCINoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 08:44:04 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: sys_write() racy for multi-threaded append?
-Date: Fri, 9 Mar 2007 14:44:10 +0100
-User-Agent: KMail/1.9.5
-Cc: "Benjamin LaHaise" <bcrl@kvack.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com> <20070309013405.GI6209@kvack.org> <f2b55d220703090419w755d42d0mea4f220e3caaa59a@mail.gmail.com>
-In-Reply-To: <f2b55d220703090419w755d42d0mea4f220e3caaa59a@mail.gmail.com>
+	Fri, 9 Mar 2007 08:55:24 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:53920 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767295AbXCINzW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 08:55:22 -0500
+Date: Fri, 9 Mar 2007 13:55:15 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@osdl.org, Marcelo Tosatti <marcelo@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, mpm@selenic.com,
+       Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: [SLUB 0/3] SLUB: The unqueued slab allocator V4
+In-Reply-To: <Pine.LNX.4.64.0703081013270.27731@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0703091322140.16052@skynet.skynet.ie>
+References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0703081022040.1615@skynet.skynet.ie>
+ <Pine.LNX.4.64.0703080836300.27191@schroedinger.engr.sgi.com>
+ <20070308174004.GB12958@skynet.ie> <Pine.LNX.4.64.0703081013270.27731@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703091444.10622.dada1@cosmosbay.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 March 2007 13:19, Michael K. Edwards wrote:
-> On 3/8/07, Benjamin LaHaise <bcrl@kvack.org> wrote:
-> > Any number of things can cause a short write to occur, and rewinding the
-> > file position after the fact is just as bad.  A sane app has to either
-> > serialise the writes itself or use a thread safe API like pwrite().
+On Thu, 8 Mar 2007, Christoph Lameter wrote:
+
+> On Thu, 8 Mar 2007, Mel Gorman wrote:
 >
-> Not on a pipe/FIFO.  Short writes there are flat out verboten by
-> 1003.1 unless O_NONBLOCK is set.  (Not that f_pos is interesting on a
-> pipe except as a "bytes sent" indicator  -- and in the multi-threaded
-> scenario, if you do the speculative update that I'm suggesting, you
-> can't 100% trust it unless you ensure that you are not in
-> mid-read/write in some other thread at the moment you sample f_pos.
-> But that doesn't make it useless.)
-Hello Michael
-
-When was the last time you checked standards ? Please read them again, and 
-stop disinforming people.
-
-http://www.opengroup.org/onlinepubs/007908775/xsh/write.html
-
-	"On a file not capable of seeking, writing always takes place starting at the
-	 current position. The value of a file offset associated with such a device
-	is undefined."
-
-A pipe/FIFO is not capable of seeking.
-
-I let you make the conclusion of these two points.
-
-A conformant kernel is free to not touch f_pos for non capable seeking files 
-(pipes, sockets, ...), or to put any value in it.
-
-Current code does that not because of lazy programmers, but because its 
-generic, and adding special cases (tests + conditional branches) just slow 
-down the code and make it larger.
-
+>>> Note that the 16kb page size has a major
+>>> impact on SLUB performance. On IA64 slub will use only 1/4th the locking
+>>> overhead as on 4kb platforms.
+>> It'll be interesting to see the kernbench tests then with debugging
+>> disabled.
 >
-> As to what a "sane app" has to do: it's just not that unusual to write
-> application code that treats a short read/write as a catastrophic
-> error, especially when the fd is of a type that is known never to
-> produce a short read/write unless something is drastically wrong.  For
-> instance, I bomb on short write in audio applications where the driver
-> is known to block until enough bytes have been read/written, period.
-> When switching from reading a stream of audio frames from thread A to
-> reading them from thread B, I may be willing to omit app
-> serialization, because I can tolerate an imperfect hand-off in which
-> thread A steals one last frame after thread B has started reading --
-> as long as the fd doesn't get screwed up.  There is no reason for the
-> generic sys_read code to leave a race open in which the same frame is
-> read by both threads and a hardware buffer overrun results later.
+> You can get a similar effect on 4kb platforms by specifying slub_min_order=2 on bootup.
+> This means that we have to rely on your patches to allow higher order
+> allocs to work reliably though.
 
-Don't assume your app is sane while the kernel is not. It's not very fair :
+It should work out because of the way buddy always selects the minimum 
+page size will tend to cluster the slab allocations together whether they 
+are reclaimable or not. It's something I can investigate when slub has 
+stabilised a bit.
 
-Show us the source code so that we can agree with you or disagree.
+However, in general, high order kernel allocations remain a bad idea. 
+Depending on high order allocations that do not group could potentially 
+lead to a situation where the movable areas are used more and more by 
+kernel allocations. I cannot think of a workload that would actually break 
+everything, but it's a possibility.
 
-Also, I've seen some Unixes (namely AIX IBM) that could return a partial write 
-even on a regular file on regular file system. An easy way to trigger this 
-was to launch a debugger/syscall_tracer on the live process while it was 
-doing a big write(). Most 'sane apps' were ignoring the partial return or 
-just throw an exception.
-
-Even on 'cleaner Unixes', a write() near the ulimit -f may return a partial 
-count on a regular file.
-
->
-> In short, I'm not proposing that the kernel perfectly serialize
-> concurrent reads and writes to arbitrary fd types.  I'm proposing that
-> it not do something blatantly stupid and easily avoided in generic
-> code that makes it impossible for any fd type to guarantee that, after
-> 10 successful pipelined 100-byte reads or writes, f_pos will have
-> advanced by 1000.
+> The higher the order of slub the less
+> locking overhead. So the better your patches deal with fragmentation the
+> more we can reduce locking overhead in slub.
 >
 
-Before saying current linux code is "blatantly stupid and easily avoided", 
-just post your patches so that we can check them and eventually say : 
+I can certainly kick it around a lot and see what happen. It's best that 
+slub_min_order=2 remain an optional performance enhancing switch though.
 
-Oh yes, Michael was right and {we|they} were "stupid" all these years
-
-Thank you
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
