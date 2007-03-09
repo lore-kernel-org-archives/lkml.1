@@ -1,42 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964780AbXCILwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964883AbXCILwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964780AbXCILwH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 06:52:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932529AbXCILwG
+	id S964883AbXCILwR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 06:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964935AbXCILwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 06:52:06 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:38336 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932715AbXCILwF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 06:52:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=P78tF7smKxknEdUetpTaL5yOI9RG/2f0f8GuarJxxxcLaVY49fi9s+vRclwrUXLOCU4b5jSjI1PkRaCrMay43nkJFt3oTU0SzogiemrxNlTjVvXf+IcWrMyuXoW6tjj5CQply5cZTvpxHJhUFzDTNBseh+I/yejl+2CXz7T4bzU=
-Message-ID: <84144f020703090352s3ecd8ab4pdde6f24f6cf7cc47@mail.gmail.com>
-Date: Fri, 9 Mar 2007 13:52:00 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: [PATCH 2/7] revoke: add f_light flag for struct file
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, serue@us.ibm.com
-In-Reply-To: <200703091213.35691.dada1@cosmosbay.com>
+	Fri, 9 Mar 2007 06:52:16 -0500
+Received: from hempcity.net ([81.171.100.190]:50286 "EHLO hempcity.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964883AbXCILwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 06:52:15 -0500
+X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Mar 2007 06:52:15 EST
+Message-ID: <36417.84.81.1.164.1173440696.squirrel@webmail.coolzero.info>
+Date: Fri, 9 Mar 2007 12:44:56 +0100 (CET)
+Subject: Re: PCI failures during boot
+From: "Jim van Wel" <jim@coolzero.info>
+To: linux-kernel@vger.kernel.org
+Reply-To: jim@coolzero.info
+User-Agent: SquirrelMail/1.4.8-4.el4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703091014110.32320@sbz-30.cs.Helsinki.FI>
-	 <200703091108.58371.dada1@cosmosbay.com>
-	 <84144f020703090243j6fd49b5eoa23f4cc12866725a@mail.gmail.com>
-	 <200703091213.35691.dada1@cosmosbay.com>
-X-Google-Sender-Auth: 3160e98438f0f17f
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/9/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> Then just drop the fget_light() 'optimisation' and always take a reference
-> (atomic on f_count) regardless of single-thread or not. Instead of dirtying
-> f_light, just do the straightforward thing and be with it.
+Hi there,
 
-That's what I did first but akpm thought it was "unfortunate." Hmm.. ;-)
+Please try first a newer kernel of FC6.
+
+2.6.19-1.2911.6.5.fc6
+
+That's 2.6.19.7.
+
+That's the newest one.
+
+Greetings,
+Jim,
+
+> Hi,
+>
+> I just bought a brand new notebook and wanted to install FC6 on it.
+Unfornately there are some issues reported by the console during boot.
+Here are some reported errors, I attached the full dmesg and other
+information just in case.
+>
+> ACPI: bus type pci registered
+> PCI: Using MMCONFIG at e0000000
+> ACPI: Interpreter enabled
+> ACPI: Using IOAPIC for interrupt routing
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> PCI: Probing PCI hardware (bus 00)
+> PCI: Ignoring BAR0-3 of IDE controller 0000:00:1f.2
+> Boot video device is 0000:01:00.0
+> PCI: Transparent bridge - 0000:00:1e.0
+> PCI: Bus #07 (-#0a) is hidden behind transparent bridge #06 (-#07) (try
+'pci=assign-busses')
+> Please report the result to linux-kernel to fix this permanently
+>
+> and later:
+>
+> PCI: Using ACPI for IRQ routing
+> PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a
+report
+> PCI: Cannot allocate resource region 7 of bridge 0000:00:1c.0
+> PCI: Cannot allocate resource region 8 of bridge 0000:00:1c.0
+> NetLabel: Initializing
+> NetLabel:  domain hash size = 128
+>
+> I currently can't update my kernel version and I'm running a
+> 2.6.18-1.2798.fc6 kernel.
+>
+> Could anybody give me some advices please ?
+> --
+> Francis
+>
+
+
+
