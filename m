@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992893AbXCICSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965259AbXCICWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992893AbXCICSU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 21:18:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992886AbXCICST
+	id S965259AbXCICWG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 21:22:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965267AbXCICWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 21:18:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58231
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2992893AbXCICSS (ORCPT
+	Thu, 8 Mar 2007 21:22:06 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:43980 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965259AbXCICWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 21:18:18 -0500
-Date: Thu, 08 Mar 2007 18:18:18 -0800 (PST)
-Message-Id: <20070308.181818.116353410.davem@davemloft.net>
-To: mathieu.desnoyers@polymtl.ca
-Cc: akpm@linux-foundation.org, rschultz@google.com, ak@suse.de,
-       mbligh@google.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix atomicity of TIF update in flush_thread() for
- x86_64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070309021553.GA8387@Krystal>
-References: <20070309021553.GA8387@Krystal>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Mar 2007 21:22:04 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 8 Mar 2007 18:22:00 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 2/5] signalfd v4 - signalfd core ...
+In-Reply-To: <Pine.LNX.4.64.0703081707280.3670@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0703081820040.3670@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703081707280.3670@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Thu, 8 Mar 2007 21:15:53 -0500
+On Thu, 8 Mar 2007, Davide Libenzi wrote:
 
-> Fix atomicity of TIF update in flush_thread() for x86_64
-> 
-> Race :
-> 
-> parent process executing :
-> sys_ptrace()
->  (lock_kernel())
->  (ptrace_get_task_struct(pid))
->  arch_ptrace()
->    ptrace_detach()
->      ptrace_disable(child);
->        clear_singlestep(child);
->          clear_tsk_thread_flag(child, TIF_SINGLESTEP);
->          (which clears the TIF_SINGLESTEP flag atomically from a different
-> 	  process)
->  (put_task_struct(child))
->  (unlock_kernel())
-> 
-> And at the same time, in the child process :
-> sys_execve()
->  do_execve()
->    search_binary_handler()
->      load_elf_binary()
->        flush_old_exec()
->          flush_thread()
->            doing a non-atomic thread flag update 
-> 
-> It applies on 2.6.20.
-> 
-> Signed-off-by: Rebecca Schultz <rschultz@google.com>
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> +static ssize_t signalfd_read(struct file *file, char *buf, size_t count,
+> +			     loff_t *ppos)
+> +{
+> +	struct signalfd_ctx *ctx = file->private_data;
+> +	struct sighand_struct *sighand = ctx->sighand;
+> +	ssize_t res = 0;
+> +	int signo = 0;
+> +	siginfo_t info;
+> +	DECLARE_WAITQUEUE(wait, current);
+> +
+> +	if (count < sizeof(struct signalfd_siginfo))
+> +		return -EINVAL;
+> +	spin_lock_irq(&sighand->siglock);
+> +	if (unlikely(sighand != ctx->tsk->sighand))
+> +		goto out_unlock;
+> +	res = -EAGAIN;
+> +	if ((signo = dequeue_signal(ctx->tsk, &ctx->sigmask, &info)) != 0 &&
 
-Please fix all platforms, not just your favorite one, kthx.
-:-)
+Grrr, never change the code after you tested it. The above is clearly:
+
+	if ((signo = dequeue_signal(ctx->tsk, &ctx->sigmask, &info)) == 0 &&
+		...
+
+
+
+- Davide
+
+
