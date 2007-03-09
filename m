@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767364AbXCIQ2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767369AbXCIQa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767364AbXCIQ2o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 11:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767363AbXCIQ2o
+	id S1767369AbXCIQa5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 11:30:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767370AbXCIQa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 11:28:44 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37282 "EHLO e4.ny.us.ibm.com"
+	Fri, 9 Mar 2007 11:30:57 -0500
+Received: from mail.emacinc.com ([63.245.244.68]:60345 "EHLO mail.emacinc.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767364AbXCIQ2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 11:28:43 -0500
-Date: Fri, 9 Mar 2007 10:28:39 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Arnd Bergmann <arnd@arndb.de>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       hch@infradead.org, alan@lxorguk.ukuu.org.uk, serue@us.ibm.com
-Subject: Re: [PATCH 7/7] revoke: wire up s390 system calls
-Message-ID: <20070309162839.GE5948@sergelap.austin.ibm.com>
-References: <Pine.LNX.4.64.0703091016340.32320@sbz-30.cs.Helsinki.FI> <200703091611.09737.arnd@arndb.de> <1173454580.14888.1.camel@localhost> <45F18016.4030502@cs.helsinki.fi> <1173456737.14888.3.camel@localhost>
+	id S1767369AbXCIQa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 11:30:56 -0500
+From: NZG <ngustavson@emacinc.com>
+Organization: EMAC.Inc
+To: David Brownell <david-b@pacbell.net>
+Date: Fri, 9 Mar 2007 10:31:19 -0600
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+References: <200703070955.31370.david-b@pacbell.net>
+In-Reply-To: <200703070955.31370.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173456737.14888.3.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703091031.19758.ngustavson@emacinc.com>
+X-SA-Exim-Connect-IP: 63.245.244.67
+X-SA-Exim-Mail-From: ngustavson@emacinc.com
+Subject: Re: passing function pointers through platform devices?
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Spam-Relay: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Martin Schwidefsky (schwidefsky@de.ibm.com):
-> On Fri, 2007-03-09 at 17:41 +0200, Pekka Enberg wrote:
-> > Martin Schwidefsky wrote:
-> > > Yes, please put me or Heiko on CC if you add system calls to s390.
-> > 
-> > Ok, sorry about that. I would expect akpm to send it to you guys though 
-> > whenever revoke graduates from -mm and not merge it to mainline.
-> 
-> Yes, but nobody is perfect. Even Andrew sometimes forgets to add people
-> to CC who should know about "stuff". It would be nice if the CC-line is
-> added from the start.
+On Wednesday 07 March 2007 11:55 am, David Brownell wrote:
+> > I'm developing an SPI- bus >MMC/SD block driver translation layer.
+>
+> Another one?  There's already been significant work in that area.  See for
+> example
+>
+>   http://marc.theaimsgroup.com/?l=linux-kernel&m=117000652529003&w=2
+Nice, I'll build on that, my previous work ignored the SPI/MMC layers (because 
+they didn't exist at the time) and just build a stacked driver on a character 
+SPI driver.  This gives me some direction as to how to proceed.
 
-Sorry, I should have cc:d you when I sent my testing patch to Pekka.
+> Which admittedly didn't behave when I just put it onto my test rig,
+> but seems nonetheless to be a significant step forward.  It's not like
+> everyone has hardware that can use such a driver after all!
+True, but it's fairly common right now, until every microcontroller gets a 
+hardware SD controller (which seems to be the trend)
 
--serge
+> That's how it's done in that patch.  The model being what the PXA MMC/SD
+> card driver does, since that's the most generic model I found ... handling
+> for example systems which need to poll for card detect, as well as ones
+> that can use real gpio based IRQs.  The mmc_spi driver doesn't need to know
+> which kind of platform it's got.
+Sounds good, thanks
+
+NZG
+
