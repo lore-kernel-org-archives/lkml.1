@@ -1,104 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767521AbXCITwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767526AbXCIT51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767521AbXCITwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 14:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767525AbXCITwU
+	id S1767526AbXCIT51 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 14:57:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767529AbXCIT51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 14:52:20 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46292 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767521AbXCITwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 14:52:19 -0500
-Date: Fri, 9 Mar 2007 11:51:09 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
-In-Reply-To: <20070309192420.GA27747@elte.hu>
-Message-ID: <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org>
-References: <20070309180230.GA17988@elte.hu>
- <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org>
- <20070309192420.GA27747@elte.hu>
+	Fri, 9 Mar 2007 14:57:27 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:25955 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767526AbXCIT5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 14:57:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Un/Avn5hLwI1DsK7OcM9e6MZ+urWazW5dYkoQpQr6IeFymykN5ViGCYE/H0bPaQ4y/fgib3AIB96vhpsjLtJZSYJ7EG1G7qnDr9Ddk/+IadhSqxEagpYljKnxyf/nb7F/E1Ke2XqxSlML11LwUunqD4XoOloZTVC+d3062cTxcQ=
+Message-ID: <45F1BC20.1090908@gmail.com>
+Date: Fri, 09 Mar 2007 20:57:20 +0100
+From: johan henriksson <jhn98032@gmail.com>
+User-Agent: Mail/News 1.5.0.8 (X11/20061119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [patch 2.6.20-1] radeonfb: Add support for Radeon xpress 200m
+References: <45ECB2D0.3080205@telia.com> <45EEEBC9.1010002@redhat.com>	 <45EF275E.4060300@gmail.com> <45F03305.8040507@redhat.com>	 <45F062E1.8050007@gmail.com> <1173445234.24454.13.camel@localhost.localdomain>
+In-Reply-To: <1173445234.24454.13.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Mar 2007, Ingo Molnar wrote:
+Benjamin Herrenschmidt wrote:
+>> -		radeonfb_pm_init(rinfo, rinfo->is_mobility ? 1 : -1, ignore_devlist, force_sleep);
+>> +		radeonfb_pm_init(rinfo, rinfo->is_mobility && rinfo->family != CHIP_FAMILY_RS480 ? 1 : -1, ignore_devlist, force_sleep);
 > 
-> Unfortunately i still dont see where i'm wrong, and i'm really trying to 
-> understand your argument. Is your argument that as long as an ABI (VMI) 
-> is never directly used but only used via wrapper functions 
-> (paravirt_ops)
+> I'd rather you add a check for RS480 inside radeonfb_pm_*
+> 
+> Ben.
+> 
+> 
 
-No.
+Something like this?
 
-My argument is utternly and *purely* that you've been confusing the 
-discussion by using the wrong terms, and as a result, you've been 
-discussing things that aren't *relevant*.
 
-You haven't been saying anything constructive.
-
-For example, here's a *constructive* thing you could have said, and never 
-actually did:
-
- - paravirt_op->write_apic should not exist
-
-   anything that needs to write to the apic should ether
-
-    (a) have been caught much earlier in the paravirt stack, ie it's a 
-	"disable interrupt" kind of operation, and should never even have 
-	gotten to the APIC write in the first place, but been handled by 
-	the paravirtualized handler.
-    (b) just be emulated as an APIC write (and if the emulation isn't good 
-	enough, screw it)
-
-In other words, to be *constructive*, you need to point out particular 
-and practical problem spots, instead of just ranting about any 
-"paravirtualized ABI".
-
-Of *course* there is an ABI at some point behind any API. Why do you harp 
-on that? It's irrelevant. Any API will always end up being instantiated 
-into a binary thing at some point, and that binary thing will have to work 
-with some particular version of a hardware/infrastructure combination, but 
-that has *nothing* to do with anything.
-
-The x86 instruction set is an ABI. Our API's eventually tend to be 
-compiled to something like that ABI, and yes, some ABI's may not be able 
-to do certain things. For example, on the 32-bit x86 ABI, there are no 
-interfaces for address space identifiers, and the wrappers become a no-op 
-that just don't do anything, and if you want fast context switches between 
-two contexts, you're screwed.
-
-Similarly, maybe the VMI ABI doesn't allow for something that the kernel 
-wants to do efficiently. Big deal. What relevance does that have to do 
-with anything, except the fact that if true, the VMWare people are 
-screwed? It's *their* problem.
-
-So please
-
- - point out things that are badly done. I agree that apic_write() simply 
-   shouldn't be an ABI point at all. But do so *directly* without some 
-   ranting about other things that aren't relevant. Your "1400 hooks" rant 
-   was pointless - there aren't 1400 hooks at all. There are 1400 
-   call-sites, but that's like saying that the "mov" operation is a bad 
-   instruction, because there are 5 million mov instructions in the 
-   kernel.
-
- - Realize that if VMI has problems, it's not *your* problem, or even the
-   kernels problem. It's purely a VMI problem. I don't understand why you 
-   care, or why you think we should care.
-
- - and I guess we can also stop cc'ing me in the first place. I don't even 
-   think virtualization is very interesting. I'd much rather flame people 
-   about bad taste in more important areas ;)
-
-Thanks,
-
-				Linus
+---
+diff -upr linux-2.6.20.1-vanilla/drivers/video/aty/ati_ids.h linux-2.6.20.1/drivers/video/aty/ati_ids.h
+--- linux-2.6.20.1-vanilla/drivers/video/aty/ati_ids.h	Tue Feb 20 07:34:32 2007
++++ linux-2.6.20.1/drivers/video/aty/ati_ids.h	Fri Mar  9 20:30:09 2007
+@@ -209,4 +209,4 @@
+ #define PCI_CHIP_R423_5D57              0x5D57
+ #define PCI_CHIP_RS350_7834             0x7834
+ #define PCI_CHIP_RS350_7835             0x7835
+-
++#define PCI_CHIP_RS480_5955             0x5955
+diff -upr linux-2.6.20.1-vanilla/drivers/video/aty/radeon_base.c linux-2.6.20.1/drivers/video/aty/radeon_base.c
+--- linux-2.6.20.1-vanilla/drivers/video/aty/radeon_base.c	Tue Feb 20 07:34:32 2007
++++ linux-2.6.20.1/drivers/video/aty/radeon_base.c	Fri Mar  9 20:42:31 2007
+@@ -100,6 +100,8 @@
+ 	{ PCI_VENDOR_ID_ATI, id, PCI_ANY_ID, PCI_ANY_ID, 0, 0, (flags) | (CHIP_FAMILY_##family) }
+ 
+ static struct pci_device_id radeonfb_pci_table[] = {
++        /* Radeon Xpress 200m */
++	CHIP_DEF(PCI_CHIP_RS480_5955,   RS480,  CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
+ 	/* Mobility M6 */
+ 	CHIP_DEF(PCI_CHIP_RADEON_LY, 	RV100,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+ 	CHIP_DEF(PCI_CHIP_RADEON_LZ,	RV100,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+@@ -1990,7 +1992,8 @@ static void radeon_identify_vram(struct 
+ 	/* framebuffer size */
+         if ((rinfo->family == CHIP_FAMILY_RS100) ||
+             (rinfo->family == CHIP_FAMILY_RS200) ||
+-            (rinfo->family == CHIP_FAMILY_RS300)) {
++            (rinfo->family == CHIP_FAMILY_RS300) ||
++	    (rinfo->family == CHIP_FAMILY_RS480) ) {
+           u32 tom = INREG(NB_TOM);
+           tmp = ((((tom >> 16) - (tom & 0xffff) + 1) << 6) * 1024);
+ 
+diff -upr linux-2.6.20.1-vanilla/drivers/video/aty/radeon_pm.c linux-2.6.20.1/drivers/video/aty/radeon_pm.c
+--- linux-2.6.20.1-vanilla/drivers/video/aty/radeon_pm.c	Tue Feb 20 07:34:32 2007
++++ linux-2.6.20.1/drivers/video/aty/radeon_pm.c	Fri Mar  9 20:39:54 2007
+@@ -2826,11 +2826,15 @@ void radeonfb_pm_init(struct radeonfb_in
+ 	rinfo->pm_reg = pci_find_capability(rinfo->pdev, PCI_CAP_ID_PM);
+ 
+ 	/* Enable/Disable dynamic clocks: TODO add sysfs access */
+-	rinfo->dynclk = dynclk;
+-	if (dynclk == 1) {
++	if (rinfo->family == CHIP_FAMILY_RS480)
++		rinfo->dynclk = -1;
++	else
++		rinfo->dynclk = dynclk; 
++	
++	if (rinfo->dynclk == 1) {
+ 		radeon_pm_enable_dynamic_mode(rinfo);
+ 		printk("radeonfb: Dynamic Clock Power Management enabled\n");
+-	} else if (dynclk == 0) {
++	} else if (rinfo->dynclk == 0) {
+ 		radeon_pm_disable_dynamic_mode(rinfo);
+ 		printk("radeonfb: Dynamic Clock Power Management disabled\n");
+ 	}
+diff -upr linux-2.6.20.1-vanilla/drivers/video/aty/radeonfb.h linux-2.6.20.1/drivers/video/aty/radeonfb.h
+--- linux-2.6.20.1-vanilla/drivers/video/aty/radeonfb.h	Tue Feb 20 07:34:32 2007
++++ linux-2.6.20.1/drivers/video/aty/radeonfb.h	Fri Mar  9 20:30:09 2007
+@@ -48,6 +48,7 @@ enum radeon_family {
+ 	CHIP_FAMILY_RV350,
+ 	CHIP_FAMILY_RV380,    /* RV370/RV380/M22/M24 */
+ 	CHIP_FAMILY_R420,     /* R420/R423/M18 */
++	CHIP_FAMILY_RS480,
+ 	CHIP_FAMILY_LAST,
+ };
+ 
+@@ -64,7 +65,8 @@ enum radeon_family {
+ 				((rinfo)->family == CHIP_FAMILY_RV350) || \
+ 				((rinfo)->family == CHIP_FAMILY_R350)  || \
+ 				((rinfo)->family == CHIP_FAMILY_RV380) || \
+-				((rinfo)->family == CHIP_FAMILY_R420))
++				((rinfo)->family == CHIP_FAMILY_R420)  || \
++		                ((rinfo)->family == CHIP_FAMILY_RS480) )
+ 
+ /*
+  * Chip flags
