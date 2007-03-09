@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767265AbXCINXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767275AbXCIN3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767265AbXCINXs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 08:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767275AbXCINXs
+	id S1767275AbXCIN3X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 08:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767278AbXCIN3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 08:23:48 -0500
-Received: from hu-out-0506.google.com ([72.14.214.231]:27826 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767265AbXCINXr (ORCPT
+	Fri, 9 Mar 2007 08:29:23 -0500
+Received: from MAIL.13thfloor.at ([213.145.232.33]:50769 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767275AbXCIN3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 08:23:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=E34I/GcuKfdfYQzferfEYv1Wp3wroiQdJsMpvYvpjO18yLtsF9f/BSyfL45N2JwnkLHYyYyTCZd5mvLsOBYQC1or1TwP91ScbPD9lu84zX1dAXn9emkLde147zQaoszZeJ3rX7z8yW9fKSOaAlxX1HgyNevCEnnOUJaIoILfYQ0=
-Message-ID: <1e1a7e1b0703090523l5602f325k17560a9ee0b467e5@mail.gmail.com>
-Date: Sat, 10 Mar 2007 00:23:40 +1100
-From: James <iphitus@gmail.com>
-To: "Ivan Babkin" <ivan.babkin@miclab.chem.msu.ru>
-Subject: Re: Experimental driver for Ricoh Bay1Controller SD Card readers
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45D4E000.6050403@miclab.chem.msu.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Mar 2007 08:29:23 -0500
+Date: Fri, 9 Mar 2007 14:29:22 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: Kirill Korotaev <dev@sw.ru>
+Cc: Paul Menage <menage@google.com>, pj@sgi.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, winget@google.com,
+       containers@lists.osdl.org, akpm@linux-foundation.org,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru
+Subject: Re: [PATCH 1/2] rcfs core patch
+Message-ID: <20070309132922.GB14907@MAIL.13thfloor.at>
+Mail-Followup-To: Kirill Korotaev <dev@sw.ru>,
+	Paul Menage <menage@google.com>, pj@sgi.com,
+	"Eric W. Biederman" <ebiederm@xmission.com>, winget@google.com,
+	containers@lists.osdl.org, akpm@linux-foundation.org,
+	ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	xemul@sw.ru
+References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <6599ad830703080110j15aa961anc39954928cbc3851@mail.gmail.com> <20070309003819.GA4506@MAIL.13thfloor.at> <45F123CF.2000902@sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45D4E000.6050403@miclab.chem.msu.ru>
+In-Reply-To: <45F123CF.2000902@sw.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/16/07, Ivan Babkin <ivan.babkin@miclab.chem.msu.ru> wrote:
-> Thank for the job you've done!
-> Your driver works with 1 Gb sd-card (x86_64 suse's 2.16.18.2 kernel).
-> Read rate for me was around 250 Kb/s, write - 28 Kb/s (using dd utility).
-> BTW, I get continuous flow of "sdricoh_cs: timeout waiting for data"
-> messages in dmesg.
+On Fri, Mar 09, 2007 at 12:07:27PM +0300, Kirill Korotaev wrote:
+>>  nobody actually cares about a precise accounting and
+>>  calculating shares or partitions of whatever resource,
+>>  all that matters is that you have a way to prevent a
+>>  potential hostile environment from sucking up all your
+>>  resources (or even a single one) resulting in a DoS
 
-Works for me too. Using a 512mb SD card, and a 256miniSD in an adaptor.
+> This is not true. People care. Reasons:
+>   - resource planning
+>   - fairness
+>   - guarantees
 
-Managed to mount both SD cards and play mp3's off each with mpg321.
-Literally music to my ears. I used the 0.1 release on the homepage, so
-it still oopsed on removal when I hadnt unmounted.
+let me make that a little more clear ...
 
-Laptop is an Acer Travelmate 370 for the record.
+_nobody_ cares wether a shared memory page is
+accounted as full page or as fraction of a page
+(depending on the number of guests sharing it)
+as long as the accounted amount is substracted
+correctly when the page is disposed 
 
-James
+so there _is_ a difference between _false_
+accounting (which seems what you are referring
+to in the next paragraph) and imprecise, but
+consistant accounting (which is what I was 
+talking about)
 
--- 
-iphitus // Arch Developer // kernel26beyond // iphitus.loudas.com
+best,
+Herbert
+
+>   What you talk is about security only. Not the above issues.
+>   So good precision is required. If there is no precision at all,
+>   security sucks as well and can be exploited, e.g. for CPU
+>   schedulers doing an accounting based on jiffies accounting in
+>   scheduler_tick() it is easy to build an application consuming
+>   90% of CPU, but ~0% from scheduler POV.
+
+> Kirill
