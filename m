@@ -1,298 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767373AbXCIQhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767382AbXCIQiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767373AbXCIQhP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 11:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767375AbXCIQhP
+	id S1767382AbXCIQiJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 11:38:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767383AbXCIQiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 11:37:15 -0500
-Received: from MAIL.13thfloor.at ([213.145.232.33]:49726 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767373AbXCIQhN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 11:37:13 -0500
-Date: Fri, 9 Mar 2007 17:37:11 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: Pavel Emelianov <xemul@sw.ru>
-Cc: balbir@in.ibm.com, containers@lists.osdl.org,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/7] Resource counters
-Message-ID: <20070309163711.GA3647@MAIL.13thfloor.at>
-Mail-Followup-To: Pavel Emelianov <xemul@sw.ru>, balbir@in.ibm.com,
-	containers@lists.osdl.org, Paul Menage <menage@google.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru> <45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru>
+	Fri, 9 Mar 2007 11:38:09 -0500
+Received: from lug-owl.de ([195.71.106.12]:55850 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767382AbXCIQiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 11:38:07 -0500
+Date: Fri, 9 Mar 2007 17:38:05 +0100
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       rmk@arm.linux.org.uk, sam@ravnborg.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] Complain about missing system calls.
+Message-ID: <20070309163805.GV18564@lug-owl.de>
+Mail-Followup-To: Andi Kleen <andi@firstfloor.org>,
+	David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	rmk@arm.linux.org.uk, sam@ravnborg.org, linux-arch@vger.kernel.org
+References: <1173394873.3461.510.camel@pmac.infradead.org> <p737itqbdnl.fsf@bingen.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qa1NXTiqN6KSzHv0"
 Content-Disposition: inline
-In-Reply-To: <45EE6769.9060701@sw.ru>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <p737itqbdnl.fsf@bingen.suse.de>
+X-Operating-System: Linux mail 2.6.12.3lug-owl 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 10:19:05AM +0300, Pavel Emelianov wrote:
-> Balbir Singh wrote:
-> > Pavel Emelianov wrote:
-> >> Introduce generic structures and routines for
-> >> resource accounting.
-> >>
-> >> Each resource accounting container is supposed to
-> >> aggregate it, container_subsystem_state and its
-> >> resource-specific members within.
-> >>
-> >>
-> >> ------------------------------------------------------------------------
-> >>
-> >> diff -upr linux-2.6.20.orig/include/linux/res_counter.h
-> >> linux-2.6.20-0/include/linux/res_counter.h
-> >> --- linux-2.6.20.orig/include/linux/res_counter.h    2007-03-06
-> >> 13:39:17.000000000 +0300
-> >> +++ linux-2.6.20-0/include/linux/res_counter.h    2007-03-06
-> >> 13:33:28.000000000 +0300
-> >> @@ -0,0 +1,83 @@
-> >> +#ifndef __RES_COUNTER_H__
-> >> +#define __RES_COUNTER_H__
-> >> +/*
-> >> + * resource counters
-> >> + *
-> >> + * Copyright 2007 OpenVZ SWsoft Inc
-> >> + *
-> >> + * Author: Pavel Emelianov <xemul@openvz.org>
-> >> + *
-> >> + */
-> >> +
-> >> +#include <linux/container.h>
-> >> +
-> >> +struct res_counter {
-> >> +    unsigned long usage;
-> >> +    unsigned long limit;
-> >> +    unsigned long failcnt;
-> >> +    spinlock_t lock;
-> >> +};
-> >> +
-> >> +enum {
-> >> +    RES_USAGE,
-> >> +    RES_LIMIT,
-> >> +    RES_FAILCNT,
-> >> +};
-> >> +
-> >> +ssize_t res_counter_read(struct res_counter *cnt, int member,
-> >> +        const char __user *buf, size_t nbytes, loff_t *pos);
-> >> +ssize_t res_counter_write(struct res_counter *cnt, int member,
-> >> +        const char __user *buf, size_t nbytes, loff_t *pos);
-> >> +
-> >> +static inline void res_counter_init(struct res_counter *cnt)
-> >> +{
-> >> +    spin_lock_init(&cnt->lock);
-> >> +    cnt->limit = (unsigned long)LONG_MAX;
-> >> +}
-> >> +
-> > 
-> > Is there any way to indicate that there are no limits on this container.
-> 
-> Yes - LONG_MAX is essentially a "no limit" value as no
-> container will ever have such many files :)
 
--1 or ~0 is a viable choice for userspace to
-communicate 'infinite' or 'unlimited'
+--qa1NXTiqN6KSzHv0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > LONG_MAX is quite huge, but still when the administrator wants to
-> > configure a container to *un-limited usage*, it becomes hard for
-> > the administrator.
-> > 
-> >> +static inline int res_counter_charge_locked(struct res_counter *cnt,
-> >> +        unsigned long val)
-> >> +{
-> >> +    if (cnt->usage <= cnt->limit - val) {
-> >> +        cnt->usage += val;
-> >> +        return 0;
-> >> +    }
-> >> +
-> >> +    cnt->failcnt++;
-> >> +    return -ENOMEM;
-> >> +}
-> >> +
-> >> +static inline int res_counter_charge(struct res_counter *cnt,
-> >> +        unsigned long val)
-> >> +{
-> >> +    int ret;
-> >> +    unsigned long flags;
-> >> +
-> >> +    spin_lock_irqsave(&cnt->lock, flags);
-> >> +    ret = res_counter_charge_locked(cnt, val);
-> >> +    spin_unlock_irqrestore(&cnt->lock, flags);
-> >> +    return ret;
-> >> +}
-> >> +
-> > 
-> > Will atomic counters help here.
-> 
-> I'm afraid no. We have to atomically check for limit and alter
-> one of usage or failcnt depending on the checking result. Making
-> this with atomic_xxx ops will require at least two ops.
+On Fri, 2007-03-09 17:11:10 +0100, Andi Kleen <andi@firstfloor.org> wrote:
+> David Woodhouse <dwmw2@infradead.org> writes:
+> > Most system calls seem to get added to i386 first. This patch
+> > automatically generates a warning for any new system call which is
+> > implemented on i386 but not the architecture currently being compiled.
+> > On PowerPC at the moment, for example, it results in these warnings:
+> > init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_rang=
+e not implemented
+> > init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not imp=
+lemented
+> > init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait no=
+t implemented
+>=20
+> I think a better solution would be to finally switch to auto generated
+> system call tables for newer system calls. The original reason why the
+> architectures have different system call numbers -- compatibility with
+> another "native" Unix -- is completely obsolete now. This leaves only
+> minor differences of compat stub vs non compat stub and a few
+> architecture specific calls.
+>=20
+> Of course the existing syscall numbers can't be changed, but for all new=
+=20
+> calls one could just add automatically for everybody.
+>=20
+> A global table with two entries (compat and non compat) and a per arch=20
+> override table should be sufficient.
 
-Linux-VServer does the accounting with atomic counters,
-so that works quite fine, just do the checks at the
-beginning of whatever resource allocation and the
-accounting once the resource is acquired ...
+Not everybody has a simple indexed list of pointers :)  For example,
+for vax-linux, we use a struct per syscall with the expected number of
+on-stack longwords for the call.
 
-> If we'll remove failcnt this would look like
->    while (atomic_cmpxchg(...))
-> which is also not that good.
-> 
-> Moreover - in RSS accounting patches I perform page list
-> manipulations under this lock, so this also saves one atomic op.
+So if something "new" is coming up, please keep in mind that it should
+be flexible enough to represent that. :)
 
-it still hasn't been shown that this kind of RSS limit
-doesn't add big time overhead to normal operations
-(inside and outside of such a resource container)
+MfG, JBG
 
-note that the 'usual' memory accounting is much more
-lightweight and serves similar purposes ...
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:         "really soon now":      an unspecified period of time=
+, likly to
+the second  :                                 be greater than any reasonabl=
+e definition
+                                              of "soon".
 
-best,
-Herbert
+--qa1NXTiqN6KSzHv0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> >> +static inline void res_counter_uncharge_locked(struct res_counter *cnt,
-> >> +        unsigned long val)
-> >> +{
-> >> +    if (unlikely(cnt->usage < val)) {
-> >> +        WARN_ON(1);
-> >> +        val = cnt->usage;
-> >> +    }
-> >> +
-> >> +    cnt->usage -= val;
-> >> +}
-> >> +
-> >> +static inline void res_counter_uncharge(struct res_counter *cnt,
-> >> +        unsigned long val)
-> >> +{
-> >> +    unsigned long flags;
-> >> +
-> >> +    spin_lock_irqsave(&cnt->lock, flags);
-> >> +    res_counter_uncharge_locked(cnt, val);
-> >> +    spin_unlock_irqrestore(&cnt->lock, flags);
-> >> +}
-> >> +
-> >> +#endif
-> >> diff -upr linux-2.6.20.orig/init/Kconfig linux-2.6.20-0/init/Kconfig
-> >> --- linux-2.6.20.orig/init/Kconfig    2007-03-06 13:33:28.000000000 +0300
-> >> +++ linux-2.6.20-0/init/Kconfig    2007-03-06 13:33:28.000000000 +0300
-> >> @@ -265,6 +265,10 @@ config CPUSETS
-> >>
-> >>        Say N if unsure.
-> >>
-> >> +config RESOURCE_COUNTERS
-> >> +    bool
-> >> +    select CONTAINERS
-> >> +
-> >>  config SYSFS_DEPRECATED
-> >>      bool "Create deprecated sysfs files"
-> >>      default y
-> >> diff -upr linux-2.6.20.orig/kernel/Makefile
-> >> linux-2.6.20-0/kernel/Makefile
-> >> --- linux-2.6.20.orig/kernel/Makefile    2007-03-06 13:33:28.000000000
-> >> +0300
-> >> +++ linux-2.6.20-0/kernel/Makefile    2007-03-06 13:33:28.000000000 +0300
-> >> @@ -51,6 +51,7 @@ obj-$(CONFIG_RELAY) += relay.o
-> >>  obj-$(CONFIG_UTS_NS) += utsname.o
-> >>  obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
-> >>  obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
-> >> +obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
-> >>
-> >>  ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
-> >>  # According to Alan Modra <alan@linuxcare.com.au>, the
-> >> -fno-omit-frame-pointer is
-> >> diff -upr linux-2.6.20.orig/kernel/res_counter.c
-> >> linux-2.6.20-0/kernel/res_counter.c
-> >> --- linux-2.6.20.orig/kernel/res_counter.c    2007-03-06
-> >> 13:39:17.000000000 +0300
-> >> +++ linux-2.6.20-0/kernel/res_counter.c    2007-03-06
-> >> 13:33:28.000000000 +0300
-> >> @@ -0,0 +1,72 @@
-> >> +/*
-> >> + * resource containers
-> >> + *
-> >> + * Copyright 2007 OpenVZ SWsoft Inc
-> >> + *
-> >> + * Author: Pavel Emelianov <xemul@openvz.org>
-> >> + *
-> >> + */
-> >> +
-> >> +#include <linux/parser.h>
-> >> +#include <linux/fs.h>
-> >> +#include <linux/res_counter.h>
-> >> +#include <asm/uaccess.h>
-> >> +
-> >> +static inline unsigned long *res_counter_member(struct res_counter
-> >> *cnt, int member)
-> >> +{
-> >> +    switch (member) {
-> >> +    case RES_USAGE:
-> >> +        return &cnt->usage;
-> >> +    case RES_LIMIT:
-> >> +        return &cnt->limit;
-> >> +    case RES_FAILCNT:
-> >> +        return &cnt->failcnt;
-> >> +    };
-> >> +
-> >> +    BUG();
-> >> +    return NULL;
-> >> +}
-> >> +
-> >> +ssize_t res_counter_read(struct res_counter *cnt, int member,
-> >> +        const char __user *userbuf, size_t nbytes, loff_t *pos)
-> >> +{
-> >> +    unsigned long *val;
-> >> +    char buf[64], *s;
-> >> +
-> >> +    s = buf;
-> >> +    val = res_counter_member(cnt, member);
-> >> +    s += sprintf(s, "%lu\n", *val);
-> >> +    return simple_read_from_buffer((void __user *)userbuf, nbytes,
-> >> +            pos, buf, s - buf);
-> >> +}
-> >> +
-> >> +ssize_t res_counter_write(struct res_counter *cnt, int member,
-> >> +        const char __user *userbuf, size_t nbytes, loff_t *pos)
-> >> +{
-> >> +    int ret;
-> >> +    char *buf, *end;
-> >> +    unsigned long tmp, *val;
-> >> +
-> >> +    buf = kmalloc(nbytes + 1, GFP_KERNEL);
-> >> +    ret = -ENOMEM;
-> >> +    if (buf == NULL)
-> >> +        goto out;
-> >> +
-> >> +    buf[nbytes] = 0;
-> >> +    ret = -EFAULT;
-> >> +    if (copy_from_user(buf, userbuf, nbytes))
-> >> +        goto out_free;
-> >> +
-> >> +    ret = -EINVAL;
-> >> +    tmp = simple_strtoul(buf, &end, 10);
-> >> +    if (*end != '\0')
-> >> +        goto out_free;
-> >> +
-> >> +    val = res_counter_member(cnt, member);
-> >> +    *val = tmp;
-> >> +    ret = nbytes;
-> >> +out_free:
-> >> +    kfree(buf);
-> >> +out:
-> >> +    return ret;
-> >> +}
-> >>
-> > 
-> > 
-> > These bits look a little out of sync, with no users for these routines in
-> > this patch. Won't you get a compiler warning, compiling this bit alone?
-> > 
-> 
-> Nope - when you have a non-static function without users in a
-> file no compiler warning produced.
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/containers
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFF8Y1tHb1edYOZ4bsRAtTbAJ9pGP5OP+CAJDhS2ToKtazUmhEdAACfWTh8
+7TLIUGzDrO/z2z3buGDL3uI=
+=R054
+-----END PGP SIGNATURE-----
+
+--qa1NXTiqN6KSzHv0--
