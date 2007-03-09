@@ -1,114 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992865AbXCIBgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992875AbXCIBmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992865AbXCIBgt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 20:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992868AbXCIBgt
+	id S2992875AbXCIBmj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 20:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992873AbXCIBmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 20:36:49 -0500
-Received: from smtpout.mac.com ([17.250.248.171]:55792 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992865AbXCIBgs convert rfc822-to-8bit (ORCPT
+	Thu, 8 Mar 2007 20:42:39 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:57483 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992872AbXCIBmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 20:36:48 -0500
-In-Reply-To: <45EFBA14.9090307@cosmosbay.com>
-References: <45ED1A3C.6030707@argo.co.il> <200703071906.58405.dada1@cosmosbay.com> <Pine.LNX.4.64.0703071022390.5963@woody.linux-foundation.org> <200703071952.13219.dada1@cosmosbay.com> <20070307221401.GA16938@kryten> <Pine.LNX.4.64.0703071453080.5963@woody.linux-foundation.org> <f2b55d220703071725w7c09b93bgbf357aeb25a21c2b@mail.gmail.com> <6E1C86DF-D512-418C-B270-BC5C4316BC0A@mac.com> <45EFBA14.9090307@cosmosbay.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <8638AE87-6005-4021-98EB-43E55694B0FB@mac.com>
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Anton Blanchard <anton@samba.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@argo.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Content-Transfer-Encoding: 8BIT
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [patch] epoll use a single inode ...
-Date: Thu, 8 Mar 2007 20:34:50 -0500
-To: Eric Dumazet <dada1@cosmosbay.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Thu, 8 Mar 2007 20:42:37 -0500
+Date: Fri, 9 Mar 2007 09:40:40 +0800
+From: Joe Jin <joe.jin@oracle.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Joe Jin <joe.jin@oracle.com>, akpm@osdl.org, dgilbert@interlog.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haobo.zhou@oracle.com
+Subject: Re: [PATCH] [scsi]: Add offline state checking while dispatch a scsi cmd
+Message-ID: <20070309014040.GA6632@joejin-pc.cn.oracle.com>
+References: <20070308092207.GA17141@joejin-pc.cn.oracle.com> <1173369759.3683.1.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173369759.3683.1.camel@mulgrave.il.steeleye.com>
+User-Agent: Mutt/1.4.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 08, 2007, at 02:24:04, Eric Dumazet wrote:
-> Kyle Moffett a écrit :
->> Prefetching is also fairly critical on a Power4 or G5 PowerPC  
->> system as they have a long memory latency; an L2-cache miss can  
->> cost 200+ cycles.  On such systems the "dcbt" prefetch instruction  
->> brings in a single 128-byte cacheline and has no serializing  
->> effects whatsoever, making it ideal for use in a linked-list- 
->> traversal inner loop.
->
-> OK, 200 cycles...
->
-> But what is the cost of the conditional branch you added in prefetch 
-> (x) ?
->
-> if (!x) return;
->
-> (correctly predicted or not, but do powerPC have a BTB ?)
+> What's the error you're trying to fix?  scsi_dispatch_cmd() is only
+> called from scsi_request_fn() which already has an equivalent of this
+> check in it just prior to calling dispatch.
 
-Well, PowerPC "dcbt" does prefetch() correctly, it doesn't ever raise  
-exceptions, doesn't have any side effects, takes only enough CPU to  
-decode the address, and is ignored if it would have to do anything  
-other than load the cacheline from RAM.  Prefetch streams are halted  
-when they reach the end of a page boundary (no trapping to the MMU)  
-and if the TLB entry isn't present then they would asynchronously  
-abort.  This is a suitable prefetch implementation for G5:
+Yeah, I have saw the cheking at scsi_request_fn(), recently we got a crash
+info as following at rhel4 2.6.9-42.0.2.ELsmp,
 
-   #define prefetch(x) __asm__ __volatile__ ("dcbt 0, %0"::"r"(x));
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+megaraid: aborting-150766876 cmd=2a <c=2 t=0 l=0>
+megaraid abort: 150766876:15[255:128], fw owner
+...
+egaraid: aborting-150767541 cmd=2a <c=2 t=0 l=0>
+megaraid abort: 150767541[255:128], driver owner
+megaraid: resetting the host...
+megaraid: 150766876:129[65535:65535], reset from pending list
+megaraid: 1 outstanding commands. Max wait 180 sec
+megaraid mbox: Wait for 1 commands to complete:180
+...
+megaraid mbox: Wait for 1 commands to complete:0
+megaraid mbox: critical hardware error!
+megaraid: resetting the host...
+megaraid: hw error, cannot reset
+megaraid: resetting the host...
+megaraid: hw error, cannot reset
+scsi: Device offlined - not ready after error recovery: host 0 channel 2 id 0 lun 0
+SCSI error : <0 2 0 0> return code = 0x6000000
+end_request: I/O error, dev sda, sector 24117409
+Buffer I/O error on device sda5, logical block 327797
+...
+EXT3-fs error (device sda8) in start_transaction: Journal has aborted
+scsi0 (0:0): rejecting I/O to offline device
+printk: 85 messages suppressed.
+Buffer I/O error on device sda5, logical block 327691
+lost page write due to I/O error on sda5
+scsi0 (0:0): rejecting I/O to offline device
+...
+EXT3-fs error (device sda8) in start_transaction: Journal has aborted
 
-On GCC4+ the "__builtin_prefetch" built-in functions is probably  
-mildly better tuned for most architectures:
+Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP: 
+<ffffffffa0031e66>{:megaraid_mbox:megaraid_queue_command+2634}
+PML4 21a25d067 PGD 2170ac067 PMD 0 
+Oops: 0002 [1] SMP 
+CPU 0 
+Modules linked in: hangcheck_timer mptctl mptbase ipmi_devintf ipmi_si ipmi_msghandler dell_rbu netconsole netdump autofs4 i2c_dev i2c_core ocfs2(U) debugfs(U) nfs lockd nfs_acl ocfs2_dlmfs(U) ocfs2_dlm(U) ocfs2_nodemanager(U) configfs(U) sunrpc ds yenta_socket pcmcia_core ide_dump scsi_dump diskdump zlib_deflate dm_mirror dm_multipath dm_mod emcphr(U) emcpmpap(U) emcpmpaa(U) emcpmpc(U) emcpmp(U) emcp(U) emcplib(U) button battery ac joydev uhci_hcd ehci_hcd hw_random tg3 e1000 bond0(U) floppy sg ext3 jbd lpfc scsi_transport_fc megaraid_mbox megaraid_mm sd_mod scsi_mod
+Pid: 13238, comm: emagent Tainted: P      2.6.9-42.0.2.ELsmp
+RIP: 0010:[<ffffffffa0031e66>] <ffffffffa0031e66>{:megaraid_mbox:megaraid_queue_command+2634}
+RSP: 0018:000001019b5a9b48  EFLAGS: 00010002
+RAX: 0000000220b8e000 RBX: 00000102ffd1b048 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000010431124bf0
+RBP: 0000000000000001 R08: 0000000000000000 R09: 0000010133ce5b80
+R10: 00000102ffd3e5a0 R11: 0000000000000060 R12: 0000010133ce5b80
+R13: 00000102ffd3e480 R14: 00000100bfb4c8b8 R15: 00000101ffcf4000
+FS:  0000000000000000(0000) GS:ffffffff804e5180(005b) knlGS:00000000f47ffbb0
+CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
+CR2: 0000000000000000 CR3: 0000000000101000 CR4: 00000000000006e0
+Process emagent (pid: 13238, threadinfo 000001019b5a8000, task 000001003e5a8030)
+Stack: 0000000000000000 0000000000000046 0000000000000046 00000102ffd3e480 
+       00000101fff73980 ffffffff8015cb38 00000100bfb4d4aa 00000100bfb4d4a2 
+       00000100bfb4c8b8 0000010100000080 
+Call Trace:<ffffffff8015cb38>{mempool_alloc+129} <ffffffffa0002874>{:scsi_mod:scsi_done+0} 
+       <ffffffff8013fc00>{__mod_timer+113} <ffffffffa0002adf>{:scsi_mod:scsi_dispatch_cmd+595} 
+       <ffffffffa0007a72>{:scsi_mod:scsi_request_fn+990} <ffffffff8024e385>{generic_unplug_device+24} 
+       <ffffffff8017a6d3>{__wait_on_buffer+120} <ffffffff8017a55e>{bh_wake_function+0} 
+       <ffffffff8017a55e>{bh_wake_function+0} <ffffffffa00877fe>{:ext3:ext3_bread+96} 
+       <ffffffffa008935c>{:ext3:htree_dirblock_to_tree+50} 
+       <ffffffffa008952c>{:ext3:ext3_htree_fill_tree+295} 
+       <ffffffff8018b232>{filldir64+122} <ffffffff8018b1b8>{filldir64+0} 
+       <ffffffffa0083ace>{:ext3:ext3_readdir+371} <ffffffff8018f019>{dput+56} 
+       <ffffffff8018b1b8>{filldir64+0} <ffffffff8018599c>{path_release+12} 
+       <ffffffff8019e335>{compat_sys_statfs+105} <ffffffff8018b1b8>{filldir64+0} 
+       <ffffffff8018aef7>{vfs_readdir+155} <ffffffff8018b2e8>{sys_getdents64+118} 
+       <ffffffff80125bbb>{sysenter_do_call+27} 
 
-   #define PREFETCH_RD 0
-   #define PREFETCH_WR 1
-   #define PREFETCH_LOCALITY_NONE 0
-   #define PREFETCH_LOCALITY_LOW  1
-   #define PREFETCH_LOCALITY_MED  2
-   #define PREFETCH_LOCALITY_HIGH 3
-   #define prefetch(x, args...) __builtin_prefetch(x ,##args)
+Code: 48 89 04 11 41 8b 44 24 18 49 83 c4 20 49 8b 56 20 89 44 11 
+RIP <ffffffffa0031e66>{:megaraid_mbox:megaraid_queue_command+2634} RSP <000001019b5a9b48>
+CR2: 0000000000000000
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-The pertinent GCC docs:
-> This function is used to minimize cache-miss latency by moving data  
-> into a cache before it is accessed. You can insert calls to  
-> __builtin_prefetch into code for which you know addresses of data  
-> in memory that is likely to be accessed soon. If the target  
-> supports them, data prefetch instructions will be generated. If the  
-> prefetch is done early enough before the access then the data will  
-> be in the cache by the time it is accessed.
->
-> The value of addr is the address of the memory to prefetch. There  
-> are two optional arguments, rw and locality. The value of rw is a  
-> compile-time constant one or zero; one means that the prefetch is  
-> preparing for a write to the memory address and zero, the default,  
-> means that the prefetch is preparing for a read. The value locality  
-> must be a compile-time constant integer between zero and three. A  
-> value of zero means that the data has no temporal locality, so it  
-> need not be left in the cache after the access. A value of three  
-> means that the data has a high degree of temporal locality and  
-> should be left in all levels of cache possible. Values of one and  
-> two mean, respectively, a low or moderate degree of temporal  
-> locality. The default is three.
-> 	for (i = 0; i < n; i++) {
-> 		a[i] = a[i] + b[i];
-> 		__builtin_prefetch (&a[i+j], 1, 1);
-> 		__builtin_prefetch (&b[i+j], 0, 1);
-> 		/* ... */
-> 	}
->
-> Data prefetch does not generate faults if addr is invalid, but the  
-> address expression itself must be valid. For example, a prefetch of  
-> p->next will not fault if p->next is not a valid address, but  
-> evaluation will fault if p is not a valid address.
->
-> If the target does not support data prefetch, the address  
-> expression is evaluated if it includes side effects but no other  
-> code is generated and GCC does not issue a warning.
+full crash info have update to http://patch.linux-security.cn/crashinfo/megaraid_crashinfo.log
 
-Cheers,
-Kyle Moffett
+>From crashinfo, befor kernel panic, device have setting state to OFFLINE, but
+at that time, scsi cmd still will send to device.
 
+any advice?
+
+-Joe
