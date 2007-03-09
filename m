@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992947AbXCIE1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992953AbXCIE1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992947AbXCIE1T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 23:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992948AbXCIE1S
+	id S2992953AbXCIE1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 23:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992955AbXCIE1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 23:27:18 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60081
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2992947AbXCIE1S (ORCPT
+	Thu, 8 Mar 2007 23:27:46 -0500
+Received: from wx-out-0506.google.com ([66.249.82.224]:31311 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992953AbXCIE1o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 23:27:18 -0500
-Date: Thu, 08 Mar 2007 20:27:18 -0800 (PST)
-Message-Id: <20070308.202718.68040662.davem@davemloft.net>
-To: hpa@zytor.com
-Cc: anton@samba.org, hch@infradead.org, arjan@infradead.org,
-       zippel@linux-m68k.org, dmlb2000@gmail.com, linux-kernel@vger.kernel.org,
-       gdb@sourceware.org
-Subject: Re: PAGE_SIZE Availability Inconsistency
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <45F0E014.8060907@zytor.com>
-References: <20070308.134825.45514445.davem@davemloft.net>
-	<20070309024324.GA24695@kryten>
-	<45F0E014.8060907@zytor.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 8 Mar 2007 23:27:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=VoMA8g8zt0rsnvnfAOwSV99n2DIBTTAa2Ms6CjAgff/y5lZrqweM2V4mRHxnChCSSLKJyn2a7V6o8VpO5n5aGLP1x67SRT5vsA1rwOTCy1qIQUjtd9oLU6bpx6zGpJGEZKifSSypxSLWSHOR+p4amhaOAPRNk8JWGyK4Q4DsRRY=
+From: Quinn Storm <livinglatexkali@gmail.com>
+Organization: Beryl
+To: linux-kernel@vger.kernel.org
+Subject: NVidia early quirk repair patch bug
+Date: Thu, 8 Mar 2007 23:27:40 -0500
+User-Agent: KMail/1.9.6
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703082327.40782.livinglatexkali@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Thu, 08 Mar 2007 20:18:28 -0800
+In attempting to fix some issues with my system, I was pulling patches from 
+the kernel git tree, and I discovered that this patch (
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fe69933652562f093ccde600cecf234930c01932 )
+is malformed on i386, specifically the line:
 
-> Anton Blanchard wrote:
-> > The other option is to create a v3 swap format that doesnt use any
-> > PAGE_SIZE parameters.
-> 
-> The best thing to do would be to look for the magic both at PAGE_SIZE 
-> (for compatibility) and MIN_PAGE_SIZE (for sanity.)
++               if (acpi_table_parse(ACPI_SIG_HPET, nvidia_hpet_check) {
 
-That might work, but a large part of me says to go for v3
-and do it cleanly.
+should read
+
++               if (acpi_table_parse(ACPI_SIG_HPET, nvidia_hpet_check)) {
+
+I know someone else would have caught this, but I figured since I was doing 
+this I'd post about it.
+
+btw, thanks for the wonderful work guys, wanted to mention bcm43xx finally 
+works properly on 2.6.21-rc3 w/ my 4311
