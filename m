@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767223AbXCIMtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767228AbXCIMuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767223AbXCIMtQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 07:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767225AbXCIMtQ
+	id S1767228AbXCIMuM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 07:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767230AbXCIMuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 07:49:16 -0500
-Received: from wx-out-0506.google.com ([66.249.82.232]:56807 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767223AbXCIMtP (ORCPT
+	Fri, 9 Mar 2007 07:50:11 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:12148 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767227AbXCIMuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 07:49:15 -0500
+	Fri, 9 Mar 2007 07:50:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=rZjfMzg//visJHHf8SKEdTusbkwpQBihd1dF8VA+SffYOBO41/wA70lp8hFYy395TJ8FGbUFUHA0wyj9Y3JJljLbubHVVM+jUfKdiw+iFrKpy2GZFpTM1s0yjYDKV6/w7fNZU9DTG68yn8hwWuplGeQbTIKvkFJYwZ0ja1vblIc=
-Message-ID: <45F157C3.4090604@gmail.com>
-Date: Fri, 09 Mar 2007 21:49:07 +0900
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Lc6P12bRbV8U2WXTnsNhwqnV09NvsuolMWVRhBp2r3bmt1kB5SHHDIARRy3iR1yN97GxxwrEqPnZ3TVhZ6z4V6RMM4ePbQXO6THwRre+i137jC3zAnnX+Y0VysFWeGEFaxaPwiBvcdhKqAZ/aomPbLChy9rHCLKyxMeIlKrmbVU=
+Message-ID: <45F157FF.50801@gmail.com>
+Date: Fri, 09 Mar 2007 21:50:07 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: rol@as2917.net
-CC: "'Jeff Garzik'" <jeff@garzik.org>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Eric D. Mudama'" <edmudama@gmail.com>
-Subject: Re: [git patches] libata fixes
-References: <01bd01c75fc2$57e70300$4b00a8c0@donald>
-In-Reply-To: <01bd01c75fc2$57e70300$4b00a8c0@donald>
+To: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATA] Failed to set xfermode on LITE-ON LTR-48246S
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070227135838.GA4328@titan.lahn.de> <45EB9822.40300@gmail.com> <20070305103840.GA4381@titan.lahn.de> <45EC3B3F.7020509@gmail.com> <20070306092339.GA3803@titan.lahn.de>
+In-Reply-To: <20070306092339.GA3803@titan.lahn.de>
 X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Rolland wrote:
-> Hell Tejun,
+Philipp Matthias Hahn wrote:
+> Hello Tejun!
 > 
-> I've boot-tested this yesterday, with no real luck... 
+> On Tue, Mar 06, 2007 at 12:46:07AM +0900, Tejun Heo wrote:
+>> Philipp Matthias Hahn wrote:
+>>> On Mon, Mar 05, 2007 at 01:10:10PM +0900, Tejun Heo wrote:
+>>>> * Does applying the attached patch over unpatched 2.6.20.1 fix the problem?
+>>> Yes, it seems to fix it. (testes on top of the first patch mentioned
+>>> above, but witheout the second one.).
+>>> If I should test it as the sole patche, just mail me again please.
+>> Yeap, please test it on top of vanilla kernel to verify that the patch
+>> proper fixes the problem.
 > 
-> 1 - Tested on top of 2.6.21-rc2 (hope it's fine for you),
-> 2 - Collected a full dmesg before and after
-> 
-> Extract is :
-> ata7: PATA max UDMA/100 cmd 0x0000000000019c00 ctl 0x0000000000019882 bmdma
-> 0x00
-> 00000000019400 irq 16
-> ata8: PATA max UDMA/100 cmd 0x0000000000019800 ctl 0x0000000000019482 bmdma
-> 0x00
-> 00000000019408 irq 16
-> scsi6 : pata_jmicron
-> ata7.00: ATAPI, max UDMA/66
-> ata7.00: configured for UDMA/66
-> scsi7 : pata_jmicron
-> ATA: abnormal status 0x7F on port 0x0000000000019807
-> ata7.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> ata7.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x12 data 36 in
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> Yes, applying only this patch does fix the problem.
+> Thank you for your support.
 
-It seems like IRQ is not getting through.  The first IRQ driven command
-is failing for you.
-
-* Does giving 'acpi=off' or 'irqpoll' make any difference?
-
-* Can you connect a harddisk to the channel and see whether that works?
-
-Thanks.
+Okay, it seems we'll have to default to polling SETXFER.  I'll forward
+it upstream soon.  Thanks.
 
 -- 
 tejun
