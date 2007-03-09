@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767399AbXCIQxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767407AbXCIQ5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767399AbXCIQxl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 11:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767402AbXCIQxl
+	id S1767407AbXCIQ5H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 11:57:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767408AbXCIQ5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 11:53:41 -0500
-Received: from wr-out-0506.google.com ([64.233.184.226]:50318 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767399AbXCIQxk (ORCPT
+	Fri, 9 Mar 2007 11:57:06 -0500
+Received: from smtp-105-friday.nerim.net ([62.4.16.105]:4731 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767407AbXCIQ5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 11:53:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H4m1jeoYskOIdE/gyJecpRPLh2xIAUPQjBe0XLin59sMDiT5epAo40LZPZOgQQYBFGzvYOFzv3LR/DM/D3EVXZSAey2IF1yw8pi5Kbt7xR7SPC1Kzl5ICb6kssgpkRQ3tWxbe6s/fE24/gOMDbOfyGQJgxH8sWTAmatpRo05OR0=
-Message-ID: <b0943d9e0703090853i6deb0581wec7e962d0d76b9df@mail.gmail.com>
-Date: Fri, 9 Mar 2007 16:53:39 +0000
-From: "Catalin Marinas" <catalin.marinas@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: Possible "struct pid" leak from tty_io.c
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <m1y7m64cpw.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 9 Mar 2007 11:57:05 -0500
+Date: Fri, 9 Mar 2007 17:55:40 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Bryan Wu <bryan.wu@analog.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i2c-core: i2c bitbang gpio structure
+Message-Id: <20070309175540.6bb22798.khali@linux-fr.org>
+In-Reply-To: <1173435201.18580.17.camel@roc-desktop>
+References: <1173435201.18580.17.camel@roc-desktop>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
-	 <m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
-	 <b0943d9e0703090253r690e1f21qf8d7a1edfd08561b@mail.gmail.com>
-	 <m1y7m64cpw.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> "Catalin Marinas" <catalin.marinas@gmail.com> writes:
->
-> > On 08/03/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> >> "Catalin Marinas" <catalin.marinas@gmail.com> writes:
-> >
-> > I think it's only the pid_chain and rcu member that could be placed in
-> > a list and kmemleak scans the memory for these two offsets as well.
-> > I'll check those lists anyway but I doubt it's a more fundamental
-> > problem with how kmemleak handles struct pid as I should've probably
-> > got more reports.
->
-> Right.  I was pointing out the possibilities but because we do
-> some tricky things.  Mostly I was wondering about the hlist for
-> the list of tasks.  Now if a task is on that list we should have
-> a struct pid_link pointing at our struct pid, so it shouldn't fool
-> kmemleak but I'm still a little curious if all of those hlist_heads are
-> NULL pointers.
+Hi Bryan,
 
-Yes, all the 3 hlist_head tasks are NULL pointers on the reported object.
+On Fri, 09 Mar 2007 18:13:21 +0800, Wu, Bryan wrote:
+> Hi folks,
+> 
+> A new structure is added to i2c-core for GPIO-based I2C interface
+> adapter. My latest GPIO based I2C adapter driver for Blackfin system
+> will use this stuff. And also IXP4XX GPIO based I2C driver can also be
+> moved to this.
+>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com> 
+> ---
+>  include/linux/i2c.h |   20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> Index: include/linux/i2c.h
+> ===================================================================
+> --- include/linux/i2c.h	(revision 2813)
+> +++ include/linux/i2c.h	(working copy)
+> @@ -201,6 +201,26 @@ struct i2c_algorithm {
+>  };
+>  
+>  /*
+> + * Some chips do not have an I2C unit, so GPIO lines are just used to 
+> + * Used as platform_data to provide GPIO pin information to this kind GPIO 
+> + * based I2C driver.
+> + */
+> +struct i2c_bitbang_gpio {
+> +	int sda;
+> +	int scl;
+> +};
+
+Why would this be included in the generic i2c.h header file? As far as
+I can see this structure only makes sense for bit-banged I2C busses, so
+this structure should be declared in i2c-algo-bit.h.
+
+Also, this structure alone isn't very useful. I'm waiting to see
+drivers actually making use of it before I will consider merging this
+patch at all.
+
+> +
+> +static inline int i2c_bitbang_gpio_sda(struct i2c_bitbang_gpio *gpio)
+> +{
+> +	return (gpio->sda);
+> +}
+> +
+> +static inline int i2c_bitbang_gpio_scl(struct i2c_bitbang_gpio *gpio)
+> +{
+> +	return (gpio->scl);
+> +}
+
+What's the point of these?
 
 -- 
-Catalin
+Jean Delvare
