@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbXCIAW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbXCIA15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752402AbXCIAW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 19:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbXCIAW2
+	id S1752202AbXCIA15 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 19:27:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbXCIA15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 19:22:28 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:34614 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752402AbXCIAW0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 19:22:26 -0500
-Subject: Re: hardwired VMI crap
-From: Daniel Walker <dwalker@mvista.com>
-Reply-To: dwalker@mvista.com
-To: Zachary Amsden <zach@vmware.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, john stultz <johnstul@us.ibm.com>,
-       akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pratap Subrahmanyam <pratap@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Daniel Hecht <dhecht@vmware.com>, Daniel Arai <arai@vmware.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-In-Reply-To: <45F0A254.4020002@vmware.com>
-References: <45EF175D.6030609@vmware.com>
-	 <1173302503.24738.795.camel@localhost.localdomain>
-	 <45EF372E.7030600@goop.org>
-	 <1173308717.24738.898.camel@localhost.localdomain>
-	 <45EF49E9.7040509@vmware.com> <20070308091019.GA19460@elte.hu>
-	 <45EFE010.7080108@vmware.com>
-	 <1173352154.24738.1023.camel@localhost.localdomain>
-	 <45F0761C.6060107@vmware.com> <45F07D07.5090003@goop.org>
-	 <20070308213458.GA24634@elte.hu> <45F09EAE.6090908@goop.org>
-	 <45F0A254.4020002@vmware.com>
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 16:22:23 -0800
-Message-Id: <1173399743.20300.3.camel@dwalker1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Thu, 8 Mar 2007 19:27:57 -0500
+Received: from gw.goop.org ([64.81.55.164]:33857 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752202AbXCIA14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 19:27:56 -0500
+Message-ID: <45F0AA09.8070503@goop.org>
+Date: Thu, 08 Mar 2007 16:27:53 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Martin Drab <drab@kepler.fjfi.cvut.cz>
+CC: hugh@veritas.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Bryan O'Sullivan" <bos@serpentine.com>
+Subject: Re: Question about memory mapping mechanism
+References: <Pine.LNX.4.64.0703081345010.21317@kepler.fjfi.cvut.cz>
+In-Reply-To: <Pine.LNX.4.64.0703081345010.21317@kepler.fjfi.cvut.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-08 at 15:55 -0800, Zachary Amsden wrote:
+Martin Drab wrote:
+> Hi,
+>
+> I'm writing a driver for a sampling device that is constantly delivering a 
+> relatively high amount of data (about 16 MB/s) and I need to deliver the 
+> data to the user-space ASAP. To prevent data loss I create a queue of 
+> buffers (consisting of few pages each) which are more or less directly 
+> filled by the device and then mapped to the user-space via mmap().
+>
+> The thing is that I'd like to prevent kernel to swap these pages out, 
+> because then I may loose some data when they are not available in time 
+> for the next round.
+>
+> My original idea (that used to work in the past) was to allocate the 
+> buffers using __get_free_pages(), then pin the pages down by setting their 
+> PG_reserved bit in the page flags before using them. And then set the 
+> VM_RESERVED flag of the appropriate VMA when mmap() is called for these 
+> pages that are then mapped using nopage() mechanism.
+>
+> But this way no longer seems to work correctly, it kind of works, but I'm 
+> getting following messages for each mmapped page upon munmap() call:
+>
+> --------------------------------------
+> [19172.939248] Bad page state in process 'dtrtest'
+> [19172.939249] page:ffff81000160a978 flags:0x001a000000000404 mapping:0000000000000000 mapcount:0 count:0
+> [19172.939251] Trying to fix it up, but a reboot is needed
+> [19172.939253] Backtrace:
+> [19172.939256]
+> [19172.939257] Call Trace:
+> [19172.939273]  [<ffffffff802adc37>] bad_page+0x57/0x90
+> [19172.939280]  [<ffffffff8020b92f>] free_hot_cold_page+0x7f/0x180
+> [19172.939287]  [<ffffffff80207a90>] unmap_vmas+0x450/0x750
+> [19172.939308]  [<ffffffff80212867>] unmap_region+0xb7/0x160
+> [19172.939318]  [<ffffffff80211918>] do_munmap+0x238/0x2f0
+> [19172.939325]  [<ffffffff802656c5>] __down_write_nested+0x35/0xf0
+> [19172.939334]  [<ffffffff80215ffd>] sys_munmap+0x4d/0x80
+> [19172.939341]  [<ffffffff8025f11e>] system_call+0x7e/0x83
+> -------------------------------
+>
+> Aparently due to the PG_reserved bit set.
+>
+> So my question is: What is currently a proper way to do all this cleanly?
+>   
 
-> 
-> We just don't drive the local timer interrupts through the APIC, we make 
-> hypercalls to schedule local timer alarms.  Which is something we must 
-> do for UP kernels as well, which use the PIT / PIC.  So there is a need 
-> for having clockevents code which doesn't program timers through the APIC.
 
-This getting a bit confusing to me .. When your talking about "local
-timer interrupts" are you speaking of a periodic interrupt from the
-lapic , or the jiffies increment inside the virtual machine?
+Have you looked at the Infiniband stuff?  I know the folks working on
+the ipath driver eventually got this kind of thing working in a sane way.
 
-Daniel
-
+    J
