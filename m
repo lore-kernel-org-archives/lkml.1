@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767245AbXCINCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767266AbXCING7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767245AbXCINCA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 08:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767246AbXCINCA
+	id S1767266AbXCING7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 08:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767265AbXCING7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 08:02:00 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:55814 "EHLO mail.dvmed.net"
+	Fri, 9 Mar 2007 08:06:59 -0500
+Received: from gate.crashing.org ([63.228.1.57]:48164 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767245AbXCINB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 08:01:59 -0500
-Message-ID: <45F15AC4.7080600@garzik.org>
-Date: Fri, 09 Mar 2007 08:01:56 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: akpm@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_cmd640: Multiple updates
-References: <20070307164329.752993ff@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070307164329.752993ff@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1767266AbXCING6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 08:06:58 -0500
+Subject: Re: [patch 2.6.20-1] radeonfb: Add support for Radeon xpress 200m
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: johan henriksson <jhn98032@gmail.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+In-Reply-To: <45F062E1.8050007@gmail.com>
+References: <45ECB2D0.3080205@telia.com> <45EEEBC9.1010002@redhat.com>
+	 <45EF275E.4060300@gmail.com> <45F03305.8040507@redhat.com>
+	 <45F062E1.8050007@gmail.com>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 14:00:34 +0100
+Message-Id: <1173445234.24454.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> Add suspend/resume support
-> Write 0x5B to 0 not 0x5C
-> 
-> The former is important as we must kill the FIFO on a resume
-> 
-> Signed-off-by: Alan Cox <alan@redhat.com>
 
-applied
+> -		radeonfb_pm_init(rinfo, rinfo->is_mobility ? 1 : -1, ignore_devlist, force_sleep);
+> +		radeonfb_pm_init(rinfo, rinfo->is_mobility && rinfo->family != CHIP_FAMILY_RS480 ? 1 : -1, ignore_devlist, force_sleep);
+
+I'd rather you add a check for RS480 inside radeonfb_pm_*
+
+Ben.
 
 
