@@ -1,117 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965047AbXCILw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964936AbXCILyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965047AbXCILw7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 06:52:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965219AbXCILw6
+	id S964936AbXCILyd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 06:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965182AbXCILyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 06:52:58 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:57250 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965047AbXCILw4 (ORCPT
+	Fri, 9 Mar 2007 06:54:33 -0500
+Received: from server1.secure-linux-server.com ([207.44.172.97]:50409 "EHLO
+	server1.secure-linux-server.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964936AbXCILyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 06:52:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d/9Y3YIxShseYbuVTOyBleQ1XoxHzAsq8fAK/Ns8KcD6f6bfzJ/Sjrmgs6GJ/ZdiQyLttBRegmV01CKWHkO5pNQRlaXFLwZ4BjjewVgDHq/CLlwdGav7dNAiJKUS3aWeahw8dk8FLCjcsE60wFPIrb6fjWNbvXhYSWEHX0G+rsQ=
-Message-ID: <f2b55d220703090352x7f07e1bgc94193f500c10e12@mail.gmail.com>
-Date: Fri, 9 Mar 2007 03:52:54 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: sys_write() racy for multi-threaded append?
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <45F0F644.6020705@cosmosbay.com>
+	Fri, 9 Mar 2007 06:54:32 -0500
+Message-ID: <45F14AE9.90009@ufomechanic.net>
+Date: Fri, 09 Mar 2007 11:54:17 +0000
+From: Amin Azez <azez@ufomechanic.net>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Patrick McHardy <kaber@trash.net>, James Morris <jmorris@namei.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>
+Subject: Re: [PATCH] chaostables
+References: <Pine.LNX.4.61.0703080723280.2448@yvahk01.tjqt.qr> <20070308131412.08d9973e@lxorguk.ukuu.org.uk> <Line.LNX.4.64.0703080955060.8029@d.namei> <Pine.LNX.4.61.0703081652310.2448@yvahk01.tjqt.qr> <45F044A0.50001@trash.net> <Pine.LNX.4.61.0703082112300.521@yvahk01.tjqt.qr> <45F12A69.1060406@ufomechanic.net> <Pine.LNX.4.61.0703091106280.8799@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0703091106280.8799@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com>
-	 <45F09F9C.4030801@cosmosbay.com>
-	 <f2b55d220703081557k8101e68g1a3556e42f68416@mail.gmail.com>
-	 <45F0A71C.2000800@cosmosbay.com>
-	 <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com>
-	 <45F0F644.6020705@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/8/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> Dont even try, you *cannot* do that, without breaking the standards, or
-> without a performance drop.
+* Jan Engelhardt wrote, On 09/03/07 10:19:
+> Hello,
 >
-> The only safe way would be to lock the file during the whole read()/write()
-> syscall, and we dont want this (this would be more expensive than current)
-> Dont forget 'file' may be some sockets/tty/whatever, not a regular file.
+> On Mar 9 2007 09:35, Amin Azez wrote:
+>   
+>> * Jan Engelhardt wrote, On 08/03/07 20:26:
+>>     
+>>> xt_portscan needs to keep track of what packets the machine has already 
+>>> seen. So on the first SYN, the connection is marked with "1". (Then we 
+>>> send our SYN-ACK... and the connection turns ESTABLISHED.) The next 
+>>> packet that is received will be an ACK or an RST. But it must come 
+>>> _exactly after_ the SYN, so just using --tcp-flags ACK will not work. A 
+>>> state which can be remembered is required. For that, an automaton is 
+>>> used, whose state is saved in the connection mark.
+>>>       
+>> There would me more point in having this as a new match if it didn't
+>> trample on the connection mark, but used it's own slot or flag-bit.
+>>     
+For the record, I support inclusion of this extension in general.
+It is true to say "but a netfilter guru could craft together a sequence
+of mark-consuming rules to do something somewhat similar" the same is
+also somewhat true for connlimit (packet limits) and so on. The point of
+this match is that people don't have to.
+> Adding a member to the ip_conntrack/nf_conntrack and sk_buff struct would
+> increase the struct sizes, and that would penalize users who do not intend
+> to use xt_portscan.
+>   
+I understand what you say but it sounds a bit like saying: "but we
+didn't make it very good because so few people would use it anyway"
+which of course makes it even less attractive. I realise you have your
+own interpretation but this is how it reads to me.
+> I do not see why the packet/connection marks should not be used to record
+> additional information
+...
+> Almost never I required connection marking myself 
+I guessed as much. I use it heavily, with my xml rule generators.
+> except for this
+> portscanning automaton and perhaps a little MARK here and there for
+> finely-tuned SNAT. Again, things might look different on your side(s).
+>   
+There's too many things fighting over the same few bits of the mark, and
+in your case you are using it to track internal state of a connection
+that has no relevance to the rest of the iptables/ebtables rules.
 
-I'm not trying to provide full serialization of concurrent
-multi-threaded read()/write() in all exceptional scenarios.  I am
-trying to think through the semantics of pipelined I/O operations on
-struct file.  In the _absence_ of an exception, something sane should
-happen -- and when you start at f_pos == 1000 and write 100 bytes each
-from two threads (successfully), leaving f_pos at 1100 is not sane.
+I'm suggesting that some of the people who would want to use the chaos
+match, won't because of the mark issue.
 
-> Standards are saying :
+This is not a new problem.
+
+http://article.gmane.org/gmane.comp.security.firewalls.netfilter.devel/16217
+> From: Tom Eastep <teastep <at> shorewall.net>
+> Subject: Re: RFC: Disable defered bridge hooks by default
+<http://news.gmane.org/find-root.php?message_id=%3c44AEFE20.3020307%40shorewall.net%3e>
+
 >
-> If an error occurs, file pointer remains unchanged.
+> Once again, netfilter marks are the solution of last resort. This is
+> becoming very painful for those of us who produce general Netfilter
+> configuration tools. The situation is exacerbated by the fact that
+> ebtables doesn't support modifying the mark value via logical AND/OR and
+> the other fwmark consumers (tc, ip) don't allow a mask when testing the
+> fwmark value.
 
->From 1003.1, 2004 edition:
+I suggested one solution
+http://article.gmane.org/gmane.comp.security.firewalls.netfilter.devel/16244
 
-<standard>
-This volume of IEEE Std 1003.1-2001 does not specify the value of the
-file offset after an error is returned; there are too many cases. For
-programming errors, such as [EBADF], the concept is meaningless since
-no file is involved. For errors that are detected immediately, such as
-[EAGAIN], clearly the pointer should not change. After an interrupt or
-hardware error, however, an updated value would be very useful and is
-the behavior of many implementations.
+and Patrick McHardy has suggested using ct_extend.
 
-This volume of IEEE Std 1003.1-2001 does not specify behavior of
-concurrent writes to a file from multiple processes. Applications
-should use some form of concurrency control.
-</standard>
+I've not looked into this further because I'm too busy doing xml
+versions of iptables, ebtables, iproute anc tc.
 
-The effect on f_pos of an error during concurrent writes is therefore
-doubly unconstrained.  In the absence of concurrent writes, it is
-quite harmless for f_pos to have transiently contained, at some point
-during the execution of write(), an overestimate of the file position
-after the write().  In the presence of concurrent writes (let us say
-two 100-byte writes to a file whose f_pos starts at 1000), it is
-conceivable that the second write will succeed at f_pos == 1100 but
-the first will be short (let us say only 50 bytes are written),
-leaving f_pos at 1150 and no bytes written in the range 1050 to 1099.
-That would suck -- but the standard does not oblige you to avoid it
-unless the destination is a pipe or FIFO with O_NONBLOCK clear, in
-which case partial writes are flat out verboten.
+[There's an ip route<->xml at:
+http://mailman.ds9a.nl/pipermail/lartc/2007q1/020376.html
+iptables now has xml<-> convertor ]
 
-> You cannot know for sure how many bytes will be written, since write() can
-> returns a count that is different than buflen.
-
-Of course (except in the pipe/FIFO case).  But if it does, and you're
-writing concurrently to the fd, you're not obliged to do anything sane
-at all.  If you're not writing concurrently, the fact that you
-overshot and then fixed it up after vfs_write() returned is _totally_
-invisible.  f_pos is local to the struct file.
-
-> So you cannot update fpos before calling vfs_write()
-
-You can speculatively update it, and in the common case you don't have
-to touch it again.  That's a win.
-
-> About your L1 'miss', dont forget that multi-threaded apps are going to
-> atomic_dec_and_test(&file->f_count) anyway when fput() is done at the end of
-> syscall. And you were concerned about multi-threaded apps, didnt you ?
-
-That does indeed interfere with the optimization for multi-threaded
-apps.  Which doesn't mean it isn't worth having for single-threaded
-apps.  And if we get to the point that that atomic_dec_and_test is the
-only thing left (in the common case) that touches the struct file
-after a VFS operation completes, then we can evaluate whether f_count
-ought to be split out of the struct file and put somewhere else.  In
-fact, if I understand the calls inside vfs_write() correctly, f_count
-is (usually?) the only member of struct file that is written to during
-a call to sys_pwrite64(); so moving it out of struct file and into
-some place where it has to be kept cache-coherent anyway would also
-improve the performance on SMP of distributed pwrite() calls to a
-process-global fd.
-
-Cheers,
-- Michael
+Sam
