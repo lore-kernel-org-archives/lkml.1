@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767420AbXCIRCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767419AbXCIRC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767420AbXCIRCT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 12:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767421AbXCIRCT
+	id S1767419AbXCIRC2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 12:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767403AbXCIRC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 12:02:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:34066 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767420AbXCIRCR convert rfc822-to-8bit (ORCPT
+	Fri, 9 Mar 2007 12:02:28 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:36311 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767419AbXCIRC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 12:02:17 -0500
+	Fri, 9 Mar 2007 12:02:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Wi1T/9y0y1uI/KBPRXiDqR8Q43O12jHYMsl+P/HA9bWBrLnYBDT74NsDlbQFEFguqS6YyXsy8MQMJ9Chj2wduDJxhFLb/9g+6onolRFMdg7iJZ6nrQ2I0HoBVEisnLyCKKRSmsbtTEsSNYi4LGhlSk3AEAgY7NznV5wpeaHwKkk=
-Message-ID: <d120d5000703090902v6ae88c75ibe18ff0de3e5276d@mail.gmail.com>
-Date: Fri, 9 Mar 2007 12:02:14 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Oliver Neukum" <oneukum@suse.de>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Maneesh Soni" <maneesh@in.ibm.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200703091745.00169.oneukum@suse.de>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ZainOJGQtbpn4slCO90/iCnfKp+SC02zN96Yv4pD5h2jafT7NlMFx5zHQ8s9KHadEen2M9ONGSDujBTn8adsbxf3OYyB95cUBXJFS0rBzex2yGBEF4IC2qWvQOKtrhbV3K68LdlAVmCUvfOe6l3VBQo8e4XQzsN/L/OVPmyEuhs=
+Message-ID: <84144f020703090902w592da639p9507c24365a6bf83@mail.gmail.com>
+Date: Fri, 9 Mar 2007 19:02:24 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Benjamin LaHaise" <bcrl@kvack.org>
+Subject: Re: [PATCH 2/7] revoke: add f_light flag for struct file
+Cc: "Eric Dumazet" <dada1@cosmosbay.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk, serue@us.ibm.com
+In-Reply-To: <20070309161113.GM6209@kvack.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.44L0.0703091124570.2611-100000@iolanthe.rowland.org>
-	 <200703091745.00169.oneukum@suse.de>
+References: <Pine.LNX.4.64.0703091014110.32320@sbz-30.cs.Helsinki.FI>
+	 <200703091108.58371.dada1@cosmosbay.com>
+	 <84144f020703090243j6fd49b5eoa23f4cc12866725a@mail.gmail.com>
+	 <200703091213.35691.dada1@cosmosbay.com>
+	 <20070309161113.GM6209@kvack.org>
+X-Google-Sender-Auth: 8e2a3ea6175159b9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/9/07, Oliver Neukum <oneukum@suse.de> wrote:
-> Am Freitag, 9. März 2007 17:32 schrieb Alan Stern:
-> > On Fri, 9 Mar 2007, Oliver Neukum wrote:
+On Fri, Mar 09, 2007 at 12:13:35PM +0100, Eric Dumazet wrote:
+> > Then just drop the fget_light() 'optimisation' and always take a reference
+> > (atomic on f_count) regardless of single-thread or not. Instead of dirtying
+> > f_light, just do the straightforward thing and be with it.
 > >
-> > > Am Donnerstag, 8. März 2007 17:02 schrieb Alan Stern:
-> > > > On Thu, 8 Mar 2007, Oliver Neukum wrote:
-> > > >
-> > > > > Hi,
-> > > > >
-> > > > > after a lightning bolt from high above I've been looking into refcounting
-> > > > > the data structures drivers use to provide the data used to refill sysfs
-> > > > > buffers. I've come to the following conclusion.
-> > > > >
-> > > > > 1. struct sysfs_buffer must have a struct kref * and probably a destructor
-> > > > > pointer
-> > > > > 2. drivers must be able to pass these pointers through an extended
-> > > > > device_create_file()
-> > > > > 3. Drivers must use refcounting if they want to use attributes
-> > > > > 4. read/write/poll must do refcounting
-> > > > >
-> > > > > I am not sure where to store the pointers. struct sysfs_dirent() looks
-> > > > > like the obvious choice. Comments?
-> > > >
-> > > > Can you explain the reasoning that led to these conclusions?  And what
-> > > > exactly was your lightning bolt?
-> > >
-> > > The old race between disconnect and IO to attribute via sysfs again.
-> > > If I cannot disassociate the drivers from the buffers in the buffers, drivers
-> > > must not deallocate the data necessary to answer sysfs callbacks while
-> > > a buffer exists.
-> >
-> > Why wouldn't you be able to dissociate a driver from a buffer?  That was
-> > the whole point of adding .orphan to sysfs_buffer and creating
-> > sysfs_buffer_collection -- it was supposed to solve exactly this race.
->
-> It did solve the race but deadlocked when unbinding devices through sysfs.
-> Linux therefore asked for the patch to be reverted and wants the isue solved
-> with refcounting.
->
+> > (that is : fget_light() = fget() = no more keeping fput_needed everywhere, and
+> > convoluted things in some dark sides of the kernel.
 
-I think we already have all refcounting that is needed. What is
-missing is subsystem-provided ->release() hooks for drivers to release
-driver-specific resources when a device finally goes away.
+On 3/9/07, Benjamin LaHaise <bcrl@kvack.org> wrote:
+> And it makes things rather slower for a lot of single threaded applications
+> on modern systems.  Yes, fget_light can be done much more cleanly, but please
+> don't go around ripping out optimizations just because.
 
--- 
-Dmitry
+Don't worry, the fget_light() bits are no longer needed:
+http://lkml.org/lkml/2007/3/9/151
