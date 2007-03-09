@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993012AbXCIGvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993015AbXCIGwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993012AbXCIGvE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 01:51:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993015AbXCIGvE
+	id S2993015AbXCIGwN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 01:52:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993016AbXCIGwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 01:51:04 -0500
-Received: from vesl.donpac.ru ([80.254.111.33]:46572 "EHLO vesl.donpac.ru"
+	Fri, 9 Mar 2007 01:52:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42732 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993012AbXCIGvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 01:51:02 -0500
-Date: Fri, 9 Mar 2007 09:50:56 +0300
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
-Message-ID: <20070309065055.GA18056@pazke.donpac.ru>
-Mail-Followup-To: Rusty Russell <rusty@rustcorp.com.au>,
-	lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <1173419792.32234.131.camel@localhost.localdomain>
+	id S2993015AbXCIGwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 01:52:12 -0500
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
-Content-Disposition: inline
-In-Reply-To: <1173419792.32234.131.camel@localhost.localdomain>
-X-Uname: Linux 2.6.18-1-amd64 x86_64
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Andrey Panin <pazke@donpac.ru>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/utrace
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: Alan Stern's message of  Wednesday, 7 March 2007 14:11:00 -0500 <Pine.LNX.4.44L0.0703071127530.6624-100000@iolanthe.rowland.org>
+X-Zippy-Says: I'm having a RELIGIOUS EXPERIENCE..  and I don't take any DRUGS
+Message-Id: <20070309065203.3A81A180063@magilla.sf.frob.com>
+Date: Thu,  8 Mar 2007 22:52:03 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> That sounds like a rather fragile approach to avoiding a minimal amount of 
+> work.  Debug exceptions don't occur very often, and when they do it won't 
+> matter too much if we go through some extra notifier-chain callouts.
 
---82I3+IH0IqGh5yIs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+When single-stepping occurs it happens repeatedly many times, and that
+doesn't need any more overhead than it already has.  
 
-On 068, 03 09, 2007 at 04:56:32PM +1100, Rusty Russell wrote:
-> __builtin_types_compatible_p() has been around since gcc 2.95,
+> It turns out that this won't work correctly unless I use something
+> stronger, like a spinlock or RCU.  Either one seems like overkill.
 
-but it's not available in Intel C compiler IIRC :(
+What is the problem with just clearing TIF_DEBUG?  It just means that in
+the SIGKILL case, the dying thread won't switch in its local debugregs.
+The global kernel allocations will already be set in the processor from the
+previous context, and old user-address allocations do no harm since we
+won't run in user mode again before switching out at the end of do_exit.
 
-> and we don't use it anywhere.  This patch quietly fixes that.
->
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->=20
-> diff -r f0ff8138f993 include/linux/kernel.h
-> --- a/include/linux/kernel.h	Fri Mar 09 16:40:25 2007 +1100
-> +++ b/include/linux/kernel.h	Fri Mar 09 16:44:04 2007 +1100
-> @@ -35,7 +35,9 @@ extern const char linux_proc_banner[];
->  #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
->  #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
-> =20
-> -#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-> +#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])			      \
-> +	+ sizeof(typeof(int[1 - 2*!!__builtin_types_compatible_p(typeof(arr), \
-> +		 typeof(&arr[0]))]))*0)
->  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
->  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
->  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
->=20
->=20
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->=20
+> Is there any way to find out from within the
+> switch_to_thread_hw_breakpoint routine whether the task is in this unusual
+> state?  (By which I mean the task is being debugged and the debugger
+> hasn't told it to start running.)  Would (tsk->exit_code == SIGKILL) work?  
 
---=20
-Andrey Panin		| Linux and UNIX system administrator
-pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
+That won't necessarily work.  There isn't any cheap check that won't also
+catch a task preempted on its way to stopping for the debugger.  
 
---82I3+IH0IqGh5yIs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+> If not, can we add a TIF_DEBUG_STOPPED flag?  
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+I'm not clear on what that would mean, but it's probably not an idea I like.
 
-iD8DBQFF8QPPIWZCBzwS8mkRAj0HAKCjgMBZmQNIG9ypRL5QjQDGUO0FOgCdEj2r
-GYUyko2KRSpiYB3yM+/Fagc=
-=3cOy
------END PGP SIGNATURE-----
+> Or should I just go with a spinlock?
 
---82I3+IH0IqGh5yIs--
+If it's really necessary, but it hasn't proved so for any other switched
+per-thread state.  As long as you aren't doing per-thread kernel-mode
+allocations, I don't see why you need anything other than TIF_DEBUG.
+
+> Is SIGKILL the only way this can happen?
+
+It should be, but there might be some stray wake_up_process calls in the
+kernel that can violate [up]trace's supposed monopoly on TASK_TRACED (or
+duopoly with SIGKILL, I suppose I should say).  If there is no SIGKILL,
+then the task will just call schedule again nearly immediately to go back
+to blocking, which will switch out unless there is a second wakeup right
+then.
+
+> In a similar vein, I need a reliable way to know whether a task has gone 
+> through exit_thread().  If it has, then its hw_breakpoint area has been 
+> deallocated and a new one must not be allocated.  Will (tsk->flags & 
+> PF_EXITING) always be true once that happens?
+
+PF_EXITING it set after there is no possibility of returning to user mode,
+but a while before exit_thread, when you might still want kernel-mode
+breakpoints.  If the only per-thread allocations you support are for user
+mode, then you can certainly refuse to do any when PF_EXITING is set.
+
+
+Thanks,
+Roland
+
