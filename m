@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965771AbXCIH6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375AbXCIIHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965771AbXCIH6O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 02:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965777AbXCIH6O
+	id S1751375AbXCIIHF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 03:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993073AbXCIIHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 02:58:14 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:47811 "EHLO tmailer.gwdg.de"
+	Fri, 9 Mar 2007 03:07:05 -0500
+Received: from waste.org ([66.93.16.53]:55910 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965771AbXCIH6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 02:58:13 -0500
-Date: Fri, 9 Mar 2007 08:54:53 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: kaber@trash.net
-cc: James Morris <jmorris@namei.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>
-Subject: Re: [PATCH] chaostables
-In-Reply-To: <45F044A0.50001@trash.net>
-Message-ID: <Pine.LNX.4.61.0703090822360.521@yvahk01.tjqt.qr>
-References: <45F044A0.50001@trash.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1751375AbXCIIHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 03:07:02 -0500
+Date: Fri, 9 Mar 2007 01:53:58 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+Message-ID: <20070309075358.GA10394@waste.org>
+References: <20070309053931.GA10459@waste.org> <200703091728.03978.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703091728.03978.kernel@kolivas.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Mar 09, 2007 at 05:28:03PM +1100, Con Kolivas wrote:
+> On Friday 09 March 2007 16:39, Matt Mackall wrote:
+> > First off, let me say that I think your approach has great promise,
+> > but I'm afraid it doesn't work so well here yet.
+> >
+> > Box is an R51 Thinkpad, 1.7GHz Pentium M. I'm using a make -j 5 as a
+> > test load.
+> >
+> > With 2.6.21-rc2-mm2, I get slightly sluggish response for opening new
+> > terminals, scrolling in Galeon, and a bit jerky behaviour for spinning
+> > Beryl's 3D desktop. Playing MP3s off an sshfs FUSE mount works fine.
+> > Typing across ssh sessions has no noticeable lag. Mouse pointer
+> > movement is smooth.
+> >
+> > With 2.6.21-rc3-mm1, terminals take longer to open, Galeon is
+> > noticeably more sluggish, and Beryl's desktop switching goes from being
+> > jerky to a 5-second agony. Typing in shells, remote or not,
+> > lags noticeably. Mouse pointer is alternately smooth or jerky. But
+> > MP3s still work great!
+> >
+> > Problems persist with make -j 2 and make.
+> 
+> make -j5 sucks you'll get precisely 1/6th cpu for galeon with this scheduler 
+> which is perfectly fair and I make no apology for it, nor do I plan to 
+> optimise for it. With make (without jobs) you'll still only get 50% cpu so it 
+> should be precisely half speed unless you nice it. Does it feel precisely 
+> half speed? It's supposed to. This is one of the drawbacks of a perfectly 
+> fair approach; its... fair and will need more liberal use of nice.
 
-On Thu, 08 Mar 2007 18:15:12 +0100, Patrick McHardy wrote:
->>>>Index: linux-2.6.21-rc3/net/netfilter/xt_CHAOS.c
->>>>+	/* Equivalent to:
->>>>+	 * -A chaos -m statistic --mode random --probability \
->>>>+	 *         $reject_percentage -j REJECT --reject-with host-unreach;
->>>>+	 * -A chaos -m statistic --mode random --probability \
->>>>+	 *         $delude_percentage -j DELUDE;
-[2nd one should have had -p tcp]
->>>>+	 * -A chaos -j DROP;
->>>>+	 */
->>>
->>>What does this do that can't be done by simply adding those individual 
->>>rules?
->>
->>It "wraps it all up", reducing the overall number of rules and user 
->>chains required in the filtering tables to implement the wanted logic. 
->>Reducing the number of filtering rules also reduces the time process a 
->>packet. These two are, in my opinion, a good thing.
->
->By that argument we could just codify every ruleset and put it in the
->kernel. Its three simple rules. There is no chance I'm going to take
->this part.
+Well then I suppose something must be broken. When my box is idle, I
+can grab my desktop and spin it around and generate less than 25% CPU
+with the CPU stepped all the way down from 1.7GHz to 600MHz (Beryl is
+actually much snappier than many conventional window managers by doing
+just about everything through GL). By comparison, grabbing the Galeon
+scroll bar and wiggling it will generate 100% CPU (still throttled
+though) but remain relatively smooth.
 
-While that is indeed true, I think users will have a judgement (perhaps 
-call it "first impression") that puts a certain set of NF rules into 
-either of the two categories "this is fundamental/generic enough to 
-warrant its own module" and "this does not". While
+With a single non-parallel make running (all in cache, mind you), the
+system kicks up into just about 100% CPU usage at full speed. Desktop
+spinning becomes between 10x to 100x slower (from ~30fps to < 1fps).
+Galeon scrolling pauses for as much as a second. Mouse movement pauses
+for as much as a second. Typing in terminals lags noticeably.
 
-  -A INPUT -s 134.76.0.0/16 -p tcp --dport 22 -j ACCEPT;
-  -A INPUT -p tcp --dport 80 -j ACCEPT;
-  -A INPUT -j REJECT;
+This is not the expected behavior of a fair, low-latency scheduler.
 
-is clearly something that only applies to one machine only, perhaps a
-little subnet, or at best, the servers on the company network, it is not
-"for everyone". xt_CHAOS on the other hand was meant - if you want so - as
-a replacement for DROP/REJECT and the default policy, e.g.:
+For reference, this was with HZ=250, PREEMPT, PREEMPT_BKL, and !NO_HZ.
 
-	# Block all evil, even if from inside the house.
-		-A INPUT -m evil -j CHAOS;
-	# Ignore stray packets not directed at us
-		-A INPUT -d mybase -m this -j ACCEPT;
-	# Management console
-		-A INPUT -s yourbase -m that -j ACCEPT;
-	# Chain policy (instead, or supplemental to, -P INPUT DROP)
-		-A INPUT -j CHAOS;
-
-(-m evil, -m this and -m that are placeholders and are not seriously
-considered to get their own kernel module anytime.)
-
-For me, this falls under generic-enough, but your (and other people's) mileage
-migt vary.
-
-
-Thank you for the comments,
-
-Jan
+-- 
+Mathematics is the supreme nostalgia of our time.
