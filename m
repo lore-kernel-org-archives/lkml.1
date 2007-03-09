@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767442AbXCIRfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767440AbXCIRip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767442AbXCIRfT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 12:35:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767439AbXCIRfT
+	id S1767440AbXCIRip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 12:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbXCIRip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 12:35:19 -0500
-Received: from mga09.intel.com ([134.134.136.24]:11373 "EHLO mga09.intel.com"
+	Fri, 9 Mar 2007 12:38:45 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:58192 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767440AbXCIRfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 12:35:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,268,1170662400"; 
-   d="scan'208"; a="55746472:sNHT198943065"
-Message-ID: <45F19ACD.6030906@linux.intel.com>
-Date: Fri, 09 Mar 2007 20:35:09 +0300
-From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	id S1752700AbXCIRio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 12:38:44 -0500
+Message-ID: <45F19BA1.3090408@garzik.org>
+Date: Fri, 09 Mar 2007 12:38:41 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Pavel Machek <pavel@ucw.cz>, "Moore, Robert" <robert.moore@intel.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-References: <20070302220454.a0c66d04.khali@linux-fr.org>	<B28E9812BAF6E2498B7EC5C427F293A402021B07@orsmsx415.amr.corp.intel.com>	<20070309071855.GA5148@ucw.cz>	<20070309112420.42420cf2.khali@linux-fr.org>	<45F13965.2030709@linux.intel.com> <20070309182355.d1845962.khali@linux-fr.org>
-In-Reply-To: <20070309182355.d1845962.khali@linux-fr.org>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, john.ronciak@intel.com,
+       jesse.brandeburg@intel.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] e1000: FIX: be ready for incoming irq at pci_request_irq
+References: <20070306165721.27434.23796.stgit@localhost.localdomain> <45F18F7C.3030801@garzik.org> <45F1954D.4000506@intel.com>
+In-Reply-To: <45F1954D.4000506@intel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> Hi Alexey,
->
-> On Fri, 09 Mar 2007 13:39:33 +0300, Alexey Starikovskiy wrote:
->   
->> Jean Delvare wrote:
->>     
->>> I can only second Pavel's wish here. This would be highly convenient
->>> for OS developers to at least know which resources are accessed by AML
->>> and SMM. Without this information, we can never be sure that OS-level
->>> code won't conflict with ACPI or SMM.
->>>       
->> BIOS vendors are not required to support latest and greatest ACPI spec. 
->> So even if some future spec version
->> will include this ports description, we will still have majority of 
->> hardware not exporting it...
->>     
->
-> Your reasoning is amazing. So we should refrain from proposing any
-> improvement which we aren't certain 100% of the systems will support
-> tomorrow? Then let's all stay away from our keyboards forever, as the
-> evolution of computer technology is based on exactly that -
-> improvements which not all systems implement.
->
-> It's friday evening, let's have some more for fun. With a similar
-> logic, ten years ago we'd have come up with the following conclusions:
->
-> The majority of computers have a single CPU, there is no point in
-> adding SMP support to Linux.
->
-> Let's not add a new instruction set in our next CPU family. The
-> majority of systems will not implement it so it will be useless anyway.
->
-> There's no point in supporting PnP in Linux, there are a majority of
-> legacy ISA cards out there which do not support it anyway!
->
-> See my point? Just because not every hardware out there supports a
-> given standard doesn't make that standard necessarily useless.
->
-> Just make the next version of ACPI better than the previous one (not
-> necessarily a challenge) and everyone will embrace it.
->
->   
-You get me wrong, I'm not against the proposal, so keep your breath.
-I'm just saying that you get old waiting for BIOS vendors to export this 
-info, even if it's in spec.
+Kok, Auke wrote:
+> Personally, I think this is really really needed. I'm surprised that you 
+> already didn't push this considering Andrew pulled this into -mm 
+> immediately.
 
-Regards,
-Alex.
+
+Since it affects a fragile area of e1000 for all [e1000] users, I much 
+prefer to err on the side of caution.  I have a history of pulling 
+wide-impact fixes like this, late in -rc cycle, and having yet more 
+breakage appear.
+
+But if Andrew or Linus disagree, feel free to override me.  This is just 
+area where I am intentionally over-cautious.
+
+	Jeff
+
+
+
+
