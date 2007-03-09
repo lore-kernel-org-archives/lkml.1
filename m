@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422659AbXCIApc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423014AbXCIApq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422659AbXCIApc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 19:45:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422716AbXCIApc
+	id S1423014AbXCIApq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 19:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423013AbXCIApp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 19:45:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33550 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422659AbXCIApb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 19:45:31 -0500
-Date: Thu, 8 Mar 2007 19:45:26 -0500
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: update 'getting sparse' info.
-Message-ID: <20070309004526.GA17459@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 8 Mar 2007 19:45:45 -0500
+Received: from ik-out-1112.google.com ([66.249.90.177]:10773 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422716AbXCIApn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 19:45:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=k32EtNVLHHNPyI/QAO/Hu33532sIdrdU3RGVeY3i+86CVKNbFJKEDMDM4DIFIHnC5OhfNlO/JxPOF0dbHYaWkHFR4qCaBp0LKGNtLhf0bs9msPfhk4xKfoKDwVoLugT0qVjk/+Afuw50qM2u/0dSK101KR0+uMsdN5YGdMOxFLo=
+Message-ID: <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com>
+Date: Thu, 8 Mar 2007 16:45:41 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: sys_write() racy for multi-threaded append?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <45F0A71C.2000800@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+References: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com>
+	 <45F09F9C.4030801@cosmosbay.com>
+	 <f2b55d220703081557k8101e68g1a3556e42f68416@mail.gmail.com>
+	 <45F0A71C.2000800@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- point to the sparse webpage
-- use git:// instead of rsync://
+On 3/8/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> Absolutely not. We dont want to slow down kernel 'just in case a fool might
+> want to do crazy things'
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+Actually, I think it would make the kernel (negligibly) faster to bump
+f_pos before the vfs_write() call.  Unless fget_light sets fput_needed
+or the write doesn't complete cleanly, you won't have to touch the
+file table entry again after vfs_write() returns.  You can adjust
+vfs_write to grab f_dentry out of the file before going into
+do_sync_write.  do_sync_write is done with the struct file before it
+goes into the aio_write() loop.  Result: you probably save at least an
+L1 cache miss, unless the aio_write loop is so frugal with L1 cache
+that it doesn't manage to evict the struct file.
 
---- linux-2.6.20.noarch/Documentation/sparse.txt~	2007-03-08 19:40:30.000000000 -0500
-+++ linux-2.6.20.noarch/Documentation/sparse.txt	2007-03-08 19:43:01.000000000 -0500
-@@ -45,11 +45,15 @@ special.
- Getting sparse
- ~~~~~~~~~~~~~~
- 
--With git, you can just get it from
-+You can get latest released versions from the Sparse homepage at
-+http://www.kernel.org/pub/linux/kernel/people/josh/sparse/
- 
--        rsync://rsync.kernel.org/pub/scm/devel/sparse/sparse.git
-+Alternatively, you can get snapshots of the latest development version
-+of sparse using git to clone..
- 
--and DaveJ has tar-balls at
-+        git://git.kernel.org/pub/scm/linux/kernel/git/josh/sparse.git
-+
-+DaveJ has hourly generated tarballs of the git tree available at..
- 
-         http://www.codemonkey.org.uk/projects/git-snapshots/sparse/
- 
+Patch to follow.
 
--- 
-http://www.codemonkey.org.uk
+Cheers,
+- Michael
