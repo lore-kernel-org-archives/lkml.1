@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767150AbXCIKeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993109AbXCIKgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767150AbXCIKeW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 05:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993107AbXCIKeV
+	id S2993109AbXCIKgS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 05:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993110AbXCIKgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 05:34:21 -0500
-Received: from wr-out-0506.google.com ([64.233.184.224]:52175 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993105AbXCIKeU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 05:34:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=ryKvsqbtw8MNIHL3uxS4FIhBiq9UWdxbNxHPDUD6jf0JoEwPRu/EeI1NydkHymyyhDzQkW2AjcB1Lib4DvkroUsnS9tlghS3ggHkqlDVCmtBsg8/t5aTzLQ+qMyObLeFXsLbh2A7oEqxFUwlSpqqKV63xvI52nEH3tyDPUWiVX8=
-Date: Fri, 9 Mar 2007 19:34:19 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: gregkh@suse.de, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: [PATCH] devres: release resources on device_del()
-Message-ID: <20070309103419.GB32687@htj.dyndns.org>
+	Fri, 9 Mar 2007 05:36:18 -0500
+Received: from depni.sinp.msu.ru ([213.131.7.21]:51055 "EHLO depni.sinp.msu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993109AbXCIKgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 05:36:17 -0500
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+References: <20070309053931.GA10459@waste.org>
+	<200703091728.03978.kernel@kolivas.org>
+	<20070309075358.GA10394@waste.org>
+	<200703091936.47128.kernel@kolivas.org>
+	<87slce945h.fsf@depni.sinp.msu.ru>
+	<20070309094904.GC2986@holomorphy.com>
+From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Date: Fri, 09 Mar 2007 13:36:15 +0300
+In-Reply-To: <20070309094904.GC2986@holomorphy.com> (William Lee Irwin, III's message of "Fri\, 9 Mar 2007 01\:49\:04 -0800")
+Message-ID: <87irdasnz4.fsf@depni.sinp.msu.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some platform devices are driven without driver attached, so managed
-resources can be acquired without driver attached.  Make sure such
-resources are released by calling devres_release_all() in
-device_del().
+William Lee Irwin III <wli@holomorphy.com> writes:
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
-This one fixes oops on pata_platform and pata_legacy unload.  libata
-being the only user of devres at the moment.  I think this can go
-through libata-dev#upstream.
+> On Fri, Mar 09, 2007 at 12:07:06PM +0300, Serge Belyshev wrote:
+>> If you see sched_yield() when stracing any 3d program, I suggest you
+>> to try this bruteforce workaround, which works fine for me,
+>> disable sched_yield():
+>
+> May I suggest LD_PRELOAD of a library consisting of only a nopped
+> sched_yield() function in userspace?
+>
 
- drivers/base/core.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+Sure. This is definitely clearer way to do. You just need to put
+export LD_PRELOAD=/path/to/your/lib.so somewhere early enough.
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index cf2a398..89ebe36 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -787,6 +787,13 @@ void device_del(struct device * dev)
- 	device_remove_attrs(dev);
- 	bus_remove_device(dev);
- 
-+	/*
-+	 * Some platform devices are driven without driver attached
-+	 * and managed resources may have been acquired.  Make sure
-+	 * all resources are released.
-+	 */
-+	devres_release_all(dev);
-+
- 	/* Notify the platform of the removal, in case they
- 	 * need to do anything...
- 	 */
--- 
-1.5.0.1
-
+cat > yield.c << EOF
+int sched_yield (void)
+{
+	return 0;
+}
+EOF
+gcc yield.c -o yield.so -shared -O2 -fPIC -g
