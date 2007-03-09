@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767241AbXCIMyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767243AbXCIM7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767241AbXCIMyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 07:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767240AbXCIMyT
+	id S1767243AbXCIM7X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 07:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767244AbXCIM7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 07:54:19 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:6036 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767236AbXCIMyR (ORCPT
+	Fri, 9 Mar 2007 07:59:23 -0500
+Received: from wx-out-0506.google.com ([66.249.82.238]:62196 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767243AbXCIM7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 07:54:17 -0500
+	Fri, 9 Mar 2007 07:59:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=PKtIxBqcLgNjjdUNnXkPJTkI2KNDggIkRVpxKBagC4evnvV5Wse1jUG46aau3zp3jISKFz8X25uBkUWQAi9J7IkPHCWw4qIYhpunXlEzgWeTW2QL4W+ptL5hiadY9UQKPwryhjHFlVakNmM+tsaWbfcUtNc5xugLjyAj2qP26Dg=
-Message-ID: <45F158F2.9040907@gmail.com>
-Date: Fri, 09 Mar 2007 21:54:10 +0900
+        b=WX/ZG4MRlgLd+Yi9xVwCODQI9zXFaZN66LwdFxOshoK1CSSZrtEi4t5I77oO4MF4GaNVbtxPKVzCayIr4DFDd5W8Zpb/ub0EICExvUoV87216rwDOz7IZDTg12/RSg52qcQU47Dm2K/AXyp+CyBCa/VUoL465d/Nra5iyBDyIVM=
+Message-ID: <45F15A28.5010700@gmail.com>
+Date: Fri, 09 Mar 2007 21:59:20 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Greg KH <greg@kroah.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@osdl.org>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
-References: <20070111222627.66bb75ab.akpm@osdl.org>	<20070124135354.GI17836@stusta.de>	<45B76946.1070009@ru.mvista.com>	<45D756D7.4060106@ru.mvista.com>	<45D75853.1060607@ru.mvista.com>	<45E2DF13.9010200@ru.mvista.com>	<20070226092644.aea76b37.randy.dunlap@oracle.com>	<20070226211401.GC3810@kroah.com>	<45ED9390.3000308@ru.mvista.com> <20070306084751.b82a7b84.randy.dunlap@oracle.com>
-In-Reply-To: <20070306084751.b82a7b84.randy.dunlap@oracle.com>
+To: Conke Hu <conke.hu@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] ATAPI command TEST_UNIT_READY never succeeds!
+References: <5767b9100703070409o3e094420rf7ccffc436332184@mail.gmail.com>	 <5767b9100703070423y194bf492wad28ddc66ab98775@mail.gmail.com>	 <45EEAFB4.3060306@gmail.com> <5767b9100703090421h27711ceeqda5648eefd428456@mail.gmail.com>
+In-Reply-To: <5767b9100703090421h27711ceeqda5648eefd428456@mail.gmail.com>
 X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Randy Dunlap wrote:
->>     Erm, before I do that, could somebody explain what
+Conke Hu wrote:
+> On 3/7/07, Tejun Heo <htejun@gmail.com> wrote:
+>> (snip)
+>> I've read your last posting about this, but forgot to follow up.  TUR is
+>> supposed to fail if ATAPI device doesn't have media loaded.  TUR fails
+>> and sense data returns device not ready - media not present.  That's the
+>> normal operation.  Does TUR fail even with media loaded or is sense data
+>> not properly fetched?
 >>
->> #define HAVE_PCI_REQ_REGIONS 2
->>
->> accompanying their declaration is for? I have't found any references to it in 
->> the source. Should I duplicate it for CONFIG_PCI=n case (I guess not)?
 > 
-> I wouldn't since it's not used anywhere, but maybe Tejun could comment
-> on it...
+> Thank you, Tejun! I did forget to load any media :(
+> When I load media and retry, TUR succeeds but there is still a
+> problem: when using ahci driver, TUR will not succeed unless it runs
+> twice, and the following loop always runs till retries==2
+> -------------------- code in sr.c, get_capabilities()
+> -------------------------
+>     retries = 0;
+>     do {
+>         memset((void *)cmd, 0, MAX_COMMAND_SIZE);
+>         cmd[0] = TEST_UNIT_READY;
+> 
+>         the_result = scsi_execute_req (cd->device, cmd, DMA_NONE, NULL,
+>                            0, &sshdr, SR_TIMEOUT,
+>                            MAX_RETRIES);
+> 
+>         retries++;
+>     } while (retries < 5 &&
+>          (!scsi_status_is_good(the_result) ||
+>           (scsi_sense_valid(&sshdr) &&
+>            sshdr.sense_key == UNIT_ATTENTION)));
+> ------------------------------------- end code
+> -------------------------------------
+> 
+> this issue only occurs in ahci driver,  and libata + pata driver is OK.
 
-This is the first time I see that macro.  There is no user in the whole
-source.  I think the best way is to just kill it.
+After media is loaded, it takes some time for the device to get ready,
+and it's supposed to raise UNIT_ATTENTION to tell the driver that media
+has changed.  TUR fails with UA and sense data reports media exchanged
+and the next TUR succeeds.  In SATA, you might also see unit reset UA
+due to the probing sequence.  Those are why TUR is tried several times
+in the first place.
 
-Thanks.
+So, there's nothing wrong with failing TURs, it's perfectly normal that
+they fail first one or two tries.
 
 -- 
 tejun
