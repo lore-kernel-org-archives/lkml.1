@@ -1,34 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993018AbXCIHJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993025AbXCIHJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993018AbXCIHJF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 02:09:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993026AbXCIHJF
+	id S2993025AbXCIHJE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 02:09:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993026AbXCIHJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 02:09:05 -0500
-Received: from [221.6.14.228] ([221.6.14.228]:41272 "EHLO proxy.fnst.com.cn"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993018AbXCIHJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 02:09:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58459 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993025AbXCIHJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Mar 2007 02:09:03 -0500
-Message-ID: <005a01c76219$d9633350$2801a8c0@zhangxiliang>
-From: "zhangxiliang" <zhangxiliang@nanjing-fnst.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: "swapon" function manpage 
-Date: Fri, 9 Mar 2007 15:09:16 +0800
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3028
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-RFC2646: Format=Flowed; Original
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] swsusp: Disable nonboot CPUs before entering platform suspend
+Date: Fri, 9 Mar 2007 08:11:37 +0100
+User-Agent: KMail/1.9.5
+Cc: shaohua.li@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Dave Jones <davej@redhat.com>
+References: <200703072044.12021.rjw@sisk.pl> <200703080013.05544.rjw@sisk.pl> <200703082011.15706.lenb@kernel.org>
+In-Reply-To: <200703082011.15706.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703090811.38559.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
-  The manpage of "swapon" function since Linux 2.6.17 has some error.
-  The MAX_SWAPFILES should be 30 in the latest version. Swap migration uses
-the two higest numbers of swap types (30 and 31).
+On Friday, 9 March 2007 02:11, Len Brown wrote:
+> On Wednesday 07 March 2007 18:13, Rafael J. Wysocki wrote:
+> > On Wednesday, 7 March 2007 23:49, Andrew Morton wrote:
+> > > On Wed, 7 Mar 2007 23:14:29 +0100
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > On Wednesday, 7 March 2007 22:16, Andrew Morton wrote:
+> > > > > On Wed, 7 Mar 2007 20:44:11 +0100
+> > > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > > 
+> > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > 
+> > > > > > Prevent the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
+> > > > > > from triggering by disabling nonboot CPUs before we finally enter the platform
+> > > > > > suspend.
+> > > > > > 
+> > > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > ---
+> > > > > >  kernel/power/disk.c |    1 +
+> > > > > >  kernel/power/user.c |    2 +-
+> > > > > >  2 files changed, 2 insertions(+), 1 deletion(-)
+> > > > > > 
+> > > > > > Index: linux-2.6.21-rc2-mm2/kernel/power/disk.c
+> > > > > > ===================================================================
+> > > > > > --- linux-2.6.21-rc2-mm2.orig/kernel/power/disk.c
+> > > > > > +++ linux-2.6.21-rc2-mm2/kernel/power/disk.c
+> > > > > > @@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
+> > > > > >  	switch(mode) {
+> > > > > >  	case PM_DISK_PLATFORM:
+> > > > > >  		if (pm_ops && pm_ops->enter) {
+> > > > > > +			disable_nonboot_cpus();
+> > > > > >  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+> > > > > >  			pm_ops->enter(PM_SUSPEND_DISK);
+> > > > > >  			break;
+> > > > > > Index: linux-2.6.21-rc2-mm2/kernel/power/user.c
+> > > > > > ===================================================================
+> > > > > > --- linux-2.6.21-rc2-mm2.orig/kernel/power/user.c
+> > > > > > +++ linux-2.6.21-rc2-mm2/kernel/power/user.c
+> > > > > > @@ -398,9 +398,9 @@ static int snapshot_ioctl(struct inode *
+> > > > > >  
+> > > > > >  		case PMOPS_ENTER:
+> > > > > >  			if (data->platform_suspend) {
+> > > > > > +				disable_nonboot_cpus();
+> > > > > >  				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+> > > > > >  				error = pm_ops->enter(PM_SUSPEND_DISK);
+> > > > > > -				error = 0;
+> > > > > >  			}
+> > > > > >  			break;
+> > > > > 
+> > > > > Is this considered 2.6.21 material?  If so why?
+> > > > 
+> > > > Well, the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
+> > > > triggers every time an SMP x86_64 box is suspended to disk using the platform
+> > > > mode (default), which is quite annoying IMHO and users think something wrong is
+> > > > going on.  This will probably cause them to report the problem and I'd rather
+> > > > like to avoid handling these reports. ;-)
+> > > 
+> > > Well sure - if patches were always error-free, we'd always apply them
+> > > immediately.
+> > > 
+> > > The question is: is the risk of this patch breaking things exceeded by the
+> > > benefit which you describe?
+> > 
+> > Well, it has survived some testing (http://lkml.org/lkml/2007/3/7/16).  Also,
+> > before the code ordering in 2.6.21-rc* we had been running on one CPU
+> > here, so I think the risk is small.
+> > 
+> > We could remove the WARN_ON() as Pavel has just suggested, but first I'd like
+> > to know who put it there and why.
+> > 
+> 
+> Shaohua added it between 2.6.17 and 2.6.18
+> 55b2355eefc2f160246226d4d69fed431173a4d5
 
-Regards
-Zhang Xiliang 
+Yes, DaveJ has already noticed that, but what it's there for?
 
-
-
+Rafael
