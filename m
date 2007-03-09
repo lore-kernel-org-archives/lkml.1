@@ -1,72 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767571AbXCIWcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767573AbXCIWf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767571AbXCIWcu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 17:32:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767576AbXCIWcu
+	id S1767573AbXCIWf7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 17:35:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767574AbXCIWf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 17:32:50 -0500
-Received: from waste.org ([66.93.16.53]:38015 "EHLO waste.org"
+	Fri, 9 Mar 2007 17:35:59 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:56219 "EHLO tetsuo.zabbo.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767571AbXCIWct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 17:32:49 -0500
-Date: Fri, 9 Mar 2007 16:20:06 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Willy Tarreau <w@1wt.eu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Message-ID: <20070309222006.GJ10394@waste.org>
-References: <20070309053931.GA10459@waste.org> <20070309213959.GI10394@waste.org> <20070309215716.GK943@1wt.eu> <200703100912.07792.kernel@kolivas.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703100912.07792.kernel@kolivas.org>
-User-Agent: Mutt/1.5.9i
+	id S1767573AbXCIWf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 17:35:58 -0500
+From: Zach Brown <zach.brown@oracle.com>
+To: linux-aio@kvack.org, linux-kernel@vger.kernel.org
+Cc: Jeff Moyer <jmoyer@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Message-Id: <20070309223557.29256.4572.sendpatchset@tetsuo.zabbo.net>
+Subject: [PATCH] dio: invalidate clean pages before dio write
+Date: Fri,  9 Mar 2007 14:35:57 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 10, 2007 at 09:12:07AM +1100, Con Kolivas wrote:
-> On Saturday 10 March 2007 08:57, Willy Tarreau wrote:
-> > On Fri, Mar 09, 2007 at 03:39:59PM -0600, Matt Mackall wrote:
-> > > On Sat, Mar 10, 2007 at 08:19:18AM +1100, Con Kolivas wrote:
-> > > > On Saturday 10 March 2007 08:07, Con Kolivas wrote:
-> > > > > On Saturday 10 March 2007 07:46, Matt Mackall wrote:
-> > > > > > My suspicion is the problem lies in giving too much quanta to
-> > > > > > newly-started processes.
-> > > > >
-> > > > > Ah that's some nice detective work there. Mainline does some rather
-> > > > > complex accounting on sched_fork including (possibly) a whole timer
-> > > > > tick which rsdl does not do. make forks off continuously so what you
-> > > > > say may well be correct. I'll see if I can try to revert to the
-> > > > > mainline behaviour in sched_fork (which was obviously there for a
-> > > > > reason).
-> > > >
-> > > > Wow! Thanks Matt. You've found a real bug too. This seems to fix the
-> > > > qemu misbehaviour and bitmap errors so far too! Now can you please try
-> > > > this to see if it fixes your problem?
-> > >
-> > > Sorry, it's about the same. I now suspect an accounting glitch involving
-> > > pipe wake-ups.
-> > >
-> > > 5x memload: good
-> > > 5x execload: good
-> > > 5x forkload: good
-> > > 5 parallel makes: mostly good
-> > > make -j 5: bad
-> > >
-> > > So what's different between makes in parallel and make -j 5? Make's
-> > > job server uses pipe I/O to control how many jobs are running.
-> >
-> > Matt, could you check with plain 2.6.20 + Con's patch ? It is possible
-> > that he added bugs when porting to -mm, or that someting in -mm causes
-> > the trouble. Your experience with -mm seems so much different from mine
-> > with mainline, there must be a difference somewhere !
-> 
-> Good idea.
+dio: invalidate clean pages before dio write
 
-2.6.20+RSDL+tickfix+noyield behaves more or less the same under make
--j5 as 2.6.21-rc3-mm1. A bit worse, perhaps. There's no tickless on
-2.6.20, so that could explain that.
+This patch fixes a user-triggerable oops that was reported by Leonid Ananiev as
+archived at http://lkml.org/lkml/2007/2/8/337.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+dio writes invalidate clean pages that intersect the written region so that
+subsequent buffered reads go to disk to read the new data.  If this fails the
+interface tries to tell the caller that the cache is inconsistent by returning
+EIO.
+
+Before this patch we had the problem where this invalidation failure would
+clobber -EIOCBQUEUED as it made its way from fs/direct-io.c to fs/aio.c.  Both
+fs/aio.c and bio completion call aio_complete() and we reference freed memory,
+usually oopsing.
+
+This patch addresses this problem by invalidating before the write so that we
+can cleanly return -EIO before ->direct_IO() has had a chance to return
+-EIOCBQUEUED.
+
+There is a compromise here.  During the dio write we can fault in mmap()ed
+pages which intersect the written range with get_user_pages() if the user
+provided them for the source buffer.  This is a crazy thing to do, but we can
+make it mostly work in most cases by trying the invalidation again.   The
+compromise is that we won't return an error if this second invalidation fails
+if it's an AIO write and we have -EIOCBQUEUED.
+
+This was tested by having two processes race performing large O_DIRECT and
+buffered ordered writes.  Within minutes ext3 would see a race between
+ext3_releasepage() and jbd holding a reference on ordered data buffers and
+would cause invalidation to fail, panicing the box.  The test can be found in
+the 'aio_dio_bugs' test group in test.kernel.org/autotest.  After this patch
+the test passes.
+
+Signed-off-by: Zach Brown <zach.brown@oracle.com>
+---
+
+ mm/filemap.c |   48 ++++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 36 insertions(+), 12 deletions(-)
+
+--- a/mm/filemap.c	Wed Feb 28 06:00:13 2007 +0000
++++ b/mm/filemap.c	Thu Mar 08 17:48:58 2007 -0800
+@@ -2379,7 +2379,8 @@ generic_file_direct_IO(int rw, struct ki
+ 	struct file *file = iocb->ki_filp;
+ 	struct address_space *mapping = file->f_mapping;
+ 	ssize_t retval;
+-	size_t write_len = 0;
++	size_t write_len;
++	pgoff_t end = 0; /* silence gcc */
+ 
+ 	/*
+ 	 * If it's a write, unmap all mmappings of the file up-front.  This
+@@ -2388,23 +2389,46 @@ generic_file_direct_IO(int rw, struct ki
+ 	 */
+ 	if (rw == WRITE) {
+ 		write_len = iov_length(iov, nr_segs);
++		end = (offset + write_len - 1) >> PAGE_CACHE_SHIFT;
+ 	       	if (mapping_mapped(mapping))
+ 			unmap_mapping_range(mapping, offset, write_len, 0);
+ 	}
+ 
+ 	retval = filemap_write_and_wait(mapping);
+-	if (retval == 0) {
+-		retval = mapping->a_ops->direct_IO(rw, iocb, iov,
+-						offset, nr_segs);
+-		if (rw == WRITE && mapping->nrpages) {
+-			pgoff_t end = (offset + write_len - 1)
+-						>> PAGE_CACHE_SHIFT;
+-			int err = invalidate_inode_pages2_range(mapping,
++	if (retval)
++		goto out;
++
++	/*
++	 * After a write we want buffered reads to be sure to go to disk to get
++	 * the new data.  We invalidate clean cached page from the region we're
++	 * about to write.  We do this *before* the write so that we can return
++	 * -EIO without clobbering -EIOCBQUEUED from ->direct_IO().
++	 */
++	if (rw == WRITE && mapping->nrpages) {
++		retval = invalidate_inode_pages2_range(mapping,
+ 					offset >> PAGE_CACHE_SHIFT, end);
+-			if (err)
+-				retval = err;
+-		}
+-	}
++		if (retval)
++			goto out;
++	}
++
++	retval = mapping->a_ops->direct_IO(rw, iocb, iov, offset, nr_segs);
++	if (retval)
++		goto out;
++
++	/* 
++	 * Finally, try again to invalidate clean pages which might have been
++	 * faulted in by get_user_pages() if the source of the write was an
++	 * mmap()ed region of the file we're writing.  That's a pretty crazy
++	 * thing to do, so we don't support it 100%.  If this invalidation
++	 * fails and we have -EIOCBQUEUED we ignore the failure.
++	 */
++	if (rw == WRITE && mapping->nrpages) {
++		int err = invalidate_inode_pages2_range(mapping,
++					      offset >> PAGE_CACHE_SHIFT, end);
++		if (err && retval >= 0)
++			retval = err;
++	}
++out:
+ 	return retval;
+ }
+ 
