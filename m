@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767470AbXCIUIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965805AbXCIUJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767470AbXCIUIe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767471AbXCIUIe
+	id S965805AbXCIUJP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:09:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965516AbXCIUJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:08:34 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:44597 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1767470AbXCIUId (ORCPT
+	Fri, 9 Mar 2007 15:09:15 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4307 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767471AbXCIUJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:08:33 -0500
-Date: Fri, 9 Mar 2007 15:08:32 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
-       <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-In-Reply-To: <d120d5000703090934r45c39f74l2a51eda986b1f07b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0703091451140.5094-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Mar 2007 15:09:14 -0500
+Date: Fri, 9 Mar 2007 20:08:50 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Jean Delvare <khali@linux-fr.org>, Bryan Wu <bryan.wu@analog.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Bitbanging i2c bus driver using the GPIO API
+Message-ID: <20070309200850.GA8444@flint.arm.linux.org.uk>
+Mail-Followup-To: David Brownell <david-b@pacbell.net>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Jean Delvare <khali@linux-fr.org>, Bryan Wu <bryan.wu@analog.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
+References: <200703090945.38880.david-b@pacbell.net> <11734661281633-git-send-email-hskinnemoen@atmel.com> <200703091130.13547.david-b@pacbell.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703091130.13547.david-b@pacbell.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007, Alan Stern wrote:
-
-> Oliver, your idea won't work either.  Think about what would happen if 
-> someone did
+On Fri, Mar 09, 2007 at 11:30:12AM -0800, David Brownell wrote:
+> On Friday 09 March 2007 10:48 am, Haavard Skinnemoen wrote:
+> > This is a very simple bitbanging i2c bus driver utilizing the new
+> > arch-neutral GPIO API. Useful for chips that don't have a built-in
+> > i2c controller, additional i2c busses, or testing purposes.
 > 
-> 	rmmod driver_module </sys/devices/.../attribute_file
-> 
-> The rmmod process would never actually read the attribute, so until it 
-> exited the private data structure would have a positive refcount.  But 
-> rmmod can't exit until the driver has been unloaded from memory, and it 
-> can't be unloaded while its data structure is still allocated.  Thus we 
-> would end up with deadlock; rmmod would hang forever.
+> That's the right idea!  But remember that not all GPIOs support
+> reading back the actual value on SCL (it's an OUT pin, so lacking
+> multidrive capability the values "should" be what you wrote), so
+> getscl() support should depend on a flag in platform data.  In
+> the same vein, if SCL is an output-only pin, you won't be able
+> to change its direction ... but then, I'm not sure why you were
+> changing its direction in setscl() rather than just its value.
 
-I take this back.  Redirecting stdin to the attribute file would increase 
-the module's refcount and cause rmmod to exit immediately with an error.
+That's a more correct I2C implementation.  If you read the specs, the
+SDA and SCL signals are supposed to be driven by open-collector or
+open-drain drivers, such that devices only pull the bus low.  Pull-up
+resistors pull the signals high when undriven.
 
-After some more thought, I basically agree with what Oliver wrote
-originally.  sysfs_dirent is indeed the logical place to store the kref
-pointer.  However it needs to be used during open and release, not during
-read, write, and poll.  Another point, which Oliver didn't think of, is
-that the kref pointer needs to be passed to the driver as an argument in
-the show() and store() method calls.
+This avoids the possibility of damage caused when one device drives
+a signal low and another device tries to drive it high.
 
-Implementing this will be difficult.  One possibility is to change the 
-definition of sysfs_ops, adding the new struct kref * argument to the 
-prototypes.  This will involve changing _lots_ of source files, adding an 
-unused argument to many functions, which isn't attractive.
+Therefore, the correct I2C GPIO implementation is one where you drive
+both SDA and SCL low by using a combination of the data direction
+register and the output level register, but avoid driving the output
+high.
 
-The other possibility is to test at runtime whether the kref pointer is 
-NULL, and if it is, don't pass it.  This would work, but it isn't 
-type-safe.
-
-Finally, there's added complexity in each driver which wants to use the 
-new facility.  The module_exit routine will need to be smart enough to 
-block until all the private data structures have been released.  
-usb-storage does something like that now; it's kind of ugly (although it 
-could be improved if appropriate support were added to the core kernel).
-
-Alan Stern
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
