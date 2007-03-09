@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767259AbXCINLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767269AbXCINNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767259AbXCINLZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 08:11:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767271AbXCINLZ
+	id S1767269AbXCINNm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 08:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767274AbXCINNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 08:11:25 -0500
-Received: from www.osadl.org ([213.239.205.134]:40205 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767259AbXCINLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 08:11:24 -0500
-Subject: Re: [rfc][patch] futex: restartable futex_wait?
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070309122417.GA15325@wotan.suse.de>
-References: <20070307153349.GA32404@wotan.suse.de>
-	 <20070308172902.GA16834@elte.hu> <20070309051038.GA12479@wotan.suse.de>
-	 <1173433115.3999.2.camel@chaos>  <20070309122417.GA15325@wotan.suse.de>
-Content-Type: text/plain
-Date: Fri, 09 Mar 2007 14:10:53 +0100
-Message-Id: <1173445853.3999.6.camel@chaos>
+	Fri, 9 Mar 2007 08:13:42 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:57062 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767269AbXCINNl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 08:13:41 -0500
+Date: Fri, 9 Mar 2007 15:13:40 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Eric Dumazet <dada1@cosmosbay.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, hch@infradead.org, serue@us.ibm.com
+Subject: Re: [PATCH 2/7] revoke: add f_light flag for struct file
+In-Reply-To: <20070309141246.2059c9dc@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.64.0703091512400.21669@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0703091014110.32320@sbz-30.cs.Helsinki.FI>
+ <200703091108.58371.dada1@cosmosbay.com> <84144f020703090243j6fd49b5eoa23f4cc12866725a@mail.gmail.com>
+ <200703091213.35691.dada1@cosmosbay.com> <84144f020703090352s3ecd8ab4pdde6f24f6cf7cc47@mail.gmail.com>
+ <84144f020703090358o76d1d82bk9479792173445fe3@mail.gmail.com>
+ <20070309141246.2059c9dc@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-09 at 13:24 +0100, Nick Piggin wrote:
-> > > > 'time' here is relative, so the restarted syscall will do a /full/ wait 
-> > > > again.
-> > > 
-> > > But it has been modified by schedule_timeout?
-> > 
-> > But this does not change the syscall registers, so it is restarted in
-> > the same way. We need a new futex OP for this, which takes absolute time
-> > like the PI futex op does.
+At some point in time, I wrote:
+> > Btw, what we can do is delay closing the actual revoked file until the
+> > task terminates. This has the unfortunate side-effect that a task has
+> > no way of freeing the resources now. But, I am beginning to think it's
+> > not a big problem because the inode mapping will be zapped immediately
+> > upon revoke anyway...
+ 
+On Fri, 9 Mar 2007, Alan Cox wrote:
+> Actually you can't entirely do this. The revoke() definition states
+> explicitly that the driver close occurs at the point of revoke() not
+> later.
 > 
-> Forgive me if I'm missing something here, but I'm using the restart block
-> and saving the updated value of time in ->arg2, and using that as the new
-> time parameter passed into futex_wait from futex_wait_restart.
+> That can however be pushed into the device revoke method for the cases
+> where it might matter (eg tty).
 
-Oops. I went into confusion mode. You are right, the restart block keeps
-that.
+Yeah, you just make f_ops->revoke close the driver and f_ops->flush a 
+no-op if the driver has already been closed.
 
-	tglx
-
-
+			Pekka
