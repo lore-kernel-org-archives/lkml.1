@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993131AbXCIRVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767421AbXCIRVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993131AbXCIRVM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 12:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992494AbXCIRVM
+	id S1767421AbXCIRVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 12:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767429AbXCIRVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 12:21:12 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42491 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752700AbXCIRVH (ORCPT
+	Fri, 9 Mar 2007 12:21:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41119 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767421AbXCIRVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 12:21:07 -0500
-Date: Fri, 9 Mar 2007 09:21:00 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: akpm@osdl.org, Marcelo Tosatti <marcelo@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, mpm@selenic.com,
-       Manfred Spraul <manfred@colorfullife.com>
-Subject: Re: [SLUB 0/3] SLUB: The unqueued slab allocator V4
-In-Reply-To: <Pine.LNX.4.64.0703091503580.16052@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0703090907330.7315@schroedinger.engr.sgi.com>
-References: <20070307023502.19658.39217.sendpatchset@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0703081022040.1615@skynet.skynet.ie>
- <Pine.LNX.4.64.0703080836300.27191@schroedinger.engr.sgi.com>
- <20070308174004.GB12958@skynet.ie> <Pine.LNX.4.64.0703081135280.3130@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0703091503580.16052@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Mar 2007 12:21:14 -0500
+Subject: Re: [PATCH] Complain about missing system calls.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       rmk@arm.linux.org.uk, sam@ravnborg.org, linux-arch@vger.kernel.org
+In-Reply-To: <p737itqbdnl.fsf@bingen.suse.de>
+References: <1173394873.3461.510.camel@pmac.infradead.org>
+	 <p737itqbdnl.fsf@bingen.suse.de>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 17:20:02 +0000
+Message-Id: <1173460802.12760.2.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007, Mel Gorman wrote:
+On Fri, 2007-03-09 at 17:11 +0100, Andi Kleen wrote:
+> Of course the existing syscall numbers can't be changed, but for all new 
+> calls one could just add automatically for everybody.
+> 
+> A global table with two entries (compat and non compat) and a per arch 
+> override table should be sufficient.
 
-> The results without slub_debug were not good except for IA64. x86_64 and ppc64
-> both blew up for a variety of reasons. The IA64 results were
+Counterexample: sys_epoll_pwait.
 
-Yuck that is the dst issue that Adrian is also looking at. Likely an issue 
-with slab merging and RCU frees.
- 
-> KernBench Comparison
-> --------------------
->                           2.6.21-rc2-mm2-clean       2.6.21-rc2-mm2-slub
-> %diff
-> User   CPU time                        1084.64                   1032.93 4.77%
-> System CPU time                          73.38                     63.14 13.95%
-> Total  CPU time                        1158.02                   1096.07 5.35%
-> Elapsed    time                         307.00                    285.62 6.96%
+It'd be nice if it were that simple.
 
-Wow! The first indication that we are on the right track with this.
+It'd also be nice if people stopped thinking it was that simple :)
 
-> AIM9 Comparison
->  2 page_test               2097119.26                 3398259.27 1301140.01 62.04% System Allocations & Pages/second
+-- 
+dwmw2
 
-Wow! Must have all stayed within slab boundaries.
-
->  8 link_test                 64776.04                    7488.13  -57287.91 -88.44% Link/Unlink Pairs/second
-
-Crap. Maybe we straddled a slab boundary here?
