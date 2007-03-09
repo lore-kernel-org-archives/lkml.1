@@ -1,55 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767588AbXCIWud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767592AbXCIWwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767588AbXCIWud (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 17:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767591AbXCIWud
+	id S1767592AbXCIWwH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 17:52:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767591AbXCIWwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 17:50:33 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:13395 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767588AbXCIWuc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 17:50:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Rx+0vNjjnWLkgIeKekbI0d27ZBEFO2xCCoH4TmN4VcWAtS0elbeifM340znbb6gBfB6k7JhB1rbSFiZhr7kOj1S2IyfnZ4m03Wr5Aoqp8MGvNC4QK9rOmTSZwzXS7tHzUP3/MPJYBK7gFUtCKzEjkKkG/XhzClQLvdrUqTEz1ew=
-Message-ID: <75b66ecd0703091450l26bdc12es4091018f2d87f0d3@mail.gmail.com>
-Date: Fri, 9 Mar 2007 17:50:29 -0500
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
+	Fri, 9 Mar 2007 17:52:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45418 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767592AbXCIWwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 17:52:05 -0500
+Date: Fri, 9 Mar 2007 23:50:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Zachary Amsden" <zach@vmware.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "john stultz" <johnstul@us.ibm.com>, akpm@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, "Andi Kleen" <ak@suse.de>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.61.0703092135450.8799@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070309225027.GA28180@elte.hu>
+References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org> <20070309201257.GA5761@elte.hu> <Pine.LNX.4.64.0703091305090.10832@woody.linux-foundation.org> <20070309213607.GA16796@elte.hu> <Pine.LNX.4.64.0703091423570.10832@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070309180230.GA17988@elte.hu>
-	 <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org>
-	 <20070309192420.GA27747@elte.hu>
-	 <Pine.LNX.4.61.0703092135450.8799@yvahk01.tjqt.qr>
-X-Google-Sender-Auth: 4d0c408b58f8b26f
+In-Reply-To: <Pine.LNX.4.64.0703091423570.10832@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/9/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> I think the sound example to the right really shows it. /dev/dsp has a
-> consistent ABI on a ton of systems. The API below it, varies. Linux got
-> file_operations and ALSA. Solaris/BSD may have its
-> vnode-and-so-on-functions and some sort of OSS.
 
-I think this is a poor example as applications lose a lot of
-functionality (multiple stream mixing, software volume control, etc)
-by going through the legacy /dev/dsp interface vs. using native ALSA.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Lee
+> > but ... maybe because VMI is so lowlevel and covers /all/ of x86 
+> > today, it will always be able to emulate whatever different concept 
+> > we can come up with? Do we really know this absolutely sure?
+> 
+> "For sure"? Absolutely not. But since any new interfaces we come up 
+> with for doing timers etc had better work perfectly fine on an old 
+> hardware platform too, we can't exactly require any interfaces that do 
+> things that a bog-standard old dual-PPro didn't do 10 years ago, can 
+> we?
+
+i'm not really thinking in terms of extending the native kernel - 
+whatever we do on the native kernel we'll indeed have to be able to do 
+on 'real' hardware too - including really old boxes.
+
+i'm thinking more in terms of having some new and more intelligent 
+virtualization-only abstractions.
+
+For example i think people are way too obsessed with building virtual 
+'machines' that look like PCs, while i've got some truly pie-in-the-sky 
+ideas floating to simplify virtual machines, like the one i just 
+outlined to Chris:
+
+|| long-term i'd like to have a paravirt model where the guest does not 
+|| store /any/ page tables - all paging is managed by the hypervisor. 
+|| The guest has a vma tree, but otherwise it does not process 
+|| pagefaults, has no concept of a pte (if in paravirt mode), has no 
+|| concept of kernel page tables either: there are hypercalls to 
+|| allocate/free guest-kernel memory, etc. This needs some (serious) MM 
+|| surgery but it's doable and it's interesting as well. How would you 
+|| map this to the VMI backend?
+
+Clearly the ugliest and most complex part of hypervisors is MMU support. 
+So the above model would avoid all the shadow page table complexities 
+and other MMU nasties, and keep that stuff in the hypervisor. [ in 
+exchange for a whole set of other complexities and problems ;-) ] This 
+would be even more highlevel than UML (UML emulates pagetables in 
+user-space), in that regard.
+
+even in such a drastic model we could share like 90% of the x86 binary 
+code with the rest of the kernel (all the filesystem support, networking 
+stack, etc. would still be reusable by the guest kernel), so a paravirt 
+approach, where native and guest is the same image (as opposed to the 
+UML model, where they are separate) still makes sense and is preferred 
+by distributions.
+
+Mapping this into VMI calls looks ... near impossible to me. VMI really 
+assumes that there is no hypervisor state for kernel objects - while the 
+above model _shares_ a very substantial kernel object with the 
+hypervisor - and in fact 100% delegates its handling to the hypervisor 
+altogether. Hm?
+
+	Ingo
