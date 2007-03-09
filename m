@@ -1,86 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767537AbXCIVSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993146AbXCIVTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767537AbXCIVSD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:18:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993145AbXCIVSD
+	id S2993146AbXCIVTb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:19:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993145AbXCIVTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:18:03 -0500
-Received: from smtp108.sbc.mail.mud.yahoo.com ([68.142.198.207]:38694 "HELO
-	smtp108.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S2993144AbXCIVSA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:18:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=j5DN2mEMb12tNx1fV37AnCjAvf1QZnO0nAs9eyBGNUuhh4Qot1aC7BUadhRSvyXQexUUd9dDHzLeihDSwWa5oO7Z/T5YFqgtdFgsdhZmAiZSHnw3xE28iNnUQU7Xuvtb57SomEIDQTbdis0T87jKRbPHa3OfN9dP9MlQLkgfYEo=  ;
-X-YMail-OSG: klYyDZAVM1lecnHZzz7LSUY_0BT1FP0DlQTJiF4j4L.9Xfj1gaq..324g.2lSJaNxuA7paIGMwF89bolUpd8WGLe.IicXJ3kJ9g3sYKfq2p.pE1hNcru5UFPC2jMhI6K.nQniYPPBKVpzmw-
-From: David Brownell <david-b@pacbell.net>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] Bitbanging i2c bus driver using the GPIO API
-Date: Fri, 9 Mar 2007 13:17:56 -0800
-User-Agent: KMail/1.7.1
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Jean Delvare <khali@linux-fr.org>, Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-References: <200703090945.38880.david-b@pacbell.net> <200703091130.13547.david-b@pacbell.net> <20070309200850.GA8444@flint.arm.linux.org.uk>
-In-Reply-To: <20070309200850.GA8444@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+	Fri, 9 Mar 2007 16:19:31 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2214 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2993144AbXCIVTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 16:19:30 -0500
+Date: Fri, 9 Mar 2007 21:19:10 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Johnson <ajohnson@intrinsyc.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Software Suspend: Fix suspend when console is in VT_AUTO/KD_GRAPHICS mode
+Message-ID: <20070309211910.GD6374@ucw.cz>
+References: <1173394485.28589.17.camel@localhost.localdomain> <20070309090805.GA5822@atrey.karlin.mff.cuni.cz> <20070309153456.GA28664@srcf.ucam.org> <1173466942.29923.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703091317.58178.david-b@pacbell.net>
+In-Reply-To: <1173466942.29923.6.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 March 2007 12:08 pm, Russell King wrote:
-> On Fri, Mar 09, 2007 at 11:30:12AM -0800, David Brownell wrote:
-> > On Friday 09 March 2007 10:48 am, Haavard Skinnemoen wrote:
-> > > This is a very simple bitbanging i2c bus driver utilizing the new
-> > > arch-neutral GPIO API. Useful for chips that don't have a built-in
-> > > i2c controller, additional i2c busses, or testing purposes.
+Hi!
+
+> > > So... if current console is graphical, we leave X accessing the
+> > > console... That's bad, because video state is not going to be
+> > > restored...?
 > > 
-> > That's the right idea!  But remember that not all GPIOs support
-> > reading back the actual value on SCL (it's an OUT pin, so lacking
-> > multidrive capability the values "should" be what you wrote), so
-> > getscl() support should depend on a flag in platform data.  In
-> > the same vein, if SCL is an output-only pin, you won't be able
-> > to change its direction ... but then, I'm not sure why you were
-> > changing its direction in setscl() rather than just its value.
+> > A graphical console is not necessarily X. Is there any requirement for 
+> > there to be a single VT that isn't in text mode? The vt switching is 
+> > a hack, we shouldn't make life difficult for people who have their own 
+> > userspace code that's entirely capable of restoring video state on its 
+> > own.
 > 
-> That's a more correct I2C implementation.  If you read the specs, the
-> SDA and SCL signals are supposed to be driven by open-collector or
-> open-drain drivers, such that devices only pull the bus low.  Pull-up
-> resistors pull the signals high when undriven.
-
-Exactly as I had mentioned:
-
-> > I2C has another interesting special case.  at91_set_multi_drive()
-> > would be appropriate (yes?) for ARCH_AT91 to use on SCL, to best
-> > support both clock stretching and multi-master configurations.
-
-Where "multi-drive" == open-drain.  You're saying it should also be
-used on SDA too ... OK, I was focussing on clock stretching but it
-applies there too.
-
- 
-> This avoids the possibility of damage caused when one device drives
-> a signal low and another device tries to drive it high.
+> I realised that the previous patch would disallow a console switch while
+> running X.  Attached is an updated patch with this scenario fixed.
 > 
-> Therefore, the correct I2C GPIO implementation is one where you drive
-> both SDA and SCL low by using a combination of the data direction
-> register and the output level register, but avoid driving the output
-> high.
+> Another approach might be to fail in vt_waitactive() if a console switch
+> is not going to occur.
+> 
+> -- Andrew
+> 
 
-I see your point -- it does answer my question -- but you seem to have
-overlooked a highly relevant one of mine.  :)
+>  
+> -void set_console(int nr)
+> +extern char vt_dont_switch;
+> +
 
-Regardless, those nuances should be captured in comments in that
-driver:  that for GPIOs that don't support open drain output (only
-push/pull drivers), that it's faked by otherwise-unnecessary
-tweaking of GPIO direction.
+What does this variable do and why do we want to use it here?
 
-- Dave
+> +int set_console(int nr)
+>  {
+> +	struct vc_data *vc = vc_cons[fg_console].d;
+> +
+> +	if(!vc_cons_allocated(nr) || vt_dont_switch || 
 
+'if ('
+
+> +		(vc->vt_mode.mode != VT_PROCESS && vc->vc_mode == KD_GRAPHICS)) {
+> +
+> +		return -EINVAL;
+> +	}
+> +
+
+I assume you want ...mode == VT_AUTO here?
+
+And big comment explaining why we want this behaviour?
+
+And another big comment explaining why this will not break existing
+set_console() users?
+
+>  	want_console = nr;
+>  	schedule_console_callback();
+> +
+> +	return 0;
+>  }
+>  
+>  struct tty_driver *console_driver;
+> diff -rup linux-2.6.20.1/drivers/char/vt_ioctl.c
+> linux/drivers/char/vt_ioctl.c
+> --- linux-2.6.20.1/drivers/char/vt_ioctl.c	2007-02-19 22:34:32.000000000
+> -0800
+> +++ linux/drivers/char/vt_ioctl.c	2007-03-08 14:15:41.000000000 -0800
+> @@ -34,7 +34,7 @@
+>  #include <linux/kbd_diacr.h>
+>  #include <linux/selection.h>
+>  
+> -static char vt_dont_switch;
+> +char vt_dont_switch;
+>  extern struct tty_driver *console_driver;
+>  
+>  #define VT_IS_IN_USE(i)	(console_driver->ttys[i] &&
+> console_driver->ttys[i]->count)
+> diff -rup linux-2.6.20.1/include/linux/kbd_kern.h
+> linux/include/linux/kbd_kern.h
+> --- linux-2.6.20.1/include/linux/kbd_kern.h	2007-02-19
+> 22:34:32.000000000 -0800
+> +++ linux/include/linux/kbd_kern.h	2007-03-08 14:15:41.000000000 -0800
+> @@ -75,7 +75,7 @@ extern int do_poke_blanked_console;
+>  
+>  extern void (*kbd_ledfunc)(unsigned int led);
+>  
+> -extern void set_console(int nr);
+> +extern int set_console(int nr);
+>  extern void schedule_console_callback(void);
+>  
+>  static inline void set_leds(void)
+> diff -rup linux-2.6.20.1/kernel/power/console.c
+> linux/kernel/power/console.c
+> --- linux-2.6.20.1/kernel/power/console.c	2007-02-19 22:34:32.000000000
+> -0800
+> +++ linux/kernel/power/console.c	2007-03-08 14:15:41.000000000 -0800
+> @@ -27,7 +27,11 @@ int pm_prepare_console(void)
+>  		return 1;
+>  	}
+>  
+> -	set_console(SUSPEND_CONSOLE);
+> +	if (set_console(SUSPEND_CONSOLE)) {
+> +		/* Unable to change to the new console */
+
+That's not what the comment should say.
+
+It should explain why it is okay to proceed when we can't change to
+text console.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
