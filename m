@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993141AbXCIVLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993140AbXCIVOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993141AbXCIVLx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993140AbXCIVLx
+	id S2993140AbXCIVOf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:14:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993137AbXCIVOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:11:53 -0500
-Received: from rune.pobox.com ([208.210.124.79]:47367 "EHLO rune.pobox.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993141AbXCIVLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:11:52 -0500
-From: Rodney Gordon II <meff@pobox.com>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Date: Fri, 9 Mar 2007 15:11:45 -0600
-User-Agent: KMail/1.9.5
-Cc: Con Kolivas <kernel@kolivas.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200703041800.53360.kernel@kolivas.org>
-In-Reply-To: <200703041800.53360.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Mar 2007 16:14:35 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3422 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965819AbXCIVOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 16:14:34 -0500
+Date: Fri, 9 Mar 2007 21:13:31 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Johnson <ajohnson@intrinsyc.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Software Suspend: Fix suspend when console is in VT_AUTO/KD_GRAPHICS mode
+Message-ID: <20070309211330.GC6374@ucw.cz>
+References: <1173394485.28589.17.camel@localhost.localdomain> <20070309090805.GA5822@atrey.karlin.mff.cuni.cz> <20070309153456.GA28664@srcf.ucam.org> <DBC923D919FAB345973A94E6E194E849043808E0@yvrmail01.itc.intrinsyc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703091511.46111.meff@pobox.com>
+In-Reply-To: <DBC923D919FAB345973A94E6E194E849043808E0@yvrmail01.itc.intrinsyc.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 March 2007 01:00, Con Kolivas wrote:
-> This message is to announce the first general public release of the
-> "Rotating Staircase DeadLine" cpu scheduler.
->
-> Based on previous work from the staircase cpu scheduler I set out to
-> design, from scratch, a new scheduling policy design which satisfies every
-> requirement for SCHED_NORMAL (otherwise known as SCHED_OTHER) task
-> management.
->
+Hi!
 
-Con, you've really outdone yourself this time ! :D
+> > > So... if current console is graphical, we leave X accessing the
+> > > console... That's bad, because video state is not going to be
+> > > restored...?
+> > 
+> > A graphical console is not necessarily X. Is there any requirement for
+> > there to be a single VT that isn't in text mode? The vt switching is
+> > a hack, we shouldn't make life difficult for people who have their own
+> > userspace code that's entirely capable of restoring video state on its
+> > own.
+> 
+> The problem actually comes about when using Qtopia Phone Edition (QPE)
+> on a PXA270. QPE puts the console into VT_AUTO+KD_GRAPHICS mode and
+> writes directly to the framebuffer from then on.  In this mode the
+> kernel correctly disallows a console change, as QPE is not getting
+> notification of a console change and thus does not know when to repaint
+> the screen. 
 
-As a long time user of the -ck patchset, RSDL is a welcome change, and a great 
-piece of code to play around with, and USE!
+Fix qpe to use vt_process, instead?
 
-Booted up on my system perfectly, Pentium-D 830 3GHz, 1.5GB RAM.
+...how does qpe know when to repaint the screen, anyway?
 
-No problems whatsoever so far, using 0.26. I can launch up a bunch of encode 
-jobs, in SCHED_NORMAL even, and still have low latency on my desktop (I know 
-it's not low latency _specific_ code, but it works very well).
-
-I guess all I can say is.. wow. This code isn't "prime time" ready, yet.. But 
-it can be, and would be a great addition to mainline.
-
-Hell, a little tuning and merging this with a few current ck patches could 
-make a damn fine kernel, and probably beat out the original staircase in 
-desktops. :)
-
-Keep up the good work !
--r
-
+							Pavel
 -- 
-Rodney "meff" Gordon II -*- meff@pobox.com
-Systems Administrator / Coder Geek -*- Open yourself to OpenSource
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
