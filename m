@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965199AbXCIHvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965360AbXCIHws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965199AbXCIHvd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 02:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965267AbXCIHvd
+	id S965360AbXCIHws (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 02:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965495AbXCIHws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 02:51:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43917 "EHLO
+	Fri, 9 Mar 2007 02:52:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43930 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965199AbXCIHvc (ORCPT
+	with ESMTP id S965360AbXCIHwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 02:51:32 -0500
-Date: Fri, 9 Mar 2007 07:51:23 +0000
+	Fri, 9 Mar 2007 02:52:47 -0500
+Date: Fri, 9 Mar 2007 07:52:45 +0000
 From: Christoph Hellwig <hch@infradead.org>
 To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/9] lguest: block device speedup
-Message-ID: <20070309075123.GC8798@infradead.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
+Message-ID: <20070309075245.GD8798@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
 	Rusty Russell <rusty@rustcorp.com.au>,
-	Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
 	lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Jens Axboe <jens.axboe@oracle.com>
-References: <1173409524.32234.67.camel@localhost.localdomain>
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <1173419792.32234.131.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173409524.32234.67.camel@localhost.localdomain>
+In-Reply-To: <1173419792.32234.131.camel@localhost.localdomain>
 User-Agent: Mutt/1.4.2.2i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 02:05:24PM +1100, Rusty Russell wrote:
-> diff -r fdc8cbc1fd61 drivers/block/lguest_blk.c
-> --- a/drivers/block/lguest_blk.c	Thu Mar 08 13:35:39 2007 +1100
-> +++ b/drivers/block/lguest_blk.c	Thu Mar 08 15:51:55 2007 +1100
-> @@ -45,6 +45,16 @@ struct blockdev
->  	struct request *req;
->  };
+On Fri, Mar 09, 2007 at 04:56:32PM +1100, Rusty Russell wrote:
+> __builtin_types_compatible_p() has been around since gcc 2.95, and we
+> don't use it anywhere.  This patch quietly fixes that.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff -r f0ff8138f993 include/linux/kernel.h
+> --- a/include/linux/kernel.h	Fri Mar 09 16:40:25 2007 +1100
+> +++ b/include/linux/kernel.h	Fri Mar 09 16:44:04 2007 +1100
+> @@ -35,7 +35,9 @@ extern const char linux_proc_banner[];
+>  #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+>  #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
 >  
-> +/* Jens gave me this nice helper to end all chunks of a request. */
-> +static void end_entire_request(struct request *req, int uptodate)
-> +{
-> +	if (end_that_request_first(req, uptodate, req->hard_nr_sectors))
-> +		BUG();
-> +	add_disk_randomness(req->rq_disk);
-> +	blkdev_dequeue_request(req);
-> +	end_that_request_last(req, uptodate);
-> +}
+> -#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+> +#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])			      \
+> +	+ sizeof(typeof(int[1 - 2*!!__builtin_types_compatible_p(typeof(arr), \
+> +		 typeof(&arr[0]))]))*0)
 
-I think we really want this in common code, ll_rw_blk.c should have:
+This needs a comment explaning why we're doing this, and maybe a little
+explanation of the combination of gcc magic and C trickery used to implement
+it to the brave non-uberhacker people trying to understand linux headers.
 
-static int __end_request(struct request *req, int uptodate,
-		unsigned int sectors)
-{
-        if (!end_that_request_first(req, uptodate, sectors)) {
-		add_disk_randomness(req->rq_disk);
-		blkdev_dequeue_request(req);
-		end_that_request_last(req, uptodate);
-		return 1;
-	}
-	return 0;
-}
-
-/* TODO: add kerneldoc comment */
-/* XXX: should be called end_partial_request */
-void end_request(struct request *req, int uptodate)
-{
-	__end_request(req, uptodate, req->hard_cur_sectors);
-}
-
-/* TODO: add kerneldoc comment */
-void end_entired_request(struct request *req, int uptodate)
-{
-	if (!__end_request(req, uptodate, req->hard_nr_sectors))
-		BUG();
-}
-
-the latter two maybe as inlines
