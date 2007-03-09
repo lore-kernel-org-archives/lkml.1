@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767448AbXCIRsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932723AbXCIRuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767448AbXCIRsF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 12:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767444AbXCIRsF
+	id S932723AbXCIRuS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 12:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932725AbXCIRuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 12:48:05 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:41996 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767448AbXCIRsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 12:48:03 -0500
-Date: Fri, 9 Mar 2007 09:47:47 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
-In-Reply-To: <20070309090510.GA24908@infradead.org>
-Message-ID: <Pine.LNX.4.64.0703090938450.10832@woody.linux-foundation.org>
-References: <1173419792.32234.131.camel@localhost.localdomain>
- <20070309065055.GA18056@pazke.donpac.ru> <20070309075308.GE8798@infradead.org>
- <20070309090218.GB18056@pazke.donpac.ru> <20070309090510.GA24908@infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Mar 2007 12:50:18 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:49004 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932723AbXCIRuQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 12:50:16 -0500
+Date: Fri, 9 Mar 2007 23:27:07 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Paul Menage <menage@google.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, pj@sgi.com, winget@google.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] rcfs core patch
+Message-ID: <20070309175707.GA21661@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <6599ad830703080110j15aa961anc39954928cbc3851@mail.gmail.com> <20070309003819.GA4506@MAIL.13thfloor.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309003819.GA4506@MAIL.13thfloor.at>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Mar 2007, Christoph Hellwig wrote:
+On Fri, Mar 09, 2007 at 01:38:19AM +0100, Herbert Poetzl wrote:
+> > 2) you allow a task to selectively reshare namespaces/subsystems with
+> >    another task, i.e. you can update current->task_proxy to point to
+> >    a proxy that matches your existing task_proxy in some ways and the
+> >    task_proxy of your destination in others. In that case a trivial
+> >    implementation would be to allocate a new task_proxy and copy some
+> >    pointers from the old task_proxy and some from the new. But then
+> >    whenever a task moves between different groupings it acquires a
+> >    new unique task_proxy. So moving a bunch of tasks between two
+> >    groupings, they'd all end up with unique task_proxy objects with
+> >    identical contents.
 > 
-> It was only put in under the premise that they'll fix whatever breaks,
-> we're not going to put any maintaince border on us to hack around
-> broken propritary compilers.
+> this is exactly what Linux-VServer does right now, and I'm
+> still not convinced that the nsproxy really buys us anything
+> compared to a number of different pointers to various spaces
+> (located in the task struct)
 
-Well, since Rusty's macro was hoddible *anyway*, I don't think I'd apply 
-it as-is. Breaking icc for something that ugly and not-very-important 
-simply makes no sense.
+Are you saying that the current scheme of storing pointers to different
+spaces (uts_ns, ipc_ns etc) in nsproxy doesn't buy anything? 
 
-There are better ways to do this. 
+Or are you referring to storage of pointers to resource (name)spaces 
+in nsproxy doesn't buy anything?
 
-For one, you could (and should!) abstract these kinds of things out, 
-rather than put them in another macro that really does something totally 
-different. Then, the macro could have become
+In either case, doesn't it buy speed and storage space?
 
-	#define ARRAY_SIZE (sizeof_expression + 0*error_if_not_array)
+> I'd prefer to do accounting (and limits) in a very simple
+> and especially performant way, and the reason for doing
+> so is quite simple:
 
-which would already be a hell of a lot more readable. But more 
-importantly, it's also now suddenly much easiler to abstract out for 
-different compilers.
+Can you elaborate on the relationship between data structures used to store 
+those limits to the task_struct? Does task_struct store pointers to those 
+objects directly?
 
-We *already* support different compilers through <linux/compiler.h>, and 
-there just isn't any reason for bad code just for bad codes sake!
-
-				Linus
-
-
+-- 
+Regards,
+vatsa
