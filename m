@@ -1,140 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750925AbXCIO66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbXCIO72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750925AbXCIO66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 09:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932529AbXCIO66
+	id S1752675AbXCIO72 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 09:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXCIO72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 09:58:58 -0500
-Received: from mivlgu.ru ([81.18.140.87]:47366 "EHLO mail.mivlgu.ru"
+	Fri, 9 Mar 2007 09:59:28 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:53242 "EHLO kanga.kvack.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750925AbXCIO65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 09:58:57 -0500
-Date: Fri, 9 Mar 2007 17:58:52 +0300
-From: Sergey Vlasov <vsu@altlinux.ru>
-To: "Luong Ngo" <luong.ngo@gmail.com>
-Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       "Linux kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: Sleeping thread not receive signal until it wakes up
-Message-Id: <20070309175852.581a6162.vsu@altlinux.ru>
-In-Reply-To: <1b2aacd80703081452s2fff09b7lea97245e337b1d2b@mail.gmail.com>
-References: <1b2aacd80703062131g6c8578fgf200dd05a502c49f@mail.gmail.com>
-	<Pine.LNX.4.61.0703070813070.12338@chaos.analogic.com>
-	<1b2aacd80703071128v5227382do2277d0b85ca3b20c@mail.gmail.com>
-	<Pine.LNX.4.61.0703071457060.13923@chaos.analogic.com>
-	<1b2aacd80703071628y29b7d862h84eb5e853dd6f4d7@mail.gmail.com>
-	<Pine.LNX.4.61.0703080752570.17167@chaos.analogic.com>
-	<1173362032.24738.1058.camel@localhost.localdomain>
-	<1b2aacd80703081452s2fff09b7lea97245e337b1d2b@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.6; i586-alt-linux-gnu)
+	id S1752348AbXCIO71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 09:59:27 -0500
+Date: Fri, 9 Mar 2007 09:59:20 -0500
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sys_write() racy for multi-threaded append?
+Message-ID: <20070309145920.GJ6209@kvack.org>
+References: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com> <45F09F9C.4030801@cosmosbay.com> <f2b55d220703081557k8101e68g1a3556e42f68416@mail.gmail.com> <45F0A71C.2000800@cosmosbay.com> <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com> <20070309013405.GI6209@kvack.org> <f2b55d220703090419w755d42d0mea4f220e3caaa59a@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f2b55d220703090419w755d42d0mea4f220e3caaa59a@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007 14:52:07 -0800 Luong Ngo wrote:
-
-[...]
-> static irqreturn board_isr(int irq, void *dev_id, struct pt_regs* regs)
-> {
->  spin_lock(&dev->lock);
->    if (dev->irqMask & (1 << irqBit)) {
->     // Set the interrupt event mask
->     dev->irqEvent |= (1 << irqBit);
+On Fri, Mar 09, 2007 at 04:19:55AM -0800, Michael K. Edwards wrote:
+> On 3/8/07, Benjamin LaHaise <bcrl@kvack.org> wrote:
+> >Any number of things can cause a short write to occur, and rewinding the
+> >file position after the fact is just as bad.  A sane app has to either
+> >serialise the writes itself or use a thread safe API like pwrite().
 > 
->     // Disable this irq, it will be reenabled after processed by board task
->     disable_irq(irq);
+> Not on a pipe/FIFO.  Short writes there are flat out verboten by
+> 1003.1 unless O_NONBLOCK is set.  (Not that f_pos is interesting on a
+> pipe except as a "bytes sent" indicator  -- and in the multi-threaded
+> scenario, if you do the speculative update that I'm suggesting, you
+> can't 100% trust it unless you ensure that you are not in
+> mid-read/write in some other thread at the moment you sample f_pos.
+> But that doesn't make it useless.)
 
-I assume that your device does not support shared interrupts?  If it
-does (and a PCI device is required to support them), you cannot use
-disable_irq() here (and you need to check a register in the device to
-find out if it really did generate an IRQ)...
+Writes to a pipe/FIFO are atomic, so long as they fit within the pipe buffer 
+size, while f_pos on a pipe is undefined -- what exactly is the issue here?  
+The semantics you're assuming are not defined by POSIX.  Heck, even looking 
+at a man page for one of the *BSDs states "Some devices are incapable of 
+seeking.  The value of the pointer associated with such a device is 
+undefined."  What part of undefined is problematic?
 
->     // Wake up Board thread that calling IOCTL
->     wake_up(&(dev->boardIRQWaitQueue));
->   }
->   spin_unlock(&dev->lock);
-> 
->   return IRQ_HANDLED;
+> As to what a "sane app" has to do: it's just not that unusual to write
+> application code that treats a short read/write as a catastrophic
+> error, especially when the fd is of a type that is known never to
+> produce a short read/write unless something is drastically wrong.  For
+> instance, I bomb on short write in audio applications where the driver
+> is known to block until enough bytes have been read/written, period.
+> When switching from reading a stream of audio frames from thread A to
+> reading them from thread B, I may be willing to omit app
+> serialization, because I can tolerate an imperfect hand-off in which
+> thread A steals one last frame after thread B has started reading --
+> as long as the fd doesn't get screwed up.  There is no reason for the
+> generic sys_read code to leave a race open in which the same frame is
+> read by both threads and a hardware buffer overrun results later.
 
-...and return IRQ_NONE here if the IRQ is not from your device.
+I hope I don't have to run any of your software.  Short writes can and do 
+happen because of a variety of reasons: signals, memory allocation failures, 
+quota being exceeded....  These are all error conditions the kernel has to 
+provide well defined semantics for, as well behaved applications will try 
+to handle them gracefully.
 
-> 
-> }
-> 
-> static int ats89_ioctl(struct inode *inode, struct file *file, u_int
-> cmd, u_long arg)
-> {
-> 
->           switch(cmd){
->            case GET_IRQ_CMD: {
->             u32  regMask32;
-> 
->            spin_lock_irq(dev->lock);
->            while ((dev->irqMask & dev->irqEvent) == 0) {
->                  // Sleep until board interrupt happens
->                  spin_unlock_irq(dev->lock);
->                  interruptible_sleep_on(&(dev->boardIRQWaitQueue));
->                  if (uncond_wakeup) {
->                      /* don't go back to loop */
->                      break;
->                  }
->                  spin_lock_irq(dev->lock);
->              }
-> 
->             uncond_wakeup = 0;
-> 
->              // Board interrupt happened
->             regMask32 = dev->irqMask & dev->irqEvent;
->              if(copy_to_user(&(((ATS89_IOCTL_S *)arg)->mask32),
-> &regMask32, sizeof(u32))) {
->                  spin_unlock_irq(dev->lock);
->                  return -EAGAIN;
->              }
-> 
->              // Clear the event mask
->              dev->irqEvent = 0;
->              spin_unlock_irq(dev->lock);
->         }
->         break;
-> 
-> 
->            }
-> }
+> In short, I'm not proposing that the kernel perfectly serialize
+> concurrent reads and writes to arbitrary fd types.  I'm proposing that
+> it not do something blatantly stupid and easily avoided in generic
+> code that makes it impossible for any fd type to guarantee that, after
+> 10 successful pipelined 100-byte reads or writes, f_pos will have
+> advanced by 1000.
 
-And this code is full of bugs:
+The semantics you're looking for are defined for regular files with 
+O_APPEND.  Anything else is asking for synchronization that other 
+applications do not require and do not desire.
 
- 1) As you have been told already, interruptible_sleep_on() and
-    sleep_on() functions are broken and should not be used (they are
-    left in the kernel only to support some obsolete code).  Either
-    use wait_event_interruptible() or work with wait queues directly
-    (prepare_to_wait(), finish_wait(), ...).
-
- 2) The code to handle pending signals is missing - you need to have
-    this after wait_event_interruptible():
-
-		if (signal_pending(current))
-			return -ERESTARTSYS;
-
-    (but be careful - you might need to clean up something before
-    returning).
-
-    This is what causes your problem - interruptible_sleep_on()
-    returns if a signal is pending, but your code does not check for
-    signals and therefore invokes interruptible_sleep_on() again; but
-    if a signal is pending, interruptible_sleep_on() returns
-    immediately, causing your driver to eat 100% CPU looping in kernel
-    mode until some device event finally happens.
-
- 3) If uncond_wakeup is set, you break out of the loop with dev->lock
-    unlocked; however, if dev->irqEvent gets set, you exit the loop
-    with dev->lock locked.  The subsequent code always unlocks
-    dev->lock, so in the uncond_wakeup case you have double unlock.
-
- 4) You are doing copy_to_user() while holding a spinlock - this is
-    prohibited (as any other form of sleep inside a spinlock).
-
- 5) The return code for the copy_to_user() failure is wrong - it
-    should be -EFAULT (this is not a fatal bug, but an annoyance for
-    users of your driver, who might get such nonstandard error codes
-    while debugging their programs and wonder what is going on).
+		-ben
+-- 
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
