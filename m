@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422716AbXCIAqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423013AbXCIAr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422716AbXCIAqu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 19:46:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423013AbXCIAqu
+	id S1423013AbXCIAr7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 19:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423015AbXCIAr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 19:46:50 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47194 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422716AbXCIAqt convert rfc822-to-8bit (ORCPT
+	Thu, 8 Mar 2007 19:47:58 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:41107 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423013AbXCIAr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 19:46:49 -0500
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-Date: Fri, 9 Mar 2007 01:45:53 +0100
-User-Agent: KMail/1.9.1
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0703081101230.4086-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0703081101230.4086-100000@iolanthe.rowland.org>
+	Thu, 8 Mar 2007 19:47:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ci6IbyVq0n7NKsDVaW1KyQkFrnlz02YLKD6IfggQ+sHFI0mL+6DCiwl3qP/PqghARiUy34V8W+50ia2ThPnnVp8c0PO5agExD8wqvdK/cd7GAWhnNG59xWKDOvXg5gzL3IqpWDF8iuE2KRmmYhwjJW5q8ybge9uHWPMiPkuyeng=
+Message-ID: <9c21eeae0703081647u4c203fa8re315e07467c563fe@mail.gmail.com>
+Date: Thu, 8 Mar 2007 16:47:54 -0800
+From: "David Brown" <dmlb2000@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: KVM and rtc missing interupts 2.6.21-rc3
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <adatzwvxuta.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703090145.53895.oneukum@suse.de>
+References: <9c21eeae0703081348i713c996bked9ebe2af76bc2db@mail.gmail.com>
+	 <adatzwvxuta.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 8. März 2007 17:02 schrieb Alan Stern:
-> On Thu, 8 Mar 2007, Oliver Neukum wrote:
-> 
-> > Hi,
-> > 
-> > after a lightning bolt from high above I've been looking into refcounting
-> > the data structures drivers use to provide the data used to refill sysfs
-> > buffers. I've come to the following conclusion.
-> > 
-> > 1. struct sysfs_buffer must have a struct kref * and probably a destructor
-> > pointer
-> > 2. drivers must be able to pass these pointers through an extended
-> > device_create_file()
-> > 3. Drivers must use refcounting if they want to use attributes
-> > 4. read/write/poll must do refcounting
-> > 
-> > I am not sure where to store the pointers. struct sysfs_dirent() looks
-> > like the obvious choice. Comments?
-> 
-> Can you explain the reasoning that led to these conclusions?  And what 
-> exactly was your lightning bolt?
+> I started to debug this a little while ago but I never got too far.
+> However it doesn't seem connected with kvm -- it is something to do
+> with tun/tap or bridging holding a lock too long I think.
+>
+> Try running your guest with -no-kvm (and even with the kvm module not
+> loaded, just to be sure).  In my case I still saw the messages.
+> However, removing the "-net tap" line from my command line did get rid
+> of the messages.
 
-The old race between disconnect and IO to attribute via sysfs again.
-If I cannot disassociate the drivers from the buffers in the buffers, drivers
-must not deallocate the data necessary to answer sysfs callbacks while
-a buffer exists. Reading from a buffer must up a refcount in the driver's
-data structures. The question becomes how to get a pointer to the buffer.
-And it cannot live in the dentry as the dentry can go away while files
-are still open. This leaves the inode or the buffer.
+Hmmm I'm getting the same thing on 2.6.20.1 as well.
 
-	Regards
-		Oliver
+- David Brown
