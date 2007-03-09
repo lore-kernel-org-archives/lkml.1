@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767450AbXCISMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932725AbXCISXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767450AbXCISMM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 13:12:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767453AbXCISMM
+	id S932725AbXCISXD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 13:23:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932743AbXCISXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 13:12:12 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:50871 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767450AbXCISMK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 13:12:10 -0500
-Date: Fri, 9 Mar 2007 23:49:08 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, pj@sgi.com,
-       winget@google.com, containers@lists.osdl.org, akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070309181908.GC21661@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <m1odn4bs6n.fsf@ebiederm.dsl.xmission.com> <6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com> <45EF5A62.8000103@vilain.net> <6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com> <45EF5E71.7090101@vilain.net> <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com> <m1d53ka5b9.fsf@ebiederm.dsl.xmission.com> <20070309005357.GC4506@MAIL.13thfloor.at>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070309005357.GC4506@MAIL.13thfloor.at>
-User-Agent: Mutt/1.5.11
+	Fri, 9 Mar 2007 13:23:03 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:43515 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932725AbXCISXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 13:23:00 -0500
+Date: Fri, 9 Mar 2007 10:22:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, take2] VFS : Delay the dentry name generation on sockets
+ and pipes.
+In-Reply-To: <200703091118.58990.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0703091014210.10832@woody.linux-foundation.org>
+References: <45ED1A3C.6030707@argo.co.il> <200703081758.07179.dada1@cosmosbay.com>
+ <200703081929.58265.dada1@cosmosbay.com> <200703091118.58990.dada1@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 01:53:57AM +0100, Herbert Poetzl wrote:
-> > The real trick is that I believe these groupings are designed to
-> > be something you can setup on login and then not be able to switch
-> > out of. Which means we can't use sessions and process groups as the
-> > grouping entities as those have different semantics.
+
+
+On Fri, 9 Mar 2007, Eric Dumazet wrote:
 > 
-> precisely, once you are inside a resource container, you
-> must not have the ability to modify its limits, and to
-> some degree, you should not know about the actual available
-> resources, but only about the artificial limits
+> 	CAUTION : d_path() logic is quite  tricky. 
+> 	The correct way to return for example "Hello" is to put it
+> 	at the end of the buffer, and returns a pointer to the first char.
 
->From non-container workload management perspective, we do desire dynamic
-manipulation of limits associated with a group and also the ability to move 
-tasks across resource-classes/groups.
+Yeah, it's subtle, since it wants to use a single buffer, and not copy 
+things around too much.
 
--- 
-Regards,
-vatsa
+But can I ask you to do a take3, and simply have a helper function like
+
+	char *dynamic_dname(struct dentry *dentry, char *buffer, int len,
+		const char *fmt, ...)
+	{
+		va_list args;
+		char temp[64];
+		int i;
+
+		va_start(args, fmt);
+		i = vsnprintf(tmp,sizeof(tmp),fmt,args) + 1;
+		va_end(args);
+
+		if (i > len)
+			return ERR_PTR(-ENAMETOOLONG);
+
+		buffer += len - i;
+		memcpy(buffer, tmp, i);
+		return buffer;
+	}
+
+and just require that everybody use that function.
+
+Then the pipe code would just become
+
+	static char *pipefs_dname(struct dentry *dentry, char *buffer, int buflen)
+	{
+		return dynamic_dname(dentry, buffer, buflen, ""pipe:[%lu]", dentry->d_inode->i_ino);
+	}
+
+and you're done, and you have only *one* place in the VFS layer 
+(preferably right next to d_path() itself) that cares about the
+subtle issues that we have.
+
+		Linus
