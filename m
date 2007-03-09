@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993093AbXCIKcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767150AbXCIKeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993093AbXCIKcA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 05:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767143AbXCIKcA
+	id S1767150AbXCIKeW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 05:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993107AbXCIKeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 05:32:00 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:42649 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993093AbXCIKb6 (ORCPT
+	Fri, 9 Mar 2007 05:34:21 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:52175 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993105AbXCIKeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 05:31:58 -0500
+	Fri, 9 Mar 2007 05:34:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=KquplCocNCecMCNLsKG/SsZekdLUkY1Y0etCpK51uvKBr6iPrT51TVePfGyvVucxMPWsi5YRPvFbEJvAK8fX9dMFbOOAJKSAvTMBfLykQcXixItbALu65TxPo4OABiTYhH5V8j6/c0w1wi9xZsTMFiUNblsVgnQ9Gte57ZFxRyY=
-Message-ID: <45F1379C.9090609@gmail.com>
-Date: Fri, 09 Mar 2007 19:31:56 +0900
+        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=ryKvsqbtw8MNIHL3uxS4FIhBiq9UWdxbNxHPDUD6jf0JoEwPRu/EeI1NydkHymyyhDzQkW2AjcB1Lib4DvkroUsnS9tlghS3ggHkqlDVCmtBsg8/t5aTzLQ+qMyObLeFXsLbh2A7oEqxFUwlSpqqKV63xvI52nEH3tyDPUWiVX8=
+Date: Fri, 9 Mar 2007 19:34:19 +0900
 From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+To: gregkh@suse.de, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [PATCH] devres: release resources on device_del()
+Message-ID: <20070309103419.GB32687@htj.dyndns.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, linux-ide@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: OOPS with 2.6.21rc2-git (ata: conflict with ide0/1)
-References: <45EC9A67.8070204@intel.com> <45EFC3D1.208@gmail.com> <45EFDEF6.7000909@garzik.org>
-In-Reply-To: <45EFDEF6.7000909@garzik.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Which patch?
-> 
-> Since this affects libata directly, and since devres came in via libata,
-> I would rather that libata bugs not get /too/ blocked by patches in
-> other trees.
+Some platform devices are driven without driver attached, so managed
+resources can be acquired without driver attached.  Make sure such
+resources are released by calling devres_release_all() in
+device_del().
 
-This one.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+This one fixes oops on pata_platform and pata_legacy unload.  libata
+being the only user of devres at the moment.  I think this can go
+through libata-dev#upstream.
 
-  http://article.gmane.org/gmane.linux.kernel/495515
+ drivers/base/core.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index cf2a398..89ebe36 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -787,6 +787,13 @@ void device_del(struct device * dev)
+ 	device_remove_attrs(dev);
+ 	bus_remove_device(dev);
+ 
++	/*
++	 * Some platform devices are driven without driver attached
++	 * and managed resources may have been acquired.  Make sure
++	 * all resources are released.
++	 */
++	devres_release_all(dev);
++
+ 	/* Notify the platform of the removal, in case they
+ 	 * need to do anything...
+ 	 */
 -- 
-tejun
+1.5.0.1
+
