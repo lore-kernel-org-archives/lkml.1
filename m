@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767501AbXCIUyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767533AbXCIUyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767501AbXCIUyK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:54:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767529AbXCIUyK
+	id S1767533AbXCIUyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:54:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767532AbXCIUyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:54:10 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:46353 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767501AbXCIUyI (ORCPT
+	Fri, 9 Mar 2007 15:54:43 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:4501 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767531AbXCIUyl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:54:08 -0500
-Message-ID: <45F1C8FF.9040600@zytor.com>
-Date: Fri, 09 Mar 2007 12:52:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Fri, 9 Mar 2007 15:54:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=F5iZA6qmVTQAXJOnhUhYTeIKFbygvL+2UHIU9y0iX+6iYuN4CYp55R0alNZ459sjvhpU7caA0gUm9I5nEAOKNcFoaUu+HaAXLUs3FGGiNYBoCjIt6m8nW51tYM4n+PVOSdqa0UHV+Zu3nLVXqcwiOA/pPMw64qmJUOlEbvl3Tz4=
+Message-ID: <d120d5000703091254t350216b3wfb679a53294b0e5a@mail.gmail.com>
+Date: Fri, 9 Mar 2007 15:54:39 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Pete Zaitcev" <zaitcev@redhat.com>
+Subject: Re: Fix locking in mousedev
+Cc: linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz
+In-Reply-To: <20070309103656.cd681677.zaitcev@redhat.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, sam@ravnborg.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH] Complain about missing system calls.
-References: <1173394873.3461.510.camel@pmac.infradead.org> <p737itqbdnl.fsf@bingen.suse.de> <20070309163805.GV18564@lug-owl.de> <45F1B818.4090007@zytor.com> <20070309201308.GB8444@flint.arm.linux.org.uk>
-In-Reply-To: <20070309201308.GB8444@flint.arm.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070228110631.86a150e4.zaitcev@redhat.com>
+	 <d120d5000703090628p46556d52qb94b523fda4e947d@mail.gmail.com>
+	 <20070309103656.cd681677.zaitcev@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> On Fri, Mar 09, 2007 at 11:40:08AM -0800, H. Peter Anvin wrote:
->> Jan-Benedict Glaw wrote:
->>> Not everybody has a simple indexed list of pointers :)  For example,
->>> for vax-linux, we use a struct per syscall with the expected number of
->>> on-stack longwords for the call.
->>>
->>> So if something "new" is coming up, please keep in mind that it should
->>> be flexible enough to represent that. :)
->>>
->> I discussed with Al Viro a while ago about using something like the 
->> SYSCALLS.def file from klibc as the source format for the system calls. 
->>  That would deal very flexibly with almost all kinds of stub generation.
-> 
-> Hopefully with this idea in place, we can spot new syscalls before
-> the final release of the kernel (maybe kautobuild can help there)
-> and fix any silly system call argument ordering which requires
-> different architectures to have different syscall prototypes (eg,
-> sys_arm_fadvise64_64 vs sys_fadvise64_64, sys_arm_sync_file_range vs
-> sys_sync_file_range).
+On 3/9/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> On Fri, 9 Mar 2007 09:28:49 -0500, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+> > On 2/28/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
+>
+> > > Dmitry, please consider getting rid of the list of handles entirely.
+> > > The other major user is drivers/char/keyboard.c.
+> >
+> > I agree that handlers should not access h_list nad use their own
+> > private lists instead. However input core still needs that list to
+> > maintain its books.
+>
+> Hmm. So it appears that my patch wastes 2 ulongs per input handle
+> then, in the name of preventing oopses. OK.
+>
 
-That would definitely be nice.
+Think about the time when everyone switches to evdev-based input
+drivers. Then we can forget about mousedev wasting some extra memory
+;)
 
-> Otherwise the SYSCALLS.def file will probably end up being full of
-> ifdefs.
-
-... which exactly mirrors the pain and suffering which libc maintainers 
-have to deal with.  The amount of time I spent per line of code in klibc 
-is quite high, in part because I wanted it to be as self-porting as was 
-possible.  I've really tried to avoid arch-specific hacks, and yet there 
-are more there than there should be, in large part because of unusable 
-or missing kernel header exports.
-
-	-hpa
+-- 
+Dmitry
