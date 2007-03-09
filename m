@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767549AbXCIV2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767541AbXCIVdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767549AbXCIV2a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767550AbXCIV2a
+	id S1767541AbXCIVdz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767547AbXCIVdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:28:30 -0500
-Received: from web55605.mail.re4.yahoo.com ([206.190.58.229]:27576 "HELO
-	web55605.mail.re4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1767549AbXCIV23 (ORCPT
+	Fri, 9 Mar 2007 16:33:55 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:44180 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767541AbXCIVdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:28:29 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Mar 2007 16:28:29 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Oejifsbwm12iD9zp/nllHIy2RccxVu81kKUpBM3mgon0o/uO09nzZCjcDBsY8AjHD0jhA8Hru11K9thyGK4I3DCfGswjCT4JefB9u7SO5A52z9JMsA+PRq4PkBWu6Ypr0cKkjxhwVX6rdgTpdMU/O6Li+v7wgFqlpCoz6ew/aEc=;
-X-YMail-OSG: 9MgZh3MVM1lGM.Ij2c75hqvNF_GD.jF_MeG2ZPStVZ9hXhsRJmhDAVuoijM0imYJuvHxqigNhGPoy_Yl5ta2COzEt4MMqdX6Wo6eW6zNHttkQRCnjNHEKAENAVDohZzKHQrCrJKGTPlxRVg18.6OhKqy
-Date: Fri, 9 Mar 2007 13:21:48 -0800 (PST)
-From: Amit Choudhary <amit2030@yahoo.com>
-Subject: getting memory for a limited time.
-To: Linux Kernel <linux-kernel@vger.kernel.org>
+	Fri, 9 Mar 2007 16:33:53 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 9 Mar 2007 13:33:42 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: "David M. Lloyd" <dmlloyd@flurg.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 2/5] signalfd v2 - signalfd core ...
+In-Reply-To: <1173364264.6891.3.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0703091332490.5284@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703071712210.3672@alien.or.mcafeemobile.com>
+ <1173364264.6891.3.camel@localhost>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <595070.37181.qm@web55605.mail.re4.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 8 Mar 2007, David M. Lloyd wrote:
 
-Is there any debug option where I get some memory (from kmalloc() family) for limited time only.
-Once the time slice expires, that memory is zeroed out so that if I use it again after the time
-slice expired, I should see a crash.
+> On Wed, 2007-03-07 at 17:21 -0800, Davide Libenzi wrote:
+> > int signalfd_dequeue(int fd, siginfo_t *info, long timeo);
+> > 
+> > The "fd" parameter must ba a signalfd file descriptor. The "info" parameter
+> > is a pointer to the siginfo that will receive the dequeued signal, and
+> > "timeo" is a timeout in milliseconds, or -1 for infinite.
+> > The signalfd_dequeue function returns 0 if successfull.
+> 
+> Does this support non-blocking mode?  It doesn't seem to at my level of
+> understanding anyway.  If I use this with EPOLLET for example, I'd
+> expect to get a single EPOLLIN when a signal arrives, which would
+> indicate to me that I must call signalfd_dequeue() in a loop until I get
+> EAGAIN in order to be sure I've consumed all the outstanding signals so
+> that the edge-triggered notification can be "re-armed".
+> 
+> Make sense?
 
--Amit
+Yes, the new version can use the O_NONBLOCK flag and read(2) will return 
+EAGAIN.
+Will post a newer version later, together with timerfd ...
 
 
- 
-____________________________________________________________________________________
-Finding fabulous fares is fun.  
-Let Yahoo! FareChase search your favorite travel sites to find flight and hotel bargains.
-http://farechase.yahoo.com/promo-generic-14795097
+
+- Davide
+
+
