@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbXCIAbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbXCIAg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752437AbXCIAbJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 19:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXCIAbJ
+	id S1752536AbXCIAg3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 19:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbXCIAg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 19:31:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58990 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752437AbXCIAbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 19:31:07 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Kernel threads
-In-Reply-To: Oleg Nesterov's message of  Thursday, 8 March 2007 19:38:44 +0300 <20070308163844.GA6638@tv-sign.ru>
-Emacs: ballast for RAM.
-Message-Id: <20070309003100.9893B180063@magilla.sf.frob.com>
-Date: Thu,  8 Mar 2007 16:31:00 -0800 (PST)
+	Thu, 8 Mar 2007 19:36:29 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:63296 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbXCIAg2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 19:36:28 -0500
+Date: Thu, 08 Mar 2007 18:35:55 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Question about memory mapping mechanism
+In-reply-to: <fa.8Fy6n0Le4Y2mDfeEy936/5bbJHA@ifi.uio.no>
+To: Martin Drab <drab@kepler.fjfi.cvut.cz>, hugh@veritas.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <45F0ABEB.3030201@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.8Fy6n0Le4Y2mDfeEy936/5bbJHA@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your change seems fine to me.  I certainly concur that it seems insane
-for init to be responsible for tasks created magically inside the
-kernel.  The history I've found says that the setting to SIGCHLD was
-introduced as part of "v2.5.1.9 -> v2.5.1.10", without detailed
-commentary in the log.  This was probably before the auto-reaping
-semantics worked as they do now.  So like the man said, at the time,
-it seemed the logical thing to do.
+Martin Drab wrote:
+> Hi,
+> 
+> I'm writing a driver for a sampling device that is constantly delivering a 
+> relatively high amount of data (about 16 MB/s) and I need to deliver the 
+> data to the user-space ASAP. To prevent data loss I create a queue of 
+> buffers (consisting of few pages each) which are more or less directly 
+> filled by the device and then mapped to the user-space via mmap().
+> 
+> The thing is that I'd like to prevent kernel to swap these pages out, 
+> because then I may loose some data when they are not available in time 
+> for the next round.
 
-To be paranoid, I wouldn't make this change in any stable kernel series.
-It changes behavior visible to userland (init) from how it has been
-consistently for five years, so, who knows, something might notice.  
-The old behavior is pretty harmless, albeit changing it seems both
-preferable and harmless.
+It would likely be easier to just mlock this buffer from the userspace 
+application, rather than trying to achieve this in the driver..
 
-
-Thanks,
-Roland
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
