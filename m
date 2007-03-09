@@ -1,93 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767445AbXCISHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbXCISHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767445AbXCISHP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 13:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767451AbXCISHP
+	id S1752288AbXCISHs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 13:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXCISHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 13:07:15 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:51660 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767445AbXCISHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 13:07:13 -0500
-Date: Fri, 9 Mar 2007 23:44:22 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       xemul@sw.ru, pj@sgi.com, winget@google.com, containers@lists.osdl.org,
-       akpm@linux-foundation.org, menage@google.com
-Subject: Re: [PATCH 1/2] rcfs core patch
-Message-ID: <20070309181422.GB21661@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <20070308101347.GA29051@in.ibm.com> <20070309004816.GB4506@MAIL.13thfloor.at>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070309004816.GB4506@MAIL.13thfloor.at>
-User-Agent: Mutt/1.5.11
+	Fri, 9 Mar 2007 13:07:48 -0500
+Received: from rtr.ca ([64.26.128.89]:2387 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752288AbXCISHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 13:07:34 -0500
+Message-ID: <45F1A263.5020407@rtr.ca>
+Date: Fri, 09 Mar 2007 13:07:31 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Matt Mackall <mpm@selenic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+References: <20070309053931.GA10459@waste.org>	<200703091728.03978.kernel@kolivas.org>	<20070309075358.GA10394@waste.org>	<200703091936.47128.kernel@kolivas.org>	<87slce945h.fsf@depni.sinp.msu.ru>	<20070309094904.GC2986@holomorphy.com> <87irdasnz4.fsf@depni.sinp.msu.ru>
+In-Reply-To: <87irdasnz4.fsf@depni.sinp.msu.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 01:48:16AM +0100, Herbert Poetzl wrote:
-> > There have been various projects attempting to provide resource
-> > management support in Linux, including CKRM/Resource Groups and UBC.
-> 
-> let me note here, once again, that you forgot Linux-VServer
-> which does quite non-intrusive resource management ...
+Mmm.. when it's good, it's *really* good.
+My desktop feels snappier and all of that.
 
-Sorry, not intentionally. Maybe it slipped because I haven't seen much res mgmt
-related patches from Linux Vserver on lkml recently. Note that I -did- talk 
-about VServer at one point in past (http://lkml.org/lkml/2006/06/15/112)!
+No noticeable jerkiness of windows/scrolling,
+which I *do* observe with the stock scheduler.
 
-> the basic 'context' (pid space) is the grouping mechanism
-> we use for resource management too
+But when it's bad, it stinks.
+Like when a "make -j2" kernel rebuild is happening in a background window
 
-so tasks sharing the same nsproxy->pid_ns is the fundamental unit of
-resource management (as far as vserver/container goes)?
+This is on a Pentium-M 760 single-core, w/2GB SDRAM (notebook).
 
-> > As you know, the introduction of 'struct container' was objected
-> > to and was felt redundant as a means to group tasks. Thats where I
-> > took a shot at converting over Paul Menage's patch to avoid 'struct
-> > container' abstraction and insead work with 'struct nsproxy'.
-> 
-> which IMHO isn't a step in the right direction, as
-> you will need to handle different nsproxies within
-> the same 'resource container' (see previous email)
+JADP (Just Another Data Point).
 
-Isn't that made simple because of the fact that we have pointers to
-namespace objects (and not actual objects themselves) in nsproxy?
+Cheers
 
-I mean, all that is required to manage multiple nsproxy's
-is to have the pointer to the same resource object in all of them.
-
-In system call terms, if someone does a unshare of uts namespace, he
-will get into a new nsproxy object sure (which has a pointer to the new
-uts namespace) but the new nsproxy object will still be pointing to the
-old resource controlling objects.
-
-> > When we support task movement across resource classes, we need to find a
-> > nsproxy which has the right combination of resource classes that the
-> > task's nsproxy can be hooked to.
-> 
-> no, not necessarily, we can simply create a new one
-> and give it the proper resource or whatever-spaces
-
-That would be the simplest, agreeably. But not optimal in terms of
-storage?
-
-Pls note that task-movement can be not-so-infrequent (in other words,
-frequent) in context of non-container workload management.
-
-> why is the filesystem approach so favored for this
-> kind of manipulations?
-> 
-> IMHO it is one of the worst interfaces I can imagine
-> (to move tasks between spaces and/or assign resources)
-> but yes, I'm aware that filesystems are 'in' nowadays
-
-Ease of use maybe. Scripts can be more readily used with a fs-based
-interface.
-
--- 
-Regards,
-vatsa
+Mark
