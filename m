@@ -1,44 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767230AbXCIMvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767224AbXCIMwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767230AbXCIMvL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 07:51:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767233AbXCIMvK
+	id S1767224AbXCIMwc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 07:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767233AbXCIMwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 07:51:10 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:55697 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767230AbXCIMvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 07:51:09 -0500
-Message-ID: <45F15838.7040501@garzik.org>
-Date: Fri, 09 Mar 2007 07:51:04 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 9 Mar 2007 07:52:32 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:47085 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767224AbXCIMwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 07:52:31 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Fri, 9 Mar 2007 07:48:47 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: any thoughts yet on a "generic" ioctl.h?
+In-Reply-To: <45F15547.6040207@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0703090737230.1617@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703081556260.9349@CPE00045a9c397f-CM001225dbafb6>
+ <45F0D798.4050602@s5r6.in-berlin.de> <Pine.LNX.4.64.0703090450160.30726@CPE00045a9c397f-CM001225dbafb6>
+ <45F14232.5060703@s5r6.in-berlin.de> <Pine.LNX.4.64.0703090617050.880@CPE00045a9c397f-CM001225dbafb6>
+ <45F15547.6040207@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] devres: release resources on device_del()
-References: <20070309103419.GB32687@htj.dyndns.org>
-In-Reply-To: <20070309103419.GB32687@htj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Some platform devices are driven without driver attached, so managed
-> resources can be acquired without driver attached.  Make sure such
-> resources are released by calling devres_release_all() in
-> device_del().
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
-> This one fixes oops on pata_platform and pata_legacy unload.  libata
-> being the only user of devres at the moment.  I think this can go
-> through libata-dev#upstream.
+On Fri, 9 Mar 2007, Stefan Richter wrote:
 
-applied to #upstream-fixes
+> Robert P. J. Day wrote:
+> > if someone can't immediately see what i'm trying
+> > to do given the previously-posted patch, then they shouldn't be
+> > commenting on it one way or the other.
+>
+> I'm not sure if you are addressing me too.  Just to clarify:  I
+> wasn't commenting on the patch, I only commented on what I quoted in
+> my reply.
 
+sorry, i worded that *really* badly.  i didn't mean to imply that
+*you* were incapable of understanding what the patch represented --
+i've seen enough of your posts to appreciate your technical expertise.
 
+all i want to know is if the proposed patch making
+include/asm-generic/ioctl.h more flexible is even *theoretically* a
+feasible thing to do, or whether anyone on this list would have any
+howling objections to it.
+
+not only that, but i would *prefer* to submit just that file as a
+first patch all by itself since, again theoretically, it shouldn't
+break anything and i'd like to verify that first before trying to
+simplify any of the arch-specific ioctl.h files one at a time.
+
+as it is, the number of arch-specific ioctl.h files that could
+potentially be made *much* shorter are for the arches:
+
+  mips
+  parisc
+  alpha
+  sparc
+  sparc-64
+  powerpc
+
+all the rest simply include asm-generic/ioctl.h directly.
+
+rday
+
+p.s.  for those who may have come in late, the proposed new
+asm-generic/ioctl.h file would allow an includer to override any or
+all of:
+
+  _IOC_SIZEBITS
+  _IOC_DIRBITS
+  _IOC_NONE
+  _IOC_WRITE
+  _IOC_READ
+
+AFAICT, those are the only differences across the entire spectrum of
+ioctl.h files.  if there's something i've missed, feel free to let me
+know.
+
+--
+========================================================================
+Robert P. J. Day Linux Consulting, Training and Annoying Kernel
+Pedantry Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
