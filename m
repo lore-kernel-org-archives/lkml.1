@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767451AbXCISMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767450AbXCISMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767451AbXCISMG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 13:12:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767450AbXCISMG
+	id S1767450AbXCISMM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 13:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767453AbXCISMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 13:12:06 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:43000 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbXCISMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 13:12:03 -0500
-Date: Fri, 9 Mar 2007 10:11:47 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bill Davidsen <davidsen@tmr.com>
-cc: Ed Tomlinson <edt@aei.ca>, Gene Heskett <gene.heskett@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Revell <rlrevell@joe-job.com>,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
-   scheduler
-In-Reply-To: <45F17514.5070509@tmr.com>
-Message-ID: <Pine.LNX.4.64.0703091005540.10832@woody.linux-foundation.org>
-References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org>
- <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com>
- <200703051419.25814.gene.heskett@gmail.com> <200703052123.29421.edt@aei.ca>
- <Pine.LNX.4.64.0703051849410.3998@woody.linux-foundation.org>
- <45F0DCB7.5020908@tmr.com> <Pine.LNX.4.64.0703082226530.10832@woody.linux-foundation.org>
- <45F17514.5070509@tmr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Mar 2007 13:12:12 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50871 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767450AbXCISMK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 13:12:10 -0500
+Date: Fri, 9 Mar 2007 23:49:08 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, pj@sgi.com,
+       winget@google.com, containers@lists.osdl.org, akpm@linux-foundation.org
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070309181908.GC21661@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <m1odn4bs6n.fsf@ebiederm.dsl.xmission.com> <6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com> <45EF5A62.8000103@vilain.net> <6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com> <45EF5E71.7090101@vilain.net> <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com> <m1d53ka5b9.fsf@ebiederm.dsl.xmission.com> <20070309005357.GC4506@MAIL.13thfloor.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309005357.GC4506@MAIL.13thfloor.at>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 09, 2007 at 01:53:57AM +0100, Herbert Poetzl wrote:
+> > The real trick is that I believe these groupings are designed to
+> > be something you can setup on login and then not be able to switch
+> > out of. Which means we can't use sessions and process groups as the
+> > grouping entities as those have different semantics.
+> 
+> precisely, once you are inside a resource container, you
+> must not have the ability to modify its limits, and to
+> some degree, you should not know about the actual available
+> resources, but only about the artificial limits
 
+>From non-container workload management perspective, we do desire dynamic
+manipulation of limits associated with a group and also the ability to move 
+tasks across resource-classes/groups.
 
-On Fri, 9 Mar 2007, Bill Davidsen wrote:
->
-> But it IS okay for people to make special-case schedulers. Because it's MY
-> machine,
-
-Sure.
-
-Go wild. It's what open-source is all about.
-
-I'm not stopping you.
-
-I'm just not merging code that makes the scheduler unreadable, even hard 
-to understand, and slows things down. I'm also not merging code that sets 
-some scheduler policy limits by having specific "pluggable scheduler 
-interfaces".
-
-Different schedulers tend to need different data structures in some *very* 
-core data, like the per-cpu run-queues, in "struct task_struct", in 
-"struct thread_struct" etc etc. Those are some of *the* most low-level 
-structures in the kernel. And those are things that get set up to have as 
-little cache footprint a possible etc.
-
-IO schedulers have basically none of those issues. Once you need to do IO, 
-you'll happibly use a few indirect pointers, it's not going to show up 
-anywhere. But in the scheduler, 10 cycles here and there will be a big 
-deal.
-
-And hey, you can try to prove me wrong. Code talks. So far, nobody has 
-really ever come close.
-
-So go and code it up, and show the end result. So far, nobody who actually 
-*does* CPU schedulers have really wanted to do it, because they all want 
-to muck around with their own private versions of the data structures.
-
-		Linus
+-- 
+Regards,
+vatsa
