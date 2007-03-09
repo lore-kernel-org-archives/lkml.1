@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767423AbXCIRLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767425AbXCIRMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767423AbXCIRLD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 12:11:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767427AbXCIRLC
+	id S1767425AbXCIRMU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 12:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767422AbXCIRMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 12:11:02 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:47985 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767425AbXCIRLA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 12:11:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NjQaxW8gTqugAB3TGKpYQzxHJZN1C6TD7zcQq+UHaOSbLrUr3CGC732jvHJ2UHG4ctimVklB2ERQy/Hc5rhybjTRcOTACPj/UNhdfvRSRBc0knpLsFFfagRqzOaar2mpnCxCkP3uQNKz0wdVBtRDDAWfeB2gcWrczb5Fg9uTEiY=
-Message-ID: <4af2d03a0703090910g4473e351k988a96f9e79a0d07@mail.gmail.com>
-Date: Fri, 9 Mar 2007 18:10:57 +0100
-From: "Jiri Slaby" <jirislaby@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
-Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Richard Purdie" <rpurdie@rpsys.net>
-In-Reply-To: <4af2d03a0703090848g67b77f78ie98e359bbd97d5ca@mail.gmail.com>
+	Fri, 9 Mar 2007 12:12:20 -0500
+Received: from mga01.intel.com ([192.55.52.88]:5704 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767403AbXCIRMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 12:12:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,268,1170662400"; 
+   d="scan'208"; a="209585430:sNHT64247743"
+Message-ID: <45F1954D.4000506@intel.com>
+Date: Fri, 09 Mar 2007 09:11:41 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jeff Garzik <jeff@garzik.org>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, john.ronciak@intel.com,
+       jesse.brandeburg@intel.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] e1000: FIX: be ready for incoming irq at pci_request_irq
+References: <20070306165721.27434.23796.stgit@localhost.localdomain> <45F18F7C.3030801@garzik.org>
+In-Reply-To: <45F18F7C.3030801@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
-	 <45E996A0.6070700@gmail.com> <45E99A45.9030506@gmail.com>
-	 <20070303094125.838ce04d.akpm@linux-foundation.org>
-	 <45F13791.8040408@gmail.com>
-	 <d120d5000703090613v2923e9c1k8389b566257daa43@mail.gmail.com>
-	 <Pine.LNX.4.64.0703091531280.26904@twin.jikos.cz>
-	 <Pine.LNX.4.64.0703091658350.26904@twin.jikos.cz>
-	 <4af2d03a0703090848g67b77f78ie98e359bbd97d5ca@mail.gmail.com>
+X-OriginalArrivalTime: 09 Mar 2007 17:11:41.0580 (UTC) FILETIME=[0194C4C0:01C7626E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/9/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> I don't know if this is related, but my notebook keyboard doesn't emit
-> numbers with numlock (not even directly Fn+blue number) anymore with
-> -rc3 (note that LED is flashing when numlock is on). I think -rc2
-> worked fine (I'm going to check this too). It's Asus M6R, similar
-> (except wi-fi) to for example yenya's model here:
-> http://www.fi.muni.cz/~kas/m6r/
+Jeff Garzik wrote:
+> Auke Kok wrote:
+>> From: Auke Kok <auke-jan.h.kok@intel.com>
+>>
+>> DEBUG_SHIRQ code exposed that e1000 was not ready for incoming interrupts
+>> after having called pci_request_irq. This obviously requires us to finish
+>> our software setup which assigns the irq handler before we request the
+>> irq.
+>>
+>> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+>> ---
+>>
+>>  drivers/net/e1000/e1000_main.c |   66 +++++++++++++++++++++++++++-------------
+>>  1 files changed, 45 insertions(+), 21 deletions(-)
+> 
+> All these do indeed look like fixes to me.  But they look like low 
+> priority fixes that would need some public testing behind them, and it's 
+> pretty late in the 2.6.21-rc game.
+> 
+> I'll merge them into an e1000-fixes branch for now (and propagates 
+> through #ALL to akpm's -mm).  If replies to this email indicate we 
+> really should push these upstream for 2.6.21-rc, it will be easy enough 
+> to do so via #e1000-fixes.
 
-Ignore this, it's deux ex machina, it works now.
+Personally, I think this is really really needed. I'm surprised that you already 
+didn't push this considering Andrew pulled this into -mm immediately.
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+We've also been crunching this patch in our labs for a whole week now doing all 
+sorts of load/unload up/down torture and it's a real improvement. Especially 
+ESB2 systems were hit with this bug irregardless of the DEBUG_SHIRQ code active 
+or not, so it's a real bug with real fix.
+
+but hey, it doesn't fix a new problem :)
+
+Auke
+
+
+
