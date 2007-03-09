@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992990AbXCIFxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992978AbXCIF5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992990AbXCIFxK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 00:53:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992989AbXCIFxK
+	id S2992978AbXCIF5a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 00:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992988AbXCIF5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 00:53:10 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:34363 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992990AbXCIFxJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 00:53:09 -0500
-Message-ID: <45F0F644.6020705@cosmosbay.com>
-Date: Fri, 09 Mar 2007 06:53:08 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sys_write() racy for multi-threaded append?
-References: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com>	 <45F09F9C.4030801@cosmosbay.com>	 <f2b55d220703081557k8101e68g1a3556e42f68416@mail.gmail.com>	 <45F0A71C.2000800@cosmosbay.com> <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com>
-In-Reply-To: <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 09 Mar 2007 06:53:06 +0100 (CET)
+	Fri, 9 Mar 2007 00:57:30 -0500
+Received: from ozlabs.org ([203.10.76.45]:54137 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992978AbXCIF53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 00:57:29 -0500
+Subject: [PATCH] Use more gcc extensions in the Linux headers
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 16:56:32 +1100
+Message-Id: <1173419792.32234.131.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael K. Edwards a écrit :
-> On 3/8/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
->> Absolutely not. We dont want to slow down kernel 'just in case a fool 
->> might
->> want to do crazy things'
-> 
-> Actually, I think it would make the kernel (negligibly) faster to bump
-> f_pos before the vfs_write() call.  Unless fget_light sets fput_needed
-> or the write doesn't complete cleanly, you won't have to touch the
-> file table entry again after vfs_write() returns.  You can adjust
-> vfs_write to grab f_dentry out of the file before going into
-> do_sync_write.  do_sync_write is done with the struct file before it
-> goes into the aio_write() loop.  Result: you probably save at least an
-> L1 cache miss, unless the aio_write loop is so frugal with L1 cache
-> that it doesn't manage to evict the struct file.
-> 
-> Patch to follow.
+__builtin_types_compatible_p() has been around since gcc 2.95, and we
+don't use it anywhere.  This patch quietly fixes that.
 
-Dont even try, you *cannot* do that, without breaking the standards, or 
-without a performance drop.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-The only safe way would be to lock the file during the whole read()/write() 
-syscall, and we dont want this (this would be more expensive than current)
-Dont forget 'file' may be some sockets/tty/whatever, not a regular file.
+diff -r f0ff8138f993 include/linux/kernel.h
+--- a/include/linux/kernel.h	Fri Mar 09 16:40:25 2007 +1100
++++ b/include/linux/kernel.h	Fri Mar 09 16:44:04 2007 +1100
+@@ -35,7 +35,9 @@ extern const char linux_proc_banner[];
+ #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+ #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
+ 
+-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
++#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])			      \
++	+ sizeof(typeof(int[1 - 2*!!__builtin_types_compatible_p(typeof(arr), \
++		 typeof(&arr[0]))]))*0)
+ #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+ #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+ #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 
-Standards are saying :
-
-If an error occurs, file pointer remains unchanged.
-
-You cannot know for sure how many bytes will be written, since write() can 
-returns a count that is different than buflen.
-
-So you cannot update fpos before calling vfs_write()
-
-About your L1 'miss', dont forget that multi-threaded apps are going to 
-atomic_dec_and_test(&file->f_count) anyway when fput() is done at the end of 
-syscall. And you were concerned about multi-threaded apps, didnt you ?
 
