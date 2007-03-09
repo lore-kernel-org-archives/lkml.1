@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993029AbXCIHLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993031AbXCIHOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993029AbXCIHLz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 02:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993026AbXCIHLz
+	id S2993031AbXCIHOS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 02:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993032AbXCIHOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 02:11:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39511
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2993028AbXCIHLy (ORCPT
+	Fri, 9 Mar 2007 02:14:18 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:5668 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993031AbXCIHOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 02:11:54 -0500
-Date: Thu, 08 Mar 2007 23:11:42 -0800 (PST)
-Message-Id: <20070308.231142.74749203.davem@davemloft.net>
-To: peter.p.waskiewicz.jr@intel.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       christopher.leech@intel.com
-Subject: Re: [PATCH 0/2] NET: Multiple queue network device support REPOST
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329026E981A@orsmsx414.amr.corp.intel.com>
-References: <20070308.222154.74746753.davem@davemloft.net>
-	<D5C1322C3E673F459512FB59E0DDC329026E981A@orsmsx414.amr.corp.intel.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 9 Mar 2007 02:14:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=p702cWz7ExyyHEHWH/EwiW2nr0vp0QMV2Hj1Ln0zviYz7cl94dIu/V5jwuYCv2GDBE32wKs7p40zydxjBoQw0fd02qeEqIH9Mp7XHV5F1GTdHCa6vEMeQ0hDGqgJZWp1XhycrKF5E3MpUyLjRxE5JIf6Kndwkyv0t/5H/gRmTm4=
+Date: Thu, 8 Mar 2007 23:14:01 -0800
+From: Amit Choudhary <amit2030@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] drivers/media/video/videocodec.c: check kmalloc() return
+ value.
+Message-Id: <20070308231401.42679647.amit2030@gmail.com>
+Organization: X
+X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.8.15; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Date: Thu, 8 Mar 2007 22:42:19 -0800
+Description: Check the return value of kmalloc() in function videocodec_build_table(), in file drivers/media/video/videocodec.c.
 
-> This was taken into consideration, and I did reply that my concern for
-> doing that could cause stale data in the skb if the queue mapping
-> changed.
+Signed-off-by: Amit Choudhary <amit2030@gmail.com>
 
-This is not a problem.
-
-Since the ->enqueue function stores references to the SKBs,
-any change of the dev->qdisc has to flush those references
-somehow, and it is at that point that you can fixup the
-skb queue mappings.
-
-This happens via invoking the qdisc->ops->reset() method.
+diff --git a/drivers/media/video/videocodec.c b/drivers/media/video/videocodec.c
+index 2ae3fb2..16fc1dd 100644
+--- a/drivers/media/video/videocodec.c
++++ b/drivers/media/video/videocodec.c
+@@ -348,6 +348,8 @@ #define LINESIZE 100
+ 	kfree(videocodec_buf);
+ 	videocodec_buf = (char *) kmalloc(size, GFP_KERNEL);
+ 
++	if (!videocodec_buf)
++		return 0;
+ 	i = 0;
+ 	i += scnprintf(videocodec_buf + i, size - 1,
+ 		      "<S>lave or attached <M>aster name  type flags    magic    ");
