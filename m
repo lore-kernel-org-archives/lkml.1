@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767473AbXCIUNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767477AbXCIUN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767473AbXCIUNU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767474AbXCIUNU
+	id S1767477AbXCIUN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767479AbXCIUN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:13:20 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4311 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767473AbXCIUNT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:13:19 -0500
-Date: Fri, 9 Mar 2007 20:13:08 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sam@ravnborg.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] Complain about missing system calls.
-Message-ID: <20070309201308.GB8444@flint.arm.linux.org.uk>
-Mail-Followup-To: "H. Peter Anvin" <hpa@zytor.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	sam@ravnborg.org, linux-arch@vger.kernel.org
-References: <1173394873.3461.510.camel@pmac.infradead.org> <p737itqbdnl.fsf@bingen.suse.de> <20070309163805.GV18564@lug-owl.de> <45F1B818.4090007@zytor.com>
+	Fri, 9 Mar 2007 15:13:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36664 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767477AbXCIUN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 15:13:56 -0500
+Date: Fri, 9 Mar 2007 21:12:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
+Message-ID: <20070309201257.GA5761@elte.hu>
+References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45F1B818.4090007@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 11:40:08AM -0800, H. Peter Anvin wrote:
-> Jan-Benedict Glaw wrote:
-> >
-> >Not everybody has a simple indexed list of pointers :)  For example,
-> >for vax-linux, we use a struct per syscall with the expected number of
-> >on-stack longwords for the call.
-> >
-> >So if something "new" is coming up, please keep in mind that it should
-> >be flexible enough to represent that. :)
-> >
-> 
-> I discussed with Al Viro a while ago about using something like the 
-> SYSCALLS.def file from klibc as the source format for the system calls. 
->  That would deal very flexibly with almost all kinds of stub generation.
 
-Hopefully with this idea in place, we can spot new syscalls before
-the final release of the kernel (maybe kautobuild can help there)
-and fix any silly system call argument ordering which requires
-different architectures to have different syscall prototypes (eg,
-sys_arm_fadvise64_64 vs sys_fadvise64_64, sys_arm_sync_file_range vs
-sys_sync_file_range).
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Otherwise the SYSCALLS.def file will probably end up being full of
-ifdefs.
+> Similarly, maybe the VMI ABI doesn't allow for something that the 
+> kernel wants to do efficiently. Big deal. What relevance does that 
+> have to do with anything, except the fact that if true, the VMWare 
+> people are screwed? It's *their* problem.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+i wont hold you up for long, but i think this is the key difference, and 
+if i understand your point correctly i think you are really wrong here.
+
+This is 'enterprise Linux compatibility and ABI 101', really - i dare to 
+bet blindly that you wont see anyone here from distros arguing against 
+this simple point.
+
+Once this thing is released upstream, it creates a new compatibility 
+rule:
+
+  _new kernel must not break on an older hypervisor_
+
+due to a new paravirt_ops design. Ever. It's really that simple. (I 
+think i never said this explicitly because this requirement of backwards 
+compatibility was so obvious to me.)
+
+And it doesnt matter whether we think that it was VMWare who messed up. 
+Users/customers _will_ blame us: "v2.6.25 regresses, it wont run under 
+ESX v1.12 anymore". Distro will yield and will undo whatever change 
+breaks backwards compatibility with older hypervisors. (most likely it 
+will be undone upstream already) Backwards compatibility acts as a very 
+heavy barrier against certain types of paravirt_ops design changes.
+
+Once v2.6.21 is released, and a bigger distro releases a kernel with 
+CONFIG_PARAVIRT+CONFIG_VMI enabled: backwards compatibility in future 
+versions becomes mainly /that/ distro's problem (and upstream's 
+problem), _NOT_ WMware's problem.
+
+That's why i mentioned CONFIG_COMPAT_VDSO as an example. One major 
+distro (SuSE 9.0) came out with that particular glibc version that had a 
+bug that depended on a particular and totally unintentional ABI detail 
+in the vDSO. As a result we had to do several iterations of 
+CONFIG_COMPAT_VDSO to keep backwards compatibility. And glibc is perhaps 
+_the_ most kernel-friendly external software project in existence. 
+Still, the ABI dependency was there, and we cannot break users who run 
+old userspace. The same rule holds here: we cannot break users who run 
+an old hypervisor.
+
+	Ingo
