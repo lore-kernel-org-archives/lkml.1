@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965820AbXCIUnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767495AbXCIUns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965820AbXCIUnV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 15:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965818AbXCIUnV
+	id S1767495AbXCIUns (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 15:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965819AbXCIUnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 15:43:21 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:59485 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965817AbXCIUnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 15:43:20 -0500
-Date: Fri, 9 Mar 2007 21:42:43 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: netconsole system freeze when cable unplugged
-Message-ID: <20070309204243.GA28441@electric-eye.fr.zoreil.com>
-References: <45F1B6FD.1060902@simon.arlott.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F1B6FD.1060902@simon.arlott.org.uk>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Fri, 9 Mar 2007 15:43:47 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:60069 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965821AbXCIUnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 15:43:46 -0500
+Message-ID: <52293.172.21.0.22.1173473006.squirrel@pat.norway.atmel.com>
+In-Reply-To: <200703091130.13547.david-b@pacbell.net>
+References: <200703090945.38880.david-b@pacbell.net>
+    <11734661281633-git-send-email-hskinnemoen@atmel.com>
+    <200703091130.13547.david-b@pacbell.net>
+Date: Fri, 9 Mar 2007 21:43:26 +0100 (CET)
+Subject: Re: [PATCH] Bitbanging i2c bus driver using the GPIO API
+From: =?iso-8859-1?Q?H=E5vard_Skinnemoen?= <hskinnemoen@atmel.com>
+To: "David Brownell" <david-b@pacbell.net>
+Cc: "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Jean Delvare" <khali@linux-fr.org>, "Bryan Wu" <bryan.wu@analog.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Deepak Saxena" <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Arlott <simon@fire.lp0.eu> :
-> When I unplug the cable the system just stops responding to anything, 
-> at all. No message is printed to the console when the cable is plugged 
-> back in.
+On Fri, March 9, 2007 20:30, David Brownell wrote:
+> On Friday 09 March 2007 10:48 am, Haavard Skinnemoen wrote:
+>> This is a very simple bitbanging i2c bus driver utilizing the new
+>> arch-neutral GPIO API. Useful for chips that don't have a built-in
+>> i2c controller, additional i2c busses, or testing purposes.
+>
+> That's the right idea!  But remember that not all GPIOs support
+> reading back the actual value on SCL (it's an OUT pin, so lacking
+> multidrive capability the values "should" be what you wrote), so
+> getscl() support should depend on a flag in platform data.  In
+> the same vein, if SCL is an output-only pin, you won't be able
+> to change its direction ... but then, I'm not sure why you were
+> changing its direction in setscl() rather than just its value.
 
-rtl8139_interrupt (spin_lock(&tp->lock))
--> rtl8139_weird_interrupt
-   -> rtl_check_media
-      -> mii_check_media (printk(KERN_INFO "%s: link down\n", ...))
-         [netpoll stuff here]
-         -> rtl8139_poll_controller
-            -> rtl8139_interrupt
-               *deadlock*
+The idea is to keep the output value at 0 and switch the output driver on
+and off. I assumed that changing the direction was the easiest way to
+achieve this.
 
-See below for my random stuff of the day. Feel free to open a PR at
-bugzilla.kernel.org if the issue does not go away.
+I never really thought about output-only pins. Is it actually possible to
+implement i2c properly on such hardware?
 
---------8<-----------------------------------------------------------------
+> I2C has another interesting special case.  at91_set_multi_drive()
+> would be appropriate (yes?) for ARCH_AT91 to use on SCL, to best
+> support both clock stretching and multi-master configurations.
 
-8139too: netconsole breakage when link changes
+Isn't it better to switch the direction to input since the driver needs to
+watch the pin state in order to support clock stretching and multi-master?
 
-rtl8139_interrupt is not supposed to be reentrant but its link
-management part can emit printk.
+>> +	gpio_direction_input(pdata->sda_pin);
+>> +	gpio_direction_input(pdata->scl_pin);
+>> +	gpio_set_value(pdata->sda_pin, 0);
+>> +	gpio_set_value(pdata->scl_pin, 0);
+>
+> Surely you mean "output" in both cases.  So you can set the
+> value.  Setting the value on an input pin is undefined.  ;)
 
-Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+No I really do mean input, as I want to put the bus into an idle state
+initially, which means no output drivers and passive pullup on both lines.
 
-diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
-index 99304b2..64467ad 100644
---- a/drivers/net/8139too.c
-+++ b/drivers/net/8139too.c
-@@ -2215,9 +2215,16 @@ static irqreturn_t rtl8139_interrupt (int irq, void *dev_instance)
-  */
- static void rtl8139_poll_controller(struct net_device *dev)
- {
--	disable_irq(dev->irq);
-+	struct rtl8139_private *tp = netdev_priv(dev);
-+	unsigned long flags;
-+	int rc;
-+
-+	rc = spin_trylock_irqsave(&tp->lock, flags);
-+	if (!rc)
-+		return;
-+	spin_unlock(&tp->lock);
- 	rtl8139_interrupt(dev->irq, dev);
--	enable_irq(dev->irq);
-+	local_irq_restore(flags);
- }
- #endif
- 
+The gpio_set_value() calls should go away and the output value should be
+explicitly set to 0 when turning on the output drivers. In its present
+form, the driver happens to work on my hardware, which is all I really
+cared about when writing it ;-)
+
+>> +	printk(KERN_INFO "i2c-gpio: using pins 0x%x (sda) 0x%x (scl)\n",
+>> +	       pdata->sda_pin, pdata->scl_pin);
+>
+> Please, no hex there.  I think dev_info() would be better; and it
+> might be nice to report whether clock stretching is supported.
+
+Ok, but how do I inform i2c-algo-bit about whether or not clock stretching
+is supported?
+
+>> --- a/include/linux/i2c-id.h
+>> +++ b/include/linux/i2c-id.h
+>> @@ -194,6 +194,7 @@
+>>  #define I2C_HW_B_EM28XX		0x01001f /* em28xx video capture cards */
+>>  #define I2C_HW_B_CX2341X	0x010020 /* Conexant CX2341X MPEG encoder
+>> cards */
+>>  #define I2C_HW_B_INTELFB	0x010021 /* intel framebuffer driver */
+>> +#define I2C_HW_B_GPIO		0x010022 /* Generic GPIO-based driver */
+>
+> It'd be nice to completely abolish those IDs, starting by not
+> adding new ones.  Especially, not adding unused ones!
+
+Sure.
+
+Haavard
+
