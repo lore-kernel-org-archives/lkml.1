@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767310AbXCIOSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767317AbXCIOVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767310AbXCIOSw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 09:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767315AbXCIOSw
+	id S1767317AbXCIOVo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 09:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767318AbXCIOVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 09:18:52 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:46639 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767310AbXCIOSv (ORCPT
+	Fri, 9 Mar 2007 09:21:44 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:50417 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767317AbXCIOVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 09:18:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H33RzNMpvLoT4hSezHc/fXpWam+jrtzbSErQ7tD96GF/p/bH0Ugtjf7sEKXei7rUITVHWWzov1gkz0XwJyuJrRuT+TcDmUDOAO9ZhMoEPhNK3kCawG15Cfab2jykeBKF8dkbu2zE3v1lIvbTHx/B06XOrx83ahoCcJYPFT7sg/A=
-Message-ID: <57354eff0703090618q17d80f53p25b904d552fc30c@mail.gmail.com>
-Date: Fri, 9 Mar 2007 15:18:48 +0100
-From: "Oleksiy Kebkal" <kebkal@gmail.com>
-To: "Robin Getz" <rgetz@blackfin.uclinux.org>,
-       "Oleksiy Kebkal" <kebkal@gmail.com>, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-serial@vger.kernel.org
-Subject: Re: should RTS init in serial core be tied to CRTSCTS
-In-Reply-To: <20070308204020.GE30023@flint.arm.linux.org.uk>
+	Fri, 9 Mar 2007 09:21:43 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Fri, 9 Mar 2007 09:19:05 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Artem Bityutskiy <dedekind@yandex.ru>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: the usage of DEBUG_DRIVER seems ambiguous
+In-Reply-To: <45F169CA.3000106@yandex.ru>
+Message-ID: <Pine.LNX.4.64.0703090916410.3143@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703071941200.14336@CPE00045a9c397f-CM001225dbafb6>
+ <20070308111858.9352f51d.randy.dunlap@oracle.com> <45F169CA.3000106@yandex.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8bd0f97a0703011603m794e00f5x875eb68ad0db05de@mail.gmail.com>
-	 <200703080844.32157.rgetz@blackfin.uclinux.org>
-	 <20070308134800.GA30023@flint.arm.linux.org.uk>
-	 <200703081523.39698.rgetz@blackfin.uclinux.org>
-	 <20070308204020.GE30023@flint.arm.linux.org.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/3/8, Russell King <rmk+lkml@arm.linux.org.uk>:
-> ... which occurs /after/ userspace is up and running, when sysfs is
-> available.  So putting it in sysfs is reasonable.
+On Fri, 9 Mar 2007, Artem Bityutskiy wrote:
 
-Is it right place for serial settings?
-/sys/class/tty/ttySN/
+> Randy Dunlap wrote:
+> > >   it's clearly a configuration variable, but it's also being used by
+> > > itself in a few drivers/net/ source files.  is that deliberate?
+> >
+> > The ones in drivers/net/ are just local driver debug controls.
+> > They happen to have the same name as a (likely newer) kconfig symbol.
+> >
+> > Is there a real problem that needs to be fixed?
+>
+> Renaming them just for the sake of being less confusing makes sense.
 
-How far is it reasonable to split termios settings to the attributes?
-1)
-/sys/class/tty/ttyS0/termios
-2)
-/sys/class/tty/ttyS0/c_iflag
-/sys/class/tty/ttyS0/c_oflag
-/sys/class/tty/ttyS0/c_cflag
-/sys/class/tty/ttyS0/c_lflag
-/sys/class/tty/ttyS0/c_cc
-3)
-/sys/class/tty/ttyS0/speed
-/sys/class/tty/ttyS0/eof
-/sys/class/tty/ttyS0/eon
-/sys/class/tty/ttyS0/erase
-.... and so on
+that's kind of what i had in mind.  i have a script that peruses the
+source tree, checking for apparent typoes in preprocessor directives
+when someone forgets the leading "CONFIG_", and as long as that macro
+name is the way it is, that example is going to be flagged every time
+for no good reason.
 
+if someone wants to make a suggestion, i can submit a simple renaming
+patch.
 
--Oleksiy
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
