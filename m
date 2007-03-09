@@ -1,48 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767641AbXCIX0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767645AbXCIX17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767641AbXCIX0n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 18:26:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767643AbXCIX0n
+	id S1767645AbXCIX17 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 18:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767643AbXCIX17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 18:26:43 -0500
-Received: from gw.goop.org ([64.81.55.164]:48986 "EHLO mail.goop.org"
+	Fri, 9 Mar 2007 18:27:59 -0500
+Received: from mga09.intel.com ([134.134.136.24]:5205 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767642AbXCIX0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 18:26:42 -0500
-Message-ID: <45F1ED30.5070402@goop.org>
-Date: Fri, 09 Mar 2007 15:26:40 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1767642AbXCIX16 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 18:27:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,268,1170662400"; 
+   d="scan'208"; a="55917270:sNHT25075800"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: question about periodic clocks
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] NET: Multiple queue network device support
+Date: Fri, 9 Mar 2007 15:27:53 -0800
+Message-ID: <D5C1322C3E673F459512FB59E0DDC329026E9F85@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <20070309230143.GI521@postel.suug.ch>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] NET: Multiple queue network device support
+thread-index: Acdint4TPrYRd2vOTuKD7v9rTIpzggAADgnw
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Thomas Graf" <tgraf@suug.ch>
+Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "David Miller" <davem@davemloft.net>,
+       "Garzik, Jeff" <jgarzik@pobox.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kok, Auke" <auke@foo-projects.org>,
+       "Ronciak, John" <john.ronciak@intel.com>
+X-OriginalArrivalTime: 09 Mar 2007 23:27:54.0427 (UTC) FILETIME=[900BE0B0:01C762A2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How does the clock period get set on periodic timers?  In my clock
-driver, I'm seeing a call to ->set_mode(CLOCK_EVT_MODE_PERIODIC, evt),
-but then... nothing.  I was expecting a call to set_next_event to set
-the timer period.
+> * Waskiewicz Jr, Peter P <peter.p.waskiewicz.jr@intel.com> 
+> 2007-03-09 11:25
+> > > > +			}
+> > > > +		} else {
+> > > > +			/* We're not a multi-queue device. */
+> > > > +			spin_lock(&dev->queue_lock);
+> > > > +			q = dev->qdisc;
+> > > > +			if (q->enqueue) {
+> > > > +				rc = q->enqueue(skb, q);
+> > > > +				qdisc_run(dev);
+> > > > +				spin_unlock(&dev->queue_lock);
+> > > > +				rc = rc == NET_XMIT_BYPASS
+> > > > +				           ? 
+> NET_XMIT_SUCCESS : rc;
+> > > > +				goto out;
+> > > > +			}
+> > > > +			spin_unlock(&dev->queue_lock);
+> > > 
+> > > Please don't duplicate already existing code.
+> > 
+> > I don't want to mix multiqueue and non-multiqueue code in 
+> the transmit 
+> > path.  This was an attempt to allow MQ and non-MQ devices 
+> to coexist 
+> > in a machine having separate code paths.  Are you suggesting to 
+> > combine them?  That would get very messy trying to 
+> determine what type 
+> > of lock to grab (subqueue lock or dev->queue_lock), not to mention 
+> > grabbing the
+> > dev->queue_lock would block multiqueue devices in that same 
+> codepath.
+> 
+> The piece of code I quoted above is the branch executed if 
+> multi queue is not enabled. The code you added is 100% 
+> identical to the already existing enqueue logic. Just execute 
+> the existing branch if multi queue is not enabled.
+> 
 
-The calltrace is:
+I totally agree this is identical code if multiqueue isn't enabled.
+However, when multiqueue is enabled, I don't want to make all network
+drivers implement the subqueue API just to be able to lock the queues.
+So the first thing I check is netif_is_multiqueue(dev), and if it
+*isn't* multiqueue, it will run the existing code.  This way both
+non-multiqueue devices don't have to have any knowledge of the MQ API.
 
-#0  xen_new_set_mode (mode=CLOCK_EVT_MODE_PERIODIC, evt=0xc10a2ac0)
-    at arch/i386/xen/time.c:275
-#1  0xc01323da in clockevents_set_mode (dev=0xc10a2ac0, 
-    mode=CLOCK_EVT_MODE_PERIODIC) at kernel/time/clockevents.c:64
-#2  0xc0132854 in tick_setup_periodic (dev=0xc10a2ac0, 
-    broadcast=<value optimized out>) at kernel/time/tick-common.c:111
+> > This is another attempt to keep the two codepaths separate. 
+>  The only 
+> > way I see of combining them is to check netif_is_multiqueue() 
+> > everytime I need to grab a lock, which I think would be excessive.
+> 
+> The code added is 100% identical to the existing code, just 
+> be a little smarter on how you do the ifdefs.
 
-and tick_setup_periodic does just call clockevents_set_mode, but nothing
-to set a period.
+An example could be an on-board adapter isn't multiqueue, and an
+expansion card you have in your system is.  If I handle multiqueue being
+on with just ifdef's, then I could use the expansion card, but not the
+on-board adapter as-is.  The on-board driver would need to be updated to
+have 1 queue in the multiqueue context, which is what I tried to avoid.
 
-Am I supposed to assume some default period?  HZ?  (That's what hpet
-seems to do.)
+> > > Your modified qdisc_restart() expects the queue_lock to 
+> be locked, 
+> > > how can this work?
+> > 
+> > No, it doesn't expect the lock to be held.  Because of the multiple 
+> > queues, enqueueing and dequeueing are now asynchronous, since I can 
+> > enqueue to queue 0 while dequeuing from queue 1.  dev->queue_lock 
+> > isn't held, so this can happen.  Therefore the 
+> spin_trylock() is used 
+> > in this dequeue because I don't want to wait for someone to finish 
+> > with that queue in question (e.g. enqueue working), since that will 
+> > block all other bands/queues after the band in question.  So if the 
+> > lock isn't available to grab, we move to the next band.  If 
+> I were to 
+> > wait for the lock, I'd serialize the enqueue/dequeue 
+> completely, and 
+> > block other traffic flows in other queues waiting for the lock.
+> 
+> The first thing you do in qdisc_restart() after dequeue()ing 
+> is unlock the sub queue lock. You explicitely unlock it 
+> before calling qdisc_run() so I assume dequeue() is expected 
+> to keep it locked. Something doesn't add up.
 
-Is set_next_event only ever called if the timer is in ONESHOT mode?
+That's the entire point of this extra locking.  enqueue() is going to
+put an skb into a band somewhere that maps to some queue, and there is
+no way to guarantee the skb I retrieve from dequeue() is headed for the
+same queue.  Therefore, I need to unlock the queue after I finish
+enqueuing, since having that lock makes little sense to dequeue().
+dequeue() will then grab *a* lock on a queue; it may be the same one we
+had during enqueue(), but it may not be.  And the placement of the
+unlock of that queue is exactly where it happens in non-multiqueue,
+which is right before the hard_start_xmit().
 
-Thanks,
-    J
+I concede that the locking model is complex and seems really nasty, but
+to truly separate queue functionality from one another, I see no other
+feasible option than to run locking like this.  I am very open to
+suggestions.
+
+> 
+> BTW, which lock serializes your write access to 
+> qdisc->q.qlen? It used to be dev->queue_lock but that is 
+> apparently not true for multi queue.
+> 
+
+This is a very good catch, because it isn't being protected on the
+entire qdisc right now for PRIO.  However, Chris Leech pointed out the
+LINK_STATE_QDISC_RUNNING bit is serializing things at the qdisc_run()
+level, so that's probably protecting this counter right now.  I'm
+looking at pushing that down into the qdisc, but at the same time I can
+think of something to serialize these stats containers for the qdisc.
