@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423015AbXCIAwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423019AbXCIAx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423015AbXCIAwa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 19:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423019AbXCIAwa
+	id S1423019AbXCIAx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 19:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423021AbXCIAx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 19:52:30 -0500
-Received: from kepler.fjfi.cvut.cz ([147.32.6.11]:58315 "EHLO
-	kepler.fjfi.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423015AbXCIAwa (ORCPT
+	Thu, 8 Mar 2007 19:53:59 -0500
+Received: from MAIL.13thfloor.at ([213.145.232.33]:56641 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423019AbXCIAx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 19:52:30 -0500
-Date: Fri, 9 Mar 2007 01:52:18 +0100 (CET)
-From: Martin Drab <drab@kepler.fjfi.cvut.cz>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: hugh@veritas.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Question about memory mapping mechanism
-In-Reply-To: <45F0ABEB.3030201@shaw.ca>
-Message-ID: <Pine.LNX.4.64.0703090138470.25365@kepler.fjfi.cvut.cz>
-References: <fa.8Fy6n0Le4Y2mDfeEy936/5bbJHA@ifi.uio.no> <45F0ABEB.3030201@shaw.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Mar 2007 19:53:58 -0500
+Date: Fri, 9 Mar 2007 01:53:57 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, pj@sgi.com,
+       winget@google.com, containers@lists.osdl.org, akpm@linux-foundation.org
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070309005357.GC4506@MAIL.13thfloor.at>
+Mail-Followup-To: "Eric W. Biederman" <ebiederm@xmission.com>,
+	Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, xemul@sw.ru, pj@sgi.com,
+	winget@google.com, containers@lists.osdl.org,
+	akpm@linux-foundation.org
+References: <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <m1odn4bs6n.fsf@ebiederm.dsl.xmission.com> <6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com> <45EF5A62.8000103@vilain.net> <6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com> <45EF5E71.7090101@vilain.net> <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com> <m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Mar 2007, Robert Hancock wrote:
-
-> Martin Drab wrote:
-> > Hi,
-> > 
-> > I'm writing a driver for a sampling device that is constantly delivering a
-> > relatively high amount of data (about 16 MB/s) and I need to deliver the
-> > data to the user-space ASAP. To prevent data loss I create a queue of
-> > buffers (consisting of few pages each) which are more or less directly
-> > filled by the device and then mapped to the user-space via mmap().
-> > 
-> > The thing is that I'd like to prevent kernel to swap these pages out,
-> > because then I may loose some data when they are not available in time for
-> > the next round.
+On Wed, Mar 07, 2007 at 06:32:10PM -0700, Eric W. Biederman wrote:
+> "Paul Menage" <menage@google.com> writes:
 > 
-> It would likely be easier to just mlock this buffer from the userspace
-> application, rather than trying to achieve this in the driver..
+>> On 3/7/07, Sam Vilain <sam@vilain.net> wrote:
+>>> But "namespace" has well-established historical semantics too - a way
+>>> of changing the mappings of local * to global objects. This
+>>> accurately describes things liek resource controllers, cpusets, resource
+>>> monitoring, etc.
+>>
+>> Sorry, I think this statement is wrong, by the generally established
+>> meaning of the term namespace in computer science.
+>>
+>>> Trying to extend the well-known term namespace to refer to things
+>>> that are semantically equivalent namespaces is a useful approach,
+>>> IMHO.
+>>
+>> Yes, that would be true. But the kinds of groupings that we're talking
+>> about are supersets of namespaces, not semantically equivalent to
+>> them. To use Eric's "shoe" analogy from earlier, it's like insisting
+>> that we use the term "sneaker" to refer to all footware, including ski
+>> boots and birkenstocks ...
+> 
+> Pretty much.  For most of the other cases I think we are safe referring
+> to them as resource controls or resource limits.  
 
-Well yes, but it is the kernel that needs to have it guaranteed and 
-especially on the buffers that aren't currently mmapped to user-space, but 
-are free to be filled with data from the device. And generally we can not 
-rely on an application to do the mlock(), I guess. If the application 
-wouldn't do it and if it would happen that some of the buffers would be 
-swapped out, we may end up with a page fault within an interrupt.
+> I know that roughly covers what cpusets and beancounters and ckrm
+> currently do.
 
-And besides, I guess the mlock() is effective only as long as the pages 
-are really mapped into the user-space. Since when they are then unmapped 
-by munmap(2) when the application have read the data, their VMA eventually 
-seizes to exist and the mlock() protection would be gone anyway. Right?
+let me tell you, it also covers what Linux-VServer does :)
 
-We need a permanent protection. But perhaps artificially increasing the 
-page's reference count via get_page() upon allocation, instead of setting 
-the PG_reserved bit, would do. (If I got it right.)
+> The real trick is that I believe these groupings are designed to
+> be something you can setup on login and then not be able to switch
+> out of. Which means we can't use sessions and process groups as the
+> grouping entities as those have different semantics.
 
-Martin
+precisely, once you are inside a resource container, you
+must not have the ability to modify its limits, and to
+some degree, you should not know about the actual available
+resources, but only about the artificial limits
+
+HTC,
+Herbert
+
+> Eric
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/containers
