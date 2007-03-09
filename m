@@ -1,157 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965157AbXCICRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992893AbXCICSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965157AbXCICRo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 21:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965199AbXCICRo
+	id S2992893AbXCICSU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 21:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992886AbXCICST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 21:17:44 -0500
-Received: from mga01.intel.com ([192.55.52.88]:2863 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965157AbXCICRm convert rfc822-to-8bit (ORCPT
+	Thu, 8 Mar 2007 21:18:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58231
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S2992893AbXCICSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 21:17:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,265,1170662400"; 
-   d="scan'208"; a="209209352:sNHT20637365"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] NET: Add packet sock option to return orig_dev to userspace when bonded
-Date: Thu, 8 Mar 2007 18:17:39 -0800
-Message-ID: <D5C1322C3E673F459512FB59E0DDC329026E9753@orsmsx414.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] NET: Add packet sock option to return orig_dev to userspace when bonded
-thread-index: Acdh8Rw3cgqJvTELRDSYiIQr3vkaqg==
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Leech, Christopher" <christopher.leech@intel.com>, <jgarzik@pobox.com>
-X-OriginalArrivalTime: 09 Mar 2007 02:17:40.0098 (UTC) FILETIME=[1CC42E20:01C761F1]
+	Thu, 8 Mar 2007 21:18:18 -0500
+Date: Thu, 08 Mar 2007 18:18:18 -0800 (PST)
+Message-Id: <20070308.181818.116353410.davem@davemloft.net>
+To: mathieu.desnoyers@polymtl.ca
+Cc: akpm@linux-foundation.org, rschultz@google.com, ak@suse.de,
+       mbligh@google.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix atomicity of TIF update in flush_thread() for
+ x86_64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070309021553.GA8387@Krystal>
+References: <20070309021553.GA8387@Krystal>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch applies against commit
-704e0b01791bfcb75355f269a6f0054a75c9c563
-of branch 'master' from davem/net-2.6.22
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Thu, 8 Mar 2007 21:15:53 -0500
 
----
-Summary:
+> Fix atomicity of TIF update in flush_thread() for x86_64
+> 
+> Race :
+> 
+> parent process executing :
+> sys_ptrace()
+>  (lock_kernel())
+>  (ptrace_get_task_struct(pid))
+>  arch_ptrace()
+>    ptrace_detach()
+>      ptrace_disable(child);
+>        clear_singlestep(child);
+>          clear_tsk_thread_flag(child, TIF_SINGLESTEP);
+>          (which clears the TIF_SINGLESTEP flag atomically from a different
+> 	  process)
+>  (put_task_struct(child))
+>  (unlock_kernel())
+> 
+> And at the same time, in the child process :
+> sys_execve()
+>  do_execve()
+>    search_binary_handler()
+>      load_elf_binary()
+>        flush_old_exec()
+>          flush_thread()
+>            doing a non-atomic thread flag update 
+> 
+> It applies on 2.6.20.
+> 
+> Signed-off-by: Rebecca Schultz <rschultz@google.com>
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
-	NET: Add packet sock option to return orig_dev to userspace when
-bonded
-
----
-Add a packet socket option to allow the orig_dev index to be returned to
-userspace when passing traffic through a bonded device.  This is very
-useful
-for layer 2 traffic being able to report which physical device actually
-received the traffic, instead of having the bond hide that information.
-
-The new option is called PACKET_BONDED_ORIGDEV.
-
-Signed-off-by: Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
-
----
- include/linux/if_packet.h |    1 +
- net/packet/af_packet.c    |   34 +++++++++++++++++++++++++++++++---
- 2 files changed, 32 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/if_packet.h b/include/linux/if_packet.h
-index f3de05c..b68c177 100644
---- a/include/linux/if_packet.h
-+++ b/include/linux/if_packet.h
-@@ -42,6 +42,7 @@ struct sockaddr_ll
- #define PACKET_STATISTICS		6
- #define PACKET_COPY_THRESH		7
- #define PACKET_AUXDATA			8
-+#define PACKET_BONDED_ORIGDEV		9
- 
- struct tpacket_stats
- {
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index f9866a8..05e53a0 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -201,7 +201,8 @@ struct packet_sock {
- 	struct packet_type	prot_hook;
- 	spinlock_t		bind_lock;
- 	unsigned int		running:1,	/* prot_hook is
-attached*/
--				auxdata:1;
-+				auxdata:1,
-+				origdev:1;	/* return orig_dev for
-bonds */
- 	int			ifindex;	/* bound device
-*/
- 	__be16			num;
- #ifdef CONFIG_PACKET_MULTICAST
-@@ -528,7 +529,11 @@ static int packet_rcv(struct sk_buff *sk
- 	sll->sll_hatype = dev->type;
- 	sll->sll_protocol = skb->protocol;
- 	sll->sll_pkttype = skb->pkt_type;
--	sll->sll_ifindex = dev->ifindex;
-+	/* Look at all traffic types bound for us - includes BC and MC
-*/
-+	if (unlikely(po->origdev) && skb->pkt_type == PACKET_HOST)
-+		sll->sll_ifindex = orig_dev->ifindex;
-+	else
-+		sll->sll_ifindex = dev->ifindex;
- 	sll->sll_halen = 0;
- 
- 	if (dev->hard_header_parse)
-@@ -673,7 +678,11 @@ static int tpacket_rcv(struct sk_buff *s
- 	sll->sll_hatype = dev->type;
- 	sll->sll_protocol = skb->protocol;
- 	sll->sll_pkttype = skb->pkt_type;
--	sll->sll_ifindex = dev->ifindex;
-+	/* Look at all traffic types bound for us - includes BC and MC
-*/
-+	if (unlikely(po->origdev) && skb->pkt_type == PACKET_HOST)
-+		sll->sll_ifindex = orig_dev->ifindex;
-+	else
-+		sll->sll_ifindex = dev->ifindex;
- 
- 	h->tp_status = status;
- 	smp_mb();
-@@ -1413,6 +1422,18 @@ packet_setsockopt(struct socket *sock, i
- 		po->auxdata = !!val;
- 		return 0;
- 	}
-+	case PACKET_BONDED_ORIGDEV:
-+	{
-+		int val;
-+
-+		if (optlen < sizeof(val))
-+			return -EINVAL;
-+		if (copy_from_user(&val, optval, sizeof(val)))
-+			return -EFAULT;
-+
-+		po->origdev = !!val;
-+		return 0;
-+	}
- 	default:
- 		return -ENOPROTOOPT;
- 	}
-@@ -1456,6 +1477,13 @@ static int packet_getsockopt(struct sock
- 
- 		data = &val;
- 		break;
-+	case PACKET_BONDED_ORIGDEV:
-+		if (len > sizeof(int))
-+			len = sizeof(int);
-+		val = po->origdev;
-+
-+		data = &val;
-+		break;
- 	default:
- 		return -ENOPROTOOPT;
- 	}
-
-
--- 
-Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
+Please fix all platforms, not just your favorite one, kthx.
+:-)
