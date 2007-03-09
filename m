@@ -1,64 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767452AbXCISHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767445AbXCISHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767452AbXCISHL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 13:07:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767451AbXCISHK
+	id S1767445AbXCISHP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 13:07:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767451AbXCISHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 13:07:10 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42769 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767444AbXCISHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 13:07:08 -0500
-Date: Fri, 9 Mar 2007 10:00:49 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-In-Reply-To: <20070309105635.GA11635@elte.hu>
-Message-ID: <Pine.LNX.4.64.0703090949140.10832@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
- <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>
- <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
- <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
- <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
- <20070309105635.GA11635@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Mar 2007 13:07:15 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:51660 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767445AbXCISHN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 13:07:13 -0500
+Date: Fri, 9 Mar 2007 23:44:22 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, pj@sgi.com, winget@google.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org, menage@google.com
+Subject: Re: [PATCH 1/2] rcfs core patch
+Message-ID: <20070309181422.GB21661@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <20070308101347.GA29051@in.ibm.com> <20070309004816.GB4506@MAIL.13thfloor.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309004816.GB4506@MAIL.13thfloor.at>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Mar 2007, Ingo Molnar wrote:
-> > Some day we may have modesetting support in the kernel for some 
-> > graphics hw, right now it's pretty damn spotty.
+On Fri, Mar 09, 2007 at 01:48:16AM +0100, Herbert Poetzl wrote:
+> > There have been various projects attempting to provide resource
+> > management support in Linux, including CKRM/Resource Groups and UBC.
 > 
-> having no video is what i'd have expected - but getting a /hang/ is not 
-> what i'd have expected.
+> let me note here, once again, that you forgot Linux-VServer
+> which does quite non-intrusive resource management ...
 
-I debugged a case exactly like this (with the TRACE_RESUME() thing) back 
-last November on my laptop.
+Sorry, not intentionally. Maybe it slipped because I haven't seen much res mgmt
+related patches from Linux Vserver on lkml recently. Note that I -did- talk 
+about VServer at one point in past (http://lkml.org/lkml/2006/06/15/112)!
 
-The problem is that radeonfb actually *tries* to re-initialize the 
-graphics chips, but because it doesn't know all the details, it does it 
-wrong, and hangs the whole chip.
+> the basic 'context' (pid space) is the grouping mechanism
+> we use for resource management too
 
-I forget exactly where it happened, and it might well be different for 
-you. But this is exactly what TRACE_RESUME can be used to pinpoint if you 
-want to try to debug it. 
+so tasks sharing the same nsproxy->pid_ns is the fundamental unit of
+resource management (as far as vserver/container goes)?
 
-			Linus
+> > As you know, the introduction of 'struct container' was objected
+> > to and was felt redundant as a means to group tasks. Thats where I
+> > took a shot at converting over Paul Menage's patch to avoid 'struct
+> > container' abstraction and insead work with 'struct nsproxy'.
+> 
+> which IMHO isn't a step in the right direction, as
+> you will need to handle different nsproxies within
+> the same 'resource container' (see previous email)
+
+Isn't that made simple because of the fact that we have pointers to
+namespace objects (and not actual objects themselves) in nsproxy?
+
+I mean, all that is required to manage multiple nsproxy's
+is to have the pointer to the same resource object in all of them.
+
+In system call terms, if someone does a unshare of uts namespace, he
+will get into a new nsproxy object sure (which has a pointer to the new
+uts namespace) but the new nsproxy object will still be pointing to the
+old resource controlling objects.
+
+> > When we support task movement across resource classes, we need to find a
+> > nsproxy which has the right combination of resource classes that the
+> > task's nsproxy can be hooked to.
+> 
+> no, not necessarily, we can simply create a new one
+> and give it the proper resource or whatever-spaces
+
+That would be the simplest, agreeably. But not optimal in terms of
+storage?
+
+Pls note that task-movement can be not-so-infrequent (in other words,
+frequent) in context of non-container workload management.
+
+> why is the filesystem approach so favored for this
+> kind of manipulations?
+> 
+> IMHO it is one of the worst interfaces I can imagine
+> (to move tasks between spaces and/or assign resources)
+> but yes, I'm aware that filesystems are 'in' nowadays
+
+Ease of use maybe. Scripts can be more readily used with a fs-based
+interface.
+
+-- 
+Regards,
+vatsa
