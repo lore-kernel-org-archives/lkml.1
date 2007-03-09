@@ -1,132 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993146AbXCIVTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993144AbXCIVTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993146AbXCIVTb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993145AbXCIVTb
+	id S2993144AbXCIVTj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993145AbXCIVTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:19:31 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2214 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993144AbXCIVTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:19:30 -0500
-Date: Fri, 9 Mar 2007 21:19:10 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Johnson <ajohnson@intrinsyc.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Software Suspend: Fix suspend when console is in VT_AUTO/KD_GRAPHICS mode
-Message-ID: <20070309211910.GD6374@ucw.cz>
-References: <1173394485.28589.17.camel@localhost.localdomain> <20070309090805.GA5822@atrey.karlin.mff.cuni.cz> <20070309153456.GA28664@srcf.ucam.org> <1173466942.29923.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Mar 2007 16:19:39 -0500
+Received: from mail33.syd.optusnet.com.au ([211.29.132.104]:42422 "EHLO
+	mail33.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2993144AbXCIVTi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 16:19:38 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+Date: Sat, 10 Mar 2007 08:19:18 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+References: <20070309053931.GA10459@waste.org> <20070309204623.GE10394@waste.org> <200703100807.43582.kernel@kolivas.org>
+In-Reply-To: <200703100807.43582.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1173466942.29923.6.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200703100819.18354.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Saturday 10 March 2007 08:07, Con Kolivas wrote:
+> On Saturday 10 March 2007 07:46, Matt Mackall wrote:
+> > My suspicion is the problem lies in giving too much quanta to
+> > newly-started processes.
+>
+> Ah that's some nice detective work there. Mainline does some rather complex
+> accounting on sched_fork including (possibly) a whole timer tick which rsdl
+> does not do. make forks off continuously so what you say may well be
+> correct. I'll see if I can try to revert to the mainline behaviour in
+> sched_fork (which was obviously there for a reason).
 
-> > > So... if current console is graphical, we leave X accessing the
-> > > console... That's bad, because video state is not going to be
-> > > restored...?
-> > 
-> > A graphical console is not necessarily X. Is there any requirement for 
-> > there to be a single VT that isn't in text mode? The vt switching is 
-> > a hack, we shouldn't make life difficult for people who have their own 
-> > userspace code that's entirely capable of restoring video state on its 
-> > own.
-> 
-> I realised that the previous patch would disallow a console switch while
-> running X.  Attached is an updated patch with this scenario fixed.
-> 
-> Another approach might be to fail in vt_waitactive() if a console switch
-> is not going to occur.
-> 
-> -- Andrew
-> 
+Wow! Thanks Matt. You've found a real bug too. This seems to fix the qemu
+ misbehaviour and bitmap errors so far too! Now can you please try this to see
+ if it fixes your problem?
 
->  
-> -void set_console(int nr)
-> +extern char vt_dont_switch;
-> +
+---
+ kernel/sched.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-What does this variable do and why do we want to use it here?
-
-> +int set_console(int nr)
->  {
-> +	struct vc_data *vc = vc_cons[fg_console].d;
-> +
-> +	if(!vc_cons_allocated(nr) || vt_dont_switch || 
-
-'if ('
-
-> +		(vc->vt_mode.mode != VT_PROCESS && vc->vc_mode == KD_GRAPHICS)) {
-> +
-> +		return -EINVAL;
-> +	}
-> +
-
-I assume you want ...mode == VT_AUTO here?
-
-And big comment explaining why we want this behaviour?
-
-And another big comment explaining why this will not break existing
-set_console() users?
-
->  	want_console = nr;
->  	schedule_console_callback();
-> +
-> +	return 0;
->  }
->  
->  struct tty_driver *console_driver;
-> diff -rup linux-2.6.20.1/drivers/char/vt_ioctl.c
-> linux/drivers/char/vt_ioctl.c
-> --- linux-2.6.20.1/drivers/char/vt_ioctl.c	2007-02-19 22:34:32.000000000
-> -0800
-> +++ linux/drivers/char/vt_ioctl.c	2007-03-08 14:15:41.000000000 -0800
-> @@ -34,7 +34,7 @@
->  #include <linux/kbd_diacr.h>
->  #include <linux/selection.h>
->  
-> -static char vt_dont_switch;
-> +char vt_dont_switch;
->  extern struct tty_driver *console_driver;
->  
->  #define VT_IS_IN_USE(i)	(console_driver->ttys[i] &&
-> console_driver->ttys[i]->count)
-> diff -rup linux-2.6.20.1/include/linux/kbd_kern.h
-> linux/include/linux/kbd_kern.h
-> --- linux-2.6.20.1/include/linux/kbd_kern.h	2007-02-19
-> 22:34:32.000000000 -0800
-> +++ linux/include/linux/kbd_kern.h	2007-03-08 14:15:41.000000000 -0800
-> @@ -75,7 +75,7 @@ extern int do_poke_blanked_console;
->  
->  extern void (*kbd_ledfunc)(unsigned int led);
->  
-> -extern void set_console(int nr);
-> +extern int set_console(int nr);
->  extern void schedule_console_callback(void);
->  
->  static inline void set_leds(void)
-> diff -rup linux-2.6.20.1/kernel/power/console.c
-> linux/kernel/power/console.c
-> --- linux-2.6.20.1/kernel/power/console.c	2007-02-19 22:34:32.000000000
-> -0800
-> +++ linux/kernel/power/console.c	2007-03-08 14:15:41.000000000 -0800
-> @@ -27,7 +27,11 @@ int pm_prepare_console(void)
->  		return 1;
->  	}
->  
-> -	set_console(SUSPEND_CONSOLE);
-> +	if (set_console(SUSPEND_CONSOLE)) {
-> +		/* Unable to change to the new console */
-
-That's not what the comment should say.
-
-It should explain why it is okay to proceed when we can't change to
-text console.
+Index: linux-2.6.21-rc3-mm1/kernel/sched.c
+===================================================================
+--- linux-2.6.21-rc3-mm1.orig/kernel/sched.c	2007-03-10 08:08:11.000000000 +1100
++++ linux-2.6.21-rc3-mm1/kernel/sched.c	2007-03-10 08:13:57.000000000 +1100
+@@ -1560,7 +1560,7 @@ int fastcall wake_up_state(struct task_s
+ 	return try_to_wake_up(p, state, 0);
+ }
+ 
+-static void task_expired_entitlement(struct rq *rq, struct task_struct *p);
++static void task_running_tick(struct rq *rq, struct task_struct *p);
+ /*
+  * Perform scheduler related setup for a newly forked process p.
+  * p is forked by current.
+@@ -1621,10 +1621,8 @@ void fastcall sched_fork(struct task_str
+ 		 * left from its timeslice. Taking the runqueue lock is not
+ 		 * a problem.
+ 		 */
+-		struct rq *rq = __task_rq_lock(current);
+-
+-		task_expired_entitlement(rq, current);
+-		__task_rq_unlock(rq);
++		current->time_slice = 1;
++		task_running_tick(cpu_rq(cpu), current);
+ 	}
+ 	local_irq_enable();
+ out:
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-ck
