@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767449AbXCISKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767451AbXCISMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767449AbXCISKP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 13:10:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767451AbXCISKP
+	id S1767451AbXCISMG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 13:12:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767450AbXCISMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 13:10:15 -0500
-Received: from mtaout5.012.net.il ([84.95.2.13]:19979 "EHLO mtaout5.012.net.il"
+	Fri, 9 Mar 2007 13:12:06 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:43000 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767449AbXCISKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 13:10:13 -0500
-Date: Fri, 09 Mar 2007 20:10:03 +0200
-From: Avi Kivity <avi@argo.co.il>
-Subject: Re: [PATCH 4/4 TRY#3] optimize and simplify get_cycles_sync()
-In-reply-to: <20070309151511.GE13481@amd.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: discuss@x86-64.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Message-id: <45F1A2FB.7040206@argo.co.il>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7BIT
-X-Greylist: Sender IP whitelisted,
- not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Fri,
- 09 Mar 2007 20:10:03 +0200 (IST)
-References: <20070309150825.GA13481@amd.com> <20070309151511.GE13481@amd.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S1751722AbXCISMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 13:12:03 -0500
+Date: Fri, 9 Mar 2007 10:11:47 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bill Davidsen <davidsen@tmr.com>
+cc: Ed Tomlinson <edt@aei.ca>, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lee Revell <rlrevell@joe-job.com>,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu
+   scheduler
+In-Reply-To: <45F17514.5070509@tmr.com>
+Message-ID: <Pine.LNX.4.64.0703091005540.10832@woody.linux-foundation.org>
+References: <54348.192.54.193.51.1173087934.squirrel@rousalka.dyndns.org>
+ <75b66ecd0703051020h1f0c1f85r15a5de082a80cec0@mail.gmail.com>
+ <200703051419.25814.gene.heskett@gmail.com> <200703052123.29421.edt@aei.ca>
+ <Pine.LNX.4.64.0703051849410.3998@woody.linux-foundation.org>
+ <45F0DCB7.5020908@tmr.com> <Pine.LNX.4.64.0703082226530.10832@woody.linux-foundation.org>
+ <45F17514.5070509@tmr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> From: Joerg Roedel <joerg.roedel@amd.com>
+
+
+On Fri, 9 Mar 2007, Bill Davidsen wrote:
 >
-> This patch simplifies the get_cycles_sync() function by removing
-> the #ifdefs from it. Further it introduces an optimization for AMD
-> processors. There the RDTSCP instruction is used instead of CPUID;RDTSC
-> which is helpfull if the kernel runs as a KVM guest. Running as a guest
-> makes CPUID very expensive because it causes an intercept of the guest.
->
->   
-> +#define RDTSCP ".byte 0x0f, 0x01, 0xf9"
-> +	alternative_io_two("cpuid\nrdtsc",
-> +			   "rdtsc", X86_FEATURE_SYNC_RDTSC,
-> +			   ".byte 0x0f, 0x01, 0xf9", X86_FEATURE_RDTSCP,
->   
+> But it IS okay for people to make special-case schedulers. Because it's MY
+> machine,
 
-why not use the RDTSCP macro here?
+Sure.
 
+Go wild. It's what open-source is all about.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+I'm not stopping you.
 
+I'm just not merging code that makes the scheduler unreadable, even hard 
+to understand, and slows things down. I'm also not merging code that sets 
+some scheduler policy limits by having specific "pluggable scheduler 
+interfaces".
+
+Different schedulers tend to need different data structures in some *very* 
+core data, like the per-cpu run-queues, in "struct task_struct", in 
+"struct thread_struct" etc etc. Those are some of *the* most low-level 
+structures in the kernel. And those are things that get set up to have as 
+little cache footprint a possible etc.
+
+IO schedulers have basically none of those issues. Once you need to do IO, 
+you'll happibly use a few indirect pointers, it's not going to show up 
+anywhere. But in the scheduler, 10 cycles here and there will be a big 
+deal.
+
+And hey, you can try to prove me wrong. Code talks. So far, nobody has 
+really ever come close.
+
+So go and code it up, and show the end result. So far, nobody who actually 
+*does* CPU schedulers have really wanted to do it, because they all want 
+to muck around with their own private versions of the data structures.
+
+		Linus
