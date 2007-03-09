@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993142AbXCIVIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993143AbXCIVIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993142AbXCIVIK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:08:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993141AbXCIVIJ
+	id S2993143AbXCIVIr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:08:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993144AbXCIVIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:08:09 -0500
-Received: from waste.org ([66.93.16.53]:42046 "EHLO waste.org"
+	Fri, 9 Mar 2007 16:08:47 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49178 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993140AbXCIVIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:08:07 -0500
-Date: Fri, 9 Mar 2007 14:55:37 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Message-ID: <20070309205537.GG10394@waste.org>
-References: <20070309053931.GA10459@waste.org> <200703091939.05535.kernel@kolivas.org> <20070309182744.GC10394@waste.org> <200703100715.39354.kernel@kolivas.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703100715.39354.kernel@kolivas.org>
-User-Agent: Mutt/1.5.9i
+	id S2993143AbXCIVIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 16:08:45 -0500
+Date: Fri, 9 Mar 2007 13:06:47 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
+In-Reply-To: <20070309201257.GA5761@elte.hu>
+Message-ID: <Pine.LNX.4.64.0703091305090.10832@woody.linux-foundation.org>
+References: <20070309180230.GA17988@elte.hu>
+ <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org>
+ <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org>
+ <20070309201257.GA5761@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 10, 2007 at 07:15:38AM +1100, Con Kolivas wrote:
-> How odd. I would have thought that if an interaction was to occur it would 
-> have been without the new feature. Clearly what you describe without NO_HZ is 
-> not the expected behaviour with RSDL. I wonder what went wrong. Are you on 
-> 100HZ on that laptop? While I expect 100HZ should be ok, it might just not 
-> be... My laptop is about the same performance and works fine with 100HZ under 
-> load of all sorts BUT I don't have Beryl (which I would have thought swayed 
-> things in the opposite direction also).
 
-Note I also did a test with metacity and got more or less the same
-results.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+On Fri, 9 Mar 2007, Ingo Molnar wrote:
+>
+>   _new kernel must not break on an older hypervisor_
+
+Total red herring. AGAIN.
+
+The paravirt_ops isn't a 1:1 hypervisor ABI.
+
+If we change paravirt_ops to be higher-level ops (as we should), yes, the 
+paravirt->VMI layer needs to be extended to have the "higher->lower" 
+translation. But at no point did we break the hypervisor.
+
+Anyway, please don't even bother cc'ing or replying to me any more.
+
+		Linus
