@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767300AbXCIOGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767307AbXCIOIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767300AbXCIOGP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 09:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767299AbXCIOGP
+	id S1767307AbXCIOIA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 09:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767305AbXCIOH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 09:06:15 -0500
-Received: from smtp.nokia.com ([131.228.20.173]:45593 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767300AbXCIOGO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 09:06:14 -0500
-Message-ID: <45F169CA.3000106@yandex.ru>
-Date: Fri, 09 Mar 2007 16:06:02 +0200
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Fri, 9 Mar 2007 09:07:59 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:56461 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767299AbXCIOH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 09:07:58 -0500
+Message-ID: <45F16A3C.3020201@garzik.org>
+Date: Fri, 09 Mar 2007 09:07:56 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: the usage of DEBUG_DRIVER seems ambiguous
-References: <Pine.LNX.4.64.0703071941200.14336@CPE00045a9c397f-CM001225dbafb6> <20070308111858.9352f51d.randy.dunlap@oracle.com>
-In-Reply-To: <20070308111858.9352f51d.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 09 Mar 2007 14:06:03.0246 (UTC) FILETIME=[129DE0E0:01C76254]
-X-Nokia-AV: Clean
+To: Tejun Heo <htejun@gmail.com>
+CC: linux-ide@vger.kernel.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] iomap: implement pcim_iounmap_regions()
+References: <20070309104558.GE32687@htj.dyndns.org>
+In-Reply-To: <20070309104558.GE32687@htj.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
->>   it's clearly a configuration variable, but it's also being used by
->> itself in a few drivers/net/ source files.  is that deliberate?
+Tejun Heo wrote:
+> Implement pcim_iounmap_regions() - the opposite of
+> pcim_iomap_regions().
 > 
-> The ones in drivers/net/ are just local driver debug controls.
-> They happen to have the same name as a (likely newer) kconfig symbol.
+> Signed-off-by: Tejun heo <htejun@gmail.com>
+> ---
+> This one is used by libata's new init model and generally useful for
+> driver midlayers.  Please push it through libata-dev#upstream.
 > 
-> Is there a real problem that needs to be fixed?
+> Thanks.
+> 
+>  include/linux/pci.h |    1 +
+>  lib/devres.c        |   26 ++++++++++++++++++++++++++
+>  2 files changed, 27 insertions(+), 0 deletions(-)
 
-Renaming them just for the sake of being less confusing makes sense.
+applied
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+
