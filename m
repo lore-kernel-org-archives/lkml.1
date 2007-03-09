@@ -1,38 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993094AbXCIJtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993097AbXCIJ5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993094AbXCIJtN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 04:49:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993095AbXCIJtN
+	id S2993097AbXCIJ5d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 04:57:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993096AbXCIJ5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 04:49:13 -0500
-Received: from holomorphy.com ([66.93.40.71]:58808 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993094AbXCIJtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 04:49:12 -0500
-Date: Fri, 9 Mar 2007 01:49:04 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Cc: Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Message-ID: <20070309094904.GC2986@holomorphy.com>
-References: <20070309053931.GA10459@waste.org> <200703091728.03978.kernel@kolivas.org> <20070309075358.GA10394@waste.org> <200703091936.47128.kernel@kolivas.org> <87slce945h.fsf@depni.sinp.msu.ru>
+	Fri, 9 Mar 2007 04:57:32 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:43004 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993097AbXCIJ5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 04:57:32 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Fri, 9 Mar 2007 04:53:58 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: any thoughts yet on a "generic" ioctl.h?
+In-Reply-To: <45F0D798.4050602@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0703090450160.30726@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703081556260.9349@CPE00045a9c397f-CM001225dbafb6>
+ <45F0D798.4050602@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87slce945h.fsf@depni.sinp.msu.ru>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 12:07:06PM +0300, Serge Belyshev wrote:
-> If you see sched_yield() when stracing any 3d program, I suggest you
-> to try this bruteforce workaround, which works fine for me,
-> disable sched_yield():
+On Fri, 9 Mar 2007, Stefan Richter wrote:
 
-May I suggest LD_PRELOAD of a library consisting of only a nopped
-sched_yield() function in userspace?
+> Robert P. J. Day wrote:
+> >   i asked about this a while back, but i still haven't heard a
+> > definitive response as to whether it's acceptable.
+>
+> Maybe you get response if you post a complete patch.
 
+that *was* the complete patch -- its purpose was simply to make
+asm-generic/ioctl.h general enough to allow arch-specific ioctl.h
+files to *subsequently* be simplified.  there was no need to do
+*everything* in one step -- each simplification could be submitted as
+a separate arch-specific patch, as many things are.
 
--- wli
+i was more asking about the *philosophy* of that patch, and whether
+there were any obvious objections.
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
