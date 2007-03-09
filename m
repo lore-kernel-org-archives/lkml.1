@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992895AbXCICfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992899AbXCICiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992895AbXCICfh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 21:35:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992897AbXCICfh
+	id S2992899AbXCICiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 21:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992897AbXCICiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 21:35:37 -0500
-Received: from mail.tmr.com ([64.65.253.246]:33273 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992895AbXCICff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 21:35:35 -0500
-Message-ID: <45F0C87A.9000400@tmr.com>
-Date: Thu, 08 Mar 2007 21:37:46 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Andy Isaacson <adi@hexapodia.org>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Neil Brown <neilb@suse.de>, linux-raid@vger.kernel.org
-Subject: Re: [PATCH] fix read past end of array in md/linear.c
-References: <20070308205204.GA12152@hexapodia.org>
-In-Reply-To: <20070308205204.GA12152@hexapodia.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 8 Mar 2007 21:38:18 -0500
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:41279 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992894AbXCICiR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 21:38:17 -0500
+Date: Thu, 8 Mar 2007 21:38:14 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, mbligh@google.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, sparclinux@vger.kernel.org
+Subject: [PATCH] Fix atomicity of TIF update in flush_thread() for sparc64
+Message-ID: <20070309023814.GA9462@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 21:35:52 up 34 days, 16:43,  6 users,  load average: 1.31, 1.15, 1.21
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Isaacson wrote:
-> When iterating through an array, one must be careful to test one's index
-> variable rather than another similarly-named variable.  
->
-> The loop will read off the end of conf->disks[] in the following
-> (pathological) case:
->
-> % dd bs=1 seek=840716287 if=/dev/zero of=d1 count=1
-> % for i in 2 3 4; do dd if=/dev/zero of=d$i bs=1k count=$(($i+150)); done
-> % ./vmlinux ubd0=root ubd1=d1 ubd2=d2 ubd3=d3 ubd4=d4
-> # mdadm -C /dev/md0 --level=linear --raid-devices=4 /dev/ubd[1234]
->
-> adding some printks, I saw this:
-> [42949374.960000] hash_spacing = 821120
-> [42949374.960000] cnt          = 4
-> [42949374.960000] min_spacing  = 801
-> [42949374.960000] j=0 size=820928 sz=820928
-> [42949374.960000] i=0 sz=820928 hash_spacing=820928
-> [42949374.960000] j=1 size=64 sz=64
-> [42949374.960000] j=2 size=64 sz=128
-> [42949374.960000] j=3 size=64 sz=192
-> [42949374.960000] j=4 size=1515870810 sz=1515871002
->
-> Index: linus/drivers/md/linear.c
-> ===================================================================
-> --- linus.orig/drivers/md/linear.c	2007-03-02 11:35:55.000000000 -0800
-> +++ linus/drivers/md/linear.c	2007-03-07 13:10:30.000000000 -0800
-> @@ -188,7 +188,7 @@
->  	for (i=0; i < cnt-1 ; i++) {
->  		sector_t sz = 0;
->  		int j;
-> -		for (j=i; i<cnt-1 && sz < min_spacing ; j++)
-> +		for (j=i; j<cnt-1 && sz < min_spacing ; j++)
->  			sz += conf->disks[j].size;
->  		if (sz >= min_spacing && sz < conf->hash_spacing)
->  			conf->hash_spacing = sz;
+Fix atomicity of TIF update in flush_thread() for x86_64
 
-After looking at that code, I have to wonder how this ever worked, or if 
-in fact anyone ever took this path. I assume that the value of sz caused 
-the loop exit in all cases, since this has been in the code at least 
-since 2.6.15, oldest thing I have handy.
+Race :
 
+parent process executing :
+sys_ptrace()
+ (lock_kernel())
+ (ptrace_get_task_struct(pid))
+ arch_ptrace()
+   ptrace_detach()
+     ptrace_disable(child);
+       clear_singlestep(child);
+         clear_tsk_thread_flag(child, TIF_SINGLESTEP);
+         (which clears the TIF_SINGLESTEP flag atomically from a different
+	  process)
+ (put_task_struct(child))
+ (unlock_kernel())
+
+And at the same time, in the child process :
+sys_execve()
+ do_execve()
+   search_binary_handler()
+     load_elf_binary()
+       flush_old_exec()
+         flush_thread()
+           doing a non-atomic thread flag update 
+
+It applies on 2.6.20.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+
+--- a/arch/sparc64/kernel/process.c
++++ b/arch/sparc64/kernel/process.c
+@@ -413,8 +413,13 @@ void flush_thread(void)
+ 	struct thread_info *t = current_thread_info();
+ 	struct mm_struct *mm;
+ 
+-	if (t->flags & _TIF_ABI_PENDING)
+-		t->flags ^= (_TIF_ABI_PENDING | _TIF_32BIT);
++	if (test_tsk_thread_flag(tsk, TIF_ABI_PENDING)) {
++		clear_tsk_thread_flag(tsk, TIF_ABI_PENDING);
++		if (test_tsk_thread_flag(tsk, TIF_32BIT))
++			clear_tsk_thread_flag(tsk, TIF_32BIT);
++		else
++			set_tsk_thread_flag(tsk, TIF_32BIT);
++	}
+ 
+ 	mm = t->task->mm;
+ 	if (mm)
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
