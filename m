@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992996AbXCIGV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992995AbXCIGWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992996AbXCIGV7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 01:21:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992995AbXCIGV7
+	id S2992995AbXCIGWy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 01:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992999AbXCIGWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 01:21:59 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38205
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2992993AbXCIGV6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 01:21:58 -0500
-Date: Thu, 08 Mar 2007 22:21:54 -0800 (PST)
-Message-Id: <20070308.222154.74746753.davem@davemloft.net>
-To: peter.p.waskiewicz.jr@intel.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       christopher.leech@intel.com
-Subject: Re: [PATCH 0/2] NET: Multiple queue network device support REPOST
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1173420779298-git-send-email-peter.p.waskiewicz.jr@intel.com>
-References: <1173420779298-git-send-email-peter.p.waskiewicz.jr@intel.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 9 Mar 2007 01:22:54 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:35886 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992995AbXCIGWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 01:22:53 -0500
+Date: Fri, 9 Mar 2007 17:22:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
+Message-Id: <20070309172243.2fda15a6.sfr@canb.auug.org.au>
+In-Reply-To: <1173419792.32234.131.camel@localhost.localdomain>
+References: <1173419792.32234.131.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__9_Mar_2007_17_22_43_+1100_7HbM69BQxdP6vnVZ"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Fri__9_Mar_2007_17_22_43_+1100_7HbM69BQxdP6vnVZ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-You didn't address my correction the other day wherein I clarified
-for you that my idea was not to store the queue mapping in
-skb->priority but rather to shrink skb->priority to a u16 and
-add a new u16 skb->queue_mapping or whatever field to store the
-necessary information.
+On Fri, 09 Mar 2007 16:56:32 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
+>
+> __builtin_types_compatible_p() has been around since gcc 2.95, and we
+> don't use it anywhere.  This patch quietly fixes that.
 
-You're just posting a set of patches using the same approach again
-plus some bug fixes, so there is essentially nothing new for anyone to
-review.
+After staring at this for about 2 minutes, how about a commit message like:
 
-Why ask for feedback if you fail to take any of it into consideration?
-:-/
+Make ARRAY_SIZE complain strangely if passed a pointer instead of an
+array.
+
+:-)
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__9_Mar_2007_17_22_43_+1100_7HbM69BQxdP6vnVZ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF8P08FdBgD/zoJvwRAuA/AKCCurpEpkWnmc3UKb+9TK2r5rkDFgCePOy/
+gX5eLGv6lGFsonf5JKTGRC4=
+=Yfh/
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__9_Mar_2007_17_22_43_+1100_7HbM69BQxdP6vnVZ--
