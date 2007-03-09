@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992874AbXCIBoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992879AbXCICCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992874AbXCIBoo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 20:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992878AbXCIBoo
+	id S2992879AbXCICCL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 21:02:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992863AbXCICCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 20:44:44 -0500
-Received: from tapsys.com ([72.36.178.242]:39254 "EHLO tapsys.com"
+	Thu, 8 Mar 2007 21:02:11 -0500
+Received: from tapsys.com ([72.36.178.242]:39271 "EHLO tapsys.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992874AbXCIBok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 20:44:40 -0500
-Message-ID: <45F0BC02.3000905@madrabbit.org>
-Date: Thu, 08 Mar 2007 20:44:34 -0500
+	id S2992879AbXCICCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 21:02:06 -0500
+Message-ID: <45F0C018.2020409@madrabbit.org>
+Date: Thu, 08 Mar 2007 21:02:00 -0500
 From: Ray Lee <ray-lk@madrabbit.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
 To: Adrian Bunk <bunk@stusta.de>, LKML <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: 2.6.21-rc[123] regression with NOAPIC
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Odd suspend regression in 2.6.21-rc[123]
 Content-Type: multipart/mixed;
- boundary="------------020902010205030205010604"
+ boundary="------------070303070806090508090900"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------020902010205030205010604
+--------------070303070806090508090900
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
 Hey there,
 
-For me, this is a minor regression as I no longer need to boot with
-NOAPIC, it just happened to still be the default when I tried 2.6.21-rc3.
+In 2.6.21-rc1,2,3, my laptop will fully suspend to ram, but then
+*immediately* resumes back from suspension. (It resumes just fine, as well.)
 
-During boot, the computer wedges, hard. It's unresponsive to SysRq
-combos, or ctrl-alt-del, but the fan kicks in pretty quickly, so I'm
-guessing the CPU is still going wild.
+Nothing out of the ordinary is logged, and this happens even when
+booting into init=/bin/sh with minimal modules loaded and executing
+s2ram from that minimal environment.
 
-The boot locks right before, or during, or immediately after the ** line
-below:
+I'm going to ponder the 2.6.20 to 2.6.21-rc1 changelog, but I'm hoping
+someone with a clue can offer a suggestion before I end up bisecting the
+whole thing. (Wouldn't be so bad, except I'm given to understand that
+there are multiple places in those changes where nothing quite works
+with respect to suspend.)
 
-   [   15.020037] ACPI: CPU0 (power states: C1[C1] C3[C3])
-** [   15.020221] ACPI: Processor [C000] (supports 8 throttling states)
-   [   15.036059] ACPI: Thermal Zone [TZ1] (66 C)
-   [   15.041893] ACPI: Thermal Zone [TZ2] (53 C)
-   [   15.051285] ACPI: Thermal Zone [TZ3] (33 C)
-   [   15.054922] ACPI: Thermal Zone [TZ4] (34 C)
-
-This is an x86-64 system, HP/Compaq nx6125, ATI chipset (sigh). Booting
-with NOAPIC worked in 2.6.20, fails in 2.6.21-rc1 (and 2, and 3). I
-haven't started bisecting yet, as I'm going to start a painful suspend
-to RAM regression hunt first.
-
-Full dmesg from a successful 2.6.21-rc3 boot attached.
+HP/Compaq NX6125 system, AMD64, dmesg attached.
 
 Ray
 
---------------020902010205030205010604
+
+--------------070303070806090508090900
 Content-Type: text/plain;
  name="2.6.20-rc3.dmesg"
 Content-Transfer-Encoding: 7bit
@@ -1815,4 +1807,4 @@ Content-Disposition: inline;
 [  327.798187] APIC error on CPU0: 40(40)
 [  369.571839] SoftMAC: Scanning finished: scanned 14 channels starting with channel 1
 
---------------020902010205030205010604--
+--------------070303070806090508090900--
