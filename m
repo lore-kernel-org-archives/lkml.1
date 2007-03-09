@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767548AbXCIVZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767545AbXCIV2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767548AbXCIVZn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767545AbXCIVZn
+	id S1767545AbXCIV2J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:28:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767547AbXCIV2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:25:43 -0500
-Received: from mx2.suse.de ([195.135.220.15]:48914 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767542AbXCIVZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:25:42 -0500
-Date: Fri, 9 Mar 2007 13:24:01 -0800
-From: Greg KH <greg@kroah.com>
-To: John Stoffel <john@stoffel.org>
-Cc: linux-usb-devel@lists.sourceforge.net,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc3 - oops on remove of USB dongle
-Message-ID: <20070309212401.GB8629@kroah.com>
-References: <17905.32741.244785.543626@smtp.charter.net>
-MIME-Version: 1.0
+	Fri, 9 Mar 2007 16:28:09 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:34924 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767545AbXCIV2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 16:28:08 -0500
+Date: Fri, 9 Mar 2007 13:27:14 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
+Message-ID: <20070309212714.GU10574@sequoia.sous-sol.org>
+References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org> <20070309210430.GA14905@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <17905.32741.244785.543626@smtp.charter.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070309210430.GA14905@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 10:40:21AM -0500, John Stoffel wrote:
-> 
-> Hi all,
-> 
-> I've just compiled and installed 2.6.21-rc3 on my Dual CPU Dell
-> Precision 610MT system.  Dual 550mhz Xeon, 768mb of RAM.  Mix of SCSI,
-> ATA drives.  I'm using the new ATA_ drivers for my PATA disks.  
-> 
-> After booting, I pulled my seldom used USB->serial device from the
-> system to toss in my bag to bring to work.  It's a Belkin F5U109
-> dongle.  I noticed the following oops:
+* Ingo Molnar (mingo@elte.hu) wrote:
+> ( if there is no backwards compatibility promise then i have zero
+>   complaints: then paravirt_ops + the hypercall just becomes another API
+>   internal to Linux that we can improve at will. But that is not
+>   realistic: if we provide CONFIG_VMI today, people will expect to have
+>   CONFIG_VMI in the future too. )
 
-Ugh, I have a fix for this in my tree, I'll send it to Linus in a few
-hours.
-
-sorry for taking so long with this...
-
-greg k-h
+This was the whole reason we didn't adopt VMI directly.  Instead,
+preferring an kernel internal API, pv_ops, that can adopt naturally
+as the kernel changes, and it is the pv_ops client code's (or backend
+as it is also referred to) responsibility to do whatever is necessary
+to map back to the hypervisor's ABI.  The goal was explicitly to keep
+things internal fluid as usual.  As I said before, no matter how you
+slice it there's glue code somewhere to deal with compatibilities.
+And it's always been the virtualization platform's responsibility to
+deal with the changes.
