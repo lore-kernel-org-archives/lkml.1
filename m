@@ -1,130 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767606AbXCIXBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767611AbXCIXBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767606AbXCIXBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 18:01:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767610AbXCIXBY
+	id S1767611AbXCIXBb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 18:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767610AbXCIXBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 18:01:24 -0500
-Received: from postel.suug.ch ([194.88.212.233]:35375 "EHLO postel.suug.ch"
+	Fri, 9 Mar 2007 18:01:30 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:34054 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767606AbXCIXBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 18:01:23 -0500
-Date: Sat, 10 Mar 2007 00:01:43 +0100
-From: Thomas Graf <tgraf@suug.ch>
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       David Miller <davem@davemloft.net>, "Garzik, Jeff" <jgarzik@pobox.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kok, Auke" <auke@foo-projects.org>,
-       "Ronciak, John" <john.ronciak@intel.com>
-Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
-Message-ID: <20070309230143.GI521@postel.suug.ch>
-References: <20070309134037.GH521@postel.suug.ch> <D5C1322C3E673F459512FB59E0DDC329026E9C45@orsmsx414.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329026E9C45@orsmsx414.amr.corp.intel.com>
+	id S1767611AbXCIXB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 18:01:28 -0500
+Date: Fri, 9 Mar 2007 23:55:56 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Paulo Marques <pmarques@grupopie.com>, dmitry.torokhov@gmail.com,
+       Christoph Hellwig <hch@infradead.org>,
+       Deepak Saxena <dsaxena@plexity.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix building kernel under Solaris 11_snv
+In-Reply-To: <20070309222332.GA19615@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.61.0703092344250.8799@yvahk01.tjqt.qr>
+References: <20070306180940.GA3240@plexity.net> <20070307094229.GG14863@infradead.org>
+ <Pine.LNX.4.61.0703072342310.2448@yvahk01.tjqt.qr> <20070308083543.GA5213@infradead.org>
+ <Pine.LNX.4.61.0703082142240.521@yvahk01.tjqt.qr> <20070308212512.GA10584@uranus.ravnborg.org>
+ <Pine.LNX.4.61.0703082242020.521@yvahk01.tjqt.qr> <20070309190054.GA18641@uranus.ravnborg.org>
+ <Pine.LNX.4.61.0703092019250.8799@yvahk01.tjqt.qr> <20070309222332.GA19615@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Waskiewicz Jr, Peter P <peter.p.waskiewicz.jr@intel.com> 2007-03-09 11:25
-> > > +			}
-> > > +		} else {
-> > > +			/* We're not a multi-queue device. */
-> > > +			spin_lock(&dev->queue_lock);
-> > > +			q = dev->qdisc;
-> > > +			if (q->enqueue) {
-> > > +				rc = q->enqueue(skb, q);
-> > > +				qdisc_run(dev);
-> > > +				spin_unlock(&dev->queue_lock);
-> > > +				rc = rc == NET_XMIT_BYPASS
-> > > +				           ? NET_XMIT_SUCCESS : rc;
-> > > +				goto out;
-> > > +			}
-> > > +			spin_unlock(&dev->queue_lock);
-> > 
-> > Please don't duplicate already existing code.
-> 
-> I don't want to mix multiqueue and non-multiqueue code in the transmit
-> path.  This was an attempt to allow MQ and non-MQ devices to coexist in
-> a machine having separate code paths.  Are you suggesting to combine
-> them?  That would get very messy trying to determine what type of lock
-> to grab (subqueue lock or dev->queue_lock), not to mention grabbing the
-> dev->queue_lock would block multiqueue devices in that same codepath.
 
-The piece of code I quoted above is the branch executed if multi queue
-is not enabled. The code you added is 100% identical to the already
-existing enqueue logic. Just execute the existing branch if multi queue
-is not enabled.
+On Mar 9 2007 23:23, Sam Ravnborg wrote:
 
-> This is another attempt to keep the two codepaths separate.  The only
-> way I see of combining them is to check netif_is_multiqueue() everytime
-> I need to grab a lock, which I think would be excessive.
+>Date: Fri, 9 Mar 2007 23:23:32 +0100
+>From: Sam Ravnborg <sam@ravnborg.org>
+>To: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+>    Paulo Marques <pmarques@grupopie.com>
+>Cc: dmitry.torokhov@gmail.com, Christoph Hellwig <hch@infradead.org>,
+>    Deepak Saxena <dsaxena@plexity.net>,
+>    Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+>Subject: Re: [PATCH] Fix building kernel under Solaris 11_snv
+>
 
-The code added is 100% identical to the existing code, just be a little
-smarter on how you do the ifdefs.
+Reference: http://lkml.org/lkml/2007/3/8/368
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-> > >  	}
-> > >  
-> > >  	return NULL;
-> > > @@ -141,18 +174,53 @@ prio_dequeue(struct Qdisc* sch)
-> > >  	struct sk_buff *skb;
-> > >  	struct prio_sched_data *q = qdisc_priv(sch);
-> > >  	int prio;
-> > > +#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-> > > +	int queue;
-> > > +#endif
-> > >  	struct Qdisc *qdisc;
-> > >  
-> > > +	/*
-> > > +	 * If we're multiqueue, the basic approach is try the 
-> > lock on each
-> > > +	 * queue.  If it's locked, either we're already 
-> > dequeuing, or enqueue
-> > > +	 * is doing something.  Go to the next band if we're 
-> > locked.  Once we
-> > > +	 * have a packet, unlock the queue.  NOTE: the 
-> > underlying qdisc CANNOT
-> > > +	 * be a PRIO qdisc, otherwise we will deadlock.  FIXME
-> > > +	 */
-> > >  	for (prio = 0; prio < q->bands; prio++) {
-> > > +#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-> > > +		if (netif_is_multiqueue(sch->dev)) {
-> > > +			queue = q->band2queue[prio];
-> > > +			if 
-> > (spin_trylock(&sch->dev->egress_subqueue[queue].queue_lock)) {
-> > > +				qdisc = q->queues[prio];
-> > > +				skb = qdisc->dequeue(qdisc);
-> > > +				if (skb) {
-> > > +					sch->q.qlen--;
-> > > +					skb->priority = prio;
-> > > +					
-> > spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
-> > > +					return skb;
-> > > +				}
-> > > +				
-> > spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
-> > > +			}
-> > 
-> > Your modified qdisc_restart() expects the queue_lock to be 
-> > locked, how can this work?
-> 
-> No, it doesn't expect the lock to be held.  Because of the multiple
-> queues, enqueueing and dequeueing are now asynchronous, since I can
-> enqueue to queue 0 while dequeuing from queue 1.  dev->queue_lock isn't
-> held, so this can happen.  Therefore the spin_trylock() is used in this
-> dequeue because I don't want to wait for someone to finish with that
-> queue in question (e.g. enqueue working), since that will block all
-> other bands/queues after the band in question.  So if the lock isn't
-> available to grab, we move to the next band.  If I were to wait for the
-> lock, I'd serialize the enqueue/dequeue completely, and block other
-> traffic flows in other queues waiting for the lock.
+Happy cherrypicking.
+More comments below.
 
-The first thing you do in qdisc_restart() after dequeue()ing is unlock
-the sub queue lock. You explicitely unlock it before calling qdisc_run()
-so I assume dequeue() is expected to keep it locked. Something doesn't
-add up.
+>> >> Index: linux-2.6.21-rc3/scripts/kallsyms.c
+>> >> ===================================================================
+>> >> --- linux-2.6.21-rc3.orig/scripts/kallsyms.c	2007-03-07 05:41:20.000000000 +0100
+>> >> +++ linux-2.6.21-rc3/scripts/kallsyms.c	2007-03-07 23:46:46.249005000 +0100
+>> >> @@ -378,6 +378,40 @@
+>> >>  	table_cnt = pos;
+>> >>  }
+>> >>  
+>> >> +#ifdef __sun__
+>> >> +/* Return the first occurrence of NEEDLE in HAYSTACK.  */
+>> >> +void *
+>> >> +memmem (haystack, haystack_len, needle, needle_len)
+>> >> +     const void *haystack;
+>> >> +      return (void *) begin;
+>> >> +
+>> >> +  return NULL;
+>> >> +}
+>> >> +#endif
+>> >> +
+>> >>  /* replace a given token in all the valid symbols. Use the sampled symbols
+>> >>   * to update the counts */
+>> >>  static void compress_symbols(unsigned char *str, int idx)
+>> 
+>> This one, I am just waiting for someone to object to the extra #if-#endif.
+>
+>I was planning to ask Paulo if strstr could not be used - Paulo?
 
-BTW, which lock serializes your write access to qdisc->q.qlen? It used
-to be dev->queue_lock but that is apparently not true for multi queue.
+I am not sure, but I would tend to say "no".
+
+kallsyms.c:
+	p1 = table[i].sym;                                              
+                                                                                
+	/* find the token on the symbol */                              
+	p2 = memmem(p1, len, str, 2);                                   
+	if (!p2) continue;                                              
+
+My first impression would be that 'p1' is a multi-nul-terminated string
+array ("foo\0bar\0next\0symbol\0..."), much like the entire .strtab
+section (I have not actually bothered to check, so it is a raw guess), and
+I do not think strstr would replace memmem here if that was the case.
+
+>> >> Index: linux-2.6.21-rc3/scripts/kconfig/Makefile
+>> >> ===================================================================
+>> >> --- linux-2.6.21-rc3.orig/scripts/kconfig/Makefile	2007-03-07 05:41:20.000000000 +0100
+>> >> +++ linux-2.6.21-rc3/scripts/kconfig/Makefile	2007-03-07 23:21:19.730679000 +0100
+>> >> @@ -88,7 +88,7 @@
+>> >>  HOST_EXTRACFLAGS = $(shell $(CONFIG_SHELL) $(check-lxdialog) -ccflags)
+>> >>  HOST_LOADLIBES   = $(shell $(CONFIG_SHELL) $(check-lxdialog) -ldflags $(HOSTCC))
+>> >>  
+>> >> -HOST_EXTRACFLAGS += -DLOCALE
+>> >> +HOST_EXTRACFLAGS += -DLOCALE -std=c99 -D__EXTENSIONS__
+>> >>  
+>> >>  PHONY += $(obj)/dochecklxdialog
+>> >>  $(obj)/dochecklxdialog:
+>> 
+>> The error message for this one was: <stdbool.h> only valid in C99 mode.
+>> Linux GCC 4.1.2 does not print that, Solaris GCC 3.4.3 does. I do not
+>> know offhand who is right.
+>
+>The -std= looks safe. The __EXTENSIONS__ part seems safe and needed after a
+>bit googling.
+
+Humm humm. Linux's /usr/include does not have any (glibc) file with the
+string __EXTENSIONS__ in it. Though, the linux manpage for fileno() does
+not mention fileno() conforming to anything. Under Linux, fileno() is
+wrapped inside __USE_POSIX, and the comments in Solaris's headers also
+indicate it is something posixy.
+
+Perhaps have something like
+
+#ifdef __sun__
+#	define __EXTENSIONS__ 1
+#endif
+
+>> >> Index: linux-2.6.21-rc3/scripts/mod/file2alias.c
+>> >> ===================================================================
+>> >> --- linux-2.6.21-rc3.orig/scripts/mod/file2alias.c	2007-03-07 05:41:20.000000000 +0100
+>> >> +++ linux-2.6.21-rc3/scripts/mod/file2alias.c	2007-03-07 23:41:23.772026000 +0100
+>> >> @@ -32,6 +32,8 @@
+>> >>  typedef uint32_t	__u32;
+>> >>  typedef uint16_t	__u16;
+>> >>  typedef unsigned char	__u8;
+>> >> +typedef int32_t		__s32;
+>> >> +typedef int16_t		__s16;
+>> >>  
+>> >>  /* Big exception to the "don't include kernel headers into userspace, which
+>> >>   * even potentially has different endianness and word sizes, since
+>> 
+>> HAX.
+>
+>This goes away when we do not include input.h I think.
+
+Exactly.
+
+>> >> Index: linux-2.6.21-rc3/scripts/mod/modpost.h
+>> >> ===================================================================
+>> >> --- linux-2.6.21-rc3.orig/scripts/mod/modpost.h	2007-03-07 05:41:20.000000000 +0100
+>> >> +++ linux-2.6.21-rc3/scripts/mod/modpost.h	2007-03-07 23:37:01.315290000 +0100
+>> >> @@ -41,6 +41,11 @@
+>> >>  #define ELF_R_TYPE  ELF64_R_TYPE
+>> >>  #endif
+>> >>  
+>> >> +#ifdef __sun__
+>> >> +typedef uint16_t Elf32_Section;
+>> >> +typedef uint16_t Elf64_Section;
+>> >> +#endif
+>> >> +
+>> >>  /* The 64-bit MIPS ELF ABI uses an unusual reloc format. */
+>> >>  typedef struct
+>> >>  {
+>> 
+>> More HAX because Sol does not have them >:-(
+>
+>Yup - but needed.
+
+How much do we want to support Solaris anyway? It's like trying to make
+ICC a thoroughly supported compiler. Hey, do we want to support GCC
+compilation under BSD too? What about CYGWIN - there have been efforts
+before! :p  Seriously, what build platforms do we want to support in
+the near future?
+
+
+
+Thanks,
+Jan
+-- 
