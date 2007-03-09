@@ -1,164 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbXCIWBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993150AbXCIWGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752506AbXCIWBa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 17:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933405AbXCIWBa
+	id S2993150AbXCIWGF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 17:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993149AbXCIWGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 17:01:30 -0500
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:38213 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbXCIWB1 (ORCPT
+	Fri, 9 Mar 2007 17:06:05 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55148 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933410AbXCIWGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 17:01:27 -0500
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070309125242.GB15325@wotan.suse.de>
-References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070208105458.26443.41479.sendpatchset@linux.site> <20070309103913.GA4503@infradead.org> <20070309125242.GB15325@wotan.suse.de>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4079137B-C8FE-402B-9B75-478EC6A3A5A4@cam.ac.uk>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	Fri, 9 Mar 2007 17:06:04 -0500
+Date: Fri, 9 Mar 2007 14:06:03 -0800
+From: Paul Jackson <pj@sgi.com>
+To: Herbert Poetzl <herbert@13thfloor.at>
+Cc: vatsa@in.ibm.com, ebiederm@xmission.com, menage@google.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, winget@google.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka
+ containers on top of nsproxy!
+Message-Id: <20070309140603.b2b162c6.pj@sgi.com>
+In-Reply-To: <20070309215218.GA17592@MAIL.13thfloor.at>
+References: <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
+	<m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
+	<6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
+	<45EF5A62.8000103@vilain.net>
+	<6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com>
+	<45EF5E71.7090101@vilain.net>
+	<6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
+	<m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
+	<20070309005357.GC4506@MAIL.13thfloor.at>
+	<20070309181908.GC21661@in.ibm.com>
+	<20070309215218.GA17592@MAIL.13thfloor.at>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [patch 2/3] fs: introduce perform_write aop
-Date: Fri, 9 Mar 2007 22:01:11 +0000
-To: Nick Piggin <npiggin@suse.de>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> the emphasis here is on 'from inside' which basically
+> boils down to the following:
+> 
+>  if you create a 'resource container' to limit the
+>  usage of a set of resources for the processes
+>  belonging to this container, it would be kind of
+>  defeating the purpose, if you'd allow the processes
+>  to manipulate their limits, no?
 
-On 9 Mar 2007, at 12:52, Nick Piggin wrote:
+Wrong - this is not the only way.
 
-> Hi Christoph,
->
-> On Fri, Mar 09, 2007 at 10:39:13AM +0000, Christoph Hellwig wrote:
->> Hi Nick,
->>
->> sorry for my later reply, this has been on my to answer list for  
->> the last
->> month and I only managed to get back to it now.
->
-> No worries, I haven't had much time to work on it since then anyway.
-> Thanks for taking a look.
->
->> On Thu, Feb 08, 2007 at 02:07:36PM +0100, Nick Piggin wrote:
->>> as a single call to copy a given amount of userdata at the given  
->>> offset. This
->>> is more flexible, because the implementation can determine how to  
->>> best handle
->>> errors, or multi-page ranges (eg. it may use a gang lookup), and  
->>> only requires
->>> one call into the fs.
->>
->> I really like this idea, especially for avoiding to call into the  
->> allocator
->> for every block.
+For instance in cpusets, -any- task in the system, regardless of what
+cpuset it is currently assigned to, might be able to manipulate -any-
+cpuset in the system.
 
-Indeed.  FWIW my NTFS driver does not use the generic file write  
-helper function and instead has its own code that does the allocation  
-first and then does the writing a page at a time much the same as  
-generic file write does so depending on what this new interface ends  
-up looking like exactly I may well be able to switch the NTFS driver  
-to use it instead of doing everything by myself and duplicating a ton  
-of code from the VFS...
+Yes -- some sufficient mechanism is required to keep tasks from
+escalating their resources or capabilities beyond an allowed point.
 
-Best regards,
+But that mechanism might not be strictly based on position in some
+hierarchy.
 
-	Anton
+In the case of cpusets, it is based on the permissions on files in
+the cpuset file system (normally mounted at /dev/cpuset), versus
+the current priviledges and capabilities of the task.
 
->> Have you contacted the reiser4 folks whether this would
->> superceed their batch_write op completely?
->
-> I haven't yet, although that's been on my todo list when I get the API
-> into a more final state.
->
-> batch_write seems quite similar, however theirs is still page  
-> based, and
-> a bit crufty, IMO. I found it to be really clean to just pass down  
-> offsets,
-> but that may be a matter for debate.
->
-> What they _do_ have is a write actor function that will do the data  
-> copy.
-> This could be one possible way to get rid of ->prepare_write and
-> ->commit_write, but I haven't tried that yet, because I don't like  
-> adding
-> more redirection and complexity if possible...
->
->>> One problem with this interface is that it cannot be used to  
->>> write into the
->>> filesystem by any means other than already-initialised buffers  
->>> via iovecs. So
->>> prepare/commit have to stay around for non-user data...
->>
->> Actually I think that's a a good thing to a certain extent.  It  
->> reminds
->> us that all other users are horrible abuse of the interface.  I'd  
->> even
->> go so far as to make batch_write a callback that the filesystem  
->> passes
->> to generic_file_aio_write to make clear it's not a generic thing but
->> a helper.  (It's not a generic thing because it's the upper layer  
->> writing
->> into the pagecache, not a pagecache to fs below operation).
->
-> OK, if you think that's reasonable, then that is one hurdle out of  
-> the way ;)
->
->> The still leaves open on how to get rid of ->prepare_write and - 
->> >commit_write
->> compltely, and for that we'll probably need ->kernel_read and - 
->> >kernel_write
->> file operations.  But that's a step you shouldn't consider yet  
->> when doing
->> this work.
->
-> I had a couple of possibilities for that. First is passing in a  
-> write actor
-> (eg. defaulting to the normal iovec usercopy), but as I said I  
-> consider this
-> more like fixing the problem with brute force (ie. just making the  
-> interface
-> more complex). Maybe as a last resort, though.
->
-> Another thing that would be much nicer from _my_ point of view  
-> would be to
-> just make all kernel users set up their data in an iovec, and use  
-> the normal
-> call with KERNEL_DS. Unfortunately, this is not the expected way  
-> for a lot
-> of code to work, and it might require extra copying of the data.
->
->
->>> Another thing is that it seems to be less able to be implemented  
->>> in generic,
->>> reusable code. It should be possible to introduce a new 2-op  
->>> interface (or
->>> maybe just a new error handler op) which can be used correctly in  
->>> generic code.
->>
->> We should be able to find a nice abstraction for this, see my next  
->> mails.
->>
->>> +	/*
->>> +	 * perform_write replaces prepare and commit_write callbacks.
->>> +	 */
->>
->> This is a rather useless comment :)  Better remove it and add a  
->> proper
->> descriptions to Documentation/filesystems/vfs.txt and
->> Documentation/filesystems/Locking
->
-> Will do. Thanks!
+A root priviledged task in the smallest leaf node cpuset can manipulate
+every cpuset in the system.  This is an ordinary and common occurrence.
+
+I say again, as you seem to be skipping over this detail, one
+advantage of basing an API on a file system is the usefulness of
+the file system permission model (the -rwxrwxrwx permissions and
+the uid/gid owners on each file and directory node).
 
 -- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
