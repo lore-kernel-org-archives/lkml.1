@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375AbXCIIHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965777AbXCIIKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751375AbXCIIHF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 03:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993073AbXCIIHF
+	id S965777AbXCIIKi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 03:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXCIIKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 03:07:05 -0500
-Received: from waste.org ([66.93.16.53]:55910 "EHLO waste.org"
+	Fri, 9 Mar 2007 03:10:38 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:14006 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbXCIIHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 03:07:02 -0500
-Date: Fri, 9 Mar 2007 01:53:58 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Message-ID: <20070309075358.GA10394@waste.org>
-References: <20070309053931.GA10459@waste.org> <200703091728.03978.kernel@kolivas.org>
+	id S1752048AbXCIIKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 03:10:37 -0500
+Date: Fri, 9 Mar 2007 09:09:10 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@muc.de>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/9] lguest: block device speedup
+Message-ID: <20070309080909.GD7331@kernel.dk>
+References: <1173409524.32234.67.camel@localhost.localdomain> <20070309075123.GC8798@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200703091728.03978.kernel@kolivas.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070309075123.GC8798@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 05:28:03PM +1100, Con Kolivas wrote:
-> On Friday 09 March 2007 16:39, Matt Mackall wrote:
-> > First off, let me say that I think your approach has great promise,
-> > but I'm afraid it doesn't work so well here yet.
-> >
-> > Box is an R51 Thinkpad, 1.7GHz Pentium M. I'm using a make -j 5 as a
-> > test load.
-> >
-> > With 2.6.21-rc2-mm2, I get slightly sluggish response for opening new
-> > terminals, scrolling in Galeon, and a bit jerky behaviour for spinning
-> > Beryl's 3D desktop. Playing MP3s off an sshfs FUSE mount works fine.
-> > Typing across ssh sessions has no noticeable lag. Mouse pointer
-> > movement is smooth.
-> >
-> > With 2.6.21-rc3-mm1, terminals take longer to open, Galeon is
-> > noticeably more sluggish, and Beryl's desktop switching goes from being
-> > jerky to a 5-second agony. Typing in shells, remote or not,
-> > lags noticeably. Mouse pointer is alternately smooth or jerky. But
-> > MP3s still work great!
-> >
-> > Problems persist with make -j 2 and make.
+On Fri, Mar 09 2007, Christoph Hellwig wrote:
+> On Fri, Mar 09, 2007 at 02:05:24PM +1100, Rusty Russell wrote:
+> > diff -r fdc8cbc1fd61 drivers/block/lguest_blk.c
+> > --- a/drivers/block/lguest_blk.c	Thu Mar 08 13:35:39 2007 +1100
+> > +++ b/drivers/block/lguest_blk.c	Thu Mar 08 15:51:55 2007 +1100
+> > @@ -45,6 +45,16 @@ struct blockdev
+> >  	struct request *req;
+> >  };
+> >  
+> > +/* Jens gave me this nice helper to end all chunks of a request. */
+> > +static void end_entire_request(struct request *req, int uptodate)
+> > +{
+> > +	if (end_that_request_first(req, uptodate, req->hard_nr_sectors))
+> > +		BUG();
+> > +	add_disk_randomness(req->rq_disk);
+> > +	blkdev_dequeue_request(req);
+> > +	end_that_request_last(req, uptodate);
+> > +}
 > 
-> make -j5 sucks you'll get precisely 1/6th cpu for galeon with this scheduler 
-> which is perfectly fair and I make no apology for it, nor do I plan to 
-> optimise for it. With make (without jobs) you'll still only get 50% cpu so it 
-> should be precisely half speed unless you nice it. Does it feel precisely 
-> half speed? It's supposed to. This is one of the drawbacks of a perfectly 
-> fair approach; its... fair and will need more liberal use of nice.
+> I think we really want this in common code, ll_rw_blk.c should have:
 
-Well then I suppose something must be broken. When my box is idle, I
-can grab my desktop and spin it around and generate less than 25% CPU
-with the CPU stepped all the way down from 1.7GHz to 600MHz (Beryl is
-actually much snappier than many conventional window managers by doing
-just about everything through GL). By comparison, grabbing the Galeon
-scroll bar and wiggling it will generate 100% CPU (still throttled
-though) but remain relatively smooth.
-
-With a single non-parallel make running (all in cache, mind you), the
-system kicks up into just about 100% CPU usage at full speed. Desktop
-spinning becomes between 10x to 100x slower (from ~30fps to < 1fps).
-Galeon scrolling pauses for as much as a second. Mouse movement pauses
-for as much as a second. Typing in terminals lags noticeably.
-
-This is not the expected behavior of a fair, low-latency scheduler.
-
-For reference, this was with HZ=250, PREEMPT, PREEMPT_BKL, and !NO_HZ.
+Yeah I know, this is also what I wrote to Rusty when I reviewed this
+code and made the suggestion. The kernel also needs a full sweep to get
+rid of end_request() entirely, it's really a relic from ancient times.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Jens Axboe
+
