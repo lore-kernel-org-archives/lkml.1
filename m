@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992922AbXCIDS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992920AbXCIDTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992922AbXCIDS5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 22:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992921AbXCIDS4
+	id S2992920AbXCIDTl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 22:19:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992923AbXCIDTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 22:18:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:45462 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992922AbXCIDS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 22:18:56 -0500
-Subject: [PATCH 5/9] lguest: documentation fixes
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Andi Kleen <ak@muc.de>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1173410210.32234.76.camel@localhost.localdomain>
-References: <1173409524.32234.67.camel@localhost.localdomain>
-	 <1173409696.32234.69.camel@localhost.localdomain>
-	 <1173409939.32234.73.camel@localhost.localdomain>
-	 <1173410210.32234.76.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 09 Mar 2007 14:17:44 +1100
-Message-Id: <1173410264.32234.78.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Mar 2007 22:19:41 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:46916 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992920AbXCIDTk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Mar 2007 22:19:40 -0500
+X-IronPort-AV: i="4.14,265,1170662400"; 
+   d="scan'208"; a="399030358:sNHT42375480"
+To: "David Brown" <dmlb2000@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: KVM and rtc missing interupts 2.6.21-rc3
+X-Message-Flag: Warning: May contain useful information
+References: <9c21eeae0703081348i713c996bked9ebe2af76bc2db@mail.gmail.com>
+	<adatzwvxuta.fsf@cisco.com>
+	<9c21eeae0703081647u4c203fa8re315e07467c563fe@mail.gmail.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 08 Mar 2007 19:19:35 -0800
+In-Reply-To: <9c21eeae0703081647u4c203fa8re315e07467c563fe@mail.gmail.com> (David Brown's message of "Thu, 8 Mar 2007 16:47:54 -0800")
+Message-ID: <ada7itrxfw8.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Mar 2007 03:19:36.0037 (UTC) FILETIME=[C3A37950:01C761F9]
+Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim7002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1: It helps if you connect the bridge to a link.
+ > > Try running your guest with -no-kvm (and even with the kvm module not
+ > > loaded, just to be sure).  In my case I still saw the messages.
+ > > However, removing the "-net tap" line from my command line did get rid
+ > > of the messages.
+ > 
+ > Hmmm I'm getting the same thing on 2.6.20.1 as well.
 
-Signed-off-by: James Morris <jmorris@namei.org>
+With or without kvm?
 
-2: You can theoretically run lguest with no boot parameters.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff -r 90134cf1fe0a Documentation/lguest/lguest.c
---- a/Documentation/lguest/lguest.c	Wed Feb 21 11:32:59 2007 +1100
-+++ b/Documentation/lguest/lguest.c	Wed Feb 21 11:51:47 2007 +1100
-@@ -938,7 +938,7 @@ int main(int argc, char *argv[])
- 		argc--;
- 	}
- 
--	if (argc < 4)
-+	if (argc < 3)
- 		errx(1, "Usage: lguest [--verbose] <mem> vmlinux "
- 			"[--sharenet=<filename>|--tunnet=(<ipaddr>|bridge:<bridgename>)"
- 			"|--block=<filename>|--initrd=<filename>]... [args...]");
-diff -r 90134cf1fe0a Documentation/lguest/lguest.txt
---- a/Documentation/lguest/lguest.txt	Wed Feb 21 11:32:59 2007 +1100
-+++ b/Documentation/lguest/lguest.txt	Wed Feb 21 11:50:55 2007 +1100
-@@ -90,6 +90,7 @@ Running Lguest:
-     ifconfig eth0 0.0.0.0
-     brctl addbr lg0
-     ifconfig lg0 up
-+    brctl addif lg0 eth0
-     dhclient lg0
-     
-   Then use --tunnet=bridge:lg0 when launching the guest.
-
-
+ - R.
