@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767440AbXCIRip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbXCIRkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767440AbXCIRip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 12:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbXCIRip
+	id S1752702AbXCIRkk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 12:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbXCIRkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 12:38:45 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:58192 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752700AbXCIRio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 12:38:44 -0500
-Message-ID: <45F19BA1.3090408@garzik.org>
-Date: Fri, 09 Mar 2007 12:38:41 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 9 Mar 2007 12:40:40 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:20920 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbXCIRkj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 12:40:39 -0500
+In-Reply-To: <1173217902.15589.33.camel@sinatra.austin.ibm.com>
+To: John Rose <johnrose@austin.ibm.com>
+Cc: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+       Me Notes <johnrose@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       External List <linuxppc-dev@ozlabs.org>,
+       Nathan Fontenot <nfont@austin.ibm.com>,
+       Paul Mackerras <paulus@samba.org>, Paul Mackerras <pmac@au1.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, john.ronciak@intel.com,
-       jesse.brandeburg@intel.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] e1000: FIX: be ready for incoming irq at pci_request_irq
-References: <20070306165721.27434.23796.stgit@localhost.localdomain> <45F18F7C.3030801@garzik.org> <45F1954D.4000506@intel.com>
-In-Reply-To: <45F1954D.4000506@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Subject: Re: [PATCH 1/2] ibmebus: dynamic addiiton/removal of adapters,	uevent, root
+ device based on struct device
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OFAC7B9901.69441F4F-ONC1257299.005F175A-C1257299.006117C1@de.ibm.com>
+Date: Fri, 9 Mar 2007 18:40:35 +0100
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 09/03/2007 18:40:36,
+	Serialize complete at 09/03/2007 18:40:36
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Personally, I think this is really really needed. I'm surprised that you 
-> already didn't push this considering Andrew pulled this into -mm 
-> immediately.
+John Rose <johnrose@austin.ibm.com> wrote on 06.03.2007 22:51:42:
 
+> We are seeing several build errors when attempting to apply this to
+> 2.6.21-rc2:
 
-Since it affects a fragile area of e1000 for all [e1000] users, I much 
-prefer to err on the side of caution.  I have a history of pulling 
-wide-impact fixes like this, late in -rc cycle, and having yet more 
-breakage appear.
+Hot Damn! I did my test compiles with gcc 3.3, and you obviously compiled 
+with gcc 4.1 - I only got a warning where you got an error, and that 
+warning escaped me. Sorry about that.
 
-But if Andrew or Linus disagree, feel free to override me.  This is just 
-area where I am intentionally over-cautious.
+I fixed the error and all warnings and will post a fresh set of patches 
+right after this reply. If you could give the new patch another go and ack 
+it if it works, I would be delighted! =)
 
-	Jeff
+Thanks for pointing this out!
+  Joachim
 
-
-
+---
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
 
