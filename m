@@ -1,68 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbXCIWSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbXCIWSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761AbXCIWSW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 17:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXCIWSV
+	id S933409AbXCIWSe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 17:18:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXCIWSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 17:18:21 -0500
-Received: from mail33.syd.optusnet.com.au ([211.29.132.104]:44719 "EHLO
-	mail33.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752761AbXCIWSV (ORCPT
+	Fri, 9 Mar 2007 17:18:33 -0500
+Received: from wr-out-0506.google.com ([64.233.184.227]:15234 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbXCIWSc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 17:18:21 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Date: Sat, 10 Mar 2007 09:18:05 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-References: <20070309053931.GA10459@waste.org> <20070309213959.GI10394@waste.org> <200703100857.12939.kernel@kolivas.org>
-In-Reply-To: <200703100857.12939.kernel@kolivas.org>
+	Fri, 9 Mar 2007 17:18:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UoZ38WSLe100QV0mY2FeBT2A5E+Vo72KbyJzpWNx12mX4tsmmq/PSP82i7SpHnQMeWBU336Kydg3QqgAsEqzz37M/HNHb7VrdFw/tG15rDsgHTJpawJQ3r5nnUcAKW4ZMRm91O8qDrPZ6boMUnFHkqkHDW+M8lj7GE7BpQoTVQc=
+Message-ID: <48f7fe350703091418p133a955ar8bef47db33a42e3f@mail.gmail.com>
+Date: Fri, 9 Mar 2007 17:18:31 -0500
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: "Al Boldi" <a1426z@gawab.com>
+Subject: Re: Pluggable Schedulers (was: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler)
+Cc: "William Lee Irwin III" <wli@holomorphy.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200703092343.46276.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703100918.05547.kernel@kolivas.org>
+References: <200703091625.55361.a1426z@gawab.com>
+	 <20070309135751.GE2986@holomorphy.com>
+	 <200703092343.46276.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 March 2007 08:57, Con Kolivas wrote:
-> On Saturday 10 March 2007 08:39, Matt Mackall wrote:
-> > On Sat, Mar 10, 2007 at 08:19:18AM +1100, Con Kolivas wrote:
-> > > On Saturday 10 March 2007 08:07, Con Kolivas wrote:
-> > > > On Saturday 10 March 2007 07:46, Matt Mackall wrote:
-> > > > > My suspicion is the problem lies in giving too much quanta to
-> > > > > newly-started processes.
-> > > >
-> > > > Ah that's some nice detective work there. Mainline does some rather
-> > > > complex accounting on sched_fork including (possibly) a whole timer
-> > > > tick which rsdl does not do. make forks off continuously so what you
-> > > > say may well be correct. I'll see if I can try to revert to the
-> > > > mainline behaviour in sched_fork (which was obviously there for a
-> > > > reason).
-> > >
-> > > Wow! Thanks Matt. You've found a real bug too. This seems to fix the
-> > > qemu misbehaviour and bitmap errors so far too! Now can you please try
-> > > this to see if it fixes your problem?
+from what I understood, there is a performance loss in plugsched
+schedulers because they have to share code....
+
+even if pluggable schedulers is not a viable option, being able to
+choose which one was built into the kernel would be easy (only takes a
+few ifdefs), i too think competition would be good
+
+On 3/9/07, Al Boldi <a1426z@gawab.com> wrote:
+> William Lee Irwin III wrote:
+> > William Lee Irwin III wrote:
+> > >> I consider policy issues to be hopeless political quagmires and
+> > >> therefore stick to mechanism. So even though I may have started the
+> > >> code in question, I have little or nothing to say about that sort of
+> > >> use for it.
+> > >> There's my longwinded excuse for having originated that tidbit of code.
 > >
-> > Sorry, it's about the same. I now suspect an accounting glitch involving
-> > pipe wake-ups.
+> > On Fri, Mar 09, 2007 at 04:25:55PM +0300, Al Boldi wrote:
+> > > I've no idea what both of you are talking about.
 > >
-> > 5x memload: good
-> > 5x execload: good
-> > 5x forkload: good
-> > 5 parallel makes: mostly good
-> > make -j 5: bad
-> >
-> > So what's different between makes in parallel and make -j 5? Make's
-> > job server uses pipe I/O to control how many jobs are running.
+> > The short translation of my message for you is "Linus, please don't
+> > LART me too hard."
 >
-> Hmm it must be those deep pipes again then. I removed any quirks testing
-> for those from mainline as I suspected it would be ok. Guess I"m wrong.
-
-I shouldn't blame this straight up though if NO_HZ makes it better. Something 
-else is going wrong... wtf though?
-
--- 
--ck
+> Right.
+>
+> > On Fri, Mar 09, 2007 at 04:25:55PM +0300, Al Boldi wrote:
+> > > How can giving people the freedom of choice be in any way
+> > > counter-productive?
+> >
+> > This sort of concern is too subjective for me to have an opinion on it.
+>
+> How diplomatic.
+>
+> > My preferred sphere of operation is the Manichean domain of faster vs.
+> > slower, functionality vs. non-functionality, and the like. For me, such
+> > design concerns are like the need for a kernel to format pagetables so
+> > the x86 MMU decodes what was intended, or for a compiler to emit valid
+> > assembly instructions, or for a programmer to write C the compiler
+> > won't reject with parse errors.
+>
+> Sure, but I think, even from a technical point of view, competition is a good
+> thing to have.  Pluggable schedulers give us this kind of competition, that
+> forces each scheduler to refine or become obsolete.  Think evolution.
+>
+> > If Linus, akpm, et al object to the
+> > design, then invalid output was produced. Please refer to Linus, akpm,
+> > et al for these sorts of design concerns.
+>
+> Point taken.
+>
+> Linus Torvalds wrote:
+> > And hey, you can try to prove me wrong. Code talks. So far, nobody has
+> > really ever come close.
+> >
+> > So go and code it up, and show the end result. So far, nobody who actually
+> > *does* CPU schedulers have really wanted to do it, because they all want
+> > to muck around with their own private versions of the data structures.
+>
+> What about PlugSched?
+>
+>
+> Thanks!
+>
+> --
+> Al
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
