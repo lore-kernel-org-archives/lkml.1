@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993145AbXCIVXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767546AbXCIVXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993145AbXCIVXc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993148AbXCIVXc
+	id S1767546AbXCIVXu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767545AbXCIVXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:23:32 -0500
-Received: from waste.org ([66.93.16.53]:40165 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993145AbXCIVXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:23:31 -0500
-Date: Fri, 9 Mar 2007 15:10:58 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Message-ID: <20070309211058.GH10394@waste.org>
-References: <20070309053931.GA10459@waste.org> <20070309075358.GA10394@waste.org> <20070309082057.GB10394@waste.org> <200703091939.05535.kernel@kolivas.org> <20070309204623.GE10394@waste.org>
+	Fri, 9 Mar 2007 16:23:50 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1853 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767539AbXCIVXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 16:23:48 -0500
+Date: Fri, 9 Mar 2007 21:23:34 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       jkarlson@cc.hut.fi
+Subject: Re: [Bugme-new] [Bug 8100] New: dynticks makes ksoftirqd1 use unreasonable amount of cpu time
+Message-ID: <20070309212334.GA6447@ucw.cz>
+References: <200702281734.l1SHYAp0021968@fire-2.osdl.org> <20070228140023.46bbba98.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070309204623.GE10394@waste.org>
+In-Reply-To: <20070228140023.46bbba98.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 02:46:24PM -0600, Matt Mackall wrote:
-> A priori, this load should be manageable by RSDL as the interactive
-> loads are all pretty small. So I wrote a little Python script that
-> basically continuously memcpys some 16MB chunks of memory:
+Hi!
+
+> bugme-daemon@bugzilla.kernel.org wrote:
 > 
-> #!/usr/bin/python
-> a = "a" * 16 * 1024 * 1024
-> while 1:
->     b = a[1:] + "b"
->     a = b[1:] + "c"
-> 
-> I've got 1.5G of RAM, so I can run quite a few of these without
-> killing my pagecache. This should test whether a) Beryl's actually
-> running up against memory bandwidth issues and b) whether "simple"
-> static loads work. As you can see, running 5 instances of this script
-> leaves me in good shape still. 10 is still in "ok" territory, with top
-> showing each getting 9.7-10% of the CPU. 15 starts to feel sluggish.
-> 20 the mouse jumps a bit and I got an MP3 skip. 30 is getting pretty
-> bad, but still not as bad as the make -j 5 load.
-> 
-> My suspicion is the problem lies in giving too much quanta to
-> newly-started processes.
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8100
+> > 
+> >            Summary: dynticks makes ksoftirqd1 use unreasonable amount of cpu
+> >                     time
+> >     Kernel Version: 2.6.21-rc2
+> >             Status: NEW
+> >           Severity: low
+> >              Owner: johnstul@us.ibm.com
+> >          Submitter: jkarlson@cc.hut.fi
+> > 
+> > 
+> > Most recent kernel where this bug did *NOT* occur:
+> > any kernel without dynticks
+> > 
+> > Distribution:
+> > Debian etch with linux-2.6.21-rc{2,1}
+> > 
+> > Hardware Environment: 
+> > Macbook core2 with bios emulation
+> > 
+> > Software Environment:
+> > The problem is obvious when listening to shoutcast stream with kmplayer and 
+> > artsd via wi-fi with  wpa (wpa_supplicant)
+> > 
+> > Problem Description:
+> > ksoftirqd1 uses ~30% cpu-time (by top) no other symptoms, while
+> > without dyntikcs cpu-load in similar circumstances is negligible.
+> > This might be a dynticks feature rather than bug.
 
-I've also tried 10+ instances of each of the following:
+top lies. top has always lied, now it lies more. Do not trust top.
+RESOLVED/INVALID?
 
-forkload:
-#!/bin/sh
-./forkload&
-
-execload:
-#!/bin/sh
-exec ./execload
-
-And it's quite well-behaved in both cases.
-
-Also, if I run:
-
-for a in 1 2 3 4 5; do mkdir $a; cp .config $a; make O=$a & done
-
-..I get mostly good behavior with some occassional snags. Things run
-much better than make -j 5. Unfortunately, that doesn't make my kernel
-get built faster.
-
+							Pavel
 -- 
-Mathematics is the supreme nostalgia of our time.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
