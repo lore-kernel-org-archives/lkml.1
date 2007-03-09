@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993096AbXCIJ76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993098AbXCIKAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993096AbXCIJ76 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 04:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637734AbXCIJ76
+	id S2993098AbXCIKAV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 05:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767143AbXCIKAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 04:59:58 -0500
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:22065 "EHLO
-	outbound1-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993095AbXCIJ74 (ORCPT
+	Fri, 9 Mar 2007 05:00:21 -0500
+Received: from mail11.syd.optusnet.com.au ([211.29.132.192]:54418 "EHLO
+	mail11.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2993099AbXCIKAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 04:59:56 -0500
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Date: Fri, 9 Mar 2007 10:57:10 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-cc: discuss@x86-64.org, "Andi Kleen" <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] optimize and simplify get_cycles_sync()
-Message-ID: <20070309095710.GB8922@amd.com>
-References: <20070228140501.GA19452@amd.com>
- <20070228142554.GE19452@amd.com>
- <20070306162541.2b8a148d.akpm@linux-foundation.org>
+	Fri, 9 Mar 2007 05:00:19 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: 2.6.21-rc3: /proc broken
+Date: Fri, 9 Mar 2007 20:59:54 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070307201915.4d579113.akpm@linux-foundation.org> <200703090856.45386.kernel@kolivas.org> <20070309085355.GB29959@flint.arm.linux.org.uk>
+In-Reply-To: <20070309085355.GB29959@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <20070306162541.2b8a148d.akpm@linux-foundation.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 09 Mar 2007 09:57:56.0851 (UTC)
- FILETIME=[69A24430:01C76231]
-X-WSS-ID: 69EFF04E328551529-01-01
 Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703092059.54653.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 04:25:41PM -0800, Andrew Morton wrote:
-> On Wed, 28 Feb 2007 15:25:54 +0100
-> "Joerg Roedel" <joerg.roedel@amd.com> wrote:
-> 
-> > From: Joerg Roedel <joerg.roedel@amd.com>
-> > 
-> > This patch simplifies the get_cycles_sync() function by removing the
-> > #ifdefs from it. Further it introduces an optimization for AMD
-> > processors. There the RDTSCP instruction is used instead of CPUID;RDTSC
-> > which is helpfull if the kernel runs as a KVM guest. Running as a guest
-> > makes CPUID very expensive because it causes an intercept of the guest.
-> 
-> Problem:
-> 
-> http://test.kernel.org/functional/index.html
-> 
-> lots of builds fell over because their binutils versions don't understand
-> rdtscp.
-> 
-> I don't know how recently rdtscp support was added to binutils, but
-> this is likely to be a problem.  Perhaps we can change this patch to
-> embed the hex code for that opcode instead?
+On Friday 09 March 2007 19:53, Russell King wrote:
+> On Fri, Mar 09, 2007 at 08:56:44AM +1100, Con Kolivas wrote:
+> > I did make oldconfig from http://userweb.kernel.org/~akpm/ck/config.txt
+> > and chose all the defaults. Then building your fat config with -rc3, 'ps'
+> > hangs on qemu for almost 30 seconds and then at last produces a broken
+> > output
+>
+> Let me guess - you have either a serial console or something like that
+> and you're running these commands over said serial console?
+>
+> Or you have console directed to both a serial port and the VT and you're
+> capturing this off the VT using gpm.
+>
+> Either way, "serial8250: too much work for irq4" is a printk which will
+> be displayed by the kernel when it's unable to clear down work for the
+> serial port within 256 loops or so of the interrupt handler; it's a
+> protection against the box locking up.
+>
+> It not actually contained in any of the files.
 
-Ok, I will submit an updated version soon. Thanks for pointing this out.
+Thank you very much for taking the time to explain it to me and I apologise 
+for the false positive. It's very much due to running qemu directing 
+everything to the serial console which is just as you say. Allowing qemu to 
+output to graphic fixes the error. Unfortunately that also makes akpm's oops 
+go away so I can't really reproduce it now. Perhaps the bug occurs due to 
+interrupts being disabled for an extended time; it gives me something to look 
+at now.
 
-Joerg
+Thanks!
 
 -- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
-
-
+-ck
