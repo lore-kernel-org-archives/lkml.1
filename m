@@ -1,103 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932642AbXCIVps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933382AbXCIVsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932642AbXCIVps (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:45:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933380AbXCIVps
+	id S933382AbXCIVsX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933388AbXCIVsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:45:48 -0500
-Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:32356 "HELO
-	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932642AbXCIVpr (ORCPT
+	Fri, 9 Mar 2007 16:48:23 -0500
+Received: from imo-m21.mx.aol.com ([64.12.137.2]:47768 "EHLO
+	imo-m21.mx.aol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933382AbXCIVsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:45:47 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=UjJ4MPU1gm01UpAqc4NIfMzpAY6WTUmyvQuv57nkj2G3Mxnv0VpWQCqwe/rWJQEs+Bu1dLeMbLYHeJBIkYD8n7k04iyVI/h6GdbhvnKAAZTyawbPpQDEl1Eox62qGT00JbkDJxSR6zWCrQEAfCHO3fGOgSmpR/vhhmSbYN0pCfo=  ;
-X-YMail-OSG: jP729NYVM1msuM9RbQOgrXuLOjfBd8ZqYBM0xohg8x0k.2UoD8gs4TJQIPK_Ssr4N0f1PTvncP5kwNUkeTJdsAlLqHNAxbIyNcTIIRA3EFjRjLdaqO2k8odEXW6VNtWEJeLg.tS_9TeDmKA-
-From: David Brownell <david-b@pacbell.net>
-To: =?iso-8859-1?q?H=E5vard_Skinnemoen?= <hskinnemoen@atmel.com>
-Subject: Re: [PATCH] Bitbanging i2c bus driver using the GPIO API
-Date: Fri, 9 Mar 2007 13:45:43 -0800
-User-Agent: KMail/1.7.1
-Cc: "Jean Delvare" <khali@linux-fr.org>, "Bryan Wu" <bryan.wu@analog.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Deepak Saxena" <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-References: <200703090945.38880.david-b@pacbell.net> <200703091130.13547.david-b@pacbell.net> <52293.172.21.0.22.1173473006.squirrel@pat.norway.atmel.com>
-In-Reply-To: <52293.172.21.0.22.1173473006.squirrel@pat.norway.atmel.com>
+	Fri, 9 Mar 2007 16:48:22 -0500
+X-Greylist: delayed 305 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Mar 2007 16:48:22 EST
+References: <8C930983B0855DF-1728-4769@webmail-dd15.sysops.aol.com>
+To: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Subject: TCP MSG_PEEK kernel assertions ...
+Date: Fri, 09 Mar 2007 16:43:10 -0500
+In-Reply-To: <8C930983B0855DF-1728-4769@webmail-dd15.sysops.aol.com>
+X-MB-Message-Source: WebUI
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200703091345.44744.david-b@pacbell.net>
+From: davef1624@aol.com
+X-MB-Message-Type: User
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+X-Mailer: AOL WebMail 24126
+Message-Id: <8C930AB112CB842-1728-4DAC@webmail-dd15.sysops.aol.com>
+X-AOL-IP: 205.188.104.15
+X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 March 2007 12:43 pm, Håvard Skinnemoen wrote:
-> On Fri, March 9, 2007 20:30, David Brownell wrote:
-> > On Friday 09 March 2007 10:48 am, Haavard Skinnemoen wrote:
-> >> This is a very simple bitbanging i2c bus driver utilizing the new
-> >> arch-neutral GPIO API. Useful for chips that don't have a built-in
-> >> i2c controller, additional i2c busses, or testing purposes.
-> >
-> > That's the right idea!  But remember that not all GPIOs support
-> > reading back the actual value on SCL ...
-> 
-> The idea is to keep the output value at 0 and switch the output driver on
-> and off. I assumed that changing the direction was the easiest way to
-> achieve this.
-> 
-> I never really thought about output-only pins. Is it actually possible to
-> implement i2c properly on such hardware?
 
-Not strictly; but folk do so, and the results are compatible-enough
-for many purposes.  Certainly a quick glance at i2c-algo-bit tells
-me that it knows how to cope with output-only SCL.  A generic GPIO
-driver "should" be able to at least act sanely given such a pin.
+ Hello,
 
+  I periodically see the following TCP kernel assertion errors in 
+/var/log/message
+  (it does seem that networking is eventually able to recover from these 
+errors):
 
-> > I2C has another interesting special case.  at91_set_multi_drive()
-> > would be appropriate (yes?) for ARCH_AT91 to use on SCL, to best
-> > support both clock stretching and multi-master configurations.
-> 
-> Isn't it better to switch the direction to input since the driver needs to
-> watch the pin state in order to support clock stretching and multi-master?
+  kernel: KERNEL: assertion (flags & MSG_PEEK) failed at net/ipv4/tcp.c 
+(1171)
+  kernel: KERNEL: assertion (flags & MSG_PEEK) failed at net/ipv4/tcp.c 
+(1171)
+  kernel: KERNEL: assertion (tp->copied_seq == tp->rcv_nxt || (flags & 
+(MSG_PEEK | MSG_TRUNC))) failed at net/ipv4/tcp.c (1235)
+  kernel: KERNEL: assertion (flags & MSG_PEEK) failed at net/ipv4/tcp.c 
+(1171)
+  kernel: KERNEL: assertion (tp->copied_seq == tp->rcv_nxt || (flags & 
+(MSG_PEEK | MSG_TRUNC))) failed at net/ipv4/tcp.c (1235)
 
-Not necessarily ... reading the GPIO pad state works regardless of what
-direction was configured on most chips (including AT91 and AVR32), but
-not all of them.
+  These errors only seem to occur when using the sk98lin (SysKonnect) 
+Network Device Driver,
+  and a Yukon Gigabit Ethernet 10/100/1000Base-T Adapter (from Marvell I 
+believe).
+ (The other NIC cards we're using in-house don't exhibit this issue).
 
-Certainly multi-drive/open-drain outputs get the electical stuff right
-without that.  Russell's explanation says the reason to switch direction
-is to disable the non-open-drain output drivers.
+ I've seen postings concerning this issue over the past year or so,
+  but have not seen a clear resolution and/or understanding of the 
+root-cause of this issue.
 
-There are several options lurking, that a generic I2C bitbanger "ought"
-to handle.  Existence of open-drain outputs is one issue.  Ability to
-change direction is another; as is ability to read the value on output
-pads.  Your code assumed one set of answers; others are possible.
+  I'm in the process of upgrading my sk98lin network driver to the 
+latest from SysKonnect
+ in an attempt to see if this corrects the problem.
+
+ Does anybody have any insight into this problem?
+
+ Best regards,
+ Dave F
 
 
-> The gpio_set_value() calls should go away and the output value should be
-> explicitly set to 0 when turning on the output drivers. In its present
-> form, the driver happens to work on my hardware, which is all I really
-> cared about when writing it ;-)
+  
+________________________________________________________________________ 
 
-As I said in a different way above!  If open drain outputs are available,
-and the actual values can be read on output pins, then I think both pins
-can be configured as outputs and left that way.
+  AOL now offers free email to everyone. Find out more about what's free 
+from AOL at AOL.com.
+ -
+  To unsubscribe from this list: send the line "unsubscribe linux-net" 
+in
+ the body of a message to majordomo@vger.kernel.org
+ More majordomo info at http://vger.kernel.org/majordomo-info.html
 
- 
-> >> +	printk(KERN_INFO "i2c-gpio: using pins 0x%x (sda) 0x%x (scl)\n",
-> >> +	       pdata->sda_pin, pdata->scl_pin);
-> >
-> > Please, no hex there.  I think dev_info() would be better; and it
-> > might be nice to report whether clock stretching is supported.
-> 
-> Ok, but how do I inform i2c-algo-bit about whether or not clock stretching
-> is supported?
 
-Reading the code, I see it's automatic if you don't provide getscl()...
-
-- Dave
-
+________________________________________________________________________
+AOL now offers free email to everyone.  Find out more about what's free 
+from AOL at AOL.com.
