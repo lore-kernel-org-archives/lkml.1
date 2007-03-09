@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767622AbXCIXHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767621AbXCIXIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767622AbXCIXHU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 18:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767582AbXCIXHU
+	id S1767621AbXCIXIX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 18:08:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767623AbXCIXIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 18:07:20 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:59175 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767622AbXCIXHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 18:07:16 -0500
-Message-ID: <45F1E8A3.6000100@vmware.com>
-Date: Fri, 09 Mar 2007 15:07:15 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+	Fri, 9 Mar 2007 18:08:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46066 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767621AbXCIXIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 18:08:21 -0500
+Date: Sat, 10 Mar 2007 00:02:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
        Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
        akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
        Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
-References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org> <20070309201257.GA5761@elte.hu> <Pine.LNX.4.64.0703091305090.10832@woody.linux-foundation.org> <20070309213607.GA16796@elte.hu> <Pine.LNX.4.64.0703091423570.10832@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703091423570.10832@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070309230249.GA31295@elte.hu>
+References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org> <20070309210430.GA14905@elte.hu> <20070309212714.GU10574@sequoia.sous-sol.org> <20070309214704.GA20988@elte.hu> <20070309221046.GV10574@sequoia.sous-sol.org> <20070309222435.GB24341@elte.hu> <20070309224640.GW10574@sequoia.sous-sol.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309224640.GW10574@sequoia.sous-sol.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
->> but ... maybe because VMI is so lowlevel and covers /all/ of x86 today, 
->> it will always be able to emulate whatever different concept we can come 
->> up with? Do we really know this absolutely sure?
->>     
->
-> "For sure"? Absolutely not. But since any new interfaces we come up with 
-> for doing timers etc had better work perfectly fine on an old hardware 
-> platform too, we can't exactly require any interfaces that do things that 
-> a bog-standard old dual-PPro didn't do 10 years ago, can we?
->
-> So assumign that the VMI interface is roughly as powerful (by virtue of 
-> basically emulating it) as the old single-ioapic/single-lapic systems we 
-> used to use, I don't think it should ever be a real problem. Hmm?
->   
 
-Sorry to keep you in a thread you don't want more to do with Linus, but 
-to answer the question completely directly:
+* Chris Wright <chrisw@sous-sol.org> wrote:
 
-There are four design requirement which are inviolate for achieving a 
-large measurable performance gain, which is the primary benefit of i386 
-paravirt-ops for us.  These changes are required for /ALL/ high 
-performance paravirtualized kernels not running in hardware 
-virtualization, across a broad spectrum of hypervisors, and have either 
-zero negative impact or opportunity for additional gain when hardware 
-virtualization is enabled.
+> > ok, sure, how about the one i mentioned: long-term i'd like to have 
+> > a paravirt model where the guest does not store /any/ page tables - 
+> > all paging is managed by the hypervisor. The guest has a vma tree, 
+> > but otherwise it does not process pagefaults, has no concept of a 
+> > pte (if in paravirt mode), has no concept of kernel page tables 
+> > either: there are hypercalls to allocate/free guest-kernel memory, 
+> > etc. This needs some (serious) MM surgery but it's doable and it's 
+> > interesting as well. How would you map this to the VMI backend?
+> 
+> Sounds a lot like a userspace process.  My immediate thought is, why 
+> not use containers, a more natural fit.  [...]
 
-1) Ability to run the kernel at non-zero CPL
-2) Ability to replace hardware interrupt masking functions with 
-virtualizable equivalents
-3) Notification when page tables are allocated and released
-4) Notification in some form when page table entries are updated (or 
-vma's are changed)
+easy: in my model the hypervisor is isolated from the guest kernel. In 
+the container model it is not. [ This is a basic quality requirement for 
+virtualization: a guest kernel does not get to read any hypervisor 
+crypto keys to HD-DVD smut! ;-) ]
 
-Everything after this are incremental gains, some more valuable than 
-others, but not as major in significance as the above four (apic_write, 
-incidentally, _is_ one of the more substantial gains for us).
+> [...] But if you have _any_ hope of booting this kernel on native 
+> hardware when it's not running under a hypervisor then I'd expect the 
+> same pv_ops interfaces that allow it to run on native would allow VMI 
+> to build and handle the shadow (since you'd have taken it out of the 
+> kernel).  Heh, so in order to run this on native we had to add 
+> fork/mmap pv ops?  I agree it might be interesting, but it's still not 
+> clear that it's useful w/out some code to back it up, and see the 
+> value.
 
-These don't seem to be a major burden on the kernel at all.
+progress ;-) But yes, some /really/ high-level pv_ops would be needed.
 
-#1 is already the default case now for even native hardware.
-#2 requires a lot of hooks because interrupt masking is a common 
-function, and this is where the large numbers of hook points Ingo was 
-demonstrating came from, but these icache effects and costs are on 
-already expensive instructions.  In fact, it appears on some hardware, 
-the nop padding around cli / sti / pushf / popf contributes to a 
-mysterious performance gain, perhaps due to some pipelining anomaly.
-#3 is not a common enough operation to be of performance concern.  It 
-does however, require pagetables, just as native hardware does.  Which 
-we can implement perfectly well anyway in our backend, just as the 
-native backend would if some reckless madman removed all notions of page 
-tables from a paravirt kernel.
-#4 involves an extra call in page fault paths and from some points in 
-the mm layer.
+[ in the end we might be able to simplify it down to a single hook! That 
+  would be: run_native_image / run_guest_image ;-) ]
 
-There are no ABI requirements tied to these, merely the presence of any 
-usable API for them in paravirt-ops.
+seriously, most of the body of x86 kernel code is in filesystems, VFS, 
+networking, scheduler and the core kernel - much of which can be shared 
+between native and guest. The MM is a significant and very central 
+chunk, but it is less than 3% of the total codesize.
 
-Linus is right - our virtual hardware is an exact replica of real 
-hardware.  So no matter how you change paravirtualization in the kernel, 
-anything that runs on real hardware will continue to run on VMware.  VMI 
-is tied very closely to the hardware, on purpose, and follows the rules 
-of native hardware extremely closely.  So you can pretty much twist and 
-abuse paravirt-ops in a number of ways, and as long as it continues to 
-run on real hardware with the above four requirements, it still runs 
-even on VMI.  Violate the above four requirements, and it costs a lot of 
-performance, but we still continue to run.
-
-Zach
+	Ingo
