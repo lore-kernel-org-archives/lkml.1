@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767517AbXCITgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767513AbXCITj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767517AbXCITgq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 14:36:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767519AbXCITgq
+	id S1767513AbXCITj2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 14:39:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767519AbXCITj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 14:36:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33463 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767517AbXCITgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 14:36:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH] swsusp: Disable nonboot CPUs before entering platform suspend
-Date: Fri, 9 Mar 2007 20:39:19 +0100
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200703072044.12021.rjw@sisk.pl> <20070307210716.GA4913@ucw.cz> <20070309122934.GA8412@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20070309122934.GA8412@osiris.boeblingen.de.ibm.com>
+	Fri, 9 Mar 2007 14:39:28 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52030 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1767513AbXCITj1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 14:39:27 -0500
+Date: Fri, 09 Mar 2007 13:39:25 -0600
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+User-Agent: nail 11.25 7/29/05
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703092039.20131.rjw@sisk.pl>
+Message-Id: <20070309193925.B60891B8028@attica.americas.sgi.com>
+From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 9 March 2007 13:29, Heiko Carstens wrote:
-> On Wed, Mar 07, 2007 at 09:07:17PM +0000, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Prevent the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
-> > > from triggering by disabling nonboot CPUs before we finally enter the platform
-> > > suspend.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
-> > >  kernel/power/disk.c |    1 +
-> > >  kernel/power/user.c |    2 +-
-> > >  2 files changed, 2 insertions(+), 1 deletion(-)
-> > > 
-> > > Index: linux-2.6.21-rc2-mm2/kernel/power/disk.c
-> > > ===================================================================
-> > > --- linux-2.6.21-rc2-mm2.orig/kernel/power/disk.c
-> > > +++ linux-2.6.21-rc2-mm2/kernel/power/disk.c
-> > > @@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
-> > >  	switch(mode) {
-> > >  	case PM_DISK_PLATFORM:
-> > >  		if (pm_ops && pm_ops->enter) {
-> > > +			disable_nonboot_cpus();
-> > >  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-> > >  			pm_ops->enter(PM_SUSPEND_DISK);
-> > >  			break;
-> > 
-> > ...so, if pm_ops is non-null, power_down does nonboot cpu disabling,
-> > otherwise we proceed with cpus enabled?
-> > 
-> > That looks ugly.
-> > 
-> > Is the warning bogus? Or maybe we should *always* disable nonboot cpus
-> > in powerdown path?
-> 
-> Is disable_nonboot_cpus() assuming that first_cpu(cpu_present_map) is
-> the boot cpu? Just wondering why disable_nonboot_cpus() isn't using just
-> any_online_cpu(cpu_online_map)...
 
-Is your question related to the code in kernel/cpu.c?
+From: Cliff Wickman <cpw@sgi.com>
 
-Rafael
+(this is a second submission -- the first was from a work area back
+ porting to an older release)
+
+When a cpu is disabled, move_task_off_dead_cpu() is called for tasks
+that have been running on that cpu.
+
+Currently, such a task is migrated:
+ 1) to any cpu on the same node as the disabled cpu, which is both online
+    and among that task's cpus_allowed
+ 2) to any cpu which is both online and among that task's cpus_allowed
+
+But the task's cpus_allowed may have been a single cpu.
+
+This patch would insert a preference to migrate such a task to a cpu within
+its cpuset (and set its cpus_allowed to its cpuset).
+
+With this patch, migrate the task to:
+ 1) to any cpu on the same node as the disabled cpu, which is both online
+    and among that task's cpus_allowed
+ 2) to any online cpu within the task's cpuset
+ 3) to any cpu which is both online and among that task's cpus_allowed
+
+
+Diffed against 2.6.21-rc3 (Andrew's current top of tree)
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+
+---
+ kernel/sched.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+Index: morton.070123/kernel/sched.c
+===================================================================
+--- morton.070123.orig/kernel/sched.c
++++ morton.070123/kernel/sched.c
+@@ -5170,6 +5170,12 @@ restart:
+ 	if (dest_cpu == NR_CPUS)
+ 		dest_cpu = any_online_cpu(p->cpus_allowed);
+ 
++	/* try to stay on the same cpuset */
++	if (dest_cpu == NR_CPUS) {
++		p->cpus_allowed = cpuset_cpus_allowed(p);
++		dest_cpu = any_online_cpu(p->cpus_allowed);
++	}
++
+ 	/* No more Mr. Nice Guy. */
+ 	if (dest_cpu == NR_CPUS) {
+ 		rq = task_rq_lock(p, &flags);
