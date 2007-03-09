@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767455AbXCISZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767453AbXCIS1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767455AbXCISZO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 13:25:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767454AbXCISZO
+	id S1767453AbXCIS1I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 13:27:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767456AbXCIS1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 13:25:14 -0500
-Received: from Mail.MNSU.EDU ([134.29.1.12]:54777 "EHLO mail.mnsu.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767455AbXCISZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 13:25:12 -0500
-Message-ID: <45F1A65D.5000903@mnsu.edu>
-Date: Fri, 09 Mar 2007 12:24:29 -0600
-From: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Fri, 9 Mar 2007 13:27:07 -0500
+Received: from allen.werkleitz.de ([80.190.251.108]:60846 "EHLO
+	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbXCIS1F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 13:27:05 -0500
+X-Greylist: delayed 2118 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Mar 2007 13:27:04 EST
+Date: Fri, 9 Mar 2007 18:48:21 +0100
+From: Johannes Stezenbach <js@linuxtv.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Message-ID: <20070309174821.GA31754@linuxtv.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Con Kolivas <kernel@kolivas.org>,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Matt Mackall <mpm@selenic.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-References: <20070309053931.GA10459@waste.org>	<200703091728.03978.kernel@kolivas.org>	<20070309075358.GA10394@waste.org>	<200703091936.47128.kernel@kolivas.org>	<87slce945h.fsf@depni.sinp.msu.ru>	<20070309094904.GC2986@holomorphy.com> <87irdasnz4.fsf@depni.sinp.msu.ru> <45F1A263.5020407@rtr.ca>
-In-Reply-To: <45F1A263.5020407@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 87.162.102.116
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 08, 2007, Linus Torvalds wrote:
+> On Fri, 9 Mar 2007, Ingo Molnar wrote:
+> > 
+> > disabling the following radeonfb options in the .config made resume work 
+> > again:
+> 
+> In general, don't even *try* to use radeonfb for suspend/resume.
+> 
+> I don't think it has ever worked, except on some very rare laptops 
+> (largely PPC Macs) where people had enough information to set up the 
+> PLL's.
+> 
+> I don't think the other framebuffer drivers are much better.
+> 
+> You're better off using the VGA console, and lettign X re-initialize the 
+> graphics device. That generally at least has a reasonably good chance of 
+> working.
+> 
+> Re-initializing graphics modes really is very hard. You can try with the 
+> BIOS video hack (I forget the kernel command line to turn it on), but we 
+> really do end up depending on X doing it better.
 
-Mark Lord wrote:
-> Mmm.. when it's good, it's *really* good.
-> My desktop feels snappier and all of that.
->
-> No noticeable jerkiness of windows/scrolling,
-> which I *do* observe with the stock scheduler.
->
-> But when it's bad, it stinks.
-> Like when a "make -j2" kernel rebuild is happening in a background window
->
+acpi_sleep=s3_bios has always worked for me on my ThinkPad T42p.
 
-Would you please do that same "make -j2" niced.  Tell us how that feels.
+Even if one doesn't use the fb console at all, radeonfb apparently
+is still required on some ThinkPad models to work around BIOS bugs:
 
--- 
-Jeffrey Hundstad
+http://www.thinkwiki.org/wiki/Problem_with_high_power_drain_in_ACPI_sleep#Radeon_GPU_not_powered_off
 
+
+Johannes
