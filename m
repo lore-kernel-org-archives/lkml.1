@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767515AbXCIT0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767514AbXCITaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767515AbXCIT0V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 14:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767513AbXCIT0V
+	id S1767514AbXCITaR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 14:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767510AbXCITaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 14:26:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51835 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767511AbXCIT0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 14:26:08 -0500
-Date: Fri, 9 Mar 2007 20:24:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
-Message-ID: <20070309192420.GA27747@elte.hu>
-References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Mar 2007 14:30:17 -0500
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:34145 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1767514AbXCITaP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 14:30:15 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=i0gqnF+0Y6y/HikNIuXsMGamuPXI1IUteAUbioPhDAVrEz1MI9F4dgy2Etp6WcDXx1YtDPMkCKHjPCy6W9Nkf0e8LkTYkKTd4wRCwdyIGFFR7rdia9IfYKeC+Y237fBDQld/9jUibtKOrKR8qF4voy75uwSWPe6NZK2i+YQK10Q=  ;
+X-YMail-OSG: nYyHwqwVM1lqGpjIPjty1D4NpFYbUi3rMFXhNZoQoS.Yp1V8BjTyJvQBsmxM02A93smhj0dgNG5us2k4lWLnkeIpf4WpqTeKaWcZkfv8q8ujUa3r6wGPoWw5ghqdyHZIgGIR2pzE.XOwxY8-
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] Bitbanging i2c bus driver using the GPIO API
+Date: Fri, 9 Mar 2007 11:30:12 -0800
+User-Agent: KMail/1.7.1
+Cc: Jean Delvare <khali@linux-fr.org>, Bryan Wu <bryan.wu@analog.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
+References: <200703090945.38880.david-b@pacbell.net> <11734661281633-git-send-email-hskinnemoen@atmel.com>
+In-Reply-To: <11734661281633-git-send-email-hskinnemoen@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200703091130.13547.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 09 March 2007 10:48 am, Haavard Skinnemoen wrote:
+> This is a very simple bitbanging i2c bus driver utilizing the new
+> arch-neutral GPIO API. Useful for chips that don't have a built-in
+> i2c controller, additional i2c busses, or testing purposes.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+That's the right idea!  But remember that not all GPIOs support
+reading back the actual value on SCL (it's an OUT pin, so lacking
+multidrive capability the values "should" be what you wrote), so
+getscl() support should depend on a flag in platform data.  In
+the same vein, if SCL is an output-only pin, you won't be able
+to change its direction ... but then, I'm not sure why you were
+changing its direction in setscl() rather than just its value.
 
-> On Fri, 9 Mar 2007, Ingo Molnar wrote:
-> > 
-> > yes - but we already support the raw hardware ABI, in the native 
-> > kernel.
-> 
-> Why do you continue to call paravirt an ABI?
-> 
-> We got over that. It's not. It's an API.
-> 
-> VMI is an ABI.
+I2C has another interesting special case.  at91_set_multi_drive()
+would be appropriate (yes?) for ARCH_AT91 to use on SCL, to best
+support both clock stretching and multi-master configurations.
 
-Unfortunately i still dont see where i'm wrong, and i'm really trying to 
-understand your argument. Is your argument that as long as an ABI (VMI) 
-is never directly used but only used via wrapper functions 
-(paravirt_ops), it has no effects whatsoever on the flexibility of the 
-rest of the software and ceases to have any negative ABI effects? In my 
-opinion that is an absurd (and incorrect) point so i guess you must mean 
-something else, but i really cannot think what that is.
 
-I never said paravirt_ops is an ABI. I say that the ABI(s) _behind_ 
-paravirt_ops [in the backend] /does/ limit Linux, even if wrapped, 
-inevitably, and that i'm simply worried about having 4-5 independent 
-ABIs behind each paravirt_ops variant each creating a web of design 
-constraints on the rest of the kernel. To quote a past email of mine:
+> +	gpio_direction_input(pdata->sda_pin);
+> +	gpio_direction_input(pdata->scl_pin);
+> +	gpio_set_value(pdata->sda_pin, 0);
+> +	gpio_set_value(pdata->scl_pin, 0);
 
-|| 'paravirt ops can take care of it' - but that is just blatantly 
-|| _FALSE_: the ABI 'behind' the paravirt_ops 'shines through' via 
-|| functional coupling
+Surely you mean "output" in both cases.  So you can set the
+value.  Setting the value on an input pin is undefined.  ;)
 
-it doesnt matter in how big letters the wrapper functions have 'freedom' 
-written on them, the _real_ constraint is the user's expectation to have 
-the hypervisor work with Linux that worked with that particular VMI ABI 
-in v2.6.21. So the user wants to have its hypervisor 1.12 work with 
-Linux v2.6.22 - without having to update the hypervisor. And Linux 
-v2.6.23. Etc. /That/ is the 'ABI effect' i'm worried about. It is a 
-"compatibility web" that gets more and more entangled with every new 
-paravirt_ops implementation added.
- 
-In practice, when a problem comes up during code rewrite, 90% of the 
-time we can probably find a way around it via paravirt_ops and the 
-backend, but i'm simply worried about the remaining 10%. And that 10% is 
-not hypothetical at all, should i cite specific examples of problems 
-that i think cannot be solved via Linux-only modifications?
 
-I'm also worried about the sheer QA inertia of having an additional 4-5 
-hypervisor-ABI constraints on the correctness of the kernel, in addition 
-to the 2 main CPU variants we have at the moment.
+> +	printk(KERN_INFO "i2c-gpio: using pins 0x%x (sda) 0x%x (scl)\n",
+> +	       pdata->sda_pin, pdata->scl_pin);
 
-If we said "paravirt_ops must behave like real hardware" then we'd 
-probably remove some of that risk (although enforcement is still an 
-issue). But we _specifically_ say that no, it doesnt have to behave like 
-real hardware. We allow shortcuts, we allow modifications of behavior - 
-and that's good in quite many cases. But we allow really weird hacks 
-like the .safe_halt() thing. Our only present requirement it appears is 
-that "it works with today's hypervisor" - and that requirement 
-automatically transforms itself into: "all future kernels will work with 
-all past versions of the hypervisor".
+Please, no hex there.  I think dev_info() would be better; and it
+might be nice to report whether clock stretching is supported.
 
-	Ingo
+
+> --- a/include/linux/i2c-id.h
+> +++ b/include/linux/i2c-id.h
+> @@ -194,6 +194,7 @@
+>  #define I2C_HW_B_EM28XX		0x01001f /* em28xx video capture cards */
+>  #define I2C_HW_B_CX2341X	0x010020 /* Conexant CX2341X MPEG encoder cards */
+>  #define I2C_HW_B_INTELFB	0x010021 /* intel framebuffer driver */
+> +#define I2C_HW_B_GPIO		0x010022 /* Generic GPIO-based driver */
+
+It'd be nice to completely abolish those IDs, starting by not
+adding new ones.  Especially, not adding unused ones!
+
+- Dave
