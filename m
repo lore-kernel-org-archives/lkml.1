@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767237AbXCIMw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767241AbXCIMyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767237AbXCIMw6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 07:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767236AbXCIMw6
+	id S1767241AbXCIMyT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 07:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767240AbXCIMyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 07:52:58 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47998 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767237AbXCIMw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 07:52:56 -0500
-Date: Fri, 9 Mar 2007 13:52:42 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2/3] fs: introduce perform_write aop
-Message-ID: <20070309125242.GB15325@wotan.suse.de>
-References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070208105458.26443.41479.sendpatchset@linux.site> <20070309103913.GA4503@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070309103913.GA4503@infradead.org>
-User-Agent: Mutt/1.5.9i
+	Fri, 9 Mar 2007 07:54:19 -0500
+Received: from nz-out-0506.google.com ([64.233.162.225]:6036 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767236AbXCIMyR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 07:54:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PKtIxBqcLgNjjdUNnXkPJTkI2KNDggIkRVpxKBagC4evnvV5Wse1jUG46aau3zp3jISKFz8X25uBkUWQAi9J7IkPHCWw4qIYhpunXlEzgWeTW2QL4W+ptL5hiadY9UQKPwryhjHFlVakNmM+tsaWbfcUtNc5xugLjyAj2qP26Dg=
+Message-ID: <45F158F2.9040907@gmail.com>
+Date: Fri, 09 Mar 2007 21:54:10 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Greg KH <greg@kroah.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@osdl.org>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
+References: <20070111222627.66bb75ab.akpm@osdl.org>	<20070124135354.GI17836@stusta.de>	<45B76946.1070009@ru.mvista.com>	<45D756D7.4060106@ru.mvista.com>	<45D75853.1060607@ru.mvista.com>	<45E2DF13.9010200@ru.mvista.com>	<20070226092644.aea76b37.randy.dunlap@oracle.com>	<20070226211401.GC3810@kroah.com>	<45ED9390.3000308@ru.mvista.com> <20070306084751.b82a7b84.randy.dunlap@oracle.com>
+In-Reply-To: <20070306084751.b82a7b84.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+Hello,
 
-On Fri, Mar 09, 2007 at 10:39:13AM +0000, Christoph Hellwig wrote:
-> Hi Nick,
+Randy Dunlap wrote:
+>>     Erm, before I do that, could somebody explain what
+>>
+>> #define HAVE_PCI_REQ_REGIONS 2
+>>
+>> accompanying their declaration is for? I have't found any references to it in 
+>> the source. Should I duplicate it for CONFIG_PCI=n case (I guess not)?
 > 
-> sorry for my later reply, this has been on my to answer list for the last
-> month and I only managed to get back to it now.
+> I wouldn't since it's not used anywhere, but maybe Tejun could comment
+> on it...
 
-No worries, I haven't had much time to work on it since then anyway.
-Thanks for taking a look.
+This is the first time I see that macro.  There is no user in the whole
+source.  I think the best way is to just kill it.
 
-> On Thu, Feb 08, 2007 at 02:07:36PM +0100, Nick Piggin wrote:
-> > as a single call to copy a given amount of userdata at the given offset. This
-> > is more flexible, because the implementation can determine how to best handle
-> > errors, or multi-page ranges (eg. it may use a gang lookup), and only requires
-> > one call into the fs.
-> 
-> I really like this idea, especially for avoiding to call into the allocator
-> for every block.  Have you contacted the reiser4 folks whether this would
-> superceed their batch_write op completely?
+Thanks.
 
-I haven't yet, although that's been on my todo list when I get the API
-into a more final state.
-
-batch_write seems quite similar, however theirs is still page based, and
-a bit crufty, IMO. I found it to be really clean to just pass down offsets,
-but that may be a matter for debate.
-
-What they _do_ have is a write actor function that will do the data copy.
-This could be one possible way to get rid of ->prepare_write and
-->commit_write, but I haven't tried that yet, because I don't like adding
-more redirection and complexity if possible...
-
-> > One problem with this interface is that it cannot be used to write into the
-> > filesystem by any means other than already-initialised buffers via iovecs. So
-> > prepare/commit have to stay around for non-user data... 
-> 
-> Actually I think that's a a good thing to a certain extent.  It reminds
-> us that all other users are horrible abuse of the interface.  I'd even
-> go so far as to make batch_write a callback that the filesystem passes
-> to generic_file_aio_write to make clear it's not a generic thing but
-> a helper.  (It's not a generic thing because it's the upper layer writing
-> into the pagecache, not a pagecache to fs below operation).
-
-OK, if you think that's reasonable, then that is one hurdle out of the way ;)
-
-> The still leaves open on how to get rid of ->prepare_write and ->commit_write
-> compltely, and for that we'll probably need ->kernel_read and ->kernel_write
-> file operations.  But that's a step you shouldn't consider yet when doing
-> this work.
-
-I had a couple of possibilities for that. First is passing in a write actor
-(eg. defaulting to the normal iovec usercopy), but as I said I consider this
-more like fixing the problem with brute force (ie. just making the interface
-more complex). Maybe as a last resort, though.
-
-Another thing that would be much nicer from _my_ point of view would be to
-just make all kernel users set up their data in an iovec, and use the normal
-call with KERNEL_DS. Unfortunately, this is not the expected way for a lot
-of code to work, and it might require extra copying of the data.
-
-
-> > Another thing is that it seems to be less able to be implemented in generic,
-> > reusable code. It should be possible to introduce a new 2-op interface (or
-> > maybe just a new error handler op) which can be used correctly in generic code.
-> 
-> We should be able to find a nice abstraction for this, see my next mails.
-> 
-> > +	/*
-> > +	 * perform_write replaces prepare and commit_write callbacks.
-> > +	 */
-> 
-> This is a rather useless comment :)  Better remove it and add a proper
-> descriptions to Documentation/filesystems/vfs.txt and
-> Documentation/filesystems/Locking
-
-Will do. Thanks!
-
+-- 
+tejun
