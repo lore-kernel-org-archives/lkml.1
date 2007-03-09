@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932887AbXCIEak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933364AbXCIEcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932887AbXCIEak (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Mar 2007 23:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932926AbXCIEak
+	id S933364AbXCIEcl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Mar 2007 23:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933369AbXCIEcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Mar 2007 23:30:40 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34765 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932887AbXCIEaj (ORCPT
+	Thu, 8 Mar 2007 23:32:41 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:54104 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933364AbXCIEck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Mar 2007 23:30:39 -0500
-Date: Thu, 8 Mar 2007 20:30:41 -0800
-From: Paul Jackson <pj@sgi.com>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: menage@google.com, sam@vilain.net, vatsa@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       xemul@sw.ru, dev@sw.ru, winget@google.com, containers@lists.osdl.org,
-       serue@us.ibm.com, akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka
- containers on top of nsproxy!
-Message-Id: <20070308203041.1fc5d340.pj@sgi.com>
-In-Reply-To: <m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
-References: <20070301133543.GK15509@in.ibm.com>
-	<20070307174346.GA19521@sergelap.austin.ibm.com>
-	<20070307180055.GC17151@in.ibm.com>
-	<20070307205846.GB7010@sergelap.austin.ibm.com>
-	<6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
-	<m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
-	<6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
-	<45EF5A62.8000103@vilain.net>
-	<6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com>
-	<45EF5E71.7090101@vilain.net>
-	<6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
-	<m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 8 Mar 2007 23:32:40 -0500
+Message-ID: <45F0E309.70403@zytor.com>
+Date: Thu, 08 Mar 2007 20:31:05 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: anton@samba.org, hch@infradead.org, arjan@infradead.org,
+       zippel@linux-m68k.org, dmlb2000@gmail.com, linux-kernel@vger.kernel.org,
+       gdb@sourceware.org
+Subject: Re: PAGE_SIZE Availability Inconsistency
+References: <20070308.134825.45514445.davem@davemloft.net>	<20070309024324.GA24695@kryten>	<45F0E014.8060907@zytor.com> <20070308.202718.68040662.davem@davemloft.net>
+In-Reply-To: <20070308.202718.68040662.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The real trick is that I believe these groupings are designed to be something
-> you can setup on login and then not be able to switch out of.  Which means
-> we can't use sessions and process groups as the grouping entities as those 
-> have different semantics.
+David Miller wrote:
+> From: "H. Peter Anvin" <hpa@zytor.com>
+> Date: Thu, 08 Mar 2007 20:18:28 -0800
+> 
+>> Anton Blanchard wrote:
+>>> The other option is to create a v3 swap format that doesnt use any
+>>> PAGE_SIZE parameters.
+>> The best thing to do would be to look for the magic both at PAGE_SIZE 
+>> (for compatibility) and MIN_PAGE_SIZE (for sanity.)
+> 
+> That might work, but a large part of me says to go for v3
+> and do it cleanly.
 
-Not always on login.  For big administered systems, we use batch schedulers
-to manage the placement of multiple jobs, submitted to a run queue by users,
-onto the available compute resources.
+The advantage would be that it wouldn't require a v3 for platforms for 
+which MIN_PAGE_SIZE == PAGE_SIZE, which accounts for a very large 
+percentage of systems.
 
-But I agree with your conclusion - the existing task grouping mechanisms,
-while useful for some purposes, don't meet the need here.
+You still have to look for the darn magic in two places, so there is no 
+reason for it to be different.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+	-hpa
