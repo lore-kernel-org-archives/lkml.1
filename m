@@ -1,104 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbXCIWSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767564AbXCIWVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933409AbXCIWSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 17:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXCIWSd
+	id S1767564AbXCIWVM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 17:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767565AbXCIWVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 17:18:33 -0500
-Received: from wr-out-0506.google.com ([64.233.184.227]:15234 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbXCIWSc (ORCPT
+	Fri, 9 Mar 2007 17:21:12 -0500
+Received: from father.pmc-sierra.com ([216.241.224.13]:48145 "HELO
+	father.pmc-sierra.bc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1767564AbXCIWVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 17:18:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UoZ38WSLe100QV0mY2FeBT2A5E+Vo72KbyJzpWNx12mX4tsmmq/PSP82i7SpHnQMeWBU336Kydg3QqgAsEqzz37M/HNHb7VrdFw/tG15rDsgHTJpawJQ3r5nnUcAKW4ZMRm91O8qDrPZ6boMUnFHkqkHDW+M8lj7GE7BpQoTVQc=
-Message-ID: <48f7fe350703091418p133a955ar8bef47db33a42e3f@mail.gmail.com>
-Date: Fri, 9 Mar 2007 17:18:31 -0500
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: "Al Boldi" <a1426z@gawab.com>
-Subject: Re: Pluggable Schedulers (was: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler)
-Cc: "William Lee Irwin III" <wli@holomorphy.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200703092343.46276.a1426z@gawab.com>
+	Fri, 9 Mar 2007 17:21:11 -0500
+Message-ID: <45F1DDC8.1010503@pmc-sierra.com>
+From: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Marc St-Jean <stjeanma@pmc-sierra.com>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org
+Subject: Re: [PATCH] drivers: PMC MSP71xx LED driver
+Date: Fri, 9 Mar 2007 14:20:56 -0800 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703091625.55361.a1426z@gawab.com>
-	 <20070309135751.GE2986@holomorphy.com>
-	 <200703092343.46276.a1426z@gawab.com>
+X-Mailer: Internet Mail Service (5.5.2657.72)
+x-originalarrivaltime: 09 Mar 2007 22:20:56.0903 (UTC) FILETIME=[356A5D70:01C76299]
+user-agent: Thunderbird 1.5.0.10 (X11/20070221)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-from what I understood, there is a performance loss in plugsched
-schedulers because they have to share code....
 
-even if pluggable schedulers is not a viable option, being able to
-choose which one was built into the kernel would be easy (only takes a
-few ifdefs), i too think competition would be good
+Andrew Morton wrote:
+>  > On Mon, 26 Feb 2007 17:48:55 -0600 Marc St-Jean 
+> <stjeanma@pmc-sierra.com> wrote:
+>  > [PATCH] drivers: PMC MSP71xx LED driver
+>  >
+>  > Patch to add LED driver for the PMC-Sierra MSP71xx devices.
+>  >
+>  > This patch references some platform support files previously
+>  > submitted to the linux-mips@linux-mips.org list.
 
-On 3/9/07, Al Boldi <a1426z@gawab.com> wrote:
-> William Lee Irwin III wrote:
-> > William Lee Irwin III wrote:
-> > >> I consider policy issues to be hopeless political quagmires and
-> > >> therefore stick to mechanism. So even though I may have started the
-> > >> code in question, I have little or nothing to say about that sort of
-> > >> use for it.
-> > >> There's my longwinded excuse for having originated that tidbit of code.
-> >
-> > On Fri, Mar 09, 2007 at 04:25:55PM +0300, Al Boldi wrote:
-> > > I've no idea what both of you are talking about.
-> >
-> > The short translation of my message for you is "Linus, please don't
-> > LART me too hard."
->
-> Right.
->
-> > On Fri, Mar 09, 2007 at 04:25:55PM +0300, Al Boldi wrote:
-> > > How can giving people the freedom of choice be in any way
-> > > counter-productive?
-> >
-> > This sort of concern is too subjective for me to have an opinion on it.
->
-> How diplomatic.
->
-> > My preferred sphere of operation is the Manichean domain of faster vs.
-> > slower, functionality vs. non-functionality, and the like. For me, such
-> > design concerns are like the need for a kernel to format pagetables so
-> > the x86 MMU decodes what was intended, or for a compiler to emit valid
-> > assembly instructions, or for a programmer to write C the compiler
-> > won't reject with parse errors.
->
-> Sure, but I think, even from a technical point of view, competition is a good
-> thing to have.  Pluggable schedulers give us this kind of competition, that
-> forces each scheduler to refine or become obsolete.  Think evolution.
->
-> > If Linus, akpm, et al object to the
-> > design, then invalid output was produced. Please refer to Linus, akpm,
-> > et al for these sorts of design concerns.
->
-> Point taken.
->
-> Linus Torvalds wrote:
-> > And hey, you can try to prove me wrong. Code talks. So far, nobody has
-> > really ever come close.
-> >
-> > So go and code it up, and show the end result. So far, nobody who actually
-> > *does* CPU schedulers have really wanted to do it, because they all want
-> > to muck around with their own private versions of the data structures.
->
-> What about PlugSched?
->
->
-> Thanks!
->
-> --
-> Al
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Thanks for the feedback Andrew, I've implemented your recommendations.
+A few comments/answers below.
+
+[...]
+
+>  > +     /* determine the progress into the current cycle, relative to 
+> the POLL_PERIOD */
+>  > +     initialPeriod = (u8)(*ledRegPtr >> MSP_LED_INITIALPERIOD_SHIFT);
+>  > +     finalPeriod = (u8)(*ledRegPtr >> MSP_LED_FINALPERIOD_SHIFT);
+>  > +     ledTimeOut = (u8)(*ledRegPtr >> MSP_LED_WATCHDOG_SHIFT);
+>  > +     timer = (u8)(private_msp_led_register[ledId] >> 
+> MSP_LED_WATCHDOG_SHIFT);
+> 
+> I assume all these (u8) casts are unneeded.
+> 
+>  > +     totalPeriod = (u16)initialPeriod + (u16)finalPeriod;
+> 
+> And here.
+
+I assume the author didn't expect the integer promotion to occur until
+after the addition.
+
+[...]
+
+> 
+>  > +{
+>  > +     int pin;
+>  > +     u8 currDirectionBits, currDataBits, prevDataBits, 
+> prevDirectionBits;
+>  > +     currDirectionBits = currDataBits = prevDataBits = 
+> prevDirectionBits = 0;
+> 
+> The unneeded initialisations here are just to suppress the incorrect gcc
+> warning, yes?
+
+No, initialization is needed as they are passed by reference to functions
+setting/clearing bits.
+
+> If so, that should at least be comented.  And try to avoid declarations o
+> this form as well as multiple assignments.  So you want:
+> 
+>         u8 curr_direction_bits = 0;     /* Suppress gcc warning */
+>         u8 curr_data_bits = 0;          /* Suppress gcc warning */
+>         u8 prev_data_bits = 0;          /* Suppress gcc warning */
+>         u8 prev_direction_bits = 0;     /* Suppress gcc warning */
+> 
+> the initialisation does cause extra ode to be generated and we usually just
+> let te warning come out.  I think later gcc's fixed it.
+
+OK, I've split them on to separate line but without the comment.
+
+[...]
+
+> 
+>  > +void __init pmctwiled_setup(void)
+>  > +{
+>  > +     static int called;
+>  > +     int dev;
+>  > +
+>  > +     /* check if already initialized */
+>  > +     if( called )
+>  > +             return;
+> 
+> This cannot happen (can it?)
+
+Yes it can happen. Platform code can call pmctwiled_setup (that's why
+the function was written) before the pmctwiled_init function runs.
+This is so various sub-system init functions can ensure initialization
+has occurred before setting start-up values.
+
+If you have an idea on a better way to accomplish this I'm all ears.
+
+
+>  > +     /* initialize LEDs to default state */
+>  > +     for( dev = 0; dev < MSP_LED_NUM_DEVICES; dev++ ) {
+>  > +             int pin;
+>  > +             pmctwiled_device[dev] = NULL;
+>  > +            
+>  > +             for( pin = 0; pin < 8; pin++ ) {
+>  > +                     int led = MSP_LED_DEVPIN(dev,pin);
+>  > +                     if (mspLedInitialInputState[dev] & (1 << pin)) 
+> {                               
+>  > +                             msp_led_disable(led);
+>  > +                     } else {
+>  > +                             msp_led_enable(led);
+>  > +                             if (mspLedInitialPinState[dev] & (1 << 
+> pin))                                                                   
+> 
+>  > +                                     msp_led_turn_on(led);           
+>                
+>  > +                             else                   
+>  > +                                     msp_led_turn_off(led);
+>  > +                     }
+>  > +                    
+>  > +                     /* Initialize the private led register memory */
+>  > +                     private_msp_led_register[led] = 0;
+>  > +             }
+>  > +     }
+>  > +    
+>  > +     /* indicate initialised */
+>  > +     called++;
+>  > +}
+
+[...]
+
+>  > +typedef enum {
+>  > +     MSP_LED_INPUT = 0,
+>  > +     MSP_LED_OUTPUT,
+>  > +} msp_led_direction_t;
+> 
+> No typedefs, please.   Convert this to
+> 
+> enum msp_led_direction {
+>         ...
+> };
+
+Alright I'll change it but it wasn't mentioned in the review of
+the previous drivers and they've been resubmitted with some.
+A quick search shows several drivers typedef'ing enums with and
+without *_t suffixes.
+
+Is there a new style rule or are only core kernel types allowed to
+use _t?
+
+
+>  > +/* Output modes */
+>  > +typedef enum {
+>  > +     MSP_LED_OFF = 0,                /* Off steady */
+>  > +     MSP_LED_ON,                             /* On steady */
+>  > +     MSP_LED_BLINK,                  /* On for initialPeriod, off 
+> for finalPeriod */
+>  > +     MSP_LED_BLINK_INVERT,   /* Off for initialPeriod, on for 
+> finalPeriod */
+>  > +} msp_led_mode_t;
+> 
+> Ditto.
+> 
+>  > +/* For non-LED pins, these macros set HI and LO accordingly */
+>  > +#define msp_led_pin_hi       msp_led_turn_off
+>  > +#define msp_led_pin_lo       msp_led_turn_on
+> 
+> eww.
+> 
+> static inline wrapper functions are preferred.  Write code in C, not cpp
+> where possible.
+
+I agree the wrappers are cleaner but don't understand how this relates
+to C++.
+
+Marc
