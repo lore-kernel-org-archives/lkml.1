@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767163AbXCILCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767171AbXCILEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767163AbXCILCR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 06:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767170AbXCILCR
+	id S1767171AbXCILEj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 06:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767173AbXCILEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 06:02:17 -0500
-Received: from mail.queued.net ([207.210.101.209]:3007 "EHLO mail.queued.net"
+	Fri, 9 Mar 2007 06:04:38 -0500
+Received: from z2.cat.iki.fi ([212.16.98.133]:51567 "EHLO z2.cat.iki.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767163AbXCILCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 06:02:16 -0500
-Message-ID: <45F13EBE.5040804@debian.org>
-Date: Fri, 09 Mar 2007 06:02:22 -0500
-From: Andres Salomon <dilinger@debian.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] Input: psmouse - create PS/2 protocol options for
- Kconfig
-References: <45D43115.6060806@debian.org> <45D50101.60802@debian.org>	 <20070215173024.adc54d6c.akpm@linux-foundation.org>	 <200702160028.09251.dtor@insightbb.com> <45D54260.7080302@debian.org> <d120d5000702160742v14ac197eica567a15cc1e85d4@mail.gmail.com>
-In-Reply-To: <d120d5000702160742v14ac197eica567a15cc1e85d4@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1767171AbXCILEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 06:04:38 -0500
+Date: Fri, 9 Mar 2007 13:04:36 +0200
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: Niklaus <niklaus@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: more than 65535 outbound connections
+Message-ID: <20070309110436.GD3883@mea-ext.zmailer.org>
+References: <85e0e3140703090016h609ecc5t504121a99bcd3e44@mail.gmail.com> <85e0e3140703090019r7daf5ce4g9269925773374bf7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <85e0e3140703090019r7daf5ce4g9269925773374bf7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On 2/16/07, Andres Salomon <dilinger@debian.org> wrote:
->> Dmitry Torokhov wrote:
->> > On Thursday 15 February 2007 20:30, Andrew Morton wrote:
->> >> On Thu, 15 Feb 2007 19:55:29 -0500
->> >> Andres Salomon <dilinger@debian.org> wrote:
->> [...]
->> >> Perhaps a nicer implementation would be to have a separate .c file
->> for each
->> >> variant.
->> >>
->> >
->> > Having completely separate sub-drivers is very hard because of very
->> delicate
->> > PS/2 protocol probing....
->> >
->> > What do you think about patch below? It somewhat reduces #ifdef
->> clutter in main
->> > module moving it in .h files...
->> >
->>
->> Normally, I'm a fan of that sort of thing.  However, in this case, I
->> think it makes sense to have the #ifdefs right in the probe function; at
->> least for me, it makes it easier to understand what's going on.  The
->> synaptics stuff is especially tricky; with a cursory glance over the
->> code, one might assume that all the synaptics functions disappear when
->> CONFIG_MOUSE_PS2_SYNAPTICS is unset.  However, if the #ifdef's are in
->> the probe function, it's pretty clear that some synaptics functions
->> still get called even when CONFIG_MOUSE_PS2_SYNAPTICS is unset.
->>
+On Fri, Mar 09, 2007 at 01:49:34PM +0530, Niklaus wrote:
+> Hi,
 > 
-> Thit is a valid point but #ifdef maze in the middle of already messy
-> psmouse-extensions() is too much for me. I guess I will just add a
-> comment explaining that synaptics probing is really special.
+> I could be wrong in the below description or might have misunderstood
+> many of the concepts , please correct appropriately.
 > 
+> 65535 ports can allowed . So on a  machine namely C you can have max
+> 65535 outbound connections
 
-I haven't seen patches in your tree; are you waiting for me to do the
-cleanups and resend?
+IP connections are quads (four-tuples), machine A and B IP addresses,
+plus 16 bit port numbers at both ends.
 
+You can have about  64 k * 3 G = 192 T  connections out from a machine
+to any single port number out there to all existing IP addresses.
+
+If  A.ip, B.ip, and B.port  stay the same, A can setup up to some
+10 - 50 thousand parallel connections.  (Depending on allowed dynamic
+source IP port number space at machine A.)
+
+If either B.ip or B.port changes, A can reuse a port that is actively
+connected to something. Resulting four-tuple is different -> connection
+is different.
+
+Does Linux reuse port numbers in this way ?
+It most likely does, but I didn't verify.
+
+> What i was thinking was to send to another machines A and B from the
+> same port [X] and then when we get data from it to [X] we can the send
+> it to the correct application using stateful mapping or storing some
+> information . The machines A and B are unaware of this mapping from
+> the C  machine.
+
+You want to make a "L4 switch" -- a "load balancer" ?
+That thing is a NAT-box, and is really not making buffered TCP flows,
+but rather mapping IP/TCP header rewriters to divert the flows to new
+destinations.
+
+> Can we increase it by anymeans in the kernel. Does we have patches for the 
+> above
+> 
+> i read on the web that terry lambert has got 1.6 million simultaneous
+> connection ? how is the way it is done.
+> 
+> http://kerneltrap.org/node/277
+
+With 50 thousand connections per single ( A.ip / B.ip / B.port ) set,
+one needs only 32  B.ports or A.ip:s or B.ip:s to do that 1.6 million
+parallel TCP streams.
+
+Such does eat up lots and lots system kernel memory...
+
+> Regs
+> Nik
+
+/Matti Aarnio
 
