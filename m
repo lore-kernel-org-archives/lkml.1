@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766792AbXCIV7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767562AbXCIV74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766792AbXCIV7M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 16:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767555AbXCIV7M
+	id S1767562AbXCIV74 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 16:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767560AbXCIV74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 16:59:12 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:40359 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766792AbXCIV7K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 16:59:10 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Fri, 9 Mar 2007 16:43:24 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: dead(?) header files in the source tree
-Message-ID: <Pine.LNX.4.64.0703091633350.29697@CPE00045a9c397f-CM001225dbafb6>
+	Fri, 9 Mar 2007 16:59:56 -0500
+Received: from gw.goop.org ([64.81.55.164]:36015 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767557AbXCIV7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 16:59:54 -0500
+Message-ID: <45F1D8D7.9040207@goop.org>
+Date: Fri, 09 Mar 2007 13:59:51 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
+References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org> <20070309210430.GA14905@elte.hu> <20070309212714.GU10574@sequoia.sous-sol.org> <20070309214704.GA20988@elte.hu>
+In-Reply-To: <20070309214704.GA20988@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> i am worried whether /any/ future change to the upstream kernel's design 
+> can be adopted via paravirt_ops, via the current VMI ABI. And by /any/ i 
+> mean truly any. And whether that can be done is not a function of the 
+> flexibility of paravirt_ops, it's a function of the flexibility of the 
+> VMI ABI.
 
-  following up on an earlier post by stefan richter, i wrote a
-brute-force little script that scanned the source tree, looking for
-header files that weren't included from *anywhere* in the tree.  what
-turned up was the following:
+Come on. You're talking as if these changes can be made in a vacuum,
+with no regard to any external constraints.  In reality, any such change
+is limited by concerns like:
 
-./arch/m68k/atari/atasound.h
-./arch/arm/mach-s3c2410/bast.h
-./arch/ppc/syslib/cpc710.h
-./arch/um/kernel/tt/include/mode_kern-tt.h
-./arch/powerpc/platforms/83xx/mpc834x_itx.h
-./drivers/serial/crisv10.h
-./drivers/isdn/hardware/eicon/dbgioctl.h
-./drivers/char/digi.h
-./drivers/message/i2o/i2o_lan.h
-./drivers/net/wan/lmc/lmc_media.h
-./drivers/net/skfp/h/lnkstat.h
-./drivers/isdn/hardware/eicon/main_if.h
-./drivers/message/fusion/lsi/mpi_inb.h
-./drivers/message/fusion/lsi/mpi_log_fc.h
-./drivers/video/riva/nv4ref.h
-./drivers/scsi/pci2000.h
-./drivers/char/drm/via_mm.h
-./drivers/net/chelsio/vsc8244_reg.h
-./include/linux/elfnote.h
-./sound/pci/au88x0/au88x0_sb.h
-./sound/pci/cs46xx/imgs/cwcemb80.h
+   1. does it make sense in terms of kernel design?
+   2. can all the (real) architectures support it?
+   3. does it make sense on real hardware?
+   4. does it require massive kernel-wide changes, or does it have
+      limited scope?
+   5. etc, etc
 
-  this list represents an absolute *minimum* of what are apparently
-orphaned header files, in that they are not referenced from *anywhere
-else* in the tree, not even from include directives that are
-currently commented out.  in short, they are truly homeless (assuming
-i didn't screw up my programming, that is).
+Obviously one of the things to be considered among the many other issues
+is "what effect does this have on the paravirt_ops interface?".
 
-  anyone want to get rid of some of them?
+Now it may be that you've got a change that's absolutely great for
+everyone, and the only blocker is that the FoobieVisor can't deal with
+it.  OK, great, then you'd have a point.
 
-rday
+But are you really saying that one of your handwavy proposals is just
+fine on a pre-apic i486/mmu-less m68k/whatever, but can't be made to
+work on a hypervisor?
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Come up with a specific proposal, and we'll work out the details.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+    J
