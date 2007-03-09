@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965767AbXCIH4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965771AbXCIH6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965767AbXCIH4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 02:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965771AbXCIH4V
+	id S965771AbXCIH6O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 02:58:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965777AbXCIH6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 02:56:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58667 "EHLO ogre.sisk.pl"
+	Fri, 9 Mar 2007 02:58:14 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:47811 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965767AbXCIH4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 02:56:20 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] swsusp: Disable nonboot CPUs before entering platform suspend
-Date: Fri, 9 Mar 2007 08:58:55 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200703072044.12021.rjw@sisk.pl> <20070307210716.GA4913@ucw.cz>
-In-Reply-To: <20070307210716.GA4913@ucw.cz>
+	id S965771AbXCIH6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 02:58:13 -0500
+Date: Fri, 9 Mar 2007 08:54:53 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: kaber@trash.net
+cc: James Morris <jmorris@namei.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>
+Subject: Re: [PATCH] chaostables
+In-Reply-To: <45F044A0.50001@trash.net>
+Message-ID: <Pine.LNX.4.61.0703090822360.521@yvahk01.tjqt.qr>
+References: <45F044A0.50001@trash.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703090858.55632.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 7 March 2007 22:07, Pavel Machek wrote:
-> Hi!
-> 
-> > Prevent the WARN_ON() in arch/x86_64/kernel/acpi/sleep.c:init_low_mapping()
-> > from triggering by disabling nonboot CPUs before we finally enter the platform
-> > suspend.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  kernel/power/disk.c |    1 +
-> >  kernel/power/user.c |    2 +-
-> >  2 files changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.21-rc2-mm2/kernel/power/disk.c
-> > ===================================================================
-> > --- linux-2.6.21-rc2-mm2.orig/kernel/power/disk.c
-> > +++ linux-2.6.21-rc2-mm2/kernel/power/disk.c
-> > @@ -61,6 +61,7 @@ static void power_down(suspend_disk_meth
-> >  	switch(mode) {
-> >  	case PM_DISK_PLATFORM:
-> >  		if (pm_ops && pm_ops->enter) {
-> > +			disable_nonboot_cpus();
-> >  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-> >  			pm_ops->enter(PM_SUSPEND_DISK);
-> >  			break;
-> 
-> ...so, if pm_ops is non-null, power_down does nonboot cpu disabling,
-> otherwise we proceed with cpus enabled?
-> 
-> That looks ugly.
-> 
-> Is the warning bogus?
+Hello,
 
-Well, maybe.  I'm not sure.
+On Thu, 08 Mar 2007 18:15:12 +0100, Patrick McHardy wrote:
+>>>>Index: linux-2.6.21-rc3/net/netfilter/xt_CHAOS.c
+>>>>+	/* Equivalent to:
+>>>>+	 * -A chaos -m statistic --mode random --probability \
+>>>>+	 *         $reject_percentage -j REJECT --reject-with host-unreach;
+>>>>+	 * -A chaos -m statistic --mode random --probability \
+>>>>+	 *         $delude_percentage -j DELUDE;
+[2nd one should have had -p tcp]
+>>>>+	 * -A chaos -j DROP;
+>>>>+	 */
+>>>
+>>>What does this do that can't be done by simply adding those individual 
+>>>rules?
+>>
+>>It "wraps it all up", reducing the overall number of rules and user 
+>>chains required in the filtering tables to implement the wanted logic. 
+>>Reducing the number of filtering rules also reduces the time process a 
+>>packet. These two are, in my opinion, a good thing.
+>
+>By that argument we could just codify every ruleset and put it in the
+>kernel. Its three simple rules. There is no chance I'm going to take
+>this part.
 
-> Or maybe we should *always* disable nonboot cpus in powerdown path?
+While that is indeed true, I think users will have a judgement (perhaps 
+call it "first impression") that puts a certain set of NF rules into 
+either of the two categories "this is fundamental/generic enough to 
+warrant its own module" and "this does not". While
 
-I think we should do that.
+  -A INPUT -s 134.76.0.0/16 -p tcp --dport 22 -j ACCEPT;
+  -A INPUT -p tcp --dport 80 -j ACCEPT;
+  -A INPUT -j REJECT;
 
-> > Index: linux-2.6.21-rc2-mm2/kernel/power/user.c
-> > ===================================================================
-> > --- linux-2.6.21-rc2-mm2.orig/kernel/power/user.c
-> > +++ linux-2.6.21-rc2-mm2/kernel/power/user.c
-> > @@ -398,9 +398,9 @@ static int snapshot_ioctl(struct inode *
-> >  
-> >  		case PMOPS_ENTER:
-> >  			if (data->platform_suspend) {
-> > +				disable_nonboot_cpus();
-> >  				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-> >  				error = pm_ops->enter(PM_SUSPEND_DISK);
-> > -				error = 0;
-> >  			}
-> >  			break;
-> 
-> Foe an userland application, disabling cpus during pmops_enter is at
-> least surprising.......
+is clearly something that only applies to one machine only, perhaps a
+little subnet, or at best, the servers on the company network, it is not
+"for everyone". xt_CHAOS on the other hand was meant - if you want so - as
+a replacement for DROP/REJECT and the default policy, e.g.:
 
-Yes, but this is not a usual ioctl().  OTOH, we can call enable_nonboot_cpus()
-if pm_ops->enter(PM_SUSPEND_DISK) returns an error (otherwise it souldn't
-return at all, no?).
+	# Block all evil, even if from inside the house.
+		-A INPUT -m evil -j CHAOS;
+	# Ignore stray packets not directed at us
+		-A INPUT -d mybase -m this -j ACCEPT;
+	# Management console
+		-A INPUT -s yourbase -m that -j ACCEPT;
+	# Chain policy (instead, or supplemental to, -P INPUT DROP)
+		-A INPUT -j CHAOS;
 
-Rafael
+(-m evil, -m this and -m that are placeholders and are not seriously
+considered to get their own kernel module anytime.)
+
+For me, this falls under generic-enough, but your (and other people's) mileage
+migt vary.
+
+
+Thank you for the comments,
+
+Jan
