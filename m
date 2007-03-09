@@ -1,83 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbXCIO72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbXCIPFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752675AbXCIO72 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 09:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXCIO72
+	id S1752157AbXCIPFe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 10:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030493AbXCIPFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 09:59:28 -0500
-Received: from kanga.kvack.org ([66.96.29.28]:53242 "EHLO kanga.kvack.org"
+	Fri, 9 Mar 2007 10:05:34 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4030 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752348AbXCIO71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 09:59:27 -0500
-Date: Fri, 9 Mar 2007 09:59:20 -0500
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sys_write() racy for multi-threaded append?
-Message-ID: <20070309145920.GJ6209@kvack.org>
-References: <f2b55d220703081508r3d8d033cu99f53104943d16cb@mail.gmail.com> <45F09F9C.4030801@cosmosbay.com> <f2b55d220703081557k8101e68g1a3556e42f68416@mail.gmail.com> <45F0A71C.2000800@cosmosbay.com> <f2b55d220703081645vc78905cj56afbc58ad2113d8@mail.gmail.com> <20070309013405.GI6209@kvack.org> <f2b55d220703090419w755d42d0mea4f220e3caaa59a@mail.gmail.com>
+	id S1752157AbXCIPFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 10:05:32 -0500
+Date: Fri, 9 Mar 2007 09:19:07 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc: linux-wireless@vger.kernel.org
+Subject: Re: 2.6.21-rc2-mm2: drivers/net/wireless/libertas/debugfs.c addr bogosity
+Message-ID: <20070309141906.GA3296@tuxdriver.com>
+References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <20070307224116.GE3441@stusta.de> <20070307150057.4e6342dc.akpm@linux-foundation.org> <20070309021146.GL4575@bakeyournoodle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f2b55d220703090419w755d42d0mea4f220e3caaa59a@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070309021146.GL4575@bakeyournoodle.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 04:19:55AM -0800, Michael K. Edwards wrote:
-> On 3/8/07, Benjamin LaHaise <bcrl@kvack.org> wrote:
-> >Any number of things can cause a short write to occur, and rewinding the
-> >file position after the fact is just as bad.  A sane app has to either
-> >serialise the writes itself or use a thread safe API like pwrite().
+Probably should copy me and linux-wireless@vger.kernel.org.  Other than
+that, this looks fine to me.  I'll queue it up shortly.
+
+John
+
+On Fri, Mar 09, 2007 at 01:11:46PM +1100, Tony Breeds wrote:
+> On Wed, Mar 07, 2007 at 03:00:57PM -0800, Andrew Morton wrote:
+> > On Wed, 7 Mar 2007 23:41:16 +0100
+> > Adrian Bunk <bunk@stusta.de> wrote:
+> > 
+> > > On Tue, Mar 06, 2007 at 12:44:08AM -0800, Andrew Morton wrote:
+> > > >...
+> > > > Changes since 2.6.20-rc2-mm1:
+> > > >...
+> > > >  git-netdev-all.patch
+> > > >...
+> > > >  git trees
+> > > >...
+> > > 
+> > > drivers/net/wireless/libertas/debugfs.c contains:
+> > >   #define item_addr(n) ((u32) &((wlan_adapter *)0)->n)
+> > > 
+> > > This is wrong on 64bit architectures.
+> > 
+> > Is OK - it is simply yet another reimplementation of offsetof().  Hint.
 > 
-> Not on a pipe/FIFO.  Short writes there are flat out verboten by
-> 1003.1 unless O_NONBLOCK is set.  (Not that f_pos is interesting on a
-> pipe except as a "bytes sent" indicator  -- and in the multi-threaded
-> scenario, if you do the speculative update that I'm suggesting, you
-> can't 100% trust it unless you ensure that you are not in
-> mid-read/write in some other thread at the moment you sample f_pos.
-> But that doesn't make it useless.)
+> Perhaps something like?
+> 
+> Against 2.6.21-rc3-mm2
+> 
+> From: Tony Breeds <tony@bakeyournoodle.com>
+> 
+> Cleanup drivers/net/wireless/libertas/debugfs.c to use standard kernel macros and functions.
+> 
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> 
+> ---
+> only compile tested on x86
+> 
+>  debugfs.c |   41 ++++-------------------------------------
+>  1 file changed, 4 insertions(+), 37 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/libertas/debugfs.c b/drivers/net/wireless/libertas/debugfs.c
+> index 3ad1e03..51dfd20 100644
+> --- a/drivers/net/wireless/libertas/debugfs.c
+> +++ b/drivers/net/wireless/libertas/debugfs.c
+> @@ -1772,8 +1772,8 @@ void libertas_debugfs_remove_one(wlan_private *priv)
+>  
+>  /* debug entry */
+>  
+> -#define item_size(n) (sizeof ((wlan_adapter *)0)->n)
+> -#define item_addr(n) ((u32) &((wlan_adapter *)0)->n)
+> +#define item_size(n)	(FIELD_SIZEOF(wlan_adapter, n))
+> +#define item_addr(n)	(offsetof(wlan_adapter, n))
+>  
+>  struct debug_data {
+>  	char name[32];
+> @@ -1789,40 +1789,7 @@ static struct debug_data items[] = {
+>  	{"psstate", item_size(psstate), item_addr(psstate)},
+>  };
+>  
+> -static int num_of_items = sizeof(items) / sizeof(items[0]);
+> -
+> -/**
+> - *  @brief convert string to number
+> - *
+> - *  @param s   	   pointer to numbered string
+> - *  @return 	   converted number from string s
+> - */
+> -static int string_to_number(char *s)
+> -{
+> -	int r = 0;
+> -	int base = 0;
+> -
+> -	if ((strncmp(s, "0x", 2) == 0) || (strncmp(s, "0X", 2) == 0))
+> -		base = 16;
+> -	else
+> -		base = 10;
+> -
+> -	if (base == 16)
+> -		s += 2;
+> -
+> -	for (s = s; *s != 0; s++) {
+> -		if ((*s >= 48) && (*s <= 57))
+> -			r = (r * base) + (*s - 48);
+> -		else if ((*s >= 65) && (*s <= 70))
+> -			r = (r * base) + (*s - 55);
+> -		else if ((*s >= 97) && (*s <= 102))
+> -			r = (r * base) + (*s - 87);
+> -		else
+> -			break;
+> -	}
+> -
+> -	return r;
+> -}
+> +static int num_of_items = ARRAY_SIZE(items);
+>  
+>  /**
+>   *  @brief proc read function
+> @@ -1912,7 +1879,7 @@ static int wlan_debugfs_write(struct file *f, const char __user *buf,
+>  			if (!p2)
+>  				break;
+>  			p2++;
+> -			r = string_to_number(p2);
+> +			r = simple_strtoul(p2, NULL, 0);
+>  			if (d[i].size == 1)
+>  				*((u8 *) d[i].addr) = (u8) r;
+>  			else if (d[i].size == 2)
+> Yours Tony
+> 
+>   linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+>   Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Writes to a pipe/FIFO are atomic, so long as they fit within the pipe buffer 
-size, while f_pos on a pipe is undefined -- what exactly is the issue here?  
-The semantics you're assuming are not defined by POSIX.  Heck, even looking 
-at a man page for one of the *BSDs states "Some devices are incapable of 
-seeking.  The value of the pointer associated with such a device is 
-undefined."  What part of undefined is problematic?
-
-> As to what a "sane app" has to do: it's just not that unusual to write
-> application code that treats a short read/write as a catastrophic
-> error, especially when the fd is of a type that is known never to
-> produce a short read/write unless something is drastically wrong.  For
-> instance, I bomb on short write in audio applications where the driver
-> is known to block until enough bytes have been read/written, period.
-> When switching from reading a stream of audio frames from thread A to
-> reading them from thread B, I may be willing to omit app
-> serialization, because I can tolerate an imperfect hand-off in which
-> thread A steals one last frame after thread B has started reading --
-> as long as the fd doesn't get screwed up.  There is no reason for the
-> generic sys_read code to leave a race open in which the same frame is
-> read by both threads and a hardware buffer overrun results later.
-
-I hope I don't have to run any of your software.  Short writes can and do 
-happen because of a variety of reasons: signals, memory allocation failures, 
-quota being exceeded....  These are all error conditions the kernel has to 
-provide well defined semantics for, as well behaved applications will try 
-to handle them gracefully.
-
-> In short, I'm not proposing that the kernel perfectly serialize
-> concurrent reads and writes to arbitrary fd types.  I'm proposing that
-> it not do something blatantly stupid and easily avoided in generic
-> code that makes it impossible for any fd type to guarantee that, after
-> 10 successful pipelined 100-byte reads or writes, f_pos will have
-> advanced by 1000.
-
-The semantics you're looking for are defined for regular files with 
-O_APPEND.  Anything else is asking for synchronization that other 
-applications do not require and do not desire.
-
-		-ben
 -- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <zyntrop@kvack.org>.
+John W. Linville
+linville@tuxdriver.com
