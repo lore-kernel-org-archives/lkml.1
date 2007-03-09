@@ -1,115 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767582AbXCIXMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767630AbXCIXMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767582AbXCIXMX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 18:12:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767627AbXCIXMX
+	id S1767630AbXCIXMs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 18:12:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767632AbXCIXMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 18:12:23 -0500
-Received: from amsfep20-int.chello.nl ([62.179.120.15]:36946 "EHLO
-	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767582AbXCIXMV (ORCPT
+	Fri, 9 Mar 2007 18:12:48 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:42498 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767627AbXCIXMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 18:12:21 -0500
-Subject: Re: [PATCH 3/7] revoke: core code
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, serue@us.ibm.com
-In-Reply-To: <Pine.LNX.4.64.0703091014450.32320@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0703091014450.32320@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain
-Date: Fri, 09 Mar 2007 13:30:13 +0100
-Message-Id: <1173443414.4429.7.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Mar 2007 18:12:37 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Fri, 9 Mar 2007 18:09:58 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
+In-Reply-To: <1173481052.32234.137.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0703091808490.5714@CPE00045a9c397f-CM001225dbafb6>
+References: <1173419792.32234.131.camel@localhost.localdomain>
+ <1173481052.32234.137.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-09 at 10:15 +0200, Pekka J Enberg wrote:
+On Sat, 10 Mar 2007, Rusty Russell wrote:
 
-> +static int revoke_vma(struct vm_area_struct *vma, struct zap_details *details)
-> +{
-> +	unsigned long restart_addr, start_addr, end_addr;
-> +	int need_break;
-> +
-> +	start_addr = vma->vm_start;
-> +	end_addr = vma->vm_end;
-> +
-> +	/*
-> + 	 * Not holding ->mmap_sem here.
-> +	 */
-> +	vma->vm_flags |= VM_REVOKED;
-> +	smp_mb();
+> On Fri, 2007-03-09 at 16:56 +1100, Rusty Russell wrote:
+> > __builtin_types_compatible_p() has been around since gcc 2.95, and we
+> > don't use it anywhere.  This patch quietly fixes that.
+>
+> OK, many people complained that it needed a comment.  Good point!
+> ==
+> Add comment to ARRAY_SIZE macro.
+>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>
+> diff -r 933e410f204f include/linux/kernel.h
+> --- a/include/linux/kernel.h	Sat Mar 10 09:55:31 2007 +1100
+> +++ b/include/linux/kernel.h	Sat Mar 10 09:55:53 2007 +1100
+> @@ -35,6 +35,7 @@ extern const char linux_proc_banner[];
+>  #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+>  #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
+>
+> +/* GCC is awesome. */
+>  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])			      \
+>  	+ sizeof(typeof(int[1 - 2*!!__builtin_types_compatible_p(typeof(arr), \
+>  		 typeof(&arr[0]))]))*0)
 
-Hmm, i_mmap_lock pins the vma and excludes modifications, but doesn't
-exclude concurrent faults.
+ah, but is that "universe" kind of awesome, or the "hot dogs" kind of
+awesome?
 
-I guess its save.
+http://youtube.com/watch?v=0rYT0YvQ3hs
 
-> +  again:
-> +	restart_addr = zap_page_range(vma, start_addr, end_addr - start_addr,
-> +				      details);
-> +
-> +	need_break = need_resched() || need_lockbreak(details->i_mmap_lock);
-> +	if (need_break)
-> +		goto out_need_break;
-> +
-> +	if (restart_addr < end_addr) {
-> +		start_addr = restart_addr;
-> +		goto again;
-> +	}
-> +	return 0;
-> +
-> +  out_need_break:
-> +	spin_unlock(details->i_mmap_lock);
-> +	cond_resched();
-> +	spin_lock(details->i_mmap_lock);
-> +	return -EINTR;
+rday
 
-I'm not sure this scheme works, given a sufficiently loaded machine,
-this might never complete.
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-> +}
-> +
-> +static int revoke_mapping(struct address_space *mapping, struct file *to_exclude)
-> +{
-> +	struct vm_area_struct *vma;
-> +	struct prio_tree_iter iter;
-> +	struct zap_details details;
-> +	int err = 0;
-> +
-> +	details.i_mmap_lock = &mapping->i_mmap_lock;
-> +
-> +	spin_lock(&mapping->i_mmap_lock);
-> +	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, 0, ULONG_MAX) {
-> +		if (vma->vm_flags & VM_SHARED && vma->vm_file != to_exclude) {
-
-I'm never sure of operator precedence and prefer:
-
- (vma->vm_flags & VM_SHARED) && ...
-
-which leaves no room for error.
-
-> +			err = revoke_vma(vma, &details);
-> +			if (err)
-> +				goto out;
-> +		}
-> +	}
-> +
-> +	list_for_each_entry(vma, &mapping->i_mmap_nonlinear, shared.vm_set.list) {
-> +		if (vma->vm_flags & VM_SHARED && vma->vm_file != to_exclude) {
-
-Idem.
-
-> +			err = revoke_vma(vma, &details);
-> +			if (err)
-> +				goto out;
-> +		}
-> +	}
-> +  out:
-> +	spin_unlock(&mapping->i_mmap_lock);
-> +	return err;
-> +}
-
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
