@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbXCISHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767449AbXCISKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752288AbXCISHs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 13:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXCISHs
+	id S1767449AbXCISKP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 13:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767451AbXCISKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 13:07:48 -0500
-Received: from rtr.ca ([64.26.128.89]:2387 "EHLO mail.rtr.ca"
+	Fri, 9 Mar 2007 13:10:15 -0500
+Received: from mtaout5.012.net.il ([84.95.2.13]:19979 "EHLO mtaout5.012.net.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbXCISHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 13:07:34 -0500
-Message-ID: <45F1A263.5020407@rtr.ca>
-Date: Fri, 09 Mar 2007 13:07:31 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Matt Mackall <mpm@selenic.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-References: <20070309053931.GA10459@waste.org>	<200703091728.03978.kernel@kolivas.org>	<20070309075358.GA10394@waste.org>	<200703091936.47128.kernel@kolivas.org>	<87slce945h.fsf@depni.sinp.msu.ru>	<20070309094904.GC2986@holomorphy.com> <87irdasnz4.fsf@depni.sinp.msu.ru>
-In-Reply-To: <87irdasnz4.fsf@depni.sinp.msu.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1767449AbXCISKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 13:10:13 -0500
+Date: Fri, 09 Mar 2007 20:10:03 +0200
+From: Avi Kivity <avi@argo.co.il>
+Subject: Re: [PATCH 4/4 TRY#3] optimize and simplify get_cycles_sync()
+In-reply-to: <20070309151511.GE13481@amd.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: discuss@x86-64.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
+Message-id: <45F1A2FB.7040206@argo.co.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7BIT
+X-Greylist: Sender IP whitelisted,
+ not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Fri,
+ 09 Mar 2007 20:10:03 +0200 (IST)
+References: <20070309150825.GA13481@amd.com> <20070309151511.GE13481@amd.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mmm.. when it's good, it's *really* good.
-My desktop feels snappier and all of that.
+Joerg Roedel wrote:
+> From: Joerg Roedel <joerg.roedel@amd.com>
+>
+> This patch simplifies the get_cycles_sync() function by removing
+> the #ifdefs from it. Further it introduces an optimization for AMD
+> processors. There the RDTSCP instruction is used instead of CPUID;RDTSC
+> which is helpfull if the kernel runs as a KVM guest. Running as a guest
+> makes CPUID very expensive because it causes an intercept of the guest.
+>
+>   
+> +#define RDTSCP ".byte 0x0f, 0x01, 0xf9"
+> +	alternative_io_two("cpuid\nrdtsc",
+> +			   "rdtsc", X86_FEATURE_SYNC_RDTSC,
+> +			   ".byte 0x0f, 0x01, 0xf9", X86_FEATURE_RDTSCP,
+>   
 
-No noticeable jerkiness of windows/scrolling,
-which I *do* observe with the stock scheduler.
+why not use the RDTSCP macro here?
 
-But when it's bad, it stinks.
-Like when a "make -j2" kernel rebuild is happening in a background window
 
-This is on a Pentium-M 760 single-core, w/2GB SDRAM (notebook).
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-JADP (Just Another Data Point).
-
-Cheers
-
-Mark
