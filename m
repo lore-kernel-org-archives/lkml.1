@@ -1,130 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767573AbXCIWf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767577AbXCIWgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767573AbXCIWf7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 17:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767574AbXCIWf7
+	id S1767577AbXCIWgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 17:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767572AbXCIWgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 17:35:59 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:56219 "EHLO tetsuo.zabbo.net"
+	Fri, 9 Mar 2007 17:36:20 -0500
+Received: from gw.goop.org ([64.81.55.164]:37577 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767573AbXCIWf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 17:35:58 -0500
-From: Zach Brown <zach.brown@oracle.com>
-To: linux-aio@kvack.org, linux-kernel@vger.kernel.org
-Cc: Jeff Moyer <jmoyer@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Message-Id: <20070309223557.29256.4572.sendpatchset@tetsuo.zabbo.net>
-Subject: [PATCH] dio: invalidate clean pages before dio write
-Date: Fri,  9 Mar 2007 14:35:57 -0800 (PST)
+	id S1767577AbXCIWgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 17:36:19 -0500
+Message-ID: <45F1E160.1090608@goop.org>
+Date: Fri, 09 Mar 2007 14:36:16 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Chris Wright <chrisw@sous-sol.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zachary Amsden <zach@vmware.com>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>, akpm@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
+References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.64.0703091137340.10832@woody.linux-foundation.org> <20070309210430.GA14905@elte.hu> <20070309212714.GU10574@sequoia.sous-sol.org> <20070309214704.GA20988@elte.hu> <20070309221046.GV10574@sequoia.sous-sol.org> <20070309222435.GB24341@elte.hu>
+In-Reply-To: <20070309222435.GB24341@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dio: invalidate clean pages before dio write
+Ingo Molnar wrote:
+> ok, sure, how about the one i mentioned: long-term i'd like to have a 
+> paravirt model where the guest does not store /any/ page tables - all 
+> paging is managed by the hypervisor. The guest has a vma tree, but 
+> otherwise it does not process pagefaults, has no concept of a pte (if in 
+> paravirt mode), has no concept of kernel page tables either: there are 
+> hypercalls to allocate/free guest-kernel memory, etc. This needs some 
+> (serious) MM surgery but it's doable and it's interesting as well. How 
+> would you map this to the VMI backend?
 
-This patch fixes a user-triggerable oops that was reported by Leonid Ananiev as
-archived at http://lkml.org/lkml/2007/2/8/337.
+You wouldn't.  Why would you?  It might be a useful interface - and its
+the perfect kind of high-level interface for pv_ops.  It might be worth
+adapting a hypervisor to suit it, but you still need to support the
+i386's pagetables.  So, you present the pv_ops interface with your
+vma-based mappings, and it runs it through the vma->pagetable
+translation layer to feed into either the i386 pagetables directly, or
+to a hypervisor's page-based interface.
 
-dio writes invalidate clean pages that intersect the written region so that
-subsequent buffered reads go to disk to read the new data.  If this fails the
-interface tries to tell the caller that the cache is inconsistent by returning
-EIO.
+The important part is that there's more to the story than just pv_ops. 
+If you wanted to make such a change, then you'd need to refactor the
+i386 support code to add a vma->paging helper layer.  That layer would
+be available for any pv_ops interface to use if it wishes.
 
-Before this patch we had the problem where this invalidation failure would
-clobber -EIOCBQUEUED as it made its way from fs/direct-io.c to fs/aio.c.  Both
-fs/aio.c and bio completion call aio_complete() and we reference freed memory,
-usually oopsing.
+(Remember, in the pv_ops model, bare hardware is a "hypervisor" too.)
 
-This patch addresses this problem by invalidating before the write so that we
-can cleanly return -EIO before ->direct_IO() has had a chance to return
--EIOCBQUEUED.
+Next problem?
 
-There is a compromise here.  During the dio write we can fault in mmap()ed
-pages which intersect the written range with get_user_pages() if the user
-provided them for the source buffer.  This is a crazy thing to do, but we can
-make it mostly work in most cases by trying the invalidation again.   The
-compromise is that we won't return an error if this second invalidation fails
-if it's an AIO write and we have -EIOCBQUEUED.
-
-This was tested by having two processes race performing large O_DIRECT and
-buffered ordered writes.  Within minutes ext3 would see a race between
-ext3_releasepage() and jbd holding a reference on ordered data buffers and
-would cause invalidation to fail, panicing the box.  The test can be found in
-the 'aio_dio_bugs' test group in test.kernel.org/autotest.  After this patch
-the test passes.
-
-Signed-off-by: Zach Brown <zach.brown@oracle.com>
----
-
- mm/filemap.c |   48 ++++++++++++++++++++++++++++++++++++------------
- 1 file changed, 36 insertions(+), 12 deletions(-)
-
---- a/mm/filemap.c	Wed Feb 28 06:00:13 2007 +0000
-+++ b/mm/filemap.c	Thu Mar 08 17:48:58 2007 -0800
-@@ -2379,7 +2379,8 @@ generic_file_direct_IO(int rw, struct ki
- 	struct file *file = iocb->ki_filp;
- 	struct address_space *mapping = file->f_mapping;
- 	ssize_t retval;
--	size_t write_len = 0;
-+	size_t write_len;
-+	pgoff_t end = 0; /* silence gcc */
- 
- 	/*
- 	 * If it's a write, unmap all mmappings of the file up-front.  This
-@@ -2388,23 +2389,46 @@ generic_file_direct_IO(int rw, struct ki
- 	 */
- 	if (rw == WRITE) {
- 		write_len = iov_length(iov, nr_segs);
-+		end = (offset + write_len - 1) >> PAGE_CACHE_SHIFT;
- 	       	if (mapping_mapped(mapping))
- 			unmap_mapping_range(mapping, offset, write_len, 0);
- 	}
- 
- 	retval = filemap_write_and_wait(mapping);
--	if (retval == 0) {
--		retval = mapping->a_ops->direct_IO(rw, iocb, iov,
--						offset, nr_segs);
--		if (rw == WRITE && mapping->nrpages) {
--			pgoff_t end = (offset + write_len - 1)
--						>> PAGE_CACHE_SHIFT;
--			int err = invalidate_inode_pages2_range(mapping,
-+	if (retval)
-+		goto out;
-+
-+	/*
-+	 * After a write we want buffered reads to be sure to go to disk to get
-+	 * the new data.  We invalidate clean cached page from the region we're
-+	 * about to write.  We do this *before* the write so that we can return
-+	 * -EIO without clobbering -EIOCBQUEUED from ->direct_IO().
-+	 */
-+	if (rw == WRITE && mapping->nrpages) {
-+		retval = invalidate_inode_pages2_range(mapping,
- 					offset >> PAGE_CACHE_SHIFT, end);
--			if (err)
--				retval = err;
--		}
--	}
-+		if (retval)
-+			goto out;
-+	}
-+
-+	retval = mapping->a_ops->direct_IO(rw, iocb, iov, offset, nr_segs);
-+	if (retval)
-+		goto out;
-+
-+	/* 
-+	 * Finally, try again to invalidate clean pages which might have been
-+	 * faulted in by get_user_pages() if the source of the write was an
-+	 * mmap()ed region of the file we're writing.  That's a pretty crazy
-+	 * thing to do, so we don't support it 100%.  If this invalidation
-+	 * fails and we have -EIOCBQUEUED we ignore the failure.
-+	 */
-+	if (rw == WRITE && mapping->nrpages) {
-+		int err = invalidate_inode_pages2_range(mapping,
-+					      offset >> PAGE_CACHE_SHIFT, end);
-+		if (err && retval >= 0)
-+			retval = err;
-+	}
-+out:
- 	return retval;
- }
- 
+    J
