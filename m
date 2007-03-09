@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993089AbXCIJsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993094AbXCIJtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993089AbXCIJsY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 04:48:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993092AbXCIJsY
+	id S2993094AbXCIJtN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 04:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993095AbXCIJtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 04:48:24 -0500
-Received: from smtp-105-friday.nerim.net ([62.4.16.105]:2275 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993089AbXCIJsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 04:48:23 -0500
-Date: Fri, 9 Mar 2007 10:47:06 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Sonic Zhang" <sonic.adi@gmail.com>
-Cc: "Bryan Wu" <bryan.wu@analog.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       mhfan@ustc.edu
-Subject: Re: [PATCH -mm] Blackfin: blackfin i2c driver
-Message-Id: <20070309104706.53ea82ba.khali@linux-fr.org>
-In-Reply-To: <4e5ebad50703082004s6cd34ccbp34e6f8b2c2273389@mail.gmail.com>
-References: <1173164058.31825.16.camel@roc-desktop>
-	<20070306214301.GA5590@martell.zuzino.mipt.ru>
-	<1173247078.28531.24.camel@roc-desktop>
-	<20070307075822.53e53c42.khali@linux-fr.org>
-	<1173261197.28531.60.camel@roc-desktop>
-	<20070308102738.2ec69c60.khali@linux-fr.org>
-	<4e5ebad50703082004s6cd34ccbp34e6f8b2c2273389@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Mar 2007 04:49:13 -0500
+Received: from holomorphy.com ([66.93.40.71]:58808 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993094AbXCIJtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 04:49:12 -0500
+Date: Fri, 9 Mar 2007 01:49:04 -0800
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Cc: Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+Message-ID: <20070309094904.GC2986@holomorphy.com>
+References: <20070309053931.GA10459@waste.org> <200703091728.03978.kernel@kolivas.org> <20070309075358.GA10394@waste.org> <200703091936.47128.kernel@kolivas.org> <87slce945h.fsf@depni.sinp.msu.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87slce945h.fsf@depni.sinp.msu.ru>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007 12:04:59 +0800, Sonic Zhang wrote:
-> On 3/8/07, Jean Delvare <khali@linux-fr.org> wrote:
-> > i2c-core can emulate SMBus transactions using master_xfer, so in
-> > general when you have a complete master_xfer implementation you do not
-> > need to define a separate smbus_xfer function. This would save a lot of
-> > code.
-> 
-> Actually the i2c-core can't emulate SMBus transactions using the
-> master_xfer function, because the blackfin TWI controller provide
-> hardware support to the SMBus transactions and the combination of
-> master_xfer operations can't generate proper signal for SMBus.
+On Fri, Mar 09, 2007 at 12:07:06PM +0300, Serge Belyshev wrote:
+> If you see sched_yield() when stracing any 3d program, I suggest you
+> to try this bruteforce workaround, which works fine for me,
+> disable sched_yield():
 
-Did you try? I can't think of any valid reason why it wouldn't work.
-All SMBus transactions are compatible with I2C by definition.
+May I suggest LD_PRELOAD of a library consisting of only a nopped
+sched_yield() function in userspace?
 
-Now performance might be better with dedicated code if the hardware
-accelerate SMBus transactions, that's a different issue. If you prefer
-to keep the smbus_xfer method for performance reasons, that's OK with
-me. After all you're the one who will have to maintain the driver ;)
 
--- 
-Jean Delvare
+-- wli
