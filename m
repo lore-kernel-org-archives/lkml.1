@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993008AbXCIGoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993017AbXCIGpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993008AbXCIGoy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 01:44:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993014AbXCIGoy
+	id S2993017AbXCIGpO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 01:45:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993016AbXCIGpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 01:44:54 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39739 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993008AbXCIGow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 01:44:52 -0500
-Date: Fri, 9 Mar 2007 07:44:40 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Daniel Walker <dwalker@mvista.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-pm@lists.osdl.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [linux-pm] 2.6.21-rc1: known regressions (part 2)
-Message-ID: <20070309064440.GD1983@elf.ucw.cz>
-References: <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz> <20070305084257.GA4464@mellanox.co.il>
+	Fri, 9 Mar 2007 01:45:13 -0500
+Received: from mga03.intel.com ([143.182.124.21]:29879 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993014AbXCIGpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 01:45:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,265,1170662400"; 
+   d="scan'208"; a="192939735:sNHT17507273"
+Message-ID: <45F10274.7070500@intel.com>
+Date: Thu, 08 Mar 2007 22:45:08 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070305084257.GA4464@mellanox.co.il>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: David Miller <davem@davemloft.net>
+CC: peter.p.waskiewicz.jr@intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, christopher.leech@intel.com
+Subject: Re: [PATCH 0/2] NET: Multiple queue network device support REPOST
+References: <1173420779298-git-send-email-peter.p.waskiewicz.jr@intel.com> <20070308.222154.74746753.davem@davemloft.net>
+In-Reply-To: <20070308.222154.74746753.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+David Miller wrote:
+> You didn't address my correction the other day wherein I clarified
+> for you that my idea was not to store the queue mapping in
+> skb->priority but rather to shrink skb->priority to a u16 and
+> add a new u16 skb->queue_mapping or whatever field to store the
+> necessary information.
+> 
+> You're just posting a set of patches using the same approach again
+> plus some bug fixes, so there is essentially nothing new for anyone to
+> review.
+> 
+> Why ask for feedback if you fail to take any of it into consideration?
+> :-/
 
-> Pavel, I tried with your .config, and indeed the system came back to life after
-> 2-3 minutes after I press Fn/F4, indeed the issue seems to be with the disk.
-> It could be that the same takes place with my original .config - maybe
-> I just wasn't patient enough. I'll need to re-test that.
-> 
-> However, I noticed that, after resume, when the system is presumably functional,
-> if I try to suspend to ram again, this second suspend hangs, displaying
-> the following on screen:
-> 
-> [   17.170000] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low) -> IRQ 20
-> [   17.170000] PCI: Setting latency timer of device 0000:02:00.0 to 64
-> [   17.250000] e1000: 0000:02:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x1) 00:16:41:5
-> 4:6c:47
-> [   17.330000] e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
-> 
-> the crescent LED starts blinking and does not seem to stop for at lest 10 min,
-> I've run out of patience after that. It could be that it's just very slow again.
-> 
-> Pavel, did you try suspend to RAM after a successfull resume from
-> RAM?
+Where are the patches anyway? They didn't seem to make it either to netdev nor lkml!
 
-Seems to work ok in -rc3... as long as I do not mix s2ram with s2disk.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Auke
