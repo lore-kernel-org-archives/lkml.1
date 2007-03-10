@@ -1,84 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767761AbXCJEBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965833AbXCJEF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767761AbXCJEBi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 23:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993174AbXCJEBh
+	id S965833AbXCJEF2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 23:05:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbXCJEF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 23:01:37 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40091 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767772AbXCJEBb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 23:01:31 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc3-mm2: BUG: at drivers/pci/pci.c:679 pci_restore_state during suspend testing
-References: <200703090113.14627.rjw@sisk.pl>
-	<20070309190009.20b912a6.akpm@linux-foundation.org>
-Date: Fri, 09 Mar 2007 21:00:49 -0700
-In-Reply-To: <20070309190009.20b912a6.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 9 Mar 2007 19:00:09 -0800")
-Message-ID: <m164993fym.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 9 Mar 2007 23:05:28 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36749 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752808AbXCJEF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 23:05:27 -0500
+Date: Fri, 9 Mar 2007 20:03:46 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: [GIT PATCH] USB fixes for 2.6.21-rc3
+Message-ID: <20070310040346.GA30638@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Here are some USB fixes and new device ids against 2.6.21-rc3.
 
->> On Fri, 9 Mar 2007 01:13:14 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->> I get the following traces from 2.6.21-rc3-mm2 during the "resume" phase
->> of testing with 'echo test > /sys/power/disk && echo disk > /sys/power/state':
->> 
->> acpi thermal:00: resuming
->> pci 0000:00:00.0: resuming
->> pcieport-driver 0000:00:01.0: resuming
->> BUG: at drivers/pci/pci.c:679 pci_restore_state()
->> 
->> Call Trace:
->>  [<ffffffff803ab3e9>] pci_restore_state+0x229/0x270
->>  [<ffffffff803b10f9>] pcie_portdrv_restore_config+0x19/0x40
->>  [<ffffffff803b1171>] pcie_portdrv_resume+0x11/0x20
->>  [<ffffffff803ad92c>] pci_device_resume+0x2c/0x70
->>  [<ffffffff80411d41>] resume_device+0xe1/0x160
->>  [<ffffffff80411e69>] dpm_resume+0xa9/0x110
->>  [<ffffffff80411f18>] device_resume+0x48/0x60
->>  [<ffffffff802bb355>] pm_suspend_disk+0x235/0x250
->>  [<ffffffff802b99c5>] enter_state+0x65/0x250
->>  [<ffffffff802b9c2a>] state_store+0x7a/0xa0
->>  [<ffffffff80316734>] subsys_attr_store+0x24/0x30
->>  [<ffffffff803168a0>] sysfs_write_file+0x100/0x140
->>  [<ffffffff802181cf>] vfs_write+0xdf/0x180
->>  [<ffffffff80218d10>] sys_write+0x50/0x90
->>  [<ffffffff8026529e>] system_call+0x7e/0x83
->
-> Yes, a number of people (including myself) have been hitting these
-> new warnings.  I don't think we know why yet, but Eric is offline
-> for a bit and I'm travelling.  We'll sort it out over the next few
-> weeks I guess.
+These patches contain a number of fixes that lots of people have
+reported with regards to usb-serial devices oopsing and providing
+incorrect minor numbers.  They also add a number of new device ids and
+some other minor fixes.
 
-I'm online again.  I had fun getting caught in the trailing edge of a blizzard
-in Nebraska earlier but I have found my way back to my apartment and my computer 
-and friends.
+All of these have been in the -mm releases.
 
-Jeff Garzik is the one who really spotted what the problem is.  He pointed
-out that pci_save_state and pci_restore_state have not historically required
-being paired (as the usually are during suspend and resume) and there is
-a practical use in resetting devices for not requiring them to be paired.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-The recent additions to pci_save_state and pci_restore_state for the msi,
-pci-e, pci-x all assumed those calls would be paired, and thus allocated
-a buffer on save and freed the buffer and restore.
+The full patches will be sent to the linux-usb-devel mailing list, if
+anyone wants to see them.
 
-My WARN_ON's tested to ensure all of the buffers were freed.
+thanks,
 
-However drivers like the tg3 that use pci_save/restore_state for more than
-just suspend/resume wind up triggering the warning.
+greg k-h
 
-I have recently sent out two patches to remove the pairing requirement
-but I haven't figured out suspend/resume for any of my machines so I
-couldn't test them.
 
-Eric
+ drivers/usb/class/cdc-acm.c        |    8 ++--
+ drivers/usb/core/devio.c           |   13 ++---
+ drivers/usb/core/hub.c             |    9 +---
+ drivers/usb/core/message.c         |    9 +++-
+ drivers/usb/gadget/at91_udc.c      |    6 +-
+ drivers/usb/gadget/goku_udc.c      |   29 ------------
+ drivers/usb/gadget/pxa2xx_udc.c    |    2 +-
+ drivers/usb/host/ehci-hub.c        |    3 +-
+ drivers/usb/host/uhci-hub.c        |   11 +++--
+ drivers/usb/misc/ftdi-elan.c       |   18 ++++++-
+ drivers/usb/net/dm9601.c           |    4 ++
+ drivers/usb/serial/airprime.c      |   47 +++++++++++++++++++
+ drivers/usb/serial/cp2101.c        |    2 +
+ drivers/usb/serial/ftdi_sio.c      |   90 ++++++++++++++++++-----------------
+ drivers/usb/serial/ftdi_sio.h      |   21 ++++++++
+ drivers/usb/serial/ipaq.c          |    2 +
+ drivers/usb/serial/usb-serial.c    |   22 ++++----
+ drivers/usb/storage/unusual_devs.h |   17 +++----
+ 18 files changed, 186 insertions(+), 127 deletions(-)
+
+---------------
+
+Alan Stern (2):
+      USB: set the correct interval for interrupt URBs
+      UHCI: fix port resume problem
+
+Andre Spahlinger (1):
+      USB: ipaq.c: Additional devices
+
+Andrew Nayenko (1):
+      USB storage: Nokia 6288 unusual_devs entry
+
+Cyrill Gorcunov (1):
+      USB Elan FTDI: check for workqueue creation
+
+David Brownell (1):
+      USB: at91_udc, fix more modpost bogosity (rename driver struct)
+
+Gard Spreemann (1):
+      USB: Product ID for FT232RL in ftdi_sio
+
+Jim Radford (2):
+      usb-serial: fix shutdown / device_unregister order
+      USB: ftdi_sio: use port_probe / port_remove thereby fixing access to the latency_timer
+
+Jon K Hellan (1):
+      USB: New device IDs for cp2101 driver
+
+Martin Schiller (1):
+      USB: RTS/DTR signal patch for airprime driver
+
+Max Dmitrichenko (1):
+      USB: fix Unaligned access in EHCI driver
+
+Michael Olberg (1):
+      USB: add QL355P power supply ids to fdti_sio
+
+Milan Svoboda (1):
+      USB: pxa2xx_udc: fix hardcoded irq number
+
+Oliver Neukum (5):
+      USB: ratelimit debounce error messages
+      USB: kill dead code from hub.c
+      USB: fix usb-serial device naming bug
+      USB: further fix for usb-serial
+      USB: fix spinlock recursion in cdc-acm.c
+
+Phil Dibowitz (1):
+      USB storage: Removed duplicate supertop unusual_dev entry
+
+Ralf Baechle (1):
+      USB: goku_udc: Remove crude cache coherency code
+
+Thomas Schleusener (1):
+      USB: add Additional PIDs in ftdi_sio
+
+YOSHIFUJI Hideaki (1):
+      USBNET: DM9501: Add Corega FEther USB-TXC support.
+
