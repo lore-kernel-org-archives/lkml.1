@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933429AbXCJJzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbXCJJ6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933429AbXCJJzN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 04:55:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933449AbXCJJzM
+	id S933450AbXCJJ6P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 04:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932691AbXCJJ6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 04:55:12 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51184 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933429AbXCJJzJ (ORCPT
+	Sat, 10 Mar 2007 04:58:15 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:64487 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751473AbXCJJ6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 04:55:09 -0500
-Date: Sat, 10 Mar 2007 09:55:08 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, bjoern@j3e.de,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 1/4]: ufs2 more correct work with time
-Message-ID: <20070310095508.GA24090@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	bjoern@j3e.de, linux-fsdevel@vger.kernel.org
-References: <20070310093002.GA757@rain>
+	Sat, 10 Mar 2007 04:58:14 -0500
+Subject: Re: [PATCH] Complain about missing system calls.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       rmk@arm.linux.org.uk, sam@ravnborg.org, linux-arch@vger.kernel.org
+In-Reply-To: <20070309190051.GA20521@one.firstfloor.org>
+References: <1173394873.3461.510.camel@pmac.infradead.org>
+	 <p737itqbdnl.fsf@bingen.suse.de> <20070309163805.GV18564@lug-owl.de>
+	 <20070309190051.GA20521@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Organization: IBM Corporation
+Date: Sat, 10 Mar 2007 10:58:13 +0100
+Message-Id: <1173520693.7128.17.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070310093002.GA757@rain>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 10, 2007 at 12:30:02PM +0300, Evgeniy Dushistov wrote:
-> This patch corrects work with time in UFS2 case.
+On Fri, 2007-03-09 at 20:00 +0100, Andi Kleen wrote:
+> > Not everybody has a simple indexed list of pointers :)  For example,
+> > for vax-linux, we use a struct per syscall with the expected number of
+> > on-stack longwords for the call.
+> > 
+> > So if something "new" is coming up, please keep in mind that it should
+> > be flexible enough to represent that. :)
 > 
-> 1)According to UFS2 disk layout modification/access and so on "time"
-> should be hold in two variables one 64bit for seconds and another
-> 32bit for nanoseconds,
+> Are there plans to merge vax any time soon to mainline? 
 > 
-> at now for some unknown reason we suppose
-> that "inode time" holds in three variables 32bit for seconds, 32bit for
-> milliseconds and 32bit for nanoseconds.
+> Normally we don't care very much about out of tree code, especially
+> if it adds complexity like this.
 > 
-> 2)We set amount of nanoseconds in "VFS inode" to 0 during read, instead
-> of getting values from "on disk inode"(this should close
-> http://bugzilla.kernel.org/show_bug.cgi?id=7991).
+> But I suspect s390 would need number of arguments anyways.
 
+I can't quite follow that line of thought. Why does s390 need the number
+of arguments? The wrapper of a compat system call implicitly knows how
+many arguments a system calls to do the conversion. For a normal system
+call we just call the function. Random example sys_read: the user space
+loads the arguments to register %r2, %r3, %r4 and calls the system. The
+register are not touched until sys_read is reached. Only sys_read cares
+about the number of arguments in this case.
 
-Looks good to me.
+-- 
+blue skies,              IBM Deutschland Entwicklung GmbH
+   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
+                         Geschäftsführung: Herbert Kircher
+Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
+Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
+   Development           HRB 243294
+
+"Reality continues to ruin my life." - Calvin.
+
 
