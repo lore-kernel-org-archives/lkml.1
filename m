@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXCJWpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbXCJWrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbXCJWpT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:45:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932354AbXCJWpS
+	id S932330AbXCJWrA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 17:47:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932371AbXCJWq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:45:18 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:60708 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932310AbXCJWpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:45:17 -0500
-Date: Sat, 10 Mar 2007 23:45:34 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-Message-ID: <20070310224534.GA3150@uranus.ravnborg.org>
-References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg> <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr> <20070310194617.2aef1006@localhost> <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr> <20070310175058.GA19878@cvg> <Pine.LNX.4.61.0703101906070.8799@yvahk01.tjqt.qr> <20070310212730.GA2577@uranus.ravnborg.org> <Pine.LNX.4.61.0703102234210.26332@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 10 Mar 2007 17:46:59 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:27992 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932330AbXCJWq6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 17:46:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=knbX0k1RTwsL/i1NjZSUo9mq21qqDBEmYMsl5vrhMAAN8AzDnbasynJ2zBxaTj9PlMsYclO3VkQKULOwSDdVK10yQ7pQCk5F91xQ9fL39/gQ3cG9612tannr7z4Okec3xl2RhB3K4oONxYfTbV8K69hd9L2qKPIyyWvQt+KFx3I=
+From: Denis Vlasenko <vda.linux@googlemail.com>
+To: Mockern@yandex.ru
+Subject: Re: Problem: cat < /dev/my_ttyS0 is not blocked
+Date: Sat, 10 Mar 2007 23:43:31 +0100
+User-Agent: KMail/1.8.2
+Cc: linux-kernel@vger.kernel.org
+References: <45F2A1B5.000006.27583@webmail15.yandex.ru>
+In-Reply-To: <45F2A1B5.000006.27583@webmail15.yandex.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0703102234210.26332@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200703102343.31135.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 10, 2007 at 10:34:41PM +0100, Jan Engelhardt wrote:
-> 
-> On Mar 10 2007 22:27, Sam Ravnborg wrote:
-> >On Sat, Mar 10, 2007 at 07:23:41PM +0100, Jan Engelhardt wrote:
-> >> 
-> >> Whether the 'working config file path' should change when you do
-> >> 'Save as Alternate' or not, is a menuconfig axiom. Ask Sam Ravnborg
-> >> if you want it changed :-)
-> >
-> >Current behaviour is not logical but on the other hand I do not
-> >see a big need to make it so.
-> >It seems that people very seldom uses "save alternate" anyway.
-> >
-> >But patches are welcome.
-> 
-> ^_^ The patch has already been posted, has not it?
-No.
-Either we keep current behaviour or we change to the "normal"
-behaviour with a "Save as..." as know from all other programs.
+On Saturday 10 March 2007 13:16, Mockern wrote:
+> I have a problem with  cat < /dev/my_ttyS0 (see strace output below).
+> cat function is not blocked. I don't understand why it is not stopped
+> at read(0, __  and terminated?  
+> Thank you
 
-	Sam
+Because /dev/my_ttyS0 is probaly a null file.
+
+Please show output of 'ls -l /dev/*ttyS*'
+
+--
+vda
