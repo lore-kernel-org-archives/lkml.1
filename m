@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751859AbXCJTa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbXCJTbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751859AbXCJTa6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 14:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXCJTa6
+	id S932073AbXCJTbU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 14:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXCJTbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 14:30:58 -0500
-Received: from holomorphy.com ([66.93.40.71]:58238 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751859AbXCJTa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 14:30:56 -0500
-Date: Sat, 10 Mar 2007 11:31:00 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Pluggable Schedulers (was: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler)
-Message-ID: <20070310193100.GI2986@holomorphy.com>
-References: <200703091625.55361.a1426z@gawab.com> <200703100834.25136.a1426z@gawab.com> <20070310065927.GH2986@holomorphy.com> <200703101947.11960.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703101947.11960.a1426z@gawab.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 10 Mar 2007 14:31:19 -0500
+Received: from smtp-106-saturday.noc.nerim.net ([62.4.17.106]:4704 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932073AbXCJTbR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 14:31:17 -0500
+Date: Sat, 10 Mar 2007 20:29:41 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Petr Vandrovec <petr@vandrovec.name>
+Cc: i2c@lm-sensors.org, Hans-Frieder Vogt <hfvogt@gmx.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add nForce MCP61 support to i2c-nforce2
+Message-Id: <20070310202941.165b28a0.khali@linux-fr.org>
+In-Reply-To: <20070310080003.GA24177@vana.vc.cvut.cz>
+References: <20070310080003.GA24177@vana.vc.cvut.cz>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
->> Last I checked there were limits to runtime configurability centering
->> around only supporting a compiled-in set of scheduling drivers, unless
->> Peter's taken it the rest of the way without my noticing. It's unclear
->> what you have in mind in terms of dynamic extensibility. My only guess
->> would be pluggable scheduling policy/class support for individual
->> schedulers in addition to plugging the individual schedulers, except
->> I'm rather certain that Williams' code doesn't do anything with modules.
+Hi Petr,
 
-On Sat, Mar 10, 2007 at 07:47:11PM +0300, Al Boldi wrote:
-> Correct, it doesn't, yet.  But do you think that PlugSched has the basic 
-> infrastructure in place to support this, or would it require a complete 
-> redesign/rewrite.
+On Sat, 10 Mar 2007 09:00:03 +0100, Petr Vandrovec wrote:
+> Hello,
+>   patch below adds support for nVidia's SMBus adapter present on Gateway's GT5414E 
+> motherboard (ECS's MCP61 PM-AM).  Patch is for current Linus's git tree.
 
-The piece I got done was just representing schedulers as driver-like
-affairs (which, embarrassingly enough, needed lots of bugfixing), and
-everyone's just been running with that and boot-time switching ever
-since. Runtime switching (to module-loaded schedulers or otherwise)
-needs a lot of hotplug-esque work. Scheduler class support, pluggable
-or otherwise, needs per-scheduler abstracting things out along the same
-lines as what was originally done for the overall schedulers
-surrounding enqueueing and dequeueing so the scheduler itself only
-plucks tasks out of and stuffs tasks into some sort of abstracted-out
-queue or set of queues, though I did try to break things down at a low
-enough level where they'd be plausible for more than just the one
-driver (never distributed) I used to test the design. I dumped the
-entire project long before ever getting to where modules entered the
-picture, and have never touched modules otherwise, so I'm not entirely
-sure what other issues would come up with those after the smoke clears
-from runtime switching.
+We already have a patch doing exactly this in -mm:
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm2/broken-out/jdelvare-i2c-i2c-nforce2-add-mcp61-mcp65-support.patch
 
-I don't plan on doing anything here myself, since the boot-time
-switching etc. is likely already considered offensive enough.
+> 00:01.1 SMBus: nVidia Corporation MCP61 SMBus (rev a2)
+>         Subsystem: Elitegroup Computer Systems Unknown device 2601
+>         Flags: 66MHz, fast devsel, IRQ 10
+>         I/O ports at fc00 [size=64]
+>         I/O ports at 1c00 [size=64]
+>         I/O ports at f400 [size=64]
+>         Capabilities: [44] Power Management version 2
 
-The next time something comes up that bears a risk of positioning me
-against the kernel's political winds, I'll just rm it or not write it
-at all instead of leaving code around (or worse yet, passing it around)
-to be taken up by others. It just leaves a lot of embarrassed explaining
-to do when it resurfaces years later, or otherwise leaves a rather bad
-taste in my mouth when NIH'd years later like other things not mentioned
-here (VM code kept quiet similarly to plugsched) and everyone approves
-so long as it didn't come from me.
+BTW, note how the MCP61 has not 2 but 3 64-byte I/O areas declared. The
+previous chips used BAR 4 and 5, this new one additionally uses BAR 0.
+Without documentation it's hard to be sure this is a 3rd SMBus channel,
+but it sure looks so. Maybe you'll want to hack the i2c-nforce2 driver
+a bit to confirm or infirm this theory.
 
-
--- wli
+-- 
+Jean Delvare
