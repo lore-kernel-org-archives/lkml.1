@@ -1,82 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767847AbXCJPvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933471AbXCJPxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767847AbXCJPvy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 10:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767850AbXCJPvy
+	id S933471AbXCJPxB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 10:53:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933472AbXCJPxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 10:51:54 -0500
-Received: from sceptre.pobox.com ([207.106.133.20]:54628 "EHLO
-	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767847AbXCJPvx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 10:51:53 -0500
-X-Greylist: delayed 57591 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Mar 2007 10:51:53 EST
-Date: Sat, 10 Mar 2007 09:51:49 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Cliff Wickman <cpw@sgi.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
-Message-ID: <20070310155149.GA18478@localdomain>
-References: <20070309193925.B60891B8028@attica.americas.sgi.com> <20070310091942.GC18250@elte.hu>
-MIME-Version: 1.0
+	Sat, 10 Mar 2007 10:53:00 -0500
+Received: from mail.screens.ru ([213.234.233.54]:49330 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933471AbXCJPw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 10:52:59 -0500
+Date: Sat, 10 Mar 2007 18:56:38 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/9] signalfd/timerfd v1 - signalfd core ...
+Message-ID: <20070310155638.GA192@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070310091942.GC18250@elte.hu>
-User-Agent: Mutt/1.5.12-2006-07-14
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi-
+Davide Libenzi wrote:
+>
+> +int signalfd_deliver(struct sighand_struct *sighand, int sig,
+> +		     struct siginfo *info)
+> +{
+> +	int nsig = 0;
+> +	struct list_head *pos;
+> +	struct signalfd_ctx *ctx;
+> +
+> +	list_for_each(pos, &sighand->sfdlist) {
+> +		ctx = list_entry(pos, struct signalfd_ctx, lnk);
 
-Ingo Molnar wrote:
-> 
-> * Cliff Wickman <cpw@sgi.com> wrote:
-> 
-> > With this patch, migrate the task to:
-> >  1) to any cpu on the same node as the disabled cpu, which is both online
-> >     and among that task's cpus_allowed
-> >  2) to any online cpu within the task's cpuset
-> >  3) to any cpu which is both online and among that task's cpus_allowed
-> > 
-> > Diffed against 2.6.21-rc3 (Andrew's current top of tree)
-> 
-> looks good to me.
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
-> 
-> > +	/* try to stay on the same cpuset */
-> > +	if (dest_cpu == NR_CPUS) {
-> > +		p->cpus_allowed = cpuset_cpus_allowed(p);
-> > +		dest_cpu = any_online_cpu(p->cpus_allowed);
-> > +	}
-> 
-> what's the practical effect of this - when moving the last CPU offline 
-> from a node you got jobs migrated to really alien nodes? Thus i think we 
-> should queue this up for v2.6.21 too, correct? It's a NOP on systems 
-> that do not set up cpusets, so it's low-risk.
+list_for_each_entry()
 
-See my earlier reply to this patch.  Calling cpuset_cpus_allowed
-(which takes a mutex) here is a bug, since move_task_off_dead_cpu must
-be called with interrupts disabled.
+> +		/*
+> +		 * We use a negative signal value as a way to broadcast that the
+> +		 * sighand has been orphaned, so that we can notify all the
+> +		 * listeners about this. Remeber the ctx->sigmask is inverted,
+> +		 * so if the user is interested in a signal, that corresponding
+> +		 * bit will be zero.
+> +		 */
+> +		if (sig < 0 || !sigismember(&ctx->sigmask, sig)) {
+> +			__wake_up_locked(&ctx->wqh,
+> +					 TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE);
+
+wake_up_locked(&ctx->wqh)
+
+> +asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask)
+> +{
+> [...snip...]
+> +	if (ufd == -1) {
+> +		error = -ENOMEM;
+> +		ctx = kmem_cache_alloc(signalfd_ctx_cachep, GFP_KERNEL);
+> +		if (!ctx)
+> +			goto err_exit;
+> +
+> +		init_waitqueue_head(&ctx->wqh);
+> +		ctx->sigmask = sigmask;
+> +		ctx->tsk = current;
+> +		get_task_struct(current);
+> +
+> +		/*
+> +		 * We also increment the sighand count to make sure
+> +		 * it doesn't go away from us in poll() when the task
+> +		 * exits (which can happen if the fd is passed to
+> +		 * another process with unix domain sockets.
+> +		 *
+> +		 * This also guarantees that an execve() will reallocate
+> +		 * the signal state, and thus avoids security concerns
+> +		 * with a untrusted process that passes off the signal
+> +		 * queue fd to another, and then does a suid execve.
+> +		 */
+> +		ctx->sighand = current->sighand;
+> +		atomic_inc(&ctx->sighand->count);
+
+I personally don't like this. de_thread() was/is the source of numerous
+problems, and this patch adds yet another subtle dependency. The usage of
+"private" __cleanup_sighand() is not good per se, imho.
+
+Also, this is not so flexible, we can't take S_ISUID into account. It seems
+logical to preserve ctx after a "normal" exec.
+
+I think, we don't need signalfd_ctx->sighand at all, please see below.
+
+> +	} else {
+> +		error = -EBADF;
+> +		file = fget(ufd);
+> +		if (!file)
+> +			goto err_exit;
+> +		ctx = file->private_data;
+> +		error = -EINVAL;
+> +		if (file->f_op != &signalfd_fops) {
+> +			fput(file);
+> +			goto err_exit;
+> +		}
+> +		spin_lock_irq(&ctx->sighand->siglock);
+> +		ctx->sigmask = sigmask;
+> +		spin_unlock_irq(&ctx->sighand->siglock);
+> +		wake_up(&ctx->wqh);
+
+Race with signalfd_read()->__add_wait_queue().
+
+> +static unsigned int signalfd_poll(struct file *file, poll_table *wait)
+> +{
+> +	struct signalfd_ctx *ctx = file->private_data;
+> +	struct sighand_struct *sighand = ctx->sighand;
+> +	unsigned int events = 0;
+> +	unsigned long flags;
+> +
+> +	poll_wait(file, &ctx->wqh, wait);
+> +
+> +	spin_lock_irqsave(&sighand->siglock, flags);
+> +	/*
+> +	 * Let the caller get a POLLIN in this case, ala socket recv() when
+> +	 * the peer disconnect. The check for the changed sighand must be
+> +	 * done before calling next_signal(), since if sighand changed, a call
+> +	 * to next_signal() would crash. It'd be possible to avoid grabbing a
+> +	 * lock by incrementing the tsk->signal count like we do with the
+> +	 * tsk->sighand, but the code in __exit_signal() assumes that the
+> +	 * tsk->signal can be freed only there, and this would require
+> +	 * some code restructuring that I'm living out at this time.
+> +	 */
+> +	if (sighand != ctx->tsk->sighand || ctx->tsk->signal == NULL ||
+
+We don't need "ctx->tsk->signal == NULL". tsk->signal == NULL (when checked
+under ->siglock) implies tsk->sighand == NULL. This is covered by the first
+"sighand != ctx->tsk->sighand"  check.
+
+> +static ssize_t signalfd_read(struct file *file, char *buf, size_t count,
+> +			     loff_t *ppos)
+> +{
+> [...snip...]
+> +		for (;;) {
+> +			if (sighand != ctx->tsk->sighand) {
+> +				/*
+> +				 * Let the caller read zero byte, ala socket recv()
+> +				 * when the peer disconnect. This test must be done
+> +				 * before doing a dequeue_signal(), because if the
+> +				 * task's sighand changed, a dequeue_signal() is going
+> +				 * to crash (tsk->signal is set to NULL).
+> +				 */
+> +				res = 0;
+> +				break;
+> +			}
+> +			set_current_state(TASK_INTERRUPTIBLE);
+> +			if ((signo = dequeue_signal(ctx->tsk, &ctx->sigmask,
+> +						    &info)) != 0)
+> +				break;
+> +			if (signal_pending(current)) {
+> +				res = -EINTR;
+
+-ERESTARTSYS ?
+
+> +				break;
+> +			}
+> +			spin_unlock_irq(&sighand->siglock);
+> +			schedule();
+> +			spin_lock_irq(&sighand->siglock);
+> +		}
+> +		__remove_wait_queue(&ctx->wqh, &wait);
+> +		set_current_state(TASK_RUNNING);
+
+We don't need mb() here.
+
+> +void signal_fill_info(struct siginfo *dinfo, int sig, struct siginfo *sinfo)
+> +{
+> +	switch ((unsigned long) sinfo) {
+> +	case (unsigned long) SEND_SIG_NOINFO:
+> +		dinfo->si_signo = sig;
+> +		dinfo->si_errno = 0;
+> +		dinfo->si_code = SI_USER;
+> +		dinfo->si_pid = current->pid;
+> +		dinfo->si_uid = current->uid;
+> +		break;
+> +	case (unsigned long) SEND_SIG_PRIV:
+> +		dinfo->si_signo = sig;
+> +		dinfo->si_errno = 0;
+> +		dinfo->si_code = SI_KERNEL;
+> +		dinfo->si_pid = 0;
+> +		dinfo->si_uid = 0;
+> +		break;
+> +	default:
+> +		copy_siginfo(dinfo, sinfo);
+> +	}
+> +}
+
+This change seems unneeded?
 
 
-> btw., unrelated to your patch, there's this bit right after the code 
-> above:
-> 
->         /* No more Mr. Nice Guy. */
->         if (dest_cpu == NR_CPUS) {
->                 rq = task_rq_lock(p, &flags);
->                 cpus_setall(p->cpus_allowed);
->                 dest_cpu = any_online_cpu(p->cpus_allowed);
-> 
-> out of consistency, shouldnt the cpus_setall() rather be:
-> 
-> 		p->cpus_allowed = cpu_possible_map;
-> 
-> ? It shouldnt make any real difference but it looks more consistent.
+I'd suggest to remove signalfd_ctx->sighand. de_thread()/exit_signal() call
 
-The default value of cpus_allowed is CPU_MASK_ALL, I thought -- at
-least that's what we set init's to early on.  Though, as you say, it
-shouldn't make any difference.
+	signalfd_exit_task(struct sighand_struct *sighand)
+	{
+		list_for_each_entry_safe(ctx, sighand->sfdlist)
+			if (ctx->tsk == current) {
+				wake_up_locked(ctx->wqh);
+				list_del_init(ctx->lnk);
+			}
+	}
+
+signalfd_read()/signalfd_poll use
+
+	static struct sighand_struct *ctx_try_to_lock(struct signalfd_ctx *ctx, flags)
+	{
+		struct sighand_struct *ret;
+
+		rcu_read_lock();
+		ret = lock_task_sighand(ctx->task);
+		rcu_read_unlock();
+
+		if (ret && list_empty(ctx->lnk)) {
+			unlock_task_sighand(ctx->task);
+			ret = NULL;
+		}
+
+		return ret;
+	}
+
+instead of "spin_lock_irq(ctx->sighand)" + "if (ctx->sighand != ctx->tsk->sighand)".
+
+Possible?
+
+Note that signalfd_exit_task() is generic, could be used in another context,
+de_thread() can avoid the call if !suid.
+
+How about CONFIG_SIGNALFD, btw?
+
+Davide, could you please cc me? I am not subscribed to lkml, noticed the new
+version by accident.
+
+Oleg.
 
