@@ -1,56 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbXCJUgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXCJUha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932225AbXCJUgo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 15:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbXCJUgo
+	id S932224AbXCJUha (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 15:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932228AbXCJUha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 15:36:44 -0500
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:43443 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932217AbXCJUgn (ORCPT
+	Sat, 10 Mar 2007 15:37:30 -0500
+Received: from mga02.intel.com ([134.134.136.20]:6199 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932224AbXCJUh2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 15:36:43 -0500
-Date: Sat, 10 Mar 2007 12:36:41 -0800 (PST)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
-In-Reply-To: <Pine.LNX.4.64.0703090938450.10832@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0703101229090.15510@shell4.speakeasy.net>
-References: <1173419792.32234.131.camel@localhost.localdomain>
- <20070309065055.GA18056@pazke.donpac.ru> <20070309075308.GE8798@infradead.org>
- <20070309090218.GB18056@pazke.donpac.ru> <20070309090510.GA24908@infradead.org>
- <Pine.LNX.4.64.0703090938450.10832@woody.linux-foundation.org>
+	Sat, 10 Mar 2007 15:37:28 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,270,1170662400"; 
+   d="scan'208"; a="207221523:sNHT23513154"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] NET: Multiple queue network device support
+Date: Sat, 10 Mar 2007 12:37:24 -0800
+Message-ID: <D5C1322C3E673F459512FB59E0DDC329026EA188@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <20070310023432.GJ521@postel.suug.ch>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] NET: Multiple queue network device support
+thread-index: AcdivJfpWkVmf8swT6yqGA2hYCnVcAAlutSA
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Thomas Graf" <tgraf@suug.ch>
+Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "David Miller" <davem@davemloft.net>,
+       "Garzik, Jeff" <jgarzik@pobox.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kok, Auke" <auke@foo-projects.org>,
+       "Ronciak, John" <john.ronciak@intel.com>
+X-OriginalArrivalTime: 10 Mar 2007 20:37:26.0394 (UTC) FILETIME=[EA13A5A0:01C76353]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007, Linus Torvalds wrote:
-> On Fri, 9 Mar 2007, Christoph Hellwig wrote:
-> Well, since Rusty's macro was hoddible *anyway*, I don't think I'd apply
-> it as-is. Breaking icc for something that ugly and not-very-important
-> simply makes no sense.
->
-> There are better ways to do this.
->
-> For one, you could (and should!) abstract these kinds of things out,
-> rather than put them in another macro that really does something totally
-> different. Then, the macro could have become
->
-> 	#define ARRAY_SIZE (sizeof_expression + 0*error_if_not_array)
+> -----Original Message-----
+> From: Thomas Graf [mailto:tgraf@suug.ch] 
+> Sent: Friday, March 09, 2007 6:35 PM
+> To: Waskiewicz Jr, Peter P
+> Cc: Kok, Auke-jan H; David Miller; Garzik, Jeff; 
+> netdev@vger.kernel.org; linux-kernel@vger.kernel.org; 
+> Brandeburg, Jesse; Kok, Auke; Ronciak, John
+> Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
+> 
+> * Waskiewicz Jr, Peter P <peter.p.waskiewicz.jr@intel.com> 
+> 2007-03-09 15:27
+> > That's the entire point of this extra locking.  enqueue() 
+> is going to 
+> > put an skb into a band somewhere that maps to some queue, 
+> and there is 
+> > no way to guarantee the skb I retrieve from dequeue() is headed for 
+> > the same queue.  Therefore, I need to unlock the queue 
+> after I finish 
+> > enqueuing, since having that lock makes little sense to dequeue().
+> > dequeue() will then grab *a* lock on a queue; it may be the 
+> same one 
+> > we had during enqueue(), but it may not be.  And the 
+> placement of the 
+> > unlock of that queue is exactly where it happens in non-multiqueue, 
+> > which is right before the hard_start_xmit().
+> 
+> The lock is already unlocked after dequeue, from your prio_dequeue():
+> 
+>        if (netif_is_multiqueue(sch->dev)) {
+>                queue = q->band2queue[prio];
+>                if 
+> (spin_trylock(&sch->dev->egress_subqueue[queue].queue_lock)) {
+>                        qdisc = q->queues[prio];
+>                        skb = qdisc->dequeue(qdisc);
+>                        if (skb) {
+>                                sch->q.qlen--;
+>                                skb->priority = prio;
+>                                
+> spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
+>                                return skb;
+>                        }
+>                        
+> spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
+>        }
 
-/* Error if X is a pointer, 0 otherwise */
-#define ERROR_IF_POINTER(x) \
-	sizeof(int[-__builtin_types_compatible_p(typeof(x), typeof(&x[0]))])
+Ok, now I see what's wrong.  Taking Dave M.'s recommendation to store
+the queue mapping in the skb will let me unlock the queue when dequeue()
+returns.  I'll fix this locking issue; thanks for the feedback and
+persistent drilling into my thick head.
 
-/* Warning (div by zero) if x is a pointer, 0 otherwise */
-#define WARN_IF_POINTER(x) \
-	(0/!__builtin_types_compatible_p(typeof(x), typeof(&x[0])))
-
-The gcc docs say __builtin_types_compatible_p returns 1 or 0, so the !!
-isn't necessary.  And my gcc at least returns 0 for sizeof(int[0]).
+-PJ Waskiewicz
+peter.p.waskiewicz.jr@intel.com
