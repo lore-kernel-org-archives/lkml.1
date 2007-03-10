@@ -1,263 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933498AbXCJRUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbXCJRhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933498AbXCJRUA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 12:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933499AbXCJRUA
+	id S1752823AbXCJRhQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 12:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXCJRhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 12:20:00 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:32650 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933498AbXCJRT6 (ORCPT
+	Sat, 10 Mar 2007 12:37:15 -0500
+Received: from atl.uu.jhcloos.net ([207.210.96.115]:60181 "EHLO
+	atl.uu.jhcloos.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752823AbXCJRhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 12:19:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=r/S4WVXMeWjyX9ZjyP70w3dJHsonLF7nrwkIJ/+kJJ377P66U7H243F06/pues6jFEXRGCDzlpk7273BGMl7fRDtO2MeFwV92SgfLgTjHrKXiSuZKfRemcWNmZzyb65SLlKEnCIdnC+jJmFciEgldxbYboF34cq/LeCYj0LtsWw=
-Message-ID: <2a12af650703100919x6171909dp45751f202497e32f@mail.gmail.com>
-Date: Sat, 10 Mar 2007 19:19:55 +0200
-From: "Marti Raudsepp" <marti@juffo.org>
-To: "Kernel hackers" <linux-kernel@vger.kernel.org>
-Subject: BUG: Killing and reviving files with USB disks
+	Sat, 10 Mar 2007 12:37:13 -0500
+X-Greylist: delayed 1972 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Mar 2007 12:37:13 EST
+From: James Cloos <cloos@jhcloos.com>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Matt Mackall <mpm@selenic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+In-Reply-To: <200703100807.43582.kernel@kolivas.org> (Con Kolivas's message of
+	"Sat\, 10 Mar 2007 08\:07\:43 +1100")
+References: <20070309053931.GA10459@waste.org>
+	<200703091939.05535.kernel@kolivas.org>
+	<20070309204623.GE10394@waste.org>
+	<200703100807.43582.kernel@kolivas.org>
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMnRFWHRUaXRsZQAvbWF4dG9y
+ L2Nsb29zL2luY29taW5nLzIwMDQvMDIvUFdHL0pIQzE2LnBuZyJMlEwAAAAadEVYdFNvZnR3YXJl
+ AEdOT01FIEljb24gRWRpdG9ynioKbAAAAHFJREFUeJzFk8EKwCAMQ1/ED9cvzw6iuM0N9WIvDTWE
+ 1KjAxmKnLBEBjLcEIBCeI2nccy5YKrjxwbbvAvZ37zlo4GB9iRMC/cq/AppItwmMyJ5I98wd9G7P
+ xxgrSKlYS2lMrOcV13o95aVSKA7E5ndGXG+IIzcl4BNfAAAAAElFTkSuQmCC
+Copyright: Copyright 2006 James Cloos
+X-Hashcash: 1:23:070310:akpm@linux-foundation.org::s5/5Vq6BVw4Pg7sN:0000000000000000000000000000000000006e/x
+X-Hashcash: 1:23:070310:linux-kernel@vger.kernel.org::RVhJmiKoVPHV4i0Q:000000000000000000000000000000000MnTH
+X-Hashcash: 1:23:070310:mpm@selenic.com::+CGZdIdnsYHQarHZ:005qxw
+X-Hashcash: 1:23:070310:kernel@kolivas.org::zBCUzOjgn8tRCpxL:0000000000000000000000000000000000000000000EVak
+Date: Sat, 10 Mar 2007 12:01:59 -0500
+Message-ID: <m3ejnxqbfl.fsf@lugabout.jhcloos.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/23.0.0 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: be44dc03d9a4f507
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello LKML,
+>>>>> "Con" == Con Kolivas <kernel@kolivas.org> writes:
 
-BUG: Killing and reviving files with USB disks
+Con> It's sad that sched_yield is still in our graphics card drivers ...
 
-This is a reproducible demonstration of the problem initially reported in my
-previous e-mail, titled "PROBLEM: 'bio too big device' after moving to a USB
-disk" (http://lkml.org/lkml/2007/3/7/657)
+I just did a recursive grep(1) on my mirror of the freedesktop git
+repos for sched_yield.  This only checked the master branches as I
+did not bother to script up something to clone each, check out all
+branches in turn, and grep(1) each possibility.
 
-Given that my previous e-mail appears to have been ignored in its entirety,
-it's probably a good idea to send in this reproducible demonstration of the
-problem, with a more dramatic headline.
+The output is just:
 
-Summary:
-01. Create LVM volume; initialize dm-crypt; initialize reiserfs; mount
-02. Populate the disk with files; sync; flush caches
-03. Confirm that the files are still readable and non-corrupt (sha1sum)
-04. Migrate logical volume to USB disk; sync; flush caches
-05. Confirm that ALL PREVIOUSLY VERIFIED FILES ARE CORRUPT, spewing I/O errors
-06. Observe "bio too big device dm-0 (256 > 240)" messages in dmesg
-07. Run reiserfsck to check for corruptions -- none.
-08. Migrate logical volume back to SATA disk; sync; flush caches
-09. Confirm that files are readable and non-corrupt again
-10. Clean up
+:; grep -r sched_yield FDO/xorg
+FDO/xorg/xserver/hw/kdrive/via/viadraw.c:		sched_yield();
+FDO/xorg/driver/xf86-video-glint/src/pm2_video.c:    if (sync) /* sched_yield? */
 
+Is there something else I should grep(1) for?  If not, it looks as
+if sched_yield(2) has been evicted from the drivers.
 
-Meet the characters:
-* /dev/sda: The protagonist, my old SATA disk.
-* /dev/sda5: the LVM partition on the old disk.
-* /dev/sdb: The antagonist, my new offending USB disk; whole disk is used as
-            an LVM physical volume.
-* /dev/primary: LVM volume group 'primary' consisting of /dev/sdb and
-                /dev/sda5
-* /dev/primary/punchbag: LVM volume 'punchbag' for demonstration purposes.
-* /dev/mapper/crypt-punchbag: The dm-crypt "decrypted" loopback device.
-
-
-And their accessories:
-* Linux non 2.6.19-gentoo-r6 #1 Wed Feb 28 20:55:24 EET 2007 x86_64 AMD
-  Athlon(tm) 64 Processor 3000+ AuthenticAMD GNU/Linux
-* USB disk 120GB Western Digital, model 00UE-00KVT0 (according to udev),
-  serial DEF10CD7F64C
-* Older SATA disk 200GB Seagate 7200.7, model ST3200822AS
-* Motherboard Asus A8N5X, nForce4 chipset
-* Offending file system: reiserfs v3.6, mounted with noatime,barrier=flush
-* dm-crypt using aes-256 with cbc-essiv:sha256; using assembly-optimized AES
-  on x86_64 (CONFIG_CRYPTO_AES_X86_64)
-* Test partition is 68 extents times 16MiB = 1088 MiB large (that's the
-  largest I could allocate while remaining in one segment -- otherwise lvmove
-  wouldn't move the partition back to /dev/sda5 after "defragmenting" it.)
-* LVM utilities version: 2.02.17 (2006-12-14)
-* LVM library version: 1.02.12 (2006-10-13)
-* LVM driver version: 4.10.0
-* cryptsetup-luks 1.0.4 (user space interface to dm-crypt)
-
-
-Let the play begin:
-[non]# pvdisplay /dev/sda5
-  --- Physical volume ---
-  PV Name               /dev/sda5
-  VG Name               primary
-  PV Size               145.83 GB / not usable 2.73 MB
-  Allocatable           yes
-  PE Size (KByte)       16384
-  Total PE              9333
-  Free PE               117
-  Allocated PE          9216
-  PV UUID               YdrDuL-jw5z-J0SA-EEKU-NOC4-6gGR-T90YCA
-
-[non]# pvdisplay /dev/sdb
-  --- Physical volume ---
-  PV Name               /dev/sdb
-  VG Name               primary
-  PV Size               111.79 GB / not usable 9.46 MB
-  Allocatable           yes
-  PE Size (KByte)       16384
-  Total PE              7154
-  Free PE               7129
-  Allocated PE          25
-  PV UUID               nE8C5L-lfI1-VNgs-Q7ei-1Zz3-GeGT-UNhH4p
-
-[non]# lvcreate -n punchbag --extents 68 primary /dev/sda5
-  Logical volume "punchbag" created
-[non]# lvs --segments -o +devices
-  LV       VG      Attr   #Str Type   SSize   Devices
-  [...]
-  punchbag primary -wi-a-    1 linear   1.06G /dev/sda5(0)
-  [...]
-[non]# cryptsetup luksFormat /dev/primary/punchbag -c
-aes-cbc-essiv:sha256 -h sha1
-  [...]
-Are you sure? (Type uppercase yes): YES
-Enter LUKS passphrase:
-Verify passphrase:
-Command successful.
-[non]# cryptsetup luksOpen /dev/primary/punchbag crypt-punchbag
-Enter LUKS passphrase:
-key slot 0 unlocked.
-Command successful.
-[non]# mkfs.reiserfs /dev/mapper/crypt-punchbag
-  [...]
-Guessing about desired format.. Kernel 2.6.19-gentoo-r6 is running.
-Format 3.6 with standard journal
-Count of blocks on the device: 343920
-Number of blocks consumed by mkreiserfs formatting process: 8222
-Blocksize: 4096
-Hash function used to sort names: "r5"
-Journal Size 8193 blocks (first block 18)
-Journal Max transaction length 1024
-inode generation number: 0
-UUID: c1857208-5090-49dd-9163-9fb002d96a88
-ATTENTION: YOU SHOULD REBOOT AFTER FDISK!
-	ALL DATA WILL BE LOST ON '/dev/mapper/crypt-punchbag'!
-Continue (y/n):y
-
-Initializing journal - 0%....20%....40%....60%....80%....100%
-Syncing..ok
-  [...]
-
-ReiserFS is successfully created on /dev/mapper/crypt-punchbag.
-[non]# mkdir /mnt/punchbag
-[non]# mount /dev/mapper/crypt-punchbag /mnt/punchbag -o noatime,barrier=flush
-[non]# cp -r ~marti/mp3 /mnt/punchbag
-  [... yes, these are legal mp3s ;)]
-cp: writing `/mnt/punchbag/mp3/...': No space left on device
-^C
-[non]# sync
-[non]# echo 3 > /proc/sys/vm/drop_caches
-[non]# cd /mnt/punchbag/mp3/mr\ Epic\ -\ Sideways
-[non]# sha1sum -c *.sha1
-mr Epic - Sideways - 01. Down Low.flac: OK
-mr Epic - Sideways - 02. Blue Days.flac: OK
-mr Epic - Sideways - 03. Sift.flac: OK
-mr Epic - Sideways - 04. Slipping.flac: OK
-mr Epic - Sideways - 05. Ruff and Tumble.flac: OK
-mr Epic - Sideways - 06. In.flac: OK
-mr Epic - Sideways - 07. Out.flac: OK
-[non]# pvmove -n punchbag /dev/sda5 /dev/sdb
-  [...]
-  /dev/sda5: Moved: 100.0%
-[non]# lvs --segments -o +devices
-  LV       VG      Attr   #Str Type   SSize   Devices
-  [...]
-  punchbag primary -wi-ao    1 linear   1.06G /dev/sdb(25)
-[non]# sync
-[non]# echo 3 > /proc/sys/vm/drop_caches
-[non]# sha1sum -c *.sha1
-sha1sum: mr Epic - Sideways - 01. Down Low.flac: Input/output error
-mr Epic - Sideways - 01. Down Low.flac: FAILED open or read
-sha1sum: mr Epic - Sideways - 02. Blue Days.flac: Input/output error
-mr Epic - Sideways - 02. Blue Days.flac: FAILED open or read
-sha1sum: mr Epic - Sideways - 03. Sift.flac: Input/output error
-mr Epic - Sideways - 03. Sift.flac: FAILED open or read
-sha1sum: mr Epic - Sideways - 04. Slipping.flac: Input/output error
-mr Epic - Sideways - 04. Slipping.flac: FAILED open or read
-sha1sum: mr Epic - Sideways - 05. Ruff and Tumble.flac: Input/output error
-mr Epic - Sideways - 05. Ruff and Tumble.flac: FAILED open or read
-sha1sum: mr Epic - Sideways - 06. In.flac: Input/output error
-mr Epic - Sideways - 06. In.flac: FAILED open or read
-sha1sum: mr Epic - Sideways - 07. Out.flac: Input/output error
-mr Epic - Sideways - 07. Out.flac: FAILED open or read
-sha1sum: WARNING: 7 of 7 listed files could not be read
-[non]# dmesg |tail -n7
-[101403.106825] bio too big device dm-0 (256 > 240)
-[101403.115228] bio too big device dm-0 (256 > 240)
-[101403.115912] bio too big device dm-0 (256 > 240)
-[101403.130529] bio too big device dm-0 (256 > 240)
-[101403.131220] bio too big device dm-0 (256 > 240)
-[101403.141577] bio too big device dm-0 (256 > 240)
-[101403.142255] bio too big device dm-0 (256 > 240)
-[non]# cd
-[non]# umount /mnt/punchbag
-[non]# reiserfsck --check /dev/mapper/crypt-punchbag
-  [...]
-Will read-only check consistency of the filesystem on
-/dev/mapper/crypt-punchbag
-Will put log info to 'stdout'
-
-Do you want to run this program?[N/Yes] (note need to type Yes if you do):Yes
-###########
-reiserfsck --check started at Sat Mar 10 19:00:08 2007
-###########
-Replaying journal..
-Reiserfs journal '/dev/mapper/crypt-punchbag' in blocks [18..8211]: 0
-transactions replayed
-Checking Internal tree...
-0%....20%....40%....60%....80%....100%
-Checking Semantic tree...
-There are on the filesystem:
-	Leaves 282
-	Internal nodes 3
-	Directories 18
-	Other files 196
-	Data block pointers 268374 (0 of them are zero)
-	Safe links 0
-No corruptions found
-###########
-reiserfsck finished at Sat Mar 10 19:00:10 2007
-###########
-[non]# mount /dev/mapper/crypt-punchbag /mnt/punchbag -o noatime,barrier=flush
-[non]# cd /mnt/punchbag/mp3/mr\ Epic\ -\ Sideways
-[non]# pvmove -n punchbag /dev/sdb /dev/sda5
-  [...]
-  /dev/sdb: Moved: 100.0%
-[non]# lvs --segments -o +devices
-  LV       VG      Attr   #Str Type   SSize   Devices
-  [...]
-  punchbag primary -wi-a-    1 linear   1.06G /dev/sda5(0)
-  [...]
-[non]# sync
-[non]# echo 3 > /proc/sys/vm/drop_caches
-[non]# sha1sum -c *.sha1
-mr Epic - Sideways - 01. Down Low.flac: OK
-mr Epic - Sideways - 02. Blue Days.flac: OK
-mr Epic - Sideways - 03. Sift.flac: OK
-mr Epic - Sideways - 04. Slipping.flac: OK
-mr Epic - Sideways - 05. Ruff and Tumble.flac: OK
-mr Epic - Sideways - 06. In.flac: OK
-mr Epic - Sideways - 07. Out.flac: OK
-[non]# cd
-[non]# umount /mnt/punchbag
-[non]# cryptsetup remove crypt-punchbag
-[non]# lvremove primary/punchbag
-Do you really want to remove active logical volume "punchbag"? [y/n]: y
-  Logical volume "punchbag" successfully removed
-
-I repeated this five times and each time was able to reproduce the problem.
-More details on the symptoms of the problem in my previous problem report:
-http://lkml.org/lkml/2007/3/7/657
-
-I'm not subscribed to the list, so please keep me in Cc:.
-
-
-Regards,
-Marti Raudsepp
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
