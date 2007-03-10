@@ -1,244 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751292AbXCJWTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751295AbXCJWVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751292AbXCJWTI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXCJWTH
+	id S1751295AbXCJWVU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 17:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbXCJWVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:19:07 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:50651 "EHLO
+	Sat, 10 Mar 2007 17:21:20 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:50696 "EHLO
 	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbXCJWTG (ORCPT
+	with ESMTP id S1751295AbXCJWVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:19:06 -0500
+	Sat, 10 Mar 2007 17:21:19 -0500
 X-Originating-Ip: 74.109.98.130
-Date: Sat, 10 Mar 2007 17:16:26 -0500 (EST)
+Date: Sat, 10 Mar 2007 17:18:31 -0500 (EST)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
 X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, james.bottomley@steeleye.com
-Subject: [PATCH] SCSI: Delete unused header file.
-Message-ID: <Pine.LNX.4.64.0703101715050.28707@CPE00045a9c397f-CM001225dbafb6>
+cc: Andrew Morton <akpm@osdl.org>, starvik@axis.com
+Subject: [PATCH] CRIS: Delete unused header file.
+Message-ID: <Pine.LNX.4.64.0703101717140.28739@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
 X-Net-Direct-Inc-MailScanner: Found to be clean
 X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
 	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
+	BAYES_00 -15.00)
 X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  Delete apparently unused header file drivers/scsi/pci2000.h.
+  Delete apparently unused header file drivers/serial/crisv10.h.
 
 Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
 ---
 
-diff --git a/drivers/scsi/pci2000.h b/drivers/scsi/pci2000.h
+diff --git a/drivers/serial/crisv10.h b/drivers/serial/crisv10.h
 deleted file mode 100644
-index 0ebd8ce..0000000
---- a/drivers/scsi/pci2000.h
+index 4a23340..0000000
+--- a/drivers/serial/crisv10.h
 +++ /dev/null
-@@ -1,197 +0,0 @@
--/****************************************************************************
-- * Perceptive Solutions, Inc. PCI-2000 device driver for Linux.
+@@ -1,136 +0,0 @@
+-/*
+- * serial.h: Arch-dep definitions for the Etrax100 serial driver.
 - *
-- * pci2000.h - Linux Host Driver for PCI-2000 IntelliCache SCSI Adapters
+- * Copyright (C) 1998, 1999, 2000 Axis Communications AB
+- */
+-
+-#ifndef _ETRAX_SERIAL_H
+-#define _ETRAX_SERIAL_H
+-
+-#include <linux/circ_buf.h>
+-#include <asm/termios.h>
+-
+-/* Software state per channel */
+-
+-#ifdef __KERNEL__
+-/*
+- * This is our internal structure for each serial port's state.
 - *
-- * Copyright (c) 1997-1999 Perceptive Solutions, Inc.
-- * All Rights Reserved.
+- * Many fields are paralleled by the structure used by the serial_struct
+- * structure.
 - *
-- * Redistribution and use in source and binary forms, with or without
-- * modification, are permitted provided that redistributions of source
-- * code retain the above copyright notice and this comment without
-- * modification.
-- *
-- * Technical updates and product information at:
-- *  http://www.psidisk.com
-- *
-- * Please send questions, comments, bug reports to:
-- *  tech@psidisk.com Technical Support
-- *
-- ****************************************************************************/
--#ifndef _PCI2000_H
--#define _PCI2000_H
+- * For definitions of the flags field, see tty.h
+- */
 -
--#include <linux/types.h>
+-#define SERIAL_RECV_DESCRIPTORS 8
 -
--#ifndef	PSI_EIDE_SCSIOP
--#define	PSI_EIDE_SCSIOP	1
+-struct etrax_recv_buffer {
+-	struct etrax_recv_buffer *next;
+-	unsigned short length;
+-	unsigned char error;
+-	unsigned char pad;
 -
--#define	LINUXVERSION(v,p,s)    (((v)<<16) + ((p)<<8) + (s))
+-	unsigned char buffer[0];
+-};
 -
--/************************************************/
--/*		definition of standard data types		*/
--/************************************************/
--#define	CHAR	char
--#define	UCHAR	unsigned char
--#define	SHORT	short
--#define	USHORT	unsigned short
--#define	BOOL	long
--#define	LONG	long
--#define	ULONG	unsigned long
--#define	VOID	void
+-struct e100_serial {
+-	int			baud;
+-	volatile u8		*port; /* R_SERIALx_CTRL */
+-	u32			irq;  /* bitnr in R_IRQ_MASK2 for dmaX_descr */
 -
--typedef	CHAR	*PCHAR;
--typedef	UCHAR	*PUCHAR;
--typedef	SHORT	*PSHORT;
--typedef	USHORT	*PUSHORT;
--typedef	BOOL	*PBOOL;
--typedef	LONG	*PLONG;
--typedef	ULONG	*PULONG;
--typedef	VOID	*PVOID;
+-	/* Output registers */
+-	volatile u8		*oclrintradr; /* adr to R_DMA_CHx_CLR_INTR */
+-	volatile u32		*ofirstadr;   /* adr to R_DMA_CHx_FIRST */
+-	volatile u8		*ocmdadr;     /* adr to R_DMA_CHx_CMD */
+-	const volatile u8	*ostatusadr;  /* adr to R_DMA_CHx_STATUS */
 -
+-	/* Input registers */
+-	volatile u8		*iclrintradr; /* adr to R_DMA_CHx_CLR_INTR */
+-	volatile u32		*ifirstadr;   /* adr to R_DMA_CHx_FIRST */
+-	volatile u8		*icmdadr;     /* adr to R_DMA_CHx_CMD */
+-	volatile u32		*idescradr;   /* adr to R_DMA_CHx_DESCR */
 -
--/************************************************/
--/*		Misc. macros			 				*/
--/************************************************/
--#define ANY2SCSI(up, p)					\
--((UCHAR *)up)[0] = (((ULONG)(p)) >> 8);	\
--((UCHAR *)up)[1] = ((ULONG)(p));
+-	int			flags;	/* defined in tty.h */
 -
--#define SCSI2LONG(up)					\
--( (((long)*(((UCHAR *)up))) << 16)		\
--+ (((long)(((UCHAR *)up)[1])) << 8)		\
--+ ((long)(((UCHAR *)up)[2])) )
+-	u8			rx_ctrl; /* shadow for R_SERIALx_REC_CTRL */
+-	u8			tx_ctrl; /* shadow for R_SERIALx_TR_CTRL */
+-	u8			iseteop; /* bit number for R_SET_EOP for the input dma */
+-	int			enabled; /* Set to 1 if the port is enabled in HW config */
 -
--#define XANY2SCSI(up, p)				\
--((UCHAR *)up)[0] = ((long)(p)) >> 24;	\
--((UCHAR *)up)[1] = ((long)(p)) >> 16;	\
--((UCHAR *)up)[2] = ((long)(p)) >> 8;	\
--((UCHAR *)up)[3] = ((long)(p));
+-	u8		dma_out_enabled:1; /* Set to 1 if DMA should be used */
+-	u8		dma_in_enabled:1;  /* Set to 1 if DMA should be used */
 -
--#define XSCSI2LONG(up)					\
--( (((long)(((UCHAR *)up)[0])) << 24)	\
--+ (((long)(((UCHAR *)up)[1])) << 16)	\
--+ (((long)(((UCHAR *)up)[2])) <<  8)	\
--+ ((long)(((UCHAR *)up)[3])) )
+-	/* end of fields defined in rs_table[] in .c-file */
+-	u8		uses_dma_in;  /* Set to 1 if DMA is used */
+-	u8		uses_dma_out; /* Set to 1 if DMA is used */
+-	u8		forced_eop;   /* a fifo eop has been forced */
+-	int			baud_base;     /* For special baudrates */
+-	int			custom_divisor; /* For special baudrates */
+-	struct etrax_dma_descr	tr_descr;
+-	struct etrax_dma_descr	rec_descr[SERIAL_RECV_DESCRIPTORS];
+-	int			cur_rec_descr;
 -
--/************************************************/
--/*		SCSI CDB operation codes 				*/
--/************************************************/
--#define SCSIOP_TEST_UNIT_READY		0x00
--#define SCSIOP_REZERO_UNIT			0x01
--#define SCSIOP_REWIND				0x01
--#define SCSIOP_REQUEST_BLOCK_ADDR	0x02
--#define SCSIOP_REQUEST_SENSE		0x03
--#define SCSIOP_FORMAT_UNIT			0x04
--#define SCSIOP_READ_BLOCK_LIMITS	0x05
--#define SCSIOP_REASSIGN_BLOCKS		0x07
--#define SCSIOP_READ6				0x08
--#define SCSIOP_RECEIVE				0x08
--#define SCSIOP_WRITE6				0x0A
--#define SCSIOP_PRINT				0x0A
--#define SCSIOP_SEND					0x0A
--#define SCSIOP_SEEK6				0x0B
--#define SCSIOP_TRACK_SELECT			0x0B
--#define SCSIOP_SLEW_PRINT			0x0B
--#define SCSIOP_SEEK_BLOCK			0x0C
--#define SCSIOP_PARTITION			0x0D
--#define SCSIOP_READ_REVERSE			0x0F
--#define SCSIOP_WRITE_FILEMARKS		0x10
--#define SCSIOP_FLUSH_BUFFER			0x10
--#define SCSIOP_SPACE				0x11
--#define SCSIOP_INQUIRY				0x12
--#define SCSIOP_VERIFY6				0x13
--#define SCSIOP_RECOVER_BUF_DATA		0x14
--#define SCSIOP_MODE_SELECT			0x15
--#define SCSIOP_RESERVE_UNIT			0x16
--#define SCSIOP_RELEASE_UNIT			0x17
--#define SCSIOP_COPY					0x18
--#define SCSIOP_ERASE				0x19
--#define SCSIOP_MODE_SENSE			0x1A
--#define SCSIOP_START_STOP_UNIT		0x1B
--#define SCSIOP_STOP_PRINT			0x1B
--#define SCSIOP_LOAD_UNLOAD			0x1B
--#define SCSIOP_RECEIVE_DIAGNOSTIC	0x1C
--#define SCSIOP_SEND_DIAGNOSTIC		0x1D
--#define SCSIOP_MEDIUM_REMOVAL		0x1E
--#define SCSIOP_READ_CAPACITY		0x25
--#define SCSIOP_READ					0x28
--#define SCSIOP_WRITE				0x2A
--#define SCSIOP_SEEK					0x2B
--#define SCSIOP_LOCATE				0x2B
--#define SCSIOP_WRITE_VERIFY			0x2E
--#define SCSIOP_VERIFY				0x2F
--#define SCSIOP_SEARCH_DATA_HIGH		0x30
--#define SCSIOP_SEARCH_DATA_EQUAL	0x31
--#define SCSIOP_SEARCH_DATA_LOW		0x32
--#define SCSIOP_SET_LIMITS			0x33
--#define SCSIOP_READ_POSITION		0x34
--#define SCSIOP_SYNCHRONIZE_CACHE	0x35
--#define SCSIOP_COMPARE				0x39
--#define SCSIOP_COPY_COMPARE			0x3A
--#define SCSIOP_WRITE_DATA_BUFF		0x3B
--#define SCSIOP_READ_DATA_BUFF		0x3C
--#define SCSIOP_CHANGE_DEFINITION	0x40
--#define SCSIOP_READ_SUB_CHANNEL		0x42
--#define SCSIOP_READ_TOC				0x43
--#define SCSIOP_READ_HEADER			0x44
--#define SCSIOP_PLAY_AUDIO			0x45
--#define SCSIOP_PLAY_AUDIO_MSF		0x47
--#define SCSIOP_PLAY_TRACK_INDEX		0x48
--#define SCSIOP_PLAY_TRACK_RELATIVE	0x49
--#define SCSIOP_PAUSE_RESUME			0x4B
--#define SCSIOP_LOG_SELECT			0x4C
--#define SCSIOP_LOG_SENSE			0x4D
--#define SCSIOP_MODE_SELECT10		0x55
--#define SCSIOP_MODE_SENSE10			0x5A
--#define SCSIOP_LOAD_UNLOAD_SLOT		0xA6
--#define SCSIOP_MECHANISM_STATUS		0xBD
--#define SCSIOP_READ_CD				0xBE
+-	volatile int		tr_running; /* 1 if output is running */
 -
--// SCSI read capacity structure
--typedef	struct _READ_CAPACITY_DATA
--	{
--	ULONG blks;				/* total blocks (converted to little endian) */
--	ULONG blksiz;			/* size of each (converted to little endian) */
--	}	READ_CAPACITY_DATA, *PREAD_CAPACITY_DATA;
+-	struct tty_struct	*tty;
+-	int			read_status_mask;
+-	int			ignore_status_mask;
+-	int			x_char;	/* xon/xoff character */
+-	int			close_delay;
+-	unsigned short		closing_wait;
+-	unsigned short		closing_wait2;
+-	unsigned long		event;
+-	unsigned long		last_active;
+-	int			line;
+-	int			type;  /* PORT_ETRAX */
+-	int			count;	    /* # of fd on device */
+-	int			blocked_open; /* # of blocked opens */
+-	struct circ_buf		xmit;
+-	struct etrax_recv_buffer *first_recv_buffer;
+-	struct etrax_recv_buffer *last_recv_buffer;
+-	unsigned int		recv_cnt;
+-	unsigned int		max_recv_cnt;
 -
--// SCSI inquiry data
--typedef struct _INQUIRYDATA
--	{
--	UCHAR DeviceType			:5;
--	UCHAR DeviceTypeQualifier	:3;
--	UCHAR DeviceTypeModifier	:7;
--	UCHAR RemovableMedia		:1;
--    UCHAR Versions;
--    UCHAR ResponseDataFormat;
--    UCHAR AdditionalLength;
--    UCHAR Reserved[2];
--	UCHAR SoftReset				:1;
--	UCHAR CommandQueue			:1;
--	UCHAR Reserved2				:1;
--	UCHAR LinkedCommands		:1;
--	UCHAR Synchronous			:1;
--	UCHAR Wide16Bit				:1;
--	UCHAR Wide32Bit				:1;
--	UCHAR RelativeAddressing	:1;
--    UCHAR VendorId[8];
--    UCHAR ProductId[16];
--    UCHAR ProductRevisionLevel[4];
--    UCHAR VendorSpecific[20];
--    UCHAR Reserved3[40];
--	}	INQUIRYDATA, *PINQUIRYDATA;
--
+-	struct work_struct	work;
+-	struct async_icount	icount;   /* error-statistics etc.*/
+-	struct ktermios		normal_termios;
+-	struct ktermios		callout_termios;
+-#ifdef DECLARE_WAITQUEUE
+-	wait_queue_head_t	open_wait;
+-	wait_queue_head_t	close_wait;
+-#else
+-	struct wait_queue	*open_wait;
+-	struct wait_queue	*close_wait;
 -#endif
 -
--// function prototypes
--int Pci2000_Detect			(struct scsi_host_template *tpnt);
--int Pci2000_Command			(Scsi_Cmnd *SCpnt);
--int Pci2000_QueueCommand	(Scsi_Cmnd *SCpnt, void (*done)(Scsi_Cmnd *));
--int Pci2000_Abort			(Scsi_Cmnd *SCpnt);
--int Pci2000_Reset			(Scsi_Cmnd *SCpnt, unsigned int flags);
--int Pci2000_Release			(struct Scsi_Host *pshost);
--int Pci2000_BiosParam		(struct scsi_device *sdev,
--					struct block_device *bdev,
--					sector_t capacity, int geom[]);
+-	unsigned long		char_time_usec;       /* The time for 1 char, in usecs */
+-	unsigned long		flush_time_usec;      /* How often we should flush */
+-	unsigned long		last_tx_active_usec;  /* Last tx usec in the jiffies */
+-	unsigned long		last_tx_active;       /* Last tx time in jiffies */
+-	unsigned long		last_rx_active_usec;  /* Last rx usec in the jiffies */
+-	unsigned long		last_rx_active;       /* Last rx time in jiffies */
 -
+-	int			break_detected_cnt;
+-	int			errorcode;
+-
+-#ifdef CONFIG_ETRAX_RS485
+-	struct rs485_control	rs485;  /* RS-485 support */
 -#endif
+-};
+-
+-/* this PORT is not in the standard serial.h. it's not actually used for
+- * anything since we only have one type of async serial-port anyway in this
+- * system.
+- */
+-
+-#define PORT_ETRAX 1
+-
+-/*
+- * Events are used to schedule things to happen at timer-interrupt
+- * time, instead of at rs interrupt time.
+- */
+-#define RS_EVENT_WRITE_WAKEUP	0
+-
+-#endif /* __KERNEL__ */
+-
+-#endif /* !_ETRAX_SERIAL_H */
 -- 
 ========================================================================
 Robert P. J. Day
