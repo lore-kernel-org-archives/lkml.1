@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933482AbXCJQjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933483AbXCJQoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933482AbXCJQjX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 11:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933484AbXCJQjX
+	id S933483AbXCJQoe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 11:44:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933489AbXCJQoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 11:39:23 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:47879 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933482AbXCJQjW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 11:39:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=sf+A/hkFLHCz4KMdY/eCZIXRrtkTdKmByV6W8Hz5eYXORghDzqWRHs62iW9J8hgSoMLoV+tMCxtuFw/p1wjpHmp77KxEcK19hrdxGl4VEXY/97SCb+xvL28cuAb9pzRjga9WIf/DgpAGSm2SCnz08YgtqqfN6Dn9LRtv/EsVHTc=
-Date: Sat, 10 Mar 2007 19:35:57 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-Message-ID: <20070310163557.GC10230@cvg>
-References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg> <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr>
+	Sat, 10 Mar 2007 11:44:34 -0500
+Received: from [212.12.190.34] ([212.12.190.34]:32931 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933483AbXCJQod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 11:44:33 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: Pluggable Schedulers (was: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler)
+Date: Sat, 10 Mar 2007 19:47:11 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200703091625.55361.a1426z@gawab.com> <200703100834.25136.a1426z@gawab.com> <20070310065927.GH2986@holomorphy.com>
+In-Reply-To: <20070310065927.GH2986@holomorphy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703101947.11960.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jan Engelhardt - Sat, Mar 10, 2007 at 05:26:03PM +0100]
-| 
-| On Mar 10 2007 19:06, Cyrill Gorcunov wrote:
-| >[Vladimir - Sat, Mar 10, 2007 at 04:05:42PM +0300]
-| >| Here's the problem:
-| >|   1. Unpack the kernel sources, run make menuconfig.
-| >|   2. Mark the necessary options.
-| >|   3. Pick "Save an alternate configuration file", enter a filename (e.g. /root/kernelcfg)
-| >|   4. Pick "Exit".
-| >| ->5. Configurator exits without saving. If type "make bzImage", it builtd all the default options.
-| 
-| Well, you already saved explicitly and did not make any further changes
-| after that, so it won't ask again on exit (perhaps all Office Suites do
-| the same). In fact, if you do exactly that, menuconfig assumes you do not
-| intend to build a kernel (since you did not save to .config).
-| 
-| 
-| Jan
-| -- 
-| 
+William Lee Irwin III wrote:
+> William Lee Irwin III wrote:
+> >> A useful exercise may also be enumerating
+> >> your expectations and having those who actually work with the code
+> >> describe how well those are actually met.
+>
+> On Sat, Mar 10, 2007 at 08:34:25AM +0300, Al Boldi wrote:
+> > A runtime configurable framework that allows for dynamically extensible
+> > schedulers.  PlugSched seems to be a good start.
+>
+> Last I checked there were limits to runtime configurability centering
+> around only supporting a compiled-in set of scheduling drivers, unless
+> Peter's taken it the rest of the way without my noticing. It's unclear
+> what you have in mind in terms of dynamic extensibility. My only guess
+> would be pluggable scheduling policy/class support for individual
+> schedulers in addition to plugging the individual schedulers, except
+> I'm rather certain that Williams' code doesn't do anything with modules.
 
-Hi, Jan
+Correct, it doesn't, yet.  But do you think that PlugSched has the basic 
+infrastructure in place to support this, or would it require a complete 
+redesign/rewrite.
 
-so you think that is a normal behaviour? I mean sould we leave all as
-it is?
 
-		Cyrill
+Thanks!
+
+--
+Al
 
