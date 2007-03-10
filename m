@@ -1,102 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767788AbXCJELG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767778AbXCJELG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767788AbXCJELG (ORCPT <rfc822;w@1wt.eu>);
+	id S1767778AbXCJELG (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 9 Mar 2007 23:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767778AbXCJEKh
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767768AbXCJEKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 23:10:37 -0500
-Received: from ns1.suse.de ([195.135.220.2]:36320 "EHLO mx1.suse.de"
+	Fri, 9 Mar 2007 23:10:34 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36995 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767785AbXCJEKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 23:10:16 -0500
+	id S1767791AbXCJEKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 23:10:23 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-pci@atrey.karlin.mff.cuni.cz
 Cc: linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/4] PCI: allow multiple calls to pcim_pin_device()
-Date: Fri,  9 Mar 2007 20:08:31 -0800
-Message-Id: <11734997142797-git-send-email-gregkh@suse.de>
+       Sam Ravnborg <sam@ravnborg.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 3/4] PCI: aer: fix section mismatch warning
+Date: Fri,  9 Mar 2007 20:08:33 -0800
+Message-Id: <1173499721772-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.0.2
-In-Reply-To: <20070310040356.GB30638@kroah.com>
-References: <20070310040356.GB30638@kroah.com>
+In-Reply-To: <1173499718269-git-send-email-gregkh@suse.de>
+References: <20070310040356.GB30638@kroah.com> <11734997142797-git-send-email-gregkh@suse.de> <1173499718269-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tejun Heo <htejun@gmail.com>
+From: Sam Ravnborg <sam@ravnborg.org>
 
-Sanity check in pcim_pin_device() was too restrictive in that it didn't
-allow multiple calls to the function, which is against the devres
-philosohpy of fire-and-forget.  Track pinned status separately and allow
-pinning multiple times.
+Fix following section mismatch warning (when compiled with CONFIG_HOTPLUG=n):
+WARNING: drivers/pci/built-in.o - Section mismatch: reference to .init.text:aer_probe from .data between 'aerdrv' (at offset 0x1608) and 'aer_error_handlers'
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Acked-by: Ian McDonald <ian.mcdonald@jandi.co.nz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Warning was fixed by renaming aerdrv to aerdriver so we pass the whitelist.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/pci/pci.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+ drivers/pci/pcie/aer/aerdrv.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index df49530..a32db06 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -757,7 +757,8 @@ int pci_enable_device(struct pci_dev *dev)
-  * when a device is enabled using managed PCI device enable interface.
-  */
- struct pci_devres {
--	unsigned int disable:1;
-+	unsigned int enabled:1;
-+	unsigned int pinned:1;
- 	unsigned int orig_intx:1;
- 	unsigned int restore_intx:1;
- 	u32 region_mask;
-@@ -781,7 +782,7 @@ static void pcim_release(struct device *gendev, void *res)
- 	if (this->restore_intx)
- 		pci_intx(dev, this->orig_intx);
+diff --git a/drivers/pci/pcie/aer/aerdrv.c b/drivers/pci/pcie/aer/aerdrv.c
+index b164de0..db6ad8e 100644
+--- a/drivers/pci/pcie/aer/aerdrv.c
++++ b/drivers/pci/pcie/aer/aerdrv.c
+@@ -66,7 +66,7 @@ static struct pci_error_handlers aer_error_handlers = {
+ 	.resume = aer_error_resume,
+ };
  
--	if (this->disable)
-+	if (this->enabled && !this->pinned)
- 		pci_disable_device(dev);
- }
+-static struct pcie_port_service_driver aerdrv = {
++static struct pcie_port_service_driver aerdriver = {
+ 	.name		= "aer",
+ 	.id_table	= &aer_id[0],
  
-@@ -820,12 +821,12 @@ int pcim_enable_device(struct pci_dev *pdev)
- 	dr = get_pci_dr(pdev);
- 	if (unlikely(!dr))
- 		return -ENOMEM;
--	WARN_ON(!!dr->disable);
-+	WARN_ON(!!dr->enabled);
- 
- 	rc = pci_enable_device(pdev);
- 	if (!rc) {
- 		pdev->is_managed = 1;
--		dr->disable = 1;
-+		dr->enabled = 1;
- 	}
- 	return rc;
- }
-@@ -843,9 +844,9 @@ void pcim_pin_device(struct pci_dev *pdev)
- 	struct pci_devres *dr;
- 
- 	dr = find_pci_dr(pdev);
--	WARN_ON(!dr || !dr->disable);
-+	WARN_ON(!dr || !dr->enabled);
- 	if (dr)
--		dr->disable = 0;
-+		dr->pinned = 1;
+@@ -328,7 +328,7 @@ static void aer_error_resume(struct pci_dev *dev)
+  **/
+ static int __init aer_service_init(void)
+ {
+-	return pcie_port_service_register(&aerdrv);
++	return pcie_port_service_register(&aerdriver);
  }
  
  /**
-@@ -876,7 +877,7 @@ pci_disable_device(struct pci_dev *dev)
+@@ -338,7 +338,7 @@ static int __init aer_service_init(void)
+  **/
+ static void __exit aer_service_exit(void)
+ {
+-	pcie_port_service_unregister(&aerdrv);
++	pcie_port_service_unregister(&aerdriver);
+ }
  
- 	dr = find_pci_dr(dev);
- 	if (dr)
--		dr->disable = 0;
-+		dr->enabled = 0;
- 
- 	if (atomic_sub_return(1, &dev->enable_cnt) != 0)
- 		return;
+ module_init(aer_service_init);
 -- 
 1.5.0.2
 
