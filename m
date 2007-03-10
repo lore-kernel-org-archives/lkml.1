@@ -1,124 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767855AbXCJQIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767853AbXCJQJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767855AbXCJQIb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 11:08:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767857AbXCJQIb
+	id S1767853AbXCJQJm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 11:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767856AbXCJQJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 11:08:31 -0500
-Received: from pool-71-111-97-248.ptldor.dsl-w.verizon.net ([71.111.97.248]:11519
-	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767855AbXCJQIa (ORCPT
+	Sat, 10 Mar 2007 11:09:41 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:12814 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767853AbXCJQJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 11:08:30 -0500
-X-Greylist: delayed 1090 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Mar 2007 11:08:29 EST
-Date: Sat, 10 Mar 2007 07:45:11 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: 2.6.21-rc3-mm1
-Message-ID: <20070310154511.GB9645@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070307201839.6f45735b.akpm@linux-foundation.org> <45F07715.9090502@googlemail.com> <20070309181851.e96d468a.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 10 Mar 2007 11:09:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=omSqVyX7KtjSZya2B2FePXAgsI+3PyLss+urzZpDH+8qFQwy5rwW5SR5G9eYloGRSXKRtl/2rK9zqRoANle04WlW2ih12UUJQlI5b5+ybhUzMaobH9qkMc5EdoPzDy1aQlN6Pab+v1EOk5fWNIwZ44owYXj03riJOepnrS17rDk=
+Date: Sat, 10 Mar 2007 19:06:14 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Vladimir <snigga@mail.ru>
+Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
+Message-ID: <20070310160614.GB10230@cvg>
+References: <20070310160542.21cdb968@localhost>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="3V7upXqbjpZ4EhLz"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070309181851.e96d468a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070310160542.21cdb968@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 06:18:51PM -0800, Andrew Morton wrote:
-> > On Thu, 08 Mar 2007 21:50:29 +0100 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> > Andrew Morton napisał(a):
-> > > Temporarily at
-> > > 
-> > >   http://userweb.kernel.org/~akpm/2.6.21-rc3-mm1/
-> > > 
-> > > Will appear later at
-> > > 
-> > >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm1/
-> > > 
-> > 
-> > cpu_hotplug (AutoTest) hangs at this
-> > 
-> > =============================================
-> > [ INFO: possible recursive locking detected ]
-> > 2.6.21-rc3-mm1 #2
-> > ---------------------------------------------
-> > sh/7213 is trying to acquire lock:
-> >  (sched_hotcpu_mutex){--..}, at: [<c033883a>] mutex_lock+0x1c/0x1f
-> > 
-> > but task is already holding lock:
-> >  (sched_hotcpu_mutex){--..}, at: [<c033883a>] mutex_lock+0x1c/0x1f
-> > 
-> > other info that might help us debug this:
-> > 4 locks held by sh/7213:
-> >  #0:  (cpu_add_remove_lock){--..}, at: [<c033883a>] mutex_lock+0x1c/0x1f
-> >  #1:  (sched_hotcpu_mutex){--..}, at: [<c033883a>] mutex_lock+0x1c/0x1f
-> >  #2:  (cache_chain_mutex){--..}, at: [<c033883a>] mutex_lock+0x1c/0x1f
-> >  #3:  (workqueue_mutex){--..}, at: [<c033883a>] mutex_lock+0x1c/0x1f
-> 
-> That's pretty useless, isn't it?  We need to know the mutex_lock() caller
-> here.
-> 
-> > stack backtrace
-> >  [<c0105256>] show_trace_log_lvl+0x1a/0x2f
-> >  [<c010597b>] show_trace+0x12/0x14
-> >  [<c0105a3d>] dump_stack+0x16/0x18
-> >  [<c013fc73>] __lock_acquire+0x1aa/0xceb
-> >  [<c014082d>] lock_acquire+0x79/0x93
-> >  [<c03385dc>] __mutex_lock_slowpath+0x107/0x349
-> >  [<c033883a>] mutex_lock+0x1c/0x1f
-> >  [<c011d924>] sched_getaffinity+0x14/0x91
-> >  [<c015796d>] __synchronize_sched+0x11/0x5f
-> >  [<c011d257>] detach_destroy_domains+0x2c/0x30
-> >  [<c011fc1a>] update_sched_domains+0x27/0x3a
-> >  [<c012fe7a>] notifier_call_chain+0x2b/0x4a
-> >  [<c012fec6>] __raw_notifier_call_chain+0x19/0x1e
-> >  [<c0145756>] _cpu_down+0x70/0x282
-> >  [<c014598e>] cpu_down+0x26/0x38
-> >  [<c0272714>] store_online+0x27/0x5a
-> >  [<c026f610>] sysdev_store+0x20/0x25
-> >  [<c01b7a8e>] sysfs_write_file+0xc1/0xe9
-> >  [<c0180052>] vfs_write+0xd1/0x15a
-> >  [<c0180682>] sys_write+0x3d/0x72
-> >  [<c0104270>] syscall_call+0x7/0xb
-> > 
-> > l *0xc033883a
-> > 0xc033883a is in mutex_lock (/mnt/md0/devel/linux-mm/kernel/mutex.c:92).
-> > 87              /*
-> > 88               * The locking fastpath is the 1->0 transition from
-> > 89               * 'unlocked' into 'locked' state.
-> > 90               */
-> > 91              __mutex_fastpath_lock(&lock->count, __mutex_lock_slowpath);
-> > 92      }
-> > 93
-> > 94      EXPORT_SYMBOL(mutex_lock);
-> > 95
-> > 96      static void fastcall noinline __sched
-> > 
-> > I didn't test other -mm's with this test.
-> > 
-> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc3-mm1/console.log
-> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc3-mm1/mm-config
-> 
-> I can't immediately spot the bug.  Probably it's caused by rcu-preempt's
-> changes to synchronize_sched(): that function now does a heap more than it
-> used to, including taking sched_hotcpu_muex.
-> 
-> So, what to do about this.  Paul, I'm thinking that I should drop
-> rcu-preempt for now - I don't think we ended up being able to identify any
-> particular benefit which it brings to current mainline, and I suspect that
-> things will become simpler if/when we start using the process freezer for
-> CPU hotplug.
 
-It certainly makes sense for Michal to try backing out rcu-preempt using
-your broken-out list of patches.  If that makes the problem go away,
-then I would certainly have a hard time arguing with you.  We are working
-on getting measurements showing benefit of rcu-preempt, but aren't there
-yet.
+--3V7upXqbjpZ4EhLz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-						Thanx, Paul
+[Vladimir - Sat, Mar 10, 2007 at 04:05:42PM +0300]
+| Here's the problem:
+|   1. Unpack the kernel sources, run make menuconfig.
+|   2. Mark the necessary options.
+|   3. Pick "Save an alternate configuration file", enter a filename (e.g. /root/kernelcfg)
+|   4. Pick "Exit".
+| ->5. Configurator exits without saving. If type "make bzImage", it builtd all the default options.
+| 
+| And there's no ".config" file in kernel root directory, so i have to move there my "kernelcfg" and
+| rename it.
+| 
+| If i just run "make menuconfig", then pick "Exit", then it asks "Save kernel configuration?".
+| 
+| This happens starting from kernel 2.6.20 till 2.6.20.2
+| Slackware-current.
+| PC: Athlon-XP 2000+, 256 MB RAM.
+| Linux wolf 2.6.20.2 #1 SMP PREEMPT Sat Mar 10 15:41:42 MSK 2007 i686 athlon-4 i386 GNU/Linux
+| -- 
+| Faith manages.
+| -
+| 
+
+Hi, Vladimir
+
+here is the patch to resolve your problem. Test it and write me the
+results...
+
+		Cyrill
+
+
+--3V7upXqbjpZ4EhLz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="patch.diff"
+
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index 664fe29..98836b6 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -432,8 +432,7 @@ int conf_write(const char *name)
+ 		     use_timestamp ? "# " : "",
+ 		     use_timestamp ? ctime(&now) : "");
+ 
+-	if (!conf_get_changed())
+-		sym_clear_all_valid();
++	sym_clear_all_valid();
+ 
+ 	menu = rootmenu.list;
+ 	while (menu) {
+diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
+index 3f9a132..ea32df8 100644
+--- a/scripts/kconfig/mconf.c
++++ b/scripts/kconfig/mconf.c
+@@ -840,8 +840,11 @@ static void conf_save(void)
+ 		case 0:
+ 			if (!dialog_input_result[0])
+ 				return;
+-			if (!conf_write(dialog_input_result))
++			res = conf_get_changed(); /* temporary used */
++			if (!conf_write(dialog_input_result)) {
++				sym_set_change_count(res);
+ 				return;
++			}
+ 			show_textbox(NULL, _("Can't create file!  Probably a nonexistent directory."), 5, 60);
+ 			break;
+ 		case 1:
+
+--3V7upXqbjpZ4EhLz--
