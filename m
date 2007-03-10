@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933491AbXCJQ7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767885AbXCJRJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933491AbXCJQ7c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 11:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933493AbXCJQ7c
+	id S1767885AbXCJRJK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 12:09:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767887AbXCJRJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 11:59:32 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:59500 "EHLO tmailer.gwdg.de"
+	Sat, 10 Mar 2007 12:09:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35441 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933491AbXCJQ7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 11:59:31 -0500
-Date: Sat, 10 Mar 2007 17:53:11 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andreas Schwab <schwab@suse.de>
-cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Valdis.Kletnieks@vt.edu,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1767885AbXCJRJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 12:09:09 -0500
+Date: Sat, 10 Mar 2007 18:08:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Cliff Wickman <cpw@sgi.com>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
-In-Reply-To: <jeslcdktzh.fsf@sykes.suse.de>
-Message-ID: <Pine.LNX.4.61.0703101752440.8799@yvahk01.tjqt.qr>
-References: <1173419792.32234.131.camel@localhost.localdomain>
- <1173481052.32234.137.camel@localhost.localdomain>
- <200703100403.l2A4355v008616@turing-police.cc.vt.edu>
- <1173503968.3104.65.camel@nigel.suspend2.net> <Pine.LNX.4.61.0703101452240.8799@yvahk01.tjqt.qr>
- <jeslcdktzh.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+Message-ID: <20070310170819.GA26772@elte.hu>
+References: <20070309193925.B60891B8028@attica.americas.sgi.com> <20070310091942.GC18250@elte.hu> <20070310155149.GA18478@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070310155149.GA18478@localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mar 10 2007 16:18, Andreas Schwab wrote:
->Jan Engelhardt <jengelh@linux01.gwdg.de> writes:
->
->> So in case they _ARE_ compatible, we get the compile error, as far as I
->> can see it. There's a ! too much in the !!_builtin line.
->
+* Nathan Lynch <ntl@pobox.com> wrote:
 
-	>The error case is when the types are compatible.  That means that
-	>the argument is in fact _not_ an array.
+> > > +	/* try to stay on the same cpuset */
+> > > +	if (dest_cpu == NR_CPUS) {
+> > > +		p->cpus_allowed = cpuset_cpus_allowed(p);
+> > > +		dest_cpu = any_online_cpu(p->cpus_allowed);
+> > > +	}
+> > 
+> > what's the practical effect of this - when moving the last CPU offline 
+> > from a node you got jobs migrated to really alien nodes? Thus i think we 
+> > should queue this up for v2.6.21 too, correct? It's a NOP on systems 
+> > that do not set up cpusets, so it's low-risk.
+> 
+> See my earlier reply to this patch.  Calling cpuset_cpus_allowed 
+> (which takes a mutex) here is a bug, since move_task_off_dead_cpu must 
+> be called with interrupts disabled.
 
-That one should go in as a comment for that macro.
+ouch. i only checked the !CONFIG_CPUSET case :-/ It's a really bad idea 
+to have any locking there indeed. The name itself suggests some atomic 
+action.
 
-
-
-Jan
--- 
+	Ingo
