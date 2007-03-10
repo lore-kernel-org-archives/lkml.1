@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933543AbXCJIXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbXCJIYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933543AbXCJIXI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 03:23:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933540AbXCJIXH
+	id S933552AbXCJIYr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 03:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933545AbXCJIYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 03:23:07 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:46067 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933543AbXCJIXG (ORCPT
+	Sat, 10 Mar 2007 03:24:45 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:45586 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933540AbXCJIYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 03:23:06 -0500
-Date: Sat, 10 Mar 2007 03:23:03 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, mbligh@google.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] Fix atomicity of TIF update in flush_thread() for powerpc
-Message-ID: <20070310082303.GD23144@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 10 Mar 2007 03:24:44 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 10 Mar 2007 00:24:41 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Pavel Machek <pavel@ucw.cz>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch v2] epoll use a single inode ...
+In-Reply-To: <20070310080607.GA6511@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0703100019550.28135@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703051532590.4907@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0703051558070.3998@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0703051609430.4907@alien.or.mcafeemobile.com>
+ <20070310080607.GA6511@ucw.cz>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix atomicity of TIF update in flush_thread() for powerpc
+On Sat, 10 Mar 2007, Pavel Machek wrote:
 
-Fixes it correctly with *_ti_thread_flag.
+> > Heh, this is what Al was saying ;)
+> > I'm fine with that, but how about counter cycles (going back to zero)? 
+> 
+> Just use u64?
 
-Race :
+Yeah, the second patch was using an u64.
+I ended up using a "class" name (signalfd, timerfd, asyncfd) as dname 
+entry. An incremental counter would not add any useful information, and 
+noone will ever care about dentry name of those objects. Prolly the class 
+name is the only thing you might want to know, or we can drop even that 
+and use a shared dentry for everything.
 
-parent process executing :
-sys_ptrace()
- (lock_kernel())
- (ptrace_get_task_struct(pid))
- arch_ptrace()
-   ptrace_detach()
-     ptrace_disable(child);
-       clear_singlestep(child);
-         clear_tsk_thread_flag(child, TIF_SINGLESTEP);
-         (which clears the TIF_SINGLESTEP flag atomically from a different
-          process)
- (put_task_struct(child))
- (unlock_kernel())
 
-And at the same time, in the child process :
-sys_execve()
- do_execve()
-   search_binary_handler()
-     load_elf_binary()
-       flush_old_exec()
-         flush_thread()
-           doing a non-atomic thread flag update
+- Davide
 
-Applies on 2.6.20.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -476,8 +476,13 @@ void flush_thread(void)
- #ifdef CONFIG_PPC64
- 	struct thread_info *t = current_thread_info();
- 
--	if (t->flags & _TIF_ABI_PENDING)
--		t->flags ^= (_TIF_ABI_PENDING | _TIF_32BIT);
-+	if (test_ti_thread_flag(t, TIF_ABI_PENDING)) {
-+		clear_ti_thread_flag(t, TIF_ABI_PENDING);
-+		if (test_ti_thread_flag(t, TIF_32BIT))
-+			clear_ti_thread_flag(t, TIF_32BIT);
-+		else
-+			set_ti_thread_flag(t, TIF_32BIT);
-+	}
- #endif
- 
- 	discard_lazy_cpu_state();
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
