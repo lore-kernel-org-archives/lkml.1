@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965825AbXCJDMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXCJD1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965825AbXCJDMG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 22:12:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965712AbXCJDMF
+	id S1752812AbXCJD1n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 22:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbXCJD1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 22:12:05 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:60829 "EHLO e2.ny.us.ibm.com"
+	Fri, 9 Mar 2007 22:27:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55310 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965825AbXCJDME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 22:12:04 -0500
-Date: Sat, 10 Mar 2007 08:49:09 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       sam@vilain.net, dev@sw.ru, xemul@sw.ru, pj@sgi.com,
-       ebiederm@xmission.com, winget@google.com, containers@lists.osdl.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070310031909.GA11330@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070301133543.GK15509@in.ibm.com> <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com> <20070307173031.GC2336@in.ibm.com> <20070307174346.GA19521@sergelap.austin.ibm.com> <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <20070309163430.GN6504@in.ibm.com> <6599ad830703091409s3d233829gb8f0afbfd2883b15@mail.gmail.com> <20070310020220.GE21661@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752798AbXCJD1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 22:27:41 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH][RFC] Make entire ACPI submenu dependent on PM.
+Date: Fri, 9 Mar 2007 22:26:14 -0500
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+References: <Pine.LNX.4.64.0703041312490.5332@CPE00045a9c397f-CM001225dbafb6>
+In-Reply-To: <Pine.LNX.4.64.0703041312490.5332@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070310020220.GE21661@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703092226.14552.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 10, 2007 at 07:32:20AM +0530, Srivatsa Vaddagiri wrote:
-> Ok, let me see if I can convey what I had in mind better:
+This patch is right, and I applied it.
+
+On i386, it did what it should -- made the menus look better.
+
+Testing x86_64 exposed a latent bug, however.
+Since CONFIG_X86_64_ACPI_NUMA=y does a select on ACPI,
+it is possible to config a kernel with PM=n
+and ACPI=y, which violates ACPI's dependency on PM.
+
+Basically, select of something that has dependencies doesn't
+enforce those dependencies.
+
+When will somebody re-write Kconfig into something that
+humans can use?
+
+-Len
+
+On Sunday 04 March 2007 13:17, Robert P. J. Day wrote:
 > 
-> 	    uts_ns pid_ns ipc_ns
-> 		\    |    /
-> 		---------------
-> 	       | nsproxy  	|
-> 	        ----------------
->                  /  |   \    \ <-- 'nsproxy' pointer
-> 		T1  T2  T3 ...T1000
-> 		|   |   |      | <-- 'containers' pointer (4/8 KB for 1000 task)
-> 	       -------------------
-> 	      | container_group	  |
-> 	       ------------------	
-> 		/
-> 	     ----------
-> 	    | container |
-> 	     ----------
-> 		|
-> 	     ----------
-> 	    | cpu_limit |
-> 	     ---------- 
-
-[snip]
-
-> We save on 4/8 KB (for 1000 tasks) by avoiding the 'containers' pointer
-> in each task_struct (just to get to the resource limit information).
-
-Having the 'containers' pointer in each task-struct is great from a
-non-container res mgmt perspective. It lets you dynamically decide what
-is the fundamental unit of res mgmt. 
-
-It could be {T1, T5} tasks/threads of a process, or {T1, T3, T8, T10} tasks of 
-a session (for limiting login time per session), or {T1, T2 ..T10, T18, T27} 
-tasks of a user etc.
-
-But from a vserver/container pov, this level flexibility (at a -task- level) of 
-deciding the unit of res mgmt is IMHO not needed. The
-vserver/container/namespace (tsk->nsproxy->some_ns) to which a task 
-belongs automatically defines that unit of res mgmt.
-
-
--- 
-Regards,
-vatsa
+>   Make the visibility of the entire ACPI submenu dependent on PM.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+> ---
+> 
+>   given that de-selecting Power Management (PM) de-activates the
+> entire contents of the ACPI submenu, it seems pointless to leave the
+> top-level menu entry visible.  but this is just a hack and i'll leave
+> it to the official maintainers to do it properly. :-)
+> 
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 7c49e10..3208ce0 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -7,6 +7,7 @@ menu "ACPI (Advanced Configuration and Power Interface) Support"
+>  	depends on !X86_VISWS
+>  	depends on !IA64_HP_SIM
+>  	depends on IA64 || X86
+> +	depends on PM
+> 
+>  config ACPI
+>  	bool "ACPI Support"
+> 
