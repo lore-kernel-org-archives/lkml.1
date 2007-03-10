@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbXCJGU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbXCJGYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752375AbXCJGU0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 01:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbXCJGTj
+	id S1752797AbXCJGYm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 01:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbXCJGTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 01:19:39 -0500
-Received: from tapsys.com ([72.36.178.242]:40064 "EHLO tapsys.com"
+	Sat, 10 Mar 2007 01:19:35 -0500
+Received: from ns.suse.de ([195.135.220.2]:41020 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752326AbXCJGTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 01:19:08 -0500
-Message-ID: <45F24DCE.8060902@madrabbit.org>
-Date: Sat, 10 Mar 2007 01:18:54 -0500
-From: Ray Lee <ray-lk@madrabbit.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	id S1752363AbXCJGTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 01:19:21 -0500
+Date: Fri, 9 Mar 2007 22:17:41 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, netfilter-devel@lists.netfilter.org,
+       Patrick McHardy <kaber@trash.net>, davem@davemloft.net
+Subject: [patch 09/20] nf_conntrack: fix incorrect classification of IPv6 fragments as ESTABLISHED
+Message-ID: <20070310061741.GJ31412@kroah.com>
+References: <20070310061234.465093436@mini.kroah.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Vladimir Lebedev <vladimir.p.lebedev@intel.com>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: Odd suspend regression in 2.6.21-rc[123]
-References: <45F0C018.2020409@madrabbit.org>
-In-Reply-To: <45F0C018.2020409@madrabbit.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="nf_conntrack-fix-incorrect-classification-of-ipv6-fragments-as-established.patch"
+In-Reply-To: <20070310061603.GA31412@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> In 2.6.21-rc1,2,3, my laptop will fully suspend to ram, but then
-> *immediately* resumes back from suspension. (It resumes just fine, as well.)
-[...]
-> HP/Compaq NX6125 system, AMD64, dmesg attached.
+-stable review patch.  If anyone has any objections, please let us know.
 
-hg bisect found the below patch as the culprit, and reverting it does
-fix the regression. It's supposed to address "sometime ac/battery update
-stops after resume from disk." This thread:
-http://lkml.org/lkml/2007/2/24/111 appears to talk about the same issue,
-and therefore it may be solved without the below patch, so perhaps we
-can all be happy.
+------------------
+From: Patrick McHardy <kaber@trash.net>
 
-Regardless, I think my laptop no longer being able to go into S3 sleep
-is a bit more important than someone else's laptop merely not showing
-the correct AC status :-).
+[NETFILTER]: nf_conntrack: fix incorrect classification of IPv6 fragments as ESTABLISHED
 
-Please revert. (git patch id ed41dab90eb40ac4911e60406bc653661f0e4ce1)
+The individual fragments of a packet reassembled by conntrack have the
+conntrack reference from the reassembled packet attached, but nfctinfo
+is not copied. This leaves it initialized to 0, which unfortunately is
+the value of IP_CT_ESTABLISHED.
 
-Ray
+The result is that all IPv6 fragments are tracked as ESTABLISHED,
+allowing them to bypass a usual ruleset which accepts ESTABLISHED
+packets early.
 
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-ACPI: Disable GPEs in preparation for sleep.
+---
+ net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7887
+--- a/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c
++++ b/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c
+@@ -257,6 +257,7 @@ static unsigned int ipv6_conntrack_in(un
+ 		}
+ 		nf_conntrack_get(reasm->nfct);
+ 		(*pskb)->nfct = reasm->nfct;
++		(*pskb)->nfctinfo = reasm->nfctinfo;
+ 		return NF_ACCEPT;
+ 	}
+ 
 
-Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-Signed-off-by: Vladimir Lebedev <vladimir.p.lebedev@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-
-committer: Len Brown <len.brown@intel.com>
-
-
-diff -r 31db4f8c1b77 -r 2a00d393c882 drivers/acpi/hardware/hwsleep.c
---- a/drivers/acpi/hardware/hwsleep.c   Fri Feb 09 10:45:33 2007 -0800
-+++ b/drivers/acpi/hardware/hwsleep.c   Sat Feb 10 01:30:35 2007 -0500
-@@ -235,6 +235,14 @@ acpi_status acpi_enter_sleep_state_prep(
-                                "While executing method _SST"));
-        }
-
-+       /*
-+        * 1) Disable/Clear all GPEs
-+        */
-+       status = acpi_hw_disable_all_gpes();
-+       if (ACPI_FAILURE(status)) {
-+               return_ACPI_STATUS(status);
-+       }
-+
-        return_ACPI_STATUS(AE_OK);
- }
-
-@@ -290,13 +298,8 @@ acpi_status asmlinkage acpi_enter_sleep_
-        }
-
-        /*
--        * 1) Disable/Clear all GPEs
-         * 2) Enable all wakeup GPEs
-         */
--       status = acpi_hw_disable_all_gpes();
--       if (ACPI_FAILURE(status)) {
--               return_ACPI_STATUS(status);
--       }
-        acpi_gbl_system_awake_and_running = FALSE;
-
-        status = acpi_hw_enable_all_wakeup_gpes();
-
+-- 
