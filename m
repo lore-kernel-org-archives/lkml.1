@@ -1,196 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933499AbXCJRnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbXCJRnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933499AbXCJRnF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 12:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933500AbXCJRnF
+	id S1752845AbXCJRnd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 12:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXCJRnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 12:43:05 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:45876 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933499AbXCJRnD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 12:43:03 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 10 Mar 2007 09:42:55 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/9] signalfd/timerfd v1 - signalfd core ...
-In-Reply-To: <20070310155638.GA192@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0703100929020.29266@alien.or.mcafeemobile.com>
-References: <20070310155638.GA192@tv-sign.ru>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 10 Mar 2007 12:43:33 -0500
+Received: from smtp25.orange.fr ([193.252.22.23]:31294 "EHLO smtp25.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752845AbXCJRnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 12:43:31 -0500
+X-ME-UUID: 20070310174327772.BC6A81C00087@mwinf2553.orange.fr
+Date: Sat, 10 Mar 2007 19:43:27 +0200
+From: Samuel Ortiz <samuel@sortiz.org>
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: irda rmmod lockdep trace.
+Message-ID: <20070310174326.GA3816@sortiz.org>
+Reply-To: Samuel Ortiz <samuel@sortiz.org>
+References: <20070308225436.GA25184@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070308225436.GA25184@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Mar 2007, Oleg Nesterov wrote:
+Hi Dave,
 
-> Davide Libenzi wrote:
-> >
-> > +int signalfd_deliver(struct sighand_struct *sighand, int sig,
-> > +		     struct siginfo *info)
-> > +{
-> > +	int nsig = 0;
-> > +	struct list_head *pos;
-> > +	struct signalfd_ctx *ctx;
-> > +
-> > +	list_for_each(pos, &sighand->sfdlist) {
-> > +		ctx = list_entry(pos, struct signalfd_ctx, lnk);
+On Thu, Mar 08, 2007 at 05:54:36PM -0500, Dave Jones wrote:
+> modprobe irda ; rmmod irda in 2.6.21rc3 gets me the spew below..
+Well it seems that we call __irias_delete_object() from hashbin_delete(). Then
+__irias_delete_object() calls itself hashbin_delete() again. We're trying to
+get the lock recursively.
+I'll try to fix that soon, thanks for the report.
+
+Cheers,
+Samuel.
+
+
+> 	Dave
 > 
-> list_for_each_entry()
-
-Will do, thx!
-
-
-
-> > +		/*
-> > +		 * We use a negative signal value as a way to broadcast that the
-> > +		 * sighand has been orphaned, so that we can notify all the
-> > +		 * listeners about this. Remeber the ctx->sigmask is inverted,
-> > +		 * so if the user is interested in a signal, that corresponding
-> > +		 * bit will be zero.
-> > +		 */
-> > +		if (sig < 0 || !sigismember(&ctx->sigmask, sig)) {
-> > +			__wake_up_locked(&ctx->wqh,
-> > +					 TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE);
+> NET: Registered protocol family 23
+> NET: Unregistered protocol family 23
 > 
-> wake_up_locked(&ctx->wqh)
-
-Yeah, will do.
-
-
-
-> > +		ctx->sighand = current->sighand;
-> > +		atomic_inc(&ctx->sighand->count);
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.20-1.2966.fc7 #1
+> ---------------------------------------------
+> rmmod/16712 is trying to acquire lock:
+>  (&hashbin->hb_spinlock){....}, at: [<ffffffff884bf476>] hashbin_delete+0x29/0x94 [irda]
 > 
-> I personally don't like this. de_thread() was/is the source of numerous
-> problems, and this patch adds yet another subtle dependency. The usage of
-> "private" __cleanup_sighand() is not good per se, imho.
-
-This we agree ...
-
-
-
-> Also, this is not so flexible, we can't take S_ISUID into account. It seems
-> logical to preserve ctx after a "normal" exec.
-
-This, not really. I'm not sure we want to leak this out of an exec.
-
-
-
-> > +		spin_lock_irq(&ctx->sighand->siglock);
-> > +		ctx->sigmask = sigmask;
-> > +		spin_unlock_irq(&ctx->sighand->siglock);
-> > +		wake_up(&ctx->wqh);
+> but task is already holding lock:
+>  (&hashbin->hb_spinlock){....}, at: [<ffffffff884bf476>] hashbin_delete+0x29/0x94 [irda]
 > 
-> Race with signalfd_read()->__add_wait_queue().
-
-Ack.
-
-
-
-> > +	if (sighand != ctx->tsk->sighand || ctx->tsk->signal == NULL ||
+> other info that might help us debug this:
+> 1 lock held by rmmod/16712:
+>  #0:  (&hashbin->hb_spinlock){....}, at: [<ffffffff884bf476>] hashbin_delete+0x29/0x94 [irda]
 > 
-> We don't need "ctx->tsk->signal == NULL". tsk->signal == NULL (when checked
-> under ->siglock) implies tsk->sighand == NULL. This is covered by the first
-> "sighand != ctx->tsk->sighand"  check.
-
-Extra check, due to rely less on the exit_signal code.
-
-
-> > +		__remove_wait_queue(&ctx->wqh, &wait);
-> > +		set_current_state(TASK_RUNNING);
+> stack backtrace:
 > 
-> We don't need mb() here.
-
-Ack.
-
-
-> > +void signal_fill_info(struct siginfo *dinfo, int sig, struct siginfo *sinfo)
-> > +{
-> > +	switch ((unsigned long) sinfo) {
-> > +	case (unsigned long) SEND_SIG_NOINFO:
-> > +		dinfo->si_signo = sig;
-> > +		dinfo->si_errno = 0;
-> > +		dinfo->si_code = SI_USER;
-> > +		dinfo->si_pid = current->pid;
-> > +		dinfo->si_uid = current->uid;
-> > +		break;
-> > +	case (unsigned long) SEND_SIG_PRIV:
-> > +		dinfo->si_signo = sig;
-> > +		dinfo->si_errno = 0;
-> > +		dinfo->si_code = SI_KERNEL;
-> > +		dinfo->si_pid = 0;
-> > +		dinfo->si_uid = 0;
-> > +		break;
-> > +	default:
-> > +		copy_siginfo(dinfo, sinfo);
-> > +	}
-> > +}
+> Call Trace:
+>  [<ffffffff802a303b>] __lock_acquire+0x151/0xbc4
+>  [<ffffffff884c1517>] :irda:__irias_delete_attrib+0x0/0x31
+>  [<ffffffff802a3ea4>] lock_acquire+0x4c/0x65
+>  [<ffffffff884bf476>] :irda:hashbin_delete+0x29/0x94
+>  [<ffffffff80264011>] _spin_lock_irqsave+0x2c/0x3c
+>  [<ffffffff884bf476>] :irda:hashbin_delete+0x29/0x94
+>  [<ffffffff884c1918>] :irda:__irias_delete_object+0x0/0x39
+>  [<ffffffff884c193d>] :irda:__irias_delete_object+0x25/0x39
+>  [<ffffffff884bf48d>] :irda:hashbin_delete+0x40/0x94
+>  [<ffffffff884c5e3a>] :irda:iriap_cleanup+0x36/0x38
+>  [<ffffffff884c5fd6>] :irda:irda_cleanup+0x29/0x3a
+>  [<ffffffff802aa1e1>] sys_delete_module+0x199/0x1ca
+>  [<ffffffff8026ce36>] syscall_trace_enter+0x9a/0x9f
+>  [<ffffffff8025c2b5>] tracesys+0xdc/0xe1
 > 
-> This change seems unneeded?
-
-Yes, it leaked out from the version of signalfd that had its own queue.
-
-
-> I'd suggest to remove signalfd_ctx->sighand. de_thread()/exit_signal() call
 > 
-> 	signalfd_exit_task(struct sighand_struct *sighand)
-> 	{
-> 		list_for_each_entry_safe(ctx, sighand->sfdlist)
-> 			if (ctx->tsk == current) {
-> 				wake_up_locked(ctx->wqh);
-> 				list_del_init(ctx->lnk);
-> 			}
-> 	}
-> 
-> signalfd_read()/signalfd_poll use
-> 
-> 	static struct sighand_struct *ctx_try_to_lock(struct signalfd_ctx *ctx, flags)
-> 	{
-> 		struct sighand_struct *ret;
-> 
-> 		rcu_read_lock();
-> 		ret = lock_task_sighand(ctx->task);
-> 		rcu_read_unlock();
-> 
-> 		if (ret && list_empty(ctx->lnk)) {
-> 			unlock_task_sighand(ctx->task);
-> 			ret = NULL;
-> 		}
-> 
-> 		return ret;
-> 	}
-> 
-> instead of "spin_lock_irq(ctx->sighand)" + "if (ctx->sighand != ctx->tsk->sighand)".
-> 
-> Possible?
-> 
-> Note that signalfd_exit_task() is generic, could be used in another context,
-> de_thread() can avoid the call if !suid.
-
-I think it looks good to me. Will give it a spin today.
-
-
-
-> How about CONFIG_SIGNALFD, btw?
-
-Yes, I was already planning it.
-
-
-> Davide, could you please cc me? I am not subscribed to lkml, noticed the new
-> version by accident.
-
-Will do, thx!
-
-
-
-- Davide
-
+> -- 
+> http://www.codemonkey.org.uk
 
