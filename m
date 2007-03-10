@@ -1,104 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767853AbXCJQJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767859AbXCJQRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767853AbXCJQJm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 11:09:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767856AbXCJQJl
+	id S1767859AbXCJQRn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 11:17:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767856AbXCJQRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 11:09:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:12814 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767853AbXCJQJk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 11:09:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=omSqVyX7KtjSZya2B2FePXAgsI+3PyLss+urzZpDH+8qFQwy5rwW5SR5G9eYloGRSXKRtl/2rK9zqRoANle04WlW2ih12UUJQlI5b5+ybhUzMaobH9qkMc5EdoPzDy1aQlN6Pab+v1EOk5fWNIwZ44owYXj03riJOepnrS17rDk=
-Date: Sat, 10 Mar 2007 19:06:14 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Vladimir <snigga@mail.ru>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-Message-ID: <20070310160614.GB10230@cvg>
-References: <20070310160542.21cdb968@localhost>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="3V7upXqbjpZ4EhLz"
-Content-Disposition: inline
-In-Reply-To: <20070310160542.21cdb968@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 10 Mar 2007 11:17:43 -0500
+Received: from www.osadl.org ([213.239.205.134]:46992 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767854AbXCJQRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 11:17:42 -0500
+Subject: Re: question about periodic clocks
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <45F2D3CE.1060008@goop.org>
+References: <45F1ED30.5070402@goop.org>
+	 <1173516061.24738.1148.camel@localhost.localdomain>
+	 <45F2D3CE.1060008@goop.org>
+Content-Type: text/plain
+Date: Sat, 10 Mar 2007 17:24:04 +0100
+Message-Id: <1173543844.24738.1178.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-03-10 at 07:50 -0800, Jeremy Fitzhardinge wrote:
+> Thomas Gleixner wrote:
+> > Good point. I never thought about that and we set the period in the
+> > clock event device itself. You are right, the clockevents layer should
+> > hand over the period either with the set_mode call or seperately.
+> > Probably with the set_mode call, as it is needed exactly there and we
+> > don't want to have a "if (dev->mode == XXX)" check in set_next_event().
+> >
+> > I look into this.
+> >
+> So, in the meantime, the period is 1/HZ?
 
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Yep.
 
-[Vladimir - Sat, Mar 10, 2007 at 04:05:42PM +0300]
-| Here's the problem:
-|   1. Unpack the kernel sources, run make menuconfig.
-|   2. Mark the necessary options.
-|   3. Pick "Save an alternate configuration file", enter a filename (e.g. /root/kernelcfg)
-|   4. Pick "Exit".
-| ->5. Configurator exits without saving. If type "make bzImage", it builtd all the default options.
-| 
-| And there's no ".config" file in kernel root directory, so i have to move there my "kernelcfg" and
-| rename it.
-| 
-| If i just run "make menuconfig", then pick "Exit", then it asks "Save kernel configuration?".
-| 
-| This happens starting from kernel 2.6.20 till 2.6.20.2
-| Slackware-current.
-| PC: Athlon-XP 2000+, 256 MB RAM.
-| Linux wolf 2.6.20.2 #1 SMP PREEMPT Sat Mar 10 15:41:42 MSK 2007 i686 athlon-4 i386 GNU/Linux
-| -- 
-| Faith manages.
-| -
-| 
+> I also have a question about clockevent cpumasks.  I was using the lapic
+> clockevent as a model, but as I understand it there's a lapic per CPU,
+> which explains why it registers a clockevent per cpu with that cpu alone
+> in the cpumask.
+> 
+> The Xen timer is a bit different; I guess more like hpet.  There's a
+> single (virtual-)machine-wide timer, which is "owned" by the last cpu
+> with programmed it; ie, that cpu is the one which gets the resulting
+> event interrupt.  Does this mean I should register a single clockevent
+> device with a cpumask of CPU_MASK_ALL?  Or should I constrain it to a
+> single cpu?
 
-Hi, Vladimir
+Uuurg. That's ugly. clockevents expect a per CPU timer especially for
+dynamic ticks. If you cannot provide a per cpu timer, then you probably
+need to use the broadcast trick.
 
-here is the patch to resolve your problem. Test it and write me the
-results...
+Register a primary clocksource (as PIT/HPET) and register per CPU dummy
+clocksources with CLOCK_EVT_FEAT_DUMMY set - we use the same trick, when
+the lapic timer is broken. The clockevents code then uses PIT/HPET as
+the primary tick source and broadcasts the periodic tick to the other
+CPUs. In that case the dyntick / highres features are disabled.
 
-		Cyrill
+We did some experiments to support multiple CPUs with one timer for
+hres/dyntick but it does not scale and it is so ugly that it is not
+worth the trouble. It works for the lapic stops in C3 case, as we have a
+well defined point (right before going into the deep power state) where
+we can rearm the global clock event device. As we are idle at that point
+anyway there is not much penalty, but I really dont want to do that in
+an active system.
+
+> There's a comment in hpet.c saying
+> 
+> 		 * Start hpet with the boot cpu mask and make it
+> 		 * global after the IO_APIC has been initialized.
+> 
+> but I don't see any place where the hpet cpumask is updated.
+
+I wanted to do that in the first place, but never bothered. In an UP
+environment it does not matter. On a sane SMP box (where we do not have
+the local APIC stops in C3 problem) the HPET (analogous PIT) is switched
+off for ever. In the case of LAPIC stops in C3 the HPET(PIT) is used as
+a broadcast fallback. That means before we go into C3 we arm the
+HPET/PIT for the earliest to expire lapic event of all CPUs. In that
+case it does not matter, whether HPET/PIT is pinned to CPU#0 or anything
+else.
+
+	tglx
 
 
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="patch.diff"
-
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 664fe29..98836b6 100644
---- a/scripts/kconfig/confdata.c
-+++ b/scripts/kconfig/confdata.c
-@@ -432,8 +432,7 @@ int conf_write(const char *name)
- 		     use_timestamp ? "# " : "",
- 		     use_timestamp ? ctime(&now) : "");
- 
--	if (!conf_get_changed())
--		sym_clear_all_valid();
-+	sym_clear_all_valid();
- 
- 	menu = rootmenu.list;
- 	while (menu) {
-diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
-index 3f9a132..ea32df8 100644
---- a/scripts/kconfig/mconf.c
-+++ b/scripts/kconfig/mconf.c
-@@ -840,8 +840,11 @@ static void conf_save(void)
- 		case 0:
- 			if (!dialog_input_result[0])
- 				return;
--			if (!conf_write(dialog_input_result))
-+			res = conf_get_changed(); /* temporary used */
-+			if (!conf_write(dialog_input_result)) {
-+				sym_set_change_count(res);
- 				return;
-+			}
- 			show_textbox(NULL, _("Can't create file!  Probably a nonexistent directory."), 5, 60);
- 			break;
- 		case 1:
-
---3V7upXqbjpZ4EhLz--
