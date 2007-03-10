@@ -1,94 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750699AbXCJRy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750957AbXCJSJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750699AbXCJRy0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 12:54:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbXCJRyZ
+	id S1750957AbXCJSJi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 13:09:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbXCJSJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 12:54:25 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:9246 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbXCJRyY (ORCPT
+	Sat, 10 Mar 2007 13:09:38 -0500
+Received: from smtpauth02.prod.mesa1.secureserver.net ([64.202.165.182]:43305
+	"HELO smtpauth02.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750943AbXCJSJh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 12:54:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=hnmmGDWAdXWphNJ2wId7xSvc3twKcyWl353aLQK4WKZ6tfpYz7Pu/DBbsrg+KhE4O01Og8R+pBeB1t4TYYlEpfEr7sLzQ5LmHfxNaiH+ceyJPH1kaFPobpsmd4JhPs9KkR83BqX96P1b1DG2/yKBU0dqsF4wwzlXbfWhg78i/P0=
-Date: Sat, 10 Mar 2007 20:50:58 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-Message-ID: <20070310175058.GA19878@cvg>
-References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg> <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr> <20070310194617.2aef1006@localhost> <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr>
+	Sat, 10 Mar 2007 13:09:37 -0500
+Message-ID: <45F2F45F.6000403@seclark.us>
+Date: Sat, 10 Mar 2007 13:09:35 -0500
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Con Kolivas <kernel@kolivas.org>
+CC: ck list <ck@vds.kolivas.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: RSDL v0.28 for 2.6.20
+References: <200703101845.59497.kernel@kolivas.org>
+In-Reply-To: <200703101845.59497.kernel@kolivas.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jan Engelhardt - Sat, Mar 10, 2007 at 05:50:56PM +0100]
-| On Mar 10 2007 19:46, Vladimir wrote:
-| >> On Mar 10 2007 19:06, Cyrill Gorcunov wrote:
-| >> >[Vladimir - Sat, Mar 10, 2007 at 04:05:42PM +0300]
-| >> >| Here's the problem:
-| >> >|   1. Unpack the kernel sources, run make menuconfig.
-| >> >|   2. Mark the necessary options.
-| >> >|   3. Pick "Save an alternate configuration file", enter a filename (e.g. /root/kernelcfg)
-| >> >|   4. Pick "Exit".
-| >> >| ->5. Configurator exits without saving. If type "make bzImage", it builtd all the default
-| >> >options.
-| >> 
-| >> Well, you already saved explicitly and did not make any further 
-| >> changes after that, so it won't ask again on exit (perhaps all Office 
-| >> Suites do the same). In fact, if you do exactly that, menuconfig 
-| >> assumes you do not intend to build a kernel (since you did not save 
-| >> to .config).
-| >
-| >Hm.... Do i have to "Save an alternate configuration file" to ".config" 
-| >manually? The configurator used to do that automatically when i pick 
-| >"Exit". I think that was reasonable. Anyway, the patch Cyrill sent me 
-| >works all right.
-| 
-| If you make some changes and do not call 'save an alternate config 
-| file', it will ask you on exit.
-| 
-| If you make no changes at all, a .config won't get written - true. But 
-| then, the defconfig will be used anyway.
-| 
-| All is fine.
-| 
-| 
-| Jan
+Con Kolivas wrote:
 
-Jan
+>Here is an update for RSDL to version 0.28
+>
+>Full patch:
+>http://ck.kolivas.org/patches/staircase-deadline/2.6.20-sched-rsdl-0.28.patch
+>
+>Series:
+>http://ck.kolivas.org/patches/staircase-deadline/2.6.20/
+>
+>The patch to get you from 0.26 to 0.28:
+>http://ck.kolivas.org/patches/staircase-deadline/2.6.20/sched-rsdl-0.26-0.28.patch
+>
+>A similar patch and directories will be made for 2.6.21-rc3 without further 
+>announcement
+>
+>  
+>
+doesn't apply against 2.6.20.2:
 
-lets see to the following scenario:
+patch -p1 <~/2.6.20-sched-rsdl-0.28.patch --dry-run
+patching file include/linux/list.h
+patching file fs/proc/array.c
+patching file fs/pipe.c
+patching file include/linux/sched.h
+patching file include/asm-generic/bitops/sched.h
+patching file include/asm-s390/bitops.h
+patching file kernel/sched.c
+Hunk #41 FAILED at 3531.
+1 out of 62 hunks FAILED -- saving rejects to file kernel/sched.c.rej
+patching file include/linux/init_task.h
+patching file Documentation/sched-design.txt
 
-	1) I've taken a pure Linux kernel (no .config at all)
-	2) I started menuconfig, made a few changes and saved the file
-	to .config1 as alternate
-	3) Then I made some additional changes
-	4) Then I'm getting out of menuconfig and of course "Save
-	configuration..?" question is raising. Ok, I'm selecting
-	"Yes" and as result new configuration will be written to the .config
-	file. All works as it should be...
-	
-...but as you mentoined in your message "perhaps all Office Suites do
-the same" - no, Office do not the same. The only question I have
-(and it could resolve all our problems) - what an alternate config
-file is:
+Steve
+-- 
 
-	- just a snapshot of a config tree at moment of its writting
-	- _working_ file to which configurator should write parameters
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
 
-your comments?
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
 
-P.S.
 
-Excuse for poor eng. grammar
-
-		Cyrill
 
