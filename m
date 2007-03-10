@@ -1,128 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933531AbXCJHwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbXCJIIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933531AbXCJHwM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 02:52:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933528AbXCJHwL
+	id S933533AbXCJIIr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 03:08:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933529AbXCJIIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 02:52:11 -0500
-Received: from mx2.suse.de ([195.135.220.15]:44947 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933533AbXCJHwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 02:52:00 -0500
-Subject: patch pci-repair-pci_save-restore_state-so-we-can-restore-one-save-many-times.patch added to gregkh-2.6 tree
-To: ebiederm@xmission.com, akpm@linux-foundation.org, auke-jan.h.kok@intel.com,
-       bunk@stusta.de, gregkh@suse.de, jeff@garzik.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       michal.k.k.piotrowski@gmail.com, mingo@elte.hu, mst@mellanox.co.il,
-       pavel@ucw.cz, tglx@linutronix.de, torvalds@linux-foundation.org
-From: <gregkh@suse.de>
-Date: Fri, 09 Mar 2007 23:50:20 -0800
-In-Reply-To: <m1lki75wlm.fsf_-_@ebiederm.dsl.xmission.com>
-Message-Id: <20070310075157.6162AB9484B@imap.suse.de>
+	Sat, 10 Mar 2007 03:08:47 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:38450 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933526AbXCJIIq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 03:08:46 -0500
+Date: Sat, 10 Mar 2007 03:08:44 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: akpm@linux-foundation.org, mbligh@google.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, sparclinux@vger.kernel.org
+Subject: [PATCH] Fix atomicity of TIF update in flush_thread() for sparc64
+Message-ID: <20070310080844.GA23144@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix atomicity of TIF update in flush_thread() for sparc64
 
-This is a note to let you know that I've just added the patch titled
+Fixes correctly the race by using *_ti_thread_flag.
 
-     Subject: pci: Repair pci_save/restore_state so we can restore one save many times.
+Race :
 
-to my gregkh-2.6 tree.  Its filename is
+parent process executing :
+sys_ptrace()
+ (lock_kernel())
+ (ptrace_get_task_struct(pid))
+ arch_ptrace()
+   ptrace_detach()
+     ptrace_disable(child);
+       clear_singlestep(child);
+         clear_tsk_thread_flag(child, TIF_SINGLESTEP);
+         (which clears the TIF_SINGLESTEP flag atomically from a different
+          process)
+ (put_task_struct(child))
+ (unlock_kernel())
 
-     pci-repair-pci_save-restore_state-so-we-can-restore-one-save-many-times.patch
+And at the same time, in the child process :
+sys_execve()
+ do_execve()
+   search_binary_handler()
+     load_elf_binary()
+       flush_old_exec()
+         flush_thread()
+           doing a non-atomic thread flag update
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+It applies on 2.6.20.
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
->From owner-linux-pci@atrey.karlin.mff.cuni.cz Thu Mar  8 12:06:39 2007
-From: Eric W. Biederman <ebiederm@xmission.com>
-Date: Thu, 08 Mar 2007 13:06:13 -0700
-Subject: pci: Repair pci_save/restore_state so we can restore one save many times.
-To: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, <linux-pci@atrey.karlin.mff.cuni.cz>, michael@ellerman.id.au
-Message-ID: <m1lki75wlm.fsf_-_@ebiederm.dsl.xmission.com>
-
-
-From: Eric W. Biederman <ebiederm@xmission.com>
-
-Because we do not reserve space for the pci-x and pci-e state in struct
-pci dev we need to dynamically allocate it.  However because we need
-to support restore being called multiple times after a single save
-it is never safe to free the buffers we have allocated to hold the
-state.
-
-So this patch modifies the save routines to first check to see
-if we have already allocated a state buffer before allocating
-a new one.  Then the restore routines are modified to not free
-the state after restoring it.  Simple and it fixes some subtle
-error path handling bugs, that are hard to test for.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/pci/pci.c   |   12 ++++++------
- include/linux/pci.h |    5 -----
- 2 files changed, 6 insertions(+), 11 deletions(-)
-
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -551,7 +551,9 @@ static int pci_save_pcie_state(struct pc
- 	if (pos <= 0)
- 		return 0;
+--- a/arch/sparc64/kernel/process.c
++++ b/arch/sparc64/kernel/process.c
+@@ -413,8 +413,13 @@ void flush_thread(void)
+ 	struct thread_info *t = current_thread_info();
+ 	struct mm_struct *mm;
  
--	save_state = kzalloc(sizeof(*save_state) + sizeof(u16) * 4, GFP_KERNEL);
-+	save_state = pci_find_saved_cap(dev, PCI_CAP_ID_EXP);
-+	if (!save_state)
-+		save_state = kzalloc(sizeof(*save_state) + sizeof(u16) * 4, GFP_KERNEL);
- 	if (!save_state) {
- 		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
- 		return -ENOMEM;
-@@ -582,8 +584,6 @@ static void pci_restore_pcie_state(struc
- 	pci_write_config_word(dev, pos + PCI_EXP_LNKCTL, cap[i++]);
- 	pci_write_config_word(dev, pos + PCI_EXP_SLTCTL, cap[i++]);
- 	pci_write_config_word(dev, pos + PCI_EXP_RTCTL, cap[i++]);
--	pci_remove_saved_cap(save_state);
--	kfree(save_state);
- }
+-	if (t->flags & _TIF_ABI_PENDING)
+-		t->flags ^= (_TIF_ABI_PENDING | _TIF_32BIT);
++	if (test_ti_thread_flag(t, TIF_ABI_PENDING)) {
++		clear_ti_thread_flag(t, TIF_ABI_PENDING);
++		if (test_ti_thread_flag(t, TIF_32BIT))
++			clear_ti_thread_flag(t, TIF_32BIT);
++		else
++			set_ti_thread_flag(t, TIF_32BIT);
++	}
  
- 
-@@ -597,7 +597,9 @@ static int pci_save_pcix_state(struct pc
- 	if (pos <= 0)
- 		return 0;
- 
--	save_state = kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
-+	save_state = pci_find_saved_cap(dev, PCI_CAP_ID_EXP);
-+	if (!save_state)
-+		save_state = kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
- 	if (!save_state) {
- 		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
- 		return -ENOMEM;
-@@ -622,8 +624,6 @@ static void pci_restore_pcix_state(struc
- 	cap = (u16 *)&save_state->data[0];
- 
- 	pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
--	pci_remove_saved_cap(save_state);
--	kfree(save_state);
- }
- 
- 
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -222,11 +222,6 @@ static inline void pci_add_saved_cap(str
- 	hlist_add_head(&new_cap->next, &pci_dev->saved_cap_space);
- }
- 
--static inline void pci_remove_saved_cap(struct pci_cap_saved_state *cap)
--{
--	hlist_del(&cap->next);
--}
--
- /*
-  *  For PCI devices, the region numbers are assigned this way:
-  *
-
-
-Patches currently in gregkh-2.6 which might be from ebiederm@xmission.com are
-
+ 	mm = t->task->mm;
+ 	if (mm)
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
