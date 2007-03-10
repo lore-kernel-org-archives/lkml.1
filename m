@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751216AbXCJWa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbXCJWe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751216AbXCJWa5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXCJWa5
+	id S1751306AbXCJWe4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 17:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbXCJWez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:30:57 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:46257 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbXCJWaz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:30:55 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 10 Mar 2007 14:30:50 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nicholas Miell <nmiell@comcast.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
-In-Reply-To: <1173560473.2958.23.camel@entropy>
-Message-ID: <Pine.LNX.4.64.0703101424060.3679@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com> 
- <1173508384.3108.1.camel@entropy>  <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
-  <1173509019.3108.4.camel@entropy>  <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
-  <1173510568.3108.17.camel@entropy>  <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
-  <1173556374.2958.12.camel@entropy>  <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
- <1173560473.2958.23.camel@entropy>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 10 Mar 2007 17:34:55 -0500
+Received: from mail09.syd.optusnet.com.au ([211.29.132.190]:38921 "EHLO
+	mail09.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751306AbXCJWez convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 17:34:55 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Subject: Re: [PATCH][RSDL-mm 0/6]  Rotating Staircase DeadLine scheduler   for -mm
+Date: Sun, 11 Mar 2007 10:01:15 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+References: <1173527368.3380.1.camel@rousalka.dyndns.org> <200703110103.21224.kernel@kolivas.org> <1173545608.4143.10.camel@rousalka.dyndns.org>
+In-Reply-To: <1173545608.4143.10.camel@rousalka.dyndns.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703111001.15682.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Mar 2007, Nicholas Miell wrote:
+On Sunday 11 March 2007 03:53, Nicolas Mailhot wrote:
+> Le dimanche 11 mars 2007 à 01:03 +1100, Con Kolivas a écrit :
+> > On Saturday 10 March 2007 22:49, Nicolas Mailhot wrote:
+> > > Oops
+> > >
+> > > ⇒ http://bugzilla.kernel.org/show_bug.cgi?id=8166
+> >
+> > Thanks very much. I can't get your config to boot on qemu, but could you
+> > please try this debugging patch? It's not a patch you can really run the
+> > machine with but might find where the problem occurs. Specifically I'm
+> > looking for the warning MISSING STATIC BIT in your case.
+> >
+> > http://ck.kolivas.org/patches/crap/sched-rsdl-0.28-stuff.patch
+>
+> I attached a screenshot of the patched kernel boot
 
-> I never complained about one timer per fd (although, now that you
-> mention it, that would get a bit excessive if you have thousands of
-> outstanding timers).
+Thanks. Darn the debugging didn't catch anything. Did you see any BUG during 
+the boot earlier than that screenshot? Probably not. 
 
-Right, of course.
+If you have the time I would appreciate you testing 2.6.20 with the rsdl 0.28 
+patch for it with a config as close to this -mm2 one as possible.
 
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20-sched-rsdl-0.28.patch
 
+and see if the bug recurs please?
 
-> > The real-time and monotonic selection can be added. 
-> 
-> IOW, the timerfd patch is not suitable for inclusion as-is. (While
-> you're at it, you should probably add a flags argument for future
-> expansion.)
+Thanks!
 
-That's already in.
-
-
-
-> > If you look at the posix timers code, that's a bunch of code over the real 
-> > meat of it, that is hrtimer.c. The timerfd interface goes straight to 
-> > that, without adding yet another meaning to the sigevent structure,
-> 
-> That's what the sigevent structure is for -- to describe how events
-> should be signaled to userspace, whether by signal delivery, thread
-> creation, or queuing to event completion ports. If if you think
-> extending it would be bad, I can show you the line in POSIX where it
-> encourages the contrary.
-
-I'm sorry, I already explained you that linking the two (files and posix 
-timers) is going to create more troubles than it actually solves.
-The timerfd code provides the same functionality, with zero intrusion in 
-existing code, and basically zero code (once if you remove the usual fd 
-creation/cleanup).
-The code of adding posix timers support would be *all* the existing one
-(that is already a thin wrapper that calls hrtimer.c support - like 
-posix timers do), plus adding more crud into the posix timers code, plus 
-adding file references handling. If *you* want to do that, I can open you 
-a door into the timerfd.
-
-
-
-
-- Davide
-
-
+-- 
+-ck
