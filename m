@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXCJJMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161022AbXCJJPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932290AbXCJJMG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 04:12:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbXCJJMG
+	id S1161022AbXCJJPb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 04:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1160995AbXCJJPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 04:12:06 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53304 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932290AbXCJJMC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 04:12:02 -0500
-Date: Sat, 10 Mar 2007 01:11:15 -0800
-From: Paul Jackson <pj@sgi.com>
-To: Sam Vilain <sam@vilain.net>
-Cc: menage@google.com, ebiederm@xmission.com, serue@us.ibm.com,
-       vatsa@in.ibm.com, akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru,
-       containers@lists.osdl.org, winget@google.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] resource control file system - aka containers on
- top of nsproxy!
-Message-Id: <20070310011115.dbeddf39.pj@sgi.com>
-In-Reply-To: <45F271D3.3040909@vilain.net>
-References: <20070301133543.GK15509@in.ibm.com>
-	<6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com>
-	<20070307173031.GC2336@in.ibm.com>
-	<20070307174346.GA19521@sergelap.austin.ibm.com>
-	<20070307180055.GC17151@in.ibm.com>
-	<20070307205846.GB7010@sergelap.austin.ibm.com>
-	<6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com>
-	<m1odn4bs6n.fsf@ebiederm.dsl.xmission.com>
-	<6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
-	<45EF5A62.8000103@vilain.net>
-	<6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com>
-	<45EF5E71.7090101@vilain.net>
-	<20070308202713.34de89ed.pj@sgi.com>
-	<45F271D3.3040909@vilain.net>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Mar 2007 04:15:31 -0500
+Received: from mail.kroah.org ([69.55.234.183]:54790 "EHLO perch.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933426AbXCJJPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 04:15:20 -0500
+Date: Sat, 10 Mar 2007 01:14:45 -0800
+From: Greg KH <greg@kroah.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       netfilter-devel@lists.netfilter.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>, davem@davemloft.net,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       akpm@linux-foundation.org, Michal Miroslaw <mirq-linux@rere.qmqm.pl>,
+       torvalds@linux-foundation.org, Patrick McHardy <kaber@trash.net>,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 12/20] nfnetlink_log: fix reference counting
+Message-ID: <20070310091445.GA26611@kroah.com>
+References: <20070310061234.465093436@mini.kroah.org> <20070310061803.GM31412@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070310061803.GM31412@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam wrote:
-> But when you apply this to something like cpusets, it gets a little abstract.
+On Fri, Mar 09, 2007 at 10:18:03PM -0800, Greg KH wrote:
+> -stable review patch.  If anyone has any objections, please let us know.
+> 
+> ------------------
+> From: Michal Miroslaw <mirq-linux@rere.qmqm.pl>
+> 
+> [NETFILTER]: nfnetlink_log: fix reference counting
+> 
+> Fix reference counting (memory leak) problem in __nfulnl_send() and callers
+> related to packet queueing.
+> 
+> Signed-off-by: Michal Miroslaw <mirq-linux@rere.qmqm.pl>
+> Signed-off-by: Patrick McHardy <kaber@trash.net>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  net/netfilter/nfnetlink_log.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> --- a/net/netfilter/nfnetlink_log.c
+> +++ b/net/netfilter/nfnetlink_log.c
+> @@ -220,7 +220,8 @@ _instance_destroy2(struct nfulnl_instanc
+>  		/* timer "holds" one reference (we have one more) */
+>  		if (timer_pending(&inst->timer)) {
+>  			del_timer(&inst->timer);
+> -			instance_put(inst);
+> +
+> +instance_put(inst);
+>  		}
+>  		if (inst->qlen)
+>  			__nfulnl_send(inst);
+> 
 
-Just a tad abstract <grin>.
+As this patch does nothing, it's now dropped.  It was my fault as the
+original patch didn't apply and I messed up using quilt here.
 
-Thanks.
+thanks,
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+greg k-h
