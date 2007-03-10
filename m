@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767836AbXCJPAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbXCJPDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767836AbXCJPAh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 10:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767839AbXCJPAh
+	id S933460AbXCJPDX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 10:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933461AbXCJPDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 10:00:37 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:19742 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767836AbXCJPAg (ORCPT
+	Sat, 10 Mar 2007 10:03:23 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:55288 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933460AbXCJPDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 10:00:36 -0500
-From: Grozdan Nikolov <microchip@chello.be>
-To: linux-kernel@vger.kernel.org
-Subject: imm module issues
-Date: Sat, 10 Mar 2007 16:00:28 +0100
-User-Agent: KMail/1.9.6
+	Sat, 10 Mar 2007 10:03:22 -0500
+Date: Sat, 10 Mar 2007 16:03:24 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: _proxy_pda still makes linking modules fail
+Message-ID: <20070310150323.GN3441@stusta.de>
+References: <1173315479.12472.9.camel@qrnik>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200703101600.28449.microchip@chello.be>
+In-Reply-To: <1173315479.12472.9.camel@qrnik>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Mar 08, 2007 at 01:57:59AM +0100, Marcin 'Qrczak' Kowalczyk wrote:
+> This is linux-2.6.20.1 with lots of patches from PLD Linux (I believe
+> the patches don't affect the issue), compiled with gcc-4.1.2 and
+> binutils-2.17.50.0.12 on x86.
+>...
 
-I've compiled the 2.6.20.2 kernel today (I took the SuSE HEAD kernel instead 
-of the vanilla one) and I'm having issues with the "imm" module. I still use 
-a ZIP drive here for small backups and the "imm" module worked flawless on 
-kernel 2.6.18.8 but with kernel 2.6.20.2 I get error messages that the device 
-is offline even if the device is switched on and has a ZIP disk inside of it.
+Please test a plain 2.6.20 from ftp.kernel.org.
+If it fails, please send your .config .
 
-This is what I get from "dmesg" (Sorry for posting this here if it's the wrong 
-place, but I wasn't sure if I should report this to Novell's bugzilla because 
-I'm using the SuSE head kernel which is not officially supported)
+cu
+Adrian
 
-imm: Version 2.05 (for Linux 2.4.0)
-imm: Found device at ID 6, Attempting to use EPP 32 bit
-imm: Communication established at 0x378 with ID 6 using EPP 32 bit
-scsi1 : Iomega VPI2 (imm) interface
-scsi 1:0:6:0: Direct-Access     IOMEGA   ZIP 250          L.58 PQ: 0 ANSI: 2
-sd 1:0:6:0: scsi: Device offlined - not ready after error recovery
-sd 1:0:6:0: rejecting I/O to offline device
-sd 1:0:6:0: rejecting I/O to offline device
-sd 1:0:6:0: rejecting I/O to offline device
-sd 1:0:6:0: rejecting I/O to offline device
-sda : READ CAPACITY failed.
-sda : status=0, message=00, host=1, driver=00
-sda : sense not available.
-sd 1:0:6:0: rejecting I/O to offline device
-sda: Write Protect is off
-sda: Mode Sense: 00 00 00 00
-sd 1:0:6:0: rejecting I/O to offline device
-sda: asking for cache data failed
-sda: assuming drive cache: write through
-sd 1:0:6:0: Attached scsi removable disk sda
-sd 1:0:6:0: Attached scsi generic sg0 type 0
 -- 
-go openSUSE go!
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
