@@ -1,219 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751196AbXCJWDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXCJWFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751196AbXCJWDD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:03:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXCJWDD
+	id S932079AbXCJWFR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 17:05:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbXCJWFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:03:03 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:50341 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbXCJWDB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:03:01 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Sat, 10 Mar 2007 16:59:46 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, markus.lidel@shadowconnect.com
-Subject: [PATCH] I2O: Delete unused header file.
-Message-ID: <Pine.LNX.4.64.0703101658480.28440@CPE00045a9c397f-CM001225dbafb6>
+	Sat, 10 Mar 2007 17:05:17 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51097 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751200AbXCJWFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 17:05:13 -0500
+Date: Sat, 10 Mar 2007 23:04:40 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Johannes Stezenbach <js@linuxtv.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>, linux-pm@lists.osdl.org,
+       lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
+       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Eric W. Biederman" <ebiederm@xmission.com>, seife@suse.de
+Subject: s2ram (was Re: [2/6] 2.6.21-rc2: known regressions)
+Message-ID: <20070310220440.GE2758@elf.ucw.cz>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org> <20070309174821.GA31754@linuxtv.org> <20070309233508.GB2197@elf.ucw.cz> <20070310090121.GB15647@elte.hu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-972241779-1173563986=:28440"
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070310090121.GB15647@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi!
 
---0-972241779-1173563986=:28440
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+> > > Even if one doesn't use the fb console at all, radeonfb apparently 
+> > > is still required on some ThinkPad models to work around BIOS bugs:
+> > > 
+> > > http://www.thinkwiki.org/wiki/Problem_with_high_power_drain_in_ACPI_sleep#Radeon_GPU_not_powered_off
+> > 
+> > 
+> > s2ram should be able to work around this, it has parts from 
+> > radeontool. (suspend.sf.net).
+> 
+> i'm wondering, do you have any idea how Windows handles the 
+> suspend/resume quirks problem area? Do they "curse BIOS vendors and 
 
+Windows actually have (kernel) graphics drivers that know how to
+resume the video. If you boot save mode, they go w/o graphics drivers,
+and have similar problems to us.
 
-  Delete apparently unused header file.
+> btw., the s2ram database seems quite a bit spotty:
+> 
+>  $ ./s2ram -n
+>  Machine is unknown.
+>  This machine can be identified by:
+>      sys_vendor   = "System manufacturer"
+>      sys_product  = "System Product Name"
+>      sys_version  = "System Version"
+>      bios_version = "ASUS A8N-E ACPI BIOS Revision 1008"
+> 
+>  $ ./s2ram -n
+>  Machine is unknown.
+>  This machine can be identified by:
+>     sys_vendor   = "Hewlett-Packard "
+>     sys_product  = "compaq nx9030 (PG630ET#ABD)       "
+>     sys_version  = "Rev 1           "
+>     bios_version = "F.15    "
+>  See http://en.opensuse.org/S2ram for details.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Desktops are the problem; but that nx9030 should be reasonably easy to
+add.
 
----
+> even at the link above i didnt find any clear algorithm about how to 
+> extend the quirks-list and the white-list - while i expect that most 
+> people experience what i did: that s2ram doesnt know their boxes. 
+> (otherwise they would not visit that URL at all i suspect)
 
-diff --git a/drivers/message/i2o/i2o_lan.h b/drivers/message/i2o/i2o_lan.h
-deleted file mode 100644
-index 6502b81..0000000
---- a/drivers/message/i2o/i2o_lan.h
-+++ /dev/null
-@@ -1,159 +0,0 @@
--/*
-- *   	i2o_lan.h			I2O LAN Class definitions
-- *
-- *      I2O LAN CLASS OSM       	May 26th 2000
-- *
-- *      (C) Copyright 1999, 2000	University of Helsinki,
-- *					Department of Computer Science
-- *
-- *      This code is still under development / test.
-- *
-- *	Author:		Auvo Häkkinen <Auvo.Hakkinen@cs.Helsinki.FI>
-- *			Juha Sievänen <Juha.Sievanen@cs.Helsinki.FI>
-- *			Taneli Vähäkangas <Taneli.Vahakangas@cs.Helsinki.FI>
-- */
--
--#ifndef _I2O_LAN_H
--#define _I2O_LAN_H
--
--/* Default values for tunable parameters first */
--
--#define I2O_LAN_MAX_BUCKETS_OUT 96
--#define I2O_LAN_BUCKET_THRESH	18	/* 9 buckets in one message */
--#define I2O_LAN_RX_COPYBREAK	200
--#define I2O_LAN_TX_TIMEOUT 	(1*HZ)
--#define I2O_LAN_TX_BATCH_MODE	2	/* 2=automatic, 1=on, 0=off */
--#define I2O_LAN_EVENT_MASK	0	/* 0=None, 0xFFC00002=All */
--
--/* LAN types */
--#define I2O_LAN_ETHERNET	0x0030
--#define I2O_LAN_100VG		0x0040
--#define I2O_LAN_TR		0x0050
--#define I2O_LAN_FDDI		0x0060
--#define I2O_LAN_FIBRE_CHANNEL	0x0070
--#define I2O_LAN_UNKNOWN		0x00000000
--
--/* Connector types */
--
--/* Ethernet */
--#define I2O_LAN_AUI		(I2O_LAN_ETHERNET << 4) + 0x00000001
--#define I2O_LAN_10BASE5		(I2O_LAN_ETHERNET << 4) + 0x00000002
--#define I2O_LAN_FIORL		(I2O_LAN_ETHERNET << 4) + 0x00000003
--#define I2O_LAN_10BASE2		(I2O_LAN_ETHERNET << 4) + 0x00000004
--#define I2O_LAN_10BROAD36	(I2O_LAN_ETHERNET << 4) + 0x00000005
--#define I2O_LAN_10BASE_T	(I2O_LAN_ETHERNET << 4) + 0x00000006
--#define I2O_LAN_10BASE_FP	(I2O_LAN_ETHERNET << 4) + 0x00000007
--#define I2O_LAN_10BASE_FB	(I2O_LAN_ETHERNET << 4) + 0x00000008
--#define I2O_LAN_10BASE_FL	(I2O_LAN_ETHERNET << 4) + 0x00000009
--#define I2O_LAN_100BASE_TX	(I2O_LAN_ETHERNET << 4) + 0x0000000A
--#define I2O_LAN_100BASE_FX	(I2O_LAN_ETHERNET << 4) + 0x0000000B
--#define I2O_LAN_100BASE_T4	(I2O_LAN_ETHERNET << 4) + 0x0000000C
--#define I2O_LAN_1000BASE_SX	(I2O_LAN_ETHERNET << 4) + 0x0000000D
--#define I2O_LAN_1000BASE_LX	(I2O_LAN_ETHERNET << 4) + 0x0000000E
--#define I2O_LAN_1000BASE_CX	(I2O_LAN_ETHERNET << 4) + 0x0000000F
--#define I2O_LAN_1000BASE_T	(I2O_LAN_ETHERNET << 4) + 0x00000010
--
--/* AnyLAN */
--#define I2O_LAN_100VG_ETHERNET	(I2O_LAN_100VG << 4) + 0x00000001
--#define I2O_LAN_100VG_TR	(I2O_LAN_100VG << 4) + 0x00000002
--
--/* Token Ring */
--#define I2O_LAN_4MBIT		(I2O_LAN_TR << 4) + 0x00000001
--#define I2O_LAN_16MBIT		(I2O_LAN_TR << 4) + 0x00000002
--
--/* FDDI */
--#define I2O_LAN_125MBAUD	(I2O_LAN_FDDI << 4) + 0x00000001
--
--/* Fibre Channel */
--#define I2O_LAN_POINT_POINT	(I2O_LAN_FIBRE_CHANNEL << 4) + 0x00000001
--#define I2O_LAN_ARB_LOOP	(I2O_LAN_FIBRE_CHANNEL << 4) + 0x00000002
--#define I2O_LAN_PUBLIC_LOOP	(I2O_LAN_FIBRE_CHANNEL << 4) + 0x00000003
--#define I2O_LAN_FABRIC		(I2O_LAN_FIBRE_CHANNEL << 4) + 0x00000004
--
--#define I2O_LAN_EMULATION	0x00000F00
--#define I2O_LAN_OTHER		0x00000F01
--#define I2O_LAN_DEFAULT		0xFFFFFFFF
--
--/* LAN class functions */
--
--#define LAN_PACKET_SEND		0x3B
--#define LAN_SDU_SEND		0x3D
--#define LAN_RECEIVE_POST	0x3E
--#define LAN_RESET		0x35
--#define LAN_SUSPEND		0x37
--
--/* LAN DetailedStatusCode defines */
--#define I2O_LAN_DSC_SUCCESS			0x00
--#define I2O_LAN_DSC_DEVICE_FAILURE		0x01
--#define I2O_LAN_DSC_DESTINATION_NOT_FOUND	0x02
--#define	I2O_LAN_DSC_TRANSMIT_ERROR		0x03
--#define I2O_LAN_DSC_TRANSMIT_ABORTED		0x04
--#define I2O_LAN_DSC_RECEIVE_ERROR		0x05
--#define I2O_LAN_DSC_RECEIVE_ABORTED		0x06
--#define I2O_LAN_DSC_DMA_ERROR			0x07
--#define I2O_LAN_DSC_BAD_PACKET_DETECTED		0x08
--#define I2O_LAN_DSC_OUT_OF_MEMORY		0x09
--#define I2O_LAN_DSC_BUCKET_OVERRUN		0x0A
--#define I2O_LAN_DSC_IOP_INTERNAL_ERROR		0x0B
--#define I2O_LAN_DSC_CANCELED			0x0C
--#define I2O_LAN_DSC_INVALID_TRANSACTION_CONTEXT	0x0D
--#define I2O_LAN_DSC_DEST_ADDRESS_DETECTED	0x0E
--#define I2O_LAN_DSC_DEST_ADDRESS_OMITTED	0x0F
--#define I2O_LAN_DSC_PARTIAL_PACKET_RETURNED	0x10
--#define I2O_LAN_DSC_SUSPENDED			0x11
--
--struct i2o_packet_info {
--	u32 offset:24;
--	u32 flags:8;
--	u32 len:24;
--	u32 status:8;
--};
--
--struct i2o_bucket_descriptor {
--	u32 context;		/* FIXME: 64bit support */
--	struct i2o_packet_info packet_info[1];
--};
--
--/* Event Indicator Mask Flags for LAN OSM */
--
--#define I2O_LAN_EVT_LINK_DOWN		0x01
--#define I2O_LAN_EVT_LINK_UP		0x02
--#define I2O_LAN_EVT_MEDIA_CHANGE 	0x04
--
--#include <linux/netdevice.h>
--#include <linux/fddidevice.h>
--
--struct i2o_lan_local {
--	u8 unit;
--	struct i2o_device *i2o_dev;
--
--	struct fddi_statistics stats;	/* see also struct net_device_stats */
--	unsigned short (*type_trans) (struct sk_buff *, struct net_device *);
--	atomic_t buckets_out;	/* nbr of unused buckets on DDM */
--	atomic_t tx_out;	/* outstanding TXes */
--	u8 tx_count;		/* packets in one TX message frame */
--	u16 tx_max_out;		/* DDM's Tx queue len */
--	u8 sgl_max;		/* max SGLs in one message frame */
--	u32 m;			/* IOP address of the batch msg frame */
--
--	struct work_struct i2o_batch_send_task;
--	int send_active;
--	struct sk_buff **i2o_fbl;	/* Free bucket list (to reuse skbs) */
--	int i2o_fbl_tail;
--	spinlock_t fbl_lock;
--
--	spinlock_t tx_lock;
--
--	u32 max_size_mc_table;	/* max number of multicast addresses */
--
--	/* LAN OSM configurable parameters are here: */
--
--	u16 max_buckets_out;	/* max nbr of buckets to send to DDM */
--	u16 bucket_thresh;	/* send more when this many used */
--	u16 rx_copybreak;
--
--	u8 tx_batch_mode;	/* Set when using batch mode sends */
--	u32 i2o_event_mask;	/* To turn on interesting event flags */
--};
--
--#endif				/* _I2O_LAN_H */
+Did you get options for s2ram that work on your systems? Mail them to
+seife@suse.de, and he'll extend the whitelist ;-). In the meantime,
+just use -f <whatever>
+								Pavel
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
---0-972241779-1173563986=:28440--
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
