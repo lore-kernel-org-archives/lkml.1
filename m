@@ -1,94 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933416AbXCJGRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750930AbXCJGS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933416AbXCJGRP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 01:17:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbXCJGRP
+	id S1750930AbXCJGS1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 01:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXCJGS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 01:17:15 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:33825 "EHLO smtp.osdl.org"
+	Sat, 10 Mar 2007 01:18:27 -0500
+Received: from mx2.suse.de ([195.135.220.15]:41175 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993179AbXCJGRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 01:17:13 -0500
-Date: Fri, 9 Mar 2007 22:13:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-Cc: stjeanma@pmc-sierra.com, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH] drivers: PMC MSP71xx LED driver
-Message-Id: <20070309221348.c5ab7acc.akpm@linux-foundation.org>
-In-Reply-To: <45F1DDC8.1010503@pmc-sierra.com>
-References: <45F1DDC8.1010503@pmc-sierra.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1750708AbXCJGS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 01:18:26 -0500
+Date: Fri, 9 Mar 2007 22:16:03 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/20] 2.6.20-stable review
+Message-ID: <20070310061603.GA31412@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 9 Mar 2007 14:20:56 -0800  Marc St-Jean <Marc_St-Jean@pmc-sierra.com> wrote:
-> 
-> 
-> >  > +typedef enum {
-> >  > +     MSP_LED_INPUT = 0,
-> >  > +     MSP_LED_OUTPUT,
-> >  > +} msp_led_direction_t;
-> > 
-> > No typedefs, please.   Convert this to
-> > 
-> > enum msp_led_direction {
-> >         ...
-> > };
-> 
-> Alright I'll change it but it wasn't mentioned in the review of
-> the previous drivers and they've been resubmitted with some.
-> A quick search shows several drivers typedef'ing enums with and
-> without *_t suffixes.
+This is the start of the stable review cycle for the 2.6.20.3 release.
+There are 20 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Poeple do bad things, and it sometimes gets missed.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-> Is there a new style rule or are only core kernel types allowed to
-> use _t?
+Responses should be made by Tuesday March 13 00:00:00 UTC.  Anything
+received after that time might be too late.
 
-The general rule is: no typedefs.
+thanks,
 
-typedefs make sense when the underlying type can change: u64, size_t,
-resource_size_t, etc.  We also use them for really hairy definitions like
-filler_t.  Nothing else.  Please don't use them just to save typing.
-
-> 
-> >  > +/* Output modes */
-> >  > +typedef enum {
-> >  > +     MSP_LED_OFF = 0,                /* Off steady */
-> >  > +     MSP_LED_ON,                             /* On steady */
-> >  > +     MSP_LED_BLINK,                  /* On for initialPeriod, off 
-> > for finalPeriod */
-> >  > +     MSP_LED_BLINK_INVERT,   /* Off for initialPeriod, on for 
-> > finalPeriod */
-> >  > +} msp_led_mode_t;
-> > 
-> > Ditto.
-> > 
-> >  > +/* For non-LED pins, these macros set HI and LO accordingly */
-> >  > +#define msp_led_pin_hi       msp_led_turn_off
-> >  > +#define msp_led_pin_lo       msp_led_turn_on
-> > 
-> > eww.
-> > 
-> > static inline wrapper functions are preferred.  Write code in C, not cpp
-> > where possible.
-> 
-> I agree the wrappers are cleaner but don't understand how this relates
-> to C++.
-
-cpp == C preprocessor.
-
-It would be better to do
-
-/*
- * nice comment goes here 
- */
-static inline void msp_led_pin_hi(...)
-{
-	msp_led_turn_off(...);
-}
-
+greg k-h
