@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751067AbXCJTRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751633AbXCJTTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751067AbXCJTRJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 14:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbXCJTRJ
+	id S1751633AbXCJTTp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 14:19:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXCJTTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 14:17:09 -0500
-Received: from smtp-106-saturday.nerim.net ([62.4.16.106]:3007 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751067AbXCJTRI (ORCPT
+	Sat, 10 Mar 2007 14:19:45 -0500
+Received: from pool-151-204-250-243.bstnma.east.verizon.net ([151.204.250.243]:50097
+	"EHLO patience.localdomain" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751573AbXCJTTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 14:17:08 -0500
-Date: Sat, 10 Mar 2007 20:15:31 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>, Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Bitbanging i2c bus driver using the GPIO API
-Message-Id: <20070310201531.512a13f8.khali@linux-fr.org>
-In-Reply-To: <200703091130.13547.david-b@pacbell.net>
-References: <200703090945.38880.david-b@pacbell.net>
-	<11734661281633-git-send-email-hskinnemoen@atmel.com>
-	<200703091130.13547.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Mar 2007 14:19:44 -0500
+X-Greylist: delayed 991 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Mar 2007 14:19:43 EST
+Date: Sat, 10 Mar 2007 14:19:29 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@patience.localdomain
+To: Oliver Neukum <oneukum@suse.de>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+In-Reply-To: <200703092148.08910.oneukum@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0703101405330.7545-100000@patience.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007 11:30:12 -0800, David Brownell wrote:
-> > --- a/include/linux/i2c-id.h
-> > +++ b/include/linux/i2c-id.h
-> > @@ -194,6 +194,7 @@
-> >  #define I2C_HW_B_EM28XX		0x01001f /* em28xx video capture cards */
-> >  #define I2C_HW_B_CX2341X	0x010020 /* Conexant CX2341X MPEG encoder cards */
-> >  #define I2C_HW_B_INTELFB	0x010021 /* intel framebuffer driver */
-> > +#define I2C_HW_B_GPIO		0x010022 /* Generic GPIO-based driver */
+On Fri, 9 Mar 2007, Oliver Neukum wrote:
+
+> Am Freitag, 9. März 2007 21:08 schrieb Alan Stern:
+> > After some more thought, I basically agree with what Oliver wrote
+> > originally.  sysfs_dirent is indeed the logical place to store the kref
+> > pointer.  However it needs to be used during open and release, not during
 > 
-> It'd be nice to completely abolish those IDs, starting by not
-> adding new ones.  Especially, not adding unused ones!
+> OK.
+> 
+> > read, write, and poll.  Another point, which Oliver didn't think of, is
+> > that the kref pointer needs to be passed to the driver as an argument in
+> > the show() and store() method calls.
+> 
+> Why? What's wrong with simply calling kref_get/put?
 
-I'm confident that we'll be able to get rid of the I2C device driver
-IDs pretty soon thanks to your new i2c-core model, but I'm not sure if
-we'll be able to get rid of I2C adapter drivers IDs that quickly. But I
-agree with you, please let's not add new unused IDs.
+It's the same old problem: the race between unbind and sysfs I/O.  What
+good does holding a reference to the private data structure do if the
+show/store method gets called after the driver has been unbound from the
+device?  dev_get_drvdata() will no longer provide a valid pointer to the
+private data, so the method will have no way to access it.  Hence the
+method needs another argument.
 
--- 
-Jean Delvare
+(BTW, the sysfs core would actually need more than a kref.  It would also 
+need a pointer to a release routine -- the kref contains only the atomic 
+counter.  The more you think about it, the more complicated this approach 
+becomes.)
+
+> > Finally, there's added complexity in each driver which wants to use the 
+> > new facility.  The module_exit routine will need to be smart enough to 
+> > block until all the private data structures have been released.  
+> > usb-storage does something like that now; it's kind of ugly (although it 
+> > could be improved if appropriate support were added to the core kernel).
+> 
+> If we up the module count for every bound device, all device attributes
+> should be gone before we ever get that far.
+
+Not quite right.  However, since every open sysfs file holds a module
+reference, if the driver's module_exit has been called then there can be
+no open sysfs files, hence no private data still pinned.  Thus this isn't
+a problem at all.
+
+
+But never mind all the above.  I'm going to post another message on this
+thread in which I argue that Oliver's original approach was a good one and
+should not have been reverted.  The specific problem identified by Hugh
+Dickins can be fixed in the way Dmitry first suggested, by doing the real
+operation from a workqueue routine.
+
+Alan Stern
+
