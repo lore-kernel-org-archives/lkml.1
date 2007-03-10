@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933489AbXCJQvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933492AbXCJQxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933489AbXCJQvO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 11:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933490AbXCJQvO
+	id S933492AbXCJQxe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 11:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933490AbXCJQxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 11:51:14 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:54652 "EHLO tmailer.gwdg.de"
+	Sat, 10 Mar 2007 11:53:34 -0500
+Received: from mx.laposte.net ([81.255.54.11]:12552 "EHLO mx.laposte.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933489AbXCJQvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 11:51:12 -0500
-Date: Sat, 10 Mar 2007 17:50:56 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Vladimir <snigga@mail.ru>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-In-Reply-To: <20070310194617.2aef1006@localhost>
-Message-ID: <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr>
-References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg>
- <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr> <20070310194617.2aef1006@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S933492AbXCJQxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 11:53:32 -0500
+Subject: Re: [PATCH][RSDL-mm 0/6]  Rotating Staircase DeadLine scheduler 
+	for -mm
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200703110103.21224.kernel@kolivas.org>
+References: <1173527368.3380.1.camel@rousalka.dyndns.org>
+	 <200703110103.21224.kernel@kolivas.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-q3B2bAd5c9mLuKJFIpX4"
+Organization: Adresse perso
+Date: Sat, 10 Mar 2007 17:53:28 +0100
+Message-Id: <1173545608.4143.10.camel@rousalka.dyndns.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 (2.9.92-1.fc7.1) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 10 2007 19:46, Vladimir wrote:
->> On Mar 10 2007 19:06, Cyrill Gorcunov wrote:
->> >[Vladimir - Sat, Mar 10, 2007 at 04:05:42PM +0300]
->> >| Here's the problem:
->> >|   1. Unpack the kernel sources, run make menuconfig.
->> >|   2. Mark the necessary options.
->> >|   3. Pick "Save an alternate configuration file", enter a filename (e.g. /root/kernelcfg)
->> >|   4. Pick "Exit".
->> >| ->5. Configurator exits without saving. If type "make bzImage", it builtd all the default
->> >options.
->> 
->> Well, you already saved explicitly and did not make any further 
->> changes after that, so it won't ask again on exit (perhaps all Office 
->> Suites do the same). In fact, if you do exactly that, menuconfig 
->> assumes you do not intend to build a kernel (since you did not save 
->> to .config).
->
->Hm.... Do i have to "Save an alternate configuration file" to ".config" 
->manually? The configurator used to do that automatically when i pick 
->"Exit". I think that was reasonable. Anyway, the patch Cyrill sent me 
->works all right.
 
-If you make some changes and do not call 'save an alternate config 
-file', it will ask you on exit.
+--=-q3B2bAd5c9mLuKJFIpX4
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-If you make no changes at all, a .config won't get written - true. But 
-then, the defconfig will be used anyway.
+Le dimanche 11 mars 2007 =C3=A0 01:03 +1100, Con Kolivas a =C3=A9crit :
+> On Saturday 10 March 2007 22:49, Nicolas Mailhot wrote:
+> > Oops
+> >
+> > =E2=87=92 http://bugzilla.kernel.org/show_bug.cgi?id=3D8166
+>=20
+> Thanks very much. I can't get your config to boot on qemu, but could you=20
+> please try this debugging patch? It's not a patch you can really run the=20
+> machine with but might find where the problem occurs. Specifically I'm=20
+> looking for the warning MISSING STATIC BIT in your case.=20
+>=20
+> http://ck.kolivas.org/patches/crap/sched-rsdl-0.28-stuff.patch
 
-All is fine.
+I attached a screenshot of the patched kernel boot
 
+--=20
+Nicolas Mailhot
 
-Jan
--- 
+--=-q3B2bAd5c9mLuKJFIpX4
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iEYEABECAAYFAkXy4ogACgkQI2bVKDsp8g2OaACfSY+F7jv4v17Wx/rLO1liT8Xr
+1/cAoPl/DvdiNnDcENrVfqx33Z2cFD8p
+=z+vN
+-----END PGP SIGNATURE-----
+
+--=-q3B2bAd5c9mLuKJFIpX4--
