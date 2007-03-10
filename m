@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXCJWmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXCJWpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932234AbXCJWmL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:42:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932306AbXCJWmL
+	id S932310AbXCJWpT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 17:45:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932354AbXCJWpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:42:11 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:58102 "EHLO smtp.osdl.org"
+	Sat, 10 Mar 2007 17:45:18 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60708 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932234AbXCJWmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:42:09 -0500
-Date: Sat, 10 Mar 2007 14:42:01 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nicholas Miell <nmiell@comcast.net>
-cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
-In-Reply-To: <1173563796.2958.28.camel@entropy>
-Message-ID: <Pine.LNX.4.64.0703101421410.10330@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com> 
- <1173508384.3108.1.camel@entropy>  <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
-  <1173509019.3108.4.camel@entropy>  <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
-  <1173510568.3108.17.camel@entropy>  <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
-  <1173556374.2958.12.camel@entropy>  <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
-  <1173560473.2958.23.camel@entropy>  <Pine.LNX.4.64.0703101340550.10330@woody.linux-foundation.org>
- <1173563796.2958.28.camel@entropy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S932310AbXCJWpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 17:45:17 -0500
+Date: Sat, 10 Mar 2007 23:45:34 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
+Message-ID: <20070310224534.GA3150@uranus.ravnborg.org>
+References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg> <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr> <20070310194617.2aef1006@localhost> <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr> <20070310175058.GA19878@cvg> <Pine.LNX.4.61.0703101906070.8799@yvahk01.tjqt.qr> <20070310212730.GA2577@uranus.ravnborg.org> <Pine.LNX.4.61.0703102234210.26332@yvahk01.tjqt.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0703102234210.26332@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 10 Mar 2007, Nicholas Miell wrote:
+On Sat, Mar 10, 2007 at 10:34:41PM +0100, Jan Engelhardt wrote:
 > 
-> Care to elaborate on why they're a horrible crock?
+> On Mar 10 2007 22:27, Sam Ravnborg wrote:
+> >On Sat, Mar 10, 2007 at 07:23:41PM +0100, Jan Engelhardt wrote:
+> >> 
+> >> Whether the 'working config file path' should change when you do
+> >> 'Save as Alternate' or not, is a menuconfig axiom. Ask Sam Ravnborg
+> >> if you want it changed :-)
+> >
+> >Current behaviour is not logical but on the other hand I do not
+> >see a big need to make it so.
+> >It seems that people very seldom uses "save alternate" anyway.
+> >
+> >But patches are welcome.
+> 
+> ^_^ The patch has already been posted, has not it?
+No.
+Either we keep current behaviour or we change to the "normal"
+behaviour with a "Save as..." as know from all other programs.
 
-It's a *classic* case of an interface that tries to do everything under 
-the sun.
-
-Here's a clue: look at any system call that takes a union as part of its 
-arguments. Count them. I think we have two:
- - struct siginfo
- - struct sigevent
-and they are both broken horrible interfaces where the data structures 
-depend on various flags.
-
-It's just not the UNIX system call way. And none of it really makes sense 
-if you already have a file descriptor, since at that point you know what 
-the notification mechanism is.
-
-I'd actually much rather do POSIX timers the other way around: associate a 
-generic notification mechanism with the file descriptor, and then 
-implement posix_timer_create() on top of timerfd. Now THAT sounds like a 
-clean unix-like interface ("everything is a file") and would imply that 
-you'd be able to do the same kind of notification for any file descriptor, 
-not just timers.
-
-But posix timers as they are done now are just an abomination. They are 
-not unix-like at all.
-
-> And are the bugs fixed? If so, why replace them? They work now.
-
-.. but the reason for the bugs was largely a very baroque interface, which 
-didn't get fixed (because it's specified by the standard).
-
-I'd rather have straightforward interfaces. The timerfd() one lookedalot 
-more straightforward than posix timers.
-
-(That said, using "struct itimerspec" might be a good idea. That would 
-also obviate the need for TFD_TIMER_SEQ, since an itimerspec automatically 
-has both "base" and "incremental" parts).
-
-		Linus
+	Sam
