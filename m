@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750930AbXCJGS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750708AbXCJGSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750930AbXCJGS1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 01:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXCJGS1
+	id S1750708AbXCJGSb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 01:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbXCJGSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 01:18:27 -0500
-Received: from mx2.suse.de ([195.135.220.15]:41175 "EHLO mx2.suse.de"
+	Sat, 10 Mar 2007 01:18:31 -0500
+Received: from mx1.suse.de ([195.135.220.2]:40906 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750708AbXCJGS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 01:18:26 -0500
-Date: Fri, 9 Mar 2007 22:16:03 -0800
+	id S1750708AbXCJGS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 01:18:29 -0500
+Date: Fri, 9 Mar 2007 22:16:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,30 +19,113 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/20] 2.6.20-stable review
-Message-ID: <20070310061603.GA31412@kroah.com>
+       alan@lxorguk.ukuu.org.uk, netfilter-devel@lists.netfilter.org,
+       Patrick McHardy <kaber@trash.net>, davem@davemloft.net
+Subject: [patch 02/20] nf_conntrack/nf_nat: fix incorrect config ifdefs
+Message-ID: <20070310061646.GC31412@kroah.com>
+References: <20070310061234.465093436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="nf_conntrack-nf_nat-fix-incorrect-config-ifdefs.patch"
+In-Reply-To: <20070310061603.GA31412@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.20.3 release.
-There are 20 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
+From: Patrick McHardy <kaber@trash.net>
 
-Responses should be made by Tuesday March 13 00:00:00 UTC.  Anything
-received after that time might be too late.
+[NETFILTER]: nf_conntrack/nf_nat: fix incorrect config ifdefs
 
-thanks,
+The nf_conntrack_netlink config option is named CONFIG_NF_CT_NETLINK,
+but multiple files use CONFIG_IP_NF_CONNTRACK_NETLINK or
+CONFIG_NF_CONNTRACK_NETLINK for ifdefs.
 
-greg k-h
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ net/ipv4/netfilter/nf_nat_core.c       |    3 +--
+ net/ipv4/netfilter/nf_nat_proto_gre.c  |    3 +--
+ net/ipv4/netfilter/nf_nat_proto_icmp.c |    3 +--
+ net/ipv4/netfilter/nf_nat_proto_tcp.c  |    3 +--
+ net/ipv4/netfilter/nf_nat_proto_udp.c  |    3 +--
+ net/netfilter/nf_conntrack_proto_gre.c |    3 +--
+ 6 files changed, 6 insertions(+), 12 deletions(-)
+
+--- a/net/ipv4/netfilter/nf_nat_core.c
++++ b/net/ipv4/netfilter/nf_nat_core.c
+@@ -540,8 +540,7 @@ void nf_nat_protocol_unregister(struct n
+ }
+ EXPORT_SYMBOL(nf_nat_protocol_unregister);
+ 
+-#if defined(CONFIG_IP_NF_CONNTRACK_NETLINK) || \
+-    defined(CONFIG_IP_NF_CONNTRACK_NETLINK_MODULE)
++#if defined(CONFIG_NF_CT_NETLINK) || defined(CONFIG_NF_CT_NETLINK_MODULE)
+ int
+ nf_nat_port_range_to_nfattr(struct sk_buff *skb,
+ 			    const struct nf_nat_range *range)
+--- a/net/ipv4/netfilter/nf_nat_proto_gre.c
++++ b/net/ipv4/netfilter/nf_nat_proto_gre.c
+@@ -152,8 +152,7 @@ static struct nf_nat_protocol gre __read
+ 	.manip_pkt		= gre_manip_pkt,
+ 	.in_range		= gre_in_range,
+ 	.unique_tuple		= gre_unique_tuple,
+-#if defined(CONFIG_IP_NF_CONNTRACK_NETLINK) || \
+-    defined(CONFIG_IP_NF_CONNTRACK_NETLINK_MODULE)
++#if defined(CONFIG_NF_CT_NETLINK) || defined(CONFIG_NF_CT_NETLINK_MODULE)
+ 	.range_to_nfattr	= nf_nat_port_range_to_nfattr,
+ 	.nfattr_to_range	= nf_nat_port_nfattr_to_range,
+ #endif
+--- a/net/ipv4/netfilter/nf_nat_proto_icmp.c
++++ b/net/ipv4/netfilter/nf_nat_proto_icmp.c
+@@ -78,8 +78,7 @@ struct nf_nat_protocol nf_nat_protocol_i
+ 	.manip_pkt		= icmp_manip_pkt,
+ 	.in_range		= icmp_in_range,
+ 	.unique_tuple		= icmp_unique_tuple,
+-#if defined(CONFIG_IP_NF_CONNTRACK_NETLINK) || \
+-    defined(CONFIG_IP_NF_CONNTRACK_NETLINK_MODULE)
++#if defined(CONFIG_NF_CT_NETLINK) || defined(CONFIG_NF_CT_NETLINK_MODULE)
+ 	.range_to_nfattr	= nf_nat_port_range_to_nfattr,
+ 	.nfattr_to_range	= nf_nat_port_nfattr_to_range,
+ #endif
+--- a/net/ipv4/netfilter/nf_nat_proto_tcp.c
++++ b/net/ipv4/netfilter/nf_nat_proto_tcp.c
+@@ -140,8 +140,7 @@ struct nf_nat_protocol nf_nat_protocol_t
+ 	.manip_pkt		= tcp_manip_pkt,
+ 	.in_range		= tcp_in_range,
+ 	.unique_tuple		= tcp_unique_tuple,
+-#if defined(CONFIG_IP_NF_CONNTRACK_NETLINK) || \
+-    defined(CONFIG_IP_NF_CONNTRACK_NETLINK_MODULE)
++#if defined(CONFIG_NF_CT_NETLINK) || defined(CONFIG_NF_CT_NETLINK_MODULE)
+ 	.range_to_nfattr	= nf_nat_port_range_to_nfattr,
+ 	.nfattr_to_range	= nf_nat_port_nfattr_to_range,
+ #endif
+--- a/net/ipv4/netfilter/nf_nat_proto_udp.c
++++ b/net/ipv4/netfilter/nf_nat_proto_udp.c
+@@ -130,8 +130,7 @@ struct nf_nat_protocol nf_nat_protocol_u
+ 	.manip_pkt		= udp_manip_pkt,
+ 	.in_range		= udp_in_range,
+ 	.unique_tuple		= udp_unique_tuple,
+-#if defined(CONFIG_IP_NF_CONNTRACK_NETLINK) || \
+-    defined(CONFIG_IP_NF_CONNTRACK_NETLINK_MODULE)
++#if defined(CONFIG_NF_CT_NETLINK) || defined(CONFIG_NF_CT_NETLINK_MODULE)
+ 	.range_to_nfattr	= nf_nat_port_range_to_nfattr,
+ 	.nfattr_to_range	= nf_nat_port_nfattr_to_range,
+ #endif
+--- a/net/netfilter/nf_conntrack_proto_gre.c
++++ b/net/netfilter/nf_conntrack_proto_gre.c
+@@ -281,8 +281,7 @@ static struct nf_conntrack_l4proto nf_co
+ 	.new		 = gre_new,
+ 	.destroy	 = gre_destroy,
+ 	.me 		 = THIS_MODULE,
+-#if defined(CONFIG_NF_CONNTRACK_NETLINK) || \
+-    defined(CONFIG_NF_CONNTRACK_NETLINK_MODULE)
++#if defined(CONFIG_NF_CT_NETLINK) || defined(CONFIG_NF_CT_NETLINK_MODULE)
+ 	.tuple_to_nfattr = nf_ct_port_tuple_to_nfattr,
+ 	.nfattr_to_tuple = nf_ct_port_nfattr_to_tuple,
+ #endif
+
+-- 
