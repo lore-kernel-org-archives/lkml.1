@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767778AbXCJELG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767792AbXCJELP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767778AbXCJELG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 23:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767768AbXCJEKe
+	id S1767792AbXCJELP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 23:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767768AbXCJELH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 23:10:34 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:36995 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767791AbXCJEKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 23:10:23 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Cc: linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       Sam Ravnborg <sam@ravnborg.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 3/4] PCI: aer: fix section mismatch warning
-Date: Fri,  9 Mar 2007 20:08:33 -0800
-Message-Id: <1173499721772-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.0.2
-In-Reply-To: <1173499718269-git-send-email-gregkh@suse.de>
-References: <20070310040356.GB30638@kroah.com> <11734997142797-git-send-email-gregkh@suse.de> <1173499718269-git-send-email-gregkh@suse.de>
+	Fri, 9 Mar 2007 23:11:07 -0500
+Received: from h80ad275d.async.vt.edu ([128.173.39.93]:38538 "EHLO
+	h80ad275d.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767781AbXCJEKn (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 23:10:43 -0500
+X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Mar 2007 23:10:43 EST
+Message-Id: <200703100403.l2A4355v008616@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
+In-Reply-To: Your message of "Sat, 10 Mar 2007 09:57:32 +1100."
+             <1173481052.32234.137.camel@localhost.localdomain>
+From: Valdis.Kletnieks@vt.edu
+References: <1173419792.32234.131.camel@localhost.localdomain>
+            <1173481052.32234.137.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1173499385_4248P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 09 Mar 2007 23:03:05 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
+--==_Exmh_1173499385_4248P
+Content-Type: text/plain; charset=us-ascii
 
-Fix following section mismatch warning (when compiled with CONFIG_HOTPLUG=n):
-WARNING: drivers/pci/built-in.o - Section mismatch: reference to .init.text:aer_probe from .data between 'aerdrv' (at offset 0x1608) and 'aer_error_handlers'
+On Sat, 10 Mar 2007 09:57:32 +1100, Rusty Russell said:
 
-Warning was fixed by renaming aerdrv to aerdriver so we pass the whitelist.
+> +/* GCC is awesome. */
+>  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])			      \
+>  	+ sizeof(typeof(int[1 - 2*!!__builtin_types_compatible_p(typeof(arr), \
+>  		 typeof(&arr[0]))]))*0)
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/pci/pcie/aer/aerdrv.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+-/* GCC is awesome. */
++/* GCC leaves me speechless. */
 
-diff --git a/drivers/pci/pcie/aer/aerdrv.c b/drivers/pci/pcie/aer/aerdrv.c
-index b164de0..db6ad8e 100644
---- a/drivers/pci/pcie/aer/aerdrv.c
-+++ b/drivers/pci/pcie/aer/aerdrv.c
-@@ -66,7 +66,7 @@ static struct pci_error_handlers aer_error_handlers = {
- 	.resume = aer_error_resume,
- };
- 
--static struct pcie_port_service_driver aerdrv = {
-+static struct pcie_port_service_driver aerdriver = {
- 	.name		= "aer",
- 	.id_table	= &aer_id[0],
- 
-@@ -328,7 +328,7 @@ static void aer_error_resume(struct pci_dev *dev)
-  **/
- static int __init aer_service_init(void)
- {
--	return pcie_port_service_register(&aerdrv);
-+	return pcie_port_service_register(&aerdriver);
- }
- 
- /**
-@@ -338,7 +338,7 @@ static int __init aer_service_init(void)
-  **/
- static void __exit aer_service_exit(void)
- {
--	pcie_port_service_unregister(&aerdrv);
-+	pcie_port_service_unregister(&aerdriver);
- }
- 
- module_init(aer_service_init);
--- 
-1.5.0.2
 
+
+--==_Exmh_1173499385_4248P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFF8i35cC3lWbTT17ARAlwZAJ9be4Uqz2QEx484J3GvriDR52vRewCgyGWf
+6xvgnBpCMGsXY0MrNByyB/M=
+=lg0C
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1173499385_4248P--
