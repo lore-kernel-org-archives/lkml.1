@@ -1,88 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbXCJXI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750928AbXCJXMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751328AbXCJXI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 18:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXCJXI3
+	id S1750928AbXCJXMA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 18:12:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXCJXMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 18:08:29 -0500
-Received: from www.osadl.org ([213.239.205.134]:35868 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932419AbXCJXI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 18:08:28 -0500
-Subject: Re: Use of absolute timeouts for oneshot timers
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dan Hecht <dhecht@vmware.com>, john stultz <johnstul@us.ibm.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <45F33697.4000000@goop.org>
-References: <45F33697.4000000@goop.org>
-Content-Type: text/plain
-Date: Sun, 11 Mar 2007 00:14:51 +0100
-Message-Id: <1173568491.24738.1194.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Sat, 10 Mar 2007 18:12:00 -0500
+Received: from mail04.syd.optusnet.com.au ([211.29.132.185]:42373 "EHLO
+	mail04.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750928AbXCJXL7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 18:11:59 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+Date: Sun, 11 Mar 2007 10:38:59 +1100
+User-Agent: KMail/1.9.5
+Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Matt Mackall <mpm@selenic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+References: <20070309053931.GA10459@waste.org> <45F2F727.7010406@rtr.ca> <200703111034.02159.kernel@kolivas.org>
+In-Reply-To: <200703111034.02159.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703111038.59387.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-10 at 14:52 -0800, Jeremy Fitzhardinge wrote:
-> When booting under Xen, you'll get this if you're using both the xen
-> clocksource and clockevent drivers.  However, it seems that during boot
-> on a NO_HZ HIGHRES_TIMERS system, the kernel does not use the Xen
-> clocksource until it switches to highres timer mode.  This means that
-> during boot the kernel's monotonic clock is drifting with respect to the
-> hypervisor, and all timeouts are unreliable.
+On Sunday 11 March 2007 10:34, Con Kolivas wrote:
+> On Sunday 11 March 2007 05:21, Mark Lord wrote:
+> > Con Kolivas wrote:
+> > > On Saturday 10 March 2007 05:07, Mark Lord wrote:
+> > >> Mmm.. when it's good, it's *really* good.
+> > >> My desktop feels snappier and all of that.
+> > >
+> > >..
+> > >
+> > >> But when it's bad, it stinks.
+> > >> Like when a "make -j2" kernel rebuild is happening in a background
+> > >> window
+> > >
+> > > And that's bad. When you say "it stinks" is it more than 3 times
+> > > slower? It should be precisely 3 times slower under that load (although
+> > > low cpu using things like audio wont be affected by running 3 times
+> > > slower). If it feels like much more than that much slower, there is a
+> > > bug there somewhere.
+> >
+> > Scrolling windows is incredibly jerkey, and very very sluggish
+> > when images are involved (eg. a large web page in firefox).
+> >
+> > > As another reader suggested, how does it run with the compile 'niced'?
+> > > How does it perform with make (without a -j number).
+> >
+> > Yes, it behaves itself when the "make -j2" is nice'd.
+> >
+> > >> This is on a Pentium-M 760 single-core, w/2GB SDRAM (notebook).
+> > >
+> > > What HZ are you running? Are you running a Beryl desktop?
+> >
+> > HZ==1000, NO_HZ, Kubunutu Dapper Drake distro, ATI X300 open-source X.org
+> > driver.
+>
+> Can you try the new version of RSDL. Assuming it doesn't oops on you it has
+> some accounting bugfixes which may have been biting you.
 
-The clocksource is not used until the clocksource is installed. Also the
-periodic mode during boot, when the clock event device supports periodic
-mode, is not reading the time. It relies on the clock event device
-getting it straight. That's not a big deal during boot and on a kernel
-with NO_HZ=n and HIGHRES=n the periodic tick only updates jiffies. If
-the only clocksource is jiffies, then we have to live with it and we do
-not switch to NO_HZ/HIGHRES as we would lose track of time.
+Oh I just checked the mesa repo for that driver as well. It seems the r300 
+drivers have sched_yield in them as well, but not all components. You may be 
+getting bitten by this too.
 
-Once we switch to NO_HZ or HIGHRES the clock event device is directly
-coupled to the clock event source.
+http://webcvs.freedesktop.org/mesa/Mesa/src/mesa/drivers/dri/r300/radeon_ioctl.c?revision=1.14&view=markup
 
-> Initially I was just computing the kernel-hypervisor offset at boot
-> time, but then I changed it to recompute it every time the timer mode
-> changes.  However, this didn't really help, and I was still getting
-> unpredictable timeouts during boot.  I've changed it to just compute the
-> hypervisor absolute time directly using the delta each time the oneshot
-> timer is set, which will definitely be reliable (if the kernel and
-> hypervisor have drifting timebases then the meaning of Xns delta will be
-> different, but at least thats a local error rather than a long-term
-> cumulative error).
+I don't really know what the radeon and other models are so I'm not sure if it 
+applies to your hardware; I just did a random search through the r300 
+directory.
 
-We do not really care up to the point, where the high resolution
-clocksource (e.g. TSC, PM-Timer or HPET on real hardware) becomes
-active. Early boot is fragile and we switch over to high res clocksource
-and highres/nohz when things have stabilized. 
-
-> My analysis might be wrong here (I suspect the Xen periodic timer may
-> have unexpected behaviour), but the overall conclusion still stands:
-> using an absolute timeout only works if the kernel and hypervisor have
-> non-drifting timebases.  I think its too fragile for a clockevent
-> implementation to assume that a particular clocksource is in use to get
-> reliable results.
-
-Once we switched over to the clocksource, everything should be in
-perfect sync.
-
-> Or perhaps this is a property of the whole clock subsystem: that
-> clockevents must be paired with clocksources.  But its not obvious to me
-> that this enforced, or even acknowledged.
-
-It's simply enforced in NO_HZ, HIGHRES mode as we operate in absolute
-time, which is read back from the clocksource, even if we use a relative
-value for real hardware clock event devices to program the next event.
-We calculate the delta between the absolute event and now. So we never
-get an accumulating error.
-
-What problem are you observing ?
-
-	tglx
-
-
+-- 
+-ck
