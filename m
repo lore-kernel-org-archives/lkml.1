@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbXCJW4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751324AbXCJXHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932396AbXCJW4M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:56:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCJW4M
+	id S1751324AbXCJXHN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 18:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXCJXHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:56:12 -0500
-Received: from outmx010.isp.belgacom.be ([195.238.5.233]:34522 "EHLO
-	outmx010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932396AbXCJW4K (ORCPT
+	Sat, 10 Mar 2007 18:07:13 -0500
+Received: from mail33.syd.optusnet.com.au ([211.29.132.104]:54519 "EHLO
+	mail33.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751324AbXCJXHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:56:10 -0500
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC] Configuration generic drivers at runtime
-Date: Sat, 10 Mar 2007 23:57:17 +0100
-User-Agent: KMail/1.9.6
-X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
+	Sat, 10 Mar 2007 18:07:11 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+Date: Sun, 11 Mar 2007 10:34:01 +1100
+User-Agent: KMail/1.9.5
+Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Matt Mackall <mpm@selenic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+References: <20070309053931.GA10459@waste.org> <200703100723.51858.kernel@kolivas.org> <45F2F727.7010406@rtr.ca>
+In-Reply-To: <45F2F727.7010406@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703102357.17661.laurent.pinchart@skynet.be>
+Message-Id: <200703111034.02159.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+On Sunday 11 March 2007 05:21, Mark Lord wrote:
+> Con Kolivas wrote:
+> > On Saturday 10 March 2007 05:07, Mark Lord wrote:
+> >> Mmm.. when it's good, it's *really* good.
+> >> My desktop feels snappier and all of that.
+> >
+> >..
+> >
+> >> But when it's bad, it stinks.
+> >> Like when a "make -j2" kernel rebuild is happening in a background
+> >> window
+> >
+> > And that's bad. When you say "it stinks" is it more than 3 times slower?
+> > It should be precisely 3 times slower under that load (although low cpu
+> > using things like audio wont be affected by running 3 times slower). If
+> > it feels like much more than that much slower, there is a bug there
+> > somewhere.
+>
+> Scrolling windows is incredibly jerkey, and very very sluggish
+> when images are involved (eg. a large web page in firefox).
+>
+> > As another reader suggested, how does it run with the compile 'niced'?
+> > How does it perform with make (without a -j number).
+>
+> Yes, it behaves itself when the "make -j2" is nice'd.
+>
+> >> This is on a Pentium-M 760 single-core, w/2GB SDRAM (notebook).
+> >
+> > What HZ are you running? Are you running a Beryl desktop?
+>
+> HZ==1000, NO_HZ, Kubunutu Dapper Drake distro, ATI X300 open-source X.org
+> driver.
 
-I'm writing a Linux driver for USB Video Class (UVC) devices. Before 
-submitting it to the kernel, there are still a few rough corners I'd like to 
-polish. Comments would be appreciated for the following one.
+Can you try the new version of RSDL. Assuming it doesn't oops on you it has 
+some accounting bugfixes which may have been biting you.
 
-The UVC spec defines a way for device vendors to provide extensions to the 
-standard through so-called extension units, identified by a GUID (Globally 
-Unique IDentifier). An extension unit can define any number of controls 
-(think of controls as simple parameters such as brightness, zoom, pan/tilt, 
-shutter speed, ...). Devices advertise in their USB descriptors the extension 
-units they support, along with the controls that are supported in each 
-extension unit.
-
-To access those extension units from user-space, the UVC driver will offer two 
-methods. One of them will map the controls defined by extension units to V4L2 
-controls. The question that arises is how to define and store those mappings.
-
-And obvious solution would be to have an ever growing array in the driver, 
-storing control information for all possible extension units ever defined by 
-webcam vendors. While this is quite straightforward, it might not be the most 
-usable solution for device vendors who wouldn't want debug controls to be 
-included in the kernel by default, or who wouldn't want to submit new control 
-definitions for inclusion in the kernel (with the implied delay) every time a 
-new device comes out.
-
-Another solution would be to introduce a way to define controls and mappings 
-at runtime. Mappings would be stored in test-based user-space configuration 
-files, distributed by vendors. A small user-space utility would add them 
-through a few ioctls. This obviously raises some security concerns (regarding 
-which users will be allowed to add mappings, or how many of them they can 
-add).
-
-I would like comments regarding the second solution. Is this something that is 
-likely to be accepted in the mainline kernel ? I don't know of any other 
-Linux driver implementing such kind of dynamic runtime configuration.
-
-Best regards,
-
-Laurent Pinchart
+Thanks
+-- 
+-ck
