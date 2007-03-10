@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbXCJLtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766661AbXCJLw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752821AbXCJLtd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 06:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbXCJLtc
+	id S1766661AbXCJLw7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 06:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766916AbXCJLw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 06:49:32 -0500
-Received: from mx.laposte.net ([81.255.54.11]:19333 "EHLO mx.laposte.net"
+	Sat, 10 Mar 2007 06:52:59 -0500
+Received: from 1wt.eu ([62.212.114.60]:1102 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752821AbXCJLtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 06:49:32 -0500
-Subject: Re: [PATCH][RSDL-mm 0/6]  Rotating Staircase DeadLine scheduler
-	for -mm
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: kernel@kolivas.org
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-jO2HuAFPfZ74O3AnmF+e"
-Organization: Adresse perso
-Date: Sat, 10 Mar 2007 12:49:28 +0100
-Message-Id: <1173527368.3380.1.camel@rousalka.dyndns.org>
+	id S1766661AbXCJLw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 06:52:58 -0500
+Date: Sat, 10 Mar 2007 12:48:26 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@linux-foundation.org, rkuhn@e18.physik.tu-muenchen.de,
+       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] tcp_cubic: use 32 bit math
+Message-ID: <20070310114826.GB1608@1wt.eu>
+References: <20070307170731.2b4397e3@freekitty> <20070307.185539.48527371.davem@davemloft.net> <45EF7EB7.8040806@linux-foundation.org> <20070307.195135.74749102.davem@davemloft.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.92 (2.9.92-1.fc7.1) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070307.195135.74749102.davem@davemloft.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 07, 2007 at 07:51:35PM -0800, David Miller wrote:
+> From: Stephen Hemminger <shemminger@linux-foundation.org>
+> Date: Wed, 07 Mar 2007 19:10:47 -0800
+> 
+> > David Miller wrote:
+> > > What about Willy Tarreau's supposedly even faster variant?
+> > > Or does this incorporate that set of improvements?
+> > >   
+> > That's what this is:
+> >     x = (2 * x + (uint32_t)div64_64(a, (uint64_t)x*(uint64_t)x)) / 3;
+> 
+> Great, thanks for the clarification.
 
---=-jO2HuAFPfZ74O3AnmF+e
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Oh BTW, I have a newer version with a first approximation of the
+cbrt() before the div64_64, which allows us to reduce from 3 div64
+to only 2 div64. This results in a version which is twice as fast
+as the initial one (ncubic), but with slightly less accuracy (0.286%
+compared to 0.247). But I see that other functions such as hcbrt()
+had a 1.5% avg error, so I think this is not dramatic.
 
-Oops
+Also, I managed to remove all other divides, to be kind with CPUs
+having a slow divide instruction or no divide at all. Since we compute
+on limited range (22 bits), we can multiply then shift right. It shows
+me even slightly better time on pentium-m and athlon, with a slightly
+higher avg error (0.297% compared to 0.286%), and slightly smaller
+code.
 
-=E2=87=92 http://bugzilla.kernel.org/show_bug.cgi?id=3D8166
+I just have to clean experiments from my code to provide a patch.
+David, Stephen, are you interested ?
 
---=20
-Nicolas Mailhot
+$ ./bictcp
+fls(0)=0, fls(1)=1, fls(256)=9
+Calibrating
+Function     clocks  mean(us) max(us)  std(us)  Avg error
+bictcp          936     0.61    24.28     1.99 0.172%
+ocubic          886     0.57    23.51     3.18 0.274%
+ncubic          644     0.42    16.59     2.18 0.247%
+ncubic32        444     0.29    11.47     1.50 0.247%
+ncubic32_1      444     0.29    11.56     1.88 0.238%
+ncubic32b3      337     0.22     8.67     0.88 0.286%
+ncubic_ndiv3    329     0.21     8.46     0.69 0.297%
+acbrt           707     0.46    18.05     0.80 0.275%
+hcbrt           644     0.42    16.44     0.51 1.580%
 
---=-jO2HuAFPfZ74O3AnmF+e
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Regards,
+Willy
 
-iEYEABECAAYFAkXym0EACgkQI2bVKDsp8g3irACeMV213jDuO1tuEqK9dP2xwCjw
-rwgAn1RcW8dYyXwMqMPV/CZ7AbykALZw
-=PNMJ
------END PGP SIGNATURE-----
-
---=-jO2HuAFPfZ74O3AnmF+e--
