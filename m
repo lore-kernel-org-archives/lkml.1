@@ -1,148 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbXCJA4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767696AbXCJA7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752769AbXCJA4q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 19:56:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXCJA4q
+	id S1767696AbXCJA7L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 19:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767698AbXCJA7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 19:56:46 -0500
-Received: from MAIL.13thfloor.at ([213.145.232.33]:34605 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbXCJA4o (ORCPT
+	Fri, 9 Mar 2007 19:59:11 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:59520 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767696AbXCJA7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 19:56:44 -0500
-Date: Sat, 10 Mar 2007 01:56:43 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       xemul@sw.ru, pj@sgi.com, winget@google.com, containers@lists.osdl.org,
-       akpm@linux-foundation.org, menage@google.com
-Subject: Re: [PATCH 1/2] rcfs core patch
-Message-ID: <20070310005643.GC3647@MAIL.13thfloor.at>
-Mail-Followup-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	xemul@sw.ru, pj@sgi.com, winget@google.com,
-	containers@lists.osdl.org, akpm@linux-foundation.org,
-	menage@google.com
-References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <20070308101347.GA29051@in.ibm.com> <20070309004816.GB4506@MAIL.13thfloor.at> <20070309181422.GB21661@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070309181422.GB21661@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	Fri, 9 Mar 2007 19:59:09 -0500
+Date: Fri, 09 Mar 2007 19:59:07 -0500
+From: Gene Heskett <gene.heskett@verizon.net>
+Subject: Re: [linux-usb-devel] Question re hiddev
+In-reply-to: <02da01c762a9$20988510$84163e05@kroptech.com>
+To: "Adam Kropelin" <akropel1@rochester.rr.com>, jikos@suse.cz,
+       linux-kernel@vger.kernel.org
+Cc: linux-usb-devel@lists.sourceforge.net
+Message-id: <200703091959.07232.gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703081354.28281.gene.heskett@verizon.net>
+ <200703090103.32583.gene.heskett@verizon.net>
+ <02da01c762a9$20988510$84163e05@kroptech.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 11:44:22PM +0530, Srivatsa Vaddagiri wrote:
-> On Fri, Mar 09, 2007 at 01:48:16AM +0100, Herbert Poetzl wrote:
-> > > There have been various projects attempting to provide resource
-> > > management support in Linux, including CKRM/Resource Groups and UBC.
+On Friday 09 March 2007, Adam Kropelin wrote:
+>Gene Heskett wrote:
+>> On Thursday 08 March 2007, Gene Heskett wrote:
+>>> Greetings;
+>>>
+>>> Belkin is being non-responsive to requests for updated drivers for
+>>> their line of UPS's, all of which now have a USB port which is the
+>>> Belkin recommended way to talk to these things.
+>>>
+>>> Unforch, the belkin supplied *nix stuff was last compiled on an rh5.2
+>>> machine using gcc-2.7.2, so there has been some bitrot.
+>>>
+>>> I believe the problem to be that when their version of upsd is
+>>> trying to open the /dev/name its given, it is assuming and hard
+>>> coded to do the ioctl's to set the ports speed in baudrate, width of
+>>> word, parity etc.
+>>>
+>>> Getting failure messages for that, it retrys the open until it has
+>>> 1024 links to /dev/hiddev0 according to an lsof|grep hiddev0, all of
+>>> which presumably have failed so it never actually opens the
+>>> /dev/hiddev0 port in r/w mode successfully.
+>>>
+>>> I can, from a shell, 'cat' the data from this port, its not very fast
+>>> taking about 8-10 seconds to output all the integers or bytes to
+>>> constitute a complete screen update when translated by the gui into
+>>> sensible data.
+>>>
+>>> My proposal, and I'll see if I can make a patch, is to add to the
+>>> hiddev.c code, stubs for these otherwise useless functions that do
+>>> nothing but return a 0 indicating success so that these legacy
+>>> drivers can make use of a port whose data is just fine but fails
+>>> these configuration things that don't mean squat to hiddev anyway.
+>>>
+>>> Would this effort at making legacy drivers who think they are
+>>> using /dev/ttySx, work with /dev/hiddev constitute an acceptable
+>>> reason for such a patch to hiddev.c?
+>>
+>> Its been about a day now, and no one has commented.  Am I an idiot or
+>> ??
+>
+>I think you fundamentally misunderstand hiddev. It's an interface to HID
+>devices, which are not (NOT!) byte streams of the sort you'd get on
+>/dev/ttySx. hiddev speaks in specific structures via read/write/ioctl as
+>detailed in Documentation/usb/hiddev.txt. Any application which is
+>making tty ioctls to set baud rate, etc. will never work (unmodified)
+>with hiddev.
+>
+>Your Belkin UPS may follow the USB HID class spec for Power Devices, in
+>which case a suite like NUT will be able to handle it with their
+>USB-generic driver.
+>
+>--Adam
 
-> > let me note here, once again, that you forgot Linux-VServer
-> > which does quite non-intrusive resource management ...
+I *think* I had the nut daemon working a couple of days ago, it at least 
+ran without getting a tummy ache and upchucking into the logs.  But as 
+for using that data usefully, nuts docs might as well be written in 
+swahili.  It also doesn't seem to have a gui like the belkin programs 
+give.  Or I don't know how to set it up to use a gui.  Either is a strong 
+possibility...
 
-> Sorry, not intentionally. Maybe it slipped because I haven't
-> seen much res mgmt related patches from Linux Vserver on 
-> lkml recently.
+If anyone else has it working, please speak up.  The ups is a Belkin 
+F6C-1500, with some more adjectives appended that have nothing to do with 
+the electronics in it.
 
-mainly because I got the impression that we planned
-to work on the various spaces first, and handle things
-like resource management later .. but it seems that
-resource management is now in focus, while the spaces
-got somewhat delayed ...
-
-> Note that I -did- talk about VServer at one point in past
-> (http://lkml.org/lkml/2006/06/15/112)!
-
-noted and appreciated (although this was about CPU
-resources, which IMHO is a special resource like
-the networking, as you are mostly interested in
-'bandwidth' limitations there, not in resource
-limits per se (and of course, it wasn't even cited
-correctly, as it is Linux-VServer not vserver ...)
-
-> > the basic 'context' (pid space) is the grouping mechanism
-> > we use for resource management too
-
-> so tasks sharing the same nsproxy->pid_ns is the fundamental
-> unit of resource management (as far as vserver/container goes)?
-
-we currently have a 'process' context, which holds
-the administrative data (capabilities and flags) and
-the resource accounting and limits, which basically
-contains the pid namespace, so yes and no
-
-it contains a reference to the 'main' nsproxy, which
-is used to copy spaces from when you enter the guest
-(or some set of spaces), and it defines the unit we
-consider a process container
-
-> > > As you know, the introduction of 'struct container' was objected
-> > > to and was felt redundant as a means to group tasks. Thats where
-> > > I took a shot at converting over Paul Menage's patch to avoid
-> > > 'struct container' abstraction and insead work with 'struct
-> > > nsproxy'.
-> > 
-> > which IMHO isn't a step in the right direction, as
-> > you will need to handle different nsproxies within
-> > the same 'resource container' (see previous email)
-> 
-> Isn't that made simple because of the fact that we have pointers to
-> namespace objects (and not actual objects themselves) in nsproxy?
-> 
-> I mean, all that is required to manage multiple nsproxy's
-> is to have the pointer to the same resource object in all of them.
-> 
-> In system call terms, if someone does a unshare of uts namespace, 
-> he will get into a new nsproxy object sure (which has a pointer to the
-> new uts namespace) but the new nsproxy object will still be pointing
-> to the old resource controlling objects.
-
-yes, that is why I agreed, that the container (or
-resource limit/accounting/controlling object) can
-be seen as space too (and handled like that)
-
-> > > When we support task movement across resource classes, we need to
-> > > find a nsproxy which has the right combination of resource classes
-> > > that the task's nsproxy can be hooked to.
-> > 
-> > no, not necessarily, we can simply create a new one
-> > and give it the proper resource or whatever-spaces
-> 
-> That would be the simplest, agreeably. But not optimal in terms of
-> storage?
-> 
-> Pls note that task-movement can be not-so-infrequent 
-> (in other words, frequent) in context of non-container workload 
-> management.
-
-not only there, also with solutions like Linux-VServer
-(it is quite common to enter guests or subsets of the
-space mix assigned)
-
-> > why is the filesystem approach so favored for this
-> > kind of manipulations?
-> > 
-> > IMHO it is one of the worst interfaces I can imagine
-> > (to move tasks between spaces and/or assign resources)
-> > but yes, I'm aware that filesystems are 'in' nowadays
-> 
-> Ease of use maybe. Scripts can be more readily used with a fs-based
-> interface.
-
-correct, but what about security and/or atomicity?
-i.e. how to assure that some action really was 
-taken and/or how to wait for completion?
-
-sure, all this _can_ be done, no doubt, but it
-is much harder to do with a fs based interface than
-with e.g. a syscall interface ...
-
-> -- 
-> Regards,
-> vatsa
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/containers
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+UPS interrupted the server's power
