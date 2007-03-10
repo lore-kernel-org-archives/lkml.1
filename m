@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767683AbXCJA2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767677AbXCJAcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767683AbXCJA2I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 19:28:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767687AbXCJA2I
+	id S1767677AbXCJAcL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 19:32:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767685AbXCJAcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 19:28:08 -0500
-Received: from warden-p.diginsite.com ([208.29.163.248]:46376 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1767683AbXCJA2H (ORCPT
+	Fri, 9 Mar 2007 19:32:11 -0500
+Received: from mail20.syd.optusnet.com.au ([211.29.132.201]:34915 "EHLO
+	mail20.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767677AbXCJAcK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 19:28:07 -0500
-Date: Fri, 9 Mar 2007 16:06:17 -0800 (PST)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Al Boldi <a1426z@gawab.com>
-cc: William Lee Irwin III <wli@holomorphy.com>, linux-kernel@vger.kernel.org
-Subject: Re: Pluggable Schedulers (was: [ANNOUNCE] RSDL completely fair 
- starvation free interactive cpu scheduler)
-In-Reply-To: <200703092343.46276.a1426z@gawab.com>
-Message-ID: <Pine.LNX.4.63.0703091604180.31392@qynat.qvtvafvgr.pbz>
-References: <200703091625.55361.a1426z@gawab.com>  <20070309135751.GE2986@holomorphy.com>
- <200703092343.46276.a1426z@gawab.com>
+	Fri, 9 Mar 2007 19:32:10 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+Date: Sat, 10 Mar 2007 11:31:45 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+References: <20070309053931.GA10459@waste.org> <200703101002.37920.kernel@kolivas.org> <20070309230612.GL10394@waste.org>
+In-Reply-To: <20070309230612.GL10394@waste.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703101131.46148.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007, Al Boldi wrote:
-
+On Saturday 10 March 2007 10:06, Matt Mackall wrote:
+> On Sat, Mar 10, 2007 at 10:02:37AM +1100, Con Kolivas wrote:
+> > On Saturday 10 March 2007 09:29, Matt Mackall wrote:
+> > > On Sat, Mar 10, 2007 at 09:18:05AM +1100, Con Kolivas wrote:
+> > > > On Saturday 10 March 2007 08:57, Con Kolivas wrote:
+> > > > > On Saturday 10 March 2007 08:39, Matt Mackall wrote:
+> > > > > > So what's different between makes in parallel and make -j 5?
+> > > > > > Make's job server uses pipe I/O to control how many jobs are
+> > > > > > running.
+> > > > >
+> > > > > Hmm it must be those deep pipes again then. I removed any quirks
+> > > > > testing for those from mainline as I suspected it would be ok.
+> > > > > Guess I"m wrong.
+> > > >
+> > > > I shouldn't blame this straight up though if NO_HZ makes it better.
+> > > > Something else is going wrong... wtf though?
+> > >
+> > > Just so we're clear, dynticks has only 'fixed' the single non-parallel
+> > > make load so far.
+> >
+> > Ok, back to the pipe idea. Without needing a kernel recompile, can you
+> > try running the make -j5 as a SCHED_BATCH task?
 >
->> My preferred sphere of operation is the Manichean domain of faster vs.
->> slower, functionality vs. non-functionality, and the like. For me, such
->> design concerns are like the need for a kernel to format pagetables so
->> the x86 MMU decodes what was intended, or for a compiler to emit valid
->> assembly instructions, or for a programmer to write C the compiler
->> won't reject with parse errors.
+> Seems the same.
 >
-> Sure, but I think, even from a technical point of view, competition is a good
-> thing to have.  Pluggable schedulers give us this kind of competition, that
-> forces each scheduler to refine or become obsolete.  Think evolution.
+> Oddly, nice make -j 5 is better than batch (but not quite up to stock).
 
-The point Linus is makeing is that with pluggable schedulers there isn't 
-competition between them, the various developer teams would go off in their own 
-direction and any drawbacks to their scheduler could be answered with "that's 
-not what we are good at, use a different scheduler", with the very real 
-possibility that a person could get this answer from ALL schedulers, leaving 
-them with nothing good to use.
+Shouldn't be odd. SCHED_BATCH (as Ingo implemented it which is what I'm trying 
+to reproduce for RSDL) is meant to give the same cpu as the same nice level, 
+but not give low latency. Nice on the other hand will give much less cpu.
 
-David Lang
+-- 
+-ck
