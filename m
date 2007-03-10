@@ -1,260 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbXCJGhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbXCJGiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752203AbXCJGhj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 01:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbXCJGhj
+	id S1752803AbXCJGiM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 01:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbXCJGiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 01:37:39 -0500
-Received: from gateway.insightbb.com ([74.128.0.19]:37464 "EHLO
-	asav13.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbXCJGhh (ORCPT
+	Sat, 10 Mar 2007 01:38:12 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:44667 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbXCJGiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 01:37:37 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlwPAJ7g8UVKhRO4UGdsb2JhbACCBIVNh18BASo
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Greg KH <gregkh@suse.de>
-Subject: [PATCH] Use attribute groups in struct device_type
-Date: Sat, 10 Mar 2007 01:37:34 -0500
-User-Agent: KMail/1.9.3
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	Sat, 10 Mar 2007 01:38:10 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 9 Mar 2007 22:38:09 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Nicholas Miell <nmiell@comcast.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
+In-Reply-To: <1173508384.3108.1.camel@entropy>
+Message-ID: <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com>
+ <1173508384.3108.1.camel@entropy>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703100137.35203.dtor@insightbb.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
+On Fri, 9 Mar 2007, Nicholas Miell wrote:
 
-Please consider applying the patch below. It switches struct device_type
-to using attribute groups which os more flexible. I am using it in my
-input class_device -> device conversion (which is 99% done btw).
+> Why did you ignore the existing POSIX timer API?
 
-I looked through -mm and the latest git and there does not seem to be
-any users of struct device_type yet...
+The existing POSIX API is a standard and a very good one. Too bad it does 
+not deliver to files. The timerfd code is, as you can probably read from 
+the code, a really thin wrapper around the existing hrtimer.c Linux code.
 
--- 
-Dmitry
 
-Driver core: use attribute groups in struct device_type
+- Davide
 
-Attribute groups are more flexible than attribute lists
-(an attribute list can be represented by anonymous group)
-so switch struct device_type to use them.
 
-Also rework attribute creation for devices so that they all
-cleaned up properly in case of errors.
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/base/core.c    |  115 +++++++++++++++++++++++++++++--------------------
- include/linux/device.h |    2 
- 2 files changed, 70 insertions(+), 47 deletions(-)
-
-Index: work/drivers/base/core.c
-===================================================================
---- work.orig/drivers/base/core.c
-+++ work/drivers/base/core.c
-@@ -259,64 +259,95 @@ static ssize_t store_uevent(struct devic
- 	return count;
- }
- 
--static int device_add_groups(struct device *dev)
-+static int device_add_attributes(struct device *dev,
-+				 struct device_attribute *attrs)
-+{
-+	int error = 0;
-+	int i;
-+
-+	if (attrs) {
-+		for (i = 0; attr_name(attrs[i]); i++) {
-+			error = device_create_file(dev, &attrs[i]);
-+			if (error)
-+				break;
-+		}
-+		if (error)
-+			while (--i >= 0)
-+				device_remove_file(dev, &attrs[i]);
-+	}
-+	return error;
-+}
-+
-+static void device_remove_attributes(struct device *dev,
-+				     struct device_attribute *attrs)
- {
- 	int i;
-+
-+	if (attrs)
-+		for (i = 0; attr_name(attrs[i]); i++)
-+			device_remove_file(dev, &attrs[i]);
-+}
-+
-+static int device_add_groups(struct device *dev,
-+			     struct attribute_group **groups)
-+{
- 	int error = 0;
-+	int i;
- 
--	if (dev->groups) {
--		for (i = 0; dev->groups[i]; i++) {
--			error = sysfs_create_group(&dev->kobj, dev->groups[i]);
-+	if (groups) {
-+		for (i = 0; groups[i]; i++) {
-+			error = sysfs_create_group(&dev->kobj, groups[i]);
- 			if (error) {
- 				while (--i >= 0)
--					sysfs_remove_group(&dev->kobj, dev->groups[i]);
--				goto out;
-+					sysfs_remove_group(&dev->kobj, groups[i]);
-+				break;
- 			}
- 		}
- 	}
--out:
- 	return error;
- }
- 
--static void device_remove_groups(struct device *dev)
-+static void device_remove_groups(struct device *dev,
-+				 struct attribute_group **groups)
- {
- 	int i;
--	if (dev->groups) {
--		for (i = 0; dev->groups[i]; i++) {
--			sysfs_remove_group(&dev->kobj, dev->groups[i]);
--		}
--	}
-+
-+	if (groups)
-+		for (i = 0; groups[i]; i++)
-+			sysfs_remove_group(&dev->kobj, groups[i]);
- }
- 
- static int device_add_attrs(struct device *dev)
- {
- 	struct class *class = dev->class;
- 	struct device_type *type = dev->type;
--	int error = 0;
--	int i;
-+	int error;
- 
--	if (class && class->dev_attrs) {
--		for (i = 0; attr_name(class->dev_attrs[i]); i++) {
--			error = device_create_file(dev, &class->dev_attrs[i]);
--			if (error)
--				break;
--		}
-+	if (class) {
-+		error = device_add_attributes(dev, class->dev_attrs);
- 		if (error)
--			while (--i >= 0)
--				device_remove_file(dev, &class->dev_attrs[i]);
-+			return error;
- 	}
- 
--	if (type && type->attrs) {
--		for (i = 0; attr_name(type->attrs[i]); i++) {
--			error = device_create_file(dev, &type->attrs[i]);
--			if (error)
--				break;
--		}
-+	if (type) {
-+		error = device_add_groups(dev, type->groups);
- 		if (error)
--			while (--i >= 0)
--				device_remove_file(dev, &type->attrs[i]);
-+			goto err_remove_class_attrs;
- 	}
- 
-+	error = device_add_groups(dev, dev->groups);
-+	if (error)
-+		goto err_remove_type_groups;
-+
-+	return 0;
-+
-+ err_remove_type_groups:
-+	if (type)
-+		device_remove_groups(dev, type->groups);
-+ err_remove_class_attrs:
-+	if (class)
-+		device_remove_attributes(dev, class->dev_attrs);
-+
- 	return error;
- }
- 
-@@ -324,17 +355,14 @@ static void device_remove_attrs(struct d
- {
- 	struct class *class = dev->class;
- 	struct device_type *type = dev->type;
--	int i;
- 
--	if (class && class->dev_attrs) {
--		for (i = 0; attr_name(class->dev_attrs[i]); i++)
--			device_remove_file(dev, &class->dev_attrs[i]);
--	}
-+	device_remove_groups(dev, dev->groups);
- 
--	if (type && type->attrs) {
--		for (i = 0; attr_name(type->attrs[i]); i++)
--			device_remove_file(dev, &type->attrs[i]);
--	}
-+	if (type)
-+		device_remove_groups(dev, type->groups);
-+
-+	if (class)
-+		device_remove_attributes(dev, class->dev_attrs);
- }
- 
- 
-@@ -599,8 +627,6 @@ int device_add(struct device *dev)
- 
- 	if ((error = device_add_attrs(dev)))
- 		goto AttrsError;
--	if ((error = device_add_groups(dev)))
--		goto GroupError;
- 	if ((error = device_pm_add(dev)))
- 		goto PMError;
- 	if ((error = bus_add_device(dev)))
-@@ -624,7 +650,7 @@ int device_add(struct device *dev)
- 		up(&dev->class->sem);
- 	}
-  Done:
-- 	kfree(class_name);
-+	kfree(class_name);
- 	put_device(dev);
- 	return error;
-  AttachError:
-@@ -635,8 +661,6 @@ int device_add(struct device *dev)
- 	if (dev->bus)
- 		blocking_notifier_call_chain(&dev->bus->bus_notifier,
- 					     BUS_NOTIFY_DEL_DEVICE, dev);
--	device_remove_groups(dev);
-- GroupError:
- 	device_remove_attrs(dev);
-  AttrsError:
- 	if (dev->devt_attr) {
-@@ -783,7 +807,6 @@ void device_del(struct device * dev)
- 		up(&dev->class->sem);
- 	}
- 	device_remove_file(dev, &dev->uevent_attr);
--	device_remove_groups(dev);
- 	device_remove_attrs(dev);
- 	bus_remove_device(dev);
- 
-Index: work/include/linux/device.h
-===================================================================
---- work.orig/include/linux/device.h
-+++ work/include/linux/device.h
-@@ -328,7 +328,7 @@ extern struct class_device *class_device
- extern void class_device_destroy(struct class *cls, dev_t devt);
- 
- struct device_type {
--	struct device_attribute *attrs;
-+	struct attribute_group **groups;
- 	int (*uevent)(struct device *dev, char **envp, int num_envp,
- 		      char *buffer, int buffer_size);
- 	void (*release)(struct device *dev);
