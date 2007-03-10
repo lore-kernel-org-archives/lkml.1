@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbXCJITr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933544AbXCJIVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933537AbXCJITr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 03:19:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933539AbXCJITr
+	id S933544AbXCJIVh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 03:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933541AbXCJIVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 03:19:47 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:42548 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933537AbXCJITq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 03:19:46 -0500
-Date: Sat, 10 Mar 2007 03:19:44 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: akpm@linux-foundation.org, mbligh@google.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: Re: [PATCH] Fix atomicity of TIF update in flush_thread() for powerpc
-Message-ID: <20070310081944.GA22756@Krystal>
-References: <20070309024525.GB9462@Krystal>
+	Sat, 10 Mar 2007 03:21:37 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4629 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933539AbXCJIVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 03:21:35 -0500
+Date: Sat, 10 Mar 2007 08:21:25 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] implement __attribute_discard_text/data__ and use it to leave out PM functions if !CONFIG_PM
+Message-ID: <20070310082124.GA6771@ucw.cz>
+References: <20070305033819.GA32687@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070309024525.GB9462@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 03:19:24 up 35 days, 22:27,  3 users,  load average: 1.28, 1.23, 1.19
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070305033819.GA32687@htj.dyndns.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Broken patch. Don't apply. Correct one coming.
+Hi!
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> Fix atomicity of TIF update in flush_thread() for powerpc
+> This patch is the result from the following discussion.
 > 
-> Race :
+>   http://thread.gmane.org/gmane.linux.ide/16475
 > 
-> parent process executing :
-> sys_ptrace()
->  (lock_kernel())
->  (ptrace_get_task_struct(pid))
->  arch_ptrace()
->    ptrace_detach()
->      ptrace_disable(child);
->        clear_singlestep(child);
->          clear_tsk_thread_flag(child, TIF_SINGLESTEP);
->          (which clears the TIF_SINGLESTEP flag atomically from a different
-> 	  process)
->  (put_task_struct(child))
->  (unlock_kernel())
+> The problem is that CONFIG_PM affects a lot of low level drivers and
+> scattering CONFIG_PM all over the place is too ugly.  This patch...
 > 
-> And at the same time, in the child process :
-> sys_execve()
->  do_execve()
->    search_binary_handler()
->      load_elf_binary()
->        flush_old_exec()
->          flush_thread()
->            doing a non-atomic thread flag update 
+> * implements __attribute_discard_text__ and __attribute_discard_data__
+>   (not implemented for modules yet, only for built-ins)
+> * uses them to implement __pm and __pmdata markers
+> * convert libata midlayer and ahci to use it instead of CONFIG_PM
 > 
-> Applies on 2.6.20.
+> __attribute_discard_text/data__ puts the marked symbols in separate
+> sections which are located from VMA 0 and discarded when generating
+> the final image.  It's similar to putting those into /DISCARD/ section
+> but won't complain even if the discarded symbols are referenced by
+> active sections.  As the discard sections are located from VMA 0,
+> actually dereferencing such symbols will result in OOPS.
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> This trick certainly makes LLDs cleaner but there are also some
+> downsides, so here are the cons.
 > 
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -476,8 +476,13 @@ void flush_thread(void)
->  #ifdef CONFIG_PPC64
->  	struct thread_info *t = current_thread_info();
->  
-> -	if (t->flags & _TIF_ABI_PENDING)
-> -		t->flags ^= (_TIF_ABI_PENDING | _TIF_32BIT);
-> +	if (test_tsk_thread_flag(tsk, TIF_ABI_PENDING)) {
-> +		clear_tsk_thread_flag(tsk, TIF_ABI_PENDING);
-> +		if (test_tsk_thread_flag(tsk, TIF_32BIT))
-> +			clear_tsk_thread_flag(tsk, TIF_32BIT);
-> +		else
-> +			set_tsk_thread_flag(tsk, TIF_32BIT);
-> +	}
->  #endif
->  
->  	discard_lazy_cpu_state();
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> * Cannot depend on the compiler to detect illegal dereferences to
+>   discarded symbols.  We probably can do this using sparse.
+> 
+> * Cannot use the compiler to detect unused but unmarked symbols.  This
+>   also probably can be done with sparse.
+> 
+> * EXPORT_SYMBOL() is nullified, so it will take extra bytes for
+>   each symbol marked with __pm.  (insignificant)
+> 
+> * Implementation involves modifying kernel image, module build process
+>   and possibly sparse.  It might be too expensive to achieve device
+>   driver prettiness, but there are a lot of device drivers out there
+>   and a lot of CONFIG_PM's to be added.  Also, discard attributes can
+>   be used for other purposes too.
+> 
+> Any better ideas?  Comments?
 
+Seems ok to me. Certainly better than config_pm...
+
+							Pavel
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
