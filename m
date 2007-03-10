@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993159AbXCJCeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993163AbXCJClY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993159AbXCJCeN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 21:34:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993160AbXCJCeN
+	id S2993163AbXCJClY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 21:41:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993161AbXCJClY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 21:34:13 -0500
-Received: from postel.suug.ch ([194.88.212.233]:36308 "EHLO postel.suug.ch"
+	Fri, 9 Mar 2007 21:41:24 -0500
+Received: from waste.org ([66.93.16.53]:59217 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993159AbXCJCeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 21:34:12 -0500
-Date: Sat, 10 Mar 2007 03:34:32 +0100
-From: Thomas Graf <tgraf@suug.ch>
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       David Miller <davem@davemloft.net>, "Garzik, Jeff" <jgarzik@pobox.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kok, Auke" <auke@foo-projects.org>,
-       "Ronciak, John" <john.ronciak@intel.com>
-Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
-Message-ID: <20070310023432.GJ521@postel.suug.ch>
-References: <20070309230143.GI521@postel.suug.ch> <D5C1322C3E673F459512FB59E0DDC329026E9F85@orsmsx414.amr.corp.intel.com>
+	id S2993165AbXCJClX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 21:41:23 -0500
+Date: Fri, 9 Mar 2007 20:26:56 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+Message-ID: <20070310022656.GQ10394@waste.org>
+References: <20070309053931.GA10459@waste.org> <200703101228.38923.kernel@kolivas.org> <20070310014230.GP10394@waste.org> <200703101320.23125.kernel@kolivas.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329026E9F85@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <200703101320.23125.kernel@kolivas.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Waskiewicz Jr, Peter P <peter.p.waskiewicz.jr@intel.com> 2007-03-09 15:27
-> That's the entire point of this extra locking.  enqueue() is going to
-> put an skb into a band somewhere that maps to some queue, and there is
-> no way to guarantee the skb I retrieve from dequeue() is headed for the
-> same queue.  Therefore, I need to unlock the queue after I finish
-> enqueuing, since having that lock makes little sense to dequeue().
-> dequeue() will then grab *a* lock on a queue; it may be the same one we
-> had during enqueue(), but it may not be.  And the placement of the
-> unlock of that queue is exactly where it happens in non-multiqueue,
-> which is right before the hard_start_xmit().
+On Sat, Mar 10, 2007 at 01:20:22PM +1100, Con Kolivas wrote:
+> Progress at last! And without any patches! Well those look very reasonable to 
+> me. Especially since -j5 is a worst case scenario.
 
-The lock is already unlocked after dequeue, from your prio_dequeue():
+Well that's with a noyield patch and your sched_tick fix.
 
-       if (netif_is_multiqueue(sch->dev)) {
-               queue = q->band2queue[prio];
-               if (spin_trylock(&sch->dev->egress_subqueue[queue].queue_lock)) {
-                       qdisc = q->queues[prio];
-                       skb = qdisc->dequeue(qdisc);
-                       if (skb) {
-                               sch->q.qlen--;
-                               skb->priority = prio;
-                               spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
-                               return skb;
-                       }
-                       spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
-       }
+> But would you say it's still _adequate_ with ccache considering you
+> only have 1/6th cpu left for X? With and without ccache it's quite a
+> different workload so they will behave differently.
+
+No, I don't think 1/6th is being left for X in the ccache case so I
+think there's a bug lurking here. My memload, execload, and forkload
+test cases did better even with X niced.
+
+To confirm, I've just run 15 instances of memload with unniced Xorg
+and it performs better than make -j 5 with ccache.
+
+If I have some time tomorrow, I'll try to do a straight -mm1 to mm2
+comparison with different loads.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
