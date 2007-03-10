@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767856AbXCJQW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767861AbXCJQ1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767856AbXCJQW0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 11:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767864AbXCJQW0
+	id S1767861AbXCJQ1g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 11:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767864AbXCJQ1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 11:22:26 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:8266 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767856AbXCJQWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 11:22:25 -0500
-Date: Sat, 10 Mar 2007 10:21:47 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: How soon is soon? MCP55 NCQ support on Linux...
-In-reply-to: <fa.KSn1DWJ+5WP0YQT6/PSMt6AbHU8@ifi.uio.no>
-To: Zoltan Boszormenyi <zboszor@dunaweb.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Allen Martin <AMartin@nvidia.com>
-Message-id: <45F2DB1B.7040305@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-2; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.KSn1DWJ+5WP0YQT6/PSMt6AbHU8@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sat, 10 Mar 2007 11:27:36 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:39267 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767861AbXCJQ1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 11:27:35 -0500
+Date: Sat, 10 Mar 2007 17:26:03 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Vladimir <snigga@mail.ru>,
+       linux-kernel-list <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
+In-Reply-To: <20070310160614.GB10230@cvg>
+Message-ID: <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr>
+References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zoltan Boszormenyi wrote:
-> Hi,
-> 
-> I have seen your message in LKML archive:
-> http://marc.theaimsgroup.com/?l=linux-kernel&m=116046278930988&w=2
-> It's dated 2006.10.10 and states that a patch
-> to support NCQ on MCP55/MCP61 under Linux
-> is coming "soon". Now it's five months later
-> and I would like to ask when will it be supported?
-> Especially when this seems to be the last NVidia chipset
-> that has NCQ but isn't supported under Linux.
-> 
-> Thanks in advance,
-> Zoltán Böszörményi
 
-It's a good question, I haven't heard anything about this either. Even 
-documentation to allow others to implement it would be useful, although 
-there may be some kind of IP issues that prevent public release of the 
-specs, as I assume has prevented this with the nForce4 ADMA controllers.
+On Mar 10 2007 19:06, Cyrill Gorcunov wrote:
+>[Vladimir - Sat, Mar 10, 2007 at 04:05:42PM +0300]
+>| Here's the problem:
+>|   1. Unpack the kernel sources, run make menuconfig.
+>|   2. Mark the necessary options.
+>|   3. Pick "Save an alternate configuration file", enter a filename (e.g. /root/kernelcfg)
+>|   4. Pick "Exit".
+>| ->5. Configurator exits without saving. If type "make bzImage", it builtd all the default options.
 
-I'm not sure what the story is with MCP51 either.. apparently the 
-Windows driver NCQ support for that chipset was late in coming but I 
-think it does have it now too..
+Well, you already saved explicitly and did not make any further changes
+after that, so it won't ask again on exit (perhaps all Office Suites do
+the same). In fact, if you do exactly that, menuconfig assumes you do not
+intend to build a kernel (since you did not save to .config).
 
+
+Jan
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
