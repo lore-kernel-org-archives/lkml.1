@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767711AbXCJBbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767712AbXCJBhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767711AbXCJBbQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 20:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767712AbXCJBbQ
+	id S1767712AbXCJBhi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 20:37:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767713AbXCJBhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 20:31:16 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47192 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767711AbXCJBbP (ORCPT
+	Fri, 9 Mar 2007 20:37:38 -0500
+Received: from straum.hexapodia.org ([64.81.70.185]:30238 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767712AbXCJBhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 20:31:15 -0500
-Date: Fri, 9 Mar 2007 17:31:15 -0800
-From: Paul Jackson <pj@sgi.com>
-To: Herbert Poetzl <herbert@13thfloor.at>
-Cc: vatsa@in.ibm.com, menage@google.com, ebiederm@xmission.com,
-       winget@google.com, containers@lists.osdl.org, akpm@linux-foundation.org,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       xemul@sw.ru
-Subject: Re: [PATCH 1/2] rcfs core patch
-Message-Id: <20070309173115.c70aa20a.pj@sgi.com>
-In-Reply-To: <20070310010041.GD3647@MAIL.13thfloor.at>
-References: <20070301133543.GK15509@in.ibm.com>
-	<20070301134528.GL15509@in.ibm.com>
-	<m1slcg8m4f.fsf@ebiederm.dsl.xmission.com>
-	<20070308101347.GA29051@in.ibm.com>
-	<20070309004816.GB4506@MAIL.13thfloor.at>
-	<20070309181422.GB21661@in.ibm.com>
-	<20070309112547.3e82deca.pj@sgi.com>
-	<20070310010041.GD3647@MAIL.13thfloor.at>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Fri, 9 Mar 2007 20:37:37 -0500
+Date: Fri, 9 Mar 2007 17:37:36 -0800
+From: Andy Isaacson <adi@hexapodia.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Kees Cook <kees@outflux.net>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: maps protection
+Message-ID: <20070310013736.GA18877@hexapodia.org>
+References: <20070307012234.GN9621@outflux.net> <20070306175609.267bd7a9.akpm@linux-foundation.org> <20070307021335.GR9621@outflux.net> <20070306185942.585e7cd1.akpm@linux-foundation.org> <20070307031429.GU9621@outflux.net> <1173241331.3236.10.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173241331.3236.10.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.2.2i
+X-PGP-Fingerprint: 48 01 21 E2 D4 E4 68 D1  B8 DF 39 B2 AF A3 16 B9
+X-PGP-Key-URL: http://web.hexapodia.org/~adi/pgp.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert wrote:
-> personally, I'd prefer to avoid hierarchical
-> structures wherever possible,
+On Tue, Mar 06, 2007 at 08:22:11PM -0800, Arjan van de Ven wrote:
+> > How about using a reduced check, as is done for fd and environ?  This 
+> > would allow root-running system monitors to still do their job.  
+> > Effectively, this changes the test from "is ptracing" to just "can 
+> > ptrace".
+> > 
+> > If this still isn't considered safe, I'll add the maps_protect file...
+> 
+> btw I consider it an information leak that any user can see which
+> files/libraries any other user and root has mmap'd. (and with glibc's
+> stdio mmap feature that goes even beyond direct mmap to fopen()'d).
+> 
+> If root or some other user wants to watch
+> hillary-vs-obama-in-the-mud.avi, no other user has ANY business even
+> seeing that. So at minimum it's a privacy issue showing the filenames...
 
-Sure - avoid them if you like.  But sometimes they work out rather
-well.  And file system API's are sometimes the best fit for them.
+Sure, I would be fine with making /proc/<pid>/maps mode 0400 (so long as
+root can still read it).  But please don't take away my ability to debug
+applications using pmap(1).  It's so incredibly useful to be able to say
+"ah, look, he mapped nss_nis.so rather than nss_nisplus.so".
 
-I'm all for choosing the simplest API topology that makes sense.
-
-But encoding higher dimension topologies into lower dimension API's,
-just because they seem "simpler" results in obfuscation, convolution
-and obscurity, which ends up costing everyone more than getting the
-natural fit.
-
-    "Make everything as simple as possible, but not simpler."
-    --  Albert Einstein
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+-andy
