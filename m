@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030367AbXCJJbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030579AbXCJJcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030367AbXCJJbj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 04:31:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030514AbXCJJbj
+	id S1030579AbXCJJcP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 04:32:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030515AbXCJJcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 04:31:39 -0500
-Received: from mx1-2.mail.ru ([194.67.23.121]:8684 "EHLO mx1.mail.ru"
+	Sat, 10 Mar 2007 04:32:14 -0500
+Received: from mx2-2.mail.ru ([194.67.23.122]:20248 "EHLO mx2.mail.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030367AbXCJJbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 04:31:37 -0500
-Date: Sat, 10 Mar 2007 12:32:19 +0300
+	id S1030579AbXCJJcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 04:32:12 -0500
+Date: Sat, 10 Mar 2007 12:32:55 +0300
 From: Evgeniy Dushistov <dushistov@mail.ru>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org
-Subject: [PATCH 3/4]: ufs: zeroize the rest of block in truncate
-Message-ID: <20070310093219.GA802@rain>
+Subject: [PATCH 4/4]: ufs2 tindirect truncate fix
+Message-ID: <20070310093255.GA822@rain>
 Mail-Followup-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
 	linux-fsdevel@vger.kernel.org
 MIME-Version: 1.0
@@ -24,25 +24,9 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fix behaviour in such test scenario:
-
-lseek(fd, BIG_OFFSET)
-write(fd, buf, sizeof(buf))
-truncate(BIG_OFFSET)
-truncate(BIG_OFFSET + sizeof(buf))
-read(fd, buf...)
-
-Because of if file big enough(BIG_OFFSET) we start allocate
-space by block, ordinary block size > page size,
-so we should zeroize the rest of block in truncate(except last framgnet,
-about which VFS should care), to not get garbage,
-when we extend file.
-
-Also patch corrects conversation
-from pointer to block to physical block number,
-this helps in case of not common used UFS types.
-
-And add to debug output inode number.
+During modification of code to support UFS2 writing,
+the case with "three indirect" blocks in truncate path was missed,
+this patch fixes this situation.
 
 Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
 
@@ -52,178 +36,15 @@ Index: linux-2.6.21-rc3-git6/fs/ufs/truncate.c
 ===================================================================
 --- linux-2.6.21-rc3-git6.orig/fs/ufs/truncate.c
 +++ linux-2.6.21-rc3-git6/fs/ufs/truncate.c
-@@ -74,7 +74,7 @@ static int ufs_trunc_direct(struct inode
- 	unsigned i, tmp;
- 	int retry;
- 	
--	UFSD("ENTER\n");
-+	UFSD("ENTER: ino %lu\n", inode->i_ino);
- 
- 	sb = inode->i_sb;
- 	uspi = UFS_SB(sb)->s_uspi;
-@@ -96,8 +96,8 @@ static int ufs_trunc_direct(struct inode
- 		block2 = ufs_fragstoblks (frag3);
+@@ -348,7 +348,7 @@ static int ufs_trunc_tindirect(struct in
  	}
  
--	UFSD("frag1 %llu, frag2 %llu, block1 %llu, block2 %llu, frag3 %llu,"
--	     " frag4 %llu\n",
-+	UFSD("ino %lu, frag1 %llu, frag2 %llu, block1 %llu, block2 %llu,"
-+	     " frag3 %llu, frag4 %llu\n", inode->i_ino,
- 	     (unsigned long long)frag1, (unsigned long long)frag2,
- 	     (unsigned long long)block1, (unsigned long long)block2,
- 	     (unsigned long long)frag3, (unsigned long long)frag4);
-@@ -163,7 +163,7 @@ next1:
- 	mark_inode_dirty(inode);
-  next3:
- 
--	UFSD("EXIT\n");
-+	UFSD("EXIT: ino %lu\n", inode->i_ino);
- 	return retry;
- }
- 
-@@ -248,7 +248,7 @@ static int ufs_trunc_indirect(struct ino
- 	}
- 	ubh_brelse (ind_ubh);
- 	
--	UFSD("EXIT\n");
-+	UFSD("EXIT: ino %lu\n", inode->i_ino);
- 	
- 	return retry;
- }
-@@ -262,7 +262,7 @@ static int ufs_trunc_dindirect(struct in
- 	void *dind;
- 	int retry = 0;
- 	
--	UFSD("ENTER\n");
-+	UFSD("ENTER: ino %lu\n", inode->i_ino);
- 	
- 	sb = inode->i_sb;
- 	uspi = UFS_SB(sb)->s_uspi;
-@@ -312,7 +312,7 @@ static int ufs_trunc_dindirect(struct in
- 	}
- 	ubh_brelse (dind_bh);
- 	
--	UFSD("EXIT\n");
-+	UFSD("EXIT: ino %lu\n", inode->i_ino);
- 	
- 	return retry;
- }
-@@ -327,7 +327,7 @@ static int ufs_trunc_tindirect(struct in
- 	void *tind, *p;
- 	int retry;
- 	
--	UFSD("ENTER\n");
-+	UFSD("ENTER: ino %lu\n", inode->i_ino);
- 
- 	retry = 0;
- 	
-@@ -372,19 +372,21 @@ static int ufs_trunc_tindirect(struct in
- 	}
- 	ubh_brelse (tind_bh);
- 	
--	UFSD("EXIT\n");
-+	UFSD("EXIT: ino %lu\n", inode->i_ino);
- 	return retry;
- }
- 
- static int ufs_alloc_lastblock(struct inode *inode)
- {
- 	int err = 0;
-+	struct super_block *sb = inode->i_sb;
- 	struct address_space *mapping = inode->i_mapping;
--	struct ufs_sb_private_info *uspi = UFS_SB(inode->i_sb)->s_uspi;
-+	struct ufs_sb_private_info *uspi = UFS_SB(sb)->s_uspi;
- 	unsigned i, end;
- 	sector_t lastfrag;
- 	struct page *lastpage;
- 	struct buffer_head *bh;
-+	u64 phys64;
- 
- 	lastfrag = (i_size_read(inode) + uspi->s_fsize - 1) >> uspi->s_fshift;
- 
-@@ -424,6 +426,20 @@ static int ufs_alloc_lastblock(struct in
- 	       set_page_dirty(lastpage);
-        }
- 
-+       if (lastfrag >= UFS_IND_FRAGMENT) {
-+	       end = uspi->s_fpb - ufs_fragnum(lastfrag) - 1;
-+	       phys64 = bh->b_blocknr + 1;
-+	       for (i = 0; i < end; ++i) {
-+		       bh = sb_getblk(sb, i + phys64);
-+		       lock_buffer(bh);
-+		       memset(bh->b_data, 0, sb->s_blocksize);
-+		       set_buffer_uptodate(bh);
-+		       mark_buffer_dirty(bh);
-+		       unlock_buffer(bh);
-+		       sync_dirty_buffer(bh);
-+		       brelse(bh);
-+	       }
-+       }
- out_unlock:
-        ufs_put_locked_page(lastpage);
- out:
-Index: linux-2.6.21-rc3-git6/fs/ufs/inode.c
-===================================================================
---- linux-2.6.21-rc3-git6.orig/fs/ufs/inode.c
-+++ linux-2.6.21-rc3-git6/fs/ufs/inode.c
-@@ -212,7 +212,7 @@ repeat:
- 			brelse (result);
- 			goto repeat;
- 		} else {
--			*phys = tmp + blockoff;
-+			*phys = uspi->s_sbbase + tmp + blockoff;
- 			return NULL;
- 		}
- 	}
-@@ -282,9 +282,9 @@ repeat:
- 	}
- 
- 	if (!phys) {
--		result = sb_getblk(sb, tmp + blockoff);
-+		result = sb_getblk(sb, uspi->s_sbbase + tmp + blockoff);
- 	} else {
--		*phys = tmp + blockoff;
-+		*phys = uspi->s_sbbase + tmp + blockoff;
- 		result = NULL;
- 		*err = 0;
- 		*new = 1;
-@@ -368,7 +368,7 @@ repeat:
- 			brelse (result);
- 			goto repeat;
- 		} else {
--			*phys = tmp + blockoff;
-+			*phys = uspi->s_sbbase + tmp + blockoff;
- 			goto out;
- 		}
- 	}
-@@ -389,9 +389,9 @@ repeat:
- 
- 
- 	if (!phys) {
--		result = sb_getblk(sb, tmp + blockoff);
-+		result = sb_getblk(sb, uspi->s_sbbase + tmp + blockoff);
- 	} else {
--		*phys = tmp + blockoff;
-+		*phys = uspi->s_sbbase + tmp + blockoff;
- 		*new = 1;
- 	}
- 
-Index: linux-2.6.21-rc3-git6/fs/ufs/balloc.c
-===================================================================
---- linux-2.6.21-rc3-git6.orig/fs/ufs/balloc.c
-+++ linux-2.6.21-rc3-git6/fs/ufs/balloc.c
-@@ -482,8 +482,9 @@ u64 ufs_new_fragments(struct inode *inod
- 	if (result) {
- 		ufs_clear_frags(inode, result + oldcount, newcount - oldcount,
- 				locked_page != NULL);
--		ufs_change_blocknr(inode, fragment - oldcount, oldcount, tmp,
--				   result, locked_page);
-+		ufs_change_blocknr(inode, fragment - oldcount, oldcount,
-+				   uspi->s_sbbase + tmp,
-+				   uspi->s_sbbase + result, locked_page);
- 		ufs_cpu_to_data_ptr(sb, p, result);
- 		*err = 0;
- 		UFS_I(inode)->i_lastfrag = max_t(u32, UFS_I(inode)->i_lastfrag, fragment + count);
+ 	for (i = tindirect_block ; i < uspi->s_apb ; i++) {
+-		tind = ubh_get_addr32 (tind_bh, i);
++		tind = ubh_get_data_ptr(uspi, tind_bh, i);
+ 		retry |= ufs_trunc_dindirect(inode, UFS_NDADDR + 
+ 			uspi->s_apb + ((i + 1) << uspi->s_2apbshift), tind);
+ 		ubh_mark_buffer_dirty(tind_bh);
 -- 
 /Evgeniy
 
