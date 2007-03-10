@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767710AbXCJB30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767711AbXCJBbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767710AbXCJB30 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 20:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767711AbXCJB30
+	id S1767711AbXCJBbQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 20:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767712AbXCJBbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 20:29:26 -0500
-Received: from mail15.syd.optusnet.com.au ([211.29.132.196]:52054 "EHLO
-	mail15.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767710AbXCJB3Z (ORCPT
+	Fri, 9 Mar 2007 20:31:16 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47192 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1767711AbXCJBbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 20:29:25 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Date: Sat, 10 Mar 2007 12:28:38 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-References: <20070309053931.GA10459@waste.org> <200703101134.26313.kernel@kolivas.org> <20070310004948.GN10394@waste.org>
-In-Reply-To: <20070310004948.GN10394@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 9 Mar 2007 20:31:15 -0500
+Date: Fri, 9 Mar 2007 17:31:15 -0800
+From: Paul Jackson <pj@sgi.com>
+To: Herbert Poetzl <herbert@13thfloor.at>
+Cc: vatsa@in.ibm.com, menage@google.com, ebiederm@xmission.com,
+       winget@google.com, containers@lists.osdl.org, akpm@linux-foundation.org,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru
+Subject: Re: [PATCH 1/2] rcfs core patch
+Message-Id: <20070309173115.c70aa20a.pj@sgi.com>
+In-Reply-To: <20070310010041.GD3647@MAIL.13thfloor.at>
+References: <20070301133543.GK15509@in.ibm.com>
+	<20070301134528.GL15509@in.ibm.com>
+	<m1slcg8m4f.fsf@ebiederm.dsl.xmission.com>
+	<20070308101347.GA29051@in.ibm.com>
+	<20070309004816.GB4506@MAIL.13thfloor.at>
+	<20070309181422.GB21661@in.ibm.com>
+	<20070309112547.3e82deca.pj@sgi.com>
+	<20070310010041.GD3647@MAIL.13thfloor.at>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703101228.38923.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 March 2007 11:49, Matt Mackall wrote:
-> On Sat, Mar 10, 2007 at 11:34:26AM +1100, Con Kolivas wrote:
-> > Ok, so some of the basics then. Can you please give me the output of 'top
-> > -b' running for a few seconds during the whole affair?
->
-> Here you go:
->
-> http://selenic.com/baseline
-> http://selenic.com/underload
->
-> This is with 2.6.20+rsdl+tickfix at HZ=250.
->
-> Something I haven't mentioned about my setup is that I'm using ccache.
-> And it turns out disabling ccache makes a large difference. Going to
-> switch back to a NO_HZ kernel and see what that looks like.
+Herbert wrote:
+> personally, I'd prefer to avoid hierarchical
+> structures wherever possible,
 
-Your X is reniced to -10 so.... try again with X nice 0 please.
+Sure - avoid them if you like.  But sometimes they work out rather
+well.  And file system API's are sometimes the best fit for them.
+
+I'm all for choosing the simplest API topology that makes sense.
+
+But encoding higher dimension topologies into lower dimension API's,
+just because they seem "simpler" results in obfuscation, convolution
+and obscurity, which ends up costing everyone more than getting the
+natural fit.
+
+    "Make everything as simple as possible, but not simpler."
+    --  Albert Einstein
 
 -- 
--ck
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
