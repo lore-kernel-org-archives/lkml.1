@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993158AbXCJCaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993159AbXCJCeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993158AbXCJCaU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 21:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993159AbXCJCaT
+	id S2993159AbXCJCeN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 21:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993160AbXCJCeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 21:30:19 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57535 "EHLO smtp.osdl.org"
+	Fri, 9 Mar 2007 21:34:13 -0500
+Received: from postel.suug.ch ([194.88.212.233]:36308 "EHLO postel.suug.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993158AbXCJCaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 21:30:18 -0500
-Date: Fri, 9 Mar 2007 18:30:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kees Cook <kees@outflux.net>
-Cc: arjan@linux.intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] proc: maps protection
-Message-Id: <20070309183006.7ff23eff.akpm@linux-foundation.org>
-In-Reply-To: <20070308205525.GJ6805@outflux.net>
-References: <20070307012234.GN9621@outflux.net>
-	<20070306175609.267bd7a9.akpm@linux-foundation.org>
-	<20070307021335.GR9621@outflux.net>
-	<20070306185942.585e7cd1.akpm@linux-foundation.org>
-	<20070307031429.GU9621@outflux.net>
-	<1173241331.3236.10.camel@laptopd505.fenrus.org>
-	<20070308205525.GJ6805@outflux.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	id S2993159AbXCJCeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 21:34:12 -0500
+Date: Sat, 10 Mar 2007 03:34:32 +0100
+From: Thomas Graf <tgraf@suug.ch>
+To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       David Miller <davem@davemloft.net>, "Garzik, Jeff" <jgarzik@pobox.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kok, Auke" <auke@foo-projects.org>,
+       "Ronciak, John" <john.ronciak@intel.com>
+Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
+Message-ID: <20070310023432.GJ521@postel.suug.ch>
+References: <20070309230143.GI521@postel.suug.ch> <D5C1322C3E673F459512FB59E0DDC329026E9F85@orsmsx414.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329026E9F85@orsmsx414.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 8 Mar 2007 12:55:25 -0800 Kees Cook <kees@outflux.net> wrote:
-> On Tue, Mar 06, 2007 at 08:22:11PM -0800, Arjan van de Ven wrote:
-> > > [Adding Cc:lkml]
-> > 
-> > > How about using a reduced check, as is done for fd and environ?  This 
-> > > would allow root-running system monitors to still do their job.  
-> > > Effectively, this changes the test from "is ptracing" to just "can 
-> > > ptrace".
-> > > 
-> > > If this still isn't considered safe, I'll add the maps_protect file...
-> > 
-> > btw I consider it an information leak that any user can see which
-> > files/libraries any other user and root has mmap'd. (and with glibc's
-> > stdio mmap feature that goes even beyond direct mmap to fopen()'d).
-> > 
-> > If root or some other user wants to watch
-> > hillary-vs-obama-in-the-mud.avi, no other user has ANY business even
-> > seeing that. So at minimum it's a privacy issue showing the filenames...
-> 
-> So, what's the state of this?  Is the reduced "allowed to ptrace" check 
-> good enough for inclusion?  What is needed for some form of this patch 
-> to be included?  I'm happy to try new approaches if I can get some 
-> further input.
+* Waskiewicz Jr, Peter P <peter.p.waskiewicz.jr@intel.com> 2007-03-09 15:27
+> That's the entire point of this extra locking.  enqueue() is going to
+> put an skb into a band somewhere that maps to some queue, and there is
+> no way to guarantee the skb I retrieve from dequeue() is headed for the
+> same queue.  Therefore, I need to unlock the queue after I finish
+> enqueuing, since having that lock makes little sense to dequeue().
+> dequeue() will then grab *a* lock on a queue; it may be the same one we
+> had during enqueue(), but it may not be.  And the placement of the
+> unlock of that queue is exactly where it happens in non-multiqueue,
+> which is right before the hard_start_xmit().
 
-I just don't know what it will break - we're changing things so that user A
-cannot monitor user B's memory maps.  I feel that it's sure to break
-various people's fancy custom system activity monitoring/logging setups,
-and the sort of users who will be affected are, alas, the sort of people
-who won't run a kernel with this change in it for another couple of years
-yet.
+The lock is already unlocked after dequeue, from your prio_dequeue():
 
-> Another suggestion was to make this an ELF header toggle, and I'm 
-> generally against that idea.  If a toggle is needed, I'd rather it be a 
-> system-wide one.
-
-A global /proc knob probably isn't too bad.
-
-Do we actually need to disable the whole interface?  If all you're
-concerned about is the pathname then perhaps the knob could cause that
-pathname to be replaced with "<hidden>".  That'll cause things to
-break less seriously and still allows somewhat useful info to be gathered.
-
+       if (netif_is_multiqueue(sch->dev)) {
+               queue = q->band2queue[prio];
+               if (spin_trylock(&sch->dev->egress_subqueue[queue].queue_lock)) {
+                       qdisc = q->queues[prio];
+                       skb = qdisc->dequeue(qdisc);
+                       if (skb) {
+                               sch->q.qlen--;
+                               skb->priority = prio;
+                               spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
+                               return skb;
+                       }
+                       spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
+       }
