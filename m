@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767861AbXCJQ1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767857AbXCJQeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767861AbXCJQ1g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 11:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767864AbXCJQ1g
+	id S1767857AbXCJQeR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 11:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767865AbXCJQeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 11:27:36 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:39267 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767861AbXCJQ1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 11:27:35 -0500
-Date: Sat, 10 Mar 2007 17:26:03 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Vladimir <snigga@mail.ru>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-In-Reply-To: <20070310160614.GB10230@cvg>
-Message-ID: <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr>
-References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg>
+	Sat, 10 Mar 2007 11:34:17 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4082 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767857AbXCJQeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 11:34:16 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] 2.6.21-rc3-mm1
+Date: Sat, 10 Mar 2007 17:36:34 +0100
+User-Agent: KMail/1.9.5
+Cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+References: <Pine.LNX.4.44L0.0703101057380.23928-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0703101057380.23928-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703101736.35386.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Mar 10 2007 19:06, Cyrill Gorcunov wrote:
->[Vladimir - Sat, Mar 10, 2007 at 04:05:42PM +0300]
->| Here's the problem:
->|   1. Unpack the kernel sources, run make menuconfig.
->|   2. Mark the necessary options.
->|   3. Pick "Save an alternate configuration file", enter a filename (e.g. /root/kernelcfg)
->|   4. Pick "Exit".
->| ->5. Configurator exits without saving. If type "make bzImage", it builtd all the default options.
+> > Right. Can't be 100% sure but without the patch it would have probably
+> > failed by now so I guess the patch is ok. Not sure how to make usb mouse
+> > plugging/unplugging process automatic ;-)
+> 
+> 	echo FOO >/sys/bus/usb/drivers/usbhid/unbind
+> 
+> to simulate an unplug (actually, to do an unbind), and
+> 
+> 	echo FOO >/sys/bus/usb/drivers/usbhid/unbind
+                                              ^^^^^^ bind I guess
 
-Well, you already saved explicitly and did not make any further changes
-after that, so it won't ask again on exit (perhaps all Office Suites do
-the same). In fact, if you do exactly that, menuconfig assumes you do not
-intend to build a kernel (since you did not save to .config).
+> to do a bind, where FOO is the name of the USB mouse device link present
+> in the /sys/bus/usb/drivers/usbhid directory.
 
+# ls -al /sys/bus/usb/drivers/usbhid
+total 0
+drwxr-xr-x 2 root root    0 Mar 10 17:30 .
+drwxr-xr-x 8 root root    0 Mar 10 17:14 ..
+lrwxrwxrwx 1 root root    0 Mar 10 17:30 2-2:1.0 -> ../../../../devices/pci0000:00/0000:00:0c.0/usb2/2-2/2-2:1.0
+--w------- 1 root root 4096 Mar 10 17:17 bind
+lrwxrwxrwx 1 root root    0 Mar 10 17:17 module -> ../../../../module/usbhid
+--w------- 1 root root 4096 Mar 10 17:17 new_id
+--w------- 1 root root    0 Mar 10 17:22 unbind
 
-Jan
--- 
+# echo "2-2:1.0" > /sys/bus/usb/drivers/usbhid/unbind
+bash: echo: write error: No such device
+
+Any thoughts?
+
+Regards,
+
+	Mariusz Kozlowski
