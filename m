@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932567AbXCJJVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbXCJJYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932567AbXCJJVl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 04:21:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933426AbXCJJVl
+	id S932627AbXCJJYQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 04:24:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933426AbXCJJYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 04:21:41 -0500
-Received: from mail.kroah.org ([69.55.234.183]:55262 "EHLO perch.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932567AbXCJJVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 04:21:39 -0500
-Date: Sat, 10 Mar 2007 01:18:20 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>, jkosina@suse.cz
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc3-mm1
-Message-ID: <20070310091820.GB30495@kroah.com>
-References: <20070307201839.6f45735b.akpm@linux-foundation.org> <200703100933.35743.m.kozlowski@tuxland.pl> <20070310005828.0ab608b1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070310005828.0ab608b1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 10 Mar 2007 04:24:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42400 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932627AbXCJJYN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 04:24:13 -0500
+Subject: Re: [PATCH] dvb-core: Fix several locking related problems.
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Johannes Stezenbach <js@linuxtv.org>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Oberritter <obi@linuxtv.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-dvb@linuxtv.org
+In-Reply-To: <20070310014959.GA4147@linuxtv.org>
+References: <45DCB3A3.3060705@simon.arlott.org.uk>
+	 <45E08886.50606@linuxtv.org> <45E08BFD.3080203@simon.arlott.org.uk>
+	 <45E9D923.7040707@simon.arlott.org.uk> <45EAE894.1010000@linuxtv.org>
+	 <45EB05D2.90608@simon.arlott.org.uk>  <20070310014959.GA4147@linuxtv.org>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 10 Mar 2007 07:23:57 -0200
+Message-Id: <1173518637.9092.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0-1mdv2007.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 10, 2007 at 12:58:28AM -0800, Andrew Morton wrote:
-> > On Sat, 10 Mar 2007 09:33:35 +0100 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> > Hello, 
+Em Sáb, 2007-03-10 às 02:49 +0100, Johannes Stezenbach escreveu:
+> On Sun, Mar 04, 2007 at 05:45:54PM +0000, Simon Arlott wrote:
+> > Fix several instances of dvb-core functions using mutex_lock_interruptible 
+> > and returning -ERESTARTSYS where the calling function will either never 
+> > retry or never check the return value.
 > > 
-> > > - The wireless changes in here need a lot of testers, please.  It is major
-> > >   rework.
+> > These cause a race condition with dvb_dmxdev_filter_free and 
+> > dvb_dvr_release, both of which are filesystem release functions whose 
+> > return value is ignored and will never be retried. When this happens it 
+> > becomes impossible to open dvr0 again (-EBUSY) since it has not been 
+> > released properly.
 > > 
-> > Works for me ... so far ;-) Anyway to the point:
-> > 
-> > When moving my laptop I reattached the usb mouse. Then I found this in syslog:
-> > 
-> > usb 2-1: new low speed USB device using uhci_hcd and address 3
-> > usb 2-1: new device found, idVendor=046d, idProduct=c00e
-> > usb 2-1: new device strings: Mfr=1, Product=2, SerialNumber=0
-> > usb 2-1: Product: USB-PS/2 Optical Mouse
-> > usb 2-1: Manufacturer: Logitech
-> > usb 2-1: configuration #1 chosen from 1 choice
-> > khubd: page allocation failure. order:5, mode:0xd0
-> >  [<c01045c4>] show_trace_log_lvl+0x1a/0x30
-> >  [<c0104d50>] show_trace+0x12/0x14
-> >  [<c0104e07>] dump_stack+0x16/0x18
-> >  [<c014acc6>] __alloc_pages+0x2e4/0x303
-> >  [<c01604df>] cache_alloc_refill+0x2e4/0x516
-> >  [<c01608e4>] kmem_cache_zalloc+0x78/0x7c
-> >  [<c0341343>] hid_parse_report+0xce/0x26b
-> >  [<c032d99b>] hid_probe+0x264/0xdba
-> >  [<c030feb9>] usb_probe_interface+0x5a/0x89
-> >  [<c02bf74f>] driver_probe_device+0x86/0x178
-> >  [<c02bf849>] __device_attach+0x8/0xa
-> >  [<c02beadc>] bus_for_each_drv+0x4a/0x68
-> >  [<c02bfb39>] device_attach+0x8b/0xd2
-> >  [<c02bea4e>] bus_attach_device+0x40/0x84
-> >  [<c02bd835>] device_add+0x5d0/0x6c8
-> >  [<c030e8bd>] usb_set_configuration+0x2d6/0x4c6
-> >  [<c03158ab>] generic_probe+0x15c/0x251
-> >  [<c030fb87>] usb_probe_device+0x36/0x3c
-> >  [<c02bf74f>] driver_probe_device+0x86/0x178
-> >  [<c02bf849>] __device_attach+0x8/0xa
-> >  [<c02beadc>] bus_for_each_drv+0x4a/0x68
-> >  [<c02bfb39>] device_attach+0x8b/0xd2
-> >  [<c02bea4e>] bus_attach_device+0x40/0x84
-> >  [<c02bd835>] device_add+0x5d0/0x6c8
-> >  [<c030a078>] usb_new_device+0x128/0x196
-> >  [<c030aedd>] hub_thread+0x28a/0xb4a
-> >  [<c0126c75>] kthread+0xa2/0xc9
-> >  [<c010422f>] kernel_thread_helper+0x7/0x18
-> >  =======================
+> > Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 > 
-> hid_parse_report() is doing kmalloc(128k kbytes).  We canot sanely support
-> that and the code shold be rewritten to not do that.  A simple though
-> somewhat lame fix would be to switch to vmalloc().
+> Acked-By: Johannes Stezenbach <js@linuxtv.org>
 > 
-> It's been this way for some time, so it's odd that the failures have just
-> popped up now.
+> I can't test this but to me it looks good.
+> Mauro, could you please pick it up and keep it in the
+> linuxtv.org repository for a while for testing?
 
-Jiri is the person to ask about this now.  Jiri, any thoughts about
-this?
+Done.
+Thanks, Johannes.
 
-thanks,
+-- 
+Cheers,
+Mauro
 
-greg k-h
