@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbXCJGVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbXCJGVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752221AbXCJGVS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 01:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbXCJGU2
+	id S1752780AbXCJGVR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 01:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbXCJGUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 01:20:28 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41314 "EHLO mx2.suse.de"
+	Sat, 10 Mar 2007 01:20:38 -0500
+Received: from mx1.suse.de ([195.135.220.2]:41077 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752689AbXCJGUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 01:20:21 -0500
-Date: Fri, 9 Mar 2007 22:18:42 -0800
+	id S1750909AbXCJGUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 01:20:09 -0500
+Date: Fri, 9 Mar 2007 22:18:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,17 +19,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Philipp Reisner <philipp.reisner@linbit.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 17/20] Fix callback bug in connector
-Message-ID: <20070310061842.GR31412@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 14/20] bcm43xx: Fix problem with >1 GB RAM
+Message-ID: <20070310061819.GO31412@kroah.com>
 References: <20070310061234.465093436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-callback-bug-in-connector.patch"
+Content-Disposition: inline; filename="bcm43xx-fix-problem-with-1-gb-ram.patch"
 In-Reply-To: <20070310061603.GA31412@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,75 +35,309 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Philipp Reisner <philipp.reisner@linbit.com>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-[CONNECTOR]: Bugfix for cn_call_callback()
+[PATCH] bcm43xx: Fix problem with >1 GB RAM
 
-When system under heavy stress and must allocate new work
-instead of reusing old one, new work must use correct
-completion callback.
+Some versions of the bcm43xx chips only support 30-bit DMA, which means
+that the descriptors and buffers must be in the first 1 GB of RAM. On
+the i386 and x86_64 architectures with more than 1 GB RAM, an incorrect
+assignment may occur. This patch ensures that the various DMA addresses
+are within the capability of the chip. Testing has been limited to x86_64
+as no one has an i386 system with more than 1 GB RAM.
 
-Patch is based on Philipp's and Lars' work.
-I only cleaned small stuff (and removed spaces instead of tabs).
-
-Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
-Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/connector/connector.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/net/wireless/bcm43xx/bcm43xx.h     |    1 
+ drivers/net/wireless/bcm43xx/bcm43xx_dma.c |  171 +++++++++++++++++++++--------
+ 2 files changed, 125 insertions(+), 47 deletions(-)
 
---- a/drivers/connector/connector.c
-+++ b/drivers/connector/connector.c
-@@ -128,7 +128,7 @@ EXPORT_SYMBOL_GPL(cn_netlink_send);
-  */
- static int cn_call_callback(struct cn_msg *msg, void (*destruct_data)(void *), void *data)
+--- a/drivers/net/wireless/bcm43xx/bcm43xx.h
++++ b/drivers/net/wireless/bcm43xx/bcm43xx.h
+@@ -766,6 +766,7 @@ struct bcm43xx_private {
+ 	 * This is currently always BCM43xx_BUSTYPE_PCI
+ 	 */
+ 	u8 bustype;
++	u64 dma_mask;
+ 
+ 	u16 board_vendor;
+ 	u16 board_type;
+--- a/drivers/net/wireless/bcm43xx/bcm43xx_dma.c
++++ b/drivers/net/wireless/bcm43xx/bcm43xx_dma.c
+@@ -145,16 +145,14 @@ dma_addr_t map_descbuffer(struct bcm43xx
+ 			  int tx)
  {
--	struct cn_callback_entry *__cbq;
-+	struct cn_callback_entry *__cbq, *__new_cbq;
- 	struct cn_dev *dev = &cdev;
- 	int err = -ENODEV;
+ 	dma_addr_t dmaaddr;
++	int direction = PCI_DMA_FROMDEVICE;
  
-@@ -148,27 +148,27 @@ static int cn_call_callback(struct cn_ms
- 			} else {
- 				struct cn_callback_data *d;
- 				
--				__cbq = kzalloc(sizeof(*__cbq), GFP_ATOMIC);
--				if (__cbq) {
--					d = &__cbq->data;
-+				err = -ENOMEM;
-+				__new_cbq = kzalloc(sizeof(struct cn_callback_entry), GFP_ATOMIC);
-+				if (__new_cbq) {
-+					d = &__new_cbq->data;
- 					d->callback_priv = msg;
- 					d->callback = __cbq->data.callback;
- 					d->ddata = data;
- 					d->destruct_data = destruct_data;
--					d->free = __cbq;
-+					d->free = __new_cbq;
- 
--					INIT_WORK(&__cbq->work,
-+					INIT_WORK(&__new_cbq->work,
- 							&cn_queue_wrapper);
--					
+-	if (tx) {
+-		dmaaddr = dma_map_single(&ring->bcm->pci_dev->dev,
+-					 buf, len,
+-					 DMA_TO_DEVICE);
+-	} else {
+-		dmaaddr = dma_map_single(&ring->bcm->pci_dev->dev,
++	if (tx)
++		direction = PCI_DMA_TODEVICE;
 +
- 					if (queue_work(dev->cbdev->cn_queue,
--						    &__cbq->work))
-+						    &__new_cbq->work))
- 						err = 0;
- 					else {
--						kfree(__cbq);
-+						kfree(__new_cbq);
- 						err = -EINVAL;
- 					}
--				} else
--					err = -ENOMEM;
-+				}
- 			}
- 			break;
- 		}
++	dmaaddr = pci_map_single(ring->bcm->pci_dev,
+ 					 buf, len,
+-					 DMA_FROM_DEVICE);
+-	}
++					 direction);
+ 
+ 	return dmaaddr;
+ }
+@@ -166,13 +164,13 @@ void unmap_descbuffer(struct bcm43xx_dma
+ 		      int tx)
+ {
+ 	if (tx) {
+-		dma_unmap_single(&ring->bcm->pci_dev->dev,
++		pci_unmap_single(ring->bcm->pci_dev,
+ 				 addr, len,
+-				 DMA_TO_DEVICE);
++				 PCI_DMA_TODEVICE);
+ 	} else {
+-		dma_unmap_single(&ring->bcm->pci_dev->dev,
++		pci_unmap_single(ring->bcm->pci_dev,
+ 				 addr, len,
+-				 DMA_FROM_DEVICE);
++				 PCI_DMA_FROMDEVICE);
+ 	}
+ }
+ 
+@@ -183,8 +181,8 @@ void sync_descbuffer_for_cpu(struct bcm4
+ {
+ 	assert(!ring->tx);
+ 
+-	dma_sync_single_for_cpu(&ring->bcm->pci_dev->dev,
+-				addr, len, DMA_FROM_DEVICE);
++	pci_dma_sync_single_for_cpu(ring->bcm->pci_dev,
++				    addr, len, PCI_DMA_FROMDEVICE);
+ }
+ 
+ static inline
+@@ -194,8 +192,8 @@ void sync_descbuffer_for_device(struct b
+ {
+ 	assert(!ring->tx);
+ 
+-	dma_sync_single_for_device(&ring->bcm->pci_dev->dev,
+-				   addr, len, DMA_FROM_DEVICE);
++	pci_dma_sync_single_for_cpu(ring->bcm->pci_dev,
++				    addr, len, PCI_DMA_TODEVICE);
+ }
+ 
+ /* Unmap and free a descriptor buffer. */
+@@ -214,17 +212,53 @@ void free_descriptor_buffer(struct bcm43
+ 
+ static int alloc_ringmemory(struct bcm43xx_dmaring *ring)
+ {
+-	struct device *dev = &(ring->bcm->pci_dev->dev);
+-
+-	ring->descbase = dma_alloc_coherent(dev, BCM43xx_DMA_RINGMEMSIZE,
+-					    &(ring->dmabase), GFP_KERNEL);
++	ring->descbase = pci_alloc_consistent(ring->bcm->pci_dev, BCM43xx_DMA_RINGMEMSIZE,
++					    &(ring->dmabase));
+ 	if (!ring->descbase) {
+-		printk(KERN_ERR PFX "DMA ringmemory allocation failed\n");
+-		return -ENOMEM;
++		/* Allocation may have failed due to pci_alloc_consistent
++		   insisting on use of GFP_DMA, which is more restrictive
++		   than necessary...  */
++		struct dma_desc *rx_ring;
++		dma_addr_t rx_ring_dma;
++
++		rx_ring = kzalloc(BCM43xx_DMA_RINGMEMSIZE, GFP_KERNEL);
++		if (!rx_ring)
++			goto out_err;
++
++		rx_ring_dma = pci_map_single(ring->bcm->pci_dev, rx_ring,
++					     BCM43xx_DMA_RINGMEMSIZE,
++					     PCI_DMA_BIDIRECTIONAL);
++
++		if (pci_dma_mapping_error(rx_ring_dma) ||
++		    rx_ring_dma + BCM43xx_DMA_RINGMEMSIZE > ring->bcm->dma_mask) {
++			/* Sigh... */
++			if (!pci_dma_mapping_error(rx_ring_dma))
++				pci_unmap_single(ring->bcm->pci_dev,
++						 rx_ring_dma, BCM43xx_DMA_RINGMEMSIZE,
++						 PCI_DMA_BIDIRECTIONAL);
++			rx_ring_dma = pci_map_single(ring->bcm->pci_dev,
++						 rx_ring, BCM43xx_DMA_RINGMEMSIZE,
++						 PCI_DMA_BIDIRECTIONAL);
++			if (pci_dma_mapping_error(rx_ring_dma) ||
++			    rx_ring_dma + BCM43xx_DMA_RINGMEMSIZE > ring->bcm->dma_mask) {
++				assert(0);
++				if (!pci_dma_mapping_error(rx_ring_dma))
++					pci_unmap_single(ring->bcm->pci_dev,
++							 rx_ring_dma, BCM43xx_DMA_RINGMEMSIZE,
++							 PCI_DMA_BIDIRECTIONAL);
++				goto out_err;
++			}
++                }
++
++                ring->descbase = rx_ring;
++                ring->dmabase = rx_ring_dma;
+ 	}
+ 	memset(ring->descbase, 0, BCM43xx_DMA_RINGMEMSIZE);
+ 
+ 	return 0;
++out_err:
++	printk(KERN_ERR PFX "DMA ringmemory allocation failed\n");
++	return -ENOMEM;
+ }
+ 
+ static void free_ringmemory(struct bcm43xx_dmaring *ring)
+@@ -407,6 +441,29 @@ static int setup_rx_descbuffer(struct bc
+ 	if (unlikely(!skb))
+ 		return -ENOMEM;
+ 	dmaaddr = map_descbuffer(ring, skb->data, ring->rx_buffersize, 0);
++	/* This hardware bug work-around adapted from the b44 driver.
++	   The chip may be unable to do PCI DMA to/from anything above 1GB */
++	if (pci_dma_mapping_error(dmaaddr) ||
++	    dmaaddr + ring->rx_buffersize > ring->bcm->dma_mask) {
++		/* This one has 30-bit addressing... */
++		if (!pci_dma_mapping_error(dmaaddr))
++			pci_unmap_single(ring->bcm->pci_dev,
++					 dmaaddr, ring->rx_buffersize,
++					 PCI_DMA_FROMDEVICE);
++		dev_kfree_skb_any(skb);
++		skb = __dev_alloc_skb(ring->rx_buffersize,GFP_DMA);
++		if (skb == NULL)
++			return -ENOMEM;
++		dmaaddr = pci_map_single(ring->bcm->pci_dev,
++					 skb->data, ring->rx_buffersize,
++					 PCI_DMA_FROMDEVICE);
++		if (pci_dma_mapping_error(dmaaddr) ||
++		    dmaaddr + ring->rx_buffersize > ring->bcm->dma_mask) {
++			assert(0);
++			dev_kfree_skb_any(skb);
++			return -ENOMEM;
++		}
++	}
+ 	meta->skb = skb;
+ 	meta->dmaaddr = dmaaddr;
+ 	skb->dev = ring->bcm->net_dev;
+@@ -636,8 +693,10 @@ struct bcm43xx_dmaring * bcm43xx_setup_d
+ 	err = dmacontroller_setup(ring);
+ 	if (err)
+ 		goto err_free_ringmemory;
++	return ring;
+ 
+ out:
++	printk(KERN_ERR PFX "Error in bcm43xx_setup_dmaring\n");
+ 	return ring;
+ 
+ err_free_ringmemory:
+@@ -705,30 +764,16 @@ int bcm43xx_dma_init(struct bcm43xx_priv
+ 	struct bcm43xx_dmaring *ring;
+ 	int err = -ENOMEM;
+ 	int dma64 = 0;
+-	u64 mask = bcm43xx_get_supported_dma_mask(bcm);
+-	int nobits;
+ 
+-	if (mask == DMA_64BIT_MASK) {
++	bcm->dma_mask = bcm43xx_get_supported_dma_mask(bcm);
++	if (bcm->dma_mask == DMA_64BIT_MASK)
+ 		dma64 = 1;
+-		nobits = 64;
+-	} else if (mask == DMA_32BIT_MASK)
+-		nobits = 32;
+-	else
+-		nobits = 30;
+-	err = pci_set_dma_mask(bcm->pci_dev, mask);
+-	err |= pci_set_consistent_dma_mask(bcm->pci_dev, mask);
+-	if (err) {
+-#ifdef CONFIG_BCM43XX_PIO
+-		printk(KERN_WARNING PFX "DMA not supported on this device."
+-					" Falling back to PIO.\n");
+-		bcm->__using_pio = 1;
+-		return -ENOSYS;
+-#else
+-		printk(KERN_ERR PFX "FATAL: DMA not supported and PIO not configured. "
+-				    "Please recompile the driver with PIO support.\n");
+-		return -ENODEV;
+-#endif /* CONFIG_BCM43XX_PIO */
+-	}
++	err = pci_set_dma_mask(bcm->pci_dev, bcm->dma_mask);
++	if (err)
++		goto no_dma;
++	err = pci_set_consistent_dma_mask(bcm->pci_dev, bcm->dma_mask);
++	if (err)
++		goto no_dma;
+ 
+ 	/* setup TX DMA channels. */
+ 	ring = bcm43xx_setup_dmaring(bcm, 0, 1, dma64);
+@@ -774,7 +819,9 @@ int bcm43xx_dma_init(struct bcm43xx_priv
+ 		dma->rx_ring3 = ring;
+ 	}
+ 
+-	dprintk(KERN_INFO PFX "%d-bit DMA initialized\n", nobits);
++	dprintk(KERN_INFO PFX "%d-bit DMA initialized\n",
++		(bcm->dma_mask == DMA_64BIT_MASK) ? 64 :
++		(bcm->dma_mask == DMA_32BIT_MASK) ? 32 : 30);
+ 	err = 0;
+ out:
+ 	return err;
+@@ -800,7 +847,17 @@ err_destroy_tx1:
+ err_destroy_tx0:
+ 	bcm43xx_destroy_dmaring(dma->tx_ring0);
+ 	dma->tx_ring0 = NULL;
+-	goto out;
++no_dma:
++#ifdef CONFIG_BCM43XX_PIO
++	printk(KERN_WARNING PFX "DMA not supported on this device."
++				" Falling back to PIO.\n");
++	bcm->__using_pio = 1;
++	return -ENOSYS;
++#else
++	printk(KERN_ERR PFX "FATAL: DMA not supported and PIO not configured. "
++			    "Please recompile the driver with PIO support.\n");
++	return -ENODEV;
++#endif /* CONFIG_BCM43XX_PIO */
+ }
+ 
+ /* Generate a cookie for the TX header. */
+@@ -905,6 +962,7 @@ static void dma_tx_fragment(struct bcm43
+ 	struct bcm43xx_dmadesc_generic *desc;
+ 	struct bcm43xx_dmadesc_meta *meta;
+ 	dma_addr_t dmaaddr;
++	struct sk_buff *bounce_skb;
+ 
+ 	assert(skb_shinfo(skb)->nr_frags == 0);
+ 
+@@ -924,9 +982,28 @@ static void dma_tx_fragment(struct bcm43
+ 			       skb->len - sizeof(struct bcm43xx_txhdr),
+ 			       (cur_frag == 0),
+ 			       generate_cookie(ring, slot));
++	dmaaddr = map_descbuffer(ring, skb->data, skb->len, 1);
++	if (dma_mapping_error(dmaaddr) || dmaaddr + skb->len > ring->bcm->dma_mask) {
++		/* chip cannot handle DMA to/from > 1GB, use bounce buffer (copied from b44 driver) */
++		if (!dma_mapping_error(dmaaddr))
++			unmap_descbuffer(ring, dmaaddr, skb->len, 1);
++		bounce_skb = __dev_alloc_skb(skb->len, GFP_ATOMIC|GFP_DMA);
++		if (!bounce_skb)
++			return;
++		dmaaddr = map_descbuffer(ring, bounce_skb->data, bounce_skb->len, 1);
++		if (dma_mapping_error(dmaaddr) || dmaaddr + skb->len > ring->bcm->dma_mask) {
++			if (!dma_mapping_error(dmaaddr))
++				unmap_descbuffer(ring, dmaaddr, skb->len, 1);
++			dev_kfree_skb_any(bounce_skb);
++			assert(0);
++			return;
++		}
++		memcpy(skb_put(bounce_skb, skb->len), skb->data, skb->len);
++		dev_kfree_skb_any(skb);
++		skb = bounce_skb;
++	}
+ 
+ 	meta->skb = skb;
+-	dmaaddr = map_descbuffer(ring, skb->data, skb->len, 1);
+ 	meta->dmaaddr = dmaaddr;
+ 
+ 	fill_descriptor(ring, desc, dmaaddr,
 
 -- 
