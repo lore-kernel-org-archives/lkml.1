@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767704AbXCJBC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbXCJBGC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767704AbXCJBC6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 20:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767706AbXCJBC5
+	id S1752776AbXCJBGC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 20:06:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767705AbXCJBGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 20:02:57 -0500
-Received: from mail20.syd.optusnet.com.au ([211.29.132.201]:49903 "EHLO
-	mail20.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767704AbXCJBC4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 20:02:56 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Date: Sat, 10 Mar 2007 12:02:25 +1100
-User-Agent: KMail/1.9.5
-Cc: Matt Mackall <mpm@selenic.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-References: <20070309053931.GA10459@waste.org> <20070309215716.GK943@1wt.eu> <200703100912.07792.kernel@kolivas.org>
-In-Reply-To: <200703100912.07792.kernel@kolivas.org>
+	Fri, 9 Mar 2007 20:06:01 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:50582 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752776AbXCJBGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 20:06:01 -0500
+Date: Sat, 10 Mar 2007 02:04:18 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
+In-Reply-To: <1173481052.32234.137.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.61.0703100156490.8799@yvahk01.tjqt.qr>
+References: <1173419792.32234.131.camel@localhost.localdomain>
+ <1173481052.32234.137.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703101202.25814.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 March 2007 09:12, Con Kolivas wrote:
-> On Saturday 10 March 2007 08:57, Willy Tarreau wrote:
-> > On Fri, Mar 09, 2007 at 03:39:59PM -0600, Matt Mackall wrote:
-> > > On Sat, Mar 10, 2007 at 08:19:18AM +1100, Con Kolivas wrote:
-> > > > On Saturday 10 March 2007 08:07, Con Kolivas wrote:
-> > > > > On Saturday 10 March 2007 07:46, Matt Mackall wrote:
 
-> > > 5x memload: good
-> > > 5x execload: good
-> > > 5x forkload: good
-> > > 5 parallel makes: mostly good
-> > > make -j 5: bad
-> > >
-> > > So what's different between makes in parallel and make -j 5? Make's
-> > > job server uses pipe I/O to control how many jobs are running.
-> >
-> > Matt, could you check with plain 2.6.20 + Con's patch ? It is possible
-> > that he added bugs when porting to -mm, or that someting in -mm causes
-> > the trouble. Your experience with -mm seems so much different from mine
-> > with mainline, there must be a difference somewhere !
+On Mar 10 2007 09:57, Rusty Russell wrote:
+>On Fri, 2007-03-09 at 16:56 +1100, Rusty Russell wrote:
+>> __builtin_types_compatible_p() has been around since gcc 2.95, and we
+>> don't use it anywhere.  This patch quietly fixes that.
 >
-> Good idea.
+>OK, many people complained that it needed a comment.  Good point!
+>==
+>Add comment to ARRAY_SIZE macro.
+>
+>Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>
+>diff -r 933e410f204f include/linux/kernel.h
+>--- a/include/linux/kernel.h	Sat Mar 10 09:55:31 2007 +1100
+>+++ b/include/linux/kernel.h	Sat Mar 10 09:55:53 2007 +1100
+>@@ -35,6 +35,7 @@ extern const char linux_proc_banner[];
+> #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+> #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
+> 
+>+/* GCC is awesome. */
+> #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])			      \
+> 	+ sizeof(typeof(int[1 - 2*!!__builtin_types_compatible_p(typeof(arr), \
+> 		 typeof(&arr[0]))]))*0)
 
-It's all very odd Matt. It really isn't behaving anything like you describe 
-for myself or others. It sounds more like a real bug than what the design 
-would do at all. The only things that are different on yours is Beryl and a 
-different graphics card. When you're comparing to mainline are you 
-comparing -mm1 to -mm2 to ensure something else from -mm isn't responsible? 
-Also have you tried rsdl on 2.6.20 as Willy suggested? I would really love to 
-get to the bottom of this as it really shouldn't behave that way under load 
-no matter how the load is dished out.
+Getting back at the macro, how would you like to have it merged?
 
-Thanks!
 
+
+Jan
 -- 
--ck
