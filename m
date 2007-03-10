@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbXCJW0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbXCJW1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932263AbXCJW0t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932275AbXCJW0t
+	id S932275AbXCJW1E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 17:27:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932283AbXCJW1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:26:49 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48019 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932263AbXCJW0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:26:48 -0500
-Date: Sat, 10 Mar 2007 23:26:40 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Johnson <ajohnson@intrinsyc.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Software Suspend: Fix suspend when console is in VT_AUTO/KD_GRAPHICS mode
-Message-ID: <20070310222639.GE2674@elf.ucw.cz>
-References: <1173394485.28589.17.camel@localhost.localdomain> <20070309090805.GA5822@atrey.karlin.mff.cuni.cz> <20070309153456.GA28664@srcf.ucam.org> <DBC923D919FAB345973A94E6E194E849043808E0@yvrmail01.itc.intrinsyc.com> <20070309211330.GC6374@ucw.cz> <1173477490.30345.9.camel@localhost.localdomain>
+	Sat, 10 Mar 2007 17:27:03 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:4672 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932275AbXCJW1A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 17:27:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=beW73Y4zHBzr/Gw/j4+3+7ESYbuIv5TYm6wivP5SlYQmNeN3KQHZ6PIed+ron7XF2/afmpF8Yh27TXv3oQo/3QVt9phFv3J6UPLLbE8IicA+DB+q/vXGFho7Q+Ra1uBw2kVvF6KquPodLlZX5tbepXzDoD8TpAWL9vTl16KNDqc=
+Message-ID: <b14e81f00703101426k1cc9d4ar465107fcb2a9bc8@mail.gmail.com>
+Date: Sat, 10 Mar 2007 17:26:58 -0500
+From: "michael chang" <thenewme91@gmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: [ck] Re: RSDL v0.28 for 2.6.20
+Cc: "Stephen Clark" <Stephen.Clark@seclark.us>, "ck list" <ck@vds.kolivas.org>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070310221150.GA6274@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1173477490.30345.9.camel@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+References: <200703101845.59497.kernel@kolivas.org>
+	 <45F2F45F.6000403@seclark.us> <20070310191118.GL943@1wt.eu>
+	 <b14e81f00703101356s248bd914m91c26e2d22e507d4@mail.gmail.com>
+	 <20070310221150.GA6274@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 3/10/07, Willy Tarreau <w@1wt.eu> wrote:
+> On Sat, Mar 10, 2007 at 04:56:57PM -0500, michael chang wrote:
+> > On 3/10/07, Willy Tarreau <w@1wt.eu> wrote:
+> > >BTW, Con, I think that you should base your work on 2.6.20.[23] and not
+> > >2.6.20 next time, due to this conflict. It will get wider adoption.
+>           ^^^^^^^^^^
+>
+> > Maybe I'm naive, but I find this hard to understand -- 2.6.20.2 didn't
+> > exist when Con published his patch. (Con published it ~12 hours before
+> > the release of 2.6.20.2, from what I can tell.) How can he base his
+> > work on something that didn't yet exist? (And it applied cleanly to
+> > 2.6.20.1, the latest when he published it.)
+>
+> You see the words I have underlined ? "next time". I know for sure he
+> published it before 2.6.20.2, but now that it is out, I suggested that
+> Con rebases his work on this version for new releases.
+>
 
-> > ...how does qpe know when to repaint the screen, anyway?
-> 
-> QPE doesn't need to repaint the screen after wake-up - the framebuffer
-> memory is retained so the PXA270 lcd controller simply displays what was
-> last on the screen when it is re-enabled.
+Oh. That's my mistake, then. That makes sense. To me, it sounded like
+you were implying he was supposed to base it on 2.6.20.2 in advance,
+for some reason. *sigh*
 
-That probably means QPE is broken on machines that do not preserve
-framebuffer over suspend :-(.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+~Mike
+ - Just the crazy copy cat.
