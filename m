@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbXCJWwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbXCJW4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932388AbXCJWwM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:52:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXCJWwM
+	id S932396AbXCJW4M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 17:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXCJW4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:52:12 -0500
-Received: from gw.goop.org ([64.81.55.164]:41008 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932388AbXCJWwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:52:10 -0500
-Message-ID: <45F33697.4000000@goop.org>
-Date: Sat, 10 Mar 2007 14:52:07 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 10 Mar 2007 17:56:12 -0500
+Received: from outmx010.isp.belgacom.be ([195.238.5.233]:34522 "EHLO
+	outmx010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932396AbXCJW4K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 17:56:10 -0500
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: linux-kernel@vger.kernel.org
+Subject: [RFC] Configuration generic drivers at runtime
+Date: Sat, 10 Mar 2007 23:57:17 +0100
+User-Agent: KMail/1.9.6
+X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>, Dan Hecht <dhecht@vmware.com>,
-       john stultz <johnstul@us.ibm.com>
-CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Use of absolute timeouts for oneshot timers
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703102357.17661.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been thinking a bit more about how useful an absolute timeout is
-for a oneshot timer in a virtual environment.
+Hi everybody,
 
-In principle, absolute times are generally preferable.  A relative
-timeout means "timeout in X ns from now", but the meaning of "now" is
-ambiguous, particularly if the vcpu can be preempted at any time, which
-means the determination of "now" can be arbitrarily deferred.
+I'm writing a Linux driver for USB Video Class (UVC) devices. Before 
+submitting it to the kernel, there are still a few rough corners I'd like to 
+polish. Comments would be appreciated for the following one.
 
-However, an absolute time is only meaningful if the kernel and
-hypervisor are operating off the same timebase (ie, no drift).  In
-general, the kernel's monotonic timer is going to start from 0ns when
-the virtual machine is booted, and the hypervisor's is going to start at
-0ns when the hypervisor is booted.  If they're operating off the same
-timebase, then in principle you can work out a constant offset between
-the two, and use that for converting a kernel absolute time into a
-hypervisor absolute time.
+The UVC spec defines a way for device vendors to provide extensions to the 
+standard through so-called extension units, identified by a GUID (Globally 
+Unique IDentifier). An extension unit can define any number of controls 
+(think of controls as simple parameters such as brightness, zoom, pan/tilt, 
+shutter speed, ...). Devices advertise in their USB descriptors the extension 
+units they support, along with the controls that are supported in each 
+extension unit.
 
-When booting under Xen, you'll get this if you're using both the xen
-clocksource and clockevent drivers.  However, it seems that during boot
-on a NO_HZ HIGHRES_TIMERS system, the kernel does not use the Xen
-clocksource until it switches to highres timer mode.  This means that
-during boot the kernel's monotonic clock is drifting with respect to the
-hypervisor, and all timeouts are unreliable.
+To access those extension units from user-space, the UVC driver will offer two 
+methods. One of them will map the controls defined by extension units to V4L2 
+controls. The question that arises is how to define and store those mappings.
 
-Initially I was just computing the kernel-hypervisor offset at boot
-time, but then I changed it to recompute it every time the timer mode
-changes.  However, this didn't really help, and I was still getting
-unpredictable timeouts during boot.  I've changed it to just compute the
-hypervisor absolute time directly using the delta each time the oneshot
-timer is set, which will definitely be reliable (if the kernel and
-hypervisor have drifting timebases then the meaning of Xns delta will be
-different, but at least thats a local error rather than a long-term
-cumulative error).
+And obvious solution would be to have an ever growing array in the driver, 
+storing control information for all possible extension units ever defined by 
+webcam vendors. While this is quite straightforward, it might not be the most 
+usable solution for device vendors who wouldn't want debug controls to be 
+included in the kernel by default, or who wouldn't want to submit new control 
+definitions for inclusion in the kernel (with the implied delay) every time a 
+new device comes out.
 
-My analysis might be wrong here (I suspect the Xen periodic timer may
-have unexpected behaviour), but the overall conclusion still stands:
-using an absolute timeout only works if the kernel and hypervisor have
-non-drifting timebases.  I think its too fragile for a clockevent
-implementation to assume that a particular clocksource is in use to get
-reliable results.
+Another solution would be to introduce a way to define controls and mappings 
+at runtime. Mappings would be stored in test-based user-space configuration 
+files, distributed by vendors. A small user-space utility would add them 
+through a few ioctls. This obviously raises some security concerns (regarding 
+which users will be allowed to add mappings, or how many of them they can 
+add).
 
-Or perhaps this is a property of the whole clock subsystem: that
-clockevents must be paired with clocksources.  But its not obvious to me
-that this enforced, or even acknowledged.
+I would like comments regarding the second solution. Is this something that is 
+likely to be accepted in the mainline kernel ? I don't know of any other 
+Linux driver implementing such kind of dynamic runtime configuration.
 
-(Of course, if the drift can be characterized, then you can compensate
-for it, but this seems too complex to be the right answer.  And drift
-compensation is numerically much simpler for small 32-bit deltas
-compared to 64-bit absolute times.)
+Best regards,
 
-    J
+Laurent Pinchart
