@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751193AbXCJTEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751468AbXCJTHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751193AbXCJTEz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 14:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbXCJTEz
+	id S1751468AbXCJTHS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 14:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXCJTHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 14:04:55 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:39006 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbXCJTEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 14:04:54 -0500
-Date: Sat, 10 Mar 2007 20:04:38 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-In-Reply-To: <20070310185029.GA20131@cvg>
-Message-ID: <Pine.LNX.4.61.0703102003500.23298@yvahk01.tjqt.qr>
-References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg>
- <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr> <20070310194617.2aef1006@localhost>
- <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr> <20070310175058.GA19878@cvg>
- <Pine.LNX.4.61.0703101906070.8799@yvahk01.tjqt.qr> <20070310185029.GA20131@cvg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Sat, 10 Mar 2007 14:07:18 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:53712 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236AbXCJTHQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 14:07:16 -0500
+Date: Sat, 10 Mar 2007 19:05:13 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: [SOUND] hda_intel: build fix
+Message-ID: <20070310190513.GA24435@linux-mips.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  CC [M]  sound/pci/hda/hda_intel.o
+sound/pci/hda/hda_intel.c:1508: error: position_fix_list causes a section type conflict
 
-On Mar 10 2007 21:50, Cyrill Gorcunov wrote:
->
->Actually, I always work with only .config file too... and the reason I
->wrote you is Vladimir's mail... so either menuconfig does not work as
->expected or users does not expect a such behaviour of menuconfig.
+Gcc like its __devinitdata readable not const, it seems.  An alternative
+fix would be to remove the __devinitdata attribute but that would result
+in slight runtime bloat.
 
-The latter. Though this behavior has been there since... I think since
-menuconfig came into existence. It goes way back to 2.4 and 2.2.
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-
-Jan
--- 
+diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
+index b9a8e23..63b6854 100644
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -1505,7 +1505,7 @@ static int azx_dev_free(struct snd_device *device)
+ /*
+  * white/black-listing for position_fix
+  */
+-static const struct snd_pci_quirk position_fix_list[] __devinitdata = {
++static struct snd_pci_quirk position_fix_list[] __devinitdata = {
+ 	SND_PCI_QUIRK(0x1028, 0x01cc, "Dell D820", POS_FIX_NONE),
+ 	{}
+ };
