@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbXCJUop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXCJVGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932265AbXCJUop (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 15:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270AbXCJUop
+	id S932255AbXCJVGS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 16:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932256AbXCJVGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 15:44:45 -0500
-Received: from waste.org ([66.93.16.53]:51717 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932241AbXCJUon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 15:44:43 -0500
-Date: Sat, 10 Mar 2007 14:31:57 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: netconsole system freeze when cable unplugged
-Message-ID: <20070310203157.GB10459@waste.org>
-References: <45F1B6FD.1060902@simon.arlott.org.uk> <20070309204243.GA28441@electric-eye.fr.zoreil.com>
+	Sat, 10 Mar 2007 16:06:18 -0500
+Received: from sccrmhc13.comcast.net ([63.240.77.83]:54426 "EHLO
+	sccrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932255AbXCJVGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 16:06:17 -0500
+Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
+From: Nicholas Miell <nmiell@comcast.net>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com>
+	 <1173508384.3108.1.camel@entropy>
+	 <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
+	 <1173509019.3108.4.camel@entropy>
+	 <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
+	 <1173510568.3108.17.camel@entropy>
+	 <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
+	 <1173556374.2958.12.camel@entropy>
+	 <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
+Content-Type: text/plain
+Date: Sat, 10 Mar 2007 13:01:13 -0800
+Message-Id: <1173560473.2958.23.camel@entropy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070309204243.GA28441@electric-eye.fr.zoreil.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 (2.8.3-1.0.njm.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 09:42:43PM +0100, Francois Romieu wrote:
-> Simon Arlott <simon@fire.lp0.eu> :
-> > When I unplug the cable the system just stops responding to anything, 
-> > at all. No message is printed to the console when the cable is plugged 
-> > back in.
+On Sat, 2007-03-10 at 12:41 -0800, Davide Libenzi wrote:
+> On Sat, 10 Mar 2007, Nicholas Miell wrote:
 > 
-> rtl8139_interrupt (spin_lock(&tp->lock))
-> -> rtl8139_weird_interrupt
->    -> rtl_check_media
->       -> mii_check_media (printk(KERN_INFO "%s: link down\n", ...))
->          [netpoll stuff here]
->          -> rtl8139_poll_controller
->             -> rtl8139_interrupt
->                *deadlock*
+> > Try reading the timer_create man page.
+> > 
+> > In short, you're limited to a single clock, so you can't set timers
+> > based on wall-clock time (subject to NTP correction), monotomic time
+> > (not subject to NTP, will not ever go backwards or skip ticks), the
+> > high-res versions of the previous two clocks, per-thread or per-process
+> > CPU usage time, or any other clocks that may get introduced in the
+> > future.
+> 
+> One timer per fd yes. So?
 
-Probably the best thing that can be done here aside from moving
-mii_check_media outside interrupt handling is to add
-netpoll_plug/unplug(dev) methods that push work off to netpoll's queue
-for drivers that have a netpoll recursion problem.
+I never complained about one timer per fd (although, now that you
+mention it, that would get a bit excessive if you have thousands of
+outstanding timers).
+
+> The real-time and monotonic selection can be added. 
+
+IOW, the timerfd patch is not suitable for inclusion as-is. (While
+you're at it, you should probably add a flags argument for future
+expansion.)
+
+> If you look at the posix timers code, that's a bunch of code over the real 
+> meat of it, that is hrtimer.c. The timerfd interface goes straight to 
+> that, without adding yet another meaning to the sigevent structure,
+
+That's what the sigevent structure is for -- to describe how events
+should be signaled to userspace, whether by signal delivery, thread
+creation, or queuing to event completion ports. If if you think
+extending it would be bad, I can show you the line in POSIX where it
+encourages the contrary.
+
+>  and 
+> yet another case inside the posix timers trigger functions. That will be 
+> as unstandard as timerfd is, and even more, since you cannot use that 
+> interface and hope to be portable in any case.
+
+If Linux were to do a wholesale theft of the Solaris interface (warts
+and all), you'd be portable (and, now that I think of it, more
+efficient).
+
+Two major unixes using the same interface would probably make it a
+shoe-in for the next POSIX, too. (c.f. openat(2) and friends)
+
+> On top of that, handing over files to the posix timers will creates 
+> problems with references kept around.
+> The timerfd code is just a *really* thin layer (if you exclude the 
+> includes, the structure definitions and the fd setup code, there's 
+> basically *nothing*) over hrtimer.c and does not mess up with other kernel 
+> code in any way, and offers the same functionalities. I'd like to keep it 
+> that way.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Nicholas Miell <nmiell@comcast.net>
+
