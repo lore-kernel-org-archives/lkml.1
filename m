@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbXCJCUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993158AbXCJCaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbXCJCUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 21:20:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbXCJCUo
+	id S2993158AbXCJCaU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 21:30:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993159AbXCJCaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 21:20:44 -0500
-Received: from mail20.syd.optusnet.com.au ([211.29.132.201]:37127 "EHLO
-	mail20.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752777AbXCJCUn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 21:20:43 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Date: Sat, 10 Mar 2007 13:20:22 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-References: <20070309053931.GA10459@waste.org> <200703101228.38923.kernel@kolivas.org> <20070310014230.GP10394@waste.org>
-In-Reply-To: <20070310014230.GP10394@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 9 Mar 2007 21:30:19 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:57535 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993158AbXCJCaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Mar 2007 21:30:18 -0500
+Date: Fri, 9 Mar 2007 18:30:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kees Cook <kees@outflux.net>
+Cc: arjan@linux.intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: maps protection
+Message-Id: <20070309183006.7ff23eff.akpm@linux-foundation.org>
+In-Reply-To: <20070308205525.GJ6805@outflux.net>
+References: <20070307012234.GN9621@outflux.net>
+	<20070306175609.267bd7a9.akpm@linux-foundation.org>
+	<20070307021335.GR9621@outflux.net>
+	<20070306185942.585e7cd1.akpm@linux-foundation.org>
+	<20070307031429.GU9621@outflux.net>
+	<1173241331.3236.10.camel@laptopd505.fenrus.org>
+	<20070308205525.GJ6805@outflux.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703101320.23125.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 March 2007 12:42, Matt Mackall wrote:
-> On Sat, Mar 10, 2007 at 12:28:38PM +1100, Con Kolivas wrote:
-> > On Saturday 10 March 2007 11:49, Matt Mackall wrote:
-> > > On Sat, Mar 10, 2007 at 11:34:26AM +1100, Con Kolivas wrote:
-> > > > Ok, so some of the basics then. Can you please give me the output of
-> > > > 'top -b' running for a few seconds during the whole affair?
-> > >
-> > > Here you go:
-> > >
-> > > http://selenic.com/baseline
-> > > http://selenic.com/underload
-> > >
-> > > This is with 2.6.20+rsdl+tickfix at HZ=250.
-> > >
-> > > Something I haven't mentioned about my setup is that I'm using ccache.
-> > > And it turns out disabling ccache makes a large difference. Going to
-> > > switch back to a NO_HZ kernel and see what that looks like.
-> >
-> > Your X is reniced to -10 so.... try again with X nice 0 please.
->
-> Doh, can't believe I didn't notice that. That's apparently a default
-> in Debian/unstable (not sure where to tweak it).
+> On Thu, 8 Mar 2007 12:55:25 -0800 Kees Cook <kees@outflux.net> wrote:
+> On Tue, Mar 06, 2007 at 08:22:11PM -0800, Arjan van de Ven wrote:
+> > > [Adding Cc:lkml]
+> > 
+> > > How about using a reduced check, as is done for fd and environ?  This 
+> > > would allow root-running system monitors to still do their job.  
+> > > Effectively, this changes the test from "is ptracing" to just "can 
+> > > ptrace".
+> > > 
+> > > If this still isn't considered safe, I'll add the maps_protect file...
+> > 
+> > btw I consider it an information leak that any user can see which
+> > files/libraries any other user and root has mmap'd. (and with glibc's
+> > stdio mmap feature that goes even beyond direct mmap to fopen()'d).
+> > 
+> > If root or some other user wants to watch
+> > hillary-vs-obama-in-the-mud.avi, no other user has ANY business even
+> > seeing that. So at minimum it's a privacy issue showing the filenames...
+> 
+> So, what's the state of this?  Is the reduced "allowed to ptrace" check 
+> good enough for inclusion?  What is needed for some form of this patch 
+> to be included?  I'm happy to try new approaches if I can get some 
+> further input.
 
-See other email from Kyle on how to dpkg reconfigure. I submitted a bug report 
-to debian years ago about this and I presume it was fixed but you've probably 
-slowly dist upgraded from an older version and it stayed in your config?
+I just don't know what it will break - we're changing things so that user A
+cannot monitor user B's memory maps.  I feel that it's sure to break
+various people's fancy custom system activity monitoring/logging setups,
+and the sort of users who will be affected are, alas, the sort of people
+who won't run a kernel with this change in it for another couple of years
+yet.
 
-> Reniced: 
->
->              without ccache    with ccache
-> make -j 5
->  beryl       good              ok
->  galeon      ok/good           ok
->  mp3         good              good
->  terminal    good              ok
->  mouse       good              ok
+> Another suggestion was to make this an ELF header toggle, and I'm 
+> generally against that idea.  If a toggle is needed, I'd rather it be a 
+> system-wide one.
 
-Progress at last! And without any patches! Well those look very reasonable to 
-me. Especially since -j5 is a worst case scenario.
+A global /proc knob probably isn't too bad.
 
-> We're still left with a big unexplained ccache differential,
+Do we actually need to disable the whole interface?  If all you're
+concerned about is the pathname then perhaps the knob could cause that
+pathname to be replaced with "<hidden>".  That'll cause things to
+break less seriously and still allows somewhat useful info to be gathered.
 
-But would you say it's still _adequate_ with ccache considering you only have 
-1/6th cpu left for X? With and without ccache it's quite a different workload 
-so they will behave differently.
-
-> and a big 
-> NO_HZ vs HZ=250 differential.
-
-That part I don't know about. You've only tested the difference with X running 
-nice -10. I need to look further at the mechanism for -nice tasks. It should 
-be possible to run smoothly even with a -niced X (although that was never my 
-intent) so perhaps that's not working properly. I'll look into that.
-
-Thanks!
-
--- 
--ck
