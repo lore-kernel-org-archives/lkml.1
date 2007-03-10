@@ -1,76 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766661AbXCJLw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766903AbXCJMQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766661AbXCJLw7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 06:52:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766916AbXCJLw7
+	id S1766903AbXCJMQG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 07:16:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766916AbXCJMQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 06:52:59 -0500
-Received: from 1wt.eu ([62.212.114.60]:1102 "EHLO 1wt.eu"
+	Sat, 10 Mar 2007 07:16:06 -0500
+Received: from lucidpixels.com ([75.144.35.66]:39980 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766661AbXCJLw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 06:52:58 -0500
-Date: Sat, 10 Mar 2007 12:48:26 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@linux-foundation.org, rkuhn@e18.physik.tu-muenchen.de,
-       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp_cubic: use 32 bit math
-Message-ID: <20070310114826.GB1608@1wt.eu>
-References: <20070307170731.2b4397e3@freekitty> <20070307.185539.48527371.davem@davemloft.net> <45EF7EB7.8040806@linux-foundation.org> <20070307.195135.74749102.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307.195135.74749102.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+	id S1766903AbXCJMQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 07:16:04 -0500
+Date: Sat, 10 Mar 2007 07:16:03 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+cc: debian-user@lists.debian.org, bytes@linuxgazette.net
+Subject: Intel Core Duo/Solo Temperature Monitoring Working On Intel DG965
+ Motherboard
+Message-ID: <Pine.LNX.4.64.0703100707320.3807@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-583885355-1173528963=:3807"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 07:51:35PM -0800, David Miller wrote:
-> From: Stephen Hemminger <shemminger@linux-foundation.org>
-> Date: Wed, 07 Mar 2007 19:10:47 -0800
-> 
-> > David Miller wrote:
-> > > What about Willy Tarreau's supposedly even faster variant?
-> > > Or does this incorporate that set of improvements?
-> > >   
-> > That's what this is:
-> >     x = (2 * x + (uint32_t)div64_64(a, (uint64_t)x*(uint64_t)x)) / 3;
-> 
-> Great, thanks for the clarification.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Oh BTW, I have a newer version with a first approximation of the
-cbrt() before the div64_64, which allows us to reduce from 3 div64
-to only 2 div64. This results in a version which is twice as fast
-as the initial one (ncubic), but with slightly less accuracy (0.286%
-compared to 0.247). But I see that other functions such as hcbrt()
-had a 1.5% avg error, so I think this is not dramatic.
+---1463747160-583885355-1173528963=:3807
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Also, I managed to remove all other divides, to be kind with CPUs
-having a slow divide instruction or no divide at all. Since we compute
-on limited range (22 bits), we can multiply then shift right. It shows
-me even slightly better time on pentium-m and athlon, with a slightly
-higher avg error (0.297% compared to 0.286%), and slightly smaller
-code.
+DISCLAIMER: This patch is still experimental.=20
+AUTHOR: Rudolf Marek has written the coretemp module for Intel Core Duo/Sol=
+o
+processors.
 
-I just have to clean experiments from my code to provide a patch.
-David, Stephen, are you interested ?
+Without this patch, you cannot monitor your CPU temperature, at least not=
+=20
+on a DG965 motherboard.
 
-$ ./bictcp
-fls(0)=0, fls(1)=1, fls(256)=9
-Calibrating
-Function     clocks  mean(us) max(us)  std(us)  Avg error
-bictcp          936     0.61    24.28     1.99 0.172%
-ocubic          886     0.57    23.51     3.18 0.274%
-ncubic          644     0.42    16.59     2.18 0.247%
-ncubic32        444     0.29    11.47     1.50 0.247%
-ncubic32_1      444     0.29    11.56     1.88 0.238%
-ncubic32b3      337     0.22     8.67     0.88 0.286%
-ncubic_ndiv3    329     0.21     8.46     0.69 0.297%
-acbrt           707     0.46    18.05     0.80 0.275%
-hcbrt           644     0.42    16.44     0.51 1.580%
+From=20the readme (second patch):
+
++Kernel driver coretemp
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++Supported chips:
++  * All Intel Core family
++    Prefix: 'coretemp'
++    Addresses scanned: CPUID (family 0x6, models 0xe, 0xf)
++    Datasheet: Intel 64 and IA-32 Architectures Software Developer's Manua=
+l
++               Volume 3A: System Programming Guide
++
++Author: Rudolf Marek
++Contact: Rudolf Marek <edited_out>
+
++Description
++-----------
++
++This driver permits reading temperature sensor embedded inside Intel Core =
+CPU.
++Temperature is measured in degrees Celsius and measurement resolution is
++1 degree C. Valid temperatures are from 0 to TjMax degrees C, because
++the actual temperature is in fact a delta from TjMax.
++
++Temperature known as TjMax is the maximum junction temperature of processo=
+r.
++Intel defines this temperature as 85C or 100C. At this temperature, protec=
+tion
++mechanism will perform actions to forcibly cool down the processor. Alarm
++may be raised, if the temperature grows enough (more than TjMax) to trigge=
+r
++the Out-Of-Spec bit. Following table summarizes the exported sysfs files:
++
++temp1_input     - Core temperature (in milidegrees of Celsius).
++temp1_crit      - Maximum junction temperature  (in milidegrees of Celsius=
+).
++temp1_crit_alarm - Set when Out-of-spec bit is set, never clears.
++                  Correct CPU operation is no longer guaranteed.
++temp1_label     - Contains string with the "Core X", where X is processor
++                  number.
++
++The TjMax temperature is set to 85C if undocumented model specific registe=
+r
++(UMSR) 0xee has bit 30 set. If not the TjMax is 100C as documented in proc=
+essor
++datasheet. Intel will not disclose this information to individuals.
+
+How to get it working:
+---------------------------------------------------------------------------=
+-
+Per: http://www.lm-sensors.org/wiki/Devices
+
+Scroll down to:
+Intel  =09 Core/Core2 =09 yes =09 coretemp =09 =09 =09 Integrated
+sensor in CPU, patch is here.
+
+Here is the post:
+http://lists.lm-sensors.org/pipermail/lm-sensors/2007-January/018676.html
+
+Patch1:=20
+http://lists.lm-sensors.org/pipermail/lm-sensors/attachments/20070114/e6669=
+82f/attachment-0002.bin
+
+Patch2:=20
+http://lists.lm-sensors.org/pipermail/lm-sensors/attachments/20070114/e6669=
+82f/attachment-0003.bin
+
+Applies clean under 2.6.20.2:
+p34:/usr/src/linux-2.6.20.2# patch -p1 < /home/user/attachment-0002.bin
+patching file drivers/hwmon/coretemp.c
+patching file drivers/hwmon/Kconfig
+patching file drivers/hwmon/Makefile
+p34:/usr/src/linux-2.6.20.2# patch -p1 < /home/user/attachment-0003.bin
+patching file Documentation/hwmon/coretemp
+p34:/usr/src/linux-2.6.20.2#
+
+In the Kernel I selected the following two options under:
+-> Hardware Monitoring support
+    <M> Hardware Monitoring support
+    <M> Intel Core (2) Duo/Solo temperature sensor
+
+Then recompile/reboot/etc.
+
+You will need:
+http://dl.lm-sensors.org/lm-sensors/releases/lm_sensors-2.10.2.tar.gz
+
+1. You will need to remove or overwrite your old libsensors3 if you have it
+installed.
+2. You need to make sure you have libsysfs-dev and flex installed to compil=
+e
+the latest lm_sensors.
+
+Once everything is compiled, load the modules and run sensors:
+
+p34:~# modprobe coretemp
+p34:~# lsmod
+Module                  Size  Used by
+coretemp                5120  0
+hwmon                   2372  1 coretemp
+p34:~#
+
+root@p34:~/lm_sensors-2.10.2/prog/sensors# ./sensors=20
+coretemp-isa-0000
+Adapter: ISA adapter
+temp1:       +40=B0C  (high =3D   +85=B0C) (Core 1/2)
+
+coretemp-isa-0001
+Adapter: ISA adapter
+temp1:       +39=B0C  (high =3D   +85=B0C) (Core 2/2)
+
+Run 10 bzip2s to test to make sure its working correctly.
+
+root@p34:~/lm_sensors-2.10.2/lib$ ps auxww | grep -v grep | grep -c bzip2
+10
+root@p34:~/lm_sensors-2.10.2/lib$
+
+Watch temps:
+
+root@p34:~/lm_sensors-2.10.2/prog/sensors# ./sensors=20
+Adapter: ISA adapter
+temp1:       +54=B0C  (high =3D   +85=B0C)
+temp1:       +53=B0C  (high =3D   +85=B0C)
+
+( .. a few minutes later .. )
+
+temp1:       +57=B0C  (high =3D   +85=B0C)=20
+temp1:       +55=B0C  (high =3D   +85=B0C)
+
+( .. a few minutes later .. )
+
+temp1:       +58=B0C  (high =3D   +85=B0C)=20
+temp1:       +57=B0C  (high =3D   +85=B0C)
+
+( .. a few minutes later .. )
+
+temp1:       +60=B0C  (high =3D   +85=B0C)=20
+temp1:       +58=B0C  (high =3D   +85=B0C)
+
+( .. a few minutes later .. )
+
+temp1:       +62=B0C  (high =3D   +85=B0C)=20
+temp1:       +60=B0C  (high =3D   +85=B0C)
+
+root@p34:~/lm_sensors-2.10.2/lib$ killall -9 bzip2
+
+temp1:       +52=B0C  (high =3D   +85=B0C)=20
+temp1:       +51=B0C  (high =3D   +85=B0C)
+
+( .. a few minutes later .. )
+
+temp1:       +48=B0C  (high =3D   +85=B0C)=20
+temp1:       +48=B0C  (high =3D   +85=B0C)
+
+Setup:
+
+p34:~# sensors=20
+coretemp-isa-0000
+Adapter: ISA adapter
+temp1:       +41=B0C  (high =3D   +85=B0C)
+
+coretemp-isa-0001
+Adapter: ISA adapter
+temp1:       +39=B0C  (high =3D   +85=B0C)
+
+p34:~#
+
+Commentary:
+It will probably be a few weeks until this is incorporated into Linus'=20
+tree, hopefully it can make it into 2.6.22, then userland support should=20
+follow over time.
+
+p34:~# mbmon
+No Hardware Monitor found!!
+InitMBInfo: Success
+p34:~#
+
+Justin.
 
 
-Regards,
-Willy
-
+---1463747160-583885355-1173528963=:3807--
