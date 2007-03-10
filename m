@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbXCJGVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbXCJGVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbXCJGVQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 01:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXCJGUl
+	id S1752221AbXCJGVS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 01:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbXCJGU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 01:20:41 -0500
-Received: from ns1.suse.de ([195.135.220.2]:41058 "EHLO mx1.suse.de"
+	Sat, 10 Mar 2007 01:20:28 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:41314 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbXCJGTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 01:19:48 -0500
-Date: Fri, 9 Mar 2007 22:18:10 -0800
+	id S1752689AbXCJGUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 01:20:21 -0500
+Date: Fri, 9 Mar 2007 22:18:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,14 +19,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, James.Bottomley@SteelEye.com,
-       Douglas Gilbert <dougg@torque.net>
-Subject: [patch 13/20] Fix bug 7994 sleeping function called from invalid context
-Message-ID: <20070310061810.GN31412@kroah.com>
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 17/20] Fix callback bug in connector
+Message-ID: <20070310061842.GR31412@kroah.com>
 References: <20070310061234.465093436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-bug-7994-sleeping-function-called-from-invalid-context.patch"
+Content-Disposition: inline; filename="fix-callback-bug-in-connector.patch"
 In-Reply-To: <20070310061603.GA31412@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,62 +38,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Douglas Gilbert <dougg@torque.net>
+From: Philipp Reisner <philipp.reisner@linbit.com>
 
-  - addresses the reported bug (with GFP_KERNEL -> GFP_ATOMIC)
-  - improves error checking, and
-  - is a subset of the changes to scsi_debug in lk 2.6.21-rc*
+[CONNECTOR]: Bugfix for cn_call_callback()
 
-Compiled and lightly tested (in lk 2.6.21-rc2 environment).
+When system under heavy stress and must allocate new work
+instead of reusing old one, new work must use correct
+completion callback.
 
-Signed-off-by: Douglas Gilbert <dougg@torque.net>
+Patch is based on Philipp's and Lars' work.
+I only cleaned small stuff (and removed spaces instead of tabs).
+
+Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
+Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/scsi_debug.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/connector/connector.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
---- a/drivers/scsi/scsi_debug.c
-+++ b/drivers/scsi/scsi_debug.c
-@@ -954,7 +954,9 @@ static int resp_inquiry(struct scsi_cmnd
- 	int alloc_len, n, ret;
+--- a/drivers/connector/connector.c
++++ b/drivers/connector/connector.c
+@@ -128,7 +128,7 @@ EXPORT_SYMBOL_GPL(cn_netlink_send);
+  */
+ static int cn_call_callback(struct cn_msg *msg, void (*destruct_data)(void *), void *data)
+ {
+-	struct cn_callback_entry *__cbq;
++	struct cn_callback_entry *__cbq, *__new_cbq;
+ 	struct cn_dev *dev = &cdev;
+ 	int err = -ENODEV;
  
- 	alloc_len = (cmd[3] << 8) + cmd[4];
--	arr = kzalloc(SDEBUG_MAX_INQ_ARR_SZ, GFP_KERNEL);
-+	arr = kzalloc(SDEBUG_MAX_INQ_ARR_SZ, GFP_ATOMIC);
-+	if (! arr)
-+		return DID_REQUEUE << 16;
- 	if (devip->wlun)
- 		pq_pdt = 0x1e;	/* present, wlun */
- 	else if (scsi_debug_no_lun_0 && (0 == devip->lun))
-@@ -1217,7 +1219,9 @@ static int resp_report_tgtpgs(struct scs
- 	alen = ((cmd[6] << 24) + (cmd[7] << 16) + (cmd[8] << 8)
- 		+ cmd[9]);
+@@ -148,27 +148,27 @@ static int cn_call_callback(struct cn_ms
+ 			} else {
+ 				struct cn_callback_data *d;
+ 				
+-				__cbq = kzalloc(sizeof(*__cbq), GFP_ATOMIC);
+-				if (__cbq) {
+-					d = &__cbq->data;
++				err = -ENOMEM;
++				__new_cbq = kzalloc(sizeof(struct cn_callback_entry), GFP_ATOMIC);
++				if (__new_cbq) {
++					d = &__new_cbq->data;
+ 					d->callback_priv = msg;
+ 					d->callback = __cbq->data.callback;
+ 					d->ddata = data;
+ 					d->destruct_data = destruct_data;
+-					d->free = __cbq;
++					d->free = __new_cbq;
  
--	arr = kzalloc(SDEBUG_MAX_TGTPGS_ARR_SZ, GFP_KERNEL);
-+	arr = kzalloc(SDEBUG_MAX_TGTPGS_ARR_SZ, GFP_ATOMIC);
-+	if (! arr)
-+		return DID_REQUEUE << 16;
- 	/*
- 	 * EVPD page 0x88 states we have two ports, one
- 	 * real and a fake port with no device connected.
-@@ -1996,6 +2000,8 @@ static int scsi_debug_slave_configure(st
- 	if (sdp->host->max_cmd_len != SCSI_DEBUG_MAX_CMD_LEN)
- 		sdp->host->max_cmd_len = SCSI_DEBUG_MAX_CMD_LEN;
- 	devip = devInfoReg(sdp);
-+	if (NULL == devip)
-+		return 1;       /* no resources, will be marked offline */
- 	sdp->hostdata = devip;
- 	if (sdp->host->cmd_per_lun)
- 		scsi_adjust_queue_depth(sdp, SDEBUG_TAGGED_QUEUING,
-@@ -2044,7 +2050,7 @@ static struct sdebug_dev_info * devInfoR
+-					INIT_WORK(&__cbq->work,
++					INIT_WORK(&__new_cbq->work,
+ 							&cn_queue_wrapper);
+-					
++
+ 					if (queue_work(dev->cbdev->cn_queue,
+-						    &__cbq->work))
++						    &__new_cbq->work))
+ 						err = 0;
+ 					else {
+-						kfree(__cbq);
++						kfree(__new_cbq);
+ 						err = -EINVAL;
+ 					}
+-				} else
+-					err = -ENOMEM;
++				}
+ 			}
+ 			break;
  		}
- 	}
- 	if (NULL == open_devip) { /* try and make a new one */
--		open_devip = kzalloc(sizeof(*open_devip),GFP_KERNEL);
-+		open_devip = kzalloc(sizeof(*open_devip),GFP_ATOMIC);
- 		if (NULL == open_devip) {
- 			printk(KERN_ERR "%s: out of memory at line %d\n",
- 				__FUNCTION__, __LINE__);
 
 -- 
