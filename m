@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933504AbXCJHBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933506AbXCJHMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933504AbXCJHBY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 02:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933496AbXCJHBY
+	id S933506AbXCJHMK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 02:12:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933507AbXCJHMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 02:01:24 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:49513 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933502AbXCJHBW (ORCPT
+	Sat, 10 Mar 2007 02:12:09 -0500
+Received: from gateway.insightbb.com ([74.128.0.19]:24324 "EHLO
+	asav04.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933506AbXCJHMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 02:01:22 -0500
-Message-ID: <45F257C1.4070904@vmware.com>
-Date: Fri, 09 Mar 2007 23:01:21 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Sat, 10 Mar 2007 02:12:08 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlwPANLo8UVKhRO4UGdsb2JhbACCBIVNh18BASo
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] Use attribute groups in struct device_type
+Date: Sat, 10 Mar 2007 02:12:04 -0500
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <200703100137.35203.dtor@insightbb.com> <20070310065443.GA20302@suse.de> <20070310065556.GB20302@suse.de>
+In-Reply-To: <20070310065556.GB20302@suse.de>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: PATCH: Fix VMI and COMPAT_VDSO for 2.6.21
-References: <45F2578E.3060907@vmware.com>
-In-Reply-To: <45F2578E.3060907@vmware.com>
-Content-Type: multipart/mixed;
- boundary="------------090606070209090205050408"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703100212.05770.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090606070209090205050408
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Saturday 10 March 2007 01:55, Greg KH wrote:
+> On Fri, Mar 09, 2007 at 10:54:43PM -0800, Greg KH wrote:
+> > On Sat, Mar 10, 2007 at 01:37:34AM -0500, Dmitry Torokhov wrote:
+> > > Greg,
+> > > 
+> > > Please consider applying the patch below. It switches struct device_type
+> > > to using attribute groups which os more flexible. I am using it in my
+> > > input class_device -> device conversion (which is 99% done btw).
+> > 
+> > Argh, I never sent you my version of that, did I?  Very sorry about
+> > that, I was working on fixing up the device namespace issue first, which
+> > isn't done yet :(
+> > 
+> > Anyway, my patch that did that is below, feel free to use it or not if
+> > you want.
+> > 
+> > > I looked through -mm and the latest git and there does not seem to be
+> > > any users of struct device_type yet...
+> > 
+> > Yes, the input patch below uses it and I have a block-device patch from
+> > Kay in my tree that Andrew doesn't pull from (as it's usually really
+> > messed up and I know to hide this kind of breakage from him...)
+> 
+> Oops, that patch didn't use it, this follow-on patch from Kay uses them.
+> 
 
-Zachary Amsden wrote:
-> VMI is broken under COMPAT_VDSO, as Xen and other non hardware 
-> assisted hypervisors will be.  I have been working on a fix for this 
-> which works for older glibcs that panic when the new relocatable VDSO 
-> is used.  However, I believe at this time that the fix is going to be 
-> too radical to consider at this stage in the release of 2.6.21.  We 
-> don't expect this config option to be turned on by vendors for new 
-> distributions, so at this point we are willing to drop support for it 
-> when VMI is compiled in, and work on a patch for 2.6.22 which more 
-> fully addresses the problem.
->
-> Please apply, thanks.
+Ok, so input portion in your tree does not use type->attrs so we don't
+have a conflict here. Unless my patch messes up Kay's blockdev patch
+badly I'd like you to accept it. Input uses 3 attribute groups and I
+don't want to open-code their creation/removal.
 
-I suppose it would be better if I attached the patch.
-
-Zach
-
---------------090606070209090205050408
-Content-Type: text/plain;
- name="vmi-depends-on-not-compat-vdso.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="vmi-depends-on-not-compat-vdso.patch"
-
-Signed-off-by: Zachary Amsden <zach@vmware.com>
-
-Index: linux-2.6.21/arch/i386/Kconfig
-===================================================================
---- linux-2.6.21.orig/arch/i386/Kconfig	2007-03-06 18:51:33.000000000 -0800
-+++ linux-2.6.21/arch/i386/Kconfig	2007-03-09 22:36:15.000000000 -0800
-@@ -220,7 +220,7 @@ config PARAVIRT
- 
- config VMI
- 	bool "VMI Paravirt-ops support"
--	depends on PARAVIRT
-+	depends on PARAVIRT && !COMPAT_VDSO
- 	help
- 	  VMI provides a paravirtualized interface to the VMware ESX server
- 	  (it could be used by other hypervisors in theory too, but is not
-
---------------090606070209090205050408--
+-- 
+Dmitry
