@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767857AbXCJQeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767865AbXCJQgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767857AbXCJQeR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 11:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767865AbXCJQeR
+	id S1767865AbXCJQgP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 11:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767868AbXCJQgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 11:34:17 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4082 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767857AbXCJQeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 11:34:16 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] 2.6.21-rc3-mm1
-Date: Sat, 10 Mar 2007 17:36:34 +0100
-User-Agent: KMail/1.9.5
-Cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-References: <Pine.LNX.4.44L0.0703101057380.23928-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0703101057380.23928-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 10 Mar 2007 11:36:15 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:54461 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767865AbXCJQgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 11:36:13 -0500
+Date: Sat, 10 Mar 2007 11:31:09 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       mbligh@google.com, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: [PATCH] Fix sparc TIF_USEDFPU flag atomicity
+Message-ID: <20070310163109.GA5901@Krystal>
+References: <20070310081743.GC23144@Krystal> <20070310082646.GC2994@holomorphy.com> <20070310.002944.115909724.davem@davemloft.net> <20070310105903.GA8915@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703101736.35386.m.kozlowski@tuxland.pl>
+In-Reply-To: <20070310105903.GA8915@holomorphy.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 11:29:00 up 36 days,  6:36,  2 users,  load average: 1.11, 1.13, 1.09
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* William Lee Irwin III (wli@holomorphy.com) wrote:
+> On Sat, 10 Mar 2007 00:26:46 -0800, William Lee Irwin III <wli@holomorphy.com> wrote:
+> >> Oh dear. Could we bit a bit more idiomatic here? For instance,
+> >> something like:
+> 
+> On Sat, Mar 10, 2007 at 12:29:44AM -0800, David Miller wrote:
+> > Ok I pulled the sparc32 patch back out until there is some
+> > consensus here :)
+> 
+> It's just a minor touch-up. If Mathieu is okay with it, I'd rather
+> leave him as the author and just send along an Acked-by: with it.
+> I'm not terribly attached to it, either. I just choked on my soda
+> when I saw set_ti_thread_flag(task_thread_info(fpt), TI_USEDFPU)
+> etc. go by. (Which reminds me, I really need to figure out how to
+> consolidate the UP and SMP cases for all this.)
+> 
+> 
+> -- wli
+
 Hello,
 
-> > Right. Can't be 100% sure but without the patch it would have probably
-> > failed by now so I guess the patch is ok. Not sure how to make usb mouse
-> > plugging/unplugging process automatic ;-)
-> 
-> 	echo FOO >/sys/bus/usb/drivers/usbhid/unbind
-> 
-> to simulate an unplug (actually, to do an unbind), and
-> 
-> 	echo FOO >/sys/bus/usb/drivers/usbhid/unbind
-                                              ^^^^^^ bind I guess
+William's implementation is indeed neater than mine. So the consensus
+goes to his patch as far as I'm concerned.
 
-> to do a bind, where FOO is the name of the USB mouse device link present
-> in the /sys/bus/usb/drivers/usbhid directory.
+Mathieu
 
-# ls -al /sys/bus/usb/drivers/usbhid
-total 0
-drwxr-xr-x 2 root root    0 Mar 10 17:30 .
-drwxr-xr-x 8 root root    0 Mar 10 17:14 ..
-lrwxrwxrwx 1 root root    0 Mar 10 17:30 2-2:1.0 -> ../../../../devices/pci0000:00/0000:00:0c.0/usb2/2-2/2-2:1.0
---w------- 1 root root 4096 Mar 10 17:17 bind
-lrwxrwxrwx 1 root root    0 Mar 10 17:17 module -> ../../../../module/usbhid
---w------- 1 root root 4096 Mar 10 17:17 new_id
---w------- 1 root root    0 Mar 10 17:22 unbind
-
-# echo "2-2:1.0" > /sys/bus/usb/drivers/usbhid/unbind
-bash: echo: write error: No such device
-
-Any thoughts?
-
-Regards,
-
-	Mariusz Kozlowski
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
