@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767031AbXCJOEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767033AbXCJOG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767031AbXCJOEg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 09:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767033AbXCJOEg
+	id S1767033AbXCJOG1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 09:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767834AbXCJOG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 09:04:36 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:51577 "EHLO tmailer.gwdg.de"
+	Sat, 10 Mar 2007 09:06:27 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:52561 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767031AbXCJOEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 09:04:35 -0500
-Date: Sat, 10 Mar 2007 15:03:44 +0100 (MET)
+	id S1767033AbXCJOGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 09:06:25 -0500
+Date: Sat, 10 Mar 2007 15:01:32 +0100 (MET)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-cc: xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Where is Linux 2.6.20.2?
-In-Reply-To: <200703102152.GIF00641.VOFFSMJOFHLtOQ@I-love.SAKURA.ne.jp>
-Message-ID: <Pine.LNX.4.61.0703101503220.8799@yvahk01.tjqt.qr>
-References: <200703102133.IFJ33040.OFJtSFOVQOHMLF@I-love.SAKURA.ne.jp>
- <2375c9f90703100442o64d32d17k600ed7b8f2175cc8@mail.gmail.com>
- <200703102152.GIF00641.VOFFSMJOFHLtOQ@I-love.SAKURA.ne.jp>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+cc: Valdis.Kletnieks@vt.edu, Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
+In-Reply-To: <1173503968.3104.65.camel@nigel.suspend2.net>
+Message-ID: <Pine.LNX.4.61.0703101452240.8799@yvahk01.tjqt.qr>
+References: <1173419792.32234.131.camel@localhost.localdomain> 
+ <1173481052.32234.137.camel@localhost.localdomain> 
+ <200703100403.l2A4355v008616@turing-police.cc.vt.edu>
+ <1173503968.3104.65.camel@nigel.suspend2.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Spam-Report: Content analysis: 0.0 points, 6.0 required
@@ -27,33 +31,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mar 10 2007 21:52, Tetsuo Handa wrote:
-
->Date: Sat, 10 Mar 2007 21:52:23 +0900
->From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
->To: xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org
->Subject: Re: Where is Linux 2.6.20.2?
+On Mar 10 2007 16:19, Nigel Cunningham wrote:
+>On Fri, 2007-03-09 at 23:03 -0500, Valdis.Kletnieks@vt.edu wrote:
+>> On Sat, 10 Mar 2007 09:57:32 +1100, Rusty Russell said:
+>> 
+>> > +/* GCC is awesome. */
+>> >  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])			      \
+>> >  	+ sizeof(typeof(int[1 - 2*!!__builtin_types_compatible_p(typeof(arr), \
+>> >  		 typeof(&arr[0]))]))*0)
+>> 
+>> -/* GCC is awesome. */
+>> +/* GCC leaves me speechless. */
 >
->Cong WANG wrote:
->> http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.20.2.tar.bz2
->> isn't it what you want?
->It's currently 404 (Not Found) error.
->
->http://www2.kernel.org/ page is still showing 2.6.20.1
->although it once showed 2.6.20.2 .
+>A speechless Rusty would be horrible. That said, it would be nice if the
+>comment was something more like the normal Rusty pearl of wisdom. I
+>understand the first part, but have no idea was + sizeof(typeof(int[....
+>does...
 
-15:02 ichi:/dev/shm > l /lnk/lk/linux-2.6.20.2.tar.
-linux-2.6.20.2.tar.bz2       linux-2.6.20.2.tar.gz.sign
-linux-2.6.20.2.tar.bz2.sign  linux-2.6.20.2.tar.sign
-linux-2.6.20.2.tar.gz        
-15:02 ichi:/dev/shm > l /lnk/lk/linux-2.6.20.2.tar.bz2
--rw-r--r-- 1 455 5200 43378711 Mar  9 20:08 /lnk/lk/linux-2.6.20.2.tar.bz2
-15:02 ichi:/dev/shm > df -T `readlink -f /lnk/lk`
-Filesystem    Type   1K-blocks      Used Available Use% Mounted on
-134.76.10.1:/ftp/pub
-               nfs   5044816000 3911586640 1048766112  79% /F
+IOCCC entry candidate.
 
-It is synced out to the world already.
+Simple. !!__builtin_types_compatible_p, as it sounds, will return 1 if
+both types are compatible. If they are, then '1-2*!!_builtin..' will
+produce -1, then - surprisingly - sizeof(typeof(int[-1])) seems strange to
+me and should throw the error.
+
+If the types are not compatible, compat_p returns 0. !! will turn it into
+0. 2* will turn it into 0. 1-0 is 1. sizeof(typeof(int[1])) is valid, and
+*0 will compile it away.
+
+So in case they _ARE_ compatible, we get the compile error, as far as I
+can see it. There's a ! too much in the !!_builtin line. Now we know why
+such patches are dangerous.
+
+What's more, a test program does not even fail when the types are
+incompatible. (Or it's also wrong):
+
+#include <stdio.h>
+struct foo {
+        int x, y, z;
+};
+struct bar {
+        const char *fol;
+};
+#define c(x, y)  \
+        sizeof(typeof(int[1 - \
+         2*!!__builtin_types_compatible_p(typeof(x), typeof(y))]))
+int main(void)
+{
+        printf("%d\n", c(struct foo *, struct bar *));
+	printf("%d\n", c(int*, int*));
+}
+
+Both printf()s throw a compile time error.
 
 
 Jan
