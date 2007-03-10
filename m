@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751078AbXCJVo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750819AbXCJVqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751078AbXCJVo2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 16:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbXCJVo2
+	id S1750819AbXCJVqJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 16:46:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbXCJVqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 16:44:28 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56566 "EHLO smtp.osdl.org"
+	Sat, 10 Mar 2007 16:46:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59622 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbXCJVo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 16:44:27 -0500
-Date: Sat, 10 Mar 2007 13:44:24 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nicholas Miell <nmiell@comcast.net>
-cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
-In-Reply-To: <1173560473.2958.23.camel@entropy>
-Message-ID: <Pine.LNX.4.64.0703101340550.10330@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com> 
- <1173508384.3108.1.camel@entropy>  <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
-  <1173509019.3108.4.camel@entropy>  <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
-  <1173510568.3108.17.camel@entropy>  <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
-  <1173556374.2958.12.camel@entropy>  <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
- <1173560473.2958.23.camel@entropy>
+	id S1750819AbXCJVqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 16:46:07 -0500
+Message-ID: <45F3269D.8010601@redhat.com>
+Date: Sat, 10 Mar 2007 16:43:57 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/20] 2.6.20-stable review
+References: <20070310061603.GA31412@kroah.com> <20070310062313.GA853@kroah.com>
+In-Reply-To: <20070310062313.GA853@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 10 Mar 2007, Nicholas Miell wrote:
+Greg KH wrote:
+> On Fri, Mar 09, 2007 at 10:16:03PM -0800, Greg KH wrote:
+>> This is the start of the stable review cycle for the 2.6.20.3 release.
 > 
-> That's what the sigevent structure is for -- to describe how events
-> should be signaled to userspace, whether by signal delivery, thread
-> creation, or queuing to event completion ports. If if you think
-> extending it would be bad, I can show you the line in POSIX where it
-> encourages the contrary.
+> Oh, the rolled up patch is at:
+> 	kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.20.3-rc1.gz
 
-I'm sorry, but by pointing to the POSIX timer stuff, you're just making 
-your argument weaker.
+You mean:
 
-POSIX timers are a horrible crock and over-designed to be a union of 
-everything that has ever been done. Nasty. We had tons of bugs in the 
-original setup because they were so damn nasty.
+kernel.org/pub/linux/kernel/v2.6/incr/patch-2.6.20.3-rc1.gz
 
-I'd rather look at just about *anything* else for good design than from 
-some of the abortions that are posix-timers.
-
-		Linus
+?
