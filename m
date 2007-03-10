@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933464AbXCJPeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161158AbXCJPhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933464AbXCJPeb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 10:34:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161041AbXCJPeb
+	id S1161158AbXCJPhZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 10:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161139AbXCJPhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 10:34:31 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1188 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933464AbXCJPea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 10:34:30 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: 2.6.21-rc3-mm1
-Date: Sat, 10 Mar 2007 16:36:47 +0100
-User-Agent: KMail/1.9.5
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-References: <20070307201839.6f45735b.akpm@linux-foundation.org> <20070310091820.GB30495@kroah.com> <Pine.LNX.4.64.0703101337460.10121@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0703101337460.10121@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 10 Mar 2007 10:37:24 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44201 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161041AbXCJPhX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 10:37:23 -0500
+Date: Sat, 10 Mar 2007 16:40:59 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: kristen.c.accardi@intel.com, len.brown@intel.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: libata-acpi: allow _GTF on SATA, but disable on PATA for now
+Message-ID: <20070310164059.4ba68bcc@lxorguk.ukuu.org.uk>
+In-Reply-To: <45F296B9.7000005@garzik.org>
+References: <200703100559.l2A5x6kP017578@hera.kernel.org>
+	<45F296B9.7000005@garzik.org>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703101636.48758.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+> Alan has been actively working on PATA ACPI, and we have been debugging 
+> ACPI issues as well.  PLEASE coordinate with the maintainer, when 
+> touching code outside of drivers/acpi!
 
-> On Sat, 10 Mar 2007, Greg KH wrote:
-> 
-> > > hid_parse_report() is doing kmalloc(128k kbytes).  We canot sanely 
-> > > support that and the code shold be rewritten to not do that.  A simple 
-> > > though somewhat lame fix would be to switch to vmalloc().
-> > > It's been this way for some time, so it's odd that the failures have 
-> > > just popped up now.
-> > Jiri is the person to ask about this now.  Jiri, any thoughts about
-> > this?
-> 
-> I have just queued the patch below to HID tree for the next upstream 
-> merge. Mariusz, I guess it solves your issue, right?
+ap->cbl is not a reliable way to tell SATA from PATA at the moment. We
+need to fix the real crashes too - right now no non PCI controller
+actually works at all (crash on boot) because of the ACPI crap.
 
-Right. Can't be 100% sure but without the patch it would have probably
-failed by now so I guess the patch is ok. Not sure how to make usb mouse
-plugging/unplugging process automatic ;-)
+Please drop this patch as it will cause regressions on systems that do
+not need the extra methods. Instead merge the one that fixe the non PCI
+crashes and we might get further.
 
-Thanks,
+> AFAICS this patch went in with zero appearance on LKML or another 
+> related list, until submission.  This is /not/ how we do Linux development.
 
-	Mariusz Kozlowski
+Agreed.
+
+NAK the patch likewise.
+
+Alan
