@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXCJUha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbXCJUlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932224AbXCJUha (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 15:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932228AbXCJUha
+	id S932223AbXCJUlm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 15:41:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932228AbXCJUlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 15:37:30 -0500
-Received: from mga02.intel.com ([134.134.136.20]:6199 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932224AbXCJUh2 convert rfc822-to-8bit (ORCPT
+	Sat, 10 Mar 2007 15:41:42 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:46209 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932223AbXCJUll (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 15:37:28 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,270,1170662400"; 
-   d="scan'208"; a="207221523:sNHT23513154"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sat, 10 Mar 2007 15:41:41 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 10 Mar 2007 12:41:35 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Nicholas Miell <nmiell@comcast.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
+In-Reply-To: <1173556374.2958.12.camel@entropy>
+Message-ID: <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com> 
+ <1173508384.3108.1.camel@entropy>  <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
+  <1173509019.3108.4.camel@entropy>  <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
+  <1173510568.3108.17.camel@entropy>  <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
+ <1173556374.2958.12.camel@entropy>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/2] NET: Multiple queue network device support
-Date: Sat, 10 Mar 2007 12:37:24 -0800
-Message-ID: <D5C1322C3E673F459512FB59E0DDC329026EA188@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <20070310023432.GJ521@postel.suug.ch>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/2] NET: Multiple queue network device support
-thread-index: AcdivJfpWkVmf8swT6yqGA2hYCnVcAAlutSA
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Thomas Graf" <tgraf@suug.ch>
-Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "David Miller" <davem@davemloft.net>,
-       "Garzik, Jeff" <jgarzik@pobox.com>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kok, Auke" <auke@foo-projects.org>,
-       "Ronciak, John" <john.ronciak@intel.com>
-X-OriginalArrivalTime: 10 Mar 2007 20:37:26.0394 (UTC) FILETIME=[EA13A5A0:01C76353]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Thomas Graf [mailto:tgraf@suug.ch] 
-> Sent: Friday, March 09, 2007 6:35 PM
-> To: Waskiewicz Jr, Peter P
-> Cc: Kok, Auke-jan H; David Miller; Garzik, Jeff; 
-> netdev@vger.kernel.org; linux-kernel@vger.kernel.org; 
-> Brandeburg, Jesse; Kok, Auke; Ronciak, John
-> Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
-> 
-> * Waskiewicz Jr, Peter P <peter.p.waskiewicz.jr@intel.com> 
-> 2007-03-09 15:27
-> > That's the entire point of this extra locking.  enqueue() 
-> is going to 
-> > put an skb into a band somewhere that maps to some queue, 
-> and there is 
-> > no way to guarantee the skb I retrieve from dequeue() is headed for 
-> > the same queue.  Therefore, I need to unlock the queue 
-> after I finish 
-> > enqueuing, since having that lock makes little sense to dequeue().
-> > dequeue() will then grab *a* lock on a queue; it may be the 
-> same one 
-> > we had during enqueue(), but it may not be.  And the 
-> placement of the 
-> > unlock of that queue is exactly where it happens in non-multiqueue, 
-> > which is right before the hard_start_xmit().
-> 
-> The lock is already unlocked after dequeue, from your prio_dequeue():
-> 
->        if (netif_is_multiqueue(sch->dev)) {
->                queue = q->band2queue[prio];
->                if 
-> (spin_trylock(&sch->dev->egress_subqueue[queue].queue_lock)) {
->                        qdisc = q->queues[prio];
->                        skb = qdisc->dequeue(qdisc);
->                        if (skb) {
->                                sch->q.qlen--;
->                                skb->priority = prio;
->                                
-> spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
->                                return skb;
->                        }
->                        
-> spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
->        }
+On Sat, 10 Mar 2007, Nicholas Miell wrote:
 
-Ok, now I see what's wrong.  Taking Dave M.'s recommendation to store
-the queue mapping in the skb will let me unlock the queue when dequeue()
-returns.  I'll fix this locking issue; thanks for the feedback and
-persistent drilling into my thick head.
+> Try reading the timer_create man page.
+> 
+> In short, you're limited to a single clock, so you can't set timers
+> based on wall-clock time (subject to NTP correction), monotomic time
+> (not subject to NTP, will not ever go backwards or skip ticks), the
+> high-res versions of the previous two clocks, per-thread or per-process
+> CPU usage time, or any other clocks that may get introduced in the
+> future.
 
--PJ Waskiewicz
-peter.p.waskiewicz.jr@intel.com
+One timer per fd yes. So?
+The real-time and monotonic selection can be added. 
+If you look at the posix timers code, that's a bunch of code over the real 
+meat of it, that is hrtimer.c. The timerfd interface goes straight to 
+that, without adding yet another meaning to the sigevent structure, and 
+yet another case inside the posix timers trigger functions. That will be 
+as unstandard as timerfd is, and even more, since you cannot use that 
+interface and hope to be portable in any case.
+On top of that, handing over files to the posix timers will creates 
+problems with references kept around.
+The timerfd code is just a *really* thin layer (if you exclude the 
+includes, the structure definitions and the fd setup code, there's 
+basically *nothing*) over hrtimer.c and does not mess up with other kernel 
+code in any way, and offers the same functionalities. I'd like to keep it 
+that way.
+
+
+
+- Davide
+
+
