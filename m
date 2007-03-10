@@ -1,81 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767694AbXCJAz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbXCJA4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767694AbXCJAz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Mar 2007 19:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767695AbXCJAz1
+	id S1752769AbXCJA4q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Mar 2007 19:56:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXCJA4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Mar 2007 19:55:27 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:63959 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767694AbXCJAzZ (ORCPT
+	Fri, 9 Mar 2007 19:56:46 -0500
+Received: from MAIL.13thfloor.at ([213.145.232.33]:34605 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbXCJA4o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Mar 2007 19:55:25 -0500
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="g3VA3++VBt"
-Content-Transfer-Encoding: 7bit
-Message-ID: <17906.503.464219.762437@smtp.charter.net>
-Date: Fri, 9 Mar 2007 19:55:19 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Greg KH <greg@kroah.com>
-Cc: John Stoffel <john@stoffel.org>, linux-usb-devel@lists.sourceforge.net,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc3 - oops on remove of USB dongle
-In-Reply-To: <20070309212401.GB8629@kroah.com>
-References: <17905.32741.244785.543626@smtp.charter.net>
-	<20070309212401.GB8629@kroah.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Fri, 9 Mar 2007 19:56:44 -0500
+Date: Sat, 10 Mar 2007 01:56:43 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, pj@sgi.com, winget@google.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org, menage@google.com
+Subject: Re: [PATCH 1/2] rcfs core patch
+Message-ID: <20070310005643.GC3647@MAIL.13thfloor.at>
+Mail-Followup-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	xemul@sw.ru, pj@sgi.com, winget@google.com,
+	containers@lists.osdl.org, akpm@linux-foundation.org,
+	menage@google.com
+References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <20070308101347.GA29051@in.ibm.com> <20070309004816.GB4506@MAIL.13thfloor.at> <20070309181422.GB21661@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309181422.GB21661@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 09, 2007 at 11:44:22PM +0530, Srivatsa Vaddagiri wrote:
+> On Fri, Mar 09, 2007 at 01:48:16AM +0100, Herbert Poetzl wrote:
+> > > There have been various projects attempting to provide resource
+> > > management support in Linux, including CKRM/Resource Groups and UBC.
 
---g3VA3++VBt
-Content-Type: text/plain; charset=us-ascii
-Content-Description: message body text
-Content-Transfer-Encoding: 7bit
+> > let me note here, once again, that you forgot Linux-VServer
+> > which does quite non-intrusive resource management ...
 
+> Sorry, not intentionally. Maybe it slipped because I haven't
+> seen much res mgmt related patches from Linux Vserver on 
+> lkml recently.
 
-Duh... forgot the patches:
+mainly because I got the impression that we planned
+to work on the various spaces first, and handle things
+like resource management later .. but it seems that
+resource management is now in focus, while the spaces
+got somewhat delayed ...
 
+> Note that I -did- talk about VServer at one point in past
+> (http://lkml.org/lkml/2006/06/15/112)!
 
---g3VA3++VBt
-Content-Type: application/octet-stream
-Content-Description: two patches for usbserial oops on 2.6.21-rc3
-Content-Disposition: attachment;
-	filename="2.6.21-rc-usb-serial.patch"
-Content-Transfer-Encoding: base64
+noted and appreciated (although this was about CPU
+resources, which IMHO is a special resource like
+the networking, as you are mostly interested in
+'bandwidth' limitations there, not in resource
+limits per se (and of course, it wasn't even cited
+correctly, as it is Linux-VServer not vserver ...)
 
-LS0tIGEvZHJpdmVycy91c2Ivc2VyaWFsL3VzYi1zZXJpYWwuYwkyMDA3LTAzLTA1IDE0OjQzOjIw
-LjAwMDAwMDAwMCArMDEwMAorKysgYi9kcml2ZXJzL3VzYi9zZXJpYWwvdXNiLXNlcmlhbC5jCTIw
-MDctMDMtMDUgMTU6MTg6NTMuMDAwMDAwMDAwICswMTAwCkBAIC05OSw5ICs5OSwxMiBAQAogCQkJ
-Y29udGludWU7CiAKIAkJKm1pbm9yID0gaTsKKwkJaiA9IDA7CiAJCWRiZygiJXMgLSBtaW5vciBi
-YXNlID0gJWQiLCBfX0ZVTkNUSU9OX18sICptaW5vcik7Ci0JCWZvciAoaSA9ICptaW5vcjsgKGkg
-PCAoKm1pbm9yICsgbnVtX3BvcnRzKSkgJiYgKGkgPCBTRVJJQUxfVFRZX01JTk9SUyk7ICsraSkK
-KwkJZm9yIChpID0gKm1pbm9yOyAoaSA8ICgqbWlub3IgKyBudW1fcG9ydHMpKSAmJiAoaSA8IFNF
-UklBTF9UVFlfTUlOT1JTKTsgKytpKSB7CiAJCQlzZXJpYWxfdGFibGVbaV0gPSBzZXJpYWw7CisJ
-CQlzZXJpYWwtPnBvcnRbaisrXS0+bnVtYmVyID0gaTsKKwkJfQogCQlzcGluX3VubG9jaygmdGFi
-bGVfbG9jayk7CiAJCXJldHVybiBzZXJpYWw7CiAJfQpAQCAtODQ4LDcgKzg1MSw2IEBACiAJCXBv
-cnQgPSBremFsbG9jKHNpemVvZihzdHJ1Y3QgdXNiX3NlcmlhbF9wb3J0KSwgR0ZQX0tFUk5FTCk7
-CiAJCWlmICghcG9ydCkKIAkJCWdvdG8gcHJvYmVfZXJyb3I7Ci0JCXBvcnQtPm51bWJlciA9IGkg
-KyBzZXJpYWwtPm1pbm9yOwogCQlwb3J0LT5zZXJpYWwgPSBzZXJpYWw7CiAJCXNwaW5fbG9ja19p
-bml0KCZwb3J0LT5sb2NrKTsKIAkJbXV0ZXhfaW5pdCgmcG9ydC0+bXV0ZXgpOwpAQCAtMTAzNSw5
-ICsxMDM3LDYgQEAKIAkJa2ZyZWUocG9ydC0+aW50ZXJydXB0X291dF9idWZmZXIpOwogCX0KIAot
-CS8qIHJldHVybiB0aGUgbWlub3IgcmFuZ2UgdGhhdCB0aGlzIGRldmljZSBoYWQgKi8KLQlyZXR1
-cm5fc2VyaWFsIChzZXJpYWwpOwotCiAJLyogZnJlZSB1cCBhbnkgbWVtb3J5IHRoYXQgd2UgYWxs
-b2NhdGVkICovCiAJZm9yIChpID0gMDsgaSA8IHNlcmlhbC0+bnVtX3BvcnRfcG9pbnRlcnM7ICsr
-aSkKIAkJa2ZyZWUoc2VyaWFsLT5wb3J0W2ldKTsKCi0tQm91bmRhcnktMDA9X2hEWjhGLzZ3OVQ2
-L1FrTQpDb250ZW50LVR5cGU6IHRleHQveC1kaWZmOwogIGNoYXJzZXQ9Imlzby04ODU5LTEiOwog
-IG5hbWU9InVzYnNlcmlhbDIwMDcwMjI3LnBhdGNoIgpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5n
-OiA3Yml0CkNvbnRlbnQtRGlzcG9zaXRpb246IGF0dGFjaG1lbnQ7CglmaWxlbmFtZT0idXNic2Vy
-aWFsMjAwNzAyMjcucGF0Y2giCgotLS0gbGludXgtMi42LjIxLXJjMS9kcml2ZXJzL3VzYi9zZXJp
-YWwvdXNiLXNlcmlhbC5jLmFsdAkyMDA3LTAyLTIxIDA1OjMyOjMwLjAwMDAwMDAwMCArMDEwMAor
-KysgbGludXgtMi42LjIxLXJjMS9kcml2ZXJzL3VzYi9zZXJpYWwvdXNiLXNlcmlhbC5jCTIwMDct
-MDItMjYgMTU6MzI6NTAuMDAwMDAwMDAwICswMTAwCkBAIC04MjYsNyArODI2LDYgQEAKIAkJCW51
-bV9wb3J0cyA9IHR5cGUtPm51bV9wb3J0czsKIAl9CiAKLQlzZXJpYWwtPm1pbm9yID0gbWlub3I7
-CiAJc2VyaWFsLT5udW1fcG9ydHMgPSBudW1fcG9ydHM7CiAJc2VyaWFsLT5udW1fYnVsa19pbiA9
-IG51bV9idWxrX2luOwogCXNlcmlhbC0+bnVtX2J1bGtfb3V0ID0gbnVtX2J1bGtfb3V0OwpAQCAt
-OTgwLDYgKzk3OSw3IEBACiAJCWRldl9lcnIoJmludGVyZmFjZS0+ZGV2LCAiTm8gbW9yZSBmcmVl
-IHNlcmlhbCBkZXZpY2VzXG4iKTsKIAkJZ290byBwcm9iZV9lcnJvcjsKIAl9CisJc2VyaWFsLT5t
-aW5vciA9IG1pbm9yOwogCiAJLyogcmVnaXN0ZXIgYWxsIG9mIHRoZSBpbmRpdmlkdWFsIHBvcnRz
-IHdpdGggdGhlIGRyaXZlciBjb3JlICovCiAJZm9yIChpID0gMDsgaSA8IG51bV9wb3J0czsgKytp
-KSB7CgotLUJvdW5kYXJ5LTAwPV9oRFo4Ri82dzlUNi9Ra00tLQo=
---g3VA3++VBt--
+> > the basic 'context' (pid space) is the grouping mechanism
+> > we use for resource management too
+
+> so tasks sharing the same nsproxy->pid_ns is the fundamental
+> unit of resource management (as far as vserver/container goes)?
+
+we currently have a 'process' context, which holds
+the administrative data (capabilities and flags) and
+the resource accounting and limits, which basically
+contains the pid namespace, so yes and no
+
+it contains a reference to the 'main' nsproxy, which
+is used to copy spaces from when you enter the guest
+(or some set of spaces), and it defines the unit we
+consider a process container
+
+> > > As you know, the introduction of 'struct container' was objected
+> > > to and was felt redundant as a means to group tasks. Thats where
+> > > I took a shot at converting over Paul Menage's patch to avoid
+> > > 'struct container' abstraction and insead work with 'struct
+> > > nsproxy'.
+> > 
+> > which IMHO isn't a step in the right direction, as
+> > you will need to handle different nsproxies within
+> > the same 'resource container' (see previous email)
+> 
+> Isn't that made simple because of the fact that we have pointers to
+> namespace objects (and not actual objects themselves) in nsproxy?
+> 
+> I mean, all that is required to manage multiple nsproxy's
+> is to have the pointer to the same resource object in all of them.
+> 
+> In system call terms, if someone does a unshare of uts namespace, 
+> he will get into a new nsproxy object sure (which has a pointer to the
+> new uts namespace) but the new nsproxy object will still be pointing
+> to the old resource controlling objects.
+
+yes, that is why I agreed, that the container (or
+resource limit/accounting/controlling object) can
+be seen as space too (and handled like that)
+
+> > > When we support task movement across resource classes, we need to
+> > > find a nsproxy which has the right combination of resource classes
+> > > that the task's nsproxy can be hooked to.
+> > 
+> > no, not necessarily, we can simply create a new one
+> > and give it the proper resource or whatever-spaces
+> 
+> That would be the simplest, agreeably. But not optimal in terms of
+> storage?
+> 
+> Pls note that task-movement can be not-so-infrequent 
+> (in other words, frequent) in context of non-container workload 
+> management.
+
+not only there, also with solutions like Linux-VServer
+(it is quite common to enter guests or subsets of the
+space mix assigned)
+
+> > why is the filesystem approach so favored for this
+> > kind of manipulations?
+> > 
+> > IMHO it is one of the worst interfaces I can imagine
+> > (to move tasks between spaces and/or assign resources)
+> > but yes, I'm aware that filesystems are 'in' nowadays
+> 
+> Ease of use maybe. Scripts can be more readily used with a fs-based
+> interface.
+
+correct, but what about security and/or atomicity?
+i.e. how to assure that some action really was 
+taken and/or how to wait for completion?
+
+sure, all this _can_ be done, no doubt, but it
+is much harder to do with a fs based interface than
+with e.g. a syscall interface ...
+
+> -- 
+> Regards,
+> vatsa
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/containers
