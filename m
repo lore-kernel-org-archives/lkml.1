@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbXCJGUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbXCJGVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752802AbXCJGUZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 01:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbXCJGTr
+	id S1752791AbXCJGVQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 01:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXCJGUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 01:19:47 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41252 "EHLO mx2.suse.de"
+	Sat, 10 Mar 2007 01:20:41 -0500
+Received: from ns1.suse.de ([195.135.220.2]:41058 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751049AbXCJGTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 01:19:39 -0500
-Date: Fri, 9 Mar 2007 22:17:55 -0800
+	id S1750948AbXCJGTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 01:19:48 -0500
+Date: Fri, 9 Mar 2007 22:18:10 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,14 +19,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, netfilter-devel@lists.netfilter.org,
-       Patrick McHardy <kaber@trash.net>, davem@davemloft.net
-Subject: [patch 11/20] nfnetlink_log: fix crash on bridged packet
-Message-ID: <20070310061755.GL31412@kroah.com>
+       alan@lxorguk.ukuu.org.uk, James.Bottomley@SteelEye.com,
+       Douglas Gilbert <dougg@torque.net>
+Subject: [patch 13/20] Fix bug 7994 sleeping function called from invalid context
+Message-ID: <20070310061810.GN31412@kroah.com>
 References: <20070310061234.465093436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="nfnetlink_log-fix-crash-on-bridged-packet.patch"
+Content-Disposition: inline; filename="fix-bug-7994-sleeping-function-called-from-invalid-context.patch"
 In-Reply-To: <20070310061603.GA31412@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,33 +35,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Patrick McHardy <kaber@trash.net>
+From: Douglas Gilbert <dougg@torque.net>
 
-[NETFILTER]: nfnetlink_log: fix crash on bridged packet
+  - addresses the reported bug (with GFP_KERNEL -> GFP_ATOMIC)
+  - improves error checking, and
+  - is a subset of the changes to scsi_debug in lk 2.6.21-rc*
 
-physoutdev is only set on purely bridged packet, when nfnetlink_log is used
-in the OUTPUT/FORWARD/POSTROUTING hooks on packets forwarded from or to a
-bridge it crashes when trying to dereference skb->nf_bridge->physoutdev.
+Compiled and lightly tested (in lk 2.6.21-rc2 environment).
 
-Reported by Holger Eitzenberger <heitzenberger@astaro.com>
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Douglas Gilbert <dougg@torque.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/nfnetlink_log.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/scsi_debug.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
---- a/net/netfilter/nfnetlink_log.c
-+++ b/net/netfilter/nfnetlink_log.c
-@@ -491,7 +491,7 @@ __build_packet_message(struct nfulnl_ins
- 			 * for physical device (when called from ipv4) */
- 			NFA_PUT(inst->skb, NFULA_IFINDEX_OUTDEV,
- 				sizeof(tmp_uint), &tmp_uint);
--			if (skb->nf_bridge) {
-+			if (skb->nf_bridge && skb->nf_bridge->physoutdev) {
- 				tmp_uint = 
- 				    htonl(skb->nf_bridge->physoutdev->ifindex);
- 				NFA_PUT(inst->skb, NFULA_IFINDEX_PHYSOUTDEV,
+--- a/drivers/scsi/scsi_debug.c
++++ b/drivers/scsi/scsi_debug.c
+@@ -954,7 +954,9 @@ static int resp_inquiry(struct scsi_cmnd
+ 	int alloc_len, n, ret;
+ 
+ 	alloc_len = (cmd[3] << 8) + cmd[4];
+-	arr = kzalloc(SDEBUG_MAX_INQ_ARR_SZ, GFP_KERNEL);
++	arr = kzalloc(SDEBUG_MAX_INQ_ARR_SZ, GFP_ATOMIC);
++	if (! arr)
++		return DID_REQUEUE << 16;
+ 	if (devip->wlun)
+ 		pq_pdt = 0x1e;	/* present, wlun */
+ 	else if (scsi_debug_no_lun_0 && (0 == devip->lun))
+@@ -1217,7 +1219,9 @@ static int resp_report_tgtpgs(struct scs
+ 	alen = ((cmd[6] << 24) + (cmd[7] << 16) + (cmd[8] << 8)
+ 		+ cmd[9]);
+ 
+-	arr = kzalloc(SDEBUG_MAX_TGTPGS_ARR_SZ, GFP_KERNEL);
++	arr = kzalloc(SDEBUG_MAX_TGTPGS_ARR_SZ, GFP_ATOMIC);
++	if (! arr)
++		return DID_REQUEUE << 16;
+ 	/*
+ 	 * EVPD page 0x88 states we have two ports, one
+ 	 * real and a fake port with no device connected.
+@@ -1996,6 +2000,8 @@ static int scsi_debug_slave_configure(st
+ 	if (sdp->host->max_cmd_len != SCSI_DEBUG_MAX_CMD_LEN)
+ 		sdp->host->max_cmd_len = SCSI_DEBUG_MAX_CMD_LEN;
+ 	devip = devInfoReg(sdp);
++	if (NULL == devip)
++		return 1;       /* no resources, will be marked offline */
+ 	sdp->hostdata = devip;
+ 	if (sdp->host->cmd_per_lun)
+ 		scsi_adjust_queue_depth(sdp, SDEBUG_TAGGED_QUEUING,
+@@ -2044,7 +2050,7 @@ static struct sdebug_dev_info * devInfoR
+ 		}
+ 	}
+ 	if (NULL == open_devip) { /* try and make a new one */
+-		open_devip = kzalloc(sizeof(*open_devip),GFP_KERNEL);
++		open_devip = kzalloc(sizeof(*open_devip),GFP_ATOMIC);
+ 		if (NULL == open_devip) {
+ 			printk(KERN_ERR "%s: out of memory at line %d\n",
+ 				__FUNCTION__, __LINE__);
 
 -- 
