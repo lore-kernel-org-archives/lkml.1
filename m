@@ -1,76 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030242AbXCJJUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932567AbXCJJVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030242AbXCJJUj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 04:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766583AbXCJJUi
+	id S932567AbXCJJVl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 04:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933426AbXCJJVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 04:20:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33513 "EHLO mx2.mail.elte.hu"
+	Sat, 10 Mar 2007 04:21:41 -0500
+Received: from mail.kroah.org ([69.55.234.183]:55262 "EHLO perch.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030242AbXCJJTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 04:19:51 -0500
-Date: Sat, 10 Mar 2007 10:19:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cliff Wickman <cpw@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
-Message-ID: <20070310091942.GC18250@elte.hu>
-References: <20070309193925.B60891B8028@attica.americas.sgi.com>
-Mime-Version: 1.0
+	id S932567AbXCJJVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 04:21:39 -0500
+Date: Sat, 10 Mar 2007 01:18:20 -0800
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>, jkosina@suse.cz
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.21-rc3-mm1
+Message-ID: <20070310091820.GB30495@kroah.com>
+References: <20070307201839.6f45735b.akpm@linux-foundation.org> <200703100933.35743.m.kozlowski@tuxland.pl> <20070310005828.0ab608b1.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070309193925.B60891B8028@attica.americas.sgi.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070310005828.0ab608b1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Cliff Wickman <cpw@sgi.com> wrote:
-
-> With this patch, migrate the task to:
->  1) to any cpu on the same node as the disabled cpu, which is both online
->     and among that task's cpus_allowed
->  2) to any online cpu within the task's cpuset
->  3) to any cpu which is both online and among that task's cpus_allowed
+On Sat, Mar 10, 2007 at 12:58:28AM -0800, Andrew Morton wrote:
+> > On Sat, 10 Mar 2007 09:33:35 +0100 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+> > Hello, 
+> > 
+> > > - The wireless changes in here need a lot of testers, please.  It is major
+> > >   rework.
+> > 
+> > Works for me ... so far ;-) Anyway to the point:
+> > 
+> > When moving my laptop I reattached the usb mouse. Then I found this in syslog:
+> > 
+> > usb 2-1: new low speed USB device using uhci_hcd and address 3
+> > usb 2-1: new device found, idVendor=046d, idProduct=c00e
+> > usb 2-1: new device strings: Mfr=1, Product=2, SerialNumber=0
+> > usb 2-1: Product: USB-PS/2 Optical Mouse
+> > usb 2-1: Manufacturer: Logitech
+> > usb 2-1: configuration #1 chosen from 1 choice
+> > khubd: page allocation failure. order:5, mode:0xd0
+> >  [<c01045c4>] show_trace_log_lvl+0x1a/0x30
+> >  [<c0104d50>] show_trace+0x12/0x14
+> >  [<c0104e07>] dump_stack+0x16/0x18
+> >  [<c014acc6>] __alloc_pages+0x2e4/0x303
+> >  [<c01604df>] cache_alloc_refill+0x2e4/0x516
+> >  [<c01608e4>] kmem_cache_zalloc+0x78/0x7c
+> >  [<c0341343>] hid_parse_report+0xce/0x26b
+> >  [<c032d99b>] hid_probe+0x264/0xdba
+> >  [<c030feb9>] usb_probe_interface+0x5a/0x89
+> >  [<c02bf74f>] driver_probe_device+0x86/0x178
+> >  [<c02bf849>] __device_attach+0x8/0xa
+> >  [<c02beadc>] bus_for_each_drv+0x4a/0x68
+> >  [<c02bfb39>] device_attach+0x8b/0xd2
+> >  [<c02bea4e>] bus_attach_device+0x40/0x84
+> >  [<c02bd835>] device_add+0x5d0/0x6c8
+> >  [<c030e8bd>] usb_set_configuration+0x2d6/0x4c6
+> >  [<c03158ab>] generic_probe+0x15c/0x251
+> >  [<c030fb87>] usb_probe_device+0x36/0x3c
+> >  [<c02bf74f>] driver_probe_device+0x86/0x178
+> >  [<c02bf849>] __device_attach+0x8/0xa
+> >  [<c02beadc>] bus_for_each_drv+0x4a/0x68
+> >  [<c02bfb39>] device_attach+0x8b/0xd2
+> >  [<c02bea4e>] bus_attach_device+0x40/0x84
+> >  [<c02bd835>] device_add+0x5d0/0x6c8
+> >  [<c030a078>] usb_new_device+0x128/0x196
+> >  [<c030aedd>] hub_thread+0x28a/0xb4a
+> >  [<c0126c75>] kthread+0xa2/0xc9
+> >  [<c010422f>] kernel_thread_helper+0x7/0x18
+> >  =======================
 > 
-> Diffed against 2.6.21-rc3 (Andrew's current top of tree)
+> hid_parse_report() is doing kmalloc(128k kbytes).  We canot sanely support
+> that and the code shold be rewritten to not do that.  A simple though
+> somewhat lame fix would be to switch to vmalloc().
+> 
+> It's been this way for some time, so it's odd that the failures have just
+> popped up now.
 
-looks good to me.
+Jiri is the person to ask about this now.  Jiri, any thoughts about
+this?
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+thanks,
 
-> +	/* try to stay on the same cpuset */
-> +	if (dest_cpu == NR_CPUS) {
-> +		p->cpus_allowed = cpuset_cpus_allowed(p);
-> +		dest_cpu = any_online_cpu(p->cpus_allowed);
-> +	}
-
-what's the practical effect of this - when moving the last CPU offline 
-from a node you got jobs migrated to really alien nodes? Thus i think we 
-should queue this up for v2.6.21 too, correct? It's a NOP on systems 
-that do not set up cpusets, so it's low-risk.
-
-btw., unrelated to your patch, there's this bit right after the code 
-above:
-
-        /* No more Mr. Nice Guy. */
-        if (dest_cpu == NR_CPUS) {
-                rq = task_rq_lock(p, &flags);
-                cpus_setall(p->cpus_allowed);
-                dest_cpu = any_online_cpu(p->cpus_allowed);
-
-out of consistency, shouldnt the cpus_setall() rather be:
-
-		p->cpus_allowed = cpu_possible_map;
-
-? It shouldnt make any real difference but it looks more consistent.
-
-	Ingo
+greg k-h
