@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbXCJWe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXCJWmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751306AbXCJWe4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 17:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbXCJWez
+	id S932234AbXCJWmL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 17:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932306AbXCJWmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 17:34:55 -0500
-Received: from mail09.syd.optusnet.com.au ([211.29.132.190]:38921 "EHLO
-	mail09.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751306AbXCJWez convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 17:34:55 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Subject: Re: [PATCH][RSDL-mm 0/6]  Rotating Staircase DeadLine scheduler   for -mm
-Date: Sun, 11 Mar 2007 10:01:15 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <1173527368.3380.1.camel@rousalka.dyndns.org> <200703110103.21224.kernel@kolivas.org> <1173545608.4143.10.camel@rousalka.dyndns.org>
-In-Reply-To: <1173545608.4143.10.camel@rousalka.dyndns.org>
+	Sat, 10 Mar 2007 17:42:11 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:58102 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932234AbXCJWmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 17:42:09 -0500
+Date: Sat, 10 Mar 2007 14:42:01 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nicholas Miell <nmiell@comcast.net>
+cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
+In-Reply-To: <1173563796.2958.28.camel@entropy>
+Message-ID: <Pine.LNX.4.64.0703101421410.10330@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com> 
+ <1173508384.3108.1.camel@entropy>  <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
+  <1173509019.3108.4.camel@entropy>  <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
+  <1173510568.3108.17.camel@entropy>  <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
+  <1173556374.2958.12.camel@entropy>  <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
+  <1173560473.2958.23.camel@entropy>  <Pine.LNX.4.64.0703101340550.10330@woody.linux-foundation.org>
+ <1173563796.2958.28.camel@entropy>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703111001.15682.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 March 2007 03:53, Nicolas Mailhot wrote:
-> Le dimanche 11 mars 2007 à 01:03 +1100, Con Kolivas a écrit :
-> > On Saturday 10 March 2007 22:49, Nicolas Mailhot wrote:
-> > > Oops
-> > >
-> > > ⇒ http://bugzilla.kernel.org/show_bug.cgi?id=8166
-> >
-> > Thanks very much. I can't get your config to boot on qemu, but could you
-> > please try this debugging patch? It's not a patch you can really run the
-> > machine with but might find where the problem occurs. Specifically I'm
-> > looking for the warning MISSING STATIC BIT in your case.
-> >
-> > http://ck.kolivas.org/patches/crap/sched-rsdl-0.28-stuff.patch
->
-> I attached a screenshot of the patched kernel boot
 
-Thanks. Darn the debugging didn't catch anything. Did you see any BUG during 
-the boot earlier than that screenshot? Probably not. 
 
-If you have the time I would appreciate you testing 2.6.20 with the rsdl 0.28 
-patch for it with a config as close to this -mm2 one as possible.
+On Sat, 10 Mar 2007, Nicholas Miell wrote:
+> 
+> Care to elaborate on why they're a horrible crock?
 
-http://ck.kolivas.org/patches/staircase-deadline/2.6.20-sched-rsdl-0.28.patch
+It's a *classic* case of an interface that tries to do everything under 
+the sun.
 
-and see if the bug recurs please?
+Here's a clue: look at any system call that takes a union as part of its 
+arguments. Count them. I think we have two:
+ - struct siginfo
+ - struct sigevent
+and they are both broken horrible interfaces where the data structures 
+depend on various flags.
 
-Thanks!
+It's just not the UNIX system call way. And none of it really makes sense 
+if you already have a file descriptor, since at that point you know what 
+the notification mechanism is.
 
--- 
--ck
+I'd actually much rather do POSIX timers the other way around: associate a 
+generic notification mechanism with the file descriptor, and then 
+implement posix_timer_create() on top of timerfd. Now THAT sounds like a 
+clean unix-like interface ("everything is a file") and would imply that 
+you'd be able to do the same kind of notification for any file descriptor, 
+not just timers.
+
+But posix timers as they are done now are just an abomination. They are 
+not unix-like at all.
+
+> And are the bugs fixed? If so, why replace them? They work now.
+
+.. but the reason for the bugs was largely a very baroque interface, which 
+didn't get fixed (because it's specified by the standard).
+
+I'd rather have straightforward interfaces. The timerfd() one lookedalot 
+more straightforward than posix timers.
+
+(That said, using "struct itimerspec" might be a good idea. That would 
+also obviate the need for TFD_TIMER_SEQ, since an itimerspec automatically 
+has both "base" and "incremental" parts).
+
+		Linus
