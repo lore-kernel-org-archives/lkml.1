@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767839AbXCJPU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161089AbXCJP3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767839AbXCJPU2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 10:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767841AbXCJPU1
+	id S1161089AbXCJP3H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 10:29:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161115AbXCJP3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 10:20:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49133 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767839AbXCJPU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 10:20:26 -0500
-Date: Sat, 10 Mar 2007 16:18:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Seyfried <seife@suse.de>
-Cc: Pavel Machek <pavel@suse.cz>, Johannes Stezenbach <js@linuxtv.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, linux-pm@lists.osdl.org,
-       lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Message-ID: <20070310151804.GA10627@elte.hu>
-References: <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org> <20070309174821.GA31754@linuxtv.org> <20070309233508.GB2197@elf.ucw.cz> <20070310090121.GB15647@elte.hu> <20070310114301.GA30554@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 10 Mar 2007 10:29:06 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:29297 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161089AbXCJP2z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 10:28:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oi0C43xr2jqOK6iqh7SxL2Brydwqbp55U8VrMjfPkdHqUgQ/i5ULRXuErxxYLP8w+n6B90y5kcJWAV+fKVhHuSmNbui+7O2yI25hV3b0HokhlZPjGoJN7yJXlzgpeSZ/NlZ/prS6dPm8K+RviaJm1CChoHFdyKOD19GSr2gbMYQ=
+Message-ID: <b637ec0b0703100728i5a38e17boe370c86c02791e02@mail.gmail.com>
+Date: Sat, 10 Mar 2007 16:28:52 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [git patches] libata (and devres) fixes
+Cc: "Jeff Garzik" <jeff@garzik.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070309234839.2070a265@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070310114301.GA30554@suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20070309163148.GA12848@havoc.gtf.org>
+	 <b637ec0b0703091324q7f15fddbpc8c24b4e1131e3f4@mail.gmail.com>
+	 <20070309234839.2070a265@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Maybe KERN_DEBUG instead of KERN_ERR?
 
-* Stefan Seyfried <seife@suse.de> wrote:
 
-> > btw., the s2ram database seems quite a bit spotty:
-> > 
-> >  $ ./s2ram -n
-> >  Machine is unknown.
-> >  This machine can be identified by:
-> >      sys_vendor   = "System manufacturer"
-> >      sys_product  = "System Product Name"
-> >      sys_version  = "System Version"
-> >      bios_version = "ASUS A8N-E ACPI BIOS Revision 1008"
-> > 
-> >  $ ./s2ram -n
-> >  Machine is unknown.
-> >  This machine can be identified by:
-> >     sys_vendor   = "Hewlett-Packard "
-> >     sys_product  = "compaq nx9030 (PG630ET#ABD)       "
-> >     sys_version  = "Rev 1           "
-> >     bios_version = "F.15    "
-> >  See http://en.opensuse.org/S2ram for details.
-> > 
-> > even at the link above i didnt find any clear algorithm about how to 
-> > extend the quirks-list and the white-list - while i expect that most 
-> > people experience what i did: that s2ram doesnt know their boxes. 
-> > (otherwise they would not visit that URL at all i suspect)
-> 
-> Ok. To be honest, you are the first reporter that seems to have read 
-> the documentation above, but not understood what to do.
-
-thanks for the compliment ;-) _I_ very much know what to do (i mailed 
-the right person after all ;), but i dont really count and on the 6 
-systems i tried s2ram said on 5 that it's 'unknown', i assumed it could 
-possibly be due to the visible lack of clear instructions on that 
-webpage ;-)
-
-> i might consider reworking the documentation if there are more reports 
-> about problems with the procedure.
-
-Probably tweaking the webpage doesnt help because people dont get there 
-- as the results plainly show it. Maybe some more automation would be 
-useful too, a tool that detects failed resume and tries all those 
-options that makes sense on that box or something? It's not like that 
-people dont _try_ suspend/resume on Linux, it's just that they find it 
-doesnt work and there is no clear mortal-usable (end-user-) way of 
-fixing it and submitting the result of that fixing.
-
-	Ingo
+On 3/10/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > scsi1 : ata_piix
+> > ata2: port disabled. ignoring.
+> > ata2: reset failed, giving up    <--- THIS IS NEW.
+> >
+> > However, I think it's just bogus as there is ata2 is disabled on this laptop.
+>
+> This is expected behaviour and it is what every controller except the
+> PIIX has done for some time. I'm not sure its perfect but we could return
+> 0 from the -ENOENT case in ata_eh_reset() if that is preferred.
+>
+>
