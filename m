@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965058AbXCKTgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965095AbXCKTgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965058AbXCKTgE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 15:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXCKTgE
+	id S965095AbXCKTgL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 15:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965083AbXCKTgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 15:36:04 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58273 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965058AbXCKTgB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 15:36:01 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kirill Korotaev <dev@sw.ru>, containers@lists.osdl.org, menage@google.com,
-       xemul@sw.ru, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 2/7] RSS controller core
-References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>
-	<20070306140036.4e85bd2f.akpm@linux-foundation.org>
-	<45F3F581.9030503@sw.ru>
-	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
-Date: Sun, 11 Mar 2007 13:34:42 -0600
-In-Reply-To: <20070311045111.62d3e9f9.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Sun, 11 Mar 2007 04:51:11 -0800")
-Message-ID: <m1wt1nvajx.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 11 Mar 2007 15:36:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40761 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965095AbXCKTgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 15:36:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Milan Broz <mbroz@redhat.com>
+Subject: Re: SwSusp to disk doesn't work - Try 2
+Date: Sun, 11 Mar 2007 20:38:51 +0100
+User-Agent: KMail/1.9.5
+Cc: Thomas Meyer <thomas@m3y3r.de>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
+References: <45F44599.3060508@m3y3r.de> <200703111926.20183.rjw@sisk.pl> <45F452A2.2050009@redhat.com>
+In-Reply-To: <45F452A2.2050009@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703112038.52375.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Sunday, 11 March 2007 20:04, Milan Broz wrote:
+> Rafael J. Wysocki napsal(a):
+> > On Sunday, 11 March 2007 19:08, Thomas Meyer wrote:
+> >> Suspend to disk doesn't work on my laptop.
+> >>
+> >> The suspend seems to hang while enabling the non-boot cpus again.
+> >>
+> >> with platform = "test" and state = "disk" i get this:
+> 
+> >> Enabling non-boot CPUs ...
+> ...
+> > 
+> > Could you please put some printk()s in kernel/cpu.c:_cpu_up() to see where
+> > it gets stuck?  I bet one of the notifiers goes to sleep (cpufreq, maybe).
+> 
+> Hi,
+> I see the same problem - 2.6.21-rc3 with NO_HZ set (tickless), 
 
-> Yep.  Straightforward machine partitioning.  An attractive thing is that it
-> 100% reuses existing page reclaim, unaltered.
+Ah, NO_HZ.  Thomas Gleixner's address added to the Cc list.
 
-And misses every resource sharing opportunity in sight.  Except for
-filtering the which pages are eligible for reclaim an RSS limit should
-not need to change the existing reclaim logic, and with things like the
-memory zones we have had that kind of restriction in the reclaim logic
-for a long time.  So filtering out ineligible pages isn't anything new.
+> short printk trace 
+> 
+> enable_nonboot_cpus
+>  _cpu_up
+>   raw_notifier_callchain (CPU_UP_PREPARE)
+>     ...
+>     update_sched_domains
+>      detach_destroy_domains
+>        [waits here] --> synchronize_sched (==synchronize_rcu)
 
->> imho memzone approach is inconvinient for pages sharing and shares accounting.
->> it also makes memory management more strict, forbids overcommiting
->> per-container etc.
->
-> umm, who said they were requirements?
->
->> Maybe you have some ideas how we can decide on this?
->
-> We need to work out what the requirements are before we can settle on an
-> implementation.
+Well, I think the call to wait_for_completion() does not return, probably
+because the task supposed to complete the completion is frozen at this
+point.  Can you please try to confirm that it gets stuck on
+wait_for_completion() in synchronize_rcu()?
 
-If you are talking about RSS limits the term is well defined.  The
-number of pages you can have mapped into your set of address space at
-any given time.
-
-Unless I'm totally blind that isn't what the patchset implements.  A
-true RSS limit over multiple processes has a lot of potential to be
-generally useful, is very understandable, doesn't affect kernel cache
-decisions so largely performance should not be affected.  There is a
-little more overhead in the fault logic but that is a moderately
-expensive path anyway.
-
-> Sigh.  Who is running this show?   Anyone?
-
-Someone is supposed to run the show?  :)
-
-> You can actually do a form of overcommittment by allowing multiple
-> containers to share one or more of the zones.  Whether that is sufficient
-> or suitable I don't know.  That depends on the requirements, and we haven't
-> even discussed those, let alone agreed to them.  
-
-Another really nasty issue is the container term as the resource guys
-are using the term in a subtlety different way then it has been used
-with namespaces leading to several threads where the participants talked
-past each other.  We need a different term to designate the group of
-tasks a resource controller is dealing with.
-
-The whole filesystem interface also is over general and makes it too
-easy to express the hard things (like move an existing task from one
-group of tasks to another) leading to code complications.
-
-On the up side I think the code the focus is likely in the right place
-to start delivering usable code.
-
-Eric
+Rafael
