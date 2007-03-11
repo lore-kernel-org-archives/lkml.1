@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbXCKVlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbXCKVmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932706AbXCKVlN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 17:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbXCKVlN
+	id S932825AbXCKVmF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 17:42:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932830AbXCKVmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 17:41:13 -0400
-Received: from h80ad275d.async.vt.edu ([128.173.39.93]:44221 "EHLO
-	h80ad275d.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932706AbXCKVlM (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 17:41:12 -0400
-Message-Id: <200703112140.l2BLeoTD009496@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
-In-Reply-To: Your message of "Sun, 11 Mar 2007 13:50:37 +1100."
-             <1173581437.32234.168.camel@localhost.localdomain>
-From: Valdis.Kletnieks@vt.edu
-References: <1173419792.32234.131.camel@localhost.localdomain> <1173481052.32234.137.camel@localhost.localdomain> <Pine.LNX.4.61.0703100156490.8799@yvahk01.tjqt.qr>
-            <1173581437.32234.168.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1173649250_8163P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 11 Mar 2007 17:42:05 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:39279 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932840AbXCKVmD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 17:42:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=A+UfMh705/jHiWIWKFiYJzCci44sZoSO+jyyn1LWyT1SC33gaKBfKnHk4Yvty90bH3mbbShNOvCH2OZNLIGUHJwX7J/PEzWVSb7j6t3SayL3GiVdDjptpmMMhwuwlDuwy0oZhK9C5I0wvPp0moLMu3NA6YhPhkS71sO8cduFW34=
+Message-ID: <75b66ecd0703111442v24f5b264rc9a8ef5d96f27375@mail.gmail.com>
+Date: Sun, 11 Mar 2007 17:42:02 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Giuliano Pochini" <pochini@shiny.it>
+Subject: Re: /sys/devices/system/cpu/cpuX/online are missing
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070311222652.5ea40da1.pochini@shiny.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Sun, 11 Mar 2007 17:40:50 -0400
+Content-Disposition: inline
+References: <20070311222652.5ea40da1.pochini@shiny.it>
+X-Google-Sender-Auth: c26109b573337d0e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1173649250_8163P
-Content-Type: text/plain; charset=us-ascii
+On 3/11/07, Giuliano Pochini <pochini@shiny.it> wrote:
+>
+>
+> Since 2.6.20 /sys/devices/system/cpu/cpuX/online isn't there anymore. The
+> directories exist, though. I also tested linux-2.6.21rc3. I had a look at the
+> archives and I found nothing about the removal of that file, which is still
+> documented in Documentation/cpu-hotplug.txt. I don't know if other
+> architectures are affected.
 
-On Sun, 11 Mar 2007 13:50:37 +1100, Rusty Russell said:
-> Well, this is what I sent to Linus and Andrew (many thanks to those who
-> made appropriately whimsical *or* useful comments):
+What is CONFIG_SYSFS_DEPRECATED set to?
 
-Ahh.. much better - it's now a form that even I can get my brain wrapped around :)
-
---==_Exmh_1173649250_8163P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFF9HdicC3lWbTT17ARAinCAJ9Al6RWt9g9oyHic8GpUwS4gDxa4QCdFPrs
-MDp5n9cF/UKh47+H/nl/LAE=
-=YdIG
------END PGP SIGNATURE-----
-
---==_Exmh_1173649250_8163P--
+Lee
