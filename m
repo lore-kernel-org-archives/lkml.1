@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751187AbXCKHWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751250AbXCKH0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751187AbXCKHWy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 03:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbXCKHWy
+	id S1751250AbXCKH0R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 03:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbXCKH0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 03:22:54 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:1035 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbXCKHWx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 03:22:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=KLATk3lRN9EdgQgG3eD7aIMh7Kk1mVBoWX9okBbLQmpeZi20V0XbBU6r0ztbgfmIBpP0KhnTGPaEte1jAskZd6hyxypamuQeIWwI0sY/v6dE7A7rciWChL4MgxDc0ux9lCp+GSks1wOK168VoGeSallp6gGuifZW/zaRumTPMeU=
-Message-ID: <3aac340703102322p362998b9labedc13503702d2b@mail.gmail.com>
-Date: Sun, 11 Mar 2007 09:22:50 +0200
-From: Vitaliyi <imgrey@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: libata extension
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 11 Mar 2007 03:26:17 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:38667 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751250AbXCKH0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 03:26:17 -0400
+Date: Sat, 10 Mar 2007 23:26:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: linux-kernel@vger.kernel.org, twoller@crystal.cirrus.com
+Subject: Re: [PATCH] CIRRUS: Delete unused header file.
+Message-Id: <20070310232610.dda68aff.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703101725550.28973@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703101725550.28973@CPE00045a9c397f-CM001225dbafb6>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good Day
+> On Sat, 10 Mar 2007 17:27:44 -0500 (EST) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+> 
+>   Delete apparently unused header file
+> sound/pci/cs46xx/imgs/cwcemb80.h.
+> 
 
-Say i want to implement extended set of ATA commands available to
-userspace for building diagnostic tools.
-I need 0x40 -- read verify and 0x32 -- write long with error handling,
-for example. I was trying ide driver through ioctl's, but seems it
-lack of functionality and full of gotchas. Furthermore it oopses
-sometimes.
+That patch series was rather a mess
 
-Is it possible to use libata for such purpose or i need to write
-separate IDE driver ?
-By the way, i'm sure it should be done in kernel space since i'm going
-to deal with some hdd manufacturer commands.
+- Multiple patches with the same Subject: (I might have lost some as a result)
 
-P.S. I was looking through libata and ide sources and documentation
-but still dont have broad picture.
+- Several patches which tried to remove the same header file
 
+- Several patches which simply didn't apply
 
-Thanks
+- Inconsisent changelogging, inconsistent titling
+
+- Lack of sequence numbering (again, contributes to possible patch loss)
+
+- Useless indenting in changleog text which I have to edit away.
+
+We have good tools (ie: quilt) which make this sort of thing nice and easy
+to get right - please use them.
+
+I didn't check that these headers are indeed unused.  I hope you got that
+minor part right..
+
