@@ -1,101 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933848AbXCKREJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbXCKRjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933848AbXCKREJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 13:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933850AbXCKREJ
+	id S933860AbXCKRjd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 13:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933864AbXCKRjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 13:04:09 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:27511 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933848AbXCKREH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 13:04:07 -0400
-Message-ID: <45F437C9.2090108@sw.ru>
-Date: Sun, 11 Mar 2007 20:09:29 +0300
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	Sun, 11 Mar 2007 13:39:33 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45732 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933860AbXCKRjb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 13:39:31 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: SATA resume slowness, e1000 MSI warning
+References: <20070308102354.GC5149@mellanox.co.il>
+	<m1wt1oyqyo.fsf@ebiederm.dsl.xmission.com>
+	<20070311112400.GB24475@mellanox.co.il>
+Date: Sun, 11 Mar 2007 11:37:52 -0600
+In-Reply-To: <20070311112400.GB24475@mellanox.co.il> (Michael S. Tsirkin's
+	message of "Sun, 11 Mar 2007 13:24:00 +0200")
+Message-ID: <m1ird7y93j.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Herbert Poetzl <herbert@13thfloor.at>
-CC: Srivatsa Vaddagiri <vatsa@in.ibm.com>, menage@google.com, pj@sgi.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, winget@google.com,
-       containers@lists.osdl.org, akpm@linux-foundation.org,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       xemul@sw.ru
-Subject: Re: [PATCH 1/2] rcfs core patch
-References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <20070308101347.GA29051@in.ibm.com> <20070309004816.GB4506@MAIL.13thfloor.at> <45F127AB.5070704@sw.ru> <20070309132136.GA14907@MAIL.13thfloor.at>
-In-Reply-To: <20070309132136.GA14907@MAIL.13thfloor.at>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert,
+"Michael S. Tsirkin" <mst@mellanox.co.il> writes:
 
-> sorry, I'm not in the lucky position that I get payed
-> for sending patches to LKML, so I have to think twice
-> before I invest time in coding up extra patches ...
-> 
-> i.e. you will have to live with my comments for now
-looks like you have no better argurments then that...
+>> Quoting Eric W. Biederman <ebiederm@xmission.com>:
+>> Subject: Re: SATA resume slowness, e1000 MSI warning
+>> 
+>> "Michael S. Tsirkin" <mst@mellanox.co.il> writes:
+>> 
+>> >> The only case I can see which might trigger this is if we saved
+>> >> pci-X state and then didn't restore it because we could not find
+>> >> the capability on restore.
+>> >
+>> > Hmm. pci_save_pcix_state/pci_restore_pcix_state seem to only handle
+>> > regular devices and seem to ignore the fact that for bridge PCI-X
+>> > capability has a different structure.
+>> >
+>> > Is this intentional? 
+>> 
+>> Probably not a such.  I don't think we have any drivers for bridge
+>> devices so I don't think it matters.  It likely wouldn't hurt to fix
+>> it just in case though.
+>> 
+>> Do any of the mellanox cards do anything with the bridge on the card?
+>
+> Yes but they do their own thing wrt saving/restoring registers.
+> Look at drivers/infiniband/hw/mthca/mthca_reset.c
+>
+>> > If not, here's a patch to fix this. Warning: completely untested.
+>> 
+>> If you fix the offsets and diff this against my last fix (to never
+>> free the buffer) I think your patch makes sense.
+>
+> Let's agree what the correct offsets are.
+>
+>> > PCI: restore bridge PCI-X capability registers after PM event
+>> >
+>> > Restore PCI-X bridge up/downstream capability registers
+>> > after PM event.  This includes maxumum split transaction
+>> > commitment limit which might be vital for PCI X.
+>> >
+>> > Signed-off-by: Michael S. Tsirkin <mst@mellanox.co.il>
+>> >
+>> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> > index df49530..4b788ef 100644
+>> > --- a/drivers/pci/pci.c
+>> > +++ b/drivers/pci/pci.c
+>> > @@ -597,14 +597,19 @@ static int pci_save_pcix_state(struct pci_dev *dev)
+>> >  	if (pos <= 0)
+>> >  		return 0;
+>> >  
+>> > -	save_state = kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
+>> > + save_state = kzalloc(sizeof(*save_state) + sizeof(u16) * 2, GFP_KERNEL);
+>> >  	if (!save_state) {
+>> > -		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
+>> > +		dev_err(&dev->dev, "Out of memory in pci_save_pcix_state\n");
+>> >  		return -ENOMEM;
+>> >  	}
+>> >  	cap = (u16 *)&save_state->data[0];
+>> >  
+>> > -	pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
+>> > +	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
+>> 
+>> This appears to be the proper test.
+>> 
+>> > + pci_read_config_word(dev, pos + PCI_X_BRIDGE_UP_SPL_CTL, &cap[i++]);
+>> > + pci_read_config_word(dev, pos + PCI_X_BRIDGE_DN_SPL_CTL, &cap[i++]);
+>> > +	} else
+>> > +		pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
+>> > +
+>> >  	pci_add_saved_cap(dev, save_state);
+>> >  	return 0;
+>> >  }
+>> > @@ -621,7 +626,11 @@ static void pci_restore_pcix_state(struct pci_dev *dev)
+>> >  		return;
+>> >  	cap = (u16 *)&save_state->data[0];
+>> >  
+>> > -	pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
+>> > +	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
+>> > + pci_write_config_word(dev, pos + PCI_X_BRIDGE_UP_SPL_CTL, cap[i++]);
+>> > + pci_write_config_word(dev, pos + PCI_X_BRIDGE_DN_SPL_CTL, cap[i++]);
+>> 
+>> These look like the proper two registers to save.
+>> 
+>> > +	} else
+>> > +		pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
+>> >  	pci_remove_saved_cap(save_state);
+>> >  	kfree(save_state);
+>> >  }
+>> > diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
+>> > index f09cce2..fb7eefd 100644
+>> > --- a/include/linux/pci_regs.h
+>> > +++ b/include/linux/pci_regs.h
+>> > @@ -332,6 +332,8 @@
+>> > #define PCI_X_STATUS_SPL_ERR 0x20000000 /* Rcvd Split Completion Error Msg
+> */
+>> >  #define  PCI_X_STATUS_266MHZ	0x40000000	/* 266 MHz capable */
+>> >  #define  PCI_X_STATUS_533MHZ	0x80000000	/* 533 MHz capable */
+>> > +#define PCI_X_BRIDGE_UP_SPL_CTL 10 /* PCI-X upstream split transaction
+> limit */
+>> > +#define PCI_X_BRIDGE_DN_SPL_CTL 14 /* PCI-X downstream split transaction
+> limit */
+>> 
+>> Unless I am completely misreading the spec. While you have picked the
+>> right register to save the offsets should be 0x08 and 0x0c or 8 and 12....
+>
+> No, the spec is written in terms of dwords (32 bit), we are storing words (16
+> bits).
+> The data at offsets 8 and 12 is read-only split transaction capacity.
+> Split transaction limit starts at bit 16 so you need to add 2 to byte offset.
+>
+> Right?
 
->>Looks like your main argument is non-intrusive...
->>"working", "secure", "flexible" are not required to 
->>people any more? :/
-> 
-> 
-> well, Linux-VServer is "working", "secure", "flexible"
-> _and_ non-intrusive ... it is quite natural that less
-> won't work for me ... and regarding patches, there
-> will be a 2.2 release soon, with all the patches ...
-ok. please check your dcache and slab accounting then
-(analyzed according to patch-2.6.20.1-vs2.3.0.11.diff):
-Both are full of races and problems. Some of them:
-1. Slabs allocated from interrupt context are charged to current context.
-   So charged values contain arbitrary mess, since during interrupts
-   context can be arbitrary.
-2. Due to (1) I guess you do not make any limiting of slabs.
-   So there are number of ways how to consume a lot of kernel
-   memory from inside container and
-   OOM killer will kill arbitrary tasks in case of memory-shortage after that.
-   Don't think it is secure... real DoS.
-3. Dcache accounting simply doesn't work, since
-   charges/uncharges are done on current context (sic!!!), which is arbitrary.
-   i.e. lookup can be done in VE context, while dcache shrink can be done
-   from another context.
-   So the whole problem with dcache DoS is not solved at all, it is just hard to trigger.
-4. Dcache accounting is racy, since your checks look like:
-   if (atomic_read(de->d_count))
-      charge();
-   which obviously races with other dput()'s/lookups.
-5. Dcache accounting can be hit if someone does `find /` inside container.
-   After that it is impossible to open something new,
-   since all the dentries for directories in dcache will have d_count > 0
-   (due it's children).
-   It is a BUG.
-6. Counters can be non-zero on container stop due to all of the above.
+>From that perspective it makes sense.  So I will agree with the way you are
+thinking the code works.
 
-There are more and more points which arise when such a non-intrusive
-accounting is concerned. I'm really suprised, that you don't see them
-or try to behave as you don't see them :/
-And, please, believe me, I would not suggest so much complicated patches
-If everything was so easy and I had no reasons simply to accept vserver code.
+The read-only and the read-write part are all defined as part of the
+same register so I didn't expect them to be separate.  And I hadn't
+paid attention enough to see that the code was only saving 16bit
+values.
 
-> well, as you know, all current solutions use a syscall
-> interface to do most of the work, in the OpenVZ/Virtuozzo
-> case several, unassigned syscalls are used, while 
-> FreeVPS and Linux-VServer use a registered and versioned
-> (multiplexed) system call, which works quite fine for
-> all known purposes ...
-> 
-> I'm quite happy with the extensibility and flexibility
-> the versioned syscall interface has, the only thing I'd
-> change if I would redesign that interface is, that I
-> would add another pointer argument to eliminate 32/64bit
-> issues completely (i.e. use 4 args instead of the 3)
-Well, I would be happy with syscalls also.
-But my guess is that cpuset guys who already use fs approach won't be happy :/
-Maybe we can use both?
+Rumor has it that some pci devices can't tolerate < 32bit accesses.
+Although I have never met one.  The two factors together suggest that
+for generic code it probably makes sense to operate on 32bit
+quantities, and just to ignore the read-only portion.
 
-Thanks,
-Kirill
-
+Eric
