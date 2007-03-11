@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751250AbXCKH0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751234AbXCKHcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751250AbXCKH0R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 03:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbXCKH0R
+	id S1751234AbXCKHcu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 03:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXCKHcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 03:26:17 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:38667 "EHLO smtp.osdl.org"
+	Sun, 11 Mar 2007 03:32:50 -0400
+Received: from 1wt.eu ([62.212.114.60]:1118 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbXCKH0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 03:26:17 -0400
-Date: Sat, 10 Mar 2007 23:26:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: linux-kernel@vger.kernel.org, twoller@crystal.cirrus.com
-Subject: Re: [PATCH] CIRRUS: Delete unused header file.
-Message-Id: <20070310232610.dda68aff.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703101725550.28973@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0703101725550.28973@CPE00045a9c397f-CM001225dbafb6>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	id S1751234AbXCKHct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 03:32:49 -0400
+Date: Sun, 11 Mar 2007 08:32:28 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@osdl.org
+Subject: Re: RSDL-mm 0.28
+Message-ID: <20070311073228.GM943@1wt.eu>
+References: <20070311013506.GD10459@waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070311013506.GD10459@waste.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sat, 10 Mar 2007 17:27:44 -0500 (EST) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
-> 
->   Delete apparently unused header file
-> sound/pci/cs46xx/imgs/cwcemb80.h.
-> 
+On Sat, Mar 10, 2007 at 07:35:06PM -0600, Matt Mackall wrote:
+> I've tested -mm2 against -mm2+noyield and -mm2+rsdl+noyield. The
+> noyield patch simply makes the sched_yield syscall return immediately.
+> Xorg and all tests are run at nice 0.
 
-That patch series was rather a mess
+[skipped long and precise test report]
 
-- Multiple patches with the same Subject: (I might have lost some as a result)
+> Also note I could occassionally trigger nasty multi-second pauses with
+> -mm2+noyield under exectest that didn't show up elsewhere. That's
+> probably a bug in the mainline scheduler.
 
-- Several patches which tried to remove the same header file
+This is not a bug per se, but more a design problem. This is caused by
+the interactivity booster which is unfair. Mike Galbraith and others
+spent a lot of time trying to get rid of those problems a few versions
+ago. In early kernels (around 2.6.11), I could trivially cause pauses
+more than 30 seconds long by running a few tasks simulating an interactive
+workload. It is much more difficult to achieve this with recent kernels,
+and it has absolutely no effect on RSDL, which is one of the reasons
+I have to find it great !
 
-- Several patches which simply didn't apply
-
-- Inconsisent changelogging, inconsistent titling
-
-- Lack of sequence numbering (again, contributes to possible patch loss)
-
-- Useless indenting in changleog text which I have to edit away.
-
-We have good tools (ie: quilt) which make this sort of thing nice and easy
-to get right - please use them.
-
-I didn't check that these headers are indeed unused.  I hope you got that
-minor part right..
+Regards,
+Willy
 
