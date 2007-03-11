@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbXCKTBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934004AbXCKTEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934001AbXCKTBm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 15:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934002AbXCKTBm
+	id S934004AbXCKTEn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 15:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934005AbXCKTEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 15:01:42 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50051 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934001AbXCKTBl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 15:01:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelianov <xemul@sw.ru>
-Cc: balbir@in.ibm.com, containers@lists.osdl.org,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/7] Resource counters
-References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru>
-	<45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru>
-	<20070309163711.GA3647@MAIL.13thfloor.at>
-Date: Sun, 11 Mar 2007 13:00:15 -0600
-In-Reply-To: <20070309163711.GA3647@MAIL.13thfloor.at> (Herbert Poetzl's
-	message of "Fri, 9 Mar 2007 17:37:11 +0100")
-Message-ID: <m1fy8bwqps.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 11 Mar 2007 15:04:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36982 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934004AbXCKTEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 15:04:42 -0400
+Message-ID: <45F452A2.2050009@redhat.com>
+Date: Sun, 11 Mar 2007 20:04:02 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Thomas Meyer <thomas@m3y3r.de>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: SwSusp to disk doesn't work - Try 2
+References: <45F44599.3060508@m3y3r.de> <200703111926.20183.rjw@sisk.pl>
+In-Reply-To: <200703111926.20183.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Poetzl <herbert@13thfloor.at> writes:
+Rafael J. Wysocki napsal(a):
+> On Sunday, 11 March 2007 19:08, Thomas Meyer wrote:
+>> Suspend to disk doesn't work on my laptop.
+>>
+>> The suspend seems to hang while enabling the non-boot cpus again.
+>>
+>> with platform = "test" and state = "disk" i get this:
 
->
-> Linux-VServer does the accounting with atomic counters,
-> so that works quite fine, just do the checks at the
-> beginning of whatever resource allocation and the
-> accounting once the resource is acquired ...
+>> Enabling non-boot CPUs ...
+...
+> 
+> Could you please put some printk()s in kernel/cpu.c:_cpu_up() to see where
+> it gets stuck?  I bet one of the notifiers goes to sleep (cpufreq, maybe).
 
-Atomic operations versus locks is only a granularity thing.
-You still need the cache line which is the cost on SMP.
+Hi,
+I see the same problem - 2.6.21-rc3 with NO_HZ set (tickless), 
+short printk trace 
 
-Are you using atomic_add_return or atomic_add_unless or
-are you performing you actions in two separate steps which
-is racy?  What I have seen indicates you are using a racy two separate
-operation form.
+enable_nonboot_cpus
+ _cpu_up
+  raw_notifier_callchain (CPU_UP_PREPARE)
+    ...
+    update_sched_domains
+     detach_destroy_domains
+       [waits here] --> synchronize_sched (==synchronize_rcu)
 
->> If we'll remove failcnt this would look like
->>    while (atomic_cmpxchg(...))
->> which is also not that good.
->> 
->> Moreover - in RSS accounting patches I perform page list
->> manipulations under this lock, so this also saves one atomic op.
->
-> it still hasn't been shown that this kind of RSS limit
-> doesn't add big time overhead to normal operations
-> (inside and outside of such a resource container)
->
-> note that the 'usual' memory accounting is much more
-> lightweight and serves similar purposes ...
 
-Perhaps....
+Milan
 
-Eric
+
