@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbXCKU7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932317AbXCKVC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932253AbXCKU7s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 16:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbXCKU7s
+	id S932317AbXCKVC7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 17:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbXCKVC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 16:59:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60660
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932253AbXCKU7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 16:59:47 -0400
-Date: Sun, 11 Mar 2007 13:59:46 -0700 (PDT)
-Message-Id: <20070311.135946.28788670.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: linux-kernel@vger.kernel.org, ak@suse.com, holt@sgi.com,
-       linux-ia64@vger.kernel.org, mpm@selenic.com
-Subject: Re: [QUICKLIST 0/6] Arch independent quicklists V1
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
-References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Mar 2007 17:02:59 -0400
+Received: from raven.upol.cz ([158.194.120.4]:42068 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932317AbXCKVC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 17:02:58 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       Trent Piepho <xyzzy@speakeasy.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [RFC PATCH 1/3] Add ability to keep track of callers of symbol_(get|put)
+In-Reply-To: <20070311000938.80202418.akpm@linux-foundation.org>
+References: <1173501095.26213.405.camel@localhost> <20070311000938.80202418.akpm@linux-foundation.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: jed + slrn/0.9.8.1pl1 (x86_64-linux-gnu-debian)
+Date: Sun, 11 Mar 2007 22:12:27 +0100
+Message-Id: <E1HQVL9-0007nM-I0@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
-Date: Sat, 10 Mar 2007 18:09:23 -0800 (PST)
+> From: Andrew Morton
+> Newsgroups: gmane.linux.kernel
+> Subject: Re: [RFC PATCH 1/3] Add ability to keep track of callers of symbol_(get|put)
+> Date: Sun, 11 Mar 2007 00:09:38 -0800
+>
+>> On Sat, 10 Mar 2007 02:31:35 -0200 Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+>> From: Trent Piepho <xyzzy@speakeasy.org>
+>> 
+>> When a module uses symbol_get() to increase the ref count of another
+>> module, there is no record what module called symbol_get().  A module
+>> can
+>> show up as having other users, but there is no way to tell who those
+>> users are.
+>> 
+>> This adds that ability to symbol_put() and symbol_get().
+>
+> One day I'll write a script which unwordwraps patches and then you'll all
+> need to find new ways of torturing me.
 
-> Page table pages have the characteristics that they are typically zero
-> or in a known state when they are freed. This is usually the exactly
-> same state as needed after allocation. So it makes sense to build a list
-> of freed page table pages and then consume the pages already in use
-> first. Those pages have already been initialized correctly (thus no
-> need to zero them) and are likely already cached in such a way that
-> the MMU can use them most effectively.
+I don't support twisted patches, but before they will be resent, because
+word wrapping may lead to 80-colums rule, please find useful this:
 
-I'm going to make the radical declaration that it be perhaps often
-better to always initialize page table chunks to all zeros on
-allocation.
-
-The reason is that every time I've monitored the allocation patterns
-of these things on SMP, the page table chunks always get released on a
-different cpu than where they were initialized.
-
-It's precisely suboptimal for a workload that forks off a lot of
-very short lived jobs, watch what happens during runs of lmbench's
-lat_proc for example.
-
-The allocator side just does nothing but emit L2 cache line ownership
-transactions as the pte page is touched.  Especially on chips like
-PowerPC where zero initialization is absurdly cheap, we can avoid all
-of the cache line transfers if we just initialize it at allocation
-time.
-
-Look, I like this trick too, sparc and sparc64 were the first Linux
-platforms to implement page table caching about 8 years ago, but
-I'm wondering whether it really makes sense any more.
-
+sed -r '
+# assume only line started from [+-] got wrapped
+# start what ever first line
+/^[-+]/{
+:more;
+# append next line, to check wrapped addition
+N;
+# if it is one, i.e starts not with [ \t+-], '@@' or 'diff'
+# do "\n" -> " "
+s_\n([^d@ \t+-])_ \1_g;
+# loop until find one(addition), because line(s) already here
+T more;
+# special case of empty line
+s_\n$_&_
+t more;
+b;
+};'
+____
