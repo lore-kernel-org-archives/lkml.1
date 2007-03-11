@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751440AbXCJXqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751483AbXCKAVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751440AbXCJXqf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 18:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXCJXqf
+	id S1751483AbXCKAVO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 19:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXCKAVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 18:46:35 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:33157 "EHLO tmailer.gwdg.de"
+	Sat, 10 Mar 2007 19:21:14 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:59853 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440AbXCJXqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 18:46:33 -0500
-Date: Sun, 11 Mar 2007 00:43:34 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Kanhu Rauta <choiskanhu@gmail.com>
-cc: netfilter-devel@lists.netfilter.org, linux-net@vger.kernel.org,
-       kernelnewbies@nl.linux.org, linux-kernel@vger.kernel.org
-Subject: Re: IP Defragmentation
-In-Reply-To: <4c348ac20703072215x63a7a315kd018e433c7a197d2@mail.gmail.com>
-Message-ID: <Pine.LNX.4.61.0703110042460.26332@yvahk01.tjqt.qr>
-References: <4c348ac20703072215x63a7a315kd018e433c7a197d2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1751483AbXCKAVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 19:21:13 -0500
+Date: Sat, 10 Mar 2007 16:21:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kees Cook <kees@outflux.net>
+Cc: arjan@linux.intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: maps protection
+Message-Id: <20070310162101.716b6b57.akpm@linux-foundation.org>
+In-Reply-To: <20070310183341.GB10460@outflux.net>
+References: <20070307012234.GN9621@outflux.net>
+	<20070306175609.267bd7a9.akpm@linux-foundation.org>
+	<20070307021335.GR9621@outflux.net>
+	<20070306185942.585e7cd1.akpm@linux-foundation.org>
+	<20070307031429.GU9621@outflux.net>
+	<1173241331.3236.10.camel@laptopd505.fenrus.org>
+	<20070308205525.GJ6805@outflux.net>
+	<20070309183006.7ff23eff.akpm@linux-foundation.org>
+	<45F23BB5.8090907@linux.intel.com>
+	<20070310183341.GB10460@outflux.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Sat, 10 Mar 2007 10:33:41 -0800 Kees Cook <kees@outflux.net> wrote:
+> Here's another revision, with both the "can ptrace" and the global /proc 
+> knob;
 
-On Mar 8 2007 11:45, Kanhu Rauta wrote:
->
-> 1>in case of fragmention i am getting only one packet at the
-> hook,While analyzing the ip header it says this is the assembled
-> packet(skb->len=1528,offset=0,MF=0).
+We'd be needing a changelog for that.
 
-conntrack assembles defragmented packets.
+Please update the procfs documentation.
 
-> While dumping the data(for 0 to 1528 print skb->data[i]) it shows that
-> only 1472 bytes are valid data and rest 28 bytes are something
-> garbage.
-
-Have you forgotten to use skb_header_pointer()?
-
-
-
-Jan
--- 
+Does the patch also cover /proc/pid/smaps?
