@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbXCKU6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932253AbXCKU7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932130AbXCKU6H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 16:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbXCKU6H
+	id S932253AbXCKU7s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 16:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbXCKU7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 16:58:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60062 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932130AbXCKU6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 16:58:06 -0400
-Message-ID: <45F46D33.1050808@redhat.com>
-Date: Sun, 11 Mar 2007 21:57:23 +0100
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: SwSusp to disk doesn't work - Try 2
-References: <45F44599.3060508@m3y3r.de> <200703112038.52375.rjw@sisk.pl> <45F46530.8050005@redhat.com> <200703112132.32753.rjw@sisk.pl> <45F46660.4010102@m3y3r.de>
-In-Reply-To: <45F46660.4010102@m3y3r.de>
-Content-Type: text/plain; charset=ISO-8859-15
+	Sun, 11 Mar 2007 16:59:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60660
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932253AbXCKU7r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 16:59:47 -0400
+Date: Sun, 11 Mar 2007 13:59:46 -0700 (PDT)
+Message-Id: <20070311.135946.28788670.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: linux-kernel@vger.kernel.org, ak@suse.com, holt@sgi.com,
+       linux-ia64@vger.kernel.org, mpm@selenic.com
+Subject: Re: [QUICKLIST 0/6] Arch independent quicklists V1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer napsal(a):
-> Rafael J. Wysocki schrieb:
->> On Sunday, 11 March 2007 21:23, Milan Broz wrote:
->>   
->>> Rafael J. Wysocki:
->>>     
->>>> Ah, NO_HZ.  Thomas Gleixner's address added to the Cc list.
->>>>
->>>>       
->>>>> short printk trace 
->>>>>
->>>>> enable_nonboot_cpus
->>>>>  _cpu_up
->>>>>   raw_notifier_callchain (CPU_UP_PREPARE)
->>>>>     ...
->>>>>     update_sched_domains
->>>>>      detach_destroy_domains
->>>>>        [waits here] --> synchronize_sched (==synchronize_rcu)
->>>>>         
->>>> Well, I think the call to wait_for_completion() does not return, probably
->>>> because the task supposed to complete the completion is frozen at this
->>>> point.  Can you please try to confirm that it gets stuck on
->>>> wait_for_completion() in synchronize_rcu()?
->>>>       
->>> Yes, it's in wait_for_completion() in synchronize_rcu().
->>> As noted in some previous mail, it will wake up after
->>> event - key press etc.
->>>
->>> Patch in http://lkml.org/lkml/2007/3/7/255 solves different problem.
->>> I added it to my quilt and applied anyway -> no change.
->>>     
->> Does the problem go away if NO_HZ is unset?
->>   
-> 
-> i tried to boot with nohz=off, but the problem did persist.
+From: Christoph Lameter <clameter@sgi.com>
+Date: Sat, 10 Mar 2007 18:09:23 -0800 (PST)
 
-Hmmmm, both variants (nohz=off or recompiled kernel without NO_HZ) works for me.
+> Page table pages have the characteristics that they are typically zero
+> or in a known state when they are freed. This is usually the exactly
+> same state as needed after allocation. So it makes sense to build a list
+> of freed page table pages and then consume the pages already in use
+> first. Those pages have already been initialized correctly (thus no
+> need to zero them) and are likely already cached in such a way that
+> the MMU can use them most effectively.
 
-Milan
+I'm going to make the radical declaration that it be perhaps often
+better to always initialize page table chunks to all zeros on
+allocation.
 
+The reason is that every time I've monitored the allocation patterns
+of these things on SMP, the page table chunks always get released on a
+different cpu than where they were initialized.
+
+It's precisely suboptimal for a workload that forks off a lot of
+very short lived jobs, watch what happens during runs of lmbench's
+lat_proc for example.
+
+The allocator side just does nothing but emit L2 cache line ownership
+transactions as the pte page is touched.  Especially on chips like
+PowerPC where zero initialization is absurdly cheap, we can avoid all
+of the cache line transfers if we just initialize it at allocation
+time.
+
+Look, I like this trick too, sparc and sparc64 were the first Linux
+platforms to implement page table caching about 8 years ago, but
+I'm wondering whether it really makes sense any more.
 
