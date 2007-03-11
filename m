@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932658AbXCKCXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932722AbXCKCX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932658AbXCKCXP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 21:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932719AbXCKCWr
+	id S932722AbXCKCX4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 21:23:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932739AbXCKCXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 21:22:47 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:46901 "EHLO
+	Sat, 10 Mar 2007 21:23:17 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:46916 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932658AbXCKCWb (ORCPT
+	with ESMTP id S932672AbXCKCWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 21:22:31 -0500
+	Sat, 10 Mar 2007 21:22:54 -0500
 X-AuthUser: davidel@xmailserver.org
-Date: Sat, 10 Mar 2007 18:22:30 -0800 (PST)
+Date: Sat, 10 Mar 2007 18:22:53 -0800 (PST)
 From: Davide Libenzi <davidel@xmailserver.org>
 X-X-Sender: davide@alien.or.mcafeemobile.com
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: [patch 5/9] signalfd/timerfd - signalfd compat code ...
-Message-ID: <Pine.LNX.4.64.0703101822260.3613@alien.or.mcafeemobile.com>
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [patch 8/9] signalfd/timerfd - timerfd wire up x86_64 arch ...
+Message-ID: <Pine.LNX.4.64.0703101822490.3613@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implement the necessary compat code for the signalfd system call.
+This patch wire the timerfd system call to the x86_64 architecture.
+
 
 
 Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
@@ -35,40 +35,29 @@ Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
 
-Index: linux-2.6.20.ep2/fs/compat.c
+Index: linux-2.6.20.ep2/arch/x86_64/ia32/ia32entry.S
 ===================================================================
---- linux-2.6.20.ep2.orig/fs/compat.c	2007-03-10 15:57:00.000000000 -0800
-+++ linux-2.6.20.ep2/fs/compat.c	2007-03-10 15:58:03.000000000 -0800
-@@ -46,6 +46,7 @@
- #include <linux/rwsem.h>
- #include <linux/tsacct_kern.h>
- #include <linux/highmem.h>
-+#include <linux/signal.h>
- #include <linux/poll.h>
- #include <linux/mm.h>
+--- linux-2.6.20.ep2.orig/arch/x86_64/ia32/ia32entry.S	2007-03-10 15:58:00.000000000 -0800
++++ linux-2.6.20.ep2/arch/x86_64/ia32/ia32entry.S	2007-03-10 15:58:10.000000000 -0800
+@@ -720,4 +720,5 @@
+ 	.quad sys_getcpu
+ 	.quad sys_epoll_pwait
+ 	.quad sys_signalfd		/* 320 */
++	.quad sys_timerfd
+ ia32_syscall_end:
+Index: linux-2.6.20.ep2/include/asm-x86_64/unistd.h
+===================================================================
+--- linux-2.6.20.ep2.orig/include/asm-x86_64/unistd.h	2007-03-10 15:58:00.000000000 -0800
++++ linux-2.6.20.ep2/include/asm-x86_64/unistd.h	2007-03-10 15:58:10.000000000 -0800
+@@ -621,8 +621,10 @@
+ __SYSCALL(__NR_move_pages, sys_move_pages)
+ #define __NR_signalfd		280
+ __SYSCALL(__NR_signalfd, sys_signalfd)
++#define __NR_timerfd		281
++__SYSCALL(__NR_timerfd, sys_timerfd)
  
-@@ -2235,3 +2236,24 @@
- 	return sys_ni_syscall();
- }
- #endif
-+
-+asmlinkage long compat_sys_signalfd(int ufd,
-+				    const compat_sigset_t __user *sigmask,
-+				    compat_size_t sigsetsize)
-+{
-+	compat_sigset_t ss32;
-+	sigset_t tmp;
-+	sigset_t __user *ksigmask;
-+
-+	if (sigsetsize != sizeof(compat_sigset_t))
-+		return -EINVAL;
-+	if (copy_from_user(&ss32, sigmask, sizeof(ss32)))
-+		return -EFAULT;
-+	sigset_from_compat(&tmp, &ss32);
-+	ksigmask = compat_alloc_user_space(sizeof(sigset_t));
-+	if (copy_to_user(ksigmask, &tmp, sizeof(sigset_t)))
-+		return -EFAULT;
-+
-+	return sys_signalfd(ufd, ksigmask, sizeof(sigset_t));
-+}
-+
+-#define __NR_syscall_max __NR_signalfd
++#define __NR_syscall_max __NR_timerfd
+ 
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
