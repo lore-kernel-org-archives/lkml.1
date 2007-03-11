@@ -1,89 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933052AbXCKEbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbXCKEce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933052AbXCKEbh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 23:31:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933055AbXCKEbh
+	id S933089AbXCKEce (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 23:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933101AbXCKEcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 23:31:37 -0500
-Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:38132 "HELO
-	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933052AbXCKEbg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 23:31:36 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=suRmoUkxD6P+LqLoarbn/MLoVAwM6s0JTYWlDrpMoXfbgsD5JMUI7wWJhfUtw1eA270cCrvQVNRs857xfKoPdCXzGMZzr0u3y4xMpomptSvkjgrWjRj/RaowggUMAAtEXrre/KIvF7G3041sAZbvvsgSAvi2+U1lSfRSNQAFXCA=  ;
-X-YMail-OSG: wdOGlvoVM1k62RvxfFAr5sRezwtf2ckjhpUDFPYzJJnsGfDP0Dk7o6XNeyZxsBGkAvAn2YwAishCocx.RK87EEabuEgPx3PpmGTXVHN6mOrxfXb.Pq2NANlrGqdcFnw71Te5tMHTO9DhIFc-
-From: David Brownell <david-b@pacbell.net>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH v2] Bitbanging i2c bus driver using the GPIO API
-Date: Sat, 10 Mar 2007 20:31:32 -0800
-User-Agent: KMail/1.7.1
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>, Bryan Wu <bryan.wu@analog.com>,
+	Sat, 10 Mar 2007 23:32:33 -0500
+Received: from relay2.ptmail.sapo.pt ([212.55.154.22]:34722 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S933079AbXCKEca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 23:32:30 -0500
+X-AntiVirus: PTMail-AV 0.3-0.90.0
+Subject: Re: and try remove another quirk on this computers Re: [3/6]
+	2.6.21-rc2: known regressions
+From: Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mathieu =?ISO-8859-1?Q?B=E9rard?= <Mathieu.Berard@crans.org>,
+       Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@stusta.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-References: <200703091345.44744.david-b@pacbell.net> <11735324081261-git-send-email-hskinnemoen@atmel.com> <20070310211550.c694555d.khali@linux-fr.org>
-In-Reply-To: <20070310211550.c694555d.khali@linux-fr.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703102031.34186.david-b@pacbell.net>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org,
+       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>,
+       Lukas Hejtmanek <xhejtman@fi.muni.cz>, Meelis Roos <mroos@linux.ee>,
+       Olivier Mondoloni <darkcore71@yahoo.fr>,
+       Thomas Renninger <trenn@suse.de>, Robert Moore <robert.moore@intel.com>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0703092134330.10832@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	 <20070305015036.GH3441@stusta.de> <45EE9E39.3010800@garzik.org>
+	 <45F20541.9090208@crans.org>
+	 <1173499896.21891.34.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703092134330.10832@woody.linux-foundation.org>
+Content-Type: multipart/signed; micalg=sha1; protocol="application/x-pkcs7-signature"; boundary="=-eI40XrYQEOkMDQcihixK"
+Date: Sun, 11 Mar 2007 04:32:55 +0000
+Message-Id: <1173587575.11759.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 March 2007 12:15 pm, Jean Delvare wrote:
-> Hi Haavard,
-> 
-> On Sat, 10 Mar 2007 14:13:28 +0100, Haavard Skinnemoen wrote:
-> > This is a very simple bitbanging i2c bus driver utilizing the new
-> > arch-neutral GPIO API. Useful for chips that don't have a built-in
-> > i2c controller, additional i2c busses, or testing purposes.
 
-This updated version looks a lot better.  However it doesn't address
-the API change -- gpio_direction_output(gpio, initial_value) -- which
-is understandable since that patch hasn't yet merged.
+--=-eI40XrYQEOkMDQcihixK
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 2007-03-09 at 21:41 -0800, Linus Torvalds wrote:
+>=20
+> On Sat, 10 Mar 2007, Sergio Monteiro Basto wrote:
+> >=20
+> > With this quirk I got this oops on hibernate (but computer still
+> > working)=20
+>=20
+> Well, strictly speaking it's a warning, not an oops per se.=20
+>=20
+> What happens is that the quirk wants to do an "ioremap_nocache()", which=20
+> allocates memory, and that happens very early during initialization when=20
+> interrupts are disabled.
+>=20
+> And you're really not supposed to allocate memory, except using=20
+> GFP_ATOMIC. But we've always been lax about that during early boot, so we=
+=20
+> have stuff that does. And resume ends up doing a lot of the same things=20
+> early boot does, and shows issues like this.
+>=20
+> So the quirk is probably still a good idea, and the warning message is=20
+> just that - a very scary warning message, but not an indicator that=20
+> anything is seriously screwed up for you.
+>=20
+> (It is an indication of a real bug, though, even though it's harmless in=20
+> practice in this case)
+
+Hi, thanks=20
+Just to write, I test last fedora kernel(2.6.20-1.2981.fc7) which is
+based on 2.6.21-rc3-git5, without any problem, less than the scary
+warning, talked in this email :)
+
+Best regards,
+--=20
+S=C3=A9rgio M. B.
+
+--=-eI40XrYQEOkMDQcihixK
+Content-Type: application/x-pkcs7-signature; name=smime.p7s
+Content-Disposition: attachment; filename=smime.p7s
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIGVjCCAw8w
+ggJ4oAMCAQICEGne8YrzxxgYAeyxZxmiO+owDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
+JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
+ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA2MTAxMTEwMjAzOVoXDTA3MTAxMTEwMjAz
+OVowSzEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEoMCYGCSqGSIb3DQEJARYZc2Vy
+Z2lvQHNlcmdpb21iLm5vLWlwLm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAN9R
+ix9koyWSNQDmAHxcSeWXdFO1osqg2yeNgBBl+fz8FLYyROsDGpZMcnOd/Df6tWwMZpMSYDNIksiZ
+5VkCWaWIzIBccHX3wIkqrkcq3v1OcPGW9adXClXSbSZ0Hb4V4+bQ9LMAOjaMlH/dKLVkln6qmbko
+NOxgPotdVxCGcUy1Pqa4dT1zFo5+nIv1NAUNqKpq63X/+3nILNG4JGAvLIL8wcYs0cETGS6vISgd
+YFN/JlIqekWUGGUmc+SJcyyTWjXGN+2G0SDS8K3a9NFCo7a1Y0FyHQxikQRtB9sCcpQCoXiqaWsT
+npSrNJ0Od4w1sHZz09uEdhWKqXEmJsKKwi8CAwEAAaNZMFcwDgYDVR0PAQH/BAQDAgSQMBEGCWCG
+SAGG+EIBAQQEAwIFoDAkBgNVHREEHTAbgRlzZXJnaW9Ac2VyZ2lvbWIubm8taXAub3JnMAwGA1Ud
+EwEB/wQCMAAwDQYJKoZIhvcNAQEFBQADgYEAwVE8/kY82qYG7I2+gW0NhSyn+DR0uAWYbSxB2NgP
+16QOrzXt2HazlXkl2Bc+NKQEqEGKOu5fPPg2GoJ3zDO1Y8GUNGtJH0sX+63RGoUNOAv+bAK1Nxhb
+illDUUCjW3OqA/hRyBwjU9kHJPYhl1EbAUGpAhfENHjkS/S7b1REBLMwggM/MIICqKADAgECAgEN
+MA0GCSqGSIb3DQEBBQUAMIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMMV2VzdGVybiBDYXBlMRIw
+EAYDVQQHEwlDYXBlIFRvd24xGjAYBgNVBAoTEVRoYXd0ZSBDb25zdWx0aW5nMSgwJgYDVQQLEx9D
+ZXJ0aWZpY2F0aW9uIFNlcnZpY2VzIERpdmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVyc29uYWwg
+RnJlZW1haWwgQ0ExKzApBgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0ZS5jb20w
+HhcNMDMwNzE3MDAwMDAwWhcNMTMwNzE2MjM1OTU5WjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMc
+VGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZy
+ZWVtYWlsIElzc3VpbmcgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMSmPFVzVftOucqZ
+Wh5owHUEcJ3f6f+jHuy9zfVb8hp2vX8MOmHyv1HOAdTlUAow1wJjWiyJFXCO3cnwK4Vaqj9xVsuv
+PAsH5/EfkTYkKhPPK9Xzgnc9A74r/rsYPge/QIACZNenprufZdHFKlSFD0gEf6e20TxhBEAeZBly
+YLf7AgMBAAGjgZQwgZEwEgYDVR0TAQH/BAgwBgEB/wIBADBDBgNVHR8EPDA6MDigNqA0hjJodHRw
+Oi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlUGVyc29uYWxGcmVlbWFpbENBLmNybDALBgNVHQ8EBAMC
+AQYwKQYDVR0RBCIwIKQeMBwxGjAYBgNVBAMTEVByaXZhdGVMYWJlbDItMTM4MA0GCSqGSIb3DQEB
+BQUAA4GBAEiM0VCD6gsuzA2jZqxnD3+vrL7CF6FDlpSdf0whuPg2H6otnzYvwPQcUCCTcDz9reFh
+YsPZOhl+hLGZGwDFGguCdJ4lUJRix9sncVcljd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo05RAaWzVN
+d+NWIXiC3CEZNd4ksdMdRv9dX2VPMYIB/DCCAfgCAQEwdjBiMQswCQYDVQQGEwJaQTElMCMGA1UE
+ChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFs
+IEZyZWVtYWlsIElzc3VpbmcgQ0ECEGne8YrzxxgYAeyxZxmiO+owCQYFKw4DAhoFAKBdMBgGCSqG
+SIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA3MDMxMTA0MzI0OVowIwYJKoZI
+hvcNAQkEMRYEFKJQ2BgB6gHc+s4orpsiDpk2ZDIsMA0GCSqGSIb3DQEBAQUABIIBACUNQgue/sIb
+NvCY/lgu8VZMfHVJiDDVmoxSmd3JN/18MPv4HIoSq15KxI/m3ixYXy35+ym6H5xeQxUAV094Dmvz
+FySDyoIl6vzoZvW8gV0+hzfMxRB7rkl+nZRWmsg3yIjYpN+SE+2fRbQAt8c4ApiIM0TbIm818/F6
+a0AoZru6Os/2cj2Bg0skzMlobtecLezeV0tMOzRqaJqXq2EQsUFsE/NGw2Xzkp9pYUY89hCBPTcL
+spIWx7W6tfAB9A/jn1NkCpQ9FI0tfHdE0n0cWYMi7diCDmM4wyk/b9bJTG+2+pajLUi0m4h6KZP/
+frPK3KdtuNetGKzpn2xt0/RDTWoAAAAAAAA=
 
 
-> I like the idea very much. Would this let us get rid of i2c-ixp2000?
-> i2c-ixp4xx? scx200_i2c? Other drivers?
-
-There's CONFIG_GENERIC_GPIO support for ixp4xx (nyet upstream, ISTR it's
-waiting on the gpio_direction_output update), so that one should be
-particularly easy to replace.  Presumably some other bitbang drivers
-could vanish before long too.
-
-
-> What value will you get if the SDA pin is open-drain and currently in
-> output mode?
-
-For output GPIOs, gpio_get_value() is specified to either return the
-actual value at the pin ... or zero, if the hardware can't do that.
-Most GPIO pins *can* do that.  (Specifically, that's how AT91 GPIOs
-work, open drain or otherwise.)
-
-(However, there can be various latencies involved.  On one chip
-when I wrote the output value, then immediately read it back, I
-got the old value.  Reason:  the GPIO controller clock needed
-to tick first in order to latch the new input value!  It was only
-about 30 MHz, so the back-to-back instructions were too fast.  You
-can also sometimes notice capacitance causing similar delays.
-Of course those latencies apply regardless of pin direction.)
-
-I think Haavard is assuming the GPIO actually returns that value,
-since otherwise there'd be no point in trying to use the open drain
-mode.  It'd be worth capturing that in the i2c-gpio.h definition
-for that struct.
-
-
-> Are such GPIO pins actually able to detect that the pin is 
-> low while they are not themselves driving it low?
-
-Given a "yes" to the above, then clearly "yes" here too.  As
-I noted, if it can't actually sense the value at the pin, that
-function should always return zero.
-
-- Dave
+--=-eI40XrYQEOkMDQcihixK--
 
