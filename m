@@ -1,109 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964802AbXCKTa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965058AbXCKTgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964802AbXCKTa6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 15:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965075AbXCKTa6
+	id S965058AbXCKTgE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 15:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXCKTgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 15:30:58 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46357 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964802AbXCKTa4 (ORCPT
+	Sun, 11 Mar 2007 15:36:04 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58273 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965058AbXCKTgB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 15:30:56 -0400
-Date: Sun, 11 Mar 2007 15:30:54 -0400
-From: Josef Sipek <jsipek@cs.sunysb.edu>
-To: git@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] Guilt v0.22
-Message-ID: <20070311193054.GA26766@filer.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
+	Sun, 11 Mar 2007 15:36:01 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kirill Korotaev <dev@sw.ru>, containers@lists.osdl.org, menage@google.com,
+       xemul@sw.ru, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>
+	<20070306140036.4e85bd2f.akpm@linux-foundation.org>
+	<45F3F581.9030503@sw.ru>
+	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
+Date: Sun, 11 Mar 2007 13:34:42 -0600
+In-Reply-To: <20070311045111.62d3e9f9.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Sun, 11 Mar 2007 04:51:11 -0800")
+Message-ID: <m1wt1nvajx.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guilt v0.22 is available for download (once it mirrors out on kernel.org).
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
-queues-like functionality and interface to git.
+> Yep.  Straightforward machine partitioning.  An attractive thing is that it
+> 100% reuses existing page reclaim, unaltered.
 
-Tarballs:
-http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
+And misses every resource sharing opportunity in sight.  Except for
+filtering the which pages are eligible for reclaim an RSS limit should
+not need to change the existing reclaim logic, and with things like the
+memory zones we have had that kind of restriction in the reclaim logic
+for a long time.  So filtering out ineligible pages isn't anything new.
 
-Git repo:
-git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
+>> imho memzone approach is inconvinient for pages sharing and shares accounting.
+>> it also makes memory management more strict, forbids overcommiting
+>> per-container etc.
+>
+> umm, who said they were requirements?
+>
+>> Maybe you have some ideas how we can decide on this?
+>
+> We need to work out what the requirements are before we can settle on an
+> implementation.
 
+If you are talking about RSS limits the term is well defined.  The
+number of pages you can have mapped into your set of address space at
+any given time.
 
-The changes to Guilt could be divided into three categories:
+Unless I'm totally blind that isn't what the patchset implements.  A
+true RSS limit over multiple processes has a lot of potential to be
+generally useful, is very understandable, doesn't affect kernel cache
+decisions so largely performance should not be affected.  There is a
+little more overhead in the fault logic but that is a moderately
+expensive path anyway.
 
-1) Documentation: Quite a bit of documentation was added.
+> Sigh.  Who is running this show?   Anyone?
 
-2) Bugfixes:
-    - guilt-patchbomb did not actually do the right action based on user's
-      answer to the question about removal of the temporary patch directory.
+Someone is supposed to run the show?  :)
 
-    - Many places in the code used variables in an unsafe way - a whitespace
-      in a path could have caused very bad things to happen.
+> You can actually do a form of overcommittment by allowing multiple
+> containers to share one or more of the zones.  Whether that is sufficient
+> or suitable I don't know.  That depends on the requirements, and we haven't
+> even discussed those, let alone agreed to them.  
 
-    - Guilt 0.21 did not allow the user to be in a subdirectory and run
-      guilt commands.
+Another really nasty issue is the container term as the resource guys
+are using the term in a subtlety different way then it has been used
+with namespaces leading to several threads where the participants talked
+past each other.  We need a different term to designate the group of
+tasks a resource controller is dealing with.
 
-    - guilt-files did not recurse into subdirectories.
+The whole filesystem interface also is over general and makes it too
+easy to express the hard things (like move an existing task from one
+group of tasks to another) leading to code complications.
 
-3) Features: Autotagging:
+On the up side I think the code the focus is likely in the right place
+to start delivering usable code.
 
-    Automatically creates unannotated tags for top, bottom, and base of the
-    stack
-
-    On every push or pop operation (refresh is a pop followed by a push),
-    update the stack top (${branch}_top), stack bottom (${branch}_bottom),
-    and stack base (${branch}_base) tags.
-
-    Top:	Topmost applied patch/commit
-    Bottom:	Bottommost applied patch/commit
-    Base:	Commit on top of which the bottom most patch is applied
-
-    Having these three tags, one can easily get the log/diff/other information
-    only for commits that are (or are not!) part of the patch stack.
-
-    Autotagging can be disabled by setting guilt.autotag=0 in your git
-    config file.
-
-    Additionally, guilt-init now accepts a new parameter '-n' to
-    automatically set guilt.autotag=0 in the current repository.
-
-
-As always, patches, and other feedback is welcome.
-
-Josef "Jeff" Sipek.
-
-------------
-Changes since v0.21:
-
-Josef 'Jeff' Sipek (19):
-      Inform git-sh-setup that we can work from within a subdirectory
-      Docs: guilt-new manpage
-      files: Recurse into subdirectories when using git-diff-tree
-      Docs: guilt-files manpage
-      Docs: Formatting fixes
-      Docs: prev, refresh, top, and unapplied manpages
-      new: Make sure the requested patchname would not create unnecessary problems
-      Quote variables as frequently as possible to prevent whitespace problems
-      Remove find_git_dir as git-sh-setup already provides such functionality
-      Makefile's clean target should be .PHONY as well
-      Docs: Fix links/references between pages
-      Docs: Mention the fact that guilt can be used to develop guilt
-      Docs: Fix command examples in new & next manpage
-      Docs: Remove stray reference
-      Automatically create unannotated tags for top, bottom, and base of the stack
-      Autotag: Read guilt.autotag config var and tag commits only if this feature is enabled
-      Docs: Added install-html makefile rule to Documentation/Makefile
-      Makefile: Replace hard-coded script list with a wildcard
-      Guilt v0.22
-
-Nur Hussein (3):
-      Guilt: Fixed guilt-patchbomb temporary mbox deletion bug
-      Guilt: Added an uninstall target
-      Guilt: Makefile tab fix
-
+Eric
