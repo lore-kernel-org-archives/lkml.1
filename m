@@ -1,244 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbXCKCMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXCKCMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932649AbXCKCMm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 21:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932500AbXCKCJ7
+	id S932486AbXCKCMt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 21:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932560AbXCKCJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 21:09:59 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57709 "EHLO
+	Sat, 10 Mar 2007 21:09:57 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57699 "EHLO
 	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932514AbXCKCJt (ORCPT
+	by vger.kernel.org with ESMTP id S932500AbXCKCJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 21:09:49 -0500
+	Sat, 10 Mar 2007 21:09:39 -0500
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-kernel@vger.kernel.org
 Cc: ak@suse.com, mpm@selenic.com, linux-ia64@vger.kernel.org, holt@sgi.com,
        Christoph Lameter <clameter@sgi.com>
-Message-Id: <20070311020949.19905.48402.sendpatchset@schroedinger.engr.sgi.com>
+Message-Id: <20070311020939.19905.15885.sendpatchset@schroedinger.engr.sgi.com>
 In-Reply-To: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
 References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
-Subject: [QUICKLIST 5/6] x86_64: Separate quicklist for pgds
-Date: Sat, 10 Mar 2007 18:09:49 -0800 (PST)
+Subject: [QUICKLIST 3/6] i386: Use standard list manipulators for pgd_list
+Date: Sat, 10 Mar 2007 18:09:39 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_64: Add quicklist for pgd.
+i386: Use standard list macros.
 
-A second quicklist is useful to separate out PGD handling. We can carry
-the initialized pgds over to the next process needing them. This
-avoids the zeroing of the pgds on free that we had to introduce
-in the last patch.
-
-Also clean up the pgd_list handling to use regular list macros.
-There is no need anymore to avoid the lru field.
-
-Move the add/removal of the pgds to the pgdlist into the
-constructor / destructor. That way the implementation is
-congruent with i386.
+Get rid of generating a list via page->index and page->private. Use
+page->lru instead.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Index: linux-2.6.21-rc3/arch/x86_64/Kconfig
+Index: linux-2.6.21-rc3/arch/i386/mm/pgtable.c
 ===================================================================
---- linux-2.6.21-rc3.orig/arch/x86_64/Kconfig	2007-03-10 14:00:52.000000000 -0800
-+++ linux-2.6.21-rc3/arch/x86_64/Kconfig	2007-03-10 14:00:53.000000000 -0800
-@@ -58,7 +58,7 @@
- 
- config NR_QUICK
- 	int
--	default 1
-+	default 2
- 
- config ISA
- 	bool
-Index: linux-2.6.21-rc3/arch/x86_64/mm/fault.c
-===================================================================
---- linux-2.6.21-rc3.orig/arch/x86_64/mm/fault.c	2007-03-10 14:00:29.000000000 -0800
-+++ linux-2.6.21-rc3/arch/x86_64/mm/fault.c	2007-03-10 14:00:53.000000000 -0800
-@@ -585,7 +585,7 @@
- }
- 
+--- linux-2.6.21-rc3.orig/arch/i386/mm/pgtable.c	2007-03-10 17:42:08.000000000 -0800
++++ linux-2.6.21-rc3/arch/i386/mm/pgtable.c	2007-03-10 17:44:23.000000000 -0800
+@@ -213,31 +213,12 @@ struct page *pte_alloc_one(struct mm_str
+  * -- wli
+  */
  DEFINE_SPINLOCK(pgd_lock);
 -struct page *pgd_list;
-+LIST_HEAD(pgd_list);
- 
- void vmalloc_sync_all(void)
- {
-@@ -605,8 +605,7 @@
- 			if (pgd_none(*pgd_ref))
- 				continue;
- 			spin_lock(&pgd_lock);
--			for (page = pgd_list; page;
--			     page = (struct page *)page->index) {
-+			list_for_each_entry(page, &pgd_list, lru) {
- 				pgd_t *pgd;
- 				pgd = (pgd_t *)page_address(page) + pgd_index(address);
- 				if (pgd_none(*pgd))
-Index: linux-2.6.21-rc3/include/asm-x86_64/pgalloc.h
-===================================================================
---- linux-2.6.21-rc3.orig/include/asm-x86_64/pgalloc.h	2007-03-10 14:00:52.000000000 -0800
-+++ linux-2.6.21-rc3/include/asm-x86_64/pgalloc.h	2007-03-10 14:00:53.000000000 -0800
-@@ -7,6 +7,9 @@
- #include <linux/mm.h>
- #include <linux/quicklist.h>
- 
-+#define QUICK_PGD 0	/* We preserve special mappings over free */
-+#define QUICK_PT 1	/* Other page table pages that are zero on free */
-+
- #define pmd_populate_kernel(mm, pmd, pte) \
- 		set_pmd(pmd, __pmd(_PAGE_TABLE | __pa(pte)))
- #define pud_populate(mm, pud, pmd) \
-@@ -22,88 +25,77 @@
- static inline void pmd_free(pmd_t *pmd)
- {
- 	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
--	quicklist_free(0, NULL, pmd);
-+	quicklist_free(QUICK_PT, NULL, pmd);
- }
- 
- static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
- {
--	return (pmd_t *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
-+	return (pmd_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
- }
- 
- static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	return (pud_t *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
-+	return (pud_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
- }
- 
- static inline void pud_free (pud_t *pud)
- {
- 	BUG_ON((unsigned long)pud & (PAGE_SIZE-1));
--	quicklist_free(0, NULL, pud);
-+	quicklist_free(QUICK_PT, NULL, pud);
- }
- 
+-
 -static inline void pgd_list_add(pgd_t *pgd)
-+static inline void pgd_ctor(void *x)
- {
-+	unsigned boundary;
-+	pgd_t *pgd = x;
- 	struct page *page = virt_to_page(pgd);
- 
-+	/*
-+	 * Copy kernel pointers in from init.
-+	 */
-+	boundary = pgd_index(__PAGE_OFFSET);
-+	memcpy(pgd + boundary,
-+		init_level4_pgt + boundary,
-+		(PTRS_PER_PGD - boundary) * sizeof(pgd_t));
-+
- 	spin_lock(&pgd_lock);
--	page->index = (pgoff_t)pgd_list;
+-{
+-	struct page *page = virt_to_page(pgd);
+-	page->index = (unsigned long)pgd_list;
 -	if (pgd_list)
--		pgd_list->private = (unsigned long)&page->index;
+-		set_page_private(pgd_list, (unsigned long)&page->index);
 -	pgd_list = page;
--	page->private = (unsigned long)&pgd_list;
-+	list_add(&page->lru, &pgd_list);
- 	spin_unlock(&pgd_lock);
- }
- 
+-	set_page_private(page, (unsigned long)&pgd_list);
+-}
+-
 -static inline void pgd_list_del(pgd_t *pgd)
-+static inline void pgd_dtor(void *x)
- {
+-{
 -	struct page *next, **pprev, *page = virt_to_page(pgd);
-+	pgd_t *pgd = x;
-+	struct page *page = virt_to_page(pgd);
- 
- 	spin_lock(&pgd_lock);
 -	next = (struct page *)page->index;
--	pprev = (struct page **)page->private;
+-	pprev = (struct page **)page_private(page);
 -	*pprev = next;
 -	if (next)
--		next->private = (unsigned long)pprev;
-+	list_del(&page->lru);
- 	spin_unlock(&pgd_lock);
- }
+-		set_page_private(next, (unsigned long)pprev);
+-}
++LIST_HEAD(pgd_list);
  
-+
- static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ void pgd_ctor(void *pgd)
  {
--	unsigned boundary;
--	pgd_t *pgd = (pgd_t *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
--	if (!pgd)
--		return NULL;
-+	pgd_t *pgd = (pgd_t *)quicklist_alloc(QUICK_PGD,
-+			 GFP_KERNEL|__GFP_REPEAT, pgd_ctor);
+ 	unsigned long flags;
++	struct page *page = virt_to_page(pgd);
+ 
+ 	if (PTRS_PER_PMD == 1) {
+ 		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
+@@ -256,7 +237,7 @@ void pgd_ctor(void *pgd)
+ 			__pa(swapper_pg_dir) >> PAGE_SHIFT,
+ 			USER_PTRS_PER_PGD, PTRS_PER_PGD - USER_PTRS_PER_PGD);
  
 -	pgd_list_add(pgd);
--	/*
--	 * Copy kernel pointers in from init.
--	 * Could keep a freelist or slab cache of those because the kernel
--	 * part never changes.
--	 */
--	boundary = pgd_index(__PAGE_OFFSET);
--	memset(pgd, 0, boundary * sizeof(pgd_t));
--	memcpy(pgd + boundary,
--	       init_level4_pgt + boundary,
--	       (PTRS_PER_PGD - boundary) * sizeof(pgd_t));
- 	return pgd;
++	list_add(&page->lru, &pgd_list);
+ 	spin_unlock_irqrestore(&pgd_lock, flags);
  }
  
- static inline void pgd_free(pgd_t *pgd)
+@@ -264,10 +245,11 @@ void pgd_ctor(void *pgd)
+ void pgd_dtor(void *pgd)
  {
- 	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
+ 	unsigned long flags; /* can be called from interrupt context */
++	struct page *page = virt_to_page(pgd);
+ 
+ 	paravirt_release_pd(__pa(pgd) >> PAGE_SHIFT);
+ 	spin_lock_irqsave(&pgd_lock, flags);
 -	pgd_list_del(pgd);
--	memset(pgd, 0, PAGE_SIZE);
--	quicklist_free(0, NULL, pgd);
-+	quicklist_free(QUICK_PGD, pgd_dtor, pgd);
++	list_del(&page->lru);
+ 	spin_unlock_irqrestore(&pgd_lock, flags);
  }
  
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
- {
--	return (pte_t *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
-+	return (pte_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
- }
- 
- static inline struct page *pte_alloc_one(struct mm_struct *mm, unsigned long address)
- {
--	void *p = (void *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
-+	void *p = (void *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
- 	if (!p)
- 		return NULL;
- 	return virt_to_page(p);
-@@ -115,7 +107,7 @@
- static inline void pte_free_kernel(pte_t *pte)
- {
- 	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
--	quicklist_free(0, NULL, pte);
-+	quicklist_free(QUICK_PT, NULL, pte);
- }
- 
- static inline void pte_free(struct page *pte)
-@@ -130,6 +122,7 @@
- 
- static inline void check_pgt_cache(void)
- {
--	quicklist_check(0, NULL);
-+	quicklist_check(QUICK_PGD, pgd_dtor);
-+	quicklist_check(QUICK_PT, NULL);
- }
- #endif /* _X86_64_PGALLOC_H */
-Index: linux-2.6.21-rc3/include/asm-x86_64/pgtable.h
+Index: linux-2.6.21-rc3/include/asm-i386/pgtable.h
 ===================================================================
---- linux-2.6.21-rc3.orig/include/asm-x86_64/pgtable.h	2007-03-10 14:00:29.000000000 -0800
-+++ linux-2.6.21-rc3/include/asm-x86_64/pgtable.h	2007-03-10 14:02:18.000000000 -0800
-@@ -403,7 +403,7 @@
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val })
+--- linux-2.6.21-rc3.orig/include/asm-i386/pgtable.h	2007-03-10 17:41:48.000000000 -0800
++++ linux-2.6.21-rc3/include/asm-i386/pgtable.h	2007-03-10 17:42:00.000000000 -0800
+@@ -39,7 +39,7 @@ extern pgd_t swapper_pg_dir[1024];
+ void check_pgt_cache(void);
  
  extern spinlock_t pgd_lock;
 -extern struct page *pgd_list;
 +extern struct list_head pgd_list;
- void vmalloc_sync_all(void);
+ static inline void pgtable_cache_init(void) {};
+ void paging_init(void);
  
- #endif /* !__ASSEMBLY__ */
-@@ -420,7 +420,6 @@
- #define HAVE_ARCH_UNMAPPED_AREA
+Index: linux-2.6.21-rc3/arch/i386/mm/fault.c
+===================================================================
+--- linux-2.6.21-rc3.orig/arch/i386/mm/fault.c	2007-03-10 17:48:04.000000000 -0800
++++ linux-2.6.21-rc3/arch/i386/mm/fault.c	2007-03-10 17:49:30.000000000 -0800
+@@ -608,11 +608,10 @@ void vmalloc_sync_all(void)
+ 			struct page *page;
  
- #define pgtable_cache_init()   do { } while (0)
--#define check_pgt_cache()      do { } while (0)
+ 			spin_lock_irqsave(&pgd_lock, flags);
+-			for (page = pgd_list; page; page =
+-					(struct page *)page->index)
++			list_for_each_entry(page, &pgd_list, lru)
+ 				if (!vmalloc_sync_one(page_address(page),
+ 								address)) {
+-					BUG_ON(page != pgd_list);
++					BUG();
+ 					break;
+ 				}
+ 			spin_unlock_irqrestore(&pgd_lock, flags);
+Index: linux-2.6.21-rc3/arch/i386/mm/pageattr.c
+===================================================================
+--- linux-2.6.21-rc3.orig/arch/i386/mm/pageattr.c	2007-03-10 17:49:44.000000000 -0800
++++ linux-2.6.21-rc3/arch/i386/mm/pageattr.c	2007-03-10 17:50:14.000000000 -0800
+@@ -95,7 +95,7 @@ static void set_pmd_pte(pte_t *kpte, uns
+ 		return;
  
- #define PAGE_AGP    PAGE_KERNEL_NOCACHE
- #define HAVE_PAGE_AGP 1
+ 	spin_lock_irqsave(&pgd_lock, flags);
+-	for (page = pgd_list; page; page = (struct page *)page->index) {
++	list_for_each_entry(page, &pgd_list, lru) {
+ 		pgd_t *pgd;
+ 		pud_t *pud;
+ 		pmd_t *pmd;
