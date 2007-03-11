@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933825AbXCKQne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933842AbXCKQoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933825AbXCKQne (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 12:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXCKQne
+	id S933842AbXCKQoY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 12:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933841AbXCKQoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 12:43:34 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51992 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933825AbXCKQnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 12:43:33 -0400
-Date: Sun, 11 Mar 2007 09:43:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Paul Rolland <rol@as2917.net>
-cc: "'Tejun Heo'" <htejun@gmail.com>, "'Jeff Garzik'" <jeff@garzik.org>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       linux-ide@vger.kernel.org, "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Eric D. Mudama'" <edmudama@gmail.com>
-Subject: RE: [git patches] libata fixes
-In-Reply-To: <014d01c763d1$699510c0$2101a8c0@donald>
-Message-ID: <Pine.LNX.4.64.0703110931080.9690@woody.linux-foundation.org>
-References: <014d01c763d1$699510c0$2101a8c0@donald>
+	Sun, 11 Mar 2007 12:44:24 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33966 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933838AbXCKQoW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 12:44:22 -0400
+Date: Sun, 11 Mar 2007 09:44:20 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: linux-kernel@vger.kernel.org, ak@suse.com, linux-ia64@vger.kernel.org,
+       holt@sgi.com, mpm@selenic.com
+Subject: Re: [QUICKLIST 4/6] x86_64: Single Quicklist
+In-Reply-To: <200703110854.05799.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0703110939140.24216@schroedinger.engr.sgi.com>
+References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+ <20070311020944.19905.87599.sendpatchset@schroedinger.engr.sgi.com>
+ <200703110854.05799.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 11 Mar 2007, Andi Kleen wrote:
 
-Paul,
- do I understand correctly that the *only* difference between the working 
-setup is that you applied (by hand) the libata patch that Jeff sent out?
+> This and i386 version are ok to me, although it might be better to just
+> finish __GFP_ZERO support to do this.
 
-So plain 2.6.21-rc2 works fine, but with the patch applied, you get no 
-interrupts on the DVD drive?
+This would not work for pgds on i386 and x86_64
 
-On Sun, 11 Mar 2007, Paul Rolland wrote:
-> 
-> > It seems like IRQ is not getting through.  The first IRQ 
-> > driven command is failing for you.
-> 
-> Hmmmm.... 
-> > Extract is :
-> > ata7: PATA max UDMA/100 cmd 0x0000000000019c00 ctl 0x0000000000019882 bmdma 0x0000000000019400 irq 16
-> > ata8: PATA max UDMA/100 cmd 0x0000000000019800 ctl 0x0000000000019482 bmdma 0x0000000000019408 irq 16
-> 
-> IRQ 16 is IO-APIC-fasteoi for libata, and is not shared... but all the
-> others libata IRQ are IO-APIC-edge.
+GFP_ZERO support the way I have done it in the past would mean another set 
+of buddy lists in the page allocator and another issue with fragmentation. 
+So I have stayed away from it although patches exist in my archives (See 
+my ftp.kernel.org archive).
 
-Ok, that's interesting, although IO-APIC-fasteoi certainly works for 
-others (eg me), but it's still useful.
-
-> > * Does giving 'acpi=off' or 'irqpoll' make any difference?
-> > 
-> > * Can you connect a harddisk to the channel and see whether 
-> > that works?
->
-> Tried that.. Disk is identified as ATA-7: Mastor 6Y080L0, YAR41BW0, max
-> UDMA/13 and then timeout again...
-> 
-> Tried then with acpi=off, same result (identify is OK, but then timeout),
-> and irqpoll and then it was OK !!!!
-
-Whee... There were no changes that looked interrupt-related there..
-
-		Linus
+Maybe we could implemento limited GFP_ZERO support by just keeping an 
+additional per cpu list of pages? The issue with that one is that a page
+may grow cold on that list. One usually want the page to be hot in the 
+cache when it is allocated. This is different for page table pages. Page 
+table pages are typically sparsely accessed.
