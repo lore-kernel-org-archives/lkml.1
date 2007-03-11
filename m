@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933208AbXCKGSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933214AbXCKGUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933208AbXCKGSl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 01:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933212AbXCKGSl
+	id S933214AbXCKGUF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 01:20:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933217AbXCKGUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 01:18:41 -0500
-Received: from alnrmhc16.comcast.net ([204.127.225.96]:49323 "EHLO
-	alnrmhc16.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933208AbXCKGSk (ORCPT
+	Sun, 11 Mar 2007 01:20:04 -0500
+Received: from mail32.syd.optusnet.com.au ([211.29.132.63]:37261 "EHLO
+	mail32.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933214AbXCKGUC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 01:18:40 -0500
-Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
-From: Nicholas Miell <nmiell@comcast.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703102119020.10330@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com>
-	 <1173508384.3108.1.camel@entropy>
-	 <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
-	 <1173509019.3108.4.camel@entropy>
-	 <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
-	 <1173510568.3108.17.camel@entropy>
-	 <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
-	 <1173556374.2958.12.camel@entropy>
-	 <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
-	 <1173560473.2958.23.camel@entropy>
-	 <Pine.LNX.4.64.0703101340550.10330@woody.linux-foundation.org>
-	 <1173563796.2958.28.camel@entropy>
-	 <Pine.LNX.4.64.0703101421410.10330@woody.linux-foundation.org>
-	 <1173572751.2958.107.camel@entropy>
-	 <Pine.LNX.4.64.0703101630260.10330@woody.linux-foundation.org>
-	 <1173577759.2958.124.camel@entropy>
-	 <Pine.LNX.4.64.0703102119020.10330@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 10 Mar 2007 22:18:37 -0800
-Message-Id: <1173593917.2958.150.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.0.njm.1) 
+	Sun, 11 Mar 2007 01:20:02 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: RSDL-mm 0.28
+Date: Sun, 11 Mar 2007 17:19:38 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck@vds.kolivas.org
+References: <20070311013506.GD10459@waste.org> <20070311040132.GS10394@waste.org> <20070311040305.GT10394@waste.org>
+In-Reply-To: <20070311040305.GT10394@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703111719.38514.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-10 at 21:31 -0800, Linus Torvalds wrote:
-> 
-> On Sat, 10 Mar 2007, Nicholas Miell wrote:
-> > 
-> > Ah, I see. You're just interested in fds as a generic handle concept,
-> > and not a more Plan 9 type thing.
-> 
-> Indeed. It's a "handle".
-> 
-> UNIX has pid's for "process" handles, and "file descriptors" for just 
-> about everything else.
+On Sunday 11 March 2007 15:03, Matt Mackall wrote:
+> On Sat, Mar 10, 2007 at 10:01:32PM -0600, Matt Mackall wrote:
+> > On Sun, Mar 11, 2007 at 01:28:22PM +1100, Con Kolivas wrote:
+> > > Ok I don't think there's any actual accounting problem here per se
+> > > (although I did just recently post a bugfix for rsdl however I think
+> > > that's unrelated). What I think is going on in the ccache testcase is
+> > > that all the work is being offloaded to kernel threads reading/writing
+> > > to/from the filesystem and the make is not getting any actual cpu
+> > > time.
+> >
+> > I don't see significant system time while this is happening.
+>
+> Also, it's running pretty much entirely out of page cache so there
+> wouldn't be a whole lot for kernel threads to do.
 
-And I imagine that somebody will come up with way of getting a fd for a
-process sooner or later. 
-
-> > If that's the goal, somebody should start thinking about reducing the
-> > contents of struct file to the bare minimum (i.e. not much more than a
-> > file_operations pointer).
-> 
-> Well, there's more there, but it really is fairly close. If you look at 
-> it, a "struct file" ends up not having a lot more than the minimal stuff 
-> required to use it as a a handle: it really isn't a very big structure. 
-> 
-> The biggest part is actually the read-ahead state, which is arguably a 
-> generic thing for a file handle, even though not all kinds will be able to 
-> use it. We *could* make that be behind a pointer (along with the "f_pos" 
-> thing, that really logically goes along with the read-ahead thing), of 
-> course, but since most files probably do end up being "traditional file" 
-> structures, it's probably not wrong to just have it in the file.
-> 
-
-Actually, I was thinking reducing struct file to the bare minimum, and
-then using that as the common header shared by object-specific
-structures. I don't know how unpleasant that would be from a memory
-allocation perspective, though.
+Well I can't reproduce that behaviour here at all whether from disk or the 
+pagecache with ccache, so I'm not entirely sure what's different at your end. 
+However both you and the other person reporting bad behaviour were using ATI 
+drivers. That's about the only commonality? I wonder if they do need to 
+yield... somewhat instead of not at all.
 
 -- 
-Nicholas Miell <nmiell@comcast.net>
-
+-ck
