@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964793AbXCKXXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964801AbXCKX3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964793AbXCKXXA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 19:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964801AbXCKXXA
+	id S964801AbXCKX3M (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 19:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964810AbXCKX3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 19:23:00 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:35575 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964793AbXCKXW7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 19:22:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=MhgTXVbD0+gqQCnkf+TLXKnh0dqpEkWMrIcmhjXNRGL13tXWBzAS5LJGJBu5hs1zhfaSHGRotShpKLAsm/xxREGnEU4N6ekmheQPVXgwOTHuHNB6FMGzsyGLMH9bjiWg21m80Cs3aUZCAEhRbCo/0OexsT5SrpU6fbAT1Ouw+uU=
-Date: Sun, 11 Mar 2007 16:22:52 -0700
-From: Amit Choudhary <amit2030@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: video4linux-list@redhat.com
-Subject: [PATCH] [REVISED] drivers/media/video/videocodec.c: check kmalloc()
- return value.
-Message-Id: <20070311162252.2fc29248.amit2030@gmail.com>
-Organization: X
-X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.8.15; i686-pc-linux-gnu)
+	Sun, 11 Mar 2007 19:29:11 -0400
+Received: from ozlabs.org ([203.10.76.45]:48409 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964789AbXCKX3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 19:29:10 -0400
+Subject: [PATCH] BUILD_BUG_ON_ZERO -> BUILD_BUG_OR_ZERO
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andi Kleen <ak@muc.de>, Jan Beulich <jbeulich@novell.com>
+Content-Type: text/plain
+Date: Mon, 12 Mar 2007 10:28:13 +1100
+Message-Id: <1173655694.32234.213.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Description: Check the return value of kmalloc() in function videocodec_build_table(), in file drivers/media/video/videocodec.c.
+BUILD_BUG_ON_ZERO is named perfectly wrong, and BUILD_BUG_ON_RETURN_ZERO
+is too long.  Flip three bits, and the name is much more suitable.
 
-Signed-off-by: Amit Choudhary <amit2030@gmail.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-diff --git a/drivers/media/video/videocodec.c b/drivers/media/video/videocodec.c
-index 290e641..f2bbd7a 100644
---- a/drivers/media/video/videocodec.c
-+++ b/drivers/media/video/videocodec.c
-@@ -348,6 +348,9 @@ #define LINESIZE 100
- 	kfree(videocodec_buf);
- 	videocodec_buf = kmalloc(size, GFP_KERNEL);
+diff -r 6fb745a5bb51 include/linux/compiler-gcc.h
+--- a/include/linux/compiler-gcc.h	Mon Mar 12 09:12:20 2007 +1100
++++ b/include/linux/compiler-gcc.h	Mon Mar 12 09:51:18 2007 +1100
+@@ -24,7 +24,7 @@
  
-+	if (!videocodec_buf)
-+		return 0;
-+
- 	i = 0;
- 	i += scnprintf(videocodec_buf + i, size - 1,
- 		      "<S>lave or attached <M>aster name  type flags    magic    ");
+ /* &a[0] degrades to a pointer: a different type from an array */
+ #define __must_be_array(a) \
+-  BUILD_BUG_ON_ZERO(__builtin_types_compatible_p(typeof(a), typeof(&a[0])))
++  BUILD_BUG_OR_ZERO(__builtin_types_compatible_p(typeof(a), typeof(&a[0])))
+ 
+ #define inline		inline		__attribute__((always_inline))
+ #define __inline__	__inline__	__attribute__((always_inline))
+diff -r 6fb745a5bb51 include/linux/kernel.h
+--- a/include/linux/kernel.h	Mon Mar 12 09:12:20 2007 +1100
++++ b/include/linux/kernel.h	Mon Mar 12 09:51:25 2007 +1100
+@@ -341,7 +341,7 @@ struct sysinfo {
+    result (of value 0 and type size_t), so the expression can be used
+    e.g. in a structure initializer (or where-ever else comma expressions
+    aren't permitted). */
+-#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
++#define BUILD_BUG_OR_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
+ 
+ /* Trap pasters of __FUNCTION__ at compile-time */
+ #define __FUNCTION__ (__func__)
+diff -r 6fb745a5bb51 include/linux/moduleparam.h
+--- a/include/linux/moduleparam.h	Mon Mar 12 09:12:20 2007 +1100
++++ b/include/linux/moduleparam.h	Mon Mar 12 09:51:42 2007 +1100
+@@ -65,7 +65,7 @@ struct kparam_array
+ #define __module_param_call(prefix, name, set, get, arg, perm)		\
+ 	/* Default value instead of permissions? */			\
+ 	static int __param_perm_check_##name __attribute__((unused)) =	\
+-	BUILD_BUG_ON_ZERO((perm) < 0 || (perm) > 0777 || ((perm) & 2));	\
++	BUILD_BUG_OR_ZERO((perm) < 0 || (perm) > 0777 || ((perm) & 2));	\
+ 	static char __param_str_##name[] = prefix #name;		\
+ 	static struct kernel_param const __param_##name			\
+ 	__attribute_used__						\
+
+
