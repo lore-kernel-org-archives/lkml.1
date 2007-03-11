@@ -1,134 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933761AbXCKPZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933757AbXCKPbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933761AbXCKPZd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 11:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933763AbXCKPZd
+	id S933757AbXCKPbE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 11:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933764AbXCKPbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 11:25:33 -0400
-Received: from amsfep17-int.chello.nl ([62.179.120.12]:24962 "EHLO
-	amsfep17-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933761AbXCKPZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 11:25:32 -0400
-Subject: Re: lockdep question (was Re: IPoIB caused a kernel: BUG: soft
-	lockup detected on CPU#0!)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Roland Dreier <roland.list@gmail.com>,
-       Tziporet Koren <tziporet@mellanox.co.il>,
-       Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070311135051.GA31985@mellanox.co.il>
-References: <45E552FC.4040305@mellanox.co.il>
-	 <f8ca0a150703030937u61bcd9aj200415b76c00d151@mail.gmail.com>
-	 <20070311135051.GA31985@mellanox.co.il>
+	Sun, 11 Mar 2007 11:31:03 -0400
+Received: from www.osadl.org ([213.239.205.134]:56608 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933757AbXCKPbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 11:31:01 -0400
+Subject: Re: [patch 6/9] signalfd/timerfd - timerfd core ...
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703101822340.3613@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0703101822340.3613@alien.or.mcafeemobile.com>
 Content-Type: text/plain
-Date: Sun, 11 Mar 2007 16:25:19 +0100
-Message-Id: <1173626719.5182.10.camel@lappy>
+Date: Sun, 11 Mar 2007 16:37:26 +0100
+Message-Id: <1173627447.24738.1243.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-11 at 15:50 +0200, Michael S. Tsirkin wrote:
-> > Quoting Roland Dreier <roland.list@gmail.com>:
-> > Subject: Re: IPoIB caused a kernel: BUG: soft lockup detected on CPU#0!
-> > 
-> > >Feb 27 17:47:52 sw169 kernel:  [<ffffffff8053aaf1>] _spin_lock_irqsave+0x15/0x24
-> > >Feb 27 17:47:52 sw169 kernel:  [<ffffffff88067a23>] :ib_ipoib:ipoib_neigh_destructor+0xc2/0x139
-> > 
-> > It looks like this is deadlocking trying to take priv->lock in ipoib_neigh_destructor().
-> > One idea I just had would be to build a kernel with CONFIG_PROVE_LOCKING 
-> > turned on, and then rerun this test.  There's a good chance that this would
-> > diagnose the deadlock.  (I don't have good access to my test machines right now, or
-> > else I would do it myself)
-> 
-> OK, I did that. But I get
-> 	[13440.761857] INFO: trying to register non-static key.
-> 	[13440.766903] the code is fine but needs lockdep annotation.
-> 	[13440.772455] turning off the locking correctness validator.
-> and I am not sure what triggers this, or how to fix it to have the
-> validator actually do its job.
+Davide,
 
-It usually indicates a spinlock is not properly initialized. Like
-__SPIN_LOCK_UNLOCKED() used in a non-static context, use
-spin_lock_init() in these cases.
+On Sat, 2007-03-10 at 18:22 -0800, Davide Libenzi wrote:
 
-However looking at the code, ipoib_neight_destructor only uses
-&priv->lock, and that seems to get properly initialized in ipoib_setup()
-using spin_lock_init().
+Some remarks:
 
-So either there are other sites that instanciate those objects and
-forget about the lock init, or the object is corrupted (use after free?)
+> +
+> +asmlinkage long sys_timerfd(int ufd, int clockid, int tmrtype,
+> +			    const struct timespec __user *utmr)
+> +{
+> +	int error;
+> +	struct timerfd_ctx *ctx;
+> +	struct file *file;
+> +	struct inode *inode;
+> +	ktime_t tval, tnow;
+> +	struct timespec ktmr, tmrnow;
+> +
+> +	error = -EFAULT;
+> +	if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
+> +		goto err_exit;
 
-> Ingo, what key does the message refer to?
-> 
-> The stack dump seems to point to drivers/infiniband/ulp/ipoib/ipoib_main.c line
-> 829.
-> 
-> Full message below:
-> 	
-> [13440.761857] INFO: trying to register non-static key.
-> [13440.766903] the code is fine but needs lockdep annotation.
-> [13440.772455] turning off the locking correctness validator.
-> [13440.778008]  [<c023c082>] __lock_acquire+0xae4/0xbb9
-> [13440.783078]  [<c023c43d>] lock_acquire+0x56/0x71
-> [13440.787784]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
-> [13440.794412]  [<c051ad41>] _spin_lock_irqsave+0x32/0x41
-> [13440.799649]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
-> [13440.806275]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
-> [13440.812897]  [<c04a1c1b>] dst_run_gc+0xc/0x118
-> [13440.817439]  [<c022af6e>] run_timer_softirq+0x37/0x16b
-> [13440.822673]  [<c04a1c0f>] dst_run_gc+0x0/0x118
-> [13440.827221]  [<c04a3eab>] neigh_destroy+0xbe/0x104
-> [13440.832114]  [<c04a1bb1>] dst_destroy+0x4d/0xab
-> [13440.836751]  [<c04a1c64>] dst_run_gc+0x55/0x118
-> [13440.841384]  [<c022b03f>] run_timer_softirq+0x108/0x16b
-> [13440.846711]  [<c0227634>] __do_softirq+0x5a/0xd5
-> [13440.851427]  [<c023b435>] trace_hardirqs_on+0x106/0x141
-> [13440.856754]  [<c0227643>] __do_softirq+0x69/0xd5
-> [13440.861470]  [<c02276e6>] do_softirq+0x37/0x4d
-> [13440.866016]  [<c02167b0>] smp_apic_timer_interrupt+0x6b/0x77
-> [13440.871774]  [<c02029ef>] default_idle+0x3b/0x54
-> [13440.876491]  [<c02029ef>] default_idle+0x3b/0x54
-> [13440.881211]  [<c0204c33>] apic_timer_interrupt+0x33/0x38
-> [13440.886624]  [<c02029ef>] default_idle+0x3b/0x54
-> [13440.891342]  [<c02029f1>] default_idle+0x3d/0x54
-> [13440.896061]  [<c0202aaa>] cpu_idle+0xa2/0xbb
-> [13440.900436]  =======================
-> [13768.711447] BUG: spinlock lockup on CPU#1, swapper/0, c0687880
-> [13768.717353]  [<c031f919>] _raw_spin_lock+0xda/0xfd
-> [13768.722247]  [<c051ad48>] _spin_lock_irqsave+0x39/0x41
-> [13768.727486]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
-> [13768.734110]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
-> [13768.740735]  [<c04a1c1b>] dst_run_gc+0xc/0x118
-> [13768.745276]  [<c022af6e>] run_timer_softirq+0x37/0x16b
-> [13768.750517]  [<c04a1c0f>] dst_run_gc+0x0/0x118
-> [13768.755061]  [<c04a3eab>] neigh_destroy+0xbe/0x104
-> [13768.759955]  [<c04a1bb1>] dst_destroy+0x4d/0xab
-> [13768.764586]  [<c04a1c64>] dst_run_gc+0x55/0x118
-> [13768.769218]  [<c022b03f>] run_timer_softirq+0x108/0x16b
-> [13768.774542]  [<c0227634>] __do_softirq+0x5a/0xd5
-> [13768.779261]  [<c023b435>] trace_hardirqs_on+0x106/0x141
-> [13768.784588]  [<c0227643>] __do_softirq+0x69/0xd5
-> [13768.789308]  [<c02276e6>] do_softirq+0x37/0x4d
-> [13768.793851]  [<c02167b0>] smp_apic_timer_interrupt+0x6b/0x77
-> [13768.799609]  [<c02029ef>] default_idle+0x3b/0x54
-> [13768.804326]  [<c02029ef>] default_idle+0x3b/0x54
-> [13768.809054]  [<c0204c33>] apic_timer_interrupt+0x33/0x38
-> [13768.814471]  [<c02029ef>] default_idle+0x3b/0x54
-> [13768.819187]  [<c02029f1>] default_idle+0x3d/0x54
-> [13768.823903]  [<c0202aaa>] cpu_idle+0xa2/0xbb
-> [13768.828279]  =======================
-> 
-> 
-> -- 
-> MST
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Please do not use goto for a simple
+		return -EFAULT;
+
+Please validate the timespec before converting it.
+
+        if (!timespec_valid(&ktmr))
+                return -EINVAL;
+
+
+> +	tval = timespec_to_ktime(ktmr);
+> +	error = -EINVAL;
+> +	if (clockid != CLOCK_MONOTONIC &&
+> +	    clockid != CLOCK_REALTIME)
+> +		goto err_exit;
+> +	switch (tmrtype) {
+> +	case TFD_TIMER_REL:
+> +	case TFD_TIMER_SEQ:
+> +		break;
+> +	case TFD_TIMER_ABS:
+> +		getnstimeofday(&tmrnow);
+> +		tnow = timespec_to_ktime(tmrnow);
+
+		tnow = ktime_get();
+
+> +		if (ktime_to_ns(tval) <= ktime_to_ns(tnow))
+> +			goto err_exit;
+> +		tval = ktime_sub(tval, tnow);
+
+Why do you want to do that ? hrtimers handle relative and absolute
+expiry times. You break down everything to relative time and lose the
+accuracy for absolute timers. 
+
+> +		break;
+> +	default:
+> +		goto err_exit;
+> +	}
+> +
+> +	if (ufd == -1) {
+> +		error = -ENOMEM;
+> +		ctx = kmem_cache_alloc(timerfd_ctx_cachep, GFP_KERNEL);
+> +		if (!ctx)
+> +			goto err_exit;
+> +
+> +		init_waitqueue_head(&ctx->wqh);
+> +		spin_lock_init(&ctx->lock);
+> +		ctx->ticks = 0;
+> +		ctx->tmrtype = tmrtype;
+> +		ctx->clockid = clockid;
+> +		ctx->tval = tval;
+> +		hrtimer_init(&ctx->tmr, ctx->clockid, HRTIMER_REL);
+> +		ctx->tmr.expires = ctx->tval;
+> +		ctx->tmr.function = timerfd_tmrproc;
+> +
+> +		hrtimer_start(&ctx->tmr, ctx->tval, HRTIMER_REL);
+> +
+> +		/*
+> +		 * When we call this, the initialization must be complete, since
+> +		 * aino_getfd() will install the fd.
+> +		 */
+> +		error = aino_getfd(&ufd, &inode, &file, "[timerfd]",
+> +				   &timerfd_fops, ctx);
+> +		if (error)
+> +			goto err_fdalloc;
+
+Why is the timer started before we have everything in place ? 
+
+Also if you turn it around then the (re)programming part of the timer
+can be shared.
+
+> +	} else {
+> +		error = -EBADF;
+> +		file = fget(ufd);
+> +		if (!file)
+> +			goto err_exit;
+> +		ctx = file->private_data;
+> +		error = -EINVAL;
+> +		if (file->f_op != &timerfd_fops) {
+> +			fput(file);
+> +			goto err_exit;
+> +		}
+> +
+> +		/*
+> +		 * We need to stop the exiting timer before. We call
+> +		 * hrtimer_cancel() w/out holding our lock.
+> +		 */
+> +		spin_lock_irq(&ctx->lock);
+> +		while (hrtimer_active(&ctx->tmr)) {
+> +			spin_unlock_irq(&ctx->lock);
+> +			hrtimer_cancel(&ctx->tmr);
+> +			spin_lock_irq(&ctx->lock);
+> +		}
+
+Please use hrtimer_try_to_cancel()
+
+retry:
+	spin_lock_irq(....):
+	if (hrtimer_try_to_cancel(&ctx->tmr) < 0) {
+		spin_unlock_irq();
+		cpu_relax();
+		goto retry;
+	}
+
+> +
+> +static unsigned int timerfd_poll(struct file *file, poll_table *wait)
+> +{
+> +	struct timerfd_ctx *ctx = file->private_data;
+> +
+> +	poll_wait(file, &ctx->wqh, wait);
+> +
+> +	return ctx->ticks ? POLLIN: 0;
+
+This is racy:
+
+	timer is set up (non periodic)
+	timer expires
+	poll 
+
+	now poll is stuck for ever !
+
+
+	tglx
+
 
