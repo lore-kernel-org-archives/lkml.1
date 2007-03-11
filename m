@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbXCKDQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932778AbXCKDUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932796AbXCKDQg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 22:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932805AbXCKDQg
+	id S932778AbXCKDUj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 22:20:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932805AbXCKDUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 22:16:36 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34896 "EHLO smtp.osdl.org"
+	Sat, 10 Mar 2007 22:20:39 -0500
+Received: from ozlabs.org ([203.10.76.45]:36831 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932796AbXCKDQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 22:16:34 -0500
-Date: Sat, 10 Mar 2007 19:16:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Con Kolivas" <kernel@kolivas.org>
-Cc: mpm@selenic.com, linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-Subject: Re: RSDL-mm 0.28
-Message-Id: <20070310191614.5ac3cf4b.akpm@linux-foundation.org>
-In-Reply-To: <8cd998d50703101828l71fbec7bi9a819ad7b7fd9828@mail.gmail.com>
-References: <20070311013506.GD10459@waste.org>
-	<8cd998d50703101828l71fbec7bi9a819ad7b7fd9828@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	id S932778AbXCKDUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 22:20:38 -0500
+Subject: Re: [PATCH] Use more gcc extensions in the Linux headers
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+In-Reply-To: <Pine.LNX.4.61.0703110353330.16857@yvahk01.tjqt.qr>
+References: <1173419792.32234.131.camel@localhost.localdomain>
+	 <1173481052.32234.137.camel@localhost.localdomain>
+	 <Pine.LNX.4.61.0703100156490.8799@yvahk01.tjqt.qr>
+	 <1173581437.32234.168.camel@localhost.localdomain>
+	 <Pine.LNX.4.61.0703110353330.16857@yvahk01.tjqt.qr>
+Content-Type: text/plain
+Date: Sun, 11 Mar 2007 14:19:36 +1100
+Message-Id: <1173583177.32234.186.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 11 Mar 2007 13:28:22 +1100 "Con Kolivas" <kernel@kolivas.org> wrote:
-> Well... are you advocating we change sched_yield semantics to a
-> gentler form?
+On Sun, 2007-03-11 at 03:58 +0100, Jan Engelhardt wrote:
+> >-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+> >+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+> >+
+> 80 cols *cough* :)
 
->From a practical POV: our present yield() behaviour is so truly awful that
-it's basically always a bug to use it.  This probably isn't a good thing.
+I think your cough added a column?
 
-So yes, I do think that we should have a rethink and try to come up with
-behaviour which is more in accord with what application developers expect
-yield() to do.
+Rusty.
 
-otoh,
-
-a) we should have done this five years ago.  Instead, we've spent that
-   time training userspace programmers to not use yield(), so perhaps
-   there's little to be gained in changing it now.
-
-b) if we _were_ to change yield(), people would use it more, and their
-   applications would of course suck bigtime when run on earlier 2.6
-   kernels.
-
-
-Bottom line: we've had a _lot_ of problems with the new yield() semantics. 
-We effectively broke back-compatibility by changing its behaviour a lot,
-and we can't really turn around and blame application developers for that.
 
