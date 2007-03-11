@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895AbXCKJPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751872AbXCKJVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751895AbXCKJPQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 05:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbXCKJPQ
+	id S1751872AbXCKJVY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 05:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbXCKJVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 05:15:16 -0400
-Received: from www.osadl.org ([213.239.205.134]:53877 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751895AbXCKJPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 05:15:14 -0400
-Subject: Re: Use of absolute timeouts for oneshot timers
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dan Hecht <dhecht@vmware.com>, john stultz <johnstul@us.ibm.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <45F35088.7020607@goop.org>
-References: <45F33697.4000000@goop.org>
-	 <1173568491.24738.1194.camel@localhost.localdomain>
-	 <45F35088.7020607@goop.org>
-Content-Type: text/plain
-Date: Sun, 11 Mar 2007 10:21:38 +0100
-Message-Id: <1173604898.24738.1204.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Mar 2007 05:21:23 -0400
+Received: from mail22.syd.optusnet.com.au ([211.29.133.160]:38297 "EHLO
+	mail22.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751872AbXCKJVX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 05:21:23 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Subject: Re: [BIG] Re: sched rsdl fix for 0.28
+Date: Sun, 11 Mar 2007 20:21:15 +1100
+User-Agent: KMail/1.9.5
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>
+References: <200703111107.00704.kernel@kolivas.org> <1173604223.3550.2.camel@rousalka.dyndns.org>
+In-Reply-To: <1173604223.3550.2.camel@rousalka.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703112021.15172.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-03-10 at 16:42 -0800, Jeremy Fitzhardinge wrote:
-> Thomas Gleixner wrote:
-> > It's simply enforced in NO_HZ, HIGHRES mode as we operate in absolute
-> > time, which is read back from the clocksource, even if we use a relative
-> > value for real hardware clock event devices to program the next event.
-> > We calculate the delta between the absolute event and now. So we never
-> > get an accumulating error.
-> >
-> > What problem are you observing ?
-> 
-> Actually, two things.  There was the unexpected pauses during boot,
-> which is trivially fixable by not using the Xen periodic timer, and
-> using the single-shot fallback.
-> 
-> But I'm making the more general observation that if you use an absolute
-> rather than relative time to set the single-shot timeout, then you have
-> to deal with a long-term cumulative drift between the kernel's monotonic
-> time and the hypervisor's monotonic time.  This can happen even if your
-> clocksource is derived directly from the hypervisor monotonic time,
-> because running ntp will warp the kernel's time, and so it will drift
-> with respect to the hypervisor clock.  You can only avoid this by 1) not
-> allowing adjtime, or 2) making those same adjtime warps to the
-> hypervisor time.  Neither of these is a good general solution.
+On Sunday 11 March 2007 20:10, Nicolas Mailhot wrote:
+> Le dimanche 11 mars 2007 à 11:07 +1100, Con Kolivas a écrit :
+> > sched rsdl fix
+>
+> Doesn't change a thing. Always breaks at the same place (though
+> depending on hardware timings? the trace is not always the same). Pretty
+> sure nothing happens before this failure
 
-Sigh, yes. Using a relative time for the next event is probably the
-least ugly solution
+Bummer. The only other thing to try is v0.29 posted recently. I still haven't 
+got a good way to reproduce this locally but I'll keep trying. Thanks for 
+testing.
 
-	tglx
-
-
-
+-- 
+-ck
