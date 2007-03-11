@@ -1,48 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964923AbXCKTUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964873AbXCKTUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964923AbXCKTUA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 15:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964930AbXCKTUA
+	id S964873AbXCKTUj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 15:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964960AbXCKTUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 15:20:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37593 "EHLO mx2.mail.elte.hu"
+	Sun, 11 Mar 2007 15:20:39 -0400
+Received: from tag.witbe.net ([81.88.96.48]:41611 "EHLO tag.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964923AbXCKTT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 15:19:59 -0400
-Date: Sun, 11 Mar 2007 20:19:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Roland Dreier <roland.list@gmail.com>, Roland Dreier <rdreier@cisco.com>,
-       general@lists.openfabrics.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: lockdep question (was Re: IPoIB caused a kernel: BUG: soft lockup detected on CPU#0!)
-Message-ID: <20070311191920.GA7049@elte.hu>
-References: <45E552FC.4040305@mellanox.co.il> <f8ca0a150703030937u61bcd9aj200415b76c00d151@mail.gmail.com> <20070311135051.GA31985@mellanox.co.il> <20070311150431.GE31985@mellanox.co.il>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070311150431.GE31985@mellanox.co.il>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S964873AbXCKTUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 15:20:35 -0400
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: <rol@as2917.net>, "'Linus Torvalds'" <torvalds@linux-foundation.org>
+Cc: "'Tejun Heo'" <htejun@gmail.com>, "'Jeff Garzik'" <jeff@garzik.org>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       <linux-ide@vger.kernel.org>, "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'Eric D. Mudama'" <edmudama@gmail.com>
+Subject: RE: [git patches] libata fixes
+Date: Sun, 11 Mar 2007 20:20:31 +0100
+Organization: AS2917.net
+Message-ID: <018901c76412$56bc2bf0$2101a8c0@donald>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+In-Reply-To: <017f01c7640b$fbcafab0$2101a8c0@donald>
+Thread-Index: Acdj/HF4LoR3SbeASZO6d4BenJXMGAADldzQAAHXyqA=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Just one point that may be interesting, as it seems that this is IRQ
+related : at the beginning of the dmesg, it seems that IRQ16 is used
+for sky2/Yukon , but when reading /proc/interrupts, it has been remapped
+to IRQ 505... Could this also affect libata ?
 
-* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+Regards,
+Paul
 
-> After adding some printks, I started getting these:
+Paul Rolland, rol(at)as2917.net
+ex-AS2917 Network administrator and Peering Coordinator
+
+--
+
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un navigateur 
+"Some people dream of success... while others wake up and work hard at it" 
+
+"I worry about my child and the Internet all the time, even though she's too 
+young to have logged on yet. Here's what I worry about. I worry that 10 or 15 
+years from now, she will come to me and say 'Daddy, where were you when they 
+took freedom of the press away from the Internet?'"
+--Mike Godwin, Electronic Frontier Foundation 
+  
+
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org 
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Paul Rolland
+> Sent: Sunday, March 11, 2007 7:35 PM
+> To: 'Linus Torvalds'
+> Cc: 'Tejun Heo'; 'Jeff Garzik'; 'Andrew Morton'; 
+> linux-ide@vger.kernel.org; 'LKML'; 'Eric D. Mudama'
+> Subject: RE: [git patches] libata fixes
 > 
-> [  597.036720] BUG: MAX_STACK_TRACE_ENTRIES too low!
+> Hello,
+> 
+> >  do I understand correctly that the *only* difference between 
+> > the working 
+> > setup is that you applied (by hand) the libata patch that 
+> > Jeff sent out?
+> > 
+> > So plain 2.6.21-rc2 works fine, but with the patch applied, 
+> > you get no 
+> > interrupts on the DVD drive?
+> 
+> Nope... I tried several patches from Tejun, and also some 
+> that Jeff posted
+> to linux-ide, but no luck. The only way to have this DVD-RW 
+> working is to
+> use irqpoll on the command line...
+> 
+> Sorry to have been unclear....
+> 
+> To complete, here are some more output from the machine : 
+>  - a dmesg without irqpoll,
+>  - a dmesg with irqpoll,
+>  - a copy of /proc/interrupts
+> 6 [19:33] rol@riri:~> cat /proc/interrupts 
+>            CPU0       CPU1       
+>   0:     357022          0   IO-APIC-edge      timer
+>   1:          8          0   IO-APIC-edge      i8042
+>   4:         14          0   IO-APIC-edge      serial
+>   6:          5          0   IO-APIC-edge      floppy
+>   8:          1          0   IO-APIC-edge      rtc
+>   9:          0          0   IO-APIC-fasteoi   acpi
+>  12:        129          0   IO-APIC-edge      i8042
+>  14:       7639          0   IO-APIC-edge      libata
+>  15:          0          0   IO-APIC-edge      libata
+>  16:          0          0   IO-APIC-fasteoi   libata
+>  17:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
+>  18:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
+>  19:        204          0   IO-APIC-fasteoi   uhci_hcd:usb5, 
+> HDA Intel
+>  20:        107          0   IO-APIC-fasteoi   ehci_hcd:usb1, 
+> uhci_hcd:usb2
+>  21:          3          0   IO-APIC-fasteoi   ohci1394
+> 504:       8243          0   PCI-MSI-edge      libata
+> 505:          1          0   PCI-MSI-edge      eth1
+> 506:        386          0   PCI-MSI-edge      eth0
+> NMI:        771        531 
+> LOC:     569318     578684 
+> ERR:          0
+> 
+> Regards,
+> Paul
+> 
 
-this should go away if you double the size of MAX_STACK_TRACE_ENTRIES in 
-kernel/lockdep_internals.h. (keep it a power of two) If it doesnt go 
-away then it might signal some sort of leak.
-
-	Ingo
