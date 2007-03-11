@@ -1,244 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751793AbXCKIi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbXCKJAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751793AbXCKIi5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 04:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXCKIi5
+	id S1751830AbXCKJAG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 05:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXCKJAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 04:38:57 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:5260 "EHLO relay.sw.ru"
+	Sun, 11 Mar 2007 05:00:06 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:3215 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751793AbXCKIi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 04:38:56 -0400
-Message-ID: <45F3C0C5.9000900@sw.ru>
-Date: Sun, 11 Mar 2007 11:41:41 +0300
+	id S1751830AbXCKJAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 05:00:04 -0400
+Message-ID: <45F3C576.3090706@sw.ru>
+Date: Sun, 11 Mar 2007 12:01:42 +0300
 From: Pavel Emelianov <xemul@sw.ru>
 User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: balbir@in.ibm.com
-CC: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, devel@openvz.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
-Subject: Re: [RFC][PATCH 5/7] Per-container OOM killer and page reclamation
-References: <45ED7DEC.7010403@sw.ru> <45ED82B9.8090306@sw.ru> <45F1CFC7.3070406@in.ibm.com>
-In-Reply-To: <45F1CFC7.3070406@in.ibm.com>
+To: herbert@13thfloor.at
+CC: balbir@in.ibm.com, containers@lists.osdl.org,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/7] Resource counters
+References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru> <45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru> <20070309163711.GA3647@MAIL.13thfloor.at>
+In-Reply-To: <20070309163711.GA3647@MAIL.13thfloor.at>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Hi, Pavel,
+Herbert Poetzl wrote:
+> On Wed, Mar 07, 2007 at 10:19:05AM +0300, Pavel Emelianov wrote:
+>> Balbir Singh wrote:
+>>> Pavel Emelianov wrote:
+>>>> Introduce generic structures and routines for
+>>>> resource accounting.
+>>>>
+>>>> Each resource accounting container is supposed to
+>>>> aggregate it, container_subsystem_state and its
+>>>> resource-specific members within.
+>>>>
+>>>>
+>>>> ------------------------------------------------------------------------
+>>>>
+>>>> diff -upr linux-2.6.20.orig/include/linux/res_counter.h
+>>>> linux-2.6.20-0/include/linux/res_counter.h
+>>>> --- linux-2.6.20.orig/include/linux/res_counter.h    2007-03-06
+>>>> 13:39:17.000000000 +0300
+>>>> +++ linux-2.6.20-0/include/linux/res_counter.h    2007-03-06
+>>>> 13:33:28.000000000 +0300
+>>>> @@ -0,0 +1,83 @@
+>>>> +#ifndef __RES_COUNTER_H__
+>>>> +#define __RES_COUNTER_H__
+>>>> +/*
+>>>> + * resource counters
+>>>> + *
+>>>> + * Copyright 2007 OpenVZ SWsoft Inc
+>>>> + *
+>>>> + * Author: Pavel Emelianov <xemul@openvz.org>
+>>>> + *
+>>>> + */
+>>>> +
+>>>> +#include <linux/container.h>
+>>>> +
+>>>> +struct res_counter {
+>>>> +    unsigned long usage;
+>>>> +    unsigned long limit;
+>>>> +    unsigned long failcnt;
+>>>> +    spinlock_t lock;
+>>>> +};
+>>>> +
+>>>> +enum {
+>>>> +    RES_USAGE,
+>>>> +    RES_LIMIT,
+>>>> +    RES_FAILCNT,
+>>>> +};
+>>>> +
+>>>> +ssize_t res_counter_read(struct res_counter *cnt, int member,
+>>>> +        const char __user *buf, size_t nbytes, loff_t *pos);
+>>>> +ssize_t res_counter_write(struct res_counter *cnt, int member,
+>>>> +        const char __user *buf, size_t nbytes, loff_t *pos);
+>>>> +
+>>>> +static inline void res_counter_init(struct res_counter *cnt)
+>>>> +{
+>>>> +    spin_lock_init(&cnt->lock);
+>>>> +    cnt->limit = (unsigned long)LONG_MAX;
+>>>> +}
+>>>> +
+>>> Is there any way to indicate that there are no limits on this container.
+>> Yes - LONG_MAX is essentially a "no limit" value as no
+>> container will ever have such many files :)
 > 
-> Please find my patch to add LRU behaviour to your latest RSS controller.
+> -1 or ~0 is a viable choice for userspace to
+> communicate 'infinite' or 'unlimited'
 
-Thanks for participation and additional testing :)
-I'll include this into next generation of patches.
+OK, I'll make ULONG_MAX :)
 
-> Balbir Singh
-> Linux Technology Center
-> IBM, ISTL
+>>> LONG_MAX is quite huge, but still when the administrator wants to
+>>> configure a container to *un-limited usage*, it becomes hard for
+>>> the administrator.
+>>>
+>>>> +static inline int res_counter_charge_locked(struct res_counter *cnt,
+>>>> +        unsigned long val)
+>>>> +{
+>>>> +    if (cnt->usage <= cnt->limit - val) {
+>>>> +        cnt->usage += val;
+>>>> +        return 0;
+>>>> +    }
+>>>> +
+>>>> +    cnt->failcnt++;
+>>>> +    return -ENOMEM;
+>>>> +}
+>>>> +
+>>>> +static inline int res_counter_charge(struct res_counter *cnt,
+>>>> +        unsigned long val)
+>>>> +{
+>>>> +    int ret;
+>>>> +    unsigned long flags;
+>>>> +
+>>>> +    spin_lock_irqsave(&cnt->lock, flags);
+>>>> +    ret = res_counter_charge_locked(cnt, val);
+>>>> +    spin_unlock_irqrestore(&cnt->lock, flags);
+>>>> +    return ret;
+>>>> +}
+>>>> +
+>>> Will atomic counters help here.
+>> I'm afraid no. We have to atomically check for limit and alter
+>> one of usage or failcnt depending on the checking result. Making
+>> this with atomic_xxx ops will require at least two ops.
 > 
+> Linux-VServer does the accounting with atomic counters,
+> so that works quite fine, just do the checks at the
+> beginning of whatever resource allocation and the
+> accounting once the resource is acquired ...
+
+This works quite fine on non-preempted kernels.
+>From the time you checked for resource till you really
+account it kernel may preempt and let another process
+pass through vx_anything_avail() check.
+
+>> If we'll remove failcnt this would look like
+>>    while (atomic_cmpxchg(...))
+>> which is also not that good.
+>>
+>> Moreover - in RSS accounting patches I perform page list
+>> manipulations under this lock, so this also saves one atomic op.
 > 
-> ------------------------------------------------------------------------
+> it still hasn't been shown that this kind of RSS limit
+> doesn't add big time overhead to normal operations
+> (inside and outside of such a resource container)
 > 
-> Add LRU behaviour to the RSS controller patches posted by Pavel Emelianov
+> note that the 'usual' memory accounting is much more
+> lightweight and serves similar purposes ...
+
+It OOM-kills current int case of limit hit instead of
+reclaiming pages or killing *memory eater* to free memory.
+
+> best,
+> Herbert
 > 
-> 	http://lkml.org/lkml/2007/3/6/198
+>>>> +static inline void res_counter_uncharge_locked(struct res_counter *cnt,
+>>>> +        unsigned long val)
+>>>> +{
+>>>> +    if (unlikely(cnt->usage < val)) {
+>>>> +        WARN_ON(1);
+>>>> +        val = cnt->usage;
+>>>> +    }
+>>>> +
+>>>> +    cnt->usage -= val;
+>>>> +}
+>>>> +
+>>>> +static inline void res_counter_uncharge(struct res_counter *cnt,
+>>>> +        unsigned long val)
+>>>> +{
+>>>> +    unsigned long flags;
+>>>> +
+>>>> +    spin_lock_irqsave(&cnt->lock, flags);
+>>>> +    res_counter_uncharge_locked(cnt, val);
+>>>> +    spin_unlock_irqrestore(&cnt->lock, flags);
+>>>> +}
+>>>> +
+>>>> +#endif
+>>>> diff -upr linux-2.6.20.orig/init/Kconfig linux-2.6.20-0/init/Kconfig
+>>>> --- linux-2.6.20.orig/init/Kconfig    2007-03-06 13:33:28.000000000 +0300
+>>>> +++ linux-2.6.20-0/init/Kconfig    2007-03-06 13:33:28.000000000 +0300
+>>>> @@ -265,6 +265,10 @@ config CPUSETS
+>>>>
+>>>>        Say N if unsure.
+>>>>
+>>>> +config RESOURCE_COUNTERS
+>>>> +    bool
+>>>> +    select CONTAINERS
+>>>> +
+>>>>  config SYSFS_DEPRECATED
+>>>>      bool "Create deprecated sysfs files"
+>>>>      default y
+>>>> diff -upr linux-2.6.20.orig/kernel/Makefile
+>>>> linux-2.6.20-0/kernel/Makefile
+>>>> --- linux-2.6.20.orig/kernel/Makefile    2007-03-06 13:33:28.000000000
+>>>> +0300
+>>>> +++ linux-2.6.20-0/kernel/Makefile    2007-03-06 13:33:28.000000000 +0300
+>>>> @@ -51,6 +51,7 @@ obj-$(CONFIG_RELAY) += relay.o
+>>>>  obj-$(CONFIG_UTS_NS) += utsname.o
+>>>>  obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+>>>>  obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
+>>>> +obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
+>>>>
+>>>>  ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+>>>>  # According to Alan Modra <alan@linuxcare.com.au>, the
+>>>> -fno-omit-frame-pointer is
+>>>> diff -upr linux-2.6.20.orig/kernel/res_counter.c
+>>>> linux-2.6.20-0/kernel/res_counter.c
+>>>> --- linux-2.6.20.orig/kernel/res_counter.c    2007-03-06
+>>>> 13:39:17.000000000 +0300
+>>>> +++ linux-2.6.20-0/kernel/res_counter.c    2007-03-06
+>>>> 13:33:28.000000000 +0300
+>>>> @@ -0,0 +1,72 @@
+>>>> +/*
+>>>> + * resource containers
+>>>> + *
+>>>> + * Copyright 2007 OpenVZ SWsoft Inc
+>>>> + *
+>>>> + * Author: Pavel Emelianov <xemul@openvz.org>
+>>>> + *
+>>>> + */
+>>>> +
+>>>> +#include <linux/parser.h>
+>>>> +#include <linux/fs.h>
+>>>> +#include <linux/res_counter.h>
+>>>> +#include <asm/uaccess.h>
+>>>> +
+>>>> +static inline unsigned long *res_counter_member(struct res_counter
+>>>> *cnt, int member)
+>>>> +{
+>>>> +    switch (member) {
+>>>> +    case RES_USAGE:
+>>>> +        return &cnt->usage;
+>>>> +    case RES_LIMIT:
+>>>> +        return &cnt->limit;
+>>>> +    case RES_FAILCNT:
+>>>> +        return &cnt->failcnt;
+>>>> +    };
+>>>> +
+>>>> +    BUG();
+>>>> +    return NULL;
+>>>> +}
+>>>> +
+>>>> +ssize_t res_counter_read(struct res_counter *cnt, int member,
+>>>> +        const char __user *userbuf, size_t nbytes, loff_t *pos)
+>>>> +{
+>>>> +    unsigned long *val;
+>>>> +    char buf[64], *s;
+>>>> +
+>>>> +    s = buf;
+>>>> +    val = res_counter_member(cnt, member);
+>>>> +    s += sprintf(s, "%lu\n", *val);
+>>>> +    return simple_read_from_buffer((void __user *)userbuf, nbytes,
+>>>> +            pos, buf, s - buf);
+>>>> +}
+>>>> +
+>>>> +ssize_t res_counter_write(struct res_counter *cnt, int member,
+>>>> +        const char __user *userbuf, size_t nbytes, loff_t *pos)
+>>>> +{
+>>>> +    int ret;
+>>>> +    char *buf, *end;
+>>>> +    unsigned long tmp, *val;
+>>>> +
+>>>> +    buf = kmalloc(nbytes + 1, GFP_KERNEL);
+>>>> +    ret = -ENOMEM;
+>>>> +    if (buf == NULL)
+>>>> +        goto out;
+>>>> +
+>>>> +    buf[nbytes] = 0;
+>>>> +    ret = -EFAULT;
+>>>> +    if (copy_from_user(buf, userbuf, nbytes))
+>>>> +        goto out_free;
+>>>> +
+>>>> +    ret = -EINVAL;
+>>>> +    tmp = simple_strtoul(buf, &end, 10);
+>>>> +    if (*end != '\0')
+>>>> +        goto out_free;
+>>>> +
+>>>> +    val = res_counter_member(cnt, member);
+>>>> +    *val = tmp;
+>>>> +    ret = nbytes;
+>>>> +out_free:
+>>>> +    kfree(buf);
+>>>> +out:
+>>>> +    return ret;
+>>>> +}
+>>>>
+>>>
+>>> These bits look a little out of sync, with no users for these routines in
+>>> this patch. Won't you get a compiler warning, compiling this bit alone?
+>>>
+>> Nope - when you have a non-static function without users in a
+>> file no compiler warning produced.
+>> _______________________________________________
+>> Containers mailing list
+>> Containers@lists.osdl.org
+>> https://lists.osdl.org/mailman/listinfo/containers
 > 
-> which was in turn similar to the RSS controller posted by me
-> 
-> 	http://lkml.org/lkml/2007/2/26/8
-> 
-> Pavel's patches have a per container list of pages, which helps reduce
-> reclaim time of the RSS controller but the per container list of pages is
-> in FIFO order. I've implemented active and inactive lists per container to
-> help select the right set of pages to reclaim when the container is under
-> memory pressure.
-> 
-> I've tested these patches on a ppc64 machine and they work fine for
-> the minimal testing I've done.
-> 
-> Pavel would you please include these patches in your next iteration.
-> 
-> Comments, suggestions and further improvements are as always welcome!
-> 
-> Signed-off-by: <balbir@in.ibm.com>
-> ---
-> 
->  include/linux/rss_container.h |    1 
->  mm/rss_container.c            |   47 +++++++++++++++++++++++++++++++-----------
->  mm/swap.c                     |    5 ++++
->  mm/vmscan.c                   |    3 ++
->  4 files changed, 44 insertions(+), 12 deletions(-)
-> 
-> diff -puN include/linux/rss_container.h~rss-container-lru2 include/linux/rss_container.h
-> --- linux-2.6.20/include/linux/rss_container.h~rss-container-lru2	2007-03-09 22:52:56.000000000 +0530
-> +++ linux-2.6.20-balbir/include/linux/rss_container.h	2007-03-10 00:39:59.000000000 +0530
-> @@ -19,6 +19,7 @@ int container_rss_prepare(struct page *,
->  void container_rss_add(struct page_container *);
->  void container_rss_del(struct page_container *);
->  void container_rss_release(struct page_container *);
-> +void container_rss_move_lists(struct page *pg, bool active);
->  
->  int mm_init_container(struct mm_struct *mm, struct task_struct *tsk);
->  void mm_free_container(struct mm_struct *mm);
-> diff -puN mm/rss_container.c~rss-container-lru2 mm/rss_container.c
-> --- linux-2.6.20/mm/rss_container.c~rss-container-lru2	2007-03-09 22:52:56.000000000 +0530
-> +++ linux-2.6.20-balbir/mm/rss_container.c	2007-03-10 02:42:54.000000000 +0530
-> @@ -17,7 +17,8 @@ static struct container_subsys rss_subsy
->  
->  struct rss_container {
->  	struct res_counter res;
-> -	struct list_head page_list;
-> +	struct list_head inactive_list;
-> +	struct list_head active_list;
->  	struct container_subsys_state css;
->  };
->  
-> @@ -96,6 +97,26 @@ void container_rss_release(struct page_c
->  	kfree(pc);
->  }
->  
-> +void container_rss_move_lists(struct page *pg, bool active)
-> +{
-> +	struct rss_container *rss;
-> +	struct page_container *pc;
-> +
-> +	if (!page_mapped(pg))
-> +		return;
-> +
-> +	pc = page_container(pg);
-> +	BUG_ON(!pc);
-> +	rss = pc->cnt;
-> +
-> +	spin_lock_irq(&rss->res.lock);
-> +	if (active)
-> +		list_move(&pc->list, &rss->active_list);
-> +	else
-> +		list_move(&pc->list, &rss->inactive_list);
-> +	spin_unlock_irq(&rss->res.lock);
-> +}
-> +
->  void container_rss_add(struct page_container *pc)
->  {
->  	struct page *pg;
-> @@ -105,7 +126,7 @@ void container_rss_add(struct page_conta
->  	rss = pc->cnt;
->  
->  	spin_lock(&rss->res.lock);
-> -	list_add(&pc->list, &rss->page_list);
-> +	list_add(&pc->list, &rss->active_list);
->  	spin_unlock(&rss->res.lock);
->  
->  	page_container(pg) = pc;
-> @@ -141,7 +162,10 @@ unsigned long container_isolate_pages(un
->  	struct zone *z;
->  
->  	spin_lock_irq(&rss->res.lock);
-> -	src = &rss->page_list;
-> +	if (active)
-> +		src = &rss->active_list;
-> +	else
-> +		src = &rss->inactive_list;
->  
->  	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
->  		pc = list_entry(src->prev, struct page_container, list);
-> @@ -152,13 +176,10 @@ unsigned long container_isolate_pages(un
->  
->  		spin_lock(&z->lru_lock);
->  		if (PageLRU(page)) {
-> -			if ((active && PageActive(page)) ||
-> -					(!active && !PageActive(page))) {
-> -				if (likely(get_page_unless_zero(page))) {
-> -					ClearPageLRU(page);
-> -					nr_taken++;
-> -					list_move(&page->lru, dst);
-> -				}
-> +			if (likely(get_page_unless_zero(page))) {
-> +				ClearPageLRU(page);
-> +				nr_taken++;
-> +				list_move(&page->lru, dst);
->  			}
->  		}
->  		spin_unlock(&z->lru_lock);
-> @@ -212,7 +233,8 @@ static int rss_create(struct container_s
->  		return -ENOMEM;
->  
->  	res_counter_init(&rss->res);
-> -	INIT_LIST_HEAD(&rss->page_list);
-> +	INIT_LIST_HEAD(&rss->inactive_list);
-> +	INIT_LIST_HEAD(&rss->active_list);
->  	cont->subsys[rss_subsys.subsys_id] = &rss->css;
->  	return 0;
->  }
-> @@ -284,7 +306,8 @@ static __init int rss_create_early(struc
->  
->  	rss = &init_rss_container;
->  	res_counter_init(&rss->res);
-> -	INIT_LIST_HEAD(&rss->page_list);
-> +	INIT_LIST_HEAD(&rss->inactive_list);
-> +	INIT_LIST_HEAD(&rss->active_list);
->  	cont->subsys[rss_subsys.subsys_id] = &rss->css;
->  	ss->create = rss_create;
->  	return 0;
-> diff -puN mm/vmscan.c~rss-container-lru2 mm/vmscan.c
-> --- linux-2.6.20/mm/vmscan.c~rss-container-lru2	2007-03-09 22:52:56.000000000 +0530
-> +++ linux-2.6.20-balbir/mm/vmscan.c	2007-03-10 00:42:35.000000000 +0530
-> @@ -1142,6 +1142,7 @@ static unsigned long container_shrink_pa
->  			else
->  				add_page_to_inactive_list(z, page);
->  			spin_unlock_irq(&z->lru_lock);
-> +			container_rss_move_lists(page, false);
->  
->  			put_page(page);
->  		}
-> @@ -1191,6 +1192,7 @@ static void container_shrink_pages_activ
->  		list_move(&page->lru, &z->inactive_list);
->  		z->nr_inactive++;
->  		spin_unlock_irq(&z->lru_lock);
-> +		container_rss_move_lists(page, false);
->  
->  		put_page(page);
->  	}
-> @@ -1206,6 +1208,7 @@ static void container_shrink_pages_activ
->  		list_move(&page->lru, &z->active_list);
->  		z->nr_active++;
->  		spin_unlock_irq(&z->lru_lock);
-> +		container_rss_move_lists(page, true);
->  
->  		put_page(page);
->  	}
-> diff -puN mm/swap.c~rss-container-lru2 mm/swap.c
-> --- linux-2.6.20/mm/swap.c~rss-container-lru2	2007-03-10 00:42:38.000000000 +0530
-> +++ linux-2.6.20-balbir/mm/swap.c	2007-03-10 01:20:39.000000000 +0530
-> @@ -30,6 +30,7 @@
->  #include <linux/cpu.h>
->  #include <linux/notifier.h>
->  #include <linux/init.h>
-> +#include <linux/rss_container.h>
->  
->  /* How many pages do we try to swap or page in/out together? */
->  int page_cluster;
-> @@ -140,6 +141,7 @@ int rotate_reclaimable_page(struct page 
->  void fastcall activate_page(struct page *page)
->  {
->  	struct zone *zone = page_zone(page);
-> +	bool moved = false;
->  
->  	spin_lock_irq(&zone->lru_lock);
->  	if (PageLRU(page) && !PageActive(page)) {
-> @@ -147,8 +149,11 @@ void fastcall activate_page(struct page 
->  		SetPageActive(page);
->  		add_page_to_active_list(zone, page);
->  		__count_vm_event(PGACTIVATE);
-> +		moved = true;
->  	}
->  	spin_unlock_irq(&zone->lru_lock);
-> +	if (moved)
-> +		container_rss_move_lists(page, true);
->  }
->  
->  /*
-> _
 
