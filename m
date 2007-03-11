@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965116AbXCKTip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965083AbXCKTrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965116AbXCKTip (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 15:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965122AbXCKTip
+	id S965083AbXCKTrf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 15:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965149AbXCKTrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 15:38:45 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45019 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965116AbXCKTio (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 15:38:44 -0400
-Date: Sun, 11 Mar 2007 12:38:43 -0700
-From: Paul Jackson <pj@sgi.com>
-To: vatsa@in.ibm.com
-Cc: menage@google.com, sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
-       containers@lists.osdl.org, ebiederm@xmission.com, mbligh@google.com,
-       winget@google.com, rohitseth@google.com, serue@us.ibm.com,
-       devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container
- system abstracted from cpusets code
-Message-Id: <20070311123843.a16a1555.pj@sgi.com>
-In-Reply-To: <20070308103808.GH6504@in.ibm.com>
-References: <20070212081521.808338000@menage.corp.google.com>
-	<20070212085104.130746000@menage.corp.google.com>
-	<20070307122117.GB2336@in.ibm.com>
-	<6599ad830703071250p6c92a357g51391a23ee3d78d8@mail.gmail.com>
-	<20070308103808.GH6504@in.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 11 Mar 2007 15:47:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40785 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965145AbXCKTrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 15:47:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Meyer <thomas@m3y3r.de>
+Subject: Re: SwSusp to disk doesn't work - Try 2
+Date: Sun, 11 Mar 2007 20:50:15 +0100
+User-Agent: KMail/1.9.5
+Cc: Milan Broz <mbroz@redhat.com>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+References: <45F44599.3060508@m3y3r.de> <45F452A2.2050009@redhat.com> <45F4557A.9010203@m3y3r.de>
+In-Reply-To: <45F4557A.9010203@m3y3r.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703112050.16284.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vatsa wrote:
-> Yes, that way only the hierarchy hosting cpusets takes the hit of
-> double-locking. cpuset_subsys->create/destroy can take this additional lock 
-> inside cpuset.c.
+On Sunday, 11 March 2007 20:16, Thomas Meyer wrote:
+> Milan Broz schrieb:
+> > Rafael J. Wysocki napsal(a):
+> >   
+> >> On Sunday, 11 March 2007 19:08, Thomas Meyer wrote:
+> >>     
+> >>> Suspend to disk doesn't work on my laptop.
+> >>>
+> >>> The suspend seems to hang while enabling the non-boot cpus again.
+> >>>
+> >>> with platform = "test" and state = "disk" i get this:
+> >>>       
+> >
+> >   
+> > Hi,
+> > I see the same problem - 2.6.21-rc3 with NO_HZ set (tickless), 
+> > short printk trace 
+> >
+> > enable_nonboot_cpus
+> >  _cpu_up
+> >   raw_notifier_callchain (CPU_UP_PREPARE)
+> >     ...
+> >     update_sched_domains
+> >      detach_destroy_domains
+> >        [waits here] --> synchronize_sched (==synchronize_rcu)
+> >
+> >   
+> 
+> Maybe this helps:
+> 
+> Mar 11 20:03:56 [kernel] PM: Removing info for No Bus:msr1
+> Mar 11 20:03:56 [kernel] CPU1 is down
+> Mar 11 20:03:56 [kernel] swsusp debug: Waiting for 5 seconds.
+> Mar 11 20:03:56 [kernel] Enabling non-boot CPUs ...
+> Mar 11 20:03:56 [kernel] _cpu_up: before notifier CPU_UP_PREPARE.
+> Mar 11 20:03:56 [kernel] migration_call: Hi!
+> Mar 11 20:03:56 [kernel] rcu_cpu_notify: Hi!
+> Mar 11 20:03:56 [kernel] timer_cpu_notify: Hi!
+> Mar 11 20:03:56 [kernel] hrtimer_cpu_notify: Hi!
+> Mar 11 20:03:56 [kernel] cpu_callback: Hi!
+> Mar 11 20:03:56 [kernel] workqueue_cpu_callback: Hi!
+> Mar 11 20:03:56 [kernel] topology_cpu_callback: Hi!
+> 
+> Guess what? Hang!
 
-The primary reason for the cpuset double locking, as I recall, was because
-cpusets needs to access cpusets inside the memory allocator.  A single,
-straight forward, cpuset lock failed under the following common scenario:
- 1) user does cpuset system call (writes some file below /dev/cpuset, e.g.)
- 2) kernel cpuset code locks its lock
- 3) cpuset code asks to allocate some memory for some cpuset structure
- 4) memory allocator tries to lock the cpuset lock - deadlock!
+Hm, you may be hitting the problem described in this thread:
+http://lkml.org/lkml/2007/3/6/364 .
 
-The reason that the memory allocator needs the cpuset lock is to check
-whether the memory nodes the current task is allowed to use have changed,
-due to changes in the current tasks cpuset.
+Can you please apply the patch at http://lkml.org/lkml/2007/3/7/255
+and see if that helps?
 
-A secondary reason that the cpuset code needs two locks is because the
-main cpuset lock is a long held, system wide lock, and various low
-level bits of performance critical code sometimes require quick,
-read-only access to cpusets.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Rafael
