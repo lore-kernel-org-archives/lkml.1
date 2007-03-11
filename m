@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750733AbXCKHEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751187AbXCKHWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750733AbXCKHEs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 03:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbXCKHEs
+	id S1751187AbXCKHWy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 03:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbXCKHWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 03:04:48 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49838 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750733AbXCKHEq (ORCPT
+	Sun, 11 Mar 2007 03:22:54 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:1035 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751157AbXCKHWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 03:04:46 -0400
-Date: Sat, 10 Mar 2007 23:04:44 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mpm@selenic.com
-Subject: Re: [SLUB 0/3] SLUB: The unqueued slab allocator V5
-In-Reply-To: <20070310224946.f9385917.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703102259440.23001@schroedinger.engr.sgi.com>
-References: <20070311021009.19963.11893.sendpatchset@schroedinger.engr.sgi.com>
- <20070310224946.f9385917.akpm@linux-foundation.org>
+	Sun, 11 Mar 2007 03:22:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=KLATk3lRN9EdgQgG3eD7aIMh7Kk1mVBoWX9okBbLQmpeZi20V0XbBU6r0ztbgfmIBpP0KhnTGPaEte1jAskZd6hyxypamuQeIWwI0sY/v6dE7A7rciWChL4MgxDc0ux9lCp+GSks1wOK168VoGeSallp6gGuifZW/zaRumTPMeU=
+Message-ID: <3aac340703102322p362998b9labedc13503702d2b@mail.gmail.com>
+Date: Sun, 11 Mar 2007 09:22:50 +0200
+From: Vitaliyi <imgrey@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: libata extension
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Mar 2007, Andrew Morton wrote:
+Good Day
 
-> Is this safe to think about applying yet?
+Say i want to implement extended set of ATA commands available to
+userspace for building diagnostic tools.
+I need 0x40 -- read verify and 0x32 -- write long with error handling,
+for example. I was trying ide driver through ioctl's, but seems it
+lack of functionality and full of gotchas. Furthermore it oopses
+sometimes.
 
-Its safe. By default kernels will be build with SLAB. SLUB becomes only a 
-selectable alternative. It should not become the primary slab until we 
-know that its really superior overall and have thoroughly tested it in
-a variety of workloads.
+Is it possible to use libata for such purpose or i need to write
+separate IDE driver ?
+By the way, i'm sure it should be done in kernel space since i'm going
+to deal with some hdd manufacturer commands.
 
-> We lost the leak detector feature.
+P.S. I was looking through libata and ide sources and documentation
+but still dont have broad picture.
 
-There will be numerous small things that will have to be addressed. There
-is also some minor work to be done for tracking callers better.
- 
-> It might be nice to create synonyms for PageActive, PageReferenced and
-> PageError, to make things clearer in the slub core.   At the expense of
-> making things less clear globally.  Am unsure.
 
-I have been back and forth on doing that. There are somewhat similar 
-in what they mean for SLUB. But creating synonyms may be confusing to 
-those checking how page flags are being used.
-
+Thanks
