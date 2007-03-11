@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933271AbXCKMIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933274AbXCKMLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933271AbXCKMIz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 08:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbXCKMIz
+	id S933274AbXCKMLg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 08:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933275AbXCKMLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 08:08:55 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40218 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933271AbXCKMIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 08:08:54 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX185hDcS+DQ5mKBfUep6H4LsgzasKwqSGXTfv1jzUN
-	IdBYcZ1fSztUqp
+	Sun, 11 Mar 2007 08:11:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50449 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933274AbXCKMLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 08:11:35 -0400
+Date: Sun, 11 Mar 2007 13:10:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200703112248.24192.kernel@kolivas.org>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <1173613149.6927.29.camel@Homer.simpson.net>
-	 <200703112248.24192.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Sun, 11 Mar 2007 13:08:51 +0100
-Message-Id: <1173614931.6927.36.camel@Homer.simpson.net>
+Message-ID: <20070311121038.GA9146@elte.hu>
+References: <200703111457.17624.kernel@kolivas.org> <1173613149.6927.29.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173613149.6927.29.camel@Homer.simpson.net>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-11 at 22:48 +1100, Con Kolivas wrote:
+
+* Mike Galbraith <efault@gmx.de> wrote:
+
+> > Full patch for 2.6.21-rc3-mm2: 
+> > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0.29.patch
 > 
-> Thanks for the report. I'm assuming you're describing a single hyperthread P4 
-> here in SMP mode so 2 logical cores. Can you elaborate on whether there is 
-> any difference as to which cpu things are bound to as well? Can you also see 
-> what happens with lame not niced to +5 (ie at 0) and with lame at nice +19.
+> I'm seeing a cpu distribution problem running this on my P4 box.
 
-Yes, one P4/HT/SMP. No change at nice 0, but setting the encoders to
-nice 19 did put X/gforce ~back where they were with 2.6.21-rc3.  Tasks
-don't seem to be bound to any particular cpu, relies on load balancing
-(which appears to be working).
+> With 2.6.21-rc3, X/Gforce maintain their ~50% cpu (remain smooth), and 
+> the encoders (100%cpu bound) get whats left when Amarok isn't eating 
+> it.
+> 
+> I plunked the above patch into plain 2.6.21-rc3 and retested to 
+> eliminate other mm tree differences, and it's repeatable.  The nice 5 
+> cpu hogs always receive considerably more that the nice 0 sleepers.
 
-	-Mike
+hm. Do you get the same same problem on UP too? (i.e. lets eliminate any 
+SMP/HT artifacts)
 
+	Ingo
