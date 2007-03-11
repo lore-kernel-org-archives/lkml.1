@@ -1,95 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbXCKPVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933761AbXCKPZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933751AbXCKPVm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 11:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933755AbXCKPVl
+	id S933761AbXCKPZd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 11:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933763AbXCKPZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 11:21:41 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:53375 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933749AbXCKPVk (ORCPT
+	Sun, 11 Mar 2007 11:25:33 -0400
+Received: from amsfep17-int.chello.nl ([62.179.120.12]:24962 "EHLO
+	amsfep17-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933761AbXCKPZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 11:21:40 -0400
-Subject: Re: [PATCH] [scsi]: Add offline state checking while dispatch a
-	scsi cmd
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Joe Jin <joe.jin@oracle.com>
-Cc: akpm@osdl.org, dgilbert@interlog.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, haobo.zhou@oracle.com
-In-Reply-To: <20070309014040.GA6632@joejin-pc.cn.oracle.com>
-References: <20070308092207.GA17141@joejin-pc.cn.oracle.com>
-	 <1173369759.3683.1.camel@mulgrave.il.steeleye.com>
-	 <20070309014040.GA6632@joejin-pc.cn.oracle.com>
+	Sun, 11 Mar 2007 11:25:32 -0400
+Subject: Re: lockdep question (was Re: IPoIB caused a kernel: BUG: soft
+	lockup detected on CPU#0!)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Roland Dreier <roland.list@gmail.com>,
+       Tziporet Koren <tziporet@mellanox.co.il>,
+       Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070311135051.GA31985@mellanox.co.il>
+References: <45E552FC.4040305@mellanox.co.il>
+	 <f8ca0a150703030937u61bcd9aj200415b76c00d151@mail.gmail.com>
+	 <20070311135051.GA31985@mellanox.co.il>
 Content-Type: text/plain
-Date: Sun, 11 Mar 2007 10:21:23 -0500
-Message-Id: <1173626483.3420.3.camel@mulgrave.il.steeleye.com>
+Date: Sun, 11 Mar 2007 16:25:19 +0100
+Message-Id: <1173626719.5182.10.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-09 at 09:40 +0800, Joe Jin wrote:
-> > What's the error you're trying to fix?  scsi_dispatch_cmd() is only
-> > called from scsi_request_fn() which already has an equivalent of this
-> > check in it just prior to calling dispatch.
+On Sun, 2007-03-11 at 15:50 +0200, Michael S. Tsirkin wrote:
+> > Quoting Roland Dreier <roland.list@gmail.com>:
+> > Subject: Re: IPoIB caused a kernel: BUG: soft lockup detected on CPU#0!
+> > 
+> > >Feb 27 17:47:52 sw169 kernel:  [<ffffffff8053aaf1>] _spin_lock_irqsave+0x15/0x24
+> > >Feb 27 17:47:52 sw169 kernel:  [<ffffffff88067a23>] :ib_ipoib:ipoib_neigh_destructor+0xc2/0x139
+> > 
+> > It looks like this is deadlocking trying to take priv->lock in ipoib_neigh_destructor().
+> > One idea I just had would be to build a kernel with CONFIG_PROVE_LOCKING 
+> > turned on, and then rerun this test.  There's a good chance that this would
+> > diagnose the deadlock.  (I don't have good access to my test machines right now, or
+> > else I would do it myself)
 > 
-> Yeah, I have saw the cheking at scsi_request_fn(), recently we got a crash
-> info as following at rhel4 2.6.9-42.0.2.ELsmp,
+> OK, I did that. But I get
+> 	[13440.761857] INFO: trying to register non-static key.
+> 	[13440.766903] the code is fine but needs lockdep annotation.
+> 	[13440.772455] turning off the locking correctness validator.
+> and I am not sure what triggers this, or how to fix it to have the
+> validator actually do its job.
 
-This kernel is way to old to debug ...
+It usually indicates a spinlock is not properly initialized. Like
+__SPIN_LOCK_UNLOCKED() used in a non-static context, use
+spin_lock_init() in these cases.
 
-However: 
-> scsi0 (0:0): rejecting I/O to offline device
-> ...
-> EXT3-fs error (device sda8) in start_transaction: Journal has aborted
+However looking at the code, ipoib_neight_destructor only uses
+&priv->lock, and that seems to get properly initialized in ipoib_setup()
+using spin_lock_init().
+
+So either there are other sites that instanciate those objects and
+forget about the lock init, or the object is corrupted (use after free?)
+
+> Ingo, what key does the message refer to?
 > 
-> Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP: 
-> <ffffffffa0031e66>{:megaraid_mbox:megaraid_queue_command+2634}
-
-This is a bug actually in the megaraid.
-
-> PML4 21a25d067 PGD 2170ac067 PMD 0 
-> Oops: 0002 [1] SMP 
-> CPU 0 
-> Modules linked in: hangcheck_timer mptctl mptbase ipmi_devintf ipmi_si ipmi_msghandler dell_rbu netconsole netdump autofs4 i2c_dev i2c_core ocfs2(U) debugfs(U) nfs lockd nfs_acl ocfs2_dlmfs(U) ocfs2_dlm(U) ocfs2_nodemanager(U) configfs(U) sunrpc ds yenta_socket pcmcia_core ide_dump scsi_dump diskdump zlib_deflate dm_mirror dm_multipath dm_mod emcphr(U) emcpmpap(U) emcpmpaa(U) emcpmpc(U) emcpmp(U) emcp(U) emcplib(U) button battery ac joydev uhci_hcd ehci_hcd hw_random tg3 e1000 bond0(U) floppy sg ext3 jbd lpfc scsi_transport_fc megaraid_mbox megaraid_mm sd_mod scsi_mod
-> Pid: 13238, comm: emagent Tainted: P      2.6.9-42.0.2.ELsmp
-> RIP: 0010:[<ffffffffa0031e66>] <ffffffffa0031e66>{:megaraid_mbox:megaraid_queue_command+2634}
-> RSP: 0018:000001019b5a9b48  EFLAGS: 00010002
-> RAX: 0000000220b8e000 RBX: 00000102ffd1b048 RCX: 0000000000000000
-> RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000010431124bf0
-> RBP: 0000000000000001 R08: 0000000000000000 R09: 0000010133ce5b80
-> R10: 00000102ffd3e5a0 R11: 0000000000000060 R12: 0000010133ce5b80
-> R13: 00000102ffd3e480 R14: 00000100bfb4c8b8 R15: 00000101ffcf4000
-> FS:  0000000000000000(0000) GS:ffffffff804e5180(005b) knlGS:00000000f47ffbb0
-> CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-> CR2: 0000000000000000 CR3: 0000000000101000 CR4: 00000000000006e0
-> Process emagent (pid: 13238, threadinfo 000001019b5a8000, task 000001003e5a8030)
-> Stack: 0000000000000000 0000000000000046 0000000000000046 00000102ffd3e480 
->        00000101fff73980 ffffffff8015cb38 00000100bfb4d4aa 00000100bfb4d4a2 
->        00000100bfb4c8b8 0000010100000080 
-> Call Trace:<ffffffff8015cb38>{mempool_alloc+129} <ffffffffa0002874>{:scsi_mod:scsi_done+0} 
->        <ffffffff8013fc00>{__mod_timer+113} <ffffffffa0002adf>{:scsi_mod:scsi_dispatch_cmd+595} 
->        <ffffffffa0007a72>{:scsi_mod:scsi_request_fn+990} <ffffffff8024e385>{generic_unplug_device+24} 
->        <ffffffff8017a6d3>{__wait_on_buffer+120} <ffffffff8017a55e>{bh_wake_function+0} 
->        <ffffffff8017a55e>{bh_wake_function+0} <ffffffffa00877fe>{:ext3:ext3_bread+96} 
->        <ffffffffa008935c>{:ext3:htree_dirblock_to_tree+50} 
->        <ffffffffa008952c>{:ext3:ext3_htree_fill_tree+295} 
->        <ffffffff8018b232>{filldir64+122} <ffffffff8018b1b8>{filldir64+0} 
->        <ffffffffa0083ace>{:ext3:ext3_readdir+371} <ffffffff8018f019>{dput+56} 
->        <ffffffff8018b1b8>{filldir64+0} <ffffffff8018599c>{path_release+12} 
->        <ffffffff8019e335>{compat_sys_statfs+105} <ffffffff8018b1b8>{filldir64+0} 
->        <ffffffff8018aef7>{vfs_readdir+155} <ffffffff8018b2e8>{sys_getdents64+118} 
->        <ffffffff80125bbb>{sysenter_do_call+27} 
-
-And this is a direct command submission path:  it already passed both
-online check gates in this path *after* the device was offlined, so
-adding a third won't fix this.  Firstly, I'm assuming you have only a
-single disk, so the I/O was definitely bound for sda?  Secondly, can you
-reproduce with a modern (2.6.20) kernel.  Your trace strongly suggests
-that the device came back online for some reason and then the megaraid
-driver died.
-
-James
-
+> The stack dump seems to point to drivers/infiniband/ulp/ipoib/ipoib_main.c line
+> 829.
+> 
+> Full message below:
+> 	
+> [13440.761857] INFO: trying to register non-static key.
+> [13440.766903] the code is fine but needs lockdep annotation.
+> [13440.772455] turning off the locking correctness validator.
+> [13440.778008]  [<c023c082>] __lock_acquire+0xae4/0xbb9
+> [13440.783078]  [<c023c43d>] lock_acquire+0x56/0x71
+> [13440.787784]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
+> [13440.794412]  [<c051ad41>] _spin_lock_irqsave+0x32/0x41
+> [13440.799649]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
+> [13440.806275]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
+> [13440.812897]  [<c04a1c1b>] dst_run_gc+0xc/0x118
+> [13440.817439]  [<c022af6e>] run_timer_softirq+0x37/0x16b
+> [13440.822673]  [<c04a1c0f>] dst_run_gc+0x0/0x118
+> [13440.827221]  [<c04a3eab>] neigh_destroy+0xbe/0x104
+> [13440.832114]  [<c04a1bb1>] dst_destroy+0x4d/0xab
+> [13440.836751]  [<c04a1c64>] dst_run_gc+0x55/0x118
+> [13440.841384]  [<c022b03f>] run_timer_softirq+0x108/0x16b
+> [13440.846711]  [<c0227634>] __do_softirq+0x5a/0xd5
+> [13440.851427]  [<c023b435>] trace_hardirqs_on+0x106/0x141
+> [13440.856754]  [<c0227643>] __do_softirq+0x69/0xd5
+> [13440.861470]  [<c02276e6>] do_softirq+0x37/0x4d
+> [13440.866016]  [<c02167b0>] smp_apic_timer_interrupt+0x6b/0x77
+> [13440.871774]  [<c02029ef>] default_idle+0x3b/0x54
+> [13440.876491]  [<c02029ef>] default_idle+0x3b/0x54
+> [13440.881211]  [<c0204c33>] apic_timer_interrupt+0x33/0x38
+> [13440.886624]  [<c02029ef>] default_idle+0x3b/0x54
+> [13440.891342]  [<c02029f1>] default_idle+0x3d/0x54
+> [13440.896061]  [<c0202aaa>] cpu_idle+0xa2/0xbb
+> [13440.900436]  =======================
+> [13768.711447] BUG: spinlock lockup on CPU#1, swapper/0, c0687880
+> [13768.717353]  [<c031f919>] _raw_spin_lock+0xda/0xfd
+> [13768.722247]  [<c051ad48>] _spin_lock_irqsave+0x39/0x41
+> [13768.727486]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
+> [13768.734110]  [<f899bff2>] ipoib_neigh_destructor+0xd0/0x132 [ib_ipoib]
+> [13768.740735]  [<c04a1c1b>] dst_run_gc+0xc/0x118
+> [13768.745276]  [<c022af6e>] run_timer_softirq+0x37/0x16b
+> [13768.750517]  [<c04a1c0f>] dst_run_gc+0x0/0x118
+> [13768.755061]  [<c04a3eab>] neigh_destroy+0xbe/0x104
+> [13768.759955]  [<c04a1bb1>] dst_destroy+0x4d/0xab
+> [13768.764586]  [<c04a1c64>] dst_run_gc+0x55/0x118
+> [13768.769218]  [<c022b03f>] run_timer_softirq+0x108/0x16b
+> [13768.774542]  [<c0227634>] __do_softirq+0x5a/0xd5
+> [13768.779261]  [<c023b435>] trace_hardirqs_on+0x106/0x141
+> [13768.784588]  [<c0227643>] __do_softirq+0x69/0xd5
+> [13768.789308]  [<c02276e6>] do_softirq+0x37/0x4d
+> [13768.793851]  [<c02167b0>] smp_apic_timer_interrupt+0x6b/0x77
+> [13768.799609]  [<c02029ef>] default_idle+0x3b/0x54
+> [13768.804326]  [<c02029ef>] default_idle+0x3b/0x54
+> [13768.809054]  [<c0204c33>] apic_timer_interrupt+0x33/0x38
+> [13768.814471]  [<c02029ef>] default_idle+0x3b/0x54
+> [13768.819187]  [<c02029f1>] default_idle+0x3d/0x54
+> [13768.823903]  [<c0202aaa>] cpu_idle+0xa2/0xbb
+> [13768.828279]  =======================
+> 
+> 
+> -- 
+> MST
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
