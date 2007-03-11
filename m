@@ -1,117 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbXCKBrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbXCKBtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932431AbXCKBrl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 20:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbXCKBrl
+	id S932440AbXCKBtX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 20:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932446AbXCKBtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 20:47:41 -0500
-Received: from waste.org ([66.93.16.53]:37758 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932431AbXCKBrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 20:47:40 -0500
-Date: Sat, 10 Mar 2007 19:35:06 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@osdl.org
-Subject: RSDL-mm 0.28
-Message-ID: <20070311013506.GD10459@waste.org>
+	Sat, 10 Mar 2007 20:49:23 -0500
+Received: from sccrmhc14.comcast.net ([204.127.200.84]:53433 "EHLO
+	sccrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932440AbXCKBtW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 20:49:22 -0500
+Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
+From: Nicholas Miell <nmiell@comcast.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703101630260.10330@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com>
+	 <1173508384.3108.1.camel@entropy>
+	 <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
+	 <1173509019.3108.4.camel@entropy>
+	 <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
+	 <1173510568.3108.17.camel@entropy>
+	 <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
+	 <1173556374.2958.12.camel@entropy>
+	 <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
+	 <1173560473.2958.23.camel@entropy>
+	 <Pine.LNX.4.64.0703101340550.10330@woody.linux-foundation.org>
+	 <1173563796.2958.28.camel@entropy>
+	 <Pine.LNX.4.64.0703101421410.10330@woody.linux-foundation.org>
+	 <1173572751.2958.107.camel@entropy>
+	 <Pine.LNX.4.64.0703101630260.10330@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 10 Mar 2007 17:49:19 -0800
+Message-Id: <1173577759.2958.124.camel@entropy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 (2.8.3-1.0.njm.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've tested -mm2 against -mm2+noyield and -mm2+rsdl+noyield. The
-noyield patch simply makes the sched_yield syscall return immediately.
-Xorg and all tests are run at nice 0.
+On Sat, 2007-03-10 at 16:35 -0800, Linus Torvalds wrote:
+> 
+> On Sat, 10 Mar 2007, Nicholas Miell wrote:
+> > > 
+> > > I'd actually much rather do POSIX timers the other way around: associate a 
+> > > generic notification mechanism with the file descriptor, and then 
+> > > implement posix_timer_create() on top of timerfd. Now THAT sounds like a 
+> > > clean unix-like interface ("everything is a file") and would imply that 
+> > > you'd be able to do the same kind of notification for any file descriptor, 
+> > > not just timers.
+> > > 
+> > 
+> > But timers aren't files or even remotely file-like
+> 
+> What do you think "a file" is?
+> 
+> In UNIX, a file descriptor is pretty much anything. You could say that 
+> sockets aren't remotely file-like, and you'd be right. What's your point? 
+> If you can read on it, it's a file.
 
-Loads:
- memload: constant memcpy of 16MB buffer
- execload: constant re-exec of a trivial shell script
- forkload: constant fork and exit of a trivial shell script
- make -j 5: hot-cache kernel build without ccache
- make -j 5 ccache: hot-cache kernel build with ccache
+Ah, I see. You're just interested in fds as a generic handle concept,
+and not a more Plan 9 type thing.
 
-Tests:
- beryl - 3D window manager, wiggle windows, spin desktop, etc.
- galeon - web browser, rapidly scrolling long web pages by grabbing
-    the scroll bar
- mp3 - XMMS on a FUSE sshfs over wireless (during all tests)
- terminal - responsiveness of ssh and local terminal sessions
- mouse - responsiveness of mouse pointer
+If that's the goal, somebody should start thinking about reducing the
+contents of struct file to the bare minimum (i.e. not much more than a
+file_operations pointer).
 
-Results:
- great = completely smooth
- good = fully responsive
- ok = visible latency
- bad = becomes difficult to use (or mp3 skips)
- awful = make it stop, please
+> 
+> And the real point of the whole signalfd() is that there really *are* a 
+> lot of UNIX interfaces that basically only work with file descriptors. Not 
+> just read, but select/poll/epoll.
 
-          -mm2        -mm2+noyield   rsdl+noyield
-no load
- beryl    great       great          great
- galeon   good        good           good
- mp3      good        good           good
- terminal good        good           good
- mouse    good        good           good
-memload x10
- beryl    awful/bad   great          good
- galeon   good        good           ok/good
- mp3      good        good           good
- terminal good        good           good
- mouse    good        good           good
-execload x10
- beryl    awful/bad   bad/good       good
- galeon   good        bad/good       ok/good
- mp3      good        bad            good
- terminal good        bad/good       good
- mouse    good        bad/good       good
-forkload x10
- beryl    good        good           great
- galeon   good        good           ok/good
- mp3      good        good           good
- terminal good        good           ok/good
- mouse    good        good           good
-make -j 5
- beryl    ok          good           good/great
- galeon   good        good           ok/good
- mp3      good        good           good
- terminal good        good           good
- mouse    good        good           good
-make -j 5 ccache
- beryl    ok          good           awful
- galeon   good        good           bad
- mp3      good        good           bad
- terminal good        good           bad/ok
- mouse    good        good           bad/ok
+It'd be useful if the polling interfaces could return small datums
+beyond just the POLL* flags -- having to do a read on timerfd just to
+get the overrun count has a lot of overhead for just an integer, and I
+imagine other things would like to pass back stuff too.
 
-make -j 5
-real      8m1.857s    8m50.659s      8m9.282s
-user      7m19.127s   8m3.494s       7m30.740s
-sys       0m30.910s   0m33.722s      0m29.542s
 
-make -j 5 ccache
-real      2m6.182s    2m19.032s      2m1.832s
-user      1m39.466s   1m48.787s      1m37.250s
-sys       0m19.741s   0m22.993s      0m20.109s
+> They currently have just one timeout, but the thing is, if UNIX had just 
+> had "timer file descriptors", they'd not need even that one. And even with 
+> the timeout, Davide's patch actually makes for a *better* timeout than the 
+> ones provided by select/poll/epoll, exactly because you can do things like 
+> repeating timers and absolute time etc.
+> 
+> Much more naturally than the timer interface we currently have for those 
+> system calls.
+> 
 
-There's a substantial performance hit for not yield, so we probably
-want to investigate alternate semantics for it. It seems reasonable
-for apps to say "let me not hog the CPU" without completely expiring
-them. Imagine you're in the front of the line (aka queue) and you
-spend a moment fumbling for your wallet. The polite thing to do is to
-let the next guy in front. But with the current sched_yield, you go
-all the way to the back of the line.
+You still want timeouts, creating/setting/destroying at timer just for
+a single call to select/poll/epoll is probably too heavy weight.
 
-RSDL makes most of the noyield hit back in normal make and then some
-with ccache. Impressive. But ccache is still destroying interactivity
-somehow. The ccache effect is fairly visible even with non-parallel
-'make'.
+timerfd() still leaves out the basic clock selection functionality
+provided by both setitimer() and timer_create().
 
-Also note I could occassionally trigger nasty multi-second pauses with
--mm2+noyield under exectest that didn't show up elsewhere. That's
-probably a bug in the mainline scheduler.
-
+> The same goes for signals. The whole "pselect()" thing shows that signals 
+> really *should* have been file descriptors, and suddenly you don't need 
+> "pselect()" at all.
+> 
+> So the "not remotely file-like" is not actually a real argument. One of 
+> the big *points* of UNIX was that it unified a lot under the general 
+> umbrella of a "file descriptor". Davide just unifies even more.
+>
+> 		Linus
 -- 
-Mathematics is the supreme nostalgia of our time.
+Nicholas Miell <nmiell@comcast.net>
+
