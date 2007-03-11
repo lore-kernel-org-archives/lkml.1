@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbXCKWAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbXCKWCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932696AbXCKWAh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 18:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932875AbXCKWAh
+	id S932875AbXCKWCK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 18:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932886AbXCKWCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 18:00:37 -0400
-Received: from www17.your-server.de ([213.133.104.17]:4138 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932696AbXCKWAg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 18:00:36 -0400
-Message-ID: <45F47B2D.1090403@m3y3r.de>
-Date: Sun, 11 Mar 2007 22:57:01 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Milan Broz <mbroz@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: SwSusp to disk doesn't work - Try 2
-References: <45F44599.3060508@m3y3r.de> <45F46660.4010102@m3y3r.de>	 <45F46D33.1050808@redhat.com>  <200703112209.53665.rjw@sisk.pl> <1173650195.13341.11.camel@localhost.localdomain>
-In-Reply-To: <1173650195.13341.11.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sun, 11 Mar 2007 18:02:10 -0400
+Received: from smtpout.mac.com ([17.250.248.178]:58559 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932875AbXCKWCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 18:02:09 -0400
+In-Reply-To: <200703111641.52066.dhazelton@enter.net>
+References: <2375c9f90703110715v4278f83flbc9fce6c542472a5@mail.gmail.com> <Pine.LNX.4.61.0703112134180.16857@yvahk01.tjqt.qr> <200703111641.52066.dhazelton@enter.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <14DE5DBD-4164-4CDF-9690-631514EB15EF@mac.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Cong WANG <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Style Question
+Date: Sun, 11 Mar 2007 18:01:38 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner schrieb:
-> On Sun, 2007-03-11 at 22:09 +0100, Rafael J. Wysocki wrote:
->   
->>>>>>>>     update_sched_domains
->>>>>>>>      detach_destroy_domains
->>>>>>>>        [waits here] --> synchronize_sched (==synchronize_rcu)
->>>>>>>>         
->>>>>>>>                 
->>>>>>> Well, I think the call to wait_for_completion() does not return, probably
->>>>>>> because the task supposed to complete the completion is frozen at this
->>>>>>> point.  Can you please try to confirm that it gets stuck on
->>>>>>> wait_for_completion() in synchronize_rcu()?
->>>>>>>       
->>>>>>>               
->>>>>> Yes, it's in wait_for_completion() in synchronize_rcu().
->>>>>> As noted in some previous mail, it will wake up after
->>>>>> event - key press etc.
->>>>>>
->>>>>> Patch in http://lkml.org/lkml/2007/3/7/255 solves different problem.
->>>>>> I added it to my quilt and applied anyway -> no change.
->>>>>>     
->>>>>>             
->>>>> Does the problem go away if NO_HZ is unset?
->>>>>   
->>>>>           
->>>> i tried to boot with nohz=off, but the problem did persist.
->>>>         
->>> Hmmmm, both variants (nohz=off or recompiled kernel without NO_HZ) works for me.
->>>       
->> Definitely something strange is going on here.
+On Mar 11, 2007, at 16:41:51, Daniel Hazelton wrote:
+> On Sunday 11 March 2007 16:35:50 Jan Engelhardt wrote:
+>> On Mar 11 2007 22:15, Cong WANG wrote:
+>>> So can I say using NULL is better than 0 in kernel?
 >>
->> I think we need an advice from someone who knows the RCU internals.
->>     
+>> On what basis? Do you even know what NULL is defined as in (C, not  
+>> C++) userspace? Think about it.
 >
-> RCU synchronization depends on the timer interrupt. Which kernel version
-> are you guys talking about ?
->
-> 	tglx
->   
+> IIRC, the glibc and GCC headers define NULL as (void*)0  :)
 
-I talk about be521466feb3bb1cd89de82a2b1d080e9ebd3cb6 (2.6.21-rc3+).
+On the other hand when __cplusplus is defined they define it to the  
+"__null" builtin, which GCC uses to give type conversion errors for  
+"int foo = NULL" but not "char *foo = NULL".  A "((void *)0)"  
+definition gives C++ type errors for both due to the broken C++ void  
+pointer conversion problems.
 
-The worst config is with nohz and without hrtimers: the kernel even 
-doesn't come back after pressing the power key.
-
-But i stay with without nohz and without hrtimers for now, because here 
-the suspend to disk works.
+Cheers,
+Kyle Moffett
 
