@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbXCKNEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbXCKN33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbXCKNEL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 09:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXCKNEL
+	id S1752222AbXCKN33 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 09:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXCKN33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 09:04:11 -0400
-Received: from il.qumranet.com ([82.166.9.18]:54886 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752105AbXCKNEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 09:04:10 -0400
-Message-ID: <45F3FE48.2040808@qumranet.com>
-Date: Sun, 11 Mar 2007 15:04:08 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Sun, 11 Mar 2007 09:29:29 -0400
+Received: from web36615.mail.mud.yahoo.com ([209.191.85.32]:38410 "HELO
+	web36615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752209AbXCKN33 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 09:29:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=3pdt/SOVYnjAI8usCWfdHXLoPth2zcaC2BpQoh7icM95o32TOXmpscNyYp3zC4l5WqOAtd24a6+KYM3fIoojQdtJKzP/kY+8iA3i420/Q3sjLKlOz7XXjXUNv/D22H0AIsfmSvfedP+HpWF/z0pJl6skVdKJ5Uo8boW6O8zsJYk=;
+X-YMail-OSG: aftGpHgVM1msVtsQvSVuoiqFuCdK.yHI0C4wFEkCw6.VVvSKS9Fhmg1YvafxMZUfXuE7H9FTSO2hjdjOg4_KPmpFImKUUecHh7mV3ZIG2SAWrvSkJVOHJG6VMjv84sow9oTrs6fR3F9Y_XU-
+Date: Sun, 11 Mar 2007 06:29:28 -0700 (PDT)
+From: Parav Pandit <paravpandit@yahoo.com>
+Subject: Locking interrupt handler in L1 cache
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: kvm-devel <kvm-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] KVM: always reload segment selectors
-References: <20070311122441.GA10774@elte.hu> <45F3F85D.7000509@qumranet.com> <20070311124146.GA15115@elte.hu> <20070311125233.GA17328@elte.hu>
-In-Reply-To: <20070311125233.GA17328@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <265904.11493.qm@web36615.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Subject: [patch] KVM: always reload segment selectors
-> From: Ingo Molnar <mingo@elte.hu>
->
-> failed VM entry on VMX might still change %fs or %gs, thus make sure 
-> that KVM always reloads the segment selectors. This is crutial on both 
-> x86 and x86_64: x86 has __KERNEL_PDA in %fs on which things like 
-> 'current' depends and x86_64 has 0 there and needs MSR_GS_BASE to work.
->
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/kvm/vmx.c |   37 +++++++++++++++++++++----------------
->  1 file changed, 21 insertions(+), 16 deletions(-)
->
-> Index: linux/drivers/kvm/vmx.c
-> ===================================================================
-> --- linux.orig/drivers/kvm/vmx.c
-> +++ linux/drivers/kvm/vmx.c
-> @@ -1896,6 +1896,27 @@ again:
->  		[cr2]"i"(offsetof(struct kvm_vcpu, cr2))
->  	      : "cc", "memory" );
->  
-> +	/*
-> +	 * Reload segment selectors ASAP. (it's needed for a functional
-> +	 * kernel: x86 relies on having __KERNEL_PDA in %fs and x86_64
-> +	 * relies on having 0 in %gs for the CPU PDA to work.)
-> +	 */
-> +	if (fs_gs_ldt_reload_needed) {
-> +		load_ldt(ldt_sel);
-> +		load_fs(fs_sel);
-> +		/*
-> +		 * If we have to reload gs, we must take care to
-> +		 * preserve our gs base.
-> +		 */
-> +		local_irq_disable();
-> +		load_gs(gs_sel);
-> +#ifdef CONFIG_X86_64
-> +		wrmsrl(MSR_GS_BASE, vmcs_readl(HOST_GS_BASE));
-> +#endif
-> +		local_irq_enable();
-> +
-> +		reload_tss();
-> +	}
->  	++kvm_stat.exits;
->  
->  	save_msrs(vcpu->guest_msrs, NR_BAD_MSRS);
+Hi,
 
-btw, looking at the code, we could just remove fs from the 
-fs_gs_reload_needed and make in unconditional.  VT knows how to reload 
-segments, except if they're user segments (groan).  In the case of fs, 
-if it's used for the pda, it's obviously a kernel segment.
+I have MPC 8548 Linux 2.6.x based firewall which will
+mostly do packet processing for 80% time.
+So obviously most of the time it will RX and TX
+packets through gianfar ethernet driver.
 
-gs is different: since only the segment base is loaded (via swapgs), the 
-selector part could well be a userspace selector, and thus the 
-irq-protected reload is needed.
+I want to lock my interrupt handler of this driver in
+the L1 cache.
 
-Anyway, I'm applying the patch as the above discourse is irrelevant to 
-the fix.
+1. Is there any kernel API for locking function and
+data to lock them in the L1/L2 cache?
+
+2. How can I use "icbtls" - Instruction Cache Block
+Touch and Lock Set" for locking my interrupt handler?
+
+3. Is "icbtls" is the correct instruction at which I
+am looking at?
+
+4. How do I find end address of the interrupt handler
+function and how do we pass it to cache locking
+instructions? (Because it can happen that interrupt
+handler size is more than a cache line, not aligned
+etc)?
+
+5. Can we enhance request_irq() function to take an
+additional parameter to lock the interrupt handler in
+the cache?
+
+I understand that if my interrupt handler is going to
+be called most of the time then it is very likely to
+happen that OS will flush the same, but there is no
+guarantee for it.
+
+Regards,
+Parav Pandit
 
 
--- 
-error compiling committee.c: too many arguments to function
 
+ 
+____________________________________________________________________________________
+Get your own web address.  
+Have a HUGE year through Yahoo! Small Business.
+http://smallbusiness.yahoo.com/domains/?p=BESTDEAL
