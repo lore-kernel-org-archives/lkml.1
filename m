@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964812AbXCKXw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964796AbXCKX6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964812AbXCKXw7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 19:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964813AbXCKXw7
+	id S964796AbXCKX6Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 19:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964815AbXCKX6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 19:52:59 -0400
-Received: from rwcrmhc15.comcast.net ([204.127.192.85]:42354 "EHLO
-	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964812AbXCKXw6 (ORCPT
+	Sun, 11 Mar 2007 19:58:16 -0400
+Received: from mail04.syd.optusnet.com.au ([211.29.132.185]:36611 "EHLO
+	mail04.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964796AbXCKX6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 19:52:58 -0400
-X-Greylist: delayed 93380 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Mar 2007 19:52:58 EDT
-Subject: Re: [patch 6/9] signalfd/timerfd v3 - timerfd core ...
-From: Nicholas Miell <nmiell@comcast.net>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1173657008.2964.6.camel@entropy>
-References: <send-serie.davidel@xmailserver.org.5031.1173654242.6>
-	 <Pine.LNX.4.64.0703111610360.4936@alien.or.mcafeemobile.com>
-	 <1173657008.2964.6.camel@entropy>
-Content-Type: text/plain
-Date: Sun, 11 Mar 2007 16:52:57 -0700
-Message-Id: <1173657177.2964.9.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.0.njm.1) 
+	Sun, 11 Mar 2007 19:58:15 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>
+Subject: RSDL v0.30 cpu scheduler for mainline kernels
+Date: Mon, 12 Mar 2007 10:58:11 +1100
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703121058.11966.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-11 at 16:50 -0700, Nicholas Miell wrote:
-> You should probably make it behave like the other things that use
-> itimerspec, just to avoid confusion -- i.e. timers are relative by
-> default, there's a flag that makes them absolute, they expire when
-> it_value specifies, and repeat every it_interval nanoseconds if
-> it_interval is non-zero.
-> 
-> i.e.
-> 
-> int timerfd(int ufd, int clockid, int flags, const struct timespec
-> *utmr);
-> 
-> with TFD_TIMER_ABS in flags making the timer absolute instead of
-> relative (and no TFD_TIMER_REL or TFD_TIMER_SEQ at all).
-> 
+There are updated patches for 2.6.20, 2.6.20.2, 2.6.21-rc3 and 2.6.21-rc3-mm2 
+to bring RSDL up to version 0.30 for download here:
 
-Sorry, that should be
+Full patches:
 
-int timerfd(int ufd, int clockid, int flags, const struct itimerspec
-*utmr);
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20-sched-rsdl-0.30.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20.2-rsdl-0.30.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-sched-rsdl-0.30.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0.30.patch
 
-and TFD_TIMER_ABSTIME.
+incrementals:
+
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20/2.6.20.2-rsdl-0.29-0.30.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20.2/2.6.20.2-rsdl-0.29-0.30.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3/2.6.21-rc3-rsdl-0.29-0.30.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2/2.6.21-rc3-mm2-rsdl-0.29-0.30.patch
 
 -- 
-Nicholas Miell <nmiell@comcast.net>
-
+-ck
