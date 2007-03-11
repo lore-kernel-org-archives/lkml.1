@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751527AbXCKAmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbXCKAng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751527AbXCKAmz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 19:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbXCKAmz
+	id S1751564AbXCKAng (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 19:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXCKAnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 19:42:55 -0500
-Received: from gw.goop.org ([64.81.55.164]:42862 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751527AbXCKAmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 19:42:54 -0500
-Message-ID: <45F35088.7020607@goop.org>
-Date: Sat, 10 Mar 2007 16:42:48 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: Dan Hecht <dhecht@vmware.com>, john stultz <johnstul@us.ibm.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Use of absolute timeouts for oneshot timers
-References: <45F33697.4000000@goop.org> <1173568491.24738.1194.camel@localhost.localdomain>
-In-Reply-To: <1173568491.24738.1194.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
+	Sat, 10 Mar 2007 19:43:35 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:46894 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751564AbXCKAnf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 19:43:35 -0500
+Subject: Re: [PATCH] SCSI: Delete unused header file.
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0703101715050.28707@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703101715050.28707@CPE00045a9c397f-CM001225dbafb6>
+Content-Type: text/plain
+Date: Sat, 10 Mar 2007 18:43:31 -0600
+Message-Id: <1173573812.4416.2.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> It's simply enforced in NO_HZ, HIGHRES mode as we operate in absolute
-> time, which is read back from the clocksource, even if we use a relative
-> value for real hardware clock event devices to program the next event.
-> We calculate the delta between the absolute event and now. So we never
-> get an accumulating error.
->
-> What problem are you observing ?
+On Sat, 2007-03-10 at 17:16 -0500, Robert P. J. Day wrote:
+>   Delete apparently unused header file drivers/scsi/pci2000.h.
 
-Actually, two things.  There was the unexpected pauses during boot,
-which is trivially fixable by not using the Xen periodic timer, and
-using the single-shot fallback.
+This was apparently missed by Christoph when he removed the driver ...
+I'll add it to the queue.  For future SCSI work, could you cc
+linux-scsi@vger.kernel.org please?  That way, any interested parties are
+more likely to see the patch.
 
-But I'm making the more general observation that if you use an absolute
-rather than relative time to set the single-shot timeout, then you have
-to deal with a long-term cumulative drift between the kernel's monotonic
-time and the hypervisor's monotonic time.  This can happen even if your
-clocksource is derived directly from the hypervisor monotonic time,
-because running ntp will warp the kernel's time, and so it will drift
-with respect to the hypervisor clock.  You can only avoid this by 1) not
-allowing adjtime, or 2) making those same adjtime warps to the
-hypervisor time.  Neither of these is a good general solution.
+Thanks,
 
-Therefore, the only useful way to set a single-shot timer is by using
-relative rather than absolute time, and making sure the delta not too
-large.  The guest and hypervisor may (and in general, will) have
-drifting clocks, but the error will never be too large to deal with.
+James
 
-    J
