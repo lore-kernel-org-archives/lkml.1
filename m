@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbXCKJvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXCKJxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069AbXCKJvt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 05:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbXCKJvt
+	id S1752082AbXCKJxR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 05:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXCKJxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 05:51:49 -0400
-Received: from mail15.syd.optusnet.com.au ([211.29.132.196]:46777 "EHLO
-	mail15.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752069AbXCKJvt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 05:51:49 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Subject: Re: [BIG] Re: sched rsdl fix for 0.28
-Date: Sun, 11 Mar 2007 20:51:42 +1100
-User-Agent: KMail/1.9.5
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-References: <200703111107.00704.kernel@kolivas.org> <1173604223.3550.2.camel@rousalka.dyndns.org> <200703112021.15172.kernel@kolivas.org>
-In-Reply-To: <200703112021.15172.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703112051.42782.kernel@kolivas.org>
+	Sun, 11 Mar 2007 05:53:17 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:41974 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752082AbXCKJxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 05:53:16 -0400
+Date: Sun, 11 Mar 2007 01:53:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Jin <joe.jin@oracle.com>
+Cc: James.Bottomley@SteelEye.com, joe.jin@oracle.com,
+       akpm@linux-foundation.org, dgilbert@interlog.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haobo.zhou@oracle.com
+Subject: Re: [PATCH] [scsi]: Add offline state checking while dispatch a
+ scsi cmd
+Message-Id: <20070311015300.271c2323.akpm@linux-foundation.org>
+In-Reply-To: <20070309014040.GA6632@joejin-pc.cn.oracle.com>
+References: <20070308092207.GA17141@joejin-pc.cn.oracle.com>
+	<1173369759.3683.1.camel@mulgrave.il.steeleye.com>
+	<20070309014040.GA6632@joejin-pc.cn.oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 March 2007 20:21, Con Kolivas wrote:
-> On Sunday 11 March 2007 20:10, Nicolas Mailhot wrote:
-> > Le dimanche 11 mars 2007 à 11:07 +1100, Con Kolivas a écrit :
-> > > sched rsdl fix
-> >
-> > Doesn't change a thing. Always breaks at the same place (though
-> > depending on hardware timings? the trace is not always the same). Pretty
-> > sure nothing happens before this failure
->
-> Bummer. The only other thing to try is v0.29 posted recently. I still
-> haven't got a good way to reproduce this locally but I'll keep trying.
-> Thanks for testing.
+> On Fri, 9 Mar 2007 09:40:40 +0800 Joe Jin <joe.jin@oracle.com> wrote:
+> > What's the error you're trying to fix?  scsi_dispatch_cmd() is only
+> > called from scsi_request_fn() which already has an equivalent of this
+> > check in it just prior to calling dispatch.
+> 
+> Yeah, I have saw the cheking at scsi_request_fn(), recently we got a crash
+> info as following at rhel4 2.6.9-42.0.2.ELsmp,
 
-Oh and if that oopses and you still have the time, could you please test 0.29 
-on 2.6.20.2 (available from same directory).
+The 2.6.9 base is very old in mainline terms.  Are you sure the bug hasn't
+been fixed in mainline by other means?
 
--- 
--ck
