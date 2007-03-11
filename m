@@ -1,94 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbXCKCMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbXCKCMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932570AbXCKCMD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 21:12:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932507AbXCKCKu
+	id S932649AbXCKCMm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 21:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932500AbXCKCJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 21:10:50 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58947 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932562AbXCKCKV (ORCPT
+	Sat, 10 Mar 2007 21:09:59 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57709 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932514AbXCKCJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 21:10:21 -0500
+	Sat, 10 Mar 2007 21:09:49 -0500
 From: Christoph Lameter <clameter@sgi.com>
-To: akpm@osdl.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>, mpm@selenic.com
-Message-Id: <20070311021021.19963.90870.sendpatchset@schroedinger.engr.sgi.com>
-In-Reply-To: <20070311021009.19963.11893.sendpatchset@schroedinger.engr.sgi.com>
-References: <20070311021009.19963.11893.sendpatchset@schroedinger.engr.sgi.com>
-Subject: [SLUB 2/3] Enable poisoning for RCU and constructors
-Date: Sat, 10 Mar 2007 18:10:21 -0800 (PST)
+To: linux-kernel@vger.kernel.org
+Cc: ak@suse.com, mpm@selenic.com, linux-ia64@vger.kernel.org, holt@sgi.com,
+       Christoph Lameter <clameter@sgi.com>
+Message-Id: <20070311020949.19905.48402.sendpatchset@schroedinger.engr.sgi.com>
+In-Reply-To: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+Subject: [QUICKLIST 5/6] x86_64: Separate quicklist for pgds
+Date: Sat, 10 Mar 2007 18:09:49 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable poisoning / redzoning for slabs with constructors or SLAB_DEWSTROY_BY_RCU
+x86_64: Add quicklist for pgd.
 
-We cannot poison the object itself but we can poison padding spaces and do
-the redzoning. For that we introduce another flag controlling object
-poisoning.
+A second quicklist is useful to separate out PGD handling. We can carry
+the initialized pgds over to the next process needing them. This
+avoids the zeroing of the pgds on free that we had to introduce
+in the last patch.
+
+Also clean up the pgd_list handling to use regular list macros.
+There is no need anymore to avoid the lru field.
+
+Move the add/removal of the pgds to the pgdlist into the
+constructor / destructor. That way the implementation is
+congruent with i386.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Index: linux-2.6.21-rc3/mm/slub.c
+Index: linux-2.6.21-rc3/arch/x86_64/Kconfig
 ===================================================================
---- linux-2.6.21-rc3.orig/mm/slub.c	2007-03-09 21:13:02.000000000 -0800
-+++ linux-2.6.21-rc3/mm/slub.c	2007-03-09 21:13:44.000000000 -0800
-@@ -80,6 +80,9 @@
- #define ARCH_SLAB_MINALIGN sizeof(void *)
- #endif
+--- linux-2.6.21-rc3.orig/arch/x86_64/Kconfig	2007-03-10 14:00:52.000000000 -0800
++++ linux-2.6.21-rc3/arch/x86_64/Kconfig	2007-03-10 14:00:53.000000000 -0800
+@@ -58,7 +58,7 @@
  
-+/* Internal SLUB flags */
-+#define __OBJECT_POISON 0x80000000	/* Poison object */
+ config NR_QUICK
+ 	int
+-	default 1
++	default 2
+ 
+ config ISA
+ 	bool
+Index: linux-2.6.21-rc3/arch/x86_64/mm/fault.c
+===================================================================
+--- linux-2.6.21-rc3.orig/arch/x86_64/mm/fault.c	2007-03-10 14:00:29.000000000 -0800
++++ linux-2.6.21-rc3/arch/x86_64/mm/fault.c	2007-03-10 14:00:53.000000000 -0800
+@@ -585,7 +585,7 @@
+ }
+ 
+ DEFINE_SPINLOCK(pgd_lock);
+-struct page *pgd_list;
++LIST_HEAD(pgd_list);
+ 
+ void vmalloc_sync_all(void)
+ {
+@@ -605,8 +605,7 @@
+ 			if (pgd_none(*pgd_ref))
+ 				continue;
+ 			spin_lock(&pgd_lock);
+-			for (page = pgd_list; page;
+-			     page = (struct page *)page->index) {
++			list_for_each_entry(page, &pgd_list, lru) {
+ 				pgd_t *pgd;
+ 				pgd = (pgd_t *)page_address(page) + pgd_index(address);
+ 				if (pgd_none(*pgd))
+Index: linux-2.6.21-rc3/include/asm-x86_64/pgalloc.h
+===================================================================
+--- linux-2.6.21-rc3.orig/include/asm-x86_64/pgalloc.h	2007-03-10 14:00:52.000000000 -0800
++++ linux-2.6.21-rc3/include/asm-x86_64/pgalloc.h	2007-03-10 14:00:53.000000000 -0800
+@@ -7,6 +7,9 @@
+ #include <linux/mm.h>
+ #include <linux/quicklist.h>
+ 
++#define QUICK_PGD 0	/* We preserve special mappings over free */
++#define QUICK_PT 1	/* Other page table pages that are zero on free */
 +
- static int kmem_size = sizeof(struct kmem_cache);
+ #define pmd_populate_kernel(mm, pmd, pte) \
+ 		set_pmd(pmd, __pmd(_PAGE_TABLE | __pa(pte)))
+ #define pud_populate(mm, pud, pmd) \
+@@ -22,88 +25,77 @@
+ static inline void pmd_free(pmd_t *pmd)
+ {
+ 	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
+-	quicklist_free(0, NULL, pmd);
++	quicklist_free(QUICK_PT, NULL, pmd);
+ }
  
- #ifdef CONFIG_SMP
-@@ -247,8 +250,8 @@
- 	if (s->objects == 1)
- 		return;
+ static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
+ {
+-	return (pmd_t *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
++	return (pmd_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+ }
  
--	if (s->flags & SLAB_POISON) {
--		memset(p, POISON_FREE, s->objsize -1);
-+	if (s->flags & __OBJECT_POISON) {
-+		memset(p, POISON_FREE, s->objsize - 1);
- 		p[s->objsize -1] = POISON_END;
- 	}
+ static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return (pud_t *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
++	return (pud_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+ }
  
-@@ -388,7 +391,8 @@
- 			object_err(s, page, p, "Alignment padding check fails");
+ static inline void pud_free (pud_t *pud)
+ {
+ 	BUG_ON((unsigned long)pud & (PAGE_SIZE-1));
+-	quicklist_free(0, NULL, pud);
++	quicklist_free(QUICK_PT, NULL, pud);
+ }
  
- 	if (s->flags & SLAB_POISON) {
--		if (!active && (!check_bytes(p, POISON_FREE, s->objsize - 1) ||
-+		if (!active && (s->flags & __OBJECT_POISON)
-+				&& (!check_bytes(p, POISON_FREE, s->objsize - 1) ||
- 				p[s->objsize -1] != POISON_END)) {
- 			object_err(s, page, p, "Poison");
- 			return 0;
-@@ -1371,14 +1375,9 @@
- 		strncmp(slub_debug_slabs, name, strlen(slub_debug_slabs)) == 0))
- 			flags |= slub_debug;
+-static inline void pgd_list_add(pgd_t *pgd)
++static inline void pgd_ctor(void *x)
+ {
++	unsigned boundary;
++	pgd_t *pgd = x;
+ 	struct page *page = virt_to_page(pgd);
  
--	if ((flags & SLAB_POISON) &&((flags & SLAB_DESTROY_BY_RCU) ||
--			ctor || dtor)) {
--		if (!(slub_debug & SLAB_POISON))
--			printk(KERN_WARNING "SLUB %s: Clearing SLAB_POISON "
--				"because de/constructor exists.\n",
--				s->name);
--		flags &= ~SLAB_POISON;
--	}
-+	if ((flags & SLAB_POISON) && !(flags & SLAB_DESTROY_BY_RCU) &&
-+			!ctor && !dtor)
-+		flags |= __OBJECT_POISON;
++	/*
++	 * Copy kernel pointers in from init.
++	 */
++	boundary = pgd_index(__PAGE_OFFSET);
++	memcpy(pgd + boundary,
++		init_level4_pgt + boundary,
++		(PTRS_PER_PGD - boundary) * sizeof(pgd_t));
++
+ 	spin_lock(&pgd_lock);
+-	page->index = (pgoff_t)pgd_list;
+-	if (pgd_list)
+-		pgd_list->private = (unsigned long)&page->index;
+-	pgd_list = page;
+-	page->private = (unsigned long)&pgd_list;
++	list_add(&page->lru, &pgd_list);
+ 	spin_unlock(&pgd_lock);
+ }
  
- 	tentative_size = ALIGN(size, calculate_alignment(align, flags));
+-static inline void pgd_list_del(pgd_t *pgd)
++static inline void pgd_dtor(void *x)
+ {
+-	struct page *next, **pprev, *page = virt_to_page(pgd);
++	pgd_t *pgd = x;
++	struct page *page = virt_to_page(pgd);
  
-@@ -1389,7 +1388,7 @@
- 	 */
- 	if (size == PAGE_SIZE)
- 		flags &= ~(SLAB_RED_ZONE| SLAB_DEBUG_FREE | \
--			SLAB_STORE_USER | SLAB_POISON);
-+			SLAB_STORE_USER | SLAB_POISON | __OBJECT_POISON);
+ 	spin_lock(&pgd_lock);
+-	next = (struct page *)page->index;
+-	pprev = (struct page **)page->private;
+-	*pprev = next;
+-	if (next)
+-		next->private = (unsigned long)pprev;
++	list_del(&page->lru);
+ 	spin_unlock(&pgd_lock);
+ }
  
- 	s->name = name;
- 	s->ctor = ctor;
++
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+-	unsigned boundary;
+-	pgd_t *pgd = (pgd_t *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
+-	if (!pgd)
+-		return NULL;
++	pgd_t *pgd = (pgd_t *)quicklist_alloc(QUICK_PGD,
++			 GFP_KERNEL|__GFP_REPEAT, pgd_ctor);
+ 
+-	pgd_list_add(pgd);
+-	/*
+-	 * Copy kernel pointers in from init.
+-	 * Could keep a freelist or slab cache of those because the kernel
+-	 * part never changes.
+-	 */
+-	boundary = pgd_index(__PAGE_OFFSET);
+-	memset(pgd, 0, boundary * sizeof(pgd_t));
+-	memcpy(pgd + boundary,
+-	       init_level4_pgt + boundary,
+-	       (PTRS_PER_PGD - boundary) * sizeof(pgd_t));
+ 	return pgd;
+ }
+ 
+ static inline void pgd_free(pgd_t *pgd)
+ {
+ 	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
+-	pgd_list_del(pgd);
+-	memset(pgd, 0, PAGE_SIZE);
+-	quicklist_free(0, NULL, pgd);
++	quicklist_free(QUICK_PGD, pgd_dtor, pgd);
+ }
+ 
+ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+ {
+-	return (pte_t *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
++	return (pte_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+ }
+ 
+ static inline struct page *pte_alloc_one(struct mm_struct *mm, unsigned long address)
+ {
+-	void *p = (void *)quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
++	void *p = (void *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+ 	if (!p)
+ 		return NULL;
+ 	return virt_to_page(p);
+@@ -115,7 +107,7 @@
+ static inline void pte_free_kernel(pte_t *pte)
+ {
+ 	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
+-	quicklist_free(0, NULL, pte);
++	quicklist_free(QUICK_PT, NULL, pte);
+ }
+ 
+ static inline void pte_free(struct page *pte)
+@@ -130,6 +122,7 @@
+ 
+ static inline void check_pgt_cache(void)
+ {
+-	quicklist_check(0, NULL);
++	quicklist_check(QUICK_PGD, pgd_dtor);
++	quicklist_check(QUICK_PT, NULL);
+ }
+ #endif /* _X86_64_PGALLOC_H */
+Index: linux-2.6.21-rc3/include/asm-x86_64/pgtable.h
+===================================================================
+--- linux-2.6.21-rc3.orig/include/asm-x86_64/pgtable.h	2007-03-10 14:00:29.000000000 -0800
++++ linux-2.6.21-rc3/include/asm-x86_64/pgtable.h	2007-03-10 14:02:18.000000000 -0800
+@@ -403,7 +403,7 @@
+ #define __swp_entry_to_pte(x)		((pte_t) { (x).val })
+ 
+ extern spinlock_t pgd_lock;
+-extern struct page *pgd_list;
++extern struct list_head pgd_list;
+ void vmalloc_sync_all(void);
+ 
+ #endif /* !__ASSEMBLY__ */
+@@ -420,7 +420,6 @@
+ #define HAVE_ARCH_UNMAPPED_AREA
+ 
+ #define pgtable_cache_init()   do { } while (0)
+-#define check_pgt_cache()      do { } while (0)
+ 
+ #define PAGE_AGP    PAGE_KERNEL_NOCACHE
+ #define HAVE_PAGE_AGP 1
