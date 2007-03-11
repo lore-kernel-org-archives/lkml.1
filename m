@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932801AbXCKDWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbXCKDZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932801AbXCKDWQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 22:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932806AbXCKDWQ
+	id S932806AbXCKDZQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 22:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbXCKDZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 22:22:16 -0500
-Received: from holomorphy.com ([66.93.40.71]:57370 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932801AbXCKDWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 22:22:15 -0500
-Date: Sat, 10 Mar 2007 19:22:13 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, ak@suse.com, linux-ia64@vger.kernel.org,
-       holt@sgi.com, mpm@selenic.com
-Subject: Re: [QUICKLIST 2/6] i386: quicklist support
-Message-ID: <20070311032213.GJ2986@holomorphy.com>
-References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com> <20070311020934.19905.57850.sendpatchset@schroedinger.engr.sgi.com>
+	Sat, 10 Mar 2007 22:25:16 -0500
+Received: from mail31.syd.optusnet.com.au ([211.29.132.102]:46356 "EHLO
+	mail31.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932806AbXCKDZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 22:25:15 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: RSDL-mm 0.28
+Date: Sun, 11 Mar 2007 14:59:28 +1100
+User-Agent: KMail/1.9.5
+Cc: mpm@selenic.com, linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+References: <20070311013506.GD10459@waste.org> <8cd998d50703101828l71fbec7bi9a819ad7b7fd9828@mail.gmail.com> <20070310191614.5ac3cf4b.akpm@linux-foundation.org>
+In-Reply-To: <20070310191614.5ac3cf4b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070311020934.19905.57850.sendpatchset@schroedinger.engr.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703111459.28806.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 10, 2007 at 06:09:34PM -0800, Christoph Lameter wrote:
-> i386: Convert to quicklists
-> Implement the i386 management of pgd and pmds using quicklists.
+On Sunday 11 March 2007 14:16, Andrew Morton wrote:
+> > On Sun, 11 Mar 2007 13:28:22 +1100 "Con Kolivas" <kernel@kolivas.org>
+> > wrote: Well... are you advocating we change sched_yield semantics to a
+> > gentler form?
+> >
+> >From a practical POV: our present yield() behaviour is so truly awful that
+>
+> it's basically always a bug to use it.  This probably isn't a good thing.
+>
+> So yes, I do think that we should have a rethink and try to come up with
+> behaviour which is more in accord with what application developers expect
+> yield() to do.
+>
+> otoh,
+>
+> a) we should have done this five years ago.  Instead, we've spent that
+>    time training userspace programmers to not use yield(), so perhaps
+>    there's little to be gained in changing it now.
+>
+> b) if we _were_ to change yield(), people would use it more, and their
+>    applications would of course suck bigtime when run on earlier 2.6
+>    kernels.
+>
+>
+> Bottom line: we've had a _lot_ of problems with the new yield() semantics.
+> We effectively broke back-compatibility by changing its behaviour a lot,
+> and we can't really turn around and blame application developers for that.
 
-I approve, though it would be nice if ptes had an interface operating
-on struct page * to use.
+So... I would take it that's a yes for a recommendation with respect to 
+implementing a new yield() ? A new scheduler is as good a time as any to do 
+it.
 
-
-On Sat, Mar 10, 2007 at 06:09:34PM -0800, Christoph Lameter wrote:
-> The i386 management of page table pages currently uses page sized slabs.
-> The page state is therefore mainly determined by the slab code. However,
-> i386 also uses its own fields in the page struct to mark special pages
-> and to build a list of pgds using the ->private and ->index field (yuck!).
-> This has been finely tuned to work right with SLAB but SLUB needs more
-> control over the page struct. Currently the only way for SLUB to support
-> these slabs is through special casing PAGE_SIZE slabs.
-> If we use quicklists instead then we can avoid the mess, and also the
-> overhead of manipulating page sized objects through slab.
-
-Hey! I did quite well given the constraints under which I was operating.
-
-
--- wli
+-- 
+-ck
