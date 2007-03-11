@@ -1,83 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbXCKOdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933672AbXCKOc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbXCKOdA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 10:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933675AbXCKOdA
+	id S933672AbXCKOc5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 10:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933673AbXCKOc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 10:33:00 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:38850 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933673AbXCKOc6 (ORCPT
+	Sun, 11 Mar 2007 10:32:57 -0400
+Received: from MAIL.13thfloor.at ([213.145.232.33]:43187 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933672AbXCKOc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 10:32:58 -0400
-Date: Sun, 11 Mar 2007 09:32:39 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-In-reply-to: <1173613149.6927.29.camel@Homer.simpson.net>
-To: linux-kernel@vger.kernel.org
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Message-id: <200703111032.40296.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703111457.17624.kernel@kolivas.org>
- <1173613149.6927.29.camel@Homer.simpson.net>
-User-Agent: KMail/1.9.6
+	Sun, 11 Mar 2007 10:32:56 -0400
+Date: Sun, 11 Mar 2007 15:32:55 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kirill Korotaev <dev@sw.ru>,
+       containers@lists.osdl.org, Paul Menage <menage@google.com>,
+       List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+Message-ID: <20070311143254.GC3696@MAIL.13thfloor.at>
+Mail-Followup-To: Pavel Emelianov <xemul@sw.ru>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Kirill Korotaev <dev@sw.ru>, containers@lists.osdl.org,
+	Paul Menage <menage@google.com>,
+	List <linux-kernel@vger.kernel.org>
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru> <20070306140036.4e85bd2f.akpm@linux-foundation.org> <20070309164855.GB3647@MAIL.13thfloor.at> <45F3C700.3060106@sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F3C700.3060106@sw.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 March 2007, Mike Galbraith wrote:
->Hi Con,
->
->On Sun, 2007-03-11 at 14:57 +1100, Con Kolivas wrote:
->> What follows this email is a patch series for the latest version of
->> the RSDL cpu scheduler (ie v0.29). I have addressed all bugs that I am
->> able to reproduce in this version so if some people would be kind
->> enough to test if there are any hidden bugs or oops lurking, it would
->> be nice to know in anticipation of putting this back in -mm. Thanks.
->>
->> Full patch for 2.6.21-rc3-mm2:
->> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0
->>.29.patch
->
->I'm seeing a cpu distribution problem running this on my P4 box.
->
->Scenario:
->listening to music collection (mp3) via Amarok.  Enable Amarok
->visualization gforce, and size such that X and gforce each use ~50% cpu.
->Start rip/encode of new CD with grip/lame encoder.  Lame is set to use
->both cpus, at nice 5.  Once the encoders start, they receive
->considerable more cpu than nice 0 X/Gforce, taking ~120% and leaving the
->remaining 80% for X/Gforce and Amarok (when it updates it's ~12k entry
->database) to squabble over.
->
->With 2.6.21-rc3,  X/Gforce maintain their ~50% cpu (remain smooth), and
->the encoders (100%cpu bound) get whats left when Amarok isn't eating it.
->
->I plunked the above patch into plain 2.6.21-rc3 and retested to
->eliminate other mm tree differences, and it's repeatable.  The nice 5
->cpu hogs always receive considerably more that the nice 0 sleepers.
->
->	-Mike
+On Sun, Mar 11, 2007 at 12:08:16PM +0300, Pavel Emelianov wrote:
+> Herbert Poetzl wrote:
+>> On Tue, Mar 06, 2007 at 02:00:36PM -0800, Andrew Morton wrote:
+>>> On Tue, 06 Mar 2007 17:55:29 +0300
+>>> Pavel Emelianov <xemul@sw.ru> wrote:
+>>>
+>>>> +struct rss_container {
+>>>> +	struct res_counter res;
+>>>> +	struct list_head page_list;
+>>>> +	struct container_subsys_state css;
+>>>> +};
+>>>> +
+>>>> +struct page_container {
+>>>> +	struct page *page;
+>>>> +	struct rss_container *cnt;
+>>>> +	struct list_head list;
+>>>> +};
+>>> ah. This looks good. I'll find a hunk of time to go through this
+>>> work and through Paul's patches. It'd be good to get both patchsets
+>>> lined up in -mm within a couple of weeks. But..
+>> 
+>> doesn't look so good for me, mainly becaus of the 
+>> additional per page data and per page processing
+>> 
+>> on 4GB memory, with 100 guests, 50% shared for each
+>> guest, this basically means ~1mio pages, 500k shared
+>> and 1500k x sizeof(page_container) entries, which
+>> roughly boils down to ~25MB of wasted memory ...
+>> 
+>> increase the amount of shared pages and it starts
+>> getting worse, but maybe I'm missing something here
+> 
+> You are. Each page has only one page_container associated
+> with it despite the number of containers it is shared
+> between.
+> 
+>>> We need to decide whether we want to do per-container memory
+>>> limitation via these data structures, or whether we do it via
+>>> a physical scan of some software zone, possibly based on Mel's
+>>> patches.
+>> 
+>> why not do simple page accounting (as done currently
+>> in Linux) and use that for the limits, without
+>> keeping the reference from container to page?
+> 
+> As I've already answered in my previous letter simple
+> limiting w/o per-container reclamation and per-container
+> oom killer isn't a good memory management. It doesn't allow
+> to handle resource shortage gracefully.
 
-Just to comment, I've been running one of the patches between 20-ck1 and 
-this latest one, which is building as I type, but I also run gkrellm 
-here, version 2.2.9.
+per container OOM killer does not require any container
+page reference, you know _what_ tasks belong to the 
+container, and you know their _badness_ from the normal
+OOM calculations, so doing them for a container is really
+straight forward without having any page 'tagging'
 
-Since I have been running this middle of this series patch, something is 
-killing gkrellm about once a day, and there is nothing in the logs to 
-indicate a problem.  I see a blink out of the corner of my eye, and its 
-gone.  And it always starts right back up from a kmenu click.
+for the reclamation part, please elaborate how that will
+differ in a (shared memory) guest from what the kernel
+currently does ...
 
-No idea if anyone else is experiencing this or not.
+TIA,
+Herbert
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-You scratch my tape, and I'll scratch yours.
+> This patchset provides more grace way to handle this, but
+> full memory management includes accounting of VMA-length
+> as well (returning ENOMEM from system call) but we've decided
+> to start with RSS.
+> 
+>> best,
+>> Herbert
+>> 
+>>> _______________________________________________
+>>> Containers mailing list
+>>> Containers@lists.osdl.org
+>>> https://lists.osdl.org/mailman/listinfo/containers
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>> 
