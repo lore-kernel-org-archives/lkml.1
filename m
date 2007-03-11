@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932454AbXCKB5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbXCKCJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932454AbXCKB5q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 20:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbXCKB5q
+	id S932470AbXCKCJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 21:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbXCKCJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 20:57:46 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:46314 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932454AbXCKB5p (ORCPT
+	Sat, 10 Mar 2007 21:09:26 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57685 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932468AbXCKCJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 20:57:45 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 10 Mar 2007 17:57:39 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nicholas Miell <nmiell@comcast.net>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 6/9] signalfd/timerfd v1 - timerfd core ...
-In-Reply-To: <1173577759.2958.124.camel@entropy>
-Message-ID: <Pine.LNX.4.64.0703101752360.3613@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0703091535360.3761@alien.or.mcafeemobile.com> 
- <1173508384.3108.1.camel@entropy>  <Pine.LNX.4.64.0703092235430.28135@alien.or.mcafeemobile.com>
-  <1173509019.3108.4.camel@entropy>  <Pine.LNX.4.64.0703092248420.28135@alien.or.mcafeemobile.com>
-  <1173510568.3108.17.camel@entropy>  <Pine.LNX.4.64.0703092323370.28135@alien.or.mcafeemobile.com>
-  <1173556374.2958.12.camel@entropy>  <Pine.LNX.4.64.0703101230010.29503@alien.or.mcafeemobile.com>
-  <1173560473.2958.23.camel@entropy>  <Pine.LNX.4.64.0703101340550.10330@woody.linux-foundation.org>
-  <1173563796.2958.28.camel@entropy>  <Pine.LNX.4.64.0703101421410.10330@woody.linux-foundation.org>
-  <1173572751.2958.107.camel@entropy>  <Pine.LNX.4.64.0703101630260.10330@woody.linux-foundation.org>
- <1173577759.2958.124.camel@entropy>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 10 Mar 2007 21:09:25 -0500
+From: Christoph Lameter <clameter@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: ak@suse.com, holt@sgi.com, linux-ia64@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, mpm@selenic.com
+Message-Id: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+Subject: [QUICKLIST 0/6] Arch independent quicklists V1
+Date: Sat, 10 Mar 2007 18:09:23 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Mar 2007, Nicholas Miell wrote:
+This patchset introduces an arch independent framework to handle lists
+of recently used page table pages.
 
-> If that's the goal, somebody should start thinking about reducing the
-> contents of struct file to the bare minimum (i.e. not much more than a
-> file_operations pointer).
+Page table pages have the characteristics that they are typically zero
+or in a known state when they are freed. This is usually the exactly
+same state as needed after allocation. So it makes sense to build a list
+of freed page table pages and then consume the pages already in use
+first. Those pages have already been initialized correctly (thus no
+need to zero them) and are likely already cached in such a way that
+the MMU can use them most effectively.
 
-That's already pretty smal, and the single inode (and maybe dentry) will 
-make it even smaller. Unless you want to create brazillions of signalfds,
-timerfds or asyncfds.
+Such an implementation already exits for ia64. If I remember correctly
+it was done by Robin Holt. Howver, that implementation did not support
+constructors and destructors as needed by i386 / x86_64. It also only
+supported a single quicklist. The implementation here has constructor
+and destructor support as well as the ability for an arch to specify
+how many quicklists are needed.
 
+Quicklists are defined by an arch defining the necessary number
+of quicklists in arch/<arch>/Kconfig. F.e. i386 needs two and thus
+has 
 
+config NR_QUICK
+	int
+	default 2
 
-> > And the real point of the whole signalfd() is that there really *are* a 
-> > lot of UNIX interfaces that basically only work with file descriptors. Not 
-> > just read, but select/poll/epoll.
-> 
-> It'd be useful if the polling interfaces could return small datums
-> beyond just the POLL* flags -- having to do a read on timerfd just to
-> get the overrun count has a lot of overhead for just an integer, and I
-> imagine other things would like to pass back stuff too.
-...
+If an arch has requested quicklist support then pages can be allocated
+from the quicklist (or from the page allocator if the quicklist is
+empty) via:
 
-> You still want timeouts, creating/setting/destroying at timer just for
-> a single call to select/poll/epoll is probably too heavy weight.
+quicklist_alloc(<quicklist-nr>, <gfpflags>, <constructor>)
 
-Take a look at what timerfd does and what posix timers has to do to 
-implement the interface. You'll prolly stop trolling with things like "a 
-lot of overhead" or "too heavy weight".
+Page table pages can be freed using:
 
+quicklist_free(<quicklist-nr>, <destructor>, <page>)
 
+Pages must have a definite state after allocation and before
+they are freed. If no constructor is specified then pages
+will be zeroed on allocation and must be zeroed before they are
+freed.
 
-> timerfd() still leaves out the basic clock selection functionality
-> provided by both setitimer() and timer_create().
+If a constructor is used then the constructor will establish
+a definite page state. F.e. the i386 and x86_64 pgd constructors
+establish certain mappings.
 
-That is coming as soon as I fixed my send-serie script ...
+Constructors and destructors can also be used to track the pages.
+i386 and x86_64 use a list of pgds in order to be able to dynamically
+update standard mappings.
 
+6 patches follow this message:
 
-
-
-- Davide
-
+[QUICKLIST 1/6] Extract quicklist implementation from IA64
+[QUICKLIST 2/6] i386: quicklist support
+[QUICKLIST 3/6] i386: Use standard list manipulators for pgd_list
+[QUICKLIST 4/6] x86_64: Single quicklist
+[QUICKLIST 5/6] x86_64: Separate quicklist for pgds
+[QUICKLIST 6/6] slub: remove special casing for PAGE_SIZE slabs
 
