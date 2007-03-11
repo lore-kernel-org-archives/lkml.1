@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXCKLgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932965AbXCKLiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933262AbXCKLgh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 07:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933142AbXCKLgh
+	id S932965AbXCKLiY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 07:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933149AbXCKLiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 07:36:37 -0400
-Received: from tag.witbe.net ([81.88.96.48]:35187 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932965AbXCKLgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 07:36:36 -0400
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Tejun Heo'" <htejun@gmail.com>
-Cc: "'Jeff Garzik'" <jeff@garzik.org>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       <linux-ide@vger.kernel.org>, "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Eric D. Mudama'" <edmudama@gmail.com>
-Subject: RE: [git patches] libata fixes
-Date: Sun, 11 Mar 2007 12:35:46 +0100
-Organization: AS2917.net
-Message-ID: <014d01c763d1$699510c0$2101a8c0@donald>
+	Sun, 11 Mar 2007 07:38:24 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:58418 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932965AbXCKLiX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 07:38:23 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Sun, 11 Mar 2007 06:09:55 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CIRRUS: Delete unused header file.
+In-Reply-To: <20070310232610.dda68aff.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703110606510.17962@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703101725550.28973@CPE00045a9c397f-CM001225dbafb6>
+ <20070310232610.dda68aff.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <45F157C3.4090604@gmail.com>
-Thread-Index: AcdiSVmtZoUEouauTm++gUFi5Z82AwBhELNg
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sat, 10 Mar 2007, Andrew Morton wrote:
 
-> It seems like IRQ is not getting through.  The first IRQ 
-> driven command is failing for you.
+> > On Sat, 10 Mar 2007 17:27:44 -0500 (EST) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+> >
+> >   Delete apparently unused header file
+> > sound/pci/cs46xx/imgs/cwcemb80.h.
+> >
+>
+> That patch series was rather a mess
+>
+> - Multiple patches with the same Subject: (I might have lost some as a result)
 
-Hmmmm.... 
-> Extract is :
-> ata7: PATA max UDMA/100 cmd 0x0000000000019c00 ctl 0x0000000000019882 bmdma
-> 0x0000000000019400 irq 16
-> ata8: PATA max UDMA/100 cmd 0x0000000000019800 ctl 0x0000000000019482 bmdma
-> 0x0000000000019408 irq 16
+yes, that was a bad decision on my part, sorry.
 
-IRQ 16 is IO-APIC-fasteoi for libata, and is not shared... but all the
-others libata IRQ are IO-APIC-edge.
+> - Several patches which tried to remove the same header file
 
-> * Does giving 'acpi=off' or 'irqpoll' make any difference?
-> 
-> * Can you connect a harddisk to the channel and see whether 
-> that works?
-Tried that.. Disk is identified as ATA-7: Mastor 6Y080L0, YAR41BW0, max
-UDMA/13
-and then timeout again...
+*that* shouldn't have happened, those patches were designed to be
+independent of one another and, AFAIK, i submitted them only once.  i
+have no idea how the above might have happened.
 
-Tried then with acpi=off, same result (identify is OK, but then timeout),
-and irqpoll and then it was OK !!!!
+> - Several patches which simply didn't apply
 
-Let's then go back to my DVD-RW and test irqpoll...
-and ... Yes.... Got it !
-It is identified, it can be mounted, and read as /dev/sr1 !
+hmmmmm ... they were created against the latest git tree, i don't know
+why they wouldn't apply.
 
-/proc/interrupts show a count of 0 for IRQ 16, so yes, it goes somewhere
-else...
+...
 
-Doing some diffs on copy of /proc/interrupts while accessing the DVD
-gives two possibilities : IRQ14 or IRQ18, but both are also counting
-when not accessing the DVD...
+> - Useless indenting in changleog text which I have to edit away.
 
-Question : does running with irqpoll affects performance ?
+ah, i'll remember to not indent the changelog text next time, sorry.
 
-Paul
- 
+rday
 
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
