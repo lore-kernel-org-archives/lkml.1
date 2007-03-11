@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933273AbXCKMUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933284AbXCKM1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933273AbXCKMUr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 08:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933278AbXCKMUr
+	id S933284AbXCKM1Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 08:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933281AbXCKM1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 08:20:47 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58801 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933273AbXCKMUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 08:20:47 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/uedgKYAzu9aTt6UDsTvhaFi7vZfa06Z7Fis00rF
-	P5O/3b12dctPjn
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Con Kolivas <kernel@kolivas.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070311121038.GA9146@elte.hu>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <1173613149.6927.29.camel@Homer.simpson.net>
-	 <20070311121038.GA9146@elte.hu>
-Content-Type: text/plain
-Date: Sun, 11 Mar 2007 13:20:42 +0100
-Message-Id: <1173615642.6927.38.camel@Homer.simpson.net>
+	Sun, 11 Mar 2007 08:27:25 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45102 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933284AbXCKM1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 08:27:25 -0400
+Date: Sun, 11 Mar 2007 13:31:08 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Vitaliyi <imgrey@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: libata extension
+Message-ID: <20070311133108.7dca0e7b@lxorguk.ukuu.org.uk>
+In-Reply-To: <45F3B829.2010503@shaw.ca>
+References: <fa.tUT8ZqaAp2RZveBFqwzUhq3UYGI@ifi.uio.no>
+	<45F3B829.2010503@shaw.ca>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-03-11 at 13:10 +0100, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > > Full patch for 2.6.21-rc3-mm2: 
-> > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0.29.patch
-> > 
-> > I'm seeing a cpu distribution problem running this on my P4 box.
-> 
-> > With 2.6.21-rc3, X/Gforce maintain their ~50% cpu (remain smooth), and 
-> > the encoders (100%cpu bound) get whats left when Amarok isn't eating 
-> > it.
-> > 
-> > I plunked the above patch into plain 2.6.21-rc3 and retested to 
-> > eliminate other mm tree differences, and it's repeatable.  The nice 5 
-> > cpu hogs always receive considerably more that the nice 0 sleepers.
-> 
-> hm. Do you get the same same problem on UP too? (i.e. lets eliminate any 
-> SMP/HT artifacts)
+> I believe you should be able to do this by sending ATA pass-through SCSI 
+> commands into the device using SG_IO, without any kernel changes. It's 
+> really the mechanism that's meant for this..
 
-I'll boot up nosmp and report back (but now it's time to take Opa to the
-Gasthaus for his Sunday afternoon brewskies;)
+It should work, but Mark Lord reported some problems with READ_LONG on
+PIIX/ICH intel chipsets. I don't know if he ever resolved them but if not
+I have a patch that ought to.
 
-	-Mike
-
+Alan
