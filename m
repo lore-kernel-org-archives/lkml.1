@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbXCKIWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751789AbXCKIeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751773AbXCKIWA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 04:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXCKIWA
+	id S1751789AbXCKIeB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 04:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXCKIeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 04:22:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47786 "EHLO mx2.mail.elte.hu"
+	Sun, 11 Mar 2007 04:34:01 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:45249 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773AbXCKIV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 04:21:58 -0400
-Date: Sun, 11 Mar 2007 09:20:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Stefan Seyfried <seife@suse.de>, Johannes Stezenbach <js@linuxtv.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	id S1751789AbXCKIeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 04:34:00 -0400
+Message-ID: <45F3BF9C.8070305@sw.ru>
+Date: Sun, 11 Mar 2007 11:36:44 +0300
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@osdl.org>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, devel@openvz.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, linux-pm@lists.osdl.org,
-       lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-       Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com,
-       Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Message-ID: <20070311082002.GA4013@elte.hu>
-References: <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org> <20070309174821.GA31754@linuxtv.org> <20070309233508.GB2197@elf.ucw.cz> <20070310090121.GB15647@elte.hu> <20070310114301.GA30554@suse.de> <20070310151804.GA10627@elte.hu> <20070310220810.GF2758@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070310220810.GF2758@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
+Subject: Re: [RFC][PATCH 6/7] Account for the number of tasks within container
+References: <45ED7DEC.7010403@sw.ru> <45ED831A.5030108@sw.ru>	 <6599ad830703061800n38244a8fp68b29fa0290d18d7@mail.gmail.com>	 <45EE6601.4070107@sw.ru> <6599ad830703080549t70e66f92ua345f9fe59c44df4@mail.gmail.com>
+In-Reply-To: <6599ad830703080549t70e66f92ua345f9fe59c44df4@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pavel Machek <pavel@suse.cz> wrote:
-
-> > Probably tweaking the webpage doesnt help because people dont get 
-> > there - as the results plainly show it. Maybe some more automation 
-> > would be useful too, a tool that detects failed resume and tries all 
-> > those options that makes sense on that box or something? It's not 
-> > like that
+Paul Menage wrote:
+> On 3/6/07, Pavel Emelianov <xemul@sw.ru> wrote:
+>> The idea is:
+>>
+>> Task may be "the entity that allocates the resources" and "the
+>> entity that is a resource allocated".
+>>
+>> When task is the first entity it may move across containers
+>> (that is implemented in your patches). When task is a resource
+>> it shouldn't move across containers like files or pages do.
+>>
+>> More generally - allocated resources hold reference to original
+>> container till they die. No resource migration is performed.
+>>
+>> Did I express my idea cleanly?
 > 
-> Unfortunately, these tend to crash the box when you pass wrong 
-> options, and I do not see easy way to test "can user see whats on 
-> display" automatically.
+> Yes, but I disagree with the premise. The title of your patch is
+> "Account for the number of tasks within container", but that's not
+> what the subsystem does, it accounts for the number of forks within
+> the container that aren't directly accompanied by an exit.
+> 
+> Ideally, resources like files and pages would be able to follow tasks
+> as well. The reason that files and pages aren't easily migrated from
+> one container to another is that there could be sharing involved;
+> figuring out the sharing can be expensive, and it's not clear what to
+> do if two users are in different containers.
+> 
+> But in the case of a task count, there are no such issues with
+> sharing, so it seems to me to be more sensible (and more efficient) to
+> just limit the number of tasks in a container.
+> 
+> i.e. when moving a task into a container or forking a task within a
+> container, increment the count; when moving a task out of a container
+> or when it exits, decrement the count.
 
-you could perhaps try what X's modesetting utility does: display a 
-dialog box that times out if it does not get clicked on, and reboot if 
-it did not get clicked on. Likewise, detect upon the next bootup that a 
-suspend-test was in progress (and didnt get back via normal resume), via 
-some temporary file. That way both the 'did not resume and i had to 
-power-cycle' and the 'resume did not restore my X' problems can be 
-handled.
+Sounds reasonable.
+I'll take this into account when I make the next iteration.
+Thanks.
 
-Finally, when the correct options have been established (worse-case with 
-a small number of reboots and "yes, indeed the resume did not work fine" 
-clicks done upon bootup by the user), automatically fill in a webform in 
-firefox and ask the user to do a single click to submit that form.
+> With your approach, if you were to set the task limit of an empty
+> container A to 1, and then move a process P from B into A, P would be
+> able to fork a new child, since the "task count" would be 0 (as P was
+> being charged to B still). Surely the fact that there's 1 process in A
+> should prevent P from forking?
+> 
+> Paul
+> 
 
-techniques like that have more chance i think to get Linux 
-suspend/resume anywhere near to working. The current 'rely on the 
-developer' technique apparently does not work.
-
-	Ingo
