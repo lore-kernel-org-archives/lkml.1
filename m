@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933593AbXCKNyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbXCKNya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933593AbXCKNyW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 09:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933587AbXCKNxg
+	id S1752360AbXCKNya (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 09:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXCKNy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 09:53:36 -0400
-Received: from il.qumranet.com ([82.166.9.18]:43434 "EHLO il.qumranet.com"
+	Sun, 11 Mar 2007 09:54:27 -0400
+Received: from il.qumranet.com ([82.166.9.18]:43432 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbXCKNxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 09:53:30 -0400
+	id S933582AbXCKNxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 09:53:32 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@osdl.org>, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 07/15] KVM: Renumber ioctls
-Date: Sun, 11 Mar 2007 15:53:19 +0200
-Message-Id: <11736212071708-git-send-email-avi@qumranet.com>
+Subject: [PATCH 14/15] KVM: Allow kernel to select size of mmap() buffer
+Date: Sun, 11 Mar 2007 15:53:26 +0200
+Message-Id: <1173621208447-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.2
 In-Reply-To: <11736212072915-git-send-email-avi@qumranet.com>
 References: <11736212072915-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The recent changes have left the ioctl numbers in complete disarray.
+This allows us to store offsets in the kernel/user kvm_run area, and be
+sure that userspace has them mapped.  As offsets can be outside the
+kvm_run struct, userspace has no way of knowing how much to mmap.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- include/linux/kvm.h |   34 +++++++++++++++++-----------------
- 1 files changed, 17 insertions(+), 17 deletions(-)
+ drivers/kvm/kvm_main.c |    8 +++++++-
+ include/linux/kvm.h    |    4 ++++
+ 2 files changed, 11 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index ed95c9b..b81f007 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -2436,7 +2436,7 @@ static long kvm_dev_ioctl(struct file *filp,
+ 			  unsigned int ioctl, unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+-	int r = -EINVAL;
++	long r = -EINVAL;
+ 
+ 	switch (ioctl) {
+ 	case KVM_GET_API_VERSION:
+@@ -2478,6 +2478,12 @@ static long kvm_dev_ioctl(struct file *filp,
+ 		 */
+ 		r = 0;
+ 		break;
++	case KVM_GET_VCPU_MMAP_SIZE:
++		r = -EINVAL;
++		if (arg)
++			goto out;
++		r = PAGE_SIZE;
++		break;
+ 	default:
+ 		;
+ 	}
 diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index d89189a..93472da 100644
+index c0d10cd..dad9081 100644
 --- a/include/linux/kvm.h
 +++ b/include/linux/kvm.h
-@@ -229,34 +229,34 @@ struct kvm_cpuid {
- /*
-  * ioctls for /dev/kvm fds:
+@@ -253,6 +253,10 @@ struct kvm_signal_mask {
+  * return is 1 (yes) or 0 (no, sorry).
   */
--#define KVM_GET_API_VERSION       _IO(KVMIO, 1)
--#define KVM_CREATE_VM             _IO(KVMIO, 2) /* returns a VM fd */
--#define KVM_GET_MSR_INDEX_LIST    _IOWR(KVMIO, 15, struct kvm_msr_list)
-+#define KVM_GET_API_VERSION       _IO(KVMIO,   0x00)
-+#define KVM_CREATE_VM             _IO(KVMIO,   0x01) /* returns a VM fd */
-+#define KVM_GET_MSR_INDEX_LIST    _IOWR(KVMIO, 0x02, struct kvm_msr_list)
+ #define KVM_CHECK_EXTENSION       _IO(KVMIO,   0x03)
++/*
++ * Get size for mmap(vcpu_fd)
++ */
++#define KVM_GET_VCPU_MMAP_SIZE    _IO(KVMIO,   0x04) /* in bytes */
  
  /*
   * ioctls for VM fds
-  */
--#define KVM_SET_MEMORY_REGION     _IOW(KVMIO, 10, struct kvm_memory_region)
-+#define KVM_SET_MEMORY_REGION     _IOW(KVMIO, 0x40, struct kvm_memory_region)
- /*
-  * KVM_CREATE_VCPU receives as a parameter the vcpu slot, and returns
-  * a vcpu fd.
-  */
--#define KVM_CREATE_VCPU           _IO(KVMIO, 11)
--#define KVM_GET_DIRTY_LOG         _IOW(KVMIO, 12, struct kvm_dirty_log)
-+#define KVM_CREATE_VCPU           _IO(KVMIO,  0x41)
-+#define KVM_GET_DIRTY_LOG         _IOW(KVMIO, 0x42, struct kvm_dirty_log)
- 
- /*
-  * ioctls for vcpu fds
-  */
--#define KVM_RUN                   _IO(KVMIO, 16)
--#define KVM_GET_REGS              _IOR(KVMIO, 3, struct kvm_regs)
--#define KVM_SET_REGS              _IOW(KVMIO, 4, struct kvm_regs)
--#define KVM_GET_SREGS             _IOR(KVMIO, 5, struct kvm_sregs)
--#define KVM_SET_SREGS             _IOW(KVMIO, 6, struct kvm_sregs)
--#define KVM_TRANSLATE             _IOWR(KVMIO, 7, struct kvm_translation)
--#define KVM_INTERRUPT             _IOW(KVMIO, 8, struct kvm_interrupt)
--#define KVM_DEBUG_GUEST           _IOW(KVMIO, 9, struct kvm_debug_guest)
--#define KVM_GET_MSRS              _IOWR(KVMIO, 13, struct kvm_msrs)
--#define KVM_SET_MSRS              _IOW(KVMIO, 14, struct kvm_msrs)
--#define KVM_SET_CPUID             _IOW(KVMIO, 17, struct kvm_cpuid)
-+#define KVM_RUN                   _IO(KVMIO,   0x80)
-+#define KVM_GET_REGS              _IOR(KVMIO,  0x81, struct kvm_regs)
-+#define KVM_SET_REGS              _IOW(KVMIO,  0x82, struct kvm_regs)
-+#define KVM_GET_SREGS             _IOR(KVMIO,  0x83, struct kvm_sregs)
-+#define KVM_SET_SREGS             _IOW(KVMIO,  0x84, struct kvm_sregs)
-+#define KVM_TRANSLATE             _IOWR(KVMIO, 0x85, struct kvm_translation)
-+#define KVM_INTERRUPT             _IOW(KVMIO,  0x86, struct kvm_interrupt)
-+#define KVM_DEBUG_GUEST           _IOW(KVMIO,  0x87, struct kvm_debug_guest)
-+#define KVM_GET_MSRS              _IOWR(KVMIO, 0x88, struct kvm_msrs)
-+#define KVM_SET_MSRS              _IOW(KVMIO,  0x89, struct kvm_msrs)
-+#define KVM_SET_CPUID             _IOW(KVMIO,  0x8a, struct kvm_cpuid)
- 
- #endif
 -- 
 1.5.0.2
 
