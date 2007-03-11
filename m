@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXCKVHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXCKVO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932458AbXCKVHN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 17:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932488AbXCKVHN
+	id S932404AbXCKVO1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 17:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932488AbXCKVO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 17:07:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41056 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932458AbXCKVHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 17:07:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Milan Broz <mbroz@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: SwSusp to disk doesn't work - Try 2
-Date: Sun, 11 Mar 2007 22:09:52 +0100
-User-Agent: KMail/1.9.5
-Cc: Thomas Meyer <thomas@m3y3r.de>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
-References: <45F44599.3060508@m3y3r.de> <45F46660.4010102@m3y3r.de> <45F46D33.1050808@redhat.com>
-In-Reply-To: <45F46D33.1050808@redhat.com>
+	Sun, 11 Mar 2007 17:14:27 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:43690 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932404AbXCKVO0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 17:14:26 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Sun, 11 Mar 2007 17:11:42 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Eric Moore <eric.moore@lsi.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] MPT FUSION:  Delete unused header files.
+In-Reply-To: <20070311195553.GA12056@lsil.com>
+Message-ID: <Pine.LNX.4.64.0703111708210.3599@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0703101656150.28403@CPE00045a9c397f-CM001225dbafb6>
+ <20070311195553.GA12056@lsil.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703112209.53665.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 11 March 2007 21:57, Milan Broz wrote:
-> Thomas Meyer napsal(a):
-> > Rafael J. Wysocki schrieb:
-> >> On Sunday, 11 March 2007 21:23, Milan Broz wrote:
-> >>   
-> >>> Rafael J. Wysocki:
-> >>>     
-> >>>> Ah, NO_HZ.  Thomas Gleixner's address added to the Cc list.
-> >>>>
-> >>>>       
-> >>>>> short printk trace 
-> >>>>>
-> >>>>> enable_nonboot_cpus
-> >>>>>  _cpu_up
-> >>>>>   raw_notifier_callchain (CPU_UP_PREPARE)
-> >>>>>     ...
-> >>>>>     update_sched_domains
-> >>>>>      detach_destroy_domains
-> >>>>>        [waits here] --> synchronize_sched (==synchronize_rcu)
-> >>>>>         
-> >>>> Well, I think the call to wait_for_completion() does not return, probably
-> >>>> because the task supposed to complete the completion is frozen at this
-> >>>> point.  Can you please try to confirm that it gets stuck on
-> >>>> wait_for_completion() in synchronize_rcu()?
-> >>>>       
-> >>> Yes, it's in wait_for_completion() in synchronize_rcu().
-> >>> As noted in some previous mail, it will wake up after
-> >>> event - key press etc.
-> >>>
-> >>> Patch in http://lkml.org/lkml/2007/3/7/255 solves different problem.
-> >>> I added it to my quilt and applied anyway -> no change.
-> >>>     
-> >> Does the problem go away if NO_HZ is unset?
-> >>   
-> > 
-> > i tried to boot with nohz=off, but the problem did persist.
-> 
-> Hmmmm, both variants (nohz=off or recompiled kernel without NO_HZ) works for me.
+On Sun, 11 Mar 2007, Eric Moore wrote:
 
-Definitely something strange is going on here.
+> On Sat, Mar 10, 2007 at 04:57:35PM -0500, Robert P. J. Day wrote:
+> >
+> >   Delete apparently unused header files.
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> >
+> > ---
+> >
+> >  drivers/message/fusion/lsi/mpi_inb.h    |  221 ----------------------
+> >  drivers/message/fusion/lsi/mpi_log_fc.h |   89 --------
+> >  2 files changed, 310 deletions(-)
+> >
+>
+> NACK.
+>
+> Thanks, but no thanks.  Don't remove these header files.  These are
+> the mpi header files that define the interface between firmware and
+> drivers.  This set of headers are bundled with each flavor OS, and
+> we are constantly providing update files when changes occur.
 
-I think we need an advice from someone who knows the RCU internals.
+either way works for me, i was just identifying unused header files.
 
-Andrew, could you please tell me whom I should ask?
+rday
 
-Rafael
+p.s.  just to clarify, when i use the adjective "unused", i mean that
+that header file is not used *anywhere* in the source tree -- not even
+in an include that is currently commented out or conditionally
+included.  i mean *nowhere* (as long as i didn't screw up my
+programming, that is).
+
+so whether people want to keep those header files in the tree is up to
+them.
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
