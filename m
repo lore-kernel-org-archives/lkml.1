@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbXCKAom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751611AbXCKBHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751624AbXCKAom (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 19:44:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbXCKAol
+	id S1751611AbXCKBHv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 20:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbXCKBHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 19:44:41 -0500
-Received: from wx-out-0506.google.com ([66.249.82.225]:41581 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbXCKAok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 19:44:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=P/MVZHRcK0GMXCGLKWNDO58MgPYYFHHwLn2X915T4H3/8jNTj6xwzSCKbwbrIcVcMWmETleJGUbz/SDmOGvJBJUbbc+KsNy6tAhbvaeLMjVZlU0Ptp4vYIYQXzf8/if4nCQ3qgrofFAMuZ0LVV1+PNlZ6STk4C23soVe8sKNvc4=
-Message-ID: <7d01f9f00703101644m6f24af63l65c267221140cab0@mail.gmail.com>
-Date: Sun, 11 Mar 2007 01:44:39 +0100
-From: "Thibaut VARENE" <T-Bone@parisc-linux.org>
-To: "Con Kolivas" <kernel@kolivas.org>
-Subject: Re: [ck] Re: RSDL v0.28 for 2.6.20
-Cc: "ck list" <ck@vds.kolivas.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <7d01f9f00703101643u572035fcp9185ab43e82b20d2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Mar 2007 20:07:51 -0500
+Received: from waste.org ([66.93.16.53]:33408 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751600AbXCKBHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 20:07:50 -0500
+Date: Sat, 10 Mar 2007 18:55:07 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kees Cook <kees@outflux.net>, arjan@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: maps protection
+Message-ID: <20070311005507.GC10459@waste.org>
+References: <20070306175609.267bd7a9.akpm@linux-foundation.org> <20070307021335.GR9621@outflux.net> <20070306185942.585e7cd1.akpm@linux-foundation.org> <20070307031429.GU9621@outflux.net> <1173241331.3236.10.camel@laptopd505.fenrus.org> <20070308205525.GJ6805@outflux.net> <20070309183006.7ff23eff.akpm@linux-foundation.org> <45F23BB5.8090907@linux.intel.com> <20070310183341.GB10460@outflux.net> <20070310162101.716b6b57.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200703101845.59497.kernel@kolivas.org>
-	 <45F2F45F.6000403@seclark.us> <20070310191118.GL943@1wt.eu>
-	 <200703111054.42921.kernel@kolivas.org>
-	 <7d01f9f00703101643u572035fcp9185ab43e82b20d2@mail.gmail.com>
-X-Google-Sender-Auth: 304240acf98bd00b
+In-Reply-To: <20070310162101.716b6b57.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/11/07, Thibaut VARENE <T-Bone@parisc-linux.org> wrote:
-> On 3/11/07, Con Kolivas <kernel@kolivas.org> wrote:
->
-> > Has anyone had any trouble with RSDL on the stable kernels (ie not -mm)?
->
-> Tested fine so far on ppc, ia64 and (mostly) parisc.
+On Sat, Mar 10, 2007 at 04:21:01PM -0800, Andrew Morton wrote:
+> > On Sat, 10 Mar 2007 10:33:41 -0800 Kees Cook <kees@outflux.net> wrote:
+> > Here's another revision, with both the "can ptrace" and the global /proc 
+> > knob;
+> 
+> We'd be needing a changelog for that.
+> 
+> Please update the procfs documentation.
+> 
+> Does the patch also cover /proc/pid/smaps?
 
-I meant ppc64, actually.
-Gomen.
+Also, we ought to revisit /proc/pid/mem write, which is currently disabled.
+Either drop the code, fix it, or make it root only.
 
 -- 
-Thibaut VARENE
-http://www.parisc-linux.org/~varenet/
+Mathematics is the supreme nostalgia of our time.
