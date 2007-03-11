@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbXCKTwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751576AbXCKUBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932710AbXCKTwB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 15:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932704AbXCKTwB
+	id S1751576AbXCKUBx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 16:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXCKUBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 15:52:01 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57838 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932710AbXCKTwA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 15:52:00 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-References: <20070311180342.GE24475@mellanox.co.il>
-	<m1mz2jws83.fsf@ebiederm.dsl.xmission.com>
-	<20070311183709.GB19601@mellanox.co.il>
-Date: Sun, 11 Mar 2007 13:50:01 -0600
-In-Reply-To: <20070311183709.GB19601@mellanox.co.il> (Michael S. Tsirkin's
-	message of "Sun, 11 Mar 2007 20:37:09 +0200")
-Message-ID: <m1mz2jv9ue.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Sun, 11 Mar 2007 16:01:53 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:55147 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751572AbXCKUBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 16:01:52 -0400
+Date: Sun, 11 Mar 2007 13:55:54 -0600
+From: Eric Moore <eric.moore@lsi.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] MPT FUSION:  Delete unused header files.
+Message-ID: <20070311195553.GA12056@lsil.com>
+References: <Pine.LNX.4.64.0703101656150.28403@CPE00045a9c397f-CM001225dbafb6>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703101656150.28403@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Michael S. Tsirkin" <mst@mellanox.co.il> writes:
+On Sat, Mar 10, 2007 at 04:57:35PM -0500, Robert P. J. Day wrote:
+> 
+>   Delete apparently unused header files.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+> ---
+> 
+>  drivers/message/fusion/lsi/mpi_inb.h    |  221 ----------------------
+>  drivers/message/fusion/lsi/mpi_log_fc.h |   89 --------
+>  2 files changed, 310 deletions(-)
+> 
 
-> OK I guess. I gather we assume writing read-only registers has no side effects?
-> Are there rumors circulating wrt to these?
+NACK.
 
-I haven't heard anything about that, and if we are writing the same value back
-it should be pretty safe.
+Thanks, but no thanks.  Don't remove these header files.  These are the mpi
+header files that define the interface between firmware and drivers.  This
+set of headers are bundled with each flavor OS, and we are constantly
+providing update files when changes occur.
 
-I have heard it asserted that at least one version of the pci spec
-only required 32bit accesses to be supported by the hardware.  One of
-these days I will have to look that and see if it is true.  I do know
-it can be weird for hardware developers to support multiple kinds of
-decode.   As I recall for pci and pci-x at the hardware level the only
-difference in between 32bit transactions and smaller ones is the state
-of the byte-enable lines.
+With respect to mpi_log_fc.h - this defines the loginfo for fibre channel
+protocal.  This is a easy lookup to for LSI Logic customers to better
+understand the kind of errors returned from firmware, and help reduce number
+of support generated request, as the end user can merely lookup the unqiue
+id in the header file.    mpi_inb.h, is header for fibre channel protocal
+definii
+ng the inband-management interface, and maybe implemented some day.
 
-Eric
+Eric Moore
+LSI Logic
+
+
+
