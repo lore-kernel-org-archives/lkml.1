@@ -1,178 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXCKN4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXCKN5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933585AbXCKN4A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 09:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXCKNyf
+	id S933602AbXCKN5A (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 09:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXCKNya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 09:54:35 -0400
-Received: from il.qumranet.com ([82.166.9.18]:36771 "EHLO il.qumranet.com"
+	Sun, 11 Mar 2007 09:54:30 -0400
+Received: from il.qumranet.com ([82.166.9.18]:36767 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933585AbXCKNxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 09:53:34 -0400
+	id S933584AbXCKNxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 09:53:33 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@osdl.org>, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 02/15] KVM: Do not communicate to userspace through cpu registers during PIO
-Date: Sun, 11 Mar 2007 15:53:14 +0200
-Message-Id: <11736212073047-git-send-email-avi@qumranet.com>
+Subject: [PATCH 15/15] KVM: Future-proof argument-less ioctls
+Date: Sun, 11 Mar 2007 15:53:27 +0200
+Message-Id: <117362120890-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.2
 In-Reply-To: <11736212072915-git-send-email-avi@qumranet.com>
 References: <11736212072915-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently when passing the a PIO emulation request to userspace, we
-rely on userspace updating %rax (on 'in' instructions) and %rsi/%rdi/%rcx
-(on string instructions).  This (a) requires two extra ioctls for getting
-and setting the registers and (b) is unfriendly to non-x86 archs, when
-they get kvm ports.
-
-So fix by doing the register fixups in the kernel and passing to userspace
-only an abstract description of the PIO to be done.
+Some ioctls ignore their arguments.  By requiring them to be zero now,
+we allow a nonzero value to have some special meaning in the future.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h      |    1 +
- drivers/kvm/kvm_main.c |   48 +++++++++++++++++++++++++++++++++++++++++++++---
- drivers/kvm/svm.c      |    1 +
- drivers/kvm/vmx.c      |    1 +
- include/linux/kvm.h    |    6 +++---
- 5 files changed, 51 insertions(+), 6 deletions(-)
+ drivers/kvm/kvm_main.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index 901b8d9..59cbc5b 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -274,6 +274,7 @@ struct kvm_vcpu {
- 	int mmio_size;
- 	unsigned char mmio_data[8];
- 	gpa_t mmio_phys_addr;
-+	int pio_pending;
- 
- 	struct {
- 		int active;
 diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 42be8a8..8a4984d 100644
+index b81f007..bf8403e 100644
 --- a/drivers/kvm/kvm_main.c
 +++ b/drivers/kvm/kvm_main.c
-@@ -1504,6 +1504,44 @@ void save_msrs(struct vmx_msr_entry *e, int n)
- }
- EXPORT_SYMBOL_GPL(save_msrs);
+@@ -2169,6 +2169,9 @@ static long kvm_vcpu_ioctl(struct file *filp,
  
-+static void complete_pio(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_io *io = &vcpu->run->io;
-+	long delta;
-+
-+	kvm_arch_ops->cache_regs(vcpu);
-+
-+	if (!io->string) {
-+		if (io->direction == KVM_EXIT_IO_IN)
-+			memcpy(&vcpu->regs[VCPU_REGS_RAX], &io->value,
-+			       io->size);
-+	} else {
-+		delta = 1;
-+		if (io->rep) {
-+			delta *= io->count;
-+			/*
-+			 * The size of the register should really depend on
-+			 * current address size.
-+			 */
-+			vcpu->regs[VCPU_REGS_RCX] -= delta;
-+		}
-+		if (io->string_down)
-+			delta = -delta;
-+		delta *= io->size;
-+		if (io->direction == KVM_EXIT_IO_IN)
-+			vcpu->regs[VCPU_REGS_RDI] += delta;
-+		else
-+			vcpu->regs[VCPU_REGS_RSI] += delta;
-+	}
-+	
-+	vcpu->pio_pending = 0;
-+	vcpu->run->io_completed = 0;
-+
-+	kvm_arch_ops->decache_regs(vcpu);
-+
-+	kvm_arch_ops->skip_emulated_instruction(vcpu);
-+}
-+
- static int kvm_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- {
- 	int r;
-@@ -1518,9 +1556,13 @@ static int kvm_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		kvm_run->emulated = 0;
- 	}
+ 	switch (ioctl) {
+ 	case KVM_RUN:
++		r = -EINVAL;
++		if (arg)
++			goto out;
+ 		r = kvm_vcpu_ioctl_run(vcpu, vcpu->run);
+ 		break;
+ 	case KVM_GET_REGS: {
+@@ -2440,9 +2443,15 @@ static long kvm_dev_ioctl(struct file *filp,
  
--	if (kvm_run->mmio_completed) {
--		memcpy(vcpu->mmio_data, kvm_run->mmio.data, 8);
--		vcpu->mmio_read_completed = 1;
-+	if (kvm_run->io_completed) {
-+		if (vcpu->pio_pending)
-+			complete_pio(vcpu);
-+		else {
-+			memcpy(vcpu->mmio_data, kvm_run->mmio.data, 8);
-+			vcpu->mmio_read_completed = 1;
-+		}
- 	}
- 
- 	vcpu->mmio_needed = 0;
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 6787f11..b176f5a 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -1056,6 +1056,7 @@ static int io_interception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		}
- 	} else
- 		kvm_run->io.value = vcpu->svm->vmcb->save.rax;
-+	vcpu->pio_pending = 1;
- 	return 0;
- }
- 
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index 910535d..7fd572a 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -1465,6 +1465,7 @@ static int handle_io(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		kvm_run->io.address = vmcs_readl(GUEST_LINEAR_ADDRESS);
- 	} else
- 		kvm_run->io.value = vcpu->regs[VCPU_REGS_RAX]; /* rax */
-+	vcpu->pio_pending = 1;
- 	return 0;
- }
- 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index d88e750..19aeb33 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -11,7 +11,7 @@
- #include <asm/types.h>
- #include <linux/ioctl.h>
- 
--#define KVM_API_VERSION 5
-+#define KVM_API_VERSION 6
- 
- /*
-  * Architectural interrupt line count, and the size of the bitmap needed
-@@ -53,7 +53,7 @@ enum kvm_exit_reason {
- struct kvm_run {
- 	/* in */
- 	__u32 emulated;  /* skip current instruction */
--	__u32 mmio_completed; /* mmio request completed */
-+	__u32 io_completed; /* mmio/pio request completed */
- 	__u8 request_interrupt_window;
- 	__u8 padding1[7];
- 
-@@ -80,7 +80,7 @@ struct kvm_run {
- 			__u32 error_code;
- 		} ex;
- 		/* KVM_EXIT_IO */
--		struct {
-+		struct kvm_io {
- #define KVM_EXIT_IO_IN  0
- #define KVM_EXIT_IO_OUT 1
- 			__u8 direction;
+ 	switch (ioctl) {
+ 	case KVM_GET_API_VERSION:
++		r = -EINVAL;
++		if (arg)
++			goto out;
+ 		r = KVM_API_VERSION;
+ 		break;
+ 	case KVM_CREATE_VM:
++		r = -EINVAL;
++		if (arg)
++			goto out;
+ 		r = kvm_dev_ioctl_create_vm();
+ 		break;
+ 	case KVM_GET_MSR_INDEX_LIST: {
 -- 
 1.5.0.2
 
