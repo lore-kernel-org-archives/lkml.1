@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933274AbXCKMLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933275AbXCKMMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933274AbXCKMLg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 08:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933275AbXCKMLg
+	id S933275AbXCKMMm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 08:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXCKMMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 08:11:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50449 "EHLO mx2.mail.elte.hu"
+	Sun, 11 Mar 2007 08:12:42 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:1617 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933274AbXCKMLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 08:11:35 -0400
-Date: Sun, 11 Mar 2007 13:10:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Con Kolivas <kernel@kolivas.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Message-ID: <20070311121038.GA9146@elte.hu>
-References: <200703111457.17624.kernel@kolivas.org> <1173613149.6927.29.camel@Homer.simpson.net>
-Mime-Version: 1.0
+	id S933275AbXCKMMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 08:12:41 -0400
+Message-ID: <45F3F581.9030503@sw.ru>
+Date: Sun, 11 Mar 2007 15:26:41 +0300
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       devel@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru>	<45ED80E1.7030406@sw.ru> <20070306140036.4e85bd2f.akpm@linux-foundation.org>
+In-Reply-To: <20070306140036.4e85bd2f.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173613149.6927.29.camel@Homer.simpson.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> > Full patch for 2.6.21-rc3-mm2: 
-> > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsdl-0.29.patch
+Andrew Morton wrote:
+> On Tue, 06 Mar 2007 17:55:29 +0300
+> Pavel Emelianov <xemul@sw.ru> wrote:
 > 
-> I'm seeing a cpu distribution problem running this on my P4 box.
-
-> With 2.6.21-rc3, X/Gforce maintain their ~50% cpu (remain smooth), and 
-> the encoders (100%cpu bound) get whats left when Amarok isn't eating 
-> it.
 > 
-> I plunked the above patch into plain 2.6.21-rc3 and retested to 
-> eliminate other mm tree differences, and it's repeatable.  The nice 5 
-> cpu hogs always receive considerably more that the nice 0 sleepers.
+>>+struct rss_container {
+>>+	struct res_counter res;
+>>+	struct list_head page_list;
+>>+	struct container_subsys_state css;
+>>+};
+>>+
+>>+struct page_container {
+>>+	struct page *page;
+>>+	struct rss_container *cnt;
+>>+	struct list_head list;
+>>+};
+> 
+> 
+> ah.  This looks good.  I'll find a hunk of time to go through this work
+> and through Paul's patches.  It'd be good to get both patchsets lined
+> up in -mm within a couple of weeks.  But..
+> 
+> We need to decide whether we want to do per-container memory limitation via
+> these data structures, or whether we do it via a physical scan of some
+> software zone, possibly based on Mel's patches.
+i.e. a separate memzone for each container?
+imho memzone approach is inconvinient for pages sharing and shares accounting.
+it also makes memory management more strict, forbids overcommiting
+per-container etc.
+Maybe you have some ideas how we can decide on this?
 
-hm. Do you get the same same problem on UP too? (i.e. lets eliminate any 
-SMP/HT artifacts)
+Thanks,
+Kirill
 
-	Ingo
