@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbXCKHrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751664AbXCKHuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751330AbXCKHrn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 03:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbXCKHrn
+	id S1751664AbXCKHuT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 03:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbXCKHuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 03:47:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:2681 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbXCKHrm (ORCPT
+	Sun, 11 Mar 2007 03:50:19 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45331 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751652AbXCKHuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 03:47:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=L0GkFJYNVPCXrfhpMjK5GOFoLJ5vNeqktvpEGFAoHXTqQaDe20owXuvKSxOV917YL5I1ND00XdntNgnZiH0eZ/rtTQB5+h5R0v55tOYKGBXa2S3gWnb0HQ2lINWXm7Sgz5IfR5Y/42mWMI4JyQ2Grh5hShM0WuknrjmfLxetjdM=
-Date: Sun, 11 Mar 2007 10:44:16 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-Message-ID: <20070311074416.GA10572@cvg>
-References: <20070310160542.21cdb968@localhost> <20070310160614.GB10230@cvg> <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr> <20070310194617.2aef1006@localhost> <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr> <20070310175058.GA19878@cvg> <Pine.LNX.4.61.0703101906070.8799@yvahk01.tjqt.qr> <20070310212730.GA2577@uranus.ravnborg.org> <Pine.LNX.4.61.0703102234210.26332@yvahk01.tjqt.qr> <20070310224534.GA3150@uranus.ravnborg.org>
-MIME-Version: 1.0
+	Sun, 11 Mar 2007 03:50:17 -0400
+Date: Sun, 11 Mar 2007 08:50:13 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Andi Kleen <andi@firstfloor.org>, Francois Romieu <romieu@fr.zoreil.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: netconsole system freeze when cable unplugged
+Message-ID: <20070311075013.GA27670@one.firstfloor.org>
+References: <45F1B6FD.1060902@simon.arlott.org.uk> <20070309204243.GA28441@electric-eye.fr.zoreil.com> <45F1EE12.2070605@simon.arlott.org.uk> <p73r6rx9q28.fsf@bingen.suse.de> <45F2BB64.10000@simon.arlott.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070310224534.GA3150@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <45F2BB64.10000@simon.arlott.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Sat, Mar 10, 2007 at 11:45:34PM +0100]
-| On Sat, Mar 10, 2007 at 10:34:41PM +0100, Jan Engelhardt wrote:
-| > 
-| > On Mar 10 2007 22:27, Sam Ravnborg wrote:
-| > >On Sat, Mar 10, 2007 at 07:23:41PM +0100, Jan Engelhardt wrote:
-| > >> 
-| > >> Whether the 'working config file path' should change when you do
-| > >> 'Save as Alternate' or not, is a menuconfig axiom. Ask Sam Ravnborg
-| > >> if you want it changed :-)
-| > >
-| > >Current behaviour is not logical but on the other hand I do not
-| > >see a big need to make it so.
-| > >It seems that people very seldom uses "save alternate" anyway.
-| > >
-| > >But patches are welcome.
-| > 
-| > ^_^ The patch has already been posted, has not it?
-| No.
-| Either we keep current behaviour or we change to the "normal"
-| behaviour with a "Save as..." as know from all other programs.
-| 
-| 	Sam
-| 
+On Sat, Mar 10, 2007 at 02:06:28PM +0000, Simon Arlott wrote:
+> On 10/03/07 13:38, Andi Kleen wrote:
+> >Simon Arlott <simon@fire.lp0.eu> writes:
+> >
+> >>On 09/03/07 20:42, Francois Romieu wrote:
+> >>>Simon Arlott <simon@fire.lp0.eu> :
+> >>>>When I unplug the cable the system just stops responding to
+> >>>>anything, at all. No message is printed to the console when the
+> >>>>cable is plugged back in.
+> >>>rtl8139_interrupt (spin_lock(&tp->lock))
+> >>>-> rtl8139_weird_interrupt
+> >>>   -> rtl_check_media
+> >>>      -> mii_check_media (printk(KERN_INFO "%s: link down\n", ...))
+> >>>         [netpoll stuff here]
+> >>>         -> rtl8139_poll_controller
+> >>>            -> rtl8139_interrupt
+> >>>               *deadlock*
+> >>>See below for my random stuff of the day. Feel free to open a PR at
+> >>>bugzilla.kernel.org if the issue does not go away.
+> >>The patch doesn't fix it, nothing changes. I'm not sure how this can
+> >>be debugged if printk won't work...
+> >
+> >earlyprintk can be called directly (early_printk()) and should
+> >work. It won't log over the network of course.
+> 
+> It also won't log over the serial console either :(
 
-Hi Sam,
+It does, you just have to configure it properly.
 
-I think we should use "Save As..." idea. And thereby menuconfig,
-qconfig, gconfig will be affected. Please give me time to make patches.
-(I'm a little busy now so I hope to make them during a week :)
+earlyprintk=serial,ttySx,baud
 
-The patch I sent to Vladimir does not normalize behaviour of config
-process but just makes an alternate file as a snapshot of current config
-state. You may review it as a temporary solution only.
-
-		Cyrill
-
+-Andi
