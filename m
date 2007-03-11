@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933618AbXCKXGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933599AbXCKXNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933618AbXCKXGv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 19:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933643AbXCKXGQ
+	id S933599AbXCKXNj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 19:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933620AbXCKXNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 19:06:16 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40642 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933637AbXCKXGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 19:06:06 -0400
-From: Neil Brown <neilb@suse.de>
-To: Andy Isaacson <adi@hexapodia.org>
-Date: Mon, 12 Mar 2007 10:05:52 +1100
+	Sun, 11 Mar 2007 19:13:39 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:32864 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933599AbXCKXNi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 19:13:38 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 11 Mar 2007 16:13:33 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 6/9] signalfd/timerfd v3 - timerfd core ...
+In-Reply-To: <send-serie.davidel@xmailserver.org.5031.1173654242.6>
+Message-ID: <Pine.LNX.4.64.0703111610360.4936@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.5031.1173654242.6>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17908.35664.68737.48529@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fix read past end of array in md/linear.c
-In-Reply-To: message from Andy Isaacson on Thursday March 8
-References: <20070308205204.GA12152@hexapodia.org>
-	<20070308205341.GA13663@hexapodia.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday March 8, adi@hexapodia.org wrote:
-> On Thu, Mar 08, 2007 at 12:52:04PM -0800, Andy Isaacson wrote:
-> > Index: linus/drivers/md/linear.c
-> > ===================================================================
-> > --- linus.orig/drivers/md/linear.c	2007-03-02 11:35:55.000000000 -0800
-> > +++ linus/drivers/md/linear.c	2007-03-07 13:10:30.000000000 -0800
-> > @@ -188,7 +188,7 @@
-> >  	for (i=0; i < cnt-1 ; i++) {
-> >  		sector_t sz = 0;
-> >  		int j;
-> > -		for (j=i; i<cnt-1 && sz < min_spacing ; j++)
-> > +		for (j=i; j<cnt-1 && sz < min_spacing ; j++)
-> >  			sz += conf->disks[j].size;
-> >  		if (sz >= min_spacing && sz < conf->hash_spacing)
-> >  			conf->hash_spacing = sz;
+On Sun, 11 Mar 2007, Davide Libenzi wrote:
+
+> This patch introduces a new system call for timers events delivered
+> though file descriptors. This allows timer event to be used with
+> standard POSIX poll(2), select(2) and read(2). As a consequence of
+> supporting the Linux f_op->poll subsystem, they can be used with
+> epoll(2) too.
+> The system call is defined as:
 > 
-> Forgot to add:
+> int timerfd(int ufd, int clockid, int tmrtype, const struct timespec *utmr);
 > 
-> Signed-off-by: Andrew Isaacson <adi@hexapodia.org>
+> The "ufd" parameter allows for re-use (re-programming) of an existing
+> timerfd w/out going through the close/open cycle (same as signalfd).
+> If "ufd" is -1, s new file descriptor will be created, otherwise the
+> existing "ufd" will be re-programmed.
+> The "clockid" parameter is either CLOCK_MONOTONIC or CLOCK_REALTIME.
+> The "tmrtype" parameter allows to specify the timer type. The following
+> values are supported:
+> 
+>     TFD_TIMER_REL
+>         The time specified in the "utmr" parameter is a relative time
+> 	from NOW.
+> 
+>     TFD_TIMER_ABS
+>         The timer specified in the "utmr" parameter is an absolute time.
+> 
+>     TFD_TIMER_SEQ
+>         The time specified in the "utmr" parameter is an interval at
+> 	which a continuous clock rate will be generated.
+> 
 
-And
- Acked-by: NeilBrown <neilb@suse.de>
+Duh! Forgot to update the documenation. Now timerfd() gets an itimerspec.
+For TFD_TIMER_REL only the it_interval is valid, and it's the relative 
+time. For TFD_TIMER_ABS, only the it_value is valid, and that the expiry 
+absolute time. For TFD_TIMER_SEQ, it_value tells when the first tick 
+should be generated, and it_interval tells the period of the following 
+ticks.
 
-Thanks!
 
-I would have replied earlier but I wanted to make sure I understood
-exactly what the possible consequences of this bug were.. and they are
-quite benign.
-The worst possible outcome is going so far off the end of the array
-that you hit un-mapped memory and Oops.
 
-If that doesn't happen, then the next worst option is that the hash
-table is sized poorly and you spend a few more cycles than needed
-choosing the target device for the request (we still always choose the
-right device).
+- Davide
 
-Thanks,
-NeilBrown
