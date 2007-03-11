@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751376AbXCJXcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751010AbXCJXiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751376AbXCJXcM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Mar 2007 18:32:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbXCJXcM
+	id S1751010AbXCJXiy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Mar 2007 18:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbXCJXix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Mar 2007 18:32:12 -0500
-Received: from gw.goop.org ([64.81.55.164]:36350 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751376AbXCJXcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Mar 2007 18:32:11 -0500
-Message-ID: <45F33FF9.70406@goop.org>
-Date: Sat, 10 Mar 2007 15:32:09 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 10 Mar 2007 18:38:53 -0500
+Received: from mail27.syd.optusnet.com.au ([211.29.133.168]:45230 "EHLO
+	mail27.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751010AbXCJXix (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Mar 2007 18:38:53 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Nicolas.Mailhot@laposte.net
+Subject: sched rsdl fix for 0.28
+Date: Sun, 11 Mar 2007 11:07:00 +1100
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: Dan Hecht <dhecht@vmware.com>, john stultz <johnstul@us.ibm.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Use of absolute timeouts for oneshot timers
-References: <45F33697.4000000@goop.org> <1173568491.24738.1194.camel@localhost.localdomain>
-In-Reply-To: <1173568491.24738.1194.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703111107.00704.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> The clocksource is not used until the clocksource is installed. Also the
-> periodic mode during boot, when the clock event device supports periodic
-> mode, is not reading the time. It relies on the clock event device
-> getting it straight.
+Here's a big bugfix for sched rsdl 0.28
 
-Yes.  This could be one source of error, where I compute  the offset
-hypervisor_time - ktime_get(), but ktime_get() may drift with respect to
-hypervisor time while using a periodic jiffies timebase.
+---
+ kernel/sched.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-> Once we switch to NO_HZ or HIGHRES the clock event device is directly
-> coupled to the clock event source.
->   
-OK.  Erm, but not in the sense that you always choose the xen/hpet/lapic
-clocksource+clockevent together; there's no direct linkage between the
-two kinds of device.  But there's the coupling where the clocksource is
-always used to directly measure the clockevent's behaviour.
+Index: linux-2.6.21-rc3-mm2/kernel/sched.c
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/kernel/sched.c	2007-03-11 11:04:38.000000000 +1100
++++ linux-2.6.21-rc3-mm2/kernel/sched.c	2007-03-11 11:05:46.000000000 +1100
+@@ -3328,6 +3328,13 @@ static inline void rotate_runqueue_prior
+ 	int new_prio_level, remaining_quota = rq_quota(rq, rq->prio_level);
+ 	struct prio_array *array = rq->active;
+ 
++	/*
++	 * Make sure we don't have tasks still on the active array that
++	 * haven't run due to not preempting (merging or smp balancing)
++	 */
++	if (find_next_bit(rq->dyn_bitmap, MAX_PRIO, MAX_RT_PRIO) <
++		rq->prio_level)
++			return;
+ 	if (rq->prio_level > MAX_PRIO - 2) {
+ 		/* Major rotation required */
+ 		struct prio_array *new_queue = rq->expired;
 
-> Once we switched over to the clocksource, everything should be in
-> perfect sync.
->   
-
-Assuming that the clocksource and the clockevent device have
-close-enough timebases.
-
->> Or perhaps this is a property of the whole clock subsystem: that
->> clockevents must be paired with clocksources.  But its not obvious to me
->> that this enforced, or even acknowledged.
->>     
->
-> It's simply enforced in NO_HZ, HIGHRES mode as we operate in absolute
-> time, which is read back from the clocksource, even if we use a relative
-> value for real hardware clock event devices to program the next event.
-> We calculate the delta between the absolute event and now. So we never
-> get an accumulating error.
->   
-
-Right, but if the clocksource and the clockevent devices have a relative
-drift, then using the clocksource to compute that we need a 500ns delay,
-but the clockevent device ends delivering the oneshot event 750ns (or
-250ns) later, then things are going to be locally upset, even if the
-next time the clockevent oneshot is programmed it will take the
-overshoot into account.  (Of course, you'd hope the drift would never
-really be that bad, and 2^32 ns only gives you ~4s window to screw up).
-
-> What problem are you observing ?
->   
-
-Unexpected pauses during boot.  I think the real problem is that Xen
-periodic timer events are not delivered unless the vcpu is actually
-running (ie, they're specifically intended for timeslicing rather than
-general periodic events).  Perhaps the real fix in this case is to just
-remove the periodic feature flag.
-
-
-    J
+-- 
+-ck
