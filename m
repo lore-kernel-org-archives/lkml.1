@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbXCLUOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbXCLUPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbXCLUOG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 16:14:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXCLUOG
+	id S1752857AbXCLUPd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXCLUPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 16:14:06 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:31487 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbXCLUOE (ORCPT
+	Mon, 12 Mar 2007 16:15:33 -0400
+Received: from ns.suse.de ([195.135.220.2]:36872 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752857AbXCLUPc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 16:14:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NHRa+FDPbrV2qpLNY8AlA8onw9WwfnC/6dX1nkH0hxDGBxTVniq8NtzDoBLsI39V7gcKvHn9PHn93RTbG2QLcb/6h9JXO9HKfTXww0bI5DBvrQYEIsVrR6jj/utkTYKq6V/S3j/j8F0zZVH0YmVC8npN05g0aY4ws6Pp9cdZjjI=
-Message-ID: <b637ec0b0703121314o747ef0bdl5c9f580b456bae43@mail.gmail.com>
-Date: Mon, 12 Mar 2007 21:14:03 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] libata: don't whine if ->prereset() returns -ENOENT
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "Greg KH" <greg@kroah.com>
-In-Reply-To: <45F50E28.7010509@gmail.com>
+	Mon, 12 Mar 2007 16:15:32 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+Date: Mon, 12 Mar 2007 21:15:31 +0100
+User-Agent: KMail/1.9.1
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0703121557360.4003-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0703121557360.4003-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20070309163148.GA12848@havoc.gtf.org>
-	 <b637ec0b0703091324q7f15fddbpc8c24b4e1131e3f4@mail.gmail.com>
-	 <20070309234839.2070a265@lxorguk.ukuu.org.uk>
-	 <45F50E28.7010509@gmail.com>
+Message-Id: <200703122115.32971.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied on top of latest GIT this patch make the warning[1] disappear.
-Thanks,
-Fabio
+Am Montag, 12. März 2007 21:03 schrieb Alan Stern:
+> On Mon, 12 Mar 2007, Oliver Neukum wrote:
+> 
+> > > >  I don't like reverting my own code. But I predict he'll tell you that a
+> > > > driver's bond with a device should be represented in a data structure
+> > > > that is to be refcounted.
+> > > 
+> > > :-)
+> > 
+> > Coming to think about it, he might be right there.
+> 
+> There still would be a synchronization problem.  Refcounts don't solve
+> races; they only solve lifetime problems.  And you would still have to
+> change the sysfs API, plus all the other stuff...
+> 
+> Do you think Linus would listen if all three of us (plus maybe Greg) tried 
+> to convince him?
 
-[1] ata2: reset failed, giving up
+No. He'd tell you that a crap API should be changed.
 
-On 3/12/07, Tejun Heo <htejun@gmail.com> wrote:
-> ->prereset() returns -ENOENT to tell libata that the port is empty and
-> reset sequencing should be stopped.  This is not an error condition.
-> Update ata_eh_reset() such that it sets device classes to ATA_DEV_NONE
-> and return success in on -ENOENT.  This makes spurious error message
-> go away.
->
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
->
-> This should do it and better fits the intention of the return value.
-> Two things to note.
->
-> 1. I think these ports should be made dummy instead of returning
-> -ENOENT on prereset().  -ENOENT from prereset() was a hack to keep
-> ata_piix's behavior unchanged while converting it to new EH.  If no
-> one objcts, I'll convert similar usages to use dummy ports after new
-> init model and drop -ENOENT hack in #upstream.
->
-> 2. -ENODEV sounds more appropriate.  Why have I used -ENOENT.  :-)
->
-> Thanks.
->
-> diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
-> index 7349c3d..361953a 100644
-> --- a/drivers/ata/libata-eh.c
-> +++ b/drivers/ata/libata-eh.c
-> @@ -1625,8 +1625,14 @@ static int ata_eh_reset(struct ata_port *ap, int classify,
->                 rc = prereset(ap);
->                 if (rc) {
->                         if (rc == -ENOENT) {
-> -                               ata_port_printk(ap, KERN_DEBUG, "port disabled. ignoring.\n");
-> +                               ata_port_printk(ap, KERN_DEBUG,
-> +                                               "port disabled. ignoring.\n");
->                                 ap->eh_context.i.action &= ~ATA_EH_RESET_MASK;
-> +
-> +                               for (i = 0; i < ATA_MAX_DEVICES; i++)
-> +                                       classes[i] = ATA_DEV_NONE;
-> +
-> +                               rc = 0;
->                         } else
->                                 ata_port_printk(ap, KERN_ERR,
->                                         "prereset failed (errno=%d)\n", rc);
->
+	Regards
+		Oliver
