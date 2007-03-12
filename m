@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751663AbXCLBQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXCLB2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751663AbXCLBQP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 21:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXCLBQP
+	id S1751690AbXCLB2Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 21:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXCLB2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 21:16:15 -0400
-Received: from MAIL.13thfloor.at ([213.145.232.33]:38185 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751065AbXCLBQO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 21:16:14 -0400
-Date: Mon, 12 Mar 2007 02:16:13 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Pavel Emelianov <xemul@sw.ru>, containers@lists.osdl.org,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/7] Resource counters
-Message-ID: <20070312011612.GD21861@MAIL.13thfloor.at>
-Mail-Followup-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-	Pavel Emelianov <xemul@sw.ru>, containers@lists.osdl.org,
-	Paul Menage <menage@google.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru> <45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru> <20070309163711.GA3647@MAIL.13thfloor.at> <m1fy8bwqps.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1fy8bwqps.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	Sun, 11 Mar 2007 21:28:25 -0400
+Received: from smtpout.mac.com ([17.250.248.178]:52728 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751690AbXCLB2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 21:28:24 -0400
+In-Reply-To: <Pine.LNX.4.61.0703120015390.18623@yvahk01.tjqt.qr>
+References: <2375c9f90703110715v4278f83flbc9fce6c542472a5@mail.gmail.com> <Pine.LNX.4.61.0703112134180.16857@yvahk01.tjqt.qr> <200703111641.52066.dhazelton@enter.net> <14DE5DBD-4164-4CDF-9690-631514EB15EF@mac.com> <Pine.LNX.4.61.0703120015390.18623@yvahk01.tjqt.qr>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <333D1A52-915E-4D08-8E7E-7FBB23EC6357@mac.com>
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       Cong WANG <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Style Question
+Date: Sun, 11 Mar 2007 21:27:53 -0400
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 11, 2007 at 01:00:15PM -0600, Eric W. Biederman wrote:
-> Herbert Poetzl <herbert@13thfloor.at> writes:
-> 
-> >
-> > Linux-VServer does the accounting with atomic counters,
-> > so that works quite fine, just do the checks at the
-> > beginning of whatever resource allocation and the
-> > accounting once the resource is acquired ...
-> 
-> Atomic operations versus locks is only a granularity thing.
-> You still need the cache line which is the cost on SMP.
-> 
-> Are you using atomic_add_return or atomic_add_unless or 
-> are you performing you actions in two separate steps 
-> which is racy? What I have seen indicates you are using 
-> a racy two separate operation form.
+On Mar 11, 2007, at 19:16:59, Jan Engelhardt wrote:
+> On Mar 11 2007 18:01, Kyle Moffett wrote:
+>> On the other hand when __cplusplus is defined they define it to  
+>> the "__null" builtin, which GCC uses to give type conversion  
+>> errors for "int foo = NULL" but not "char *foo = NULL".  A "((void  
+>> *)0)" definition gives C++ type errors for both due to the broken C 
+>> ++ void pointer conversion problems.
+>
+> I think that the primary reason they use __null is so that you can
+> actually do
+>
+> 	class foo *ptr = NULL;
+>
+> because
+>
+> 	class foo *ptr = (void *)0;
+>
+> would throw an error or at least a warning (implicit cast from void*
+> to class foo*).
 
-yes, this is the current implementation which
-is more than sufficient, but I'm aware of the
-potential issues here, and I have an experimental
-patch sitting here which removes this race with
-the following change:
+Isn't that what I said? :-D
 
- - doesn't store the accounted value but
-   limit - accounted (i.e. the free resource)
- - uses atomic_add_return() 
- - when negative, an error is returned and
-   the resource amount is added back
+Cheers,
+Kyle Moffett
 
-changes to the limit have to adjust the 'current'
-value too, but that is again simple and atomic
-
-best,
-Herbert
-
-PS: atomic_add_unless() didn't exist back then
-(at least I think so) but that might be an option
-too ...
-
-> >> If we'll remove failcnt this would look like
-> >>    while (atomic_cmpxchg(...))
-> >> which is also not that good.
-> >> 
-> >> Moreover - in RSS accounting patches I perform page list
-> >> manipulations under this lock, so this also saves one atomic op.
-> >
-> > it still hasn't been shown that this kind of RSS limit
-> > doesn't add big time overhead to normal operations
-> > (inside and outside of such a resource container)
-> >
-> > note that the 'usual' memory accounting is much more
-> > lightweight and serves similar purposes ...
-> 
-> Perhaps....
-> 
-> Eric
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/containers
