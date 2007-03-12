@@ -1,50 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965069AbXCLEkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965105AbXCLElg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965069AbXCLEkO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 00:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965088AbXCLEkN
+	id S965105AbXCLElg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 00:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965111AbXCLElg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 00:40:13 -0400
-Received: from [212.12.190.145] ([212.12.190.145]:32804 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965069AbXCLEkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 00:40:11 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Con Kolivas <kernel@kolivas.org>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Date: Mon, 12 Mar 2007 07:42:40 +0300
-User-Agent: KMail/1.5
-Cc: ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
-References: <200703042335.26785.a1426z@gawab.com> <200703120852.05857.kernel@kolivas.org> <200703120912.24156.kernel@kolivas.org>
-In-Reply-To: <200703120912.24156.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 00:41:36 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51312 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965105AbXCLElf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 00:41:35 -0400
+Date: Mon, 12 Mar 2007 15:41:17 +1100
+From: David Chinner <dgc@sgi.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: xfs@oss.sgi.com, ecashin@coraid.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] xfs: use xfs_get_buf_noaddr for iclogs
+Message-ID: <20070312044117.GK6095633@melbourne.sgi.com>
+References: <20070307101314.GB30587@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703120742.41041.a1426z@gawab.com>
+In-Reply-To: <20070307101314.GB30587@lst.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> On Monday 12 March 2007 08:52, Con Kolivas wrote:
-> > And thank you! I think I know what's going on now. I think each rotation
-> > is followed by another rotation before the higher priority task is
-> > getting a look in in schedule() to even get quota and add it to the
-> > runqueue quota. I'll try a simple change to see if that helps. Patch
-> > coming up shortly.
->
-> Can you try the following patch and see if it helps. There's also one
-> minor preemption logic fix in there that I'm planning on including.
-> Thanks!
+On Wed, Mar 07, 2007 at 11:13:14AM +0100, Christoph Hellwig wrote:
+> xfs_buf_get_noaddr.  There's a subtile change because
+> xfs_buf_get_empty returns the buffer locked, but xfs_buf_get_noaddr
+> returns it unlocked.  From my auditing and testing nothing in the
+> log I/O code cares about this distincition, but I'd be happy if
+> someone could try to prove this independently.
 
-Applied on top of v0.28 mainline, and there is no difference.
+Looks safe to me - we initialise all the fields in the xfs_buf_t
+when we allocate out of the slab, so it doesn't really matter what
+state the buffer is in when we free it.
 
-What's it look like on your machine?
+OTOH, all other buffers are supposed to be locked when under I/O.
+This change makes a special case for the log buffers, and I'd prefer
+not to have to remember that this behaviour changed fo log buffers
+at some point in time.
 
+I suggest that adding:
 
-Thanks!
+> -		iclog->hic_data = (xlog_in_core_2_t *)
+> -			  kmem_zalloc(iclogsize, KM_SLEEP | KM_LARGE);
+> -
+>  		iclog->ic_prev = prev_iclog;
+>  		prev_iclog = iclog;
+> +
+> +		bp = xfs_buf_get_noaddr(log->l_iclog_size, mp->m_logdev_targp);
+> +		XFS_BUF_SET_IODONE_FUNC(bp, xlog_iodone);
+> +		XFS_BUF_SET_BDSTRAT_FUNC(bp, xlog_bdstrat_cb);
+> +		XFS_BUF_SET_FSPRIVATE2(bp, (unsigned long)1);
 
---
-Al
++		XFS_BUF_PSEMA(bp, PRIBIO);
 
+> +		iclog->ic_bp = bp;
+> +		iclog->hic_data = bp->b_addr;
+> +
+>  		log->l_iclog_bak[i] = (xfs_caddr_t)&(iclog->ic_header);
+>  
+>  		head = &iclog->ic_header;
+
+To lock the buffer should be added here. That way we don't change
+any semantics of the code at all.
+
+> @@ -1216,11 +1221,6 @@
+>  		INT_SET(head->h_fmt, ARCH_CONVERT, XLOG_FMT);
+>  		memcpy(&head->h_fs_uuid, &mp->m_sb.sb_uuid, sizeof(uuid_t));
+>  
+> -		bp = xfs_buf_get_empty(log->l_iclog_size, mp->m_logdev_targp);
+> -		XFS_BUF_SET_IODONE_FUNC(bp, xlog_iodone);
+> -		XFS_BUF_SET_BDSTRAT_FUNC(bp, xlog_bdstrat_cb);
+> -		XFS_BUF_SET_FSPRIVATE2(bp, (unsigned long)1);
+> -		iclog->ic_bp = bp;
+>  
+>  		iclog->ic_size = XFS_BUF_SIZE(bp) - log->l_iclog_hsize;
+>  		iclog->ic_state = XLOG_STATE_ACTIVE;
+> @@ -1229,7 +1229,6 @@
+>  		iclog->ic_datap = (char *)iclog->hic_data + log->l_iclog_hsize;
+>  
+>  		ASSERT(XFS_BUF_ISBUSY(iclog->ic_bp));
+> -		ASSERT(XFS_BUF_VALUSEMA(iclog->ic_bp) <= 0);
+
+And this assert can then stay...
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
