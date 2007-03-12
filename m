@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030616AbXCLQdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030621AbXCLQhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030616AbXCLQdo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 12:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030603AbXCLQdo
+	id S1030621AbXCLQhY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 12:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030619AbXCLQhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 12:33:44 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:23972 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030616AbXCLQdn (ORCPT
+	Mon, 12 Mar 2007 12:37:23 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:29286 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030622AbXCLQhW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 12:33:43 -0400
+	Mon, 12 Mar 2007 12:37:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QWXeXHV4T/NRet7m+43retKAbA9/kseTz6zJ+d8oZUHJ7WBA63elOj07EzR0nLKTUNkXso7UJOeKGJ248cFlNQmcsiXVCYe/P4taPEXMaU0SV+yzu/cvX16ITMQ5E8K6hSZi29FuHYviqRNjp07qQ+AphV2xZzQ9zPIzoPr6kM8=
-Message-ID: <f2b55d220703120926k1ab7112fh60227fac670b8b4c@mail.gmail.com>
-Date: Mon, 12 Mar 2007 09:26:22 -0700
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: 7eggert@gmx.de
-Subject: Re: sys_write() racy for multi-threaded append?
-Cc: "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <E1HQfLX-0000fk-68@be1.lrz>
+        b=fi9ixEeS4ExvFOTwN83ss8X9VdaRzEGKm6uR9blnlmD/5GRr/jIzxCw9/5Rpo4UCvubRSUgpgfrLQpvTzFifcCURlkrQTLxuBFkDp2NPYteo2xZR0oYvWSu2E49pfv3iYvtfHowkDlecxeSMPuUNNyOORJk0j74QBAoEyQEeaNo=
+Message-ID: <b14e81f00703120937o5c1baa39n582d57d9208ae459@mail.gmail.com>
+Date: Mon, 12 Mar 2007 12:37:19 -0400
+From: "michael chang" <thenewme91@gmail.com>
+To: "jos poortvliet" <jos@mijnkamer.nl>
+Subject: Re: [ck] Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Cc: ck@vds.kolivas.org, "Al Boldi" <a1426z@gawab.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200703121559.23157.jos@mijnkamer.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <7WzUo-1zl-21@gated-at.bofh.it> <7WAx2-2pg-21@gated-at.bofh.it>
-	 <7WAGF-2Bx-9@gated-at.bofh.it> <7WB07-3g5-33@gated-at.bofh.it>
-	 <7WBt7-3SZ-23@gated-at.bofh.it> <E1HQfLX-0000fk-68@be1.lrz>
+References: <200703042335.26785.a1426z@gawab.com>
+	 <200703122352.51257.kernel@kolivas.org>
+	 <200703121714.25034.a1426z@gawab.com>
+	 <200703121559.23157.jos@mijnkamer.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/12/07, Bodo Eggert <7eggert@gmx.de> wrote:
-> Michael K. Edwards <medwards.linux@gmail.com> wrote:
-> > Actually, I think it would make the kernel (negligibly) faster to bump
-> > f_pos before the vfs_write() call.
+On 3/12/07, jos poortvliet <jos@mijnkamer.nl> wrote:
+> Op Monday 12 March 2007, schreef Al Boldi:
+> >
+> > It only takes one negatively nice'd proc to affect X adversely.
 >
-> This is a security risk.
+> goes faster than ever)? Or is this really the scheduler's fault?
 >
-> ----------------
-> other process:
-> unlink(secrest_file)
->
-> Thread 1:
-> write(fd, large)
-> (interrupted)
->
-> Thread 2:
-> fseek(fd, -n, relative)
-> read(fd, buf)
-> ----------------
 
-I don't entirely follow this.  Which process is supposed to be secure
-here, and what information is supposed to be secret from whom?  But in
-any case, are you aware that f_pos is clamped to the inode's
-max_bytes, not to the current file size?  Thread 2 can seek/read past
-the position at which Thread 1's write began, whether f_pos is bumped
-before or after the vfs_write.
+Take this with a grain of salt, but, I don't think this is the
+scheduler's _fault_. That said, if the scheduler can fix it, it's not
+necessarily a bad thing.
 
-> BTW: The best thing you can do to a program where two threads race for
-> writing one fd is to let it crash and burn in the most spectacular way
-> allowed without affecting the rest of the system, unless it happens to
-> be a pipe and the number of bytes written is less than PIPE_MAX.
-
-That's fine when you're doing integration test, and should probably be
-the default during development.  But if the race is first exposed in
-the field, or if the developer is trying to concentrate on a different
-problem, "spectacular crash and burn" may do more harm than good.
-It's easy enough to refactor the f_pos handling in the kernel so that
-it all goes through three or four inline accessor functions, at which
-point you can choose your trade-off between speed and idiot-proofness
--- at _kernel_ compile time, or (given future hardware that supports
-standardized optionally-atomic-based-on-runtime-flag operations) per
-process at run-time.
-
-Frankly, I think that unless application programmers poke at some sort
-of magic "I promise to handle short writes correctly" bit, write()
-should always return either the full number of bytes requested or an
-error code.  If they do poke at that bit, the (development) kernel
-should deliberately split writes a few percent of the time, just to
-exercise the short-write code paths.  And in order to find out where
-that magic bit is, they should have to read the kernel code or ask on
-LKML (and get the "standard lecture").
-
-Really very IEEE754-like, actually.  (Harp, harp.)
-
-Cheers,
-- Michael
+-- 
+~Mike
+ - Just the crazy copy cat.
