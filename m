@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbXCLUYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbXCLU0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbXCLUYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 16:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXCLUYS
+	id S1752871AbXCLU0e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbXCLU0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 16:24:18 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:60263 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752864AbXCLUYR (ORCPT
+	Mon, 12 Mar 2007 16:26:33 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55750 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752868AbXCLU0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 16:24:17 -0400
-Date: Mon, 12 Mar 2007 16:24:11 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: RSDL for 2.6.21-rc3- 0.29
-In-reply-to: <20070312195436.GA15319@oscar.prima.de>
-To: linux-kernel@vger.kernel.org
-Cc: Patrick Mau <mau@oscar.ping.de>, Douglas McNaught <doug@mcnaught.org>
-Message-id: <200703121624.11417.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070311013506.GD10459@waste.org>
- <87slcajliq.fsf@suzuka.mcnaught.org> <20070312195436.GA15319@oscar.prima.de>
-User-Agent: KMail/1.9.6
+	Mon, 12 Mar 2007 16:26:33 -0400
+Date: Mon, 12 Mar 2007 13:26:32 -0700
+From: Paul Jackson <pj@sgi.com>
+To: vatsa@in.ibm.com
+Cc: herbert@13thfloor.at, ebiederm@xmission.com, menage@google.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, winget@google.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka
+ containers on top of nsproxy!
+Message-Id: <20070312132632.2397a393.pj@sgi.com>
+In-Reply-To: <20070312140148.GA10450@in.ibm.com>
+References: <6599ad830703071518y715ecdb2y33752a6e25b5ecdb@mail.gmail.com>
+	<45EF5A62.8000103@vilain.net>
+	<6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com>
+	<45EF5E71.7090101@vilain.net>
+	<6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
+	<m1d53ka5b9.fsf@ebiederm.dsl.xmission.com>
+	<20070309005357.GC4506@MAIL.13thfloor.at>
+	<20070309181908.GC21661@in.ibm.com>
+	<20070309215218.GA17592@MAIL.13thfloor.at>
+	<20070309140603.b2b162c6.pj@sgi.com>
+	<20070312140148.GA10450@in.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007, Patrick Mau wrote:
->On Mon, Mar 12, 2007 at 03:43:09PM -0400, Douglas McNaught wrote:
->> Gene Heskett <gene.heskett@gmail.com> writes:
->> > On Monday 12 March 2007, Douglas McNaught wrote:
->> >>Gene Heskett <gene.heskett@gmail.com> writes:
->> >>> I'd considered it, but with 32 dle entries, the whole strace
->> >>> output would be terrabytes & I don't have THAT much disk.  Not to
->> >>> mention it traces only the parent process, so tar would be merrily
->> >>> marching along to its own drummer and not traced I'm  afraid.
->> >>
->> >>$ strace -ff
->> >>
->> >>-Doug
->> >
->> > Someone else suggested the single -f, and I tried that, but even
->> > with the shell history set for 100,000 lines, i can't get back to
->> > the start, and I think its mucking with the shell arguments
->> > numbering as what I can see is about 5 reads through /etc/services
->> > accompanied by endless complaints of -EBADFD, the the logfile it
->> > generates says the port it was given was rejected when amcheck was
->> > run, here is that snip:
->>
->> I'd do 'strace -ff -o /tmp/amanda-strace <command>', which will give
->> you a set of files in /tmp, one for each PID created by fork().  Then
->> find the one that has the 'tar' invocation you're looking for.
->
->Hi,
->
->I hope you don't mind me jumping in ...
->
->Why not temporarly replace "/bin/tar" with a shell script that does:
->
->#!/bin/sh
->exec strace -f -o output /bin/real.tar $@
->
->That should be working, shouldn't it ?
->
->Cheers,
->Patrick
+vatsa wrote:
+> This assumes that you can see the global vfs namespace right?
+> 
+> What if you are inside a container/vserver which restricts your vfs
+> namespace? i.e /dev/cpusets seen from one container is not same as what
+> is seen from another container .
 
-It should I'd think, for those instances where these scripts are run by 
-hand and therefore have a shell to output to.  I'll give that a try when 
-I get my script problem resolved, its a basic diff in the operation of 
-real tapes and vtapes I need to get right for both scenarios.
+Well, yes.  But that restriction on the namespace is no doing of
+cpusets.
 
-Good Idea(TM), Thanks.
+It's some vfs namespace restriction, which should be an orthogonal
+mechanism.
+
+Well, it's probably not orthogonal at present.  Cpusets might not yet
+handle a restricted vfs name space very well.
+
+For example the /proc/<pid>/cpuset path, giving path below /dev/cpuset
+of task pid's cpuset, might not be restricted.  And the set of all CPUs
+and Memory Nodes that are online, which is visible in various /proc
+files, and also visible in ones top cpuset, might be inconsistent if
+restricted vfs namespace mapped you to a different top cpuset.
+
+There are probably other loose ends as well.
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-"Ignorance is the soil in which belief in miracles grows."
--- Robert G. Ingersoll
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
