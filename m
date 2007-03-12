@@ -1,82 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXCLJ7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965459AbXCLJ7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965461AbXCLJ7h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 05:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965456AbXCLJ7S
+	id S965459AbXCLJ7u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 05:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXCLJ7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 12 Mar 2007 05:59:42 -0400
+Received: from smtp24.orange.fr ([193.252.22.26]:23559 "EHLO smtp24.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965452AbXCLJ7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 12 Mar 2007 05:59:18 -0400
-Received: from mga06.intel.com ([134.134.136.21]:15727 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965461AbXCLJ7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 05:59:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,274,1170662400"; 
-   d="scan'208"; a="207908985:sNHT21499576"
-Message-Id: <20070312095912.309990000@linux.intel.com>
-References: <20070312093128.577087000@linux.intel.com>
-User-Agent: quilt/0.45-1
-Date: Mon, 12 Mar 2007 02:59:31 -0700
-From: Valerie Henson <val_henson@linux.intel.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Cc: Valerie Henson <val_henson@linux.intel.com>, Jeff Garzik <jeff@garzik.org>
-Subject: [patch 3/4] [TULIP]  Fix SytemError typo
-Content-Disposition: inline; filename=tulip-system-error-typo
+X-Greylist: delayed 1226 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Mar 2007 05:59:18 EDT
+X-ME-UUID: 20070312093850257.3ED871C000A0@mwinf2423.orange.fr
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200703122022.43021.kernel@kolivas.org>
+References: <200703111457.17624.kernel@kolivas.org>
+	 <200703121929.39702.kernel@kolivas.org>
+	 <1173689733.6748.18.camel@Homer.simpson.net>
+	 <200703122022.43021.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Mon, 12 Mar 2007 10:38:39 +0100
+Message-Id: <1173692319.5835.611.camel@frg-rhel40-em64t-03>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix an annoying typo - SytemError -> SystemError
+On Mon, 2007-03-12 at 20:22 +1100, Con Kolivas wrote:
+> On Monday 12 March 2007 19:55, Mike Galbraith wrote:
+> > Hmm.  So... anything that's client/server is going to suffer horribly
+> > unless niced tasks are niced all the way down to 19?
+> 
+> Fortunately most client server models dont usually have mutually exclusive cpu 
+> use like this X case. There are many things about X that are still a little 
+> (/me tries to think of a relatively neutral term)... wanting. :(
 
-Signed-off-by: Valerie Henson <val_henson@linux.intel.com>
-Cc: Jeff Garzik <jeff@garzik.org>
+I'd say the problem is less with X than with Xlib, which is heavily
+round-trip-based. Fortunately XCB (its successor) seeks to be more
+asynchronous.
 
----
- drivers/net/tulip/interrupt.c   |    4 ++--
- drivers/net/tulip/tulip.h       |    2 +-
- drivers/net/tulip/winbond-840.c |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+	Xav
 
---- tulip-2.6-mm-linux.orig/drivers/net/tulip/interrupt.c
-+++ tulip-2.6-mm-linux/drivers/net/tulip/interrupt.c
-@@ -675,7 +675,7 @@ irqreturn_t tulip_interrupt(int irq, voi
- 				if (tp->link_change)
- 					(tp->link_change)(dev, csr5);
- 			}
--			if (csr5 & SytemError) {
-+			if (csr5 & SystemError) {
- 				int error = (csr5 >> 23) & 7;
- 				/* oops, we hit a PCI error.  The code produced corresponds
- 				 * to the reason:
-@@ -745,7 +745,7 @@ irqreturn_t tulip_interrupt(int irq, voi
- 			  TxFIFOUnderflow |
- 			  TxJabber |
- 			  TPLnkFail |
--			  SytemError )) != 0);
-+			  SystemError )) != 0);
- #else
- 	} while ((csr5 & (NormalIntr|AbnormalIntr)) != 0);
- 
---- tulip-2.6-mm-linux.orig/drivers/net/tulip/tulip.h
-+++ tulip-2.6-mm-linux/drivers/net/tulip/tulip.h
-@@ -132,7 +132,7 @@ enum pci_cfg_driver_reg {
- /* The bits in the CSR5 status registers, mostly interrupt sources. */
- enum status_bits {
- 	TimerInt = 0x800,
--	SytemError = 0x2000,
-+	SystemError = 0x2000,
- 	TPLnkFail = 0x1000,
- 	TPLnkPass = 0x10,
- 	NormalIntr = 0x10000,
---- tulip-2.6-mm-linux.orig/drivers/net/tulip/winbond-840.c
-+++ tulip-2.6-mm-linux/drivers/net/tulip/winbond-840.c
-@@ -1148,7 +1148,7 @@ static irqreturn_t intr_handler(int irq,
- 		}
- 
- 		/* Abnormal error summary/uncommon events handlers. */
--		if (intr_status & (AbnormalIntr | TxFIFOUnderflow | SytemError |
-+		if (intr_status & (AbnormalIntr | TxFIFOUnderflow | SystemError |
- 						   TimerInt | TxDied))
- 			netdev_error(dev, intr_status);
- 
 
---
