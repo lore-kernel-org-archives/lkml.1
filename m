@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030474AbXCLP7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030468AbXCLP7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030474AbXCLP7a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030468AbXCLP7a
+	id S1030468AbXCLP7j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030476AbXCLP7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:59:30 -0400
-Received: from mx1.suse.de ([195.135.220.2]:50228 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030474AbXCLP73 convert rfc822-to-8bit (ORCPT
+	Mon, 12 Mar 2007 11:59:39 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:34727 "EHLO lxorguk.ukuu.org.uk"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030468AbXCLP7i convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:59:29 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-Date: Mon, 12 Mar 2007 16:59:26 +0100
-User-Agent: KMail/1.9.1
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Maneesh Soni" <maneesh@in.ibm.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0703121041400.2489-100000@iolanthe.rowland.org> <200703121623.58607.oneukum@suse.de> <d120d5000703120842k4e134136v2fe56dcfc2264841@mail.gmail.com>
-In-Reply-To: <d120d5000703120842k4e134136v2fe56dcfc2264841@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 12 Mar 2007 11:59:38 -0400
+Date: Mon, 12 Mar 2007 17:03:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "=?UTF-8?B?TGx1w61z?= Batlle" <viriketo@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: bug in select() in linux
+Message-ID: <20070312170302.3b7bdc0c@lxorguk.ukuu.org.uk>
+In-Reply-To: <45219fb00703120802y78cf4dbds6e89b58de9d0f801@mail.gmail.com>
+References: <45219fb00703120751t7acd1ae3kb77f556b81a87634@mail.gmail.com>
+	<20070312160104.25d6b321@lxorguk.ukuu.org.uk>
+	<45219fb00703120802y78cf4dbds6e89b58de9d0f801@mail.gmail.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703121659.27348.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 12. M‰rz 2007 16:42 schrieb Dmitry Torokhov:
-> On 3/12/07, Oliver Neukum <oneukum@suse.de> wrote:
-> > Am Montag, 12. M‰rz 2007 15:57 schrieb Alan Stern
-> > > No, you're missing the point.  Let's say driver A's disconnect() is
-> > > called, so the driver marks its private data structure as "disconnected"
-> > > and does dev_set_drvdata(NULL).  Then driver B is probed and bound to the
-> > > device, and it does its own dev_set_drvdata().  Then a user still holding
-> > > an open sysfs file reference for driver A calls a show() or store()
-> > > method.  The method will do dev_get_drvdata(), receiving the pointer to
-> > > driver B's private data.  Now you're in trouble, because A's method will
-> > > think it owns B's private data!
-> >
-> > Yes, I was missing the point. In consequence, drivers must not use
-> > dev_get_drvdata() to get their references to their private data. It's
-> > probably necessary to store it in struct sysfs_buffer and include that
-> > in the store/show callbacks.
-> > (The same does apply to interfaces of course)
-> >
+On Mon, 12 Mar 2007 16:02:11 +0100
+"Llu√≠s Batlle" <viriketo@gmail.com> wrote:
+
+> Oh, of course you're right. I was inside too much layers to think of
+> the tcp protocol, and I did not pay attention to it.
 > 
-> Or drivers coudl verify that they still bound to the device they are
-> about to operate on (psmouse does this by taking a lock on device and
-> then checking if driver bound is the same address as psmouse). But I'd
-> rather get rid of all this clutter if we could sever sysfs access
-> after removing corresponding attributes.
+> Maybe something could be added to the manpage anyway.
+> 
+> The bad thing is that there's no way I can use a socket for writing
+> using select() if that connection has been half-closed by the other
+> end. Moo.
 
-No, the call has to fail if the driver is rebound to the device.
+You can because the only case it will block is when the transmit queue is
+partly or completely full which means that you will discover the
+connection has been reset when the transmit triggers a reset.
 
-	Regards
-		Oliver
+If you wait on the FD concerned for write or exception events all should
+work nicely.
