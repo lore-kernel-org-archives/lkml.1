@@ -1,65 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbXCLUTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbXCLUUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752862AbXCLUTb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 16:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbXCLUTb
+	id S1752867AbXCLUUM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXCLUUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 16:19:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:2828 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbXCLUTa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 16:19:30 -0400
-Date: Mon, 12 Mar 2007 22:20:05 +0200
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Message-ID: <20070312201820.GA8995@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	<20070305015034.GG3441@stusta.de>
-	<20070308123143.GF5149@mellanox.co.il>
-	<Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
-	<20070308195735.GG17114@mellanox.co.il>
-	<20070311120802.GA8823@elte.hu>
+	Mon, 12 Mar 2007 16:20:12 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:8675 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752867AbXCLUUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 16:20:09 -0400
+To: linux-kernel@vger.kernel.org
+CC: Nick Piggin <npiggin@suse.de>, devel@openvz.org, xfs@oss.sgi.com,
+       linux-ntfs-dev@lists.sourceforge.net
+Subject: [PATCH 1/2] mm: move common segment checks to separate helper function (v7)
+From: Dmitriy Monakhov <dmonakhov@openvz.org>
+Date: Mon, 12 Mar 2007 23:19:31 +0300
+Message-ID: <87veh6z030.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070311120802.GA8823@elte.hu>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Ingo Molnar <mingo@elte.hu>:
-> Subject: Re: [2/6] 2.6.21-rc2: known regressions
-> 
-> 
-> Michael,
-> 
-> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> 
-> > > > 2. First disk access after resume takes a couple of minutes
-> > > >    (seemed instant with 2.6.20) during this time no new messages show on console
-> > > 
-> > > Yeah, there is some problem with SATA resume. It would be beautiful if the 
-> > > people who actually see this could narrow it down with bisection. "It 
-> > > works for me" is clearly the case for many people, but not all.
-> > 
-> > Problem is, there seem to be multiple problems some of which got fixed 
-> > between rc2 and rc3. With rc2 I didn't get as far as getting to 
-> > console.
-> 
-> a quick ping: on your box that doesnt resume - if you can log in over 
-> the network after resume (or somehow run shell commands), does 'date' 
-> advance properly or not? (or do you not get that far to be able to 
-> tell?)
-> 
-> 	Ingo
+Changes against v6
+ - remove duplicated code from xfs,ntfs
+ - export generic_segment_checks, because it used by xfs,nfs now.
+ - change arguments initialization pocily according to Nick's comments.
 
-I just retested - 'date' does not advance after resume for me.
-This is with NO_HZ *not* set.
-Sorry it took so long.
+Tested with: ltp readv/writev tests
 
+Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+---
+ fs/ntfs/file.c             |   21 ++---------
+ fs/xfs/linux-2.6/xfs_lrw.c |   22 ++----------
+ include/linux/fs.h         |    3 ++
+ mm/filemap.c               |   83 ++++++++++++++++++++++++-------------------
+ 4 files changed, 55 insertions(+), 74 deletions(-)
+
+diff --git a/fs/ntfs/file.c b/fs/ntfs/file.c
+index dbbac55..621de36 100644
+--- a/fs/ntfs/file.c
++++ b/fs/ntfs/file.c
+@@ -2129,28 +2129,13 @@ static ssize_t ntfs_file_aio_write_nolock(struct kiocb *iocb,
+ 	struct address_space *mapping = file->f_mapping;
+ 	struct inode *inode = mapping->host;
+ 	loff_t pos;
+-	unsigned long seg;
+ 	size_t count;		/* after file limit checks */
+ 	ssize_t written, err;
+ 
+ 	count = 0;
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		const struct iovec *iv = &iov[seg];
+-		/*
+-		 * If any segment has a negative length, or the cumulative
+-		 * length ever wraps negative then return -EINVAL.
+-		 */
+-		count += iv->iov_len;
+-		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
+-			return -EINVAL;
+-		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
+-			continue;
+-		if (!seg)
+-			return -EFAULT;
+-		nr_segs = seg;
+-		count -= iv->iov_len;	/* This segment is no good */
+-		break;
+-	}
++	err = generic_segment_checks(iov, &nr_segs, &count, VERIFY_READ);
++	if (err)
++		return err;
+ 	pos = *ppos;
+ 	vfs_check_frozen(inode->i_sb, SB_FREEZE_WRITE);
+ 	/* We can write back this queue in page reclaim. */
+diff --git a/fs/xfs/linux-2.6/xfs_lrw.c b/fs/xfs/linux-2.6/xfs_lrw.c
+index ff8d64e..558076d 100644
+--- a/fs/xfs/linux-2.6/xfs_lrw.c
++++ b/fs/xfs/linux-2.6/xfs_lrw.c
+@@ -639,7 +639,6 @@ xfs_write(
+ 	xfs_fsize_t		isize, new_size;
+ 	xfs_iocore_t		*io;
+ 	bhv_vnode_t		*vp;
+-	unsigned long		seg;
+ 	int			iolock;
+ 	int			eventsent = 0;
+ 	bhv_vrwlock_t		locktype;
+@@ -652,24 +651,9 @@ xfs_write(
+ 	vp = BHV_TO_VNODE(bdp);
+ 	xip = XFS_BHVTOI(bdp);
+ 
+-	for (seg = 0; seg < segs; seg++) {
+-		const struct iovec *iv = &iovp[seg];
+-
+-		/*
+-		 * If any segment has a negative length, or the cumulative
+-		 * length ever wraps negative then return -EINVAL.
+-		 */
+-		ocount += iv->iov_len;
+-		if (unlikely((ssize_t)(ocount|iv->iov_len) < 0))
+-			return -EINVAL;
+-		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
+-			continue;
+-		if (seg == 0)
+-			return -EFAULT;
+-		segs = seg;
+-		ocount -= iv->iov_len;  /* This segment is no good */
+-		break;
+-	}
++	error = generic_segment_checks(iovp, &segs, &ocount, VERIFY_READ);
++	if (error)
++		return error;
+ 
+ 	count = ocount;
+ 	pos = *offset;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 6a3d22e..3b99450 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1778,6 +1778,9 @@ extern ssize_t generic_file_sendfile(struct file *, loff_t *, size_t, read_actor
+ extern void do_generic_mapping_read(struct address_space *mapping,
+ 				    struct file_ra_state *, struct file *,
+ 				    loff_t *, read_descriptor_t *, read_actor_t);
++extern int generic_segment_checks(const struct iovec *iov,
++		unsigned long *nr_segs, size_t *count,
++		unsigned long access_flags);
+ 
+ /* fs/splice.c */
+ extern ssize_t generic_file_splice_read(struct file *, loff_t *,
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 8e1849a..8bd1ea4 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1159,6 +1159,46 @@ success:
+ 	return size;
+ }
+ 
++/*
++ * Performs necessary checks before doing a write
++ * @iov:	io vector request
++ * @nr_segs:	number of segments in the iovec
++ * @count:	number of bytes to write
++ * @access_flags: type of access: %VERIFY_READ or %VERIFY_WRITE
++ *
++ * Adjust number of segments and amount of bytes to write (nr_segs should be
++ * properly initialized first). Returns appropriate error code that caller 
++ * should return or zero in case that write should be allowed.
++ */
++int generic_segment_checks(const struct iovec *iov,
++			unsigned long *nr_segs, size_t *count,
++			unsigned long access_flags)
++{
++	unsigned long   seg;
++	size_t cnt = 0;
++	for (seg = 0; seg < *nr_segs; seg++) {
++		const struct iovec *iv = &iov[seg];
++
++		/*
++		 * If any segment has a negative length, or the cumulative
++		 * length ever wraps negative then return -EINVAL.
++		 */
++		cnt += iv->iov_len;
++		if (unlikely((ssize_t)(cnt|iv->iov_len) < 0))
++			return -EINVAL;
++		if (access_ok(access_flags, iv->iov_base, iv->iov_len))
++			continue;
++		if (seg == 0)
++			return -EFAULT;
++		*nr_segs = seg;
++		cnt -= iv->iov_len;	/* This segment is no good */
++		break;
++	}
++	*count = cnt;
++	return 0;
++}
++EXPORT_SYMBOL(generic_segment_checks);
++
+ /**
+  * generic_file_aio_read - generic filesystem read routine
+  * @iocb:	kernel I/O control block
+@@ -1180,24 +1220,9 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
+ 	loff_t *ppos = &iocb->ki_pos;
+ 
+ 	count = 0;
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		const struct iovec *iv = &iov[seg];
+-
+-		/*
+-		 * If any segment has a negative length, or the cumulative
+-		 * length ever wraps negative then return -EINVAL.
+-		 */
+-		count += iv->iov_len;
+-		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
+-			return -EINVAL;
+-		if (access_ok(VERIFY_WRITE, iv->iov_base, iv->iov_len))
+-			continue;
+-		if (seg == 0)
+-			return -EFAULT;
+-		nr_segs = seg;
+-		count -= iv->iov_len;	/* This segment is no good */
+-		break;
+-	}
++	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
++	if (retval)
++		return retval;
+ 
+ 	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
+ 	if (filp->f_flags & O_DIRECT) {
+@@ -2094,30 +2119,14 @@ __generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
+ 	size_t ocount;		/* original count */
+ 	size_t count;		/* after file limit checks */
+ 	struct inode 	*inode = mapping->host;
+-	unsigned long	seg;
+ 	loff_t		pos;
+ 	ssize_t		written;
+ 	ssize_t		err;
+ 
+ 	ocount = 0;
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		const struct iovec *iv = &iov[seg];
+-
+-		/*
+-		 * If any segment has a negative length, or the cumulative
+-		 * length ever wraps negative then return -EINVAL.
+-		 */
+-		ocount += iv->iov_len;
+-		if (unlikely((ssize_t)(ocount|iv->iov_len) < 0))
+-			return -EINVAL;
+-		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
+-			continue;
+-		if (seg == 0)
+-			return -EFAULT;
+-		nr_segs = seg;
+-		ocount -= iv->iov_len;	/* This segment is no good */
+-		break;
+-	}
++	err = generic_segment_checks(iov, &nr_segs, &ocount, VERIFY_READ);
++	if (err)
++		return err;
+ 
+ 	count = ocount;
+ 	pos = *ppos;
 -- 
-MST
+1.5.0.1
+
+
