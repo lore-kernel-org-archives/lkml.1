@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751156AbXCLSW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751202AbXCLSXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751156AbXCLSW6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXCLSW6
+	id S1751202AbXCLSXU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbXCLSXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:22:58 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1567 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbXCLSW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:22:57 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 0/3] Lumpy Reclaim V5
-Message-ID: <exportbomb.1173723760@pinky>
-Date: Mon, 12 Mar 2007 18:22:45 +0000
+	Mon, 12 Mar 2007 14:23:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45007 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbXCLSXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 14:23:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [PATCH] kthread_should_stop_check_freeze
+Date: Mon, 12 Mar 2007 19:25:54 +0100
+User-Agent: KMail/1.9.5
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Anton Blanchard <anton@samba.org>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Aneesh Kumar <aneesh.kumar@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+References: <200702260800.49603.rjw@sisk.pl> <20070312122305.GB107@tv-sign.ru> <45F55485.1030603@fr.ibm.com>
+In-Reply-To: <45F55485.1030603@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703121925.55616.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following this email are three patches which represent the
-current state of the lumpy reclaim patches; collectively lumpy V5.
-This patch kit is against 2.6.21-rc3-mm2.  This stack is split out
-to show the incremental changes in this version.  This contains
-one fixup following on from Christoph Lameters feedback and one change
-affecting scan rates.  Andrew, please consider for -mm.
+On Monday, 12 March 2007 14:24, Cedric Le Goater wrote:
+> Oleg Nesterov wrote:
+> > On 03/12, Rafael J. Wysocki wrote:
+> >> On Monday, 12 March 2007 09:14, Pavel Machek wrote:
+> >>> Can we get better name for this function?
+> >> Well, I took the name from the Oleg's message.  Can you please suggest
+> >> something?
+> > 
+> > Well, kthread_should_stop_check_freeze() is really awful, I agree :)
+> > We need something better, but I can't suggest anything.
+> 
+> not much better, but what about kthread_should_stop_or_freeze() ?
 
-Comparitive testing between lumpy-V4 and lump-V5 generally shows
-a small improvement, coming from the slight increase in scanning
-coming from second of the patches.
+IMO this suggests that the thread will either stop or freeze itself, but the
+freezing part is not unconditional.
 
-I have taken the lumpy-V3 patches and the last batch of changes
-and folded them back into a single patch (collectively lumpy-V4),
-updating attribution.  On top of this are are two patches the first
-the result of feedback from Christoph and the latter a change which
-I believe is a correctness issue for scanning rates:
+I was thinking of kthread_should_stop_freezable() .
 
-lumpy-reclaim-V4: folded back base, changes incorporated are listed
-  in the changelog which is included in the patch.
-
-lumpy-back-out-removal-of-active-check-in-isolate_lru_pages:
-  reinstating a BUG where the active state missmatched the lru we are
-  scanning.  As pointed out by Christoph Lameter, there should not
-  be a missmatch and testing confirms with this base there are none.
-
-lumpy-only-count-taken-pages-as-scanned: when scanning an area
-  around a target page taken from the LRU we will only take pages
-  which match the active state.  Previously we would count the
-  missmatching pages passed over as 'scanned'.  Prior to lumpy a
-  page was only counted as 'scanned' if we had removed it from the
-  LRU and reclaimed or rotated it back to the list.  This leads
-  to reduced reclaim scanning and affects reclaim performance.
-  Move to counting pages as scanned only when actually touched.
-
-Against: 2.6.21-rc3-mm2
-
--apw
+Greetings,
+Rafael
