@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXCLPaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030427AbXCLPa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030419AbXCLPaw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030427AbXCLPaw
+	id S1030427AbXCLPa7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030430AbXCLPa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:30:52 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:52132 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030432AbXCLPav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:30:51 -0400
-Date: Mon, 12 Mar 2007 16:30:33 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: bryan.wu@analog.com, David Brownell <david-b@pacbell.net>,
+	Mon, 12 Mar 2007 11:30:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47067 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030427AbXCLPa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 11:30:57 -0400
+Date: Mon, 12 Mar 2007 08:29:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070312163033.134c351e@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070312161109.749c6d69.khali@linux-fr.org>
-References: <200703091345.44744.david-b@pacbell.net>
-	<11735324081261-git-send-email-hskinnemoen@atmel.com>
-	<1173694079.6638.13.camel@roc-desktop>
-	<20070312153457.60dafa0c@dhcp-252-105.norway.atmel.com>
-	<20070312155359.39020c80@dhcp-252-105.norway.atmel.com>
-	<20070312161109.749c6d69.khali@linux-fr.org>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG} usb-serial regression in 2.6.21-rc2-git3
+Message-ID: <20070312152920.GA29597@kroah.com>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <45EB9DC6.8010403@rtr.ca> <45F56A2D.9010808@rtr.ca> <200703121606.06601.oneukum@suse.de> <45F56E37.9050506@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F56E37.9050506@rtr.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Mar 2007 16:11:09 +0100
-Jean Delvare <khali@linux-fr.org> wrote:
-
-> > By the way, timeout seems to be hardcoded to 100 jiffies in the
-> > i2c-algo-bit driver, so there's probably not much point passing it from
-> > the board code when it's going to be overridden anyway. I'll add just a
-> > udelay parameter to the platform struct for  now.  
+On Mon, Mar 12, 2007 at 11:13:59AM -0400, Mark Lord wrote:
+> Oliver Neukum wrote:
+> >Am Montag, 12. M??rz 2007 15:56 schrieb Mark Lord:
+> >>Still no improvement on the b0rken usb-serial resume support in -rc*.
+> >
+> >Have you applied the fixes in Greg's current tree?
 > 
-> No, it's not hardcoded. I know it looks confusing. struct i2c_adapter
-> has a timeout field, that's the one being set to 100 in i2c-algo-bit,
-> but i2c-algo-bit uses the i2c_algo_bit_data timeout field. The
-> i2c_adapter timeout field is unused.
+> I don't know anything about any "current tree"
+> other than the 2.6.21-rc3-git* on kernel.org.
 
-Ah, I see. Now that you mention it, I seem to recall I came to that
-conclusion last time I looked at the code, but I've apparently forgotten
-it since then ;)
+And all of those fixes Oliver is referring to should be in anything
+older than 2.6.21-rc3-git6.  So we have a different problem here than
+what people were seeing before.
 
-I'll add a timeout field to the platform struct as well, then.
+> Greg hasn't suggested anything for this yet,
+> mostly because he's been busy keeping the 2.6.20.xx
+> point releases sane.
 
-Haavard
+No, I didn't suggest anything because I thought it was going to be fixed
+with Oliver's patches :(
+
+thanks,
+
+greg k-h
