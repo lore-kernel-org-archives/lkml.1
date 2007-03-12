@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965277AbXCLH5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965283AbXCLIB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965277AbXCLH5u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 03:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965291AbXCLH5t
+	id S965283AbXCLIB3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 04:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbXCLIB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 03:57:49 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:16685 "EHLO relay.sw.ru"
+	Mon, 12 Mar 2007 04:01:28 -0400
+Received: from tag.witbe.net ([81.88.96.48]:52724 "EHLO tag.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965277AbXCLH5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 03:57:48 -0400
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       devel@openvz.org
-Subject: [PATCH 2/2] mm: incorrect direct io error handling (v6)
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Mon, 12 Mar 2007 10:58:10 +0300
-Message-ID: <877itmrizx.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	id S965283AbXCLIB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 04:01:27 -0400
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: "'Tejun Heo'" <htejun@gmail.com>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>
+Cc: "'Jeff Garzik'" <jeff@garzik.org>, "'Alan Cox'" <alan@redhat.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       <linux-ide@vger.kernel.org>, "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'Eric D. Mudama'" <edmudama@gmail.com>
+Subject: RE: [git patches] libata fixes
+Date: Mon, 12 Mar 2007 09:00:54 +0100
+Organization: AS2917.net
+Message-ID: <001b01c7647c$921ced00$4b00a8c0@donald>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <45F4F30F.9010603@gmail.com>
+Thread-Index: Acdkb6qeIT0M5pKsQ7a057sCwX6cJwADFPOw
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I realy don't want to be annoying by sending this patcheset over and over
-again, i just want the issue to be solved. If anyone think this solution
-is realy cappy, please comment what exectly is bad. Thank you.
+Hello,
 
-Changes:
-  - patch was split in two patches.
-  - comments added. I think now it is clearly describe things.
-  - patch prepared against 2.6.20-mm3
+> It involves a long timeout, so it's bothersome.  This is caused by
+> Silicon Image 4726/3726 storage processor (SATA Port Multiplier with
+> extra features) attached to one of the ICH ports.
 
-How this patch tested:
-  - fsstress test.
-  - manual direct_io tests.
-
-LOG:
- - Trim off blocks after generic_file_direct_write() has failed.
- - Update out of date comments about direct_io locking rules.
-
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
----
- mm/filemap.c |   32 ++++++++++++++++++++++++++++----
- 1 files changed, 28 insertions(+), 4 deletions(-)
-
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 0aadf5f..8959ae3 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1925,8 +1925,9 @@ generic_file_direct_write(struct kiocb *iocb, const struct iovec *iov,
- 	/*
- 	 * Sync the fs metadata but not the minor inode changes and
- 	 * of course not the data as we did direct DMA for the IO.
--	 * i_mutex is held, which protects generic_osync_inode() from
--	 * livelocking.  AIO O_DIRECT ops attempt to sync metadata here.
-+	 * i_mutex may not being held, if so some specific locking
-+	 * ordering must protect generic_osync_inode() from livelocking.
-+	 * AIO O_DIRECT ops attempt to sync metadata here.
- 	 */
- 	if ((written >= 0 || written == -EIOCBQUEUED) &&
- 	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
-@@ -2240,6 +2241,29 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
- 	mutex_lock(&inode->i_mutex);
- 	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
- 			&iocb->ki_pos);
-+	/* 
-+	 * If __generic_file_aio_write_nolock has failed.
-+	 * This may happen because of:
-+	 * 1) Bad segment found (failed before actual write attempt)
-+	 * 2) Segments are good, but actual write operation failed
-+	 *    and may have instantiated a few blocks outside i_size.
-+	 *   a) in case of buffered write these blocks was already
-+	 *   	trimmed by generic_file_buffered_write()
-+	 *   b) in case of O_DIRECT these blocks weren't trimmed yet.
-+	 *
-+	 * In case of (2b) these blocks have to be trimmed off again.
-+	 */
-+	if (unlikely( ret < 0 && file->f_flags & O_DIRECT)) {
-+		unsigned long nr_segs_avail = nr_segs;
-+		size_t count = 0;
-+		if (!generic_segment_checks(iov, &nr_segs_avail, &count,
-+				VERIFY_READ)) {
-+			/*It is (2b) case, because segments are good*/
-+			loff_t isize = i_size_read(inode);
-+			if (pos + count > isize)
-+				vmtruncate(inode, isize);
-+		}
-+	}
- 	mutex_unlock(&inode->i_mutex);
+Yes, I think this is the part Asus is using for it's EZ-Raid feature
+on this motherboard, and they seem to like their EZ-Raid, so it's likely
+to become more and more common.
  
- 	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
-@@ -2254,8 +2278,8 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
- EXPORT_SYMBOL(generic_file_aio_write);
- 
- /*
-- * Called under i_mutex for writes to S_ISREG files.   Returns -EIO if something
-- * went wrong during pagecache shootdown.
-+ * May be called without i_mutex for writes to S_ISREG files.
-+ * Returns -EIO if something went wrong during pagecache shootdown.
-  */
- static ssize_t
- generic_file_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov,
--- 
-1.5.0.1
+> If the first  downstream port in the PMP is empty and it gets reset in
+I confirm it is empty in my config.
 
+> work very well with the current ATA reset sequence and gets identified
+> only after a few failures thus causing long timeout.
+30s to 1min ;(
+ 
+> I keep forgetting about this.  I'll ask SIMG how to deal with 
+> this.  For
+> the time being, connecting a device to the PMP port should remove the
+> timeouts.
+
+That sounds a quite expensive solution ;)
+
+Paul
 
