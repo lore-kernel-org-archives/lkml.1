@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450AbXCLXzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbXCLX4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752450AbXCLXzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 19:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXCLXzl
+	id S1752474AbXCLX4J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 19:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXCLX4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 19:55:41 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:22454 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbXCLXzk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 19:55:40 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=E3crPwEGgMwKyhEbxHrTo7lLaiwgFY1ngDlC1Oqr9JQUrx2ozH30YycNTMUYIijgr
-	AsMssOAfB/owa3Q2r9/Eg==
-Message-ID: <45F5E84B.9010901@google.com>
-Date: Mon, 12 Mar 2007 16:54:51 -0700
-From: Ethan Solomita <solo@google.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/1] mm: Inconsistent use of node IDs
-References: <45F5D974.2050702@google.com> <200703130019.30953.ak@suse.de>
-In-Reply-To: <200703130019.30953.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 19:56:09 -0400
+Received: from colin.muc.de ([193.149.48.1]:4790 "EHLO mail.muc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752489AbXCLX4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 19:56:07 -0400
+Date: 13 Mar 2007 00:56:05 +0100
+Date: Tue, 13 Mar 2007 00:56:05 +0100
+From: Andi Kleen <ak@muc.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       arjan@infradead.org
+Subject: Re: CONFIG_REORDER Kconfig help strange sentence.
+Message-ID: <20070312235605.GA14444@muc.de>
+References: <1173741484.10618.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173741484.10618.25.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Monday 12 March 2007 23:51, Ethan Solomita wrote:
->> This patch corrects inconsistent use of node numbers (variously "nid" or
->> "node") in the presence of fake NUMA.
+On Tue, Mar 13, 2007 at 10:18:03AM +1100, Rusty Russell wrote:
+> OK, this confused me:
 > 
-> I think it's very consistent -- your patch would make it inconsistent though.
+>         Function reordering (REORDER) [N/y/?] (NEW) ?
+>         
+>         This option enables the toolchain to reorder functions for a more 
+>         optimal TLB usage. If you have pretty much any version of binutils, 
+>         this can increase your kernel build time by roughly one minute.
+>         
+> "If you have pretty much any version of binutils"?  Huh?
+> 
+> You mean "This will slow your kernel build by about a minute"?
 
-	It's consistent to call node_online() with a physical node ID when the 
-online node mask is composed of fake nodes?
+Yes. Lots of sections seem to trigger some quadratic behaviour in ld.
 
-> Sorry, but when you ask for NUMA emulation you will get it. I don't see
-> any point in a "half way only for some subsystems I like" NUMA emulation. 
-> It's unlikely that your ideas of where it is useful and where is not
-> matches other NUMA emulation user's ideas too.
+It might be fixed in some unreleased CVS version though (not 100% sure) 
 
-	I don't understand your comments. My code is intended to work for all 
-systems. If the system is non-NUMA by nature, then all CPUs map to fake 
-node 0.
-
-	As an example, on a two chip dual-core AMD opteron system, there are 4 
-"cpus" where CPUs 0 and 1 are close to the first half of memory, and 
-CPUs 2 and 3 are close to the second half. Without this change CPUs 2 
-and 3 are mapped to fake node 1. This results in awful performance. With 
-this change, CPUs 2 and 3 are mapped to (roughly) 1/2 the fake node 
-count. Their zonelists[] are ordered to do allocations preferentially 
-from zones that are local to CPUs 2 and 3.
-
-	Can you tell me the scenario where my code makes things worse?
-
-> Besides adding such a secondary node space would be likely a huge long term 
-> mainteance issue. I just can it see breaking with every non trivial change.
-
-	I'm adding no data structures to do this. The current code already has 
-get_phys_node. My changes use the existing information about node 
-layout, both the physical and fake, and defines a mapping. The current 
-mapping just takes a physical node and says "it's the fake node too".
-
-> NACK.
-
-	I wish you would include some specifics as to why you think what you 
-do. You're suggesting we leave in place a system that destroys NUMA 
-locality when using fake numa, and passes around physical node ids as an 
-index into nodes[] whihc is indexed by fake nodes. My change has no 
-effect without fake numa, and harms no one with fake numa.
-	-- Ethan
+-Andi
