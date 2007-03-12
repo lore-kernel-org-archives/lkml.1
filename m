@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030193AbXCLOfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXCLOjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030193AbXCLOfj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030194AbXCLOfj
+	id S1030190AbXCLOjG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:39:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030186AbXCLOjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:35:39 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:63009 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030193AbXCLOfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:35:38 -0400
-Date: Mon, 12 Mar 2007 15:34:57 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: bryan.wu@analog.com
-Cc: David Brownell <david-b@pacbell.net>, Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070312153457.60dafa0c@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <1173694079.6638.13.camel@roc-desktop>
-References: <200703091345.44744.david-b@pacbell.net>
-	<11735324081261-git-send-email-hskinnemoen@atmel.com>
-	<1173694079.6638.13.camel@roc-desktop>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 12 Mar 2007 10:39:06 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51855 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030190AbXCLOjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:39:04 -0400
+Date: Mon, 12 Mar 2007 15:39:00 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jan Kara <jack@suse.cz>
+Cc: Ashif Harji <asharji@cs.uwaterloo.ca>, linux-kernel@vger.kernel.org
+Subject: Re: do_generic_mapping_read performance issue
+Message-ID: <20070312143900.GB6016@wotan.suse.de>
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070312142012.GH30777@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Mar 2007 18:07:59 +0800
-"Wu, Bryan" <bryan.wu@analog.com> wrote:
-> >   static struct i2c_gpio_platform_data i2c_gpio_data = {
-> > 	.sda_pin	= GPIO_PIN_FOO,
-> > 	.scl_pin	= GPIO_PIN_BAR,
-> >   };
+On Mon, Mar 12, 2007 at 03:20:12PM +0100, Jan Kara wrote:
+>   Hi,
 > 
-> Is this usage right, because 3 flags are added to this structure as
-> below:
+> > Hi, I am encountering a performance problem, which I have tracked into the 
+> > Linux kernel. The problem occurs with my experimental web server that uses 
+> > sendfile to repeatedly transmit files.  The files are based on the static 
+> > portion of the SPECweb99 fileset and range in size to model a reasonable 
+> > workload.  With this workload, a significant number of the requests are 
+> > for files of size 4 KB or less.
+> > 
+> > I have determined that the performance problems occurs in the function
+> > do_generic_mapping_read in file mm/filemap.c for kernel version 2.6.20.1.
+> > Here is the specific code fragment:
+> > 
+> >         /*
+> >          * When (part of) the same page is read multiple times
+> >          * in succession, only mark it as accessed the first time.
+> >          */
+> >         if (prev_index != index)
+> >                 mark_page_accessed(page);
+>   Actually, the code is like that certainly for two years :).
+
+Did it always use ra->prev_page? ISTR it using pos%PAGE_SIZE == 0 at some
+stage (ie. read from the start of a page -- obviously that also has holes).
+
+> > The implication of this code is that for files of size less than or equal 
+> > to a single page, the page associated with such a file is likely to get 
+> > evicted from the cache regardless of how frequently it is accessed.  The 
+> > reason is that after the first access, prev_index is always zero and index 
+> > can only be zero. Hence, mark_page_accessed is never called after the 
+> > first time the file is requested.  As a result, the page is evicted from 
+> > the cache no matter how frequently it is used.  By changing the kernel to 
+> > always call mark_page_accessed for these files, the server throughput is 
+> > increased by as much as 20%.
+>   Your analysis seems to be right. But to observe this behaviour you have
+> to have the file open and just always reread it using the same file
+> descriptor, don't you? That's probably not too common...
 > 
-> struct i2c_gpio_platform_data {
-> 	unsigned int sda_pin;
-> 	unsigned int scl_pin;
-> 	unsigned int sda_is_open_drain:1;
-> 	unsigned int scl_is_open_drain:1;
-> 	unsigned int scl_is_output_only:1;
-> };
+> > I was wondering if anyone could explain why the call to mark_page_accessed 
+> > is conditional? That is, what problem it is trying to solve. It would seem 
+> > that in many scenarios, if the same page is accessed repeatedly, then it 
+> > would be appropriate to keep that page cached.
+>   I also don't know why the condition is there but it's there at least
+> for two years so I'm not sure anybody remembers ;). Nick, do you have
+> an idea?
 
-Well, it is the simplest possible example. The last 3 fields will be 0,
-which is a valid configuration.
+Yeah it is there because that is basically how our "use once" detection
+handles the case where an app does not read in chunks that are PAGE_SIZE
+multiples and PAGE_SIZE aligned.
 
-> Thanks a lot,  I will drop our GPIO based I2C driver and try this one on
-> our platform.
-
-I hope it works for you.
-
-> > +	if (!pdata->scl_is_output_only)
-> > +		bit_data->getscl = i2c_gpio_getscl,
-> > +
-> > +	bit_data->getsda	= i2c_gpio_getsda,
-> > +	bit_data->udelay	= 5,			/* 100 kHz */
-> > +	bit_data->timeout	= HZ / 10,		/* 100 ms */
-> 
-> Can we add these udelay/timeout to struct i2c_gpio_platform_data? And
-> let customer to choose these according their specific requirement. We
-> use Kconfig to do this, but Jean and David don't like the idea, -:(
-
-Yeah, they need to be a bit more configurable than they currently are.
-And I think it makes sense to pass them from the board setup code, since
-this is where things depending on board-specific details (signal quality
-issues, pullup resistor values, etc.) are supposed to go.
-
-Haavard
