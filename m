@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbXCLUpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbXCLUsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752906AbXCLUpt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 16:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbXCLUpt
+	id S1752915AbXCLUsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbXCLUsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 16:45:49 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55201 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752888AbXCLUps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 16:45:48 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19dRZ4AVmRd3Ut8yL/QIJchgA0uVUiWnZ69VgPuFs
-	K1y83E8vUx6sVy
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703130738.19034.kernel@kolivas.org>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <200703130549.47058.kernel@kolivas.org>
-	 <1173730314.6431.30.camel@Homer.simpson.net>
-	 <200703130738.19034.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 21:45:44 +0100
-Message-Id: <1173732344.6431.54.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Mon, 12 Mar 2007 16:48:18 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1341 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752904AbXCLUsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 16:48:18 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] 2.6.21-rc3-mm1
+Date: Mon, 12 Mar 2007 21:50:43 +0100
+User-Agent: KMail/1.9.5
+Cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+References: <Pine.LNX.4.44L0.0703101359550.7545-100000@patience.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0703101359550.7545-100000@patience.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+Message-Id: <200703122150.44549.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 07:38 +1100, Con Kolivas wrote:
-> On Tuesday 13 March 2007 07:11, Mike Galbraith wrote:
-> >
-> > Killing the known corner case starvation scenarios is wonderful, but
-> > let's not just pretend that interactive tasks don't have any special
-> > requirements.
+Hello, 
+
+> > Any thoughts?
 > 
-> Now you're really making a stretch of things. Where on earth did I say that 
-> interactive tasks don't have special requirements? It's a fundamental feature 
-> of this scheduler that I go to great pains to get them as low latency as 
-> possible and their fair share of cpu despite having a completely fair cpu 
-> distribution.
+> Another mistake on my part.  The correct command is
+> 
+> 	echo -n '2-2:1.0' >/sys/bus/usb/drivers/usbhid/unbind
+> 
+> Without the "-n", the system thinks that the newline character at the end 
+> of the line written by "echo" is part of the filename.
 
-As soon as your cpu is fully utilized, fairness looses or interactivity
-loses.  Pick one.
+Nice tip. Thanks. I've run some tests and as expected -> no failure so far.
 
-	-Mike
 
+
+Regards,
+
+	Mariusz Kozlowski
