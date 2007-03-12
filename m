@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965356AbXCLI3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965336AbXCLIaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965356AbXCLI3L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 04:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965349AbXCLI3L
+	id S965336AbXCLIaE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 04:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965349AbXCLIaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 04:29:11 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:34393 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965356AbXCLI3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 04:29:09 -0400
-Message-ID: <45F50FCC.1020309@sw.ru>
-Date: Mon, 12 Mar 2007 11:31:08 +0300
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Mon, 12 Mar 2007 04:30:03 -0400
+Received: from mail05.syd.optusnet.com.au ([211.29.132.186]:38915 "EHLO
+	mail05.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965336AbXCLIaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 04:30:00 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Date: Mon, 12 Mar 2007 19:29:39 +1100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
+References: <200703111457.17624.kernel@kolivas.org> <1173684174.6659.13.camel@Homer.simpson.net> <200703121848.44714.kernel@kolivas.org>
+In-Reply-To: <200703121848.44714.kernel@kolivas.org>
 MIME-Version: 1.0
-To: Herbert Poetzl <herbert@13thfloor.at>
-CC: Andrew Morton <akpm@linux-foundation.org>, Kirill Korotaev <dev@sw.ru>,
-       containers@lists.osdl.org, Paul Menage <menage@google.com>,
-       List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 2/7] RSS controller core
-References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru> <20070306140036.4e85bd2f.akpm@linux-foundation.org> <20070309164855.GB3647@MAIL.13thfloor.at> <45F3C700.3060106@sw.ru> <20070311143254.GC3696@MAIL.13thfloor.at> <45F41A7C.3000900@sw.ru> <20070312004152.GB21861@MAIL.13thfloor.at>
-In-Reply-To: <20070312004152.GB21861@MAIL.13thfloor.at>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703121929.39702.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[snip]
+On Monday 12 March 2007 18:48, Con Kolivas wrote:
+> On Monday 12 March 2007 18:22, Mike Galbraith wrote:
+> > On Sun, 2007-03-11 at 13:10 +0100, Ingo Molnar wrote:
+> > > * Mike Galbraith <efault@gmx.de> wrote:
+> > > > > Full patch for 2.6.21-rc3-mm2:
+> > > > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-mm2-rsd
+> > > > >l- 0.29.patch
+> > > >
+> > > > I'm seeing a cpu distribution problem running this on my P4 box.
+> > > >
+> > > > With 2.6.21-rc3, X/Gforce maintain their ~50% cpu (remain smooth),
+> > > > and the encoders (100%cpu bound) get whats left when Amarok isn't
+> > > > eating it.
+> > > >
+> > > > I plunked the above patch into plain 2.6.21-rc3 and retested to
+> > > > eliminate other mm tree differences, and it's repeatable.  The nice 5
+> > > > cpu hogs always receive considerably more that the nice 0 sleepers.
+> > >
+> > > hm. Do you get the same same problem on UP too? (i.e. lets eliminate
+> > > any SMP/HT artifacts)
+> >
+> > Behavior is slightly different with a UP kernel.  Neither encoder
+> > receives more cpu than X, but they each still receive more than gforce.
+> > The distribution of X/Gforce vs lame/lame averages per eyeball to
+> > roughly ~50:50.
+> >
+> > I noticed Con posted an accounting fix, and applied it.  No change.
+>
+> So the lames are nice 5 which means they should receive 75% of the cpu that
+> nice 0 tasks receive so they should get 43% of the cpu...
+>
+> Just a couple of questions;
+>
+> The X/Gforce case; do they alternate cpu between them? By that I mean when
+> they're the only thing running does the cpu load summate to 1 or does it
+> summate to 2?
 
->>>>>> We need to decide whether we want to do per-container memory
->>>>>> limitation via these data structures, or whether we do it via
->>>>>> a physical scan of some software zone, possibly based on Mel's
->>>>>> patches.
->>>>> why not do simple page accounting (as done currently
->>>>> in Linux) and use that for the limits, without
->>>>> keeping the reference from container to page?
->>>> As I've already answered in my previous letter simple
->>>> limiting w/o per-container reclamation and per-container
->>>> oom killer isn't a good memory management. It doesn't allow
->>>> to handle resource shortage gracefully.
->>> per container OOM killer does not require any container
->>> page reference, you know _what_ tasks belong to the 
->>> container, and you know their _badness_ from the normal
->>> OOM calculations, so doing them for a container is really
->>> straight forward without having any page 'tagging'
->> That's true. If you look at the patches you'll
->> find out that no code in oom killer uses page 'tag'.
-> 
-> so what do we keep the context -> page reference
-> then at all?
+I'll save you the trouble. I just checked myself and indeed the load is only 
+1. What this means is that although there are 2 tasks running, only one is 
+running at any time making a total load of 1. So, if we add two other tasks 
+that add 2 more to the load the total load is 3. However if we weight the 
+other two tasks at nice 5, they only add .75 each to the load making a 
+weighted total of 2.5. This means that X+Gforce together should get a total 
+of 1/2.5 or 40% of the overall cpu. That sounds like exactly what you're 
+describing is happening.
 
-We need this for
-1. keeping page's owner to uncharge to IT when page
-   goes away. Or do you propose to uncharge it to
-   current (i.e. ANY) container like you do all across
-   Vserver accounting which screws up accounting with
-   pages sharing?
-2. managing LRU lists for good reclamation. See Balbir's
-   patches for details.
-3. possible future uses - correct sharing accounting,
-   dirty pages accounting, etc
-
->>> for the reclamation part, please elaborate how that will
->>> differ in a (shared memory) guest from what the kernel
->>> currently does ...
->> This is all described in the code and in the
->> discussions we had before.
-> 
-> must have missed some of them, please can you
-> point me to the relevant threads ...
-
-lkml.org archives and google will help you :)
-
-> TIA,
-> Herbert
+-- 
+-ck
