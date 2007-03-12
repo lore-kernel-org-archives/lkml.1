@@ -1,56 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751384AbXCLSgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXCLSgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751384AbXCLSgV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXCLSgV
+	id S1751385AbXCLSgo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXCLSgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:36:21 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:34885 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbXCLSgU (ORCPT
+	Mon, 12 Mar 2007 14:36:44 -0400
+Received: from mail05.syd.optusnet.com.au ([211.29.132.186]:54508 "EHLO
+	mail05.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751385AbXCLSgn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:36:20 -0400
-Subject: Re: [PATCH 1/3] Lumpy Reclaim V4
-From: Dave Hansen <hansendc@us.ibm.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <5239d2d31cd39bf4fc33426648f97be0@pinky>
-References: <exportbomb.1173723760@pinky>
-	 <5239d2d31cd39bf4fc33426648f97be0@pinky>
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 11:36:16 -0700
-Message-Id: <1173724576.11945.100.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 12 Mar 2007 14:36:43 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: "Ryan Hope" <rmh3093@gmail.com>
+Subject: BUG: atomic counter underflow at: page_add_file_rmap+0x41/0x50
+Date: Tue, 13 Mar 2007 05:36:37 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <48f7fe350703120901y6c19c67v267ac2acd518a754@mail.gmail.com> <48f7fe350703121003p5fac23a1m32c3027d35a78cc2@mail.gmail.com>
+In-Reply-To: <48f7fe350703121003p5fac23a1m32c3027d35a78cc2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703130536.37992.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-12 at 18:23 +0000, Andy Whitcroft wrote:
-> 
-> +                       /* The target page is in the block, ignore it. */
-> +                       if (unlikely(pfn == page_pfn))
-> +                               continue;
-> +#ifdef CONFIG_HOLES_IN_ZONE
-> +                       /* Avoid holes within the zone. */
-> +                       if (unlikely(!pfn_valid(pfn)))
-> +                               break;
-> +#endif 
+On Tuesday 13 March 2007 04:03, Ryan Hope wrote:
+> I applied the detect-atomic-underflow patch and now I get these BUGs:
+>
+> BUG: atomic counter underflow at:
+>  [<78167931>] page_add_file_rmap+0x41/0x50
+>  [<78161c7d>] __handle_mm_fault+0x53d/0x900
+>  [<78106de0>] do_IRQ+0x40/0x80
+>  [<7811ff99>] do_page_fault+0x129/0x630
+>  [<7811fe70>] do_page_fault+0x0/0x630
+>  [<784907f4>] error_code+0x7c/0x84
+>  =======================
+> BUG: atomic counter underflow at:
+>  [<78167931>] page_add_file_rmap+0x41/0x50
+>  [<78161c7d>] __handle_mm_fault+0x53d/0x900
+>  [<78106de0>] do_IRQ+0x40/0x80
+>  [<7811ff99>] do_page_fault+0x129/0x630
+>  [<7811fe70>] do_page_fault+0x0/0x630
+>  [<784907f4>] error_code+0x7c/0x84
+>  [<78490000>] rt_mutex_slowunlock+0x160/0x1c0
+>  =======================
+> BUG: atomic counter underflow at:
+>  [<78167931>] page_add_file_rmap+0x41/0x50
+>  [<78161c7d>] __handle_mm_fault+0x53d/0x900
+>  [<78106de0>] do_IRQ+0x40/0x80
+>  [<7811ff99>] do_page_fault+0x129/0x630
+>  [<7811fe70>] do_page_fault+0x0/0x630
+>  [<784907f4>] error_code+0x7c/0x84
+>  [<78490000>] rt_mutex_slowunlock+0x160/0x1c0
+>  =======================
+> BUG: atomic counter underflow at:
+>  [<78167931>] page_add_file_rmap+0x41/0x50
+>  [<78161c7d>] __handle_mm_fault+0x53d/0x900
+>  [<78106de0>] do_IRQ+0x40/0x80
+>  [<7811ff99>] do_page_fault+0x129/0x630
+>  [<7811fe70>] do_page_fault+0x0/0x630
+>  [<784907f4>] error_code+0x7c/0x84
+>  [<78490000>] rt_mutex_slowunlock+0x160/0x1c0
+>  =======================
+> BUG: atomic counter underflow at:
+>  [<78167931>] page_add_file_rmap+0x41/0x50
+>  [<78161c7d>] __handle_mm_fault+0x53d/0x900
+>  [<78106de0>] do_IRQ+0x40/0x80
+>  [<7811ff99>] do_page_fault+0x129/0x630
+>  [<7811fe70>] do_page_fault+0x0/0x630
+>  [<784907f4>] error_code+0x7c/0x84
+>  [<78490000>] rt_mutex_slowunlock+0x160/0x1c0
+>  =======================
+> BUG: atomic counter underflow at:
+>  [<78167931>] page_add_file_rmap+0x41/0x50
+>  [<78161c7d>] __handle_mm_fault+0x53d/0x900
+>  [<78106de0>] do_IRQ+0x40/0x80
+>  [<7811ff99>] do_page_fault+0x129/0x630
+>  [<7811fe70>] do_page_fault+0x0/0x630
+>  [<784907f4>] error_code+0x7c/0x84
+>  [<78490000>] rt_mutex_slowunlock+0x160/0x1c0
+>  =======================
+> BUG: atomic counter underflow at:
+>  [<78167931>] page_add_file_rmap+0x41/0x50
+>  [<78161c7d>] __handle_mm_fault+0x53d/0x900
+>  [<78106de0>] do_IRQ+0x40/0x80
+>  [<7811ff99>] do_page_fault+0x129/0x630
+>  [<7811fe70>] do_page_fault+0x0/0x630
+>  [<784907f4>] error_code+0x7c/0x84
+>  [<78490000>] rt_mutex_slowunlock+0x160/0x1c0
+>  =======================
+>
+> On 3/12/07, Ryan Hope <rmh3093@gmail.com> wrote:
+> > I am currently running RSDL v0.30 on 2.6.21-rc2-mm2. I get these (what
+> > seem to me as random) bug messages from dmesg; they are non fatal. I'm
+> > not quite sure if this bug is a result of changes I have made on top of
+> > RSDL; is this because of bad code I introduced or is the code that I
+> > introduced exposing a bug in RSDL? The BUGs from dmesg are shown below.
+> > If you need more info let me know.
+> >
 
-Would having something like:
+Not an RSDL bug, thanks.
 
-        static inline int pfn_in_zone_hole(unsigned long pfn)
-        {
-        #ifdef CONFIG_HOLES_IN_ZONE
-        	if (unlikely(!pfn_valid(pfn)))
-        		return 1;
-        #endif 
-        	return 0;
-        }
-        
-help us out?  page_is_buddy() and page_is_consistent() appear to do the
-exact same thing, with the same #ifdef.
-
--- Dave
-
+-- 
+-ck
