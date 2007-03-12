@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030588AbXCLQ0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030584AbXCLQ1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030588AbXCLQ0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 12:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030599AbXCLQ0c
+	id S1030584AbXCLQ1O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 12:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030587AbXCLQ1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 12:26:32 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:58808 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030588AbXCLQ0a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 12:26:30 -0400
-Date: Mon, 12 Mar 2007 12:26:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: rmmod uhci_hcd -> BUG: atomic counter underflow
-In-Reply-To: <45F57B80.5000203@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0703121223150.2489-100000@iolanthe.rowland.org>
+	Mon, 12 Mar 2007 12:27:13 -0400
+Received: from rtr.ca ([64.26.128.89]:1695 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030584AbXCLQ1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 12:27:12 -0400
+Message-ID: <45F57F63.7010308@rtr.ca>
+Date: Mon, 12 Mar 2007 12:27:15 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <greg@kroah.com>
+Cc: Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG} usb-serial regression in 2.6.21-rc2-git3
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <45EB9DC6.8010403@rtr.ca> <45F56A2D.9010808@rtr.ca> <200703121606.06601.oneukum@suse.de> <45F56E37.9050506@rtr.ca> <20070312152920.GA29597@kroah.com> <45F579CF.7040802@rtr.ca> <45F57BB8.5010705@rtr.ca> <45F57C52.1010105@rtr.ca>
+In-Reply-To: <45F57C52.1010105@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Mar 2007, Jiri Slaby wrote:
-
-> Hi.
+Mark Lord wrote:
+> ..and here is a retest with linux-2.6.21-rc3-git7
+> of simply plug/wait/unplug a USB hub/serial/parallel/PS2 gizmo.
 > 
-> After rmmoding of uhci_hcd on fresh booted 2.6.21-rc3-mm2 I got this:
+> I have two of these, with different serial port hardware in each,
+> and doing this with either of them produces an ooops.
 > 
-> BUG: atomic counter underflow at:
->   [<c0104f0b>] show_trace_log_lvl+0x1a/0x30
->   [<c01055f3>] show_trace+0x12/0x14
->   [<c010567a>] dump_stack+0x16/0x18
->   [<c01dc41b>] kref_put+0x4d/0xb2
->   [<c01db754>] kobject_put+0x14/0x16
->   [<c01db8a3>] kobject_unregister+0x22/0x25
->   [<c024c987>] bus_remove_driver+0x75/0x82
->   [<c024d3b8>] driver_unregister+0xb/0x18
->   [<c01e7020>] pci_unregister_driver+0x13/0x73
->   [<f88dbbd9>] uhci_hcd_cleanup+0xd/0x2d [uhci_hcd]
->   [<c013fb69>] sys_delete_module+0x133/0x195
->   [<c0103fe0>] syscall_call+0x7/0xb
->   =======================
-> 
-> Note, that this is connected:
-> Bus 004 Device 001: ID 0000:0000
-> Bus 003 Device 001: ID 0000:0000
-> Bus 002 Device 004: ID 0458:004c KYE Systems Corp. (Mouse Systems) Slimstar 
-> Pro Keyboard
-> Bus 002 Device 003: ID 04b4:2050 Cypress Semiconductor Corp.
-> Bus 002 Device 002: ID 045e:00f0 Microsoft Corp.
-> Bus 002 Device 001: ID 0000:0000
-> Bus 001 Device 001: ID 0000:0000
-> Bus 005 Device 001: ID 0000:0000
-> 
-> What other info do you want me to post?
+...
+> 12:12:06 kernel: mct_u232 ttyUSB2: MCT U232 converter now disconnected 
+> from ttyUSB2
+> 12:12:06 kernel: BUG: unable to handle kernel NULL pointer dereference 
+> at virtual address 00000168
+> 12:12:06 kernel:  printing eip:
+> 12:12:06 kernel: f8ca6542
+> 12:12:06 kernel: *pde = 00000000
+> 12:12:06 kernel: Oops: 0000 [#2]
 
-My guess is that this was caused by changes to the driver core, not by 
-anything connected to USB.
+Okay, from that part (above), the problem is obvious:
+in that the "MCT U232 converter now disconnected" appears,
+and then we continue to try and call the driver's method.. Oops!
 
-Would it be possible for you to add the atomic counter underflow check to 
-2.6.21-rc3 and see if the problem still occurs?  If it doesn't, that's a 
-good indication the USB stack isn't guilty -- the bus registration code 
-hasn't changed for several kernel releases.
+The hack patch below "fixes" this, but it really just hides whatever
+the real problem underneath was:
 
-Alan Stern
-
+Signed-off-by:  Mark Lord <mlord@pobox.com>
+---
+--- linux/include/linux/usb/serial.h.orig	2007-03-12 12:18:48.000000000 -0400
++++ linux/include/linux/usb/serial.h	2007-03-12 12:18:23.000000000 -0400
+@@ -99,11 +99,19 @@
+ /* get and set the port private data pointer helper functions */
+ static inline void *usb_get_serial_port_data (struct usb_serial_port *port)
+ {
++	if (!port) {
++		WARN_ON(1);
++		return NULL;
++	}
+ 	return dev_get_drvdata(&port->dev);
+ }
+ 
+ static inline void usb_set_serial_port_data (struct usb_serial_port *port, void *data)
+ {
++	if (!port) {
++		WARN_ON(1);
++		return;
++	}
+ 	dev_set_drvdata(&port->dev, data);
+ }
+ 
