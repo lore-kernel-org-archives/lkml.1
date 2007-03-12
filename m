@@ -1,86 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbXCLRVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXCLR0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932771AbXCLRVg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 13:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933535AbXCLRVg
+	id S1750719AbXCLR0G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 13:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXCLR0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 13:21:36 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:4499 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932771AbXCLRVf (ORCPT
+	Mon, 12 Mar 2007 13:26:06 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:35309 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750719AbXCLR0F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 13:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=E7ZhQcQM4enO/0rs/1VDt+nTGlMjE/LN5dN7g0Rq9f5I1F5rJnj7xafPYaI4i+bgFilpqRk6IO+xci5sw8/HRAfZSX2guDYTm8xK8AdMu/lo8LWj0xLYATOxGJ3TNEFV3kW/WcnJxLbQj7KGSx9GfidOBhktlnpElgDClrlyCm4=
-Message-ID: <661de9470703121021y9b16becm4859d2bd1e5691c0@mail.gmail.com>
-Date: Mon, 12 Mar 2007 22:51:30 +0530
-From: "Balbir Singh" <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-To: "Dave Hansen" <hansendc@us.ibm.com>
-Subject: Re: [RFC][PATCH 3/7] Data structures changes for RSS accounting
-Cc: "Kirill Korotaev" <dev@sw.ru>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       containers@lists.osdl.org, "Paul Menage" <menage@google.com>,
-       "Pavel Emelianov" <xemul@sw.ru>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1173718084.11945.51.camel@localhost.localdomain>
+	Mon, 12 Mar 2007 13:26:05 -0400
+Date: Mon, 12 Mar 2007 12:25:57 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       sam@vilain.net, dev@sw.ru, xemul@sw.ru, pj@sgi.com,
+       ebiederm@xmission.com, winget@google.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070312172557.GD12893@sergelap.austin.ibm.com>
+References: <20070307173031.GC2336@in.ibm.com> <20070307174346.GA19521@sergelap.austin.ibm.com> <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <20070309163430.GN6504@in.ibm.com> <6599ad830703091409s3d233829gb8f0afbfd2883b15@mail.gmail.com> <20070312150756.GB24742@in.ibm.com> <20070312155643.GA12893@sergelap.austin.ibm.com> <20070312162045.GD12176@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45ED7DEC.7010403@sw.ru> <45ED8181.2060905@sw.ru>
-	 <m18xe3wq3t.fsf@ebiederm.dsl.xmission.com> <45F57CFB.9010707@sw.ru>
-	 <1173718084.11945.51.camel@localhost.localdomain>
-X-Google-Sender-Auth: 002567c9fe1bc7d3
+In-Reply-To: <20070312162045.GD12176@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/12/07, Dave Hansen <hansendc@us.ibm.com> wrote:
-> On Mon, 2007-03-12 at 19:16 +0300, Kirill Korotaev wrote:
-> > now VE2 maps the same page. You can't determine whether this page is mapped
-> > to this container or another one w/o page->container pointer.
->
-> Hi Kirill,
->
-> I thought we can always get from the page to the VMA.  rmap provides
-> this to us via page->mapping and the 'struct address_space' or anon_vma.
-> Do we agree on that?
->
-> We can also get from the vma to the mm very easily, via vma->vm_mm,
-> right?
->
-> We can also get from a task to the container quite easily.
->
-> So, the only question becomes whether there is a 1:1 relationship
-> between mm_structs and containers.  Does each mm_struct belong to one
-> and only one container?  Basically, can a threaded process have
-> different threads in different containers?
->
-> It seems that we could bridge the gap pretty easily by either assigning
-> each mm_struct to a container directly, or putting some kind of
-> task-to-mm lookup.  Perhaps just a list like
-> mm->tasks_using_this_mm_list.
->
-> Not rocket science, right?
->
-> -- Dave
->
-These patches are very similar to what I posted at
-                    http://lwn.net/Articles/223829/
-In my patches, the thread group leader owns the mm_struct and all
-threads belong to the same container. I did not have a per container
-LRU, walking the global list for reclaim was a bit slow, but otherwise
-my patches did not add anything to struct page
+Quoting Srivatsa Vaddagiri (vatsa@in.ibm.com):
+> On Mon, Mar 12, 2007 at 10:56:43AM -0500, Serge E. Hallyn wrote:
+> > What's wrong with that?
+> 
+> I had been asking around on "what is the fundamental unit of res mgmt
+> for vservers" and the answer I got (from Herbert) was "all tasks that are
+> in the same pid namespace". From what you are saying above, it seems to
+> be that there is no such "fundamental" unit. It can be a random mixture
+> of tasks (taken across vservers) whose resource consumption needs to be
+> controlled. Is that correct?
 
-I used rmap information to get to the VMA and then the mm_struct.
-Kirill, it is possible to determine all the containers that map the
-page. Please see the page_in_container() function of
-http://lkml.org/lkml/2007/2/26/7.
+If I'm reading it right, yes.
 
-I was also thinking of using the page table(s) to identify all pages
-belonging to a container, by obtaining all the mm_structs of tasks
-belonging to a container. But this approach would not work well for
-the page cache controller, when we add that to our memory controller.
+If for vservers the fundamental unit of res mgmt is a vserver, that can
+surely be done at a higher level than in the kernel.
 
-Balbir
+Actually, these could be tied just by doing
+
+	mount -t container -o ns,cpuset /containers
+
+So now any task in /containers/vserver1 or any subdirectory thereof
+would have the same cpuset constraints as /containers.  OTOH, you could
+mount them separately
+
+	mount -t container -o ns /nsproxy
+	mount -t container -o cpuset /cpuset
+
+and now you have the freedom to split tasks in the same vserver
+(under /nsproxy/vserver1) into different cpusets.
+
+-serge
+
+> > > 	echo "cid 2" > /dev/cpu/prof/tasks 
+> > 
+> > Adding that feature sounds fine, 
+> 
+> Ok yes ..that can be a optional feature.
+> 
+> -- 
+> Regards,
+> vatsa
