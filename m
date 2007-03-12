@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965625AbXCLLYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965662AbXCLL0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965625AbXCLLYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 07:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965655AbXCLLYS
+	id S965662AbXCLL0D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 07:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965663AbXCLL0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 07:24:18 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:58538 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965672AbXCLLYQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 07:24:16 -0400
-Date: Mon, 12 Mar 2007 12:24:14 +0100
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.20*: PATA DMA timeout, hangs (2)
-Message-ID: <20070312112414.GA12265@janus>
-References: <20070312085447.GA10955@janus>
+	Mon, 12 Mar 2007 07:26:03 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45210 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965662AbXCLL0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 07:26:00 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19CGPYZknBCbCUBYblxP2ukvqb6gpc9KVNSPKRqvP
+	WYTOfCrSBxbCit
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070312110833.GA12835@elte.hu>
+References: <200703111457.17624.kernel@kolivas.org>
+	 <200703122022.43021.kernel@kolivas.org>
+	 <1173692286.20540.12.camel@Homer.simpson.net>
+	 <200703122127.41942.kernel@kolivas.org>
+	 <1173697024.8014.19.camel@Homer.simpson.net>
+	 <20070312110833.GA12835@elte.hu>
+Content-Type: text/plain
+Date: Mon, 12 Mar 2007 12:25:57 +0100
+Message-Id: <1173698757.8014.28.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070312085447.GA10955@janus>
-User-Agent: Mutt/1.4.1i
-X-BotBait: val@frankvm.com, kuil@frankvm.com
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 09:54:47AM +0100, Frank van Maarseveen wrote:
+On Mon, 2007-03-12 at 12:08 +0100, Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
 > 
-> 2.6.19 is ok, 2.6.20.[12] hangs from the moment DMA is turned on (hdparm
-> -d 1 /dev/hda):
+> > The test scenario was one any desktop user might do with every 
+> > expectation responsiveness of the interactive application remain 
+> > intact. I understand the concepts here Con, and I'm not knocking your 
+> > scheduler. I find it to be a step forward on the one hand, but a step 
+> > backward on the other.
 > 
-> 	hda: dma_timer_expiry: dma status == 0x20
-> 	hda: DMA timeout retry
-> 	hda: timeout waiting for DMA
-> 	hda: status error: status=0x58 {
-> 	DriveReady
-> 	SeekComplete
-> 	DataRequest
-> 	}
+> ok, then that step backward needs to be fixed.
 
-I have a totally different PATA based system (P4 HT) with similar symptoms
-except that it seem to recover by switching DMA off during boot after
-5 errors:
+btw, this scenario wasn't invented by me, it came from the _every single
+day_ usage of my best friend since his conversion to linux (he's in love
+now;) a month ago.  After I un-crippled all of the multimedia apps that
+came with our distribution, this is the thing he has been doing most.
 
-hda: dma_timer_expiry: dma status == 0x20
-hda: DMA timeout retry
-hda: timeout waiting for DMA
-hda: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-ide: failed opcode was: unknown
-hda: drive not ready for command
-hda: dma_timer_expiry: dma status == 0x20
-hda: DMA timeout retry
-hda: timeout waiting for DMA
-hda: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-ide: failed opcode was: unknown
-hda: drive not ready for command
-hda: dma_timer_expiry: dma status == 0x20
-hda: DMA timeout retry
-hda: timeout waiting for DMA
-hda: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-ide: failed opcode was: unknown
-hda: drive not ready for command
-hda: dma_timer_expiry: dma status == 0x20
-hda: DMA timeout retry
-hda: timeout waiting for DMA
-hda: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-ide: failed opcode was: unknown
-hda: drive not ready for command
-hda: dma_timer_expiry: dma status == 0x20
-hda: DMA timeout retry
-hda: timeout waiting for DMA
-hda: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-ide: failed opcode was: unknown
-hda: drive not ready for command
+	-Mike
 
-So in this case it doesn't hang but is not really usable either.
-
-lspci:
-00:00.0 Host bridge: Intel Corporation 82865G/PE/P DRAM Controller/Host-Hub Interface (rev 02)
-00:01.0 PCI bridge: Intel Corporation 82865G/PE/P PCI to AGP Controller (rev 02)
-00:1d.0 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB UHCI Controller #1 (rev 02)
-00:1d.1 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB UHCI Controller #2 (rev 02)
-00:1d.2 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB UHCI Controller #3 (rev 02)
-00:1d.3 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB UHCI Controller #4 (rev 02)
-00:1d.7 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB2 EHCI Controller (rev 02)
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev c2)
-00:1f.0 ISA bridge: Intel Corporation 82801EB/ER (ICH5/ICH5R) LPC Interface Bridge (rev 02)
-00:1f.1 IDE interface: Intel Corporation 82801EB/ER (ICH5/ICH5R) IDE Controller (rev 02)
-00:1f.2 IDE interface: Intel Corporation 82801EB (ICH5) SATA Controller (rev 02)
-00:1f.3 SMBus: Intel Corporation 82801EB/ER (ICH5/ICH5R) SMBus Controller (rev 02)
-00:1f.5 Multimedia audio controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) AC'97 Audio Controller (rev 02)
-01:00.0 VGA compatible controller: nVidia Corporation NV34 [GeForce FX 5200] (rev a1)
-02:00.0 Ethernet controller: Intel Corporation 82541PI Gigabit Ethernet Controller (rev 05)
-
-This system has SATA but there's only one PATA disk
-
--- 
-Frank
