@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030387AbXCLPYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030371AbXCLPZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030387AbXCLPYG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030371AbXCLPYG
+	id S1030371AbXCLPZN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXCLPZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:24:06 -0400
-Received: from ns.suse.de ([195.135.220.2]:46161 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030384AbXCLPYF convert rfc822-to-8bit (ORCPT
+	Mon, 12 Mar 2007 11:25:13 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57153 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030371AbXCLPZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:24:05 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-Date: Mon, 12 Mar 2007 16:23:57 +0100
-User-Agent: KMail/1.9.1
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0703121041400.2489-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0703121041400.2489-100000@iolanthe.rowland.org>
+	Mon, 12 Mar 2007 11:25:11 -0400
+Date: Mon, 12 Mar 2007 16:25:13 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.21rc3: usb 2-2: pl2303 converter now attached to ttyUSB44
+Message-ID: <20070312152513.GO18731@stusta.de>
+References: <200703071022.04409.arekm@maven.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200703121623.58607.oneukum@suse.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200703071022.04409.arekm@maven.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 12. M‰rz 2007 15:57 schrieb Alan Stern:probably nece
-> On Mon, 12 Mar 2007, Oliver Neukum wrote:
+On Wed, Mar 07, 2007 at 10:22:04AM +0100, Arkadiusz Miskiewicz wrote:
 > 
-> > > > Why? What's wrong with simply calling kref_get/put?
-> > > 
-> > > It's the same old problem: the race between unbind and sysfs I/O.  What
-> > > good does holding a reference to the private data structure do if the
-> > > show/store method gets called after the driver has been unbound from the
-> > > device?  dev_get_drvdata() will no longer provide a valid pointer to the
-> > > private data, so the method will have no way to access it.  Hence the
-> > > method needs another argument.
-> > 
-> > It does half the job. You can make sure the driver is not asked to access
-> > freed memory.
-> > It is true that a driver will have to mark that device "disconnected"
-> > and return errors if that device's attributes are referenced, but this can
-> > be done internally.
+> 2.6.21rc3 from today git, thinkpad z60m, pl2303 usb-rs232 adapter and:
 > 
-> No, you're missing the point.  Let's say driver A's disconnect() is
-> called, so the driver marks its private data structure as "disconnected"
-> and does dev_set_drvdata(NULL).  Then driver B is probed and bound to the
-> device, and it does its own dev_set_drvdata().  Then a user still holding
-> an open sysfs file reference for driver A calls a show() or store()  
-> method.  The method will do dev_get_drvdata(), receiving the pointer to
-> driver B's private data.  Now you're in trouble, because A's method will
-> think it owns B's private data!
-
-Yes, I was missing the point. In consequence, drivers must not use
-dev_get_drvdata() to get their references to their private data. It's
-probably necessary to store it in struct sysfs_buffer and include that
-in the store/show callbacks.
-(The same does apply to interfaces of course)
-
-> > Yes, this is a bit more complicated.
-> > {rant mode}
-> > Who came up with the idea of making life simpler by adding a code path?
-> > All these problems were already solved for device nodes. Ioctl is ugly, but
-> > at least a known code path.
-> > {rant off}
+> [   84.087080] usb 2-2: new full speed USB device using uhci_hcd and address 3
+> [   84.232615] usb 2-2: configuration #1 chosen from 1 choice
+> [   84.235540] pl2303 2-2:1.0: pl2303 converter detected
+> [   84.235732] usb 2-2: pl2303 converter now attached to ttyUSB44
 > 
-> I'll let Greg give the complete answer.  :-)  Bear in mind, however, that
-> the aim was probably to make life simpler for userspace -- which does not
-> mean making life simpler for the kernel.
+> With older kernels this was ttyUSB0, now it's ttyUSB44 huh, doesn't seem 
+> correct, right?
+> 
+> [arekm@tarm ~]$ ls -l /dev/tts
+> razem 0
+> crw-rw---- 1 root ttyS   4, 64 2007-03-07 10:58 0
+> crw-rw---- 1 root ttyS   4, 65 2007-03-07 10:58 1
+> crw-rw---- 1 root ttyS   4, 66 2007-03-07 10:58 2
+> crw-rw---- 1 root ttyS   4, 67 2007-03-07 10:58 3
+> crw-rw---- 1 root ttyS 188, 44 2007-03-07 10:17 USB44
+> 
+> Of course it doesn't work. minicom says that there is no device there.
+> 
+> cat test also:
+> cat: /dev/tts/USB44: No such device
 
-That doesn't mean that the method needed to be thrown out.
-Sysfs could simply pass through the syscalls for a device, like
-it is done in character devices. I am tempted to recommend
-such radical surgery.
+Thanks for your report.
 
-> (Incidentally, I'm not so sure that all these problems really were solved 
-> by ioctl on device nodes.  I bet you could find plenty of cases where 
-> ioctl races with disconnect if you looked.)
+Can you confirm that it's the following issue, and therefore fixed for 
+you in the latest -git?
 
-I will look. Death to all race conditions.
+Subject    : usb-serial broken
+             (devices shows up as ttyUSB44 or ttyUSB140 instead of ttyUSB0)
+Submitter  : Craig Schlenter <craig@codefountain.com>
+Caused-By  : Oliver Neukum <oneukum@suse.de>
+             commit 34ef50e5b1f96c2d8c0f3d28b7d407743806256c
+Fixed-By   : Oliver Neukum <oneukum@suse.de>
+Commit     : c744f99eb662b54488304b8b60e5f4323b7587bf
+Status     : fixed in -rc3-git6
 
-	Regards
-		Oliver
+> Arkadiusz Mi≈õkiewicz
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
