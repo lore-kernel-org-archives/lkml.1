@@ -1,120 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbXCLUad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbXCLUb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752880AbXCLUad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 16:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbXCLUad
+	id S1752884AbXCLUb1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbXCLUb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 16:30:33 -0400
-Received: from yvrmail01.intrinsyc.com ([209.139.192.246]:23836 "EHLO
-	yvrmail01.intrinsyc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752879AbXCLUac (ORCPT
+	Mon, 12 Mar 2007 16:31:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:22081 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883AbXCLUb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 16:30:32 -0400
-Subject: [PATCH] Software Suspend: Fix suspend when console is in
-	VT_AUTO+KD_GRAPHICS mode
-From: Andrew Johnson <ajohnson@intrinsyc.com>
-To: linux-kernel@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>, akpm@osdl.org
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 13:29:40 -0700
-Message-Id: <1173731380.30345.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Mon, 12 Mar 2007 16:31:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IIOT6A1oOtCcU/XdbGqPjZbEf7WctLlH0XKBLJCFgPgxeXOTFTLeTK0loHsNvFxHpv7ElGrwupUV4Nqc0i2VPLK5xLpWrRAQbwYQPBCzcPJxtUSoHJ+K7/To0oPaKvebUj73XrLbczS558nC82j96ZFm6VV3hZ6rdTMYF/9TWxs=
+Message-ID: <d120d5000703121331s73fa5462p5da58ba391ea7101@mail.gmail.com>
+Date: Mon, 12 Mar 2007 16:31:17 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+Cc: "Oliver Neukum" <oneukum@suse.de>, "Maneesh Soni" <maneesh@in.ibm.com>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.44L0.0703121557360.4003-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Mar 2007 20:30:50.0789 (UTC) FILETIME=[531A9D50:01C764E5]
+Content-Disposition: inline
+References: <200703122049.03113.oneukum@suse.de>
+	 <Pine.LNX.4.44L0.0703121557360.4003-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On 3/12/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 12 Mar 2007, Oliver Neukum wrote:
+>
+> > > >  I don't like reverting my own code. But I predict he'll tell you that a
+> > > > driver's bond with a device should be represented in a data structure
+> > > > that is to be refcounted.
+> > >
+> > > :-)
+> >
+> > Coming to think about it, he might be right there.
+>
+> There still would be a synchronization problem.  Refcounts don't solve
+> races; they only solve lifetime problems.  And you would still have to
+> change the sysfs API, plus all the other stuff...
+>
+> Do you think Linus would listen if all three of us (plus maybe Greg) tried
+> to convince him?
+>
 
-When the console is in VT_AUTO+KD_GRAPHICS mode, switching to the
-SUSPEND_CONSOLE fails, resulting in vt_waitactive() waiting indefinitely
-or until the task is interrupted.  This patch tests if a console switch
-can occur in set_console() and returns early if a console switch is not
-possible.
+If we'd accompany the argument with the patch that changes scsi to use
+wq to perform deletion so we don't have deadlock regression in the
+kernel he might be more perceptive... He is right about lifetime
+issues but this is not strictly lifetime issue as you correctly point
+out. Plus, refcounting also bloats the kernel so I don't relly want to
+use refcount for every integer I happen to export through sysfs if I
+can simply "revoke" access.
 
--- Andrew
-
-Signed-off-by: Andrew Johnson <ajohnson@intrinsyc.com>
----
-diff -rup linux-2.6.20.1/drivers/char/vt.c linux/drivers/char/vt.c
---- linux-2.6.20.1/drivers/char/vt.c	2007-02-19 22:34:32.000000000 -0800
-+++ linux/drivers/char/vt.c	2007-03-12 12:37:44.000000000 -0700
-@@ -2188,10 +2188,30 @@ static void console_callback(struct work
- 	release_console_sem();
- }
- 
--void set_console(int nr)
-+extern char vt_dont_switch;
-+
-+int set_console(int nr)
- {
-+	struct vc_data *vc = vc_cons[fg_console].d;
-+
-+	if (!vc_cons_allocated(nr) || vt_dont_switch || 
-+		(vc->vt_mode.mode == VT_AUTO && vc->vc_mode == KD_GRAPHICS)) {
-+
-+		/* 
-+		 * Console switch will fail in console_callback() or 
-+		 * change_console() so there is no point scheduling 
-+		 * the callback
-+		 *
-+		 * Existing set_console() users don't check the return
-+		 * value so this shouldn't break anything 
-+		 */ 
-+		return -EINVAL;
-+	}
-+
- 	want_console = nr;
- 	schedule_console_callback();
-+
-+	return 0;
- }
- 
- struct tty_driver *console_driver;
-diff -rup linux-2.6.20.1/drivers/char/vt_ioctl.c linux/drivers/char/vt_ioctl.c
---- linux-2.6.20.1/drivers/char/vt_ioctl.c	2007-02-19 22:34:32.000000000 -0800
-+++ linux/drivers/char/vt_ioctl.c	2007-03-08 14:15:41.000000000 -0800
-@@ -34,7 +34,7 @@
- #include <linux/kbd_diacr.h>
- #include <linux/selection.h>
- 
--static char vt_dont_switch;
-+char vt_dont_switch;
- extern struct tty_driver *console_driver;
- 
- #define VT_IS_IN_USE(i)	(console_driver->ttys[i] && console_driver->ttys[i]->count)
-diff -rup linux-2.6.20.1/include/linux/kbd_kern.h linux/include/linux/kbd_kern.h
---- linux-2.6.20.1/include/linux/kbd_kern.h	2007-02-19 22:34:32.000000000 -0800
-+++ linux/include/linux/kbd_kern.h	2007-03-08 14:15:41.000000000 -0800
-@@ -75,7 +75,7 @@ extern int do_poke_blanked_console;
- 
- extern void (*kbd_ledfunc)(unsigned int led);
- 
--extern void set_console(int nr);
-+extern int set_console(int nr);
- extern void schedule_console_callback(void);
- 
- static inline void set_leds(void)
-diff -rup linux-2.6.20.1/kernel/power/console.c linux/kernel/power/console.c
---- linux-2.6.20.1/kernel/power/console.c	2007-02-19 22:34:32.000000000 -0800
-+++ linux/kernel/power/console.c	2007-03-09 15:52:32.000000000 -0800
-@@ -27,7 +27,15 @@ int pm_prepare_console(void)
- 		return 1;
- 	}
- 
--	set_console(SUSPEND_CONSOLE);
-+	if (set_console(SUSPEND_CONSOLE)) {
-+		/*
-+		 * We're unable to switch to the SUSPEND_CONSOLE. 
-+		 * Let the calling function know so it can decide 
-+		 * what to do.
-+		 */ 
-+		release_console_sem();
-+		return 1;
-+	}
- 	release_console_sem();
- 
- 	if (vt_waitactive(SUSPEND_CONSOLE)) {
-
-
+-- 
+Dmitry
