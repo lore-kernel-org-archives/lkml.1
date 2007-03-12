@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965197AbXCLG60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932495AbXCLHUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965197AbXCLG60 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 02:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965238AbXCLG60
+	id S932495AbXCLHUH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 03:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933257AbXCLHUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 02:58:26 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:19857 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965197AbXCLG60 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 02:58:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=e7u6rEmmmRZESNBB2FR8pFVBrpvepevvkALsqabmUkWMFmPZBBON85X49p+OvArG4AMT+TPbv+H4L9vIkooKoTWbhXOd/sX3tCTtIszvjI2ly9+h5/ShqVt2XiNkuCFJ8Dmgd7vv7MzHZjNlAIiOPNOA6YU0dIZ36z5RjVp/cQU=
-Message-ID: <f44c5fdf0703112358j4f94998aq9e45b0a6e848551d@mail.gmail.com>
-Date: Mon, 12 Mar 2007 07:58:24 +0100
-From: "Radoslaw Szkodzinski" <astralstorm@gmail.com>
-To: "Gene Heskett" <gene.heskett@gmail.com>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Cc: linux-kernel@vger.kernel.org, "Mike Galbraith" <efault@gmx.de>,
-       "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <200703111032.40296.gene.heskett@gmail.com>
+	Mon, 12 Mar 2007 03:20:06 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:22537 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932495AbXCLHUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 03:20:04 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH] ext3: dirindex error pointer issues (b)
+References: <87lkidf5y0.fsf@sw.ru>
+From: Dmitriy Monakhov <dmonakhov@sw.ru>
+Date: Mon, 12 Mar 2007 10:20:26 +0300
+In-Reply-To: <87lkidf5y0.fsf@sw.ru> (Dmitriy Monakhov's message of "Sun, 04 Mar 2007 17:18:15 +0300")
+Message-ID: <87ird7q66d.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703111457.17624.kernel@kolivas.org>
-	 <1173613149.6927.29.camel@Homer.simpson.net>
-	 <200703111032.40296.gene.heskett@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/11/07, Gene Heskett <gene.heskett@gmail.com> wrote:
-> On Sunday 11 March 2007, Mike Galbraith wrote:
->
-> Just to comment, I've been running one of the patches between 20-ck1 and
-> this latest one, which is building as I type, but I also run gkrellm
-> here, version 2.2.9.
->
-> Since I have been running this middle of this series patch, something is
-> killing gkrellm about once a day, and there is nothing in the logs to
-> indicate a problem.  I see a blink out of the corner of my eye, and its
-> gone.  And it always starts right back up from a kmenu click.
->
-> No idea if anyone else is experiencing this or not.
->
-> --
-> Cheers, Gene
+Dmitriy Monakhov <dmonakhov@sw.ru> writes:
 
-I've had such an issue with 0.20 or something. Sometimes, the
-xfce4-panel would disappear (die) when I displayed its menu.
-Very rare issue.
+>  - ext3_dx_find_entry() exit with out setting proper error pointer
+>  - do_split() exit with out setting proper error pointer
+>    it is realy painful because many callers contain folowing code:
+>            de = do_split(handle,dir, &bh, frame, &hinfo, &retval);
+>            if (!(de))
+>                         return retval;
+>            <<< WOW retval wasn't changed by do_split(), so caller failed
+>            <<< but return SUCCESS :)
+>  - Rearrange do_split() error path. Current error path is realy ugly, all
+>    this up and down jump stuff doesn't make code easy to understand.
+Ohh my first patch change error message semantics in do_split(). Initially when 
+ext3_append() failed we just exit without printing error. In fact ext3_append()
+may fail, it is legal and it's happens qite often (ENOSPC for example). This 
+cause annoying fake error message. So restore this semantic as it was before
+patch.
+Andrew please apply incremental patch what fix it:
 
-Doesn't happen with 0.28 anyway. :-) Which looks really good, though
-I'll update to 0.30.
+Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 1a52586..7edb617 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1197,8 +1197,8 @@ journal_error:
+ 	brelse(*bh);
+ 	brelse(bh2);
+ 	*bh = NULL;
+-errout:
+ 	ext3_std_error(dir->i_sb, err);
++errout:
+ 	*error = err;
+ 	return NULL;
+ }
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index f0a6c26..02a75db 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1195,8 +1195,8 @@ journal_error:
+ 	brelse(*bh);
+ 	brelse(bh2);
+ 	*bh = NULL;
+-errout:
+ 	ext4_std_error(dir->i_sb, err);
++errout:
+ 	*error = err;
+ 	return NULL;
+ }
+
