@@ -1,95 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751786AbXCLWvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbXCLWwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751786AbXCLWvK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 18:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbXCLWvJ
+	id S1751713AbXCLWwA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 18:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXCLWwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 18:51:09 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:41733 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbXCLWvI (ORCPT
+	Mon, 12 Mar 2007 18:52:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58911
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751835AbXCLWv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 18:51:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ICfQpVO1bK+tSeEcfEfIwPnLE+G+jZ1G4nfWZV8b+J+KXpWNLHNy53wpRJQd0F077VqxW0IipDbSjxlZbKcR+8Iqee+ZMluxIPYX8Gdp28w1Y2aOtQiry2QdMGpwQrZ5+njD7Y00mJgEqbwejYMdjTBZPNfEuAVIQ7GSi2gH7Bg=
-Message-ID: <8cd998d50703121551u44ea3d85g2541503373f461f4@mail.gmail.com>
-Date: Tue, 13 Mar 2007 09:51:07 +1100
-From: "Con Kolivas" <kernel@kolivas.org>
-To: "Mike Galbraith" <efault@gmx.de>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "ck list" <ck@vds.kolivas.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1173732344.6431.54.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 12 Mar 2007 18:51:58 -0400
+Date: Mon, 12 Mar 2007 15:51:57 -0700 (PDT)
+Message-Id: <20070312.155157.74747634.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: linux-kernel@vger.kernel.org, ak@suse.com, holt@sgi.com,
+       linux-ia64@vger.kernel.org, mpm@selenic.com
+Subject: Re: [QUICKLIST 0/6] Arch independent quicklists V1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703111457.17624.kernel@kolivas.org>
-	 <200703130549.47058.kernel@kolivas.org>
-	 <1173730314.6431.30.camel@Homer.simpson.net>
-	 <200703130738.19034.kernel@kolivas.org>
-	 <1173732344.6431.54.camel@Homer.simpson.net>
-X-Google-Sender-Auth: b68f4ab74321be76
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/03/07, Mike Galbraith <efault@gmx.de> wrote:
-> On Tue, 2007-03-13 at 07:38 +1100, Con Kolivas wrote:
-> > On Tuesday 13 March 2007 07:11, Mike Galbraith wrote:
-> > >
-> > > Killing the known corner case starvation scenarios is wonderful, but
-> > > let's not just pretend that interactive tasks don't have any special
-> > > requirements.
-> >
-> > Now you're really making a stretch of things. Where on earth did I say that
-> > interactive tasks don't have special requirements? It's a fundamental feature
-> > of this scheduler that I go to great pains to get them as low latency as
-> > possible and their fair share of cpu despite having a completely fair cpu
-> > distribution.
->
-> As soon as your cpu is fully utilized, fairness looses or interactivity
-> loses.  Pick one.
+From: Christoph Lameter <clameter@sgi.com>
+Date: Sat, 10 Mar 2007 18:09:23 -0800 (PST)
 
-That's not true unless you refuse to prioritise your tasks
-accordingly. Let's take this discussion in a different direction. You
-already nice your lame processes. Why? You already have the concept
-that you are prioritising things to normal or background tasks. You
-say so yourself that lame is a background task. Stating the bleedingly
-obvious, the unix way of prioritising things is via nice. You already
-do that. So moving on from that...
+> 6 patches follow this message:
+> 
+> [QUICKLIST 1/6] Extract quicklist implementation from IA64
+> [QUICKLIST 2/6] i386: quicklist support
+> [QUICKLIST 3/6] i386: Use standard list manipulators for pgd_list
+> [QUICKLIST 4/6] x86_64: Single quicklist
+> [QUICKLIST 5/6] x86_64: Separate quicklist for pgds
+> [QUICKLIST 6/6] slub: remove special casing for PAGE_SIZE slabs
 
-Your test case you ask "how can I maximise cpu usage". Well you know
-the answer already. You run two threads. I won't dispute that.
+I ported this to sparc64 as per the patch below, tested on
+UP SunBlade1500 and 24 cpu Niagara T1000.
 
-The debate seems to be centered on whether two tasks that are niced +5
-or to a higher value is background. In my opinion, nice 5 is not
-background, but relatively less cpu. You already are savvy enough to
-be using two threads and nicing them. All I ask you to do when using
-RSDL is to change your expectations slightly and your settings from
-nice 5 to nice 10 or 15 or even 19. Why is that so offensive to you?
-nice 5 is 75% the cpu of nice 0. nice 10 is 50%, nice 15 is 25%, nice
-19 is 5%.If you're so intent on defining nice 5 as background would it
-be a matter of me just modifying nice 5 to be 25% instead? I suspect
-your answer will be no because then you'll argue that you shouldn't
-nice at all, but it should be interesting to see your response. You
-seem to be advocating that the scheduler does everything and we need
-to implement some complex flag instead. I don't believe that's the
-right thing to do at all. So I offer you some options.
+And for fun I checked everything except the SLUB patch into
+a cloned Linus tree at:
 
-1. Be happy with changing your nice from 5 to15. I still don't think
-this is in any way unreasonable.
-2. Wait for me to fix -niced tasks behaviour and -nice your X. I plan
-to implement this change anyway, not necessarily for X.
-3. Have me redefine what nice 5 is, and tell me what percentage cpu
-you think is right.
-4. Any combination of the above.
+	kernel.org:/pub/scm/linux/kernel/git/davem/quicklist-2.6.git
 
-Please don't pick 5.none of the above. Please try to work with me on this.
+Someone with some extreme patience could do the sparc 32-bit port too,
+in fact it's lacking the cached PGD update logic that x86 et al. have
+so it would even end up being a bug fix :-)  This lack is why sparc32
+pre-initializes the vmalloc/module area PGDs with static page tables
+at boot time, FWIW.
 
---
--ck
+commit 3f5d1a8772b300d401ff88065c3a6def0c5011d0
+Author: David S. Miller <davem@sunset.davemloft.net>
+Date:   Mon Mar 12 15:20:14 2007 -0700
+
+    [QUICKLIST]: Add sparc64 quicklist support.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index f75a686..40371db 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -26,6 +26,10 @@ config MMU
+ 	bool
+ 	default y
+ 
++config NR_QUICK
++	int
++	default 1
++
+ config STACKTRACE_SUPPORT
+ 	bool
+ 	default y
+diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
+index b1a1ee0..e399537 100644
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -176,30 +176,6 @@ unsigned long sparc64_kern_sec_context __read_mostly;
+ 
+ int bigkernel = 0;
+ 
+-struct kmem_cache *pgtable_cache __read_mostly;
+-
+-static void zero_ctor(void *addr, struct kmem_cache *cache, unsigned long flags)
+-{
+-	clear_page(addr);
+-}
+-
+-extern void tsb_cache_init(void);
+-
+-void pgtable_cache_init(void)
+-{
+-	pgtable_cache = kmem_cache_create("pgtable_cache",
+-					  PAGE_SIZE, PAGE_SIZE,
+-					  SLAB_HWCACHE_ALIGN |
+-					  SLAB_MUST_HWCACHE_ALIGN,
+-					  zero_ctor,
+-					  NULL);
+-	if (!pgtable_cache) {
+-		prom_printf("Could not create pgtable_cache\n");
+-		prom_halt();
+-	}
+-	tsb_cache_init();
+-}
+-
+ #ifdef CONFIG_DEBUG_DCFLUSH
+ atomic_t dcpage_flushes = ATOMIC_INIT(0);
+ #ifdef CONFIG_SMP
+diff --git a/arch/sparc64/mm/tsb.c b/arch/sparc64/mm/tsb.c
+index 236d02f..57eb302 100644
+--- a/arch/sparc64/mm/tsb.c
++++ b/arch/sparc64/mm/tsb.c
+@@ -252,7 +252,7 @@ static const char *tsb_cache_names[8] = {
+ 	"tsb_1MB",
+ };
+ 
+-void __init tsb_cache_init(void)
++void __init pgtable_cache_init(void)
+ {
+ 	unsigned long i;
+ 
+diff --git a/include/asm-sparc64/pgalloc.h b/include/asm-sparc64/pgalloc.h
+index 5891ff7..c7cb5d5 100644
+--- a/include/asm-sparc64/pgalloc.h
++++ b/include/asm-sparc64/pgalloc.h
+@@ -6,6 +6,7 @@
+ #include <linux/sched.h>
+ #include <linux/mm.h>
+ #include <linux/slab.h>
++#include <linux/quicklist.h>
+ 
+ #include <asm/spitfire.h>
+ #include <asm/cpudata.h>
+@@ -13,52 +14,50 @@
+ #include <asm/page.h>
+ 
+ /* Page table allocation/freeing. */
+-extern struct kmem_cache *pgtable_cache;
+ 
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+-	return kmem_cache_alloc(pgtable_cache, GFP_KERNEL);
++	return quicklist_alloc(0, GFP_KERNEL, NULL);
+ }
+ 
+ static inline void pgd_free(pgd_t *pgd)
+ {
+-	kmem_cache_free(pgtable_cache, pgd);
++	quicklist_free(0, NULL, pgd);
+ }
+ 
+ #define pud_populate(MM, PUD, PMD)	pud_set(PUD, PMD)
+ 
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return kmem_cache_alloc(pgtable_cache,
+-				GFP_KERNEL|__GFP_REPEAT);
++	return quicklist_alloc(0, GFP_KERNEL, NULL);
+ }
+ 
+ static inline void pmd_free(pmd_t *pmd)
+ {
+-	kmem_cache_free(pgtable_cache, pmd);
++	quicklist_free(0, NULL, pmd);
+ }
+ 
+ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+ 					  unsigned long address)
+ {
+-	return kmem_cache_alloc(pgtable_cache,
+-				GFP_KERNEL|__GFP_REPEAT);
++	return quicklist_alloc(0, GFP_KERNEL, NULL);
+ }
+ 
+ static inline struct page *pte_alloc_one(struct mm_struct *mm,
+ 					 unsigned long address)
+ {
+-	return virt_to_page(pte_alloc_one_kernel(mm, address));
++	void *pg = quicklist_alloc(0, GFP_KERNEL, NULL);
++	return pg ? virt_to_page(pg) : NULL;
+ }
+ 		
+ static inline void pte_free_kernel(pte_t *pte)
+ {
+-	kmem_cache_free(pgtable_cache, pte);
++	quicklist_free(0, NULL, pte);
+ }
+ 
+ static inline void pte_free(struct page *ptepage)
+ {
+-	pte_free_kernel(page_address(ptepage));
++	quicklist_free(0, NULL, page_address(ptepage));
+ }
+ 
+ 
+@@ -66,6 +65,9 @@ static inline void pte_free(struct page *ptepage)
+ #define pmd_populate(MM,PMD,PTE_PAGE)		\
+ 	pmd_populate_kernel(MM,PMD,page_address(PTE_PAGE))
+ 
+-#define check_pgt_cache()	do { } while (0)
++static inline void check_pgt_cache(void)
++{
++	quicklist_check(0, NULL);
++}
+ 
+ #endif /* _SPARC64_PGALLOC_H */
