@@ -1,97 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965469AbXCLKFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965498AbXCLK2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965469AbXCLKFG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 06:05:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965470AbXCLKFF
+	id S965498AbXCLK2M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 06:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965506AbXCLK2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 06:05:05 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:49099 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965469AbXCLKFD (ORCPT
+	Mon, 12 Mar 2007 06:28:12 -0400
+Received: from mail13.syd.optusnet.com.au ([211.29.132.194]:59199 "EHLO
+	mail13.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965498AbXCLK2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 06:05:03 -0400
-Date: Mon, 12 Mar 2007 06:04:42 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: RSDL for 2.6.21-rc3- 0.29
-In-reply-to: <200703120237.39477.gene.heskett@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Con Kolivas <kernel@kolivas.org>, amanda-hackers@amanda.org,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck@vds.kolivas.org
-Message-id: <200703120604.42776.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070311013506.GD10459@waste.org>
- <200703121648.22734.kernel@kolivas.org>
- <200703120237.39477.gene.heskett@gmail.com>
-User-Agent: KMail/1.9.6
+	Mon, 12 Mar 2007 06:28:11 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Date: Mon, 12 Mar 2007 21:27:41 +1100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
+References: <200703111457.17624.kernel@kolivas.org> <200703122022.43021.kernel@kolivas.org> <1173692286.20540.12.camel@Homer.simpson.net>
+In-Reply-To: <1173692286.20540.12.camel@Homer.simpson.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703122127.41942.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007, Gene Heskett wrote:
->On Monday 12 March 2007, Con Kolivas wrote:
->>Hi Gene.
->>
->>On Monday 12 March 2007 16:38, Gene Heskett wrote:
->>> I hate to say it Con, but this one seems to have broken the
->>> amanda-tar symbiosis.
->>>
->>> I haven't tried a plain 21-rc3, so the problem may exist there, and
->>> in fact it did for 21-rc1, but I don't recall if it was true for
->>> -rc2. But I will have a plain 21-rc3 running by tomorrow nights
->>> amanda run to test.
->>>
->>> What happens is that when amanda tells tar to do a level 1 or 2, tar
->>> still thinks its doing a level 0.  The net result is that the tape is
->>> filled completely and amanda does an EOT exit in about 10 of my 42
->>> dle's.  This is tar-1.15-1 for fedora core 6.
->>
->>I'm sorry but I have to say I have no idea what any of this means. I
->> gather you're making an association between some application
->> combination failing and RSDL cpu scheduler. Unfortunately the details
->> of what the problem is, or how the cpu scheduler is responsible,
->> escape me :(
+On Monday 12 March 2007 20:38, Mike Galbraith wrote:
+> On Mon, 2007-03-12 at 20:22 +1100, Con Kolivas wrote:
+> > On Monday 12 March 2007 19:55, Mike Galbraith wrote:
+> > > On Mon, 2007-03-12 at 19:29 +1100, Con Kolivas wrote:
+> > > > I'll save you the trouble. I just checked myself and indeed the load
+> > > > is only 1. What this means is that although there are 2 tasks
+> > > > running, only one is running at any time making a total load of 1.
+> > > > So, if we add two other tasks that add 2 more to the load the total
+> > > > load is 3. However if we weight the other two tasks at nice 5, they
+> > > > only add .75 each to the load making a weighted total of 2.5. This
+> > > > means that X+Gforce together should get a total of 1/2.5 or 40% of
+> > > > the overall cpu. That sounds like exactly what you're describing is
+> > > > happening.
+> > >
+> > > Hmm.  So... anything that's client/server is going to suffer horribly
+> > > unless niced tasks are niced all the way down to 19?
+> >
+> > Fortunately most client server models dont usually have mutually
+> > exclusive cpu use like this X case. There are many things about X that
+> > are still a little (/me tries to think of a relatively neutral term)...
+> > wanting. :(
 >
->I have another backup running right now, after building a plain
->2.6.21-rc3, and rebooting just now for the test.  I don't think its the
->scheduler itself, but is something post 2.6.20 that is messing with tars
->mind and making it think the files it just read to do the estimate
-> phase, are all new, so even a level 2 is in effect a level 0.  I'll
-> have an answer in about an hour, but its also 2:36am here and I'm
-> headed for the rack to get some zzz's.  So I'll report in the morning
-> as to whether or not this backup ran as it was supposed to.  I have a
-> feeling its not going to though.
+> But the reality of X is what we have to deal with.
 
-I can confirm that a plain 21-rc3 still suffers from this problem.  This 
-run of amanda terminated after 13 of the 32 dle's after writing just 
-short of 12GB to the vtape. 8 were level 0's, 5 were level 1's, all were 
-gzipped, achieving a compression ratio of 40% of original size.  There is 
-about 45GB of data here to backup, on a 5 day dumpcycle.
+And unix.
 
-If, and I have previously, I revert to a 2.6.20-ck1 patching, this does 
-not occur.  So my contention is that someplace in this recent progression 
-from 2.6.20 to 2.6.21-rc3, there is a patch which acts to change how 
-c-time is being reported to tar.  Or there is a spillage into c-times 
-when tar does its estimate scans where the output goes to /dev/null.
-Or possibly even this version of tar is doing it differently.  I just 
-looked up how to get the c-times out of ls, and they, as far as ls is 
-concerned, look sane.  But tars actions while running a 2.6.21-rcX kernel 
-certainly are not.  I do have a plain -rc2 I can try, so that will be the 
-next test.  If that also fails in this manner, I'll build a later 
-2.6.20-2 or whatever to verify that it doesn't so suffer.
+> This scheduler seems to close the corner cases of the interactivity
+> estimator, but this "any background load is palpable" thing is decidedly
+> detrimental to interactive feel.
 
-I love your patches Con, but I'll leave them out of this next testing.  No 
-use pointing fingers at good code.
+Now I think you're getting carried away because of your expectations from the 
+previous scheduler and its woefully unfair treatment towards interactive 
+tasks. Look at how you're loading up your poor P4 even with HT. You throw 2 
+cpu hogs only gently niced at it on top of your interactive tasks. If you're 
+happy to nice them +5, why not more? And you know as well as anyone that the 
+2nd logical core only gives you ~25% more cpu power overall so you're asking 
+too much of it. Let's not even talk about how lovely this will (not) be once 
+SMT nice gets killed off come 2.6.21 and nice does less if "buyer beware" you 
+chose to enable HT in your own words.
+
+> When I looked into keeping interactive tasks responsive, I came to the
+> conclusion that I just couldn't get there from here across the full
+> spectrum of cpu usage without a scheduler hint.  Interactive feel is
+> absolutely dependent upon unfairness in many cases, and targeting that
+> unfairness gets it right where heuristics sometimes can't.
+
+See above. Your expectations of what you should be able to do are simply 
+skewed. Find what cpu balance you loved in the old one (and I believe it 
+wasn't that much more cpu in favour of X if I recall correctly) and simply 
+change the nice setting on your lame encoder - since you're already setting 
+one anyway.
+
+We simply cannot continue arguing that we should dish out unfairness in any 
+manner any more. It will always come back and bite us where we don't want it. 
+We are getting good interactive response with a fair scheduler yet you seem 
+intent on overloading it to find fault with it.
+
+> 	-Mike
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Mal: "Well, you were right about this being a bad idea."
-
-Zoe: "Thanks for sayin', sir."
-				--Episode #1, "Serenity"
+-ck
