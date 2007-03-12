@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751570AbXCLWfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbXCLWgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751570AbXCLWfQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 18:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXCLWfQ
+	id S1751544AbXCLWgm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 18:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbXCLWgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 18:35:16 -0400
-Received: from rtr.ca ([64.26.128.89]:2662 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751493AbXCLWfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 18:35:13 -0400
-Message-ID: <45F5D59E.10304@rtr.ca>
-Date: Mon, 12 Mar 2007 18:35:10 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Phil Kaslo <phil@cs.arizona.edu>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Asus P5B-VM motherboard:  cd drive malfunctions if internal nic
- in use.
-References: <200703122212.l2CMCaxm032601@osprey.cs.arizona.edu>
-In-Reply-To: <200703122212.l2CMCaxm032601@osprey.cs.arizona.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 18:36:41 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:44223 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbXCLWgk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 18:36:40 -0400
+To: dgc@sgi.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <20070312214405.GQ6095633@melbourne.sgi.com> (message from David
+	Chinner on Tue, 13 Mar 2007 08:44:05 +1100)
+Subject: Re: [patch 3/8] per backing_dev dirty and writeback page accounting
+References: <20070306180443.669036741@szeredi.hu> <20070306180550.793803735@szeredi.hu> <20070312062349.GN6095633@melbourne.sgi.com> <E1HQitT-0002wP-00@dorka.pomaz.szeredi.hu> <20070312214405.GQ6095633@melbourne.sgi.com>
+Message-Id: <E1HQt7o-00042r-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 12 Mar 2007 23:36:16 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phil Kaslo wrote:
-> Hello,
+I'll try to explain the reason for the deadlock first.
+
+> IIUC, your problem is that there's another bdi that holds all the
+> dirty pages, and this throttle loop never flushes pages from that
+> other bdi and we sleep instead. It seems to me that the fundamental
+> problem is that to clean the pages we need to flush both bdi's, not
+> just the bdi we are directly dirtying.
+
+This is what happens:
+
+write fault on upper filesystem
+  balance_dirty_pages
+    submit write requests
+  loop ...
+------- fuse IPC ---------------
+[fuse loopback fs thread 1]
+read request
+sys_write
+  mutex_lock(i_mutex)
+  ...
+     balance_dirty_pages
+        submit write requests
+        loop ... write requests completed ... dirty still over limit ... 
+	... loop forever
+
+[fuse loopback fs thread 1]
+read request
+sys_write
+  mute_lock(i_mutex) blocks
+
+So the queue for the upper filesystem is full.  The queue for the
+lower filesystem is empty.  There are no dirty pages in the lower
+filesystem.
+
+So kicking pdflush for the lower filesystem doesn't help, there's
+nothing to do.  balance_dirty_pages() for the lower filesystem should
+just realize that there's nothing to do and return, and then there
+would be progress.
+
+So there's there's really no need to do any accounting, just some
+logic to determine that a backing dev is nearly or completely
+quiescent.
+
+And getting out of this tight situation doesn't have to be efficient.
+This is probably a very rare corner case, that almost never happens in
+real life, only with aggressive test tools like bash_shared_mapping.
+
+> > OK.  How about just accounting writeback pages?  That should be much
+> > less of a problem, since normally writeback is started from
+> > pdflush/kupdate in large batches without any concurrency.
 > 
-> I have a new machine, Asus motherboard, in which the cd drive malfunctions 
-> if the internal nic on the mb (RealTek RTL8168b/8111b) is actively in use.   
-> The cd drive, on ide2, is, as per dmesg, a Sony:
->  ide2: BM-DMA at 0xa400-0xa407, BIOS settings: hde:pio, hdf:pio
->  hde: SONY DVD RW AW-Q170A, ATAPI CD/DVD-ROM drive
->  hde: ATAPI 48X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(66)
+> Except when you are throttling you bounce the cacheline around
+> each cpu as it triggers foreground writeback.....
+
+Yeah, we'd loose a bit of CPU, but not any write performance, since it
+is being throttled back anyway.
+
+> > Or is it possible to export the state of the device queue to mm?
+> > E.g. could balance_dirty_pages() query the backing dev if there are
+> > any outstanding write requests?
 > 
-> I've seen this on 3 of these new machines so far.  One has a LITE-ON cdrom: 
->  hde: LITE-ON DVDRW LH-20A1H, ATAPI CD/DVD-ROM drive
-> so this is not unique to the Sony.
+> Not directly - writeback_in_progress(bdi) is a coarse measure
+> indicating pdflush is active on this bdi, which implies outstanding
+> write requests).
+
+Hmm, not quite what I need.
+
+> > > I'd call this a showstopper right now - maybe you need to look at
+> > > something like the ZVC code that Christoph Lameter wrote, perhaps?
+> > 
+> > That's rather a heavyweight approach for this I think.
 > 
-> Motherboard:  Asus P5B-VM  G965 775  BIOS Revision : 613
-> CPU: Intel Core 2 CPU 6300 1.86GHz
+> But if you want to use per-page accounting, you are going to
+> need a per-cpu or per-zone set of counters on each bdi to do
+> this without introducing regressions.
 
-Is that a PATA cd-drive?  If so, then you must have hooked it up
-to the JMicron IDE controller.  That driver is just plain buggy.
+Yes, this is an option, but I hope for a simpler solution.
 
-I gave up on it for my own P5B-VM.  The libata version works better
-than the drivers/ide, but I gave up on it and got a SATA DVD/RW drive.
-
-Off topic:  do your USB ports power off when the system shuts down?
-Mine don't -- the +5V continues on them.. I'd love a tip on how to
-turn them off completely at shutdown.
-
-Cheers
+Thanks,
+Miklos
