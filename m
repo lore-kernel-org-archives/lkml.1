@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030303AbXCLOyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030307AbXCLOyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030303AbXCLOyV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXCLOyV
+	id S1030307AbXCLOyt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030309AbXCLOyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:54:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:3272 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030303AbXCLOyU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:54:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a0lq4zFhe4W8E1rJ0pQNPKc1LRQ7mMvmAgQxt6qz5mPwPtMqVSbNxswYWKbcIoodAGmTni54MXyR6A0gYxNwxKUzmVHxK5T4MBOyZU3iatUOvYAtrSMyUTCYGyCs1zPCSrkQgwD42Atc4ghKlCZxW//8VYOzalTwFk6OPf+Q7oE=
-Message-ID: <2c0942db0703120754y13f4aa85g53bca542ec88100d@mail.gmail.com>
-Date: Mon, 12 Mar 2007 10:54:18 -0400
-From: "Ray Lee" <madrabbit@gmail.com>
-Reply-To: ray-gmail@madrabbit.org
-To: davids@webmaster.com
-Subject: Re: RSDL-mm 0.28
-Cc: "Matt Mackall" <mpm@selenic.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, ck@vds.kolivas.org
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAEBACDAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 12 Mar 2007 10:54:47 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:52356 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030307AbXCLOyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:54:46 -0400
+Date: Mon, 12 Mar 2007 15:53:59 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: bryan.wu@analog.com, David Brownell <david-b@pacbell.net>,
+       Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] Bitbanging i2c bus driver using the GPIO API
+Message-ID: <20070312155359.39020c80@dhcp-252-105.norway.atmel.com>
+In-Reply-To: <20070312153457.60dafa0c@dhcp-252-105.norway.atmel.com>
+References: <200703091345.44744.david-b@pacbell.net>
+	<11735324081261-git-send-email-hskinnemoen@atmel.com>
+	<1173694079.6638.13.camel@roc-desktop>
+	<20070312153457.60dafa0c@dhcp-252-105.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8cd998d50703101828l71fbec7bi9a819ad7b7fd9828@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKAEBACDAC.davids@webmaster.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/12/07, David Schwartz <davids@webmaster.com> wrote:
-> In no case is much of anything guaranteed, of course. (What can you do if
-> there's no other process to yield to?)
+On Mon, 12 Mar 2007 15:34:57 +0100
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-Perhaps if sched_yield()'s effects were cumulative inside a timeslice,
-then eventually the calling task would get pushed far enough down that
-others would run.
+> > > +	bit_data->udelay	= 5,			/* 100 kHz */
+> > > +	bit_data->timeout	= HZ / 10,		/* 100 ms */  
+> > 
+> > Can we add these udelay/timeout to struct i2c_gpio_platform_data? And
+> > let customer to choose these according their specific requirement. We
+> > use Kconfig to do this, but Jean and David don't like the idea, -:(  
+> 
+> Yeah, they need to be a bit more configurable than they currently are.
+> And I think it makes sense to pass them from the board setup code, since
+> this is where things depending on board-specific details (signal quality
+> issues, pullup resistor values, etc.) are supposed to go.
 
-Ray
+By the way, timeout seems to be hardcoded to 100 jiffies in the
+i2c-algo-bit driver, so there's probably not much point passing it from
+the board code when it's going to be overridden anyway. I'll add just a
+udelay parameter to the platform struct for  now.
+
+Haavard
