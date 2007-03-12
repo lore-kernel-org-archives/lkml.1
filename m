@@ -1,154 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030501AbXCLQSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030572AbXCLQTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030501AbXCLQSB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 12:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030584AbXCLQSA
+	id S1030572AbXCLQTb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 12:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXCLQTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 12:18:00 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59218 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030576AbXCLQR7 (ORCPT
+	Mon, 12 Mar 2007 12:19:31 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:46852 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030572AbXCLQTa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 12:17:59 -0400
-To: torvalds@linux-foundation.org
-Subject: [PATCH] sanitize security_getprocattr() API
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1HQnDi-0008Ll-26@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Mon, 12 Mar 2007 16:17:58 +0000
+	Mon, 12 Mar 2007 12:19:30 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] MPT FUSION: Delete unused header files.
+Date: Mon, 12 Mar 2007 10:19:18 -0600
+Message-ID: <664A4EBB07F29743873A87CF62C26D70623ED6@NAMAIL4.ad.lsil.com>
+In-Reply-To: <200703112232.l2BMWbAI010768@turing-police.cc.vt.edu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] MPT FUSION: Delete unused header files.
+Thread-Index: AcdkLS3u5lIcBYYNTpSQdHs11PdSKAAkfqNw
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+To: <Valdis.Kletnieks@vt.edu>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>
+X-OriginalArrivalTime: 12 Mar 2007 16:19:19.0584 (UTC) FILETIME=[300B7A00:01C764C2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Valdis.Kletnieks silly little rant: 
 
-have it return the buffer it had allocated
+> Certainly appropriate content for something on your website, 
+> and vendors who
+> provide programs like dmidecode and parsemce are always 
+> welcome. I could
+> probably be convinced that such info should have at least a 
+> pointer somewhere
+> in Documentation/lsi_debug.txt or some such.  But quite 
+> frankly, if I'm reduced
+> to wading through *.h files to figure out what some 
+> recalcitrant hardware is
+> upset about, there's been a failure in documentation.  
+> *ESPECIALLY* if I
+> go look at drivers/whatever/source.c and it doesn't even 
+> *reference* the *.h
+> file in question.
 
-Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
-Acked-by: James Morris <jmorris@namei.org>
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- fs/proc/base.c           |   21 ++++++---------------
- include/linux/security.h |    8 ++++----
- security/dummy.c         |    2 +-
- security/selinux/hooks.c |    8 ++++++--
- 4 files changed, 17 insertions(+), 22 deletions(-)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 4f5745a..6bbfe91 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1558,29 +1558,20 @@ static ssize_t proc_pid_attr_read(struct file * file, char __user * buf,
- 				  size_t count, loff_t *ppos)
- {
- 	struct inode * inode = file->f_path.dentry->d_inode;
--	unsigned long page;
-+	char *p = NULL;
- 	ssize_t length;
- 	struct task_struct *task = get_proc_task(inode);
- 
--	length = -ESRCH;
- 	if (!task)
--		goto out_no_task;
--
--	if (count > PAGE_SIZE)
--		count = PAGE_SIZE;
--	length = -ENOMEM;
--	if (!(page = __get_free_page(GFP_KERNEL)))
--		goto out;
-+		return -ESRCH;
- 
- 	length = security_getprocattr(task,
- 				      (char*)file->f_path.dentry->d_name.name,
--				      (void*)page, count);
--	if (length >= 0)
--		length = simple_read_from_buffer(buf, count, ppos, (char *)page, length);
--	free_page(page);
--out:
-+				      &p);
- 	put_task_struct(task);
--out_no_task:
-+	if (length > 0)
-+		length = simple_read_from_buffer(buf, count, ppos, p, length);
-+	kfree(p);
- 	return length;
- }
- 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 7f88d97..47e82c1 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1324,7 +1324,7 @@ struct security_operations {
- 
- 	void (*d_instantiate) (struct dentry *dentry, struct inode *inode);
- 
-- 	int (*getprocattr)(struct task_struct *p, char *name, void *value, size_t size);
-+ 	int (*getprocattr)(struct task_struct *p, char *name, char **value);
-  	int (*setprocattr)(struct task_struct *p, char *name, void *value, size_t size);
- 	int (*secid_to_secctx)(u32 secid, char **secdata, u32 *seclen);
- 	void (*release_secctx)(char *secdata, u32 seclen);
-@@ -2092,9 +2092,9 @@ static inline void security_d_instantiate (struct dentry *dentry, struct inode *
- 	security_ops->d_instantiate (dentry, inode);
- }
- 
--static inline int security_getprocattr(struct task_struct *p, char *name, void *value, size_t size)
-+static inline int security_getprocattr(struct task_struct *p, char *name, char **value)
- {
--	return security_ops->getprocattr(p, name, value, size);
-+	return security_ops->getprocattr(p, name, value);
- }
- 
- static inline int security_setprocattr(struct task_struct *p, char *name, void *value, size_t size)
-@@ -2749,7 +2749,7 @@ static inline int security_sem_semop (struct sem_array * sma,
- static inline void security_d_instantiate (struct dentry *dentry, struct inode *inode)
- { }
- 
--static inline int security_getprocattr(struct task_struct *p, char *name, void *value, size_t size)
-+static inline int security_getprocattr(struct task_struct *p, char *name, char **value)
- {
- 	return -EINVAL;
- }
-diff --git a/security/dummy.c b/security/dummy.c
-index 558795b..8ffd764 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -907,7 +907,7 @@ static void dummy_d_instantiate (struct dentry *dentry, struct inode *inode)
- 	return;
- }
- 
--static int dummy_getprocattr(struct task_struct *p, char *name, void *value, size_t size)
-+static int dummy_getprocattr(struct task_struct *p, char *name, char **value)
- {
- 	return -EINVAL;
- }
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index b1ac22d..0b265a5 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -4468,11 +4468,12 @@ static void selinux_d_instantiate (struct dentry *dentry, struct inode *inode)
- }
- 
- static int selinux_getprocattr(struct task_struct *p,
--			       char *name, void *value, size_t size)
-+			       char *name, char **value)
- {
- 	struct task_security_struct *tsec;
- 	u32 sid;
- 	int error;
-+	unsigned len;
- 
- 	if (current != p) {
- 		error = task_has_perm(current, p, PROCESS__GETATTR);
-@@ -4500,7 +4501,10 @@ static int selinux_getprocattr(struct task_struct *p,
- 	if (!sid)
- 		return 0;
- 
--	return selinux_getsecurity(sid, value, size);
-+	error = security_sid_to_context(sid, value, &len);
-+	if (error)
-+		return error;
-+	return len;
- }
- 
- static int selinux_setprocattr(struct task_struct *p,
--- 
-1.5.0-rc2.GIT
+Its apparent to me that you don't have our hardware, nor have you
+actually waded thru this driver source code. 
 
+If you did, you would of noticed that the header you want to delete, is
+actually referenced in the *.c source code.   The file "mpi_log_fc.h",
+is indeed mentioned in mptbase.c, in the function called
+mpt_fc_log_info, in the documention section above the function.    This
+header file is very helpful to those supporting our hardware, and those
+using it
+For SAS(mpi_log_sas.h), I have broken out each loginfo in the strings
+you will find defined in originator_str, iop_code_str, pl_code_str, etc,
+I probably do that with fibre.
+
+If its that important to you to have the header files included, I will
+provide a patch that does that.    
+
+Eric Moore
