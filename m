@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030477AbXCLQIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030496AbXCLQJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030477AbXCLQIP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 12:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030489AbXCLQIO
+	id S1030496AbXCLQJl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 12:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030501AbXCLQJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 12:08:14 -0400
-Received: from il.qumranet.com ([82.166.9.18]:48049 "EHLO il.qumranet.com"
+	Mon, 12 Mar 2007 12:09:41 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:45491 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030477AbXCLQIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 12:08:13 -0400
-Message-ID: <45F57AEB.5030405@argo.co.il>
-Date: Mon, 12 Mar 2007 18:08:11 +0200
-From: Avi Kivity <avi@argo.co.il>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S1030496AbXCLQJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 12:09:40 -0400
+Message-ID: <45F57E7D.6080604@sw.ru>
+Date: Mon, 12 Mar 2007 19:23:25 +0300
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: discuss@x86-64.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4 TRY#3] optimize and simplify get_cycles_sync()
-References: <20070309150825.GA13481@amd.com> <20070309151511.GE13481@amd.com> <45F1A2FB.7040206@argo.co.il> <20070312130245.GE8922@amd.com>
-In-Reply-To: <20070312130245.GE8922@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Pavel Emelianov <xemul@sw.ru>, containers@lists.osdl.org,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [RFC][PATCH 4/7] RSS accounting hooks over the code
+References: <45ED7DEC.7010403@sw.ru> <45ED81F2.80402@sw.ru> <m14porwq1c.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m14porwq1c.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> On Fri, Mar 09, 2007 at 08:10:03PM +0200, Avi Kivity wrote:
->   
->> Joerg Roedel wrote:
->>     
->>> From: Joerg Roedel <joerg.roedel@amd.com>
->>>
->>> This patch simplifies the get_cycles_sync() function by removing
->>> the #ifdefs from it. Further it introduces an optimization for AMD
->>> processors. There the RDTSCP instruction is used instead of CPUID;RDTSC
->>> which is helpfull if the kernel runs as a KVM guest. Running as a guest
->>> makes CPUID very expensive because it causes an intercept of the guest.
->>>
->>>  +#define RDTSCP ".byte 0x0f, 0x01, 0xf9"
->>> +	alternative_io_two("cpuid\nrdtsc",
->>> +			   "rdtsc", X86_FEATURE_SYNC_RDTSC,
->>> +			   ".byte 0x0f, 0x01, 0xf9", X86_FEATURE_RDTSCP,
->>>  
->>>       
->> why not use the RDTSCP macro here?
->>     
->
-> Does this macro exist? I couldn't found it in the current git tree. And
-> the rdtscp macros in msr.h use the plain opcode too.
->   
+Eric W. Biederman wrote:
+> Pavel Emelianov <xemul@sw.ru> writes:
+> 
+> 
+>>Pages are charged to their first touchers which are
+>>determined using pages' mapcount manipulations in
+>>rmap calls.
+> 
+> 
+> NAK pages should be charged to every rss group whose mm_struct they
+> are mapped into.
+For these you essentially need per-container page->_mapcount counter,
+otherwise you can't detect whether rss group still has the page in question being mapped
+in its processes' address spaces or not.
 
--ENOCOFFEE?  You defined the macro 3 lines above the .byte directive...
+1. This was discussed before and considered to be ok by all the resource management
+   involved people.
+2. this can be done with a-la page beancounters which are used in OVZ for shared
+   fractions accounting. It's a next step forward.
 
+If you know how to get "pages should be charged to every rss group whose mm_struct they
+are mapped into" w/o additional pointer in struct page, please throw me an idea.
 
--- 
-error compiling committee.c: too many arguments to function
-
+Thanks,
+Kirill
