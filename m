@@ -1,305 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965862AbXCLOHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965873AbXCLOMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965862AbXCLOHp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965876AbXCLOHp
+	id S965873AbXCLOMR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965876AbXCLOMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:07:45 -0400
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:37111 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965862AbXCLOHl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:07:41 -0400
-Date: Mon, 12 Mar 2007 07:07:39 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/3] Add ability to keep track of callers of
- symbol_(get|put)
-In-Reply-To: <20070311000938.80202418.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0703120652100.19670@shell2.speakeasy.net>
-References: <1173501095.26213.405.camel@localhost>
- <20070311000938.80202418.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="289735540-2145560616-1173708092=:19670"
-Content-ID: <Pine.LNX.4.58.0703120707210.4845@shell2.speakeasy.net>
+	Mon, 12 Mar 2007 10:12:17 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:55793 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965873AbXCLOMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:12:16 -0400
+Date: Mon, 12 Mar 2007 15:11:03 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] Bitbanging i2c bus driver using the GPIO API
+Message-ID: <20070312151103.44284b20@dhcp-252-105.norway.atmel.com>
+In-Reply-To: <20070310211550.c694555d.khali@linux-fr.org>
+References: <200703091345.44744.david-b@pacbell.net>
+	<11735324081261-git-send-email-hskinnemoen@atmel.com>
+	<20070310211550.c694555d.khali@linux-fr.org>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+On Sat, 10 Mar 2007 21:15:50 +0100
+Jean Delvare <khali@linux-fr.org> wrote:
 
---289735540-2145560616-1173708092=:19670
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <Pine.LNX.4.58.0703120707211.4845@shell2.speakeasy.net>
+> I like the idea very much. Would this let us get rid of i2c-ixp2000?
+> i2c-ixp4xx? scx200_i2c? Other drivers?
 
-On Sun, 11 Mar 2007, Andrew Morton wrote:
-> > On Sat, 10 Mar 2007 02:31:35 -0200 Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> > From: Trent Piepho <xyzzy@speakeasy.org>
-> >
-> > When a module uses symbol_get() to increase the ref count of another
-> > module, there is no record what module called symbol_get().  A module
-> > can
-> > show up as having other users, but there is no way to tell who those
-> > users are.
-> >
-> > This adds that ability to symbol_put() and symbol_get().
->
-> One day I'll write a script which unwordwraps patches and then you'll all
-> need to find new ways of torturing me.
->
-> This patch needed rather a lot of help in the coding-style department.
-> Hopefully Rusty can comment on the content, because I'm all exhausted from
-> cleaning it up.
+Any platform that implements the generic gpio api should be able to use
+this driver. So yes, I hope we might be able to get rid of a few
+existing bitbanging drivers.
 
-New version attached.  Coding-style should be fixed, and hopefully this
-will not be word-wrapped.
+> > +/*
+> > + * Bitbanging i2c bus driver using the GPIO API
+> > + *
+> > + * Copyright (C) 2006 Atmel Corporation
+> 
+> I'm told we're in year 2007 ;)
 
-There were some bugs with NULL as the user in symbol_(get|put), that should
-be fixed now.
+I'm also told that copyright protection lasts infinitely long in
+practice ;)
 
-I've added an error message for when a module tries to symbol_put() a
-module that it's not using.  This should keep the putted module's ref count
-from being set to -1, which is what happens now.  It should also make it a
-lot easier to track down where the extra symbol_put()s are comming from.
---289735540-2145560616-1173708092=:19670
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME="dynamic_dep_kernel.patch"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.58.0703120701320.19670@shell2.speakeasy.net>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME="dynamic_dep_kernel.patch"
+I'll update it. I probably just copied it blindly from a different
+driver.
 
-RnJvbTogVHJlbnQgUGllcGhvIDx4eXp6eUBzcGVha2Vhc3kub3JnPg0KDQpB
-ZGQgYWJpbGl0eSB0byBrZWVwIHRyYWNrIG9mIGNhbGxlcnMgb2Ygc3ltYm9s
-XyhnZXR8cHV0KQ0KDQpXaGVuIGEgbW9kdWxlIHVzZXMgc3ltYm9sX2dldCgp
-IHRvIGluY3JlYXNlIHRoZSByZWYgY291bnQgb2YgYW5vdGhlcg0KbW9kdWxl
-LCB0aGVyZSBpcyBubyByZWNvcmQgd2hhdCBtb2R1bGUgY2FsbGVkIHN5bWJv
-bF9nZXQoKS4gIEEgbW9kdWxlIGNhbg0Kc2hvdyB1cCBhcyBoYXZpbmcgb3Ro
-ZXIgdXNlcnMsIGJ1dCB0aGVyZSBpcyBubyB3YXkgdG8gdGVsbCB3aG8gdGhv
-c2UNCnVzZXJzIGFyZS4NCg0KVGhpcyBhZGRzIHRoYXQgYWJpbGl0eSB0byBz
-eW1ib2xfcHV0KCkgYW5kIHN5bWJvbF9nZXQoKS4NCg0KX19zeW1ib2xfZ2V0
-KCkgYW5kIF9fc3ltYm9sX3B1dCgpIGdhaW4gYW5vdGhlciBwYXJhbWV0ZXIs
-IHdoaWNoIHNwZWNpZmllcw0KdGhlIG1vZHVsZSB0aGF0IGlzIGRvaW5nIHRo
-ZSBnZXR0aW5nIG9yIHB1dHRpbmcuICBzeW1ib2xfcHV0X2FkZHIoKSBpcw0K
-cmVuYW1lZCB0byBfX3N5bWJvbF9wdXRfYWRkcigpIGFuZCBoYXMgdGhlIHNh
-bWUgcGFyYW1ldGVyIGFkZGVkLiAgVGhlDQptb2R1bGUgY2FuIGJlIE5VTEws
-IGluIHdoaWNoIGNhc2UgdGhlIHN5bWJvbCdzIG93bmVyJ3MgcmVmY291bnQg
-aXMNCmluY3JlbWVudGVkIHdpdGhvdXQgcmVjb3JkaW5nIHdobyBkaWQgaXQs
-IGFzIHdhcyB0aGUgY2FzZSBiZWZvcmUuDQoNClRoZSBtYWNyb3Mgc3ltYm9s
-X2dldCgpLCBzeW1ib2xfcHV0KCksIGFuZCBzeW1ib2xfcHV0X2FkZHIoKSB3
-aWxsIHVzZQ0KVEhJU19NT0RVTEUgYXMgdGhlIGdldHRlci9wdXR0ZXIgYW5k
-IHNvIGRvbid0IGhhdmUgYW4gZXh0cmEgcGFyYW1ldGVyLiAgQQ0KbWFjcm8g
-c3ltYm9sX3B1dF91c2VyKCkgaXMgYWRkZWQgdGhhdCBhbGxvd3Mgc3BlY2lm
-eWluZyB0aGUgcHV0dGluZw0KbW9kdWxlLg0KDQpUaGUgbW9kdWxlX3VzZSBz
-dHJ1Y3R1cmUgdGhhdCBrZWVwcyB0cmFjayBvZiBvbmUgbW9kdWxlJ3MgdXNl
-IG9mIGFub3RoZXINCmdhaW5zIGEgY291bnQgbWVtYmVyLiAgVGhlIG1vZHVs
-ZV91c2Ugd2lsbCBub3QgZ28gYXdheSB1bnRpbCB0aGUgY291bnQNCmdvZXMg
-ZG93biB0byB6ZXJvLiAgVGhlIGNvdW50IHdhc24ndCBuZWNlc3NhcnkgYmVm
-b3JlIGJlY2F1c2UgYSBtb2R1bGUNCmNvdWxkIG9ubHkgdXNlIGFub3RoZXIg
-bW9kdWxlIG9uY2UsIHdoZW4gdGhlIG1vZHVsZSB3YXMgbGlua2VkIGluLCBh
-bmQNCnVuLXVzZSB0aGF0IG1vZHVsZSBvbmNlLCB3aGVuIGl0IHdhcyB1bmxv
-YWRlZC4NCg0KV2hlbiBhIG1vZHVsZSBjYWxscyBzeW1ib2xfZ2V0KCkgdG8g
-Z2V0IGEgc3ltYm9sIGZyb20gbW9kdWxlIHRoYXQgb3ducw0KdGhlIHN5bWJv
-bCwgdGhlIHJlZiBjb3VudCBvZiB0aGUgb3duaW5nIG1vZHVsZSBpcyBfbm90
-XyBpbmNyZW1lbnRlZCBpZg0KdGhlIGdldHRpbmcgbW9kdWxlIHdhcyBhbHJl
-YWR5IGxpc3RlZCBhcyB1c2luZyB0aGUgb3duaW5nIG1vZHVsZS4NClJhdGhl
-ciwgdGhlIGNvdW50IG9mIHRoYXQgbW9kdWxlX3VzZSBpcyBpbmNyZW1lbnRl
-ZC4NCg0KV2hlbiBhIG1vZHVsZSBpcyBsb2FkZWQgYW5kIHRoZSBrZXJuZWwg
-bW9kdWxlIGxpbmtlciBpcyByZXNvbHZpbmcNCnN5bWJvbHMsIGl0IHdpbGwg
-bm90IGluY3JlbWVudCB0aGUgbW9kdWxlX3VzZSBjb3VudCBmb3IgZWFjaCBz
-eW1ib2wgdXNlZCwNCmJ1dCB3aWxsIGp1c3QgbGVhdmUgaXQgYXQgb25lLiAg
-V2UgZG9uJ3QgY291bnQgZWFjaCBzeW1ib2wgcmVzb2x2ZWQsDQpiZWNhdXNl
-IGR1cmluZyBtb2R1bGUgdW5sb2FkaW5nIHdlIHdvdWxkbid0IGtub3cgaG93
-IG1hbnkgdGltZXMgdG8NCmRlY3JlbWVudCB0aGUgbW9kdWxlX3VzZSBjb3Vu
-dC4NCg0KV2hlbiB0aGUgbW9kdWxlIGlzIHVubG9hZGVkLCB0aGUgbW9kdWxl
-X3VzZSBjb3VudCB3aWxsIG9ubHkgYmUNCmRlY3JlbWVudGVkIGJ5IG9uZSwg
-d2hpY2ggc2hvdWxkIGJyaW5nIGl0IHRvIHplcm8uICBJZiBpdCdzIG5vdCB6
-ZXJvLA0KdGhlbiB0aGUgcmVtYWluaW5nIGNvdW50IGlzIHRoZSBudW1iZXIg
-b2Ygc3ltYm9sX2dldCgpcyB0aGUgbW9kdWxlIGRpZA0KdGhhdCB3ZXJlIHVu
-bWF0Y2hlZCB3aXRoIGEgc3ltYm9sX3B1dCgpLg0KDQpTaWduZWQtb2ZmLWJ5
-OiBUcmVudCBQaWVwaG8gPHh5enp5QHNwZWFrZWFzeS5vcmc+DQoNCmRpZmYg
-LS1naXQgYS9pbmNsdWRlL2xpbnV4L21vZHVsZS5oIGIvaW5jbHVkZS9saW51
-eC9tb2R1bGUuaA0KLS0tIGEvaW5jbHVkZS9saW51eC9tb2R1bGUuaA0KKysr
-IGIvaW5jbHVkZS9saW51eC9tb2R1bGUuaA0KQEAgLTE2OSw5ICsxNjksMTAg
-QEAgc3RydWN0IG5vdGlmaWVyX2Jsb2NrOw0KICNpZmRlZiBDT05GSUdfTU9E
-VUxFUw0KIA0KIC8qIEdldC9wdXQgYSBrZXJuZWwgc3ltYm9sIChjYWxscyBt
-dXN0IGJlIHN5bW1ldHJpYykgKi8NCi12b2lkICpfX3N5bWJvbF9nZXQoY29u
-c3QgY2hhciAqc3ltYm9sKTsNCit2b2lkICpfX3N5bWJvbF9nZXQoY29uc3Qg
-Y2hhciAqc3ltYm9sLCBzdHJ1Y3QgbW9kdWxlICp1c2VyKTsNCiB2b2lkICpf
-X3N5bWJvbF9nZXRfZ3BsKGNvbnN0IGNoYXIgKnN5bWJvbCk7DQotI2RlZmlu
-ZSBzeW1ib2xfZ2V0KHgpICgodHlwZW9mKCZ4KSkoX19zeW1ib2xfZ2V0KE1P
-RFVMRV9TWU1CT0xfUFJFRklYICN4KSkpDQorI2RlZmluZSBzeW1ib2xfZ2V0
-KHgpICgodHlwZW9mKCZ4KSkoX19zeW1ib2xfZ2V0KE1PRFVMRV9TWU1CT0xf
-UFJFRklYICN4LCBcDQorCQkJVEhJU19NT0RVTEUpKSkNCiANCiAjaWZuZGVm
-IF9fR0VOS1NZTVNfXw0KICNpZmRlZiBDT05GSUdfTU9EVkVSU0lPTlMNCkBA
-IC0zODgsOSArMzg5LDExIEBAIGV4dGVybiB2b2lkIF9fbW9kdWxlX3B1dF9h
-bmRfZXhpdChzdHJ1Y3QNCiANCiAjaWZkZWYgQ09ORklHX01PRFVMRV9VTkxP
-QUQNCiB1bnNpZ25lZCBpbnQgbW9kdWxlX3JlZmNvdW50KHN0cnVjdCBtb2R1
-bGUgKm1vZCk7DQotdm9pZCBfX3N5bWJvbF9wdXQoY29uc3QgY2hhciAqc3lt
-Ym9sKTsNCi0jZGVmaW5lIHN5bWJvbF9wdXQoeCkgX19zeW1ib2xfcHV0KE1P
-RFVMRV9TWU1CT0xfUFJFRklYICN4KQ0KLXZvaWQgc3ltYm9sX3B1dF9hZGRy
-KHZvaWQgKmFkZHIpOw0KK3ZvaWQgX19zeW1ib2xfcHV0KGNvbnN0IGNoYXIg
-KnN5bWJvbCwgc3RydWN0IG1vZHVsZSAqdXNlcik7DQorI2RlZmluZSBzeW1i
-b2xfcHV0KHgpIF9fc3ltYm9sX3B1dChNT0RVTEVfU1lNQk9MX1BSRUZJWCAj
-eCwgVEhJU19NT0RVTEUpDQorI2RlZmluZSBzeW1ib2xfcHV0X3VzZXIoeCx1
-KSBfX3N5bWJvbF9wdXQoTU9EVUxFX1NZTUJPTF9QUkVGSVggI3gsICh1KSkN
-Cit2b2lkIF9fc3ltYm9sX3B1dF9hZGRyKHZvaWQgKmFkZHIsIHN0cnVjdCBt
-b2R1bGUgKnVzZXIpOw0KKyNkZWZpbmUgc3ltYm9sX3B1dF9hZGRyKHgpIF9f
-c3ltYm9sX3B1dF9hZGRyKCh4KSwgVEhJU19NT0RVTEUpDQogDQogLyogU29t
-ZXRpbWVzIHdlIGtub3cgd2UgYWxyZWFkeSBoYXZlIGEgcmVmY291bnQsIGFu
-ZCBpdCdzIGVhc2llciBub3QNCiAgICB0byBoYW5kbGUgdGhlIGVycm9yIGNh
-c2UgKHdoaWNoIG9ubHkgaGFwcGVucyB3aXRoIHJtbW9kIC0td2FpdCkuICov
-DQpkaWZmIC0tZ2l0IGEva2VybmVsL21vZHVsZS5jIGIva2VybmVsL21vZHVs
-ZS5jDQotLS0gYS9rZXJuZWwvbW9kdWxlLmMNCisrKyBiL2tlcm5lbC9tb2R1
-bGUuYw0KQEAgLTUxNiwzMCArNTE2LDU0IEBAIHN0cnVjdCBtb2R1bGVfdXNl
-DQogew0KIAlzdHJ1Y3QgbGlzdF9oZWFkIGxpc3Q7DQogCXN0cnVjdCBtb2R1
-bGUgKm1vZHVsZV93aGljaF91c2VzOw0KKwlpbnQgY291bnQ7DQogfTsNCiAN
-Ci0vKiBEb2VzIGEgYWxyZWFkeSB1c2UgYj8gKi8NCi1zdGF0aWMgaW50IGFs
-cmVhZHlfdXNlcyhzdHJ1Y3QgbW9kdWxlICphLCBzdHJ1Y3QgbW9kdWxlICpi
-KQ0KKy8qDQorICogRG9lcyBhIGFscmVhZHkgdXNlIGI/ICBSZXR1cm4gTlVM
-TCBpZiBpdCBkb2Vzbid0LCBhIHBvaW50ZXIgdG8gdGhlDQorICogcmVsZXZh
-bnQgbW9kdWxlX3VzZSBzdHJ1Y3R1cmUgaWYgaXQgZG9lcy4gDQorICovDQor
-c3RhdGljIHN0cnVjdCBtb2R1bGVfdXNlICphbHJlYWR5X3VzZXMoc3RydWN0
-IG1vZHVsZSAqYSwgc3RydWN0IG1vZHVsZSAqYikNCiB7DQogCXN0cnVjdCBt
-b2R1bGVfdXNlICp1c2U7DQogDQogCWxpc3RfZm9yX2VhY2hfZW50cnkodXNl
-LCAmYi0+bW9kdWxlc193aGljaF91c2VfbWUsIGxpc3QpIHsNCiAJCWlmICh1
-c2UtPm1vZHVsZV93aGljaF91c2VzID09IGEpIHsNCiAJCQlERUJVR1AoIiVz
-IHVzZXMgJXMhXG4iLCBhLT5uYW1lLCBiLT5uYW1lKTsNCi0JCQlyZXR1cm4g
-MTsNCisJCQlyZXR1cm4gdXNlOw0KIAkJfQ0KIAl9DQogCURFQlVHUCgiJXMg
-ZG9lcyBub3QgdXNlICVzIVxuIiwgYS0+bmFtZSwgYi0+bmFtZSk7DQotCXJl
-dHVybiAwOw0KLX0NCi0NCi0vKiBNb2R1bGUgYSB1c2VzIGIgKi8NCi1zdGF0
-aWMgaW50IHVzZV9tb2R1bGUoc3RydWN0IG1vZHVsZSAqYSwgc3RydWN0IG1v
-ZHVsZSAqYikNCisJcmV0dXJuIE5VTEw7DQorfQ0KKw0KKy8qDQorICogTW9k
-dWxlIGEgdXNlcyBiLiAgSWYgbW9kdWxlIGEgaXMgYSBfbmV3XyB1c2VyIG9m
-IG1vZHVsZSBiLCBtb2R1bGUgYidzIHJlZg0KKyAqIGNvdW50IHdpbGwgYmUg
-aW5jcmVtZW50ZWQuICBJZiBhIGlzIG5vdCBhIG5ldyB1c2VyIG9mIGIsIGFu
-ZCBpbmMgaXMgdHJ1ZSwNCisgKiB0aGVuIHRoZSB1c2UgY291bnQgKGkuZS4g
-IGhvdyBtYW55IHRpbWVzIGEgdXNlcyBiKSB3aWxsIGJlIGluY3JlbWVudGVk
-LiAgSWYgYQ0KKyAqIGlzIE5VTEwsIHRoZW4gdGhlIHJlZiBjb3VudCB3aWxs
-IGp1c3QgYWx3YXlzIGJlIGluY3JlbWVudGVkLg0KKyAqLw0KK3N0YXRpYyBp
-bnQgdXNlX21vZHVsZShzdHJ1Y3QgbW9kdWxlICphLCBzdHJ1Y3QgbW9kdWxl
-ICpiLCBib29sIGluYykNCiB7DQogCXN0cnVjdCBtb2R1bGVfdXNlICp1c2U7
-DQogCWludCBub193YXJuOw0KIA0KLQlpZiAoYiA9PSBOVUxMIHx8IGFscmVh
-ZHlfdXNlcyhhLCBiKSkgcmV0dXJuIDE7DQorCWlmIChiID09IE5VTEwpDQor
-CQlyZXR1cm4gMTsNCisNCisJREVCVUdQKCIlczogJXMgdXNlcyAlc1xuIiwg
-X19GVU5DVElPTl9fLCBhP2EtPm5hbWU6Iih1bmtub3duKSIsDQorCSAgICAg
-ICBiLT5uYW1lKTsNCisJaWYgKGEgPT0gTlVMTCkNCisJCXJldHVybiBzdHJv
-bmdfdHJ5X21vZHVsZV9nZXQoYik7DQorDQorCXVzZSA9IGFscmVhZHlfdXNl
-cyhhLCBiKTsNCisJaWYgKHVzZSkgew0KKwkJaWYgKGluYykNCisJCQl1c2Ut
-PmNvdW50Kys7DQorCQlERUJVR1AoIiVzOiAlcyBhbHJlYWR5IHVzZWQgJXMs
-IGNvdW50IG5vdyBhdCAlZFxuIiwNCisJCSAgICAgICBfX0ZVTkNUSU9OX18s
-IGEtPm5hbWUsIGItPm5hbWUsIHVzZS0+Y291bnQpOw0KKwkJcmV0dXJuIDE7
-DQorCX0NCiANCiAJaWYgKCFzdHJvbmdfdHJ5X21vZHVsZV9nZXQoYikpDQog
-CQlyZXR1cm4gMDsNCkBAIC01NTMsMTEgKzU3Nyw1MCBAQCBzdGF0aWMgaW50
-IHVzZV9tb2R1bGUoc3RydWN0IG1vZHVsZSAqYSwgDQogCX0NCiANCiAJdXNl
-LT5tb2R1bGVfd2hpY2hfdXNlcyA9IGE7DQorCXVzZS0+Y291bnQgPSAxOw0K
-IAlsaXN0X2FkZCgmdXNlLT5saXN0LCAmYi0+bW9kdWxlc193aGljaF91c2Vf
-bWUpOw0KIAlub193YXJuID0gc3lzZnNfY3JlYXRlX2xpbmsoYi0+aG9sZGVy
-c19kaXIsICZhLT5ta29iai5rb2JqLCBhLT5uYW1lKTsNCiAJcmV0dXJuIDE7
-DQogfQ0KIA0KKy8qDQorICogTW9kdWxlIGEgaXMgInVuLXVzaW5nIiBtb2R1
-bGUgYi4gIFRoZSB1c2UgY291bnQgaXMgZGVjcmVtZW50ZWQsIGFuZCBpZg0K
-KyAqIGl0IHJlYWNoZXMgemVybyB0aGUgbW9kdWxlX3VzZSBpcyByZW1vdmVk
-IGFuZCBtb2R1bGUgYidzIHJlZi1jb3VudCBpcw0KKyAqIGRlY3JlbWVudGVk
-LiAgUmV0dXJucyBudW1iZXIgb2YgcmVtYWluaW5nIHVzZXMuICBJZiBhIGlz
-IE5VTEwsIHRoZW4NCisgKiBqdXN0IGRlY3JlbWVudCBiJ3MgcmVmIGNvdW50
-Lg0KKyAqLw0KK3N0YXRpYyBpbnQgdW51c2VfbW9kdWxlKHN0cnVjdCBtb2R1
-bGUgKmEsIHN0cnVjdCBtb2R1bGUgKmIpDQorew0KKwlzdHJ1Y3QgbW9kdWxl
-X3VzZSAqdXNlOw0KKw0KKwlERUJVR1AoIiVzOiB1bnVzZSAlcyBieSAlc1xu
-IiwgX19GVU5DVElPTl9fLCBiLT5uYW1lLCANCisJICAgICAgIGE/YS0+bmFt
-ZToiKHVua25vd24pIik7DQorCWlmICghYSkgew0KKwkJbW9kdWxlX3B1dChi
-KTsNCisJCXJldHVybiAwOw0KKwl9DQorDQorCXVzZSA9IGFscmVhZHlfdXNl
-cyhhLCBiKTsNCisJaWYgKCF1c2UpIHsNCisJICAgIHByaW50ayhLRVJOX0VS
-UiAibW9kdWxlICVzIHRyeWluZyB0byB1bi11c2UgYSBtb2R1bGUsICVzLCB3
-aGljaCAiDQorCSAgICAgICAgICAgIml0IGlzIG5vdCB1c2luZyIsIGEtPm5h
-bWUsIGItPm5hbWUpOw0KKyAgICAgICAgICAgIHJldHVybiAwOw0KKwl9DQor
-DQorCURFQlVHUCgiJXM6ICVzIHVzZWQgJXMgJWQgdGltZShzKVxuIiwgX19G
-VU5DVElPTl9fLCANCisJICAgICAgIGEtPm5hbWUsIGItPm5hbWUsIHVzZS0+
-Y291bnQpOw0KKwlpZiAoIS0tKHVzZS0+Y291bnQpKSB7DQorCQlERUJVR1Ao
-IiVzOiByZW1vdmluZyBtb2R1bGVfdXNlIHN0cnVjdHVyZSBhbmQgc3lzZnMg
-bGlua1xuIiwgDQorCQkgICAgICAgX19GVU5DVElPTl9fKTsNCisJCWxpc3Rf
-ZGVsKCZ1c2UtPmxpc3QpOw0KKwkJa2ZyZWUodXNlKTsNCisJCXN5c2ZzX3Jl
-bW92ZV9saW5rKGItPmhvbGRlcnNfZGlyLCBhLT5uYW1lKTsNCisJCW1vZHVs
-ZV9wdXQoYik7DQorCQlyZXR1cm4gMDsNCisJfQ0KKwlyZXR1cm4gdXNlLT5j
-b3VudDsNCit9DQorDQogLyogQ2xlYXIgdGhlIHVubG9hZCBzdHVmZiBvZiB0
-aGUgbW9kdWxlLiAqLw0KIHN0YXRpYyB2b2lkIG1vZHVsZV91bmxvYWRfZnJl
-ZShzdHJ1Y3QgbW9kdWxlICptb2QpDQogew0KQEAgLTU2OSwxMCArNjMyLDE0
-IEBAIHN0YXRpYyB2b2lkIG1vZHVsZV91bmxvYWRfZnJlZShzdHJ1Y3QgbW8N
-CiAJCWxpc3RfZm9yX2VhY2hfZW50cnkodXNlLCAmaS0+bW9kdWxlc193aGlj
-aF91c2VfbWUsIGxpc3QpIHsNCiAJCQlpZiAodXNlLT5tb2R1bGVfd2hpY2hf
-dXNlcyA9PSBtb2QpIHsNCiAJCQkJREVCVUdQKCIlcyB1bnVzaW5nICVzXG4i
-LCBtb2QtPm5hbWUsIGktPm5hbWUpOw0KLQkJCQltb2R1bGVfcHV0KGkpOw0K
-LQkJCQlsaXN0X2RlbCgmdXNlLT5saXN0KTsNCi0JCQkJa2ZyZWUodXNlKTsN
-Ci0JCQkJc3lzZnNfcmVtb3ZlX2xpbmsoaS0+aG9sZGVyc19kaXIsIG1vZC0+
-bmFtZSk7DQorCQkJCWlmICh1bnVzZV9tb2R1bGUobW9kLCBpKSkgew0KKwkJ
-CQkJLyogU29tZW9uZSBtZXNzZWQgdXAhICovDQorCQkJCQlwcmludGsoS0VS
-Tl9FUlIgIm1vZHVsZSAlcyB1bmxvYWRpbmcgIg0KKwkJCQkJICAgICAgICJi
-dXQgc3RpbGwgaGFzIHVzZXMgb2YgJXNcbiIsIA0KKwkJCQkJICAgICAgIG1v
-ZC0+bmFtZSwgaS0+bmFtZSk7DQorCQkJCQl3aGlsZSAodW51c2VfbW9kdWxl
-KG1vZCwgaSkpDQorCQkJCQkJOw0KKwkJCQl9DQogCQkJCS8qIFRoZXJlIGNh
-biBiZSBhdCBtb3N0IG9uZSBtYXRjaC4gKi8NCiAJCQkJYnJlYWs7DQogCQkJ
-fQ0KQEAgLTc1NSwzMiArODIyLDQxIEBAIHN0YXRpYyB2b2lkIHByaW50X3Vu
-bG9hZF9pbmZvKHN0cnVjdCBzZXENCiAJCXNlcV9wcmludGYobSwgIi0iKTsN
-CiB9DQogDQotdm9pZCBfX3N5bWJvbF9wdXQoY29uc3QgY2hhciAqc3ltYm9s
-KQ0KK3ZvaWQgX19zeW1ib2xfcHV0KGNvbnN0IGNoYXIgKnN5bWJvbCwgc3Ry
-dWN0IG1vZHVsZSAqdXNlcikNCiB7DQogCXN0cnVjdCBtb2R1bGUgKm93bmVy
-Ow0KIAl1bnNpZ25lZCBsb25nIGZsYWdzOw0KIAljb25zdCB1bnNpZ25lZCBs
-b25nICpjcmM7DQogDQorCURFQlVHUCgiJXM6IHB1dHRpbmcgc3ltYm9sICVz
-IGJ5ICVzXG4iLCBfX0ZVTkNUSU9OX18sIHN5bWJvbCwgDQorCSAgICAgICB1
-c2VyP3VzZXItPm5hbWU6Iih1bmtub3duKSIpOw0KIAlzcGluX2xvY2tfaXJx
-c2F2ZSgmbW9kbGlzdF9sb2NrLCBmbGFncyk7DQogCWlmICghX19maW5kX3N5
-bWJvbChzeW1ib2wsICZvd25lciwgJmNyYywgMSkpDQogCQlCVUcoKTsNCi0J
-bW9kdWxlX3B1dChvd25lcik7DQorDQorCWlmIChvd25lcikNCisJCXVudXNl
-X21vZHVsZSh1c2VyLCBvd25lcik7DQogCXNwaW5fdW5sb2NrX2lycXJlc3Rv
-cmUoJm1vZGxpc3RfbG9jaywgZmxhZ3MpOw0KIH0NCiBFWFBPUlRfU1lNQk9M
-KF9fc3ltYm9sX3B1dCk7DQogDQotdm9pZCBzeW1ib2xfcHV0X2FkZHIodm9p
-ZCAqYWRkcikNCit2b2lkIF9fc3ltYm9sX3B1dF9hZGRyKHZvaWQgKmFkZHIs
-IHN0cnVjdCBtb2R1bGUgKnVzZXIpDQogew0KIAlzdHJ1Y3QgbW9kdWxlICpt
-b2RhZGRyOw0KLQ0KKwl1bnNpZ25lZCBsb25nIGZsYWdzOw0KKw0KKwlERUJV
-R1AoIiVzOiBwdXR0aW5nICVwIGJ5ICVzXG4iLCBfX0ZVTkNUSU9OX18sIGFk
-ZHIsIA0KKwkgICAgICAgdXNlcj91c2VyLT5uYW1lOiIodW5rbm93bikiKTsN
-CiAJaWYgKGNvcmVfa2VybmVsX3RleHQoKHVuc2lnbmVkIGxvbmcpYWRkcikp
-DQogCQlyZXR1cm47DQogDQogCWlmICghKG1vZGFkZHIgPSBtb2R1bGVfdGV4
-dF9hZGRyZXNzKCh1bnNpZ25lZCBsb25nKWFkZHIpKSkNCiAJCUJVRygpOw0K
-LQltb2R1bGVfcHV0KG1vZGFkZHIpOw0KLX0NCi1FWFBPUlRfU1lNQk9MX0dQ
-TChzeW1ib2xfcHV0X2FkZHIpOw0KKwlzcGluX2xvY2tfaXJxc2F2ZSgmbW9k
-bGlzdF9sb2NrLCBmbGFncyk7DQorCXVudXNlX21vZHVsZSh1c2VyLCBtb2Rh
-ZGRyKTsNCisJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmbW9kbGlzdF9sb2Nr
-LCBmbGFncyk7DQorfQ0KK0VYUE9SVF9TWU1CT0xfR1BMKF9fc3ltYm9sX3B1
-dF9hZGRyKTsNCiANCiBzdGF0aWMgc3NpemVfdCBzaG93X3JlZmNudChzdHJ1
-Y3QgbW9kdWxlX2F0dHJpYnV0ZSAqbWF0dHIsDQogCQkJICAgc3RydWN0IG1v
-ZHVsZSAqbW9kLCBjaGFyICpidWZmZXIpDQpAQCAtODE4LDcgKzg5NCw3IEBA
-IHN0YXRpYyBpbmxpbmUgdm9pZCBtb2R1bGVfdW5sb2FkX2ZyZWUoc3QNCiB7
-DQogfQ0KIA0KLXN0YXRpYyBpbmxpbmUgaW50IHVzZV9tb2R1bGUoc3RydWN0
-IG1vZHVsZSAqYSwgc3RydWN0IG1vZHVsZSAqYikNCitzdGF0aWMgaW5saW5l
-IGludCB1c2VfbW9kdWxlKHN0cnVjdCBtb2R1bGUgKmEsIHN0cnVjdCBtb2R1
-bGUgKmIsIGJvb2wgaW5jKQ0KIHsNCiAJcmV0dXJuIHN0cm9uZ190cnlfbW9k
-dWxlX2dldChiKTsNCiB9DQpAQCAtOTYxLDcgKzEwMzcsNyBAQCBzdGF0aWMg
-dW5zaWduZWQgbG9uZyByZXNvbHZlX3N5bWJvbChFbGZfDQogCWlmIChyZXQp
-IHsNCiAJCS8qIHVzZV9tb2R1bGUgY2FuIGZhaWwgZHVlIHRvIE9PTSwgb3Ig
-bW9kdWxlIHVubG9hZGluZyAqLw0KIAkJaWYgKCFjaGVja192ZXJzaW9uKHNl
-Y2hkcnMsIHZlcnNpbmRleCwgbmFtZSwgbW9kLCBjcmMpIHx8DQotCQkgICAg
-IXVzZV9tb2R1bGUobW9kLCBvd25lcikpDQorCQkgICAgIXVzZV9tb2R1bGUo
-bW9kLCBvd25lciwgZmFsc2UpKQ0KIAkJCXJldCA9IDA7DQogCX0NCiAJcmV0
-dXJuIHJldDsNCkBAIC0xMjIyLDE1ICsxMjk4LDE5IEBAIHN0YXRpYyB2b2lk
-IGZyZWVfbW9kdWxlKHN0cnVjdCBtb2R1bGUgKm0NCiAJbW9kdWxlX2ZyZWUo
-bW9kLCBtb2QtPm1vZHVsZV9jb3JlKTsNCiB9DQogDQotdm9pZCAqX19zeW1i
-b2xfZ2V0KGNvbnN0IGNoYXIgKnN5bWJvbCkNCit2b2lkICpfX3N5bWJvbF9n
-ZXQoY29uc3QgY2hhciAqc3ltYm9sLCBzdHJ1Y3QgbW9kdWxlICp1c2VyKQ0K
-IHsNCiAJc3RydWN0IG1vZHVsZSAqb3duZXI7DQogCXVuc2lnbmVkIGxvbmcg
-dmFsdWUsIGZsYWdzOw0KIAljb25zdCB1bnNpZ25lZCBsb25nICpjcmM7DQog
-DQorCURFQlVHUCgiJXM6IGdldCBzeW1ib2wgJXMgYnkgJXNcbiIsIF9fRlVO
-Q1RJT05fXywgc3ltYm9sLCANCisJICAgICAgIHVzZXI/dXNlci0+bmFtZToi
-KHVua25vd24pIik7DQogCXNwaW5fbG9ja19pcnFzYXZlKCZtb2RsaXN0X2xv
-Y2ssIGZsYWdzKTsNCiAJdmFsdWUgPSBfX2ZpbmRfc3ltYm9sKHN5bWJvbCwg
-Jm93bmVyLCAmY3JjLCAxKTsNCi0JaWYgKHZhbHVlICYmICFzdHJvbmdfdHJ5
-X21vZHVsZV9nZXQob3duZXIpKQ0KKwlERUJVR1AoIiVzOiBzeW1ib2wgJXMg
-aXMgMFdOM0QgYnkgJXNcbiIsIF9fRlVOQ1RJT05fXywgc3ltYm9sLCANCisJ
-ICAgICAgIHZhbHVlPyhvd25lcj9vd25lci0+bmFtZToieWVyIG1vbSIpOiJu
-byBvbmUiKTsNCisJaWYgKHZhbHVlICYmIG93bmVyICYmICF1c2VfbW9kdWxl
-KHVzZXIsIG93bmVyLCB0cnVlKSkNCiAJCXZhbHVlID0gMDsNCiAJc3Bpbl91
-bmxvY2tfaXJxcmVzdG9yZSgmbW9kbGlzdF9sb2NrLCBmbGFncyk7DQogDQo=
+> > +int i2c_gpio_getsda(void *data)
+> > +{
+> > +	struct i2c_gpio_platform_data *pdata = data;
+> > +
+> > +	return gpio_get_value(pdata->sda_pin);
+> > +}
+> 
+> 
+> What value will you get if the SDA pin is open-drain and currently in
+> output mode? Are such GPIO pins actually able to detect that the pin is
+> low while they are not themselves driving it low?
 
---289735540-2145560616-1173708092=:19670--
+I guess that depends on the GPIO controller. But being able to read the
+pin state even when the pin is configured as an output is a
+prerequisite for using this driver with "open drain" pins, so if the
+hardware doesn't support this, the board code should just set
+{sda,scl}_is_opendrain to zero.
+
+> > +	bit_data->udelay	= 5,			/* 100 kHz */
+> 
+> Actually, no, i2c-algo-bit has a 1/3-2/3 duty cycle, so a complete
+> cycle is 3 times the udelay value. So udelay=5 gives you 66 kHz. If
+> someone wants to fix that...
+
+Ok. I guess we should move this parameter into the platform data struct
+anyway.
+
+> Also, I wouldn't recommend such a low value when SCL cannot be sensed,
+> if a slave stretches the line even very briefly, you won't notice and
+> havoc will ensue. udelay=50 sounds more reasonable for such half-baked
+> busses.
+
+Makes sense.
+
+> > +	ret = platform_driver_probe(&i2c_gpio_driver, i2c_gpio_probe);
+> > +	if (ret)
+> > +		printk("i2c-gpio: probe failed: %d\n", ret);
+> 
+> Add KERN_ERR or similar.
+
+Will do.
+
+> Would you mind also adding yourself to MAINTAINERS for this driver? I
+> would appreciate it.
+
+Sure. I'm hoping this driver won't cause that much maintenance overhead
+anyway since all the complicated stuff is in i2c-algo-bit. But I agree
+it needs a maintainer.
+
+Haavard
