@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030307AbXCLOyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030300AbXCLO4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030307AbXCLOyt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030309AbXCLOyr
+	id S1030300AbXCLO4a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030266AbXCLO4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:54:47 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:52356 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030307AbXCLOyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:54:46 -0400
-Date: Mon, 12 Mar 2007 15:53:59 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: bryan.wu@analog.com, David Brownell <david-b@pacbell.net>,
-       Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070312155359.39020c80@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070312153457.60dafa0c@dhcp-252-105.norway.atmel.com>
-References: <200703091345.44744.david-b@pacbell.net>
-	<11735324081261-git-send-email-hskinnemoen@atmel.com>
-	<1173694079.6638.13.camel@roc-desktop>
-	<20070312153457.60dafa0c@dhcp-252-105.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Mar 2007 10:56:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50933 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030300AbXCLO43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:56:29 -0400
+Message-ID: <45F56A18.4040008@garzik.org>
+Date: Mon, 12 Mar 2007 10:56:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       Chip Coldwell <coldwell@redhat.com>
+Subject: Re: data corruption with nvidia chipsets and IDE/SATA drives (k8
+ cpu errata needed?)
+References: <fa.Tb2r8Il/2H8l9dhmsGAAQB2WEZg@ifi.uio.no> <fa.lphwLNvMksoBFaqfqCzMG1UVhsA@ifi.uio.no> <45EBB7C5.2010407@shaw.ca> <200703121406.33334.ak@suse.de>
+In-Reply-To: <200703121406.33334.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Mar 2007 15:34:57 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+Andi Kleen wrote:
+> in Linux. Apparently in some cases sata_nv does DMA on an already freed and then
+> reused mapping.
 
-> > > +	bit_data->udelay	= 5,			/* 100 kHz */
-> > > +	bit_data->timeout	= HZ / 10,		/* 100 ms */  
-> > 
-> > Can we add these udelay/timeout to struct i2c_gpio_platform_data? And
-> > let customer to choose these according their specific requirement. We
-> > use Kconfig to do this, but Jean and David don't like the idea, -:(  
-> 
-> Yeah, they need to be a bit more configurable than they currently are.
-> And I think it makes sense to pass them from the board setup code, since
-> this is where things depending on board-specific details (signal quality
-> issues, pullup resistor values, etc.) are supposed to go.
+Any data or additional info on that?  Did you discover this by tracking 
+the DMA API software routines, or something lower level (like a bus 
+analyzer)?
 
-By the way, timeout seems to be hardcoded to 100 jiffies in the
-i2c-algo-bit driver, so there's probably not much point passing it from
-the board code when it's going to be overridden anyway. I'll add just a
-udelay parameter to the platform struct for  now.
+libata handles all the DMA allocation and mapping and cleanup for 
+sata_nv, so any software problem would affect the whole of libata.
 
-Haavard
+But it's possible that the nForce SATA chip has DMA padding needs that 
+are different from those provided by libata-core (grep for "pad"), which 
+could create a situation where the hardware continues DMA'ing past the 
+end of the DMA area.
+
+	Jeff
+
+
+
+
