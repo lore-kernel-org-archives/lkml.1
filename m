@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965686AbXCLLUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965636AbXCLLXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965686AbXCLLUt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 07:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965681AbXCLLUt
+	id S965636AbXCLLXO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 07:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965625AbXCLLXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 07:20:49 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54475 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965647AbXCLLUr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 07:20:47 -0400
-Date: Mon, 12 Mar 2007 12:20:45 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, npiggin@suse.de, drepper@redhat.com,
-       oleg@tv-sign.ru, sebastien.dugue@bull.net, linux-kernel@vger.kernel.org
-Subject: Re: [patch] change futex_wait() to hrtimers
-Message-ID: <20070312112045.GC11864@one.firstfloor.org>
-References: <200703110814.l2B8EaI1007615@shell0.pdx.osdl.net> <20070312011259.3834A1801C4@magilla.sf.frob.com> <20070312091006.GF21024@elte.hu> <p73bqiyaehp.fsf@bingen.suse.de> <1173697220.13341.84.camel@localhost.localdomain> <20070312105826.GB11864@one.firstfloor.org> <20070312110417.GA12308@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 07:23:14 -0400
+Received: from [212.12.190.74] ([212.12.190.74]:32898 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965646AbXCLLXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 07:23:13 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Con Kolivas <kernel@kolivas.org>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Date: Mon, 12 Mar 2007 14:26:00 +0300
+User-Agent: KMail/1.5
+Cc: ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703120742.41041.a1426z@gawab.com> <200703121553.30462.kernel@kolivas.org>
+In-Reply-To: <200703121553.30462.kernel@kolivas.org>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20070312110417.GA12308@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703121426.00854.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> if HIGH_RES_TIMERS is disabled then that is what happens. But frankly, 
+Con Kolivas wrote:
+> On Monday 12 March 2007 15:42, Al Boldi wrote:
+> > Con Kolivas wrote:
+> > > On Monday 12 March 2007 08:52, Con Kolivas wrote:
+> > > > And thank you! I think I know what's going on now. I think each
+> > > > rotation is followed by another rotation before the higher priority
+> > > > task is getting a look in in schedule() to even get quota and add it
+> > > > to the runqueue quota. I'll try a simple change to see if that
+> > > > helps. Patch coming up shortly.
+> > >
+> > > Can you try the following patch and see if it helps. There's also one
+> > > minor preemption logic fix in there that I'm planning on including.
+> > > Thanks!
+> >
+> > Applied on top of v0.28 mainline, and there is no difference.
+> >
+> > What's it look like on your machine?
+>
+> The higher priority one always get 6-7ms whereas the lower priority one
+> runs 6-7ms and then one larger perfectly bound expiration amount.
+> Basically exactly as I'd expect. The higher priority task gets precisely
+> RR_INTERVAL maximum latency whereas the lower priority task gets
+> RR_INTERVAL min and full expiration (according to the virtual deadline) as
+> a maximum. That's exactly how I intend it to work. Yes I realise that the
+> max latency ends up being longer intermittently on the niced task but
+> that's -in my opinion- perfectly fine as a compromise to ensure the nice 0
+> one always gets low latency.
 
-disabled? I would expect it (= more wakeups) when hrtimers are enabled.
+I think, it should be possible to spread this max expiration latency across 
+the rotation, should it not?
 
-> most futex waits are without timeouts - if an application cares about 
-> micro-effects like that then you are much better off not using a 
-> per-futex timeout anywa
 
-That sounds like you're arguing for not using hrtimers here because
-the applications shouldn't depend on precise timeouts here anyways?!? 
+Thanks!
 
-Anyways when you convert more kernel timeouts to hrtimers you should
-probably add some kind of batching facility that can be globally
-configured with a sysctl or similar. Then at least laptops (and possibly
-servers) can opt for more power saving again. For the futexes alone
-it probably won't matter too much agreed, but I see a trend to more hr.
-
-I also liked the idea (stolen from another popular OS) that a application
-can tell the OS how precise it wants its wakeups to be.
-
--Andi
+--
+Al
 
