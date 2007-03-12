@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965886AbXCLOWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965889AbXCLOWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965886AbXCLOWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965887AbXCLOWA
+	id S965889AbXCLOWV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965893AbXCLOWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:22:00 -0400
-Received: from [212.12.190.20] ([212.12.190.20]:32981 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965886AbXCLOV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:21:59 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Con Kolivas <kernel@kolivas.org>
-Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
-Date: Mon, 12 Mar 2007 17:14:24 +0300
-User-Agent: KMail/1.5
-Cc: ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
-References: <200703042335.26785.a1426z@gawab.com> <200703121426.00854.a1426z@gawab.com> <200703122352.51257.kernel@kolivas.org>
-In-Reply-To: <200703122352.51257.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 10:22:21 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38973 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965889AbXCLOWT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:22:19 -0400
+Date: Mon, 12 Mar 2007 15:22:16 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, npiggin@suse.de, drepper@redhat.com,
+       oleg@tv-sign.ru, sebastien.dugue@bull.net, linux-kernel@vger.kernel.org
+Subject: Re: [patch] change futex_wait() to hrtimers
+Message-ID: <20070312142216.GA15357@one.firstfloor.org>
+References: <200703110814.l2B8EaI1007615@shell0.pdx.osdl.net> <20070312011259.3834A1801C4@magilla.sf.frob.com> <20070312091006.GF21024@elte.hu> <p73bqiyaehp.fsf@bingen.suse.de> <1173697220.13341.84.camel@localhost.localdomain> <20070312105826.GB11864@one.firstfloor.org> <20070312141214.GG4372@thunk.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703121714.25034.a1426z@gawab.com>
+In-Reply-To: <20070312141214.GG4372@thunk.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> > > The higher priority one always get 6-7ms whereas the lower priority
-> > > one runs 6-7ms and then one larger perfectly bound expiration amount.
-> > > Basically exactly as I'd expect. The higher priority task gets
-> > > precisely RR_INTERVAL maximum latency whereas the lower priority task
-> > > gets RR_INTERVAL min and full expiration (according to the virtual
-> > > deadline) as a maximum. That's exactly how I intend it to work. Yes I
-> > > realise that the max latency ends up being longer intermittently on
-> > > the niced task but that's -in my opinion- perfectly fine as a
-> > > compromise to ensure the nice 0 one always gets low latency.
-> >
-> > I think, it should be possible to spread this max expiration latency
-> > across the rotation, should it not?
->
-> There is a way that I toyed with of creating maps of slots to use for each
-> different priority, but it broke the O(1) nature of the virtual deadline
-> management. Minimising algorithmic complexity seemed more important to
-> maintain than getting slightly better latency spreads for niced tasks. It
-> also appeared to be less cache friendly in design. I could certainly try
-> and implement it but how much importance are we to place on latency of
-> niced tasks? Are you aware of any usage scenario where latency sensitive
-> tasks are ever significantly niced in the real world?
+> This becomes especially important if we want the tickless code to
+> really shine as far as power management is concerned.  Unfortunately,
+> the POSIX timer abstraction doesn't give this kind of flexibility
+> easily, so it's going to be a while before we see significant
+> userspace adoption of such a kernel feature, but I think it's
+> something that would be still worthwhile to add.
 
-It only takes one negatively nice'd proc to affect X adversely.
+I suspect it would be overkill to specify that on every sleep operation.
+99% of applications won't care and for the 1% leftover a global per 
+process setting should be fine.
+I think a single prctl() and a global sysctl as default would be enough.
 
-
-Thanks!
-
---
-Al
+-Andi
 
