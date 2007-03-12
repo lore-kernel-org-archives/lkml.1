@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965839AbXCLNOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965225AbXCLNWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965839AbXCLNOl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 09:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965840AbXCLNOl
+	id S965225AbXCLNWv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 09:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965412AbXCLNWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 09:14:41 -0400
-Received: from station18k.dscga.com ([192.24.222.18]:35064 "EHLO
-	suzuka.mcnaught.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S965839AbXCLNOl (ORCPT
+	Mon, 12 Mar 2007 09:22:51 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3811 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965376AbXCLNWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 09:14:41 -0400
-X-Greylist: delayed 1382 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Mar 2007 09:14:41 EDT
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       amanda-hackers@amanda.org, Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck@vds.kolivas.org
-Subject: Re: RSDL for 2.6.21-rc3- 0.29
-References: <20070311013506.GD10459@waste.org>
-	<200703121648.22734.kernel@kolivas.org>
-	<200703120237.39477.gene.heskett@gmail.com>
-	<200703120604.42776.gene.heskett@gmail.com>
-From: Douglas McNaught <doug@mcnaught.org>
-Date: Mon, 12 Mar 2007 08:51:37 -0400
-In-Reply-To: <200703120604.42776.gene.heskett@gmail.com> (Gene Heskett's
- message of "Mon, 12 Mar 2007 06:04:42 -0400")
-Message-ID: <873b4alj52.fsf@suzuka.mcnaught.org>
-User-Agent: Gnus/5.1006 (Gnus v5.10.6) Emacs/21.4 (gnu/linux)
+	Mon, 12 Mar 2007 09:22:50 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Matt Mackall" <mpm@selenic.com>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, <ck@vds.kolivas.org>
+Subject: RE: RSDL-mm 0.28
+Date: Mon, 12 Mar 2007 06:22:39 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKAEBACDAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Importance: Normal
+In-Reply-To: <8cd998d50703101828l71fbec7bi9a819ad7b7fd9828@mail.gmail.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 12 Mar 2007 05:23:06 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 12 Mar 2007 05:23:08 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett <gene.heskett@gmail.com> writes:
 
-> If, and I have previously, I revert to a 2.6.20-ck1 patching, this does 
-> not occur.  So my contention is that someplace in this recent progression 
-> from 2.6.20 to 2.6.21-rc3, there is a patch which acts to change how 
-> c-time is being reported to tar.  Or there is a spillage into c-times 
-> when tar does its estimate scans where the output goes to /dev/null.
-> Or possibly even this version of tar is doing it differently.  I just 
-> looked up how to get the c-times out of ls, and they, as far as ls is 
-> concerned, look sane.  But tars actions while running a 2.6.21-rcX kernel 
-> certainly are not.  I do have a plain -rc2 I can try, so that will be the 
-> next test.  If that also fails in this manner, I'll build a later 
-> 2.6.20-2 or whatever to verify that it doesn't so suffer.
+> > There's a substantial performance hit for not yield, so we probably
+> > want to investigate alternate semantics for it. It seems reasonable
+> > for apps to say "let me not hog the CPU" without completely expiring
+> > them. Imagine you're in the front of the line (aka queue) and you
+> > spend a moment fumbling for your wallet. The polite thing to do is to
+> > let the next guy in front. But with the current sched_yield, you go
+> > all the way to the back of the line.
 
-You may find 'strace' useful to track down this sort of thing (though
-the output can be voluminous).
+> Well... are you advocating we change sched_yield semantics to a
+> gentler form? This is a cinch to implement but I know how Ingo feels
+> about this. It will only encourage more lax coding using sched_yield
+> instead of proper blocking (see huge arguments with the ldap people on
+> this one who insist it's impossible not to use yield).
 
--Doug
+The basic point of sched_yield is to allow every other process at the same
+static priority level a chance to use the CPU before you get it back. It is
+generally an error to use sched_yield to be nice. It's nice to get your work
+done when the scheduler gives you the CPU, that's why it gave it to you.
+
+It is proper to use sched_yield as an optimization when it more efficient to
+allow another process/thread to run than you, for example, when you
+encounter a task you cannot do efficiently at that time because another
+thread holds a lock.
+
+It's also useful prior to doing something that can most efficiently be done
+without interruption. So a thread that returns from 'sched_yield' should
+ideally be given a full timeslice if possible. This may not be sensible if
+the 'sched_yield' didn't actuall yield, but then again, if nothing else
+wants to run, why not give the only task that does a full slice?
+
+In no case is much of anything guaranteed, of course. (What can you do if
+there's no other process to yield to?)
+
+Note that processes that call sched_yield should be rewarded for doing so
+just as process that block on I/O are, assuming they do in fact wind up
+giving up the CPU when they would otherwise have had it.
+
+DS
+
+
