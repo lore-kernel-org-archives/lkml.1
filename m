@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965606AbXCLOPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965878AbXCLOTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965606AbXCLOPG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965880AbXCLOPG
+	id S965878AbXCLOTf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965884AbXCLOTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:15:06 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:60613 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965606AbXCLOPF (ORCPT
+	Mon, 12 Mar 2007 10:19:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:16774 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965878AbXCLOTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:15:05 -0400
-Message-ID: <45F5604E.5020400@s5r6.in-berlin.de>
-Date: Mon, 12 Mar 2007 15:14:38 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7
+	Mon, 12 Mar 2007 10:19:33 -0400
+Date: Mon, 12 Mar 2007 16:20:13 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org, Roland Dreier <rdreier@cisco.com>,
+       netdev@vger.kernel.org
+Subject: Re: lockdep question (was Re: IPoIB caused a kernel: BUG: softlockup
+	detected on CPU#0!)
+Message-ID: <20070312142013.GC21643@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <45E552FC.4040305@mellanox.co.il>
+	<f8ca0a150703030937u61bcd9aj200415b76c00d151@mail.gmail.com>
+	<20070311135051.GA31985@mellanox.co.il>
+	<1173626719.5182.10.camel@lappy>
+	<20070311161231.GC13817@mellanox.co.il>
+	<20070311184819.GA2567@elte.hu>
+	<20070312132826.GB20549@mellanox.co.il>
+	<20070312135112.GA18158@elte.hu>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Jan Beulich <jbeulich@novell.com>,
-       Andi Kleen <ak@muc.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] BUILD_BUG_ON_ZERO -> BUILD_BUG_OR_ZERO
-References: <1173655694.32234.213.camel@localhost.localdomain>  <45F51C25.76E4.0078.0@novell.com> <1173691510.32234.222.camel@localhost.localdomain> <45F53C4D.30802@s5r6.in-berlin.de> <Pine.LNX.4.64.0703120748310.6942@CPE00045a9c397f-CM001225dbafb6>
-In-Reply-To: <Pine.LNX.4.64.0703120748310.6942@CPE00045a9c397f-CM001225dbafb6>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070312135112.GA18158@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Mon, 12 Mar 2007, Stefan Richter wrote:
->> Rusty Russell wrote:
->> > OTOH, BUILD_BUG_OR_ZERO says what happens: either it's a build bug, or
->> > it's zero.
->>
->> What about ZERO_UNLESS_BUILD_BUG_ON(e)? It's long though...
+> Quoting Ingo Molnar <mingo@elte.hu>:
+> Subject: Re: lockdep question (was Re: IPoIB caused a kernel: BUG: softlockup detected on CPU#0!)
 > 
-> how often is this going to be used?  it's not like the tree is
-> currently awash in calls to BUILD_BUG_ON_ZERO as it is.
+> 
+> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+> 
+> > > could you turn on CONFIG_SLAB_DEBUG as well?
+> > > 
+> > > that should catch certain types of use-after-free accesses, and 
+> > > lockdep will also warn if a still locked object is freed.
+> > 
+> > Hmm, no, this does not look like use-after-free. I enabled 
+> > CONFIG_SLAB_DEBUG, and I still see the same message, so the memory was 
+> > not overwritten by slab debugger.
+> 
+> that's still not conclusive - the memory might not have been allocated 
+> by slab again to detect it. Your magic-number check definitely shows 
+> some sort of corruption going on, right?
 
-Most of the time it will hidden as a macro-in-a-macro, like in
-ARRAY_SIZE().  So the length of the name doesn't matter much.  But then,
-the _name_ itself doesn't matter much because authors of public macros
-are the primary user group, not John Driverhacker.
+Not necessarily in such a direct way.
+
+I currently think we are somehow getting neighbours where
+neigh->dev points to a loopback device - that's type 772,
+and this seems to make sense.
+I printed out the device name and sure enough it is "lo".
+
+Is it true that sticking the following
+
+static int ipoib_neigh_setup_dev(struct net_device *dev,
+				 struct neigh_parms *parms)
+{
+	parms->neigh_destructor = ipoib_neigh_destructor;
+
+	return 0;
+}
+
+in dev->neigh_setup, as ipoib does, guarantees that neighbour->dev will point to
+the current device for any neighbour which ipoib_neigh_destructor gets?
+
+That's the assumption IPoIB makes, and it seems broken in this instance.
+
+How could that be?
+
 -- 
-Stefan Richter
--=====-=-=== --== -==--
-http://arcgraph.de/sr/
+MST
