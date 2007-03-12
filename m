@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965538AbXCLLHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965535AbXCLLIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965538AbXCLLHt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 07:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965540AbXCLLHt
+	id S965535AbXCLLIw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 07:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965540AbXCLLIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 07:07:49 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52298 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965538AbXCLLHs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 07:07:48 -0400
-Date: Mon, 12 Mar 2007 12:10:32 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Fabio Comolli <fabio.comolli@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 12 Mar 2007 07:08:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35442 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965535AbXCLLIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 07:08:51 -0400
+Date: Mon, 12 Mar 2007 12:08:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] libata: don't whine if ->prereset() returns -ENOENT
-Message-ID: <20070312121032.3cfd1786@lxorguk.ukuu.org.uk>
-In-Reply-To: <45F50E28.7010509@gmail.com>
-References: <20070309163148.GA12848@havoc.gtf.org>
-	<b637ec0b0703091324q7f15fddbpc8c24b4e1131e3f4@mail.gmail.com>
-	<20070309234839.2070a265@lxorguk.ukuu.org.uk>
-	<45F50E28.7010509@gmail.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Message-ID: <20070312110833.GA12835@elte.hu>
+References: <200703111457.17624.kernel@kolivas.org> <200703122022.43021.kernel@kolivas.org> <1173692286.20540.12.camel@Homer.simpson.net> <200703122127.41942.kernel@kolivas.org> <1173697024.8014.19.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173697024.8014.19.camel@Homer.simpson.net>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1. I think these ports should be made dummy instead of returning
-> -ENOENT on prereset().  -ENOENT from prereset() was a hack to keep
-> ata_piix's behavior unchanged while converting it to new EH.  If no
-> one objcts, I'll convert similar usages to use dummy ports after new
-> init model and drop -ENOENT hack in #upstream.
 
-No objection at all.
+* Mike Galbraith <efault@gmx.de> wrote:
 
-> 2. -ENODEV sounds more appropriate.  Why have I used -ENOENT.  :-)
+> The test scenario was one any desktop user might do with every 
+> expectation responsiveness of the interactive application remain 
+> intact. I understand the concepts here Con, and I'm not knocking your 
+> scheduler. I find it to be a step forward on the one hand, but a step 
+> backward on the other.
 
-You didn't - I did. I think -ENOENT is better as we are missing an entire
-channel not a device (disk).
+ok, then that step backward needs to be fixed.
 
->
+> > We are getting good interactive response with a fair scheduler yet 
+> > you seem intent on overloading it to find fault with it.
+> 
+> I'm not trying to find fault, I'm TESTING AND REPORTING.  Was.
+
+Con, could you please take Mike's report of this regression seriously 
+and address it? Thanks,
+
+	Ingo
