@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965698AbXCLLll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965692AbXCLLr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965698AbXCLLll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 07:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965706AbXCLLlj
+	id S965692AbXCLLr2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 07:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965722AbXCLLr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 07:41:39 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:43845 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965698AbXCLLli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 07:41:38 -0400
-To: dgc@sgi.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <20070312062349.GN6095633@melbourne.sgi.com> (message from David
-	Chinner on Mon, 12 Mar 2007 17:23:49 +1100)
-Subject: Re: [patch 3/8] per backing_dev dirty and writeback page accounting
-References: <20070306180443.669036741@szeredi.hu> <20070306180550.793803735@szeredi.hu> <20070312062349.GN6095633@melbourne.sgi.com>
-Message-Id: <E1HQitT-0002wP-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 12 Mar 2007 12:40:47 +0100
+	Mon, 12 Mar 2007 07:47:28 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:40573 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965692AbXCLLr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 07:47:27 -0400
+Date: Mon, 12 Mar 2007 12:51:37 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: David Miller <davem@davemloft.net>
+Cc: amit2030@gmail.com, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] [REVISED] net/ipv4/multipath_wrandom.c: check   kmalloc() return value.
+Message-ID: <20070312115137.GA3270@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070308.232908.92582631.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I have no idea how serious the scalability problems with this are.  If
-> > they are serious, different solutions can probably be found for the
-> > above, but this is certainly the simplest.
+On 09-03-2007 08:29, David Miller wrote:
+> From: Amit Choudhary <amit2030@gmail.com>
+> Date: Thu, 8 Mar 2007 23:22:15 -0800
 > 
-> Atomic operations to a single per-backing device from all CPUs at once?
-> That's a pretty serious scalability issue and it will cause a major
-> performance regression for XFS.
+>> Description: Check the return value of kmalloc() in function wrandom_set_nhinfo(), in file net/ipv4/multipath_wrandom.c.
+>>
+>> Signed-off-by: Amit Choudhary <amit2030@gmail.com>
+> 
+> This kind of patch has been submitted several times before and it's
+> never accepted because you have to do much more than this to recover
+> from the allocation error.
+> 
+> There is no error status returned to the caller, so the callers assume
+> the operation succeeded, and will either OOPS or crash in some other
+> way.
+> 
+> Therefore, just adding some NULL pointer checks and returning is not
+> going to fix this bug.
+> 
+> The whole cahce-multipath subsystem has to have it's guts revamped for
+> proper error handling.
 
-OK.  How about just accounting writeback pages?  That should be much
-less of a problem, since normally writeback is started from
-pdflush/kupdate in large batches without any concurrency.
+But until then it'll unnecessarily spoil linux opinion as regards
+stability and waste time of developers to check error messages.
+So, maybe it's less evil to check those NULLs where possible and add
+some WARN_ONs here and there...
 
-Or is it possible to export the state of the device queue to mm?
-E.g. could balance_dirty_pages() query the backing dev if there are
-any outstanding write requests?
-
-> I'd call this a showstopper right now - maybe you need to look at
-> something like the ZVC code that Christoph Lameter wrote, perhaps?
-
-That's rather a heavyweight approach for this I think.
-
-The only info balance_dirty_pages() really needs is whether there are
-any dirty+writeback bound for the backing dev or not.
-
-It knows about the diry pages, since it calls writeback_inodes() which
-scans the dirty pages for this backing dev looking for ones to write
-out.  If after returning from writeback_inodes() wbc->nr_to_write
-didn't decrease and wbc->pages_skipped is zero then we know that there
-are no more dirty pages for the device.  Or at least there are no
-dirty pages which aren't already under writeback.
-
-Thanks,
-Miklos
+Regards,
+Jarek P.
