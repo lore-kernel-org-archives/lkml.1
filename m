@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbXCLRxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750755AbXCLSFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbXCLRxS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 13:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbXCLRxS
+	id S1750755AbXCLSFZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbXCLSFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 13:53:18 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:62553 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbXCLRxR (ORCPT
+	Mon, 12 Mar 2007 14:05:25 -0400
+Received: from mail27.syd.optusnet.com.au ([211.29.133.168]:42221 "EHLO
+	mail27.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750755AbXCLSFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 13:53:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=cooBZ64O8313wz+hTZO6BM3DnzHY6ty5JdiC/goo+TKbZkkj9nFBmNqvj5oUO6Y+/7Be6JmI4OjN5MqDqqeeKVoBaz1HfzBmHlgkd2aI1+k5XHU0EUQcn8S+jUfeTYqJwjgCgugMYGUV5WsPg8bepLRtVeLtj3tvfBAkvFuh2xY=
-Date: Mon, 12 Mar 2007 20:49:47 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: "Make nenuconfig" does not save parameters.
-Message-ID: <20070312174947.GA10287@cvg>
-References: <Pine.LNX.4.61.0703101724160.8799@yvahk01.tjqt.qr> <20070310194617.2aef1006@localhost> <Pine.LNX.4.61.0703101747530.8799@yvahk01.tjqt.qr> <20070310175058.GA19878@cvg> <Pine.LNX.4.61.0703101906070.8799@yvahk01.tjqt.qr> <20070310212730.GA2577@uranus.ravnborg.org> <Pine.LNX.4.61.0703102234210.26332@yvahk01.tjqt.qr> <20070310224534.GA3150@uranus.ravnborg.org> <20070311100723.GA10359@cvg> <20070311195033.GA3302@uranus.ravnborg.org>
+	Mon, 12 Mar 2007 14:05:24 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Date: Tue, 13 Mar 2007 05:05:04 +1100
+User-Agent: KMail/1.9.5
+Cc: ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703122352.51257.kernel@kolivas.org> <200703121714.25034.a1426z@gawab.com>
+In-Reply-To: <200703121714.25034.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070311195033.GA3302@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703130505.05132.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Sun, Mar 11, 2007 at 08:50:33PM +0100]
+On Tuesday 13 March 2007 01:14, Al Boldi wrote:
+> Con Kolivas wrote:
+> > > > The higher priority one always get 6-7ms whereas the lower priority
+> > > > one runs 6-7ms and then one larger perfectly bound expiration amount.
+> > > > Basically exactly as I'd expect. The higher priority task gets
+> > > > precisely RR_INTERVAL maximum latency whereas the lower priority task
+> > > > gets RR_INTERVAL min and full expiration (according to the virtual
+> > > > deadline) as a maximum. That's exactly how I intend it to work. Yes I
+> > > > realise that the max latency ends up being longer intermittently on
+> > > > the niced task but that's -in my opinion- perfectly fine as a
+> > > > compromise to ensure the nice 0 one always gets low latency.
+> > >
+> > > I think, it should be possible to spread this max expiration latency
+> > > across the rotation, should it not?
+> >
+> > There is a way that I toyed with of creating maps of slots to use for
+> > each different priority, but it broke the O(1) nature of the virtual
+> > deadline management. Minimising algorithmic complexity seemed more
+> > important to maintain than getting slightly better latency spreads for
+> > niced tasks. It also appeared to be less cache friendly in design. I
+> > could certainly try and implement it but how much importance are we to
+> > place on latency of niced tasks? Are you aware of any usage scenario
+> > where latency sensitive tasks are ever significantly niced in the real
+> > world?
+>
+> It only takes one negatively nice'd proc to affect X adversely.
 
-[... snipped ...]
+I have an idea. Give me some time to code up my idea. Lack of sleep is making 
+me very unpleasant.
 
-| I would rather avoid adding the extra lines. In the
-| 'office-suite' fashion I have cooked up a patch that specify
-| the filename as part of the windows title.
-| 
-| To make the conversion we should consider renaming from
-| current "Load alternate" to "Open config file..."
-| and likewise "Save alternate" to "Save config file as..."
-| 
-| Comments?
-| 
-| 	Sam
-|
-[... snipped ...]
-
-Hi Sam,
-
-I've tested it and I think all do its work as it should...
-But only two points may be additionally changed:
-
-	1) I think it is better to show main dialog title in form:
-	"Linux Kernel v.2.6.21-rc3 Configuration - config file: .config"
-	2) You've set menu_backtitle with 128 characters may be we
-	should set as PATH_MAX+1+128 - to hold a whole config file?
-
-And renaming "Load alternate" to "Open config file..." and
-"Save alternate" to "Save config file as..." is fine I guess.
-
-Hey kernel list - what's your comments? :)
-
-	Cyrill
-
+-- 
+-ck
