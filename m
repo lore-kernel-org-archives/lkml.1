@@ -1,62 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbXCLSsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbXCLStK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751954AbXCLSsr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbXCLSsr
+	id S1752116AbXCLStK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXCLStJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:48:47 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1620 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbXCLSsq (ORCPT
+	Mon, 12 Mar 2007 14:49:09 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:50461 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752103AbXCLStH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:48:46 -0400
-Message-ID: <45F5A06D.4030004@shadowen.org>
-Date: Mon, 12 Mar 2007 18:48:13 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Mon, 12 Mar 2007 14:49:07 -0400
+Date: Mon, 12 Mar 2007 19:48:56 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+cc: 7eggert@gmx.de, Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sys_write() racy for multi-threaded append?
+In-Reply-To: <f2b55d220703120926k1ab7112fh60227fac670b8b4c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0703121803450.2313@be1.lrz>
+References: <7WzUo-1zl-21@gated-at.bofh.it> <7WAx2-2pg-21@gated-at.bofh.it>
+  <7WAGF-2Bx-9@gated-at.bofh.it> <7WB07-3g5-33@gated-at.bofh.it> 
+ <7WBt7-3SZ-23@gated-at.bofh.it> <E1HQfLX-0000fk-68@be1.lrz>
+ <f2b55d220703120926k1ab7112fh60227fac670b8b4c@mail.gmail.com>
 MIME-Version: 1.0
-To: Dave Hansen <hansendc@us.ibm.com>
-CC: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 1/3] Lumpy Reclaim V4
-References: <exportbomb.1173723760@pinky>	 <5239d2d31cd39bf4fc33426648f97be0@pinky> <1173724576.11945.100.camel@localhost.localdomain>
-In-Reply-To: <1173724576.11945.100.camel@localhost.localdomain>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
+X-Provags-ID2: V01U2FsdGVkX19YM6Hq8NtzExHc9ZzZ7/sJqtMflXfMo5cEBDX
+ /Kb5Wb8EVQx3Eu5Dzx0PtW81VGbb2BnyO55s5HmsbwzBE4iaEA
+ P9nZbvqzvRFYi/UXD7Gnw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Mon, 2007-03-12 at 18:23 +0000, Andy Whitcroft wrote:
->> +                       /* The target page is in the block, ignore it. */
->> +                       if (unlikely(pfn == page_pfn))
->> +                               continue;
->> +#ifdef CONFIG_HOLES_IN_ZONE
->> +                       /* Avoid holes within the zone. */
->> +                       if (unlikely(!pfn_valid(pfn)))
->> +                               break;
->> +#endif 
-> 
-> Would having something like:
-> 
->         static inline int pfn_in_zone_hole(unsigned long pfn)
->         {
->         #ifdef CONFIG_HOLES_IN_ZONE
->         	if (unlikely(!pfn_valid(pfn)))
->         		return 1;
->         #endif 
->         	return 0;
->         }
->         
-> help us out?  page_is_buddy() and page_is_consistent() appear to do the
-> exact same thing, with the same #ifdef.
+On Mon, 12 Mar 2007, Michael K. Edwards wrote:
+> On 3/12/07, Bodo Eggert <7eggert@gmx.de> wrote:
+> > Michael K. Edwards <medwards.linux@gmail.com> wrote:
 
-Funny you mention that.  I have a patch hanging around which basically
-does that.  I'd been planning to send it up.  It adds a
-pfn_valid_within() which you use when you already know a relative page
-within the MAX_ORDER block is valid.  I'd not sent it cause I thought
-the name sucked.
+> > > Actually, I think it would make the kernel (negligibly) faster to bump
+> > > f_pos before the vfs_write() call.
+> >
+> > This is a security risk.
 
--apw
+<snip>
+
+> I don't entirely follow this.
+
+I got it wrong, and I didn't CC myself so I couldn't correct it in time.
+
+If it was a security risk, it would exist right now, too, because of 
+other access patterns.
+
+> > BTW: The best thing you can do to a program where two threads race for
+> > writing one fd is to let it crash and burn in the most spectacular way
+> > allowed without affecting the rest of the system, unless it happens to
+> > be a pipe and the number of bytes written is less than PIPE_MAX.
+> 
+> That's fine when you're doing integration test, and should probably be
+> the default during development.  But if the race is first exposed in
+> the field, or if the developer is trying to concentrate on a different
+> problem, "spectacular crash and burn" may do more harm than good.
+> It's easy enough to refactor the f_pos handling in the kernel so that
+> it all goes through three or four inline accessor functions, at which
+> point you can choose your trade-off between speed and idiot-proofness
+> -- at _kernel_ compile time, or (given future hardware that supports
+> standardized optionally-atomic-based-on-runtime-flag operations) per
+> process at run-time.
+
+CONFIG_WOMBAT
+
+Waste memory, brain and time in order to grant an atomic write which is 
+neither guaranteed by the standard nor expected by any sane programmer, 
+just in case some idiot tries to write to one file from multiple 
+processes.
+
+Warning: Programs expecting this behaviour are buggy and non-portable.
+
+> Frankly, I think that unless application programmers poke at some sort
+> of magic "I promise to handle short writes correctly" bit, write()
+> should always return either the full number of bytes requested or an
+> error code.
+
+If you asume that you won't have short writes, your programs may fail on
+e.g. solaris. There may be reasons for linux to use the same semantics at 
+some time in the future, you never know.
+
+If you asume you *may* have short writes, you have no problem.
+
+>  If they do poke at that bit, the (development) kernel
+> should deliberately split writes a few percent of the time, just to
+> exercise the short-write code paths.  And in order to find out where
+> that magic bit is, they should have to read the kernel code or ask on
+> LKML (and get the "standard lecture").
+
+I think it may be well-hidden in menuconfig.
+
+> Really very IEEE754-like, actually.  (Harp, harp.)
+
+-EYOULOSTME
+-- 
+"Try to look unimportant; they may be low on ammo."
+-Infantry Journal
