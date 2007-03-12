@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbXCLWeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751570AbXCLWfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751110AbXCLWeq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 18:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbXCLWeq
+	id S1751570AbXCLWfQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 18:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXCLWfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 18:34:46 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:38656 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbXCLWep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 18:34:45 -0400
-Subject: Re: [RFC] [Patch 1/1] IBAC Patch
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-security-module@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com,
-       linux-kernel@vger.kernel.org, disec-devel@lists.sourceforge.net
-In-Reply-To: <200703090319.l293JrpC009714@turing-police.cc.vt.edu>
-References: <1173394696.5981.12.camel@localhost.localdomain>
-	 <200703090319.l293JrpC009714@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 17:47:20 -0400
-Message-Id: <1173736041.5803.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+	Mon, 12 Mar 2007 18:35:16 -0400
+Received: from rtr.ca ([64.26.128.89]:2662 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751493AbXCLWfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 18:35:13 -0400
+Message-ID: <45F5D59E.10304@rtr.ca>
+Date: Mon, 12 Mar 2007 18:35:10 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Phil Kaslo <phil@cs.arizona.edu>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Asus P5B-VM motherboard:  cd drive malfunctions if internal nic
+ in use.
+References: <200703122212.l2CMCaxm032601@osprey.cs.arizona.edu>
+In-Reply-To: <200703122212.l2CMCaxm032601@osprey.cs.arizona.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-08 at 22:19 -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 08 Mar 2007 17:58:16 EST, Mimi Zohar said:
-> > This is a request for comments for a new Integrity Based Access
-> > Control(IBAC) LSM module which bases access control decisions
-> > on the new integrity framework services. 
-> > 
-> > (Hopefully this will help clarify the interaction between an LSM 
-> > module and LIM module.)
+Phil Kaslo wrote:
+> Hello,
 > 
-> OK, between this and the additional LIM hooks I didn't notice in an earlier
-> patch, we're starting to see the API.   The only problem is that although
-> it may be the right API for *your* code, I suspect it's a non-starter without
-> a discussion about whether it's the right *generic* API for an LIM (which will
-> require at least one dramatic bun fight about what "Integrity" means).
-
-Absolutely, we need to make sure that the set of LIM hooks is complete and that
-nothing is missing in order to implement different types of LIM providers.  I'm 
-copying the digsig mailing list for their input on requirements, which this API 
-might not satisfy or perhaps address.
-
-> > Index: linux-2.6.21-rc3-mm2/security/ibac/Kconfig
+> I have a new machine, Asus motherboard, in which the cd drive malfunctions 
+> if the internal nic on the mb (RealTek RTL8168b/8111b) is actively in use.   
+> The cd drive, on ide2, is, as per dmesg, a Sony:
+>  ide2: BM-DMA at 0xa400-0xa407, BIOS settings: hde:pio, hdf:pio
+>  hde: SONY DVD RW AW-Q170A, ATAPI CD/DVD-ROM drive
+>  hde: ATAPI 48X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(66)
 > 
-> Minor congnitive-dissonance alert:
+> I've seen this on 3 of these new machines so far.  One has a LITE-ON cdrom: 
+>  hde: LITE-ON DVDRW LH-20A1H, ATAPI CD/DVD-ROM drive
+> so this is not unique to the Sony.
 > 
-> > +config SECURITY_IBAC_BOOTPARAM
-> > +	bool "IBAC boot parameter"
-> > +	depends on SECURITY_IBAC
-> > +	default y
-> 
-> > +	  If you are unsure how to answer this question, answer N.
-> 
-> The 'default' should in general match the hint we give the user.
+> Motherboard:  Asus P5B-VM  G965 775  BIOS Revision : 613
+> CPU: Intel Core 2 CPU 6300 1.86GHz
 
-Oops, blush.  It will obviously be corrected in the next IBAC patch
-release.
+Is that a PATA cd-drive?  If so, then you must have hooked it up
+to the JMicron IDE controller.  That driver is just plain buggy.
 
-Mimi Zohar
+I gave up on it for my own P5B-VM.  The libata version works better
+than the drivers/ide, but I gave up on it and got a SATA DVD/RW drive.
 
+Off topic:  do your USB ports power off when the system shuts down?
+Mine don't -- the +5V continues on them.. I'd love a tip on how to
+turn them off completely at shutdown.
+
+Cheers
