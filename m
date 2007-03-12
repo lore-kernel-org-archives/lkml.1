@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbXCLVA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbXCLVBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752944AbXCLVA2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 17:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbXCLVA2
+	id S1752946AbXCLVBb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 17:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbXCLVBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 17:00:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60483
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752943AbXCLVA1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 17:00:27 -0400
-Date: Mon, 12 Mar 2007 14:00:25 -0700 (PDT)
-Message-Id: <20070312.140025.21595408.davem@davemloft.net>
-To: Eric.Moore@lsi.com
-Cc: Valdis.Kletnieks@vt.edu, rpjday@mindspring.com,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] MPT FUSION: Delete unused header files.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <664A4EBB07F29743873A87CF62C26D70623ED6@NAMAIL4.ad.lsil.com>
-References: <200703112232.l2BMWbAI010768@turing-police.cc.vt.edu>
-	<664A4EBB07F29743873A87CF62C26D70623ED6@NAMAIL4.ad.lsil.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 17:01:30 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:50902 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752945AbXCLVBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 17:01:30 -0400
+Date: Mon, 12 Mar 2007 22:00:23 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
+In-Reply-To: <45F57F94.6010502@gmail.com>
+Message-ID: <Pine.LNX.4.64.0703122157550.14144@twin.jikos.cz>
+References: <Pine.LNX.4.44L0.0703121100460.2489-100000@iolanthe.rowland.org>
+ <45F57F94.6010502@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Moore, Eric" <Eric.Moore@lsi.com>
-Date: Mon, 12 Mar 2007 10:19:18 -0600
+(trimmed CC list a bit)
 
-> Valdis.Kletnieks silly little rant: 
-> 
-> > Certainly appropriate content for something on your website, 
-> > and vendors who
-> > provide programs like dmidecode and parsemce are always 
-> > welcome. I could
-> > probably be convinced that such info should have at least a 
-> > pointer somewhere
-> > in Documentation/lsi_debug.txt or some such.  But quite 
-> > frankly, if I'm reduced
-> > to wading through *.h files to figure out what some 
-> > recalcitrant hardware is
-> > upset about, there's been a failure in documentation.  
-> > *ESPECIALLY* if I
-> > go look at drivers/whatever/source.c and it doesn't even 
-> > *reference* the *.h
-> > file in question.
-> 
-> 
-> Its apparent to me that you don't have our hardware, nor have you
-> actually waded thru this driver source code. 
-> 
-> If you did, you would of noticed that the header you want to delete, is
-> actually referenced in the *.c source code.   The file "mpi_log_fc.h",
-> is indeed mentioned in mptbase.c, in the function called
-> mpt_fc_log_info, in the documention section above the function.    This
-> header file is very helpful to those supporting our hardware, and those
-> using it
-> For SAS(mpi_log_sas.h), I have broken out each loginfo in the strings
-> you will find defined in originator_str, iop_code_str, pl_code_str, etc,
-> I probably do that with fibre.
-> 
-> If its that important to you to have the header files included, I will
-> provide a patch that does that.    
+On Mon, 12 Mar 2007, Jiri Slaby wrote:
 
-If you're going to include it just for the sake of including it, not
-because the code in question actually uses types or function
-declarations defined in there, don't bother, you're just using an
-anti-social mechanism to keep this header file in the tree.
+> > >      UHCI: Eliminate asynchronous skeleton Queue Headers
+> > Post it along with the usbmon log, and I'll try to figure out what happened.
+> Here it comes:
+> USBMON:
+> f7525b40 1832950485 C Ii:004:01 0 8 = 00005300 00000000
+> f7525b40 1832950517 S Ii:004:01 -115 8 <
+> f7525140 1832950540 S Co:004:00 s 21 09 0200 0000 0001 1 = 01
+> f7525140 1832952485 C Co:004:00 0 1 >
+> Corresponds to numlock; 7; numlock; 7.
 
-Please, let's kill this header file if it is unused.
+Jiri,
+
+thanks. Could you also please redo the test with the offending uhci patch 
+reverted and send the output of a working situation?
+
+Thanks,
+
+-- 
+Jiri Kosina
