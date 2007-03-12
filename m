@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbXCLTuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbXCLTy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752810AbXCLTuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 15:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXCLTuV
+	id S1752841AbXCLTy4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 15:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXCLTy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 15:50:21 -0400
-Received: from [212.12.190.74] ([212.12.190.74]:33097 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752810AbXCLTuU convert rfc822-to-8bit (ORCPT
+	Mon, 12 Mar 2007 15:54:56 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:39278 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbXCLTyz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 15:50:20 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Date: Mon, 12 Mar 2007 22:53:33 +0300
-User-Agent: KMail/1.5
+	Mon, 12 Mar 2007 15:54:55 -0400
+X-Greylist: delayed 604 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Mar 2007 15:54:55 EDT
+X-IronPort-AV: i="4.14,275,1170662400"; 
+   d="scan'208"; a="400348820:sNHT89594496"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703122253.33866.a1426z@gawab.com>
+Subject: Clarification required about select vs wake_up race condition
+Date: Mon, 12 Mar 2007 12:44:34 -0700
+Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A411@xmb-sjc-214.amer.cisco.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Clarification required about select vs wake_up race condition
+thread-index: Acdk3tvrQuTn608jSoqFmKKZFLit7Q==
+From: "Ravinandan Arakali \(rarakali\)" <rarakali@cisco.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 12 Mar 2007 19:44:34.0286 (UTC) FILETIME=[DC2DE0E0:01C764DE]
+Authentication-Results: sj-dkim-3; header.From=rarakali@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xavier Bestel wrote:
-> Le mardi 13 mars 2007 à 05:49 +1100, Con Kolivas a écrit :
-> > Again I think your test is not a valid testcase. Why use two threads for
-> > your encoding with one cpu? Is that what other dedicated desktop OSs
-> > would do?
->
-> as your scheduler
-> is "strictly fair", won't that enable trivial DoS by just letting an
-> user fork a multitude of CPU-intensive processes ?
+Hi,
+I am facing following problem and was wondering if somebody could help
+me out.
+Our char driver(pretty much like all other char drivers) does a
+poll_wait() 
+and returns status depending on whether data is available to be read.
+Even though some data is available to be read(verified using one of our
+internal
+commands), the select() never wakes up, inspite of any no. of messages
+sent.
 
-I don't think we have to worry about DoS with this scheduler.
-Note the load average; it happily wraps.
+To understand this, I was looking at the code of select vs
+wake_up_interruptible().
+I feel I am misunderstanding some part of the kernel code but will be
+glad if
+somebody can point it out.
 
-top - 22:34:02 up 8 min,  0 users,  load average: 615.32, 746.30, 929.15
-Tasks: 3379 total, 3336 running,  43 sleeping,   0 stopped,   0 zombie
-Cpu(s):   8.8% user,  21.1% system,  10.0% nice,  56.5% idle,   3.6% IO-wait
-Mem:    499480k total,   414640k used,    84840k free,     1956k buffers
-Swap:  1020088k total,        0k used,  1020088k free,     8296k cached
+My understanding:
+The do_select() sets the state of task to TASK_INTERRUPTIBLE and calls
+the driver's
+poll entry point. In our poll(), let's say immediately after we
+determine that there's 
+nothing to be read, some data arrives causing a wake_up_interruptible()
+on another CPU. 
+The wake up happens in the context of process sending the data. Since
+the receiving 
+process was already added to the list of listeners, from looking at the
+code of 
+try_to_wake_up(), it looks like it can set the state of the receiving
+process to 
+TASK_RUNNING(I don't see any lock preventing this). After this happens,
+the receiving
+process goes to sleep (because of schedule_timeout called by do_select)
+but
+state is still set to TASK_RUNNING. In this state, when another message
+arrives,
+the wake_up_interruptible will not wake the process because of following
+code in
+try_to_wake_up() ?
 
-  PID  PR  NI  VIRT  RES  SHR SWAP nFLT nDRT WCHAN     S %CPU    TIME+  Command 
-  614  39   0  3668 2712  720  956    5    0 rest_init R  1.9   0:09.70 top     
-  845  23   0  3056 1780  932 1276    0    0 wait      S  0.0   0:01.96 sh      
-    1  20   0  1440  504  444  936   14    0 rest_init S  0.0   0:00.76 init    
- 4180  28   0  3664 2640  652 1024    0    0 rest_init R  3.5   0:00.40 top     
-  863  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.30 ping    
-  929  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.29 ping    
-  871  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.28 ping    
-  904  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.28 ping    
-  946  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.28 ping    
-  947  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.28 ping    
-  972  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.28 ping    
-  862  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  881  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  901  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  915  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  923  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  926  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  958  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  967  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  987  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
-  994  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.27 ping    
+old_state = p->state;
+if (!(old_state & state))
+   goto out;
 
+The above situation seems simplistic so I'm wondering what I am missing
+here ?
+Advice from gurus is highly appreciated.
 
-Thanks!
-
---
-Al
-
+Thanks,
+Ravi
