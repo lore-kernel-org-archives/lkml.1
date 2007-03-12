@@ -1,86 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751653AbXCLSnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751720AbXCLSoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751653AbXCLSnF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXCLSnF
+	id S1751720AbXCLSoY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXCLSoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:43:05 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:55093 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbXCLSnC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:43:02 -0400
-Subject: Re: [RFC][PATCH 2/7] RSS controller core
-From: Dave Hansen <hansendc@us.ibm.com>
-To: Herbert Poetzl <herbert@13thfloor.at>
-Cc: Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, menage@google.com, xemul@sw.ru
-In-Reply-To: <20070312010039.GC21861@MAIL.13thfloor.at>
-References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>
-	 <20070306140036.4e85bd2f.akpm@linux-foundation.org>
-	 <45F3F581.9030503@sw.ru>
-	 <20070311045111.62d3e9f9.akpm@linux-foundation.org>
-	 <20070312010039.GC21861@MAIL.13thfloor.at>
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 11:42:59 -0700
-Message-Id: <1173724979.11945.103.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 14:44:24 -0400
+Received: from smtp14.wxs.nl ([195.121.247.5]:45648 "EHLO smtp14.wxs.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751458AbXCLSoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 14:44:23 -0400
+Date: Mon, 12 Mar 2007 19:47:11 +0100
+From: jos poortvliet <jos@mijnkamer.nl>
+X-Face: $0>4o"Xx2u2q(Tx!D+6~yPc{ZhEfnQnu:/nthh%Kr%f$aiATk$xjx^X4admsd*)=?utf-8?q?IZz=3A=5FkT=0A=09=7CurITP!=2E?=)L`*)Vw@4\@6>#r;3xSPW`,~C9vb`W/s]}Gq]b!o_/+(lJ:b)=?utf-8?q?T0=26KCLMGvG=7CS=5E=0A=09z=7B=5C=2E7EtehxhFQE=27eYSsir/=7CtQ?=
+ =?utf-8?q?j=23rWQe4o?=>WC>_R<vO,d]czmqWYkq[v~iB.e_GuxB'")
+ =?utf-8?q?p3=0A=09jGdrhlY4=5E!vd=3F=3AegW?=)xn&fP4!FV<.
+Subject: Re: [ck] Re: [ANNOUNCE] RSDL completely fair starvation free
+ interactive cpu scheduler
+In-reply-to: <200703130505.05132.kernel@kolivas.org>
+To: ck@vds.kolivas.org
+Cc: Con Kolivas <kernel@kolivas.org>, Al Boldi <a1426z@gawab.com>,
+       linux-kernel@vger.kernel.org
+Message-id: <200703121947.16008.jos@mijnkamer.nl>
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=nextPart2687731.mml4ruIgb3
+Content-transfer-encoding: 7bit
+User-Agent: KMail/1.9.6
+References: <200703042335.26785.a1426z@gawab.com>
+ <200703121714.25034.a1426z@gawab.com> <200703130505.05132.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How about we drill down on these a bit more.
+--nextPart2687731.mml4ruIgb3
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Mon, 2007-03-12 at 02:00 +0100, Herbert Poetzl wrote:
->  - shared mappings of 'shared' files (binaries 
->    and libraries) to allow for reduced memory
->    footprint when N identical guests are running
+Op Monday 12 March 2007, schreef Con Kolivas:
+> On Tuesday 13 March 2007 01:14, Al Boldi wrote:
+> > Con Kolivas wrote:
+> > > > > The higher priority one always get 6-7ms whereas the lower priori=
+ty
+> > > > > one runs 6-7ms and then one larger perfectly bound expiration
+> > > > > amount. Basically exactly as I'd expect. The higher priority task
+> > > > > gets precisely RR_INTERVAL maximum latency whereas the lower
+> > > > > priority task gets RR_INTERVAL min and full expiration (according
+> > > > > to the virtual deadline) as a maximum. That's exactly how I intend
+> > > > > it to work. Yes I realise that the max latency ends up being long=
+er
+> > > > > intermittently on the niced task but that's -in my opinion-
+> > > > > perfectly fine as a compromise to ensure the nice 0 one always ge=
+ts
+> > > > > low latency.
+> > > >
+> > > > I think, it should be possible to spread this max expiration latency
+> > > > across the rotation, should it not?
+> > >
+> > > There is a way that I toyed with of creating maps of slots to use for
+> > > each different priority, but it broke the O(1) nature of the virtual
+> > > deadline management. Minimising algorithmic complexity seemed more
+> > > important to maintain than getting slightly better latency spreads for
+> > > niced tasks. It also appeared to be less cache friendly in design. I
+> > > could certainly try and implement it but how much importance are we to
+> > > place on latency of niced tasks? Are you aware of any usage scenario
+> > > where latency sensitive tasks are ever significantly niced in the real
+> > > world?
+> >
+> > It only takes one negatively nice'd proc to affect X adversely.
+>
+> I have an idea. Give me some time to code up my idea. Lack of sleep is
+> making me very unpleasant.
 
-So, it sounds like this can be phrased as a requirement like:
+You're excited by RSDL and the positive comments, aren't you? Well, don't=20
+forget to sleep, sleeping makes ppl smarter you know ;-)
 
-	"Guests must be able to share pages."
+--nextPart2687731.mml4ruIgb3
+Content-Type: application/pgp-signature
 
-Can you give us an idea why this is so?  On a typical vserver system,
-how much memory would be lost if guests were not permitted to share
-pages like this?  How much does this decrease the density of vservers?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
->  - virtual 'physical' limit should not cause
->    swap out when there are still pages left on
->    the host system (but pages of over limit guests
->    can be preferred for swapping)
+iD8DBQBF9aAw+wgQ1AD35iwRAnYXAJ9O98rS3PKPzZp78xGDo7O9a4f51gCfX3R+
+t96LVrpooN5G/kCSd8bl7kk=
+=Q0y3
+-----END PGP SIGNATURE-----
 
-Is this a really hard requirement?  It seems a bit fluffy to me.  An
-added bonus if we can do it, but certainly not the most important
-requirement in the bunch.
-
-What are the consequences if this isn't done?  Doesn't a loaded system
-eventually have all of its pages used anyway, so won't this always be a
-temporary situation?
-
-This also seems potentially harmful if we aren't able to get pages
-*back* that we've given to a guest.  Tasks can pin pages in lots of
-creative ways.
-
->  - accounting and limits have to be consistent
->    and should roughly represent the actual used
->    memory/swap (modulo optimizations, I can go
->    into detail here, if necessary)
-
-So, consistency is important, but is precision?  If we, for instance,
-used one of the hashing schemes, we could have some imprecise decisions
-made but the system would stay consistent overall.
-
-This requirement also doesn't seem to push us in the direction of having
-distinct page owners, or some sharing mechanism, because both would be
-consistent.
-
->  - OOM handling on a per guest basis, i.e. some
->    out of memory condition in guest A must not
->    affect guest B
-
-I'll agree that this one is important and well stated as-is.  Any
-disagreement on this one?
-
--- Dave
-
+--nextPart2687731.mml4ruIgb3--
