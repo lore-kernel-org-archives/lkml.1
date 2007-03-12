@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965866AbXCLOEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965877AbXCLOHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965866AbXCLOEg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965862AbXCLOEg
+	id S965877AbXCLOHl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965876AbXCLOHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:04:36 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:56568 "EHLO e6.ny.us.ibm.com"
+	Mon, 12 Mar 2007 10:07:40 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50433 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965866AbXCLOEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:04:35 -0400
-Date: Mon, 12 Mar 2007 19:41:44 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, sam@vilain.net, dev@sw.ru, xemul@sw.ru,
-       pj@sgi.com, ebiederm@xmission.com, winget@google.com,
-       containers@lists.osdl.org, akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070312141144.GB10450@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070301133543.GK15509@in.ibm.com> <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com> <20070307173031.GC2336@in.ibm.com> <20070307174346.GA19521@sergelap.austin.ibm.com> <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <20070307215919.GA2110@sergelap.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070307215919.GA2110@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.11
+	id S965490AbXCLOHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:07:39 -0400
+Message-ID: <45F55EA5.9080005@garzik.org>
+Date: Mon, 12 Mar 2007 10:07:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Valerie Henson <val_henson@linux.intel.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [patch 4/4] [TULIP] Rev tulip version
+References: <20070312093128.577087000@linux.intel.com>	 <20070312095912.743760000@linux.intel.com> <84144f020703120344n3f5ed52axf0bc1c109b549535@mail.gmail.com>
+In-Reply-To: <84144f020703120344n3f5ed52axf0bc1c109b549535@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 03:59:19PM -0600, Serge E. Hallyn wrote:
-> > containers patches uses just a single pointer in the task_struct, and
-> > all tasks in the same set of containers (across all hierarchies) will
-> > share a single container_group object, which holds the actual pointers
-> > to container state.
+Pekka Enberg wrote:
+> Hi,
 > 
-> Yes, that's why this consolidation doesn't make sense to me.
+> On 3/12/07, Valerie Henson <val_henson@linux.intel.com> wrote:
+>> --- tulip-2.6-mm-linux.orig/drivers/net/tulip/tulip_core.c
+>> +++ tulip-2.6-mm-linux/drivers/net/tulip/tulip_core.c
+>> @@ -17,11 +17,11 @@
+>>
+>>  #define DRV_NAME       "tulip"
+>>  #ifdef CONFIG_TULIP_NAPI
+>> -#define DRV_VERSION    "1.1.14-NAPI" /* Keep at least for test */
+>> +#define DRV_VERSION    "1.1.15-NAPI" /* Keep at least for test */
+>>  #else
+>> -#define DRV_VERSION    "1.1.14"
+>> +#define DRV_VERSION    "1.1.15"
+>>  #endif
+>> -#define DRV_RELDATE    "May 11, 2002"
+>> +#define DRV_RELDATE    "Feb 27, 2007"
 > 
-> Especially considering again that we will now have nsproxies pointing to
-> containers pointing to... nsproxies.
+> Why not just drop this? What purpose does a per-module revision have
+> for in-kernel drivers anyway?
 
-nsproxies needn't point to containers. It (or as Herbert pointed -
-nsproxy->pid_ns) can have direct pointers to resource objects (whatever
-struct container->subsys[] points to).
+It's the maintainer's call.  Sometimes it eases parsing bug reports, and 
+tracking changes as your drivers get backported to various enterprise 
+operating systems(tm).  Sometimes it just gets in the way.
+
+	Jeff
 
 
--- 
-Regards,
-vatsa
+
