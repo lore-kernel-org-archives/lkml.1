@@ -1,104 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965873AbXCLOMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965879AbXCLONC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965873AbXCLOMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965876AbXCLOMR
+	id S965879AbXCLONC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:13:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965883AbXCLONB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:12:17 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:55793 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965873AbXCLOMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:12:16 -0400
-Date: Mon, 12 Mar 2007 15:11:03 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070312151103.44284b20@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070310211550.c694555d.khali@linux-fr.org>
-References: <200703091345.44744.david-b@pacbell.net>
-	<11735324081261-git-send-email-hskinnemoen@atmel.com>
-	<20070310211550.c694555d.khali@linux-fr.org>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 10:13:01 -0400
+Received: from thunk.org ([69.25.196.29]:35611 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965879AbXCLONA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:13:00 -0400
+Date: Mon, 12 Mar 2007 10:12:14 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, npiggin@suse.de, drepper@redhat.com,
+       oleg@tv-sign.ru, sebastien.dugue@bull.net, linux-kernel@vger.kernel.org
+Subject: Re: [patch] change futex_wait() to hrtimers
+Message-ID: <20070312141214.GG4372@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andi Kleen <andi@firstfloor.org>,
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
+	mm-commits@vger.kernel.org, npiggin@suse.de, drepper@redhat.com,
+	oleg@tv-sign.ru, sebastien.dugue@bull.net,
+	linux-kernel@vger.kernel.org
+References: <200703110814.l2B8EaI1007615@shell0.pdx.osdl.net> <20070312011259.3834A1801C4@magilla.sf.frob.com> <20070312091006.GF21024@elte.hu> <p73bqiyaehp.fsf@bingen.suse.de> <1173697220.13341.84.camel@localhost.localdomain> <20070312105826.GB11864@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070312105826.GB11864@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Mar 2007 21:15:50 +0100
-Jean Delvare <khali@linux-fr.org> wrote:
-
-> I like the idea very much. Would this let us get rid of i2c-ixp2000?
-> i2c-ixp4xx? scx200_i2c? Other drivers?
-
-Any platform that implements the generic gpio api should be able to use
-this driver. So yes, I hope we might be able to get rid of a few
-existing bitbanging drivers.
-
-> > +/*
-> > + * Bitbanging i2c bus driver using the GPIO API
-> > + *
-> > + * Copyright (C) 2006 Atmel Corporation
+On Mon, Mar 12, 2007 at 11:58:26AM +0100, Andi Kleen wrote:
+> On Mon, Mar 12, 2007 at 12:00:20PM +0100, Thomas Gleixner wrote:
+> > On Mon, 2007-03-12 at 12:27 +0100, Andi Kleen wrote:
+> > > Ingo Molnar <mingo@elte.hu> writes:
+> > > > 
+> > > > the only correct approach is the use of hrtimers, and a patch exists for 
+> > > > that - see below. This has been included in -rt for quite some time.
+> > > 
+> > > But isn't that bad for power management? You'll likely get more
+> > > idle wakeups, won't you?
+> > 
+> > Why so ? It comes more precise, but only once.
 > 
-> I'm told we're in year 2007 ;)
+> When it's clustered around the jiffies interval then wakeups from
+> multiple processes will be somewhat batched. With a precise wakeup you'll
+> get wakeups all over the jiffies period, won't you?
 
-I'm also told that copyright protection lasts infinitely long in
-practice ;)
+What we probably need in the long-term, and not just for high
+precision wakeups, is we need a way for waiters (either in the kernel
+or in userspace) to specify a desired precision in their timers.  Is
+it, "wake me up in a second, exactly", or "wake me up in a second,
+plus or minus 10ms"?   (or 50ms?  or 100ms?).
 
-I'll update it. I probably just copied it blindly from a different
-driver.
+This becomes especially important if we want the tickless code to
+really shine as far as power management is concerned.  Unfortunately,
+the POSIX timer abstraction doesn't give this kind of flexibility
+easily, so it's going to be a while before we see significant
+userspace adoption of such a kernel feature, but I think it's
+something that would be still worthwhile to add.
 
-> > +int i2c_gpio_getsda(void *data)
-> > +{
-> > +	struct i2c_gpio_platform_data *pdata = data;
-> > +
-> > +	return gpio_get_value(pdata->sda_pin);
-> > +}
-> 
-> 
-> What value will you get if the SDA pin is open-drain and currently in
-> output mode? Are such GPIO pins actually able to detect that the pin is
-> low while they are not themselves driving it low?
+Regards,
 
-I guess that depends on the GPIO controller. But being able to read the
-pin state even when the pin is configured as an output is a
-prerequisite for using this driver with "open drain" pins, so if the
-hardware doesn't support this, the board code should just set
-{sda,scl}_is_opendrain to zero.
-
-> > +	bit_data->udelay	= 5,			/* 100 kHz */
-> 
-> Actually, no, i2c-algo-bit has a 1/3-2/3 duty cycle, so a complete
-> cycle is 3 times the udelay value. So udelay=5 gives you 66 kHz. If
-> someone wants to fix that...
-
-Ok. I guess we should move this parameter into the platform data struct
-anyway.
-
-> Also, I wouldn't recommend such a low value when SCL cannot be sensed,
-> if a slave stretches the line even very briefly, you won't notice and
-> havoc will ensue. udelay=50 sounds more reasonable for such half-baked
-> busses.
-
-Makes sense.
-
-> > +	ret = platform_driver_probe(&i2c_gpio_driver, i2c_gpio_probe);
-> > +	if (ret)
-> > +		printk("i2c-gpio: probe failed: %d\n", ret);
-> 
-> Add KERN_ERR or similar.
-
-Will do.
-
-> Would you mind also adding yourself to MAINTAINERS for this driver? I
-> would appreciate it.
-
-Sure. I'm hoping this driver won't cause that much maintenance overhead
-anyway since all the complicated stuff is in i2c-algo-bit. But I agree
-it needs a maintainer.
-
-Haavard
+						- Ted
