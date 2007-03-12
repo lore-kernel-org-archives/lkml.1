@@ -1,116 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbXCLVcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbXCLVhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932098AbXCLVcN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 17:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932264AbXCLVcN
+	id S932439AbXCLVhI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 17:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXCLVhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 17:32:13 -0400
-Received: from smtp17.wxs.nl ([195.121.247.8]:63030 "EHLO smtp17.wxs.nl"
+	Mon, 12 Mar 2007 17:37:08 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:33389 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932098AbXCLVcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 17:32:11 -0400
-Date: Mon, 12 Mar 2007 22:34:57 +0100
-From: jos poortvliet <jos@mijnkamer.nl>
-X-Face: $0>4o"Xx2u2q(Tx!D+6~yPc{ZhEfnQnu:/nthh%Kr%f$aiATk$xjx^X4admsd*)=?utf-8?q?IZz=3A=5FkT=0A=09=7CurITP!=2E?=)L`*)Vw@4\@6>#r;3xSPW`,~C9vb`W/s]}Gq]b!o_/+(lJ:b)=?utf-8?q?T0=26KCLMGvG=7CS=5E=0A=09z=7B=5C=2E7EtehxhFQE=27eYSsir/=7CtQ?=
- =?utf-8?q?j=23rWQe4o?=>WC>_R<vO,d]czmqWYkq[v~iB.e_GuxB'")
- =?utf-8?q?p3=0A=09jGdrhlY4=5E!vd=3F=3AegW?=)xn&fP4!FV<.
-Subject: Re: [ck] Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-In-reply-to: <200703130738.19034.kernel@kolivas.org>
-To: ck@vds.kolivas.org
-Cc: Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-id: <200703122235.05093.jos@mijnkamer.nl>
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart20244809.UGx3Vv2yQG
-Content-transfer-encoding: 7bit
-User-Agent: KMail/1.9.6
-References: <200703111457.17624.kernel@kolivas.org>
- <1173730314.6431.30.camel@Homer.simpson.net>
- <200703130738.19034.kernel@kolivas.org>
+	id S932386AbXCLVhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 17:37:06 -0400
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>,
+       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <d120d5000703121331s73fa5462p5da58ba391ea7101@mail.gmail.com>
+References: <200703122049.03113.oneukum@suse.de>
+	 <Pine.LNX.4.44L0.0703121557360.4003-100000@iolanthe.rowland.org>
+	 <d120d5000703121331s73fa5462p5da58ba391ea7101@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 12 Mar 2007 21:31:15 +0000
+Message-Id: <1173735075.5936.139.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart20244809.UGx3Vv2yQG
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Op Monday 12 March 2007, schreef Con Kolivas:
-> > > If we fix 95% of the desktop and worsen 5% is that bad given how much
-> > > else we've gained in the process?
+On Mon, 2007-03-12 at 16:31 -0400, Dmitry Torokhov wrote:
+> On 3/12/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Mon, 12 Mar 2007, Oliver Neukum wrote:
+> > > > >  I don't like reverting my own code. But I predict he'll tell you that a
+> > > > > driver's bond with a device should be represented in a data structure
+> > > > > that is to be refcounted.
 > >
-> > Killing the known corner case starvation scenarios is wonderful, but
-> > let's not just pretend that interactive tasks don't have any special
-> > requirements.
->
-> Now you're really making a stretch of things. Where on earth did I say th=
-at
-> interactive tasks don't have special requirements? It's a fundamental
-> feature of this scheduler that I go to great pains to get them as low
-> latency as possible and their fair share of cpu despite having a complete=
-ly
-> fair cpu distribution.
+> > There still would be a synchronization problem.  Refcounts don't solve
+> > races; they only solve lifetime problems.  And you would still have to
+> > change the sysfs API, plus all the other stuff...
+> >
+> > Do you think Linus would listen if all three of us (plus maybe Greg) tried
+> > to convince him?
+> >
+> 
+> If we'd accompany the argument with the patch that changes scsi to use
+> wq to perform deletion so we don't have deadlock regression in the
+> kernel he might be more perceptive... He is right about lifetime
+> issues but this is not strictly lifetime issue as you correctly point
+> out. Plus, refcounting also bloats the kernel so I don't relly want to
+> use refcount for every integer I happen to export through sysfs if I
+> can simply "revoke" access.
 
-As far as I understand it, RSDL always gives an equal share of cpu, but=20
-interactive tasks can have lower latency, right? So you get in trouble with=
-=20
-interactive tasks only when their share isn't enough to actually do what th=
-ey=20
-have to do in that period, eg on a heavily (over?) loaded box. Staircase,=20
-like mainline which gave them MORE than their share, would support that=20
-(though this comes at a price).
+For what its worth, I think it makes sense if the driver no longer has
+to worry about sysfs attributes after they've been removed. This is
+something the core should look after, not each and every driver.
 
-So, if your box is overloaded to a great extend, X, which can use a lot of=
-=20
-cpu, can get unresponsive - unless it's negatively niced. But most other ap=
-ps=20
-aren't as demanding as X is, so they won't really suffer. Thus the problem =
-is=20
-mostly X. And at least part of that problem is being solved - X wasting cpu=
-=20
-cycles. Also, cpu's are getting stronger, and I think it's likely X's=20
-relative CPU usage goes down as well.
+http://marc.theaimsgroup.com/?l=linux-kernel&m=117355959020831&w=2
 
-In the long term, RSDL seems like the best way to go. Nice X down, and you =
-got=20
-most of the disadvantages. You still have the perfect fairness, no stalls a=
-nd=20
-starvation ;-)
+makes a lot of sense, particularly that "No driver callbacks occur after
+unregistration". When writing the backlight class code, I remember
+checking into this, concluding that seemed to be the design of sysfs and
+thinking it a sane design.
 
-If RSDL can be improved to help X, great. But introducing again the problem=
-=20
-which RSDL was supposed to solve would be pretty pointless. I think that's=
-=20
-what grumpy Con is trying to say, and he's right at it.
+The alternative is to force each and every driver to do its own
+refcounting. My experience with locking in the extremely simple
+backlight class shows nobody reads the documentation or writes the code
+correctly. With that, I've given up and added suitable locking to the
+core even if not every driver needs it. In doing so, I made a net
+removal of a few hundred lines of broken "ticking timebomb" style code.
+I dread to think what would happen if every driver had to deal with
+sysfs refcounting.
 
-grtz
+So count me as a vote for handling this in the sysfs core, not the
+drivers.
 
-Jos
+Richard
 
-=2D-=20
-Disclaimer:
 
-Alles wat ik doe denk en zeg is gebaseerd op het wereldbeeld wat ik nu heb.=
-=20
-Ik ben niet verantwoordelijk voor wijzigingen van de wereld, of het beeld w=
-at=20
-ik daarvan heb, noch voor de daaruit voortvloeiende gedragingen van mezelf.=
-=20
-Alles wat ik zeg is aardig bedoeld, tenzij expliciet vermeld.
-
---nextPart20244809.UGx3Vv2yQG
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBF9ceB+wgQ1AD35iwRAsZjAJ9+yhEAiYK+1ri8QCQb1M2ltu1ddQCeIvhV
-bGqNrUhUK/lVhXdj5RL+cU0=
-=bpWb
------END PGP SIGNATURE-----
-
---nextPart20244809.UGx3Vv2yQG--
