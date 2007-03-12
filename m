@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965402AbXCLJWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965426AbXCLJXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965402AbXCLJWm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 05:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965419AbXCLJWm
+	id S965426AbXCLJXW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 05:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965430AbXCLJXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 05:22:42 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:21808 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965402AbXCLJWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 05:22:41 -0400
-To: Nick Piggin <npiggin@suse.de>
-Cc: Dmitriy Monakhov <dmonakhov@sw.ru>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org
-Subject: Re: [PATCH 2/2] mm: incorrect direct io error handling (v6)
-References: <877itmrizx.fsf@sw.ru> <20070312082028.GA28546@wotan.suse.de>
-	<871wjurgcd.fsf@sw.ru> <20070312090917.GD28546@wotan.suse.de>
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Mon, 12 Mar 2007 12:23:00 +0300
-In-Reply-To: <20070312090917.GD28546@wotan.suse.de> (Nick Piggin's message of "Mon, 12 Mar 2007 10:09:17 +0100")
-Message-ID: <87tzwqq0i3.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Mon, 12 Mar 2007 05:23:21 -0400
+Received: from mail14.syd.optusnet.com.au ([211.29.132.195]:47459 "EHLO
+	mail14.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965426AbXCLJXV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 05:23:21 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Date: Mon, 12 Mar 2007 20:22:42 +1100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
+References: <200703111457.17624.kernel@kolivas.org> <200703121929.39702.kernel@kolivas.org> <1173689733.6748.18.camel@Homer.simpson.net>
+In-Reply-To: <1173689733.6748.18.camel@Homer.simpson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703122022.43021.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> writes:
+On Monday 12 March 2007 19:55, Mike Galbraith wrote:
+> On Mon, 2007-03-12 at 19:29 +1100, Con Kolivas wrote:
+> > I'll save you the trouble. I just checked myself and indeed the load is
+> > only 1. What this means is that although there are 2 tasks running, only
+> > one is running at any time making a total load of 1. So, if we add two
+> > other tasks that add 2 more to the load the total load is 3. However if
+> > we weight the other two tasks at nice 5, they only add .75 each to the
+> > load making a weighted total of 2.5. This means that X+Gforce together
+> > should get a total of 1/2.5 or 40% of the overall cpu. That sounds like
+> > exactly what you're describing is happening.
+>
+> Hmm.  So... anything that's client/server is going to suffer horribly
+> unless niced tasks are niced all the way down to 19?
 
-> On Mon, Mar 12, 2007 at 11:55:30AM +0300, Dmitriy Monakhov wrote:
->> Nick Piggin <npiggin@suse.de> writes:
->> 
->> > On Mon, Mar 12, 2007 at 10:58:10AM +0300, Dmitriy Monakhov wrote:
->
->> >> @@ -2240,6 +2241,29 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
->> >>  	mutex_lock(&inode->i_mutex);
->> >>  	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
->> >>  			&iocb->ki_pos);
->> >> +	/* 
->> >> +	 * If __generic_file_aio_write_nolock has failed.
->> >> +	 * This may happen because of:
->> >> +	 * 1) Bad segment found (failed before actual write attempt)
->> >> +	 * 2) Segments are good, but actual write operation failed
->> >> +	 *    and may have instantiated a few blocks outside i_size.
->> >> +	 *   a) in case of buffered write these blocks was already
->> >> +	 *   	trimmed by generic_file_buffered_write()
->> >> +	 *   b) in case of O_DIRECT these blocks weren't trimmed yet.
->> >> +	 *
->> >> +	 * In case of (2b) these blocks have to be trimmed off again.
->> >> +	 */
->> >> +	if (unlikely( ret < 0 && file->f_flags & O_DIRECT)) {
->> >> +		unsigned long nr_segs_avail = nr_segs;
->> >> +		size_t count = 0;
->> >> +		if (!generic_segment_checks(iov, &nr_segs_avail, &count,
->> >> +				VERIFY_READ)) {
->> >> +			/*It is (2b) case, because segments are good*/
->> >> +			loff_t isize = i_size_read(inode);
->> >> +			if (pos + count > isize)
->> >> +				vmtruncate(inode, isize);
->> >> +		}
->> >> +	}
->> >
->> > OK, but wouldn't this be better to be done in the actual direct IO
->> > functions themselves? Thus you could be sure that you have the 2b case,
->> > and the code would be less fragile to something changing?
->> Ohh, We can't just call vmtruncate() after generic_file_direct_write()
->> failure while __generic_file_aio_write_nolock() becase where is no guarantee
->> what i_mutex held. In fact all existing fs always invoke 
->> __generic_file_aio_write_nolock() with i_mutex held in case of S_ISREG files,
->> but this was't explicitly demanded and documented. I've proposed to do it in
->> previous versions of this patch, because it this just document current state
->> of affairs, but David Chinner wasn't agree with it.
->
-> It seemed like it was documented in the comments that you altered in this
-> patch...
->
-> How would such a filesystem that did not hold i_mutex propose to fix the
-> problem?
->
-> The burden should be on those filesystems that might not want to hold
-> i_mutex here, to solve the problem nicely, rather than generic code to take
-> this ugly code.
-Ok then what do you think about this version http://lkml.org/lkml/2006/12/18/103
-witch was posted almost  month ago :)
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Fortunately most client server models dont usually have mutually exclusive cpu 
+use like this X case. There are many things about X that are still a little 
+(/me tries to think of a relatively neutral term)... wanting. :(
 
+-- 
+-ck
