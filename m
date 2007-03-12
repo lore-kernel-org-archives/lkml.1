@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965860AbXCLNwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965872AbXCLNwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965860AbXCLNwg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 09:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965870AbXCLNwg
+	id S965872AbXCLNwo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 09:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965870AbXCLNwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 09:52:36 -0400
-Received: from mcr-smtp-002.bulldogdsl.com ([212.158.248.8]:2686 "EHLO
-	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965860AbXCLNw3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 09:52:29 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Frank van Maarseveen <frankvm@frankvm.com>
-Subject: Re: 2.6.20*: PATA DMA timeout, hangs (2)
-Date: Mon, 12 Mar 2007 13:52:19 +0000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20070312085447.GA10955@janus> <200703121207.19042.s0348365@sms.ed.ac.uk> <20070312132546.GC12265@janus>
-In-Reply-To: <20070312132546.GC12265@janus>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 09:52:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48552 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965862AbXCLNw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 09:52:26 -0400
+Date: Mon, 12 Mar 2007 14:51:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Roland Dreier <roland.list@gmail.com>,
+       Tziporet Koren <tziporet@mellanox.co.il>,
+       Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: lockdep question (was Re: IPoIB caused a kernel: BUG: softlockup detected on CPU#0!)
+Message-ID: <20070312135112.GA18158@elte.hu>
+References: <45E552FC.4040305@mellanox.co.il> <f8ca0a150703030937u61bcd9aj200415b76c00d151@mail.gmail.com> <20070311135051.GA31985@mellanox.co.il> <1173626719.5182.10.camel@lappy> <20070311161231.GC13817@mellanox.co.il> <20070311184819.GA2567@elte.hu> <20070312132826.GB20549@mellanox.co.il>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703121352.19505.s0348365@sms.ed.ac.uk>
+In-Reply-To: <20070312132826.GB20549@mellanox.co.il>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007 13:25, Frank van Maarseveen wrote:
-[snip]
-> So, are /dev/hd* going to disappear in a few years? iow, does it make
-> sense to _slowly_ start to migrate to /dev/sd*?
 
-How would you propose doing this? I'm sure modern distros with an 
-initrd/initramfs probably already do some sort of root detection. Doesn't fix 
-the fstab issue, but I suppose this could be auto-generated too.
+* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
 
-> The problem is there's no plan B in case of any troubles except rename
-> everything back again to boot an old kernel.
+> > could you turn on CONFIG_SLAB_DEBUG as well?
+> > 
+> > that should catch certain types of use-after-free accesses, and 
+> > lockdep will also warn if a still locked object is freed.
+> 
+> Hmm, no, this does not look like use-after-free. I enabled 
+> CONFIG_SLAB_DEBUG, and I still see the same message, so the memory was 
+> not overwritten by slab debugger.
 
-I doubt this matters for distributors, as they'll simply switch over when you 
-upgrade the distro, and the earliest supported kernel will be the one that 
-shipped with the newer version.
+that's still not conclusive - the memory might not have been allocated 
+by slab again to detect it. Your magic-number check definitely shows 
+some sort of corruption going on, right?
 
-I accept that it's a bit of a drag, but it's better to have a standard naming 
-convention for all disks, isn't it?
-
-Glad this is working for you.
-
--- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+	Ingo
