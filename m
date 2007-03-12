@@ -1,123 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752413AbXCLVMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXCLVNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752413AbXCLVMF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 17:12:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbXCLVMF
+	id S1752490AbXCLVNu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 17:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXCLVNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 17:12:05 -0400
-Received: from MAIL.13thfloor.at ([213.145.232.33]:42665 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbXCLVME (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 17:12:04 -0400
-Date: Mon, 12 Mar 2007 22:11:11 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: Pavel Emelianov <xemul@sw.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Kirill Korotaev <dev@sw.ru>,
-       containers@lists.osdl.org, menage@google.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 2/7] RSS controller core
-Message-ID: <20070312211111.GB21258@MAIL.13thfloor.at>
-Mail-Followup-To: Pavel Emelianov <xemul@sw.ru>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Kirill Korotaev <dev@sw.ru>, containers@lists.osdl.org,
-	menage@google.com, linux-kernel@vger.kernel.org
-References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru> <20070306140036.4e85bd2f.akpm@linux-foundation.org> <45F3F581.9030503@sw.ru> <20070311045111.62d3e9f9.akpm@linux-foundation.org> <20070312010039.GC21861@MAIL.13thfloor.at> <45F51709.1010409@sw.ru>
+	Mon, 12 Mar 2007 17:13:50 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42490 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752430AbXCLVNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 17:13:49 -0400
+Date: Mon, 12 Mar 2007 14:11:56 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: David Miller <davem@davemloft.net>, rkuhn@e18.physik.tu-muenchen.de,
+       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] tcp_cubic: use 32 bit math
+Message-ID: <20070312141156.08e88b0e@freekitty>
+In-Reply-To: <20070310114826.GB1608@1wt.eu>
+References: <20070307170731.2b4397e3@freekitty>
+	<20070307.185539.48527371.davem@davemloft.net>
+	<45EF7EB7.8040806@linux-foundation.org>
+	<20070307.195135.74749102.davem@davemloft.net>
+	<20070310114826.GB1608@1wt.eu>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F51709.1010409@sw.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 12:02:01PM +0300, Pavel Emelianov wrote:
-> >>> Maybe you have some ideas how we can decide on this?
-> >> We need to work out what the requirements are before we can 
-> >> settle on an implementation.
+On Sat, 10 Mar 2007 12:48:26 +0100
+Willy Tarreau <w@1wt.eu> wrote:
+
+> On Wed, Mar 07, 2007 at 07:51:35PM -0800, David Miller wrote:
+> > From: Stephen Hemminger <shemminger@linux-foundation.org>
+> > Date: Wed, 07 Mar 2007 19:10:47 -0800
 > > 
-> > Linux-VServer (and probably OpenVZ):
+> > > David Miller wrote:
+> > > > What about Willy Tarreau's supposedly even faster variant?
+> > > > Or does this incorporate that set of improvements?
+> > > >   
+> > > That's what this is:
+> > >     x = (2 * x + (uint32_t)div64_64(a, (uint64_t)x*(uint64_t)x)) / 3;
 > > 
-> >  - shared mappings of 'shared' files (binaries 
-> >    and libraries) to allow for reduced memory
-> >    footprint when N identical guests are running
+> > Great, thanks for the clarification.
 > 
-> This is done in current patches.
+> Oh BTW, I have a newer version with a first approximation of the
+> cbrt() before the div64_64, which allows us to reduce from 3 div64
+> to only 2 div64. This results in a version which is twice as fast
+> as the initial one (ncubic), but with slightly less accuracy (0.286%
+> compared to 0.247). But I see that other functions such as hcbrt()
+> had a 1.5% avg error, so I think this is not dramatic.
 
-nice, but the question was about _requirements_
-(so your requirements are?)
+Ignore my hcbrt() it was a less accurate version of andi's stuff.
 
-> >  - virtual 'physical' limit should not cause
-> >    swap out when there are still pages left on
-> >    the host system (but pages of over limit guests
-> >    can be preferred for swapping)
+> Also, I managed to remove all other divides, to be kind with CPUs
+> having a slow divide instruction or no divide at all. Since we compute
+> on limited range (22 bits), we can multiply then shift right. It shows
+> me even slightly better time on pentium-m and athlon, with a slightly
+> higher avg error (0.297% compared to 0.286%), and slightly smaller
+> code.
+
+What does the code look like?
+
+ 
+> I just have to clean experiments from my code to provide a patch.
+> David, Stephen, are you interested ?
 > 
-> So what to do when virtual physical limit is hit?
-> OOM-kill current task?
-
-when the RSS limit is hit, but there _are_ enough
-pages left on the physical system, there is no
-good reason to swap out the page at all
-
- - there is no benefit in doing so (performance
-   wise, that is)
-
- - it actually hurts performance, and could
-   become a separate source for DoS
-
-what should happen instead (in an ideal world :)
-is that the page is considered swapped out for
-the guest (add guest penality for swapout), and 
-when the page would be swapped in again, the guest
-takes a penalty (for the 'virtual' page in) and
-the page is returned to the guest, possibly kicking
-out (again virtually) a different page
-
-> >  - accounting and limits have to be consistent
-> >    and should roughly represent the actual used
-> >    memory/swap (modulo optimizations, I can go
-> >    into detail here, if necessary)
+> $ ./bictcp
+> fls(0)=0, fls(1)=1, fls(256)=9
+> Calibrating
+> Function     clocks  mean(us) max(us)  std(us)  Avg error
+> bictcp          936     0.61    24.28     1.99 0.172%
+> ocubic          886     0.57    23.51     3.18 0.274%
+> ncubic          644     0.42    16.59     2.18 0.247%
+> ncubic32        444     0.29    11.47     1.50 0.247%
+> ncubic32_1      444     0.29    11.56     1.88 0.238%
+> ncubic32b3      337     0.22     8.67     0.88 0.286%
+> ncubic_ndiv3    329     0.21     8.46     0.69 0.297%
+> acbrt           707     0.46    18.05     0.80 0.275%
+> hcbrt           644     0.42    16.44     0.51 1.580%
 > 
-> This is true for current implementation for
-> booth - this patchset ang OpenVZ beancounters.
 > 
-> If you sum up the physpages values for all containers
-> you'll get the exact number of RAM pages used.
-
-hmm, including or excluding the host pages?
-
-> >  - OOM handling on a per guest basis, i.e. some
-> >    out of memory condition in guest A must not
-> >    affect guest B
+> Regards,
+> Willy
 > 
-> This is done in current patches.
 
-> Herbert, did you look at the patches before
-> sending this mail or do you just want to
-> 'take part' in conversation w/o understanding
-> of hat is going on?
 
-again, the question was about requirements, not
-your patches, and yes, I had a look at them _and_
-the OpenVZ implementations ...
-
-best,
-Herbert
-
-PS: hat is going on? :)
-
-> > HTC,
-> > Herbert
-> > 
-> >> Sigh.  Who is running this show?   Anyone?
-> >>
-> >> You can actually do a form of overcommittment by allowing multiple
-> >> containers to share one or more of the zones. Whether that is
-> >> sufficient or suitable I don't know. That depends on the requirements,
-> >> and we haven't even discussed those, let alone agreed to them.
-> >>
-> >> _______________________________________________
-> >> Containers mailing list
-> >> Containers@lists.osdl.org
-> >> https://lists.osdl.org/mailman/listinfo/containers
-> > 
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
