@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965145AbXCLFjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965119AbXCLFki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965145AbXCLFjA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 01:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965126AbXCLFjA
+	id S965119AbXCLFki (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 01:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965138AbXCLFki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 01:39:00 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:51659 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965119AbXCLFi7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 01:38:59 -0400
-Date: Mon, 12 Mar 2007 01:38:37 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: RSDL for 2.6.21-rc3- 0.29
-In-reply-to: <200703111719.38514.kernel@kolivas.org>
-To: linux-kernel@vger.kernel.org, amanda-hackers@amanda.org
-Cc: Con Kolivas <kernel@kolivas.org>, Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck@vds.kolivas.org
-Message-id: <200703120138.37667.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070311013506.GD10459@waste.org>
- <20070311040305.GT10394@waste.org> <200703111719.38514.kernel@kolivas.org>
-User-Agent: KMail/1.9.6
+	Mon, 12 Mar 2007 01:40:38 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:37281 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965119AbXCLFkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 01:40:37 -0400
+Date: Mon, 12 Mar 2007 06:40:18 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Cong WANG <xiyou.wangcong@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Style Question
+In-Reply-To: <2375c9f90703112237u4b27c530x34e310a93fd04ef0@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0703120638030.4339@yvahk01.tjqt.qr>
+References: <2375c9f90703110715v4278f83flbc9fce6c542472a5@mail.gmail.com> 
+ <Pine.LNX.4.61.0703112134180.16857@yvahk01.tjqt.qr>
+ <2375c9f90703112237u4b27c530x34e310a93fd04ef0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 March 2007, Con Kolivas wrote:
->On Sunday 11 March 2007 15:03, Matt Mackall wrote:
->> On Sat, Mar 10, 2007 at 10:01:32PM -0600, Matt Mackall wrote:
->> > On Sun, Mar 11, 2007 at 01:28:22PM +1100, Con Kolivas wrote:
->> > > Ok I don't think there's any actual accounting problem here per se
->> > > (although I did just recently post a bugfix for rsdl however I
->> > > think that's unrelated). What I think is going on in the ccache
->> > > testcase is that all the work is being offloaded to kernel threads
->> > > reading/writing to/from the filesystem and the make is not getting
->> > > any actual cpu time.
->> >
->> > I don't see significant system time while this is happening.
->>
->> Also, it's running pretty much entirely out of page cache so there
->> wouldn't be a whole lot for kernel threads to do.
+
+On Mar 12 2007 13:37, Cong WANG wrote:
 >
->Well I can't reproduce that behaviour here at all whether from disk or
-> the pagecache with ccache, so I'm not entirely sure what's different at
-> your end. However both you and the other person reporting bad behaviour
-> were using ATI drivers. That's about the only commonality? I wonder if
-> they do need to yield... somewhat instead of not at all.
+> The following code is picked from drivers/kvm/kvm_main.c:
+>
+> static struct kvm_vcpu *vcpu_load(struct kvm *kvm, int vcpu_slot)
+> {
+> struct kvm_vcpu *vcpu = &kvm->vcpus[vcpu_slot];
+>
+> mutex_lock(&vcpu->mutex);
+> if (unlikely(!vcpu->vmcs)) {
+> mutex_unlock(&vcpu->mutex);
+> return 0;
+> }
+> return kvm_arch_ops->vcpu_load(vcpu);
+> }
+>
+> Obviously, it used 0 rather than NULL when returning a pointer to
+> indicate an error. Should we fix such issue?
 
-I hate to say it Con, but this one seems to have broken the amanda-tar 
-symbiosis.
+Indeed. If it was for me, something like that should throw a compile error.
 
-I haven't tried a plain 21-rc3, so the problem may exist there, and in 
-fact it did for 21-rc1, but I don't recall if it was true for -rc2.  But 
-I will have a plain 21-rc3 running by tomorrow nights amanda run to test.
+>>[...]
+> I think it's more clear to indicate we are using a pointer rather than
+> an integer when we use NULL in kernel. But in userspace, using NULL is
+> for portbility of the program, although most (*just* most, NOT all) of
+> NULL's defination is ((void*)0). ;-)
 
-What happens is that when amanda tells tar to do a level 1 or 2, tar still 
-thinks its doing a level 0.  The net result is that the tape is filled 
-completely and amanda does an EOT exit in about 10 of my 42 dle's.  This 
-is tar-1.15-1 for fedora core 6.
+NULL has the same bit pattern as the number zero. (I'm not saying the bit
+pattern is all zeroes. And I am not even sure if NULL ought to have the same
+pattern as zero.) So C++ could use (void *)0, if it would let itself :p
 
+
+>
+>
+
+Jan
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-While it may be true that a watched pot never boils, the one you don't
-keep an eye on can make an awful mess of your stove.
-		-- Edward Stevenson
