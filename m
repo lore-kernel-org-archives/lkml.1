@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030258AbXCLPIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030358AbXCLPJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030258AbXCLPIx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030361AbXCLPIx
+	id S1030358AbXCLPJF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030369AbXCLPJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:08:53 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51539 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030258AbXCLPIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:08:52 -0400
-Date: Mon, 12 Mar 2007 20:45:48 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: ckrm-tech@lists.sourceforge.net, xemul@sw.ru, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, winget@google.com, containers@lists.osdl.org,
-       menage@google.com, Herbert Poetzl <herbert@13thfloor.at>,
-       akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070312151548.GC24742@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <45EF5A62.8000103@vilain.net> <6599ad830703071642n69bbd801n6114fa6f9e60a168@mail.gmail.com> <45EF5E71.7090101@vilain.net> <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com> <m1d53ka5b9.fsf@ebiederm.dsl.xmission.com> <20070309005357.GC4506@MAIL.13thfloor.at> <20070309181908.GC21661@in.ibm.com> <20070309215218.GA17592@MAIL.13thfloor.at> <20070309140603.b2b162c6.pj@sgi.com> <20070312140148.GA10450@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 11:09:05 -0400
+Received: from mcr-smtp-002.bulldogdsl.com ([212.158.248.8]:3953 "EHLO
+	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030358AbXCLPJD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 11:09:03 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: "=?iso-8859-1?q?Llu=EDs?= Batlle" <viriketo@gmail.com>
+Subject: Re: bug in select() in linux
+Date: Mon, 12 Mar 2007 15:08:52 +0000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <45219fb00703120751t7acd1ae3kb77f556b81a87634@mail.gmail.com> <20070312160104.25d6b321@lxorguk.ukuu.org.uk> <45219fb00703120802y78cf4dbds6e89b58de9d0f801@mail.gmail.com>
+In-Reply-To: <45219fb00703120802y78cf4dbds6e89b58de9d0f801@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070312140148.GA10450@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703121508.52749.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 07:31:48PM +0530, Srivatsa Vaddagiri wrote:
-> not so. This in-fact lets vservers and containers to work with each
-> other. So:
+On Monday 12 March 2007 15:02, Lluís Batlle wrote:
+> Oh, of course you're right. I was inside too much layers to think of
+> the tcp protocol, and I did not pay attention to it.
+>
+> Maybe something could be added to the manpage anyway.
+>
+> The bad thing is that there's no way I can use a socket for writing
+> using select() if that connection has been half-closed by the other
+> end. Moo.
 
-s/containers/cpusets
+This question comes up from time to time. I think the answer is 
+ultimately "select() sucks, use poll()".
+
+I can't exactly remember the details, but I believe POLLHUP or POLLOUT as 
+flags do what you want.
 
 -- 
-Regards,
-vatsa
+Cheers,
+Alistair.
+
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
