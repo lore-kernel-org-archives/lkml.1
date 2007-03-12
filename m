@@ -1,105 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964871AbXCLDGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964875AbXCLDPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964871AbXCLDGV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 23:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964868AbXCLDGV
+	id S964875AbXCLDPj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 23:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964896AbXCLDPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 23:06:21 -0400
-Received: from relay.felk.cvut.cz ([147.32.80.7]:49159 "EHLO
-	relay.felk.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964871AbXCLDGU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 23:06:20 -0400
-X-Greylist: delayed 1891 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Mar 2007 23:06:20 EDT
-From: Pavel Pisa <ppisa4lists@pikron.com>
-Organization: PiKRON Ltd.
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: i.MX/MX1 SDHC fix/workaround of SD card recognition problems
-Date: Mon, 12 Mar 2007 03:33:27 +0100
-User-Agent: KMail/1.9.4
-References: <200703080000.41101.ppisa@pikron.com> <45F49297.9090309@drzeus.cx>
-In-Reply-To: <45F49297.9090309@drzeus.cx>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 11 Mar 2007 23:15:39 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:37778 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964875AbXCLDPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 23:15:38 -0400
+Date: Sun, 11 Mar 2007 19:15:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Jin <joe.jin@oracle.com>
+Cc: joe.jin@oracle.com, James.Bottomley@SteelEye.com, dgilbert@interlog.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haobo.zhou@oracle.com
+Subject: Re: [PATCH] [scsi]: Add offline state checking while dispatch a
+ scsi cmd
+Message-Id: <20070311191529.e96ca324.akpm@linux-foundation.org>
+In-Reply-To: <20070312025222.GC32372@joejin-pc.cn.oracle.com>
+References: <20070308092207.GA17141@joejin-pc.cn.oracle.com>
+	<1173369759.3683.1.camel@mulgrave.il.steeleye.com>
+	<20070309014040.GA6632@joejin-pc.cn.oracle.com>
+	<20070311015300.271c2323.akpm@linux-foundation.org>
+	<20070312025222.GC32372@joejin-pc.cn.oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703120333.27581.ppisa4lists@pikron.com>
-X-FELK-MailScanner-Information: 
-X-FELK-MailScanner: Found to be clean
-X-FELK-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-2.54, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_20 -0.74)
-X-FELK-MailScanner-From: ppisa4lists@pikron.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007 00:36, you wrote:
-> Pavel Pisa wrote:
-> > The SDHC controllers cannot process shorter transfers.
-> > They has to be handled as longer ones, but it such case CRC
-> > error is evaluated. There was a case in the code still,
-> > where this error is not ignored as it should to be process
-> > these transfers.
-> >
-> > Signed-off-by: Pavel Pisa <pisa@cmp.felk.cvut.cz>
->
-> Thanks, applied. Is this something critical that should be in 2.6.21?
->
-> Rgds
+> On Mon, 12 Mar 2007 10:52:22 +0800 Joe Jin <joe.jin@oracle.com> wrote:
+> > The 2.6.9 base is very old in mainline terms.  Are you sure the bug hasn't
+> > been fixed in mainline by other means?
+> 
+> I cannot confirm if it have fixed in latest kernel, the server is a
+> production system, it's hard to debug it and try reproduce.
 
-Hello Pierre,
-
-this should go to 2.6.21, I have hold this for some
-months and I have discussed it in the thread
-"Re: CRC Errors with SD cards in 4bits mode (on i.MXl)"
-You have been CCed. This is not solution for seen data CRC
-problem, but solves problems with recognition of cards
-which has been timing sensitive sometimes.
-
-I have sent it into Russell's patch queue with my others
-MX1 fixes I have intended to be included in 2.6.21.
-It was probably mistake for this one, because it should
-go through your tree. If you send it to mainline
-yourself, I would discard patch from patch daemon.
-
-We have spoken about MX1 SDHC maintainership.
-I am attaching my subscription.
-I am not sure about mailing list field there.
-Do you suggest this one, ALKML or other?
-
-Best wishes
-
-              Pavel Pisa
-
---------------------------------------------------------------
-Subject: i.MX/MX1 SDHC maintainer
-
-I am reporting to responsibility for i.MX MMC driver
-bugs and coordination of the fighting against problems
-of this hardware beast.
-
-Signed-off-by: Pavel Pisa <ppisa@pikron.com>
-
- MAINTAINERS |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-Index: linux-2.6.21-rc1/MAINTAINERS
-===================================================================
---- linux-2.6.21-rc1.orig/MAINTAINERS
-+++ linux-2.6.21-rc1/MAINTAINERS
-@@ -1713,6 +1713,13 @@ M:	lethal@chaoticdreams.org
- L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
- S:	Maintained
- 
-+IMX MMC/SD HOST CONTROLLER INTERFACE DRIVER
-+P:	Pavel Pisa
-+M:	ppisa@pikron.com
-+L:	sdhci-devel@list.drzeus.cx
-+W:	http://mmc.drzeus.cx/wiki/Controllers/Freescale/SDHC
-+S:	Maintained
-+
- INFINIBAND SUBSYSTEM
- P:	Roland Dreier
- M:	rolandd@cisco.com
+Well.  That makes it hard to run tests, but perhaps it can be determined
+from code review..
