@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965580AbXCLN35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965620AbXCLNiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965580AbXCLN35 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 09:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965582AbXCLN34
+	id S965620AbXCLNiW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 09:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965616AbXCLNiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 09:29:56 -0400
-Received: from mx2.suse.de ([195.135.220.15]:46864 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965580AbXCLN3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 09:29:55 -0400
-Date: Mon, 12 Mar 2007 14:29:43 +0100 (CET)
-From: Michael Matz <matz@suse.de>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@argo.co.il>, discuss@x86-64.org, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [discuss] [PATCH 4/4 TRY#3] optimize and simplify get_cycles_sync()
-In-Reply-To: <20070312130245.GE8922@amd.com>
-Message-ID: <Pine.LNX.4.64.0703121427381.25448@wotan.suse.de>
-References: <20070309150825.GA13481@amd.com> <20070309151511.GE13481@amd.com>
- <45F1A2FB.7040206@argo.co.il> <20070312130245.GE8922@amd.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Mar 2007 09:38:22 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:52650 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965582AbXCLNiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 09:38:21 -0400
+Date: Mon, 12 Mar 2007 14:42:31 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: David Miller <davem@davemloft.net>, amit2030@gmail.com,
+       linux-kernel@vger.kernel.org, akpm@osdl.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] [REVISED] net/ipv4/multipath_wrandom.c: check kmalloc() return value.
+Message-ID: <20070312134230.GD3270@ff.dom.local>
+References: <20070308.232908.92582631.davem@davemloft.net> <20070312115137.GA3270@ff.dom.local> <84144f020703120536l3967dc76o6a130edc79762350@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020703120536l3967dc76o6a130edc79762350@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joerg,
-
-On Mon, 12 Mar 2007, Joerg Roedel wrote:
-
-> > >+#define RDTSCP ".byte 0x0f, 0x01, 0xf9"
-> > >+	alternative_io_two("cpuid\nrdtsc",
-> > >+			   "rdtsc", X86_FEATURE_SYNC_RDTSC,
-> > >+			   ".byte 0x0f, 0x01, 0xf9", X86_FEATURE_RDTSCP,
-> > >  
-> > 
-> > why not use the RDTSCP macro here?
+On Mon, Mar 12, 2007 at 02:36:46PM +0200, Pekka Enberg wrote:
+> On 3/12/07, Jarek Poplawski <jarkao2@o2.pl> wrote:
+> >So, maybe it's less evil to check those NULLs where possible and add
+> >some WARN_ONs here and there...
 > 
-> Does this macro exist?
+> No, it's much better to oops rather than paper over a bug.
+> 
 
-Look carefully at your patch again, or at least the four quoted lines 
-above.  You've added it yourself, in exactly the form you'd need in the 
-alternative_io_two() call :-)
+I'm not sure I can understand your intentions - do you mean
+always better? In my opinion oops is right only to avoid
+some danger. And here is no danger - some routing info,
+which is internal multipath_xxx data and can be handled
+safely, will not go into its cache.
 
-> I couldn't found it in the current git tree. And the rdtscp macros in 
-> msr.h use the plain opcode too.
-
-
-Ciao,
-Michael.
+Jarek P.
