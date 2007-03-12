@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965865AbXCLN4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965866AbXCLOEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965865AbXCLN4F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 09:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965868AbXCLN4F
+	id S965866AbXCLOEg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965862AbXCLOEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 09:56:05 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:53155 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965871AbXCLN4D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 09:56:03 -0400
-Date: Mon, 12 Mar 2007 13:53:51 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [SOUND] hda_intel: build fix
-Message-ID: <20070312135351.GA11974@linux-mips.org>
-References: <20070310190513.GA24435@linux-mips.org> <s5h8xe2soxt.wl%tiwai@suse.de>
+	Mon, 12 Mar 2007 10:04:36 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:56568 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965866AbXCLOEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:04:35 -0400
+Date: Mon, 12 Mar 2007 19:41:44 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, sam@vilain.net, dev@sw.ru, xemul@sw.ru,
+       pj@sgi.com, ebiederm@xmission.com, winget@google.com,
+       containers@lists.osdl.org, akpm@linux-foundation.org
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070312141144.GB10450@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070301133543.GK15509@in.ibm.com> <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com> <20070307173031.GC2336@in.ibm.com> <20070307174346.GA19521@sergelap.austin.ibm.com> <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <20070307215919.GA2110@sergelap.austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <s5h8xe2soxt.wl%tiwai@suse.de>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070307215919.GA2110@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 12:04:30PM +0100, Takashi Iwai wrote:
+On Wed, Mar 07, 2007 at 03:59:19PM -0600, Serge E. Hallyn wrote:
+> > containers patches uses just a single pointer in the task_struct, and
+> > all tasks in the same set of containers (across all hierarchies) will
+> > share a single container_group object, which holds the actual pointers
+> > to container state.
+> 
+> Yes, that's why this consolidation doesn't make sense to me.
+> 
+> Especially considering again that we will now have nsproxies pointing to
+> containers pointing to... nsproxies.
 
-> It's no big problem to remove const in these cases, but allowing const
-> with __devinitdata seems the right fix to me...
+nsproxies needn't point to containers. It (or as Herbert pointed -
+nsproxy->pid_ns) can have direct pointers to resource objects (whatever
+struct container->subsys[] points to).
 
-Gccs derives the readability of a section used with __attribute(section())
-from the first use, which in case of this driver was a non-const use, so
-gcc made .init.data a r/w section.  Later uses were marked with const,
-so did conflict.  Having to ensure that all members of a section are const
-or are not const is painful, so this is clearly less than desirable
-behaviour on gcc's side.  I think gcc picking the most permissive
-attributes for a section, that is r/w in this case would be far preferable.
 
-Here is a small test case btw:
-
-int foo __attribute__ ((__section__ (".init.data"))) = 23;
-const int bar __attribute__ ((__section__ (".init.data"))) = 42;
-
-Now I'm not a great fan of the patch I've posted but it reflects what real
-world gcc is doing so for the time being I don't see much of a chance to
-The Right Thing (TM).  And the gain from const in this case will be small
-anyway.
-
-  Ralf
+-- 
+Regards,
+vatsa
