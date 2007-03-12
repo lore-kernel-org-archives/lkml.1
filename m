@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965397AbXCLJJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXCLJJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965397AbXCLJJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 05:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965407AbXCLJJV
+	id S965407AbXCLJJc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 05:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965405AbXCLJJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 05:09:21 -0400
-Received: from mx1.suse.de ([195.135.220.2]:50201 "EHLO mx1.suse.de"
+	Mon, 12 Mar 2007 05:09:31 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:39004 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965397AbXCLJJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 05:09:18 -0400
-Date: Mon, 12 Mar 2007 10:09:17 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Dmitriy Monakhov <dmonakhov@sw.ru>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       devel@openvz.org
-Subject: Re: [PATCH 2/2] mm: incorrect direct io error handling (v6)
-Message-ID: <20070312090917.GD28546@wotan.suse.de>
-References: <877itmrizx.fsf@sw.ru> <20070312082028.GA28546@wotan.suse.de> <871wjurgcd.fsf@sw.ru>
-Mime-Version: 1.0
+	id S965407AbXCLJJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 05:09:30 -0400
+Message-ID: <45F51C08.2020108@openvz.org>
+Date: Mon, 12 Mar 2007 12:23:20 +0300
+From: Kirill Korotaev <dev@openvz.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: ebiederm@xmission.com
+CC: Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, devel@openvz.org, xemul@openvz.org
+Subject: Re: [Devel] Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>	<20070306140036.4e85bd2f.akpm@linux-foundation.org>	<45F3F581.9030503@sw.ru>	<20070311045111.62d3e9f9.akpm@linux-foundation.org> <m1wt1nvajx.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1wt1nvajx.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <871wjurgcd.fsf@sw.ru>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 11:55:30AM +0300, Dmitriy Monakhov wrote:
-> Nick Piggin <npiggin@suse.de> writes:
+Eric,
+
+> And misses every resource sharing opportunity in sight.
+
+that was my point too.
+
+> Except for
+> filtering the which pages are eligible for reclaim an RSS limit should
+> not need to change the existing reclaim logic, and with things like the
+> memory zones we have had that kind of restriction in the reclaim logic
+> for a long time.  So filtering out ineligible pages isn't anything new.
+
+exactly this is implemented in the current patches from Pavel.
+the only difference is that filtering is not done in general LRU list,
+which is not effective, but via per-container LRU list.
+So the pointer on the page structure does 2 things:
+- fast reclamation
+- correct uncharging of page from where it was charged
+  (e.g. shared pages can be mapped first in one container, but the last unmap
+   done from another one).
+
+>>We need to work out what the requirements are before we can settle on an
+>>implementation.
 > 
-> > On Mon, Mar 12, 2007 at 10:58:10AM +0300, Dmitriy Monakhov wrote:
+> 
+> If you are talking about RSS limits the term is well defined.  The
+> number of pages you can have mapped into your set of address space at
+> any given time.
+> 
+> Unless I'm totally blind that isn't what the patchset implements.
 
-> >> @@ -2240,6 +2241,29 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
-> >>  	mutex_lock(&inode->i_mutex);
-> >>  	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
-> >>  			&iocb->ki_pos);
-> >> +	/* 
-> >> +	 * If __generic_file_aio_write_nolock has failed.
-> >> +	 * This may happen because of:
-> >> +	 * 1) Bad segment found (failed before actual write attempt)
-> >> +	 * 2) Segments are good, but actual write operation failed
-> >> +	 *    and may have instantiated a few blocks outside i_size.
-> >> +	 *   a) in case of buffered write these blocks was already
-> >> +	 *   	trimmed by generic_file_buffered_write()
-> >> +	 *   b) in case of O_DIRECT these blocks weren't trimmed yet.
-> >> +	 *
-> >> +	 * In case of (2b) these blocks have to be trimmed off again.
-> >> +	 */
-> >> +	if (unlikely( ret < 0 && file->f_flags & O_DIRECT)) {
-> >> +		unsigned long nr_segs_avail = nr_segs;
-> >> +		size_t count = 0;
-> >> +		if (!generic_segment_checks(iov, &nr_segs_avail, &count,
-> >> +				VERIFY_READ)) {
-> >> +			/*It is (2b) case, because segments are good*/
-> >> +			loff_t isize = i_size_read(inode);
-> >> +			if (pos + count > isize)
-> >> +				vmtruncate(inode, isize);
-> >> +		}
-> >> +	}
-> >
-> > OK, but wouldn't this be better to be done in the actual direct IO
-> > functions themselves? Thus you could be sure that you have the 2b case,
-> > and the code would be less fragile to something changing?
-> Ohh, We can't just call vmtruncate() after generic_file_direct_write()
-> failure while __generic_file_aio_write_nolock() becase where is no guarantee
-> what i_mutex held. In fact all existing fs always invoke 
-> __generic_file_aio_write_nolock() with i_mutex held in case of S_ISREG files,
-> but this was't explicitly demanded and documented. I've proposed to do it in
-> previous versions of this patch, because it this just document current state
-> of affairs, but David Chinner wasn't agree with it.
+Ouch, what makes you think so?
+The fact that a page mapped into 2 different processes is charged only once?
+Imho it is much more correct then sum of process' RSS within container, due to:
+1. it is clear how much container uses physical pages, not abstract items
+2. shared pages are charged only once, so the sum of containers RSS is still
+   about physical RAM.
 
-It seemed like it was documented in the comments that you altered in this
-patch...
+> A
+> true RSS limit over multiple processes has a lot of potential to be
+> generally useful, is very understandable, doesn't affect kernel cache
+> decisions so largely performance should not be affected.  There is a
+> little more overhead in the fault logic but that is a moderately
+> expensive path anyway.
 
-How would such a filesystem that did not hold i_mutex propose to fix the
-problem?
+100% agree here.
 
-The burden should be on those filesystems that might not want to hold
-i_mutex here, to solve the problem nicely, rather than generic code to take
-this ugly code.
+>>You can actually do a form of overcommittment by allowing multiple
+>>containers to share one or more of the zones.  Whether that is sufficient
+>>or suitable I don't know.  That depends on the requirements, and we haven't
+>>even discussed those, let alone agreed to them.  
+> 
+> 
+> Another really nasty issue is the container term as the resource guys
+> are using the term in a subtlety different way then it has been used
+> with namespaces leading to several threads where the participants talked
+> past each other.  We need a different term to designate the group of
+> tasks a resource controller is dealing with.
+taskgrp? resgrp?
 
+> The whole filesystem interface also is over general and makes it too
+> easy to express the hard things (like move an existing task from one
+> group of tasks to another) leading to code complications.
+the things which are not supported are easy to disable.
+
+> On the up side I think the code the focus is likely in the right place
+> to start delivering usable code.
+
+Thanks,
+Kirill
