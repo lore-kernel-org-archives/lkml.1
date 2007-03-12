@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030401AbXCLPsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030462AbXCLPuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030401AbXCLPsp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030430AbXCLPsp
+	id S1030462AbXCLPuz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030463AbXCLPuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:48:45 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:51001 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030401AbXCLPso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:48:44 -0400
-Date: Mon, 12 Mar 2007 15:46:47 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [SOUND] hda_intel: build fix
-Message-ID: <20070312154647.GC11974@linux-mips.org>
-References: <20070310190513.GA24435@linux-mips.org> <s5h8xe2soxt.wl%tiwai@suse.de> <20070312135351.GA11974@linux-mips.org> <s5hzm6ijzep.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 12 Mar 2007 11:50:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36291 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030459AbXCLPux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 11:50:53 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Ray Lee <ray-lk@madrabbit.org>
+Subject: Re: Odd suspend regression in 2.6.21-rc[123]
+Date: Mon, 12 Mar 2007 10:42:46 -0500
+User-Agent: KMail/1.9.5
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Vladimir Lebedev <vladimir.p.lebedev@intel.com>,
+       linux-acpi@vger.kernel.org
+References: <45F0C018.2020409@madrabbit.org> <45F24DCE.8060902@madrabbit.org>
+In-Reply-To: <45F24DCE.8060902@madrabbit.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <s5hzm6ijzep.wl%tiwai@suse.de>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200703121142.46705.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 03:43:10PM +0100, Takashi Iwai wrote:
+On Saturday 10 March 2007 01:18, Ray Lee wrote:
+> Ray Lee wrote:
+> > In 2.6.21-rc1,2,3, my laptop will fully suspend to ram, but then
+> > *immediately* resumes back from suspension. (It resumes just fine, as well.)
+> [...]
+> > HP/Compaq NX6125 system, AMD64, dmesg attached.
+> 
+> hg bisect found the below patch as the culprit, and reverting it does
+> fix the regression. It's supposed to address "sometime ac/battery update
+> stops after resume from disk." This thread:
+> http://lkml.org/lkml/2007/2/24/111 appears to talk about the same issue,
+> and therefore it may be solved without the below patch, so perhaps we
+> can all be happy.
+> 
+> Regardless, I think my laptop no longer being able to go into S3 sleep
+> is a bit more important than someone else's laptop merely not showing
+> the correct AC status :-).
+> 
+> Please revert. (git patch id ed41dab90eb40ac4911e60406bc653661f0e4ce1)
 
-> Fair enough.  I agree that removing const is the only reasonable fix
-> right now.   But from semantics, const is a good thing, and people may
-> try to add it again later if we get rid of them now.  So, how about to
-> comment out such as /*const*/ in each place to remind that it's
-> intentional?
+I'd rather not break the Acer, if possible.
 
-I consider that harder to read and uglier.  If anything maybe something
-like:
+Ray, Please test the incremental patch below.
 
-#define __const_devinit
-[...]
-static __const_devinit struct snd_kcontrol_new snd_ice1712_delta1010lt_wordclock_status __devinitdata =
+---
+Subject: ACPI: resolve GPE immediate wakeup regression
+From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
 
-Worth it?  I doubt.
+Removing disabling of GPEs from enter_sleep function causes regression on nx6125.
+Doing disable_all_gpes both in prepare to sleep and in enter sleep resolves regression,
+while still fixes Acer notebooks.
 
-> Also, in your patch to ice1712, you don't have to remove const from the
-> codes in snd_ice1712_read_eeprom() and snd_ice1712_probe() functions.
-> They should work as const pointer.
+Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
 
-No, that results in warnings:
+ drivers/acpi/hardware/hwsleep.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-  CC      sound/pci/ice1712/ice1712.o
-sound/pci/ice1712/ice1712.c: In function ‘snd_ice1712_read_eeprom’:
-sound/pci/ice1712/ice1712.c:2354: warning: assignment from incompatible pointer type
-sound/pci/ice1712/ice1712.c: In function ‘snd_ice1712_probe’:
-sound/pci/ice1712/ice1712.c:2693: warning: assignment from incompatible pointer type
-
-  Ralf
+diff --git a/drivers/acpi/hardware/hwsleep.c b/drivers/acpi/hardware/hwsleep.c
+index 8fa9312..c84b1fa 100644
+--- a/drivers/acpi/hardware/hwsleep.c
++++ b/drivers/acpi/hardware/hwsleep.c
+@@ -300,6 +300,11 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
+ 	/*
+ 	 * 2) Enable all wakeup GPEs
+ 	 */
++	status = acpi_hw_disable_all_gpes();
++	if (ACPI_FAILURE(status)) {
++		return_ACPI_STATUS(status);
++	}
++
+ 	acpi_gbl_system_awake_and_running = FALSE;
+ 
+ 	status = acpi_hw_enable_all_wakeup_gpes();
