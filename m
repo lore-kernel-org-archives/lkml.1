@@ -1,102 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030729AbXCLRPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030725AbXCLRSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030729AbXCLRPK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 13:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161025AbXCLRPK
+	id S1030725AbXCLRSF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 13:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030730AbXCLRSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 13:15:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56131 "EHLO hera.kernel.org"
+	Mon, 12 Mar 2007 13:18:05 -0400
+Received: from pat.uio.no ([129.240.10.15]:58582 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030727AbXCLRPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 13:15:08 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Ray Lee <ray-lk@madrabbit.org>
-Subject: Re: ACPI: resolve GPE immediate wakeup regression
-Date: Mon, 12 Mar 2007 13:06:59 -0400
-User-Agent: KMail/1.9.5
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       Vladimir Lebedev <vladimir.p.lebedev@intel.com>,
-       linux-acpi@vger.kernel.org
-References: <45F0C018.2020409@madrabbit.org> <200703121142.46705.lenb@kernel.org> <45F58707.1@madrabbit.org>
-In-Reply-To: <45F58707.1@madrabbit.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1030725AbXCLRSC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 13:18:02 -0400
+Subject: Re: 2.6.20.2: kernel BUG at fs/nfs/write.c:505!
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Dave Jones <davej@redhat.com>
+Cc: Stresslinux Kernel <lk@stresslinux.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070312171324.GC22223@redhat.com>
+References: <45F5582C.1050100@stresslinux.org>
+	 <1173718831.6436.30.camel@heimdal.trondhjem.org>
+	 <20070312171324.GC22223@redhat.com>
+Content-Type: text/plain
+Date: Mon, 12 Mar 2007 13:17:57 -0400
+Message-Id: <1173719877.6436.40.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.92 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703121306.59437.lenb@kernel.org>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: 8BF5C9271328FFD70AF4259DC3A96CA9836D0D73
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 311 total 413559 max/h 7466 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007 12:59, Ray Lee wrote:
-> Len Brown wrote:
-> > On Saturday 10 March 2007 01:18, Ray Lee wrote:
-> >> Ray Lee wrote:
-> >>> In 2.6.21-rc1,2,3, my laptop will fully suspend to ram, but then
-> >>> *immediately* resumes back from suspension. (It resumes just fine, as well.)
-> >> [...]
-> >>> HP/Compaq NX6125 system, AMD64, dmesg attached.
-> > 
-> > I'd rather not break the Acer, if possible.
-> > 
-> > Ray, Please test the incremental patch below.
+On Mon, 2007-03-12 at 13:13 -0400, Dave Jones wrote:
+> On Mon, Mar 12, 2007 at 01:00:31PM -0400, Trond Myklebust wrote:
 > 
-> Tested and Alexey's patch (copied below) fixes the problem. I added a
-> signed-off-by just in case; feel free to yank it if inappropriate.
-> Regardless, please apply.
+>  > > Code: 0f 0b eb fe f0 ff 41 44 c7 85 18 01 00 00 01 00 00 00 48 8b
+>  > > RIP  [<ffffffff8032fb83>] nfs_wait_on_requests_locked+0x43/0xb2
+>  > >  RSP <ffff81007d669ca8>
+>  > 
+>  > Known issue. There is already a fix available in the -mm kernel
+>  > (attached).
 > 
-> Thanks Len, Alexey.
+> Did this get sent to -stable too for .20.3 ?
 
-Thanks for testing Ray,
-I'll apply this one.
+Sorry, no. It is not even in mainline yet. I've been travelling a bit
+too much recently.
 
--Len
+Cheers
+  Trond
 
-> ---
-> Subject: ACPI: resolve GPE immediate wakeup regression
-> From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-> 
-> Removing disabling of GPEs from enter_sleep function causes regression
-> on nx6125.
-> Doing disable_all_gpes both in prepare to sleep and in enter sleep
-> resolves regression,
-> while still fixes Acer notebooks.
-> 
-> Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Signed-off-by: Ray Lee <ray-lk@madrabbit.org>
-> ---
-> 
->  drivers/acpi/hardware/hwsleep.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/acpi/hardware/hwsleep.c
-> b/drivers/acpi/hardware/hwsleep.c
-> index 8fa9312..c84b1fa 100644
-> --- a/drivers/acpi/hardware/hwsleep.c
-> +++ b/drivers/acpi/hardware/hwsleep.c
-> @@ -300,6 +300,11 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8
-> sleep_state)
->  	/*
->  	 * 2) Enable all wakeup GPEs
->  	 */
-> +	status = acpi_hw_disable_all_gpes();
-> +	if (ACPI_FAILURE(status)) {
-> +		return_ACPI_STATUS(status);
-> +	}
-> +
->  	acpi_gbl_system_awake_and_running = FALSE;
-> 
->  	status = acpi_hw_enable_all_wakeup_gpes();
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
