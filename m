@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030672AbXCLRHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161023AbXCLRM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030672AbXCLRHW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 13:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030679AbXCLRHW
+	id S1161023AbXCLRM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 13:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030722AbXCLRM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 13:07:22 -0400
-Received: from pqueuea.post.tele.dk ([193.162.153.9]:46201 "EHLO
-	pqueuea.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030672AbXCLRHU (ORCPT
+	Mon, 12 Mar 2007 13:12:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:52125 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030720AbXCLRM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 13:07:20 -0400
-X-Greylist: delayed 1642 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Mar 2007 13:07:20 EDT
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Xavier Bestel <xavier.bestel@free.fr>, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703122134.13554.kernel@kolivas.org>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <200703122022.43021.kernel@kolivas.org>
-	 <1173692319.5835.611.camel@frg-rhel40-em64t-03>
-	 <200703122134.13554.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 17:38:38 +0100
-Message-Id: <1173717518.26350.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+	Mon, 12 Mar 2007 13:12:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Gnl+ggk0Q4HG3skZ5zlHDzHwxPL5taHhWKvUIS0/Ng2WD8Uje9DmV5c5KB4dUe3EGhyYg3Q82ksQcDYI7nXgLPuzNrKTsXUKKA4VHDtIqqAdxSQYzX0Hkj+uHyy9uWIFLIOW+FaON2RQgHojgMsgRyxZqvcfrDQy4KjivqIF4h8=
+Message-ID: <3aac340703121012k7d2bb9cby62651079405ad8e7@mail.gmail.com>
+Date: Mon, 12 Mar 2007 19:12:22 +0200
+From: Vitaliyi <imgrey@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Fwd: libata extension
+In-Reply-To: <3aac340703121003l43685599t8dbffe6247879a91@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3aac340703102322p362998b9labedc13503702d2b@mail.gmail.com>
+	 <45F56800.3040104@rtr.ca>
+	 <3aac340703121003l43685599t8dbffe6247879a91@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-12 at 21:34 +1100, Con Kolivas wrote:
-> On Monday 12 March 2007 20:38, Xavier Bestel wrote:
-> > On Mon, 2007-03-12 at 20:22 +1100, Con Kolivas wrote:
-> > > On Monday 12 March 2007 19:55, Mike Galbraith wrote:
-> > > > Hmm.  So... anything that's client/server is going to suffer horribly
-> > > > unless niced tasks are niced all the way down to 19?
-> > >
-> > > Fortunately most client server models dont usually have mutually
-> > > exclusive cpu use like this X case. There are many things about X that
-> > > are still a little (/me tries to think of a relatively neutral term)...
-> > > wanting. :(
-> >
-> > I'd say the problem is less with X than with Xlib, which is heavily
-> > round-trip-based. Fortunately XCB (its successor) seeks to be more
-> > asynchronous.
-> 
-> Yes I recall a talk by Keith Packard on Xorg development and how a heck of a 
-> lot of time spent spinning by X (?Xlib) for no damn good reason was the 
-> number one thing that made X suck and basically it was silly to try and fix 
-> that at the cpu scheduler level since it needed to be corrected in X, and was 
-> being actively addressed. So we should stop trying to write cpu schedulers 
-> for X.
-Excuse me for barging in. But.
+---------- Forwarded message ----------
+From: Vitaliyi <imgrey@gmail.com>
+Date: Mar 12, 2007 7:03 PM
+Subject: Re: libata extension
+To: Mark Lord <lkml@rtr.ca>
 
-with latest xorg, xlib will be using xcb internally, which afaik should
-help matters a little, but furthermore, with the arrival of xcb, stuff
-are bound to change somewhat fast, and with abit more incentive(as in,
-real benefit on latest kernels), they are bound to change even faster.
 
-and if people upgrading to newest X(using xlib w/xcb) and applications
-being updated can help stuff out in the kernel, i'd say its best to push
-for that.
-> 
-> > 	Xav
-> 
+> Use the SCSI SG_IO ioctl() with opcode=ATA_16,
+> which gives you access to the ATA Passthrough mechanism.
+> This will work for most ATA commands.
 
+How about soft-reset, is it possible to reach Device Control Register ?
+Seems not. I was thinking about patch to libata which allow to use
+Control Register.
+In the perfect case i would like to be able to execute vendor command
+set (reverse engineered).
+
+Is it possible to control timeouts in user space precisely enough and
+get rid of unnecessary kernel error messages without touching
+syslogd/klogd?
+
+By the way, how to make libata to not probe some ide channel or drive ?
+
+> I already use it in hdparm and in some other utilities
+> for scanning/repairing drives.
+>
+> A notable exeception are the READ/WRITE LONG opcodes,
+> which require an extra kernel patch from me,
+> awaiting merge into libata some year.
+
+Could you please send me this patch once it's ready ?
+
+
+Thank you
