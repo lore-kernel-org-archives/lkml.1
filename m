@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751222AbXCLSY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751298AbXCLSZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751222AbXCLSY0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXCLSY0
+	id S1751298AbXCLSZK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXCLSZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:24:26 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1587 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbXCLSYZ (ORCPT
+	Mon, 12 Mar 2007 14:25:10 -0400
+Received: from mx2.suse.de ([195.135.220.15]:37586 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751298AbXCLSZI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:24:25 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 3/3] lumpy: only count taken pages as scanned
-References: <exportbomb.1173723760@pinky>
-InReply-To: <exportbomb.1173723760@pinky>
-Message-ID: <f1e5ef335bb5a202c7b18faaa0e97b83@pinky>
-Date: Mon, 12 Mar 2007 18:24:18 +0000
+	Mon, 12 Mar 2007 14:25:08 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+Date: Mon, 12 Mar 2007 19:25:00 +0100
+User-Agent: KMail/1.9.1
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0703121216210.2489-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0703121216210.2489-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703121925.01771.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Montag, 12. März 2007 17:21 schrieb Alan Stern:
+> On Mon, 12 Mar 2007, Oliver Neukum wrote:
+> 
+> > > > Yes, I was missing the point. In consequence, drivers must not use
+> > > > dev_get_drvdata() to get their references to their private data. It's
+> 
+> You do realize how foolish that sounds?  Why do you think 
+> dev_get_drvdata() was written in the first place?
 
-When scanning the order sized area around the tag page we pull all
-pages of the matching active state; the non-matching pages are not
-otherwise affected.  We currently count these as scanned increasing
-the apparent scan rates.  Previously we would only count a page
-scanned if it was actually removed from the LRU, either then being
-reclaimed or rotated back onto the head of the LRU.
+It's still useful in disconnect/suspend/resume/etc...
+If everything were alright with the design, we wouldn't be discussing
+it now, would we?
 
-The effect of this is to cause reclaim to terminate artificially
-early when the scan count is reached, reducing effectivness.  Move to
-counting only those pages we actually remove from the LRU as scanned.
-
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
----
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index d7a0860..c3dc544 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -732,11 +732,11 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
- 			/* Check that we have not crossed a zone boundary. */
- 			if (unlikely(page_zone_id(cursor_page) != zone_id))
- 				continue;
--			scan++;
- 			switch (__isolate_lru_page(cursor_page, active)) {
- 			case 0:
- 				list_move(&cursor_page->lru, dst);
- 				nr_taken++;
-+				scan++;
- 				break;
  
- 			case -EBUSY:
+> I'm with Dmitry; the whole thing becomes much, much simpler if we put back
+> your patch and prevent sysfs access after unregistering an attribute 
+> file.  No API changes are needed, no driver changes are needed, no radical 
+> core changes are needed,...  All we would have to do is fix the one SCSI 
+> method to make it use a workqueue.
+
+Try. I don't like reverting my own code. But I predict he'll tell you that a
+driver's bond with a device should be represented in a data structure
+that is to be refcounted.
+
+	Regards
+		Oliver
