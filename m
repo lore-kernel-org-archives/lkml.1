@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbXCLUMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbXCLUOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752856AbXCLUMh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 16:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXCLUMh
+	id S1752861AbXCLUOG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXCLUOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 16:12:37 -0400
-Received: from drugphish.ch ([69.55.226.176]:48701 "EHLO www.drugphish.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752856AbXCLUMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 16:12:36 -0400
-X-Greylist: delayed 1689 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Mar 2007 16:12:36 EDT
-Message-ID: <45F5AD8E.2080105@drugphish.ch>
-Date: Mon, 12 Mar 2007 20:44:14 +0100
-From: Roberto Nibali <ratz@drugphish.ch>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Mon, 12 Mar 2007 16:14:06 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:31487 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752859AbXCLUOE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 16:14:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NHRa+FDPbrV2qpLNY8AlA8onw9WwfnC/6dX1nkH0hxDGBxTVniq8NtzDoBLsI39V7gcKvHn9PHn93RTbG2QLcb/6h9JXO9HKfTXww0bI5DBvrQYEIsVrR6jj/utkTYKq6V/S3j/j8F0zZVH0YmVC8npN05g0aY4ws6Pp9cdZjjI=
+Message-ID: <b637ec0b0703121314o747ef0bdl5c9f580b456bae43@mail.gmail.com>
+Date: Mon, 12 Mar 2007 21:14:03 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH] libata: don't whine if ->prereset() returns -ENOENT
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "Greg KH" <greg@kroah.com>
+In-Reply-To: <45F50E28.7010509@gmail.com>
 MIME-Version: 1.0
-To: "Moore, Eric" <Eric.Moore@lsi.com>
-Cc: Valdis.Kletnieks@vt.edu, "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] MPT FUSION: Delete unused header files.
-References: <664A4EBB07F29743873A87CF62C26D70623ED6@NAMAIL4.ad.lsil.com>
-In-Reply-To: <664A4EBB07F29743873A87CF62C26D70623ED6@NAMAIL4.ad.lsil.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070309163148.GA12848@havoc.gtf.org>
+	 <b637ec0b0703091324q7f15fddbpc8c24b4e1131e3f4@mail.gmail.com>
+	 <20070309234839.2070a265@lxorguk.ukuu.org.uk>
+	 <45F50E28.7010509@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Certainly appropriate content for something on your website, 
->> and vendors who
->> provide programs like dmidecode and parsemce are always 
->> welcome. I could
->> probably be convinced that such info should have at least a 
->> pointer somewhere
->> in Documentation/lsi_debug.txt or some such.  But quite 
->> frankly, if I'm reduced
->> to wading through *.h files to figure out what some 
->> recalcitrant hardware is
->> upset about, there's been a failure in documentation.  
->> *ESPECIALLY* if I
->> go look at drivers/whatever/source.c and it doesn't even 
->> *reference* the *.h
->> file in question.
-> 
-> 
-> Its apparent to me that you don't have our hardware, nor have you
-> actually waded thru this driver source code. 
+Applied on top of latest GIT this patch make the warning[1] disappear.
+Thanks,
+Fabio
 
-Allow me to shortly chime in here:
+[1] ata2: reset failed, giving up
 
-I'm the author of the mpt-status user space tool (a simple alternative 
-to your Java GUI tool), which queries LSI controllers and reports back 
-the RAID status and the synchronization state; so I have waded through 
-the driver source code quite a lot. My question:
-
-> If you did, you would of noticed that the header you want to delete, is
-> actually referenced in the *.c source code.   The file "mpi_log_fc.h",
-> is indeed mentioned in mptbase.c, in the function called
-> mpt_fc_log_info, in the documention section above the function.    This
-> header file is very helpful to those supporting our hardware, and those
-> using it
-> For SAS(mpi_log_sas.h), I have broken out each loginfo in the strings
-> you will find defined in originator_str, iop_code_str, pl_code_str, etc,
-> I probably do that with fibre.
-> 
-> If its that important to you to have the header files included, I will
-> provide a patch that does that.    
-
-I would really like to see "sanitized" kernel headers, so is it possible 
-to have your headers inside ../drivers/message/fusion{,/lsi} somehow 
-inserted into the process of the headers_install target?
-
-Best regards,
-Roberto Nibali, ratz
--- 
-echo 
-'[q]sa[ln0=aln256%Pln256/snlbx]sb3135071790101768542287578439snlbxq' | dc
+On 3/12/07, Tejun Heo <htejun@gmail.com> wrote:
+> ->prereset() returns -ENOENT to tell libata that the port is empty and
+> reset sequencing should be stopped.  This is not an error condition.
+> Update ata_eh_reset() such that it sets device classes to ATA_DEV_NONE
+> and return success in on -ENOENT.  This makes spurious error message
+> go away.
+>
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+>
+> This should do it and better fits the intention of the return value.
+> Two things to note.
+>
+> 1. I think these ports should be made dummy instead of returning
+> -ENOENT on prereset().  -ENOENT from prereset() was a hack to keep
+> ata_piix's behavior unchanged while converting it to new EH.  If no
+> one objcts, I'll convert similar usages to use dummy ports after new
+> init model and drop -ENOENT hack in #upstream.
+>
+> 2. -ENODEV sounds more appropriate.  Why have I used -ENOENT.  :-)
+>
+> Thanks.
+>
+> diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+> index 7349c3d..361953a 100644
+> --- a/drivers/ata/libata-eh.c
+> +++ b/drivers/ata/libata-eh.c
+> @@ -1625,8 +1625,14 @@ static int ata_eh_reset(struct ata_port *ap, int classify,
+>                 rc = prereset(ap);
+>                 if (rc) {
+>                         if (rc == -ENOENT) {
+> -                               ata_port_printk(ap, KERN_DEBUG, "port disabled. ignoring.\n");
+> +                               ata_port_printk(ap, KERN_DEBUG,
+> +                                               "port disabled. ignoring.\n");
+>                                 ap->eh_context.i.action &= ~ATA_EH_RESET_MASK;
+> +
+> +                               for (i = 0; i < ATA_MAX_DEVICES; i++)
+> +                                       classes[i] = ATA_DEV_NONE;
+> +
+> +                               rc = 0;
+>                         } else
+>                                 ata_port_printk(ap, KERN_ERR,
+>                                         "prereset failed (errno=%d)\n", rc);
+>
