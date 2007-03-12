@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbXCLT5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbXCLUCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752849AbXCLT5c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 15:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbXCLT5c
+	id S1752843AbXCLUCS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXCLUCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 15:57:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54005 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752849AbXCLT5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 15:57:31 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Luming Yu" <luming.yu@gmail.com>
-Subject: Re: 2.6.21-rc3-mm2 hangs my opteron during bootup, ACPI?
-Date: Mon, 12 Mar 2007 15:56:03 -0400
-User-Agent: KMail/1.9.5
-Cc: "Helge Hafting" <helge.hafting@aitel.hist.no>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20070307201915.4d579113.akpm@linux-foundation.org> <45F54E04.40302@aitel.hist.no> <3877989d0703120625w4afbf197qa30b62bac3cdfcf5@mail.gmail.com>
-In-Reply-To: <3877989d0703120625w4afbf197qa30b62bac3cdfcf5@mail.gmail.com>
+	Mon, 12 Mar 2007 16:02:18 -0400
+Received: from lilly.ping.de ([83.97.42.2]:4909 "HELO lilly.ping.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752843AbXCLUCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 16:02:17 -0400
+X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Mar 2007 16:02:16 EDT
+Date: Mon, 12 Mar 2007 20:54:36 +0100
+From: Patrick Mau <mau@oscar.ping.de>
+To: Douglas McNaught <doug@mcnaught.org>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: RSDL for 2.6.21-rc3- 0.29
+Message-ID: <20070312195436.GA15319@oscar.prima.de>
+References: <20070311013506.GD10459@waste.org> <200703121428.29947.gene.heskett@gmail.com> <87wt1mjo4q.fsf@suzuka.mcnaught.org> <200703121510.18268.gene.heskett@gmail.com> <87slcajliq.fsf@suzuka.mcnaught.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703121556.03845.lenb@kernel.org>
+In-Reply-To: <87slcajliq.fsf@suzuka.mcnaught.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007 09:25, Luming Yu wrote:
-> try acpi=off please.
+On Mon, Mar 12, 2007 at 03:43:09PM -0400, Douglas McNaught wrote:
+> Gene Heskett <gene.heskett@gmail.com> writes:
 > 
-> On 3/12/07, Helge Hafting <helge.hafting@aitel.hist.no> wrote:
-> > I went from 2.6.18-rc5-mm1 to 2.6.21-rc3-mm2
-> > The computer now hangs solid during boot, at this point:
+> > On Monday 12 March 2007, Douglas McNaught wrote:
+> >>Gene Heskett <gene.heskett@gmail.com> writes:
+> >>> I'd considered it, but with 32 dle entries, the whole strace output
+> >>> would be terrabytes & I don't have THAT much disk.  Not to mention it
+> >>> traces only the parent process, so tar would be merrily marching along
+> >>> to its own drummer and not traced I'm  afraid.
+> >>
+> >>$ strace -ff
+> >>
+> >>-Doug
 > >
-> > usb 1-1: configuration #1 chosen from 1 choice
-> > drivers/usb/class/usblp.c: usblp0: USB Bidirectional printer dev 2 if 0
-> > alt 0 proto 2 vid 0x04B8 pid 0x0007
-> > usb 1-3: new high speed USB device using ehci_hcd and address 3
-> > pc87360: PC8736x not detected, module not inserted.
-> > md: raid1 personality registered for level 1
-> > md: md driver 0.90.3 MAX_MD_DEVS=256, MD_SB_DISKS=27
-> > md: bitmap version 4.39
-> > EDAC MC: Ver: 2.0.1 Sep  2 2006
-> > sdhci: Secure Digital Host Controller Interface driver, 0.12
-> > sdhci: Copyright(c) Pierre Ossman
-> > wbsd: Winbond W83L51xD SD/MMC card interface driver, 1.6
-> > wbsd: Copyright(c) Pierre Ossman
-> > Advanced Linux Sound Architecture Driver Version 1.0.12rc1 (Thu Jun 22
-> > 13:55:50 2006 UTC).
-> > ACPI: PCI Interrupt 0000:00:06.0[A] -> GSI 17 (level, low) -> IRQ 17
-> >
-> >
-> > Here it stops with a dead keyboard.  No sysrq, it is time for the power
-> > button.
-> > A 2.6.18-rc5-mm1 boot continues like this:
-> >
-> > gameport: Trident 4DWave is pci0000:00:06.0/gameport0, speed 1884kHz
-> > ALSA device list:
-> >   #0: Trident TRID4DWAVENX PCI Audio at 0x9400, irq 17
-> > oprofile: using NMI interrupt.
-> > Netfilter messages via NETLINK v0.30.
-> > IPv4 over IPv4 tunneling driver
-> > GRE over IPv4 tunneling driver
-> > ip_conntrack version 2.4 (2043 buckets, 16344 max) - 288 bytes per conntrack
-> > ip_tables: (C) 2000-2006 Netfilter Core Team
-> > joydump: ,------------------ START ----------------.
-> >
-> >
-> > I'll be trying 2.6.20 next, unless adviced otherwise.
+> > Someone else suggested the single -f, and I tried that, but even with the 
+> > shell history set for 100,000 lines, i can't get back to the start, and I 
+> > think its mucking with the shell arguments numbering as what I can see is 
+> > about 5 reads through /etc/services accompanied by endless complaints 
+> > of -EBADFD, the the logfile it generates says the port it was given was 
+> > rejected when amcheck was run, here is that snip:
+> 
+> I'd do 'strace -ff -o /tmp/amanda-strace <command>', which will give
+> you a set of files in /tmp, one for each PID created by fork().  Then
+> find the one that has the 'tar' invocation you're looking for.
 
-yes, that would be a good baseline.
+Hi,
 
-But how about the latest git tree w/o anything from -mm.
-eg. 2.6.21-rc3-git7
+I hope you don't mind me jumping in ...
 
-thanks,
--Len
+Why not temporarly replace "/bin/tar" with a shell script that does:
+
+#!/bin/sh
+exec strace -f -o output /bin/real.tar $@
+
+That should be working, shouldn't it ?
+
+Cheers,
+Patrick
 
