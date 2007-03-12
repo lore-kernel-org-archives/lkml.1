@@ -1,112 +1,545 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751379AbXCLSez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751211AbXCLSfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751379AbXCLSez (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbXCLSez
+	id S1751211AbXCLSfQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXCLSfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:34:55 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:63751 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbXCLSez (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:34:55 -0400
-Date: Mon, 12 Mar 2007 14:34:48 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-In-reply-to: <200703121238.04191.gene.heskett@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Con Kolivas" <kernel@kolivas.org>,
-       "Radoslaw Szkodzinski" <astralstorm@gmail.com>,
-       "Mike Galbraith" <efault@gmx.de>, "ck list" <ck@vds.kolivas.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-Message-id: <200703121434.48780.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703111457.17624.kernel@kolivas.org>
- <8cd998d50703120458j6ac9f33h79728f2f599a3b91@mail.gmail.com>
- <200703121238.04191.gene.heskett@gmail.com>
-User-Agent: KMail/1.9.6
+	Mon, 12 Mar 2007 14:35:16 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:59828 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751211AbXCLSfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 14:35:12 -0400
+From: Haavard Skinnemoen <hskinnemoe@atmel.com>
+To: roland@redhat.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH -mm] AVR32: Implement utrace support
+Date: Mon, 12 Mar 2007 19:34:53 +0100
+Message-Id: <1173724493508-git-send-email-hskinnemoe@atmel.com>
+X-Mailer: git-send-email 1.4.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007, Gene Heskett wrote:
->On Monday 12 March 2007, Con Kolivas wrote:
->>On 12/03/07, Gene Heskett <gene.heskett@gmail.com> wrote:
->>> On Monday 12 March 2007, Gene Heskett wrote:
->>> >To Con, I knew 2.6.20 worked with your earlier patches, so rather
->>> > than revert all the way, I just rebooted to 2.6.20.2-rdsl-0.30 and
->>> > I'm going to fire off another backup.  I suspect it will work, but
->>> > will advise the next time I wake up.
->>>
->>> After posting the above, I thought maybe I'd hit a target in the
->>> middle and build a 2.6.20.2, with your -0.30 patch, but...
->>>
->>> I'm going to have to build a 2.6.20.2, because with the rdsl-0.30
->>> patch, its going to do a level 2 on my /usr/movies directory, which
->>> hasn't been touched in 90 days and has about 8.1GB in it according to
->>> du, and its going to do nearly all of it.  It shouldn't be anything
->>> but a directory listing file. But this is what amstatus is reporting:
->>> coyote:/usr/movies            2     7271m dumping      793m ( 10.91%)
->>> (7:26:00)
->>>
->>> And its also reporting far more data than exists it seems. As is du,
->>> for /var, which might have 2 gigs, its claiming 3.7!
->>>
->>> Honest folks, I'm not smoking anything, I quit 18 years ago.  Back to
->>> bed while this one bombs out too.
->>>
->>> --
->>> Cheers, Gene
->>
->>Gene your last good kernel you said was 2.6.20 based. I don't see a
->>good reason even to use 2.6.20.2 as a base given that information.
->
->I have 2.6.20.1 building now.  I know that 2.6.20-ck1 worked well, so
-> now I walking fwd from 2.6.20, trying to bisect it.  .1 wasn't much of
-> a patch, but who knows at this point, I'm not 'the shadow' in a 65 year
-> old radio show.  And it looks like that build is done, so here goes the
-> next test.
->
->The worst thing about this is that amanda's database is being hosed
->everytime this happens, and it's been 3 runs in a row, in a dumpcycle of
->5, where this has occurred.  I can do one more bad run by pre-clearing
->the vtape +1 that's it is going to use each time because the partition
->being used for vtapes is sitting at about 93% utilization now.  Normal
->life, its about 84%, it is a 175GB partition.  That also is stirring
->around in the old girls database when I kill stuff she thinks is there,
->but its also about 3 dumpcycles back and pretty much out of the picture
->so she will recover in a couple of dumpcycles once I find this, if
-> indeed I do.
->
->You've cooked up patches for all this, so it 2.6.20.1 works ok, then I
-> try your patch on that one.  I tried 2.6.21-rc1, and it bombed too, but
-> I just figured that was an -rc1, and we're expected to lose a pint of
-> blood at most any -rc1 aren't we?, so I didn't give it any great
-> thought and reverted till -rc2 came out.  But I ramble &
-> times-a-wasting.
->
-For those following this thread, testing is halted momentarily due to a 
-bug in my amanda wrapper scripts discovered when I told it to do a flush 
-so the next run had a clean slate.  Alan Pearson and I are exchanging 
-emails on that.  The script problem however is not connected to this, its 
-just that the wrapper needs to be right under all conditions and it 
-wasn't.  A few hours lag here.
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-Does anybody on the Cc: list need off it?
+Rip out most of the ptrace code for AVR32 and replace it with the
+much nicer utrace stuff. It builds in all possible combinations of
+CONFIG_UTRACE and CONFIG_PTRACE, and it seems to work as far as I've
+tested it with strace and some simple debugging with gdb.
 
->>--
->>-ck
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ arch/avr32/kernel/entry-avr32b.S |   10 +-
+ arch/avr32/kernel/process.c      |    2 -
+ arch/avr32/kernel/ptrace.c       |  324 ++++++++++---------------------------
+ include/asm-avr32/tracehook.h    |   69 ++++++++
+ 4 files changed, 165 insertions(+), 240 deletions(-)
 
-
-
+diff --git a/arch/avr32/kernel/entry-avr32b.S b/arch/avr32/kernel/entry-avr32b.S
+index eeb6679..81eaf20 100644
+--- a/arch/avr32/kernel/entry-avr32b.S
++++ b/arch/avr32/kernel/entry-avr32b.S
+@@ -229,15 +229,21 @@ ret_from_fork:
+ 	rjmp    syscall_exit_cont
+ 
+ syscall_trace_enter:
+-	pushm	r8-r12
++	mov	r12, sp		/* regs		*/
++	mov	r11, 0		/* is_exit	*/
+ 	rcall	syscall_trace
+-	popm	r8-r12
++
++	/* syscall_trace may update r8, so reload r8-r12 from regs. */
++	sub	lr, sp, -REG_R12
++	ldm	lr, r8-r12
+ 	rjmp	syscall_trace_cont
+ 
+ syscall_exit_work:
+ 	bld	r1, TIF_SYSCALL_TRACE
+ 	brcc	1f
+ 	unmask_interrupts
++	mov	r12, sp
++	mov	r11, 1
+ 	rcall	syscall_trace
+ 	mask_interrupts
+ 	ld.w	r1, r0[TI_flags]
+diff --git a/arch/avr32/kernel/process.c b/arch/avr32/kernel/process.c
+index 0b43259..f7cf378 100644
+--- a/arch/avr32/kernel/process.c
++++ b/arch/avr32/kernel/process.c
+@@ -229,8 +229,6 @@ asmlinkage int sys_execve(char __user *ufilename, char __user *__user *uargv,
+ 		goto out;
+ 
+ 	error = do_execve(filename, uargv, uenvp, regs);
+-	if (error == 0)
+-		current->ptrace &= ~PT_DTRACE;
+ 	putname(filename);
+ 
+ out:
+diff --git a/arch/avr32/kernel/ptrace.c b/arch/avr32/kernel/ptrace.c
+index 6f4388f..396b2f9 100644
+--- a/arch/avr32/kernel/ptrace.c
++++ b/arch/avr32/kernel/ptrace.c
+@@ -5,23 +5,23 @@
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
+  */
+-#undef DEBUG
++
++#include <linux/compile.h>
++#include <linux/elf.h>
++#include <linux/errno.h>
+ #include <linux/kernel.h>
+-#include <linux/sched.h>
+-#include <linux/mm.h>
+-#include <linux/smp_lock.h>
++#include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/ptrace.h>
+-#include <linux/errno.h>
++#include <linux/sched.h>
++#include <linux/tracehook.h>
+ #include <linux/user.h>
+-#include <linux/security.h>
+-#include <linux/unistd.h>
+-#include <linux/notifier.h>
+ 
+-#include <asm/traps.h>
+-#include <asm/uaccess.h>
+-#include <asm/ocd.h>
+-#include <asm/mmu_context.h>
+ #include <asm/kdebug.h>
++#include <asm/mmu_context.h>
++#include <asm/ocd.h>
++
++#ifdef CONFIG_UTRACE
+ 
+ static struct pt_regs *get_user_regs(struct task_struct *tsk)
+ {
+@@ -29,261 +29,113 @@ static struct pt_regs *get_user_regs(struct task_struct *tsk)
+ 				  THREAD_SIZE - sizeof(struct pt_regs));
+ }
+ 
+-static void ptrace_single_step(struct task_struct *tsk)
+-{
+-	pr_debug("ptrace_single_step: pid=%u, SR=0x%08lx\n",
+-		 tsk->pid, tsk->thread.cpu_context.sr);
+-	if (!(tsk->thread.cpu_context.sr & SR_D)) {
+-		/*
+-		 * Set a breakpoint at the current pc to force the
+-		 * process into debug mode.  The syscall/exception
+-		 * exit code will set a breakpoint at the return
+-		 * address when this flag is set.
+-		 */
+-		pr_debug("ptrace_single_step: Setting TIF_BREAKPOINT\n");
+-		set_tsk_thread_flag(tsk, TIF_BREAKPOINT);
+-	}
+-
+-	/* The monitor code will do the actual step for us */
+-	set_tsk_thread_flag(tsk, TIF_SINGLE_STEP);
+-}
+-
+-/*
+- * Called by kernel/ptrace.c when detaching
+- *
+- * Make sure any single step bits, etc. are not set
+- */
+-void ptrace_disable(struct task_struct *child)
+-{
+-	clear_tsk_thread_flag(child, TIF_SINGLE_STEP);
+-}
+-
+-/*
+- * Handle hitting a breakpoint
+- */
+-static void ptrace_break(struct task_struct *tsk, struct pt_regs *regs)
+-{
+-	siginfo_t info;
+-
+-	info.si_signo = SIGTRAP;
+-	info.si_errno = 0;
+-	info.si_code  = TRAP_BRKPT;
+-	info.si_addr  = (void __user *)instruction_pointer(regs);
+-
+-	pr_debug("ptrace_break: Sending SIGTRAP to PID %u (pc = 0x%p)\n",
+-		 tsk->pid, info.si_addr);
+-	force_sig_info(SIGTRAP, &info, tsk);
+-}
+-
+-/*
+- * Read the word at offset "offset" into the task's "struct user". We
+- * actually access the pt_regs struct stored on the kernel stack.
+- */
+-static int ptrace_read_user(struct task_struct *tsk, unsigned long offset,
+-			    unsigned long __user *data)
++static int genregs_get(struct task_struct *target,
++		       const struct utrace_regset *regset,
++		       unsigned int pos, unsigned int count,
++		       void *kbuf, void __user *ubuf)
+ {
+-	unsigned long *regs;
+-	unsigned long value;
+-
+-	pr_debug("ptrace_read_user(%p, %#lx, %p)\n",
+-		 tsk, offset, data);
+-
+-	if (offset & 3 || offset >= sizeof(struct user)) {
+-		printk("ptrace_read_user: invalid offset 0x%08lx\n", offset);
+-		return -EIO;
+-	}
+-
+-	regs = (unsigned long *)get_user_regs(tsk);
+-
+-	value = 0;
+-	if (offset < sizeof(struct pt_regs))
+-		value = regs[offset / sizeof(regs[0])];
++	struct pt_regs *regs = get_user_regs(target);
+ 
+-	return put_user(value, data);
++	return utrace_regset_copyout(&pos, &count, &kbuf, &ubuf,
++				     regs, 0, -1);
+ }
+ 
+-/*
+- * Write the word "value" to offset "offset" into the task's "struct
+- * user". We actually access the pt_regs struct stored on the kernel
+- * stack.
+- */
+-static int ptrace_write_user(struct task_struct *tsk, unsigned long offset,
+-			     unsigned long value)
++static int genregs_set(struct task_struct *target,
++		       const struct utrace_regset *regset,
++		       unsigned int pos, unsigned int count,
++		       const void *kbuf, const void __user *ubuf)
+ {
+-	unsigned long *regs;
+-
+-	if (offset & 3 || offset >= sizeof(struct user)) {
+-		printk("ptrace_write_user: invalid offset 0x%08lx\n", offset);
+-		return -EIO;
+-	}
+-
+-	if (offset >= sizeof(struct pt_regs))
+-		return 0;
+-
+-	regs = (unsigned long *)get_user_regs(tsk);
+-	regs[offset / sizeof(regs[0])] = value;
++	struct pt_regs *regs = get_user_regs(target);
+ 
+-	return 0;
++	return utrace_regset_copyin(&pos, &count, &kbuf, &ubuf,
++				    regs, 0, -1);
+ }
+ 
+-static int ptrace_getregs(struct task_struct *tsk, void __user *uregs)
+-{
+-	struct pt_regs *regs = get_user_regs(tsk);
+-
+-	return copy_to_user(uregs, regs, sizeof(*regs)) ? -EFAULT : 0;
+-}
+-
+-static int ptrace_setregs(struct task_struct *tsk, const void __user *uregs)
+-{
+-	struct pt_regs newregs;
+-	int ret;
+-
+-	ret = -EFAULT;
+-	if (copy_from_user(&newregs, uregs, sizeof(newregs)) == 0) {
+-		struct pt_regs *regs = get_user_regs(tsk);
+-
+-		ret = -EINVAL;
+-		if (valid_user_regs(&newregs)) {
+-			*regs = newregs;
+-			ret = 0;
+-		}
+-	}
+-
+-	return ret;
+-}
+-
+-long arch_ptrace(struct task_struct *child, long request, long addr, long data)
++static const struct utrace_regset native_regsets[] = {
++	{
++		.n	= ELF_NGREG,
++		.size	= sizeof(long),
++		.align	= sizeof(long),
++		.get	= genregs_get,
++		.set	= genregs_set,
++	},
++	/*
++	 * Other register sets that probably would make sense:
++	 *   - Coprocessor registers (8 coprocs with 16 registers each)
++	 *   - TLS stuff
++	 */
++};
++
++const struct utrace_regset_view utrace_avr32_native_view = {
++	.name		= UTS_MACHINE,
++	.e_machine	= ELF_ARCH,
++	.regsets	= native_regsets,
++	.n		= ARRAY_SIZE(native_regsets),
++};
++EXPORT_SYMBOL_GPL(utrace_avr32_native_view);
++
++#ifdef CONFIG_PTRACE
++
++static const struct ptrace_layout_segment avr32_uarea[] = {
++	{ 0, ELF_NGREG * sizeof(long), 0, 0 },
++	{ 0, 0, -1, 0 },
++};
++
++int arch_ptrace(long *request, struct task_struct *child,
++		struct utrace_attached_engine *engine,
++		unsigned long addr, unsigned long data, long *val)
+ {
+-	unsigned long tmp;
+-	int ret;
+-
+ 	pr_debug("arch_ptrace(%ld, %d, %#lx, %#lx)\n",
+-		 request, child->pid, addr, data);
++		 *request, child->pid, addr, data);
+ 
+ 	pr_debug("ptrace: Enabling monitor mode...\n");
+ 	__mtdr(DBGREG_DC, __mfdr(DBGREG_DC) | DC_MM | DC_DBE);
+ 
+-	switch (request) {
+-	/* Read the word at location addr in the child process */
+-	case PTRACE_PEEKTEXT:
+-	case PTRACE_PEEKDATA:
+-		ret = access_process_vm(child, addr, &tmp, sizeof(tmp), 0);
+-		if (ret == sizeof(tmp))
+-			ret = put_user(tmp, (unsigned long __user *)data);
+-		else
+-			ret = -EIO;
+-		break;
+-
++	switch (*request) {
+ 	case PTRACE_PEEKUSR:
+-		ret = ptrace_read_user(child, addr,
+-				       (unsigned long __user *)data);
+-		break;
+-
+-	/* Write the word in data at location addr */
+-	case PTRACE_POKETEXT:
+-	case PTRACE_POKEDATA:
+-		ret = access_process_vm(child, addr, &data, sizeof(data), 1);
+-		if (ret == sizeof(data))
+-			ret = 0;
+-		else
+-			ret = -EIO;
+-		break;
++		return ptrace_peekusr(child, engine, avr32_uarea, addr, data);
+ 
+ 	case PTRACE_POKEUSR:
+-		ret = ptrace_write_user(child, addr, data);
+-		break;
+-
+-	/* continue and stop at next (return from) syscall */
+-	case PTRACE_SYSCALL:
+-	/* restart after signal */
+-	case PTRACE_CONT:
+-		ret = -EIO;
+-		if (!valid_signal(data))
+-			break;
+-		if (request == PTRACE_SYSCALL)
+-			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-		else
+-			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-		child->exit_code = data;
+-		/* XXX: Are we sure no breakpoints are active here? */
+-		wake_up_process(child);
+-		ret = 0;
+-		break;
+-
+-	/*
+-	 * Make the child exit. Best I can do is send it a
+-	 * SIGKILL. Perhaps it should be put in the status that it
+-	 * wants to exit.
+-	 */
+-	case PTRACE_KILL:
+-		ret = 0;
+-		if (child->exit_state == EXIT_ZOMBIE)
+-			break;
+-		child->exit_code = SIGKILL;
+-		wake_up_process(child);
+-		break;
+-
+-	/*
+-	 * execute single instruction.
+-	 */
+-	case PTRACE_SINGLESTEP:
+-		ret = -EIO;
+-		if (!valid_signal(data))
+-			break;
+-		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-		ptrace_single_step(child);
+-		child->exit_code = data;
+-		wake_up_process(child);
+-		ret = 0;
+-		break;
+-
+-	/* Detach a process that was attached */
+-	case PTRACE_DETACH:
+-		ret = ptrace_detach(child, data);
++		return ptrace_pokeusr(child, engine, avr32_uarea, addr, data);
+ 		break;
+ 
+ 	case PTRACE_GETREGS:
+-		ret = ptrace_getregs(child, (void __user *)data);
++		return ptrace_whole_regset(child, engine, data, 0, 0);
+ 		break;
+ 
+ 	case PTRACE_SETREGS:
+-		ret = ptrace_setregs(child, (const void __user *)data);
+-		break;
+-
+-	default:
+-		ret = ptrace_request(child, request, addr, data);
++		return ptrace_whole_regset(child, engine, data, 0, 1);
+ 		break;
+ 	}
+ 
+-	pr_debug("sys_ptrace returning %d (DC = 0x%08lx)\n", ret, __mfdr(DBGREG_DC));
+-	return ret;
++	return -ENOSYS;
+ }
++#endif /* CONFIG_PTRACE */
++#endif /* CONFIG_UTRACE */
+ 
+-asmlinkage void syscall_trace(void)
++asmlinkage void syscall_trace(struct pt_regs *regs, int is_exit)
+ {
+-	pr_debug("syscall_trace called\n");
+ 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+ 		return;
+-	if (!(current->ptrace & PT_PTRACED))
+-		return;
+ 
+-	pr_debug("syscall_trace: notifying parent\n");
+-	/* The 0x80 provides a way for the tracing parent to
+-	 * distinguish between a syscall stop and SIGTRAP delivery */
+-	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
+-				 ? 0x80 : 0));
++	tracehook_report_syscall(regs, is_exit);
++}
+ 
+-	/*
+-	 * this isn't the same as continuing with a signal, but it
+-	 * will do for normal use.  strace only continues with a
+-	 * signal if the stopping signal is not SIGTRAP.  -brl
+-	 */
+-	if (current->exit_code) {
+-		pr_debug("syscall_trace: sending signal %d to PID %u\n",
+-			 current->exit_code, current->pid);
+-		send_sig(current->exit_code, current, 1);
+-		current->exit_code = 0;
+-	}
++/*
++ * Handle hitting a breakpoint
++ */
++static void do_breakpoint(struct task_struct *tsk, struct pt_regs *regs)
++{
++	siginfo_t info;
++
++	info.si_signo = SIGTRAP;
++	info.si_errno = 0;
++	info.si_code  = TRAP_BRKPT;
++	info.si_addr  = (void __user *)instruction_pointer(regs);
++
++	pr_debug("ptrace_break: Sending SIGTRAP to PID %u (pc = 0x%p)\n",
++		 tsk->pid, info.si_addr);
++	force_sig_info(SIGTRAP, &info, tsk);
+ }
+ 
+ asmlinkage void do_debug_priv(struct pt_regs *regs)
+@@ -362,10 +214,10 @@ asmlinkage void do_debug(struct pt_regs *regs)
+ 			__mtdr(DBGREG_DC, dc);
+ 
+ 			clear_thread_flag(TIF_SINGLE_STEP);
+-			ptrace_break(current, regs);
++			do_breakpoint(current, regs);
+ 		}
+ 	} else {
+ 		/* regular breakpoint */
+-		ptrace_break(current, regs);
++		do_breakpoint(current, regs);
+ 	}
+ }
+diff --git a/include/asm-avr32/tracehook.h b/include/asm-avr32/tracehook.h
+new file mode 100644
+index 0000000..30027ef
+--- /dev/null
++++ b/include/asm-avr32/tracehook.h
+@@ -0,0 +1,69 @@
++/*
++ * Tracing hooks for AVR32
++ *
++ * Copyright (C) 2007 Atmel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef _ASM_AVR32_TRACEHOOK_H
++#define _ASM_AVR32_TRACEHOOK_H
++
++#include <linux/sched.h>
++
++#define ARCH_HAS_SINGLE_STEP	1
++
++static inline void tracehook_enable_single_step(struct task_struct *tsk)
++{
++	/*
++	 * If the process is stopped in debug mode, simply set
++	 * TIF_SINGLE_STEP to tell the monitor code to set the single
++	 * step bit in DC before returning.
++	 *
++	 * Otherwise, we need to set a breakpoint at the return
++	 * address before returning to userspace. TIF_BREAKPOINT will
++	 * tell the syscall/exception exit code to do this.
++	 */
++	if (!(tsk->thread.cpu_context.sr & SR_D))
++		set_tsk_thread_flag(tsk, TIF_BREAKPOINT);
++
++	set_tsk_thread_flag(tsk, TIF_SINGLE_STEP);
++}
++
++static inline void tracehook_disable_single_step(struct task_struct *tsk)
++{
++	clear_tsk_thread_flag(tsk, TIF_BREAKPOINT);
++	clear_tsk_thread_flag(tsk, TIF_SINGLE_STEP);
++}
++
++static inline int tracehook_single_step_enabled(struct task_struct *tsk)
++{
++	return test_tsk_thread_flag(tsk, TIF_SINGLE_STEP);
++}
++
++static inline void tracehook_enable_syscall_trace(struct task_struct *tsk)
++{
++	set_tsk_thread_flag(tsk, TIF_SYSCALL_TRACE);
++}
++
++static inline void tracehook_disable_syscall_trace(struct task_struct *tsk)
++{
++	clear_tsk_thread_flag(tsk, TIF_SYSCALL_TRACE);
++}
++
++static inline void tracehook_abort_syscall(struct pt_regs *regs)
++{
++	/* Invalid system call number => return -ENOSYS */
++	regs->r8 = -1;
++}
++
++extern const struct utrace_regset_view utrace_avr32_native_view;
++
++static inline const struct utrace_regset_view *
++utrace_native_view(struct task_struct *tsk)
++{
++	return &utrace_avr32_native_view;
++}
++
++#endif /* _ASM_AVR32_TRACEHOOK_H */
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-"I am ecstatic that some moron re-invented a 1995 windows fuckup."
-        -- Alan Cox
+1.4.4.4
+
