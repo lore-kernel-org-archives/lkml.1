@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbXCLTtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbXCLTuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbXCLTtJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 15:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbXCLTtI
+	id S1752810AbXCLTuV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 15:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXCLTuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 15:49:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42430 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752707AbXCLTtH convert rfc822-to-8bit (ORCPT
+	Mon, 12 Mar 2007 15:50:21 -0400
+Received: from [212.12.190.74] ([212.12.190.74]:33097 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752810AbXCLTuU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 15:49:07 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-Date: Mon, 12 Mar 2007 20:49:01 +0100
-User-Agent: KMail/1.9.1
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0703121527290.3205-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0703121527290.3205-100000@iolanthe.rowland.org>
+	Mon, 12 Mar 2007 15:50:20 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Date: Mon, 12 Mar 2007 22:53:33 +0300
+User-Agent: KMail/1.5
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200703122049.03113.oneukum@suse.de>
+Message-Id: <200703122253.33866.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 12. März 2007 20:31 schrieb Alan Stern:
-> On Mon, 12 Mar 2007, Oliver Neukum wrote:
-> 
-> > > I'm with Dmitry; the whole thing becomes much, much simpler if we put back
-> > > your patch and prevent sysfs access after unregistering an attribute 
-> > > file.  No API changes are needed, no driver changes are needed, no radical 
-> > > core changes are needed,...  All we would have to do is fix the one SCSI 
-> > > method to make it use a workqueue.
-> > 
-> > Try.
-> 
-> I did.  Didn't you see this message from Saturday:
-> 
-> http://marc.theaimsgroup.com/?l=linux-kernel&m=117355959020831&w=2
+Xavier Bestel wrote:
+> Le mardi 13 mars 2007 à 05:49 +1100, Con Kolivas a écrit :
+> > Again I think your test is not a valid testcase. Why use two threads for
+> > your encoding with one cpu? Is that what other dedicated desktop OSs
+> > would do?
+>
+> as your scheduler
+> is "strictly fair", won't that enable trivial DoS by just letting an
+> user fork a multitude of CPU-intensive processes ?
 
-Yes. In this case, silence is partial agreement. However, convincing me
-is futile if Linus rejects the approach.
+I don't think we have to worry about DoS with this scheduler.
+Note the load average; it happily wraps.
 
-I wrote the original patch. But this problem must be solved. If the
-first attempt is rejected, I'll try another.
+top - 22:34:02 up 8 min,  0 users,  load average: 615.32, 746.30, 929.15
+Tasks: 3379 total, 3336 running,  43 sleeping,   0 stopped,   0 zombie
+Cpu(s):   8.8% user,  21.1% system,  10.0% nice,  56.5% idle,   3.6% IO-wait
+Mem:    499480k total,   414640k used,    84840k free,     1956k buffers
+Swap:  1020088k total,        0k used,  1020088k free,     8296k cached
 
-> I sent it to Linus as well as to all of you.  No replies received so far 
-> from anybody.
-> 
-> >  I don't like reverting my own code. But I predict he'll tell you that a
-> > driver's bond with a device should be represented in a data structure
-> > that is to be refcounted.
-> 
-> :-)
+  PID  PR  NI  VIRT  RES  SHR SWAP nFLT nDRT WCHAN     S %CPU    TIME+  Command 
+  614  39   0  3668 2712  720  956    5    0 rest_init R  1.9   0:09.70 top     
+  845  23   0  3056 1780  932 1276    0    0 wait      S  0.0   0:01.96 sh      
+    1  20   0  1440  504  444  936   14    0 rest_init S  0.0   0:00.76 init    
+ 4180  28   0  3664 2640  652 1024    0    0 rest_init R  3.5   0:00.40 top     
+  863  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.30 ping    
+  929  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.29 ping    
+  871  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.28 ping    
+  904  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.28 ping    
+  946  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.28 ping    
+  947  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.28 ping    
+  972  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.28 ping    
+  862  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  881  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  901  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  915  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  923  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  926  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  958  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  967  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  987  39  19  1584  488  412 1096    0    0 rest_init R  0.0   0:00.27 ping    
+  994  39  19  1584  488  412 1096    0    0 rest_init R  0.2   0:00.27 ping    
 
-Coming to think about it, he might be right there.
 
-	Regards
-		Oliver
+Thanks!
+
+--
+Al
+
