@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965363AbXCLIo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965370AbXCLIxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965363AbXCLIo5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 04:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965352AbXCLIo4
+	id S965370AbXCLIxy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 04:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965291AbXCLIxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 04:44:56 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43863 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965363AbXCLIo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 04:44:56 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18xeZIcHQMxYdPO4oEWAsL+kbv7yCqu4ehKrJatOl
-	edcriaN4YpfTGt
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703121848.44714.kernel@kolivas.org>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <20070311121038.GA9146@elte.hu>
-	 <1173684174.6659.13.camel@Homer.simpson.net>
-	 <200703121848.44714.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 09:44:46 +0100
-Message-Id: <1173689086.6748.13.camel@Homer.simpson.net>
+	Mon, 12 Mar 2007 04:53:54 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:35373 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965352AbXCLIxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 04:53:53 -0400
+Date: Mon, 12 Mar 2007 09:58:02 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Thomas Graf <tgraf@suug.ch>
+Cc: "Kok\, Auke" <auke-jan.h.kok@intel.com>,
+       David Miller <davem@davemloft.net>, "Garzik\, Jeff" <jgarzik@pobox.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       "Brandeburg\, Jesse" <jesse.brandeburg@intel.com>,
+       "Kok\, Auke" <auke@foo-projects.org>,
+       "Ronciak\, John" <john.ronciak@intel.com>
+Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
+Message-ID: <20070312085802.GA1664@ff.dom.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309134037.GH521@postel.suug.ch>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-12 at 18:48 +1100, Con Kolivas wrote:
-> 
-> Just a couple of questions;
-> 
-> The X/Gforce case; do they alternate cpu between them? By that I mean when 
-> they're the only thing running does the cpu load summate to 1 or does it 
-> summate to 2?
+On 09-03-2007 14:40, Thomas Graf wrote:
+> * Kok, Auke <auke-jan.h.kok@intel.com> 2007-02-08 16:09
+>> diff --git a/net/core/dev.c b/net/core/dev.c
+>> index 455d589..42b635c 100644
+>> --- a/net/core/dev.c
+>> +++ b/net/core/dev.c
+>> @@ -1477,6 +1477,49 @@ gso:
+>>  	skb->tc_verd = SET_TC_AT(skb->tc_verd,AT_EGRESS);
+>>  #endif
+>>  	if (q->enqueue) {
+>> +#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
+>> +		int queue_index;
+>> +		/* If we're a multi-queue device, get a queue index to lock */
+>> +		if (netif_is_multiqueue(dev))
+>> +		{
+>> +			/* Get the queue index and lock it. */
+>> +			if (likely(q->ops->map_queue)) {
+>> +				queue_index = q->ops->map_queue(skb, q);
+>> +				spin_lock(&dev->egress_subqueue[queue_index].queue_lock);
+>> +				rc = q->enqueue(skb, q);
 
-They're each on their own cpu (sibling).  Oh, you mean does one wake the
-other?  If so, yeah, I believe so.  I instrumented wakeups a (long)
-while back, looking into keeping heavy cpu visualizations smooth, and
-iirc, X was waking it.
+I'm not sure Dave Miller thought about this place, when he proposed
+to save the mapping, but I think this could be not enough. This place
+is racy: ->map_queue() is called 2 times and with some filters (and
+policies/actions) results could differ. And of course the subqueue
+lock doesn't prevent any filter from a config change in the meantime.
 
-> Gforce presumably is a 3d visualisation? Do you use one of the graphics card 
-> drivers listed that uses yield?
+After second reading of this patch I have doubts it's the proper way
+to solve the problem: there are many subqueues but we need a top queue
+(prio here) to mange them, anyway. So, why not to build this
+functionality directly into the queue? There is no difference for a
+device if skbs are going from the subqueue or a class, it is only
+interested in the mapping result and a possibility to stop and start
+a subqueue and to query its status. All this could be done by adding
+the callbacks directly to any classful scheduler or, if not enough,
+to write some specialized qdisc based on prio. The possibility to lock
+only a subqueue instead of a queue could be analized independently -
+current proposal doesn't solve this anyway.
 
-No, GL/DRI here.  I'm using a Radeon X850Pro (R480), and for GL/DRI I'd
-have to load the proprietary driver.
-
-	-Mike
-
-
-
+Regards,
+Jarek P.
