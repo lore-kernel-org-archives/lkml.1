@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030358AbXCLPJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030361AbXCLPJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030358AbXCLPJF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030369AbXCLPJF
+	id S1030361AbXCLPJT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030369AbXCLPJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:09:05 -0400
-Received: from mcr-smtp-002.bulldogdsl.com ([212.158.248.8]:3953 "EHLO
-	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030358AbXCLPJD convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:09:03 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: "=?iso-8859-1?q?Llu=EDs?= Batlle" <viriketo@gmail.com>
-Subject: Re: bug in select() in linux
-Date: Mon, 12 Mar 2007 15:08:52 +0000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <45219fb00703120751t7acd1ae3kb77f556b81a87634@mail.gmail.com> <20070312160104.25d6b321@lxorguk.ukuu.org.uk> <45219fb00703120802y78cf4dbds6e89b58de9d0f801@mail.gmail.com>
-In-Reply-To: <45219fb00703120802y78cf4dbds6e89b58de9d0f801@mail.gmail.com>
+	Mon, 12 Mar 2007 11:09:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:41735 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1030361AbXCLPJE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 11:09:04 -0400
+Date: Mon, 12 Mar 2007 11:09:03 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Jiri Kosina <jikos@jikos.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
+In-Reply-To: <45F5188D.4030106@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0703121100460.2489-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703121508.52749.s0348365@sms.ed.ac.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007 15:02, Lluís Batlle wrote:
-> Oh, of course you're right. I was inside too much layers to think of
-> the tcp protocol, and I did not pay attention to it.
->
-> Maybe something could be added to the manpage anyway.
->
-> The bad thing is that there's no way I can use a socket for writing
-> using select() if that connection has been half-closed by the other
-> end. Moo.
+On Mon, 12 Mar 2007, Jiri Slaby wrote:
 
-This question comes up from time to time. I think the answer is 
-ultimately "select() sucks, use poll()".
+> Bisecting figured out the culprit:
+> Commit: 17230acdc71137622ca7dfd789b3944c75d39404
+> Author: Alan Stern <stern@rowland.harvard.edu> Mon, 19 Feb 2007 15:52:45 -0500
+> 
+>      UHCI: Eliminate asynchronous skeleton Queue Headers
+> 
+>      This patch (as856) attempts to improve the performance of uhci-hcd by
+>      removing the asynchronous skeleton Queue Headers.  They don't contain
+>      any useful information but the controller has to read through them at
+>      least once every millisecond, incurring a non-zero DMA overhead.
+> 
+>      Now all the asynchronous queues are combined, along with the period-1
+>      interrupt queue, into a single list with a single skeleton QH.  The
+>      start of the low-speed control, full-speed control, and bulk sublists
+>      is determined by linear search.  Since there should rarely be more
+>      than a couple of QHs in the list, the searches should incur a much
+>      smaller total load than keeping the skeleton QHs.
+> 
+>      Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+>      Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> 
+> -mm minus (only) this one is OK.
 
-I can't exactly remember the details, but I believe POLLHUP or POLLOUT as 
-flags do what you want.
+Okay, here's how to track this down.  I assume that even after the
+keyboard stops working you can access the machine via a network
+connection.
 
--- 
-Cheers,
-Alistair.
+So turn on CONFIG_USB_DEBUG, CONFIG_USB_MON, and CONFIG_DEBUG_FS.  Then
+modprobe uhci-hcd with debug=2, and mount a debugfs filesystem.  Before
+using the keyboard, start a cat process to capture the usbmon output for
+the keyboard's bus (see the instructions for usbmon in
+Documentation/usb/usbmon.txt).
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+After hanging the keyboard, get a copy of the appropriate controller's 
+file in the uhci/ subdirectory of the debugfs filesystem.  Post it along 
+with the usbmon log, and I'll try to figure out what happened.
+
+Alan Stern
+
