@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXCLVaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932156AbXCLVbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932097AbXCLVaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 17:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932244AbXCLVaA
+	id S932156AbXCLVbQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 17:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932098AbXCLVbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 17:30:00 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:58142 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932097AbXCLV37 convert rfc822-to-8bit (ORCPT
+	Mon, 12 Mar 2007 17:31:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59658
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932156AbXCLVbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 17:29:59 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] MPT FUSION: Delete unused header files.
-Date: Mon, 12 Mar 2007 15:29:45 -0600
-Message-ID: <664A4EBB07F29743873A87CF62C26D70624048@NAMAIL4.ad.lsil.com>
-In-Reply-To: <20070312.140025.21595408.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] MPT FUSION: Delete unused header files.
-Thread-Index: Acdk6Xnd9LjqIhRfTnKwOsrRmZfOowAA8yLQ
-From: "Moore, Eric" <Eric.Moore@lsi.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <Valdis.Kletnieks@vt.edu>, <rpjday@mindspring.com>,
-       <linux-kernel@vger.kernel.org>, <akpm@osdl.org>
-X-OriginalArrivalTime: 12 Mar 2007 21:29:46.0396 (UTC) FILETIME=[8E7D6DC0:01C764ED]
+	Mon, 12 Mar 2007 17:31:16 -0400
+Date: Mon, 12 Mar 2007 14:31:14 -0700 (PDT)
+Message-Id: <20070312.143114.59654661.davem@davemloft.net>
+To: Eric.Moore@lsi.com
+Cc: Valdis.Kletnieks@vt.edu, rpjday@mindspring.com,
+       linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH] MPT FUSION: Delete unused header files.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <664A4EBB07F29743873A87CF62C26D70624048@NAMAIL4.ad.lsil.com>
+References: <20070312.140025.21595408.davem@davemloft.net>
+	<664A4EBB07F29743873A87CF62C26D70624048@NAMAIL4.ad.lsil.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+Date: Mon, 12 Mar 2007 15:29:45 -0600
 
-> If you're going to include it just for the sake of including it, not
-> because the code in question actually uses types or function
-> declarations defined in there, don't bother, you're just using an
-> anti-social mechanism to keep this header file in the tree.
+> Beside including the header I plan to use every define in that header
+> defined someplace in the source code.  
 > 
-> Please, let's kill this header file if it is unused.
->
+> Now can I keep the header?
 
-Beside including the header I plan to use every define in that header
-defined someplace in the source code.  
-
-Now can I keep the header?
-
+For sure :-)
