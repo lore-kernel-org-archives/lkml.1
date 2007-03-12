@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721AbXCLSqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751753AbXCLSrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751721AbXCLSqs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbXCLSqr
+	id S1751753AbXCLSrQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXCLSrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:46:47 -0400
-Received: from station18k.dscga.com ([192.24.222.18]:47822 "EHLO
-	suzuka.mcnaught.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721AbXCLSqq (ORCPT
+	Mon, 12 Mar 2007 14:47:16 -0400
+Received: from paf87.warszawa.sdi.tpnet.pl ([217.96.225.87]:31364 "EHLO
+	qrnik.knm.org.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbXCLSrP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:46:46 -0400
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       amanda-hackers@amanda.org, Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ck@vds.kolivas.org
-Subject: Re: RSDL for 2.6.21-rc3- 0.29
-References: <20070311013506.GD10459@waste.org>
-	<200703120604.42776.gene.heskett@gmail.com>
-	<873b4alj52.fsf@suzuka.mcnaught.org>
-	<200703121428.29947.gene.heskett@gmail.com>
-From: Douglas McNaught <doug@mcnaught.org>
-Date: Mon, 12 Mar 2007 14:46:45 -0400
-In-Reply-To: <200703121428.29947.gene.heskett@gmail.com> (Gene Heskett's
- message of "Mon, 12 Mar 2007 14:28:29 -0400")
-Message-ID: <87wt1mjo4q.fsf@suzuka.mcnaught.org>
-User-Agent: Gnus/5.1006 (Gnus v5.10.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 14:47:15 -0400
+Subject: Re: _proxy_pda still makes linking modules fail
+From: "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <p73lki39s3a.fsf@bingen.suse.de>
+References: <1173315479.12472.9.camel@qrnik>
+	 <p73lki39s3a.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 12 Mar 2007 19:47:06 +0100
+Message-Id: <1173725227.32613.0.camel@qrnik>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 PLD Linux 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett <gene.heskett@gmail.com> writes:
+Dnia 12-03-2007, pon o godzinie 02:19 +0100, Andi Kleen napisał(a):
 
-> I'd considered it, but with 32 dle entries, the whole strace output would 
-> be terrabytes & I don't have THAT much disk.  Not to mention it traces 
-> only the parent process, so tar would be merrily marching along to its 
-> own drummer and not traced I'm  afraid.
+> Hmm, it probably needs a EXPORT_SYMBOL. The previous change only
+> fixed the in kernel build.
+> 
+> Does it work with this patch?
 
-$ strace -ff 
+Yes! Thank you.
 
--Doug
+-- 
+   __("<         Marcin Kowalczyk
+   \__/       qrczak@knm.org.pl
+    ^^     http://qrnik.knm.org.pl/~qrczak/
+
