@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965861AbXCLNur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965858AbXCLNwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965861AbXCLNur (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 09:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965860AbXCLNur
+	id S965858AbXCLNwH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 09:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965856AbXCLNwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 09:50:47 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:38631 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965861AbXCLNuo (ORCPT
+	Mon, 12 Mar 2007 09:52:06 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:42158 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965858AbXCLNwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 09:50:44 -0400
-Date: Mon, 12 Mar 2007 14:50:50 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: heiko.carstens@de.ibm.com
-Subject: [S390] Wire up sys_utimes.
-Message-ID: <20070312135050.GC11426@skybase>
+	Mon, 12 Mar 2007 09:52:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bI2GSBIDNHd93cq2HMPFzrAiea51qp6Y2dL2wKGmXVHlbC3AjgpzAh5t52ZWa7/kTNDmWAxMFsCOR0DMWO49axuxJneAjUaRPDZ0T7MN6iRGCPVnJ6ur0qnqElAcgUysfPIpCK2ow/oYu6Btooc22CVUY3k9VIACbpE9ZNUYqHo=
+Message-ID: <2375c9f90703120652w59ca82a5k5e3f4d0ccaee80af@mail.gmail.com>
+Date: Mon, 12 Mar 2007 21:52:02 +0800
+From: "Cong WANG" <xiyou.wangcong@gmail.com>
+To: davids@webmaster.com, linux-kernel@vger.kernel.org,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>
+Subject: Re: Style Question
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEBCCDAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <Pine.LNX.4.61.0703120638030.4339@yvahk01.tjqt.qr>
+	 <MDEHLPKNGKAHNMBLJOLKOEBCCDAC.davids@webmaster.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+2007/3/12, David Schwartz <davids@webmaster.com>:
+>
+> > NULL has the same bit pattern as the number zero. (I'm not saying the bit
+> > pattern is all zeroes. And I am not even sure if NULL ought to
+> > have the same
+> > pattern as zero.) So C++ could use (void *)0, if it would let itself :p
+>
+> They don't have to have the same bit pattern. There's no logical reason a
+> NULL pointer couldn't have all bits set and the number zero have all bits
+> cleared.
+>
+> Casts are perrmited to change the bit pattern. For example '(float) 7' can
+> result in a different bit pattern than '7' and similarly '(void *) 0' can
+> result in a different bit pattern from '0'.
+>
+> As a trivial example, consider an LP64 system. NULL will have the bit
+> pattern of 64 zero bits, while '0' will have the bit pattern of 32 zero
+> bits.
+>
+> DS
 
-[S390] Wire up sys_utimes.
+I agree. C99 standard just says:
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+6.3.2.3 Pointers
 
- arch/s390/kernel/compat_wrapper.S |    6 ++++++
- arch/s390/kernel/syscalls.S       |    1 +
- include/asm-s390/unistd.h         |    3 ++-
- 3 files changed, 9 insertions(+), 1 deletion(-)
-
-diff -urpN linux-2.6/arch/s390/kernel/compat_wrapper.S linux-2.6-patched/arch/s390/kernel/compat_wrapper.S
---- linux-2.6/arch/s390/kernel/compat_wrapper.S	2007-03-12 13:53:01.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/compat_wrapper.S	2007-03-12 13:53:02.000000000 +0100
-@@ -1676,3 +1676,9 @@ compat_sys_epoll_pwait_wrapper:
- 	llgf	%r0,164(%r15)		# compat_size_t
- 	stg	%r0,160(%r15)
- 	jg	compat_sys_epoll_pwait
-+
-+	.globl	compat_sys_utimes_wrapper
-+compat_sys_utimes_wrapper:
-+	llgtr	%r2,%r2			# char *
-+	llgtr	%r3,%r3			# struct compat_timeval *
-+	jg	compat_sys_utimes
-diff -urpN linux-2.6/arch/s390/kernel/syscalls.S linux-2.6-patched/arch/s390/kernel/syscalls.S
---- linux-2.6/arch/s390/kernel/syscalls.S	2007-03-12 13:53:01.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/syscalls.S	2007-03-12 13:53:02.000000000 +0100
-@@ -321,3 +321,4 @@ SYSCALL(sys_vmsplice,sys_vmsplice,compat
- NI_SYSCALL							/* 310 sys_move_pages */
- SYSCALL(sys_getcpu,sys_getcpu,sys_getcpu_wrapper)
- SYSCALL(sys_epoll_pwait,sys_epoll_pwait,compat_sys_epoll_pwait_wrapper)
-+SYSCALL(sys_utimes,sys_utimes,compat_sys_utimes_wrapper)
-diff -urpN linux-2.6/include/asm-s390/unistd.h linux-2.6-patched/include/asm-s390/unistd.h
---- linux-2.6/include/asm-s390/unistd.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6-patched/include/asm-s390/unistd.h	2007-03-12 13:53:02.000000000 +0100
-@@ -250,8 +250,9 @@
- /* Number 310 is reserved for new sys_move_pages */
- #define __NR_getcpu		311
- #define __NR_epoll_pwait	312
-+#define __NR_utimes		313
- 
--#define NR_syscalls 313
-+#define NR_syscalls 314
- 
- /* 
-  * There are some system calls that are not present on 64 bit, some
+"3  An integer constant expression with the value 0, or such an
+expression cast to type void *, is called a null pointer constant. If
+a null pointer constant is converted to a pointer type, the resulting
+pointer, called a null pointer, is guaranteed to compare unequal to a
+pointer to any object or function."
