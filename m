@@ -1,162 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932928AbXCLRUC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbXCLRVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932928AbXCLRUC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 13:20:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965416AbXCLRUC
+	id S932771AbXCLRVg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 13:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933535AbXCLRVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 13:20:02 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:34595 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932928AbXCLRUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 13:20:00 -0400
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] getrusage() : Fill ru_inblock and ru_oublock fields if possible
-Date: Mon, 12 Mar 2007 18:20:03 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20070307012234.GN9621@outflux.net> <20070310183341.GB10460@outflux.net> <20070310162101.716b6b57.akpm@linux-foundation.org>
-In-Reply-To: <20070310162101.716b6b57.akpm@linux-foundation.org>
+	Mon, 12 Mar 2007 13:21:36 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:4499 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932771AbXCLRVf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 13:21:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=E7ZhQcQM4enO/0rs/1VDt+nTGlMjE/LN5dN7g0Rq9f5I1F5rJnj7xafPYaI4i+bgFilpqRk6IO+xci5sw8/HRAfZSX2guDYTm8xK8AdMu/lo8LWj0xLYATOxGJ3TNEFV3kW/WcnJxLbQj7KGSx9GfidOBhktlnpElgDClrlyCm4=
+Message-ID: <661de9470703121021y9b16becm4859d2bd1e5691c0@mail.gmail.com>
+Date: Mon, 12 Mar 2007 22:51:30 +0530
+From: "Balbir Singh" <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+To: "Dave Hansen" <hansendc@us.ibm.com>
+Subject: Re: [RFC][PATCH 3/7] Data structures changes for RSS accounting
+Cc: "Kirill Korotaev" <dev@sw.ru>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       containers@lists.osdl.org, "Paul Menage" <menage@google.com>,
+       "Pavel Emelianov" <xemul@sw.ru>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1173718084.11945.51.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_DvY9F+l6ReMoTG7"
-Message-Id: <200703121820.03340.dada1@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45ED7DEC.7010403@sw.ru> <45ED8181.2060905@sw.ru>
+	 <m18xe3wq3t.fsf@ebiederm.dsl.xmission.com> <45F57CFB.9010707@sw.ru>
+	 <1173718084.11945.51.camel@localhost.localdomain>
+X-Google-Sender-Auth: 002567c9fe1bc7d3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_DvY9F+l6ReMoTG7
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On 3/12/07, Dave Hansen <hansendc@us.ibm.com> wrote:
+> On Mon, 2007-03-12 at 19:16 +0300, Kirill Korotaev wrote:
+> > now VE2 maps the same page. You can't determine whether this page is mapped
+> > to this container or another one w/o page->container pointer.
+>
+> Hi Kirill,
+>
+> I thought we can always get from the page to the VMA.  rmap provides
+> this to us via page->mapping and the 'struct address_space' or anon_vma.
+> Do we agree on that?
+>
+> We can also get from the vma to the mm very easily, via vma->vm_mm,
+> right?
+>
+> We can also get from a task to the container quite easily.
+>
+> So, the only question becomes whether there is a 1:1 relationship
+> between mm_structs and containers.  Does each mm_struct belong to one
+> and only one container?  Basically, can a threaded process have
+> different threads in different containers?
+>
+> It seems that we could bridge the gap pretty easily by either assigning
+> each mm_struct to a container directly, or putting some kind of
+> task-to-mm lookup.  Perhaps just a list like
+> mm->tasks_using_this_mm_list.
+>
+> Not rocket science, right?
+>
+> -- Dave
+>
+These patches are very similar to what I posted at
+                    http://lwn.net/Articles/223829/
+In my patches, the thread group leader owns the mm_struct and all
+threads belong to the same container. I did not have a per container
+LRU, walking the global list for reclaim was a bit slow, but otherwise
+my patches did not add anything to struct page
 
-if CONFIG_TASK_IO_ACCOUNTING is defined, we update io accounting counters f=
-or=20
-each task.
+I used rmap information to get to the VMA and then the mm_struct.
+Kirill, it is possible to determine all the containers that map the
+page. Please see the page_in_container() function of
+http://lkml.org/lkml/2007/2/26/7.
 
-This patch permits reporting of values using the well known getrusage()=20
-syscall, filling ru_inblock and ru_oublock instead of null values.
+I was also thinking of using the page table(s) to identify all pages
+belonging to a container, by obtaining all the mm_structs of tasks
+belonging to a container. But this approach would not work well for
+the page cache controller, when we add that to our memory controller.
 
-As TASK_IO_ACCOUNTING currently counts bytes counts, we approximate blocks=
-=20
-count doing : nr_blocks =3D nr_bytes / 512
-
-Example of use :
-=2D---------------------
-After patch is applied, /usr/bin/time command can now give a good=20
-approximation of IO that the process had to do.
-
-$ /usr/bin/time grep tototo /usr/include/*
-Command exited with non-zero status 1
-0.00user 0.02system 0:02.11elapsed 1%CPU (0avgtext+0avgdata 0maxresident)k
-24288inputs+0outputs (0major+259minor)pagefaults 0swaps
-
-$ /usr/bin/time dd if=3D/dev/zero of=3D/tmp/testfile count=3D1000
-1000+0 enregistrements lus
-1000+0 enregistrements =E9crits
-512000 octets (512 kB) copi=E9s, 0,00326601 seconde, 157 MB/s
-0.00user 0.00system 0:00.00elapsed 80%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+3000outputs (0major+299minor)pagefaults 0swaps
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
---Boundary-00=_DvY9F+l6ReMoTG7
-Content-Type: text/plain;
-  charset="iso-8859-1";
-  name="getrusage_add_inblock_and_oublock.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="getrusage_add_inblock_and_oublock.patch"
-
---- linux-2.6.21-rc3/kernel/sys.c	2007-03-12 17:30:34.000000000 +0100
-+++ linux-2.6.21-rc3-ed/kernel/sys.c	2007-03-12 17:50:15.000000000 +0100
-@@ -29,6 +29,7 @@
- #include <linux/signal.h>
- #include <linux/cn_proc.h>
- #include <linux/getcpu.h>
-+#include <linux/task_io_accounting_ops.h>
- 
- #include <linux/compat.h>
- #include <linux/syscalls.h>
-@@ -2021,6 +2022,8 @@ static void k_getrusage(struct task_stru
- 			r->ru_nivcsw = p->signal->cnivcsw;
- 			r->ru_minflt = p->signal->cmin_flt;
- 			r->ru_majflt = p->signal->cmaj_flt;
-+			r->ru_inblock = task_io_get_inblock(p);
-+			r->ru_oublock = task_io_get_oublock(p);
- 
- 			if (who == RUSAGE_CHILDREN)
- 				break;
-@@ -2032,6 +2035,8 @@ static void k_getrusage(struct task_stru
- 			r->ru_nivcsw += p->signal->nivcsw;
- 			r->ru_minflt += p->signal->min_flt;
- 			r->ru_majflt += p->signal->maj_flt;
-+			r->ru_inblock += task_io_get_inblock(p);
-+			r->ru_oublock += task_io_get_oublock(p);
- 			t = p;
- 			do {
- 				utime = cputime_add(utime, t->utime);
-@@ -2040,6 +2045,8 @@ static void k_getrusage(struct task_stru
- 				r->ru_nivcsw += t->nivcsw;
- 				r->ru_minflt += t->min_flt;
- 				r->ru_majflt += t->maj_flt;
-+				r->ru_inblock += task_io_get_inblock(t);
-+				r->ru_oublock += task_io_get_oublock(t);
- 				t = next_thread(t);
- 			} while (t != p);
- 			break;
---- linux-2.6.21-rc3/include/linux/task_io_accounting_ops.h	2007-03-12 17:30:34.000000000 +0100
-+++ linux-2.6.21-rc3-ed/include/linux/task_io_accounting_ops.h	2007-03-12 17:50:15.000000000 +0100
-@@ -10,11 +10,29 @@ static inline void task_io_account_read(
- 	current->ioac.read_bytes += bytes;
- }
- 
-+/*
-+ * We approximate number of blocks, because we account bytes only.
-+ * A 'block' is 512 bytes
-+ */
-+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
-+{
-+	return p->ioac.read_bytes >> 9;
-+}
-+
- static inline void task_io_account_write(size_t bytes)
- {
- 	current->ioac.write_bytes += bytes;
- }
- 
-+/*
-+ * We approximate number of blocks, because we account bytes only.
-+ * A 'block' is 512 bytes
-+ */
-+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
-+{
-+	return p->ioac.write_bytes >> 9;
-+}
-+
- static inline void task_io_account_cancelled_write(size_t bytes)
- {
- 	current->ioac.cancelled_write_bytes += bytes;
-@@ -31,10 +49,20 @@ static inline void task_io_account_read(
- {
- }
- 
-+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
-+{
-+	return 0;
-+}
-+
- static inline void task_io_account_write(size_t bytes)
- {
- }
- 
-+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
-+{
-+	return 0;
-+}
-+
- static inline void task_io_account_cancelled_write(size_t bytes)
- {
- }
-
---Boundary-00=_DvY9F+l6ReMoTG7--
+Balbir
