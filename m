@@ -1,108 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964917AbXCLAPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965484AbXCLAQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964917AbXCLAPv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 20:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965238AbXCLAPv
+	id S965484AbXCLAQZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 20:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965236AbXCLAQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 20:15:51 -0400
-Received: from usul.saidi.cx ([204.11.33.34]:39356 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965114AbXCLAPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 20:15:47 -0400
-Message-ID: <45F49B93.3020208@overt.org>
-Date: Sun, 11 Mar 2007 17:15:15 -0700
-From: Philip Langdale <philipl@overt.org>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+	Sun, 11 Mar 2007 20:16:24 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:32883 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965280AbXCLAQR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Mar 2007 20:16:17 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 11 Mar 2007 17:16:14 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Nicholas Miell <nmiell@comcast.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 6/9] signalfd/timerfd v3 - timerfd core ...
+In-Reply-To: <1173657008.2964.6.camel@entropy>
+Message-ID: <Pine.LNX.4.64.0703111715460.4936@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.5031.1173654242.6> 
+ <Pine.LNX.4.64.0703111610360.4936@alien.or.mcafeemobile.com>
+ <1173657008.2964.6.camel@entropy>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Carlos Aguiar <carlos.aguiar@indt.org.br>, juha.yrjola@solidboot.com
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH] MMC: Consolidate voltage definitions
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Consolidate the list of available voltages.
+On Sun, 11 Mar 2007, Nicholas Miell wrote:
 
-Up until now, a separate set of defines has been
-used for host->vdd than that used for the OCR
-voltage mask values. Having two sets of defines
-allows them to get out of sync and the current
-sets are already inconsistent with one claiming
-to describe ranges and the other specific voltages.
+> You should probably make it behave like the other things that use
+> itimerspec, just to avoid confusion -- i.e. timers are relative by
+> default, there's a flag that makes them absolute, they expire when
+> it_value specifies, and repeat every it_interval nanoseconds if
+> it_interval is non-zero.
+> 
+> i.e.
+> 
+> int timerfd(int ufd, int clockid, int flags, const struct timespec
+> *utmr);
+> 
+> with TFD_TIMER_ABS in flags making the timer absolute instead of
+> relative (and no TFD_TIMER_REL or TFD_TIMER_SEQ at all).
 
-Only the SDHCI driver uses the host->vdd defines and
-it is easily fixed to use the OCR defines.
+Sounds sane to me. Will do...
 
-Signed-off-by: Philip Langdale <philipl@overt.org>
 
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 86d0957..2f34ae3 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -668,20 +668,17 @@ static void sdhci_set_power(struct sdhci
+- Davide
 
- 	pwr = SDHCI_POWER_ON;
-
--	switch (power) {
--	case MMC_VDD_170:
--	case MMC_VDD_180:
--	case MMC_VDD_190:
-+	switch (1 << power) {
-+	case MMC_VDD_17_18:
-+	case MMC_VDD_18_19:
- 		pwr |= SDHCI_POWER_180;
- 		break;
--	case MMC_VDD_290:
--	case MMC_VDD_300:
--	case MMC_VDD_310:
-+	case MMC_VDD_29_30:
-+	case MMC_VDD_30_31:
- 		pwr |= SDHCI_POWER_300;
- 		break;
--	case MMC_VDD_320:
--	case MMC_VDD_330:
--	case MMC_VDD_340:
-+	case MMC_VDD_32_33:
-+	case MMC_VDD_33_34:
- 		pwr |= SDHCI_POWER_330;
- 		break;
- 	default:
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 43bf6a5..496f540 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -16,30 +16,7 @@ struct mmc_ios {
- 	unsigned int	clock;			/* clock rate */
- 	unsigned short	vdd;
-
--#define	MMC_VDD_150	0
--#define	MMC_VDD_155	1
--#define	MMC_VDD_160	2
--#define	MMC_VDD_165	3
--#define	MMC_VDD_170	4
--#define	MMC_VDD_180	5
--#define	MMC_VDD_190	6
--#define	MMC_VDD_200	7
--#define	MMC_VDD_210	8
--#define	MMC_VDD_220	9
--#define	MMC_VDD_230	10
--#define	MMC_VDD_240	11
--#define	MMC_VDD_250	12
--#define	MMC_VDD_260	13
--#define	MMC_VDD_270	14
--#define	MMC_VDD_280	15
--#define	MMC_VDD_290	16
--#define	MMC_VDD_300	17
--#define	MMC_VDD_310	18
--#define	MMC_VDD_320	19
--#define	MMC_VDD_330	20
--#define	MMC_VDD_340	21
--#define	MMC_VDD_350	22
--#define	MMC_VDD_360	23
-+/* vdd stores the bit number of the selected voltage range from below. */
-
- 	unsigned char	bus_mode;		/* command output mode */
 
