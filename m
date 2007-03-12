@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965459AbXCLJ7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965472AbXCLJ7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965459AbXCLJ7u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 05:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXCLJ7m
+	id S965472AbXCLJ7v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 05:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965481AbXCLJ7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 05:59:42 -0400
-Received: from smtp24.orange.fr ([193.252.22.26]:23559 "EHLO smtp24.orange.fr"
+	Mon, 12 Mar 2007 05:59:40 -0400
+Received: from tag.witbe.net ([81.88.96.48]:54759 "EHLO tag.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965452AbXCLJ7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 05:59:18 -0400
-X-Greylist: delayed 1226 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Mar 2007 05:59:18 EDT
-X-ME-UUID: 20070312093850257.3ED871C000A0@mwinf2423.orange.fr
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703122022.43021.kernel@kolivas.org>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <200703121929.39702.kernel@kolivas.org>
-	 <1173689733.6748.18.camel@Homer.simpson.net>
-	 <200703122022.43021.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 10:38:39 +0100
-Message-Id: <1173692319.5835.611.camel@frg-rhel40-em64t-03>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+	id S965472AbXCLJ7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 05:59:30 -0400
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: "'Tejun Heo'" <htejun@gmail.com>
+Cc: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Jeff Garzik'" <jeff@garzik.org>, "'Alan Cox'" <alan@redhat.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       <linux-ide@vger.kernel.org>, "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'Eric D. Mudama'" <edmudama@gmail.com>
+Subject: RE: [git patches] libata fixes
+Date: Mon, 12 Mar 2007 10:58:31 +0100
+Organization: AS2917.net
+Message-ID: <008d01c7648d$0108d1b0$4b00a8c0@donald>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <45F509A7.8030705@gmail.com>
+Thread-Index: AcdkfSbr6MEFhxUMRIGF0OVN1mzJCwAD5+Yw
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-12 at 20:22 +1100, Con Kolivas wrote:
-> On Monday 12 March 2007 19:55, Mike Galbraith wrote:
-> > Hmm.  So... anything that's client/server is going to suffer horribly
-> > unless niced tasks are niced all the way down to 19?
+Hello,
+
+> > That sounds a quite expensive solution ;)
 > 
-> Fortunately most client server models dont usually have mutually exclusive cpu 
-> use like this X case. There are many things about X that are still a little 
-> (/me tries to think of a relatively neutral term)... wanting. :(
+> You should be able to just move the drive attached at ata1 to ata2.
+> Please report whether that works.
 
-I'd say the problem is less with X than with Xlib, which is heavily
-round-trip-based. Fortunately XCB (its successor) seeks to be more
-asynchronous.
+I'll try to find an unused disk... As I said, these ports are part of
+Asus EZRaid solution, and i'd prefer this piece of code not to try to
+write anything on the disk ;)
 
-	Xav
+... but I should find a disk without too much problem.
 
+Paul
 
