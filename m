@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbXCLUys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbXCLU4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932331AbXCLUys (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 16:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbXCLUys
+	id S1752919AbXCLU4E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbXCLU4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 16:54:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43903
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752920AbXCLUyq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 16:54:46 -0400
-Date: Mon, 12 Mar 2007 13:54:44 -0700 (PDT)
-Message-Id: <20070312.135444.63738960.davem@davemloft.net>
-To: penberg@cs.helsinki.fi
-Cc: jarkao2@o2.pl, amit2030@gmail.com, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] [REVISED] net/ipv4/multipath_wrandom.c: check
- kmalloc() return value.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <84144f020703120536l3967dc76o6a130edc79762350@mail.gmail.com>
-References: <20070308.232908.92582631.davem@davemloft.net>
-	<20070312115137.GA3270@ff.dom.local>
-	<84144f020703120536l3967dc76o6a130edc79762350@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 12 Mar 2007 16:56:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47263 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752919AbXCLU4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 16:56:01 -0400
+Date: Mon, 12 Mar 2007 16:55:13 -0400
+From: Dave Jones <davej@redhat.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, alon.barlev@gmail.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64, i386: Add command line length to boot protocol
+Message-ID: <20070312205513.GC21835@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Pavel Machek <pavel@ucw.cz>,
+	Andrew Morton <akpm@linux-foundation.org>, alon.barlev@gmail.com,
+	ak@suse.de, linux-kernel@vger.kernel.org
+References: <20070306181430.GB3151@strauss.suse.de> <20070306182134.GB9491@redhat.com> <20070312104352.GA4313@ucw.cz>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070312104352.GA4313@ucw.cz>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Date: Mon, 12 Mar 2007 14:36:46 +0200
+On Mon, Mar 12, 2007 at 10:43:52AM +0000, Pavel Machek wrote:
+ > On Tue 2007-03-06 13:21:34, Dave Jones wrote:
+ > > On Tue, Mar 06, 2007 at 07:14:30PM +0100, Bernhard Walle wrote:
+ > > 
+ > >  > +cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
+ > > 
+ > > Why a long? It's unlikely that someone is going to have a command line
+ > > bigger than 0xffff.
+ > 
+ > Well, I could imagine overflowing that. Describing your numa setup,
+ > excluding few bad bits of ram using memmap=exact, set up your boot
+ > over iscsi on cmdline.... these are likely to eat insane ammount of
+ > cmdline space.
 
-> On 3/12/07, Jarek Poplawski <jarkao2@o2.pl> wrote:
-> > So, maybe it's less evil to check those NULLs where possible and add
-> > some WARN_ONs here and there...
-> 
-> No, it's much better to oops rather than paper over a bug.
+65535 characters? Are you for real?
+Stop and think about just how big that is. If you have to create
+a boot command line that long, you have serious, serious issues.
 
-The caller is going to OOPS in this case if you return after an
-allocation failure, so there is no improvement after the patch.
+	Dave
 
-Multipath-cached just sucks, it was thrown over the wall by IBM
-Germany then never had any followon maintainence at all, so it will be
-removed unless someone steps up to seriously maintain and fix that
-code, and I REALLY MEAN IT.
+-- 
+http://www.codemonkey.org.uk
