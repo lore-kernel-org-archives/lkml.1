@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030404AbXCLPm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030417AbXCLPqC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030404AbXCLPm7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030417AbXCLPm7
+	id S1030417AbXCLPqC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:46:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030433AbXCLPqC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:42:59 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:40378 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030404AbXCLPm6 convert rfc822-to-8bit (ORCPT
+	Mon, 12 Mar 2007 11:46:02 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39836 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030417AbXCLPqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:42:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=n7uNmsz5ROaHTdvbbD6jg140LdEOd91SvrPcJoWiA0yiS+6SIlrNal0qUF/E9YGNINCxGvOdhpzlkhB+99gHN5TQzp29KNbYA83VOSBizuwOt82BOEic/qVZ722/K5WNRM4aUI1Rb8G3OCZhwn8t9ONLW2SfRCBqOS3vV752eKA=
-Message-ID: <d120d5000703120842k4e134136v2fe56dcfc2264841@mail.gmail.com>
-Date: Mon, 12 Mar 2007 10:42:56 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Oliver Neukum" <oneukum@suse.de>
-Subject: Re: refcounting drivers' data structures used in sysfs buffers
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Maneesh Soni" <maneesh@in.ibm.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200703121623.58607.oneukum@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Mon, 12 Mar 2007 11:46:00 -0400
+Date: Mon, 12 Mar 2007 16:45:58 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: _proxy_pda still makes linking modules fail
+Message-ID: <20070312154558.GA16327@one.firstfloor.org>
+References: <1173315479.12472.9.camel@qrnik> <p73lki39s3a.fsf@bingen.suse.de> <45F49E0A.3090607@goop.org> <20070312094805.GA11644@one.firstfloor.org> <45F56785.5070002@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.44L0.0703121041400.2489-100000@iolanthe.rowland.org>
-	 <200703121623.58607.oneukum@suse.de>
+In-Reply-To: <45F56785.5070002@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/12/07, Oliver Neukum <oneukum@suse.de> wrote:
-> Am Montag, 12. März 2007 15:57 schrieb Alan Stern:probably nece
-> > On Mon, 12 Mar 2007, Oliver Neukum wrote:
+On Mon, Mar 12, 2007 at 07:45:25AM -0700, Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> >> Rusty's pda->per_cpu patch will deal with this once and for all; have
+> >>     
 > >
-> > > > > Why? What's wrong with simply calling kref_get/put?
-> > > >
-> > > > It's the same old problem: the race between unbind and sysfs I/O.  What
-> > > > good does holding a reference to the private data structure do if the
-> > > > show/store method gets called after the driver has been unbound from the
-> > > > device?  dev_get_drvdata() will no longer provide a valid pointer to the
-> > > > private data, so the method will have no way to access it.  Hence the
-> > > > method needs another argument.
-> > >
-> > > It does half the job. You can make sure the driver is not asked to access
-> > > freed memory.
-> > > It is true that a driver will have to mark that device "disconnected"
-> > > and return errors if that device's attributes are referenced, but this can
-> > > be done internally.
+> > Not on x86-64.
+> >   
+> 
+> Have you considered dropping pda in x86-64?  Segment based percpu
+> doesn't really have any disadvantages.
+
+Maybe.
+
+> 
+> >> you picked it up yet?
+> >>     
 > >
-> > No, you're missing the point.  Let's say driver A's disconnect() is
-> > called, so the driver marks its private data structure as "disconnected"
-> > and does dev_set_drvdata(NULL).  Then driver B is probed and bound to the
-> > device, and it does its own dev_set_drvdata().  Then a user still holding
-> > an open sysfs file reference for driver A calls a show() or store()
-> > method.  The method will do dev_get_drvdata(), receiving the pointer to
-> > driver B's private data.  Now you're in trouble, because A's method will
-> > think it owns B's private data!
->
-> Yes, I was missing the point. In consequence, drivers must not use
-> dev_get_drvdata() to get their references to their private data. It's
-> probably necessary to store it in struct sysfs_buffer and include that
-> in the store/show callbacks.
-> (The same does apply to interfaces of course)
->
+> > Not yet.
+> >   
+> 
+> There will be interactions with my paravirt+xen patches, so I'm
+> wondering if I should rebase onto those patches, or should we apply them
+> later and fix everything up?
 
-Or drivers coudl verify that they still bound to the device they are
-about to operate on (psmouse does this by taking a lock on device and
-then checking if driver bound is the same address as psmouse). But I'd
-rather get rid of all this clutter if we could sever sysfs access
-after removing corresponding attributes.
+Applying them later is probably better
 
--- 
-Dmitry
+-Andi
