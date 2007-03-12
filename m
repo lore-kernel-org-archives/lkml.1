@@ -1,152 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964981AbXCLDnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964989AbXCLEeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964981AbXCLDnb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 23:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964980AbXCLDnb
+	id S964989AbXCLEeo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 00:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965060AbXCLEeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 23:43:31 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:38760 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964968AbXCLDn3 (ORCPT
+	Mon, 12 Mar 2007 00:34:44 -0400
+Received: from mxl144v79.mxlogic.net ([208.65.144.79]:42076 "EHLO
+	p02c11o146.mxlogic.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S964989AbXCLEen (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 23:43:29 -0400
-Date: Mon, 12 Mar 2007 14:43:26 +1100
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: 2.6.21-rc2-mm2: drivers/net/wireless/libertas/debugfs.c addr bogosity
-Message-ID: <20070312034326.GQ4575@bakeyournoodle.com>
-Mail-Followup-To: Randy Dunlap <randy.dunlap@oracle.com>,
-	"John W. Linville" <linville@tuxdriver.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Adrian Bunk <bunk@stusta.de>, jgarzik@pobox.com,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-wireless@vger.kernel.org
-References: <20070306004408.d3f6434d.akpm@linux-foundation.org> <20070307224116.GE3441@stusta.de> <20070307150057.4e6342dc.akpm@linux-foundation.org> <20070309021146.GL4575@bakeyournoodle.com> <20070309141906.GA3296@tuxdriver.com> <20070309091429.a84aee9b.randy.dunlap@oracle.com>
-Mime-Version: 1.0
+	Mon, 12 Mar 2007 00:34:43 -0400
+Date: Mon, 12 Mar 2007 06:35:09 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: SATA resume slowness, e1000 MSI warning
+Message-ID: <20070312043509.GC19601@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <20070311183709.GB19601@mellanox.co.il> <m1mz2jv9ue.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070309091429.a84aee9b.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.9i
-From: tony@bakeyournoodle.com (Tony Breeds)
+In-Reply-To: <m1mz2jv9ue.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
+X-OriginalArrivalTime: 12 Mar 2007 04:37:25.0611 (UTC) FILETIME=[22292BB0:01C76460]
+X-TM-AS-Product-Ver: SMEX-7.0.0.1526-3.6.1039-15044.001
+X-TM-AS-Result: No--15.310800-4.000000-31
+X-Spam: [F=0.2347753992; S=0.234(2007030701)]
+X-MAIL-FROM: <mst@mellanox.co.il>
+X-SOURCE-IP: [194.90.237.34]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 09:14:29AM -0800, Randy Dunlap wrote:
- 
-> Good to use FIELD_SIZEOF(),
+> Quoting Eric W. Biederman <ebiederm@xmission.com>:
+> Subject: Re: SATA resume slowness, e1000 MSI warning
+> 
+> "Michael S. Tsirkin" <mst@mellanox.co.il> writes:
+> 
+> > OK I guess. I gather we assume writing read-only registers has no side effects?
+> > Are there rumors circulating wrt to these?
+> 
+> I haven't heard anything about that, and if we are writing the same value back
+> it should be pretty safe.
+> 
+> I have heard it asserted that at least one version of the pci spec
+> only required 32bit accesses to be supported by the hardware.  One of
+> these days I will have to look that and see if it is true.
 
-Thanks.
+Maybe. But surely before the PCI-X days.
 
->                             but in general, we prefer to use it
-> directly, not in yet another wrapper.
+> I do know
+> it can be weird for hardware developers to support multiple kinds of
+> decode.
 
-I left the item_{size,addr} in place as it seemed to make the item[]
-more compact.
+Is this the only place where Linux uses pci_read_config_word/pci_read_config_dword?
+I think such hardware will be pretty much DOA on all OS-es.  Why don't we wait
+and see whether someone reports a broken config?
 
-I'm not certain using the FIELD_SIZEOF() macro directly is a win.
+> As I recall for pci and pci-x at the hardware level the only
+> difference in between 32bit transactions and smaller ones is the state
+> of the byte-enable lines.
 
-From: Tony Breeds <tony@bakeyournoodle.com>
+True, and same holds for PCI-Express.
 
-Cleanup drivers/net/wireless/libertas/debugfs.c to use standard kernel macros and functions.
+So let's assume hardware implements RO correctly but ignores the BE bits -
+nothing bad happens then, right?
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-
----
-only compile tested on x86
-
- drivers/net/wireless/libertas/debugfs.c |   56 +++++++------------------------
- 1 files changed, 12 insertions(+), 44 deletions(-)
-
-diff --git a/drivers/net/wireless/libertas/debugfs.c b/drivers/net/wireless/libertas/debugfs.c
-index 3ad1e03..8b0e3ec 100644
---- a/drivers/net/wireless/libertas/debugfs.c
-+++ b/drivers/net/wireless/libertas/debugfs.c
-@@ -1771,58 +1771,26 @@ void libertas_debugfs_remove_one(wlan_private *priv)
- }
- 
- /* debug entry */
--
--#define item_size(n) (sizeof ((wlan_adapter *)0)->n)
--#define item_addr(n) ((u32) &((wlan_adapter *)0)->n)
--
- struct debug_data {
- 	char name[32];
- 	u32 size;
- 	u32 addr;
- };
- 
--/* To debug any member of wlan_adapter, simply add one line here.
-- */
-+/* To debug any member of wlan_adapter, simply add a record here. */
- static struct debug_data items[] = {
--	{"intcounter", item_size(intcounter), item_addr(intcounter)},
--	{"psmode", item_size(psmode), item_addr(psmode)},
--	{"psstate", item_size(psstate), item_addr(psstate)},
-+	{ .name = "intcounter",
-+	  .size = FIELD_SIZEOF(wlan_adapter, intcounter),
-+	  .addr = offsetof(wlan_adapter, intcounter) },
-+	{ .name = "psmode",
-+	  .size = FIELD_SIZEOF(wlan_adapter, psmode),
-+	  .addr = offsetof(wlan_adapter, psmode) },
-+	{ .name = "psstate",
-+	  .size = FIELD_SIZEOF(wlan_adapter, psstate),
-+	  .addr = offsetof(wlan_adapter, psstate) },
- };
- 
--static int num_of_items = sizeof(items) / sizeof(items[0]);
--
--/**
-- *  @brief convert string to number
-- *
-- *  @param s   	   pointer to numbered string
-- *  @return 	   converted number from string s
-- */
--static int string_to_number(char *s)
--{
--	int r = 0;
--	int base = 0;
--
--	if ((strncmp(s, "0x", 2) == 0) || (strncmp(s, "0X", 2) == 0))
--		base = 16;
--	else
--		base = 10;
--
--	if (base == 16)
--		s += 2;
--
--	for (s = s; *s != 0; s++) {
--		if ((*s >= 48) && (*s <= 57))
--			r = (r * base) + (*s - 48);
--		else if ((*s >= 65) && (*s <= 70))
--			r = (r * base) + (*s - 55);
--		else if ((*s >= 97) && (*s <= 102))
--			r = (r * base) + (*s - 87);
--		else
--			break;
--	}
--
--	return r;
--}
-+static int num_of_items = ARRAY_SIZE(items);
- 
- /**
-  *  @brief proc read function
-@@ -1912,7 +1880,7 @@ static int wlan_debugfs_write(struct file *f, const char __user *buf,
- 			if (!p2)
- 				break;
- 			p2++;
--			r = string_to_number(p2);
-+			r = simple_strtoul(p2, NULL, 0);
- 			if (d[i].size == 1)
- 				*((u8 *) d[i].addr) = (u8) r;
- 			else if (d[i].size == 2)
-
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-
+-- 
+MST
