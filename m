@@ -1,79 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030371AbXCLPZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030351AbXCLP1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030371AbXCLPZN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXCLPZN
+	id S1030351AbXCLP1i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXCLP1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:25:13 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57153 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030371AbXCLPZL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:25:11 -0400
-Date: Mon, 12 Mar 2007 16:25:13 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.21rc3: usb 2-2: pl2303 converter now attached to ttyUSB44
-Message-ID: <20070312152513.GO18731@stusta.de>
-References: <200703071022.04409.arekm@maven.pl>
+	Mon, 12 Mar 2007 11:27:37 -0400
+Received: from ns.suse.de ([195.135.220.2]:46535 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030351AbXCLP1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 11:27:36 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: [BUG} usb-serial regression in 2.6.21-rc2-git3
+Date: Mon, 12 Mar 2007 16:27:29 +0100
+User-Agent: KMail/1.9.1
+Cc: Adrian Bunk <bunk@stusta.de>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <200703121606.06601.oneukum@suse.de> <45F56E37.9050506@rtr.ca>
+In-Reply-To: <45F56E37.9050506@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200703071022.04409.arekm@maven.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_jFX9FiFbazgjj0P"
+Message-Id: <200703121627.31332.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 07, 2007 at 10:22:04AM +0100, Arkadiusz Miskiewicz wrote:
-> 
-> 2.6.21rc3 from today git, thinkpad z60m, pl2303 usb-rs232 adapter and:
-> 
-> [   84.087080] usb 2-2: new full speed USB device using uhci_hcd and address 3
-> [   84.232615] usb 2-2: configuration #1 chosen from 1 choice
-> [   84.235540] pl2303 2-2:1.0: pl2303 converter detected
-> [   84.235732] usb 2-2: pl2303 converter now attached to ttyUSB44
-> 
-> With older kernels this was ttyUSB0, now it's ttyUSB44 huh, doesn't seem 
-> correct, right?
-> 
-> [arekm@tarm ~]$ ls -l /dev/tts
-> razem 0
-> crw-rw---- 1 root ttyS   4, 64 2007-03-07 10:58 0
-> crw-rw---- 1 root ttyS   4, 65 2007-03-07 10:58 1
-> crw-rw---- 1 root ttyS   4, 66 2007-03-07 10:58 2
-> crw-rw---- 1 root ttyS   4, 67 2007-03-07 10:58 3
-> crw-rw---- 1 root ttyS 188, 44 2007-03-07 10:17 USB44
-> 
-> Of course it doesn't work. minicom says that there is no device there.
-> 
-> cat test also:
-> cat: /dev/tts/USB44: No such device
+--Boundary-00=_jFX9FiFbazgjj0P
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Thanks for your report.
+Am Montag, 12. M=C3=A4rz 2007 16:13 schrieb Mark Lord:
+> Oliver Neukum wrote:
+> > Am Montag, 12. M=C3=A4rz 2007 15:56 schrieb Mark Lord:
+> >> Still no improvement on the b0rken usb-serial resume support in -rc*.
+> >=20
+> > Have you applied the fixes in Greg's current tree?
+>=20
+> I don't know anything about any "current tree"
+> other than the 2.6.21-rc3-git* on kernel.org.
+>=20
+> Greg hasn't suggested anything for this yet,
+> mostly because he's been busy keeping the 2.6.20.xx
+> point releases sane.
 
-Can you confirm that it's the following issue, and therefore fixed for 
-you in the latest -git?
+Sorry, try these in the chronological order the names imply.
+If it still happens, let me know.
 
-Subject    : usb-serial broken
-             (devices shows up as ttyUSB44 or ttyUSB140 instead of ttyUSB0)
-Submitter  : Craig Schlenter <craig@codefountain.com>
-Caused-By  : Oliver Neukum <oneukum@suse.de>
-             commit 34ef50e5b1f96c2d8c0f3d28b7d407743806256c
-Fixed-By   : Oliver Neukum <oneukum@suse.de>
-Commit     : c744f99eb662b54488304b8b60e5f4323b7587bf
-Status     : fixed in -rc3-git6
+	Regards
+		Oliver
 
-> Arkadiusz Miśkiewicz
+--Boundary-00=_jFX9FiFbazgjj0P
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="serial20070305.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="serial20070305.patch"
 
-cu
-Adrian
+--- a/drivers/usb/serial/usb-serial.c	2007-03-05 14:43:20.000000000 +0100
++++ b/drivers/usb/serial/usb-serial.c	2007-03-05 15:18:53.000000000 +0100
+@@ -99,9 +99,12 @@
+ 			continue;
+ 
+ 		*minor = i;
++		j = 0;
+ 		dbg("%s - minor base = %d", __FUNCTION__, *minor);
+-		for (i = *minor; (i < (*minor + num_ports)) && (i < SERIAL_TTY_MINORS); ++i)
++		for (i = *minor; (i < (*minor + num_ports)) && (i < SERIAL_TTY_MINORS); ++i) {
+ 			serial_table[i] = serial;
++			serial->port[j++]->number = i;
++		}
+ 		spin_unlock(&table_lock);
+ 		return serial;
+ 	}
+@@ -848,7 +851,6 @@
+ 		port = kzalloc(sizeof(struct usb_serial_port), GFP_KERNEL);
+ 		if (!port)
+ 			goto probe_error;
+-		port->number = i + serial->minor;
+ 		port->serial = serial;
+ 		spin_lock_init(&port->lock);
+ 		mutex_init(&port->mutex);
+@@ -1035,9 +1037,6 @@
+ 		kfree(port->interrupt_out_buffer);
+ 	}
+ 
+-	/* return the minor range that this device had */
+-	return_serial (serial);
+-
+ 	/* free up any memory that we allocated */
+ 	for (i = 0; i < serial->num_port_pointers; ++i)
+ 		kfree(serial->port[i]);
 
--- 
+--Boundary-00=_jFX9FiFbazgjj0P
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="usbserial20070227.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="usbserial20070227.patch"
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--- linux-2.6.21-rc1/drivers/usb/serial/usb-serial.c.alt	2007-02-21 05:32:30.000000000 +0100
++++ linux-2.6.21-rc1/drivers/usb/serial/usb-serial.c	2007-02-26 15:32:50.000000000 +0100
+@@ -826,7 +826,6 @@
+ 			num_ports = type->num_ports;
+ 	}
+ 
+-	serial->minor = minor;
+ 	serial->num_ports = num_ports;
+ 	serial->num_bulk_in = num_bulk_in;
+ 	serial->num_bulk_out = num_bulk_out;
+@@ -980,6 +979,7 @@
+ 		dev_err(&interface->dev, "No more free serial devices\n");
+ 		goto probe_error;
+ 	}
++	serial->minor = minor;
+ 
+ 	/* register all of the individual ports with the driver core */
+ 	for (i = 0; i < num_ports; ++i) {
 
+--Boundary-00=_jFX9FiFbazgjj0P--
