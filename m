@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030470AbXCLQNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030495AbXCLQN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030470AbXCLQNH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 12:13:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030510AbXCLQNG
+	id S1030495AbXCLQN4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 12:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030510AbXCLQNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 12:13:06 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55306 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030470AbXCLQNF (ORCPT
+	Mon, 12 Mar 2007 12:13:55 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:38780 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030495AbXCLQNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 12:13:05 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Catalin Marinas" <catalin.marinas@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Possible "struct pid" leak from tty_io.c
-References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
-	<m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
-	<m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
-Date: Mon, 12 Mar 2007 10:12:42 -0600
-In-Reply-To: <b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
-	(Catalin Marinas's message of "Mon, 12 Mar 2007 15:07:39 +0000")
-Message-ID: <m14poqv3t1.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 12 Mar 2007 12:13:54 -0400
+Date: Mon, 12 Mar 2007 21:50:45 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, sam@vilain.net, dev@sw.ru, xemul@sw.ru,
+       pj@sgi.com, ebiederm@xmission.com, winget@google.com,
+       containers@lists.osdl.org, akpm@linux-foundation.org
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070312162045.GD12176@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com> <20070307173031.GC2336@in.ibm.com> <20070307174346.GA19521@sergelap.austin.ibm.com> <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <20070309163430.GN6504@in.ibm.com> <6599ad830703091409s3d233829gb8f0afbfd2883b15@mail.gmail.com> <20070312150756.GB24742@in.ibm.com> <20070312155643.GA12893@sergelap.austin.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070312155643.GA12893@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Catalin Marinas" <catalin.marinas@gmail.com> writes:
+On Mon, Mar 12, 2007 at 10:56:43AM -0500, Serge E. Hallyn wrote:
+> What's wrong with that?
 
-> On 09/03/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
->> If I can manage to focus on this, it looks like the information I need to
->> start fixing this.
->
-> I had a look at the second leak reported it seems to be caused by the
-> same proc_set_tty() call but, in this case, there is no
-> disassociate_tty() call for the task (and the patch I posted is not
-> enough). Maybe something like below (no thourough testing):
+I had been asking around on "what is the fundamental unit of res mgmt
+for vservers" and the answer I got (from Herbert) was "all tasks that are
+in the same pid namespace". From what you are saying above, it seems to
+be that there is no such "fundamental" unit. It can be a random mixture
+of tasks (taken across vservers) whose resource consumption needs to be
+controlled. Is that correct?
 
-Thanks.  That doesn't look to bad. I'm just about to look into this.
-If I'm lucky all I will need to do is a close code review of your
-patch.
+> > 	echo "cid 2" > /dev/cpu/prof/tasks 
+> 
+> Adding that feature sounds fine, 
 
-Hopefully I can do that this afternoon.
+Ok yes ..that can be a optional feature.
 
-> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-> index db91398..ea6ca7d 100644
-> --- a/drivers/char/tty_io.c
-> +++ b/drivers/char/tty_io.c
-> @@ -3854,7 +3854,14 @@ EXPORT_SYMBOL(tty_devnum);
->
-> void proc_clear_tty(struct task_struct *p)
-> {
-> +	struct tty_struct *tty;
-> +
-> 	spin_lock_irq(&p->sighand->siglock);
-> +	tty = p->signal->tty;
-> +	if (tty) {
-> +		put_pid(tty->session);
-> +		put_pid(tty->pgrp);
-> +	}
-> 	p->signal->tty = NULL;
-> 	spin_unlock_irq(&p->sighand->siglock);
-> }
-
-Eric
+-- 
+Regards,
+vatsa
