@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXCLVNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485AbXCLVOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752490AbXCLVNu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 17:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXCLVNu
+	id S1752485AbXCLVOb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 17:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXCLVOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 17:13:50 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:42490 "EHLO smtp.osdl.org"
+	Mon, 12 Mar 2007 17:14:31 -0400
+Received: from mga02.intel.com ([134.134.136.20]:24971 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752430AbXCLVNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 17:13:49 -0400
-Date: Mon, 12 Mar 2007 14:11:56 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: David Miller <davem@davemloft.net>, rkuhn@e18.physik.tu-muenchen.de,
-       andi@firstfloor.org, dada1@cosmosbay.com, jengelh@linux01.gwdg.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tcp_cubic: use 32 bit math
-Message-ID: <20070312141156.08e88b0e@freekitty>
-In-Reply-To: <20070310114826.GB1608@1wt.eu>
-References: <20070307170731.2b4397e3@freekitty>
-	<20070307.185539.48527371.davem@davemloft.net>
-	<45EF7EB7.8040806@linux-foundation.org>
-	<20070307.195135.74749102.davem@davemloft.net>
-	<20070310114826.GB1608@1wt.eu>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+	id S1752526AbXCLVO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 17:14:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,275,1170662400"; 
+   d="scan'208"; a="208317924:sNHT18793278"
+Date: Mon, 12 Mar 2007 14:11:26 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, len.brown@intel.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: libata-acpi: allow _GTF on SATA, but disable on PATA for now
+Message-Id: <20070312141126.651cf967.kristen.c.accardi@intel.com>
+In-Reply-To: <20070312220015.094b7759@lxorguk.ukuu.org.uk>
+References: <200703100559.l2A5x6kP017578@hera.kernel.org>
+	<45F296B9.7000005@garzik.org>
+	<20070310164059.4ba68bcc@lxorguk.ukuu.org.uk>
+	<20070312095528.3dd7a693.kristen.c.accardi@intel.com>
+	<20070312220015.094b7759@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Mar 2007 12:48:26 +0100
-Willy Tarreau <w@1wt.eu> wrote:
+On Mon, 12 Mar 2007 22:00:15 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> On Wed, Mar 07, 2007 at 07:51:35PM -0800, David Miller wrote:
-> > From: Stephen Hemminger <shemminger@linux-foundation.org>
-> > Date: Wed, 07 Mar 2007 19:10:47 -0800
-> > 
-> > > David Miller wrote:
-> > > > What about Willy Tarreau's supposedly even faster variant?
-> > > > Or does this incorporate that set of improvements?
-> > > >   
-> > > That's what this is:
-> > >     x = (2 * x + (uint32_t)div64_64(a, (uint64_t)x*(uint64_t)x)) / 3;
-> > 
-> > Great, thanks for the clarification.
+> > Meanwhile, to solve the problem for these people, and without introducing
+> > a lot of new code at this stage in the release, perhaps you can suggest 
+> > a more accurate way to detect PATA vs. SATA so we can fix the bug?  
 > 
-> Oh BTW, I have a newer version with a first approximation of the
-> cbrt() before the div64_64, which allows us to reduce from 3 div64
-> to only 2 div64. This results in a version which is twice as fast
-> as the initial one (ncubic), but with slightly less accuracy (0.286%
-> compared to 0.247). But I see that other functions such as hcbrt()
-> had a 1.5% avg error, so I think this is not dramatic.
-
-Ignore my hcbrt() it was a less accurate version of andi's stuff.
-
-> Also, I managed to remove all other divides, to be kind with CPUs
-> having a slow divide instruction or no divide at all. Since we compute
-> on limited range (22 bits), we can multiply then shift right. It shows
-> me even slightly better time on pentium-m and athlon, with a slightly
-> higher avg error (0.297% compared to 0.286%), and slightly smaller
-> code.
-
-What does the code look like?
-
- 
-> I just have to clean experiments from my code to provide a patch.
-> David, Stephen, are you interested ?
+> I think the problem starts with the question. It supposes the BIOS knows
+> the answer to the question in the first place. It also supposes we
+> haven't reconfigured the port in some cases I believe.
 > 
-> $ ./bictcp
-> fls(0)=0, fls(1)=1, fls(256)=9
-> Calibrating
-> Function     clocks  mean(us) max(us)  std(us)  Avg error
-> bictcp          936     0.61    24.28     1.99 0.172%
-> ocubic          886     0.57    23.51     3.18 0.274%
-> ncubic          644     0.42    16.59     2.18 0.247%
-> ncubic32        444     0.29    11.47     1.50 0.247%
-> ncubic32_1      444     0.29    11.56     1.88 0.238%
-> ncubic32b3      337     0.22     8.67     0.88 0.286%
-> ncubic_ndiv3    329     0.21     8.46     0.69 0.297%
-> acbrt           707     0.46    18.05     0.80 0.275%
-> hcbrt           644     0.42    16.44     0.51 1.580%
+> My guess is the problem needs approaching from the other end. Ask the
+> question "What does the ACPI BIOS expect it to be ?". If I follow the
+> spec correctly we can answer that question by asking what methods (_SDD,
+> _GTF etc) it provides.
 > 
+> I don't think anything else is reliable.
 > 
-> Regards,
-> Willy
+> Alan
 > 
 
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Ah - ok, so you are saying we could query the device to see if it supports
+STM/GTM and then if we were to use the workaround I suggested for this bug
+we could just refuse to execute GTF on devices which support STM (since
+they may require execution of STM first).  If you guys decide you want 
+the workaround rather than just either disable acpi or remove the acpi patch
+entirely, let me know and I'd be glad to rework it, otherwise I'm assuming
+you have decided to just disable acpi all together.
