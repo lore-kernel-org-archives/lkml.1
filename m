@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbXCLVPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbXCLVTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752520AbXCLVPx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 17:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXCLVPx
+	id S1752583AbXCLVTr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 17:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbXCLVTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 17:15:53 -0400
-Received: from watts.utsl.gen.nz ([202.78.240.73]:40596 "EHLO
-	magnus.utsl.gen.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbXCLVPw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 17:15:52 -0400
-Message-ID: <45F5C301.8090500@vilain.net>
-Date: Tue, 13 Mar 2007 10:15:45 +1300
-From: Sam Vilain <sam@vilain.net>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060521)
+	Mon, 12 Mar 2007 17:19:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45688 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752526AbXCLVTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 17:19:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/3] swsusp: Stop using page flags
+Date: Mon, 12 Mar 2007 22:14:02 +0100
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: vatsa@in.ibm.com
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       dev@sw.ru, xemul@sw.ru, pj@sgi.com, ebiederm@xmission.com,
-       winget@google.com, containers@lists.osdl.org, akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers
- on top of nsproxy!
-References: <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com> <20070307173031.GC2336@in.ibm.com> <20070307174346.GA19521@sergelap.austin.ibm.com> <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <20070309163430.GN6504@in.ibm.com> <6599ad830703091409s3d233829gb8f0afbfd2883b15@mail.gmail.com> <20070312150756.GB24742@in.ibm.com> <20070312155643.GA12893@sergelap.austin.ibm.com> <20070312162045.GD12176@in.ibm.com>
-In-Reply-To: <20070312162045.GD12176@in.ibm.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703122214.02657.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> On Mon, Mar 12, 2007 at 10:56:43AM -0500, Serge E. Hallyn wrote:
->   
->> What's wrong with that?
->>     
->
-> I had been asking around on "what is the fundamental unit of res mgmt
-> for vservers" and the answer I got (from Herbert) was "all tasks that are
-> in the same pid namespace". From what you are saying above, it seems to
-> be that there is no such "fundamental" unit. It can be a random mixture
-> of tasks (taken across vservers) whose resource consumption needs to be
-> controlled. Is that correct?
->   
+Hi,
 
-Sure, for instance, all postgres processes across all servers might be
-put in a different IO and buffercache use container by the system
-administrator.
+The following three patches make swsusp use its own data structures for memory
+management instead of special page flags, so that these page flags can be used
+for other purposes.
 
-Sam.
+Greetings,
+Rafael
+
+
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
 
