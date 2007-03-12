@@ -1,168 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752070AbXCLXAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXCLXB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752070AbXCLXAz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 19:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbXCLXAz
+	id S1752083AbXCLXB1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 19:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXCLXB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 19:00:55 -0400
-Received: from MAIL.13thfloor.at ([213.145.232.33]:51327 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752070AbXCLXAy (ORCPT
+	Mon, 12 Mar 2007 19:01:27 -0400
+Received: from smtp006.mail.ukl.yahoo.com ([217.12.11.95]:32155 "HELO
+	smtp006.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752083AbXCLXBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 19:00:54 -0400
-Date: Tue, 13 Mar 2007 00:00:53 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: Kirill Korotaev <dev@sw.ru>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, menage@google.com, pj@sgi.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, winget@google.com,
-       containers@lists.osdl.org, akpm@linux-foundation.org,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       xemul@sw.ru
-Subject: Re: [PATCH 1/2] rcfs core patch
-Message-ID: <20070312230053.GD21258@MAIL.13thfloor.at>
-Mail-Followup-To: Kirill Korotaev <dev@sw.ru>,
-	Srivatsa Vaddagiri <vatsa@in.ibm.com>, menage@google.com,
-	pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-	winget@google.com, containers@lists.osdl.org,
-	akpm@linux-foundation.org, ckrm-tech@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, xemul@sw.ru
-References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <20070308101347.GA29051@in.ibm.com> <20070309004816.GB4506@MAIL.13thfloor.at> <45F127AB.5070704@sw.ru> <20070309132136.GA14907@MAIL.13thfloor.at> <45F437C9.2090108@sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 19:01:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Gg/OWZSPXnO2jLt5hd4lBWWLW4vvTGLK1mkNcqq1PrnISYRmMspklAE82bCPKC2I6Xsgp8FqWKEFtlpFS0uR5NCOEqI6/lBy86hXnY9DocSh5/leSyuWltBiLqkPmN5F1x2DUzX3bizVVzwKfhWrm8mGedHVhN/p4Hx8eG/7PxE=  ;
+X-YMail-OSG: 5hUs33MVM1kqnmOYKhEiLp0sasTBVg1YiYMKRgq6fIJ9SGIAIUtHALH_.c9VDgPshueEhjZwxHz8.2Dixp2h0o8GFiYmf89SRF4Yun6ogwJJkCyEt4qDrGWPK6izK0Eu6SNrkHVUfL9I
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+Date: Tue, 13 Mar 2007 00:01:13 +0100
+User-Agent: KMail/1.9.5
+Cc: Bill Irwin <bill.irwin@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20070221023735.6306.83373.sendpatchset@linux.site> <20070307094947.GE8609@wotan.suse.de> <20070307100242.GG8609@wotan.suse.de>
+In-Reply-To: <20070307100242.GG8609@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45F437C9.2090108@sw.ru>
-User-Agent: Mutt/1.5.11
+Message-Id: <200703130001.13467.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 11, 2007 at 08:09:29PM +0300, Kirill Korotaev wrote:
-> Herbert,
-> 
-> > sorry, I'm not in the lucky position that I get payed
-> > for sending patches to LKML, so I have to think twice
-> > before I invest time in coding up extra patches ...
-> > 
-> > i.e. you will have to live with my comments for now
+On Wednesday 07 March 2007 11:02, Nick Piggin wrote:
+> On Wed, Mar 07, 2007 at 10:49:47AM +0100, Nick Piggin wrote:
+> > On Wed, Mar 07, 2007 at 01:44:20AM -0800, Bill Irwin wrote:
+> > > On Wed, Mar 07, 2007 at 10:28:21AM +0100, Nick Piggin wrote:
+> > > > Depending on whether anyone wants it, and what features they want, we
+> > > > could emulate the old syscall, and make a new restricted one which is
+> > > > much less intrusive.
+> > > > For example, if we can operate only on MAP_ANONYMOUS memory and
+> > > > specify that nonlinear mappings effectively mlock the pages, then we
+> > > > can get rid of all the objrmap and unmap_mapping_range handling,
+> > > > forget about the writeout and msync problems...
+> > >
+> > > Anonymous-only would make it a doorstop for Oracle, since its entire
+> > > motive for using it is to window into objects larger than user virtual
+> >
+> > Uh, duh yes I don't mean MAP_ANONYMOUS, I was just thinking of the shmem
+> > inode that sits behind MAP_ANONYMOUS|MAP_SHARED. Of course if you don't
+> > have a file descriptor to get a pgoff, then remap_file_pages is a
+> > doorstop for everyone ;)
+> >
+> > > address spaces (this likely also applies to UML, though they should
+> > > really chime in to confirm). Restrictions to tmpfs and/or ramfs would
+> > > likely be liveable, though I suspect some things might want to do it to
+> > > shm segments (I'll ask about that one). There's definitely no need for
+> > > a persistent backing store for the object to be remapped in Oracle's
+> > > case, in any event. It's largely the in-core destination and source of
+> > > IO, not something saved on-disk itself.
+> >
+> > Yeah, tmpfs/shm segs are what I was thinking about. If UML can live with
+> > that as well, then I think it might be a good option.
+>
+> Oh, hmm.... if you can truncate these things then you still need to
+> force unmap so you still need i_mmap_nonlinear.
 
-> looks like you have no better argurments then that...
+Well, we don't need truncate(), but MADV_REMOVE for memory hotunplug, which is 
+way similar I guess.
 
-pardon?
+About the restriction to tmpfs, I have just discovered 
+'[PATCH] mm: tracking shared dirty pages' (commit 
+d08b3851da41d0ee60851f2c75b118e1f7a5fc89), which already partially conflicts 
+with remap_file_pages for file-based mmaps (and that's fully fine, for now).
 
-if you want to make that personal, please do it
-offline ... I'm sick of (lkml) folks wasting 
-time for (political) hick hack instead of trying
-to improve the kernel ...
+Even if UML does not need it, till now if there is a VMA protection and a page 
+hasn't been remapped with remap_file_pages, the VMA protection is used (just 
+because it makes sense).
 
->>> Looks like your main argument is non-intrusive...
->>> "working", "secure", "flexible" are not required to 
->>> people any more? :/
+However, it is only used when the PTE is first created - we can never change 
+protections on a VMA  - so it vma_wants_writenotify() is true (on all 
+file-based and on no shmfs based mapping, right?), and we write-protect the 
+VMA, it will always be write-protected.
 
->> well, Linux-VServer is "working", "secure", "flexible"
->> _and_ non-intrusive ... it is quite natural that less
->> won't work for me ... and regarding patches, there
->> will be a 2.2 release soon, with all the patches ...
+That's no problem for UML, but for any other user (I guess I'll have to 
+prevent callers from trying such stuff - I started from a pretty generic 
+patch).
 
-> ok. please check your dcache and slab accounting then
-> (analyzed according to patch-2.6.20.1-vs2.3.0.11.diff):
+> But come to think of it, I still don't think nonlinear mappings are
+> too bad as they are ;)
 
-development branch, good choice for new features
-and code which is currently tested ...
+Btw, I really like removing ->populate and merging the common code together. 
+filemap_populate and shmem_populate are so obnoxiously different that I 
+already wanted to do that (after merging remap_file_pages() core).
 
-> Both are full of races and problems. Some of them:
-> 1. Slabs allocated from interrupt context are charged to 
->    current context.
->    So charged values contain arbitrary mess, since during
->    interrupts context can be arbitrary.
-
-> 2. Due to (1) I guess you do not make any limiting of slabs.
->    So there are number of ways how to consume a lot of kernel
->    memory from inside container and
->    OOM killer will kill arbitrary tasks in case of 
->    memory-shortage after that.
->    Don't think it is secure... real DoS.
-
-> 3. Dcache accounting simply doesn't work, since
->    charges/uncharges are done on current context (sic!!!),
->    which is arbitrary. i.e. lookup can be done in VE context,
->    while dcache shrink can be done from another context.
->    So the whole problem with dcache DoS is not solved at 
->    all, it is just hard to trigger.
-
-> 4. Dcache accounting is racy, since your checks look like:
->    if (atomic_read(de->d_count))
->       charge();
->    which obviously races with other dput()'s/lookups.
-
-> 5. Dcache accounting can be hit if someone does `find /`
->    inside container.
->    After that it is impossible to open something new,
->    since all the dentries for directories in dcache will 
->    have d_count > 0 (due it's children).
->    It is a BUG.
-
-> 6. Counters can be non-zero on container stop due to all
->    of the above.
-
-looks like for the the first time you are actually
-looking at the code, or at least providing feedback
-and/or suggestions for improvements (well, not many
-of them, but hey, nobody is perfect :)
-
-> There are more and more points which arise when such a 
-> non-intrusive accounting is concerned. 
-
-never claimed that Linux-VServer code is perfect,
-(the Linux accounting isn't perfect either in many
-ways) and Linux-VServer is constantly improving
-(see my other email) ... but IIRC, we are _not_
-discussing Linux-VServer code at all, we are talking
-about a superior solution, which combines the best
-of both worlds ...
-
-> I'm really suprised, that you don't see them
-> or try to behave as you don't see them :/
-
-all I'm saying is that there is no point in achieving
-perfect accounting and limits (and everything else)
-when all you get is Xen performance and resource usage
-
-> And, please, believe me, I would not suggest so much 
-> complicated patches If everything was so easy and I 
-> had no reasons simply to accept vserver code.
-
-no, you are suggesting those patches, because that
-is what your company came up with after being confronted
-with the task (of creating OS-Level virtualization) and
-the arising problems ... so it definitely _is_ a
-solution to those problems, but not necessarily the
-best and definitely not the only one :)
-
-> > well, as you know, all current solutions use a syscall
-> > interface to do most of the work, in the OpenVZ/Virtuozzo
-> > case several, unassigned syscalls are used, while 
-> > FreeVPS and Linux-VServer use a registered and versioned
-> > (multiplexed) system call, which works quite fine for
-> > all known purposes ...
-> > 
-> > I'm quite happy with the extensibility and flexibility
-> > the versioned syscall interface has, the only thing I'd
-> > change if I would redesign that interface is, that I
-> > would add another pointer argument to eliminate 32/64bit
-> > issues completely (i.e. use 4 args instead of the 3)
-
-> Well, I would be happy with syscalls also.
-
-> But my guess is that cpuset guys who already use fs 
-> approach won't be happy :/
-
-> Maybe we can use both?
-
-I'm fine with either here, though my preference is
-for syscalls (and we will probably keep the versioned
-syscall commands for Linux-VServer anyway)
-
-best,
-Herbert
-
-> Thanks,
-> Kirill
+Also, I'm curious. Since my patches are already changing remap_file_pages() 
+code, should they be absolutely merged after yours?
+-- 
+Inform me of my mistakes, so I can add them to my list!
+Paolo Giarrusso, aka Blaisorblade
+http://www.user-mode-linux.org/~blaisorblade
+Chiacchiera con i tuoi amici in tempo reale! 
+ http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
