@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965883AbXCLOUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965886AbXCLOWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965883AbXCLOUP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 10:20:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965886AbXCLOUP
+	id S965886AbXCLOWA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 10:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965887AbXCLOWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 10:20:15 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52642 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965883AbXCLOUN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 10:20:13 -0400
-Date: Mon, 12 Mar 2007 15:20:12 +0100
-From: Jan Kara <jack@suse.cz>
-To: Ashif Harji <asharji@cs.uwaterloo.ca>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: Re: do_generic_mapping_read performance issue
-Message-ID: <20070312142012.GH30777@atrey.karlin.mff.cuni.cz>
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 10:22:00 -0400
+Received: from [212.12.190.20] ([212.12.190.20]:32981 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965886AbXCLOV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 10:21:59 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Con Kolivas <kernel@kolivas.org>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Date: Mon, 12 Mar 2007 17:14:24 +0300
+User-Agent: KMail/1.5
+Cc: ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703121426.00854.a1426z@gawab.com> <200703122352.51257.kernel@kolivas.org>
+In-Reply-To: <200703122352.51257.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200703121714.25034.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Con Kolivas wrote:
+> > > The higher priority one always get 6-7ms whereas the lower priority
+> > > one runs 6-7ms and then one larger perfectly bound expiration amount.
+> > > Basically exactly as I'd expect. The higher priority task gets
+> > > precisely RR_INTERVAL maximum latency whereas the lower priority task
+> > > gets RR_INTERVAL min and full expiration (according to the virtual
+> > > deadline) as a maximum. That's exactly how I intend it to work. Yes I
+> > > realise that the max latency ends up being longer intermittently on
+> > > the niced task but that's -in my opinion- perfectly fine as a
+> > > compromise to ensure the nice 0 one always gets low latency.
+> >
+> > I think, it should be possible to spread this max expiration latency
+> > across the rotation, should it not?
+>
+> There is a way that I toyed with of creating maps of slots to use for each
+> different priority, but it broke the O(1) nature of the virtual deadline
+> management. Minimising algorithmic complexity seemed more important to
+> maintain than getting slightly better latency spreads for niced tasks. It
+> also appeared to be less cache friendly in design. I could certainly try
+> and implement it but how much importance are we to place on latency of
+> niced tasks? Are you aware of any usage scenario where latency sensitive
+> tasks are ever significantly niced in the real world?
 
-> Hi, I am encountering a performance problem, which I have tracked into the 
-> Linux kernel. The problem occurs with my experimental web server that uses 
-> sendfile to repeatedly transmit files.  The files are based on the static 
-> portion of the SPECweb99 fileset and range in size to model a reasonable 
-> workload.  With this workload, a significant number of the requests are 
-> for files of size 4 KB or less.
-> 
-> I have determined that the performance problems occurs in the function
-> do_generic_mapping_read in file mm/filemap.c for kernel version 2.6.20.1.
-> Here is the specific code fragment:
-> 
->         /*
->          * When (part of) the same page is read multiple times
->          * in succession, only mark it as accessed the first time.
->          */
->         if (prev_index != index)
->                 mark_page_accessed(page);
-  Actually, the code is like that certainly for two years :).
+It only takes one negatively nice'd proc to affect X adversely.
 
-> The implication of this code is that for files of size less than or equal 
-> to a single page, the page associated with such a file is likely to get 
-> evicted from the cache regardless of how frequently it is accessed.  The 
-> reason is that after the first access, prev_index is always zero and index 
-> can only be zero. Hence, mark_page_accessed is never called after the 
-> first time the file is requested.  As a result, the page is evicted from 
-> the cache no matter how frequently it is used.  By changing the kernel to 
-> always call mark_page_accessed for these files, the server throughput is 
-> increased by as much as 20%.
-  Your analysis seems to be right. But to observe this behaviour you have
-to have the file open and just always reread it using the same file
-descriptor, don't you? That's probably not too common...
 
-> I was wondering if anyone could explain why the call to mark_page_accessed 
-> is conditional? That is, what problem it is trying to solve. It would seem 
-> that in many scenarios, if the same page is accessed repeatedly, then it 
-> would be appropriate to keep that page cached.
-  I also don't know why the condition is there but it's there at least
-for two years so I'm not sure anybody remembers ;). Nick, do you have
-an idea?
+Thanks!
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+--
+Al
+
