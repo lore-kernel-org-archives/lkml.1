@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932933AbXCLBFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751663AbXCLBQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932933AbXCLBFF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Mar 2007 21:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXCLBFE
+	id S1751663AbXCLBQP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Mar 2007 21:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXCLBQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Mar 2007 21:05:04 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:50788 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbXCLBFD (ORCPT
+	Sun, 11 Mar 2007 21:16:15 -0400
+Received: from MAIL.13thfloor.at ([213.145.232.33]:38185 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbXCLBQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Mar 2007 21:05:03 -0400
-Date: Mon, 12 Mar 2007 09:03:02 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Joe Jin <joe.jin@oracle.com>, akpm@osdl.org, dgilbert@interlog.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haobo.zhou@oracle.com
-Subject: Re: [PATCH] [scsi]: Add offline state checking while dispatch a scsi cmd
-Message-ID: <20070312010302.GA32372@joejin-pc.cn.oracle.com>
-References: <20070308092207.GA17141@joejin-pc.cn.oracle.com> <1173369759.3683.1.camel@mulgrave.il.steeleye.com> <20070309014040.GA6632@joejin-pc.cn.oracle.com> <1173626483.3420.3.camel@mulgrave.il.steeleye.com>
+	Sun, 11 Mar 2007 21:16:14 -0400
+Date: Mon, 12 Mar 2007 02:16:13 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Pavel Emelianov <xemul@sw.ru>, containers@lists.osdl.org,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/7] Resource counters
+Message-ID: <20070312011612.GD21861@MAIL.13thfloor.at>
+Mail-Followup-To: "Eric W. Biederman" <ebiederm@xmission.com>,
+	Pavel Emelianov <xemul@sw.ru>, containers@lists.osdl.org,
+	Paul Menage <menage@google.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru> <45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru> <20070309163711.GA3647@MAIL.13thfloor.at> <m1fy8bwqps.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173626483.3420.3.camel@mulgrave.il.steeleye.com>
-User-Agent: Mutt/1.4.1i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+In-Reply-To: <m1fy8bwqps.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Mar 11, 2007 at 01:00:15PM -0600, Eric W. Biederman wrote:
+> Herbert Poetzl <herbert@13thfloor.at> writes:
 > 
-> This is a bug actually in the megaraid.
-
-Aha, I'll track it.
-
+> >
+> > Linux-VServer does the accounting with atomic counters,
+> > so that works quite fine, just do the checks at the
+> > beginning of whatever resource allocation and the
+> > accounting once the resource is acquired ...
 > 
-> And this is a direct command submission path:  it already passed both
-> online check gates in this path *after* the device was offlined, so
-> adding a third won't fix this. 
+> Atomic operations versus locks is only a granularity thing.
+> You still need the cache line which is the cost on SMP.
+> 
+> Are you using atomic_add_return or atomic_add_unless or 
+> are you performing you actions in two separate steps 
+> which is racy? What I have seen indicates you are using 
+> a racy two separate operation form.
 
-Yeah, I have notice that, however, from the logs, the device have offline, 
-but why still can send cmd to device? isn't the sequences of printk suspectful?
+yes, this is the current implementation which
+is more than sufficient, but I'm aware of the
+potential issues here, and I have an experimental
+patch sitting here which removes this race with
+the following change:
 
-> single disk, so the I/O was definitely bound for sda?  Secondly, can you
-> reproduce with a modern (2.6.20) kernel.  Your trace strongly suggests
-> that the device came back online for some reason and then the megaraid
-> driver died.
+ - doesn't store the accounted value but
+   limit - accounted (i.e. the free resource)
+ - uses atomic_add_return() 
+ - when negative, an error is returned and
+   the resource amount is added back
 
-It's hard to update the kernel for the system is a production system, and we
-cannot debug it at the box :( 
+changes to the limit have to adjust the 'current'
+value too, but that is again simple and atomic
 
-I dont know if you have notice, the logs come from diskdump, if it caused by
-diskdump?
+best,
+Herbert
 
-Thanks,
-Joe
+PS: atomic_add_unless() didn't exist back then
+(at least I think so) but that might be an option
+too ...
+
+> >> If we'll remove failcnt this would look like
+> >>    while (atomic_cmpxchg(...))
+> >> which is also not that good.
+> >> 
+> >> Moreover - in RSS accounting patches I perform page list
+> >> manipulations under this lock, so this also saves one atomic op.
+> >
+> > it still hasn't been shown that this kind of RSS limit
+> > doesn't add big time overhead to normal operations
+> > (inside and outside of such a resource container)
+> >
+> > note that the 'usual' memory accounting is much more
+> > lightweight and serves similar purposes ...
+> 
+> Perhaps....
+> 
+> Eric
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/containers
