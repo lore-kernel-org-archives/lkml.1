@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030395AbXCLPaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXCLPaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030395AbXCLPaP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXCLPaP
+	id S1030419AbXCLPaw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030427AbXCLPaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:30:15 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:57652 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030395AbXCLPaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:30:13 -0400
-Date: Mon, 12 Mar 2007 08:26:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mike Galbraith <efault@gmx.de>
-cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-In-Reply-To: <1173710082.6326.49.camel@Homer.simpson.net>
-Message-ID: <Pine.LNX.4.64.0703120808110.9690@woody.linux-foundation.org>
-References: <200703111457.17624.kernel@kolivas.org>  <1173697024.8014.19.camel@Homer.simpson.net>
-  <20070312110833.GA12835@elte.hu>  <200703122223.07048.kernel@kolivas.org>
- <1173710082.6326.49.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Mar 2007 11:30:52 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:52132 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030432AbXCLPav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 11:30:51 -0400
+Date: Mon, 12 Mar 2007 16:30:33 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: bryan.wu@analog.com, David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] Bitbanging i2c bus driver using the GPIO API
+Message-ID: <20070312163033.134c351e@dhcp-252-105.norway.atmel.com>
+In-Reply-To: <20070312161109.749c6d69.khali@linux-fr.org>
+References: <200703091345.44744.david-b@pacbell.net>
+	<11735324081261-git-send-email-hskinnemoen@atmel.com>
+	<1173694079.6638.13.camel@roc-desktop>
+	<20070312153457.60dafa0c@dhcp-252-105.norway.atmel.com>
+	<20070312155359.39020c80@dhcp-252-105.norway.atmel.com>
+	<20070312161109.749c6d69.khali@linux-fr.org>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 12 Mar 2007 16:11:09 +0100
+Jean Delvare <khali@linux-fr.org> wrote:
 
-
-On Mon, 12 Mar 2007, Mike Galbraith wrote:
->
-> On Mon, 2007-03-12 at 22:23 +1100, Con Kolivas wrote:
+> > By the way, timeout seems to be hardcoded to 100 jiffies in the
+> > i2c-algo-bit driver, so there's probably not much point passing it from
+> > the board code when it's going to be overridden anyway. I'll add just a
+> > udelay parameter to the platform struct for  now.  
 > 
-> > Mike the cpu is being proportioned out perfectly according to fairness as I 
-> > mentioned in the prior email, yet X is getting the lower latency scheduling. 
-> > I'm not sure within the bounds of fairness what more would you have happen to 
-> > your liking with this test case?
-> 
-> It has been said that "perfection is the enemy of good".  The two
-> interactive tasks receiving 40% cpu while two niced background jobs
-> receive 60% may well be perfect, but it's damn sure not good.
+> No, it's not hardcoded. I know it looks confusing. struct i2c_adapter
+> has a timeout field, that's the one being set to 100 in i2c-algo-bit,
+> but i2c-algo-bit uses the i2c_algo_bit_data timeout field. The
+> i2c_adapter timeout field is unused.
 
-Well, the real problem is really "server that works on behalf of somebody 
-else".
+Ah, I see. Now that you mention it, I seem to recall I came to that
+conclusion last time I looked at the code, but I've apparently forgotten
+it since then ;)
 
-X is just the worst *practical* example of this, since not only is it the 
-most common such server, it's also a case where people see interactive 
-issues really easily.
+I'll add a timeout field to the platform struct as well, then.
 
-And the problem is that a lot of clients actually end up doing *more* in 
-the X server than they do themselves directly. Doing things like showing a 
-line of text on the screen is a lot more expensive than just keeping track 
-of that line of text, so you end up with the X server easily being marked 
-as getting "too much" CPU time, and the clients as being starved for CPU 
-time. And then you get bad interactive behaviour.
-
-So "good fairness" really should involve some notion of "work done for 
-others". It's just not very easy to do..
-
-			Linus
+Haavard
