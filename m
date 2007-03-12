@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030325AbXCLPPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030363AbXCLPSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030325AbXCLPPT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030351AbXCLPPT
+	id S1030363AbXCLPSk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030370AbXCLPSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:15:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:13819 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030325AbXCLPPR convert rfc822-to-8bit (ORCPT
+	Mon, 12 Mar 2007 11:18:40 -0400
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:51611 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030363AbXCLPSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:15:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jgzhtQcn528f+9lLjY0s7+eQVrps09071QJNNVKe8yPBbekLhXwg5xhwNncp4mWDf2q6KFBO+GjZG/UUxBiogGYCn/aapfxtxp5wQLU4mkS2eniZAJal0Fkz5TGZTfIMyAk1uZsnFuLrAe1m8yMecVcssvMmywL4uT9O1aUVhGA=
-Message-ID: <45219fb00703120815l79262977va0b7e3b8e59921de@mail.gmail.com>
-Date: Mon, 12 Mar 2007 16:15:15 +0100
-From: "=?ISO-8859-1?Q?Llu=EDs_Batlle?=" <viriketo@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: bug in select() in linux
-In-Reply-To: <200703121508.52749.s0348365@sms.ed.ac.uk>
+	Mon, 12 Mar 2007 11:18:39 -0400
+Message-ID: <45F56F37.6090407@nortel.com>
+Date: Mon, 12 Mar 2007 09:18:15 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
+To: Con Kolivas <kernel@kolivas.org>
+CC: Robert Love <rml@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: resend: KERNEL BUG: nice level should not affect SCHED_RR timeslice
+References: <45EF4890.6020806@nortel.com> <200703122027.17219.kernel@kolivas.org>
+In-Reply-To: <200703122027.17219.kernel@kolivas.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <45219fb00703120751t7acd1ae3kb77f556b81a87634@mail.gmail.com>
-	 <20070312160104.25d6b321@lxorguk.ukuu.org.uk>
-	 <45219fb00703120802y78cf4dbds6e89b58de9d0f801@mail.gmail.com>
-	 <200703121508.52749.s0348365@sms.ed.ac.uk>
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Mar 2007 15:18:19.0281 (UTC) FILETIME=[AA559010:01C764B9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wouldn't it be better for all of us that select() doesn't block on
-write(), unless there is a socket writting buffer fulfilled? It will
-be consistent with the select() specification.
+Con Kolivas wrote:
 
-2007/3/12, Alistair John Strachan <s0348365@sms.ed.ac.uk>:
-> On Monday 12 March 2007 15:02, Lluís Batlle wrote:
-> > Oh, of course you're right. I was inside too much layers to think of
-> > the tcp protocol, and I did not pay attention to it.
-> >
-> > Maybe something could be added to the manpage anyway.
-> >
-> > The bad thing is that there's no way I can use a socket for writing
-> > using select() if that connection has been half-closed by the other
-> > end. Moo.
->
-> This question comes up from time to time. I think the answer is
-> ultimately "select() sucks, use poll()".
->
-> I can't exactly remember the details, but I believe POLLHUP or POLLOUT as
-> flags do what you want.
->
-> --
-> Cheers,
-> Alistair.
->
-> Final year Computer Science undergraduate.
-> 1F2 55 South Clerk Street, Edinburgh, UK.
->
+> Indeed we do change timeslice with nice on rt_tasks in mainline at the moment. 
+> Truth is most rt programming couldn't care less about timeslices, but your 
+> point about it deviating from the standard is valid. RSDL does not change 
+> timeslice with nice on SCHED_RR tasks so it's sort of getting addressed by 
+> proxy.
+
+Unfortunately we have some vendor-supplied software that does care about 
+timeslices.  It's a crazy thing with multiple SCHED_RR kernel threads 
+that don't really self-manage very well.  They're spawned by a 
+SCHED_OTHER task and inherit its nice level.
+
+We modified the startup for the spawning task to run it at a lower nice 
+level and were fairly surprised when the latency of message handling 
+went way up.
+
+Chris
