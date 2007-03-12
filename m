@@ -1,108 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030455AbXCLP6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030474AbXCLP7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030455AbXCLP6e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030468AbXCLP6e
+	id S1030474AbXCLP7a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030468AbXCLP7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:58:34 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:49786 "EHLO e2.ny.us.ibm.com"
+	Mon, 12 Mar 2007 11:59:30 -0400
+Received: from mx1.suse.de ([195.135.220.2]:50228 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030455AbXCLP6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:58:33 -0400
-Date: Mon, 12 Mar 2007 10:56:43 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Paul Menage <menage@google.com>, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, sam@vilain.net, dev@sw.ru, xemul@sw.ru,
-       pj@sgi.com, ebiederm@xmission.com, winget@google.com,
-       containers@lists.osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
-       akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070312155643.GA12893@sergelap.austin.ibm.com>
-References: <20070301133543.GK15509@in.ibm.com> <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com> <20070307173031.GC2336@in.ibm.com> <20070307174346.GA19521@sergelap.austin.ibm.com> <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <20070309163430.GN6504@in.ibm.com> <6599ad830703091409s3d233829gb8f0afbfd2883b15@mail.gmail.com> <20070312150756.GB24742@in.ibm.com>
+	id S1030474AbXCLP73 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 11:59:29 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+Date: Mon, 12 Mar 2007 16:59:26 +0100
+User-Agent: KMail/1.9.1
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Maneesh Soni" <maneesh@in.ibm.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0703121041400.2489-100000@iolanthe.rowland.org> <200703121623.58607.oneukum@suse.de> <d120d5000703120842k4e134136v2fe56dcfc2264841@mail.gmail.com>
+In-Reply-To: <d120d5000703120842k4e134136v2fe56dcfc2264841@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070312150756.GB24742@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200703121659.27348.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Srivatsa Vaddagiri (vatsa@in.ibm.com):
-> On Fri, Mar 09, 2007 at 02:09:35PM -0800, Paul Menage wrote:
-> > > 3. This next leads me to think that 'tasks' file in each directory doesnt make
-> > >    sense for containers. In fact it can lend itself to error situations (by
-> > >    administrator/script mistake) when some tasks of a container are in one
-> > >    resource class while others are in a different class.
-> > >
-> > >         Instead, from a containers pov, it may be usefull to write
-> > >         a 'container id' (if such a thing exists) into the tasks file
-> > >         which will move all the tasks of the container into
-> > >         the new resource class. This is the same requirement we
-> > >         discussed long back of moving all threads of a process into new
-> > >         resource class.
-> > 
-> > I think you need to give a more concrete example and use case of what
-> > you're trying to propose here. I don't really see what advantage
-> > you're getting.
+Am Montag, 12. März 2007 16:42 schrieb Dmitry Torokhov:
+> On 3/12/07, Oliver Neukum <oneukum@suse.de> wrote:
+> > Am Montag, 12. März 2007 15:57 schrieb Alan Stern
+> > > No, you're missing the point.  Let's say driver A's disconnect() is
+> > > called, so the driver marks its private data structure as "disconnected"
+> > > and does dev_set_drvdata(NULL).  Then driver B is probed and bound to the
+> > > device, and it does its own dev_set_drvdata().  Then a user still holding
+> > > an open sysfs file reference for driver A calls a show() or store()
+> > > method.  The method will do dev_get_drvdata(), receiving the pointer to
+> > > driver B's private data.  Now you're in trouble, because A's method will
+> > > think it owns B's private data!
+> >
+> > Yes, I was missing the point. In consequence, drivers must not use
+> > dev_get_drvdata() to get their references to their private data. It's
+> > probably necessary to store it in struct sysfs_buffer and include that
+> > in the store/show callbacks.
+> > (The same does apply to interfaces of course)
+> >
 > 
-> Ok, this is what I had in mind:
-> 
-> 
-> 	mount -t container -o ns /dev/namespace
-> 	mount -t container -o cpu /dev/cpu
-> 
-> Lets we have the namespaces/resource-groups created as under:
-> 
-> 	/dev/namespace
-> 		    |-- prof
-> 		    |	 |- tasks <- (T1, T2)
-> 		    |    |- container_id <- 1 (doesnt exist today perhaps)
-> 		    |
-> 		    |-- student
-> 		    |    |- tasks <- (T3, T4)
-> 		    |    |- container_id <- 2 (doesnt exist today perhaps)
-> 
-> 	/dev/cpu
-> 	       |-- prof
-> 	       |    |-- tasks
-> 	       |    |-- cpu_limit (40%)
-> 	       |
-> 	       |-- student
-> 	       |    |-- tasks
-> 	       |    |-- cpu_limit (20%)
-> 	       |
-> 	       |
-> 
-> 
-> Is it possible to create the above structure in container patches? 
-> /me thinks so.
-> 
-> If so, then accidentally someone can do this:
-> 
-> 	echo T1 > /dev/cpu/prof/tasks
-> 	echo T2 > /dev/cpu/student/tasks
-> 
-> with the result that tasks of the same container are now in different
-> resource classes.
+> Or drivers coudl verify that they still bound to the device they are
+> about to operate on (psmouse does this by taking a lock on device and
+> then checking if driver bound is the same address as psmouse). But I'd
+> rather get rid of all this clutter if we could sever sysfs access
+> after removing corresponding attributes.
 
-What's wrong with that?
+No, the call has to fail if the driver is rebound to the device.
 
-> Thats why in case of containers I felt we shldnt allow individual tasks
-> to be cat'ed to tasks file. 
-> 
-> Or rather, it may be nice to say :
-> 
-> 	echo "cid 2" > /dev/cpu/prof/tasks 
-> 
-> and have all tasks belonging to container id 2 move to the new resource
-> group.
-
-Adding that feature sounds fine, but don't go stopping me from putting
-T1 into /dev/cpu/prof/tasks and T2 into /dev/cpu/student/tasks just
-because you have your own notion of what each task is supposed to be.
-Just because they're in the same namespaces doesn't mean they should get
-the same resource allocations.  If you want to add that kind of policy,
-well, it should be policy - user-definable.
-
--serge
+	Regards
+		Oliver
