@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965370AbXCLIxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXCLIyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965370AbXCLIxy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 04:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965291AbXCLIxy
+	id S965352AbXCLIyb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 04:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbXCLIyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 04:53:54 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:35373 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965352AbXCLIxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 04:53:53 -0400
-Date: Mon, 12 Mar 2007 09:58:02 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Thomas Graf <tgraf@suug.ch>
-Cc: "Kok\, Auke" <auke-jan.h.kok@intel.com>,
-       David Miller <davem@davemloft.net>, "Garzik\, Jeff" <jgarzik@pobox.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       "Brandeburg\, Jesse" <jesse.brandeburg@intel.com>,
-       "Kok\, Auke" <auke@foo-projects.org>,
-       "Ronciak\, John" <john.ronciak@intel.com>
-Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
-Message-ID: <20070312085802.GA1664@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 04:54:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49577 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965352AbXCLIya convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 04:54:30 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+Date: Mon, 12 Mar 2007 09:54:21 +0100
+User-Agent: KMail/1.9.1
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0703101405330.7545-100000@patience.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0703101405330.7545-100000@patience.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070309134037.GH521@postel.suug.ch>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200703120954.22038.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-03-2007 14:40, Thomas Graf wrote:
-> * Kok, Auke <auke-jan.h.kok@intel.com> 2007-02-08 16:09
->> diff --git a/net/core/dev.c b/net/core/dev.c
->> index 455d589..42b635c 100644
->> --- a/net/core/dev.c
->> +++ b/net/core/dev.c
->> @@ -1477,6 +1477,49 @@ gso:
->>  	skb->tc_verd = SET_TC_AT(skb->tc_verd,AT_EGRESS);
->>  #endif
->>  	if (q->enqueue) {
->> +#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
->> +		int queue_index;
->> +		/* If we're a multi-queue device, get a queue index to lock */
->> +		if (netif_is_multiqueue(dev))
->> +		{
->> +			/* Get the queue index and lock it. */
->> +			if (likely(q->ops->map_queue)) {
->> +				queue_index = q->ops->map_queue(skb, q);
->> +				spin_lock(&dev->egress_subqueue[queue_index].queue_lock);
->> +				rc = q->enqueue(skb, q);
+Am Samstag, 10. März 2007 20:19 schrieb Alan Stern:
+> On Fri, 9 Mar 2007, Oliver Neukum wrote:
+> 
+> > Am Freitag, 9. März 2007 21:08 schrieb Alan Stern:
+> > > After some more thought, I basically agree with what Oliver wrote
+> > > originally.  sysfs_dirent is indeed the logical place to store the kref
+> > > pointer.  However it needs to be used during open and release, not during
+> > 
+> > OK.
+> > 
+> > > read, write, and poll.  Another point, which Oliver didn't think of, is
+> > > that the kref pointer needs to be passed to the driver as an argument in
+> > > the show() and store() method calls.
+> > 
+> > Why? What's wrong with simply calling kref_get/put?
+> 
+> It's the same old problem: the race between unbind and sysfs I/O.  What
+> good does holding a reference to the private data structure do if the
+> show/store method gets called after the driver has been unbound from the
+> device?  dev_get_drvdata() will no longer provide a valid pointer to the
+> private data, so the method will have no way to access it.  Hence the
+> method needs another argument.
 
-I'm not sure Dave Miller thought about this place, when he proposed
-to save the mapping, but I think this could be not enough. This place
-is racy: ->map_queue() is called 2 times and with some filters (and
-policies/actions) results could differ. And of course the subqueue
-lock doesn't prevent any filter from a config change in the meantime.
+It does half the job. You can make sure the driver is not asked to access
+freed memory.
+It is true that a driver will have to mark that device "disconnected"
+and return errors if that device's attributes are referenced, but this can
+be done internally.
 
-After second reading of this patch I have doubts it's the proper way
-to solve the problem: there are many subqueues but we need a top queue
-(prio here) to mange them, anyway. So, why not to build this
-functionality directly into the queue? There is no difference for a
-device if skbs are going from the subqueue or a class, it is only
-interested in the mapping result and a possibility to stop and start
-a subqueue and to query its status. All this could be done by adding
-the callbacks directly to any classful scheduler or, if not enough,
-to write some specialized qdisc based on prio. The possibility to lock
-only a subqueue instead of a queue could be analized independently -
-current proposal doesn't solve this anyway.
+Yes, this is a bit more complicated.
+{rant mode}
+Who came up with the idea of making life simpler by adding a code path?
+All these problems were already solved for device nodes. Ioctl is ugly, but
+at least a known code path.
+{rant off}
 
-Regards,
-Jarek P.
+> (BTW, the sysfs core would actually need more than a kref.  It would also 
+> need a pointer to a release routine -- the kref contains only the atomic
+
+Yes, this is implied.
+
+	Regards
+		Oliver
