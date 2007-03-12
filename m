@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXCLI0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965322AbXCLI1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965292AbXCLI0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 04:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXCLI0T
+	id S965322AbXCLI1Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 04:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXCLI1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 04:26:19 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:15473
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965292AbXCLI0S (ORCPT
+	Mon, 12 Mar 2007 04:27:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40421 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965322AbXCLI1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 04:26:18 -0400
-Message-Id: <45F51C25.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Mon, 12 Mar 2007 08:23:49 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Cc: "Andi Kleen" <ak@muc.de>,
-       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] BUILD_BUG_ON_ZERO -> BUILD_BUG_OR_ZERO
-References: <1173655694.32234.213.camel@localhost.localdomain>
-In-Reply-To: <1173655694.32234.213.camel@localhost.localdomain>
+	Mon, 12 Mar 2007 04:27:24 -0400
+Date: Mon, 12 Mar 2007 08:27:19 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Dmitriy Monakhov <dmonakhov@sw.ru>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, devel@openvz.org
+Subject: Re: [PATCH 1/2] mm: move common segment checks to separate helper function (v6)
+Message-ID: <20070312082719.GC14831@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Dmitriy Monakhov <dmonakhov@sw.ru>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Nick Piggin <npiggin@suse.de>, devel@openvz.org
+References: <878xe2rj0e.fsf@sw.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <878xe2rj0e.fsf@sw.ru>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have to admit that I don't see the point here - I can't seem to make any sense of the OR... Jan
+On Mon, Mar 12, 2007 at 10:57:53AM +0300, Dmitriy Monakhov wrote:
+> +/*
+> + * Performs necessary checks before doing a write
+> + *
+> + * Adjust number of segments and amount of bytes to write.
+> + * Returns appropriate error code that caller should return or
+> + * zero in case that write should be allowed.
+> + */
+> +inline int generic_segment_checks(const struct iovec *iov,
+> +			unsigned long *nr_segs, size_t *count,
+> +			unsigned long access_flags)
 
->>> Rusty Russell <rusty@rustcorp.com.au> 12.03.07 00:28 >>>
-BUILD_BUG_ON_ZERO is named perfectly wrong, and BUILD_BUG_ON_RETURN_ZERO
-is too long.  Flip three bits, and the name is much more suitable.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff -r 6fb745a5bb51 include/linux/compiler-gcc.h
---- a/include/linux/compiler-gcc.h	Mon Mar 12 09:12:20 2007 +1100
-+++ b/include/linux/compiler-gcc.h	Mon Mar 12 09:51:18 2007 +1100
-@@ -24,7 +24,7 @@
- 
- /* &a[0] degrades to a pointer: a different type from an array */
- #define __must_be_array(a) \
--  BUILD_BUG_ON_ZERO(__builtin_types_compatible_p(typeof(a), typeof(&a[0])))
-+  BUILD_BUG_OR_ZERO(__builtin_types_compatible_p(typeof(a), typeof(&a[0])))
- 
- #define inline		inline		__attribute__((always_inline))
- #define __inline__	__inline__	__attribute__((always_inline))
-diff -r 6fb745a5bb51 include/linux/kernel.h
---- a/include/linux/kernel.h	Mon Mar 12 09:12:20 2007 +1100
-+++ b/include/linux/kernel.h	Mon Mar 12 09:51:25 2007 +1100
-@@ -341,7 +341,7 @@ struct sysinfo {
-    result (of value 0 and type size_t), so the expression can be used
-    e.g. in a structure initializer (or where-ever else comma expressions
-    aren't permitted). */
--#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
-+#define BUILD_BUG_OR_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
- 
- /* Trap pasters of __FUNCTION__ at compile-time */
- #define __FUNCTION__ (__func__)
-diff -r 6fb745a5bb51 include/linux/moduleparam.h
---- a/include/linux/moduleparam.h	Mon Mar 12 09:12:20 2007 +1100
-+++ b/include/linux/moduleparam.h	Mon Mar 12 09:51:42 2007 +1100
-@@ -65,7 +65,7 @@ struct kparam_array
- #define __module_param_call(prefix, name, set, get, arg, perm)		\
- 	/* Default value instead of permissions? */			\
- 	static int __param_perm_check_##name __attribute__((unused)) =	\
--	BUILD_BUG_ON_ZERO((perm) < 0 || (perm) > 0777 || ((perm) & 2));	\
-+	BUILD_BUG_OR_ZERO((perm) < 0 || (perm) > 0777 || ((perm) & 2));	\
- 	static char __param_str_##name[] = prefix #name;		\
- 	static struct kernel_param const __param_##name			\
- 	__attribute_used__						\
-
-
+Why isn't this static?  Also I doubt that we want to inline this function.
