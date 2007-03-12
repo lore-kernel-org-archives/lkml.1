@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965539AbXCLK7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965533AbXCLLDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965539AbXCLK7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 06:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965538AbXCLK7S
+	id S965533AbXCLLDI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 07:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965535AbXCLLDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 06:59:18 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:43166 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965534AbXCLK7Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 06:59:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=PT+n1EpImv0CfU331SL2RA8CQqfRGruyg/IlLHATyNYS2EnSC+OiDmfVDb2syjjCcpEQCZWvGn/LqtjmdUzyn/mKsBBKHrGD+1MVakOPhjhSCC+yLPaDX9hjG8vZU5fEWIWEZk3RYQf3oa0+8CiyzKuRBjMvJNYW5k8oevVMoHc=
-Message-ID: <45F53282.5040504@gmail.com>
-Date: Mon, 12 Mar 2007 19:59:14 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Soeren Sonnenburg <kernel@nn7.de>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Len Brown <lenb@kernel.org>
-Subject: Re: s2ram still broken with CONFIG_NO_HZ / HPET (macbook pro)
-References: <1173645941.4204.5.camel@localhost>
-In-Reply-To: <1173645941.4204.5.camel@localhost>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------040209020702070605060702"
+	Mon, 12 Mar 2007 07:03:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48198 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965534AbXCLLDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 07:03:07 -0400
+Date: Mon, 12 Mar 2007 12:02:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, drepper@redhat.com, oleg@tv-sign.ru,
+       sebastien.dugue@bull.net, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] change futex_wait() to hrtimers
+Message-ID: <20070312110204.GD2231@elte.hu>
+References: <200703110814.l2B8EaI1007615@shell0.pdx.osdl.net> <20070312011259.3834A1801C4@magilla.sf.frob.com> <20070312091006.GF21024@elte.hu> <20070312091628.GE28546@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070312091628.GE28546@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040209020702070605060702
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Soeren Sonnenburg wrote:
-> Elsewise I still see the
+* Nick Piggin <npiggin@suse.de> wrote:
+
+> > i dont think we should try to do this. We should not and cannot do 
+> > anything about all of the artifacts that comes with the use of 
+> > relative timeouts and schedule_timeout().
+> > 
+> > basically, using jiffies here (which schedule_timeout() does) is 
+> > /fundamentally/ imprecise. If you get many interrupts, rounding 
+> > errors sum up - and there's nothing we can do about it!
 > 
-> ATA: abnormal status 0x80 on port 0x000140df
-> ATA: abnormal status 0x80 on port 0x000140df
-> ata1.00: configured for UDMA/33
-> ata3.01: revalidation failed (errno=-2)
-> ata3: failed to recover some devices, retrying in 5 secs
-> ATA: abnormal status 0x7F on port 0x000140df
-> ATA: abnormal status 0x7F on port 0x000140df
-> ata3.01: configured for UDMA/133
+> Well I did convert futex_wait to an absolute timeout based version in 
+> the subsequent incremental patch. I think that is OK?
 
-I can't tell much about HPET timer, only the ATA messages.
+it still has the rounding artifacts: using timer_list there is no way to 
+do a precise long sleep based on many small sleeps.
 
-Abnormal messages can be ignored.  Hmmm... revalidation failed without
-explaining why.  Can you apply the attached patch and see whether the
-added message gets printed?
+even if this means more work for you (i'm sorry about that!) i'm quite 
+sure we should take Sebastien's hrtimers based implementation of 
+futex_wait(), and use the nanosleep method to restart it. There's no 
+point in further tweaking the imprecise approach: whenever some timeout 
+needs to be restarted, it's a candidate for hrtimers.
 
--- 
-tejun
+until then, glibc already handles timeouts and restarts it manually.
 
---------------040209020702070605060702
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch"
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 14629a3..50a7954 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -1484,8 +1484,8 @@ int ata_dev_read_id(struct ata_device *dev, unsigned int *p_class,
- 				     id, sizeof(id[0]) * ATA_ID_WORDS);
- 	if (err_mask) {
- 		if (err_mask & AC_ERR_NODEV_HINT) {
--			DPRINTK("ata%u.%d: NODEV after polling detection\n",
--				ap->print_id, dev->devno);
-+			ata_dev_printk(dev, KERN_INFO,
-+				       "NODEV after polling detection\n");
- 			return -ENOENT;
- 		}
- 
-
---------------040209020702070605060702--
+	Ingo
