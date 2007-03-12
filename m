@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965371AbXCLIzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965369AbXCLJAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965371AbXCLIzh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 04:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbXCLIzh
+	id S965369AbXCLJAI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 05:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965379AbXCLJAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 04:55:37 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40952 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965375AbXCLIzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 04:55:36 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+Ig9wYnceIm02d0cqrqDo2FIIrClmmNdM8hj2oYf
-	bJzEC3nygz1FVD
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703121929.39702.kernel@kolivas.org>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <1173684174.6659.13.camel@Homer.simpson.net>
-	 <200703121848.44714.kernel@kolivas.org>
-	 <200703121929.39702.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Mon, 12 Mar 2007 09:55:33 +0100
-Message-Id: <1173689733.6748.18.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Mon, 12 Mar 2007 05:00:08 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:46678 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965369AbXCLJAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 05:00:06 -0400
+Message-ID: <45F51709.1010409@sw.ru>
+Date: Mon, 12 Mar 2007 12:02:01 +0300
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Herbert Poetzl <herbert@13thfloor.at>
+CC: Andrew Morton <akpm@linux-foundation.org>, Kirill Korotaev <dev@sw.ru>,
+       containers@lists.osdl.org, menage@google.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru> <20070306140036.4e85bd2f.akpm@linux-foundation.org> <45F3F581.9030503@sw.ru> <20070311045111.62d3e9f9.akpm@linux-foundation.org> <20070312010039.GC21861@MAIL.13thfloor.at>
+In-Reply-To: <20070312010039.GC21861@MAIL.13thfloor.at>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-12 at 19:29 +1100, Con Kolivas wrote:
+>>> Maybe you have some ideas how we can decide on this?
+>> We need to work out what the requirements are before we can 
+>> settle on an implementation.
+> 
+> Linux-VServer (and probably OpenVZ):
+> 
+>  - shared mappings of 'shared' files (binaries 
+>    and libraries) to allow for reduced memory
+>    footprint when N identical guests are running
 
-> I'll save you the trouble. I just checked myself and indeed the load is only 
-> 1. What this means is that although there are 2 tasks running, only one is 
-> running at any time making a total load of 1. So, if we add two other tasks 
-> that add 2 more to the load the total load is 3. However if we weight the 
-> other two tasks at nice 5, they only add .75 each to the load making a 
-> weighted total of 2.5. This means that X+Gforce together should get a total 
-> of 1/2.5 or 40% of the overall cpu. That sounds like exactly what you're 
-> describing is happening.
+This is done in current patches.
 
-Hmm.  So... anything that's client/server is going to suffer horribly
-unless niced tasks are niced all the way down to 19?
+>  - virtual 'physical' limit should not cause
+>    swap out when there are still pages left on
+>    the host system (but pages of over limit guests
+>    can be preferred for swapping)
 
-	-Mike
+So what to do when virtual physical limit is hit?
+OOM-kill current task?
+
+>  - accounting and limits have to be consistent
+>    and should roughly represent the actual used
+>    memory/swap (modulo optimizations, I can go
+>    into detail here, if necessary)
+
+This is true for current implementation for
+booth - this patchset ang OpenVZ beancounters.
+
+If you sum up the physpages values for all containers
+you'll get the exact number of RAM pages used.
+
+>  - OOM handling on a per guest basis, i.e. some
+>    out of memory condition in guest A must not
+>    affect guest B
+
+This is done in current patches.
+
+Herbert, did you look at the patches before
+sending this mail or do you just want to
+'take part' in conversation w/o understanding
+of hat is going on?
+
+> HTC,
+> Herbert
+> 
+>> Sigh.  Who is running this show?   Anyone?
+>>
+>> You can actually do a form of overcommittment by allowing multiple
+>> containers to share one or more of the zones. Whether that is
+>> sufficient or suitable I don't know. That depends on the requirements,
+>> and we haven't even discussed those, let alone agreed to them.
+>>
+>> _______________________________________________
+>> Containers mailing list
+>> Containers@lists.osdl.org
+>> https://lists.osdl.org/mailman/listinfo/containers
+> 
 
