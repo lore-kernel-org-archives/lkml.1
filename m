@@ -1,170 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751281AbXCLScQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751379AbXCLSez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751281AbXCLScQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXCLScQ
+	id S1751379AbXCLSez (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbXCLSez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:32:16 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:46734 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbXCLScP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:32:15 -0400
-To: Nick Piggin <npiggin@suse.de>
-Cc: Dmitriy Monakhov <dmonakhov@sw.ru>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org
-Subject: Re: [PATCH 1/2] mm: move common segment checks to separate helper function (v6)
-References: <878xe2rj0e.fsf@sw.ru> <20070312083110.GB28546@wotan.suse.de>
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Mon, 12 Mar 2007 21:32:28 +0300
-In-Reply-To: <20070312083110.GB28546@wotan.suse.de> (Nick Piggin's message of "Mon, 12 Mar 2007 09:31:10 +0100")
-Message-ID: <874poq1fer.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 14:34:55 -0400
+Received: from vms048pub.verizon.net ([206.46.252.48]:63751 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbXCLSez (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 14:34:55 -0400
+Date: Mon, 12 Mar 2007 14:34:48 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+In-reply-to: <200703121238.04191.gene.heskett@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Con Kolivas" <kernel@kolivas.org>,
+       "Radoslaw Szkodzinski" <astralstorm@gmail.com>,
+       "Mike Galbraith" <efault@gmx.de>, "ck list" <ck@vds.kolivas.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+Message-id: <200703121434.48780.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703111457.17624.kernel@kolivas.org>
+ <8cd998d50703120458j6ac9f33h79728f2f599a3b91@mail.gmail.com>
+ <200703121238.04191.gene.heskett@gmail.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> writes:
+On Monday 12 March 2007, Gene Heskett wrote:
+>On Monday 12 March 2007, Con Kolivas wrote:
+>>On 12/03/07, Gene Heskett <gene.heskett@gmail.com> wrote:
+>>> On Monday 12 March 2007, Gene Heskett wrote:
+>>> >To Con, I knew 2.6.20 worked with your earlier patches, so rather
+>>> > than revert all the way, I just rebooted to 2.6.20.2-rdsl-0.30 and
+>>> > I'm going to fire off another backup.  I suspect it will work, but
+>>> > will advise the next time I wake up.
+>>>
+>>> After posting the above, I thought maybe I'd hit a target in the
+>>> middle and build a 2.6.20.2, with your -0.30 patch, but...
+>>>
+>>> I'm going to have to build a 2.6.20.2, because with the rdsl-0.30
+>>> patch, its going to do a level 2 on my /usr/movies directory, which
+>>> hasn't been touched in 90 days and has about 8.1GB in it according to
+>>> du, and its going to do nearly all of it.  It shouldn't be anything
+>>> but a directory listing file. But this is what amstatus is reporting:
+>>> coyote:/usr/movies            2     7271m dumping      793m ( 10.91%)
+>>> (7:26:00)
+>>>
+>>> And its also reporting far more data than exists it seems. As is du,
+>>> for /var, which might have 2 gigs, its claiming 3.7!
+>>>
+>>> Honest folks, I'm not smoking anything, I quit 18 years ago.  Back to
+>>> bed while this one bombs out too.
+>>>
+>>> --
+>>> Cheers, Gene
+>>
+>>Gene your last good kernel you said was 2.6.20 based. I don't see a
+>>good reason even to use 2.6.20.2 as a base given that information.
+>
+>I have 2.6.20.1 building now.  I know that 2.6.20-ck1 worked well, so
+> now I walking fwd from 2.6.20, trying to bisect it.  .1 wasn't much of
+> a patch, but who knows at this point, I'm not 'the shadow' in a 65 year
+> old radio show.  And it looks like that build is done, so here goes the
+> next test.
+>
+>The worst thing about this is that amanda's database is being hosed
+>everytime this happens, and it's been 3 runs in a row, in a dumpcycle of
+>5, where this has occurred.  I can do one more bad run by pre-clearing
+>the vtape +1 that's it is going to use each time because the partition
+>being used for vtapes is sitting at about 93% utilization now.  Normal
+>life, its about 84%, it is a 175GB partition.  That also is stirring
+>around in the old girls database when I kill stuff she thinks is there,
+>but its also about 3 dumpcycles back and pretty much out of the picture
+>so she will recover in a couple of dumpcycles once I find this, if
+> indeed I do.
+>
+>You've cooked up patches for all this, so it 2.6.20.1 works ok, then I
+> try your patch on that one.  I tried 2.6.21-rc1, and it bombed too, but
+> I just figured that was an -rc1, and we're expected to lose a pint of
+> blood at most any -rc1 aren't we?, so I didn't give it any great
+> thought and reverted till -rc2 came out.  But I ramble &
+> times-a-wasting.
+>
+For those following this thread, testing is halted momentarily due to a 
+bug in my amanda wrapper scripts discovered when I told it to do a flush 
+so the next run had a clean slate.  Alan Pearson and I are exchanging 
+emails on that.  The script problem however is not connected to this, its 
+just that the wrapper needs to be right under all conditions and it 
+wasn't.  A few hours lag here.
 
-> On Mon, Mar 12, 2007 at 10:57:53AM +0300, Dmitriy Monakhov wrote:
->> I realy don't want to be annoying by sending this patcheset over and over
->> again. If anyone think this patch is realy cappy, please comment what 
->> exectly is bad. Thank you.
->
-> Doesn't seem like a bad idea.
->
->> 
->> Changes:
->>   - patch was split in two patches.
+Does anybody on the Cc: list need off it?
 
->> +/*
->> + * Performs necessary checks before doing a write
->> + *
->> + * Adjust number of segments and amount of bytes to write.
->> + * Returns appropriate error code that caller should return or
->> + * zero in case that write should be allowed.
->> + */
->> +inline int generic_segment_checks(const struct iovec *iov,
->> +			unsigned long *nr_segs, size_t *count,
->> +			unsigned long access_flags)
->
-> Make it static and not inline, and the compiler will work it out.
-Wow i've just carefully checked and found more functions with duplicating code:
-fs/xfs/linux-2.6/xfs_lrw.c:655 xfs_write()
-fs/ntfs/file.c:2339 ntfs_file_aio_write_nolock()
-So i think nobody will object against exporting generic_segment_checks()
-and removing doplicating code.
->
-> This function name doesn't really imply that it returns you the
-> nr_segs and count, but that's not a big deal I guess.
->
-> You also don't say that nr_segs should be initialised to the amount
-> you which to write, while count must be initialised to zero.
->
->> +{
->> +	unsigned long   seg;
->> +	for (seg = 0; seg < *nr_segs; seg++) {
->> +		const struct iovec *iv = &iov[seg];
->> +
->> +		/*
->> +		 * If any segment has a negative length, or the cumulative
->> +		 * length ever wraps negative then return -EINVAL.
->> +		 */
->> +		*count += iv->iov_len;
->> +		if (unlikely((ssize_t)(*count|iv->iov_len) < 0))
->> +			return -EINVAL;
->> +		if (access_ok(access_flags, iv->iov_base, iv->iov_len))
->> +			continue;
->
-> Why now insert the above test, and put the below statements inside the
-> branch? OTOH, that makes it less obviously c&p from the others. Maybe
-> a subsequent patch.
->
->> +		if (seg == 0)
->> +			return -EFAULT;
->> +		*nr_segs = seg;
->> +		*count -= iv->iov_len;	/* This segment is no good */
->> +		break;
->> +	}
->
->
-> You could assign to *count here, once, and remove the requirement
-> that the caller initialised it to zero?
->
->> +	return 0;
->> +}
->> +
->>  /**
->>   * generic_file_aio_read - generic filesystem read routine
->>   * @iocb:	kernel I/O control block
->> @@ -1180,24 +1213,9 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
->>  	loff_t *ppos = &iocb->ki_pos;
->>  
->>  	count = 0;
->> -	for (seg = 0; seg < nr_segs; seg++) {
->> -		const struct iovec *iv = &iov[seg];
->> -
->> -		/*
->> -		 * If any segment has a negative length, or the cumulative
->> -		 * length ever wraps negative then return -EINVAL.
->> -		 */
->> -		count += iv->iov_len;
->> -		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
->> -			return -EINVAL;
->> -		if (access_ok(VERIFY_WRITE, iv->iov_base, iv->iov_len))
->> -			continue;
->> -		if (seg == 0)
->> -			return -EFAULT;
->> -		nr_segs = seg;
->> -		count -= iv->iov_len;	/* This segment is no good */
->> -		break;
->> -	}
->> +	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
->> +	if (retval)
->> +		return retval;
->>  
->>  	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
->>  	if (filp->f_flags & O_DIRECT) {
->> @@ -2094,30 +2112,14 @@ __generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
->>  	size_t ocount;		/* original count */
->>  	size_t count;		/* after file limit checks */
->>  	struct inode 	*inode = mapping->host;
->> -	unsigned long	seg;
->>  	loff_t		pos;
->>  	ssize_t		written;
->>  	ssize_t		err;
->>  
->>  	ocount = 0;
->> -	for (seg = 0; seg < nr_segs; seg++) {
->> -		const struct iovec *iv = &iov[seg];
->> -
->> -		/*
->> -		 * If any segment has a negative length, or the cumulative
->> -		 * length ever wraps negative then return -EINVAL.
->> -		 */
->> -		ocount += iv->iov_len;
->> -		if (unlikely((ssize_t)(ocount|iv->iov_len) < 0))
->> -			return -EINVAL;
->> -		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
->> -			continue;
->> -		if (seg == 0)
->> -			return -EFAULT;
->> -		nr_segs = seg;
->> -		ocount -= iv->iov_len;	/* This segment is no good */
->> -		break;
->> -	}
->> +	err = generic_segment_checks(iov, &nr_segs, &ocount, VERIFY_READ);
->> +	if (err)
->> +		return err;
->>  
->>  	count = ocount;
->>  	pos = *ppos;
->> -- 
->> 1.5.0.1
->> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>>--
+>>-ck
 
+
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+"I am ecstatic that some moron re-invented a 1995 windows fuckup."
+        -- Alan Cox
