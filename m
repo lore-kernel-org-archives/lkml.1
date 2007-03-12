@@ -1,103 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbXCLTXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbXCLTbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbXCLTXp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 15:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbXCLTXp
+	id S1752443AbXCLTbf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 15:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbXCLTbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 15:23:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41108 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631AbXCLTXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 15:23:43 -0400
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: TCP MSG_PEEK kernel assertions ...
-Date: Mon, 12 Mar 2007 12:22:23 -0700
-Organization: OSDL
-Message-ID: <20070312122223.3d5d7f48@freekitty>
-References: <8C930983B0855DF-1728-4769@webmail-dd15.sysops.aol.com>
-	<8C930AB112CB842-1728-4DAC@webmail-dd15.sysops.aol.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Trace: build.pdx.osdl.net 1173727343 30808 10.8.0.54 (12 Mar 2007 19:22:23 GMT)
-X-Complaints-To: abuse@osdl.org
-NNTP-Posting-Date: Mon, 12 Mar 2007 19:22:23 +0000 (UTC)
-X-Newsreader: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+	Mon, 12 Mar 2007 15:31:35 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40590 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752443AbXCLTbe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 15:31:34 -0400
+Date: Mon, 12 Mar 2007 15:31:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oneukum@suse.de>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: refcounting drivers' data structures used in sysfs buffers
+In-Reply-To: <200703121925.01771.oneukum@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0703121527290.3205-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Mar 2007 16:43:10 -0500
-davef1624@aol.com wrote:
+On Mon, 12 Mar 2007, Oliver Neukum wrote:
 
+> > I'm with Dmitry; the whole thing becomes much, much simpler if we put back
+> > your patch and prevent sysfs access after unregistering an attribute 
+> > file.  No API changes are needed, no driver changes are needed, no radical 
+> > core changes are needed,...  All we would have to do is fix the one SCSI 
+> > method to make it use a workqueue.
 > 
->  Hello,
-> 
->   I periodically see the following TCP kernel assertion errors in 
-> /var/log/message
->   (it does seem that networking is eventually able to recover from these 
-> errors):
-> 
->   kernel: KERNEL: assertion (flags & MSG_PEEK) failed at net/ipv4/tcp.c 
-> (1171)
->   kernel: KERNEL: assertion (flags & MSG_PEEK) failed at net/ipv4/tcp.c 
-> (1171)
->   kernel: KERNEL: assertion (tp->copied_seq == tp->rcv_nxt || (flags & 
-> (MSG_PEEK | MSG_TRUNC))) failed at net/ipv4/tcp.c (1235)
->   kernel: KERNEL: assertion (flags & MSG_PEEK) failed at net/ipv4/tcp.c 
-> (1171)
->   kernel: KERNEL: assertion (tp->copied_seq == tp->rcv_nxt || (flags & 
-> (MSG_PEEK | MSG_TRUNC))) failed at net/ipv4/tcp.c (1235)
-> 
->   These errors only seem to occur when using the sk98lin (SysKonnect) 
-> Network Device Driver,
->   and a Yukon Gigabit Ethernet 10/100/1000Base-T Adapter (from Marvell I 
-> believe).
->  (The other NIC cards we're using in-house don't exhibit this issue).
+> Try.
 
-Wrong mailing list. TCP errors should be sent to netdev@vger.kernel.org
+I did.  Didn't you see this message from Saturday:
 
->  I've seen postings concerning this issue over the past year or so,
->   but have not seen a clear resolution and/or understanding of the 
-> root-cause of this issue.
+http://marc.theaimsgroup.com/?l=linux-kernel&m=117355959020831&w=2
 
-Also please include more information, like what kernel version and what
-other networking features you are using like VLAN's, netfiltering, ...
+I sent it to Linus as well as to all of you.  No replies received so far 
+from anybody.
 
->   I'm in the process of upgrading my sk98lin network driver to the 
-> latest from SysKonnect
->  in an attempt to see if this corrects the problem.
+>  I don't like reverting my own code. But I predict he'll tell you that a
+> driver's bond with a device should be represented in a data structure
+> that is to be refcounted.
 
-No, that driver is worse, try the skge driver. The sk98lin driver
-is headed for removal
+:-)
 
->  Does anybody have any insight into this problem?
-> 
->  Best regards,
->  Dave F
-> 
-> 
->   
-> ________________________________________________________________________ 
-> 
->   AOL now offers free email to everyone. Find out more about what's free 
-> from AOL at AOL.com.
->  -
->   To unsubscribe from this list: send the line "unsubscribe linux-net" 
-> in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at http://vger.kernel.org/majordomo-info.html
-> 
-> 
-> ________________________________________________________________________
-> AOL now offers free email to everyone.  Find out more about what's free 
-> from AOL at AOL.com.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Alan Stern
 
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
