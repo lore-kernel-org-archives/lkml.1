@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964989AbXCLEeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965069AbXCLEkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964989AbXCLEeo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 00:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965060AbXCLEeo
+	id S965069AbXCLEkO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 00:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965088AbXCLEkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 00:34:44 -0400
-Received: from mxl144v79.mxlogic.net ([208.65.144.79]:42076 "EHLO
-	p02c11o146.mxlogic.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S964989AbXCLEen (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 00:34:43 -0400
-Date: Mon, 12 Mar 2007 06:35:09 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-Message-ID: <20070312043509.GC19601@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <20070311183709.GB19601@mellanox.co.il> <m1mz2jv9ue.fsf@ebiederm.dsl.xmission.com>
+	Mon, 12 Mar 2007 00:40:13 -0400
+Received: from [212.12.190.145] ([212.12.190.145]:32804 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965069AbXCLEkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 00:40:11 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Con Kolivas <kernel@kolivas.org>
+Subject: Re: [ANNOUNCE] RSDL completely fair starvation free interactive cpu scheduler
+Date: Mon, 12 Mar 2007 07:42:40 +0300
+User-Agent: KMail/1.5
+Cc: ck list <ck@vds.kolivas.org>, linux-kernel@vger.kernel.org
+References: <200703042335.26785.a1426z@gawab.com> <200703120852.05857.kernel@kolivas.org> <200703120912.24156.kernel@kolivas.org>
+In-Reply-To: <200703120912.24156.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1mz2jv9ue.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
-X-OriginalArrivalTime: 12 Mar 2007 04:37:25.0611 (UTC) FILETIME=[22292BB0:01C76460]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1526-3.6.1039-15044.001
-X-TM-AS-Result: No--15.310800-4.000000-31
-X-Spam: [F=0.2347753992; S=0.234(2007030701)]
-X-MAIL-FROM: <mst@mellanox.co.il>
-X-SOURCE-IP: [194.90.237.34]
+Message-Id: <200703120742.41041.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Eric W. Biederman <ebiederm@xmission.com>:
-> Subject: Re: SATA resume slowness, e1000 MSI warning
-> 
-> "Michael S. Tsirkin" <mst@mellanox.co.il> writes:
-> 
-> > OK I guess. I gather we assume writing read-only registers has no side effects?
-> > Are there rumors circulating wrt to these?
-> 
-> I haven't heard anything about that, and if we are writing the same value back
-> it should be pretty safe.
-> 
-> I have heard it asserted that at least one version of the pci spec
-> only required 32bit accesses to be supported by the hardware.  One of
-> these days I will have to look that and see if it is true.
+Con Kolivas wrote:
+> On Monday 12 March 2007 08:52, Con Kolivas wrote:
+> > And thank you! I think I know what's going on now. I think each rotation
+> > is followed by another rotation before the higher priority task is
+> > getting a look in in schedule() to even get quota and add it to the
+> > runqueue quota. I'll try a simple change to see if that helps. Patch
+> > coming up shortly.
+>
+> Can you try the following patch and see if it helps. There's also one
+> minor preemption logic fix in there that I'm planning on including.
+> Thanks!
 
-Maybe. But surely before the PCI-X days.
+Applied on top of v0.28 mainline, and there is no difference.
 
-> I do know
-> it can be weird for hardware developers to support multiple kinds of
-> decode.
+What's it look like on your machine?
 
-Is this the only place where Linux uses pci_read_config_word/pci_read_config_dword?
-I think such hardware will be pretty much DOA on all OS-es.  Why don't we wait
-and see whether someone reports a broken config?
 
-> As I recall for pci and pci-x at the hardware level the only
-> difference in between 32bit transactions and smaller ones is the state
-> of the byte-enable lines.
+Thanks!
 
-True, and same holds for PCI-Express.
+--
+Al
 
-So let's assume hardware implements RO correctly but ignores the BE bits -
-nothing bad happens then, right?
-
--- 
-MST
