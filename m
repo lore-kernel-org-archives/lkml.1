@@ -1,53 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030703AbXCLQ6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030660AbXCLQ7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030703AbXCLQ6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 12:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030679AbXCLQ6Y
+	id S1030660AbXCLQ7z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 12:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030672AbXCLQ7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 12:58:24 -0400
-Received: from mga02.intel.com ([134.134.136.20]:34277 "EHLO mga02.intel.com"
+	Mon, 12 Mar 2007 12:59:55 -0400
+Received: from tapsys.com ([72.36.178.242]:41481 "EHLO tapsys.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030673AbXCLQ6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 12:58:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,275,1170662400"; 
-   d="scan'208"; a="208121501:sNHT47222273"
-Date: Mon, 12 Mar 2007 09:55:28 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, len.brown@intel.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: libata-acpi: allow _GTF on SATA, but disable on PATA for now
-Message-Id: <20070312095528.3dd7a693.kristen.c.accardi@intel.com>
-In-Reply-To: <20070310164059.4ba68bcc@lxorguk.ukuu.org.uk>
-References: <200703100559.l2A5x6kP017578@hera.kernel.org>
-	<45F296B9.7000005@garzik.org>
-	<20070310164059.4ba68bcc@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1030660AbXCLQ7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 12:59:54 -0400
+Message-ID: <45F58707.1@madrabbit.org>
+Date: Mon, 12 Mar 2007 12:59:51 -0400
+From: Ray Lee <ray-lk@madrabbit.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Len Brown <lenb@kernel.org>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       Vladimir Lebedev <vladimir.p.lebedev@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: ACPI: resolve GPE immediate wakeup regression
+References: <45F0C018.2020409@madrabbit.org> <45F24DCE.8060902@madrabbit.org> <200703121142.46705.lenb@kernel.org>
+In-Reply-To: <200703121142.46705.lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Mar 2007 16:40:59 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Len Brown wrote:
+> On Saturday 10 March 2007 01:18, Ray Lee wrote:
+>> Ray Lee wrote:
+>>> In 2.6.21-rc1,2,3, my laptop will fully suspend to ram, but then
+>>> *immediately* resumes back from suspension. (It resumes just fine, as well.)
+>> [...]
+>>> HP/Compaq NX6125 system, AMD64, dmesg attached.
+> 
+> I'd rather not break the Acer, if possible.
+> 
+> Ray, Please test the incremental patch below.
 
-> Instead merge the one that fixe the non PCI
-> crashes and we might get further.
+Tested and Alexey's patch (copied below) fixes the problem. I added a
+signed-off-by just in case; feel free to yank it if inappropriate.
+Regardless, please apply.
 
-In bugzilla #7907 you could post your patch and see if the reporters there
-can at least confirm that it fixes their problem.
+Thanks Len, Alexey.
 
-Meanwhile, to solve the problem for these people, and without introducing
-a lot of new code at this stage in the release, perhaps you can suggest 
-a more accurate way to detect PATA vs. SATA so we can fix the bug?  Either 
-that or Len should drop the ATA ACPI support from 2.6.21 altogether and
-we should try to coordinate our efforts better for 2.6.22.  The alternative
-to dropping the ACPI support is to set the default for libata.acpi to off.
+Ray
+---
+Subject: ACPI: resolve GPE immediate wakeup regression
+From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
 
-Thanks,
-Kristen
+Removing disabling of GPEs from enter_sleep function causes regression
+on nx6125.
+Doing disable_all_gpes both in prepare to sleep and in enter sleep
+resolves regression,
+while still fixes Acer notebooks.
+
+Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Ray Lee <ray-lk@madrabbit.org>
+---
+
+ drivers/acpi/hardware/hwsleep.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/acpi/hardware/hwsleep.c
+b/drivers/acpi/hardware/hwsleep.c
+index 8fa9312..c84b1fa 100644
+--- a/drivers/acpi/hardware/hwsleep.c
++++ b/drivers/acpi/hardware/hwsleep.c
+@@ -300,6 +300,11 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8
+sleep_state)
+ 	/*
+ 	 * 2) Enable all wakeup GPEs
+ 	 */
++	status = acpi_hw_disable_all_gpes();
++	if (ACPI_FAILURE(status)) {
++		return_ACPI_STATUS(status);
++	}
++
+ 	acpi_gbl_system_awake_and_running = FALSE;
+
+ 	status = acpi_hw_enable_all_wakeup_gpes();
+
+
