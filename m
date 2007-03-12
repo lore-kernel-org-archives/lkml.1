@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXCLKoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965520AbXCLKrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965521AbXCLKoP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 06:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965526AbXCLKoP
+	id S965520AbXCLKrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 06:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965526AbXCLKrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 06:44:15 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:63958 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965521AbXCLKoO (ORCPT
+	Mon, 12 Mar 2007 06:47:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:38724 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965520AbXCLKrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 06:44:14 -0400
+	Mon, 12 Mar 2007 06:47:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=qS4sOjLzHYmlJGyMxWT6yUeHN1Bj4D3RVaowIiJccvaqkcM/FRuJmHW9o0x8yAFnetCgxop67P19an57NsSCOsVorXeGVHWO/GiCgJW13Q1zPS51iOYbm9D/BO5orAfvEiw9Sv/cQkHg31wNpk7U4IsJtM71UDp57vm8UDyF7u4=
-Message-ID: <84144f020703120344n3f5ed52axf0bc1c109b549535@mail.gmail.com>
-Date: Mon, 12 Mar 2007 12:44:12 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Valerie Henson" <val_henson@linux.intel.com>
-Subject: Re: [patch 4/4] [TULIP] Rev tulip version
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Jeff Garzik" <jeff@garzik.org>
-In-Reply-To: <20070312095912.743760000@linux.intel.com>
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=oGQAzYrU7upUkIkhA8BEYX7MlyOh+DstSPufkGWQUFgMI+SwuCsz3wMUdexrCTo7/tSLtMHlR4DYQ5ekQ1G2Ge9rtXfuGWDpO8xaYWidNIhoj/+l0FcAiIVb1KVnbQ1yLYbRhEp/HMzLgdvbc5yCk2m1ep/9LFCtIiI0srTEcpU=
+Date: Mon, 12 Mar 2007 12:45:48 +0200
+To: Amit Choudhary <amit2030@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] drivers/media/video/videocodec.c: check kmalloc() return value.
+Message-ID: <20070312104548.GA26264@Ahmed>
+References: <20070308231401.42679647.amit2030@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070312093128.577087000@linux.intel.com>
-	 <20070312095912.743760000@linux.intel.com>
-X-Google-Sender-Auth: 22a04db83d4c2ebd
+In-Reply-To: <20070308231401.42679647.amit2030@gmail.com>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Amit,
 
-On 3/12/07, Valerie Henson <val_henson@linux.intel.com> wrote:
-> --- tulip-2.6-mm-linux.orig/drivers/net/tulip/tulip_core.c
-> +++ tulip-2.6-mm-linux/drivers/net/tulip/tulip_core.c
-> @@ -17,11 +17,11 @@
->
->  #define DRV_NAME       "tulip"
->  #ifdef CONFIG_TULIP_NAPI
-> -#define DRV_VERSION    "1.1.14-NAPI" /* Keep at least for test */
-> +#define DRV_VERSION    "1.1.15-NAPI" /* Keep at least for test */
->  #else
-> -#define DRV_VERSION    "1.1.14"
-> +#define DRV_VERSION    "1.1.15"
->  #endif
-> -#define DRV_RELDATE    "May 11, 2002"
-> +#define DRV_RELDATE    "Feb 27, 2007"
+On Thu, Mar 08, 2007 at 11:14:01PM -0800, Amit Choudhary wrote:
+> Description: Check the return value of kmalloc() in function 
+> videocodec_build_table(), in file drivers/media/video/videocodec.c.
 
-Why not just drop this? What purpose does a per-module revision have
-for in-kernel drivers anyway?
+No need for `Description:'. This line is automatically put in the logs 
+as a patch description if the patch got accepted. 
 
-                                      Pekka
+It's better not to use very large lines. 
+
+Also there's no need to specify the exact function in the log, it's already
+displayed in the patch.
+
+> 
+> Signed-off-by: Amit Choudhary <amit2030@gmail.com>
+> 
+
+As said in Documentation/SubmittingPatches put a "---" line after
+Signed-off-by signature.
+
+Thanks,
+
+-- 
+Ahmed S. Darwish
+http://darwish.07.googlepages.com
+
