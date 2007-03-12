@@ -1,246 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbXCLUUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbXCLUVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752867AbXCLUUM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 16:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXCLUUM
+	id S1752859AbXCLUVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 16:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbXCLUVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 16:20:12 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:8675 "EHLO relay.sw.ru"
+	Mon, 12 Mar 2007 16:21:22 -0400
+Received: from mga03.intel.com ([143.182.124.21]:19848 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752867AbXCLUUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 16:20:09 -0400
-To: linux-kernel@vger.kernel.org
-CC: Nick Piggin <npiggin@suse.de>, devel@openvz.org, xfs@oss.sgi.com,
-       linux-ntfs-dev@lists.sourceforge.net
-Subject: [PATCH 1/2] mm: move common segment checks to separate helper function (v7)
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-Date: Mon, 12 Mar 2007 23:19:31 +0300
-Message-ID: <87veh6z030.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	id S1752859AbXCLUVU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 16:21:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,275,1170662400"; 
+   d="scan'208"; a="194899691:sNHT19374481"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] NET: Multiple queue network device support
+Date: Mon, 12 Mar 2007 13:21:16 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC329027335CC@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <20070312085802.GA1664@ff.dom.local>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] NET: Multiple queue network device support
+thread-index: Acdkg/gggoLB5xFYRpaNLuGZAuFArQAXsF0A
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Jarek Poplawski" <jarkao2@o2.pl>, "Thomas Graf" <tgraf@suug.ch>
+Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "David Miller" <davem@davemloft.net>,
+       "Garzik, Jeff" <jgarzik@pobox.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kok, Auke" <auke@foo-projects.org>,
+       "Ronciak, John" <john.ronciak@intel.com>
+X-OriginalArrivalTime: 12 Mar 2007 20:21:18.0001 (UTC) FILETIME=[FDB21A10:01C764E3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes against v6
- - remove duplicated code from xfs,ntfs
- - export generic_segment_checks, because it used by xfs,nfs now.
- - change arguments initialization pocily according to Nick's comments.
 
-Tested with: ltp readv/writev tests
+> -----Original Message-----
+> From: Jarek Poplawski [mailto:jarkao2@o2.pl] 
+> Sent: Monday, March 12, 2007 1:58 AM
+> To: Thomas Graf
+> Cc: Kok, Auke-jan H; David Miller; Garzik, Jeff; 
+> netdev@vger.kernel.org; linux-kernel@vger.kernel.org; 
+> Waskiewicz Jr, Peter P; Brandeburg, Jesse; Kok, Auke; Ronciak, John
+> Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
+> 
+> On 09-03-2007 14:40, Thomas Graf wrote:
+> > * Kok, Auke <auke-jan.h.kok@intel.com> 2007-02-08 16:09
+> >> diff --git a/net/core/dev.c b/net/core/dev.c index 
+> 455d589..42b635c 
+> >> 100644
+> >> --- a/net/core/dev.c
+> >> +++ b/net/core/dev.c
+> >> @@ -1477,6 +1477,49 @@ gso:
+> >>  	skb->tc_verd = SET_TC_AT(skb->tc_verd,AT_EGRESS);
+> >>  #endif
+> >>  	if (q->enqueue) {
+> >> +#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
+> >> +		int queue_index;
+> >> +		/* If we're a multi-queue device, get a queue 
+> index to lock */
+> >> +		if (netif_is_multiqueue(dev))
+> >> +		{
+> >> +			/* Get the queue index and lock it. */
+> >> +			if (likely(q->ops->map_queue)) {
+> >> +				queue_index = q->ops->map_queue(skb, q);
+> >> +				
+> spin_lock(&dev->egress_subqueue[queue_index].queue_lock);
+> >> +				rc = q->enqueue(skb, q);
+> 
+> I'm not sure Dave Miller thought about this place, when he 
+> proposed to save the mapping, but I think this could be not 
+> enough. This place is racy: ->map_queue() is called 2 times 
+> and with some filters (and
+> policies/actions) results could differ. And of course the 
+> subqueue lock doesn't prevent any filter from a config change 
+> in the meantime.
+> 
+> After second reading of this patch I have doubts it's the 
+> proper way to solve the problem: there are many subqueues but 
+> we need a top queue (prio here) to mange them, anyway. So, 
+> why not to build this functionality directly into the queue? 
+> There is no difference for a device if skbs are going from 
+> the subqueue or a class, it is only interested in the mapping 
+> result and a possibility to stop and start a subqueue and to 
+> query its status. All this could be done by adding the 
+> callbacks directly to any classful scheduler or, if not 
+> enough, to write some specialized qdisc based on prio. The 
+> possibility to lock only a subqueue instead of a queue could 
+> be analized independently - current proposal doesn't solve 
+> this anyway.
+> 
+> Regards,
+> Jarek P.
+> 
 
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
----
- fs/ntfs/file.c             |   21 ++---------
- fs/xfs/linux-2.6/xfs_lrw.c |   22 ++----------
- include/linux/fs.h         |    3 ++
- mm/filemap.c               |   83 ++++++++++++++++++++++++-------------------
- 4 files changed, 55 insertions(+), 74 deletions(-)
+Thanks again for the feedback.  Given some discussions I had last week
+in the office and the general feedback here, I'm going to remove the new
+per-queue locking and leave the start/stop functions for each queue and
+combine entry points for hard_start_xmit().  I'll get this out asap for
+review once it's been tested here.  If we see issues in the future with
+lock contention on the queues, we can revisit the per-queue locking.
 
-diff --git a/fs/ntfs/file.c b/fs/ntfs/file.c
-index dbbac55..621de36 100644
---- a/fs/ntfs/file.c
-+++ b/fs/ntfs/file.c
-@@ -2129,28 +2129,13 @@ static ssize_t ntfs_file_aio_write_nolock(struct kiocb *iocb,
- 	struct address_space *mapping = file->f_mapping;
- 	struct inode *inode = mapping->host;
- 	loff_t pos;
--	unsigned long seg;
- 	size_t count;		/* after file limit checks */
- 	ssize_t written, err;
- 
- 	count = 0;
--	for (seg = 0; seg < nr_segs; seg++) {
--		const struct iovec *iv = &iov[seg];
--		/*
--		 * If any segment has a negative length, or the cumulative
--		 * length ever wraps negative then return -EINVAL.
--		 */
--		count += iv->iov_len;
--		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
--			return -EINVAL;
--		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
--			continue;
--		if (!seg)
--			return -EFAULT;
--		nr_segs = seg;
--		count -= iv->iov_len;	/* This segment is no good */
--		break;
--	}
-+	err = generic_segment_checks(iov, &nr_segs, &count, VERIFY_READ);
-+	if (err)
-+		return err;
- 	pos = *ppos;
- 	vfs_check_frozen(inode->i_sb, SB_FREEZE_WRITE);
- 	/* We can write back this queue in page reclaim. */
-diff --git a/fs/xfs/linux-2.6/xfs_lrw.c b/fs/xfs/linux-2.6/xfs_lrw.c
-index ff8d64e..558076d 100644
---- a/fs/xfs/linux-2.6/xfs_lrw.c
-+++ b/fs/xfs/linux-2.6/xfs_lrw.c
-@@ -639,7 +639,6 @@ xfs_write(
- 	xfs_fsize_t		isize, new_size;
- 	xfs_iocore_t		*io;
- 	bhv_vnode_t		*vp;
--	unsigned long		seg;
- 	int			iolock;
- 	int			eventsent = 0;
- 	bhv_vrwlock_t		locktype;
-@@ -652,24 +651,9 @@ xfs_write(
- 	vp = BHV_TO_VNODE(bdp);
- 	xip = XFS_BHVTOI(bdp);
- 
--	for (seg = 0; seg < segs; seg++) {
--		const struct iovec *iv = &iovp[seg];
--
--		/*
--		 * If any segment has a negative length, or the cumulative
--		 * length ever wraps negative then return -EINVAL.
--		 */
--		ocount += iv->iov_len;
--		if (unlikely((ssize_t)(ocount|iv->iov_len) < 0))
--			return -EINVAL;
--		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
--			continue;
--		if (seg == 0)
--			return -EFAULT;
--		segs = seg;
--		ocount -= iv->iov_len;  /* This segment is no good */
--		break;
--	}
-+	error = generic_segment_checks(iovp, &segs, &ocount, VERIFY_READ);
-+	if (error)
-+		return error;
- 
- 	count = ocount;
- 	pos = *offset;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 6a3d22e..3b99450 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1778,6 +1778,9 @@ extern ssize_t generic_file_sendfile(struct file *, loff_t *, size_t, read_actor
- extern void do_generic_mapping_read(struct address_space *mapping,
- 				    struct file_ra_state *, struct file *,
- 				    loff_t *, read_descriptor_t *, read_actor_t);
-+extern int generic_segment_checks(const struct iovec *iov,
-+		unsigned long *nr_segs, size_t *count,
-+		unsigned long access_flags);
- 
- /* fs/splice.c */
- extern ssize_t generic_file_splice_read(struct file *, loff_t *,
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 8e1849a..8bd1ea4 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1159,6 +1159,46 @@ success:
- 	return size;
- }
- 
-+/*
-+ * Performs necessary checks before doing a write
-+ * @iov:	io vector request
-+ * @nr_segs:	number of segments in the iovec
-+ * @count:	number of bytes to write
-+ * @access_flags: type of access: %VERIFY_READ or %VERIFY_WRITE
-+ *
-+ * Adjust number of segments and amount of bytes to write (nr_segs should be
-+ * properly initialized first). Returns appropriate error code that caller 
-+ * should return or zero in case that write should be allowed.
-+ */
-+int generic_segment_checks(const struct iovec *iov,
-+			unsigned long *nr_segs, size_t *count,
-+			unsigned long access_flags)
-+{
-+	unsigned long   seg;
-+	size_t cnt = 0;
-+	for (seg = 0; seg < *nr_segs; seg++) {
-+		const struct iovec *iv = &iov[seg];
-+
-+		/*
-+		 * If any segment has a negative length, or the cumulative
-+		 * length ever wraps negative then return -EINVAL.
-+		 */
-+		cnt += iv->iov_len;
-+		if (unlikely((ssize_t)(cnt|iv->iov_len) < 0))
-+			return -EINVAL;
-+		if (access_ok(access_flags, iv->iov_base, iv->iov_len))
-+			continue;
-+		if (seg == 0)
-+			return -EFAULT;
-+		*nr_segs = seg;
-+		cnt -= iv->iov_len;	/* This segment is no good */
-+		break;
-+	}
-+	*count = cnt;
-+	return 0;
-+}
-+EXPORT_SYMBOL(generic_segment_checks);
-+
- /**
-  * generic_file_aio_read - generic filesystem read routine
-  * @iocb:	kernel I/O control block
-@@ -1180,24 +1220,9 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
- 	loff_t *ppos = &iocb->ki_pos;
- 
- 	count = 0;
--	for (seg = 0; seg < nr_segs; seg++) {
--		const struct iovec *iv = &iov[seg];
--
--		/*
--		 * If any segment has a negative length, or the cumulative
--		 * length ever wraps negative then return -EINVAL.
--		 */
--		count += iv->iov_len;
--		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
--			return -EINVAL;
--		if (access_ok(VERIFY_WRITE, iv->iov_base, iv->iov_len))
--			continue;
--		if (seg == 0)
--			return -EFAULT;
--		nr_segs = seg;
--		count -= iv->iov_len;	/* This segment is no good */
--		break;
--	}
-+	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
-+	if (retval)
-+		return retval;
- 
- 	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
- 	if (filp->f_flags & O_DIRECT) {
-@@ -2094,30 +2119,14 @@ __generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
- 	size_t ocount;		/* original count */
- 	size_t count;		/* after file limit checks */
- 	struct inode 	*inode = mapping->host;
--	unsigned long	seg;
- 	loff_t		pos;
- 	ssize_t		written;
- 	ssize_t		err;
- 
- 	ocount = 0;
--	for (seg = 0; seg < nr_segs; seg++) {
--		const struct iovec *iv = &iov[seg];
--
--		/*
--		 * If any segment has a negative length, or the cumulative
--		 * length ever wraps negative then return -EINVAL.
--		 */
--		ocount += iv->iov_len;
--		if (unlikely((ssize_t)(ocount|iv->iov_len) < 0))
--			return -EINVAL;
--		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
--			continue;
--		if (seg == 0)
--			return -EFAULT;
--		nr_segs = seg;
--		ocount -= iv->iov_len;	/* This segment is no good */
--		break;
--	}
-+	err = generic_segment_checks(iov, &nr_segs, &ocount, VERIFY_READ);
-+	if (err)
-+		return err;
- 
- 	count = ocount;
- 	pos = *ppos;
--- 
-1.5.0.1
-
-
+Cheers,
+-PJ Waskiewicz
