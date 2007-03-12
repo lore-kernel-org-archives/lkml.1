@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751753AbXCLSrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750741AbXCLSsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751753AbXCLSrQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 14:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXCLSrQ
+	id S1750741AbXCLSsW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 14:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXCLSsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 14:47:16 -0400
-Received: from paf87.warszawa.sdi.tpnet.pl ([217.96.225.87]:31364 "EHLO
-	qrnik.knm.org.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751967AbXCLSrP convert rfc822-to-8bit (ORCPT
+	Mon, 12 Mar 2007 14:48:21 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39246 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751746AbXCLSsV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 14:47:15 -0400
-Subject: Re: _proxy_pda still makes linking modules fail
-From: "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <p73lki39s3a.fsf@bingen.suse.de>
-References: <1173315479.12472.9.camel@qrnik>
-	 <p73lki39s3a.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 12 Mar 2007 19:47:06 +0100
-Message-Id: <1173725227.32613.0.camel@qrnik>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 PLD Linux 
+	Mon, 12 Mar 2007 14:48:21 -0400
+From: Oliver Neukum <oneukum@suse.de>
+Organization: Novell
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: [BUG} usb-serial regression in 2.6.21-rc2-git3
+Date: Mon, 12 Mar 2007 19:48:19 +0100
+User-Agent: KMail/1.9.1
+Cc: Greg KH <greg@kroah.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <45F57F63.7010308@rtr.ca> <45F584D9.4090802@rtr.ca>
+In-Reply-To: <45F584D9.4090802@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703121948.21453.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia 12-03-2007, pon o godzinie 02:19 +0100, Andi Kleen napisaÅ‚(a):
+Am Montag, 12. März 2007 17:50 schrieb Mark Lord:
+> Mark Lord wrote:
+> >
+> > Okay, from that part (above), the problem is obvious:
+> > in that the "MCT U232 converter now disconnected" appears,
+> > and then we continue to try and call the driver's method.. Oops!
+> > 
+> > The hack patch below "fixes" this, but it really just hides whatever
+> > the real problem underneath was:
 
-> Hmm, it probably needs a EXPORT_SYMBOL. The previous change only
-> fixed the in kernel build.
-> 
-> Does it work with this patch?
+static void destroy_serial(struct kref *kref):
 
-Yes! Thank you.
+	/* the ports are cleaned up and released in port_release() */
+	for (i = 0; i < serial->num_ports; ++i)
+		if (serial->port[i]->dev.parent != NULL) {
+			device_unregister(&serial->port[i]->dev);
+			serial->port[i] = NULL;
+		}
 
--- 
-   __("<         Marcin Kowalczyk
-   \__/       qrczak@knm.org.pl
-    ^^     http://qrnik.knm.org.pl/~qrczak/
+	if (serial->type->shutdown)
+		serial->type->shutdown(serial);
 
+IMHO shutdown() is using serial->port[] and bombs.
+Could you reverse the order here?
+
+	Regards
+		Oliver
