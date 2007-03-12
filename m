@@ -1,77 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965589AbXCLLQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965618AbXCLLQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965589AbXCLLQG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 07:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965618AbXCLLQG
+	id S965618AbXCLLQh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 07:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965639AbXCLLQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 07:16:06 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:58776 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965589AbXCLLQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 07:16:04 -0400
-Date: Mon, 12 Mar 2007 07:16:03 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-In-reply-to: <f44c5fdf0703112358j4f94998aq9e45b0a6e848551d@mail.gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Radoslaw Szkodzinski" <astralstorm@gmail.com>,
-       "Mike Galbraith" <efault@gmx.de>, "Con Kolivas" <kernel@kolivas.org>,
-       "ck list" <ck@vds.kolivas.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-Message-id: <200703120716.03519.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703111457.17624.kernel@kolivas.org>
- <200703111032.40296.gene.heskett@gmail.com>
- <f44c5fdf0703112358j4f94998aq9e45b0a6e848551d@mail.gmail.com>
-User-Agent: KMail/1.9.6
+	Mon, 12 Mar 2007 07:16:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43154 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965618AbXCLLQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 07:16:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] kthread_should_stop_check_freeze (was: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread)
+Date: Mon, 12 Mar 2007 12:19:11 +0100
+User-Agent: KMail/1.9.5
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Anton Blanchard <anton@samba.org>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Aneesh Kumar <aneesh.kumar@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+References: <200702260800.49603.rjw@sisk.pl> <20070312043854.GA4124@linux.vnet.ibm.com> <20070312081459.GI5242@elf.ucw.cz>
+In-Reply-To: <20070312081459.GI5242@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703121219.12072.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007, Radoslaw Szkodzinski wrote:
->On 3/11/07, Gene Heskett <gene.heskett@gmail.com> wrote:
->> On Sunday 11 March 2007, Mike Galbraith wrote:
->>
->> Just to comment, I've been running one of the patches between 20-ck1
->> and this latest one, which is building as I type, but I also run
->> gkrellm here, version 2.2.9.
->>
->> Since I have been running this middle of this series patch, something
->> is killing gkrellm about once a day, and there is nothing in the logs
->> to indicate a problem.  I see a blink out of the corner of my eye, and
->> its gone.  And it always starts right back up from a kmenu click.
->>
->> No idea if anyone else is experiencing this or not.
->>
->> --
->> Cheers, Gene
->
->I've had such an issue with 0.20 or something. Sometimes, the
->xfce4-panel would disappear (die) when I displayed its menu.
->Very rare issue.
->
->Doesn't happen with 0.28 anyway. :-) Which looks really good, though
->I'll update to 0.30.
+Hi,
 
-And I didn't see it for the few hours I was booted to 21-rc3-rsdl-0.29, 
-but tar sure went berzackers.
+On Monday, 12 March 2007 09:14, Pavel Machek wrote:
+> Hi!
+> 
+> > > > I personally think we should do the opposite, add kthread_should_stop_check_freeze()
+> > > > or something. kthread_should_stop() is like signal_pending(), we can use
+> > > > it under spin_lock (and it is probably used this way by some out-of-tree
+> > > > driver). The new helper is obviously "might_sleep()".
+> > > 
+> > > Something like this, perhaps:
+> > 
+> > Looks good to me!  The other kthread_should_stop() calls in
+> > rcutorture.c should also become kthread_should_top_check_freeze().
+> > 
+> > Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > 
+> > >  include/linux/kthread.h |    1 +
+> > >  kernel/kthread.c        |   16 ++++++++++++++++
+> > >  kernel/rcutorture.c     |    5 ++---
+> > >  3 files changed, 19 insertions(+), 3 deletions(-)
+> > > 
+> > > Index: linux-2.6.21-rc3-mm2/kernel/kthread.c
+> > > ===================================================================
+> > > --- linux-2.6.21-rc3-mm2.orig/kernel/kthread.c	2007-03-08 21:58:48.000000000 +0100
+> > > +++ linux-2.6.21-rc3-mm2/kernel/kthread.c	2007-03-11 18:32:59.000000000 +0100
+> > > @@ -13,6 +13,7 @@
+> > >  #include <linux/file.h>
+> > >  #include <linux/module.h>
+> > >  #include <linux/mutex.h>
+> > > +#include <linux/freezer.h>
+> > >  #include <asm/semaphore.h>
+> > > 
+> > >  /*
+> > > @@ -60,6 +61,21 @@ int kthread_should_stop(void)
+> > >  }
+> > >  EXPORT_SYMBOL(kthread_should_stop);
+> > > 
+> > > +/**
+> > > + * kthread_should_stop_check_freeze - check if the thread should return now and
+> > > + * if not, check if there is a freezing request pending for it.
+> > > + */
+> > > +int kthread_should_stop_check_freeze(void)
+> > > +{
+> > > +	might_sleep();
+> > > +	if (kthread_stop_info.k == current)
+> > > +		return 1;
+> > > +
+> > > +	try_to_freeze();
+> > > +	return 0;
+> > > +}
+> 
+> Can we get better name for this function?
 
-To Con, I knew 2.6.20 worked with your earlier patches, so rather than 
-revert all the way, I just rebooted to 2.6.20.2-rdsl-0.30 and I'm going 
-to fire off another backup.  I suspect it will work, but will advise the 
-next time I wake up.
+Well, I took the name from the Oleg's message.  Can you please suggest
+something?
 
+> Why is it useful?
 
+Because we want to avoid repeating
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The hardest thing is to disguise your feelings when you put a lot of
-relatives on the train for home.
+while (!kthread_should_stop()) {
+	try_to_freeze();
+	...
+}
+
+in many places?
+
+> Caller can do "try_to_freeze()" as well, no? 
+
+Sure, it just eliminates one line of code.
+
+> > >  		}
+> > >  		rcu_torture_current_version++;
+> > >  		oldbatch = cur_ops->completed();
+> > > -		try_to_freeze();
+> > > -	} while (!kthread_should_stop() && !fullstop);
+> > > +	} while (!kthread_should_stop_check_freeze() && !fullstop);
+> > >  	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
+> > > -	while (!kthread_should_stop())
+> > > +	while (!kthread_should_stop_check_freeze())
+> > >  		schedule_timeout_uninterruptible(1);
+> > >  	return 0;
+> 
+> Aha, I see, here it probably becomes handy.
+> 
+> Actually, no... I do not see it. Why don't you simply move first
+> try_to_freeze() to beggining of the loop and do
+> 
+> -   while (!kthread_should_stop()) {
+>              schedule_timeout_uninterruptible(1);
+> 	     try_to_freeze()
+> }
+
+Yes, but then the second loop will contain one more line of code.
+
+Greetings,
+Rafael
