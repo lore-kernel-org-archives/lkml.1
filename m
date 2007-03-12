@@ -1,103 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030299AbXCLPA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030309AbXCLPCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030299AbXCLPA4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 11:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030317AbXCLPAz
+	id S1030309AbXCLPCP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 11:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030325AbXCLPCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 11:00:55 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:37609 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030299AbXCLPAy (ORCPT
+	Mon, 12 Mar 2007 11:02:14 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:53058 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030309AbXCLPCN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 11:00:54 -0400
-Date: Mon, 12 Mar 2007 20:37:56 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       sam@vilain.net, dev@sw.ru, xemul@sw.ru, pj@sgi.com,
-       ebiederm@xmission.com, winget@google.com, containers@lists.osdl.org,
-       "Serge E. Hallyn" <serue@US.IBM.COM>, akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-Message-ID: <20070312150756.GB24742@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070301133543.GK15509@in.ibm.com> <6599ad830703061832w49179e75q1dd975369ba8ef39@mail.gmail.com> <20070307173031.GC2336@in.ibm.com> <20070307174346.GA19521@sergelap.austin.ibm.com> <20070307180055.GC17151@in.ibm.com> <20070307205846.GB7010@sergelap.austin.ibm.com> <6599ad830703071320ib687019h34d2e66c4abc3794@mail.gmail.com> <20070309163430.GN6504@in.ibm.com> <6599ad830703091409s3d233829gb8f0afbfd2883b15@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 11:02:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VNZhi4sOoClvcoZzjDRyF1H5Uk7ryGBtGZOfSk7G3BPq0pqKM5hsi8bxr+lFwoeX4HCFf9c6mmMjNgYDfexkPA6fYg4NVlAi5mlnld9KKCEwBamol3tiJWciXihp52nc6Mfh+wRsjtp+O28zq5goZCGdjinZKfHM5qiY/oF6Es0=
+Message-ID: <45219fb00703120802y78cf4dbds6e89b58de9d0f801@mail.gmail.com>
+Date: Mon, 12 Mar 2007 16:02:11 +0100
+From: "=?ISO-8859-1?Q?Llu=EDs_Batlle?=" <viriketo@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: bug in select() in linux
+In-Reply-To: <20070312160104.25d6b321@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <6599ad830703091409s3d233829gb8f0afbfd2883b15@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+References: <45219fb00703120751t7acd1ae3kb77f556b81a87634@mail.gmail.com>
+	 <20070312160104.25d6b321@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 02:09:35PM -0800, Paul Menage wrote:
-> > 3. This next leads me to think that 'tasks' file in each directory doesnt make
-> >    sense for containers. In fact it can lend itself to error situations (by
-> >    administrator/script mistake) when some tasks of a container are in one
-> >    resource class while others are in a different class.
-> >
-> >         Instead, from a containers pov, it may be usefull to write
-> >         a 'container id' (if such a thing exists) into the tasks file
-> >         which will move all the tasks of the container into
-> >         the new resource class. This is the same requirement we
-> >         discussed long back of moving all threads of a process into new
-> >         resource class.
-> 
-> I think you need to give a more concrete example and use case of what
-> you're trying to propose here. I don't really see what advantage
-> you're getting.
+Oh, of course you're right. I was inside too much layers to think of
+the tcp protocol, and I did not pay attention to it.
 
-Ok, this is what I had in mind:
+Maybe something could be added to the manpage anyway.
 
+The bad thing is that there's no way I can use a socket for writing
+using select() if that connection has been half-closed by the other
+end. Moo.
 
-	mount -t container -o ns /dev/namespace
-	mount -t container -o cpu /dev/cpu
+Thanks a lot for your time,
+Lluís
 
-Lets we have the namespaces/resource-groups created as under:
-
-	/dev/namespace
-		    |-- prof
-		    |	 |- tasks <- (T1, T2)
-		    |    |- container_id <- 1 (doesnt exist today perhaps)
-		    |
-		    |-- student
-		    |    |- tasks <- (T3, T4)
-		    |    |- container_id <- 2 (doesnt exist today perhaps)
-
-	/dev/cpu
-	       |-- prof
-	       |    |-- tasks
-	       |    |-- cpu_limit (40%)
-	       |
-	       |-- student
-	       |    |-- tasks
-	       |    |-- cpu_limit (20%)
-	       |
-	       |
-
-
-Is it possible to create the above structure in container patches? 
-/me thinks so.
-
-If so, then accidentally someone can do this:
-
-	echo T1 > /dev/cpu/prof/tasks
-	echo T2 > /dev/cpu/student/tasks
-
-with the result that tasks of the same container are now in different
-resource classes.
-
-Thats why in case of containers I felt we shldnt allow individual tasks
-to be cat'ed to tasks file. 
-
-Or rather, it may be nice to say :
-
-	echo "cid 2" > /dev/cpu/prof/tasks 
-
-and have all tasks belonging to container id 2 move to the new resource
-group.
-
-
-
--- 
-Regards,
-vatsa
+2007/3/12, Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> > I've tried a select() for write against a closed tcp socket (closed by
+> > the other side), and the select call _blocks_.
+>
+> A TCP close from the remote node is single sided. It sends a FIN and we
+> ACK the FIN, that means only that the remote node has completed *sending*.
+>
+> > Any write() call to that socket will _not block_, and will return with EPIPE.
+>
+> We don't know this until you try the write. At that point the other end
+> if it has closed entirely will issue an RST and terminate the connection
+> in full.
+>
+> I don't therefore believe that this is actually a bug.
+>
+> Alan
+>
