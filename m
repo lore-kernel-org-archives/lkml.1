@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbXCMFGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbXCMFKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753123AbXCMFGE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 01:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXCMFGE
+	id S1753120AbXCMFKv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 01:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbXCMFKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 01:06:04 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:60790 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbXCMFGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 01:06:02 -0400
-Date: Mon, 12 Mar 2007 22:04:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Herbert Poetzl <herbert@13thfloor.at>
-Cc: hansendc@us.ibm.com, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, menage@google.com, xemul@sw.ru
-Subject: Re: [RFC][PATCH 2/7] RSS controller core
-Message-Id: <20070312220439.677b4787.akpm@linux-foundation.org>
-In-Reply-To: <20070312224129.GC21258@MAIL.13thfloor.at>
-References: <45ED7DEC.7010403@sw.ru>
-	<45ED80E1.7030406@sw.ru>
-	<20070306140036.4e85bd2f.akpm@linux-foundation.org>
-	<45F3F581.9030503@sw.ru>
-	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
-	<20070312010039.GC21861@MAIL.13thfloor.at>
-	<1173724979.11945.103.camel@localhost.localdomain>
-	<20070312224129.GC21258@MAIL.13thfloor.at>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	Tue, 13 Mar 2007 01:10:50 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48647 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753120AbXCMFKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 01:10:49 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18GPK9TF2AGgMuQ+SbNwH1xGlCBNKH1ol2v7cYQye
+	M0eI7z3krSmfOZ
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <8cd998d50703121551u44ea3d85g2541503373f461f4@mail.gmail.com>
+References: <200703111457.17624.kernel@kolivas.org>
+	 <200703130549.47058.kernel@kolivas.org>
+	 <1173730314.6431.30.camel@Homer.simpson.net>
+	 <200703130738.19034.kernel@kolivas.org>
+	 <1173732344.6431.54.camel@Homer.simpson.net>
+	 <8cd998d50703121551u44ea3d85g2541503373f461f4@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 13 Mar 2007 06:10:39 +0100
+Message-Id: <1173762639.7944.45.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 12 Mar 2007 23:41:29 +0100 Herbert Poetzl <herbert@13thfloor.at> wrote:
-> On Mon, Mar 12, 2007 at 11:42:59AM -0700, Dave Hansen wrote:
-> > How about we drill down on these a bit more.
-> > 
-> > On Mon, 2007-03-12 at 02:00 +0100, Herbert Poetzl wrote:
-> > >  - shared mappings of 'shared' files (binaries 
-> > >    and libraries) to allow for reduced memory
-> > >    footprint when N identical guests are running
-> > 
-> > So, it sounds like this can be phrased as a requirement like:
-> > 
-> > 	"Guests must be able to share pages."
-> > 
-> > Can you give us an idea why this is so? 
+On Tue, 2007-03-13 at 09:51 +1100, Con Kolivas wrote:
+> On 13/03/07, Mike Galbraith <efault@gmx.de> wrote:
+
+> > As soon as your cpu is fully utilized, fairness looses or interactivity
+> > loses.  Pick one.
 > 
-> sure, one reason for this is that guests tend to
-> be similar (or almost identical) which results
-> in quite a lot of 'shared' libraries and executables
-> which would otherwise get cached for each guest and
-> would also be mapped for each guest separately
+> That's not true unless you refuse to prioritise your tasks
+> accordingly. Let's take this discussion in a different direction. You
+> already nice your lame processes. Why? You already have the concept
+> that you are prioritising things to normal or background tasks. You
+> say so yourself that lame is a background task. Stating the bleedingly
+> obvious, the unix way of prioritising things is via nice. You already
+> do that. So moving on from that...
 
-nooooooo.  What you're saying there amounts to text replication.  There is
-no proposal here to create duplicated copies of pagecache pages: the VM
-just doesn't support that (Nick has soe protopatches which do this as a
-possible NUMA optimisation).
+Sure.  If a user wants to do anything interactive, they can indeed nice
+19 the rest of their box before they start.
 
-So these mmapped pages will contiue to be shared across all guests.  The
-problem boils down to "which guest(s) get charged for each shared page".
+> Your test case you ask "how can I maximise cpu usage". Well you know
+> the answer already. You run two threads. I won't dispute that.
+> 
+> The debate seems to be centered on whether two tasks that are niced +5
+> or to a higher value is background. In my opinion, nice 5 is not
+> background, but relatively less cpu. You already are savvy enough to
+> be using two threads and nicing them. All I ask you to do when using
+> RSDL is to change your expectations slightly and your settings from
+> nice 5 to nice 10 or 15 or even 19. Why is that so offensive to you?
 
-A simple and obvious and easy-to-implement answer is "the guest which paged
-it in".  I think we should firstly explain why that is insufficient.
+It's not "offensive" to me, it is a behavioral regression.  The
+situation as we speak is that you can run cpu intensive tasks while
+watching eye-candy.  With RSDL, you can't, you feel the non-interactive
+load instantly.  Doesn't the fact that you're asking me to lower my
+expectations tell you that I just might have a point?
+
+> Please don't pick 5.none of the above. Please try to work with me on this.
+
+I'm not trying to be pig-headed.  I'm of the opinion that fairness is
+great... until you strictly enforce it wrt interactive tasks.  
+
+	-Mike
 
