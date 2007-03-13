@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbXCMKGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbXCMKH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbXCMKGp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 06:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXCMKGp
+	id S1753202AbXCMKH6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 06:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbXCMKH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 06:06:45 -0400
-Received: from mail04.syd.optusnet.com.au ([211.29.132.185]:34933 "EHLO
-	mail04.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753202AbXCMKGn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 06:06:43 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Date: Tue, 13 Mar 2007 21:06:08 +1100
-User-Agent: KMail/1.9.5
-Cc: Mike Galbraith <efault@gmx.de>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200703111457.17624.kernel@kolivas.org> <1173778398.6810.21.camel@Homer.simpson.net> <20070313093914.GA10533@elte.hu>
-In-Reply-To: <20070313093914.GA10533@elte.hu>
+	Tue, 13 Mar 2007 06:07:58 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:37844 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753202AbXCMKH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 06:07:57 -0400
+Message-ID: <45F67AC9.4080707@sw.ru>
+Date: Tue, 13 Mar 2007 13:19:53 +0300
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: akpm@linux-foundation.org
+CC: Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       hansendc@us.ibm.com, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [Devel] Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>	<20070306140036.4e85bd2f.akpm@linux-foundation.org>	<45F3F581.9030503@sw.ru>	<20070311045111.62d3e9f9.akpm@linux-foundation.org>	<20070312010039.GC21861@MAIL.13thfloor.at>	<1173724979.11945.103.camel@localhost.localdomain>	<20070312224129.GC21258@MAIL.13thfloor.at> <20070312220439.677b4787.akpm@linux-foundation.org>
+In-Reply-To: <20070312220439.677b4787.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703132106.08878.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 March 2007 20:39, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> > I just retested with the encoders at nice 0, and the x/gforce combo is
-> > terrible. [...]
->
-> ok. So nice levels had nothing to do with it - it's some other
-> regression somewhere. How does the vanilla scheduler cope with the
-> exactly same workload? I.e. could you describe the 'delta' difference in
-> behavior - because the delta is what we are interested in mostly, the
-> 'absolute' behavior alone is not sufficient. Something like:
->
->  - on scheduler foo, under this workload, the CPU hogs steal 70% CPU
->    time and the resulting desktop experience is 'choppy': mouse pointer
->    is laggy and audio skips.
->
->  - on scheduler bar, under this workload, the CPU hogs are at 40%
->    CPU time and the desktop experience is smooth.
->
-> things like that - we really need to be able to see the delta.
+Andrew Morton wrote:
+>>>> - shared mappings of 'shared' files (binaries 
+>>>>   and libraries) to allow for reduced memory
+>>>>   footprint when N identical guests are running
+>>>
+>>>So, it sounds like this can be phrased as a requirement like:
+>>>
+>>>	"Guests must be able to share pages."
+>>>
+>>>Can you give us an idea why this is so? 
+>>
+>>sure, one reason for this is that guests tend to
+>>be similar (or almost identical) which results
+>>in quite a lot of 'shared' libraries and executables
+>>which would otherwise get cached for each guest and
+>>would also be mapped for each guest separately
+> 
+> 
+> nooooooo.  What you're saying there amounts to text replication.  There is
+> no proposal here to create duplicated copies of pagecache pages: the VM
+> just doesn't support that (Nick has soe protopatches which do this as a
+> possible NUMA optimisation).
+> 
+> So these mmapped pages will contiue to be shared across all guests.  The
+> problem boils down to "which guest(s) get charged for each shared page".
+> 
+> A simple and obvious and easy-to-implement answer is "the guest which paged
+> it in".  I think we should firstly explain why that is insufficient.
+I guess by "paged it in" you essentially mean
+"mapped the page into address space for the *first* time"?
 
-I only find a slowdown, no choppiness, no audio stutter (it would be extremely 
-hard to make audio stutter in this design without i/o starvation or something 
-along those lines). The number difference in cpu percentage I've already 
-given on the previous email. The graphics driver does feature in this test 
-case as well so others' mileage may vary. Mike said it was terrible.
+i.e. how many times the same page mapped into 2 address spaces
+in the same container should be accounted for?
 
-> > [...]  Funny thing though, x/gforce isn't as badly affected with a
-> > kernel build.  Any build is quite noticable, but even at -j8, the
-> > effect doen't seem to be (very brief test warning applies) as bad as
-> > with only the two encoders running.  That seems quite odd.
->
-> likewise, how does the RSDL kernel build behavior compare to the vanilla
-> scheduler's behavior? (what happens in one that doesnt happen in the
-> other, etc.)
+We believe ONE. It is better due to:
+- it allows better estimate how much RAM container uses.
+- if one container mapped a single page 10,000 times,
+  it doesn't mean it is worse than a container which mapped only 200 pages
+  and that it should be killed in case of OOM.
 
-Kernel compiles seem similar till the jobs get above about 3 where rsdl gets 
-slower but still smooth. Audio is basically unaffected either way.
-
-Don't forget all the rest of the cases people have posted.
-
--- 
--ck
+Thanks,
+Kirill
