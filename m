@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbXCMLXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbXCMLXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753233AbXCMLXg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 07:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbXCMLXg
+	id S1753231AbXCMLXu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 07:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbXCMLXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 07:23:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57085 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753233AbXCMLXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 07:23:35 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/VbL1u2HDV6D/rFmDtvUSI+XoUTwAjXoXvanv4No
-	L3akRqgYvlXlTq
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703132106.08878.kernel@kolivas.org>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <1173778398.6810.21.camel@Homer.simpson.net>
-	 <20070313093914.GA10533@elte.hu>  <200703132106.08878.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Tue, 13 Mar 2007 12:23:26 +0100
-Message-Id: <1173785006.8561.19.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Tue, 13 Mar 2007 07:23:49 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58966 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753234AbXCMLXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 07:23:47 -0400
+Message-ID: <45F689C1.9070900@garzik.org>
+Date: Tue, 13 Mar 2007 07:23:45 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Vitaliyi <imgrey@gmail.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Fwd: libata extension
+References: <3aac340703102322p362998b9labedc13503702d2b@mail.gmail.com>	 <3aac340703121003l43685599t8dbffe6247879a91@mail.gmail.com>	 <3aac340703121007q35c7acf7t648e0ed7608be04d@mail.gmail.com>	 <200703122106.39669.bzolnier@gmail.com> <3aac340703121936k51df425dg7e1a74688a67075@mail.gmail.com>
+In-Reply-To: <3aac340703121936k51df425dg7e1a74688a67075@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 21:06 +1100, Con Kolivas wrote:
-> On Tuesday 13 March 2007 20:39, Ingo Molnar wrote:
-> > * Mike Galbraith <efault@gmx.de> wrote:
-> > > I just retested with the encoders at nice 0, and the x/gforce combo is
-> > > terrible. [...]
-> >
-> > ok. So nice levels had nothing to do with it - it's some other
-> > regression somewhere. How does the vanilla scheduler cope with the
-> > exactly same workload? I.e. could you describe the 'delta' difference in
-> > behavior - because the delta is what we are interested in mostly, the
-> > 'absolute' behavior alone is not sufficient. Something like:
-> >
-> >  - on scheduler foo, under this workload, the CPU hogs steal 70% CPU
-> >    time and the resulting desktop experience is 'choppy': mouse pointer
-> >    is laggy and audio skips.
-> >
-> >  - on scheduler bar, under this workload, the CPU hogs are at 40%
-> >    CPU time and the desktop experience is smooth.
-> >
-> > things like that - we really need to be able to see the delta.
+Vitaliyi wrote:
+>> Why is the access to Control register needed?
 > 
-> I only find a slowdown, no choppiness, no audio stutter (it would be extremely 
-> hard to make audio stutter in this design without i/o starvation or something 
-> along those lines). The number difference in cpu percentage I've already 
-> given on the previous email. The graphics driver does feature in this test 
-> case as well so others' mileage may vary. Mike said it was terrible.
-
-My first test run with lame at nice 0 was truly horrid, but has _not_
-repeated, so disregard that as an anomaly.  For the most part, it is as
-you say, things just get slower with load, any load.  I definitely am
-seeing lurchiness which is not present in mainline.  No audio problems
-with either kernel.
-
-> > > [...]  Funny thing though, x/gforce isn't as badly affected with a
-> > > kernel build.  Any build is quite noticable, but even at -j8, the
-> > > effect doen't seem to be (very brief test warning applies) as bad as
-> > > with only the two encoders running.  That seems quite odd.
-> >
-> > likewise, how does the RSDL kernel build behavior compare to the vanilla
-> > scheduler's behavior? (what happens in one that doesnt happen in the
-> > other, etc.)
+> To execute soft reset for example.
 > 
-> Kernel compiles seem similar till the jobs get above about 3 where rsdl gets 
-> slower but still smooth. Audio is basically unaffected either way.
+>> > In the perfect case i would like to be able to execute vendor command
+>> > set (reverse engineered).
+>>
+>> Sounds interesting. :-)
+>>
+>> Could you give some more details on what are you going to implement?
+> 
+> Reading/writing service area, uploading, downloading modules, working
+> with flash etc.
 
-It seems to be a plain linear slowdown.  The lurchiness I'm experiencing
-varies in intensity, and is impossible to quantify.  I see neither
-lurchiness nor slowdown in mainline through -j8.
+SAT (aka ATA passthru) defines how to do soft-reset.
 
-> Don't forget all the rest of the cases people have posted.
+SG_IO supports the ATA_12 and ATA_16 commands which permit soft-reset 
+and similar tasks.  libata supports this interface, but does not yet 
+support soft-reset and similar non-comment-oriented tasks.  This would 
+be the best area to add such features, though.
 
-Absolutely, all test results count.
+	Jeff
 
-	-Mike
+
 
