@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030840AbXCMRHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161029AbXCMRPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030840AbXCMRHr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 13:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030815AbXCMRHr
+	id S1161029AbXCMRPV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 13:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161034AbXCMRPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 13:07:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40077 "EHLO mx1.redhat.com"
+	Tue, 13 Mar 2007 13:15:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:55553 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030797AbXCMRHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 13:07:46 -0400
-Date: Tue, 13 Mar 2007 13:07:34 -0400
-From: Andy Gospodarek <andy@greyhouse.net>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Valerie Henson <val_henson@linux.intel.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [patch 4/4] [TULIP] Rev tulip version
-Message-ID: <20070313170733.GB28281@gospo.rdu.redhat.com>
-References: <20070312093128.577087000@linux.intel.com> <20070312095912.743760000@linux.intel.com> <84144f020703120344n3f5ed52axf0bc1c109b549535@mail.gmail.com> <45F55EA5.9080005@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F55EA5.9080005@garzik.org>
-User-Agent: Mutt/1.5.10i
+	id S1161029AbXCMRPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 13:15:20 -0400
+Message-ID: <45F6DC27.8000200@goop.org>
+Date: Tue, 13 Mar 2007 10:15:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 8/8] Convert PDA into the percpu section
+References: <1173184747.4644.23.camel@localhost.localdomain>	 <1173185592.4644.28.camel@localhost.localdomain>	 <1173185666.4644.30.camel@localhost.localdomain>	 <1173185734.4644.32.camel@localhost.localdomain>	 <1173185827.4644.34.camel@localhost.localdomain>	 <1173185909.4644.36.camel@localhost.localdomain>	 <1173186021.4644.38.camel@localhost.localdomain>	 <1173186107.4644.41.camel@localhost.localdomain> <1173186214.4644.44.camel@localhost.localdomain>
+In-Reply-To: <1173186214.4644.44.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 10:07:33AM -0400, Jeff Garzik wrote:
-> Pekka Enberg wrote:
-> >Hi,
-> >
-> >On 3/12/07, Valerie Henson <val_henson@linux.intel.com> wrote:
-> >>--- tulip-2.6-mm-linux.orig/drivers/net/tulip/tulip_core.c
-> >>+++ tulip-2.6-mm-linux/drivers/net/tulip/tulip_core.c
-> >>@@ -17,11 +17,11 @@
-> >>
-> >> #define DRV_NAME       "tulip"
-> >> #ifdef CONFIG_TULIP_NAPI
-> >>-#define DRV_VERSION    "1.1.14-NAPI" /* Keep at least for test */
-> >>+#define DRV_VERSION    "1.1.15-NAPI" /* Keep at least for test */
-> >> #else
-> >>-#define DRV_VERSION    "1.1.14"
-> >>+#define DRV_VERSION    "1.1.15"
-> >> #endif
-> >>-#define DRV_RELDATE    "May 11, 2002"
-> >>+#define DRV_RELDATE    "Feb 27, 2007"
-> >
-> >Why not just drop this? What purpose does a per-module revision have
-> >for in-kernel drivers anyway?
-> 
-> It's the maintainer's call.  Sometimes it eases parsing bug reports, and 
-> tracking changes as your drivers get backported to various enterprise 
-> operating systems(tm).  Sometimes it just gets in the way.
-> 
+Rusty Russell wrote:
+> +	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
+> +			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
+> +			__per_cpu_offset[cpu], 0xFFFFF,
+>  			0x80 | DESCTYPE_S | 0x2, 0); /* present read-write data segment */
+>   
 
-It's good to keep this type of information in drivers.  I've been
-thinking lately that it would be nice to even expand it a little bit
-(maybe include the commit sum) so its easier to help those who aren't
-running the latest upstream kernels on their boxes....
+Why testing with qemu is not enough.
 
+diff -r 8dcd1dc9b298 arch/i386/kernel/cpu/common.c
+--- a/arch/i386/kernel/cpu/common.c	Tue Mar 13 00:33:37 2007 -0700
++++ b/arch/i386/kernel/cpu/common.c	Tue Mar 13 08:33:42 2007 -0700
+@@ -627,7 +627,7 @@ __cpuinit void init_gdt(int cpu, struct 
+ 	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
+ 			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
+ 			__per_cpu_offset[cpu], 0xFFFFF,
+-			0x80 | DESCTYPE_S | 0x2, 0); /* present read-write data segment */
++			0x80 | DESCTYPE_S | 0x2, 0x8); /* present read-write data segment, G */
+ 	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
+ 	per_cpu(cpu_number, cpu) = cpu;
+ #endif /* SMP*/
+
+    J
