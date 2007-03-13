@@ -1,48 +1,951 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbXCMInF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965482AbXCMJEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbXCMInF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 04:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbXCMInF
+	id S965482AbXCMJEQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965478AbXCMJEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 04:43:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36258 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753177AbXCMInE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 04:43:04 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-X-Fcc: ~/Mail/linus
-Subject: [PATCH] Remove CHILD_MAX
-Emacs: where editing text is like playing Paganini on a glass harmonica.
-Message-Id: <20070313084229.B31FA1801C5@magilla.sf.frob.com>
-Date: Tue, 13 Mar 2007 01:42:29 -0700 (PDT)
+	Tue, 13 Mar 2007 05:04:16 -0400
+Received: from smtp-ext.int-evry.fr ([157.159.11.17]:36630 "EHLO
+	smtp-ext.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965482AbXCMJEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 05:04:14 -0400
+X-Greylist: delayed 1127 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Mar 2007 05:04:13 EDT
+From: Florian Fainelli <florian.fainelli@int-evry.fr>
+To: Marc St-Jean <stjeanma@pmc-sierra.com>
+Subject: Re: [PATCH] drivers: PMC MSP71xx LED driver
+Date: Tue, 13 Mar 2007 09:33:21 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+References: <200703121850.l2CIoSgq002420@pasqua.pmc-sierra.bc.ca>
+In-Reply-To: <200703121850.l2CIoSgq002420@pasqua.pmc-sierra.bc.ca>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1469402.iKhsDuRGH1";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200703130933.22027.florian.fainelli@int-evry.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The CHILD_MAX macro in limits.h should not be there.  It claims to be the
-limit on processes a user can own, but its value is wrong for that.
-There is no constant value, but a variable resource limit (RLIMIT_NPROC).
-Nothing in the kernel uses CHILD_MAX.
+--nextPart1469402.iKhsDuRGH1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The proper thing to do according to POSIX is not to define CHILD_MAX at all.
-The sysconf (_SC_CHILD_MAX) implementation works by calling getrlimit.
+Hi Marc,
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- include/linux/limits.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Your patch does not seem to use the Linux LED API (include/linux/leds.h),=20
+which is sometimes pretty unknown, but dramatically ease your work. Maybe i=
+t=20
+is a good idea converting it to this API if you find it relevant.
 
-diff --git a/include/linux/limits.h b/include/linux/limits.h
-index c4b4e57..2d0f941 100644  
---- a/include/linux/limits.h
-+++ b/include/linux/limits.h
-@@ -5,7 +5,6 @@
- 
- #define NGROUPS_MAX    65536	/* supplemental group IDs are available */
- #define ARG_MAX       131072	/* # bytes of args + environ for exec() */
--#define CHILD_MAX        999    /* no limit :-) */
- #define LINK_MAX         127	/* # links a file may have */
- #define MAX_CANON        255	/* size of the canonical input queue */
- #define MAX_INPUT        255	/* size of the type-ahead buffer */
+Also consider the ongoing LED-GPIO API which is being written by ARM people=
+ :=20
+http://marc.theaimsgroup.com/?l=3Dlinux-kernel&m=3D110873454720555&w=3D2
+
+My 2 cents
+
+Le lundi 12 mars 2007, Marc St-Jean a =E9crit=A0:
+> [PATCH] drivers: PMC MSP71xx LED driver
+>
+> Patch to add LED driver for the PMC-Sierra MSP71xx devices.
+>
+> This patch references some platform support files previously
+> submitted to the linux-mips@linux-mips.org list.
+>
+> Thanks,
+> Marc
+>
+> Signed-off-by: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
+> ---
+> Re-posting patch with recommended changes:
+> -Cleanup on style and formatting for comments, macros, etc.
+> -Removed unnecessary memset.
+> -Removed unnecessary inlines.
+> -Moved some driver private data structures from .h to .c.
+> -Made use of schedule_timeout_interruptible() call instead
+> of multiple calls.
+> -Added calls to kthread_should_stop and try_to_freeze().
+>
+>  drivers/i2c/chips/Kconfig                            |    9
+>  drivers/i2c/chips/Makefile                           |    1
+>  drivers/i2c/chips/pmctwiled.c                        |  524
+> +++++++++++++++++++ include/asm-mips/pmc-sierra/msp71xx/msp_led_macros.h =
+|=20
+> 273 +++++++++ 4 files changed, 807 insertions(+)
+>
+> diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
+> index 87ee3ce..3bef46b 100644
+> --- a/drivers/i2c/chips/Kconfig
+> +++ b/drivers/i2c/chips/Kconfig
+> @@ -50,6 +50,15 @@ config SENSORS_PCF8574
+>  	  These devices are hard to detect and rarely found on mainstream
+>  	  hardware.  If unsure, say N.
+>
+> +config SENSORS_PMCTWILED
+> +	tristate "PMC Led-over-TWI driver"
+> +	depends on I2C && PMC_MSP
+> +	help
+> +	  The new VPE-safe backend driver for all the LEDs on the 7120 platform.
+> +
+> +	  While you may build this as a module, it is recommended you build it
+> +	  into the kernel monolithic so all drivers may access it at all times.
+> +
+>  config SENSORS_PCA9539
+>  	tristate "Philips PCA9539 16-bit I/O port"
+>  	depends on I2C && EXPERIMENTAL
+> diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
+> index 779868e..4e79e27 100644
+> --- a/drivers/i2c/chips/Makefile
+> +++ b/drivers/i2c/chips/Makefile
+> @@ -10,6 +10,7 @@ obj-$(CONFIG_SENSORS_M41T00)	+=3D m41t00.o
+>  obj-$(CONFIG_SENSORS_PCA9539)	+=3D pca9539.o
+>  obj-$(CONFIG_SENSORS_PCF8574)	+=3D pcf8574.o
+>  obj-$(CONFIG_SENSORS_PCF8591)	+=3D pcf8591.o
+> +obj-$(CONFIG_SENSORS_PMCTWILED) +=3D pmctwiled.o
+>  obj-$(CONFIG_ISP1301_OMAP)	+=3D isp1301_omap.o
+>  obj-$(CONFIG_TPS65010)		+=3D tps65010.o
+>
+> diff --git a/drivers/i2c/chips/pmctwiled.c b/drivers/i2c/chips/pmctwiled.c
+> new file mode 100644
+> index 0000000..69845a5
+> --- /dev/null
+> +++ b/drivers/i2c/chips/pmctwiled.c
+> @@ -0,0 +1,524 @@
+> +/*
+> + * Special LED-over-TWI-PCA9554 driver for the PMC Sierra
+> + * Residential Gateway demo board (and potentially others).
+> + *
+> + * Based on pca9539.c Copyright (C) 2005 Ben Gardner <bgardner@wabtec.co=
+m>
+> + * Modified by Copyright 2006-2007 PMC-Sierra, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; version 2 of the License.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/kthread.h>
+> +#include <linux/i2c.h>
+> +#include <linux/freezer.h>
+> +
+> +#include <msp_led_macros.h>
+> +
+> +/*
+> + * The externally available "registers"
+> + *
+> + * TODO: We must ensure these are in "shared memory" for the other VPE
+> + *       to access
+> + */
+> +u32 msp_led_register[MSP_LED_COUNT];
+> +
+> +#ifdef CONFIG_PMC_MSP7120_GW
+> +/*
+> + * For each device, which pins will be in "input" mode:
+> + * One byte per device:
+> + *  0 =3D Output
+> + *  1 =3D Input
+> + */
+> +static const u8 msp_led_initial_input_state[] =3D {
+> +	/* No outputs on device 0 or 1, these are inputs only */
+> +	MSP_LED_INPUT_MODE, MSP_LED_INPUT_MODE,
+> +	/* All outputs on device 2 through 4 */
+> +	MSP_LED_OUTPUT_MODE, MSP_LED_OUTPUT_MODE, MSP_LED_OUTPUT_MODE,
+> +};
+> +
+> +/*
+> + * For each device, which output pins should start on and off:
+> + * One byte per device:
+> + *  0 =3D OFF =3D HI
+> + *  1 =3D ON  =3D Lo
+> + */
+> +static const u8 msp_led_initial_pin_state[] =3D {
+> +	0, 0, 	/* No initial state, these are input only */
+> +	1 << 1,	/* PWR_GREEN LED on, all others off */
+> +	0,	/* All off */
+> +	0,	/* All off */
+> +};
+> +#endif /* CONFIG_PMC_MSP7120_GW */
+> +
+> +/* Internal polling data */
+> +#define POLL_PERIOD msecs_to_jiffies(125) /* Poll at 125ms */
+> +
+> +static struct i2c_client *pmctwiled_device[MSP_LED_NUM_DEVICES];
+> +static struct task_struct *pmctwiled_pollthread;
+> +static u32 private_msp_led_register[MSP_LED_COUNT];
+> +static u16 current_period;
+> +
+> +/* Addresses to scan */
+> +#define PMCTWILED_BASEADDRESS	0x38
+> +
+> +static unsigned short normal_i2c[] =3D {
+> +	PMCTWILED_BASEADDRESS + 0,
+> +	PMCTWILED_BASEADDRESS + 1,
+> +	PMCTWILED_BASEADDRESS + 2,
+> +	PMCTWILED_BASEADDRESS + 3,
+> +	PMCTWILED_BASEADDRESS + 4,
+> +	I2C_CLIENT_END
+> +};
+> +
+> +/* Insmod parameters */
+> +I2C_CLIENT_INSMOD_1(pmctwiled);
+> +
+> +enum pca9554_cmd {
+> +	PCA9554_INPUT		=3D 0,
+> +	PCA9554_OUTPUT		=3D 1,
+> +	PCA9554_INVERT		=3D 2,
+> +	PCA9554_DIRECTION	=3D 3,
+> +};
+> +
+> +static int pmctwiled_attach_adapter(struct i2c_adapter *adapter);
+> +static int pmctwiled_detect(struct i2c_adapter *adapter,
+> +				int address, int kind);
+> +static int pmctwiled_detach_client(struct i2c_client *client);
+> +
+> +/* This is the driver that will be inserted */
+> +static struct i2c_driver pmctwiled_driver =3D {
+> +	.driver =3D {
+> +		.name	=3D "pmctwiled",
+> +	},
+> +	.attach_adapter	=3D pmctwiled_attach_adapter,
+> +	.detach_client	=3D pmctwiled_detach_client,
+> +};
+> +
+> +struct pmctwiled_data {
+> +	struct i2c_client client;
+> +};
+> +
+> +static int pmctwiled_attach_adapter(struct i2c_adapter *adapter)
+> +{
+> +	return i2c_probe(adapter, &addr_data, pmctwiled_detect);
+> +}
+> +
+> +/* This function is called by i2c_probe */
+> +static int pmctwiled_detect(struct i2c_adapter *adapter,
+> +				int address, int kind)
+> +{
+> +	struct i2c_client *new_client =3D NULL;	/* client structure */
+> +	struct pmctwiled_data *data =3D NULL;	/* local data structure */
+> +	int err =3D 0;
+> +	int dev_id =3D address - PMCTWILED_BASEADDRESS;
+> +
+> +	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA))
+> +		goto exit;
+> +
+> +	/*
+> +	 * For now, we presume we have a valid client. We now create the
+> +	 * client structure, even though we cannot fill it completely yet.
+> +	 */
+> +	data =3D kzalloc(sizeof(*data), GFP_KERNEL);
+> +	if (!data) {
+> +		err =3D -ENOMEM;
+> +		goto exit;
+> +	}
+> +
+> +	new_client =3D &data->client;
+> +	i2c_set_clientdata(new_client, data);
+> +	new_client->addr =3D address;
+> +	new_client->adapter =3D adapter;
+> +	new_client->driver =3D &pmctwiled_driver;
+> +	new_client->flags =3D 0;
+> +
+> +	/*
+> +	 * Detection:
+> +	 *   The pca9554 only has 4 registers (0-3).
+> +	 * All other reads should fail.
+> +	 */
+> +	if (i2c_smbus_read_byte_data(new_client, 3) < 0 ||
+> +	    i2c_smbus_read_byte_data(new_client, 4) >=3D 0)
+> +		goto exit_kfree;
+> +
+> +	/* Found PCA9554 (probably) */
+> +	strlcpy(new_client->name, "pca9554", I2C_NAME_SIZE);
+> +	printk(KERN_WARNING
+> +		"Detected PCA9554 I/O chip (device %d) at 0x%02x\n",
+> +		dev_id, address);
+> +
+> +	/* Tell the I2C layer a new client has arrived */
+> +	err =3D i2c_attach_client(new_client);
+> +	if (err)
+> +		goto exit_kfree;
+> +
+> +	/*
+> +	 * Register this in the list of available devices, and set up the
+> +	 * initial state
+> +	 */
+> +	i2c_smbus_write_byte_data(new_client, PCA9554_OUTPUT,
+> +			i2c_smbus_read_byte_data(new_client, PCA9554_INPUT));
+> +	i2c_smbus_write_byte_data(new_client, PCA9554_DIRECTION,
+> +			msp_led_initial_input_state[dev_id]);
+> +	pmctwiled_device[dev_id] =3D new_client;
+> +
+> +	return 0;
+> +
+> +exit_kfree:
+> +	kfree(data);
+> +exit:
+> +	return err;
+> +}
+> +
+> +static int pmctwiled_detach_client(struct i2c_client *client)
+> +{
+> +	int err;
+> +	int dev_id =3D client->addr - PMCTWILED_BASEADDRESS;
+> +
+> +	/* Clear reference so poll thread doesn't use while detaching */
+> +	pmctwiled_device[dev_id] =3D NULL;
+> +
+> +	/* Remove this device from the list of devices */
+> +	err =3D i2c_detach_client(client);
+> +	if (err)
+> +		return err;
+> +
+> +	kfree(i2c_get_clientdata(client));
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * mode_bits_update - Sets the mode bits of the given led register
+> + * @led_reg_ptr: Pointer to the led register value that needs to be
+> updated + * 		with the given mode.
+> + * @mode: new mode value to be set to the register
+> + *
+> + * Sets the given mode value to the given led register.
+> + */
+> +inline void mode_bits_update(u32 *led_reg_ptr, enum msp_led_mode mode)
+> +{
+> +	/* TODO: validate mode */
+> +	*led_reg_ptr |=3D MSP_LED_MODE_MASK;
+> +	*led_reg_ptr &=3D (~((u32) MSP_LED_MODE_MASK) | mode);
+> +}
+> +
+> +/*
+> + * sync_led_timer_with_polling_count - Synchronizes the led timer with
+> + * 	polling thread count
+> + * @led_id: Index for the private led register used to obtain timer
+> + * 	information
+> + * @led_reg_ptr: Pointer to the new led register value
+> + *
+> + * returns 0: If led is in its final period
+> + * returns 1: If led is in its initial period
+> + *
+> + * This function determines if the led timer is in its initial period or
+> + * the final, relative to the TWI-polling thread count (current_period)
+> + * and updates the previous timer value in the private led register.  If
+> + * the state of the led needs to be turned off (i.e. when the led has
+> + * timed out) then the mode bits in the current led register pointer is
+> + * set to MSP_LED_OFF and the other data bits are set to 0.
+> + */
+> +int sync_led_timer_with_polling_count(int led_id, u32 *led_reg_ptr)
+> +{
+> +	/* Timer variables */
+> +	int is_in_initial_period =3D 0;
+> +	u8 timer, led_timeout, initial_period, final_period;
+> +	u16 total_period;
+> +
+> +	/*
+> +	 * Determine the progress into the current cycle, relative to
+> +	 * the POLL_PERIOD
+> +	 */
+> +	initial_period =3D *led_reg_ptr >> MSP_LED_INITIALPERIOD_SHIFT;
+> +	final_period =3D *led_reg_ptr >> MSP_LED_FINALPERIOD_SHIFT;
+> +	led_timeout =3D *led_reg_ptr >> MSP_LED_WATCHDOG_SHIFT;
+> +	timer =3D private_msp_led_register[led_id] >> MSP_LED_WATCHDOG_SHIFT;
+> +
+> +	total_period =3D initial_period + final_period;
+> +	if (total_period !=3D 0)
+> +		is_in_initial_period =3D (current_period % total_period) <
+> +					initial_period;
+> +
+> +	/*
+> +	 * if the led_timeout is set, adjust the current state to be either
+> +	 * ON or OFF
+> +	 */
+> +	if (led_timeout > 0) {
+> +		if (timer >=3D led_timeout) {
+> +			/* set the register to OFF state */
+> +			mode_bits_update(led_reg_ptr, MSP_LED_OFF);
+> +			timer =3D 0;
+> +
+> +			/*
+> +			 * TODO:
+> +			 * This introduces a race condition with other
+> +			 * thread using shared memory and must be fixed.
+> +			 */
+> +			msp_led_turn_off(led_id);
+> +		} else
+> +			timer +=3D 1;
+> +
+> +		/* update timer */
+> +		*led_reg_ptr &=3D ~(0xff << MSP_LED_WATCHDOG_SHIFT);
+> +		*led_reg_ptr |=3D (timer << MSP_LED_WATCHDOG_SHIFT);
+> +	}
+> +
+> +	return is_in_initial_period;
+> +}
+> +
+> +/*
+> + * led_update - Sets the mode bits of the given led register
+> + * @led_id - id pertaining to the led that needs update
+> + * @prev_direction_bits_ptr - points to the previous direction bits on t=
+he
+> bus + * @prev_data_bits_ptr - points to the previous data bits on the bus=
+ +
+> * @curr_direction_bits_ptr - points to the new direction bits for bus
+> update + * @curr_data_bits_ptr - points to the new data bits for bus upda=
+te
+> + *
+> + * returns 1 - led is in output mode
+> + *         0 - led is in input mode and hasn't been updated
+> + *
+> + * Sets the given mode value to the given led register.
+> + */
+> +int led_update(int led_id,
+> +		u8 *prev_direction_bits_ptr, u8 *prev_data_bits_ptr,
+> +		u8 *curr_direction_bits_ptr, u8 *curr_data_bits_ptr)
+> +{
+> +	u32 curr_led_reg;
+> +	enum msp_led_mode curr_mode, prev_mode;
+> +	enum msp_led_direction curr_direction, prev_direction;
+> +	int is_in_initial_period;
+> +
+> +	/* Read the shared memory into a temporary variable */
+> +	int pin =3D led_id % MSP_LED_NUM_DEVICE_PINS;
+> +	curr_led_reg =3D msp_led_register[led_id];
+> +
+> +	/* Check if the input direction has changed to output */
+> +	prev_direction =3D (enum msp_led_direction)
+> +			((private_msp_led_register[led_id] &
+> +			MSP_LED_DIRECTION_MASK) >> MSP_LED_DIRECTION_SHIFT);
+> +	curr_direction =3D (enum msp_led_direction)((curr_led_reg &
+> +			MSP_LED_DIRECTION_MASK) >> MSP_LED_DIRECTION_SHIFT);
+> +	if ((prev_direction =3D=3D MSP_LED_INPUT) &&
+> +	    (curr_direction !=3D MSP_LED_OUTPUT))
+> +		return 0;
+> +
+> +	/* get the previous mode of the LED */
+> +	prev_mode =3D (enum msp_led_mode)(private_msp_led_register[led_id] &
+> +			MSP_LED_MODE_MASK);
+> +
+> +	if (prev_mode =3D=3D MSP_LED_ON)
+> +		*prev_data_bits_ptr |=3D 1 << pin;
+> +
+> +	if (prev_direction =3D=3D MSP_LED_INPUT)
+> +		*prev_direction_bits_ptr |=3D 1 << pin;
+> +
+> +	/* Update timer and obtain the current period */
+> +	is_in_initial_period =3D sync_led_timer_with_polling_count(
+> +					led_id, &curr_led_reg);
+> +
+> +	/* get the current mode of the LED */
+> +	curr_mode =3D (enum msp_led_mode)(curr_led_reg & MSP_LED_MODE_MASK);
+> +
+> +	switch (curr_mode) {
+> +	case MSP_LED_BLINK:
+> +		if (is_in_initial_period) {
+> +			*curr_data_bits_ptr |=3D 1 << pin;
+> +			mode_bits_update(&curr_led_reg, MSP_LED_ON);
+> +		} else
+> +			mode_bits_update(&curr_led_reg,MSP_LED_OFF);
+> +		break;
+> +	case MSP_LED_BLINK_INVERT:
+> +		if (!is_in_initial_period) {
+> +			*curr_data_bits_ptr |=3D 1 << pin;
+> +			mode_bits_update(&curr_led_reg, MSP_LED_ON);
+> +		} else
+> +			mode_bits_update(&curr_led_reg,MSP_LED_OFF);
+> +		break;
+> +	case MSP_LED_OFF:
+> +		/*
+> +		 * Assuming that the led be turned off when set to
+> +		 * output mode
+> +		 */
+> +		break;
+> +	case MSP_LED_ON:
+> +		*curr_data_bits_ptr |=3D 1 << pin;
+> +		break;
+> +	}
+> +
+> +	if (curr_direction =3D=3D MSP_LED_INPUT)
+> +		*curr_direction_bits_ptr |=3D 1 << pin;
+> +
+> +	/* save the current mode */
+> +	private_msp_led_register[led_id] =3D curr_led_reg;
+> +
+> +	return 1;
+> +}
+> +
+> +/*
+> + * device_update - Updates led device(s) on GPIO
+> + * @dev_id - id pertaining to the device that needs update
+> + *
+> + * returns 1 - device exists
+> + * 		   0 - device does not exist
+> + *
+> + * Every pin connected to the GPIO is updated if the state of the pin has
+> + * changed from its previous value stored in the memory register.  A
+> temporary + * variable, curr_led_reg is used to store the current value of
+> the register + * corresponding to the pin under focus.  curLedReg gets its
+> value from the + * global shared memory registers for leds.  This value is
+> compared with the + * previous value to determine if a change to the led
+> pin is required.  The + * previous values are stored in the private led
+> register,
+> + * private_msp_led_register.
+> + */
+> +int device_update(int dev_id)
+> +{
+> +	int pin;
+> +	u8 curr_direction_bits =3D 0;
+> +	u8 curr_data_bits =3D 0;
+> +	u8 prev_data_bits =3D 0;
+> +	u8 prev_direction_bits =3D 0;
+> +
+> +	/* if the device wasn't detected */
+> +	if (pmctwiled_device[dev_id] =3D=3D NULL)
+> +		return 0;
+> +
+> +	/* iterate through each pin of the device and update as necessary */
+> +	for (pin =3D 0; pin < MSP_LED_NUM_DEVICE_PINS; pin++) {
+> +		int led_id =3D MSP_LED_DEVPIN(dev_id, pin);
+> +		led_update(led_id, &prev_direction_bits, &prev_data_bits,
+> +				&curr_direction_bits, &curr_data_bits);
+> +	}
+> +
+> +	/*
+> +	 * BUS OPERATIONS: if the previous state is different from the
+> +	 * current state
+> +	 */
+> +	if (curr_data_bits !=3D prev_data_bits)
+> +		i2c_smbus_write_byte_data(pmctwiled_device[dev_id],
+> +				PCA9554_OUTPUT, ~(curr_data_bits));
+> +
+> +	if (curr_direction_bits !=3D prev_direction_bits)
+> +		i2c_smbus_write_byte_data(pmctwiled_device[dev_id],
+> +				PCA9554_DIRECTION, curr_direction_bits);
+> +
+> +	return 1;
+> +}
+> +
+> +static int pmctwiled_poll(void *data)
+> +{
+> +	current_period =3D 0;
+> +
+> +	/* start the polling loop */
+> +	do {
+> +		/* Starting Time */
+> +		unsigned long poll_end;
+> +		unsigned long time_left;
+> +		unsigned int poll_start =3D jiffies;
+> +
+> +		/* update every device in here for the current period */
+> +		int dev_id;
+> +		for (dev_id =3D 0; dev_id < MSP_LED_NUM_DEVICES; dev_id++)
+> +			device_update(dev_id);
+> +
+> +		/* Ending Time */
+> +		poll_end =3D jiffies;
+> +		if (poll_end >=3D poll_start) {
+> +			time_left =3D POLL_PERIOD - (poll_end - poll_start);
+> +		} else {
+> +			time_left =3D POLL_PERIOD - ((0xffffffff - poll_start) +
+> +					poll_end);
+> +			printk(KERN_WARNING
+> +				"Warning: Delaying for %lu jiffies. This may "
+> +				"not be correct because of clock wrapping\n",
+> +				time_left);
+> +		}
+> +		if (time_left > POLL_PERIOD) {
+> +			printk(KERN_WARNING
+> +				"Warning: Delay of %lu jiffies requested, "
+> +				"defaulting back to %lu\n",
+> +				time_left, POLL_PERIOD);
+> +			time_left =3D POLL_PERIOD;
+> +		}
+> +
+> +		/* reshedule next polling interval */
+> +		schedule_timeout_interruptible(time_left);
+> +
+> +		/* make swsusp happy with our thread */
+> +		try_to_freeze();
+> +
+> +		current_period++;
+> +	} while (!kthread_should_stop());
+> +
+> +	return 0;
+> +}
+> +
+> +void __init pmctwiled_setup(void)
+> +{
+> +	static int called;
+> +	int dev;
+> +
+> +	/* check if already initialized from platform initialization */
+> +	if (called)
+> +		return;
+> +
+> +	/* initialize LEDs to default state */
+> +	for (dev =3D 0; dev < MSP_LED_NUM_DEVICES; dev++) {
+> +		int pin;
+> +		pmctwiled_device[dev] =3D NULL;
+> +
+> +		for (pin =3D 0; pin < 8; pin++) {
+> +			int led =3D MSP_LED_DEVPIN(dev, pin);
+> +			if (msp_led_initial_input_state[dev] & (1 << pin)) {
+> +				msp_led_disable(led);
+> +			} else {
+> +				msp_led_enable(led);
+> +				if (msp_led_initial_pin_state[dev] & (1 << pin))
+> +					msp_led_turn_on(led);
+> +				else
+> +					msp_led_turn_off(led);
+> +			}
+> +
+> +			/* Initialize the private led register memory */
+> +			private_msp_led_register[led] =3D 0;
+> +		}
+> +	}
+> +
+> +	/* indicate initialised */
+> +	called++;
+> +}
+> +
+> +static int __init pmctwiled_init(void)
+> +{
+> +	/* setup twi led interface */
+> +	pmctwiled_setup();
+> +
+> +	/* start the polling thread */
+> +	pmctwiled_pollthread =3D kthread_run(pmctwiled_poll, NULL,
+> +					"PMCTwiLedPoller");
+> +	if (pmctwiled_pollthread =3D=3D NULL) {
+> +		printk(KERN_ERR "Could not start polling thread\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	return i2c_add_driver(&pmctwiled_driver);
+> +}
+> +
+> +static void __exit pmctwiled_exit(void)
+> +{
+> +	/* stop the polling thread */
+> +	kthread_stop(pmctwiled_pollthread);
+> +
+> +	i2c_del_driver(&pmctwiled_driver);
+> +}
+> +
+> +MODULE_DESCRIPTION("PMC TWI-LED driver");
+> +MODULE_LICENSE("GPL");
+> +
+> +module_init(pmctwiled_init);
+> +module_exit(pmctwiled_exit);
+> diff --git a/include/asm-mips/pmc-sierra/msp71xx/msp_led_macros.h
+> b/include/asm-mips/pmc-sierra/msp71xx/msp_led_macros.h new file mode 1006=
+44
+> index 0000000..b5fb683
+> --- /dev/null
+> +++ b/include/asm-mips/pmc-sierra/msp71xx/msp_led_macros.h
+> @@ -0,0 +1,273 @@
+> +/*
+> + * Macros for external SMP-safe access to the PMC MSP7120
+> + * Residential Gateway demo board LEDs (over TWI)
+> + *
+> + * Copyright 2006-2007 PMC-Sierra, Inc.
+> + *
+> + *  This program is free software; you can redistribute  it and/or modify
+> it + *  under  the terms of  the GNU General  Public License as published
+> by the + *  Free Software Foundation;  either version 2 of the  License, =
+or
+> (at your + *  option) any later version.
+> + *
+> + *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLI=
+ED
+> + *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES
+> OF + *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+> DISCLAIMED.  IN + *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY =
+=20
+> DIRECT, INDIRECT, + *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+> DAMAGES (INCLUDING, BUT + *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE
+> GOODS  OR SERVICES; LOSS OF + *  USE, DATA,  OR PROFITS; OR  BUSINESS
+> INTERRUPTION) HOWEVER CAUSED AND ON + *  ANY THEORY OF LIABILITY, WHETHER
+> IN  CONTRACT, STRICT LIABILITY, OR TORT + *  (INCLUDING NEGLIGENCE OR
+> OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF + *  THIS SOFTWARE, EVEN =
+IF
+> ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. + *
+> + *  You should have received a copy of the  GNU General Public License
+> along + *  with this program; if not, write  to the Free Software
+> Foundation, Inc., + *  675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#ifndef __MSP_LED_MACROS_H__
+> +#define __MSP_LED_MACROS_H__
+> +
+> +/* For ll/sc macros */
+> +#include <asm/regops.h>
+> +
+> +/* Generic macros for board setup */
+> +#define MSP_LED_DEVPIN(DEVICE, PIN)	((DEVICE * 8) + PIN)
+> +
+> +/* ----- Per-board configuration ----- */
+> +
+> +/* TODO: Maybe break this out into one file per board? */
+> +
+> +#ifdef CONFIG_PMC_MSP7120_GW
+> +/* Specific LEDs and PINs which can be controlled on the RG demo board: =
+*/
+> +#define MSP_LED_PWRSTANDBY_RED 		MSP_LED_DEVPIN(2, 0)
+> +#define MSP_LED_PWRSTANDBY_GREEN	MSP_LED_DEVPIN(2, 1)
+> +#define MSP_LED_LAN1_10			MSP_LED_DEVPIN(2, 2)
+> +#define MSP_LED_LAN1_100		MSP_LED_DEVPIN(2, 3)
+> +#define MSP_LED_LAN2_10			MSP_LED_DEVPIN(2, 4)
+> +#define MSP_LED_LAN2_100		MSP_LED_DEVPIN(2, 5)
+> +#define MSP_LED_LAN3_10			MSP_LED_DEVPIN(2, 6)
+> +#define MSP_LED_LAN3_100		MSP_LED_DEVPIN(2, 7)
+> +#define MSP_LED_LAN4_10			MSP_LED_DEVPIN(3, 0)
+> +#define MSP_LED_LAN4_100		MSP_LED_DEVPIN(3, 1)
+> +#define MSP_LED_LAN5_10			MSP_LED_DEVPIN(3, 2)
+> +#define MSP_LED_LAN5_100		MSP_LED_DEVPIN(3, 3)
+> +#define MSP_LED_RFU_10			MSP_LED_LAN5_10
+> +#define MSP_LED_RFU_100			MSP_LED_LAN5_100
+> +#define MSP_PIN_FLASH_RESETB		MSP_LED_DEVPIN(3, 4)
+> +#define MSP_LED_PSTN			MSP_LED_DEVPIN(3, 5)
+> +#define MSP_PIN_FLASH_BANK		MSP_LED_DEVPIN(3, 6)
+> +#define MSP_PIN_USB_HOST_DEV		MSP_LED_DEVPIN(3, 7)
+> +#define MSP_LED_PHONE1			MSP_LED_DEVPIN(4, 0)
+> +#define MSP_LED_PHONE2			MSP_LED_DEVPIN(4, 1)
+> +#define MSP_LED_USB			MSP_LED_DEVPIN(4, 2)
+> +#define MSP_LED_WIRELESS		MSP_LED_DEVPIN(4, 3)
+> +#define MSP_LED_DSL_RED			MSP_LED_DEVPIN(4, 4)
+> +#define MSP_LED_DSL_GREEN		MSP_LED_DEVPIN(4, 5)
+> +#define MSP_LED_INTERNET_RED		MSP_LED_DEVPIN(4, 6)
+> +#define MSP_LED_INTERNET_GREEN		MSP_LED_DEVPIN(4, 7)
+> +
+> +#define MSP_LED_NUM_DEVICES		5
+> +#define MSP_LED_NUM_DEVICE_PINS		8
+> +#define MSP_LED_COUNT			(MSP_LED_NUM_DEVICE_PINS * \
+> +					 MSP_LED_NUM_DEVICES)
+> +#define MSP_LED_INPUT_MODE		0xff
+> +#define MSP_LED_OUTPUT_MODE		0x00
+> +#endif /* CONFIG_PMC_MSP7120_GW */
+> +
+> +/* ----- End of Per-board configuration ----- */
+> +
+> +/* Definitions for LED blink rate value */
+> +#define MSP_LED_RATE_MAX	0xff
+> +
+> +/* -- The actual LED register list -- */
+> +extern u32 msp_led_register[];
+> +
+> +/*
+> + * Each 'register' has the following format:
+> + *
+> + * +-------+-----------------------------+
+> + * | BITS  | DESCRIPTION                 |
+> + * +-------+-----------------------------+
+> + * | 31:24 | Watchdog timer              |
+> + * |       |   Set to non-zero to start  |
+> + * |       |   or to kick, this number   |
+> + * |       |   will be decremented every |
+> + * |       |   125ms, if it reaches zero |
+> + * |       |   the LED will be turned off|
+> + * +-------+-----------------------------+
+> + * | 23:16 | Initial Period              |
+> + * |       |   125ms increments          |
+> + * +-------+-----------------------------+
+> + * |  15:8 | Final Period                |
+> + * |       |   125ms increments          |
+> + * +-------+-----------------------------+
+> + * |  7:7  | Direction                   |
+> + * |       |   See msp_led_direction     |
+> + * +-------+-----------------------------+
+> + * |  6:0  | Mode                        |
+> + * |       |   See msp_led_mode          |
+> + * +-------+-----------------------------+
+> + *
+> + * NOTE: You should probably not affect these registers directly but use
+> + * the macros in this file.  That said, if you need to touch them, be su=
+re
+> + * to use ll/sc instructions (or the macros in regops.h) so that values
+> are + * preserved safely.
+> + */
+> +
+> +/* Direction modes */
+> +enum msp_led_direction {
+> +	MSP_LED_INPUT =3D 0,
+> +	MSP_LED_OUTPUT,
+> +};
+> +
+> +/* Output modes */
+> +enum msp_led_mode {
+> +	MSP_LED_OFF =3D 0,/* Off steady */
+> +	MSP_LED_ON,	/* On steady */
+> +	MSP_LED_BLINK,	/* On for initial_period, off for final_period */
+> +	MSP_LED_BLINK_INVERT,
+> +			/* Off for initial_period, on for final_period */
+> +};
+> +
+> +#define MSP_LED_MODE_MASK		0x7f
+> +#define MSP_LED_DIRECTION_MASK		0x80
+> +#define MSP_LED_DIRECTION_SHIFT		7
+> +#define MSP_LED_INITIALPERIOD_SHIFT	8
+> +#define MSP_LED_FINALPERIOD_SHIFT	16
+> +#define MSP_LED_WATCHDOG_SHIFT		24
+> +
+> +/* -- Public API functions -- */
+> +
+> +/* Low-level macro, explicitly sets the specified LED with the values */
+> +static inline void msp_led_set_mode(u16 led,
+> +				    enum msp_led_mode mode, u8 initial_period,
+> +				    u8 final_period, u8 watchdog_timeout)
+> +{
+> +	set_value_reg32(&msp_led_register[led],
+> +			0xffffff7f,
+> +			watchdog_timeout << MSP_LED_WATCHDOG_SHIFT |
+> +			initial_period << MSP_LED_INITIALPERIOD_SHIFT |
+> +			final_period << MSP_LED_FINALPERIOD_SHIFT |
+> +			((u8)mode & MSP_LED_MODE_MASK));
+> +}
+> +
+> +static inline void msp_led_set_direction(u16 led,
+> +					 enum msp_led_direction direction)
+> +{
+> +	set_value_reg32(&msp_led_register[led],
+> +			0x00000080,
+> +			((u8)direction << MSP_LED_DIRECTION_SHIFT));
+> +}
+> +
+> +/* Turns the LED on */
+> +static inline void msp_led_turn_on(u16 led)
+> +{
+> +	msp_led_set_mode(led, MSP_LED_ON, 0, 0, 0);
+> +}
+> +
+> +/* Set pin LO */
+> +static inline void msp_led_pin_lo(u16 pin)
+> +{
+> +	msp_led_set_mode(pin, MSP_LED_ON, 0, 0, 0);
+> +}
+> +
+> +/* Turns the LED off */
+> +static inline void msp_led_turn_off(u16 led)
+> +{
+> +	msp_led_set_mode(led, MSP_LED_OFF, 0, 0, 0);
+> +}
+> +
+> +/* Set pin HI */
+> +static inline void msp_led_pin_hi(u16 pin)
+> +{
+> +	msp_led_set_mode(pin, MSP_LED_OFF, 0, 0, 0);
+> +}
+> +
+> +/*
+> + * Blinks a single LED
+> + * Period is specified in 125ms chunks
+> + */
+> +static inline void msp_led_blink(u16 led, u8 initial_period, u8
+> final_period) +{
+> +	msp_led_set_mode(led, MSP_LED_BLINK, initial_period,
+> +			 final_period, 0);
+> +}
+> +
+> +static inline void msp_led_blink_2Hz(u16 led)
+> +{
+> +	msp_led_set_mode(led, MSP_LED_BLINK, 2, 2, 0);
+> +}
+> +
+> +static inline void msp_led_blink_4Hz(u16 led)
+> +{
+> +	msp_led_set_mode(led, MSP_LED_BLINK, 1, 1, 0);
+> +}
+> +
+> +/*
+> + * Blinks one LED, then the other
+> + * Period is specified in 125ms chunks
+> + */
+> +static inline void msp_led_alternate(u16 led1, u16 led2,
+> +				     u8 led1_period, u8 led2_period)
+> +{
+> +	msp_led_set_mode(led1, MSP_LED_BLINK, led1_period,
+> +				led2_period, 0);
+> +	msp_led_set_mode(led2, MSP_LED_BLINK_INVERT, led1_period,
+> +				led2_period, 0);
+> +}
+> +
+> +/*
+> + * Stops both alternating LEDs from blinking, leaving 'on_led' on
+> + * and 'off_led' off.
+> + */
+> +static inline void msp_led_alternate_stop(u16 on_led, u16 off_led)
+> +{
+> +	msp_led_turn_on(on_led);
+> +	msp_led_turn_off(off_led);
+> +}
+> +
+> +/*
+> + * Starts the LED blinking at the specified rate until the
+> watchdog_timeout + * (specified in 125ms increments) expires, when the LED
+> is turned off. + *
+> + * This can also be used to kick the watchdog.
+> + *
+> + * Calling any other 'msp_led_...' macro will disable the watchdog,
+> + * as will kicking this watchdog with a watchdogtimeout value of 0.
+> + * When the watchdog is disabled, the LED will blink forever.
+> + */
+> +static inline void msp_led_watchdog_init(u16 led, u8 initial_period,
+> +					 u8 final_period, u8 watchdog_timeout)
+> +{
+> +	msp_led_set_mode(led, MSP_LED_BLINK, initial_period,
+> +			 final_period, watchdog_timeout);
+> +}
+> +
+> +/*
+> + * Kicks a 'watchdog' LED.  If the LED is already blinking or on,
+> + * it will start the watchdog countdown.  If the LED is already off or
+> + * the wathdog timeout given is 0, it will ensure the LED is off and
+> + * the watchdog timer has stopped.
+> + */
+> +static inline void msp_led_watchdog_kick(u16 led, u8 watchdog_timeout)
+> +{
+> +	set_value_reg32(&msp_led_register[led],
+> +			0xff << MSP_LED_WATCHDOG_SHIFT,
+> +			watchdog_timeout << MSP_LED_WATCHDOG_SHIFT);
+> +}
+> +
+> +/*
+> + * Set the direction of the led pins.
+> + */
+> +static inline void msp_led_enable(u16 led)
+> +{
+> +	msp_led_set_direction(led, MSP_LED_OUTPUT);
+> +}
+> +
+> +static inline void msp_led_disable(u16 led)
+> +{
+> +	msp_led_set_direction(led, MSP_LED_INPUT);
+> +}
+> +
+> +#endif /* !__MSP_LED_MACROS_H__ */
+
+
+
+=2D-=20
+Cordialement, Florian Fainelli
+=2D--------------------------------------------
+
+--nextPart1469402.iKhsDuRGH1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQBF9mHSkwOXMtq9F3IRAochAJ9URa0RzND/Zd6hRTHllaOIJjc0UQCgoSqr
+uTUfJlwNeCOhTG2lcu3cnRY=
+=equy
+-----END PGP SIGNATURE-----
+
+--nextPart1469402.iKhsDuRGH1--
