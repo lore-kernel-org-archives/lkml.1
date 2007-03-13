@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbXCMXrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbXCMXuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650AbXCMXrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 19:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbXCMXrR
+	id S1752645AbXCMXuN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 19:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbXCMXuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 19:47:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54897 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752135AbXCMXrP (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 19:47:15 -0400
-Date: Wed, 14 Mar 2007 10:46:25 +1100
-From: David Chinner <dgc@sgi.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Ulrich Drepper <drepper@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Mingming Cao <cmm@us.ibm.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, nscott@aconex.com,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, suparna@in.ibm.com, alex@clusterfs.com,
-       suzuki@in.ibm.com
-Subject: Re: [RFC] Heads up on sys_fallocate()
-Message-ID: <20070313234625.GB6095633@melbourne.sgi.com>
-References: <20070301183445.GA7911@amitarora.in.ibm.com> <20070301142537.b5950cd7.akpm@linux-foundation.org> <1172788855.26078.294.camel@edge> <20070301145256.3e999932.akpm@linux-foundation.org> <45E86CBA.3070905@us.ibm.com> <20070305122742.GA11486@atrey.karlin.mff.cuni.cz> <45EC7773.7020603@us.ibm.com> <20070306072850.GA23081@infradead.org> <45ED7C59.4050508@redhat.com> <45ED9B00.3020502@redhat.com>
-Mime-Version: 1.0
+	Tue, 13 Mar 2007 19:50:13 -0400
+Received: from ozlabs.org ([203.10.76.45]:51325 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752645AbXCMXuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 19:50:11 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45ED9B00.3020502@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+Message-ID: <17911.14509.184728.839589@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Mar 2007 10:50:05 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: _proxy_pda still makes linking modules fail
+In-Reply-To: <45F6C3E9.5020207@goop.org>
+References: <1173315479.12472.9.camel@qrnik>
+	<p73lki39s3a.fsf@bingen.suse.de>
+	<45F49E0A.3090607@goop.org>
+	<20070312094805.GA11644@one.firstfloor.org>
+	<1173736726.10618.1.camel@localhost.localdomain>
+	<1173767032.10618.43.camel@localhost.localdomain>
+	<17910.26926.138067.731855@cargo.ozlabs.ibm.com>
+	<45F6C3E9.5020207@goop.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 10:46:56AM -0600, Eric Sandeen wrote:
-> Ulrich Drepper wrote:
-> > Christoph Hellwig wrote:
-> >> fallocate with the whence argument and flags is already quite complicated,
-> >> I'd rather have another call for placement decisions, that would
-> >> be called on an fd to do placement decissions for any further allocations
-> >> (prealloc, write, etc)
-> > 
-> > Yes, posix_fallocate shouldn't be made more complicated.  But I don't
-> > understand why requesting linear layout of the blocks should be an
-> > option.  It's always an advantage if the blocks requested this way are
-> > linear on disk.  So, the kernel should always do its best to make this
-> > happen, without needing an additional option.
-> > 
+Jeremy Fitzhardinge writes:
+
+> Or do you mean that if you have:
 > 
-> Agreed on both points.  The hints would be for things like start block,
-> or speculative EOF preallocation, not contiguity, which I think should
-> always be the goal.
+> 	preempt_disable();
+> 	use_my_percpu++;
+> 	preempt_enable();
+> 	// switch cpus
+> 	preempt_disable();
+> 	use_my_percpu++;
+> 	preempt_enable();
+> 
+> then it will still use the old pointer to use_my_percpu?
 
-ISTR having had this discussion before ;)
+Yes.  It can, and sometimes does.  There's no way (that I know of) to
+tell gcc "all my __thread variables might have moved to a different
+address".
 
-About guided preallocation for defrag:
+> In principle gcc could CSE the value of smp_processor_id() across a cpu
+> change in the same way.
 
-http://marc.info/?t=116247859500001&r=1&w=2
+There it's easier to make gcc do what we want, because we can use a
+barrier or a volatile.  The difference is that smp_processor_id() is
+ultimately the value of something, not the address of something.  We
+can tell gcc "values might have changed" but have no way to say
+"addresses might have changed".
 
-e.g.: The sorts of policies we need for effective use of
-preallocation:
-
-http://marc.info/?l=linux-fsdevel&m=116184475308164&w=2
-http://marc.info/?l=linux-fsdevel&m=116278169519095&w=2
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Paul.
