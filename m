@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965691AbXCMMBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030268AbXCMMCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965691AbXCMMBT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 08:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965685AbXCMMBT
+	id S1030268AbXCMMCk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 08:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030265AbXCMMCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 08:01:19 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:30641 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965693AbXCMMBS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 08:01:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=ex02hW9qkXx0xqSZqbj/T/J0OwkGvAy+ZRmU30JT3SlJFBzycNOyinSpWrPyDFubJef2ODblHyvre4ybDSmE5ckwvkr+FRyG9Yfb0XlBBeaDA0TxGWF/L2kTFId7gpH8slWNh6RlsC/tcQ5s7kvNB5R4OqmQqEIFAQtu1sNFr38=  ;
-X-YMail-OSG: byC.MbwVM1mx3ZgRk5S1ZAKeFvb.QmQyYpCKw3ATGEgl8Bbd7g6W2hXAQitHGFZJR46EImogf1guzobQ8L7SESkR.bdegy2g3DXQ9t68eVpxRysBY5tLRQg7VA2o6ep6YVZbO2qkBjLD_KNQtMm.17ffuQ--
-Message-ID: <45F69287.8040509@yahoo.com.au>
-Date: Tue, 13 Mar 2007 23:01:11 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 13 Mar 2007 08:02:40 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:34670 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030268AbXCMMCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 08:02:39 -0400
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Andrea Arcangeli <andrea@suse.de>
+Subject: Re: SMP performance degradation with sysbench
+Date: Tue, 13 Mar 2007 13:02:44 +0100
+User-Agent: KMail/1.9.5
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Anton Blanchard <anton@samba.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <45E21FEC.9060605@redhat.com> <45F68713.9040608@yahoo.com.au> <20070313114215.GI8992@v2.random>
+In-Reply-To: <20070313114215.GI8992@v2.random>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
-References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>	<20070313005334.853559ca.akpm@linux-foundation.org>	<45F65ADA.9010501@yahoo.com.au>	<20070313035250.f908a50e.akpm@linux-foundation.org>	<45F685C6.8070806@yahoo.com.au>	<20070313041551.565891b5.akpm@linux-foundation.org>	<45F68B4B.9020200@yahoo.com.au> <20070313044756.b45649ac.akpm@linux-foundation.org>
-In-Reply-To: <20070313044756.b45649ac.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703131302.45216.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>On Tue, 13 Mar 2007 22:30:19 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->>We don't actually have to zap_pte_range the entire page table in
->>order to free it (IIRC we used to have to, before the 4lpt patches).
-> 
-> 
-> I'm trying to remember why we ever would have needed to zero out the pagetable
-> pages if we're taking down the whole mm?  Maybe it's because "oh, the
-> arch wants to put this page into a quicklist to recycle it", which is
-> all rather circular.
-> 
-> It would be interesting to look at a) leave the page full of random garbage
-> if we're releasing the whole mm and b) return it straight to the page allocator.
+On Tuesday 13 March 2007 12:42, Andrea Arcangeli wrote:
 
-Well we have the 'fullmm' case, which avoids all the locked pte operations
-(for those architectures where hardware pt walking requires atomicity).
+> My wild guess is that they're allocating memory after taking
+> futexes. If they do, something like this will happen:
+>
+>      taskA		taskB		taskC
+>      user lock
+> 			mmap_sem lock
+>      mmap sem -> schedule
+> 					user lock -> schedule
+>
+> If taskB wouldn't be there triggering more random trashing over the
+> mmap_sem, the lock holder wouldn't wait and task C wouldn't wait too.
+>
+> I suspect the real fix is not to allocate memory or to run other
+> expensive syscalls that can block inside the futex critical sections...
 
-However we still have to visit those to-be-unmapped parts of the page table,
-to find the pages and free them. So we still at least need to bring it into
-cache for the read... at which point, the store probably isn't a big burden.
+glibc malloc uses arenas, and trylock() only. It should not block because if 
+an arena is already locked, thread automatically chose another arena, and 
+might create a new one if necessary.
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+But yes, mmap_sem contention is a big problem, because it's also taken by 
+futex code (unfortunately)
+
