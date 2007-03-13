@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbXCMT7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbXCMUCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933068AbXCMT7K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 15:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933094AbXCMT7J
+	id S933069AbXCMUCR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933082AbXCMUCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 15:59:09 -0400
-Received: from www.osadl.org ([213.239.205.134]:43794 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933068AbXCMT7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 15:59:07 -0400
-Subject: Re: [6/6] 2.6.21-rc3: known regressions
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stephane Casset <sept@logidee.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Emil Karlson <jkarlson@cc.hut.fi>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org
-In-Reply-To: <20070313125025.GW18731@stusta.de>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
-	 <20070313125025.GW18731@stusta.de>
-Content-Type: text/plain
-Date: Tue, 13 Mar 2007 21:05:28 +0100
-Message-Id: <1173816328.13341.101.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 13 Mar 2007 16:02:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36887 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933069AbXCMUCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 16:02:16 -0400
+Message-ID: <45F7033B.2030204@redhat.com>
+Date: Tue, 13 Mar 2007 16:02:03 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Johannes Bauer <JohannesBauer@gmx.de>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       schwab@suse.de
+Subject: Re: x86_64 system lockup from userspace using setitimer()
+References: <45F6F3A6.9060405@gmx.de>
+In-Reply-To: <45F6F3A6.9060405@gmx.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 13:50 +0100, Adrian Bunk wrote:
-> Subject    : hrtimer_switch_to_hres():
->              wrong tick_init_highres() return value handling
-> References : http://lkml.org/lkml/2007/3/6/262
-> Submitter  : Linus Torvalds <torvalds@linux-foundation.org>
-> Caused-By  : Thomas Gleixner <tglx@linutronix.de>
->              commit 54cdfdb47f73b5af3d1ebb0f1e383efbe70fde9e
-> Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> Status     : unknown
+Johannes Bauer wrote:
+> Dear Community,
+> 
+> I think I've encountered a bug with the Linux kernel which results in a
+> complete system lockup and which can be started without root priviliges.
+> It's reproducible with 2.6.20.1 and 2.6.20.2 and only x64_64 seems
+> affected.
+> 
+> Here's the code which triggers the bug (originally found by me using an
+> only partly initialized "struct itimerval" structure - hence the strange
+> values in it_interval):
+> 
+> -----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
+> #include <stdio.h>
+> #include <sys/time.h>
+> #include <unistd.h>
+> 
+> int main(int argc, char **argv) {
+>     struct itimerval tim = {
+>         .it_interval = {
+>             .tv_sec = 140735669863712,
+>             .tv_usec = 4199521
+>         },
+>         .it_value = {
+>             .tv_sec = 0,
+>             .tv_usec =  100000
+>         }
+>     };
+>     setitimer(ITIMER_REAL, &tim, NULL);
+>     while (1) sleep(1);
+>     return 0;
+> }
+> -----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
+> 
+> Compiled with gcc 4.1.1 with "gcc -O2 -Wall -o crash crash.c".
+> 
+> The sourcecode can be found at
+> http://www.johannes-bauer.com/crash/crash.c and my kernel configuration
+> is at http://www.johannes-bauer.com/crash/config
+> 
+> Any further questions: feel free to ask. Please CC me for any posts in
+> this thread.
 
-Linus merged the original patch, which solved the real problem. 
+Could this be fixed by:
 
-He just gave me a lesson how to do it right next time.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=8bfd9a7a229b5f3d3eda5d7d45c2eebec5b4ba16
 
-	tglx
+[PATCH] hrtimers: prevent possible itimer DoS
 
+?
 
