@@ -1,58 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbXCMKiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXCMKmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215AbXCMKiA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 06:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXCMKiA
+	id S1752599AbXCMKmI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 06:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbXCMKmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 06:38:00 -0400
-Received: from smtp108.plus.mail.mud.yahoo.com ([68.142.206.241]:45786 "HELO
-	smtp108.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753217AbXCMKh7 (ORCPT
+	Tue, 13 Mar 2007 06:42:08 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:34253 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752599AbXCMKmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 06:37:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=X7Cv+3micT7BhK19/U2SCLko9RysjPm+Z+ZppTcrVhNsZTCvHJ8yeLjhc6y7WvTR+pswTzE+CaN9/2zynkhBmrL/yHqKblef33emlSZS8G/HXBBU/AbcdiMld+xfIPiHufhW8PoD0HXG5VIrIAcXpNwcU7BhEhvFhe2ZAv09f9w=  ;
-X-YMail-OSG: zx7G8CcVM1mZ1R4PrMNd6RaqWg.Os9s8yPtsJYyJDz0Tyh349yfXXcHDQazFgTT.3bz33mxf4iMHEuDc7uSxEWWXrESvm.A5BoQw_lKdXfFBLy9YSpaKnA--
-Message-ID: <45F67F02.5020401@yahoo.com.au>
-Date: Tue, 13 Mar 2007 21:37:54 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Andrea Arcangeli <andrea@suse.de>
-CC: Anton Blanchard <anton@samba.org>, Rik van Riel <riel@redhat.com>,
-       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: SMP performance degradation with sysbench
-References: <1172425476.5489.11.camel@odyssey.lan> <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au> <20070312220042.GA807@kryten> <45F63266.1080509@yahoo.com.au> <20070313094559.GC8992@v2.random> <45F67796.4040508@yahoo.com.au> <20070313103134.GF8992@v2.random>
-In-Reply-To: <20070313103134.GF8992@v2.random>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 06:42:07 -0400
+Date: Tue, 13 Mar 2007 10:42:02 +0000
+To: akpm@linux-foundation.org
+Cc: bob.picco@hp.com, apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix corruption of memmap on IA64 SPARSEMEM when mem_section is not a power of 2
+Message-ID: <20070313104201.GA16842@skynet.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli wrote:
-> On Tue, Mar 13, 2007 at 09:06:14PM +1100, Nick Piggin wrote:
-> 
->>Well ignoring the HT issue, I was seeing lots of idle time simply
->>because userspace could not keep up enough load to the scheduler.
->>There simply were fewer runnable tasks than CPU cores.
-> 
-> 
-> When you said idle I thought idle and not waiting for I/O. Waiting for
-> I/O would be hardly a kernel issue ;). If they're not waiting for I/O
-> and they're not scheduling in userland with nanosleep/pause, the cpu
-> shouldn't go idle. Even if they're calling sched_yield in a loop the
-> cpu should account for zero idle time as far as I can tell.
 
-Well it wasn't iowait time. From Anton's analysis, I would probably
-say it was time waiting for either the glibc malloc mutex or MySQL
-heap mutex.
+There are problems in the use of SPARSEMEM and pageblock flags that causes
+problems on ia64.
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+The first part of the problem is that units are incorrect in
+SECTION_BLOCKFLAGS_BITS computation. This results in a map_section's
+section_mem_map being treated as part of a bitmap which isn't good. This
+was evident with an invalid virtual address when mem_init attempted to free
+bootmem pages while relinquishing control from the bootmem allocator.
+
+The second part of the problem occurs because the pageblock flags bitmap is
+be located with the mem_section. The SECTIONS_PER_ROOT computation using
+sizeof (mem_section) may not be a power of 2 depending on the size of the
+bitmap. This renders masks and other such things not power of 2 base. This
+issue was seen with SPARSEMEM_EXTREME on ia64. This patch moves the bitmap
+outside of mem_section and uses a pointer instead in the mem_section. The
+bitmaps are allocated when the section is being initialised.
+
+Note that sparse_early_usemap_alloc() does not use alloc_remap() like
+sparse_early_mem_map_alloc(). The allocation required for the bitmap on x86,
+the only architecture that uses alloc_remap is typically smaller than a cache
+line. alloc_remap() pads out allocations to the cache size which would be
+a needless waste.
+
+Credit to Bob Picco for identifying the original problem and effecting a
+fix for the SECTION_BLOCKFLAGS_BITS calculation. Credit to Andy Whitcroft
+for devising the best way of allocating the bitmaps only when required for
+the section.
+
+Signed-off-by: Bob Picco <bob.picco@hp.com>
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+
+ include/linux/mmzone.h |    6 ++++--
+ mm/sparse.c            |   49 ++++++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 50 insertions(+), 5 deletions(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc2-mm2-clean/include/linux/mmzone.h linux-2.6.21-rc2-mm2-sparsemem_rootsize_fix/include/linux/mmzone.h
+--- linux-2.6.21-rc2-mm2-clean/include/linux/mmzone.h	2007-03-09 10:22:08.000000000 +0000
++++ linux-2.6.21-rc2-mm2-sparsemem_rootsize_fix/include/linux/mmzone.h	2007-03-09 19:42:00.000000000 +0000
+@@ -705,7 +705,7 @@ extern struct zone *next_zone(struct zon
+ #define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))
+ 
+ #define SECTION_BLOCKFLAGS_BITS \
+-		((SECTION_SIZE_BITS - (MAX_ORDER-1)) * NR_PAGEBLOCK_BITS)
++		((1 << (PFN_SECTION_SHIFT - (MAX_ORDER-1))) * NR_PAGEBLOCK_BITS)
+ 
+ #if (MAX_ORDER - 1 + PAGE_SHIFT) > SECTION_SIZE_BITS
+ #error Allocator MAX_ORDER exceeds SECTION_SIZE
+@@ -726,7 +726,9 @@ struct mem_section {
+ 	 * before using it wrong.
+ 	 */
+ 	unsigned long section_mem_map;
+-	DECLARE_BITMAP(pageblock_flags, SECTION_BLOCKFLAGS_BITS);
++
++	/* See declaration of similar field in struct zone */
++	unsigned long *pageblock_flags;
+ };
+ 
+ #ifdef CONFIG_SPARSEMEM_EXTREME
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc2-mm2-clean/mm/sparse.c linux-2.6.21-rc2-mm2-sparsemem_rootsize_fix/mm/sparse.c
+--- linux-2.6.21-rc2-mm2-clean/mm/sparse.c	2007-02-28 04:59:12.000000000 +0000
++++ linux-2.6.21-rc2-mm2-sparsemem_rootsize_fix/mm/sparse.c	2007-03-09 19:45:15.000000000 +0000
+@@ -198,13 +198,15 @@ struct page *sparse_decode_mem_map(unsig
+ }
+ 
+ static int sparse_init_one_section(struct mem_section *ms,
+-		unsigned long pnum, struct page *mem_map)
++		unsigned long pnum, struct page *mem_map,
++		unsigned long *pageblock_bitmap)
+ {
+ 	if (!valid_section(ms))
+ 		return -EINVAL;
+ 
+ 	ms->section_mem_map &= ~SECTION_MAP_MASK;
+ 	ms->section_mem_map |= sparse_encode_mem_map(mem_map, pnum);
++	ms->pageblock_flags = pageblock_bitmap;
+ 
+ 	return 1;
+ }
+@@ -268,6 +270,33 @@ static void __kfree_section_memmap(struc
+ 			   get_order(sizeof(struct page) * nr_pages));
+ }
+ 
++static unsigned long usemap_size(void)
++{
++	unsigned long size_bytes;
++ 	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
++	size_bytes = roundup(size_bytes, sizeof(unsigned long));
++	return size_bytes;
++}
++
++static unsigned long *__kmalloc_section_usemap(void)
++{
++	return kmalloc(usemap_size(), GFP_KERNEL);
++}
++
++static unsigned long *sparse_early_usemap_alloc(unsigned long pnum)
++{
++	unsigned long *usemap;
++	struct mem_section *ms = __nr_to_section(pnum);
++	int nid = sparse_early_nid(ms);
++
++	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	if (usemap)
++		return usemap;
++
++	printk(KERN_WARNING "%s: allocation failed\n", __FUNCTION__);
++	return NULL;
++}
++
+ /*
+  * Allocate the accumulated non-linear sections, allocate a mem_map
+  * for each and record the physical to section mapping.
+@@ -276,6 +305,7 @@ void sparse_init(void)
+ {
+ 	unsigned long pnum;
+ 	struct page *map;
++	unsigned long *usemap;
+ 
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!valid_section_nr(pnum))
+@@ -284,7 +314,13 @@ void sparse_init(void)
+ 		map = sparse_early_mem_map_alloc(pnum);
+ 		if (!map)
+ 			continue;
+-		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
++
++		usemap = sparse_early_usemap_alloc(pnum);
++		if (!usemap)
++			continue;
++
++		sparse_init_one_section(__nr_to_section(pnum), pnum, map,
++								usemap);
+ 	}
+ }
+ 
+@@ -300,6 +336,7 @@ int sparse_add_one_section(struct zone *
+ 	struct pglist_data *pgdat = zone->zone_pgdat;
+ 	struct mem_section *ms;
+ 	struct page *memmap;
++	unsigned long *usemap;
+ 	unsigned long flags;
+ 	int ret;
+ 
+@@ -309,6 +346,7 @@ int sparse_add_one_section(struct zone *
+ 	 */
+ 	sparse_index_init(section_nr, pgdat->node_id);
+ 	memmap = __kmalloc_section_memmap(nr_pages);
++	usemap = __kmalloc_section_usemap();
+ 
+ 	pgdat_resize_lock(pgdat, &flags);
+ 
+@@ -317,9 +355,14 @@ int sparse_add_one_section(struct zone *
+ 		ret = -EEXIST;
+ 		goto out;
+ 	}
++
++	if (!usemap) {
++		ret = -ENOMEM;
++		goto out;
++	}
+ 	ms->section_mem_map |= SECTION_MARKED_PRESENT;
+ 
+-	ret = sparse_init_one_section(ms, section_nr, memmap);
++	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
+ 
+ out:
+ 	pgdat_resize_unlock(pgdat, &flags);
