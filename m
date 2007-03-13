@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751511AbXCMJvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbXCMJxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751511AbXCMJvp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbXCMJvp
+	id S1752522AbXCMJxf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXCMJxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:51:45 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:37659 "EHLO e5.ny.us.ibm.com"
+	Tue, 13 Mar 2007 05:53:35 -0400
+Received: from nn7.de ([85.214.94.156]:42198 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbXCMJvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:51:44 -0400
-Date: Tue, 13 Mar 2007 15:28:08 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>, Anton Blanchard <anton@samba.org>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Aneesh Kumar <aneesh.kumar@gmail.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH] kthread_should_stop_check_freeze (was: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread)
-Message-ID: <20070313095808.GA19939@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <200702260800.49603.rjw@sisk.pl> <20070312043854.GA4124@linux.vnet.ibm.com> <20070312081459.GI5242@elf.ucw.cz> <200703121219.12072.rjw@sisk.pl> <20070312223906.GA9749@elf.ucw.cz> <20070312224524.GB807@kryten> <20070313031411.GC9881@in.ibm.com> <20070313091629.GA19684@infradead.org>
+	id S1751766AbXCMJxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 05:53:34 -0400
+Subject: Re: s2ram still broken with CONFIG_NO_HZ / HPET (macbook pro)
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Emil Karlson <jkarlson@cc.hut.fi>,
+       "Michael S\. Tsirkin" <mst@mellanox.co.il>, Len Brown <lenb@kernel.org>
+In-Reply-To: <45F53282.5040504@gmail.com>
+References: <1173645941.4204.5.camel@localhost> <45F53282.5040504@gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Mar 2007 10:53:31 +0100
+Message-Id: <1173779611.13173.8.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070313091629.GA19684@infradead.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 09:16:29AM +0000, Christoph Hellwig wrote:
-> > Document as well in the kernel_thread() API, as I notice people still
-> > use kernel_thread() some places (ex: rtasd.c in powerpc arch)?
+On Mon, 2007-03-12 at 19:59 +0900, Tejun Heo wrote:
+> Soeren Sonnenburg wrote:
+> > Elsewise I still see the
+> > 
+> > ATA: abnormal status 0x80 on port 0x000140df
+> > ATA: abnormal status 0x80 on port 0x000140df
+> > ata1.00: configured for UDMA/33
+> > ata3.01: revalidation failed (errno=-2)
+> > ata3: failed to recover some devices, retrying in 5 secs
+> > ATA: abnormal status 0x7F on port 0x000140df
+> > ATA: abnormal status 0x7F on port 0x000140df
+> > ata3.01: configured for UDMA/133
 > 
-> They shouldn't use kernel_thread.
+> I can't tell much about HPET timer, only the ATA messages.
+> 
+> Abnormal messages can be ignored.  Hmmm... revalidation failed without
+> explaining why.  Can you apply the attached patch and see whether the
+> added message gets printed?
 
-Hmm ..that needs to be documented as well then! I can easily count more
-than dozen places where kernel_thread() is being used.
+Well it is there:
 
-I agree though that kthread is a much cleaner interface to create/destroy 
-threads.
+ATA: abnormal status 0x80 on port 0x000140df
+ata1.00: configured for UDMA/33
+ata3.01: NODEV after polling detection
+ata3.01: revalidation failed (errno=-2)
+ata3: failed to recover some devices, retrying in 5 secs
+ATA: abnormal status 0x7F on port 0x000140df
+ATA: abnormal status 0x7F on port 0x000140df
+ata3.01: configured for UDMA/133
+SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
+sda: Write Protect is off
+sda: Mode Sense: 00 3a 00 00
+SCSI device sda: write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
 
+just FYI a macbook pro has a sata disc + a dvd drive registered
+as /dev/sda and /dev/scd0 driven by ata_piix:
+
+dmesg | grep ata_piix 
+ata_piix 0000:00:1f.1: version 2.10ac1
+scsi0 : ata_piix
+scsi1 : ata_piix
+ata_piix 0000:00:1f.2: MAP [ P0 P2 XX XX ]
+ata_piix 0000:00:1f.2: invalid MAP value 0
+scsi2 : ata_piix
+scsi3 : ata_piix
+
+Soeren
 -- 
-Regards,
-vatsa
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
