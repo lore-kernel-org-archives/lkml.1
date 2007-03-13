@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXCMMSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030297AbXCMMUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030284AbXCMMSN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 08:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXCMMSN
+	id S1030297AbXCMMUF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 08:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965719AbXCMMUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 08:18:13 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:34538 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030284AbXCMMSN (ORCPT
+	Tue, 13 Mar 2007 08:20:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:35039 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965702AbXCMMUC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 08:18:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=Pjb2772skoaLOX+R2MqgUffdI1VDYmo1zvpDgPo70ngc1/LRjaPCp1/5ooq7r8wYMcFvQCpx7gRYQ2wbEBRoTebr4Qg+Q2vW1ssC5SaDUdxQrQp7CEgiF1LIu90XmnUmRp3X9u867iF24uIwtuFFRgBnay/Tc1zUXWHuYTBYaKA=  ;
-X-YMail-OSG: vTq_WigVM1m32tzJPGSx772uvKWX36p.mesCM6u4A8BBfeJmMBt0wE5Qv_XJaC_DTPXFdAb6C8KzI2mPUaI.CfOPRoXkO_5M_QkYHl8T9tTfskBd1Mg0xJKxP7rUuXDUzIVIN1DeiJkgy9szhiRRPEJxsg--
-Message-ID: <45F6967F.4020002@yahoo.com.au>
-Date: Tue, 13 Mar 2007 23:18:07 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 13 Mar 2007 08:20:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=N16h3QSoqf9S4O+iQ9yzyL3FYbb0GlVjD2fYZVdi9krIfYc01ovz3r3hag1KHSPXoBtnNq0aBQg5s+OJWN/MprpmiYcTT50rsRIvqps/i4XB3MkdSQI+Ll2XfdtL5ZqVhtfNW/vGxMNUI4mRDe3NX7bQBMRNgi/RNlJc0H3glio=
+Message-ID: <45F696EC.6050601@gmail.com>
+Date: Tue, 13 Mar 2007 21:19:56 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
-References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>	<20070313005334.853559ca.akpm@linux-foundation.org>	<45F65ADA.9010501@yahoo.com.au>	<20070313035250.f908a50e.akpm@linux-foundation.org>	<45F685C6.8070806@yahoo.com.au>	<20070313041551.565891b5.akpm@linux-foundation.org>	<45F68B4B.9020200@yahoo.com.au>	<20070313044756.b45649ac.akpm@linux-foundation.org>	<45F69287.8040509@yahoo.com.au> <20070313051109.3215104b.akpm@linux-foundation.org>
-In-Reply-To: <20070313051109.3215104b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: l.genoni@oltrelinux.com
+CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: IDE disk runs just in DMA/33 with 2.6.20.2 on nVidia CK804 controller
+References: <Pine.LNX.4.64.0703131125270.24498@Phoenix.oltrelinux.com>
+In-Reply-To: <Pine.LNX.4.64.0703131125270.24498@Phoenix.oltrelinux.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>On Tue, 13 Mar 2007 23:01:11 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->>Andrew Morton wrote:
-
->>>It would be interesting to look at a) leave the page full of random garbage
->>>if we're releasing the whole mm and b) return it straight to the page allocator.
->>
->>Well we have the 'fullmm' case, which avoids all the locked pte operations
->>(for those architectures where hardware pt walking requires atomicity).
+l.genoni@oltrelinux.com wrote:
+> Hi,
+> I reported this also for 2.6.20 kernel.
+> new libata with controller nVidia CK804 initializes the disk in DMA/33,
+> with with 2.6.19.5 and previous the disk is correctly inizialized in
+> DMA/100.
+> Tha cable is OK, and with older kernels the disks runs without troubles.
 > 
-> 
-> I suspect there are some tlb operations which could be skipped in that case
-> too.
+> The sistem has two sata disks on nvidia CK804 controllers, and then a
+> disk as primary master, and a dvd writer (DMA/33) as secondary master)
 
-Depends on the tlb flush implementation. The generic one doesn't look like
-it is all that smart about optimising the fullmm case. It does skip some
-tlb flushing though.
+Cable detection on CK804 is basically broken at the moment.  It should
+be fixed with Alan's acpi cable detection magic soon (maybe 2.6.21).
 
->>However we still have to visit those to-be-unmapped parts of the page table
->>to find the pages and free them. So we still at least need to bring it into
->>cache for the read... at which point, the store probably isn't a big burden.
-> 
-> 
-> It means all that data has to be written back.  Yes, I expect it'll prove
-> to be less costly than the initial load.
-
-Still, it is something we could try.
+Thanks.
 
 -- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+tejun
