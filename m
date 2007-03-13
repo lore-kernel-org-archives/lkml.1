@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965638AbXCMJ3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXCMJc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965638AbXCMJ3k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965650AbXCMJ3k
+	id S965645AbXCMJc1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965656AbXCMJc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:29:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55072 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965638AbXCMJ3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:29:39 -0400
-Date: Tue, 13 Mar 2007 10:29:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Mike Galbraith <efault@gmx.de>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
+	Tue, 13 Mar 2007 05:32:26 -0400
+Received: from mail05.syd.optusnet.com.au ([211.29.132.186]:37832 "EHLO
+	mail05.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965645AbXCMJc0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 05:32:26 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: ck@vds.kolivas.org
+Subject: Re: [ck] Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Date: Tue, 13 Mar 2007 20:31:38 +1100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Message-ID: <20070313092920.GB7648@elte.hu>
-References: <200703111457.17624.kernel@kolivas.org> <1173762639.7944.45.camel@Homer.simpson.net> <20070313081805.GA22327@elte.hu> <200703132021.50712.kernel@kolivas.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+References: <200703111457.17624.kernel@kolivas.org> <20070313081805.GA22327@elte.hu> <200703132021.50712.kernel@kolivas.org>
 In-Reply-To: <200703132021.50712.kernel@kolivas.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703132031.39370.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 13 March 2007 20:21, Con Kolivas wrote:
+> On Tuesday 13 March 2007 19:18, Ingo Molnar wrote:
+> > * Mike Galbraith <efault@gmx.de> wrote:
+> > > [...] The situation as we speak is that you can run cpu intensive
+> > > tasks while watching eye-candy.  With RSDL, you can't, you feel the
+> > > non-interactive load instantly. [...]
+> >
+> > i have to agree with Mike that this is a material regression that cannot
+> > be talked around.
+> >
+> > Con, we want RSDL to /improve/ interactivity. Having new scheduler
+> > interactivity logic that behaves /worse/ in the presence of CPU hogs,
+> > which CPU hogs are even reniced to +5, than the current interactivity
+> > code, is i think a non-starter. Could you try to fix this, please? Good
+> > interactivity in the presence of CPU hogs (be them default nice level or
+> > nice +5) is _the_ most important scheduler interactivity metric.
+> > Anything else is really secondary.
+>
+> Well I guess you must have missed where I asked him if he would be happy if
+> I changed +5 metrics to do whatever he wanted and he refused to answer me.
+> That would easily fit within that scheme. Any percentage of nice value he
+> chose. I suggest 50% of nice 0. Heck I can even increase it if he likes.
+> All I asked for was an answer as to whether that would satisfy his
+> criterion.
 
-* Con Kolivas <kernel@kolivas.org> wrote:
+It seem Mike has chosen to go silent so I'll guess on his part. 
 
-> Well I guess you must have missed where I asked him if he would be 
-> happy if I changed +5 metrics to do whatever he wanted and he refused 
-> to answer me. [...]
+nice on my debian etch seems to choose nice +10 without arguments contrary to 
+a previous discussion that said 4 was the default. However 4 is a good value 
+to use as a base of sorts.
 
-I'd say lets keep nice levels out of this completely for now - while 
-they should work _too_, it's easy because the scheduler has the 'nice' 
-information. The basic behavior of CPU hogs that matters most.
+What I propose is as a proportion of nice 0:
+nice 4 1/2
+nice 8 1/4
+nice 12 1/8
+nice 16 1/16
+nice 20 1/32 (of course nice 20 doesn't exist)
 
-So the question is: if all tasks are on the same nice level, how does, 
-in Mike's test scenario, RSDL behave relative to the current 
-interactivity code?
+and we can do the opposite in the other direction
+nice -4 2
+nice -8 4
+nice -12 8
+nice -16 16
+nice -20 32
 
-	Ingo
+Assuming no further discussion is forthcoming I'll implement that along with 
+Al's suggestion for staggering the latencies better with nice differences 
+since the two are changing the same thing.
+
+-- 
+-ck
