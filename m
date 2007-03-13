@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbXCMSST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbXCMSVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932074AbXCMSST (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 14:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932067AbXCMSST
+	id S1753307AbXCMSVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 14:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbXCMSVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 14:18:19 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:31883 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbXCMSSS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 14:18:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=MWyyNF/uQnXUV1dqxrER46SolMjYXpdXMPBnwyYwKRfDrOQVbYTwKGHxWHCBrGRvX5C2v26mZkY46o6gYqi5z4Ppt6z9+zTIkgu8/OzehZG+xjKwVzkPPlLNugZt281qGAjiMSHuni9+967IZ3eL1QE+YE/AhHnOh+k1AeOY6h8=
-Date: Tue, 13 Mar 2007 21:18:15 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: /proc/kallsyms race vs module unload
-Message-ID: <20070313181815.GA5580@martell.zuzino.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 13 Mar 2007 14:21:42 -0400
+Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:4839 "EHLO
+	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753307AbXCMSVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 14:21:42 -0400
+Message-ID: <45F6EBB2.8090700@rtr.ca>
+Date: Tue, 13 Mar 2007 14:21:38 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Matt Mackall <mpm@selenic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: 2.6.21-rc3-mm1 RSDL results
+References: <20070309053931.GA10459@waste.org> <200703100723.51858.kernel@kolivas.org> <45F2F727.7010406@rtr.ca> <200703111034.02159.kernel@kolivas.org>
+In-Reply-To: <200703111034.02159.kernel@kolivas.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steps to reproduce:
+Con Kolivas wrote:
+> 
+> Can you try the new version of RSDL. Assuming it doesn't oops on you it has 
+> some accounting bugfixes which may have been biting you.
 
-	while true; do modprobe xfs; rmmod xfs; done
-		vs
-	while true; do cat /proc/kallsyms >/dev/null; done
+Retesting today with 2.6.21-rc3-git7 + 2.6.21-rc3-sched-rsdl-0.30.patch.
 
+Still not pleasant to use the GUI with a kernel build (-j1 or -j2) happening
+unless the build is manually "nice'd".
 
-[where xfs could be any module, I haven't tried]
+Also, accounting looks weird in top(1).
+With a 100% busy machine, top will show something like this :
 
-BUG: unable to handle kernel paging request at virtual address e19f808c
- printing eip:
-c01dc361
-*pde = 1ff5f067
-*pte = 00000000
-Oops: 0000 [#1]
-PREEMPT
-Modules linked in:
-CPU:    0
-EIP:    0060:[<c01dc361>]    Not tainted VLI
-EFLAGS: 00010297   (2.6.21-rc3-8b9909ded6922c33c221b105b26917780cfa497d #2)
-EIP is at vsnprintf+0x2af/0x48c
-eax: e19f808c   ebx: ffffffff   ecx: e19f808c   edx: fffffffe
-esi: dbe7aa84   edi: dbe2bf3c   ebp: ffffffff   esp: dbe2bec4
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process cat (pid: 7242, ti=dbe2b000 task=df5790b0 task.ti=dbe2b000)
-Stack: e19d6fde 00000000 00000010 00000008 ffffffff 00000001 00000598 dbe7aa68
-       0002f362 00000010 dbe7b000 00000000 ffffffff c034bbe0 dbe7aa68 dfd31880
-       dfa31e80 00001000 c01586b0 dbe2bf2c dbe2bf2c dfd31880 dfd31880 c01289f6
-Call Trace:
- [<c01586b0>] seq_printf+0x2e/0x4b
- [<c01289f6>] s_show+0x4b/0x7f
- [<c0158c6e>] seq_read+0x196/0x278
- [<c0158ad8>] seq_read+0x0/0x278
- [<c0143c35>] vfs_read+0x72/0x93
- [<c0143f1c>] sys_read+0x41/0x67
- [<c0102486>] sysenter_past_esp+0x5f/0x85
- =======================
-Code: 74 24 28 73 03 c6 06 20 46 4d 85 ed 7f f1 e9 b9 00 00 00 8b 0f 81 f9 ff 0f 00 00 b8 ea 45 36 c0 0f 46 c8 8b 54 24 30 89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 89 c3 89 e8 f6 44 24
-EIP: [<c01dc361>] vsnprintf+0x2af/0x48c SS:ESP 0068:dbe2bec4
+> top - 14:20:11 up 10:22,  1 user,  load average: 2.65, 2.80, 2.18
+> Tasks: 134 total,   4 running, 128 sleeping,   0 stopped,   2 zombie
+> Cpu(s): 68.7% us,  6.7% sy, 24.7% ni,  0.0% id,  0.0% wa,  0.0% hi,  0.0% si
+> Mem:   2076964k total,  2002560k used,    74404k free,   148924k buffers
+> Swap:  2409740k total,      244k used,  2409496k free,  1448876k cached
+> 
+>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>  1824 root      36  10 11748 7244 1936 R  4.0  0.3   0:00.12 cc1
+>  1845 root      31   0  8080 5272 1412 R  1.7  0.3   0:00.05 cc1
+>  4139 root      20   0  176m  35m 6860 S  1.3  1.7  18:59.35 Xorg
+> 29381 root      20   0 33712  16m  12m R  1.0  0.8   0:27.24 konsole
+>     3 root      20   0     0    0    0 S  0.3  0.0   0:00.49 events/0
+>  1529 root      20   0  2556 1460  752 S  0.3  0.1   0:00.05 make
+> 14623 root      20   0  2200 1144  860 R  0.3  0.1   0:00.89 top
+>     1 root      20   0  1568  532  464 S  0.0  0.0   0:00.22 init
+>     2 root      39  19     0    0    0 S  0.0  0.0   0:00.01 ksoftirqd/0
+>     4 root      20   0     0    0    0 S  0.0  0.0   0:00.00 khelper
+>     5 root      20   0     0    0    0 S  0.0  0.0   0:00.00 kthread    
 
+Mmm.. I wonder where all of that 100% CPU went to.. the busiest tasks
+are only showing up as 4.0% and 1.7% (when in fact they are using near 100%).
 
-
-What happens is that module_get_kallsym() drops module_mutex,
-returns "struct module *", module unloaded, "struct module *"
-used.
+Cheers
+           
 
