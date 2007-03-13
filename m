@@ -1,92 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030778AbXCMQbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030754AbXCMQcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030778AbXCMQbe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 12:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030781AbXCMQbe
+	id S1030754AbXCMQcz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 12:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030766AbXCMQcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 12:31:34 -0400
-Received: from mba.ocn.ne.jp ([122.1.175.29]:60640 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030778AbXCMQbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 12:31:33 -0400
-X-Greylist: delayed 1331 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Mar 2007 12:31:33 EDT
-Date: Wed, 14 Mar 2007 01:09:19 +0900 (JST)
-Message-Id: <20070314.010919.122026198.anemo@mba.ocn.ne.jp>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, device@lanana.org, ralf@linux-mips.org,
-       sshtylyov@ru.mvista.com
-Subject: [PATCH 2.6.21-rc3] serial: Allocate minor device numbers for
- serial_txx9 driver
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 3.3 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 13 Mar 2007 12:32:55 -0400
+Received: from MAIL.13thfloor.at ([213.145.232.33]:37336 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030754AbXCMQcz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 12:32:55 -0400
+Date: Tue, 13 Mar 2007 17:32:54 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@sw.ru>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [RFC][PATCH 1/7] Resource counters
+Message-ID: <20070313163254.GR8755@MAIL.13thfloor.at>
+Mail-Followup-To: Pavel Emelianov <xemul@sw.ru>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	containers@lists.osdl.org, Paul Menage <menage@google.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kirill Korotaev <dev@sw.ru>, Balbir Singh <balbir@in.ibm.com>
+References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru> <45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru> <20070309163711.GA3647@MAIL.13thfloor.at> <m1fy8bwqps.fsf@ebiederm.dsl.xmission.com> <20070312011612.GD21861@MAIL.13thfloor.at> <m1bqixtsr1.fsf@ebiederm.dsl.xmission.com> <20070313152150.GK8755@MAIL.13thfloor.at> <45F6C611.7070400@sw.ru>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F6C611.7070400@sw.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The serial_txx9 driver have abused device numbers (major 4, minor 128)
-if CONFIG_SERIAL_TXX9_STDSERIAL was not set.  This patch makes the
-driver allocate minor numbers from major 204 (Low-density serial
-ports).  I suppose a typical user of this driver set
-CONFIG_SERIAL_TXX9_STDSERIAL to Y (i.e. use "ttyS0"), so this patch
-would not cause big compatibility issue.
+On Tue, Mar 13, 2007 at 06:41:05PM +0300, Pavel Emelianov wrote:
+> >>> PS: atomic_add_unless() didn't exist back then
+> >>> (at least I think so) but that might be an option
+> >>> too ...
+> >> I think as far as having this discussion if you can remove that race
+> >> people will be more willing to talk about what vserver does.
+> > 
+> > well, shouldn't be a big deal to brush that patch up
+> > (if somebody actually _is_ interested)
+> > 
+> >> That said anything that uses locks or atomic operations (finer grained
+> >> locks) because of the cache line ping pong is going to have scaling
+> >> issues on large boxes.
+> > 
+> > right, but atomic ops have much less impact on most
+> > architectures than locks :)
+> 
+> Right. But atomic_add_unless() is slower as it is
+> essentially a loop. See my previous letter in this sub-thread.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/Documentation/devices.txt b/Documentation/devices.txt
-index 8de132a..62f85c5 100644
---- a/Documentation/devices.txt
-+++ b/Documentation/devices.txt
-@@ -2808,6 +2808,9 @@ Your cooperation is appreciated.
- 		    ...
- 		 190 = /dev/ttyUL3		Xilinx uartlite - port 3
- 		 191 = /dev/xvc0		Xen virtual console - port 0
-+		 192 = /dev/ttyTX0		TX39/49 serial port 0
-+		    ...
-+		 199 = /dev/ttyTX7		TX39/49 serial port 7
- 
- 205 char	Low-density serial ports (alternate device)
- 		  0 = /dev/culu0		Callout device for ttyLU0
-diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
-index 509ace7..c5607ac 100644
---- a/drivers/serial/serial_txx9.c
-+++ b/drivers/serial/serial_txx9.c
-@@ -40,6 +40,7 @@
-  *	1.07	Use CONFIG_SERIAL_TXX9_NR_UARTS.  Cleanup.
-  *	1.08	Use platform_device.
-  *		Fix and cleanup suspend/resume/initialization codes.
-+ *	1.09	Use major 204 if CONFIG_SERIAL_TXX9_STDSERIAL was not set.
-  */
- 
- #if defined(CONFIG_SERIAL_TXX9_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
-@@ -62,7 +63,7 @@
- 
- #include <asm/io.h>
- 
--static char *serial_version = "1.08";
-+static char *serial_version = "1.09";
- static char *serial_name = "TX39/49 Serial driver";
- 
- #define PASS_LIMIT	256
-@@ -70,13 +71,14 @@ static char *serial_name = "TX39/49 Serial driver";
- #if !defined(CONFIG_SERIAL_TXX9_STDSERIAL)
- /* "ttyS" is used for standard serial driver */
- #define TXX9_TTY_NAME "ttyTX"
--#define TXX9_TTY_MINOR_START	(64 + 64)	/* ttyTX0(128), ttyTX1(129) */
-+#define TXX9_TTY_MINOR_START	192
-+#define TXX9_TTY_MAJOR	204
- #else
- /* acts like standard serial driver */
- #define TXX9_TTY_NAME "ttyS"
- #define TXX9_TTY_MINOR_START	64
--#endif
- #define TXX9_TTY_MAJOR	TTY_MAJOR
-+#endif
- 
- /* flag aliases */
- #define UPF_TXX9_HAVE_CTS_LINE	UPF_BUGGY_UART
+fine, nobody actually uses atomic_add_unless(), or am I
+missing something?
 
+using two locks will be slower than using a single
+lock, adding a loop which counts from 0 to 100 will
+eat up some cpu, so what? don't do it :)
+
+> >> So in that sense anything short of per cpu variables sucks at scale.
+> >> That said I would much rather get a simple correct version without the
+> >> complexity of per cpu counters, before we optimize the counters that
+> >> much.
+> > 
+> > actually I thought about per cpu counters quite a lot, and
+> > we (Llinux-VServer) use them for accounting, but please
+> > tell me how you use per cpu structures for implementing 
+> > limits
+> 
+> Did you ever look at how get_empty_filp() works?
+> I agree, that this is not a "strict" limit, but it
+> limits the usage wit some "precision".
+> 
+> /* off-the-topic */ Herbert, you've lost Balbir again:
+> In this sub-thread some letters up Eric wrote a letter with
+> Balbir in Cc:. The next reply from you doesn't include him.
+
+I can happily add him to every email I reply to, but he
+definitely isn't removed by my mailer (as I already stated,
+it might be the mailing list which does this), fact is, the
+email arrives here without him in the cc, so a reply does
+not contain it either ...
+
+best,
+Herbert
 
