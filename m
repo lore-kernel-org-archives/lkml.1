@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbXCMCZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbXCMC0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbXCMCZw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 22:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXCMCZw
+	id S1753098AbXCMC0U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 22:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXCMC0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 22:25:52 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:44312 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753097AbXCMCZv (ORCPT
+	Mon, 12 Mar 2007 22:26:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40155
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753102AbXCMC0S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 22:25:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=LBaDCalyuWyDGeQWEuO7zO2YSllTwutG/rs7xM6pKxI3aOKwjAHF8OhfoDmeIzs7K
-	lpJuudK3VcIOQAgd9OCJg==
-Message-ID: <6599ad830703121925p7049db95nccedfc32609e6ae6@mail.gmail.com>
-Date: Mon, 12 Mar 2007 19:25:48 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Menage" <menage@google.com>, "Paul Jackson" <pj@sgi.com>,
-       ebiederm@xmission.com, matthltc@us.ibm.com,
-       ckrm-tech@lists.sourceforge.net, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       winget@google.com, xemul@sw.ru
-Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
-In-Reply-To: <20070312232143.GC6832@MAIL.13thfloor.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 12 Mar 2007 22:26:18 -0400
+Date: Mon, 12 Mar 2007 19:26:16 -0700 (PDT)
+Message-Id: <20070312.192616.63128242.davem@davemloft.net>
+To: paulus@samba.org
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, ak@suse.com, holt@sgi.com,
+       linux-ia64@vger.kernel.org, mpm@selenic.com
+Subject: Re: [QUICKLIST 0/6] Arch independent quicklists V1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <17909.62028.117035.287313@cargo.ozlabs.ibm.com>
+References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com>
+	<20070312.155157.74747634.davem@davemloft.net>
+	<17909.62028.117035.287313@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
-	 <6599ad830703071857yf711921ja3440c4276bbe58e@mail.gmail.com>
-	 <45EF83CB.9080903@vilain.net>
-	 <1173334209.13172.61.camel@localhost.localdomain>
-	 <m11wk08c9h.fsf@ebiederm.dsl.xmission.com>
-	 <20070309010628.GE4506@MAIL.13thfloor.at>
-	 <45F27503.1020108@vilain.net> <20070311141555.9951b7ba.pj@sgi.com>
-	 <6599ad830703120300x63ca5732wfe865f76cb5125a9@mail.gmail.com>
-	 <20070312232143.GC6832@MAIL.13thfloor.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/12/07, Herbert Poetzl <herbert@13thfloor.at> wrote:
->
-> why? you simply enter that specific space and
-> use the existing mechanisms (netlink, proc, whatever)
-> to retrieve the information with _existing_ tools,
+From: Paul Mackerras <paulus@samba.org>
+Date: Tue, 13 Mar 2007 11:37:32 +1100
 
-That's assuming that you're using network namespace virtualization,
-with each group of tasks in a separate namespace. What if you don't
-want the virtualization overhead, just the accounting?
+> David Miller writes:
+> 
+> > I ported this to sparc64 as per the patch below, tested on
+> > UP SunBlade1500 and 24 cpu Niagara T1000.
+> 
+> Did you see any performance improvement?  We used to have quicklists
+> on ppc, but I remain to be convinced that they actually help.
 
-Paul
+It shaved about 3 or 4 seconds consistently off of my kernel
+build on Niagara which usually clocks in just over 4 minutes
+on this 24 thread machine.
+
+> Also, I didn't understand why we have to do quicklists to take
+> advantage of the fact that the pages are in a pristine state when they
+> are freed.  I thought the whole point of the slab allocator was to be
+> able to take advantage of that...
+
+He just wants to side-step the issue in SLUB, which arguably
+is an attempt to simplify SLUB at the expense of functionality.
+
+I don't agree with that, but I'm merely preemptively testing his
+patches and porting them to sparc64 so it does not break when/if his
+code is merged in.  After being bitten by stuff like this in the past,
+I've decided to become more proactive :)
