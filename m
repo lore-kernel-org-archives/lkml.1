@@ -1,145 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbXCMPiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbXCMPi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbXCMPiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 11:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbXCMPiQ
+	id S1753272AbXCMPi2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 11:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbXCMPi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 11:38:16 -0400
-Received: from hydra.gt.owl.de ([195.71.99.218]:49537 "EHLO hydra.gt.owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753284AbXCMPiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 11:38:14 -0400
-X-Greylist: delayed 2017 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Mar 2007 11:38:14 EDT
-Date: Tue, 13 Mar 2007 16:04:35 +0100
-From: Florian Lohoff <flo@rfc822.org>
-To: linux-kernel@vger.kernel.org
-Subject: Boot fails with 2.6.20-rc3 / git-current Was: 2.6.20-rc3: Clocksource tsc unstable
-Message-ID: <20070313150435.GA26303@paradigm.rfc822.org>
-References: <4af2d03a0703090941hfebc1e5u5def6152847c965a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+	Tue, 13 Mar 2007 11:38:28 -0400
+Received: from smtp114.sbc.mail.mud.yahoo.com ([68.142.198.213]:44437 "HELO
+	smtp114.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753272AbXCMPi0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 11:38:26 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Mar 2007 11:38:26 EDT
+X-YMail-OSG: sfml3O8VM1l8EsUsYDSW6ElRAr_kX5q1qoseXZ5W_JyObLPEX0lLPmIkIfMRIq4PzSqDV1WKzB19xTnmqfQ.DOuJ3a2DmqcTBuwgzECJVvJBLpfqH.7xaZSqDoLD0sv0_14AfcMnyXIysRuv05..1W0Elw--
+Date: Tue, 13 Mar 2007 10:31:31 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: Valdis.Kletnieks@vt.edu, linux-security-module@vger.kernel.org,
+       safford@watson.ibm.com, serue@linux.vnet.ibm.com,
+       kjhall@linux.vnet.ibm.com, zohar@us.ibm.com,
+       linux-kernel@vger.kernel.org, disec-devel@lists.sourceforge.net,
+       selinux@tycho.nsa.gov
+Subject: Re: [RFC] [Patch 1/1] IBAC Patch
+Message-ID: <20070313153131.GB29812@vino.hallyn.com>
+References: <1173394696.5981.12.camel@localhost.localdomain> <200703090319.l293JrpC009714@turing-police.cc.vt.edu> <1173736041.5803.3.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4af2d03a0703090941hfebc1e5u5def6152847c965a@mail.gmail.com>
-Organization: rfc822 - pure communication
-X-SpiderMe: mh-200703131555@listme.rfc822.org
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1173736041.5803.3.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Mimi Zohar (zohar@linux.vnet.ibm.com):
+> On Thu, 2007-03-08 at 22:19 -0500, Valdis.Kletnieks@vt.edu wrote:
+> > On Thu, 08 Mar 2007 17:58:16 EST, Mimi Zohar said:
+> > > This is a request for comments for a new Integrity Based Access
+> > > Control(IBAC) LSM module which bases access control decisions
+> > > on the new integrity framework services. 
+> > > 
+> > > (Hopefully this will help clarify the interaction between an LSM 
+> > > module and LIM module.)
+> > 
+> > OK, between this and the additional LIM hooks I didn't notice in an earlier
+> > patch, we're starting to see the API.   The only problem is that although
+> > it may be the right API for *your* code, I suspect it's a non-starter without
+> > a discussion about whether it's the right *generic* API for an LIM (which will
+> > require at least one dramatic bun fight about what "Integrity" means).
+> 
+> Absolutely, we need to make sure that the set of LIM hooks is complete and that
+> nothing is missing in order to implement different types of LIM providers.  I'm 
+> copying the digsig mailing list for their input on requirements, which this API 
+> might not satisfy or perhaps address.
 
---gKMricLos+KVdGMg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+(Could you resend the IBAC patch to the disec list as well?)
 
-On Fri, Mar 09, 2007 at 06:41:45PM +0100, Jiri Slaby wrote:
-> Hi.
->=20
-> I got this message after suspend;resume on my notebook
-> Clocksource tsc unstable (delta =3D -154983451 ns)
->=20
+Is IBAC basically a 'demo' lsm?  It only hooks bprm_security, so you
+can't execute anything with a bad hash, right?  So really if you were to
+also hook mmap, this would completely do away with the need for digsig?
+IBAC is automatically able to use any integrity measurement modules you
+write, whether they use gpg like digsig does right now, or use the tpm?
 
-I am getting the exact same line on bootup on my Fujitsu Siemens
-Lifebook E8110. After that line the boot halts with current git:
+It also shows how simple it would be to hook selinux, though I guess
+there are several ways we might want to hook selinux - 1. to check only
+security.selinux xattrs, 2. to check integrity of entry point types, 3.
+to check integrity of any files labeled by the integrity measurement
+module as needing to be checked.
 
-Last lines on current git were:
+Is there any way for the LSM itself to direct which data and metadata
+will be measured?  It looks like this is done by separately configuring
+the integrity measurement module - which seems fine to me.
 
-	IPMI System Interface driver
-	Clocksource tsc unstable ( delta =3D -160251929ns )
-
-Now running:
-	Linux laptop 2.6.21-rc2 #1 SMP PREEMPT Thu Mar 1 07:41:52 CET 2007 i686 GN=
-U/Linux
-
-which comes up with the same line when initializing IDE but continues
-to run:
-
-[    9.912917] ICH7: IDE controller at PCI slot 0000:00:1f.1
-[    9.913025] ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 18 (level, low) -=
-> IRQ 20
-[    9.913210] ICH7: chipset revision 2
-[    9.913300] ICH7: not 100% native mode: will probe irqs later
-[    9.913403]     ide0: BM-DMA at 0x1810-0x1817, BIOS settings: hda:DMA, h=
-db:pio
-[    9.913637] Probing IDE interface ide0...
-[    9.997936] Clocksource tsc unstable (delta =3D -430882190 ns)
-[   10.002393] hda: MATSHITAUJ-841Db, ATAPI CD/DVD-ROM drive
-[   10.003539] ieee1394: Host added: ID:BUS[0-00:1023]  GUID[00000e10036532=
-e4]
-[   10.052945] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-
-CPU info:
-
-flo@laptop:~$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 14
-model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
-stepping        : 8
-cpu MHz         : 1333.000
-cache size      : 2048 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 2
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca =
-cmov pat clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc pn=
-i monitor vmx est tm2 xtpr
-bogomips        : 3662.23
-clflush size    : 64
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 14
-model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
-stepping        : 8
-cpu MHz         : 1333.000
-cache size      : 2048 KB
-physical id     : 0
-siblings        : 2
-core id         : 1
-cpu cores       : 2
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca =
-cmov pat clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc pn=
-i monitor vmx est tm2 xtpr
-bogomips        : 3657.63
-clflush size    : 64
-
---=20
-Florian Lohoff                  flo@rfc822.org             +49-171-2280134
-	Those who would give up a little freedom to get a little=20
-          security shall soon have neither - Benjamin Franklin
-
---gKMricLos+KVdGMg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFF9r2DUaz2rXW+gJcRAjPOAJ41nJVWRXWriHz7E1RhPJqHGUcRdgCg0m2d
-CkJXJcCE8SWU7HwlLzk4br8=
-=KQz8
------END PGP SIGNATURE-----
-
---gKMricLos+KVdGMg--
+-serge
