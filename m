@@ -1,140 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbXCMSYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752397AbXCMSfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbXCMSYS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 14:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbXCMSYS
+	id S1752397AbXCMSfm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 14:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbXCMSfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 14:24:18 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:47533 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbXCMSYQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 14:24:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Vbb+S8odv85zd6gKmhOyQua+dzC58wm/94PcxNyQQ2Fy/fHptYyU/CgO6e4DCxL7xNkGzFtqy/tRx3yQNHh7JgHWIXO3BrVx2VxDlYDSnfkqLD5y4g37zSsivUcAXPWXjQwqudgGe93SdABV1U0f+L8BZqeUUPSm7tsWYaFnnHc=
-Message-ID: <6bffcb0e0703131124s3388366dra87645928fec659@mail.gmail.com>
-Date: Tue, 13 Mar 2007 19:24:13 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: 2.6.21-rc2-git3 oops snd_intel8x0_interrupt+0x104/0x1dc [snd_intel8x0] (crashdump kernel)
-Cc: perex@suse.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-In-Reply-To: <s5hr6s0ai9l.wl%tiwai@suse.de>
+	Tue, 13 Mar 2007 14:35:41 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55510 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752397AbXCMSfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 14:35:41 -0400
+Date: Tue, 13 Mar 2007 11:33:53 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@osdl.org>, torvalds@osdl.org, stable@kernel.org
+Subject: Linux 2.6.20.3
+Message-ID: <20070313183353.GA7434@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45EC5C76.3040703@googlemail.com> <s5hr6s0ai9l.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Takashi,
+We (the -stable team) are announcing the release of the 2.6.20.3 kernel.
+It contains a number of bugfixes and all 2.6.20 users are recommended to
+upgrade.
 
-On 07/03/07, Takashi Iwai <tiwai@suse.de> wrote:
-> At Mon, 05 Mar 2007 19:07:50 +0100,
-> Michal Piotrowski wrote:
-> >
-> > Hi,
-> >
-> > I hit this bug on crashdump kernel
-> >
-> > [ 8450.127374] divide error: 0000 [#1]
-> > [ 8450.130876] PREEMPT
-> > [ 8450.133098] Modules linked in: snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd evdev intel_agp soundcore agpgart snd_page_alloc i2c_i801 skge rtc_cmos rtc_core rtc_lib ide_cd cdrom rtc unix
-> > [ 8450.159726] CPU:    0
-> > [ 8450.159727] EIP:    0060:[<ca903276>]    Not tainted VLI
-> > [ 8450.159728] EFLAGS: 00010046   (2.6.21-rc2-git3 #12)
-> > [ 8450.172304] EIP is at snd_intel8x0_interrupt+0x104/0x1dc [snd_intel8x0]
-> > [ 8450.178921] eax: 00000000   ebx: c22f3590   ecx: 0000000e   edx: 00000000
-> > [ 8450.185707] esi: c22f34f8   edi: 00700140   ebp: c2b47ce8   esp: c2b47cc0
-> > [ 8450.192501] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> > [ 8450.198338] Process modprobe (pid: 1336, ti=c2b47000 task=c1e12070 task.ti=c2b47000)
-> > [ 8450.205900] Stack: 00000001 c3197ab4 0000000e c165e6b6 0000000f 00000010 c22f37c0 00000202
-> > [ 8450.214466]        c3197ab8 00000020 c2b47d08 c1643230 ca903172 0000000a 012f37f8 c22f34f8
-> > [ 8450.223032]        070000e0 00000001 c2b47dd4 ca902144 c26b44ac c22f34f8 c1e125f8 c1e12070
-> > [ 8450.231590] Call Trace:
-> > [ 8450.234252]  [<c1604556>] show_trace_log_lvl+0x1a/0x2f
-> > [ 8450.239430]  [<c1604608>] show_stack_log_lvl+0x9d/0xa5
-> > [ 8450.244600]  [<c16047fd>] show_registers+0x1ed/0x32c
-> > [ 8450.249597]  [<c1604a43>] die+0x107/0x21e
-> > [ 8450.253640]  [<c1604bd3>] do_trap+0x79/0x91
-> > [ 8450.257860]  [<c160523a>] do_divide_error+0x94/0x9e
-> > [ 8450.262769]  [<c17fb54c>] error_code+0x74/0x7c
-> > [ 8450.267247]  [<c1643230>] request_irq+0xac/0xf4
-> > [ 8450.271811]  [<ca902144>] snd_intel8x0_probe+0x482/0xffb [snd_intel8x0]
-> > [ 8450.278459]  [<c16e78c5>] pci_device_probe+0x39/0x5b
-> > [ 8450.283455]  [<c173e633>] really_probe+0xbd/0x145
-> > [ 8450.288193]  [<c173e750>] driver_probe_device+0x95/0xa1
-> > [ 8450.293448]  [<c173e865>] __driver_attach+0x6a/0xa1
-> > [ 8450.298358]  [<c173dc61>] bus_for_each_dev+0x36/0x5b
-> > [ 8450.303354]  [<c173e4a7>] driver_attach+0x19/0x1b
-> > [ 8450.308091]  [<c173df0e>] bus_add_driver+0x6a/0x170
-> > [ 8450.313001]  [<c173ea70>] driver_register+0x79/0x7e
-> > [ 8450.317910]  [<c16e7a43>] __pci_register_driver+0x7c/0xa9
-> > [ 8450.323338]  [<ca909017>] alsa_card_intel8x0_init+0x17/0x19 [snd_intel8x0]
-> > [ 8450.330246]  [<c16366ad>] sys_init_module+0x11b0/0x12f0
-> > [ 8450.335502]  [<c1603e72>] sysenter_past_esp+0x5f/0x99
-> > [ 8450.340584]  =======================
-> > [ 8450.344172] Code: 29 c1 89 c8 83 c0 20 83 f9 ff 0f 4f c1 89 45 e0 89 53 38 8b 45 e0 0f af 43 20 03 43 24 89 43 24 f6 86 8c 02 00 00 40 75 08 31 d2 <f7> 73 18 89 53 24 8b 45 e0 03 43 30 83 e0 1f 89 43 30 8b 55 ec
-> > [ 8450.364659] EIP: [<ca903276>] snd_intel8x0_interrupt+0x104/0x1dc [snd_intel8x0] SS:ESP 0068:c2b47cc0
-> > [ 8450.373849] note: modprobe[1336] exited with preempt_count 1
-> > [ 8450.379518] BUG: sleeping function called from invalid context at kernel/rwsem.c:20
-> > [ 8450.387175] in_atomic():1, irqs_disabled():1
-> > [ 8450.391455] 1 lock held by modprobe/1336:
-> > [ 8450.395474]  #0:  (&chip->reg_lock){....}, at: [<ca9031fe>] snd_intel8x0_interrupt+0x8c/0x1dc [snd_intel8x0]
-> > [ 8450.405416] irq event stamp: 15590
-> > [ 8450.408828] hardirqs last  enabled at (15589): [<c165e6a2>] kmem_cache_alloc+0x89/0xa9
-> > [ 8450.416798] hardirqs last disabled at (15590): [<c1643227>] request_irq+0xa3/0xf4
-> > [ 8450.424329] softirqs last  enabled at (15566): [<c161a81e>] __do_softirq+0xa5/0xaa
-> > [ 8450.431943] softirqs last disabled at (15561): [<c1605cb7>] do_softirq+0x5b/0xc8
->
-> Hmm, it might be a race...
-> Does the patch below fix the problem?
->
+The diffstat and short summary of the fixes are below.
 
-Yes, it does.
+I'll also be replying to this message with a copy of the patch between
+2.6.20.2 and 2.6.20.3.
 
-Thanks!
+The updated 2.6.20.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+and can be browsed at the normal kernel.org git web browser:
+        www.kernel.org/git/
 
->
-> thanks,
->
-> Takashi
->
-> diff -r bf193701a812 sound/pci/intel8x0.c
-> --- a/sound/pci/intel8x0.c      Mon Feb 26 16:07:42 2007 +0100
-> +++ b/sound/pci/intel8x0.c      Wed Mar 07 14:40:58 2007 +0100
-> @@ -725,10 +725,11 @@ static inline void snd_intel8x0_update(s
->  static inline void snd_intel8x0_update(struct intel8x0 *chip, struct ichdev *ichdev)
->  {
->         unsigned long port = ichdev->reg_offset;
-> +       unsigned long flags;
->         int status, civ, i, step;
->         int ack = 0;
->
-> -       spin_lock(&chip->reg_lock);
-> +       spin_lock_irqsave(&chip->reg_lock, flags);
->         status = igetbyte(chip, port + ichdev->roff_sr);
->         civ = igetbyte(chip, port + ICH_REG_OFF_CIV);
->         if (!(status & ICH_BCIS)) {
-> @@ -768,7 +769,7 @@ static inline void snd_intel8x0_update(s
->                         ack = 1;
->                 }
->         }
-> -       spin_unlock(&chip->reg_lock);
-> +       spin_unlock_irqrestore(&chip->reg_lock, flags);
->         if (ack && ichdev->substream) {
->                 snd_pcm_period_elapsed(ichdev->substream);
->         }
->
+thanks,
 
-Regards,
-Michal
+greg k-h
+--------
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+ Makefile                                         |    2 
+ arch/sparc/kernel/of_device.c                    |    7 
+ arch/sparc64/kernel/of_device.c                  |    7 
+ drivers/connector/connector.c                    |   22 +-
+ drivers/net/wireless/bcm43xx/bcm43xx.h           |    1 
+ drivers/net/wireless/bcm43xx/bcm43xx_dma.c       |  171 ++++++++++++++++-------
+ drivers/scsi/scsi_debug.c                        |   12 +
+ drivers/usb/serial/keyspan.c                     |   49 ++++++
+ include/linux/netfilter_ipv4/ip_conntrack_core.h |    2 
+ include/net/inet_timewait_sock.h                 |    2 
+ include/net/netfilter/nf_conntrack_core.h        |    2 
+ net/core/sock.c                                  |    2 
+ net/ipv4/netfilter/ip_conntrack_core.c           |    2 
+ net/ipv4/netfilter/ip_conntrack_proto_tcp.c      |    4 
+ net/ipv4/netfilter/nf_nat_core.c                 |    3 
+ net/ipv4/netfilter/nf_nat_proto_gre.c            |    3 
+ net/ipv4/netfilter/nf_nat_proto_icmp.c           |    3 
+ net/ipv4/netfilter/nf_nat_proto_tcp.c            |    3 
+ net/ipv4/netfilter/nf_nat_proto_udp.c            |    3 
+ net/ipv4/udp.c                                   |    1 
+ net/ipv6/netfilter.c                             |    1 
+ net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c   |    1 
+ net/netfilter/nf_conntrack_core.c                |    2 
+ net/netfilter/nf_conntrack_proto_gre.c           |    3 
+ net/netfilter/nf_conntrack_proto_tcp.c           |    4 
+ net/netfilter/nfnetlink_log.c                    |   18 +-
+ 26 files changed, 232 insertions(+), 98 deletions(-)
+
+Summary of changes from v2.6.20.2 to v2.6.20.3
+==============================================
+
+
+David Miller (1):
+      Fix sparc64 device register probing
+
+Douglas Gilbert (1):
+      Fix bug 7994 sleeping function called from invalid context
+
+Eric Dumazet (1):
+      Fix timewait jiffies
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.20.3
+
+Herbert Xu (1):
+      Fix UDP header pointer after pskb_trim_rcsum()
+
+Johannes Berg (1):
+      Fix compat_getsockopt
+
+Larry Finger (1):
+      bcm43xx: Fix problem with >1 GB RAM
+
+Micha Mirosaw (1):
+      nfnetlink_log: fix NULL pointer dereference
+
+Michal Miroslaw (1):
+      nfnetlink_log: fix possible NULL pointer dereference
+
+Patrick McHardy (8):
+      conntrack: fix {nf, ip}_ct_iterate_cleanup endless loops
+      nf_conntrack/nf_nat: fix incorrect config ifdefs
+      tcp conntrack: accept SYN|URG as valid
+      nfnetlink_log: fix reference leak
+      nfnetlink_log: fix use after free
+      nf_conntrack: fix incorrect classification of IPv6 fragments as ESTABLISHED
+      nfnetlink_log: zero-terminate prefix
+      nfnetlink_log: fix crash on bridged packet
+
+Philipp Reisner (1):
+      Fix callback bug in connector
+
+Rainer Weikusat (1):
+      fix for bugzilla #7544 (keyspan USB-to-serial converter)
+
+Yasuyuki Kozakai (1):
+      ip6_route_me_harder should take into account mark
+
