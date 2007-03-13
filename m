@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbXCMGAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753137AbXCMGBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126AbXCMGAJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 02:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbXCMGAJ
+	id S1753137AbXCMGBF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 02:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbXCMGBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 02:00:09 -0400
-Received: from mail.kroah.org ([69.55.234.183]:46223 "EHLO perch.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753126AbXCMGAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 02:00:07 -0400
-Date: Mon, 12 Mar 2007 22:59:28 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-kernel@vger.kernel.org, ktk@bigfoot.com
-Subject: Re: [Bugme-new] [Bug 8187] New: 2.6.20 "PCI: Quirks" patch breaks X11 on I82801
-Message-ID: <20070313055928.GA12223@kroah.com>
-References: <200703122030.l2CKU5ES022977@fire-2.osdl.org> <20070312221952.691adeea.akpm@linux-foundation.org>
+	Tue, 13 Mar 2007 02:01:04 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:36202 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753136AbXCMGBB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 02:01:01 -0400
+Message-ID: <45F63DFB.9040302@cosmosbay.com>
+Date: Tue, 13 Mar 2007 07:00:27 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070312221952.691adeea.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Anton Blanchard <anton@samba.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Rik van Riel <riel@redhat.com>,
+       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: SMP performance degradation with sysbench
+References: <1172425476.5489.11.camel@odyssey.lan> <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au> <20070312220042.GA807@kryten>
+In-Reply-To: <20070312220042.GA807@kryten>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 13 Mar 2007 07:00:26 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 10:19:52PM -0800, Andrew Morton wrote:
-> > On Mon, 12 Mar 2007 13:30:05 -0700 bugme-daemon@bugzilla.kernel.org wrote:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8187
-> > 
-> >            Summary: 2.6.20 "PCI: Quirks" patch breaks X11 on I82801
-> >     Kernel Version: 2.6.20
-> >             Status: NEW
-> >           Severity: normal
-> >              Owner: greg@kroah.com
-> >          Submitter: ktk@bigfoot.com
-> > 
-> > 
-> > Most recent kernel where this bug did *NOT* occur:
-> > Any 2.6.20-pre prior to commit 368c73d4f689dae0807d0a2aa74c61fd2b9b075f
-> > 
-> > Distribution:  Slackware 11.0
-> > Hardware Environment:  HP/Compaq dc5000S (P4, 82801, 82865)
-> > Software Environment:  Xorg 6.9.0
-> > Problem Description:
-> > 
-> > Alan Cox introduced a "PCI: Quirks" patch (git commit
-> > 368c73d4f689dae0807d0a2aa74c61fd2b9b075f) in 2.6.20 that breaks X11 on this
-> > I82801 platform.  Specifically, it causes the PCI initialisation to become
-> > buggered; Xorg 6.9.0 dumps the following to the console:
-> > 	(EE) end of block range 0x177 < begin 0x3f0
-> > 	(EE) end of block range 0x177 < begin 0x3f0
-> > 	(WW) ****INVALID IO ALLOCATION**** b: 0x14d0 e: 0x14d7 correcting
-> > [...]
-> > 	Backtrace:
-> > 	0: X(xf86SigHandler+0x8a) [0x8088b2a]
-> > 	1: [0xb7f2b420]
-> > 	2: /usr/X11R6/lib/modules/drivers/i810_drv.so [0xb797f592]
-> > 	3: X(InitOutput+0xb83) [0x8072713]
-> > 	4: X(main+0x226) [0x80d4496]
-> > 	5: /lib/tls/libc.so.6(__libc_start_main+0xd4) [0xb7da7e14]
-> > 	6: X [0x806ff61]
-> > 
-> > 	Fatal server error:
-> > 	Caught signal 11.  Server aborting
-> > 
-> > Steps to reproduce:
-> > 
-> > Reverting the git commit mentioned above fixes the issue.  Apparently, this may
-> > be limited to certain combinations of on-motherboard chipsets, as I haven't seen
-> > many bug reports.  Googling shows some people having X11 segfault issues with
-> > 2.6.20 (e.g. freedesktop.org bug #9956) but in most of those cases it's due to
-> > the evdev driver and not PCI initialisation.
-> > 
-> > I wrote to Alan (cc'ed Greg as he signed off on the patch) nearly two weeks ago
-> > but have heard nothing, so I'm leaving a bug here instead.
-> > 
+Anton Blanchard a écrit :
+>  
+> Hi Nick,
 > 
-> argh.
+>> Anyway, I'll keep experimenting. If anyone from MySQL wants to help look
+>> at this, send me a mail (eg. especially with the sched_setscheduler issue,
+>> you might be able to do something better).
 > 
-> Would we break more machines than we fix if we just revert that?
+> I took a look at this today and figured Id document it:
+> 
+> http://ozlabs.org/~anton/linux/sysbench/
+> 
+> Bottom line: it looks like issues in the glibc malloc library, replacing
+> it with the google malloc library fixes the negative scaling:
+> 
+> # apt-get install libgoogle-perftools0
+> # LD_PRELOAD=/usr/lib/libtcmalloc.so /usr/sbin/mysqld
 
-I don't know, Alan?
+Hi Anton, thanks for the report.
+glibc has certainly many scalability problems.
 
-thanks,
+One of the known problem is its (ab)use of mmap() to allocate one (yes : one 
+!) page every time you fopen() a file. And then a munmap() at fclose() time.
 
-greg k-h
+
+mmap()/munmap() should be avoided as hell in multithreaded programs.
