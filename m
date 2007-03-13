@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbXCMJ5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbXCMJ5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751906AbXCMJ5B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXCMJ5B
+	id S1753205AbXCMJ5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbXCMJ5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:57:01 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44319 "EHLO
+	Tue, 13 Mar 2007 05:57:04 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44331 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbXCMJ47 (ORCPT
+	with ESMTP id S1753201AbXCMJ5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:56:59 -0400
-Message-Id: <20070313095547.178824302@bull.net>
+	Tue, 13 Mar 2007 05:57:01 -0400
+Message-Id: <20070313095547.548933801@bull.net>
 References: <20070313095203.154246923@bull.net>
 User-Agent: quilt/0.46-1
-Date: Tue, 13 Mar 2007 10:52:04 +0100
+Date: Tue, 13 Mar 2007 10:52:05 +0100
 From: Pierre.Peiffer@bull.net
 To: akpm@linux-foundation.org
 Cc: mingo@elte.hu, drepper@redhat.com, linux-kernel@vger.kernel.org,
@@ -21,272 +21,237 @@ Cc: mingo@elte.hu, drepper@redhat.com, linux-kernel@vger.kernel.org,
        =?ISO-8859-15?q?S=C3=A9bastien=20Dugu=C3=A9?= 
 	<sebastien.dugue@bull.net>,
        Pierre Peiffer <pierre.peiffer@bull.net>
-Subject: [PATCH 2.6.21-rc3-mm2 1/4] futex priority based wakeup
+Subject: [PATCH 2.6.21-rc3-mm2 2/4] Make futex_wait() use an hrtimer for timeout
 X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 13/03/2007 10:58:45,
+ 13/03/2007 10:58:46,
 	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 13/03/2007 10:58:49,
-	Serialize complete at 13/03/2007 10:58:49
-Content-Disposition: inline; filename=futex-use-prio-list.diff
+ 13/03/2007 10:58:50,
+	Serialize complete at 13/03/2007 10:58:50
+Content-Disposition: inline; filename=futex_wait-use-hrtimer.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today, all threads waiting for a given futex are woken in FIFO order (first
-waiter woken first) instead of priority order.
+This patch modifies futex_wait() to use an hrtimer + schedule() in place of
+schedule_timeout().
 
-This patch makes use of plist (pirotity ordered lists) instead of simple list in
-futex_hash_bucket.
+  schedule_timeout() is tick based, therefore the timeout granularity is
+the tick (1 ms, 4 ms or 10 ms depending on HZ). By using a high resolution
+timer for timeout wakeup, we can attain a much finer timeout granularity
+(in the microsecond range). This parallels what is already done for
+futex_lock_pi().
 
-All non-RT threads are stored with priority MAX_RT_PRIO, causing them to be
-woken last, in FIFO order (RT-threads are woken first, in priority order).
+  The timeout passed to the syscall is no longer converted to jiffies
+and is therefore passed to do_futex() and futex_wait() as a timespec
+therefore keeping nanosecond resolution.
+
+  Also this removes the need to pass the nanoseconds timeout part to
+futex_lock_pi() in val2.
+
+  In futex_wait(), if there is no timeout then a regular schedule() is
+performed. Otherwise, an hrtimer is fired before schedule() is called.
 
 Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
 Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
 
 ---
- kernel/futex.c |   78 +++++++++++++++++++++++++++++++++++----------------------
- 1 file changed, 49 insertions(+), 29 deletions(-)
+ include/linux/futex.h |    2 -
+ kernel/futex.c        |   59 +++++++++++++++++++++++++++++++++-----------------
+ kernel/futex_compat.c |   12 ++--------
+ 3 files changed, 43 insertions(+), 30 deletions(-)
 
 Index: b/kernel/futex.c
 ===================================================================
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -81,12 +81,12 @@ struct futex_pi_state {
-  * we can wake only the relevant ones (hashed queues may be shared).
-  *
-  * A futex_q has a woken state, just like tasks have TASK_RUNNING.
-- * It is considered woken when list_empty(&q->list) || q->lock_ptr == 0.
-+ * It is considered woken when plist_node_empty(&q->list) || q->lock_ptr == 0.
-  * The order of wakup is always to make the first condition true, then
-  * wake up q->waiters, then make the second condition true.
-  */
- struct futex_q {
--	struct list_head list;
-+	struct plist_node list;
- 	wait_queue_head_t waiters;
- 
- 	/* Which hash list lock to use: */
-@@ -108,8 +108,8 @@ struct futex_q {
-  * Split the global futex_lock into every hash list lock.
-  */
- struct futex_hash_bucket {
--       spinlock_t              lock;
--       struct list_head       chain;
-+	spinlock_t lock;
-+	struct plist_head chain;
- };
- 
- static struct futex_hash_bucket futex_queues[1<<FUTEX_HASHBITS];
-@@ -443,13 +443,13 @@ lookup_pi_state(u32 uval, struct futex_h
- {
- 	struct futex_pi_state *pi_state = NULL;
- 	struct futex_q *this, *next;
--	struct list_head *head;
-+	struct plist_head *head;
- 	struct task_struct *p;
- 	pid_t pid;
- 
- 	head = &hb->chain;
- 
--	list_for_each_entry_safe(this, next, head, list) {
-+	plist_for_each_entry_safe(this, next, head, list) {
- 		if (match_futex(&this->key, &me->key)) {
- 			/*
- 			 * Another waiter already exists - bump up
-@@ -513,12 +513,12 @@ lookup_pi_state(u32 uval, struct futex_h
-  */
- static void wake_futex(struct futex_q *q)
- {
--	list_del_init(&q->list);
-+	plist_del(&q->list, &q->list.plist);
- 	if (q->filp)
- 		send_sigio(&q->filp->f_owner, q->fd, POLL_IN);
- 	/*
- 	 * The lock in wake_up_all() is a crucial memory barrier after the
--	 * list_del_init() and also before assigning to q->lock_ptr.
-+	 * plist_del() and also before assigning to q->lock_ptr.
- 	 */
- 	wake_up_all(&q->waiters);
- 	/*
-@@ -631,7 +631,7 @@ static int futex_wake(u32 __user *uaddr,
- {
- 	struct futex_hash_bucket *hb;
- 	struct futex_q *this, *next;
--	struct list_head *head;
-+	struct plist_head *head;
- 	union futex_key key;
- 	int ret;
- 
-@@ -645,7 +645,7 @@ static int futex_wake(u32 __user *uaddr,
- 	spin_lock(&hb->lock);
- 	head = &hb->chain;
- 
--	list_for_each_entry_safe(this, next, head, list) {
-+	plist_for_each_entry_safe(this, next, head, list) {
- 		if (match_futex (&this->key, &key)) {
- 			if (this->pi_state) {
- 				ret = -EINVAL;
-@@ -673,7 +673,7 @@ futex_wake_op(u32 __user *uaddr1, u32 __
- {
- 	union futex_key key1, key2;
- 	struct futex_hash_bucket *hb1, *hb2;
--	struct list_head *head;
-+	struct plist_head *head;
- 	struct futex_q *this, *next;
- 	int ret, op_ret, attempt = 0;
- 
-@@ -746,7 +746,7 @@ retry:
- 
- 	head = &hb1->chain;
- 
--	list_for_each_entry_safe(this, next, head, list) {
-+	plist_for_each_entry_safe(this, next, head, list) {
- 		if (match_futex (&this->key, &key1)) {
- 			wake_futex(this);
- 			if (++ret >= nr_wake)
-@@ -758,7 +758,7 @@ retry:
- 		head = &hb2->chain;
- 
- 		op_ret = 0;
--		list_for_each_entry_safe(this, next, head, list) {
-+		plist_for_each_entry_safe(this, next, head, list) {
- 			if (match_futex (&this->key, &key2)) {
- 				wake_futex(this);
- 				if (++op_ret >= nr_wake2)
-@@ -785,7 +785,7 @@ static int futex_requeue(u32 __user *uad
- {
- 	union futex_key key1, key2;
- 	struct futex_hash_bucket *hb1, *hb2;
--	struct list_head *head1;
-+	struct plist_head *head1;
- 	struct futex_q *this, *next;
- 	int ret, drop_count = 0;
- 
-@@ -834,7 +834,7 @@ static int futex_requeue(u32 __user *uad
- 	}
- 
- 	head1 = &hb1->chain;
--	list_for_each_entry_safe(this, next, head1, list) {
-+	plist_for_each_entry_safe(this, next, head1, list) {
- 		if (!match_futex (&this->key, &key1))
- 			continue;
- 		if (++ret <= nr_wake) {
-@@ -845,9 +845,13 @@ static int futex_requeue(u32 __user *uad
- 			 * requeue.
- 			 */
- 			if (likely(head1 != &hb2->chain)) {
--				list_move_tail(&this->list, &hb2->chain);
-+				plist_del(&this->list, &hb1->chain);
-+				plist_add(&this->list, &hb2->chain);
- 				this->lock_ptr = &hb2->lock;
--			}
-+#ifdef CONFIG_DEBUG_PI_LIST
-+				this->list.plist.lock = &hb2->lock;
-+#endif
-+ 			}
- 			this->key = key2;
- 			get_futex_key_refs(&key2);
- 			drop_count++;
-@@ -892,7 +896,23 @@ queue_lock(struct futex_q *q, int fd, st
- 
- static inline void __queue_me(struct futex_q *q, struct futex_hash_bucket *hb)
- {
--	list_add_tail(&q->list, &hb->chain);
-+	int prio;
-+
-+	/*
-+	 * The priority used to register this element is
-+	 * - either the real thread-priority for the real-time threads
-+	 * (i.e. threads with a priority lower than MAX_RT_PRIO)
-+	 * - or MAX_RT_PRIO for non-RT threads.
-+	 * Thus, all RT-threads are woken first in priority order, and
-+	 * the others are woken last, in FIFO order.
-+	 */
-+	prio = min(current->normal_prio, MAX_RT_PRIO);
-+
-+	plist_node_init(&q->list, prio);
-+#ifdef CONFIG_DEBUG_PI_LIST
-+	q->list.plist.lock = &hb->lock;
-+#endif
-+	plist_add(&q->list, &hb->chain);
- 	q->task = current;
- 	spin_unlock(&hb->lock);
+@@ -998,7 +998,7 @@ static void unqueue_me_pi(struct futex_q
+ 	drop_futex_key_refs(&q->key);
  }
-@@ -947,8 +967,8 @@ static int unqueue_me(struct futex_q *q)
- 			spin_unlock(lock_ptr);
- 			goto retry;
- 		}
--		WARN_ON(list_empty(&q->list));
--		list_del(&q->list);
-+		WARN_ON(plist_node_empty(&q->list));
-+		plist_del(&q->list, &q->list.plist);
  
- 		BUG_ON(q->pi_state);
- 
-@@ -966,8 +986,8 @@ static int unqueue_me(struct futex_q *q)
-  */
- static void unqueue_me_pi(struct futex_q *q, struct futex_hash_bucket *hb)
+-static int futex_wait(u32 __user *uaddr, u32 val, unsigned long time)
++static int futex_wait(u32 __user *uaddr, u32 val, struct timespec *time)
  {
--	WARN_ON(list_empty(&q->list));
--	list_del(&q->list);
-+	WARN_ON(plist_node_empty(&q->list));
-+	plist_del(&q->list, &q->list.plist);
+ 	struct task_struct *curr = current;
+ 	DECLARE_WAITQUEUE(wait, curr);
+@@ -1006,6 +1006,8 @@ static int futex_wait(u32 __user *uaddr,
+ 	struct futex_q q;
+ 	u32 uval;
+ 	int ret;
++	struct hrtimer_sleeper t;
++	int rem = 0;
  
- 	BUG_ON(!q->pi_state);
- 	free_pi_state(q->pi_state);
-@@ -1060,10 +1080,10 @@ static int futex_wait(u32 __user *uaddr,
- 	__set_current_state(TASK_INTERRUPTIBLE);
- 	add_wait_queue(&q.waiters, &wait);
- 	/*
--	 * !list_empty() is safe here without any lock.
-+	 * !plist_node_empty() is safe here without any lock.
+ 	q.pi_state = NULL;
+  retry:
+@@ -1083,8 +1085,31 @@ static int futex_wait(u32 __user *uaddr,
+ 	 * !plist_node_empty() is safe here without any lock.
  	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
  	 */
--	if (likely(!list_empty(&q.list)))
-+	if (likely(!plist_node_empty(&q.list)))
- 		time = schedule_timeout(time);
+-	if (likely(!plist_node_empty(&q.list)))
+-		time = schedule_timeout(time);
++	if (likely(!plist_node_empty(&q.list))) {
++		if (!time)
++			schedule();
++		else {
++			hrtimer_init(&t.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++			hrtimer_init_sleeper(&t, current);
++			t.timer.expires = timespec_to_ktime(*time);
++
++			hrtimer_start(&t.timer, t.timer.expires, HRTIMER_MODE_REL);
++
++			/*
++			 * the timer could have already expired, in which
++			 * case current would be flagged for rescheduling.
++			 * Don't bother calling schedule.
++			 */
++			if (likely(t.task))
++				schedule();
++
++			hrtimer_cancel(&t.timer);
++
++			/* Flag if a timeout occured */
++			rem = (t.task == NULL);
++		}
++	}
++
  	__set_current_state(TASK_RUNNING);
  
-@@ -1336,7 +1356,7 @@ static int futex_unlock_pi(u32 __user *u
- 	struct futex_hash_bucket *hb;
- 	struct futex_q *this, *next;
- 	u32 uval;
--	struct list_head *head;
-+	struct plist_head *head;
- 	union futex_key key;
- 	int ret, attempt = 0;
- 
-@@ -1387,7 +1407,7 @@ retry_locked:
- 	 */
- 	head = &hb->chain;
- 
--	list_for_each_entry_safe(this, next, head, list) {
-+	plist_for_each_entry_safe(this, next, head, list) {
- 		if (!match_futex (&this->key, &key))
- 			continue;
- 		ret = wake_futex_pi(uaddr, uval, this);
-@@ -1461,10 +1481,10 @@ static unsigned int futex_poll(struct fi
- 	poll_wait(filp, &q->waiters, wait);
- 
  	/*
--	 * list_empty() is safe here without any lock.
-+	 * plist_node_empty() is safe here without any lock.
- 	 * q->lock_ptr != 0 is not safe, because of ordering against wakeup.
- 	 */
--	if (list_empty(&q->list))
-+	if (plist_node_empty(&q->list))
- 		ret = POLLIN | POLLRDNORM;
+@@ -1095,7 +1120,7 @@ static int futex_wait(u32 __user *uaddr,
+ 	/* If we were woken (and unqueued), we succeeded, whatever. */
+ 	if (!unqueue_me(&q))
+ 		return 0;
+-	if (time == 0)
++	if (rem)
+ 		return -ETIMEDOUT;
+ 	/*
+ 	 * We expect signal_pending(current), but another thread may
+@@ -1117,8 +1142,8 @@ static int futex_wait(u32 __user *uaddr,
+  * if there are waiters then it will block, it does PI, etc. (Due to
+  * races the kernel might see a 0 value of the futex too.)
+  */
+-static int futex_lock_pi(u32 __user *uaddr, int detect, unsigned long sec,
+-			 long nsec, int trylock)
++static int futex_lock_pi(u32 __user *uaddr, int detect, struct timespec *time,
++			 int trylock)
+ {
+ 	struct hrtimer_sleeper timeout, *to = NULL;
+ 	struct task_struct *curr = current;
+@@ -1130,11 +1155,11 @@ static int futex_lock_pi(u32 __user *uad
+ 	if (refill_pi_state_cache())
+ 		return -ENOMEM;
  
- 	return ret;
-@@ -1847,7 +1867,7 @@ static int __init init(void)
+-	if (sec != MAX_SCHEDULE_TIMEOUT) {
++	if (time) {
+ 		to = &timeout;
+ 		hrtimer_init(&to->timer, CLOCK_REALTIME, HRTIMER_MODE_ABS);
+ 		hrtimer_init_sleeper(to, current);
+-		to->timer.expires = ktime_set(sec, nsec);
++		to->timer.expires = timespec_to_ktime(*time);
  	}
  
- 	for (i = 0; i < ARRAY_SIZE(futex_queues); i++) {
--		INIT_LIST_HEAD(&futex_queues[i].chain);
-+		plist_head_init(&futex_queues[i].chain, &futex_queues[i].lock);
- 		spin_lock_init(&futex_queues[i].lock);
+ 	q.pi_state = NULL;
+@@ -1770,7 +1795,7 @@ void exit_robust_list(struct task_struct
  	}
- 	return 0;
+ }
+ 
+-long do_futex(u32 __user *uaddr, int op, u32 val, unsigned long timeout,
++long do_futex(u32 __user *uaddr, int op, u32 val, struct timespec *timeout,
+ 		u32 __user *uaddr2, u32 val2, u32 val3)
+ {
+ 	int ret;
+@@ -1796,13 +1821,13 @@ long do_futex(u32 __user *uaddr, int op,
+ 		ret = futex_wake_op(uaddr, uaddr2, val, val2, val3);
+ 		break;
+ 	case FUTEX_LOCK_PI:
+-		ret = futex_lock_pi(uaddr, val, timeout, val2, 0);
++		ret = futex_lock_pi(uaddr, val, timeout, 0);
+ 		break;
+ 	case FUTEX_UNLOCK_PI:
+ 		ret = futex_unlock_pi(uaddr);
+ 		break;
+ 	case FUTEX_TRYLOCK_PI:
+-		ret = futex_lock_pi(uaddr, 0, timeout, val2, 1);
++		ret = futex_lock_pi(uaddr, 0, timeout, 1);
+ 		break;
+ 	default:
+ 		ret = -ENOSYS;
+@@ -1815,8 +1840,7 @@ asmlinkage long sys_futex(u32 __user *ua
+ 			  struct timespec __user *utime, u32 __user *uaddr2,
+ 			  u32 val3)
+ {
+-	struct timespec t;
+-	unsigned long timeout = MAX_SCHEDULE_TIMEOUT;
++	struct timespec t, *tp = NULL;
+ 	u32 val2 = 0;
+ 
+ 	if (utime && (op == FUTEX_WAIT || op == FUTEX_LOCK_PI)) {
+@@ -1824,12 +1848,7 @@ asmlinkage long sys_futex(u32 __user *ua
+ 			return -EFAULT;
+ 		if (!timespec_valid(&t))
+ 			return -EINVAL;
+-		if (op == FUTEX_WAIT)
+-			timeout = timespec_to_jiffies(&t) + 1;
+-		else {
+-			timeout = t.tv_sec;
+-			val2 = t.tv_nsec;
+-		}
++		tp = &t;
+ 	}
+ 	/*
+ 	 * requeue parameter in 'utime' if op == FUTEX_REQUEUE.
+@@ -1837,7 +1856,7 @@ asmlinkage long sys_futex(u32 __user *ua
+ 	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE)
+ 		val2 = (u32) (unsigned long) utime;
+ 
+-	return do_futex(uaddr, op, val, timeout, uaddr2, val2, val3);
++	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
+ }
+ 
+ static int futexfs_get_sb(struct file_system_type *fs_type,
+Index: b/include/linux/futex.h
+===================================================================
+--- a/include/linux/futex.h
++++ b/include/linux/futex.h
+@@ -94,7 +94,7 @@ struct robust_list_head {
+ #define ROBUST_LIST_LIMIT	2048
+ 
+ #ifdef __KERNEL__
+-long do_futex(u32 __user *uaddr, int op, u32 val, unsigned long timeout,
++long do_futex(u32 __user *uaddr, int op, u32 val, struct timespec *timeout,
+ 	      u32 __user *uaddr2, u32 val2, u32 val3);
+ 
+ extern int
+Index: b/kernel/futex_compat.c
+===================================================================
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -141,8 +141,7 @@ asmlinkage long compat_sys_futex(u32 __u
+ 		struct compat_timespec __user *utime, u32 __user *uaddr2,
+ 		u32 val3)
+ {
+-	struct timespec t;
+-	unsigned long timeout = MAX_SCHEDULE_TIMEOUT;
++	struct timespec t, *tp = NULL;
+ 	int val2 = 0;
+ 
+ 	if (utime && (op == FUTEX_WAIT || op == FUTEX_LOCK_PI)) {
+@@ -150,15 +149,10 @@ asmlinkage long compat_sys_futex(u32 __u
+ 			return -EFAULT;
+ 		if (!timespec_valid(&t))
+ 			return -EINVAL;
+-		if (op == FUTEX_WAIT)
+-			timeout = timespec_to_jiffies(&t) + 1;
+-		else {
+-			timeout = t.tv_sec;
+-			val2 = t.tv_nsec;
+-		}
++		tp = &t;
+ 	}
+ 	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE)
+ 		val2 = (int) (unsigned long) utime;
+ 
+-	return do_futex(uaddr, op, val, timeout, uaddr2, val2, val3);
++	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
+ }
 
 -- 
 -- 
