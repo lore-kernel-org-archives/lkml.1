@@ -1,66 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXCMUMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXCMUNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933103AbXCMUMU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbXCMUMU
+	id S933174AbXCMUNA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933185AbXCMUNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:12:20 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:25143 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933102AbXCMUMS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:12:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kW9yhnfqQJNzN7jmnR4hEdiH9ZtIbRmJjoLP38w/akbBt7a9VyBTLWYkj7E822a/bSwm2bNpv13aJiMVEL3zk0vxCAg3Qe2uCSQ5LEwQ4qS9r2lfzMwKgPEIC6WTvAPWGHk9L9pSYUSDw4wMrTwQhVW3cxYbkx4Dlnp1RPgzB7g=
-Message-ID: <b637ec0b0703131312p22ee137fjc4911db07d8fa54a@mail.gmail.com>
-Date: Tue, 13 Mar 2007 21:12:17 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [3/6] 2.6.21-rc3: known regressions
-Cc: "Adrian Bunk" <bunk@stusta.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Vladimir Brik" <no.hope@gmail.com>, "Andi Kleen" <ak@muc.de>,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, "Ray Lee" <ray-lk@madrabbit.org>,
-       Colchao <colchaodemola@gmail.com>,
-       "=?UTF-8?Q?Mathieu_B=C3=A9rard?=" <Mathieu.Berard@crans.org>,
-       "Tejun Heo" <htejun@gmail.com>, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org,
-       "Michal Jaegermann" <michal@ellpspace.math.ualberta.ca>,
-       "Plamen Petrov" <plamen.petrov@tk.ru.acad.bg>,
-       "Laurent Riffard" <laurent.riffard@free.fr>
-In-Reply-To: <20070313140323.6ee03eee@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 13 Mar 2007 16:13:00 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:59841 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933174AbXCMUM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 16:12:58 -0400
+Subject: Re: Stolen and degraded time and schedulers
+From: john stultz <johnstul@us.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Daniel Walker <dwalker@mvista.com>
+In-Reply-To: <45F6D1D0.6080905@goop.org>
+References: <45F6D1D0.6080905@goop.org>
+Content-Type: text/plain
+Date: Tue, 13 Mar 2007 13:12:48 -0700
+Message-Id: <1173816769.22180.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
-	 <20070313125006.GT18731@stusta.de>
-	 <20070313140323.6ee03eee@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/13/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > Subject    : libata: PATA UDMA/100 configured as UDMA/33
-> > References : http://lkml.org/lkml/2007/2/20/294
-> >              http://www.mail-archive.com/linux-ide@vger.kernel.org/msg04115.html
-> >              http://bugzilla.kernel.org/show_bug.cgi?id=8133
-> >              http://bugzilla.kernel.org/show_bug.cgi?id=8164
-> > Submitter  : Fabio Comolli <fabio.comolli@gmail.com>
-> >              Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
-> >              Laurent Riffard <laurent.riffard@free.fr>
-> > Handled-By : Tejun Heo <htejun@gmail.com>
-> > Status     : patch available
->
-> Some cases should be fixed now but probably not all (eg the Nvidia one)
->
+On Tue, 2007-03-13 at 09:31 -0700, Jeremy Fitzhardinge wrote:
+> The current Linux scheduler makes one big assumption: that 1ms of CPU
+> time is the same as any other 1ms of CPU time, and that therefore a
+> process makes the same amount of progress regardless of which particular
+> ms of time it gets.
+> 
+> This assumption is wrong now, and will become more wrong as
+> virtualization gets more widely used.
+> 
+> It's wrong now, because it fails to take into account of several kinds
+> of missing time:
+> 
+>    1. interrupts - time spent in an ISR is accounted to the current
+>       process, even though it gets no direct benefit
+>    2. SMM - time is completely lost from the kernel
+>    3. slow CPUs - 1ms of 600MHz CPU is less useful than 1ms of 2.4GHz CPU
+> 
+[snip]
+> So how to deal with this?  Basically we need a clock which measures "CPU
+> work units", and have the scheduler use this clock.
+> 
+> A "CPU work unit" clock has these properties:
+> 
+>     * inherently per-CPU (from the kernel's perspective, so it would be
+>       per-VCPU in a virtual machine)
+>     * monotonic - you can't do negative work
+>     * measured in "work units"
+[snip]
+> So, how to implement this?
+> 
+> One quick hack would be to just make a new clocksource entrypoint, which
+> returns work units rather than real-time cycles.  That would be fairly
+> simple to implement, but it doesn't really take the per-cpu nature of
+> the clock into account (since its possible that different cpus on the
+> same machine might need their own methods).
+> 
+> Perhaps a better fit would be an entity which is equivalent to a
+> clocksource, but registered per-cpu like (some) clockevents.
+> 
+> I don't have a particular preference, but I wonder what the clock gurus
+> think.
 
-This regression is still present in 2.6.21-rc3-g8b9909de (pulled from
-Linus' tree less than one hour ago).
+My gut reaction would be to avoid using clocksources for now. While
+there is some thought going into how to expand clocksources for other
+uses (Daniel is working on this, for example), the design for
+clocksources has been very focused on its utility to timekeeping, so I'm
+hesitant to try complicate the clocksources in order to multiplex
+functionality until what is really needed is well understood.
 
-Fabio
+I suspect the best approach would be see how the sched_clock interface
+can be reworked/used for what you want, as it's design goals map closest
+to the work-unit properties you list above.
+
+Then we can look to see how clocksources can be best used to implement
+the sched_clock interface.
+
+-john
+
+
+
+
+
+
+
+
+
