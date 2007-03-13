@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbXCMCRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbXCMCXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbXCMCRV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 22:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXCMCRV
+	id S1753091AbXCMCXk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 22:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXCMCXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 22:17:21 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:36223 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753086AbXCMCRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 22:17:20 -0400
-Date: Tue, 13 Mar 2007 07:54:29 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Balbir Singh" <balbir@in.ibm.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Pavel Emelianov" <xemul@sw.ru>, Kirill@osdl.org, Linux@osdl.org,
-       containers@lists.osdl.org, "Paul Menage" <menage@google.com>,
-       List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 2/7] RSS controller core
-Message-ID: <20070313022429.GB9881@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru> <20070306140036.4e85bd2f.akpm@linux-foundation.org> <20070309164855.GB3647@MAIL.13thfloor.at> <661de9470703120255k4c4c1d0fy97a2b7a033c7b5b1@mail.gmail.com> <20070312234335.GA11578@MAIL.13thfloor.at> <661de9470703121857pc695e3cp2c3c853be3622689@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Mar 2007 22:23:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:16490 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbXCMCXj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 22:23:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=UYHMiALZWGzsydG4HZ+BafoPoqhdRD2vgv69z9K8f6/MxQJi+1x4pTFOtp31gkFwVk1dl6hdXtzkH80vY0n20OOorpdiqW4UFxq5cAQ0u5Ambm4z87VLVJX9PA0PuZoyovjrYSLCMtKrNZ4xtR5rzbwGKjimGJlUIPNC6P0wg4I=
+Message-ID: <75b66ecd0703121923q2f9913cdm8179122d95015ad8@mail.gmail.com>
+Date: Mon, 12 Mar 2007 22:23:37 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "David Lang" <david.lang@digitalinsight.com>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Cc: "Mike Galbraith" <efault@gmx.de>, "Con Kolivas" <kernel@kolivas.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "ck list" <ck@vds.kolivas.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.63.0703121523220.1245@qynat.qvtvafvgr.pbz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <661de9470703121857pc695e3cp2c3c853be3622689@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+References: <200703111457.17624.kernel@kolivas.org>
+	 <200703130549.47058.kernel@kolivas.org>
+	 <1173730314.6431.30.camel@Homer.simpson.net>
+	 <200703130738.19034.kernel@kolivas.org>
+	 <1173732344.6431.54.camel@Homer.simpson.net>
+	 <Pine.LNX.4.63.0703121523220.1245@qynat.qvtvafvgr.pbz>
+X-Google-Sender-Auth: cbe4aa2ba73bb9f9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 07:27:06AM +0530, Balbir Singh wrote:
-> I am not sure what went wrong. Could you please check your mail
-> client, cause it seemed to even change email address to smtp.osdl.org
-> which bounced back when I wrote to you earlier.
+On 3/12/07, David Lang <david.lang@digitalinsight.com> wrote:
+> the problem comes when this isn't enough. if you have several CPU hogs on a
+> system, and they are all around the same priority level, how can the scheduler
+> know which one needs the CPU the most for good interactivity?
+>
+> in some cases you may be able to directly detect that your high-priority process
+> is waiting for another one (tracing pipes and local sockets for example), but
+> what if you are waiting for several of them? (think a multimedia desktop waiting
+> for the sound card, CDRom, hard drive, and video all at once) which one needs
+> the extra CPU the most?
 
-I have a problem doing a group-reply in mutt to Herbert's mails. His
-email id gets dropped from the To or Cc list. Is that his email setting?
-Don't know.
+I'm not an expert in this area by any means but after reading this
+thread the OSX solution of simply telling the kernel "I'm the GUI,
+schedule me accordingly" looks increasingly attractive.  Why make the
+kernel guess when we can just be explicit?
 
--- 
-Regards,
-vatsa
+Does anyone know of a UNIX-like system that has managed to solve this
+problem without hooking the GUI into the scheduler?
+
+Lee
