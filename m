@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXCMUNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933185AbXCMUNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933174AbXCMUNA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933185AbXCMUNA
+	id S933185AbXCMUNj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXCMUNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:13:00 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:59841 "EHLO e1.ny.us.ibm.com"
+	Tue, 13 Mar 2007 16:13:38 -0400
+Received: from mtaout2.012.net.il ([84.95.2.4]:38346 "EHLO mtaout2.012.net.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933174AbXCMUM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:12:58 -0400
-Subject: Re: Stolen and degraded time and schedulers
-From: john stultz <johnstul@us.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
-       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Daniel Walker <dwalker@mvista.com>
-In-Reply-To: <45F6D1D0.6080905@goop.org>
-References: <45F6D1D0.6080905@goop.org>
-Content-Type: text/plain
-Date: Tue, 13 Mar 2007 13:12:48 -0700
-Message-Id: <1173816769.22180.14.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	id S933121AbXCMUNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 16:13:37 -0400
+Date: Tue, 13 Mar 2007 22:13:34 +0200
+From: Avi Kivity <avi@argo.co.il>
+Subject: Re: considering kevent - the kernel development process
+In-reply-to: <20070313190637.GA900@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>,
+       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org
+Message-id: <45F705EE.6040405@argo.co.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+X-Greylist: Sender IP whitelisted,
+ not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Tue,
+ 13 Mar 2007 22:13:34 +0200 (IST)
+References: <45F6F590.8030909@densedata.com>
+ <20070313190637.GA900@infradead.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 09:31 -0700, Jeremy Fitzhardinge wrote:
-> The current Linux scheduler makes one big assumption: that 1ms of CPU
-> time is the same as any other 1ms of CPU time, and that therefore a
-> process makes the same amount of progress regardless of which particular
-> ms of time it gets.
-> 
-> This assumption is wrong now, and will become more wrong as
-> virtualization gets more widely used.
-> 
-> It's wrong now, because it fails to take into account of several kinds
-> of missing time:
-> 
->    1. interrupts - time spent in an ISR is accounted to the current
->       process, even though it gets no direct benefit
->    2. SMM - time is completely lost from the kernel
->    3. slow CPUs - 1ms of 600MHz CPU is less useful than 1ms of 2.4GHz CPU
-> 
-[snip]
-> So how to deal with this?  Basically we need a clock which measures "CPU
-> work units", and have the scheduler use this clock.
-> 
-> A "CPU work unit" clock has these properties:
-> 
->     * inherently per-CPU (from the kernel's perspective, so it would be
->       per-VCPU in a virtual machine)
->     * monotonic - you can't do negative work
->     * measured in "work units"
-[snip]
-> So, how to implement this?
-> 
-> One quick hack would be to just make a new clocksource entrypoint, which
-> returns work units rather than real-time cycles.  That would be fairly
-> simple to implement, but it doesn't really take the per-cpu nature of
-> the clock into account (since its possible that different cpus on the
-> same machine might need their own methods).
-> 
-> Perhaps a better fit would be an entity which is equivalent to a
-> clocksource, but registered per-cpu like (some) clockevents.
-> 
-> I don't have a particular preference, but I wonder what the clock gurus
-> think.
+Christoph Hellwig wrote:
+> It's not obvious, but utter bullshit.  Please go away if you think
+> starting post with quotes from CGL specs is even remotely close to
+> a good idea.
+>   
 
-My gut reaction would be to avoid using clocksources for now. While
-there is some thought going into how to expand clocksources for other
-uses (Daniel is working on this, for example), the design for
-clocksources has been very focused on its utility to timekeeping, so I'm
-hesitant to try complicate the clocksources in order to multiplex
-functionality until what is really needed is well understood.
+I don't know about CGL, but a unified async notification mechanism _is_ 
+needed.  In ~2002, I needed one, and what I ended up with was a Red Hat 
+2.4 kernel with IO_CMD_POLL hacked in.  Five years later, mainline still 
+can't do that.
 
-I suspect the best approach would be see how the sched_clock interface
-can be reworked/used for what you want, as it's design goals map closest
-to the work-unit properties you list above.
-
-Then we can look to see how clocksources can be best used to implement
-the sched_clock interface.
-
--john
+Whether it's syslets, threadlets, io_getevents with networking support, 
+kevents, epoll with kaio support, queued signals, or something else, 
+users don't care, but they need _something_.  Please don't ignore the 
+users just because they quote the wrong text.  The need is very real.
 
 
-
-
-
-
-
-
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
