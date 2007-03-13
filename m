@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbXCMSNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbXCMSOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752718AbXCMSNk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 14:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXCMSNk
+	id S1753306AbXCMSOQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 14:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932069AbXCMSOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 14:13:40 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41953 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752718AbXCMSNj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 14:13:39 -0400
-Date: Tue, 13 Mar 2007 19:09:31 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dave Hansen <hansendc@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
-       menage@google.com, linux-kernel@vger.kernel.org, xemul@sw.ru
-Subject: Re: [RFC][PATCH 2/7] RSS controller core
-Message-ID: <20070313190931.1417c012@lxorguk.ukuu.org.uk>
-In-Reply-To: <1173806793.6680.44.camel@localhost.localdomain>
-References: <45ED7DEC.7010403@sw.ru>
-	<45ED80E1.7030406@sw.ru>
-	<20070306140036.4e85bd2f.akpm@linux-foundation.org>
-	<45F3F581.9030503@sw.ru>
-	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
-	<20070312010039.GC21861@MAIL.13thfloor.at>
-	<1173724979.11945.103.camel@localhost.localdomain>
-	<20070312224129.GC21258@MAIL.13thfloor.at>
-	<20070312220439.677b4787.akpm@linux-foundation.org>
-	<1173806793.6680.44.camel@localhost.localdomain>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 14:14:16 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44102 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753306AbXCMSOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 14:14:14 -0400
+Date: Tue, 13 Mar 2007 19:14:04 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       Tomas Janousek <tomi@nomi.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       Soeren Sonnenburg <kernel@nn7.de>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
+       Lukas Hejtmanek <xhejtman@mail.muni.cz>
+Subject: Re: [5/6] 2.6.21-rc3: known regressions
+Message-ID: <20070313181404.GC12224@elf.ucw.cz>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313125016.GV18731@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070313125016.GV18731@stusta.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> stuff is happening by comparing page->count and page->_mapcount, but it
-> certainly wouldn't be conclusive.  But, does this kind of nonsense even
-> happen in practice?  
+Hi!
 
-"Is it useful for me as a bad guy to make it happen ?"
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
+> 
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way
+> possibly involved with one or more of these issues.
+> 
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> 
+> 
+> Subject    : resume: slab error in verify_redzone_free(): cache `size-512':
+>                      memory outside object was overwritten
+> References : http://lkml.org/lkml/2007/2/24/41
+> Submitter  : Pavel Machek <pavel@ucw.cz>
+> Status     : unknown
+> 
+> 
+> Subject    : beeps get longer after suspend
+> References : http://lkml.org/lkml/2007/2/26/276
+> Submitter  : Pavel Machek <pavel@ucw.cz>
+> Status     : unknown
 
-Alan
+Seems fixed in -rc3.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
