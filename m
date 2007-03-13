@@ -1,69 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161035AbXCMRVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161044AbXCMRYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161035AbXCMRVx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 13:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161038AbXCMRVx
+	id S1161044AbXCMRYL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 13:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161025AbXCMRYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 13:21:53 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55459 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161044AbXCMRVw (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 13:21:52 -0400
-Message-Id: <200703131721.l2DHLDjV009580@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-In-Reply-To: Your message of "Mon, 12 Mar 2007 20:06:43 BST."
-             <1173726403.9153.5.camel@bip.parateam.prv>
-From: Valdis.Kletnieks@vt.edu
-References: <200703111457.17624.kernel@kolivas.org> <200703122223.07048.kernel@kolivas.org> <1173710082.6326.49.camel@Homer.simpson.net> <200703130549.47058.kernel@kolivas.org>
-            <1173726403.9153.5.camel@bip.parateam.prv>
+	Tue, 13 Mar 2007 13:24:10 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:65140 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1161049AbXCMRYJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 13:24:09 -0400
+Date: Tue, 13 Mar 2007 13:24:04 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Cc: Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
+       linux-kernel@vger.kernel.org, systemtap@sources.redhat.com,
+       mbligh@google.com, Satoshi Oshima <soshima@redhat.com>,
+       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
+       Hideo Aoki <haoki@redhat.com>
+Subject: Re: Djprobes questions
+Message-ID: <20070313172404.GA385@Krystal>
+References: <20070312223749.GA22280@Krystal> <45F63F8D.6000007@hitachi.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1173806473_3149P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Tue, 13 Mar 2007 13:21:13 -0400
+Content-Disposition: inline
+In-Reply-To: <45F63F8D.6000007@hitachi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 13:00:28 up 39 days,  7:08,  3 users,  load average: 1.61, 2.08, 1.59
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1173806473_3149P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+* Masami Hiramatsu (masami.hiramatsu.pt@hitachi.com) wrote:
+> Hi Mathieu,
+> 
+> Mathieu Desnoyers wrote:
+> > Hi Masami,
+> > 
+> > I recently had to add support for inline code patching on i386 to my
+> > marker infrastructure. Clearly, it looks like what is done in djprobes,
+> > with the main difference that I only patch the immediate value of a 2
+> > bytes "load immediate" instruction.
+> 
+> That's interesting.
+> 
+> > I think I found a solution to one of the main issues with djprobes : it
+> > currently has to wait for each CPU to hit the probe before being sure
+> > that it's safe to patch the code with something else than an int3. This
+> > is due to PIII errata 49, which says that a CPU much execute a
+> > serializing instruction before executing cross-modified code.
+> 
+> Hmm, djprobe already might not wait for each CPU to hit the probe
+> point. It just wait scheduler synchronization instead of that.
 
-On Mon, 12 Mar 2007 20:06:43 BST, Xavier Bestel said:
-> Le mardi 13 mars 2007 =E0 05:49 +1100, Con Kolivas a =E9crit :
-> > Again I think your test is not a valid testcase. Why use two threads =
-for your=20
-> > encoding with one cpu? Is that what other dedicated desktop OSs would=
- do?
->=20
-> One thought occured to me (shit happens, sometimes): as your scheduler
-> is =22strictly fair=22, won't that enable trivial DoS by just letting a=
-n
-> user fork a multitude of CPU-intensive processes ?
+Oh, I see. You can do it because you don't support fully preemptible
+kernels. It makes sense it that scenario. I could not use this scheme
+for my markers though, since I support fully preemptible kernels.
 
-Fork bombs are the reason that 'ulimit -u' exists. I don't see this sched=
-uler
-as being significantly more DoS'able via that route than previous schedul=
-ers.
+> And after that, it issues cpuid for cache serialization before
+> executing cross-modified code.
+> 
 
---==_Exmh_1173806473_3149P
-Content-Type: application/pgp-signature
+Ok, so you already used the IPI serialization I am talking about. Great :)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+> The most difficult point of the djprobe is that it has to replace
+> "live" instructions. So we must check other processors not to run
+> those instructions carefully.
+> 
+> > Here is what I do : While I use a breakpoint to fall in a trap for the
+> > CPUs that hit the site currently being modified, I also send an IPI to
+> > all CPUs so they execute cpuid. Once it returns, I am sure that every
+> > CPU has executed a serializing instruction, which enables me to go on
+> > with the complete code modification, therefore removing the initial
+> > breakpoint.
+> 
+> I think its OK. That is the same way which I've done in djprobe.
+> 
+> > Here is my code :
+> > 
+> > http://ltt.polymtl.ca/cgi-bin/gitweb.cgi?p=linux-2.6-lttng.git;a=blob;f=arch/i386/kernel/marker.c;h=89b06f02f0966685be260d6364a0dd94c3d14456;hb=v2.6.20-lttng
+> > 
+> > (Comments are welcome)
+> > 
+> > On a second note, looking at the djprobes code triggered some question 
+> > in my mind about the safety of using a worker thread to "make sure"
+> > every interrupt context has returned (so there is no IP pointing into
+> > the modified code). The following scenario might be possible : an
+> > interrupt handler (or trap handler) reenables interrupts, does irq_exit()
+> > or nmi_exit() (which reenables preemption) but does not do iret yet. My
+> > understanding is that it could be scheduled and have a return IP
+> > pointing to the code that is being modified. Am I right ?
+> 
+> Same idea was already discussed. It might work on normal kernel,
+> but, unfortunately, it doesn't work on preemptive kernel. And actually,
+> that idea is same as synchronize_sched(). So, I've used it on normal
+> kernel. In the case of preemptive kernel, currently, I'm using
+> freeze_processes() suggested by Ingo.
+> 
 
-iD8DBQFF9t2JcC3lWbTT17ARArqBAKCLGF5KbFKNHUfLDMYV7mEWqAYmNACgp4GJ
-vVZJgQepswpfw5OKuRf8KFU=
-=7pVN
------END PGP SIGNATURE-----
+It looks like a good way to know where the processes are stopped.
 
---==_Exmh_1173806473_3149P--
+> Anyway, I and Satoshi are developing a static analysis tool to
+> check whether target instructions can be replaced by long jump.
+> I'd like to release djprobe patch against latest kernel after
+> developed it.
+> 
+
+Great, continue your good work!
+
+Regards,
+
+Mathieu
+
+
+> -- 
+> Masami HIRAMATSU
+> Linux Technology Center
+> Hitachi, Ltd., Systems Development Laboratory
+> E-mail: masami.hiramatsu.pt@hitachi.com
+> 
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
