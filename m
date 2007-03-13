@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933114AbXCMUDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933085AbXCMUF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933114AbXCMUDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbXCMUDe
+	id S933085AbXCMUF2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933103AbXCMUF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:03:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37331 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933104AbXCMUDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:03:32 -0400
+	Tue, 13 Mar 2007 16:05:28 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56955 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933085AbXCMUF1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 16:05:27 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <gregkh@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Linux v2.6.21-rc3
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+	<m1zm6hq70n.fsf@ebiederm.dsl.xmission.com>
+	<20070313194024.GA14847@suse.de>
+Date: Tue, 13 Mar 2007 14:04:33 -0600
+In-Reply-To: <20070313194024.GA14847@suse.de> (Greg KH's message of "Tue, 13
+	Mar 2007 12:40:24 -0700")
+Message-ID: <m1lki0rju6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Benjamin LaHaise <bcrl@kvack.org>
-X-Fcc: ~/Mail/linus
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] avoid OPEN_MAX in SCM_MAX_FD
-In-Reply-To: Benjamin LaHaise's message of  Tuesday, 13 March 2007 10:17:50 -0400 <20070313141750.GH6209@kvack.org>
-X-Zippy-Says: Are you still an ALCOHOLIC?
-Message-Id: <20070313200256.CF7411801C5@magilla.sf.frob.com>
-Date: Tue, 13 Mar 2007 13:02:56 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > -#define SCM_MAX_FD	(OPEN_MAX-1)
-> > +#define SCM_MAX_FD	(NR_OPEN-1)
-> 
-> This is a bad idea.  [...]
+Greg KH <gregkh@suse.de> writes:
 
-Ok.  My only agenda is to get rid of OPEN_MAX.
-I then propose the following instead.
+> I do not think this should be reverted, as the odds that some one will
+> rename their network device to be "irq" or something else that is in the
+> pci device's directory is pretty slim.  It also only shows up if
+> CONFIG_SYSFS_DEPRECATED is disabled, not the common option.
 
+Ah.  I missed that last little bit.
 
-Thanks,
-Roland
+> But I am still working on it, I sent you and Kay a patch that, while it
+> locks up at boot time, should be close to what we need to address this
+> :)
 
----
-[PATCH] avoid OPEN_MAX in SCM_MAX_FD
+Hmm.  I haven't seen that one.
 
-The OPEN_MAX constant is an arbitrary number with no useful relation to
-anything.  Nothing should be using it.  SCM_MAX_FD is just an arbitrary
-constant and it should be clear that its value is chosen in net/scm.h
-and not actually derived from anything else meaningful in the system.
+>> - pci_save_state, pci_restore_state are broken and have been for a
+>>   while if used on anything besides plain pci (pci-x, pci-e and msi)
+>>   and are not used in pairs. (gregkh and Andrew have the patches to 
+>>   correct this).
+>
+> I think these are already in Linus's tree right now, right?
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- include/net/scm.h |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+Oops I missed that.
 
-diff --git a/include/net/scm.h b/include/net/scm.h
-index 5637d5e..2240690 100644  
---- a/include/net/scm.h
-+++ b/include/net/scm.h
-@@ -8,7 +8,7 @@
- /* Well, we should have at least one descriptor open
-  * to accept passed FDs 8)
-  */
--#define SCM_MAX_FD	(OPEN_MAX-1)
-+#define SCM_MAX_FD	255
- 
- struct scm_fp_list
- {
+Eric
