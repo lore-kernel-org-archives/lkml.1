@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbXCMAI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbXCMAJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752955AbXCMAI7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 20:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXCMAI7
+	id S1752969AbXCMAJf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 20:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXCMAJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 20:08:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40446 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752918AbXCMAI6 (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 20:08:58 -0400
-Date: Tue, 13 Mar 2007 11:08:29 +1100
-From: Timothy Shimmin <tes@sgi.com>
-To: Christoph Hellwig <hch@lst.de>, xfs@oss.sgi.com, ecashin@coraid.com,
-       akpm@osdl.org
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] xfs: stop using kmalloc in xfs_buf_get_noaddr
-Message-ID: <73E41C01F3C8F79AD31CEDAF@timothy-shimmins-power-mac-g5.local>
-In-Reply-To: <20070309115511.GA20426@lst.de>
-References: <20070307101324.GC30587@lst.de> <20070309115511.GA20426@lst.de>
-X-Mailer: Mulberry/4.0.8 (Mac OS X)
+	Mon, 12 Mar 2007 20:09:34 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:38433 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbXCMAJd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 20:09:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=nIO7itYg2RZdUiBjYydZidFuoFe8/1CfOS+kSeen9Jxewd00yELwQ2yU4HbZIJZ23sHAsS4Kw4ZQBrQG3voBQB4XpkCcVdK8jcsL7erUKgzaxWGDDKEAUWK/2ZczZ5EFies16bTEe91Zie6YcotV7rz5iKMvQniDvtXZtdkSfA0=
+Message-ID: <7d01f9f00703121709p66381704ic2dc10e90fdbf3d6@mail.gmail.com>
+Date: Tue, 13 Mar 2007 01:09:33 +0100
+From: "Thibaut VARENE" <T-Bone@parisc-linux.org>
+To: "michael chang" <thenewme91@gmail.com>
+Subject: Re: [ck] Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Cc: "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <b14e81f00703121438q6cdaffd0vdb08e0386961f057@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <200703111457.17624.kernel@kolivas.org>
+	 <200703130549.47058.kernel@kolivas.org>
+	 <1173730314.6431.30.camel@Homer.simpson.net>
+	 <200703130738.19034.kernel@kolivas.org>
+	 <b14e81f00703121438q6cdaffd0vdb08e0386961f057@mail.gmail.com>
+X-Google-Sender-Auth: 3af48500bcb0a678
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 3/12/07, michael chang <thenewme91@gmail.com> wrote:
 
---On 9 March 2007 12:55:11 PM +0100 Christoph Hellwig <hch@lst.de> wrote:
+> Considering the concepts put out by projects such as BOINC and
+> SETI@Home, I wouldn't be thoroughly surprised by this ideology,
+> although I do question the particular way this test case is being run.
 
-> Ed Cashin found a bug in the error handling code for the case where
-> a page allocation fails.  Here's the updated version:
->
-> Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
-> ===================================================================
-> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c	2007-03-08 19:08:38.000000000 +0100
-> +++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c	2007-03-09 08:59:15.000000000 +0100
-....
-> +	for (i = 0; i < page_count; i++) {
-> +		bp->b_pages[i] = alloc_page(GFP_KERNEL);
-> +		if (!bp->b_pages[i])
-> +			goto fail_free_mem;
-> +	}
-> +	bp->b_flags |= _XBF_PAGES;
-> +
-> +	error = _xfs_buf_map_pages(bp, XBF_MAPPED);
-> +	if (unlikely(error)) {
-> +		printk(KERN_WARNING "%s: failed to map pages\n",
-> +				__FUNCTION__);
->  		goto fail_free_mem;
-> -	bp->b_flags |= _XBF_KMEM_ALLOC;
-> +	}
->
->  	xfs_buf_unlock(bp);
->
->  	XB_TRACE(bp, "no_daddr", data);
->  	return bp;
-> +
->   fail_free_mem:
-> -	kmem_free(data, malloc_len);
-> + 	for ( ; i >= 0; i--)
-> +		__free_page(bp->b_pages[i]);
->   fail_free_buf:
->  	xfs_buf_free(bp);
->   fail:
+If Con actually implements SCHED_IDLEPRIO in RSDL, life is good even
+in that case.
 
-It looks like you might need: for (i--; i >= 0; i--)
-(or: for (j = 0; j < i; j++) etc.)
+> This seems to me like he's saying that there has to be a mechanism
+> (outside of nice) that can be used to treat processes that "I" want to
+> be interactive all special-like. It feels like something that would
+> have been said in the design of what the scheduler was in -ck and is
+> currently in vanilla.
 
-Because if the initial alloc_page loop goes to completion then:
-  i == pagecount
-and if alloc_page loop terminates early then
-  bp->b_pages[i] == NULL
-So we have gone 1 too far in both cases and need to
-start free'ing back one.
-Unless I missed something.
+Exactly. Driving us again toward the fact that different workloads
+might benefit from different schedulers (eg: RSDL is cool for server
+loads, previous staircase did an excellent job on desktop, etc) and
+thus that having a choice of schedulers might be something that would
+satisfy (some) people...
 
---Tim
+> To me, that fundamentally clashes with the design behind RSDL. That
+> said, I could be wrong -- Con appears to have something that could be
+> very promising up his sleeve that could come out sooner or later. Once
+> he's written it, of course. In any case, RSDL seems very promising,
+> for the most part.
 
+It certainly is. "Negative" feedback can be a good thing too, as it
+helps improving it anyway. It's nonetheless true that it's practically
+impossible to satisfy 100% of use case with a single design, so
+choices will have to be made.
 
+HTH
 
+T-Bone
+
+-- 
+Thibaut VARENE
+http://www.parisc-linux.org/~varenet/
