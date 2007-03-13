@@ -1,39 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752325AbXCMRaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbXCMRb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752325AbXCMRaN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 13:30:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbXCMRaN
+	id S1752552AbXCMRb3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 13:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbXCMRb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 13:30:13 -0400
-Received: from gw.goop.org ([64.81.55.164]:60627 "EHLO mail.goop.org"
+	Tue, 13 Mar 2007 13:31:29 -0400
+Received: from gw.goop.org ([64.81.55.164]:41578 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752325AbXCMRaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 13:30:11 -0400
-Message-ID: <45F6DFA2.9060106@goop.org>
-Date: Tue, 13 Mar 2007 10:30:10 -0700
+	id S1752552AbXCMRb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 13:31:28 -0400
+Message-ID: <45F6DFEF.2090008@goop.org>
+Date: Tue, 13 Mar 2007 10:31:27 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
-References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>	<20070313005334.853559ca.akpm@linux-foundation.org>	<45F65ADA.9010501@yahoo.com.au>	<20070313035250.f908a50e.akpm@linux-foundation.org>	<45F685C6.8070806@yahoo.com.au>	<20070313041551.565891b5.akpm@linux-foundation.org>	<45F68B4B.9020200@yahoo.com.au> <20070313044756.b45649ac.akpm@linux-foundation.org> <45F69287.8040509@yahoo.com.au>
-In-Reply-To: <45F69287.8040509@yahoo.com.au>
+To: Andi Kleen <ak@muc.de>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Introduce load_TLS to the "for" loop.
+References: <1173767976.10618.50.camel@localhost.localdomain> <20070313135000.GA92373@muc.de>
+In-Reply-To: <20070313135000.GA92373@muc.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> However we still have to visit those to-be-unmapped parts of the page
-> table,
-> to find the pages and free them. So we still at least need to bring it
-> into
-> cache for the read... at which point, the store probably isn't a big
-> burden.
+Andi Kleen wrote:
+> On Tue, Mar 13, 2007 at 05:39:36PM +1100, Rusty Russell wrote:
+>   
+>> GCC (4.1 at least) unrolls it anyway, but I can't believe this code
+>>     
+>
+> Are you sure? Normally it doesn't unroll without -funroll-loops which
+> the kernel does normally not set. Especially not with -Os builds.
+>   
 
-Why not try to find a place to stash a linklist pointer and link them
-all together?  Saves the pulldown pagetable walk altogether.
+Does it matter either way in this case?
 
     J
