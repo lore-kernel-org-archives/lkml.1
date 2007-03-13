@@ -1,285 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbXCMBNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752977AbXCMBTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752975AbXCMBNF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 21:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbXCMBNF
+	id S1752977AbXCMBTQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 21:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbXCMBTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 21:13:05 -0400
-Received: from gw.goop.org ([64.81.55.164]:52403 "EHLO mail.goop.org"
+	Mon, 12 Mar 2007 21:19:16 -0400
+Received: from ns2.suse.de ([195.135.220.15]:59424 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752975AbXCMBNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 21:13:04 -0400
-Message-ID: <45F5FA97.8070705@goop.org>
-Date: Mon, 12 Mar 2007 18:12:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Stephane Eranian <eranian@hpl.hp.com>,
+	id S1752974AbXCMBTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 21:19:15 -0400
+Date: Tue, 13 Mar 2007 02:19:04 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: Bill Irwin <bill.irwin@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: [PATCH] i386: Simplify smp_call_function*() by using common implementation
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 4/6] mm: merge populate and nopage into fault (fixes nonlinear)
+Message-ID: <20070313011904.GA2746@wotan.suse.de>
+References: <20070221023735.6306.83373.sendpatchset@linux.site> <20070307094947.GE8609@wotan.suse.de> <20070307100242.GG8609@wotan.suse.de> <200703130001.13467.blaisorblade@yahoo.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703130001.13467.blaisorblade@yahoo.it>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Simplify smp_call_function*() by using common implementation
+On Tue, Mar 13, 2007 at 12:01:13AM +0100, Blaisorblade wrote:
+> On Wednesday 07 March 2007 11:02, Nick Piggin wrote:
+> > >
+> > > Yeah, tmpfs/shm segs are what I was thinking about. If UML can live with
+> > > that as well, then I think it might be a good option.
+> >
+> > Oh, hmm.... if you can truncate these things then you still need to
+> > force unmap so you still need i_mmap_nonlinear.
+> 
+> Well, we don't need truncate(), but MADV_REMOVE for memory hotunplug, which is 
+> way similar I guess.
+> 
+> About the restriction to tmpfs, I have just discovered 
+> '[PATCH] mm: tracking shared dirty pages' (commit 
+> d08b3851da41d0ee60851f2c75b118e1f7a5fc89), which already partially conflicts 
+> with remap_file_pages for file-based mmaps (and that's fully fine, for now).
+> 
+> Even if UML does not need it, till now if there is a VMA protection and a page 
+> hasn't been remapped with remap_file_pages, the VMA protection is used (just 
+> because it makes sense).
+> 
+> However, it is only used when the PTE is first created - we can never change 
+> protections on a VMA  - so it vma_wants_writenotify() is true (on all 
+> file-based and on no shmfs based mapping, right?), and we write-protect the 
+> VMA, it will always be write-protected.
 
-smp_call_function and smp_call_function_single are almost complete
-duplicates of the same logic.  This patch combines them by
-implementing them in terms of the more general
-smp_call_function_mask().
+Yes, I believe that is the case, however I wonder if that is going to be
+a problem for you to distinguish between write faults for clean writable
+ptes, and write faults for readonly ptes?
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Stephane Eranian <eranian@hpl.hp.com>
-Cc: Andrew Morton <akpm@osdl.org>
-Cc: Andi Kleen <ak@suse.de>
-Cc: "Randy.Dunlap" <rdunlap@xenotime.net>
-Cc: Ingo Molnar <mingo@elte.hu>
+> That's no problem for UML, but for any other user (I guess I'll have to 
+> prevent callers from trying such stuff - I started from a pretty generic 
+> patch).
+> 
+> > But come to think of it, I still don't think nonlinear mappings are
+> > too bad as they are ;)
+> 
+> Btw, I really like removing ->populate and merging the common code together. 
+> filemap_populate and shmem_populate are so obnoxiously different that I 
+> already wanted to do that (after merging remap_file_pages() core).
 
----
- arch/i386/kernel/smp.c |  213 ++++++++++++++++++++++--------------------------
- 1 file changed, 102 insertions(+), 111 deletions(-)
+Yeah they are also frustratingly similar to filemap_nopage and shmem_nopage,
+and duplicate a lot of the same code ;)
 
-===================================================================
---- a/arch/i386/kernel/smp.c
-+++ b/arch/i386/kernel/smp.c
-@@ -515,6 +515,73 @@ void unlock_ipi_call_lock(void)
- 
- static struct call_data_struct *call_data;
- 
-+
-+/**
-+ * smp_call_function_mask(): Run a function on a set of other CPUs.
-+ * @mask: The set of cpus to run on.  Must not include the current cpu.
-+ * @func: The function to run. This must be fast and non-blocking.
-+ * @info: An arbitrary pointer to pass to the function.
-+ * @wait: If true, wait (atomically) until function has completed on other CPUs.
-+ *
-+ * Returns 0 on success, else a negative status code. Does not return until
-+ * remote CPUs are nearly ready to execute <<func>> or are or have finished.
-+ *
-+ * You must not call this function with disabled interrupts or from a
-+ * hardware interrupt handler or from a bottom half handler.
-+ */
-+int smp_call_function_mask(cpumask_t mask,
-+			   void (*func)(void *), void *info,
-+			   int wait)
-+{
-+	struct call_data_struct data;
-+	cpumask_t allbutself;
-+	int cpus;
-+
-+	/* Can deadlock when called with interrupts disabled */
-+	WARN_ON(irqs_disabled());
-+
-+	/* Holding any lock stops cpus from going down. */
-+	spin_lock(&call_lock);
-+
-+	allbutself = cpu_online_map;
-+	cpu_clear(smp_processor_id(), allbutself);
-+
-+	cpus_and(mask, mask, allbutself);
-+	cpus = cpus_weight(mask);
-+
-+	if (!cpus) {
-+		spin_unlock(&call_lock);
-+		return 0;
-+	}
-+
-+	data.func = func;
-+	data.info = info;
-+	atomic_set(&data.started, 0);
-+	data.wait = wait;
-+	if (wait)
-+		atomic_set(&data.finished, 0);
-+
-+	call_data = &data;
-+	mb();
-+
-+	/* Send a message to other CPUs */
-+	if (cpus_equal(mask, allbutself))
-+		send_IPI_allbutself(CALL_FUNCTION_VECTOR);
-+	else
-+		send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
-+
-+	/* Wait for response */
-+	while (atomic_read(&data.started) != cpus)
-+		cpu_relax();
-+
-+	if (wait)
-+		while (atomic_read(&data.finished) != cpus)
-+			cpu_relax();
-+	spin_unlock(&call_lock);
-+
-+	return 0;
-+}
-+
- /**
-  * smp_call_function(): Run a function on all other CPUs.
-  * @func: The function to run. This must be fast and non-blocking.
-@@ -528,48 +595,43 @@ static struct call_data_struct *call_dat
-  * You must not call this function with disabled interrupts or from a
-  * hardware interrupt handler or from a bottom half handler.
-  */
--int smp_call_function (void (*func) (void *info), void *info, int nonatomic,
--			int wait)
--{
--	struct call_data_struct data;
--	int cpus;
--
--	/* Holding any lock stops cpus from going down. */
--	spin_lock(&call_lock);
--	cpus = num_online_cpus() - 1;
--	if (!cpus) {
--		spin_unlock(&call_lock);
--		return 0;
--	}
--
--	/* Can deadlock when called with interrupts disabled */
--	WARN_ON(irqs_disabled());
--
--	data.func = func;
--	data.info = info;
--	atomic_set(&data.started, 0);
--	data.wait = wait;
--	if (wait)
--		atomic_set(&data.finished, 0);
--
--	call_data = &data;
--	mb();
--	
--	/* Send a message to all other CPUs and wait for them to respond */
--	send_IPI_allbutself(CALL_FUNCTION_VECTOR);
--
--	/* Wait for response */
--	while (atomic_read(&data.started) != cpus)
--		cpu_relax();
--
--	if (wait)
--		while (atomic_read(&data.finished) != cpus)
--			cpu_relax();
--	spin_unlock(&call_lock);
--
--	return 0;
-+int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
-+		      int wait)
-+{
-+	return smp_call_function_mask(cpu_online_map, func, info, wait);
- }
- EXPORT_SYMBOL(smp_call_function);
-+
-+/*
-+ * smp_call_function_single - Run a function on another CPU
-+ * @func: The function to run. This must be fast and non-blocking.
-+ * @info: An arbitrary pointer to pass to the function.
-+ * @nonatomic: Currently unused.
-+ * @wait: If true, wait until function has completed on other CPUs.
-+ *
-+ * Retrurns 0 on success, else a negative status code.
-+ *
-+ * Does not return until the remote CPU is nearly ready to execute <func>
-+ * or is or has executed.
-+ */
-+int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
-+			     int nonatomic, int wait)
-+{
-+	/* prevent preemption and reschedule on another processor */
-+	int ret;
-+	int me = get_cpu();
-+	if (cpu == me) {
-+		WARN_ON(1);
-+		put_cpu();
-+		return -EBUSY;
-+	}
-+
-+	ret = smp_call_function_mask(cpumask_of_cpu(cpu), func, info, wait);
-+
-+	put_cpu();
-+	return ret;
-+}
-+EXPORT_SYMBOL(smp_call_function_single);
- 
- static void stop_this_cpu (void * dummy)
- {
-@@ -633,77 +695,6 @@ fastcall void smp_call_function_interrup
- 	}
- }
- 
--/*
-- * this function sends a 'generic call function' IPI to one other CPU
-- * in the system.
-- *
-- * cpu is a standard Linux logical CPU number.
-- */
--static void
--__smp_call_function_single(int cpu, void (*func) (void *info), void *info,
--				int nonatomic, int wait)
--{
--	struct call_data_struct data;
--	int cpus = 1;
--
--	data.func = func;
--	data.info = info;
--	atomic_set(&data.started, 0);
--	data.wait = wait;
--	if (wait)
--		atomic_set(&data.finished, 0);
--
--	call_data = &data;
--	wmb();
--	/* Send a message to all other CPUs and wait for them to respond */
--	send_IPI_mask(cpumask_of_cpu(cpu), CALL_FUNCTION_VECTOR);
--
--	/* Wait for response */
--	while (atomic_read(&data.started) != cpus)
--		cpu_relax();
--
--	if (!wait)
--		return;
--
--	while (atomic_read(&data.finished) != cpus)
--		cpu_relax();
--}
--
--/*
-- * smp_call_function_single - Run a function on another CPU
-- * @func: The function to run. This must be fast and non-blocking.
-- * @info: An arbitrary pointer to pass to the function.
-- * @nonatomic: Currently unused.
-- * @wait: If true, wait until function has completed on other CPUs.
-- *
-- * Retrurns 0 on success, else a negative status code.
-- *
-- * Does not return until the remote CPU is nearly ready to execute <func>
-- * or is or has executed.
-- */
--
--int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
--			int nonatomic, int wait)
--{
--	/* prevent preemption and reschedule on another processor */
--	int me = get_cpu();
--	if (cpu == me) {
--		WARN_ON(1);
--		put_cpu();
--		return -EBUSY;
--	}
--
--	/* Can deadlock when called with interrupts disabled */
--	WARN_ON(irqs_disabled());
--
--	spin_lock_bh(&call_lock);
--	__smp_call_function_single(cpu, func, info, nonatomic, wait);
--	spin_unlock_bh(&call_lock);
--	put_cpu();
--	return 0;
--}
--EXPORT_SYMBOL(smp_call_function_single);
--
- static int convert_apicid_to_cpu(int apic_id)
- {
- 	int i;
+> Also, I'm curious. Since my patches are already changing remap_file_pages() 
+> code, should they be absolutely merged after yours?
 
+Is there a big clash? I don't think I did a great deal to fremap.c (mainly
+just removing stuff)...
