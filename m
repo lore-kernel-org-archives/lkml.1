@@ -1,96 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030772AbXCMQYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030774AbXCMQZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030772AbXCMQYZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 12:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030767AbXCMQYY
+	id S1030774AbXCMQZF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 12:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030775AbXCMQZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 12:24:24 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:30104 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030765AbXCMQYX (ORCPT
+	Tue, 13 Mar 2007 12:25:05 -0400
+Received: from MAIL.13thfloor.at ([213.145.232.33]:34318 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030774AbXCMQZB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 12:24:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PMyBoAgxBj4xaM5emKjs/HA3xdTIYn/WE3RhWqTmC3QP5gw49zVD1Efbbb+yRYBPKz0hnXzBgHdikhJyMSoglLI31eUhBNMpri6LxNY+KvfCFbcjZaxdiLEkSUEvWu6sMpd9mmBu9UvPv+SEkctmK954KXkAsyXUh6H1BmJsVZc=
-Message-ID: <f2b55d220703130924h11786d9fh1d87f90bcd1b3d60@mail.gmail.com>
-Date: Tue, 13 Mar 2007 09:24:22 -0700
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: sys_write() racy for multi-threaded append?
-Cc: alan@lxorguk.ukuu.org.uk, 7eggert@gmx.de, dada1@cosmosbay.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070313.004224.41634994.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 12:25:01 -0400
+Date: Tue, 13 Mar 2007 17:24:59 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: menage@google.com, xemul@sw.ru, dev@sw.ru, pj@sgi.com, sam@vilain.net,
+       ebiederm@xmission.com, winget@google.com, serue@us.ibm.com,
+       akpm@linux-foundation.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, ckrm-tech@lists.sourceforge.net
+Subject: Re: Summary of resource management discussion
+Message-ID: <20070313162459.GQ8755@MAIL.13thfloor.at>
+Mail-Followup-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>, menage@google.com,
+	xemul@sw.ru, dev@sw.ru, pj@sgi.com, sam@vilain.net,
+	ebiederm@xmission.com, winget@google.com, serue@us.ibm.com,
+	akpm@linux-foundation.org, containers@lists.osdl.org,
+	linux-kernel@vger.kernel.org, ckrm-tech@lists.sourceforge.net
+References: <20070312124226.GD17151@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <f2b55d220703121746k1a849b78rec3131cb6f5eae38@mail.gmail.com>
-	 <20070313022430.57503b08@lxorguk.ukuu.org.uk>
-	 <f2b55d220703130025l48ea2e8ci15ddf0563cf21bf9@mail.gmail.com>
-	 <20070313.004224.41634994.davem@davemloft.net>
+In-Reply-To: <20070312124226.GD17151@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/13/07, David Miller <davem@davemloft.net> wrote:
-> You're not even safe over standard output, simply run the program over
-> ssh and you suddenly have socket semantics to deal with.
+On Mon, Mar 12, 2007 at 06:12:26PM +0530, Srivatsa Vaddagiri wrote:
+> I happened to read the entire thread (@ http://lkml.org/lkml/2007/3/1/159)
+> all over again and felt it may be usefull to summarize the discussions so far.
+> 
+> If I have missed any imp. points or falsely represented someone's view
+> (unintentionally of course!), then I would be glad to be corrected.
+> 
+> 1. Which task-grouping mechanism?
+> 	
+> 	[ This question is the most vital one that needs a consensus ]
+> 
+> Resource management generally works by apply resource controls over a -group- 
+> of tasks (tasks of a user, tasks in a vserver/container etc).
+> 
+> What mechanism do we use to group tasks for res mgmt purposes?
+> 
+> Options:
+> 
+> a. Paul Menage's container(/uh-a-diff-name-pls?) patches
+> 
+> 	The patches introduce a new pointer in task_struct, struct
+> 	container_group *containers, and a new structure 'struct container'.
+> 
+> 	Tasks pointing to the same 'struct container' object (via their
+> 	tsk->containers->container[] pointer) are considered to form
+> 	a group associated with that container. The attributes associated
+> 	with a container (ex: cpu_limit, rss_limit, cpus/mems_allowed) are 
+> 	decided by the options passed to mount command (which binds 
+> 	one/more/all resource controllers to a hierarchy).
+> 
+> 	+ For workload management, where it is desirable to manage resource 
+> 	  consumption of a run-time defined (potentially arbitrary) group of 
+> 	  tasks, then this patch is handy, as no existing pointers in 
+> 	  task_struct can be used to form such a run-time decided group.
+> 
+> 	- (subjective!) If there is a existing grouping mechanism already (say 
+> 	  tsk->nsproxy[->pid_ns]) over which res control needs to be applied, 
+> 	  then the new grouping mechanism can be considered redundant (it can 
+> 	  eat up unnecessary space in task_struct)
+> 
+>           What may help avoid this redundancy is to re-build existing 
+> 	  grouping mechanism (say tsk->nsproxy) using the container patches.
+> 	  Serge however expressed some doubts on such a implementation
+> 	  (for ex: how will one build hierarchical cpusets and non-hierarchical
+> 	  namespaces using that single 'grouping' pointer in task_struct) and 
+> 	  also felt it may slow down things a bit from namespaces pov (more 
+> 	  dereferences reqd to get to a task's namespace).
+> 
+> b. Reuse existing pointers in task_struct, tsk->nsproxy or better perhaps 
+>    tsk->nsproxy->pid_ns, as the means to group tasks (rcfs patches)
+> 
+> 	This is based on the observation that the group of tasks whose resource 
+> 	consumption need to be managed is already defined in the kernel by 
+> 	existing pointers (either tsk->nsproxy or tsk->nsproxy->pid_ns)
+> 
+> 	+ reuses existing grouping mechanism in kernel
+> 
+> 	- mixes resource and name spaces (?)
+> 
+> c. Introduce yet-another new structure ('struct res_ctl?') which houses 
+>    resource control (& possibly pid_ns?) parameters and a new pointer to this 
+>    structure in task_struct (Herbert Poetzl).
+> 
+>   	Tasks that have a pointer to the same 'struct res_ctl' are considered 
+> 	to form a group for res mgmt purpose
+> 
+> 	+ Accessing res ctl information in scheduler fast path is
+> 	  optimized (only two-dereferences required)
+> 
+> 	- If all resource control parameters (cpu, memory, io etc) are
+> 	  lumped together in same structure, it makes it hard to
+> 	  have resource classes (cpu, mem etc) that are independent of
+> 	  each other.
+> 
+> 	- If we introduce several pointers in task_struct to allow
+> 	  separation of resource classes, then it will increase storage space 
+> 	  in task_struct and also fork time (we have to take ref count
+> 	  on more than one object now). Herbert thinks this is worthy
+> 	  tradeoff for the benefit gained in scheduler fast paths.
 
-I'm intimately familiar with this one.  Easily worked around by piping
-the output through cat or tee.  Not that one should ever write code
-for a *nix box that can't cope with stdout being a socket or tty; but
-sometimes the quickest way to glue existing code into a pipeline is to
-pass /dev/stdout in place of a filename, and there's no real value in
-reworking legacy code to handle short writes when you can just drop in
-cat.
+what about identifying different resource categories and
+handling them according to the typical usage pattern?
 
-> In short, if you don't handle short writes, you're writing a program
-> for something other than unix.
+like the following:
 
-Right in one.  You're writing a program for a controlled environment,
-whether it's a Linux-only API (netlink sockets) or a Linux-only
-embedded product.  And there's no need for that controlled environment
-to gratuitously reproduce the overly vague semantics of the *nix zoo.
+ - cpu and scheduler related accounting/limits
+ - memory related accounting/limits
+ - network related accounting/limits
+ - generic/file system related accounting/limits
 
-> We're not changing write() to interlock with other parallel callers or
-> messing with the f_pos semantics in such cases, that's stupid, please
-> cope, kthx.
+I don't worry too much about having the generic/file stuff
+attached to the nsproxy, but the cpu/sched stuff might be
+better off being directly reachable from the task
+(the memory related stuff might be placed in a zone or so)
 
-This is not what I am proposing, and certainly not what I'm
-implementing.  Right now f_pos handling is gratuitously thread-unsafe
-even in the common, all writes completed normally case.  writev()
-opens the largest possible window to f_pos corruption by delaying the
-f_pos update until after the vfs_writev() completes.  That's the main
-thing I want to see fixed.
+> 2. Where do we put resource control parameters for a group?
+> 
+> 	This depends on 1. So the options are:
+> 
+> a. Paul Menage's patches:
+> 
+> 	(tsk->containers->container[cpu_ctlr.subsys_id] - X)->cpu_limit
+> 
+>    An optimized version of the above is:
+> 	(tsk->containers->subsys[cpu_ctlr.subsys_id] - X)->cpu_limit
+> 
+> 
+> b. rcfs
+> 	tsk->nsproxy->ctlr_data[cpu_ctlr.subsys_id]->cpu_limit
+> 
+> c. Herbert's proposal
+> 	tsk->res_ctl->cpu_limit
 
-_If_ it proves practical to wrap accessor functions around f_pos
-accesses, and _if_ accesses to f_pos from outside read_write.c can be
-made robust against transient overshoot, then there is no harm in
-tightening up f_pos semantics so that successful pipelined writes to
-the same file don't collide so easily.  If read-modify-write on f_pos
-were atomic, it would be easy to guarantee that it is in a sane state
-any time a syscall is not actually outstanding on that struct file.
-There's even a potential performance gain from streamlining the
-pattern of L1 cache usage in the common case, although I expect it's
-negligible.
+see above, but yes ...
 
-Making read-modify-write atomic on f_pos is of course not free on all
-platforms.  But once you have the accessors, you can decide at kernel
-compile time whether or not to interlock them with spinlocks and
-memory barriers or some such.  Most platforms probably needn't bother;
-there are much bigger time bombs lurking elsewhere in the kernel.  x86
-is a bit dicey, because there's no way to atomically update a 64-bit
-loff_t in memory, and so in principle you could get a race on carry
-across the 32-bit boundary.  (This file instantaneously jumped from
-4GB to 8GB in size?  What the hell?  How long would it take you to
-spot a preemption between writing out the upper and lower halves of a
-64-bit integer?)
+> 3. How are cpusets related to vserver/containers?
+> 
+> 	Should it be possible to, lets say, create exclusive cpusets and
+> 	attach containers to different cpusets?
 
-In any case, I have certainly gotten the -ENOPATCH message by now.  It
-must be nice not to have to care whether things work in the field if
-you can point at something stupid that an application programmer did.
-I don't always have that luxury.
+that is what Linux-VServer does atm, i.e. you can put
+an entire guest into a specific cpu set 
 
-Cheers,
-- Michael
+> 4. Interface
+> 	Filesystem vs system call 
+> 
+> 	Filesystem:
+> 		+ natural way to represent hierarchical data
+> 		+ File permission model convenient to delegate
+> 	  	  management of part of a tree to one user
+> 		+ Ease of use with scripts
+> 
+> 		(from Herbet Poetzl):
+> 
+> 		- performance of filesystem interfaces is quite bad
+> 		- you need to do a lot to make the fs consistant for
+> 		  e.g. find and friends (regarding links and filesize)
+> 		- you have a quite hard time to do atomic operations
+> 		  (except for the ioctl interface, which nobody likes)
+> 		- vfs/mnt namespaces complicate the access to this
+> 		  new filesystem once you start moving around (between
+> 	          the spaces)
+> 
+> 
+> 5. If we use filesystem interface, then should it be in /proc? (Eric)
+> 
+> 	- /proc doesn't allow the flexibility of say creating multiple
+> 	  hierarchies and binding different resource controllers to each
+> 	  hierarchy
+> 
+> 6. As tasks move around namespaces/resource-classes, their
+>    tsk->nsproxy/containers object will change. Do we simple create
+>    a new nsproxy/containers object or optimize storage by searching
+>    for one which matches the task's new requirements?
+> 
+> 	- Linux Vserver follows former approach i.e simply creates
+> 	  a new nsproxy with pointers to required namespace objects
+
+which I consider suboptimal, but it was straight forward 
+to implement ... 
+
+> 7. Hierarchy
+> 
+> 	- For res mgmt, do we need to worry about hierarchy at all?
+> 
+> 		- If we consider cpuset to be a resource controller,
+> 	 	  then we have one resource controller who already
+> 		  supports hierarchy
+> 
+> 		- If we don't support hierarchy in res controllers today
+> 		  but were to add that support later, then
+> 		  user-interface shouldn't change. That's why
+> 		  designining -atleast- the user interface to support
+> 		  hierarchy may make sense
+> 
+> 	- Do we let resource classes to be split independent of each?
+> 
+> 	  For ex: CPU resource classes are independent of memory resource
+> 	  classes. This inturn affect whether the Paul Menage's patches
+> 	  need to support multiple hierarchy feature.
+
+thanks,
+Herbert
+
+> -- 
+> Regards,
+> vatsa
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/containers
