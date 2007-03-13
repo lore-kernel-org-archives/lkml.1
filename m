@@ -1,124 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965742AbXCMOAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030298AbXCMOBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965742AbXCMOAc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 10:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965768AbXCMOAc
+	id S1030298AbXCMOBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 10:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030301AbXCMOBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 10:00:32 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:40274 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965742AbXCMOAb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 10:00:31 -0400
-Date: Tue, 13 Mar 2007 15:00:29 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>
-cc: James Simmons <jsimmons@infradead.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: const and __initdata (was: Re: [Linux-fbdev-devel] [PATCH 4/7] fbdev:
- move logo externs to header file)
-In-Reply-To: <Pine.LNX.4.62.0701311339110.15066@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0703131455160.27486@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
- <Pine.LNX.4.62.0701311339110.15066@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 13 Mar 2007 10:01:33 -0400
+Received: from colin.muc.de ([193.149.48.1]:1889 "EHLO mail.muc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030298AbXCMOBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 10:01:31 -0400
+Date: 13 Mar 2007 15:01:29 +0100
+Date: Tue, 13 Mar 2007 15:01:29 +0100
+From: Andi Kleen <ak@muc.de>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Linus Torvalds <torvalds@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>, Dan Hecht <dhecht@vmware.com>,
+       Dan Arai <arai@vmware.com>, Andrew Morton <akpm@osdl.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH 2/9] Sched clock paravirt op fix.patch
+Message-ID: <20070313140129.GB92373@muc.de>
+References: <200703020254.l222sOaM009656@zach-dev.vmware.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703020254.l222sOaM009656@zach-dev.vmware.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007, Geert Uytterhoeven wrote:
-> Move the external declarations for the various linux logo structures to
-> <linux/linux_logo.h>. As a consequence, I had to remove the `const', as `const'
-> is incompatible with `__initdata'.
+On Thu, Mar 01, 2007 at 06:54:24PM -0800, Zachary Amsden wrote:
+> The custom_sched_clock hook is broken.  The result from sched_clock needs to be
+> in nanoseconds, not in CPU cycles.  The TSC is insufficient for this purpose,
+> because TSC is poorly defined in a virtual environment, and mostly represents
+> real world time instead of scheduled process time (which can be interrupted
+> without notice when a virtual machine is descheduled).
 > 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
->  arch/powerpc/kernel/prom_init.c |    3 ---
->  drivers/video/logo/logo.c       |   13 -------------
->  include/linux/linux_logo.h      |   13 +++++++++++++
->  3 files changed, 13 insertions(+), 16 deletions(-)
+> To make the scheduler consistent, we must expose a different nature of time,
+> that is scheduled time.  So deprecate this custom_sched_clock hack and turn it
+> into a paravirt-op, as it should have been all along.  This allows the tsc.c
+> code which converts cycles to nanoseconds to be shared by all paravirt-ops
+> backends.
 > 
-> --- ps3-linux-2.6.20-rc7.orig/arch/powerpc/kernel/prom_init.c
-> +++ ps3-linux-2.6.20-rc7/arch/powerpc/kernel/prom_init.c
-> @@ -44,10 +44,7 @@
->  #include <asm/sections.h>
->  #include <asm/machdep.h>
->  
-> -#ifdef CONFIG_LOGO_LINUX_CLUT224
->  #include <linux/linux_logo.h>
-> -extern const struct linux_logo logo_linux_clut224;
-> -#endif
->  
->  /*
->   * Properties whose value is longer than this get excluded from our
-> --- ps3-linux-2.6.20-rc7.orig/drivers/video/logo/logo.c
-> +++ ps3-linux-2.6.20-rc7/drivers/video/logo/logo.c
-> @@ -21,19 +21,6 @@
->  #include <asm/bootinfo.h>
->  #endif
->  
-> -extern const struct linux_logo logo_linux_mono;
-> -extern const struct linux_logo logo_linux_vga16;
-> -extern const struct linux_logo logo_linux_clut224;
-> -extern const struct linux_logo logo_dec_clut224;
-> -extern const struct linux_logo logo_mac_clut224;
-> -extern const struct linux_logo logo_parisc_clut224;
-> -extern const struct linux_logo logo_sgi_clut224;
-> -extern const struct linux_logo logo_sun_clut224;
-> -extern const struct linux_logo logo_superh_mono;
-> -extern const struct linux_logo logo_superh_vga16;
-> -extern const struct linux_logo logo_superh_clut224;
-> -extern const struct linux_logo logo_m32r_clut224;
-> -
->  
->  const struct linux_logo *fb_find_logo(int depth)
->  {
-> --- ps3-linux-2.6.20-rc7.orig/include/linux/linux_logo.h
-> +++ ps3-linux-2.6.20-rc7/include/linux/linux_logo.h
-> @@ -32,6 +32,19 @@ struct linux_logo {
->  	const unsigned char *data;
->  };
->  
-> +extern struct linux_logo logo_linux_mono;
-> +extern struct linux_logo logo_linux_vga16;
-> +extern struct linux_logo logo_linux_clut224;
-> +extern struct linux_logo logo_dec_clut224;
-> +extern struct linux_logo logo_mac_clut224;
-> +extern struct linux_logo logo_parisc_clut224;
-> +extern struct linux_logo logo_sgi_clut224;
-> +extern struct linux_logo logo_sun_clut224;
-> +extern struct linux_logo logo_superh_mono;
-> +extern struct linux_logo logo_superh_vga16;
-> +extern struct linux_logo logo_superh_clut224;
-> +extern struct linux_logo logo_m32r_clut224;
-> +
->  extern const struct linux_logo *fb_find_logo(int depth);
->  
->  #endif /* _LINUX_LINUX_LOGO_H */
+> It is unfortunate to add a new paravirt-op, but this is a very distinct
+> abstraction which is clearly different for all virtual machine implementations,
+> and it gets rid of an ugly indirect function which I ashamedly admit I hacked
+> in to try to get this to work earlier, and then even got in the wrong units.
+> 
+> Please apply.
 
-By modifying scripts/pnmtologo.c to add `const' to the declaration of the
-linux_logo structs, I could keep the const.
+I think it's better to remove this completely and not allow paravirt
+to hook into sched_clock.  After all a hypervisor stealing time is no
+different from interrupts stealing time and we don't try to handle
+that either. 
 
-However, this introduced a new conflict w.r.t. to `const' and `__initdata':
-  - gcc 3.4.6 20060404 (Red Hat 3.4.6-3) for ia32 needs xxx_data[] and
-    xxx_clut[] to be const too, else it complains about a section type conflict
-  - ppu-gcc 4.1.0 20060304 (Red Hat 4.1.0-3) for ppc64 needs xxx_data[] and
-    xxx_clut[] to be non-const, else it complains about a section type conflict
+I will remove the custom hook.
 
-Anyone with a suggestion how to fix this? Keep everything non-const for now?
-Add tests for specific compiler versions (I assume this is a gcc 3.x vs. 4.x
-issue?)?
-
-Thanks in advance!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+-Andi
