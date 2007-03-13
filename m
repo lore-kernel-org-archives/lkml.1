@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbXCMNWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbXCMN3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbXCMNWs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 09:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXCMNWs
+	id S1753257AbXCMN3A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 09:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXCMN3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 09:22:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38164 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753256AbXCMNWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 09:22:47 -0400
-Date: Tue, 13 Mar 2007 09:22:18 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
-Message-ID: <20070313132218.GA25910@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>
-References: <20070313040828.GA17893@redhat.com> <200703131022.54322.rjw@sisk.pl>
+	Tue, 13 Mar 2007 09:29:00 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:21852 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753257AbXCMN3A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 09:29:00 -0400
+Date: Tue, 13 Mar 2007 14:30:34 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Marcel Holtmann <marcel@holtmann.org>,
+       maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
+       Mark Lord <lkml@rtr.ca>
+Subject: Re: [2/6] 2.6.21-rc3: known regressions
+Message-ID: <20070313143034.77425af4@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070313125003.GS18731@stusta.de>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+	<20070313125003.GS18731@stusta.de>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703131022.54322.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 10:22:53AM +0100, Rafael J. Wysocki wrote:
- > On Tuesday, 13 March 2007 05:08, Dave Jones wrote:
- > > I spent considerable time over the last day or so bisecting to
- > > find out why an X60 stopped resuming somewhen between 2.6.20 and current -git.
- > > (Total lockup, black screen of death).
- > 
- > Do you have CONFIG_TICK_ONESHOT or CONFIG_NO_HZ set?  If you do, could you
- > please unset them and retest?
+On Tue, 13 Mar 2007 13:50:03 +0100,
+Adrian Bunk <bunk@stusta.de> wrote:
 
-I did try with NO_HZ unset, made no difference, I don't recall TICK_ONESHOT.
-I'm in meetings all day, but I'll check when I get home.
+> Subject    : ThinkPad X60: bluetooth hardlocks
+> References : http://lkml.org/lkml/2007/3/2/85
+> Submitter  : Pavel Machek <pavel@ucw.cz>
+> Handled-By : Marcel Holtmann <marcel@holtmann.org>
+> Status     : unknown
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+Does this still happen with -rc3? I'd have thought Mark's patch in
+0de1517e23c2e28d58a6344b97a120596ea200bb fixed that...
