@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbXCMLqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbXCMLsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933099AbXCMLqZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 07:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933127AbXCMLqZ
+	id S933127AbXCMLsM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 07:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933134AbXCMLsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 07:46:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37347 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933099AbXCMLqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 07:46:24 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+5JbZielG5icgNchRtKr4ksQxtdj1Ljv9qrqHGWt
-	Ffl4w97ga1zsh7
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Mike Galbraith <efault@gmx.de>
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <87bqix5q18.fsf@depni.sinp.msu.ru>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <1173778398.6810.21.camel@Homer.simpson.net>
-	 <20070313093914.GA10533@elte.hu> <200703132106.08878.kernel@kolivas.org>
-	 <1173785006.8561.19.camel@Homer.simpson.net>
-	 <87bqix5q18.fsf@depni.sinp.msu.ru>
-Content-Type: text/plain
-Date: Tue, 13 Mar 2007 12:46:21 +0100
-Message-Id: <1173786381.8561.22.camel@Homer.simpson.net>
+	Tue, 13 Mar 2007 07:48:12 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:43209 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933127AbXCMLsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 07:48:11 -0400
+Date: Tue, 13 Mar 2007 04:47:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
+Message-Id: <20070313044756.b45649ac.akpm@linux-foundation.org>
+In-Reply-To: <45F68B4B.9020200@yahoo.com.au>
+References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>
+	<20070313005334.853559ca.akpm@linux-foundation.org>
+	<45F65ADA.9010501@yahoo.com.au>
+	<20070313035250.f908a50e.akpm@linux-foundation.org>
+	<45F685C6.8070806@yahoo.com.au>
+	<20070313041551.565891b5.akpm@linux-foundation.org>
+	<45F68B4B.9020200@yahoo.com.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 14:41 +0300, Serge Belyshev wrote:
-> Mike Galbraith <efault@gmx.de> writes:
-> 
-> [snip]
-> > It seems to be a plain linear slowdown.  The lurchiness I'm experiencing
-> > varies in intensity, and is impossible to quantify.  I see neither
-> > lurchiness nor slowdown in mainline through -j8.
-> >
-> Whaa? make -j8 on mainline makes my desktop box completely useless.
-> 
-> Please reconsider your statement.
+> On Tue, 13 Mar 2007 22:30:19 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> We don't actually have to zap_pte_range the entire page table in
+> order to free it (IIRC we used to have to, before the 4lpt patches).
 
-I'll do no such thing, and don't appreciate the insinuation.
+I'm trying to remember why we ever would have needed to zero out the pagetable
+pages if we're taking down the whole mm?  Maybe it's because "oh, the
+arch wants to put this page into a quicklist to recycle it", which is
+all rather circular.
 
-	-Mike
-
+It would be interesting to look at a) leave the page full of random garbage
+if we're releasing the whole mm and b) return it straight to the page allocator.
