@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753146AbXCMGRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750974AbXCMGVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753146AbXCMGRb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 02:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbXCMGRb
+	id S1750974AbXCMGVj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 02:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbXCMGVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 02:17:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34497 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753148AbXCMGRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 02:17:30 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+q8DF8N+yqLJqnnEBgZBLOBp2EN3/kEP8tbJNOQ9
-	4kPJcXyncXtSW7
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200703131653.39415.kernel@kolivas.org>
-References: <200703111457.17624.kernel@kolivas.org>
-	 <8cd998d50703121551u44ea3d85g2541503373f461f4@mail.gmail.com>
-	 <1173762639.7944.45.camel@Homer.simpson.net>
-	 <200703131653.39415.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Tue, 13 Mar 2007 07:17:25 +0100
-Message-Id: <1173766645.10004.2.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Tue, 13 Mar 2007 02:21:39 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:36734 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750974AbXCMGVi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 02:21:38 -0400
+Message-ID: <45F642F1.1040405@vmware.com>
+Date: Mon, 12 Mar 2007 22:21:37 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: ak@suse.de, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] Fix vmi time header bug
+References: <45F5DB00.1070506@vmware.com> <20070312223136.dc6969f3.akpm@linux-foundation.org>
+In-Reply-To: <20070312223136.dc6969f3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 16:53 +1100, Con Kolivas wrote:
-> On Tuesday 13 March 2007 16:10, Mike Galbraith wrote:
+Andrew Morton wrote:
+> Really truly?   I think we have a _lot_ of declarations which omit the section
+> qualifier altogether.  How come they don't all break too?
+>   
 
-> > I'm not trying to be pig-headed.  I'm of the opinion that fairness is
-> > great... until you strictly enforce it wrt interactive tasks.
-> 
-> How about answering my question then since I offered you numerous combinations 
-> of ways to tackle the problem? The simplest one doesn't even need code, it 
-> just needs you to alter the nice value that you're already setting.
+According to the report I have.  Perhaps a bogus section qualifier does 
+more damage than an omitted one.  I'll get gcc  / linker version, but 
+this could be a combination of user error, a strange toolchain, and 
+perhaps a real bug somewhere.
 
-Hey, you specifically asked me to not choose 5 :)  (I mentioned 5
-earlier in the thread anyway, so no sense in repeating myself)
+> (ARM (at least) in fact does require the section tagging on the declaration as
+> well as the definition, but we've thus far only fixed that in a couple of places
+> which were causing breakage).
+>   
 
-	-Mike
+Yes, I was surprised by this as well, and I'm still skeptical about this 
+being the real cause.  Still, this reportedly fixed the problem, and is 
+certainly not a bad thing.
 
+Zach
