@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933251AbXCMU1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933287AbXCMU2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933251AbXCMU1s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933287AbXCMU1s
+	id S933287AbXCMU2f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXCMU2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:27:48 -0400
-Received: from mail16.syd.optusnet.com.au ([211.29.132.197]:34179 "EHLO
-	mail16.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933251AbXCMU1r (ORCPT
+	Tue, 13 Mar 2007 16:28:35 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:52391 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933287AbXCMU2d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:27:47 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: [PATCH] [RSDL-0.30] sched: rsdl improve latencies with  differential nice -1
-Date: Wed, 14 Mar 2007 07:27:37 +1100
-User-Agent: KMail/1.9.5
-Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-References: <200703132254.28281.a1426z@gawab.com>
-In-Reply-To: <200703132254.28281.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 13 Mar 2007 16:28:33 -0400
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       menage@google.com, linux-kernel@vger.kernel.org, xemul@sw.ru
+In-Reply-To: <20070313190931.1417c012@lxorguk.ukuu.org.uk>
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>
+	 <20070306140036.4e85bd2f.akpm@linux-foundation.org>
+	 <45F3F581.9030503@sw.ru>
+	 <20070311045111.62d3e9f9.akpm@linux-foundation.org>
+	 <20070312010039.GC21861@MAIL.13thfloor.at>
+	 <1173724979.11945.103.camel@localhost.localdomain>
+	 <20070312224129.GC21258@MAIL.13thfloor.at>
+	 <20070312220439.677b4787.akpm@linux-foundation.org>
+	 <1173806793.6680.44.camel@localhost.localdomain>
+	 <20070313190931.1417c012@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Tue, 13 Mar 2007 13:28:26 -0700
+Message-Id: <1173817706.6680.83.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703140727.37486.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 March 2007 06:54, Al Boldi wrote:
-> Con Kolivas wrote:
-> > On Wednesday 14 March 2007 03:03, Con Kolivas wrote:
-> > > On Wednesday 14 March 2007 02:31, Con Kolivas wrote:
-> > > > On Monday 12 March 2007 22:26, Al Boldi wrote:
-> > > > > I think, it should be possible to spread this max expiration
-> > > > > latency across the rotation, should it not?
-> > > >
-> > > > Can you try the attached patch please Al and Mike? It "dithers" the
-> > > > priority bitmap which tends to fluctuate the latency a lot more but
-> > > > in a cyclical fashion. This tends to make the max latency bound to a
-> > > > smaller value and should make it possible to run -nice tasks without
-> > > > killing the latency of the non niced tasks. Eg you could possibly run
-> > > > X nice -10 at a guess like we used to in 2.4 days. It's not essential
-> > > > of course, but is a workaround for Mike's testcase.
-> > >
-> > > Oops, one tiny fix. This is a respin of the patch, sorry.
-> >
-> > A few other minor things would need to be updated before this patch is in
-> > a good enough shape to join the rsdl patches. This one will be good for
-> > testing though.
->
-> Applied against v0.30 mainline.  It only works on prio +16 to +19.
+On Tue, 2007-03-13 at 19:09 +0000, Alan Cox wrote:
+> > stuff is happening by comparing page->count and page->_mapcount, but it
+> > certainly wouldn't be conclusive.  But, does this kind of nonsense even
+> > happen in practice?  
+> 
+> "Is it useful for me as a bad guy to make it happen ?"
 
-I guess the "other minor things" will matter then :) I'll keep working. At 
-least you know what I'm working on now.
+A very fine question. ;)
 
--- 
--ck
+To exploit this, you'd need to:
+1. need to access common data with another user
+2. be patient enough to wait
+3. determine when one of those users had actually pulled
+   a page in from disk, which sys_mincore() can do, right?
+
+I guess that might be a decent reason to not charge the guy who brings
+the page in for the page's entire lifetime.  
+
+So, unless we can change page ownership after it has been allocated,
+anyone accessing shared data can get around resource limits if they are
+patient.  
+
+-- Dave
+
