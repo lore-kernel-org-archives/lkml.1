@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933623AbXCMVUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933372AbXCMVZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933623AbXCMVUz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 17:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXCMVUz
+	id S933372AbXCMVZH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 17:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933630AbXCMVZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 17:20:55 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:35735 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933623AbXCMVUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 17:20:54 -0400
-Date: Tue, 13 Mar 2007 14:20:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-cc: Alan Stern <stern@rowland.harvard.edu>, Hugh Dickins <hugh@veritas.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
-       gregkh@suse.de, Richard Purdie <rpurdie@rpsys.net>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
-In-Reply-To: <20070313194204.5192ab19@gondolin.boeblingen.de.ibm.com>
-Message-ID: <Pine.LNX.4.64.0703131418300.9690@woody.linux-foundation.org>
-References: <1173735075.5936.139.camel@localhost.localdomain>
- <Pine.LNX.4.44L0.0703131046030.2509-100000@iolanthe.rowland.org>
- <20070313194204.5192ab19@gondolin.boeblingen.de.ibm.com>
+	Tue, 13 Mar 2007 17:25:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37708 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933372AbXCMVZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 17:25:05 -0400
+Date: Tue, 13 Mar 2007 22:24:57 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Tim Gardner <tim.gardner@canonical.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Suspend to RAM fault in VT when resuming
+Message-ID: <20070313212457.GD12370@elf.ucw.cz>
+References: <45F709F2.80504@canonical.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F709F2.80504@canonical.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi1
+
+> I've chased one of the 'Suspend to RAM' resume problems to a specific
+> line in drivers/char/vt.c, see attached 2.6.21-rc3 diff with
+
+Has suspend/resume ever worked on that hardware?
+
+> TRACE_RESUME() instrumentation. The macro scr_writew resolves to '*addr
+> = val', which appears to be causing the problem. I've verified that the
+> pointer is not NULL, but don't know if its really valid. Its pretty
+> tough to tell what is happening, but on a Dell XPS it just hangs. A Dell
+> Precision blinks the keyboard lights.
+
+It is possible that video is not initialized at that point, and that
+hardware goes seriously unhappy when you access non-existing vga. Does
+it resume ok when you completely disable video support? 
 
 
-On Tue, 13 Mar 2007, Cornelia Huck wrote:
-> 
-> Another call that deadlocked with Oliver's patch is ungroup for s390
-> ccwgroup devices. It can be made to work again with a similar patch.
+								Pavel
 
-Could we please make this easier to use by having some common sysfs helper 
-routine for this kind of "delayed_store()" functionality.
 
-I'm not a huge fan of delayed work at all, but if we have to have it, at 
-least make it one generic function rather than having multiple functions 
-all doing their own workqueue logic for it.
-
-		Linus
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
