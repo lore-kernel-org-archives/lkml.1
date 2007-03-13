@@ -1,64 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933192AbXCMMdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbXCMMh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933192AbXCMMdj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 08:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933227AbXCMMdj
+	id S1753236AbXCMMh1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 08:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbXCMMh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 08:33:39 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:2053 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933192AbXCMMdi convert rfc822-to-8bit (ORCPT
+	Tue, 13 Mar 2007 08:37:27 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52004 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753226AbXCMMh0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 08:33:38 -0400
-MIME-Version: 1.0
+	Tue, 13 Mar 2007 08:37:26 -0400
+Date: Tue, 13 Mar 2007 13:40:45 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: l.genoni@oltrelinux.com
+Cc: htejun@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: IDE disk runs just in DMA/33 with 2.6.20.2 on nVidia CK804
+ controller
+Message-ID: <20070313134045.1ecc69c9@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0703131125270.24498@Phoenix.oltrelinux.com>
+References: <Pine.LNX.4.64.0703131125270.24498@Phoenix.oltrelinux.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 13 Mar 2007 12:33:35.0954 (UTC) FILETIME=[D1D34B20:01C7656B]
-Content-class: urn:content-classes:message
-Subject: Re: Question: kthread zombie process
-Date: Tue, 13 Mar 2007 08:33:35 -0400
-Message-ID: <Pine.LNX.4.61.0703130724380.25773@chaos.analogic.com>
-In-Reply-To: <45F693B4.000001.09756@colgate.yandex.ru>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Question: kthread zombie process
-Thread-Index: Acdla9HysCLdn+/DSBeciP5xK2Lw+w==
-References: <45F693B4.000001.09756@colgate.yandex.ru>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Mockern" <Mockern@yandex.ru>
-Cc: <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 13 Mar 2007, Mockern wrote:
+On Tue, 13 Mar 2007 13:13:12 +0100 (CET)
+l.genoni@oltrelinux.com wrote:
 
 > Hi,
->
-> I use kthread in my driver. The problem is that I can't kill process
-> with kill_proc function. After rmmod my_driver, ps command shows again SW 
-> my_driver.
->
-> How can I remove this process?
->
-> Thank you
->
+> I reported this also for 2.6.20 kernel.
+> new libata with controller nVidia CK804 initializes the disk in DMA/33,
+> with with 2.6.19.5 and previous the disk is correctly inizialized in 
+> DMA/100.
+> Tha cable is OK, and with older kernels the disks runs without troubles.
 
-You need to follow the procedures used by other kernel drivers that
-use kernel threads. The kernel thread must be properly run-down during
-the module removal process. An easy to read sample is in
-../drivers/wireless/airo.c.
+I have the pieces that fix all this, but not yet integrated into the main
+tree. With 2.6.21rc3 you have 80 wire cables you may find that simply
+hacking the driver to set ATA_CBL_PATA80 is sufficient, but maybe not.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5592.64 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+Alan
