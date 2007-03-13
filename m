@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965717AbXCMMLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030279AbXCMMMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965717AbXCMMLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 08:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXCMMLW
+	id S1030279AbXCMMMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 08:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965711AbXCMMMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 08:11:22 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:43759 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965702AbXCMMLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 08:11:21 -0400
-Date: Tue, 13 Mar 2007 05:11:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
-Message-Id: <20070313051109.3215104b.akpm@linux-foundation.org>
-In-Reply-To: <45F69287.8040509@yahoo.com.au>
-References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>
-	<20070313005334.853559ca.akpm@linux-foundation.org>
-	<45F65ADA.9010501@yahoo.com.au>
-	<20070313035250.f908a50e.akpm@linux-foundation.org>
-	<45F685C6.8070806@yahoo.com.au>
-	<20070313041551.565891b5.akpm@linux-foundation.org>
-	<45F68B4B.9020200@yahoo.com.au>
-	<20070313044756.b45649ac.akpm@linux-foundation.org>
-	<45F69287.8040509@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	Tue, 13 Mar 2007 08:12:42 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50390 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965702AbXCMMMl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 08:12:41 -0400
+Date: Tue, 13 Mar 2007 13:15:33 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: "Bodo Eggert" <7eggert@gmx.de>, "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: sys_write() racy for multi-threaded append?
+Message-ID: <20070313131533.1ec468c3@lxorguk.ukuu.org.uk>
+In-Reply-To: <f2b55d220703130025l48ea2e8ci15ddf0563cf21bf9@mail.gmail.com>
+References: <7WzUo-1zl-21@gated-at.bofh.it>
+	<7WAx2-2pg-21@gated-at.bofh.it>
+	<7WAGF-2Bx-9@gated-at.bofh.it>
+	<7WB07-3g5-33@gated-at.bofh.it>
+	<7WBt7-3SZ-23@gated-at.bofh.it>
+	<E1HQfLX-0000fk-68@be1.lrz>
+	<f2b55d220703120926k1ab7112fh60227fac670b8b4c@mail.gmail.com>
+	<Pine.LNX.4.58.0703121803450.2313@be1.lrz>
+	<f2b55d220703121746k1a849b78rec3131cb6f5eae38@mail.gmail.com>
+	<20070313022430.57503b08@lxorguk.ukuu.org.uk>
+	<f2b55d220703130025l48ea2e8ci15ddf0563cf21bf9@mail.gmail.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 13 Mar 2007 23:01:11 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> Andrew Morton wrote:
-> >>On Tue, 13 Mar 2007 22:30:19 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> >>We don't actually have to zap_pte_range the entire page table in
-> >>order to free it (IIRC we used to have to, before the 4lpt patches).
-> > 
-> > 
-> > I'm trying to remember why we ever would have needed to zero out the pagetable
-> > pages if we're taking down the whole mm?  Maybe it's because "oh, the
-> > arch wants to put this page into a quicklist to recycle it", which is
-> > all rather circular.
-> > 
-> > It would be interesting to look at a) leave the page full of random garbage
-> > if we're releasing the whole mm and b) return it straight to the page allocator.
-> 
-> Well we have the 'fullmm' case, which avoids all the locked pte operations
-> (for those architectures where hardware pt walking requires atomicity).
+> But on that note -- do you have any idea how one might get ltrace to
+> work on a multi-threaded program, or how one might enhance it to
+> instrument function calls from one shared library to another?  Or
 
-I suspect there are some tlb operations which could be skipped in that case
-too.
+I don't know a vast amount about ARM ELF user space so no.
 
-> However we still have to visit those to-be-unmapped parts of the page table
-> to find the pages and free them. So we still at least need to bring it into
-> cache for the read... at which point, the store probably isn't a big burden.
+> better yet, can you advise me on how to induce gdbserver to stream
+> traces of library/syscall entry/exits for all the threads in a
+> process?  And then how to cram it down into the kernel so I don't take
 
-It means all that data has to be written back.  Yes, I expect it'll prove
-to be less costly than the initial load.
+One way to do this is to use kprobes which will do exactly what you want
+as it builds a kernel module. Doesn't currently run on ARM afaik.
+
+> the hit for an MMU context switch every time I hit a syscall or
+
+Not easily with gdbstubs as you've got to talk to something to decide how
+to log the data and proceed. If you stick it kernel side its a lot of
+ugly new code and easier to port kprobes over, if you do it remotely as
+gdbstubs intends it adds latencies and screws all your timings.
+
+gdbstubs is also not terribly SMP aware and for low level work its
+sometimes easier to have on gdb per processor if you can get your brain
+around it.
+
+Alan
