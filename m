@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751087AbXCMW3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751278AbXCMWcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751087AbXCMW3e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 18:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbXCMW3d
+	id S1751278AbXCMWcr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 18:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933347AbXCMWcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 18:29:33 -0400
-Received: from csclub1.cs.uwaterloo.ca ([129.97.7.226]:56243 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751087AbXCMW3d (ORCPT
+	Tue, 13 Mar 2007 18:32:47 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:56318 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751278AbXCMWcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 18:29:33 -0400
-Date: Tue, 13 Mar 2007 18:29:32 -0400
+	Tue, 13 Mar 2007 18:32:46 -0400
+Date: Tue, 13 Mar 2007 18:32:46 -0400
 To: linux-kernel@vger.kernel.org
-Subject: Small fixes for jsm driver
-Message-ID: <20070313222932.GD22466@csclub.uwaterloo.ca>
+Subject: jsm driver fix for linuxpps support
+Message-ID: <20070313223246.GE22466@csclub.uwaterloo.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -22,21 +22,32 @@ From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The jsm driver fails when you try to use the TIOCSSERIAL ioctl.  The
-reason is that the driver never sets uart_port.uartclk, causing the data
-received using TIOCGSERIAL to not match the internal state of the driver.
-This patch fixes this problem by settings the uartclk to the value used
-by the serial_core (16 times the baud base).
+The jsm driver doesn't currently use the uart_handle_*_change helper
+functions, which are the obvious place for things like linuxpps to tie
+into (which it now does of course), and as a result the jsm driver can
+not be used with linuxpps and anything else that ties into the
+serial_core helper functions.  This patch adds calls to these helper
+functions whenever the value they manage changes.  That actual storage
+of the state is not modified since the jsm driver caches the current
+settings (The 8250 driver reads them everytime a user asks for the
+state), and only updates them whenever they change.
 
 Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
 
---- a/drivers/serial/jsm/jsm_tty.c	2007-03-13 15:53:39.000000000 -0400
-+++ b/drivers/serial/jsm/jsm_tty.c	2007-03-13 15:55:15.000000000 -0400
-@@ -471,6 +471,7 @@
- 			continue;
+--- a/drivers/serial/jsm/jsm_neo.c	2007-03-01 10:31:28.000000000 -0500
++++ b/drivers/serial/jsm/jsm_neo.c	2007-03-01 10:18:16.000000000 -0500
+@@ -592,8 +592,13 @@
+ 		return;
  
- 		brd->channels[i]->uart_port.irq = brd->irq;
-+		brd->channels[i]->uart_port.uartclk = 14745600;
- 		brd->channels[i]->uart_port.type = PORT_JSM;
- 		brd->channels[i]->uart_port.iotype = UPIO_MEM;
- 		brd->channels[i]->uart_port.membase = brd->re_map_membase;
+ 	/* Scrub off lower bits. They signify delta's, which I don't care about */
+-	msignals &= 0xf0;
++	/* Keep DDCD and DDSR though */
++	msignals &= 0xf8;
+ 
++	if (msignals & UART_MSR_DDCD)
++		uart_handle_dcd_change(&ch->uart_port, msignals & UART_MSR_DCD);
++	if (msignals & UART_MSR_DDSR)
++		uart_handle_cts_change(&ch->uart_port, msignals & UART_MSR_CTS);
+ 	if (msignals & UART_MSR_DCD)
+ 		ch->ch_mistat |= UART_MSR_DCD;
+ 	else
