@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbXCMGXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbXCMGYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbXCMGXu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 02:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbXCMGXu
+	id S1752265AbXCMGYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 02:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbXCMGYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 02:23:50 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:39428 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1753144AbXCMGXt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 02:23:49 -0400
-Date: Mon, 12 Mar 2007 22:00:51 -0800 (PST)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Lee Revell <rlrevell@joe-job.com>
-cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-In-Reply-To: <75b66ecd0703121923q2f9913cdm8179122d95015ad8@mail.gmail.com>
-Message-ID: <Pine.LNX.4.63.0703122152520.1855@qynat.qvtvafvgr.pbz>
-References: <200703111457.17624.kernel@kolivas.org>  <200703130549.47058.kernel@kolivas.org>
-  <1173730314.6431.30.camel@Homer.simpson.net>  <200703130738.19034.kernel@kolivas.org>
-  <1173732344.6431.54.camel@Homer.simpson.net>  <Pine.LNX.4.63.0703121523220.1245@qynat.qvtvafvgr.pbz>
- <75b66ecd0703121923q2f9913cdm8179122d95015ad8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 13 Mar 2007 02:24:50 -0400
+Received: from ozlabs.org ([203.10.76.45]:33085 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752265AbXCMGYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 02:24:49 -0400
+Subject: Re: _proxy_pda still makes linking modules fail
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1173736726.10618.1.camel@localhost.localdomain>
+References: <1173315479.12472.9.camel@qrnik>
+	 <p73lki39s3a.fsf@bingen.suse.de> <45F49E0A.3090607@goop.org>
+	 <20070312094805.GA11644@one.firstfloor.org>
+	 <1173736726.10618.1.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 13 Mar 2007 17:23:52 +1100
+Message-Id: <1173767032.10618.43.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Mar 2007, Lee Revell wrote:
+On Tue, 2007-03-13 at 08:59 +1100, Rusty Russell wrote:
+> On Mon, 2007-03-12 at 10:48 +0100, Andi Kleen wrote:
+> > > Rusty's pda->per_cpu patch will deal with this once and for all; have
+> > 
+> > Not on x86-64.
+> 
+> Indeed.  Perhaps it's time I join the modern world and compile a 64-bit
+> kernel...
+> 
+> Will prepare patches,
 
-> On 3/12/07, David Lang <david.lang@digitalinsight.com> wrote:
->> the problem comes when this isn't enough. if you have several CPU hogs on a
->> system, and they are all around the same priority level, how can the 
->> scheduler
->> know which one needs the CPU the most for good interactivity?
->> 
->> in some cases you may be able to directly detect that your high-priority 
->> process
->> is waiting for another one (tracing pipes and local sockets for example), 
->> but
->> what if you are waiting for several of them? (think a multimedia desktop 
->> waiting
->> for the sound card, CDRom, hard drive, and video all at once) which one 
->> needs
->> the extra CPU the most?
->
-> I'm not an expert in this area by any means but after reading this
-> thread the OSX solution of simply telling the kernel "I'm the GUI,
-> schedule me accordingly" looks increasingly attractive.  Why make the
-> kernel guess when we can just be explicit?
+No, I don't think I will.  The PDA concept has gone too far in x86-64 to
+be undone.  In particular, it's been put in GCC 4.1 for
+CONFIG_CC_STACKPROTECTOR, which assumes %gs:40 will give the stack
+canary.
 
-this can solve the specific problem (and since 'nice' is the natural way to tell 
-the kernel this, it's not even a one-shot solution).
+For the record: the PDA should never have existed, that's what percpu
+vars were supposed to be for.  Something went wrong here 8(
 
-however Linus is right, the real underlying problem is where the user is 
-waiting on a server. if this issue could be solved then a lot of things would 
-benifit.
+%gs is best set to the offset of the local cpu's area from the "master"
+per-cpu area, not set to the local cpu area's address.  In the former
+case, booting with %gs at offset 0 works naturally, in the latter case,
+hoops need to be jumped through to make it work.  See how much nicer the
+x86 code is post pda->percpu conversion.
 
-Con, as a quick hack (probably a bad idea as I'm not a scheduling expert), if a 
-program blocks on another program (via a pipe or socket) could you easily give 
-the rest of the first program's timeslice to the second one, without makeing it 
-loose it's own?
+So, even if we leave the PDA and place the per-cpu area immediately
+after it, we still can't use "%gs:var" to access a per-cpu variable: we
+need to do a subtract, so why bother using the segment reg?
 
-I'm thinking that doing the dumb thing and just throwing a bit more CPU at the 
-thing you are waiting for may work. (assuming that the server process actually 
-does something useful with the extra CPU time it gets)
+The ideal solution has always been to use __thread, but no architecture
+has yet managed it (I tried for i386, and it quickly caused unbearable
+pain).  On x86-64 that uses "%fs" on x86-64, not "%gs" as the kernel
+does, but I might try that if I feel particularly masochistic soon...
 
-as far as latencies go, it would be like turning every process on the system 
-into a cpu hog.
+In summary, containing the PDA infection to x86-64 is possible, but
+curing that patient is non-trivial 8)
 
-David Lang
+Rusty.
 
-> Does anyone know of a UNIX-like system that has managed to solve this
-> problem without hooking the GUI into the scheduler?
->
-> Lee
->
