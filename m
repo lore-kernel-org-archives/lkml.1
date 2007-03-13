@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933632AbXCMV1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933306AbXCMV1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933632AbXCMV1J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 17:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933646AbXCMV1J
+	id S933306AbXCMV1p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 17:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933666AbXCMV1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 17:27:09 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:50839 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933632AbXCMV1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 17:27:08 -0400
-Subject: Re: Stolen and degraded time and schedulers
-From: Daniel Walker <dwalker@mvista.com>
-Reply-To: dwalker@mvista.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-In-Reply-To: <45F70A71.9090205@goop.org>
-References: <45F6D1D0.6080905@goop.org>
-	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>
-Content-Type: text/plain
-Date: Tue, 13 Mar 2007 14:27:04 -0700
-Message-Id: <1173821224.1416.24.camel@dwalker1>
+	Tue, 13 Mar 2007 17:27:44 -0400
+Received: from waste.org ([66.93.16.53]:54758 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933306AbXCMV1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 17:27:44 -0400
+Date: Tue, 13 Mar 2007 16:14:35 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: David Miller <davem@davemloft.net>
+Cc: jeremy@goop.org, nickpiggin@yahoo.com.au, akpm@linux-foundation.org,
+       clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
+Message-ID: <20070313211435.GP10394@waste.org>
+References: <20070313200313.GG10459@waste.org> <45F706BC.7060407@goop.org> <20070313202125.GO10394@waste.org> <20070313.140722.72711732.davem@davemloft.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070313.140722.72711732.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 13:32 -0700, Jeremy Fitzhardinge wrote:
+On Tue, Mar 13, 2007 at 02:07:22PM -0700, David Miller wrote:
+> From: Matt Mackall <mpm@selenic.com>
+> Date: Tue, 13 Mar 2007 15:21:25 -0500
+> 
+> > Because the fan-out is large, the bulk of the work is bringing the last
+> > layer of the tree into cache to find all the pages in the address
+> > space. And there's really no way around that.
+> 
+> That's right.
+> 
+> And I will note that historically we used to be much worse
+> in this area, as we used to walk the page table tree twice
+> on address space teardown (once to hit the PTE entries, once
+> to free the page tables).
+> 
+> Happily it is a one-pass algorithm now.
+> 
+> But, within active VMA ranges, we do have to walk all
+> the bits at least one time.
 
-> Most of the existing clocksource infrastructure would only operate on
-> CLOCK_TIMEBASE_REALTIME clocksources, so I'm not sure how much overlap
-> there would be here.  In the case of dealing with cpufreq, there's a
-> certain appeal to manipulating the shift/mult parameters to reflect the
-> fractional speed of a cpu as it changes.
+Well you -could- do this:
 
-The frequency tracking you mention is done to some extent inside the
-timekeeping adjustment functions, but I'm not sure it's totally accurate
-for non-timekeeping, and it also tracks things like interrupt latency.
-Tracking frequency changes where it's important to get it right
-shouldn't be done I think ..
+- reuse a long in struct page as a used map that divides the page up
+  into 32 or 64 segments
+- every time you set a PTE, set the corresponding bit in the mask
+- when we zap, only visit the regions set in the mask
 
-If you want accurate time accounting, don't use the TSC .
+Thus, you avoid visiting most of a PMD page in the sparse case,
+assuming PTEs aren't evenly spread across the PMD.
 
-> sched_clock would definitely be the interface which exposes all this
-> stuff to the rest of the kernel.  After all, its basically a very simple
-> interface, though the backend implementation details may not be.
+This might not even be too horrible as the appropriate struct page
+should be in cache with the appropriate bits of the mm already locked,
+etc.
 
-The sched_clock interface is basically a stripped down clocksource..
-I've implemented sched_clock as a clocksource in the past ..
-
-> We currently have a sched_clock interface in paravirt_ops to deal with
-> the hypervisor aspect.  It only occurred to me this morning that cpufreq
-> presents exactly the same problem to the rest of the kernel, and so
-> there's room for a more general solution.
-
-Are there other architecture which have this per-cpu clock frequency
-changing issue? I worked with several other architectures beyond just
-x86 and haven't seen this issue ..
-
-Daniel
-
+-- 
+Mathematics is the supreme nostalgia of our time.
