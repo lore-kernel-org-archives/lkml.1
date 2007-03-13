@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbXCMEEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbXCMEIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbXCMEEq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 00:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbXCMEEq
+	id S1753105AbXCMEIj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 00:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXCMEIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 00:04:46 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:44652 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbXCMEEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 00:04:45 -0400
-Date: Tue, 13 Mar 2007 00:04:42 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Stracing Amanda (was: RSDL for 2.6.21-rc3- 0.29)
-In-reply-to: <29495f1d0703122001x67158365s53dea258acb1aa24@mail.gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Nish Aravamudan" <nish.aravamudan@gmail.com>,
-       "Douglas McNaught" <doug@mcnaught.org>,
-       "Patrick Mau" <mau@oscar.ping.de>
-Message-id: <200703130004.42854.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-2022-jp
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070311013506.GD10459@waste.org>
- <200703122239.29256.gene.heskett@gmail.com>
- <29495f1d0703122001x67158365s53dea258acb1aa24@mail.gmail.com>
-User-Agent: KMail/1.9.6
+	Tue, 13 Mar 2007 00:08:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35216 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753105AbXCMEIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 00:08:38 -0400
+Date: Tue, 13 Mar 2007 00:08:28 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: 2.6.21rc suspend to ram regression on Lenovo X60
+Message-ID: <20070313040828.GA17893@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 March 2007, Nish Aravamudan wrote:
->On 3/12/07, Gene Heskett <gene.heskett@gmail.com> wrote:
->> On Monday 12 March 2007, Douglas McNaught wrote:
->> >Patrick Mau <mau@oscar.ping.de> writes:
->> >> Why not temporarly replace "/bin/tar" with a shell script that
->> >> does:
->> >>
->> >> #!/bin/sh
->> >> exec strace -f -o output /bin/real.tar $@
->> >
->> >You beat me to it.  :) I've done that before; it's a great
->> > suggestion.
->> >
->> >Except that if you expect 'tar' to be invoked multiple times in a
->> > run, you should probably use 'output.$$' for the output filename so
->> > things don't get clobbered.
->> >
->> >-Doug
->>
->> In my case, Doug, it will get invoked 64 times, amanda does a dummy
->> run to get an estimate, calculates what to do based on that output
->> which is 32 runs, 1 per disklist entry and I have 32, and then reruns
->> tar with the appropriate level options against each individual
->> disklist entry.
->>
->> But I'm puzzled a bit, what does the double $$ do?, or it buried
->> someplace in the bash manpage?  Its not something I've stumbled over
->> yet.
->
->buried indeed:
->
->"Special Parameters:
->  ...
->       $      Expands to the process ID of the shell.  In a  () 
-> subshell,  it expands  to  the  process  ID of the current shell, not
-> the sub‐ shell.
->"
+I spent considerable time over the last day or so bisecting to
+find out why an X60 stopped resuming somewhen between 2.6.20 and current -git.
+(Total lockup, black screen of death).
 
-Well, that's clear enough, but what of the double $$ case?  Would this 
-them make a PID unique to each invocation untill it finally wraps a 16 
-bit value, or will the kernel re-use them because they won't all be 
-running simultainiously, but limited by the number of unique 'spindle' 
-numbers on the system, this to prevent as best as it can, the thrashing 
-of a drive by having tar working on 2 separate (or more) partitions at 
-the same time.  In my case 2 are possible, as /var is on a separate 
-drive.
+The bisect log looked like this.
 
->Thanks,
->Nish
+git-bisect start
+# bad: [c8f71b01a50597e298dc3214a2f2be7b8d31170c] Linux 2.6.21-rc1
+git-bisect bad c8f71b01a50597e298dc3214a2f2be7b8d31170c
+# good: [fa285a3d7924a0e3782926e51f16865c5129a2f7] Linux 2.6.20
+git-bisect good fa285a3d7924a0e3782926e51f16865c5129a2f7
+# bad: [574009c1a895aeeb85eaab29c235d75852b09eb8] Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
+git-bisect bad 574009c1a895aeeb85eaab29c235d75852b09eb8
+# bad: [43187902cbfafe73ede0144166b741fb0f7d04e1] Merge master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6
+git-bisect bad 43187902cbfafe73ede0144166b741fb0f7d04e1
+# good: [1545085a28f226b59c243f88b82ea25393b0d63f] drm: Allow for 44 bit user-tokens (or drm_file offsets)
+git-bisect good 1545085a28f226b59c243f88b82ea25393b0d63f
+# good: [c96e2c92072d3e78954c961f53d8c7352f7abbd7] Merge master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6
+git-bisect good c96e2c92072d3e78954c961f53d8c7352f7abbd7
+# good: [31c56d820e03a2fd47f81d6c826f92caf511f9ee] [POWERPC] pasemi: iommu support
+git-bisect good 31c56d820e03a2fd47f81d6c826f92caf511f9ee
+# bad: [78149df6d565c36675463352d0bfe0000b02b7a7] Merge master.kernel.org:/pub/scm/linux/kernel/git/gregkh/pci-2.6
+git-bisect bad 78149df6d565c36675463352d0bfe0000b02b7a7
+# good: [3d9c18872fa1db5c43ab97d8cbca43775998e49c] shpchp: remove CONFIG_HOTPLUG_PCI_SHPC_POLL_EVENT_MODE
+git-bisect good 3d9c18872fa1db5c43ab97d8cbca43775998e49c
+# good: [88187dfa4d8bb565df762f272511d2c91e427e0d] MSI: Replace pci_msi_quirk with calls to pci_no_msi()
+git-bisect good 88187dfa4d8bb565df762f272511d2c91e427e0d
+# good: [866a8c87c4e51046602387953bbef76992107bcb] msi: Fix msi_remove_pci_irq_vectors.
+git-bisect good 866a8c87c4e51046602387953bbef76992107bcb
+# good: [f7feaca77d6ad6bcfcc88ac54e3188970448d6fe] msi: Make MSI useable more architectures
+git-bisect good f7feaca77d6ad6bcfcc88ac54e3188970448d6fe
+# good: [14719f325e1cd4ff757587e9a221ebaf394563ee] Revert "PCI: remove duplicate device id from ata_piix"
+git-bisect good 14719f325e1cd4ff757587e9a221ebaf394563ee
 
+which led me to a final 'bad' commit of 78149df6d565c36675463352d0bfe0000b02b7a7
+which is a merge changeset of lots of PCI bits.
+Seeing a couple of MSI changes in there, on a hunch I booted latest tree with
+pci=nomsi, and it resumed again.
 
+Any ideas how to further debug this?
+I'll try backing out individual changes from that merge tomorrow.
+
+	Dave
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-"Say yur prayers, yuh flea-pickin' varmint!"
--- Yosemite Sam
+http://www.codemonkey.org.uk
