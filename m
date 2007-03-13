@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbXCMXux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbXCMX6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752652AbXCMXux (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 19:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbXCMXux
+	id S1752658AbXCMX6U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 19:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbXCMX6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 19:50:53 -0400
-Received: from MAIL.13thfloor.at ([213.145.232.33]:38128 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752652AbXCMXuw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 19:50:52 -0400
-Date: Wed, 14 Mar 2007 00:50:51 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: menage@google.com, xemul@sw.ru, dev@sw.ru, pj@sgi.com, sam@vilain.net,
-       ebiederm@xmission.com, winget@google.com, serue@us.ibm.com,
-       akpm@linux-foundation.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, ckrm-tech@lists.sourceforge.net
-Subject: Re: Summary of resource management discussion
-Message-ID: <20070313235051.GA5000@MAIL.13thfloor.at>
-Mail-Followup-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>, menage@google.com,
-	xemul@sw.ru, dev@sw.ru, pj@sgi.com, sam@vilain.net,
-	ebiederm@xmission.com, winget@google.com, serue@us.ibm.com,
-	akpm@linux-foundation.org, containers@lists.osdl.org,
-	linux-kernel@vger.kernel.org, ckrm-tech@lists.sourceforge.net
-References: <20070312124226.GD17151@in.ibm.com> <20070313162459.GQ8755@MAIL.13thfloor.at> <20070313175820.GA21825@in.ibm.com>
-Mime-Version: 1.0
+	Tue, 13 Mar 2007 19:58:20 -0400
+Received: from ozlabs.org ([203.10.76.45]:60722 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752658AbXCMX6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 19:58:19 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070313175820.GA21825@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 7bit
+Message-ID: <17911.14998.938879.432788@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Mar 2007 10:58:14 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, clameter@sgi.com,
+       linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
+In-Reply-To: <20070313035250.f908a50e.akpm@linux-foundation.org>
+References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>
+	<20070313005334.853559ca.akpm@linux-foundation.org>
+	<45F65ADA.9010501@yahoo.com.au>
+	<20070313035250.f908a50e.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 11:28:20PM +0530, Srivatsa Vaddagiri wrote:
-> On Tue, Mar 13, 2007 at 05:24:59PM +0100, Herbert Poetzl wrote:
-> > what about identifying different resource categories and
-> > handling them according to the typical usage pattern?
-> > 
-> > like the following:
-> > 
-> >  - cpu and scheduler related accounting/limits
-> >  - memory related accounting/limits
-> >  - network related accounting/limits
-> >  - generic/file system related accounting/limits
-> > 
-> > I don't worry too much about having the generic/file stuff
-> > attached to the nsproxy, but the cpu/sched stuff might be
-> > better off being directly reachable from the task
-> 
-> I think we should experiment with both combinations (a direct pointer
-> to cpu_limit structure from task_struct and an indirect pointer), get
-> some numbers and then decide. Or do you have results already with
-> respect to that?
+Andrew Morton writes:
 
-nope, no numbers for that, but I appreciate some testing
-and probably can do some testing in this regard too
-(although I want to get some testing done for the resource
- sharing between guests first)
+> Plus, we can get in a situation where take a cache-cold, known-zero page
+> from the pte quicklist when there is a cache-hot, non-zero page sitting in
+> the page allocator.  I suspect that zeroing the cache-hot page would take a
+> similar amount of time to a single miss agains the cache-cold page.
 
-> > > 3. How are cpusets related to vserver/containers?
-> > > 
-> > > 	Should it be possible to, lets say, create exclusive cpusets and
-> > > 	attach containers to different cpusets?
-> > 
-> > that is what Linux-VServer does atm, i.e. you can put
-> > an entire guest into a specific cpu set 
-> 
-> Interesting. What abt /dev/cpuset view? 
+That is certainly the case on powerpc.
 
-host only for now
+> I'm not saying that I _know_ that the quicklists are pointless, but I don't
+> think it's established that they are pointful.
 
-best,
-Herbert
+I don't see much point to them.  For powerpc, I would rather grab an
+arbitrary page and zero it than get a page off a quicklist.
 
-> Is that same for all containers or do you restrict that view 
-> to the containers cpuset only?
-> 
-> -- 
-> Regards,
-> vatsa
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/containers
+> Maybe, dunno.  It was apparently a win on powerpc many years ago.  I had a
+
+My recollection was that it wasn't a win, but it was a long time ago...
+
+Paul.
