@@ -1,130 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161044AbXCMRYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161048AbXCMR0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161044AbXCMRYL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 13:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161025AbXCMRYK
+	id S1161048AbXCMR0p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 13:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161049AbXCMR0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 13:24:10 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:65140 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1161049AbXCMRYJ (ORCPT
+	Tue, 13 Mar 2007 13:26:45 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:39051 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161048AbXCMR0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 13:24:09 -0400
-Date: Tue, 13 Mar 2007 13:24:04 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Cc: Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
-       linux-kernel@vger.kernel.org, systemtap@sources.redhat.com,
-       mbligh@google.com, Satoshi Oshima <soshima@redhat.com>,
-       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
-       Hideo Aoki <haoki@redhat.com>
-Subject: Re: Djprobes questions
-Message-ID: <20070313172404.GA385@Krystal>
-References: <20070312223749.GA22280@Krystal> <45F63F8D.6000007@hitachi.com>
+	Tue, 13 Mar 2007 13:26:44 -0400
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       menage@google.com, linux-kernel@vger.kernel.org, xemul@sw.ru
+In-Reply-To: <20070312220439.677b4787.akpm@linux-foundation.org>
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>
+	 <20070306140036.4e85bd2f.akpm@linux-foundation.org>
+	 <45F3F581.9030503@sw.ru>
+	 <20070311045111.62d3e9f9.akpm@linux-foundation.org>
+	 <20070312010039.GC21861@MAIL.13thfloor.at>
+	 <1173724979.11945.103.camel@localhost.localdomain>
+	 <20070312224129.GC21258@MAIL.13thfloor.at>
+	 <20070312220439.677b4787.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 13 Mar 2007 10:26:33 -0700
+Message-Id: <1173806793.6680.44.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <45F63F8D.6000007@hitachi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 13:00:28 up 39 days,  7:08,  3 users,  load average: 1.61, 2.08, 1.59
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (masami.hiramatsu.pt@hitachi.com) wrote:
-> Hi Mathieu,
+On Mon, 2007-03-12 at 22:04 -0800, Andrew Morton wrote:
+> So these mmapped pages will contiue to be shared across all guests.  The
+> problem boils down to "which guest(s) get charged for each shared page".
 > 
-> Mathieu Desnoyers wrote:
-> > Hi Masami,
-> > 
-> > I recently had to add support for inline code patching on i386 to my
-> > marker infrastructure. Clearly, it looks like what is done in djprobes,
-> > with the main difference that I only patch the immediate value of a 2
-> > bytes "load immediate" instruction.
-> 
-> That's interesting.
-> 
-> > I think I found a solution to one of the main issues with djprobes : it
-> > currently has to wait for each CPU to hit the probe before being sure
-> > that it's safe to patch the code with something else than an int3. This
-> > is due to PIII errata 49, which says that a CPU much execute a
-> > serializing instruction before executing cross-modified code.
-> 
-> Hmm, djprobe already might not wait for each CPU to hit the probe
-> point. It just wait scheduler synchronization instead of that.
+> A simple and obvious and easy-to-implement answer is "the guest which paged
+> it in".  I think we should firstly explain why that is insufficient.
 
-Oh, I see. You can do it because you don't support fully preemptible
-kernels. It makes sense it that scenario. I could not use this scheme
-for my markers though, since I support fully preemptible kernels.
+My first worry was that this approach is unfair to the poor bastard that
+happened to get started up first.  If we have a bunch of containerized
+web servers, the poor guy who starts Apache first will pay the price for
+keeping it in memory for everybody else.
 
-> And after that, it issues cpuid for cache serialization before
-> executing cross-modified code.
-> 
+That said, I think this is naturally worked around.  The guy charged
+unfairly will get reclaim started on himself sooner.  This will tend to
+page out those pages that he was being unfairly charged for.  Hopefully,
+they will eventually get pretty randomly (eventually evenly) spread
+among all users.  We just might want to make sure that we don't allow
+ptes (or other new references) to be re-established to pages like this
+when we're trying to reclaim them.  Either that, or force the next
+toucher to take ownership of the thing.  But, that kind of arbitrary
+ownership transfer can't happen if we have rigidly defined boundaries
+for the containers.
 
-Ok, so you already used the IPI serialization I am talking about. Great :)
+The other concern is that the memory load on the system doesn't come
+from the first user ("the guy who paged it in").  The long-term load
+comes from "the guy who keeps using it."  The best way to exemplify this
+is somebody who read()s a page in, followed by another guy mmap()ing the
+same page.  The guy who did the read will get charged, and the mmap()er
+will get a free ride.  We could probably get an idea when this kind of
+stuff is happening by comparing page->count and page->_mapcount, but it
+certainly wouldn't be conclusive.  But, does this kind of nonsense even
+happen in practice?  
 
-> The most difficult point of the djprobe is that it has to replace
-> "live" instructions. So we must check other processors not to run
-> those instructions carefully.
-> 
-> > Here is what I do : While I use a breakpoint to fall in a trap for the
-> > CPUs that hit the site currently being modified, I also send an IPI to
-> > all CPUs so they execute cpuid. Once it returns, I am sure that every
-> > CPU has executed a serializing instruction, which enables me to go on
-> > with the complete code modification, therefore removing the initial
-> > breakpoint.
-> 
-> I think its OK. That is the same way which I've done in djprobe.
-> 
-> > Here is my code :
-> > 
-> > http://ltt.polymtl.ca/cgi-bin/gitweb.cgi?p=linux-2.6-lttng.git;a=blob;f=arch/i386/kernel/marker.c;h=89b06f02f0966685be260d6364a0dd94c3d14456;hb=v2.6.20-lttng
-> > 
-> > (Comments are welcome)
-> > 
-> > On a second note, looking at the djprobes code triggered some question 
-> > in my mind about the safety of using a worker thread to "make sure"
-> > every interrupt context has returned (so there is no IP pointing into
-> > the modified code). The following scenario might be possible : an
-> > interrupt handler (or trap handler) reenables interrupts, does irq_exit()
-> > or nmi_exit() (which reenables preemption) but does not do iret yet. My
-> > understanding is that it could be scheduled and have a return IP
-> > pointing to the code that is being modified. Am I right ?
-> 
-> Same idea was already discussed. It might work on normal kernel,
-> but, unfortunately, it doesn't work on preemptive kernel. And actually,
-> that idea is same as synchronize_sched(). So, I've used it on normal
-> kernel. In the case of preemptive kernel, currently, I'm using
-> freeze_processes() suggested by Ingo.
-> 
+-- Dave
 
-It looks like a good way to know where the processes are stopped.
-
-> Anyway, I and Satoshi are developing a static analysis tool to
-> check whether target instructions can be replaced by long jump.
-> I'd like to release djprobe patch against latest kernel after
-> developed it.
-> 
-
-Great, continue your good work!
-
-Regards,
-
-Mathieu
-
-
-> -- 
-> Masami HIRAMATSU
-> Linux Technology Center
-> Hitachi, Ltd., Systems Development Laboratory
-> E-mail: masami.hiramatsu.pt@hitachi.com
-> 
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
