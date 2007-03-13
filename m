@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbXCMLXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbXCMLYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231AbXCMLXu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 07:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbXCMLXt
+	id S1753239AbXCMLYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 07:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXCMLYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 07:23:49 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58966 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753234AbXCMLXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 07:23:47 -0400
-Message-ID: <45F689C1.9070900@garzik.org>
-Date: Tue, 13 Mar 2007 07:23:45 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 13 Mar 2007 07:24:15 -0400
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:53848 "EHLO
+	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753239AbXCMLYN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 07:24:13 -0400
+Date: Tue, 13 Mar 2007 11:24:11 +0000
+From: Ben Dooks <ben@fluff.org.uk>
+To: Maxin John <maxin.john@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Need help on mach-ep93xx
+Message-ID: <20070313112411.GA24508@fluff.org.uk>
+References: <9debc4410703122224n5def90e7g4767b95b176941c0@mail.gmail.com>
 MIME-Version: 1.0
-To: Vitaliyi <imgrey@gmail.com>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Fwd: libata extension
-References: <3aac340703102322p362998b9labedc13503702d2b@mail.gmail.com>	 <3aac340703121003l43685599t8dbffe6247879a91@mail.gmail.com>	 <3aac340703121007q35c7acf7t648e0ed7608be04d@mail.gmail.com>	 <200703122106.39669.bzolnier@gmail.com> <3aac340703121936k51df425dg7e1a74688a67075@mail.gmail.com>
-In-Reply-To: <3aac340703121936k51df425dg7e1a74688a67075@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9debc4410703122224n5def90e7g4767b95b176941c0@mail.gmail.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vitaliyi wrote:
->> Why is the access to Control register needed?
+On Tue, Mar 13, 2007 at 10:54:08AM +0530, Maxin John wrote:
+> Hi,
 > 
-> To execute soft reset for example.
+> I have one question mach-ep93xx.
 > 
->> > In the perfect case i would like to be able to execute vendor command
->> > set (reverse engineered).
->>
->> Sounds interesting. :-)
->>
->> Could you give some more details on what are you going to implement?
+> In  EP93xx  IRQ handling part in core.c,  the 2.6.19.2 kernel and
+> newer  kernels are configuring the 16 interrupts of the ports A & B
+> together. The code is not using the  interrupt capability  of the port
+> F which can provide 3 interrupts.
 > 
-> Reading/writing service area, uploading, downloading modules, working
-> with flash etc.
+> Why the port F is not configured for interrupts ?
+> 
+> Thanks in advance,
 
-SAT (aka ATA passthru) defines how to do soft-reset.
+subscribe to the linux-arm-kernel list and ask
+the question there, you'll find more ARM people there.
 
-SG_IO supports the ATA_12 and ATA_16 commands which permit soft-reset 
-and similar tasks.  libata supports this interface, but does not yet 
-support soft-reset and similar non-comment-oriented tasks.  This would 
-be the best area to add such features, though.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-	Jeff
-
-
-
+  'a smiley only costs 4 bytes'
