@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbXCMR76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbXCMSMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbXCMR76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 13:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbXCMR76
+	id S1752609AbXCMSMB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 14:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXCMSMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 13:59:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:36596 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753307AbXCMR75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 13:59:57 -0400
-Message-ID: <45F6E69B.9000602@goop.org>
-Date: Tue, 13 Mar 2007 10:59:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 13 Mar 2007 14:12:01 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54927 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752609AbXCMSMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 14:12:00 -0400
+Date: Tue, 13 Mar 2007 19:11:47 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [1/6] 2.6.21-rc3: known regressions
+Message-ID: <20070313181147.GA12224@elf.ucw.cz>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313124957.GR18731@stusta.de> <45F6A240.3090601@drzeus.cx> <200703131436.15586.oneukum@suse.de>
 MIME-Version: 1.0
-To: davids@webmaster.com
-CC: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-References: <MDEHLPKNGKAHNMBLJOLKMEJDCDAC.davids@webmaster.com>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKMEJDCDAC.davids@webmaster.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200703131436.15586.oneukum@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz wrote:
-> Good interactivity for tasks that aren't themselves CPU hogs. A task should
-> get low latency if and only if it's yielding the CPU voluntarily most of the
-> time. If it's not, it can only get better interactivity at the cost of
-> fairness, and you have to *ask* for that. (Common sense says you can't give
-> a task *more* CPU because it yields the CPU a lot. And how else do you
-> determine interactivity other than nice level?)
->   
+Hi!
 
-There's a distinction between giving it more cpu and giving it higher
-priority: the important part about having high priority is getting low
-latency access to the cpu when its needed.
+> > > Subject    : mmc card reader no longer works
+> > > References : http://lkml.org/lkml/2007/2/27/91
+> > > Submitter  : Pavel Machek <pavel@ucw.cz>
+> > > Handled-By : Oliver Neukum <oneukum@suse.de>
+> > > Status     : unknown
+> > > 
+> > 
+> > First I heard of this. The error report is a bit thin so Pavel will need to
+> > elaborate a bit more.
+> 
+> The device is a USB serial device. USB serial was known to have issues
+> in the version this happened. As far as I know the bug has not been
+> replicated after this bugs were fixed.
 
-> This scheduler will not give you greater interactivity at the cost of
-> fairness unless you really ask for it. I think that's a good thing, though I
-> do agree it might take some getting used to.
->   
+Ahha, now I see where the confusion comes from.
 
-This really seems like the wrong approach to me.  The implication here
-and in other mails is that fairness is an inherently good thing which
-should obviously take preference over any other property.
+No, the reader is not a serial device, it is reader build-in x60. USB
+serial device (siemens sx1) has separate problem.
 
-It's a nice simple stance, and its relatively easy to code up and test
-to see that its working, but it doesn't really give people what they want.
+Device is 
 
-The old unix-style dynamic priority scheme was designed to give
-interactive processes high priorities, by using the observation that
-"interactive" means "spends a lot of time blocked waiting for input". 
-That model of interactive is way too simple now, and the attempts to try
-an find an equivalent heuristic have been flawed and lead to - in some
-cases - wildly bad behaviours.  I'm guessing the emphasis on "fairness"
-is in reaction to this, which is fair enough.
+15:00.2 Generic system peripheral [0805]: Ricoh Co Ltd R5C822
+SD/SDIO/MMC/MS/MSPro Host Adapter (rev 18)
 
-But saying that the user needs to explicitly hold the schedulers hand
-and nice everything to tell it how to schedule seems to be an abdication
-of duty, an admission of failure.  We can't expect users to finesse all
-their processes with nice, and it would be a bad user interface to ask
-them to do so. 
+root@amd:~# ls -al /dev/mmc
+brw-r--r-- 1 root root 251, 0 Nov  5 16:57 /dev/mmc
+...
 
-And if someone/distro *does* go to all the effort of managing how to get
-all the processes at the right nice levels, you have this big legacy
-problem where you're now stuck keeping all those nice values meaningful
-as you continue to develop the scheduler.  Its bad enough to make them
-do the work in the first place, but its worse if they need to make it a
-kernel version dependent function.
+...anything else I should try? Card is obviously detected, but I can't
+access it..
 
-    J
+Uhuh. User error, lets close the report.
+
+mmc changed the major to 
+
+236 mmc
+
+... while it was something else in 2.6.20. Can we get stable device
+allocation for mmc?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
