@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbXCMDGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbXCMDHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbXCMDGo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 23:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbXCMDGo
+	id S1753084AbXCMDHM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 23:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbXCMDHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 23:06:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:38665 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753085AbXCMDGn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 23:06:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Wdt2x8TtnXTiYiqpqbSkktND9V8sv3taK4e4HFaWGXRO44Dg0CJRlOqrKWJ2Dt70S0IDAG4ekq1gwZkYZJ4d6PglwDty9y1Am112xBoIo/I8gOwRtWVhJxXk35fw7tKfJ07VtYa2c+YupYmi/E4TxgnzGTXkuPln+mF2xrnwMKs=
-Message-ID: <df9815e70703122006g6906cf0cl582d7aa15ea31e29@mail.gmail.com>
-Date: Tue, 13 Mar 2007 11:06:42 +0800
-From: albcamus <albcamus@gmail.com>
-To: "Teunis Peters" <teunis@wintersgift.com>
-Subject: RE: Question: removal of syscall macros?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45804B99.2060008@wintersgift.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Mar 2007 23:07:12 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50299 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753084AbXCMDHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 23:07:10 -0400
+Date: Tue, 13 Mar 2007 08:44:11 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Aneesh Kumar <aneesh.kumar@gmail.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH] kthread_should_stop_check_freeze (was: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread)
+Message-ID: <20070313031411.GC9881@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <200702260800.49603.rjw@sisk.pl> <20070312043854.GA4124@linux.vnet.ibm.com> <20070312081459.GI5242@elf.ucw.cz> <200703121219.12072.rjw@sisk.pl> <20070312223906.GA9749@elf.ucw.cz> <20070312224524.GB807@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45804B99.2060008@wintersgift.com>
+In-Reply-To: <20070312224524.GB807@kryten>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2006/12/14, Teunis Peters <teunis@wintersgift.com>:
+On Mon, Mar 12, 2007 at 05:45:24PM -0500, Anton Blanchard wrote:
+> Then please document it _clearly_ with the kthread code somewhere. 
 
-> Now that syscall macros have been pulled from the -mm tree, what method
-> is recommended to use syscalls?
->
-> (I've wasted a day grubbing through sources before giving up and copying
-> the old syscall macros into one key driver)
->
-> _syscall macros are used by:
-> ATI driver  (no choice.  I'm working with laptops)
+Document as well in the kernel_thread() API, as I notice people still
+use kernel_thread() some places (ex: rtasd.c in powerpc arch)?
 
-I have the same problem as yours.  Do  you have any idea to use ATI
-firegl driver
-in recent kernels ? Thanks in advance.
+> The reason I brought this up is I had no idea we had to put the freezer gunk
+> in all kernel thread loops and Ive been writing kernel threads for years.
 
+I noticed that in the Powerpc code (atleast for rtas kernel thread)
+here:
+
+	http://lkml.org/lkml/2007/1/9/61
+
+That was not a serious problem perhaps because process freezer was mostly used
+in software suspend and only those platforms supporting software suspend
+had to worry abt it.
+
+But now we intend to use process freezer for CPU hotplug as well, so all
+platforms wanting to support CPU hotplug better support process freezer!
+
+P.S : I believe kprobes is already using process freezer as well.
+
+-- 
 Regards,
-albcamus
+vatsa
