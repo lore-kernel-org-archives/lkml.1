@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbXCMLQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751027AbXCMLRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933063AbXCMLQG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 07:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933073AbXCMLQG
+	id S1751027AbXCMLRa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 07:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbXCMLRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 07:16:06 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:42454 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933063AbXCMLQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 07:16:03 -0400
-Date: Tue, 13 Mar 2007 04:15:51 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: clameter@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+	Tue, 13 Mar 2007 07:17:30 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50863 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751027AbXCMLRa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 07:17:30 -0400
+Date: Tue, 13 Mar 2007 04:17:26 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
-Message-Id: <20070313041551.565891b5.akpm@linux-foundation.org>
-In-Reply-To: <45F685C6.8070806@yahoo.com.au>
+In-Reply-To: <20070313005334.853559ca.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703130413080.5720@schroedinger.engr.sgi.com>
 References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>
-	<20070313005334.853559ca.akpm@linux-foundation.org>
-	<45F65ADA.9010501@yahoo.com.au>
-	<20070313035250.f908a50e.akpm@linux-foundation.org>
-	<45F685C6.8070806@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ <20070313005334.853559ca.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 13 Mar 2007 22:06:46 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> Andrew Morton wrote:
-> >>On Tue, 13 Mar 2007 19:03:38 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
-> ...
->
-> >>Page allocator still requires interrupts to be disabled, which this doesn't.
+On Tue, 13 Mar 2007, Andrew Morton wrote:
 
-> >>it is worthwhile.
-> > 
-> > 
-> > If you want a zeroed page for pagecache and someone has just stuffed a
-> > known-zero, cache-hot page into the pagetable quicklists, you have good
-> > reason to be upset.
+> > On Tue, 13 Mar 2007 00:13:25 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> > Page table pages have the characteristics that they are typically zero
+> > or in a known state when they are freed.
 > 
-> The thing is, pagetable pages are the one really good exception to the
-> rule that we should keep cache hot and initialise-on-demand. They
-> typically are fairly sparsely populated and sparsely accessed. Even
-> for last level page tables, I think it is reasonable to assume they will
-> usually be pretty cold.
+> Well if they're zero then perhaps they should be released to the page 
+> allocator to satisfy the next __GFP_ZERO request.  If that request is 
+> for a pagetable page, we break even (except we get to remove 
+> special-case code).  If that __GFP_ZERO allocation was or some 
+> application other than for a pagetable, we win.
 
-eh?  I'd have thought that a pte page which has just gone through
-zap_pte_range() will very often have a _lot_ of hot cachelines, and
-that's a common case.
+Nope that wont work.
 
-Still.   It's pretty easy to test.
+1. We need to support other states of pages other than zeroed.
 
-> > 
-> > Maybe, dunno.  It was apparently a win on powerpc many years ago.  I had a
-> > fiddle with it 5-6 years ago on x86 using a cache-disabled mapping of the
-> > page.  But it needed too much support in core VM to bother.  Since then
-> > we've grown per-cpu page magazines and __GFP_ZERO.  Plus I'm not aware of
-> > anyone having tried doing it on x86 with non-temporal stores.
-> 
-> You can win on specifically constructed benchmarks, easily.
-> 
-> But considering all the other problems you're going to introduce, we'd need
-> a significant win on a significant something, IMO.
-> 
-> You waste memory bandwidth. You also use more CPU and memory cycles
-> speculatively, ergo you waste more power.
+2. Prezeroing does not make much sense if a large portion of the
+   page is being used. Performance is better if the whole page 
+   is zeroed directly before use.Prezeroing only makes sense for sparse
+   allocations like the page table pages.
 
-Yeah, prezeroing in idle is probably pointless.  But I'm not aware of
-anyone having tried it properly...
+> (Will require some work in the page allocator)
+> (That work will open the path to using the idle thread to prezero pages)
+
+I already tried that 3 years ago and there was *no* benefit for usual
+users of the a page allocator. The advantage exists only if a small
+portion of the page is used. F.e. For one cacheline there was a 4x 
+improvement. See lkml archives for prezeroing.
+
+
