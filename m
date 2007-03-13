@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030624AbXCMPk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030739AbXCMPlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030624AbXCMPk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 11:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030665AbXCMPk2
+	id S1030739AbXCMPlQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 11:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030745AbXCMPlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 11:40:28 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:15855 "EHLO relay.sw.ru"
+	Tue, 13 Mar 2007 11:41:15 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:7151 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030624AbXCMPk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 11:40:28 -0400
-Message-ID: <45F6C611.7070400@sw.ru>
-Date: Tue, 13 Mar 2007 18:41:05 +0300
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	id S1030739AbXCMPlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 11:41:15 -0400
+Message-ID: <45F6C93F.3080207@sw.ru>
+Date: Tue, 13 Mar 2007 18:54:39 +0300
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
 To: Herbert Poetzl <herbert@13thfloor.at>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@sw.ru>, Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [RFC][PATCH 1/7] Resource counters
-References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru> <45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru> <20070309163711.GA3647@MAIL.13thfloor.at> <m1fy8bwqps.fsf@ebiederm.dsl.xmission.com> <20070312011612.GD21861@MAIL.13thfloor.at> <m1bqixtsr1.fsf@ebiederm.dsl.xmission.com> <20070313152150.GK8755@MAIL.13thfloor.at>
-In-Reply-To: <20070313152150.GK8755@MAIL.13thfloor.at>
-Content-Type: text/plain; charset=ISO-8859-1
+CC: Pavel Emelianov <xemul@sw.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.osdl.org, menage@google.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru> <20070306140036.4e85bd2f.akpm@linux-foundation.org> <45F3F581.9030503@sw.ru> <20070311045111.62d3e9f9.akpm@linux-foundation.org> <20070312010039.GC21861@MAIL.13thfloor.at> <45F51709.1010409@sw.ru> <20070312211111.GB21258@MAIL.13thfloor.at> <45F6BEFF.5000109@sw.ru> <20070313151154.GI8755@MAIL.13thfloor.at>
+In-Reply-To: <20070313151154.GI8755@MAIL.13thfloor.at>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> PS: atomic_add_unless() didn't exist back then
->>> (at least I think so) but that might be an option
->>> too ...
->> I think as far as having this discussion if you can remove that race
->> people will be more willing to talk about what vserver does.
-> 
-> well, shouldn't be a big deal to brush that patch up
-> (if somebody actually _is_ interested)
-> 
->> That said anything that uses locks or atomic operations (finer grained
->> locks) because of the cache line ping pong is going to have scaling
->> issues on large boxes.
-> 
-> right, but atomic ops have much less impact on most
-> architectures than locks :)
+Herbert,
 
-Right. But atomic_add_unless() is slower as it is
-essentially a loop. See my previous letter in this sub-thread.
-
->> So in that sense anything short of per cpu variables sucks at scale.
->> That said I would much rather get a simple correct version without the
->> complexity of per cpu counters, before we optimize the counters that
->> much.
+>>Just curious why current vserver code kills arbitrary
+>>task in container then?
 > 
-> actually I thought about per cpu counters quite a lot, and
-> we (Llinux-VServer) use them for accounting, but please
-> tell me how you use per cpu structures for implementing 
-> limits
+> 
+> because it obviously lacks the finess of OpenVZ code :)
+> 
+> seriously, handling the OOM kills inside a container
+> has never been a real world issue, as once you are
+> really out of memory (and OOM starts killing) you 
+> usually have lost the game anyways (i.e. a guest restart
+> or similar is required to get your services up and
+> running again) and OOM killer decisions are not perfect
+> in mainline either, but, you've probably seen the 
+> FIXME and TODO entries in the code showing that this
+> is work in progress ...
 
-Did you ever look at how get_empty_filp() works?
-I agree, that this is not a "strict" limit, but it
-limits the usage wit some "precision".
+I'm talking not about the finess of the code,
+but rather about the lack of isolation,
+i.e. one VE can affect others.
 
-/* off-the-topic */ Herbert, you've lost Balbir again:
-In this sub-thread some letters up Eric wrote a letter with
-Balbir in Cc:. The next reply from you doesn't include him.
+Kirill
