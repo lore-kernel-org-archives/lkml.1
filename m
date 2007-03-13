@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbXCMKPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbXCMKPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201AbXCMKPE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 06:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXCMKPE
+	id S933057AbXCMKPP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 06:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXCMKPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 06:15:04 -0400
-Received: from mx1.suse.de ([195.135.220.2]:51333 "EHLO mx1.suse.de"
+	Tue, 13 Mar 2007 06:15:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60809 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753201AbXCMKPD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 06:15:03 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Jim Radford <radford@blackbean.org>
-Subject: Re: [PATCH] usb-serial regression fix
-Date: Tue, 13 Mar 2007 11:14:46 +0100
-User-Agent: KMail/1.9.1
-Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       linux-usb-devel@lists.sourceforge.net, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <45F57F63.7010308@rtr.ca> <45F60482.6010501@rtr.ca> <20070313091408.GA7205@blackbean.org>
-In-Reply-To: <20070313091408.GA7205@blackbean.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703131114.48068.oneukum@suse.de>
+	id S1753213AbXCMKPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 06:15:13 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200703121650.35699.rgetz@blackfin.uclinux.org> 
+References: <200703121650.35699.rgetz@blackfin.uclinux.org>  <3378.1173204813@redhat.com> <29317.1172931029@redhat.com> <12852.1173449522@redhat.com> 
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Hugh Dickins <hugh@veritas.com>, bryan.wu@analog.com,
+       Robin Holt <holt@sgi.com>,
+       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>, haoki@redhat.com,
+       Bernd Schmidt <bernds_cb1@t-online.de>
+Subject: Re: Move to unshared VMAs in NOMMU mode? 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 13 Mar 2007 10:14:15 +0000
+Message-ID: <1161.1173780855@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 13. März 2007 10:14 schrieb Jim Radford:
+Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-> > So where does the memory get freed -- the structure pointed at
-> > by the serial->port[i] thingie ?  It's not a leak, is it?
-> 
-> It gets free'd through device_unregister
-> 
->     for (i = 0; i < num_ports; ++i) {
->        ...
->        port->dev.release = &port_release;
->        ...
->        retval = device_register(&port->dev);
-> 
-> which means that until all the drivers get converted to use
-> ->port_probe() and ->port_remove() (which gets called by
-> device_unregister) and stop using the ->port[] array in ->shutdown()
-> we need to have ->shutdown() called before device_unregister.
-> 
-> > > > > Look at changeset d9a7ecacac5f8274d2afce09aadcf37bdb42b93a in Linus's
-> > > > > tree from Jim Radford:
-> 
-> > > > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d9a7ecacac5f8274d2afce09aadcf37bdb42b93a
-> 
-> So, this patch should be reverted for now.
+> We (noMMU) folks need to have special code anyway - so why not put it there, 
+> and try not to increase memory footprint?
 
-While we are at it, is there a reason we call return_serial() late in the
-sequence? Making sure the device is not reopened should be the
-first measure. Are we protected by hanging up the tty?
+I'd like to have the drivers and filesystems need to know as little as possible
+about whether they're working in MMU-mode or NOMMU-mode - for the most part
+such knowledge should be unnecessary.  Additionally, I'd rather not put special
+case code in the generic parts of the NOMMU code.
 
-Secondly, what is this code supposed to do:
-
-	for (i = 0; i < serial->num_ports; ++i)
-		serial->port[i]->open_count = 0;
-
-If we get to destroy_serial(), how can ports still be open?
-
-	Regards
-		Oliver
+David
