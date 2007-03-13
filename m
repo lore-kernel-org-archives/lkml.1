@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbXCMCXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbXCMCZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbXCMCXk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 22:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXCMCXk
+	id S1753097AbXCMCZw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 22:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXCMCZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 22:23:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:16490 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753051AbXCMCXj (ORCPT
+	Mon, 12 Mar 2007 22:25:52 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:44312 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753097AbXCMCZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 22:23:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=UYHMiALZWGzsydG4HZ+BafoPoqhdRD2vgv69z9K8f6/MxQJi+1x4pTFOtp31gkFwVk1dl6hdXtzkH80vY0n20OOorpdiqW4UFxq5cAQ0u5Ambm4z87VLVJX9PA0PuZoyovjrYSLCMtKrNZ4xtR5rzbwGKjimGJlUIPNC6P0wg4I=
-Message-ID: <75b66ecd0703121923q2f9913cdm8179122d95015ad8@mail.gmail.com>
-Date: Mon, 12 Mar 2007 22:23:37 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "David Lang" <david.lang@digitalinsight.com>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Cc: "Mike Galbraith" <efault@gmx.de>, "Con Kolivas" <kernel@kolivas.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "ck list" <ck@vds.kolivas.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.63.0703121523220.1245@qynat.qvtvafvgr.pbz>
+	Mon, 12 Mar 2007 22:25:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=LBaDCalyuWyDGeQWEuO7zO2YSllTwutG/rs7xM6pKxI3aOKwjAHF8OhfoDmeIzs7K
+	lpJuudK3VcIOQAgd9OCJg==
+Message-ID: <6599ad830703121925p7049db95nccedfc32609e6ae6@mail.gmail.com>
+Date: Mon, 12 Mar 2007 19:25:48 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Paul Menage" <menage@google.com>, "Paul Jackson" <pj@sgi.com>,
+       ebiederm@xmission.com, matthltc@us.ibm.com,
+       ckrm-tech@lists.sourceforge.net, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       winget@google.com, xemul@sw.ru
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+In-Reply-To: <20070312232143.GC6832@MAIL.13thfloor.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200703111457.17624.kernel@kolivas.org>
-	 <200703130549.47058.kernel@kolivas.org>
-	 <1173730314.6431.30.camel@Homer.simpson.net>
-	 <200703130738.19034.kernel@kolivas.org>
-	 <1173732344.6431.54.camel@Homer.simpson.net>
-	 <Pine.LNX.4.63.0703121523220.1245@qynat.qvtvafvgr.pbz>
-X-Google-Sender-Auth: cbe4aa2ba73bb9f9
+References: <6599ad830703071658q60466dd8hd18a1eab9bc17535@mail.gmail.com>
+	 <6599ad830703071857yf711921ja3440c4276bbe58e@mail.gmail.com>
+	 <45EF83CB.9080903@vilain.net>
+	 <1173334209.13172.61.camel@localhost.localdomain>
+	 <m11wk08c9h.fsf@ebiederm.dsl.xmission.com>
+	 <20070309010628.GE4506@MAIL.13thfloor.at>
+	 <45F27503.1020108@vilain.net> <20070311141555.9951b7ba.pj@sgi.com>
+	 <6599ad830703120300x63ca5732wfe865f76cb5125a9@mail.gmail.com>
+	 <20070312232143.GC6832@MAIL.13thfloor.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/12/07, David Lang <david.lang@digitalinsight.com> wrote:
-> the problem comes when this isn't enough. if you have several CPU hogs on a
-> system, and they are all around the same priority level, how can the scheduler
-> know which one needs the CPU the most for good interactivity?
+On 3/12/07, Herbert Poetzl <herbert@13thfloor.at> wrote:
 >
-> in some cases you may be able to directly detect that your high-priority process
-> is waiting for another one (tracing pipes and local sockets for example), but
-> what if you are waiting for several of them? (think a multimedia desktop waiting
-> for the sound card, CDRom, hard drive, and video all at once) which one needs
-> the extra CPU the most?
+> why? you simply enter that specific space and
+> use the existing mechanisms (netlink, proc, whatever)
+> to retrieve the information with _existing_ tools,
 
-I'm not an expert in this area by any means but after reading this
-thread the OSX solution of simply telling the kernel "I'm the GUI,
-schedule me accordingly" looks increasingly attractive.  Why make the
-kernel guess when we can just be explicit?
+That's assuming that you're using network namespace virtualization,
+with each group of tasks in a separate namespace. What if you don't
+want the virtualization overhead, just the accounting?
 
-Does anyone know of a UNIX-like system that has managed to solve this
-problem without hooking the GUI into the scheduler?
-
-Lee
+Paul
