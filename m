@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbXCMGji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbXCMGkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbXCMGji (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 02:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbXCMGji
+	id S1753156AbXCMGkg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 02:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbXCMGkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 02:39:38 -0400
-Received: from ozlabs.org ([203.10.76.45]:33258 "EHLO ozlabs.org"
+	Tue, 13 Mar 2007 02:40:35 -0400
+Received: from ozlabs.org ([203.10.76.45]:33269 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753155AbXCMGji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 02:39:38 -0400
-Subject: [PATCH] Remove unused set_seg_base
+	id S1753157AbXCMGkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 02:40:35 -0400
+Subject: [PATCH] Introduce load_TLS to the "for" loop.
 From: Rusty Russell <rusty@rustcorp.com.au>
 To: Andi Kleen <ak@muc.de>
 Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 13 Mar 2007 17:38:42 +1100
-Message-Id: <1173767922.10618.48.camel@localhost.localdomain>
+Date: Tue, 13 Mar 2007 17:39:36 +1100
+Message-Id: <1173767976.10618.50.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The set_seg_base function isn't used anywhere (2.6.21-rc3-git1)
+GCC (4.1 at least) unrolls it anyway, but I can't believe this code
+was ever justifiable.  (I've also submitted a patch which cleans up
+i386, which is even uglier).
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-diff -r 0798f7cfc709 include/asm-x86_64/desc.h
---- a/include/asm-x86_64/desc.h	Mon Mar 12 16:56:18 2007 +1100
-+++ b/include/asm-x86_64/desc.h	Tue Mar 13 11:39:16 2007 +1100
-@@ -107,16 +107,6 @@ static inline void set_ldt_desc(unsigned
- 			      DESC_LDT, size * 8 - 1);
- }
+diff -r de5618b5e562 include/asm-x86_64/desc.h
+--- a/include/asm-x86_64/desc.h	Tue Mar 13 11:41:55 2007 +1100
++++ b/include/asm-x86_64/desc.h	Tue Mar 13 16:09:56 2007 +1100
+@@ -135,16 +135,13 @@ static inline void set_ldt_desc(unsigned
+ 	(info)->useable		== 0	&& \
+ 	(info)->lm		== 0)
  
--static inline void set_seg_base(unsigned cpu, int entry, void *base)
--{ 
--	struct desc_struct *d = &cpu_gdt(cpu)[entry];
--	u32 addr = (u32)(u64)base;
--	BUG_ON((u64)base >> 32); 
--	d->base0 = addr & 0xffff;
--	d->base1 = (addr >> 16) & 0xff;
--	d->base2 = (addr >> 24) & 0xff;
--} 
+-#if TLS_SIZE != 24
+-# error update this code.
+-#endif
 -
- #define LDT_entry_a(info) \
- 	((((info)->base_addr & 0x0000ffff) << 16) | ((info)->limit & 0x0ffff))
- /* Don't allow setting of the lm bit. It is useless anyways because 
+ static inline void load_TLS(struct thread_struct *t, unsigned int cpu)
+ {
++	unsigned int i;
+ 	u64 *gdt = (u64 *)(cpu_gdt(cpu) + GDT_ENTRY_TLS_MIN);
+-	gdt[0] = t->tls_array[0];
+-	gdt[1] = t->tls_array[1];
+-	gdt[2] = t->tls_array[2];
++
++	for (i = 0; i < GDT_ENTRY_TLS_ENTRIES; i++)
++		gdt[i] = t->tls_array[i];
+ } 
+ 
+ /*
 
 
