@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030781AbXCMQda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030766AbXCMQf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030781AbXCMQda (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 12:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030791AbXCMQda
+	id S1030766AbXCMQf5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 12:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030791AbXCMQf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 12:33:30 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:40280 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030782AbXCMQd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 12:33:29 -0400
-Date: Tue, 13 Mar 2007 18:33:20 +0200
-From: Dan Aloni <da-x@monatomic.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: thread stacks and strict vm overcommit accounting
-Message-ID: <20070313163320.GA28104@localdomain>
+	Tue, 13 Mar 2007 12:35:57 -0400
+Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:3332 "EHLO
+	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030766AbXCMQf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 12:35:56 -0400
+Message-ID: <45F6D2EA.403@rtr.ca>
+Date: Tue, 13 Mar 2007 12:35:54 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-PopBeforeSMTPSenders: da-x@monatomic.org
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Jim Radford <radford@blackbean.org>
+Cc: Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] usb-serial regression fix
+References: <200703121948.21453.oneukum@suse.de> <45F5B67E.7000105@rtr.ca> <20070312203331.GA6769@kroah.com> <20070312224235.GB3709@blackbean.org> <20070312225922.GA4064@blackbean.org> <20070313001819.GA6147@kroah.com> <20070313004142.GA4835@blackbean.org> <45F60482.6010501@rtr.ca> <20070313091408.GA7205@blackbean.org> <45F6AD5D.4020700@rtr.ca> <20070313153050.GA14687@blackbean.org>
+In-Reply-To: <20070313153050.GA14687@blackbean.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Jim Radford wrote:
+> ...
+> This patch reverts d9a7ecacac5f8274d2afce09aadcf37bdb42b93a since it
+> breaks drivers that need to access the ->port[] array in shutdown
+> (most of them).
 
-This question is relevent to 2.6.20.
+Patch applied, tested, works for me.
+ 
+Signed-Off: Jim Radford <radford@blackbean.org>
+Acked-by: Mark Lord <mlord@pobox.com>
 
-I noticed that if the RSS for the stack size is say, 8MB, running
-a single-threaded process doesn't incur an increase of 8MB to
-Committed_AS (/proc/meminfo).
+--- b/drivers/usb/serial/usb-serial.c
++++ a/drivers/usb/serial/usb-serial.c
+@@ -137,6 +135,11 @@
+ 
+ 	dbg("%s - %s", __FUNCTION__, serial->type->description);
+ 
++	serial->type->shutdown(serial);
++
++	/* return the minor range that this device had */
++	return_serial(serial);
++
+ 	for (i = 0; i < serial->num_ports; ++i)
+ 		serial->port[i]->open_count = 0;
+ 
+@@ -147,12 +150,6 @@
+ 			serial->port[i] = NULL;
+ 		}
+ 
+-	if (serial->type->shutdown)
+-		serial->type->shutdown(serial);
+-
+-	/* return the minor range that this device had */
+-	return_serial(serial);
+-
+ 	/* If this is a "fake" port, we have to clean it up here, as it will
+ 	 * not get cleaned up in port_release() as it was never registered with
+ 	 * the driver core */
 
-However, on multi-threaded apps linked with pthread (on Debian
-Etch with 2.6.20 vanilla x86_64), every thread will incur the
-the specified maximum stack size RSS (assuming that you use
-the default attr). In other words, it appears that vm accounting
-works differently in that case.
 
-Is this the intended behaviour?
-
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
