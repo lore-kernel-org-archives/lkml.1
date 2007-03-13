@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXCMUFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933138AbXCMUKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933106AbXCMUFv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933094AbXCMUFv
+	id S933138AbXCMUKE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933145AbXCMUKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:05:51 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45025 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933121AbXCMUFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:05:50 -0400
-Date: Tue, 13 Mar 2007 21:05:42 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [1/6] 2.6.21-rc3: known regressions
-Message-ID: <20070313200542.GC12370@elf.ucw.cz>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313124957.GR18731@stusta.de> <45F6A240.3090601@drzeus.cx> <200703131436.15586.oneukum@suse.de> <20070313181147.GA12224@elf.ucw.cz> <45F6F677.1070302@drzeus.cx>
+	Tue, 13 Mar 2007 16:10:03 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49312 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933138AbXCMUKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 16:10:01 -0400
+Date: Tue, 13 Mar 2007 16:09:57 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Hugh Dickins <hugh@veritas.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
+       <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+In-Reply-To: <Pine.LNX.4.64.0703131854130.6506@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.44L0.0703131604160.7744-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F6F677.1070302@drzeus.cx>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 13 Mar 2007, Hugh Dickins wrote:
 
-> > Uhuh. User error, lets close the report.
+> On Tue, 13 Mar 2007, Alan Stern wrote:
 > > 
-> > mmc changed the major to 
-> > 
-> > 236 mmc
-> > 
-> > ... while it was something else in 2.6.20. Can we get stable device
-> > allocation for mmc?
+> > The consensus is that we would be better off keeping Oliver's original 
+> > patch without your silly change, and instead fixing the particular method 
+> > call that deadlocked.  Can you please try out the patch below with 
+> > everything else as it was before?  It should solve your problem.
 > 
-> What kind of savages do not use udev these days?! ;)
-> 
-> I don't have the time and energy to jump through all the hoops required to get
-> an official number right now. Most users use udev and those that don't can use
-> the "major" parameter for mmc_block.
+> Yep, it works fine with your patch in and my silly reverted, thanks.
+> But (I was about to say, even before seeing Cornelia's reply, honest!)
+> I think you do need to check (audit the source? or is some runtime
+> check possible?) for other such "suicidal" sysfs files, which
+> seemed to (sysfs-ignorant) me to pose the real problem.
 
-That's okay, but if one of those savages got major for you, would you
-be willing to use it? :-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+A runtime check wouldn't detect anything until someone tried to use the 
+file -- at which point the process would deadlock anyway.
+
+On the other hand, a quick survey of the kernel source shows that
+DEVICE_ATTR is used over 1500 times.  Auditing all of them is not a job
+for the faint-of-heart!
+
+Alan Stern
+
