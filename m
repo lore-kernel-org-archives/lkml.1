@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXCMJk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965673AbXCMJl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965632AbXCMJk4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965658AbXCMJk4
+	id S965673AbXCMJl2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965661AbXCMJl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:40:56 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3101 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965632AbXCMJkz (ORCPT
+	Tue, 13 Mar 2007 05:41:28 -0400
+Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:46424 "EHLO
+	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965673AbXCMJl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:40:55 -0400
-Date: Tue, 13 Mar 2007 09:40:39 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andreas Schwab <schwab@suse.de>,
-       Giuliano Pochini <pochini@denise.shiny.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: /sys/devices/system/cpu/cpuX/online are missing
-Message-ID: <20070313094038.GA20518@flint.arm.linux.org.uk>
-Mail-Followup-To: Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Andreas Schwab <schwab@suse.de>,
-	Giuliano Pochini <pochini@denise.shiny.it>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Suresh Siddha <suresh.b.siddha@intel.com>
-References: <20070311222652.5ea40da1.pochini@shiny.it> <20070312085826.GA9985@osiris.boeblingen.de.ibm.com> <Pine.LNX.4.64.0703122337350.25919@denise.shiny.it> <je6496asea.fsf@sykes.suse.de> <20070313090350.GA9890@osiris.boeblingen.de.ibm.com> <20070313091159.GB9890@osiris.boeblingen.de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Mar 2007 05:41:27 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Date: Tue, 13 Mar 2007 20:41:05 +1100
+User-Agent: KMail/1.9.5
+Cc: Mike Galbraith <efault@gmx.de>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200703111457.17624.kernel@kolivas.org> <200703132021.50712.kernel@kolivas.org> <20070313092920.GB7648@elte.hu>
+In-Reply-To: <20070313092920.GB7648@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070313091159.GB9890@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200703132041.06320.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 10:11:59AM +0100, Heiko Carstens wrote:
-> On Tue, Mar 13, 2007 at 10:03:50AM +0100, Heiko Carstens wrote:
-> > On Tue, Mar 13, 2007 at 01:39:25AM +0100, Andreas Schwab wrote:
-> > > Giuliano Pochini <pochini@denise.shiny.it> writes:
-> > > 
-> > > > I had a look at arch/powerpc/kernel/smp.c but I'm not familiar at all with 
-> > > > those parts of the kernel.
-> > > 
-> > > See arch/powerpc/kernel/sysfs.c:topology_init.  I don't think there is
-> > > anything to do here.  You probably don't have CONFIG_HOTPLUG_CPU enabled.
-> > 
-> > I was referring to arch/ppc not arch/powerpc. But it seems that arch/ppc
-> > doesn't support cpu hotplug anyway. So I guess it's indeed just a missing
-> > config option.
-> > 
-> > Grepping a bit further shows that arm suffered by the change that inverted
-> > the logic if the 'online' attribute for cpus should appear. Since arm
-> > supports cpu hotplug but the patch left arm out, it doesn't work there
-> > anymore (cc'ing arm people: changeset 72486f1f8f0a2bc828b9d30cf4690cf2dd6807fc
-> > is most probably disabling cpu hotplug support on arm like it did on s390).
-> 
-> Should have cc'ed Suresh Siddha who caused the breakage ;)
+On Tuesday 13 March 2007 20:29, Ingo Molnar wrote:
+> * Con Kolivas <kernel@kolivas.org> wrote:
+> > Well I guess you must have missed where I asked him if he would be
+> > happy if I changed +5 metrics to do whatever he wanted and he refused
+> > to answer me. [...]
+>
+> I'd say lets keep nice levels out of this completely for now - while
+> they should work _too_, it's easy because the scheduler has the 'nice'
+> information. The basic behavior of CPU hogs that matters most.
+>
+> So the question is: if all tasks are on the same nice level, how does,
+> in Mike's test scenario, RSDL behave relative to the current
+> interactivity code?
 
-Welcome to why cleanups are bad news. ;(  Yes, ARM also needs to be fixed
-and I'd ask that in future people doing cleanups in core code take a little
-more time to review the code before submitting patches *AND* give heads-up
-to *EVERYONE* who might be affected by the change.
+If everything is run at nice 0? (this was not the test case but that's what 
+you've asked for).
+
+We have:
+X + GForce contribute a load of 1
+lame x 2 threads contribute a load of 2
+
+In RSDL
+X + GForce will get 33% cpu
+lame will get 66% cpu
+
+In mainline
+X + GForce gets a fluctuating percentage somewhere between 35~45% as far as I 
+can see on UP.
+lame gets the rest
+
+The only way to get the same behaviour on RSDL without hacking an 
+interactivity estimator, priority boost cpu misproportionator onto it is to 
+either -nice X or +nice lame.
+
+> 	Ingo
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+-ck
