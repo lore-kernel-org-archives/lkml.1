@@ -1,216 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965731AbXCMNzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965758AbXCMNzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965731AbXCMNzK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 09:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030298AbXCMNzJ
+	id S965758AbXCMNzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 09:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965757AbXCMNzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 09:55:09 -0400
-Received: from MAIL.13thfloor.at ([213.145.232.33]:44954 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965742AbXCMNzH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 09:55:07 -0400
-Date: Tue, 13 Mar 2007 14:55:05 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: Kirill Korotaev <dev@sw.ru>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, menage@google.com, pj@sgi.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, winget@google.com,
-       containers@lists.osdl.org, akpm@linux-foundation.org,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       xemul@sw.ru
-Subject: Re: [PATCH 1/2] rcfs core patch
-Message-ID: <20070313135505.GD8755@MAIL.13thfloor.at>
-Mail-Followup-To: Kirill Korotaev <dev@sw.ru>,
-	Srivatsa Vaddagiri <vatsa@in.ibm.com>, menage@google.com,
-	pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-	winget@google.com, containers@lists.osdl.org,
-	akpm@linux-foundation.org, ckrm-tech@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, xemul@sw.ru
-References: <20070301133543.GK15509@in.ibm.com> <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <20070308101347.GA29051@in.ibm.com> <20070309004816.GB4506@MAIL.13thfloor.at> <45F127AB.5070704@sw.ru> <20070309132136.GA14907@MAIL.13thfloor.at> <45F437C9.2090108@sw.ru> <20070312230053.GD21258@MAIL.13thfloor.at> <45F66096.20900@sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F66096.20900@sw.ru>
-User-Agent: Mutt/1.5.11
+	Tue, 13 Mar 2007 09:55:44 -0400
+Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:2229 "EHLO
+	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965753AbXCMNzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 09:55:43 -0400
+Message-ID: <45F6AD5D.4020700@rtr.ca>
+Date: Tue, 13 Mar 2007 09:55:41 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jim Radford <radford@blackbean.org>
+Cc: Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] usb-serial regression fix
+References: <45F57F63.7010308@rtr.ca> <45F584D9.4090802@rtr.ca> <200703121948.21453.oneukum@suse.de> <45F5B67E.7000105@rtr.ca> <20070312203331.GA6769@kroah.com> <20070312224235.GB3709@blackbean.org> <20070312225922.GA4064@blackbean.org> <20070313001819.GA6147@kroah.com> <20070313004142.GA4835@blackbean.org> <45F60482.6010501@rtr.ca> <20070313091408.GA7205@blackbean.org>
+In-Reply-To: <20070313091408.GA7205@blackbean.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 11:28:06AM +0300, Kirill Korotaev wrote:
-> >>>well, Linux-VServer is "working", "secure", "flexible"
-> >>>_and_ non-intrusive ... it is quite natural that less
-> >>>won't work for me ... and regarding patches, there
-> >>>will be a 2.2 release soon, with all the patches ...
-
-first, fix your mail client to get the quoting right,
-it is quite unreadable the way it is (not the first
-time I tell you that)
-
-> >>ok. please check your dcache and slab accounting then
-> >>(analyzed according to patch-2.6.20.1-vs2.3.0.11.diff):
-> > 
-> > 
-> > development branch, good choice for new features
-> > and code which is currently tested ...
-> you know better than I that stable branch doesn't differ much,
-> especially in securiy (because it lacks these controls at all).
+Jim Radford wrote:
+> On Mon, Mar 12, 2007 at 09:55:14PM -0400, Mark Lord wrote:
+>
+>> So where does the memory get freed -- the structure pointed at
+>> by the serial->port[i] thingie ?  It's not a leak, is it?
 > 
-> BTW, killing arbitrary task in case of RSS limit hit
-> doesn't look acceptable resource management approach, does it?
+> It gets free'd through device_unregister
 > 
-> >>Both are full of races and problems. Some of them:
-> >>1. Slabs allocated from interrupt context are charged to 
-> >>   current context.
-> >>   So charged values contain arbitrary mess, since during
-> >>   interrupts context can be arbitrary.
-> > 
-> > 
-> >>2. Due to (1) I guess you do not make any limiting of slabs.
-> >>   So there are number of ways how to consume a lot of kernel
-> >>   memory from inside container and
-> >>   OOM killer will kill arbitrary tasks in case of 
-> >>   memory-shortage after that.
-> >>   Don't think it is secure... real DoS.
-> > 
-> > 
-> >>3. Dcache accounting simply doesn't work, since
-> >>   charges/uncharges are done on current context (sic!!!),
-> >>   which is arbitrary. i.e. lookup can be done in VE context,
-> >>   while dcache shrink can be done from another context.
-> >>   So the whole problem with dcache DoS is not solved at 
-> >>   all, it is just hard to trigger.
-> > 
-> > 
-> >>4. Dcache accounting is racy, since your checks look like:
-> >>   if (atomic_read(de->d_count))
-> >>      charge();
-> >>   which obviously races with other dput()'s/lookups.
-> > 
-> > 
-> >>5. Dcache accounting can be hit if someone does `find /`
-> >>   inside container.
-> >>   After that it is impossible to open something new,
-> >>   since all the dentries for directories in dcache will 
-> >>   have d_count > 0 (due it's children).
-> >>   It is a BUG.
-> > 
-> > 
-> >>6. Counters can be non-zero on container stop due to all
-> >>   of the above.
-> > 
-> > 
-> > looks like for the the first time you are actually
-> > looking at the code, or at least providing feedback
-> > and/or suggestions for improvements (well, not many
-> > of them, but hey, nobody is perfect :)
-> It's a pity, but it took me only 5 minutes of looking into the code,
-> so "not perfect" is a wrong word here, sorry.
+>     for (i = 0; i < num_ports; ++i) {
+>        ...
+>        port->dev.release = &port_release;
+>        ...
+>        retval = device_register(&port->dev);
+> 
+> which means that until all the drivers get converted to use
+> ->port_probe() and ->port_remove() (which gets called by
+> device_unregister) and stop using the ->port[] array in ->shutdown()
+> we need to have ->shutdown() called before device_unregister.
+> 
+>>>>> Look at changeset d9a7ecacac5f8274d2afce09aadcf37bdb42b93a in Linus's
+>>>>> tree from Jim Radford:
+> 
+>>>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d9a7ecacac5f8274d2afce09aadcf37bdb42b93a
+> 
+> So, this patch should be reverted for now.
 
-see how readable and easily understandable the code is?
-it takes me several hours to read OpenVZ code, and that's
-not just me :)
+Okay, so.. Jim, could you spell it out for us now?
 
-> >>There are more and more points which arise when such a 
-> >>non-intrusive accounting is concerned. 
-> > 
-> > 
-> > never claimed that Linux-VServer code is perfect,
-> > (the Linux accounting isn't perfect either in many
-> > ways) and Linux-VServer is constantly improving
-> > (see my other email) ... but IIRC, we are _not_
-> > discussing Linux-VServer code at all, we are talking
-> > about a superior solution, which combines the best
-> > of both worlds ...
-> Forget about Vserver and OpenVZ. It is not a war.
-> We are looking for something working, new and robust.
+I'm confused.
 
-you forgot efficient and performant here ...
+Based on the current 2.6.21-rc3-git*,
+tell us *exactly* what (if any) needs to be reverted,
+and *exactly* which (if any) of my suggested patches to apply ?
 
-> I'm just trying you to show that non-intrusive and pretty small
-> accounting/limiting code like in Vserver simply doesn't work.
-
-simply doesn't work? 
-because you didn't try to make it work?
-because you didn't succeed in making it work?
-
-> The problem of resource controls is much more complicated.
-> So non-intrusiveness is a very weird argument from you 
-> (and the only).
-
-no comment, read my previous emails ...
-
-> >>I'm really suprised, that you don't see them
-> >>or try to behave as you don't see them :/
-> > 
-> > 
-> > all I'm saying is that there is no point in achieving
-> > perfect accounting and limits (and everything else)
-> > when all you get is Xen performance and resource usage
-> then please elaborate on what you mean by
-> perfect and non-perfect accounting and limits?
-
-as we are discussing RSS limits, there are actually
-three different (existing) approaches we have talked
-about:
-
- - 'the 'perfect RAM counter'
-   each page is accounted exactly once, when used in
-   a guest, regardless of how many times it is shared
-   between different guest tasks
-
- - the 'RSS sum' approach
-   each page is accounted for every task mapping it
-   (will account shared pages inside a guest several
-   times and doesn't reflect the actual RAM usage)
-
- - the 'first user owns' approach
-   each page, when mapped the first time, gets accounted
-   to the guest who mapped it, regardless of the fact
-   that it might be shared with other guests lateron
-
-the first one is 'perfect' IMHO, while all three are
-'consistant' if done properly, although they will show
-quite different results and require different limit
-settings ...
-
-> I would be happy to sent a patch with a "non-perfect"
-> accounting if it really works correct and good and suits 
-> all the people needs.
-
-good, but what you currently do is providing 'your'
-implementation with 'your' design and approach, which
-_doesn't_ really suit _my_ needs ...
-
-> BTW, Xen overhead comes mostly from different things 
-> (not resource management) - inability to share data 
-> effectively, emulation overhead etc.
-
-no comment ...
-
-> >>And, please, believe me, I would not suggest so much 
-> >>complicated patches If everything was so easy and I 
-> >>had no reasons simply to accept vserver code.
-> > 
-> > 
-> > no, you are suggesting those patches, because that
-> > is what your company came up with after being confronted
-> > with the task (of creating OS-Level virtualization) and
-> > the arising problems ... so it definitely _is_ a
-> > solution to those problems, but not necessarily the
-> > best and definitely not the only one :)
-> You judge so because you want to.
-> Have you had some time to compare UBC patches from OVZ
-> and those sent to LKML (container + RSS)?
-> You would notice too litle in common.
-> Patches in LKML has non-OVZ interfaces, no shared pages accounting,
-> RSS accounting which is not used in OVZ at all.
-> So do you see any similarities except for stupid and simple
-> controls like numtask/numfile?
-
-yes, tons of locking, complicated indirections and
-a lot of (partially hard to understand) code ...
-
-best,
-Herbert
-
-> Thanks,
-> Kirill
+Thanks
