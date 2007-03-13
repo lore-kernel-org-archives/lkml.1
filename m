@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbXCLX4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbXCMACz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbXCLX4J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 19:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXCLX4J
+	id S1752613AbXCMACz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 20:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbXCMACz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 19:56:09 -0400
-Received: from colin.muc.de ([193.149.48.1]:4790 "EHLO mail.muc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752489AbXCLX4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 19:56:07 -0400
-Date: 13 Mar 2007 00:56:05 +0100
-Date: Tue, 13 Mar 2007 00:56:05 +0100
-From: Andi Kleen <ak@muc.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       arjan@infradead.org
-Subject: Re: CONFIG_REORDER Kconfig help strange sentence.
-Message-ID: <20070312235605.GA14444@muc.de>
-References: <1173741484.10618.25.camel@localhost.localdomain>
+	Mon, 12 Mar 2007 20:02:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53611
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752613AbXCMACy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 20:02:54 -0400
+Date: Mon, 12 Mar 2007 17:02:53 -0700 (PDT)
+Message-Id: <20070312.170253.122618823.davem@davemloft.net>
+To: Geert.Uytterhoeven@sonycom.com
+Cc: jeff@garzik.org, fubar@us.ibm.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.62.0703121100260.16343@pademelon.sonytel.be>
+References: <20070306114808.GA22724@havoc.gtf.org>
+	<Pine.LNX.4.62.0703121100260.16343@pademelon.sonytel.be>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173741484.10618.25.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 10:18:03AM +1100, Rusty Russell wrote:
-> OK, this confused me:
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Date: Mon, 12 Mar 2007 11:02:43 +0100 (CET)
+
+> On Tue, 6 Mar 2007, Jeff Garzik wrote:
+> > Jay Vosburgh (3):
+> >       bonding: Improve IGMP join processing
 > 
->         Function reordering (REORDER) [N/y/?] (NEW) ?
->         
->         This option enables the toolchain to reorder functions for a more 
->         optimal TLB usage. If you have pretty much any version of binutils, 
->         this can increase your kernel build time by roughly one minute.
->         
-> "If you have pretty much any version of binutils"?  Huh?
+> ip_mc_rejoin_group: Kill warning about unused variable `in_dev' when
+> CONFIG_IP_MULTICAST is not set.
 > 
-> You mean "This will slow your kernel build by about a minute"?
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Yes. Lots of sections seem to trigger some quadratic behaviour in ld.
-
-It might be fixed in some unreleased CVS version though (not 100% sure) 
-
--Andi
+Applied, thanks Geert.
