@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965699AbXCMMGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965696AbXCMMHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965699AbXCMMGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 08:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965702AbXCMMGT
+	id S965696AbXCMMHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 08:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965702AbXCMMHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 08:06:19 -0400
-Received: from colgate.yandex.ru ([213.180.200.34]:38781 "EHLO
-	colgate.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965699AbXCMMGS (ORCPT
+	Tue, 13 Mar 2007 08:07:14 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54165 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965696AbXCMMHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 08:06:18 -0400
-Date: Tue, 13 Mar 2007 15:06:12 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45F693B4.000001.09756@colgate.yandex.ru>
-MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: linux-kernel@vger.kernel.org
-Subject: Question: kthread zombie process
-X-MsgDayCount: 1
-X-BornDate: 1134853200
-Reply-To: Mockern@yandex.ru
-X-Source-Ip: 83.64.219.194
-X-Originating-Ip: 172.16.20.173
-Content-Type: text/plain;
-  charset="US-ASCII"
+	Tue, 13 Mar 2007 08:07:12 -0400
+Date: Tue, 13 Mar 2007 13:07:55 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Roland McGrath <roland@redhat.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+Message-ID: <20070313130755.21d32627@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070313080150.7C9061801C5@magilla.sf.frob.com>
+References: <Pine.LNX.4.44L0.0703091253050.2611-100000@iolanthe.rowland.org>
+	<20070313080150.7C9061801C5@magilla.sf.frob.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 13 Mar 2007 01:00:50 -0700 (PDT)
+Roland McGrath <roland@redhat.com> wrote:
 
-I use kthread in my driver. The problem is that I can't kill process with kill_proc function. After rmmod my_driver, ps command shows again SW my_driver.
+> > Well, I can add in the test for 0, but finding the set of always-on bits
+> > in DR6 will have to be done separately.  Isn't it possible that different
+> > CPUs could have different bits?
+> 
+> I don't know, but it seems unlikely.  AFAIK all CPUs are presumed to have
+> the same CPUID results, for example.
 
-How can I remove this process?
+No. We merge the CPUID information to get a shared set of capability bits.
 
-Thank you
+Generic PC systems with a mix of PII and PIII are possible. The voyager
+architecture can have even more peculiar combinations of processor
+modules installed.
 
