@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752267AbXCMQNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbXCMQQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752267AbXCMQNP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 12:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbXCMQNP
+	id S1753301AbXCMQQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 12:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbXCMQQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 12:13:15 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:42028 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752267AbXCMQNO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 12:13:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pi1+Gq48A1mgQmeKqYUbuDuvXHpdC5ZsRII8w/u6EoFvaIvsl9tJ2YUwemnjFvCLAZ6HpKjzlJ3ctd3h/qircesOzJhskAIw8Logd/WSDAHEt6t5GPN+iRAmwgZ6hEBkDyXRpvr+RzJvksNCqCTnMoZmQXyFUUy17KoGI1J/8/w=
-Message-ID: <4af2d03a0703130913n3f51a3ffiec6e498c56a34826@mail.gmail.com>
-Date: Tue, 13 Mar 2007 17:13:08 +0100
-From: "Jiri Slaby" <jirislaby@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
-Cc: "Jiri Kosina" <jikos@jikos.cz>, linux-kernel@vger.kernel.org,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0703131155050.2509-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 12:16:59 -0400
+Received: from colin.muc.de ([193.149.48.1]:2468 "EHLO mail.muc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753301AbXCMQQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 12:16:58 -0400
+Date: 13 Mar 2007 17:16:56 +0100
+Date: Tue, 13 Mar 2007 17:16:56 +0100
+From: Andi Kleen <ak@muc.de>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Dan Hecht <dhecht@vmware.com>,
+       Dan Arai <arai@vmware.com>, Andrew Morton <akpm@osdl.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH 2/9] Sched clock paravirt op fix.patch
+Message-ID: <20070313161656.GA12128@muc.de>
+References: <200703020254.l222sOaM009656@zach-dev.vmware.com> <20070313140129.GB92373@muc.de> <45F6C2A3.4040305@goop.org> <20070313160709.GH10574@sequoia.sous-sol.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45F5D4E7.7040209@gmail.com>
-	 <Pine.LNX.4.44L0.0703131155050.2509-100000@iolanthe.rowland.org>
+In-Reply-To: <20070313160709.GH10574@sequoia.sous-sol.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/13/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> I don't see anything in the UHCI snapshots to explain the difference in
-> behavior.  One thing that stands out is the other, low-speed device (a
-> mouse?) -- in the bad kernel dump its driver was running and in the good
-> kernel dump its driver wasn't.
+On Tue, Mar 13, 2007 at 09:07:09AM -0700, Chris Wright wrote:
+> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> > In other words, regardless of whether this particular pv_op lives or
+> > dies, we're going to need to have to deal with stolen time properly.  I
+> > think this hook is reasonable and useful step towards doing that.
+> 
+> Exactly.  Normal interrupts we can handle.  Having CPU completely
+> disappear for unkown time periods we can't, and will need to.
 
-There weren't any changes neither in HW config nor in modules, just
-reverted, compiled, installed, rebooted. Mouse is HID user too, so I
-don't know what was wrong with that.
+But that is just what a interrupt is.
 
-> Can you get another pair of usbmon logs, starting from before you plug in
-> the keyboard?  Don't bother with the UHCI snapshots for now.
-
-So, do you mean rmmod uhci_hcd, unplug the keyboard, modprobe
-uhci_hcd, start usbmon, plug the keyboard, press numlock, stop usbmon,
-post it?
-
-I'm away from the box till Sat, anyway.
-
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+-Andi
