@@ -1,40 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965634AbXCMJUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030206AbXCMJWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965634AbXCMJUL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965622AbXCMJUL
+	id S1030206AbXCMJWO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965622AbXCMJWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:20:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47554 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965635AbXCMJUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:20:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
-Date: Tue, 13 Mar 2007 10:22:53 +0100
+	Tue, 13 Mar 2007 05:22:14 -0400
+Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:52795 "EHLO
+	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965607AbXCMJWN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 05:22:13 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Date: Tue, 13 Mar 2007 20:21:50 +1100
 User-Agent: KMail/1.9.5
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-References: <20070313040828.GA17893@redhat.com>
-In-Reply-To: <20070313040828.GA17893@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200703111457.17624.kernel@kolivas.org> <1173762639.7944.45.camel@Homer.simpson.net> <20070313081805.GA22327@elte.hu>
+In-Reply-To: <20070313081805.GA22327@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703131022.54322.rjw@sisk.pl>
+Message-Id: <200703132021.50712.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 13 March 2007 05:08, Dave Jones wrote:
-> I spent considerable time over the last day or so bisecting to
-> find out why an X60 stopped resuming somewhen between 2.6.20 and current -git.
-> (Total lockup, black screen of death).
+On Tuesday 13 March 2007 19:18, Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
+> > [...] The situation as we speak is that you can run cpu intensive
+> > tasks while watching eye-candy.  With RSDL, you can't, you feel the
+> > non-interactive load instantly. [...]
+>
+> i have to agree with Mike that this is a material regression that cannot
+> be talked around.
+>
+> Con, we want RSDL to /improve/ interactivity. Having new scheduler
+> interactivity logic that behaves /worse/ in the presence of CPU hogs,
+> which CPU hogs are even reniced to +5, than the current interactivity
+> code, is i think a non-starter. Could you try to fix this, please? Good
+> interactivity in the presence of CPU hogs (be them default nice level or
+> nice +5) is _the_ most important scheduler interactivity metric.
+> Anything else is really secondary.
 
-Do you have CONFIG_TICK_ONESHOT or CONFIG_NO_HZ set?  If you do, could you
-please unset them and retest?
+Well I guess you must have missed where I asked him if he would be happy if I 
+changed +5 metrics to do whatever he wanted and he refused to answer me. That 
+would easily fit within that scheme. Any percentage of nice value he chose. I 
+suggest 50% of nice 0. Heck I can even increase it if he likes. All I asked 
+for was an answer as to whether that would satisfy his criterion.
 
-Thanks,
-Rafael
+> 	Ingo
+>
+> ps. please be nice to each other - both of you are long-time
+>     scheduler contributors who did lots of cool stuff :-)
+
+I have been civil. Only one email crossed the line on my part and I apologise.
+
+-- 
+-ck
