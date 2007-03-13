@@ -1,147 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbXCMWsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751722AbXCMWvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbXCMWsU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 18:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXCMWsT
+	id S1751722AbXCMWvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 18:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbXCMWvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 18:48:19 -0400
-Received: from csclub1.cs.uwaterloo.ca ([129.97.7.226]:56863 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751123AbXCMWsS (ORCPT
+	Tue, 13 Mar 2007 18:51:46 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:34786 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751722AbXCMWvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 18:48:18 -0400
-Date: Tue, 13 Mar 2007 18:48:17 -0400
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
-       Russell King <rmk+lkml@arm.linux.org.uk>, Jan Dittmer <jdi@l4x.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-Message-ID: <20070313224817.GF22466@csclub.uwaterloo.ca>
-References: <20070216185230.GO8882@enneenne.com> <20070313213842.GA23178@enneenne.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Mar 2007 18:51:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O1txzxy57b95D68jb1OUwDnxJoO7Yllj31wdml6rGBOvqtXa9jw/Pp78/zv9F/Om6rTTFJ/VtpEejp9grH9cAEcHGHAeTyslfkN2D3ShJyExraQHMHfYDBnx80pFbj0AATj0xIgkSFqZIaC2YVRbyFwAJuqXcf14hoKeIySQuRU=
+Message-ID: <29495f1d0703131551k5c06170bma138f8c1f1f9c84e@mail.gmail.com>
+Date: Tue, 13 Mar 2007 15:51:43 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: Linux 2.6.20.3
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       torvalds@osdl.org, stable@kernel.org, sparclinux@vger.kernel.org
+In-Reply-To: <20070313.152054.31641425.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070313213842.GA23178@enneenne.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <20070313183353.GA7434@kroah.com>
+	 <29495f1d0703131457i43883529p5da1502b68ff0948@mail.gmail.com>
+	 <29495f1d0703131458j18f9aee1tcd9a2b2ff6ecdf41@mail.gmail.com>
+	 <20070313.152054.31641425.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 10:38:43PM +0100, Rodolfo Giometti wrote:
-> here my new patch for PPS support in Linux.
-> 
-> I tried to follow your suggestions as much possible! Please let me
-> know if this new version could be more acceptable.
+On 3/13/07, David Miller <davem@davemloft.net> wrote:
+> From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+> Date: Tue, 13 Mar 2007 14:58:24 -0700
+>
+> > On 3/13/07, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
+> > > On 3/13/07, Greg KH <greg@kroah.com> wrote:
+> > > > We (the -stable team) are announcing the release of the 2.6.20.3 kernel.
+> > > > It contains a number of bugfixes and all 2.6.20 users are recommended to
+> > > > upgrade.
+> > > >
+> > > > The diffstat and short summary of the fixes are below.
+> > > >
+> > > > I'll also be replying to this message with a copy of the patch between
+> > > > 2.6.20.2 and 2.6.20.3.
+> > >
+> > > Compared to 2.6.20.1 (will try 2.6.20.2 as well), I now get:
+> >
+> > err, duh -- this is a Sun Ultra 60, debian testing install.
+>
+> Figure out if 2.6.20.2 does it too, then please try to git bisect
+> it down further.
 
-I have tried out 3.0.0-rc2 which seems to work pretty well so far (when
-combined with the patches to the jsm driver I just posted).  It took soe
-work to get ntp's refclock_nmea to work though, since the patch that is
-linked to from the linuxpps page seems out of date.  Here is the patch
-that seems to be working for me, although I am still testing it.  Given
-you know the linuxpps code better perhaps you can see if it looks sane
-to you.
+Yep, that's the plan, just wanted to make folks aware.
 
---- ntpd/refclock_nmea.c.ori	2007-03-13 18:38:01.000000000 -0400
-+++ ntpd/refclock_nmea.c	2007-03-13 18:44:47.000000000 -0400
-@@ -79,6 +79,7 @@
- #define RANGEGATE	500000	/* range gate (ns) */
- 
- #define LENNMEA		75	/* min timecode length */
-+#define LENPPS		PPS_MAX_NAME_LEN
- 
- /*
-  * Tables to compute the ddd of year form icky dd/mm timecode. Viva la
-@@ -99,6 +100,7 @@
- 	pps_params_t pps_params; /* pps parameters */
- 	pps_info_t pps_info;	/* last pps data */
- 	pps_handle_t handle;	/* pps handlebars */
-+	int handle_created;	/* pps handle created flag */
- #endif /* HAVE_PPSAPI */
- };
- 
-@@ -147,6 +149,11 @@
- 	register struct nmeaunit *up;
- 	struct refclockproc *pp;
- 	int fd;
-+#ifdef PPS_HAVE_FINDPATH
-+	char id[LENPPS] = "",
-+	     path[LENPPS],
-+	     mylink[LENPPS] = "";    /* just a default device */
-+#endif	/* PPS_HAVE_FINDPATH */
- 	char device[20];
- 
- 	/*
-@@ -201,7 +208,20 @@
- #else
-             return (0);
- #endif
--        }
-+        } else {
-+            struct serial_struct  ss;
-+            if (ioctl(fd, TIOCGSERIAL, &ss) < 0 ||
-+                (
-+		 ss.flags |= ASYNC_HARDPPS_CD,
-+                 ioctl(fd, TIOCSSERIAL, &ss)) < 0) {
-+                 msyslog(LOG_NOTICE, "refclock_nmea: TIOCSSERIAL fd %d, %m", fd);
-+                 msyslog(LOG_NOTICE,
-+                         "refclock_nmea: optional PPS processing not available");
-+            } else {
-+                msyslog(LOG_INFO,
-+                        "refclock_nmea: PPS detection on");
-+            }
-+	}
- 
- 	/*
- 	 * Allocate and initialize unit structure
-@@ -238,12 +258,26 @@
- 	 * Start the PPSAPI interface if it is there. Default to use
- 	 * the assert edge and do not enable the kernel hardpps.
- 	 */
-+#ifdef PPS_HAVE_FINDPATH
-+	/* Get the PPS source's real name */
-+	//time_pps_readlink(mylink, LENPPS, path, LENPPS);
-+	time_pps_readlink(device, LENPPS, path, LENPPS);
-+
-+	/* Try to find the source */
-+	fd = time_pps_findpath(path, LENPPS, id, LENPPS);
-+	if (fd < 0) {
-+		msyslog(LOG_ERR, "refclock_nmea: cannot find PPS path \"%s\" in the system", path);
-+		return (0);
-+	}
-+	msyslog(LOG_INFO, "refclock_nmea: found PPS source \"%s\" at id #%d on \"%s\"", path, fd, id);
-+#endif	/* PPS_HAVE_FINDPATH */
- 	if (time_pps_create(fd, &up->handle) < 0) {
--		up->handle = 0;
-+		up->handle_created = 0;
- 		msyslog(LOG_ERR,
- 		    "refclock_nmea: time_pps_create failed: %m");
- 		return (1);
- 	}
-+	up->handle_created = ~0;
- 	return(nmea_ppsapi(peer, 0, 0));
- #else
- 	return (1);
-@@ -265,8 +299,10 @@
- 	pp = peer->procptr;
- 	up = (struct nmeaunit *)pp->unitptr;
- #ifdef HAVE_PPSAPI
--	if (up->handle != 0)
-+	if (up->handle_created) {
- 		time_pps_destroy(up->handle);
-+		up->handle_created = 0;
-+	}
- #endif /* HAVE_PPSAPI */
- 	io_closeclock(&pp->io);
- 	free(up);
-@@ -374,7 +410,7 @@
- 	/*
- 	 * Convert the timespec nanoseconds field to ntp l_fp units.
- 	 */ 
--	if (up->handle == 0)
-+	if (!up->handle_created)
- 		return (0);
- 	timeout.tv_sec = 0;
- 	timeout.tv_nsec = 0;
+> I took a quick look and the two sparc64 commits between 2.6.20.1
+> and 2.6.20.2 are benign, a fix for E450 interrupts and a kenvctrld
+> fix which is for a driver for hardware your ultra60 doesn't have. :)
+>
+> There is a decent amount of raid and nfs fixes in here, do you
+> use either?
 
---
-Len Sorensen
+Neither.
+
+> Another commit that might be relevant is:
+>
+> commit 530b09160744a12450fdacb2b78779c9830a29c8
+> Author: Aristeu Sergio Rozanski Filho <aristeu.sergio@gmail.com>
+> Date:   Thu Mar 1 19:02:55 2007 -0500
+>
+>     tty_io: fix race in master pty close/slave pty close path
+>
+> Hmmm...
+>
+> Please let us know if you can narrow it down further.
+
+Building 2.6.20.2 right now, will let you know.
+
+Thanks,
+Nish
