@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbXCMNgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965724AbXCMNjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933367AbXCMNgr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 09:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933534AbXCMNgr
+	id S965724AbXCMNjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 09:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965719AbXCMNjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 09:36:47 -0400
-Received: from ns.suse.de ([195.135.220.2]:36887 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933367AbXCMNgq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 09:36:46 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: [1/6] 2.6.21-rc3: known regressions
-Date: Tue, 13 Mar 2007 14:36:15 +0100
-User-Agent: KMail/1.9.1
-Cc: Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313124957.GR18731@stusta.de> <45F6A240.3090601@drzeus.cx>
-In-Reply-To: <45F6A240.3090601@drzeus.cx>
+	Tue, 13 Mar 2007 09:39:41 -0400
+Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:4955 "EHLO
+	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965715AbXCMNjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 09:39:40 -0400
+Message-ID: <45F6A99A.8060008@rtr.ca>
+Date: Tue, 13 Mar 2007 09:39:38 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703131436.15586.oneukum@suse.de>
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Jim Radford <radford@blackbean.org>, Greg KH <greg@kroah.com>,
+       linux-usb-devel@lists.sourceforge.net, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] usb-serial regression fix
+References: <45F57F63.7010308@rtr.ca> <45F60482.6010501@rtr.ca> <20070313091408.GA7205@blackbean.org> <200703131114.48068.oneukum@suse.de>
+In-Reply-To: <200703131114.48068.oneukum@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 13. März 2007 14:08 schrieb Pierre Ossman:
-> Adrian Bunk wrote:
-> > 
-> > Subject    : mmc card reader no longer works
-> > References : http://lkml.org/lkml/2007/2/27/91
-> > Submitter  : Pavel Machek <pavel@ucw.cz>
-> > Handled-By : Oliver Neukum <oneukum@suse.de>
-> > Status     : unknown
-> > 
-> 
-> First I heard of this. The error report is a bit thin so Pavel will need to
-> elaborate a bit more.
+Oliver Neukum wrote:
+>
+> If we get to destroy_serial(), how can ports still be open?
 
-The device is a USB serial device. USB serial was known to have issues
-in the version this happened. As far as I know the bug has not been
-replicated after this bugs were fixed.
+(1) open up a ckermit session on /dev/usb_serial_port_0.
+(2) suspend the machine (to RAM).
+(3) the suspend logic "removes" all USB devices.
 
-	Regards
-		Oliver
+Cheers
