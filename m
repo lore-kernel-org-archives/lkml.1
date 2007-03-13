@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030298AbXCMOBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030302AbXCMOCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030298AbXCMOBd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 10:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030301AbXCMOBd
+	id S1030302AbXCMOCF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 10:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030308AbXCMOCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 10:01:33 -0400
-Received: from colin.muc.de ([193.149.48.1]:1889 "EHLO mail.muc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030298AbXCMOBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 10:01:31 -0400
-Date: 13 Mar 2007 15:01:29 +0100
-Date: Tue, 13 Mar 2007 15:01:29 +0100
-From: Andi Kleen <ak@muc.de>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>, Dan Hecht <dhecht@vmware.com>,
-       Dan Arai <arai@vmware.com>, Andrew Morton <akpm@osdl.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH 2/9] Sched clock paravirt op fix.patch
-Message-ID: <20070313140129.GB92373@muc.de>
-References: <200703020254.l222sOaM009656@zach-dev.vmware.com>
+	Tue, 13 Mar 2007 10:02:04 -0400
+Received: from outbound3.mail.tds.net ([216.170.230.93]:42675 "EHLO
+	outbound3.mail.tds.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030302AbXCMOCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 10:02:03 -0400
+Subject: Re: sys_write() racy for multi-threaded append?
+From: "David M. Lloyd" <dmlloyd@flurg.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
+       Bodo Eggert <7eggert@gmx.de>, Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070313022430.57503b08@lxorguk.ukuu.org.uk>
+References: <7WzUo-1zl-21@gated-at.bofh.it> <7WAx2-2pg-21@gated-at.bofh.it>
+	 <7WAGF-2Bx-9@gated-at.bofh.it> <7WB07-3g5-33@gated-at.bofh.it>
+	 <7WBt7-3SZ-23@gated-at.bofh.it> <E1HQfLX-0000fk-68@be1.lrz>
+	 <f2b55d220703120926k1ab7112fh60227fac670b8b4c@mail.gmail.com>
+	 <Pine.LNX.4.58.0703121803450.2313@be1.lrz>
+	 <f2b55d220703121746k1a849b78rec3131cb6f5eae38@mail.gmail.com>
+	 <20070313022430.57503b08@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Tue, 13 Mar 2007 09:00:31 -0500
+Message-Id: <1173794431.6729.32.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703020254.l222sOaM009656@zach-dev.vmware.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 06:54:24PM -0800, Zachary Amsden wrote:
-> The custom_sched_clock hook is broken.  The result from sched_clock needs to be
-> in nanoseconds, not in CPU cycles.  The TSC is insufficient for this purpose,
-> because TSC is poorly defined in a virtual environment, and mostly represents
-> real world time instead of scheduled process time (which can be interrupted
-> without notice when a virtual machine is descheduled).
+On Tue, 2007-03-13 at 02:24 +0000, Alan Cox wrote:
+> > purports to handle short writes but has never been exercised is
+> > arguably worse than code that simply bombs on short write.  So if I
+> > can't shim in an induce-short-writes-randomly-on-purpose mechanism
+> > during development, I don't want short writes in production, period.
 > 
-> To make the scheduler consistent, we must expose a different nature of time,
-> that is scheduled time.  So deprecate this custom_sched_clock hack and turn it
-> into a paravirt-op, as it should have been all along.  This allows the tsc.c
-> code which converts cycles to nanoseconds to be shared by all paravirt-ops
-> backends.
-> 
-> It is unfortunate to add a new paravirt-op, but this is a very distinct
-> abstraction which is clearly different for all virtual machine implementations,
-> and it gets rid of an ugly indirect function which I ashamedly admit I hacked
-> in to try to get this to work earlier, and then even got in the wrong units.
-> 
-> Please apply.
+> Easy enough to do and gcov plus dejagnu or similar tools will let you
+> coverage analyse the resulting test set and replay it.
 
-I think it's better to remove this completely and not allow paravirt
-to hook into sched_clock.  After all a hypervisor stealing time is no
-different from interrupts stealing time and we don't try to handle
-that either. 
+You don't even need special tools: just change your code that says:
 
-I will remove the custom hook.
+	foo = write(fd, mybuf, mycount);
 
--Andi
+to say (for example):
+
+	foo = write(fd, mybuf, mycount / randomly_either_1_or_2);
+
+Why would this need kernel support?  The average developer doesn't
+really need to verify that the *kernel* works.  They just need to test
+their own code paths - and in this case, they can see that foo is less
+than mycount (sometimes).  The code paths don't care that it was not the
+kernel that caused it.
+
+- DML
+
