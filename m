@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbXCMJxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751532AbXCMJyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbXCMJxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXCMJxf
+	id S1751532AbXCMJyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXCMJyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:53:35 -0400
-Received: from nn7.de ([85.214.94.156]:42198 "EHLO nn7.de"
+	Tue, 13 Mar 2007 05:54:40 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:57567 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbXCMJxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:53:34 -0400
-Subject: Re: s2ram still broken with CONFIG_NO_HZ / HPET (macbook pro)
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Emil Karlson <jkarlson@cc.hut.fi>,
-       "Michael S\. Tsirkin" <mst@mellanox.co.il>, Len Brown <lenb@kernel.org>
-In-Reply-To: <45F53282.5040504@gmail.com>
-References: <1173645941.4204.5.camel@localhost> <45F53282.5040504@gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 13 Mar 2007 10:53:31 +0100
-Message-Id: <1173779611.13173.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	id S1751532AbXCMJyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 05:54:39 -0400
+Date: Tue, 13 Mar 2007 10:54:15 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Robert Marquardt <marquardt@codemercs.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Question re hiddev
+In-Reply-To: <45F650CB.1080409@codemercs.com>
+Message-ID: <Pine.LNX.4.64.0703131048100.14144@twin.jikos.cz>
+References: <200703081354.28281.gene.heskett@verizon.net>
+ <200703090103.32583.gene.heskett@verizon.net> <20070309111947.5fa58c3c.zaitcev@redhat.com>
+ <200703091928.24832.gene.heskett@verizon.net> <Pine.LNX.4.64.0703101414520.26904@twin.jikos.cz>
+ <45F650CB.1080409@codemercs.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-12 at 19:59 +0900, Tejun Heo wrote:
-> Soeren Sonnenburg wrote:
-> > Elsewise I still see the
-> > 
-> > ATA: abnormal status 0x80 on port 0x000140df
-> > ATA: abnormal status 0x80 on port 0x000140df
-> > ata1.00: configured for UDMA/33
-> > ata3.01: revalidation failed (errno=-2)
-> > ata3: failed to recover some devices, retrying in 5 secs
-> > ATA: abnormal status 0x7F on port 0x000140df
-> > ATA: abnormal status 0x7F on port 0x000140df
-> > ata3.01: configured for UDMA/133
-> 
-> I can't tell much about HPET timer, only the ATA messages.
-> 
-> Abnormal messages can be ignored.  Hmmm... revalidation failed without
-> explaining why.  Can you apply the attached patch and see whether the
-> added message gets printed?
+On Tue, 13 Mar 2007, Robert Marquardt wrote:
 
-Well it is there:
+> > as there are many Bluetooth devices with conform to HID specification
+> Namely the Wii controller which is already happily used by many programmers
+> through Windows HID API.
 
-ATA: abnormal status 0x80 on port 0x000140df
-ata1.00: configured for UDMA/33
-ata3.01: NODEV after polling detection
-ata3.01: revalidation failed (errno=-2)
-ata3: failed to recover some devices, retrying in 5 secs
-ATA: abnormal status 0x7F on port 0x000140df
-ATA: abnormal status 0x7F on port 0x000140df
-ata3.01: configured for UDMA/133
-SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
-sda: Write Protect is off
-sda: Mode Sense: 00 3a 00 00
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
+Hi Robert,
 
-just FYI a macbook pro has a sata disc + a dvd drive registered
-as /dev/sda and /dev/scd0 driven by ata_piix:
+not only this piece of hardware, but many others - for example almost all 
+Bluetooth keyboards and mice are capable of working both in HID and HCI 
+modes, etc. The layer introduced in 2.6.20 gives them the possibility of 
+using full reporting facilities of the HID layer.
 
-dmesg | grep ata_piix 
-ata_piix 0000:00:1f.1: version 2.10ac1
-scsi0 : ata_piix
-scsi1 : ata_piix
-ata_piix 0000:00:1f.2: MAP [ P0 P2 XX XX ]
-ata_piix 0000:00:1f.2: invalid MAP value 0
-scsi2 : ata_piix
-scsi3 : ata_piix
+> > There are still pending issues though, one of them being converting 
+> > the HID layer to bus, so that individual device that don't wish the 
+> > certain device to be handled by generic HID code, register on this HID 
+> > bus and handle the HID events from given device in a unified way (for 
+> > example current Wacom driver would use this facility, among other). As 
+> > a bonus, this is going to shrink the hid_blacklist, which currently 
+> > has to contain all devices for which there are specialized drivers.
+> Ah, this means our iowarrior driver will be shortlived.
 
-Soeren
+I don't think so. Firstly, it will take some time until the HID layer is 
+converted to bus, as I have another things pending. Secondly, the 
+iowarrior driver will still be needed to handle the HW-specific reports 
+that won't be handled by the generic HID layer, it would only have to be 
+changed to register through the HID bus.
+
+> Do you know the Windows HID API? It would be nice to take it into 
+> account so that a compatible API can be written. 
+
+No, I don't know Windows HID api at all. Is it worth looking at?
+
+> Mainly this needs a way to add a ReportID of 0x00 to reports from 
+> devices without ReportIDs and access to the HID descriptor so the usages 
+> can be extracted from a report.
+
+Just a sidenote - this is in fact what I am currently implementing also 
+for the new hidraw userspace interface.
+
+Thanks,
+
 -- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+Jiri Kosina
