@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030313AbXCMORy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030380AbXCMOSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030313AbXCMORy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 10:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030365AbXCMORy
+	id S1030380AbXCMOSG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 10:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030377AbXCMOSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 10:17:54 -0400
-Received: from postfix2-g20.free.fr ([212.27.60.43]:49913 "EHLO
-	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030313AbXCMORx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 10:17:53 -0400
-From: Arnaud Giersch <arnaud.giersch@free.fr>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cleanfile: a script to clean up stealth whitespace
-References: <200703121920.l2CJK24N008104@tazenda.hos.anvin.org>
-Date: Tue, 13 Mar 2007 15:16:48 +0100
-In-Reply-To: <200703121920.l2CJK24N008104@tazenda.hos.anvin.org> (H. Peter
-	Anvin's message of "Mon, 12 Mar 2007 12:16:30 -0700")
-Message-ID: <87abyh1b5b.fsf@groumpf.homeip.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Tue, 13 Mar 2007 10:18:05 -0400
+Received: from kanga.kvack.org ([66.96.29.28]:33873 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030368AbXCMOSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 10:18:04 -0400
+Date: Tue, 13 Mar 2007 10:17:50 -0400
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] avoid OPEN_MAX in SCM_MAX_FD
+Message-ID: <20070313141750.GH6209@kvack.org>
+References: <20070313083912.89D891801C5@magilla.sf.frob.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070313083912.89D891801C5@magilla.sf.frob.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lundi 12 mars 2007, vers 20:16:30 (+0100), H. Peter Anvin a écrit:
+On Tue, Mar 13, 2007 at 01:39:12AM -0700, Roland McGrath wrote:
+> The OPEN_MAX constant is an arbitrary number with no useful relation to
+> anything.  Nothing should be using it.  This patch changes SCM_MAX_FD to
+> use NR_OPEN instead of OPEN_MAX.  This increases the size of the struct
+> scm_fp_list type fourfold, to make it big enough to contain as many file
+> descriptors as could be asked of it.  This size increase may not be very
+> worthwhile, but at any rate if an arbitrary limit unrelated to anything
+> else is being defined it should be done explicitly here with:
 
-> This script cleans up various classes of stealth whitespace.  In
-> particular, it cleans up:
->
-> - Whitespace (spaces or tabs)before newline;
-> - DOS line endings (CR before LF);
-> - Space before tab (spaces are deleted or converted to tabs);
-> - Empty lines at end of file.
+> -#define SCM_MAX_FD	(OPEN_MAX-1)
+> +#define SCM_MAX_FD	(NR_OPEN-1)
 
-What about checking for a newline at end of file?  Something like:
+This is a bad idea.  From linux/fs.h:
 
-[...]
+#undef NR_OPEN
+#define NR_OPEN (1024*1024)     /* Absolute upper limit on fd num */
 
-> +    if ($is_binary) {
-> +	print STDERR "$name: $f: binary file\n";
-> +	next;
-> +    }
+There isn't anything I can see guaranteeing that net/scm.h is included 
+before fs.h.  This affects networking and should really be Cc'd to 
+netdev@vger.kernel.org, which will raise the issue that if SCM_MAX_FD is 
+raised, the resulting simple kmalloc() must be changed.  That said, I 
+doubt SCM_MAX_FD really needs to be raised, as applications using many 
+file descriptors are unlikely to try to send their entire file table to 
+another process in one go -- they have to handle the limits imposed by 
+SCM_MAX_FD anyways.
 
-    # Add a newline at end of file, if needed.
-    seek(FILE, -1, 2);
-    if (read(FILE, $last_char, 1) == 1 && $last_char ne "\n") {
-	seek(FILE, 0, 2);
-	print FILE "\n";
-    }
-
-> +    seek(FILE, 0, 0);
-> +
-> +    $in_bytes = 0;
-> +    $out_bytes = 0;
-> +    $blank_bytes = 0;
-
-[...]
-
-Regards,
-        Arnaud Giersch
+		-ben
+-- 
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
