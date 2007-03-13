@@ -1,30 +1,53 @@
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S1752140AbXCDRju (ORCPT <rfc822;ralf@linux-mips.org>); Sun, 4 Mar 2007 12:39:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbXCDRju (ORCPT <rfc822;linux-kernel-outgoing>); Sun, 4 Mar 2007 12:39:50 -0500
-Received: from [213.9.221.101] ([213.9.221.101]:2977 "EHLO mailhost.cofares.es" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP id S1752140AbXCDRjt convert rfc822-to-8bit (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Sun, 4 Mar 2007 12:39:49 -0500
-X-Greylist: delayed 906 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Mar 2007 12:39:49 EST
-To: linux-kernel@vger.kernel.org, vgonzalez@cofares.es
-From: eTrust_Antivirus_Option_for_Lotus_Notes_Domino%COFARES@cofares.es
-Subject: Warning (Realtime Scanner): Infected attachment(s) was detected!
-X-Priority: 1 (High)
-Date: Sun, 4 Mar 2007 18:24:39 +0100
-Message-ID: <OF06447589.EB993B57-ONC1257294.005FA438@cofares.es>
-X-MIMETrack: Serialize by Router on sernotes/cofares(Release 6.5.5|November 30, 2005) at 04/03/2007 18:39:48
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S1753077AbXCMDtB (ORCPT <rfc822;ralf@linux-mips.org>); Mon, 12 Mar 2007 23:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXCMDtB (ORCPT <rfc822;linux-kernel-outgoing>); Mon, 12 Mar 2007 23:49:01 -0400
+Received: from dalsmrelay4.avertlabs.com ([205.227.136.198]:59584 "EHLO dalsmrelay4.avertlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP id S1753077AbXCMDtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Mon, 12 Mar 2007 23:49:00 -0400
+X-Greylist: delayed 1509 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Mar 2007 23:49:00 EDT
+Message-ID: <023A8B2E7263454CA0F330E2E9EC2CF201831286@avert-exchange1.na.nai.com>
+From: Virus Research <Virus_Research@avertlabs.com>
+To: linux-kernel@vger.kernel.org
+Subject: Attachment Received Autoreply
+Date: Mon, 12 Mar 2007 19:21:54 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+X-Mailer: Internet Mail Service (5.5.2653.19)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752140AbXCDRju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753077AbXCMDtB@vger.kernel.org>
 
-eTrust Antivirus ha detectado un documento adjunto bloqueado/infectado =
-en
-un mensaje de correo electr=F3nico de [linux-kernel@vger.kernel.org] a
-[vgonzalez@cofares.es] con el asunto [ ].  Documentos adjuntos:
-[message.zip]  Estado:  Error en la desinfecci=F3n, archivo renombrado
+Thank you for your file-sample. We will review your email and either send
+you a response or forward to the appropriate contact. If you have sent us a
+file which is not in a password protected zip file (password - infected)
+then your sample will not be reviewed. 
 
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+______
+
+Virus Research accepts file-samples for analysis and possible inclusion into
+AV signature DAT sets. We are also prepared to answer general virus
+questions. Virus Research does not handle product related issues. 
+
+This message has been sent based upon keywords in your message.  If you have
+been sent this message in error, please resend your message with the word
+"noauto" in the subject line. 
+
+______
+
+Information on recent threats, along with other AVERT resources and tools,
+can be found at: http://www.mcafeesecurity.com/us/security/home.asp
+
+All product-related questions and comments can be addressed through
+technical support. Contact information for Technical Support can be found
+at: http://www.mcafeesecurity.com/us/contact/home.htm.
+
+Engine and DAT updates are available at:
+http://www.mcafeesecurity.com/us/downloads/updates
+
+For instructions on submitting a sample to AVERT please see:
+http://vil.nai.com/vil/submit-sample.asp
+
+If you suspect you have a new, unknown virus and have a system where you can
+do a test scan, you may first wish to try our Beta Hourly DATs to get the
+latest detection available at:
+http://vil.mcafeesecurity.com/vil/averttools.asp
+
+
+Thanks - McAfee AVERT(tm)
