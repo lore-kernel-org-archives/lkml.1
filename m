@@ -1,109 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030788AbXCMQbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030778AbXCMQbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030788AbXCMQbQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 12:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030754AbXCMQbP
+	id S1030778AbXCMQbe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 12:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030781AbXCMQbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 12:31:15 -0400
-Received: from gw.goop.org ([64.81.55.164]:47558 "EHLO mail.goop.org"
+	Tue, 13 Mar 2007 12:31:34 -0400
+Received: from mba.ocn.ne.jp ([122.1.175.29]:60640 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030789AbXCMQbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 12:31:14 -0400
-Message-ID: <45F6D1D0.6080905@goop.org>
-Date: Tue, 13 Mar 2007 09:31:12 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
-       James Morris <jmorris@namei.org>, john stultz <johnstul@us.ibm.com>,
-       Chris Wright <chrisw@sous-sol.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Stolen and degraded time and schedulers
-Content-Type: text/plain; charset=UTF-8
+	id S1030778AbXCMQbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 12:31:33 -0400
+X-Greylist: delayed 1331 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Mar 2007 12:31:33 EDT
+Date: Wed, 14 Mar 2007 01:09:19 +0900 (JST)
+Message-Id: <20070314.010919.122026198.anemo@mba.ocn.ne.jp>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, device@lanana.org, ralf@linux-mips.org,
+       sshtylyov@ru.mvista.com
+Subject: [PATCH 2.6.21-rc3] serial: Allocate minor device numbers for
+ serial_txx9 driver
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 3.3 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current Linux scheduler makes one big assumption: that 1ms of CPU
-time is the same as any other 1ms of CPU time, and that therefore a
-process makes the same amount of progress regardless of which particular
-ms of time it gets.
+The serial_txx9 driver have abused device numbers (major 4, minor 128)
+if CONFIG_SERIAL_TXX9_STDSERIAL was not set.  This patch makes the
+driver allocate minor numbers from major 204 (Low-density serial
+ports).  I suppose a typical user of this driver set
+CONFIG_SERIAL_TXX9_STDSERIAL to Y (i.e. use "ttyS0"), so this patch
+would not cause big compatibility issue.
 
-This assumption is wrong now, and will become more wrong as
-virtualization gets more widely used.
-
-It's wrong now, because it fails to take into account of several kinds
-of missing time:
-
-   1. interrupts - time spent in an ISR is accounted to the current
-      process, even though it gets no direct benefit
-   2. SMM - time is completely lost from the kernel
-   3. slow CPUs - 1ms of 600MHz CPU is less useful than 1ms of 2.4GHz CPU
-
-The first two - time lost to interrupts - are a well known problem, and
-are generally considered to be a non issue.  If you're losing a
-significant amount of time to interrupts, you probably have bigger
-problems.  (Or maybe not?)
-
-The third is not something I've seen discussed before, but it seems like
-it could be a significant problem today.  Certainly, I've noticed it
-myself: an interactive program decides to do something CPU-intensive
-(like start an animation), and it chugs until the conservative governor
-brings the CPU up to speed.  Certainly some of this is because its just
-plain CPU-starved, but I think another factor is that it gets penalized
-for running on a slow CPU: 1ms is not 1ms.  And for power reasons you
-want to encourage processes to run on slow CPUs rather than penalize them.
-
-Virtualization just exacerbates this.  If you have a busy machine
-running multiple virtual CPUs, then each VCPU may only get a small
-proportion of the total amount of available CPU time.  If the kernel's
-scheduler asserts that "you were just scheduled for 1ms, therefore you
-made 1ms of progress", then many timeslices will effectively end up
-being 1ms of 0Mhz CPU - because the VCPU wasn't scheduled and the real
-CPU was doing something else.
-
-
-So how to deal with this?  Basically we need a clock which measures "CPU
-work units", and have the scheduler use this clock.
-
-A "CPU work unit" clock has these properties:
-
-    * inherently per-CPU (from the kernel's perspective, so it would be
-      per-VCPU in a virtual machine)
-    * monotonic - you can't do negative work
-    * measured in "work units"
-
-A "work unit" is probably most simply expressed in cycles - you assume a
-cycle of CPU time is equivalent in terms of work done to any other
-cycle.  This means that 1 cycle at 600MHz is equivalent to 1 cycle at
-2.4GHz - but of course the 2.4GHz processor gets 4 times as many in any
-real time interval.  (This is the instance where the worst kind of tsc -
-varying speed which stops on idle - is actually exactly what you want.)
-
-You could also measure "work units" in terms of normalized time units:
-if the fastest CPU on the machine is 2.4GHz, then 1ms is 1ms a work unit
-on that CPU, but 250us on the 600MHz CPU.
-
-It doesn't really matter what the unit is, so long as it is used
-consistently to measure how much progress all processes made.
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+diff --git a/Documentation/devices.txt b/Documentation/devices.txt
+index 8de132a..62f85c5 100644
+--- a/Documentation/devices.txt
++++ b/Documentation/devices.txt
+@@ -2808,6 +2808,9 @@ Your cooperation is appreciated.
+ 		    ...
+ 		 190 = /dev/ttyUL3		Xilinx uartlite - port 3
+ 		 191 = /dev/xvc0		Xen virtual console - port 0
++		 192 = /dev/ttyTX0		TX39/49 serial port 0
++		    ...
++		 199 = /dev/ttyTX7		TX39/49 serial port 7
+ 
+ 205 char	Low-density serial ports (alternate device)
+ 		  0 = /dev/culu0		Callout device for ttyLU0
+diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
+index 509ace7..c5607ac 100644
+--- a/drivers/serial/serial_txx9.c
++++ b/drivers/serial/serial_txx9.c
+@@ -40,6 +40,7 @@
+  *	1.07	Use CONFIG_SERIAL_TXX9_NR_UARTS.  Cleanup.
+  *	1.08	Use platform_device.
+  *		Fix and cleanup suspend/resume/initialization codes.
++ *	1.09	Use major 204 if CONFIG_SERIAL_TXX9_STDSERIAL was not set.
+  */
+ 
+ #if defined(CONFIG_SERIAL_TXX9_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
+@@ -62,7 +63,7 @@
+ 
+ #include <asm/io.h>
+ 
+-static char *serial_version = "1.08";
++static char *serial_version = "1.09";
+ static char *serial_name = "TX39/49 Serial driver";
+ 
+ #define PASS_LIMIT	256
+@@ -70,13 +71,14 @@ static char *serial_name = "TX39/49 Serial driver";
+ #if !defined(CONFIG_SERIAL_TXX9_STDSERIAL)
+ /* "ttyS" is used for standard serial driver */
+ #define TXX9_TTY_NAME "ttyTX"
+-#define TXX9_TTY_MINOR_START	(64 + 64)	/* ttyTX0(128), ttyTX1(129) */
++#define TXX9_TTY_MINOR_START	192
++#define TXX9_TTY_MAJOR	204
+ #else
+ /* acts like standard serial driver */
+ #define TXX9_TTY_NAME "ttyS"
+ #define TXX9_TTY_MINOR_START	64
+-#endif
+ #define TXX9_TTY_MAJOR	TTY_MAJOR
++#endif
+ 
+ /* flag aliases */
+ #define UPF_TXX9_HAVE_CTS_LINE	UPF_BUGGY_UART
 
 
-So, how to implement this?
-
-One quick hack would be to just make a new clocksource entrypoint, which
-returns work units rather than real-time cycles.  That would be fairly
-simple to implement, but it doesn't really take the per-cpu nature of
-the clock into account (since its possible that different cpus on the
-same machine might need their own methods).
-
-Perhaps a better fit would be an entity which is equivalent to a
-clocksource, but registered per-cpu like (some) clockevents.
-
-I don't have a particular preference, but I wonder what the clock gurus
-think.
-
-    J
