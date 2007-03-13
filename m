@@ -1,194 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXCMKmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbXCMKt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbXCMKmI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 06:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbXCMKmI
+	id S1753220AbXCMKt6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 06:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbXCMKt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 06:42:08 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:34253 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbXCMKmH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 06:42:07 -0400
-Date: Tue, 13 Mar 2007 10:42:02 +0000
-To: akpm@linux-foundation.org
-Cc: bob.picco@hp.com, apw@shadowen.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix corruption of memmap on IA64 SPARSEMEM when mem_section is not a power of 2
-Message-ID: <20070313104201.GA16842@skynet.ie>
+	Tue, 13 Mar 2007 06:49:58 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:41731 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753220AbXCMKt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 06:49:57 -0400
+Date: Tue, 13 Mar 2007 03:48:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kirill Korotaev <dev@sw.ru>
+Cc: herbert@13thfloor.at, containers@lists.osdl.org, hansendc@us.ibm.com,
+       linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [Devel] Re: [RFC][PATCH 2/7] RSS controller core
+Message-Id: <20070313034834.14013bb0.akpm@linux-foundation.org>
+In-Reply-To: <45F67AC9.4080707@sw.ru>
+References: <45ED7DEC.7010403@sw.ru>
+	<45ED80E1.7030406@sw.ru>
+	<20070306140036.4e85bd2f.akpm@linux-foundation.org>
+	<45F3F581.9030503@sw.ru>
+	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
+	<20070312010039.GC21861@MAIL.13thfloor.at>
+	<1173724979.11945.103.camel@localhost.localdomain>
+	<20070312224129.GC21258@MAIL.13thfloor.at>
+	<20070312220439.677b4787.akpm@linux-foundation.org>
+	<45F67AC9.4080707@sw.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Tue, 13 Mar 2007 13:19:53 +0300 Kirill Korotaev <dev@sw.ru> wrote:
+> Andrew Morton wrote:
+> >>>> - shared mappings of 'shared' files (binaries 
+> >>>>   and libraries) to allow for reduced memory
+> >>>>   footprint when N identical guests are running
+> >>>
+> >>>So, it sounds like this can be phrased as a requirement like:
+> >>>
+> >>>	"Guests must be able to share pages."
+> >>>
+> >>>Can you give us an idea why this is so? 
+> >>
+> >>sure, one reason for this is that guests tend to
+> >>be similar (or almost identical) which results
+> >>in quite a lot of 'shared' libraries and executables
+> >>which would otherwise get cached for each guest and
+> >>would also be mapped for each guest separately
+> > 
+> > 
+> > nooooooo.  What you're saying there amounts to text replication.  There is
+> > no proposal here to create duplicated copies of pagecache pages: the VM
+> > just doesn't support that (Nick has soe protopatches which do this as a
+> > possible NUMA optimisation).
+> > 
+> > So these mmapped pages will contiue to be shared across all guests.  The
+> > problem boils down to "which guest(s) get charged for each shared page".
+> > 
+> > A simple and obvious and easy-to-implement answer is "the guest which paged
+> > it in".  I think we should firstly explain why that is insufficient.
+> I guess by "paged it in" you essentially mean
+> "mapped the page into address space for the *first* time"?
 
-There are problems in the use of SPARSEMEM and pageblock flags that causes
-problems on ia64.
+Not really - I mean "first allocated the page".  ie: major fault(), read(),
+write(), etc.
 
-The first part of the problem is that units are incorrect in
-SECTION_BLOCKFLAGS_BITS computation. This results in a map_section's
-section_mem_map being treated as part of a bitmap which isn't good. This
-was evident with an invalid virtual address when mem_init attempted to free
-bootmem pages while relinquishing control from the bootmem allocator.
+> i.e. how many times the same page mapped into 2 address spaces
+> in the same container should be accounted for?
+> 
+> We believe ONE. It is better due to:
+> - it allows better estimate how much RAM container uses.
+> - if one container mapped a single page 10,000 times,
+>   it doesn't mean it is worse than a container which mapped only 200 pages
+>   and that it should be killed in case of OOM.
 
-The second part of the problem occurs because the pageblock flags bitmap is
-be located with the mem_section. The SECTIONS_PER_ROOT computation using
-sizeof (mem_section) may not be a power of 2 depending on the size of the
-bitmap. This renders masks and other such things not power of 2 base. This
-issue was seen with SPARSEMEM_EXTREME on ia64. This patch moves the bitmap
-outside of mem_section and uses a pointer instead in the mem_section. The
-bitmaps are allocated when the section is being initialised.
+I'm not sure that we need to account for pages at all, nor care about rss.
 
-Note that sparse_early_usemap_alloc() does not use alloc_remap() like
-sparse_early_mem_map_alloc(). The allocation required for the bitmap on x86,
-the only architecture that uses alloc_remap is typically smaller than a cache
-line. alloc_remap() pads out allocations to the cache size which would be
-a needless waste.
+If we use a physical zone-based containment scheme: fake-numa,
+variable-sized zones, etc then it all becomes moot.  You set up a container
+which has 1.5GB of physial memory then toss processes into it.  As that
+process set increases in size it will toss out stray pages which shouldn't
+be there, then it will start reclaiming and swapping out its own pages and
+eventually it'll get an oom-killing.
 
-Credit to Bob Picco for identifying the original problem and effecting a
-fix for the SECTION_BLOCKFLAGS_BITS calculation. Credit to Andy Whitcroft
-for devising the best way of allocating the bitmaps only when required for
-the section.
+No RSS acounting or page acounting in sight, because we already *have* that
+stuff, at the physical level, in the zone.
 
-Signed-off-by: Bob Picco <bob.picco@hp.com>
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Overcommitment can be performed by allowing different containers to share
+the same zone set, or by dynamically increasing or decreasing the size of
+a physical container.
 
- include/linux/mmzone.h |    6 ++++--
- mm/sparse.c            |   49 ++++++++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 50 insertions(+), 5 deletions(-)
+This all works today with fake-numa and cpusets, no kernel changes needed. 
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc2-mm2-clean/include/linux/mmzone.h linux-2.6.21-rc2-mm2-sparsemem_rootsize_fix/include/linux/mmzone.h
---- linux-2.6.21-rc2-mm2-clean/include/linux/mmzone.h	2007-03-09 10:22:08.000000000 +0000
-+++ linux-2.6.21-rc2-mm2-sparsemem_rootsize_fix/include/linux/mmzone.h	2007-03-09 19:42:00.000000000 +0000
-@@ -705,7 +705,7 @@ extern struct zone *next_zone(struct zon
- #define PAGE_SECTION_MASK	(~(PAGES_PER_SECTION-1))
- 
- #define SECTION_BLOCKFLAGS_BITS \
--		((SECTION_SIZE_BITS - (MAX_ORDER-1)) * NR_PAGEBLOCK_BITS)
-+		((1 << (PFN_SECTION_SHIFT - (MAX_ORDER-1))) * NR_PAGEBLOCK_BITS)
- 
- #if (MAX_ORDER - 1 + PAGE_SHIFT) > SECTION_SIZE_BITS
- #error Allocator MAX_ORDER exceeds SECTION_SIZE
-@@ -726,7 +726,9 @@ struct mem_section {
- 	 * before using it wrong.
- 	 */
- 	unsigned long section_mem_map;
--	DECLARE_BITMAP(pageblock_flags, SECTION_BLOCKFLAGS_BITS);
-+
-+	/* See declaration of similar field in struct zone */
-+	unsigned long *pageblock_flags;
- };
- 
- #ifdef CONFIG_SPARSEMEM_EXTREME
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc2-mm2-clean/mm/sparse.c linux-2.6.21-rc2-mm2-sparsemem_rootsize_fix/mm/sparse.c
---- linux-2.6.21-rc2-mm2-clean/mm/sparse.c	2007-02-28 04:59:12.000000000 +0000
-+++ linux-2.6.21-rc2-mm2-sparsemem_rootsize_fix/mm/sparse.c	2007-03-09 19:45:15.000000000 +0000
-@@ -198,13 +198,15 @@ struct page *sparse_decode_mem_map(unsig
- }
- 
- static int sparse_init_one_section(struct mem_section *ms,
--		unsigned long pnum, struct page *mem_map)
-+		unsigned long pnum, struct page *mem_map,
-+		unsigned long *pageblock_bitmap)
- {
- 	if (!valid_section(ms))
- 		return -EINVAL;
- 
- 	ms->section_mem_map &= ~SECTION_MAP_MASK;
- 	ms->section_mem_map |= sparse_encode_mem_map(mem_map, pnum);
-+	ms->pageblock_flags = pageblock_bitmap;
- 
- 	return 1;
- }
-@@ -268,6 +270,33 @@ static void __kfree_section_memmap(struc
- 			   get_order(sizeof(struct page) * nr_pages));
- }
- 
-+static unsigned long usemap_size(void)
-+{
-+	unsigned long size_bytes;
-+ 	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
-+	size_bytes = roundup(size_bytes, sizeof(unsigned long));
-+	return size_bytes;
-+}
-+
-+static unsigned long *__kmalloc_section_usemap(void)
-+{
-+	return kmalloc(usemap_size(), GFP_KERNEL);
-+}
-+
-+static unsigned long *sparse_early_usemap_alloc(unsigned long pnum)
-+{
-+	unsigned long *usemap;
-+	struct mem_section *ms = __nr_to_section(pnum);
-+	int nid = sparse_early_nid(ms);
-+
-+	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
-+	if (usemap)
-+		return usemap;
-+
-+	printk(KERN_WARNING "%s: allocation failed\n", __FUNCTION__);
-+	return NULL;
-+}
-+
- /*
-  * Allocate the accumulated non-linear sections, allocate a mem_map
-  * for each and record the physical to section mapping.
-@@ -276,6 +305,7 @@ void sparse_init(void)
- {
- 	unsigned long pnum;
- 	struct page *map;
-+	unsigned long *usemap;
- 
- 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
- 		if (!valid_section_nr(pnum))
-@@ -284,7 +314,13 @@ void sparse_init(void)
- 		map = sparse_early_mem_map_alloc(pnum);
- 		if (!map)
- 			continue;
--		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
-+
-+		usemap = sparse_early_usemap_alloc(pnum);
-+		if (!usemap)
-+			continue;
-+
-+		sparse_init_one_section(__nr_to_section(pnum), pnum, map,
-+								usemap);
- 	}
- }
- 
-@@ -300,6 +336,7 @@ int sparse_add_one_section(struct zone *
- 	struct pglist_data *pgdat = zone->zone_pgdat;
- 	struct mem_section *ms;
- 	struct page *memmap;
-+	unsigned long *usemap;
- 	unsigned long flags;
- 	int ret;
- 
-@@ -309,6 +346,7 @@ int sparse_add_one_section(struct zone *
- 	 */
- 	sparse_index_init(section_nr, pgdat->node_id);
- 	memmap = __kmalloc_section_memmap(nr_pages);
-+	usemap = __kmalloc_section_usemap();
- 
- 	pgdat_resize_lock(pgdat, &flags);
- 
-@@ -317,9 +355,14 @@ int sparse_add_one_section(struct zone *
- 		ret = -EEXIST;
- 		goto out;
- 	}
-+
-+	if (!usemap) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
- 	ms->section_mem_map |= SECTION_MARKED_PRESENT;
- 
--	ret = sparse_init_one_section(ms, section_nr, memmap);
-+	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
- 
- out:
- 	pgdat_resize_unlock(pgdat, &flags);
+It could be made to work fairly simply with a multi-zone approach, or with
+resizeable zones.
+
+I'd be interested in knowing what you think the shortcomings of this are
+likely to be,.
+
