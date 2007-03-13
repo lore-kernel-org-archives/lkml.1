@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXCMLkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXCMLlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbXCMLkn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 07:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXCMLkn
+	id S933115AbXCMLlm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 07:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933161AbXCMLlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 07:40:43 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:34085 "EHLO pfx2.jmh.fr"
+	Tue, 13 Mar 2007 07:41:42 -0400
+Received: from depni.sinp.msu.ru ([213.131.7.21]:54043 "EHLO depni.sinp.msu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933084AbXCMLkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 07:40:43 -0400
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: SMP performance degradation with sysbench
-Date: Tue, 13 Mar 2007 12:40:47 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrea Arcangeli <andrea@suse.de>, Anton Blanchard <anton@samba.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <1172425476.5489.11.camel@odyssey.lan> <20070313105742.GG8992@v2.random> <45F68713.9040608@yahoo.com.au>
-In-Reply-To: <45F68713.9040608@yahoo.com.au>
+	id S933115AbXCMLll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 07:41:41 -0400
+To: Mike Galbraith <efault@gmx.de>
+Cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+References: <200703111457.17624.kernel@kolivas.org>
+	<1173778398.6810.21.camel@Homer.simpson.net>
+	<20070313093914.GA10533@elte.hu>
+	<200703132106.08878.kernel@kolivas.org>
+	<1173785006.8561.19.camel@Homer.simpson.net>
+From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Date: Tue, 13 Mar 2007 14:41:39 +0300
+In-Reply-To: <1173785006.8561.19.camel@Homer.simpson.net> (Mike Galbraith's message of "Tue\, 13 Mar 2007 12\:23\:26 +0100")
+Message-ID: <87bqix5q18.fsf@depni.sinp.msu.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703131240.47785.dada1@cosmosbay.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 March 2007 12:12, Nick Piggin wrote:
+Mike Galbraith <efault@gmx.de> writes:
+
+[snip]
+> It seems to be a plain linear slowdown.  The lurchiness I'm experiencing
+> varies in intensity, and is impossible to quantify.  I see neither
+> lurchiness nor slowdown in mainline through -j8.
 >
-> I guess googlemalloc (tcmalloc?) isn't suitable for a general purpose
-> glibc allocator. But I wonder if there are other improvements that glibc
-> can do here?
+Whaa? make -j8 on mainline makes my desktop box completely useless.
 
-I cooked a patch some time ago to speedup threaded apps and got no feedback.
-
-http://lkml.org/lkml/2006/8/9/26
-
-Maybe we have to wait for 32 core cpu before thinking of cache line 
-bouncings...
-
+Please reconsider your statement.
