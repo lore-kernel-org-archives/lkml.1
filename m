@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932634AbXCMTGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932873AbXCMTHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932634AbXCMTGj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 15:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXCMTGi
+	id S932873AbXCMTHT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 15:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbXCMTHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 15:06:38 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54297 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932634AbXCMTGi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 15:06:38 -0400
-Date: Tue, 13 Mar 2007 19:06:37 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Johann Borck <johann.borck@densedata.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: considering kevent - the kernel development process
-Message-ID: <20070313190637.GA900@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Johann Borck <johann.borck@densedata.com>,
-	linux-kernel@vger.kernel.org
-References: <45F6F590.8030909@densedata.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F6F590.8030909@densedata.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 13 Mar 2007 15:07:19 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:51549 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932873AbXCMTHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 15:07:17 -0400
+Message-ID: <45F6F677.1070302@drzeus.cx>
+Date: Tue, 13 Mar 2007 20:07:35 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [1/6] 2.6.21-rc3: known regressions
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313124957.GR18731@stusta.de> <45F6A240.3090601@drzeus.cx> <200703131436.15586.oneukum@suse.de> <20070313181147.GA12224@elf.ucw.cz>
+In-Reply-To: <20070313181147.GA12224@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please cut your cc lines next time, thanks.
-
-On Tue, Mar 13, 2007 at 08:03:44PM +0100, Johann Borck wrote:
-> if the next section seems obvious, please skip it
-> -------------------------------------------------------------------------
-> There is a need for a generic event handling mechanism in Linux - maybe 
-> it is enough to cite the current CGL Performance Requirements Definition
-> Version 4.0 at
-> http://developer.osdl.org/dev/cgl/cgl40/cgl40-performance.pdf , page 13:
+Pavel Machek wrote:
 > 
-> PRF.5.0     Efficient Low-Level Asynchronous Events  Priority P1            
-> Description: OSDL CGL specifies that carrier grade Linux shall provide 
-> an efficient capability for handling a large number of essentially 
-> simultaneous asynchronous events arriving on multiple channels, such as
-> multiple sockets or other similar paths. This mechanism is needed to 
-> enforce system scalability and soft real-time responsiveness by
-> reducing contentions appearing at the kernel level, especially under 
-> high load.
+> Uhuh. User error, lets close the report.
+> 
+> mmc changed the major to 
+> 
+> 236 mmc
+> 
+> ... while it was something else in 2.6.20. Can we get stable device
+> allocation for mmc?
 
-It's not obvious, but utter bullshit.  Please go away if you think
-starting post with quotes from CGL specs is even remotely close to
-a good idea.
+What kind of savages do not use udev these days?! ;)
 
+I don't have the time and energy to jump through all the hoops required to get
+an official number right now. Most users use udev and those that don't can use
+the "major" parameter for mmc_block.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
