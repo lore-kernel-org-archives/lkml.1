@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030302AbXCMOCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030301AbXCMOEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030302AbXCMOCF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 10:02:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030308AbXCMOCE
+	id S1030301AbXCMOEk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 10:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030308AbXCMOEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 10:02:04 -0400
-Received: from outbound3.mail.tds.net ([216.170.230.93]:42675 "EHLO
-	outbound3.mail.tds.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030302AbXCMOCD (ORCPT
+	Tue, 13 Mar 2007 10:04:40 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:35847 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030301AbXCMOEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 10:02:03 -0400
-Subject: Re: sys_write() racy for multi-threaded append?
-From: "David M. Lloyd" <dmlloyd@flurg.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       Bodo Eggert <7eggert@gmx.de>, Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070313022430.57503b08@lxorguk.ukuu.org.uk>
-References: <7WzUo-1zl-21@gated-at.bofh.it> <7WAx2-2pg-21@gated-at.bofh.it>
-	 <7WAGF-2Bx-9@gated-at.bofh.it> <7WB07-3g5-33@gated-at.bofh.it>
-	 <7WBt7-3SZ-23@gated-at.bofh.it> <E1HQfLX-0000fk-68@be1.lrz>
-	 <f2b55d220703120926k1ab7112fh60227fac670b8b4c@mail.gmail.com>
-	 <Pine.LNX.4.58.0703121803450.2313@be1.lrz>
-	 <f2b55d220703121746k1a849b78rec3131cb6f5eae38@mail.gmail.com>
-	 <20070313022430.57503b08@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Tue, 13 Mar 2007 09:00:31 -0500
-Message-Id: <1173794431.6729.32.camel@localhost>
+	Tue, 13 Mar 2007 10:04:38 -0400
+Date: Tue, 13 Mar 2007 19:41:37 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Kirill Korotaev <dev@sw.ru>, menage@google.com, pj@sgi.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, winget@google.com,
+       containers@lists.osdl.org, akpm@linux-foundation.org,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru
+Subject: Re: [ckrm-tech] [PATCH 1/2] rcfs core patch
+Message-ID: <20070313141137.GD19939@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070301134528.GL15509@in.ibm.com> <m1slcg8m4f.fsf@ebiederm.dsl.xmission.com> <20070308101347.GA29051@in.ibm.com> <20070309004816.GB4506@MAIL.13thfloor.at> <45F127AB.5070704@sw.ru> <20070309132136.GA14907@MAIL.13thfloor.at> <45F437C9.2090108@sw.ru> <20070312230053.GD21258@MAIL.13thfloor.at> <45F66096.20900@sw.ru> <20070313135505.GD8755@MAIL.13thfloor.at>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070313135505.GD8755@MAIL.13thfloor.at>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 02:24 +0000, Alan Cox wrote:
-> > purports to handle short writes but has never been exercised is
-> > arguably worse than code that simply bombs on short write.  So if I
-> > can't shim in an induce-short-writes-randomly-on-purpose mechanism
-> > during development, I don't want short writes in production, period.
-> 
-> Easy enough to do and gcov plus dejagnu or similar tools will let you
-> coverage analyse the resulting test set and replay it.
+On Tue, Mar 13, 2007 at 02:55:05PM +0100, Herbert Poetzl wrote:
+> yes, tons of locking, complicated indirections and
+> a lot of (partially hard to understand) code ...
 
-You don't even need special tools: just change your code that says:
+Are you referring to these issues in the general Paul Menage's container code
+or in the RSS-control code posted by Pavel?
 
-	foo = write(fd, mybuf, mycount);
-
-to say (for example):
-
-	foo = write(fd, mybuf, mycount / randomly_either_1_or_2);
-
-Why would this need kernel support?  The average developer doesn't
-really need to verify that the *kernel* works.  They just need to test
-their own code paths - and in this case, they can see that foo is less
-than mycount (sometimes).  The code paths don't care that it was not the
-kernel that caused it.
-
-- DML
-
+-- 
+Regards,
+vatsa
