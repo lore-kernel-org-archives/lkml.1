@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751779AbXCMXBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbXCMXH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751779AbXCMXBv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 19:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbXCMXBv
+	id S1751970AbXCMXH4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 19:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbXCMXHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 19:01:51 -0400
-Received: from reserv5.univ-lille1.fr ([193.49.225.19]:56366 "EHLO
-	reserv5.univ-lille1.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbXCMXBu (ORCPT
+	Tue, 13 Mar 2007 19:07:55 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:6288 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbXCMXHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 19:01:50 -0400
-Message-ID: <45F72D37.6090004@tremplin-utc.net>
-Date: Wed, 14 Mar 2007 00:01:11 +0100
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
-User-Agent: Thunderbird 2.0b2 (X11/20070307)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: mitr@volny.cz, otauber@web.de, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] wistron_btns: More keymaps
-References: <45ECA23A.5010503@tremplin-utc.net> <d120d5000703060536k7743ece9hb20fa4d1f7ad7ad7@mail.gmail.com> <45ED8809.70309@tremplin-utc.net>
-In-Reply-To: <45ED8809.70309@tremplin-utc.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender DNS name whitelisted, not delayed by milter-greylist-2.0.2 (reserv5.univ-lille1.fr [193.49.225.19]); Wed, 14 Mar 2007 00:01:31 +0100 (CET)
-X-USTL-MailScanner-Information: Please contact the ISP for more information
-X-USTL-MailScanner: Found to be clean
-X-USTL-MailScanner-From: eric.piel@tremplin-utc.net
+	Tue, 13 Mar 2007 19:07:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=qNgMvPU7GHS0uSC8NAUXLTOq2ACBUgb0Tiq/ARziDjeOdYut5oX0TUeh0UmxwZgsIC0w0u8anxjwyEHewMXmHjhHSSPLYq4z5GvIyn7iKO6VsZf4AXfjPcy5RaILf6tTGMi1hA6zD3zeAL69cVhq36EeRvlR2nL9lnc3gvdbilA=
+Date: Wed, 14 Mar 2007 02:07:53 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: /proc/kallsyms race vs module unload
+Message-ID: <20070313230753.GB5623@martell.zuzino.mipt.ru>
+References: <20070313181815.GA5580@martell.zuzino.mipt.ru> <45F6F24E.4080600@grupopie.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F6F24E.4080600@grupopie.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Mar 13, 2007 at 06:49:50PM +0000, Paulo Marques wrote:
+> Alexey Dobriyan wrote:
+> >[...]
+> >What happens is that module_get_kallsym() drops module_mutex,
+> >returns "struct module *", module unloaded, "struct module *"
+> >used.
+>
+> The only use for the "struct module *" is to display the name of the
+> module.
 
-As a sequel to my patch "Wistron button support for TravelMate 610" of 
-last week, here is a bigger addition of keymaps for the wistron_btns.
+Ehh?
 
-Patch 1 adds all the database of acerhk which fits this driver (about 25 
-more laptops).
-Patch 2 adds a generic map that should fit most users but has the 
-disadvantage of not being automatic.
+> This can be solved by adding a "char mod_name[MODULE_NAME_LEN];" field
+> to "kallsym_iter" and copy the name of the module over, while still
+> holding module_mutex. It would be slightly slower, but safer.
 
-Dmitry, I've tried to make them against your tree. Still, if they don't 
-apply cleanly, just tell me and I'll try harder!
+	iter->owner = module_get_kallsym(iter->pos - kallsyms_num_syms,
+					 &iter->value, &iter->type,
+					 iter->name, sizeof(iter->name));
+	if (iter->owner == NULL)
+		return 0;
 
-See you,
-Eric
+	/* Label it "global" if it is exported, "local" if not exported. */
+	iter->type = is_exported(iter->name, iter->owner)
+					     ^^^^^^^^^^^
+
