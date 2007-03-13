@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbXCMFDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbXCMFGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753121AbXCMFDF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 01:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbXCMFDF
+	id S1753123AbXCMFGE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 01:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXCMFGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 01:03:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:54264 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753121AbXCMFDC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 01:03:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LAKcm6ygsPnKgvZ14diT+MJQVHcF129ik5+Ige5NMzvKOaxCfjZRTwelqTQHHFf+iGVa+/NbeXuDOVRK86Ypz/NdvHXIYeboiq5tt6mcomzhAWvptO4ysrFqrVeYP1PpqjNY6U4iu2n3anx8CJHbcMMHChSbRQCl3xnNztdOPak=
-Message-ID: <6f6293f10703122203i7f11f355j69f6b2e2e830051f@mail.gmail.com>
-Date: Tue, 13 Mar 2007 01:03:00 -0400
-From: "Felipe Alfaro Solana" <felipe.alfaro@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: [ck] Re: RSDL v0.30 cpu scheduler for mainline kernels
-Cc: "Con Kolivas" <kernel@kolivas.org>, ck@vds.kolivas.org,
-       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070313043206.GN943@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 13 Mar 2007 01:06:04 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:60790 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753124AbXCMFGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 01:06:02 -0400
+Date: Mon, 12 Mar 2007 22:04:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Herbert Poetzl <herbert@13thfloor.at>
+Cc: hansendc@us.ibm.com, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, menage@google.com, xemul@sw.ru
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+Message-Id: <20070312220439.677b4787.akpm@linux-foundation.org>
+In-Reply-To: <20070312224129.GC21258@MAIL.13thfloor.at>
+References: <45ED7DEC.7010403@sw.ru>
+	<45ED80E1.7030406@sw.ru>
+	<20070306140036.4e85bd2f.akpm@linux-foundation.org>
+	<45F3F581.9030503@sw.ru>
+	<20070311045111.62d3e9f9.akpm@linux-foundation.org>
+	<20070312010039.GC21861@MAIL.13thfloor.at>
+	<1173724979.11945.103.camel@localhost.localdomain>
+	<20070312224129.GC21258@MAIL.13thfloor.at>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200703121058.11966.kernel@kolivas.org>
-	 <20070312.164652.108743760.davem@davemloft.net>
-	 <200703131405.23482.kernel@kolivas.org> <20070313043206.GN943@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/13/07, Willy Tarreau <w@1wt.eu> wrote:
-> On Tue, Mar 13, 2007 at 02:05:23PM +1100, Con Kolivas wrote:
-> > On Tuesday 13 March 2007 10:46, David Miller wrote:
-> > > From: Con Kolivas <kernel@kolivas.org>
-> > > Date: Mon, 12 Mar 2007 10:58:11 +1100
-> > >
-> > > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc3-sched-rsdl-0.
-> > > >30.patch
-> > >
-> > > FWIW, this boots and seems to work well on sparc64.  Tested
-> > > on UP SunBlade1500 and 24cpu Niagara T1000.
-> >
-> > Very nice. Thanks for the feedback and I'm sorry you have to work with such
-> > lousy hardware.
->
-> BTW, I don't know if you say this as a joke, but those are not necessarily
-> lousy hardware. Sun does lousy hardware when they put Sparcs in PCs (ultra5,
-> ultra10, blade100). But their servers generally are nice with large memory
-> busses and very scalable SMP architectures.
+> On Mon, 12 Mar 2007 23:41:29 +0100 Herbert Poetzl <herbert@13thfloor.at> wrote:
+> On Mon, Mar 12, 2007 at 11:42:59AM -0700, Dave Hansen wrote:
+> > How about we drill down on these a bit more.
+> > 
+> > On Mon, 2007-03-12 at 02:00 +0100, Herbert Poetzl wrote:
+> > >  - shared mappings of 'shared' files (binaries 
+> > >    and libraries) to allow for reduced memory
+> > >    footprint when N identical guests are running
+> > 
+> > So, it sounds like this can be phrased as a requirement like:
+> > 
+> > 	"Guests must be able to share pages."
+> > 
+> > Can you give us an idea why this is so? 
+> 
+> sure, one reason for this is that guests tend to
+> be similar (or almost identical) which results
+> in quite a lot of 'shared' libraries and executables
+> which would otherwise get cached for each guest and
+> would also be mapped for each guest separately
 
-I guess Con was kidding. A 24-CPU system can be anything but lousy hardware.
+nooooooo.  What you're saying there amounts to text replication.  There is
+no proposal here to create duplicated copies of pagecache pages: the VM
+just doesn't support that (Nick has soe protopatches which do this as a
+possible NUMA optimisation).
+
+So these mmapped pages will contiue to be shared across all guests.  The
+problem boils down to "which guest(s) get charged for each shared page".
+
+A simple and obvious and easy-to-implement answer is "the guest which paged
+it in".  I think we should firstly explain why that is insufficient.
+
