@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbXCMAjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbXCMAoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbXCMAjb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 20:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXCMAjb
+	id S1752515AbXCMAoM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Mar 2007 20:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXCMAoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 20:39:31 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52816 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752541AbXCMAja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 20:39:30 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Giuliano Pochini <pochini@denise.shiny.it>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: /sys/devices/system/cpu/cpuX/online are missing
-References: <20070311222652.5ea40da1.pochini@shiny.it>
-	<20070312085826.GA9985@osiris.boeblingen.de.ibm.com>
-	<Pine.LNX.4.64.0703122337350.25919@denise.shiny.it>
-X-Yow: Everybody gets free BORSCHT!
-Date: Tue, 13 Mar 2007 01:39:25 +0100
-In-Reply-To: <Pine.LNX.4.64.0703122337350.25919@denise.shiny.it> (Giuliano
-	Pochini's message of "Mon, 12 Mar 2007 23:48:21 +0100 (CET)")
-Message-ID: <je6496asea.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 12 Mar 2007 20:44:11 -0400
+Received: from cpe-67-49-92-118.socal.res.rr.com ([67.49.92.118]:48155 "EHLO
+	mail.blackbean.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752515AbXCMAoK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Mar 2007 20:44:10 -0400
+Date: Mon, 12 Mar 2007 17:41:42 -0700
+From: Jim Radford <radford@blackbean.org>
+To: Greg KH <greg@kroah.com>
+Cc: Mark Lord <lkml@rtr.ca>, linux-usb-devel@lists.sourceforge.net,
+       Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] usb-serial regression fix
+Message-ID: <20070313004142.GA4835@blackbean.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <45F57F63.7010308@rtr.ca> <45F584D9.4090802@rtr.ca> <200703121948.21453.oneukum@suse.de> <45F5B67E.7000105@rtr.ca> <20070312203331.GA6769@kroah.com> <20070312224235.GB3709@blackbean.org> <20070312225922.GA4064@blackbean.org> <20070313001819.GA6147@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070313001819.GA6147@kroah.com>
+User-Agent: Mutt/1.4.2.2i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (mail.blackbean.org [127.0.0.1]); Mon, 12 Mar 2007 17:41:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Giuliano Pochini <pochini@denise.shiny.it> writes:
+On Mon, Mar 12, 2007 at 05:18:19PM -0700, Greg KH wrote:
+> On Mon, Mar 12, 2007 at 03:59:22PM -0700, Jim Radford wrote:
+> > On Mon, Mar 12, 2007 at 03:42:35PM -0700, Jim Radford wrote:
+> > > On Mon, Mar 12, 2007 at 01:33:31PM -0700, Greg KH wrote:
+> > > > On Mon, Mar 12, 2007 at 04:22:22PM -0400, Mark Lord wrote:
+> > > > > Oliver Neukum wrote:
+> > > > > > >Mark Lord wrote:
+> > > > > > > >Okay, from that part (above), the problem is obvious:
+> > > > > > > >in that the "MCT U232 converter now disconnected"
+> > > > > > > >appears, and then we continue to try and call the
+> > > > > > > >driver's method.. Oops!
 
-> I had a look at arch/powerpc/kernel/smp.c but I'm not familiar at all with 
-> those parts of the kernel.
+> > > > > >IMHO shutdown() is using serial->port[] and bombs.
+> > > > > >Could you reverse the order here?
 
-See arch/powerpc/kernel/sysfs.c:topology_init.  I don't think there is
-anything to do here.  You probably don't have CONFIG_HOTPLUG_CPU enabled.
+> > Do not NULL serial->port[i] since it is used in ->shutdown().
+> > This wasn't an issue until the order or ->shutdown() and
+> > device_unregister was corrected.
 
-Andreas.
+> >         for (i = 0; i < serial->num_ports; ++i)
+> >                 if (serial->port[i]->dev.parent != NULL) {
+> >                         device_unregister(&serial->port[i]->dev);
+> > -                       serial->port[i] = NULL;
+> >                 }
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+> But shouldn't you null it out somewhere?  It will be an "empty"
+> pointer at some point in time...
+
+Not as far as I can see. The serial structure that ->port[i] is in
+gets kfree()ed soon after, in the same function, and nothing in
+between, other than ->shutdown(), uses ->port[].  I assume it was
+someone being overly cautious.
+
+-Jim
