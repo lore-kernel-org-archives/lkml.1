@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbXCMGYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbXCMGaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752265AbXCMGYu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 02:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbXCMGYu
+	id S1753145AbXCMGaO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 02:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbXCMGaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 02:24:50 -0400
-Received: from ozlabs.org ([203.10.76.45]:33085 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbXCMGYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 02:24:49 -0400
-Subject: Re: _proxy_pda still makes linking modules fail
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1173736726.10618.1.camel@localhost.localdomain>
-References: <1173315479.12472.9.camel@qrnik>
-	 <p73lki39s3a.fsf@bingen.suse.de> <45F49E0A.3090607@goop.org>
-	 <20070312094805.GA11644@one.firstfloor.org>
-	 <1173736726.10618.1.camel@localhost.localdomain>
+	Tue, 13 Mar 2007 02:30:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39006 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753145AbXCMGaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 02:30:12 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19se/wcrltsI4EFNQxdJknE99Pl5F8gREy6mOaSSS
+	8imvB3nYU0BSrv
+Subject: Re: [ck] Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 
+	2.6.21-rc3-mm2
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: michael chang <thenewme91@gmail.com>, ck list <ck@vds.kolivas.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200703131716.31979.kernel@kolivas.org>
+References: <200703111457.17624.kernel@kolivas.org>
+	 <b14e81f00703121438q6cdaffd0vdb08e0386961f057@mail.gmail.com>
+	 <1173766107.7944.76.camel@Homer.simpson.net>
+	 <200703131716.31979.kernel@kolivas.org>
 Content-Type: text/plain
-Date: Tue, 13 Mar 2007 17:23:52 +1100
-Message-Id: <1173767032.10618.43.camel@localhost.localdomain>
+Date: Tue, 13 Mar 2007 07:30:09 +0100
+Message-Id: <1173767409.10004.7.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 08:59 +1100, Rusty Russell wrote:
-> On Mon, 2007-03-12 at 10:48 +0100, Andi Kleen wrote:
-> > > Rusty's pda->per_cpu patch will deal with this once and for all; have
-> > 
-> > Not on x86-64.
+On Tue, 2007-03-13 at 17:16 +1100, Con Kolivas wrote:
+> On Tuesday 13 March 2007 17:08, Mike Galbraith wrote:
+> > Virtual or physical cores has nothing to do with the interactivity
+> > regression I noticed.  Two nice 0 tasks which combined used 50% of my
+> > box can no longer share that box with two nice 5 tasks and receive the
+> > 50% they need to perform.  That's it. From there, we wandered off into a
+> > discussion on the relative merit and pitfalls of fairness.
 > 
-> Indeed.  Perhaps it's time I join the modern world and compile a 64-bit
-> kernel...
-> 
-> Will prepare patches,
+> And again, with X in its current implementation it is NOT like two nice 0 
+> tasks at all; it is like one nice 0 task. This is being fixed in the X design 
+> as we speak.
 
-No, I don't think I will.  The PDA concept has gone too far in x86-64 to
-be undone.  In particular, it's been put in GCC 4.1 for
-CONFIG_CC_STACKPROTECTOR, which assumes %gs:40 will give the stack
-canary.
+Shrug.  I don't live then, I live now.  I have expressed my concerns,
+and will now switch from talk back to listen mode.
 
-For the record: the PDA should never have existed, that's what percpu
-vars were supposed to be for.  Something went wrong here 8(
-
-%gs is best set to the offset of the local cpu's area from the "master"
-per-cpu area, not set to the local cpu area's address.  In the former
-case, booting with %gs at offset 0 works naturally, in the latter case,
-hoops need to be jumped through to make it work.  See how much nicer the
-x86 code is post pda->percpu conversion.
-
-So, even if we leave the PDA and place the per-cpu area immediately
-after it, we still can't use "%gs:var" to access a per-cpu variable: we
-need to do a subtract, so why bother using the segment reg?
-
-The ideal solution has always been to use __thread, but no architecture
-has yet managed it (I tried for i386, and it quickly caused unbearable
-pain).  On x86-64 that uses "%fs" on x86-64, not "%gs" as the kernel
-does, but I might try that if I feel particularly masochistic soon...
-
-In summary, containing the PDA infection to x86-64 is possible, but
-curing that patient is non-trivial 8)
-
-Rusty.
+	-Mike
 
