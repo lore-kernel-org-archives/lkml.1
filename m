@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965694AbXCMJqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751511AbXCMJvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965694AbXCMJqP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965693AbXCMJqO
+	id S1751511AbXCMJvp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbXCMJvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:46:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51658 "EHLO mx2.suse.de"
+	Tue, 13 Mar 2007 05:51:45 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37659 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965691AbXCMJqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:46:13 -0400
-Date: Tue, 13 Mar 2007 10:45:59 +0100
-From: Andrea Arcangeli <andrea@suse.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Anton Blanchard <anton@samba.org>, Rik van Riel <riel@redhat.com>,
-       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: SMP performance degradation with sysbench
-Message-ID: <20070313094559.GC8992@v2.random>
-References: <1172425476.5489.11.camel@odyssey.lan> <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au> <20070312220042.GA807@kryten> <45F63266.1080509@yahoo.com.au>
-MIME-Version: 1.0
+	id S1751511AbXCMJvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 05:51:44 -0400
+Date: Tue, 13 Mar 2007 15:28:08 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>, Anton Blanchard <anton@samba.org>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Aneesh Kumar <aneesh.kumar@gmail.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH] kthread_should_stop_check_freeze (was: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread)
+Message-ID: <20070313095808.GA19939@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <200702260800.49603.rjw@sisk.pl> <20070312043854.GA4124@linux.vnet.ibm.com> <20070312081459.GI5242@elf.ucw.cz> <200703121219.12072.rjw@sisk.pl> <20070312223906.GA9749@elf.ucw.cz> <20070312224524.GB807@kryten> <20070313031411.GC9881@in.ibm.com> <20070313091629.GA19684@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45F63266.1080509@yahoo.com.au>
+In-Reply-To: <20070313091629.GA19684@infradead.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 04:11:02PM +1100, Nick Piggin wrote:
-> Hi Anton,
+On Tue, Mar 13, 2007 at 09:16:29AM +0000, Christoph Hellwig wrote:
+> > Document as well in the kernel_thread() API, as I notice people still
+> > use kernel_thread() some places (ex: rtasd.c in powerpc arch)?
 > 
-> Very cool. Yeah I had come to the conclusion that it wasn't a kernel
-> issue, and basically was afraid to look into userspace ;)
+> They shouldn't use kernel_thread.
 
-btw, regardless of what glibc is doing, still the cpu shouldn't go
-idle IMHO. Even if we're overscheduling and trashing over the mmap_sem
-with threads (no idea if other OS schedules the task away when they
-find the other cpu in the mmap critical section), or if we've
-overscheduling with futex locking, the cpu usage should remain 100%
-system time in the worst case. The only explanation for going idle
-legitimately could be on HT cpus where HT may hurt more than help but
-on real multicore it shouldn't happen.
+Hmm ..that needs to be documented as well then! I can easily count more
+than dozen places where kernel_thread() is being used.
+
+I agree though that kthread is a much cleaner interface to create/destroy 
+threads.
+
+-- 
+Regards,
+vatsa
