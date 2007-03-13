@@ -1,57 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030268AbXCMMCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965699AbXCMMGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030268AbXCMMCk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 08:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030265AbXCMMCk
+	id S965699AbXCMMGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 08:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965702AbXCMMGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 08:02:40 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:34670 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030268AbXCMMCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 08:02:39 -0400
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Andrea Arcangeli <andrea@suse.de>
-Subject: Re: SMP performance degradation with sysbench
-Date: Tue, 13 Mar 2007 13:02:44 +0100
-User-Agent: KMail/1.9.5
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Anton Blanchard <anton@samba.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <45E21FEC.9060605@redhat.com> <45F68713.9040608@yahoo.com.au> <20070313114215.GI8992@v2.random>
-In-Reply-To: <20070313114215.GI8992@v2.random>
+	Tue, 13 Mar 2007 08:06:19 -0400
+Received: from colgate.yandex.ru ([213.180.200.34]:38781 "EHLO
+	colgate.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965699AbXCMMGS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 08:06:18 -0400
+Date: Tue, 13 Mar 2007 15:06:12 +0300 (MSK)
+From: "Mockern" <Mockern@yandex.ru>
+Message-Id: <45F693B4.000001.09756@colgate.yandex.ru>
 MIME-Version: 1.0
+X-Mailer: Yamail [ http://yandex.ru ]
+To: linux-kernel@vger.kernel.org
+Subject: Question: kthread zombie process
+X-MsgDayCount: 1
+X-BornDate: 1134853200
+Reply-To: Mockern@yandex.ru
+X-Source-Ip: 83.64.219.194
+X-Originating-Ip: 172.16.20.173
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703131302.45216.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 March 2007 12:42, Andrea Arcangeli wrote:
+Hi,
 
-> My wild guess is that they're allocating memory after taking
-> futexes. If they do, something like this will happen:
->
->      taskA		taskB		taskC
->      user lock
-> 			mmap_sem lock
->      mmap sem -> schedule
-> 					user lock -> schedule
->
-> If taskB wouldn't be there triggering more random trashing over the
-> mmap_sem, the lock holder wouldn't wait and task C wouldn't wait too.
->
-> I suspect the real fix is not to allocate memory or to run other
-> expensive syscalls that can block inside the futex critical sections...
+I use kthread in my driver. The problem is that I can't kill process with kill_proc function. After rmmod my_driver, ps command shows again SW my_driver.
 
-glibc malloc uses arenas, and trylock() only. It should not block because if 
-an arena is already locked, thread automatically chose another arena, and 
-might create a new one if necessary.
+How can I remove this process?
 
-But yes, mmap_sem contention is a big problem, because it's also taken by 
-futex code (unfortunately)
+Thank you
 
