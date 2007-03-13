@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030756AbXCMQa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030788AbXCMQbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030756AbXCMQa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 12:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030766AbXCMQa0
+	id S1030788AbXCMQbQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 12:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030754AbXCMQbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 12:30:26 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:49947 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030756AbXCMQaZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 12:30:25 -0400
-Date: Tue, 13 Mar 2007 12:30:24 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Jiri Kosina <jikos@jikos.cz>, <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Keyboard stops working after *lock [Was: 2.6.21-rc2-mm1]
-In-Reply-To: <4af2d03a0703130913n3f51a3ffiec6e498c56a34826@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0703131225390.2509-100000@iolanthe.rowland.org>
+	Tue, 13 Mar 2007 12:31:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:47558 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030789AbXCMQbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 12:31:14 -0400
+Message-ID: <45F6D1D0.6080905@goop.org>
+Date: Tue, 13 Mar 2007 09:31:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       James Morris <jmorris@namei.org>, john stultz <johnstul@us.ibm.com>,
+       Chris Wright <chrisw@sous-sol.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Stolen and degraded time and schedulers
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Mar 2007, Jiri Slaby wrote:
+The current Linux scheduler makes one big assumption: that 1ms of CPU
+time is the same as any other 1ms of CPU time, and that therefore a
+process makes the same amount of progress regardless of which particular
+ms of time it gets.
 
-> On 3/13/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > I don't see anything in the UHCI snapshots to explain the difference in
-> > behavior.  One thing that stands out is the other, low-speed device (a
-> > mouse?) -- in the bad kernel dump its driver was running and in the good
-> > kernel dump its driver wasn't.
-> 
-> There weren't any changes neither in HW config nor in modules, just
-> reverted, compiled, installed, rebooted. Mouse is HID user too, so I
-> don't know what was wrong with that.
+This assumption is wrong now, and will become more wrong as
+virtualization gets more widely used.
 
-Odd...
+It's wrong now, because it fails to take into account of several kinds
+of missing time:
 
-> > Can you get another pair of usbmon logs, starting from before you plug in
-> > the keyboard?  Don't bother with the UHCI snapshots for now.
-> 
-> So, do you mean rmmod uhci_hcd, unplug the keyboard, modprobe
-> uhci_hcd, start usbmon, plug the keyboard, press numlock, stop usbmon,
-> post it?
+   1. interrupts - time spent in an ISR is accounted to the current
+      process, even though it gets no direct benefit
+   2. SMM - time is completely lost from the kernel
+   3. slow CPUs - 1ms of 600MHz CPU is less useful than 1ms of 2.4GHz CPU
 
-Yes.  In fact, let's be safe and unplug _both_ the mouse and the keyboard.  
-Then after starting usbmon, plug in only the keyboard.
+The first two - time lost to interrupts - are a well known problem, and
+are generally considered to be a non issue.  If you're losing a
+significant amount of time to interrupts, you probably have bigger
+problems.  (Or maybe not?)
 
-> I'm away from the box till Sat, anyway.
+The third is not something I've seen discussed before, but it seems like
+it could be a significant problem today.  Certainly, I've noticed it
+myself: an interactive program decides to do something CPU-intensive
+(like start an animation), and it chugs until the conservative governor
+brings the CPU up to speed.  Certainly some of this is because its just
+plain CPU-starved, but I think another factor is that it gets penalized
+for running on a slow CPU: 1ms is not 1ms.  And for power reasons you
+want to encourage processes to run on slow CPUs rather than penalize them.
 
-Okay, no rush.
+Virtualization just exacerbates this.  If you have a busy machine
+running multiple virtual CPUs, then each VCPU may only get a small
+proportion of the total amount of available CPU time.  If the kernel's
+scheduler asserts that "you were just scheduled for 1ms, therefore you
+made 1ms of progress", then many timeslices will effectively end up
+being 1ms of 0Mhz CPU - because the VCPU wasn't scheduled and the real
+CPU was doing something else.
 
-Alan Stern
 
+So how to deal with this?  Basically we need a clock which measures "CPU
+work units", and have the scheduler use this clock.
+
+A "CPU work unit" clock has these properties:
+
+    * inherently per-CPU (from the kernel's perspective, so it would be
+      per-VCPU in a virtual machine)
+    * monotonic - you can't do negative work
+    * measured in "work units"
+
+A "work unit" is probably most simply expressed in cycles - you assume a
+cycle of CPU time is equivalent in terms of work done to any other
+cycle.  This means that 1 cycle at 600MHz is equivalent to 1 cycle at
+2.4GHz - but of course the 2.4GHz processor gets 4 times as many in any
+real time interval.  (This is the instance where the worst kind of tsc -
+varying speed which stops on idle - is actually exactly what you want.)
+
+You could also measure "work units" in terms of normalized time units:
+if the fastest CPU on the machine is 2.4GHz, then 1ms is 1ms a work unit
+on that CPU, but 250us on the 600MHz CPU.
+
+It doesn't really matter what the unit is, so long as it is used
+consistently to measure how much progress all processes made.
+
+
+So, how to implement this?
+
+One quick hack would be to just make a new clocksource entrypoint, which
+returns work units rather than real-time cycles.  That would be fairly
+simple to implement, but it doesn't really take the per-cpu nature of
+the clock into account (since its possible that different cpus on the
+same machine might need their own methods).
+
+Perhaps a better fit would be an entity which is equivalent to a
+clocksource, but registered per-cpu like (some) clockevents.
+
+I don't have a particular preference, but I wonder what the clock gurus
+think.
+
+    J
