@@ -1,52 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbXCMKu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbXCMKw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753223AbXCMKu2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 06:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXCMKu1
+	id S1753221AbXCMKw5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 06:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXCMKw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 06:50:27 -0400
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:38924
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753223AbXCMKu0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 06:50:26 -0400
-Date: Tue, 13 Mar 2007 03:50:13 -0700
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Message-ID: <20070313105012.GA5608@gnuppy.monkey.org>
-References: <200703111457.17624.kernel@kolivas.org> <200703132021.50712.kernel@kolivas.org> <20070313092920.GB7648@elte.hu> <200703132041.06320.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703132041.06320.kernel@kolivas.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+	Tue, 13 Mar 2007 06:52:57 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:41898 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753221AbXCMKw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 06:52:56 -0400
+Date: Tue, 13 Mar 2007 03:52:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: clameter@sgi.com, linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
+Message-Id: <20070313035250.f908a50e.akpm@linux-foundation.org>
+In-Reply-To: <45F65ADA.9010501@yahoo.com.au>
+References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>
+	<20070313005334.853559ca.akpm@linux-foundation.org>
+	<45F65ADA.9010501@yahoo.com.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 08:41:05PM +1100, Con Kolivas wrote:
-> On Tuesday 13 March 2007 20:29, Ingo Molnar wrote:
-> > So the question is: if all tasks are on the same nice level, how does,
-> > in Mike's test scenario, RSDL behave relative to the current
-> > interactivity code?
-... 
-> The only way to get the same behaviour on RSDL without hacking an 
-> interactivity estimator, priority boost cpu misproportionator onto it is to 
-> either -nice X or +nice lame.
+> On Tue, 13 Mar 2007 19:03:38 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> Andrew Morton wrote:
+> >>On Tue, 13 Mar 2007 00:13:25 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> >>Page table pages have the characteristics that they are typically zero
+> >>or in a known state when they are freed.
+> > 
+> > 
+> > Well if they're zero then perhaps they should be released to the page allocator
+> > to satisfy the next __GFP_ZERO request.  If that request is for a pagetable
+> > page, we break even (except we get to remove special-case code).  If that
+> > __GFP_ZERO allocation was or some application other than for a pagetable, we
+> > win.
+> > 
+> > iow, can we just nuke 'em?
+> 
+> Page allocator still requires interrupts to be disabled, which this doesn't.
 
-Hello Ingo,
+Bah.  How many cli/sti statements fit into a single cachemiss?
 
-After talking to Con over IRC (and if I can summarize it), he's wondering if
-properly nicing those tasks, as previously mention in user emails, would solve
-this potential user reported regression or is something additional needed. It
-seems like folks are happy with the results once the nice tweeking is done.
-This is a huge behavior change after all to scheduler (just thinking out loud).
+> Considering there isn't much else that frees known zeroed pages, I wonder if
+> it is worthwhile.
 
-bill
+If you want a zeroed page for pagecache and someone has just stuffed a
+known-zero, cache-hot page into the pagetable quicklists, you have good
+reason to be upset.
+
+In fact, if you want a _non_-zeroed page and someone has just stuffed a
+known-zero, cache-hot page into the pagetable quicklists, you still have
+reason to be upset.  You *want* that cache-hot page.
+
+Generally, all these little private lists of pages (such as the ones which
+slab had/has) are a bad deal.  Cache effects preponderate and I do think
+we're generally better off tossing the things into a central pool.
+
+Plus, we can get in a situation where take a cache-cold, known-zero page
+from the pte quicklist when there is a cache-hot, non-zero page sitting in
+the page allocator.  I suspect that zeroing the cache-hot page would take a
+similar amount of time to a single miss agains the cache-cold page.
+
+I'm not saying that I _know_ that the quicklists are pointless, but I don't
+think it's established that they are pointful.
+
+ISTR that experiments with removing the i386 quicklists made zero
+difference, but that was an awfully long time ago.  Significantly, it
+predated per-cpu-pages..
+
+
+> Last time the zeroidle discussion came up was IIRC not actually real performance
+> gain, just cooking the 1024 CPU threaded pagefault numbers ;)
+
+Maybe, dunno.  It was apparently a win on powerpc many years ago.  I had a
+fiddle with it 5-6 years ago on x86 using a cache-disabled mapping of the
+page.  But it needed too much support in core VM to bother.  Since then
+we've grown per-cpu page magazines and __GFP_ZERO.  Plus I'm not aware of
+anyone having tried doing it on x86 with non-temporal stores.
 
