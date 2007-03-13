@@ -1,67 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbXCMSVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbXCMSYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbXCMSVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 14:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbXCMSVm
+	id S1753308AbXCMSYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 14:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbXCMSYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 14:21:42 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:4839 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753307AbXCMSVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 14:21:42 -0400
-Message-ID: <45F6EBB2.8090700@rtr.ca>
-Date: Tue, 13 Mar 2007 14:21:38 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 13 Mar 2007 14:24:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:47533 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbXCMSYQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 14:24:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vbb+S8odv85zd6gKmhOyQua+dzC58wm/94PcxNyQQ2Fy/fHptYyU/CgO6e4DCxL7xNkGzFtqy/tRx3yQNHh7JgHWIXO3BrVx2VxDlYDSnfkqLD5y4g37zSsivUcAXPWXjQwqudgGe93SdABV1U0f+L8BZqeUUPSm7tsWYaFnnHc=
+Message-ID: <6bffcb0e0703131124s3388366dra87645928fec659@mail.gmail.com>
+Date: Tue, 13 Mar 2007 19:24:13 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: 2.6.21-rc2-git3 oops snd_intel8x0_interrupt+0x104/0x1dc [snd_intel8x0] (crashdump kernel)
+Cc: perex@suse.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+In-Reply-To: <s5hr6s0ai9l.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Matt Mackall <mpm@selenic.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-References: <20070309053931.GA10459@waste.org> <200703100723.51858.kernel@kolivas.org> <45F2F727.7010406@rtr.ca> <200703111034.02159.kernel@kolivas.org>
-In-Reply-To: <200703111034.02159.kernel@kolivas.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45EC5C76.3040703@googlemail.com> <s5hr6s0ai9l.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> 
-> Can you try the new version of RSDL. Assuming it doesn't oops on you it has 
-> some accounting bugfixes which may have been biting you.
+Hi Takashi,
 
-Retesting today with 2.6.21-rc3-git7 + 2.6.21-rc3-sched-rsdl-0.30.patch.
+On 07/03/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Mon, 05 Mar 2007 19:07:50 +0100,
+> Michal Piotrowski wrote:
+> >
+> > Hi,
+> >
+> > I hit this bug on crashdump kernel
+> >
+> > [ 8450.127374] divide error: 0000 [#1]
+> > [ 8450.130876] PREEMPT
+> > [ 8450.133098] Modules linked in: snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd evdev intel_agp soundcore agpgart snd_page_alloc i2c_i801 skge rtc_cmos rtc_core rtc_lib ide_cd cdrom rtc unix
+> > [ 8450.159726] CPU:    0
+> > [ 8450.159727] EIP:    0060:[<ca903276>]    Not tainted VLI
+> > [ 8450.159728] EFLAGS: 00010046   (2.6.21-rc2-git3 #12)
+> > [ 8450.172304] EIP is at snd_intel8x0_interrupt+0x104/0x1dc [snd_intel8x0]
+> > [ 8450.178921] eax: 00000000   ebx: c22f3590   ecx: 0000000e   edx: 00000000
+> > [ 8450.185707] esi: c22f34f8   edi: 00700140   ebp: c2b47ce8   esp: c2b47cc0
+> > [ 8450.192501] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> > [ 8450.198338] Process modprobe (pid: 1336, ti=c2b47000 task=c1e12070 task.ti=c2b47000)
+> > [ 8450.205900] Stack: 00000001 c3197ab4 0000000e c165e6b6 0000000f 00000010 c22f37c0 00000202
+> > [ 8450.214466]        c3197ab8 00000020 c2b47d08 c1643230 ca903172 0000000a 012f37f8 c22f34f8
+> > [ 8450.223032]        070000e0 00000001 c2b47dd4 ca902144 c26b44ac c22f34f8 c1e125f8 c1e12070
+> > [ 8450.231590] Call Trace:
+> > [ 8450.234252]  [<c1604556>] show_trace_log_lvl+0x1a/0x2f
+> > [ 8450.239430]  [<c1604608>] show_stack_log_lvl+0x9d/0xa5
+> > [ 8450.244600]  [<c16047fd>] show_registers+0x1ed/0x32c
+> > [ 8450.249597]  [<c1604a43>] die+0x107/0x21e
+> > [ 8450.253640]  [<c1604bd3>] do_trap+0x79/0x91
+> > [ 8450.257860]  [<c160523a>] do_divide_error+0x94/0x9e
+> > [ 8450.262769]  [<c17fb54c>] error_code+0x74/0x7c
+> > [ 8450.267247]  [<c1643230>] request_irq+0xac/0xf4
+> > [ 8450.271811]  [<ca902144>] snd_intel8x0_probe+0x482/0xffb [snd_intel8x0]
+> > [ 8450.278459]  [<c16e78c5>] pci_device_probe+0x39/0x5b
+> > [ 8450.283455]  [<c173e633>] really_probe+0xbd/0x145
+> > [ 8450.288193]  [<c173e750>] driver_probe_device+0x95/0xa1
+> > [ 8450.293448]  [<c173e865>] __driver_attach+0x6a/0xa1
+> > [ 8450.298358]  [<c173dc61>] bus_for_each_dev+0x36/0x5b
+> > [ 8450.303354]  [<c173e4a7>] driver_attach+0x19/0x1b
+> > [ 8450.308091]  [<c173df0e>] bus_add_driver+0x6a/0x170
+> > [ 8450.313001]  [<c173ea70>] driver_register+0x79/0x7e
+> > [ 8450.317910]  [<c16e7a43>] __pci_register_driver+0x7c/0xa9
+> > [ 8450.323338]  [<ca909017>] alsa_card_intel8x0_init+0x17/0x19 [snd_intel8x0]
+> > [ 8450.330246]  [<c16366ad>] sys_init_module+0x11b0/0x12f0
+> > [ 8450.335502]  [<c1603e72>] sysenter_past_esp+0x5f/0x99
+> > [ 8450.340584]  =======================
+> > [ 8450.344172] Code: 29 c1 89 c8 83 c0 20 83 f9 ff 0f 4f c1 89 45 e0 89 53 38 8b 45 e0 0f af 43 20 03 43 24 89 43 24 f6 86 8c 02 00 00 40 75 08 31 d2 <f7> 73 18 89 53 24 8b 45 e0 03 43 30 83 e0 1f 89 43 30 8b 55 ec
+> > [ 8450.364659] EIP: [<ca903276>] snd_intel8x0_interrupt+0x104/0x1dc [snd_intel8x0] SS:ESP 0068:c2b47cc0
+> > [ 8450.373849] note: modprobe[1336] exited with preempt_count 1
+> > [ 8450.379518] BUG: sleeping function called from invalid context at kernel/rwsem.c:20
+> > [ 8450.387175] in_atomic():1, irqs_disabled():1
+> > [ 8450.391455] 1 lock held by modprobe/1336:
+> > [ 8450.395474]  #0:  (&chip->reg_lock){....}, at: [<ca9031fe>] snd_intel8x0_interrupt+0x8c/0x1dc [snd_intel8x0]
+> > [ 8450.405416] irq event stamp: 15590
+> > [ 8450.408828] hardirqs last  enabled at (15589): [<c165e6a2>] kmem_cache_alloc+0x89/0xa9
+> > [ 8450.416798] hardirqs last disabled at (15590): [<c1643227>] request_irq+0xa3/0xf4
+> > [ 8450.424329] softirqs last  enabled at (15566): [<c161a81e>] __do_softirq+0xa5/0xaa
+> > [ 8450.431943] softirqs last disabled at (15561): [<c1605cb7>] do_softirq+0x5b/0xc8
+>
+> Hmm, it might be a race...
+> Does the patch below fix the problem?
+>
 
-Still not pleasant to use the GUI with a kernel build (-j1 or -j2) happening
-unless the build is manually "nice'd".
+Yes, it does.
 
-Also, accounting looks weird in top(1).
-With a 100% busy machine, top will show something like this :
+Thanks!
 
-> top - 14:20:11 up 10:22,  1 user,  load average: 2.65, 2.80, 2.18
-> Tasks: 134 total,   4 running, 128 sleeping,   0 stopped,   2 zombie
-> Cpu(s): 68.7% us,  6.7% sy, 24.7% ni,  0.0% id,  0.0% wa,  0.0% hi,  0.0% si
-> Mem:   2076964k total,  2002560k used,    74404k free,   148924k buffers
-> Swap:  2409740k total,      244k used,  2409496k free,  1448876k cached
-> 
->   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->  1824 root      36  10 11748 7244 1936 R  4.0  0.3   0:00.12 cc1
->  1845 root      31   0  8080 5272 1412 R  1.7  0.3   0:00.05 cc1
->  4139 root      20   0  176m  35m 6860 S  1.3  1.7  18:59.35 Xorg
-> 29381 root      20   0 33712  16m  12m R  1.0  0.8   0:27.24 konsole
->     3 root      20   0     0    0    0 S  0.3  0.0   0:00.49 events/0
->  1529 root      20   0  2556 1460  752 S  0.3  0.1   0:00.05 make
-> 14623 root      20   0  2200 1144  860 R  0.3  0.1   0:00.89 top
->     1 root      20   0  1568  532  464 S  0.0  0.0   0:00.22 init
->     2 root      39  19     0    0    0 S  0.0  0.0   0:00.01 ksoftirqd/0
->     4 root      20   0     0    0    0 S  0.0  0.0   0:00.00 khelper
->     5 root      20   0     0    0    0 S  0.0  0.0   0:00.00 kthread    
+>
+> thanks,
+>
+> Takashi
+>
+> diff -r bf193701a812 sound/pci/intel8x0.c
+> --- a/sound/pci/intel8x0.c      Mon Feb 26 16:07:42 2007 +0100
+> +++ b/sound/pci/intel8x0.c      Wed Mar 07 14:40:58 2007 +0100
+> @@ -725,10 +725,11 @@ static inline void snd_intel8x0_update(s
+>  static inline void snd_intel8x0_update(struct intel8x0 *chip, struct ichdev *ichdev)
+>  {
+>         unsigned long port = ichdev->reg_offset;
+> +       unsigned long flags;
+>         int status, civ, i, step;
+>         int ack = 0;
+>
+> -       spin_lock(&chip->reg_lock);
+> +       spin_lock_irqsave(&chip->reg_lock, flags);
+>         status = igetbyte(chip, port + ichdev->roff_sr);
+>         civ = igetbyte(chip, port + ICH_REG_OFF_CIV);
+>         if (!(status & ICH_BCIS)) {
+> @@ -768,7 +769,7 @@ static inline void snd_intel8x0_update(s
+>                         ack = 1;
+>                 }
+>         }
+> -       spin_unlock(&chip->reg_lock);
+> +       spin_unlock_irqrestore(&chip->reg_lock, flags);
+>         if (ack && ichdev->substream) {
+>                 snd_pcm_period_elapsed(ichdev->substream);
+>         }
+>
 
-Mmm.. I wonder where all of that 100% CPU went to.. the busiest tasks
-are only showing up as 4.0% and 1.7% (when in fact they are using near 100%).
+Regards,
+Michal
 
-Cheers
-           
-
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
