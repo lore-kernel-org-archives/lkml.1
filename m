@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbXCMUKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXCMUMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933148AbXCMUKr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933094AbXCMUKr
+	id S933103AbXCMUMU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbXCMUMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:10:47 -0400
-Received: from gw.goop.org ([64.81.55.164]:37248 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933148AbXCMUKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:10:46 -0400
-Message-ID: <45F70540.8090506@goop.org>
-Date: Tue, 13 Mar 2007 13:10:40 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 13 Mar 2007 16:12:20 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:25143 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933102AbXCMUMS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 16:12:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kW9yhnfqQJNzN7jmnR4hEdiH9ZtIbRmJjoLP38w/akbBt7a9VyBTLWYkj7E822a/bSwm2bNpv13aJiMVEL3zk0vxCAg3Qe2uCSQ5LEwQ4qS9r2lfzMwKgPEIC6WTvAPWGHk9L9pSYUSDw4wMrTwQhVW3cxYbkx4Dlnp1RPgzB7g=
+Message-ID: <b637ec0b0703131312p22ee137fjc4911db07d8fa54a@mail.gmail.com>
+Date: Tue, 13 Mar 2007 21:12:17 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [3/6] 2.6.21-rc3: known regressions
+Cc: "Adrian Bunk" <bunk@stusta.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Vladimir Brik" <no.hope@gmail.com>, "Andi Kleen" <ak@muc.de>,
+       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, "Ray Lee" <ray-lk@madrabbit.org>,
+       Colchao <colchaodemola@gmail.com>,
+       "=?UTF-8?Q?Mathieu_B=C3=A9rard?=" <Mathieu.Berard@crans.org>,
+       "Tejun Heo" <htejun@gmail.com>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org,
+       "Michal Jaegermann" <michal@ellpspace.math.ualberta.ca>,
+       "Plamen Petrov" <plamen.petrov@tk.ru.acad.bg>,
+       "Laurent Riffard" <laurent.riffard@free.fr>
+In-Reply-To: <20070313140323.6ee03eee@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: davids@webmaster.com
-CC: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-References: <MDEHLPKNGKAHNMBLJOLKIELACDAC.davids@webmaster.com>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIELACDAC.davids@webmaster.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+	 <20070313125006.GT18731@stusta.de>
+	 <20070313140323.6ee03eee@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz wrote:
->> There's a distinction between giving it more cpu and giving it higher
->> priority: the important part about having high priority is getting low
->> latency access to the cpu when its needed.
->>     
+On 3/13/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > Subject    : libata: PATA UDMA/100 configured as UDMA/33
+> > References : http://lkml.org/lkml/2007/2/20/294
+> >              http://www.mail-archive.com/linux-ide@vger.kernel.org/msg04115.html
+> >              http://bugzilla.kernel.org/show_bug.cgi?id=8133
+> >              http://bugzilla.kernel.org/show_bug.cgi?id=8164
+> > Submitter  : Fabio Comolli <fabio.comolli@gmail.com>
+> >              Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
+> >              Laurent Riffard <laurent.riffard@free.fr>
+> > Handled-By : Tejun Heo <htejun@gmail.com>
+> > Status     : patch available
 >
-> I agree. Tasks that voluntarily relinquish their timeslices should get lower
-> latency compared to other processes at the same static priority.
+> Some cases should be fixed now but probably not all (eg the Nvidia one)
 >
->   
->> This really seems like the wrong approach to me.  The implication here
->> and in other mails is that fairness is an inherently good thing which
->> should obviously take preference over any other property.
->>     
->
-> Yes, that is the implication. The alternative to fairness is arbitrary
-> unfairness. "Rational unfairness" is a form of fairness.
->
->   
->> The old unix-style dynamic priority scheme was designed to give
->> interactive processes high priorities, by using the observation that
->> "interactive" means "spends a lot of time blocked waiting for input".
->> That model of interactive is way too simple now, and the attempts to try
->> an find an equivalent heuristic have been flawed and lead to - in some
->> cases - wildly bad behaviours.  I'm guessing the emphasis on "fairness"
->> is in reaction to this, which is fair enough.
->>     
->
-> I don't think it makes sense for the scheduler to look for some hint that
-> the user would prefer a task to get more CPU and try to give it more. That's
-> what 'nice' is for.
->
->   
->> But saying that the user needs to explicitly hold the schedulers hand
->> and nice everything to tell it how to schedule seems to be an abdication
->> of duty, an admission of failure.  We can't expect users to finesse all
->> their processes with nice, and it would be a bad user interface to ask
->> them to do so.
->>     
->
-> Then you will always get cases where the scheduler does not do what the user
-> wants because the scheduler does not *know* what the user wants. You always
-> have to tell a computer what you want it to do, and the best it can do is
-> faithfully follow your request.
->   
 
-Hm, well.  The general preference has been for the kernel to do a
-good-enough job on getting the common cases right without tuning, and
-then only add knobs for the really tricky cases it can't do well.  But
-the impression I'm getting here is that you often get sucky behaviours
-without tuning.
+This regression is still present in 2.6.21-rc3-g8b9909de (pulled from
+Linus' tree less than one hour ago).
 
-> I think it's completely irrational to ask for a scheduler that automatically
-> gives more CPU time to CPU hogs.
->   
-
-Well, it doesn't have to.  It could give good low latency with short
-timeslices to things which appear to be interactive.  If the interactive
-program doesn't make good use of its low latency, then it will suck. 
-But that's largely independent of how much overall CPU you give it.
-
-> I agree. I'm not claiming to have the perfect solution. Let's not let the
-> perfect be the enemy of the good though.
->   
-
-For all its faults, the current scheduler mostly does a good job without
-much tuning - I normally only use "nice" to run cpu-bound things without
-jacking the cpu speed up.  Certainly in my normal interactive use of
-compiz vs make -j4 on a dual-core generally gets pretty pretty good
-results.  I plan on testing the new scheduler soon though.
-
-    J
+Fabio
