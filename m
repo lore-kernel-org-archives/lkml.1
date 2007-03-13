@@ -1,72 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbXCMPiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbXCMPiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbXCMPiG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 11:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbXCMPiF
+	id S1753284AbXCMPiQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 11:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbXCMPiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 11:38:05 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:44776 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753274AbXCMPiE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 11:38:04 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17910.50411.80974.295620@smtp.charter.net>
-Date: Tue, 13 Mar 2007 11:36:11 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-In-Reply-To: <87bqix5q18.fsf@depni.sinp.msu.ru>
-References: <200703111457.17624.kernel@kolivas.org>
-	<1173778398.6810.21.camel@Homer.simpson.net>
-	<20070313093914.GA10533@elte.hu>
-	<200703132106.08878.kernel@kolivas.org>
-	<1173785006.8561.19.camel@Homer.simpson.net>
-	<87bqix5q18.fsf@depni.sinp.msu.ru>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Tue, 13 Mar 2007 11:38:16 -0400
+Received: from hydra.gt.owl.de ([195.71.99.218]:49537 "EHLO hydra.gt.owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753284AbXCMPiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 11:38:14 -0400
+X-Greylist: delayed 2017 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Mar 2007 11:38:14 EDT
+Date: Tue, 13 Mar 2007 16:04:35 +0100
+From: Florian Lohoff <flo@rfc822.org>
+To: linux-kernel@vger.kernel.org
+Subject: Boot fails with 2.6.20-rc3 / git-current Was: 2.6.20-rc3: Clocksource tsc unstable
+Message-ID: <20070313150435.GA26303@paradigm.rfc822.org>
+References: <4af2d03a0703090941hfebc1e5u5def6152847c965a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+Content-Disposition: inline
+In-Reply-To: <4af2d03a0703090941hfebc1e5u5def6152847c965a@mail.gmail.com>
+Organization: rfc822 - pure communication
+X-SpiderMe: mh-200703131555@listme.rfc822.org
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Serge" == Serge Belyshev <belyshev@depni.sinp.msu.ru> writes:
 
-Serge> Mike Galbraith <efault@gmx.de> writes:
-Serge> [snip]
->> It seems to be a plain linear slowdown.  The lurchiness I'm experiencing
->> varies in intensity, and is impossible to quantify.  I see neither
->> lurchiness nor slowdown in mainline through -j8.
->> 
+--gKMricLos+KVdGMg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Serge> Whaa? make -j8 on mainline makes my desktop box completely
-Serge> useless.
+On Fri, Mar 09, 2007 at 06:41:45PM +0100, Jiri Slaby wrote:
+> Hi.
+>=20
+> I got this message after suspend;resume on my notebook
+> Clocksource tsc unstable (delta =3D -154983451 ns)
+>=20
 
-I tried a make -j5 on my Dual processor PIII Xeon box.  It was pretty
-slow.  Firefox was ok scrolling with keyboard, but the scrollbar was
-jerky.  I also has MP3s playing at the same time and it worked just
-fine.  No drops that I heard. 
+I am getting the exact same line on bootup on my Fujitsu Siemens
+Lifebook E8110. After that line the boot halts with current git:
 
-This is 2.6.21-rc3 patched with RSDL.  
+Last lines on current git were:
 
-To me, that large a load on my system was just pushing it too hard.
-Esp since firefox seems to have become a total CPU hog in it's own
-right lately.  Or is that because I have a Matrox G450 as my video
-card and it's not handling GPU rendering in the card, but in the OS
-these days?  I dunno...
+	IPMI System Interface driver
+	Clocksource tsc unstable ( delta =3D -160251929ns )
 
-I guess I need to reboot into the default scheduler and see how it
-goes.  
+Now running:
+	Linux laptop 2.6.21-rc2 #1 SMP PREEMPT Thu Mar 1 07:41:52 CET 2007 i686 GN=
+U/Linux
 
-Serge> Please reconsider your statement.
+which comes up with the same line when initializing IDE but continues
+to run:
 
-This is not a nice statement on your half.  Mike has been doing a
-great job testing.  He and Con don't seem to communicate well at
-times, but hey, they're still talking and working together, even with
-friction.  I'm happy to see all this testing going on!
+[    9.912917] ICH7: IDE controller at PCI slot 0000:00:1f.1
+[    9.913025] ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 18 (level, low) -=
+> IRQ 20
+[    9.913210] ICH7: chipset revision 2
+[    9.913300] ICH7: not 100% native mode: will probe irqs later
+[    9.913403]     ide0: BM-DMA at 0x1810-0x1817, BIOS settings: hda:DMA, h=
+db:pio
+[    9.913637] Probing IDE interface ide0...
+[    9.997936] Clocksource tsc unstable (delta =3D -430882190 ns)
+[   10.002393] hda: MATSHITAUJ-841Db, ATAPI CD/DVD-ROM drive
+[   10.003539] ieee1394: Host added: ID:BUS[0-00:1023]  GUID[00000e10036532=
+e4]
+[   10.052945] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
 
+CPU info:
+
+flo@laptop:~$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 14
+model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
+stepping        : 8
+cpu MHz         : 1333.000
+cache size      : 2048 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 2
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca =
+cmov pat clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc pn=
+i monitor vmx est tm2 xtpr
+bogomips        : 3662.23
+clflush size    : 64
+
+processor       : 1
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 14
+model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
+stepping        : 8
+cpu MHz         : 1333.000
+cache size      : 2048 KB
+physical id     : 0
+siblings        : 2
+core id         : 1
+cpu cores       : 2
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca =
+cmov pat clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc pn=
+i monitor vmx est tm2 xtpr
+bogomips        : 3657.63
+clflush size    : 64
+
+--=20
+Florian Lohoff                  flo@rfc822.org             +49-171-2280134
+	Those who would give up a little freedom to get a little=20
+          security shall soon have neither - Benjamin Franklin
+
+--gKMricLos+KVdGMg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFF9r2DUaz2rXW+gJcRAjPOAJ41nJVWRXWriHz7E1RhPJqHGUcRdgCg0m2d
+CkJXJcCE8SWU7HwlLzk4br8=
+=KQz8
+-----END PGP SIGNATURE-----
+
+--gKMricLos+KVdGMg--
