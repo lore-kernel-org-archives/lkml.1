@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbXCMSuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXCMSyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932149AbXCMSuR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 14:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932260AbXCMSuQ
+	id S932780AbXCMSyH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 14:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbXCMSyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 14:50:16 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42693 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932149AbXCMSuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 14:50:14 -0400
-Date: Tue, 13 Mar 2007 19:55:54 +0100
-From: Jan Kara <jack@suse.cz>
-To: Ashif Harji <asharji@cs.uwaterloo.ca>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: do_generic_mapping_read performance issue
-Message-ID: <20070313185554.GA5105@duck.suse.cz>
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca>
-MIME-Version: 1.0
+	Tue, 13 Mar 2007 14:54:06 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:47923 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932566AbXCMSyF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 14:54:05 -0400
+Date: Tue, 13 Mar 2007 14:54:05 -0400
+To: Mark Lord <lkml@rtr.ca>
+Cc: Phil Kaslo <phil@cs.arizona.edu>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Asus P5B-VM motherboard:  cd drive malfunctions if internal nic in use.
+Message-ID: <20070313185405.GI22464@csclub.uwaterloo.ca>
+References: <200703122212.l2CMCaxm032601@osprey.cs.arizona.edu> <45F5D59E.10304@rtr.ca> <20070313153252.GC22466@csclub.uwaterloo.ca> <45F6CFEA.4060009@rtr.ca>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <45F6CFEA.4060009@rtr.ca>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 13-03-07 14:43:47, Ashif Harji wrote:
+On Tue, Mar 13, 2007 at 12:23:06PM -0400, Mark Lord wrote:
+> That's nice.
 > 
-> >>I would like to submit a patch to fix the performance problem.  The
-> >>simplest solution is to remove the check.  Even in the situation where an
-> >>application does not read in PAGE_SIZE multiples as described above, if
-> >>the page is accessed frequently it should remain in the cache.  However, I
-> >>am open to suggestions for a more sophisticated scheme.
-> >
-> > Well, yes, that's an obvious solution. I just wanted to make sure that
-> >such change won't break some other load. But so far it seems it won't...
-> 
-> I would like to find out if the change I am suggesting will cause any 
-> other problems.  Is there someone else I should contact before submitting 
-> a patch?  Or should I just wait another day or two for comments?
-  I don't think you'll get more feedback now. Just write the patch,
-benchmark it with your workload and also some others (basically, there should be
-no difference) and then submit the patch together with the performance
-numbers and some rationale (if it's your first submission, see
-Documentation/SubmittingPatches). Give also CC to Andrew <akpm@linux-foundation.org>
-and ask him to put it into -mm kernels for testing.
+> But the P5B-VM board does not have any such jumper for USB,
+> nor does it have any obvious combination of BIOS-setup options
+> to accomplish it.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Well it could only be done by hardware.  The P5B has those jumpers.  I
+figured the P5B-VM while a budget micro board would still have those.  I
+guess not.  Without jumper settings for it there is nothing you can do
+about it.  A quick look through the manual certainly only mentions
+standby power for the keyboard connector and not for the USB ports.
+
+--
+Len Sorensen
