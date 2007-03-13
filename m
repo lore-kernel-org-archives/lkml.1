@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbXCMLYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbXCML1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbXCMLYP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 07:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXCMLYP
+	id S1753235AbXCML1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 07:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbXCML1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 07:24:15 -0400
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:53848 "EHLO
-	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753239AbXCMLYN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 07:24:13 -0400
-Date: Tue, 13 Mar 2007 11:24:11 +0000
-From: Ben Dooks <ben@fluff.org.uk>
-To: Maxin John <maxin.john@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Need help on mach-ep93xx
-Message-ID: <20070313112411.GA24508@fluff.org.uk>
-References: <9debc4410703122224n5def90e7g4767b95b176941c0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9debc4410703122224n5def90e7g4767b95b176941c0@mail.gmail.com>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 13 Mar 2007 07:27:54 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42740 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753235AbXCML1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 07:27:53 -0400
+Date: Tue, 13 Mar 2007 04:27:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
+Message-Id: <20070313042742.e35b7511.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703130413080.5720@schroedinger.engr.sgi.com>
+References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>
+	<20070313005334.853559ca.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703130413080.5720@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 10:54:08AM +0530, Maxin John wrote:
-> Hi,
+> On Tue, 13 Mar 2007 04:17:26 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> On Tue, 13 Mar 2007, Andrew Morton wrote:
 > 
-> I have one question mach-ep93xx.
+> > > On Tue, 13 Mar 2007 00:13:25 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> > > Page table pages have the characteristics that they are typically zero
+> > > or in a known state when they are freed.
+> > 
+> > Well if they're zero then perhaps they should be released to the page 
+> > allocator to satisfy the next __GFP_ZERO request.  If that request is 
+> > for a pagetable page, we break even (except we get to remove 
+> > special-case code).  If that __GFP_ZERO allocation was or some 
+> > application other than for a pagetable, we win.
 > 
-> In  EP93xx  IRQ handling part in core.c,  the 2.6.19.2 kernel and
-> newer  kernels are configuring the 16 interrupts of the ports A & B
-> together. The code is not using the  interrupt capability  of the port
-> F which can provide 3 interrupts.
+> Nope that wont work.
 > 
-> Why the port F is not configured for interrupts ?
-> 
-> Thanks in advance,
+> 1. We need to support other states of pages other than zeroed.
 
-subscribe to the linux-arm-kernel list and ask
-the question there, you'll find more ARM people there.
+What does this mean?
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+> 2. Prezeroing does not make much sense if a large portion of the
+>    page is being used. Performance is better if the whole page 
+>    is zeroed directly before use.Prezeroing only makes sense for sparse
+>    allocations like the page table pages.
 
-  'a smiley only costs 4 bytes'
+This is not related to the above discussion.
+
+> > (Will require some work in the page allocator)
+> > (That work will open the path to using the idle thread to prezero pages)
+> 
+> I already tried that 3 years ago and there was *no* benefit for usual
+> users of the a page allocator. The advantage exists only if a small
+> portion of the page is used. F.e. For one cacheline there was a 4x 
+> improvement. See lkml archives for prezeroing.
+
+Unsurprised.  Were non-temporal stores tried?
