@@ -1,78 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbXCMP0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbXCMPad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbXCMP0a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 11:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbXCMP0a
+	id S1753270AbXCMPad (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 11:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbXCMPac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 11:26:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:60071 "EHLO mail.goop.org"
+	Tue, 13 Mar 2007 11:30:32 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:30934 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753266AbXCMP03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 11:26:29 -0400
-Message-ID: <45F6C2A3.4040305@goop.org>
-Date: Tue, 13 Mar 2007 08:26:27 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1753270AbXCMPac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 11:30:32 -0400
+Message-ID: <45F6C6BF.5000002@sw.ru>
+Date: Tue, 13 Mar 2007 18:43:59 +0300
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
-To: Andi Kleen <ak@muc.de>
-CC: Zachary Amsden <zach@vmware.com>, Linus Torvalds <torvalds@osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Dan Hecht <dhecht@vmware.com>,
-       Dan Arai <arai@vmware.com>, Andrew Morton <akpm@osdl.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH 2/9] Sched clock paravirt op fix.patch
-References: <200703020254.l222sOaM009656@zach-dev.vmware.com> <20070313140129.GB92373@muc.de>
-In-Reply-To: <20070313140129.GB92373@muc.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: devel@openvz.org
+CC: Kirill Korotaev <dev@openvz.org>, containers@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Devel] Re: [RFC][PATCH 2/7] RSS controller core
+References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru>	<20070306140036.4e85bd2f.akpm@linux-foundation.org>	<45F3F581.9030503@sw.ru>	<20070311045111.62d3e9f9.akpm@linux-foundation.org>	<m1wt1nvajx.fsf@ebiederm.dsl.xmission.com>	<45F51C08.2020108@openvz.org> <m17itltrxe.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m17itltrxe.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Thu, Mar 01, 2007 at 06:54:24PM -0800, Zachary Amsden wrote:
->   
->> The custom_sched_clock hook is broken.  The result from sched_clock needs to be
->> in nanoseconds, not in CPU cycles.  The TSC is insufficient for this purpose,
->> because TSC is poorly defined in a virtual environment, and mostly represents
->> real world time instead of scheduled process time (which can be interrupted
->> without notice when a virtual machine is descheduled).
+Eric,
+
+>>>And misses every resource sharing opportunity in sight.
 >>
->> To make the scheduler consistent, we must expose a different nature of time,
->> that is scheduled time.  So deprecate this custom_sched_clock hack and turn it
->> into a paravirt-op, as it should have been all along.  This allows the tsc.c
->> code which converts cycles to nanoseconds to be shared by all paravirt-ops
->> backends.
+>>that was my point too.
 >>
->> It is unfortunate to add a new paravirt-op, but this is a very distinct
->> abstraction which is clearly different for all virtual machine implementations,
->> and it gets rid of an ugly indirect function which I ashamedly admit I hacked
->> in to try to get this to work earlier, and then even got in the wrong units.
 >>
->> Please apply.
->>     
->
-> I think it's better to remove this completely and not allow paravirt
-> to hook into sched_clock.  After all a hypervisor stealing time is no
-> different from interrupts stealing time and we don't try to handle
-> that either. 
->   
+>>>Except for
+>>>filtering the which pages are eligible for reclaim an RSS limit should
+>>>not need to change the existing reclaim logic, and with things like the
+>>>memory zones we have had that kind of restriction in the reclaim logic
+>>>for a long time.  So filtering out ineligible pages isn't anything new.
+>>
+>>exactly this is implemented in the current patches from Pavel.
+>>the only difference is that filtering is not done in general LRU list,
+>>which is not effective, but via per-container LRU list.
+>>So the pointer on the page structure does 2 things:
+>>- fast reclamation
+> 
+>     Better than the rmap list?
+> 
+>>- correct uncharging of page from where it was charged
+>>  (e.g. shared pages can be mapped first in one container, but the last unmap
+>>   done from another one).
+> 
+>     We should charge/uncharge all of them, not just one.
+> 
+> 
+>>>>We need to work out what the requirements are before we can settle on an
+>>>>implementation.
+>>>
+>>>
+>>>If you are talking about RSS limits the term is well defined.  The
+>>>number of pages you can have mapped into your set of address space at
+>>>any given time.
+>>>
+>>>Unless I'm totally blind that isn't what the patchset implements.
+>>
+>>Ouch, what makes you think so?
+>>The fact that a page mapped into 2 different processes is charged only once?
+>>Imho it is much more correct then sum of process' RSS within container, due to:
+>>1. it is clear how much container uses physical pages, not abstract items
+>>2. shared pages are charged only once, so the sum of containers RSS is still
+>>   about physical RAM.
+> 
+> 
+> No the fact that a page mapped into 2 separate mm_structs in two
+> separate accounting domains is counted only once.  This is very likely
+> to happen with things like glibc if you have a read-only shared copy
+> of your distro.  There appears to be no technical reason for such a
+> restriction.
+> 
+> A page should not be owned.  
 
-Well, its a matter of degree.  If your busy vcpu is sharing a real cpu
-with 9 other busy vcpus, then you'll only see about 10% of the real cpu
-cycles.  If we had legitimate loads in which 90% of the cpu were taken
-up by interrupt processing, then I think we definitely would try to
-account for that time properly.
+I would be happy to propose OVZ approach then, where a page is tracked
+with page_beancounter data structure, which ties together
+a page with beancounters which use it like this:
 
-SMM interrupts, in which the CPU is stolen from the kernel entirely, is
-a better analogy.  But again, they're expected to be rare and
-insignificant.  In a virtual machine, on the other hand, you could
-expect the majority of cpu time to be stolen by other things running on
-the same physical machine.
+page -> page_beancounter -> list of beanocunters which has the page mapped
 
-In other words, regardless of whether this particular pv_op lives or
-dies, we're going to need to have to deal with stolen time properly.  I
-think this hook is reasonable and useful step towards doing that.
+This gives a number of advantages:
+- the page is accounted to all the VEs which actually use it.
+- allows almost accurate tracking of page fractions used by VEs
+  depending on how many VEs mapped the page.
+- allows to track dirty pages, i.e. which VE dirtied the page
+  and implement correct disk I/O accounting and CFQ write scheduling
+  based on VE priorities.
 
-    J
+> Going further unless the limits are draconian I don't expect users to
+> hit the rss limits often or frequently.  So in 99% of all cases page
+> reclaim should continue to be global.  Which makes me question messing
+> with the general page reclaim lists.
+
+It is not that rare when containers hit their limits, believe me :/
+In trusted environments - probably you are right, in hosting - no.
+
+Thanks,
+Kirill
+
