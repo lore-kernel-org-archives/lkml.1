@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933571AbXCMTcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750839AbXCMTmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933571AbXCMTcP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 15:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933623AbXCMTcO
+	id S1750839AbXCMTmW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 15:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbXCMTmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 15:32:14 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49381 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933571AbXCMTcN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 15:32:13 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Catalin Marinas" <catalin.marinas@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Possible "struct pid" leak from tty_io.c
-References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
-	<m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
-	<m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
-	<b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
-Date: Tue, 13 Mar 2007 13:31:52 -0600
-In-Reply-To: <b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
-	(Catalin Marinas's message of "Mon, 12 Mar 2007 15:07:39 +0000")
-Message-ID: <m1veh5q6s7.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 13 Mar 2007 15:42:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60148 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839AbXCMTmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 15:42:21 -0400
+Date: Tue, 13 Mar 2007 12:40:24 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Linux v2.6.21-rc3
+Message-ID: <20070313194024.GA14847@suse.de>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <m1zm6hq70n.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1zm6hq70n.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Catalin Marinas" <catalin.marinas@gmail.com> writes:
+On Tue, Mar 13, 2007 at 01:26:48PM -0600, Eric W. Biederman wrote:
+> - We have a network ABI regression caused by the latest sysfs
+>   changes to net-sysfs.c   In particular we now cannot rename network
+>   devices if our destination name happens to be the name of a sysfs file that
+>   the network device appears in, and if we try the kernel gets very
+>   confused and we loose access to the network device. 
+> 
+>   Do we just want to revert commit 43cb76d91ee85f579a69d42bc8efc08bac560278
+>   Greg has been working on this off and on and has not found a
+>   simple solution yet.
 
-> On 09/03/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
->> If I can manage to focus on this, it looks like the information I need to
->> start fixing this.
->
-> I had a look at the second leak reported it seems to be caused by the
-> same proc_set_tty() call but, in this case, there is no
-> disassociate_tty() call for the task (and the patch I posted is not
-> enough). Maybe something like below (no thourough testing):
->
-> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-> index db91398..ea6ca7d 100644
-> --- a/drivers/char/tty_io.c
-> +++ b/drivers/char/tty_io.c
-> @@ -3854,7 +3854,14 @@ EXPORT_SYMBOL(tty_devnum);
->
-> void proc_clear_tty(struct task_struct *p)
-> {
-> +	struct tty_struct *tty;
-> +
-> 	spin_lock_irq(&p->sighand->siglock);
-> +	tty = p->signal->tty;
-> +	if (tty) {
-> +		put_pid(tty->session);
-> +		put_pid(tty->pgrp);
-> +	}
-> 	p->signal->tty = NULL;
-> 	spin_unlock_irq(&p->sighand->siglock);
-> }
+I do not think this should be reverted, as the odds that some one will
+rename their network device to be "irq" or something else that is in the
+pci device's directory is pretty slim.  It also only shows up if
+CONFIG_SYSFS_DEPRECATED is disabled, not the common option.
 
-This patch can't be right.  Not the way proc_clear_tty is called
-once for each process in the session, plus we aren't clearing
-tty->session and tty->pgrp here. 
+But I am still working on it, I sent you and Kay a patch that, while it
+locks up at boot time, should be close to what we need to address this
+:)
 
-If the above patch works it's a fluke.
+> - pci_save_state, pci_restore_state are broken and have been for a
+>   while if used on anything besides plain pci (pci-x, pci-e and msi)
+>   and are not used in pairs. (gregkh and Andrew have the patches to 
+>   correct this).
 
-Still it is the right general area of the code.  I've just started
-looking at this it is going to take me a bit to come up to speed on
-this code again and see what silly thing is missing.
+I think these are already in Linus's tree right now, right?
 
-Eric
+thanks,
+
+greg k-h
