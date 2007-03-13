@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933266AbXCMUz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933310AbXCMUzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933266AbXCMUz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933310AbXCMUz3
+	id S933310AbXCMUzm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXCMUzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:55:29 -0400
-Received: from colin.muc.de ([193.149.48.1]:1602 "EHLO mail.muc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933266AbXCMUz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:55:27 -0400
-Date: 13 Mar 2007 21:55:26 +0100
-Date: Tue, 13 Mar 2007 21:55:26 +0100
-From: Andi Kleen <ak@muc.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Introduce load_TLS to the "for" loop.
-Message-ID: <20070313205526.GA46469@muc.de>
-References: <1173767976.10618.50.camel@localhost.localdomain> <20070313135000.GA92373@muc.de> <45F6DFEF.2090008@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F6DFEF.2090008@goop.org>
-User-Agent: Mutt/1.4.1i
+	Tue, 13 Mar 2007 16:55:42 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:58115 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933310AbXCMUzf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 16:55:35 -0400
+X-AuditID: d80ac287-9f7d7bb000000de9-c6-45f70fc75901 
+Date: Tue, 13 Mar 2007 20:55:35 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
+       gregkh@suse.de, Richard Purdie <rpurdie@rpsys.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+In-Reply-To: <Pine.LNX.4.44L0.0703131604160.7744-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.64.0703132052560.24739@blonde.wat.veritas.com>
+References: <Pine.LNX.4.44L0.0703131604160.7744-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 13 Mar 2007 20:55:34.0673 (UTC) FILETIME=[F1FB1810:01C765B1]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 10:31:27AM -0700, Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> > On Tue, Mar 13, 2007 at 05:39:36PM +1100, Rusty Russell wrote:
-> >   
-> >> GCC (4.1 at least) unrolls it anyway, but I can't believe this code
-> >>     
-> >
-> > Are you sure? Normally it doesn't unroll without -funroll-loops which
-> > the kernel does normally not set. Especially not with -Os builds.
-> >   
+On Tue, 13 Mar 2007, Alan Stern wrote:
 > 
-> Does it matter either way in this case?
+> On the other hand, a quick survey of the kernel source shows that
+> DEVICE_ATTR is used over 1500 times.  Auditing all of them is not a job
+> for the faint-of-heart!
 
-It's in the middle of the context switch.
-
--Andi
+Indeed, and faint-hearted Hugh wasn't intending to do so: but
+stout-hearted Alan will need to, won't he, before his patch can go in?
