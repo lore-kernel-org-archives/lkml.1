@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbXCMEmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbXCMEoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110AbXCMEmR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 00:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbXCMEmR
+	id S1753111AbXCMEoK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 00:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbXCMEoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 00:42:17 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35903 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753110AbXCMEmQ (ORCPT
+	Tue, 13 Mar 2007 00:44:10 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:55671 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753111AbXCMEoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 00:42:16 -0400
-Date: Mon, 12 Mar 2007 21:42:12 -0700
+	Tue, 13 Mar 2007 00:44:08 -0400
+Date: Mon, 12 Mar 2007 21:44:05 -0700
 From: sukadev@us.ibm.com
 To: Andrew Morton <akpm@osdl.org>
 Cc: Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
        Serge Hallyn <serue@us.ibm.com>, Eric Biederman <ebiederm@xmission.com>,
        Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] statically initialize struct pid for swapper
-Message-ID: <20070313044212.GA8884@us.ibm.com>
+Subject: [PATCH 3/5] Use struct pid parameter in copy_process()
+Message-ID: <20070313044405.GC8884@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,102 +28,77 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
 From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: [PATCH 1/5] statically initialize struct pid for swapper
+Subject: [PATCH 3/5] Use struct pid parameter in copy_process()
 
-Statically initialize a struct pid for the swapper process (pid_t == 0) and
-attach it to init_task.  This is needed so task_pid(), task_pgrp() and
-task_session() interfaces work on the swapper process also.
+Modify copy_process() to take a struct pid * parameter instead of a pid_t.
+This simplifies the code a bit and also avoids having to call find_pid()
+to convert the pid_t to a struct pid.
+
+Changelog: 
+	- Fixed Badari Pulavarty's comments and passed in &init_struct_pid
+	  from fork_idle().
+	- Fixed Eric Biederman's comments and simplified this patch and
+	  used a new patch to remove the likely(pid) check.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 Cc: Cedric Le Goater <clg@fr.ibm.com>
 Cc: Dave Hansen <haveblue@us.ibm.com>
 Cc: Serge Hallyn <serue@us.ibm.com>
 Cc: Eric Biederman <ebiederm@xmission.com>
-Cc: Herbert Poetzl <herbert@13thfloor.at>
-Cc: <containers@lists.osdl.org>
+Cc: containers@lists.osdl.org
 Acked-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
+ kernel/fork.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
- include/linux/init_task.h |   27 +++++++++++++++++++++++++++
- include/linux/pid.h       |    2 ++
- kernel/pid.c              |    2 ++
- 3 files changed, 31 insertions(+)
-
-Index: lx26-20-mm2c/include/linux/init_task.h
+Index: lx26-21-rc3-mm2/kernel/fork.c
 ===================================================================
---- lx26-20-mm2c.orig/include/linux/init_task.h	2007-02-28 15:47:44.000000000 -0800
-+++ lx26-20-mm2c/include/linux/init_task.h	2007-02-28 15:48:07.000000000 -0800
-@@ -96,6 +96,28 @@ extern struct group_info init_groups;
- #define INIT_PREEMPT_RCU
- #endif
- 
-+#define INIT_STRUCT_PID {						\
-+	.count 		= ATOMIC_INIT(1),				\
-+	.nr		= 0, 						\
-+	/* Don't put this struct pid in pid_hash */			\
-+	.pid_chain	= { .next = NULL, .pprev = NULL },		\
-+	.tasks		= {						\
-+		{ .first = &init_task.pids[PIDTYPE_PID].node },		\
-+		{ .first = &init_task.pids[PIDTYPE_PGID].node },	\
-+		{ .first = &init_task.pids[PIDTYPE_SID].node },		\
-+	},								\
-+	.rcu		= RCU_HEAD_INIT,				\
-+}
-+
-+#define INIT_PID_LINK(type) 					\
-+{								\
-+	.node = {						\
-+		.next = NULL,					\
-+		.pprev = &init_struct_pid.tasks[type].first,	\
-+	},							\
-+	.pid = &init_struct_pid,				\
-+}
-+
- /*
-  *  INIT_TASK is used to set up the first task table, touch at
-  * your own risk!. Base=0, limit=0x1fffff (=2MB)
-@@ -145,6 +167,11 @@ extern struct group_info init_groups;
- 	.cpu_timers	= INIT_CPU_TIMERS(tsk.cpu_timers),		\
- 	.fs_excl	= ATOMIC_INIT(0),				\
- 	.pi_lock	= SPIN_LOCK_UNLOCKED,				\
-+	.pids = {							\
-+		[PIDTYPE_PID]  = INIT_PID_LINK(PIDTYPE_PID),		\
-+		[PIDTYPE_PGID] = INIT_PID_LINK(PIDTYPE_PGID),		\
-+		[PIDTYPE_SID]  = INIT_PID_LINK(PIDTYPE_SID),		\
-+	},								\
- 	INIT_TRACE_IRQFLAGS						\
- 	INIT_LOCKDEP							\
- }
-Index: lx26-20-mm2c/include/linux/pid.h
-===================================================================
---- lx26-20-mm2c.orig/include/linux/pid.h	2007-02-28 15:48:07.000000000 -0800
-+++ lx26-20-mm2c/include/linux/pid.h	2007-02-28 15:48:07.000000000 -0800
-@@ -51,6 +51,8 @@ struct pid
- 	struct rcu_head rcu;
- };
- 
-+extern struct pid init_struct_pid;
-+
- struct pid_link
+--- lx26-21-rc3-mm2.orig/kernel/fork.c	2007-03-12 17:16:39.000000000 -0700
++++ lx26-21-rc3-mm2/kernel/fork.c	2007-03-12 17:17:48.000000000 -0700
+@@ -966,7 +966,7 @@ static struct task_struct *copy_process(
+ 					unsigned long stack_size,
+ 					int __user *parent_tidptr,
+ 					int __user *child_tidptr,
+-					int pid)
++					struct pid *pid)
  {
- 	struct hlist_node node;
-Index: lx26-20-mm2c/kernel/pid.c
-===================================================================
---- lx26-20-mm2c.orig/kernel/pid.c	2007-02-28 15:48:07.000000000 -0800
-+++ lx26-20-mm2c/kernel/pid.c	2007-02-28 15:48:07.000000000 -0800
-@@ -27,11 +27,13 @@
- #include <linux/bootmem.h>
- #include <linux/hash.h>
- #include <linux/pid_namespace.h>
-+#include <linux/init_task.h>
+ 	int retval;
+ 	struct task_struct *p = NULL;
+@@ -1033,7 +1033,7 @@ static struct task_struct *copy_process(
+ 	p->did_exec = 0;
+ 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
+ 	copy_flags(clone_flags, p);
+-	p->pid = pid;
++	p->pid = pid_nr(pid);
  
- #define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
- static struct hlist_head *pid_hash;
- static int pidhash_shift;
- static struct kmem_cache *pid_cachep;
-+struct pid init_struct_pid = INIT_STRUCT_PID;
+ 	INIT_LIST_HEAD(&p->children);
+ 	INIT_LIST_HEAD(&p->sibling);
+@@ -1265,7 +1265,7 @@ static struct task_struct *copy_process(
+ 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
+ 			__get_cpu_var(process_counts)++;
+ 		}
+-		attach_pid(p, PIDTYPE_PID, find_pid(p->pid));
++		attach_pid(p, PIDTYPE_PID, pid);
+ 		nr_threads++;
+ 	}
  
- int pid_max = PID_MAX_DEFAULT;
+@@ -1336,7 +1336,8 @@ struct task_struct * __cpuinit fork_idle
+ 	struct task_struct *task;
+ 	struct pt_regs regs;
  
+-	task = copy_process(CLONE_VM, 0, idle_regs(&regs), 0, NULL, NULL, 0);
++	task = copy_process(CLONE_VM, 0, idle_regs(&regs), 0, NULL, NULL,
++				&init_struct_pid);
+ 	if (!IS_ERR(task))
+ 		init_idle(task, cpu);
+ 
+@@ -1364,7 +1365,7 @@ long do_fork(unsigned long clone_flags,
+ 		return -EAGAIN;
+ 	nr = pid->nr;
+ 
+-	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, nr);
++	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, pid);
+ 	/*
+ 	 * Do this prior waking up the new thread - the thread pointer
+ 	 * might get invalid after that point, if the thread exits quickly.
