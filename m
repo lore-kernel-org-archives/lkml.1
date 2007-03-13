@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965673AbXCMJl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965658AbXCMJod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965673AbXCMJl2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965661AbXCMJl2
+	id S965658AbXCMJod (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965674AbXCMJod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:41:28 -0400
-Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:46424 "EHLO
-	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965673AbXCMJl1 (ORCPT
+	Tue, 13 Mar 2007 05:44:33 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35546 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965658AbXCMJoc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:41:27 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
-Date: Tue, 13 Mar 2007 20:41:05 +1100
-User-Agent: KMail/1.9.5
-Cc: Mike Galbraith <efault@gmx.de>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200703111457.17624.kernel@kolivas.org> <200703132021.50712.kernel@kolivas.org> <20070313092920.GB7648@elte.hu>
-In-Reply-To: <20070313092920.GB7648@elte.hu>
+	Tue, 13 Mar 2007 05:44:32 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Dave Hansen <hansendc@us.ibm.com>
+Cc: Kirill Korotaev <dev@sw.ru>, containers@lists.osdl.org,
+       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@sw.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 4/7] RSS accounting hooks over the code
+References: <45ED7DEC.7010403@sw.ru> <45ED81F2.80402@sw.ru>
+	<m14porwq1c.fsf@ebiederm.dsl.xmission.com> <45F57E7D.6080604@sw.ru>
+	<1173718208.11945.54.camel@localhost.localdomain>
+	<45F588DE.3000309@sw.ru>
+	<1173720796.11945.80.camel@localhost.localdomain>
+Date: Tue, 13 Mar 2007 03:43:02 -0600
+In-Reply-To: <1173720796.11945.80.camel@localhost.localdomain> (Dave Hansen's
+	message of "Mon, 12 Mar 2007 10:33:16 -0700")
+Message-ID: <m1zm6hscm1.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703132041.06320.kernel@kolivas.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 March 2007 20:29, Ingo Molnar wrote:
-> * Con Kolivas <kernel@kolivas.org> wrote:
-> > Well I guess you must have missed where I asked him if he would be
-> > happy if I changed +5 metrics to do whatever he wanted and he refused
-> > to answer me. [...]
+Dave Hansen <hansendc@us.ibm.com> writes:
+
+> On Mon, 2007-03-12 at 20:07 +0300, Kirill Korotaev wrote:
+>> > On Mon, 2007-03-12 at 19:23 +0300, Kirill Korotaev wrote:
+>> >>For these you essentially need per-container page->_mapcount counter,
+>> >>otherwise you can't detect whether rss group still has the page in question
+> being mapped
+>> >>in its processes' address spaces or not. 
+>> > 
+>> > What do you mean by this?  You can always tell whether a process has a
+>> > particular page mapped.  Could you explain the issue a bit more.  I'm
+>> > not sure I get it.
+>> When we do charge/uncharge we have to answer on another question:
+>> "whether *any* task from the *container* has this page mapped", not the
+>> "whether *this* task has this page mapped".
 >
-> I'd say lets keep nice levels out of this completely for now - while
-> they should work _too_, it's easy because the scheduler has the 'nice'
-> information. The basic behavior of CPU hogs that matters most.
+> That's a bit more clear. ;)
 >
-> So the question is: if all tasks are on the same nice level, how does,
-> in Mike's test scenario, RSDL behave relative to the current
-> interactivity code?
+> OK, just so I make sure I'm getting your argument here.  It would be too
+> expensive to go looking through all of the rmap data for _any_ other
+> task that might be sharing the charge (in the same container) with the
+> current task that is doing the unmapping.  
 
-If everything is run at nice 0? (this was not the test case but that's what 
-you've asked for).
+Which is a questionable assumption.  Worse case we are talking a list
+several thousand entries long, and generally if you are used by the same
+container you will hit one of your processes long before you traverse
+the whole list.
 
-We have:
-X + GForce contribute a load of 1
-lame x 2 threads contribute a load of 2
+So at least the average case performance should be good.
 
-In RSDL
-X + GForce will get 33% cpu
-lame will get 66% cpu
+It is only in the case when you a page is shared between multiple
+containers when this matters.
 
-In mainline
-X + GForce gets a fluctuating percentage somewhere between 35~45% as far as I 
-can see on UP.
-lame gets the rest
-
-The only way to get the same behaviour on RSDL without hacking an 
-interactivity estimator, priority boost cpu misproportionator onto it is to 
-either -nice X or +nice lame.
-
-> 	Ingo
-
--- 
--ck
+Eric
