@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXCMTKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbXCMTNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbXCMTKK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 15:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbXCMTKK
+	id S932893AbXCMTNE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 15:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbXCMTNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 15:10:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53857 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933006AbXCMTKI (ORCPT
+	Tue, 13 Mar 2007 15:13:04 -0400
+Received: from nijmegen.renzel.net ([195.243.213.130]:57657 "EHLO
+	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932893AbXCMTNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 15:10:08 -0400
-Date: Tue, 13 Mar 2007 19:09:49 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-       7eggert@gmx.de, dada1@cosmosbay.com, linux-kernel@vger.kernel.org
-Subject: Re: sys_write() racy for multi-threaded append?
-Message-ID: <20070313190949.GA3417@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Michael K. Edwards" <medwards.linux@gmail.com>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-	7eggert@gmx.de, dada1@cosmosbay.com, linux-kernel@vger.kernel.org
-References: <f2b55d220703121746k1a849b78rec3131cb6f5eae38@mail.gmail.com> <20070313022430.57503b08@lxorguk.ukuu.org.uk> <f2b55d220703130025l48ea2e8ci15ddf0563cf21bf9@mail.gmail.com> <20070313.004224.41634994.davem@davemloft.net> <f2b55d220703130924h11786d9fh1d87f90bcd1b3d60@mail.gmail.com> <f2b55d220703131059j2b47b3e0s1edae6150929684f@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Mar 2007 15:13:01 -0400
+From: Mws <mws@twisted-brains.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [1/6] 2.6.21-rc3: known regressions
+Date: Tue, 13 Mar 2007 20:12:44 +0100
+User-Agent: KMail/1.9.6
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313181147.GA12224@elf.ucw.cz> <45F6F677.1070302@drzeus.cx>
+In-Reply-To: <45F6F677.1070302@drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <f2b55d220703131059j2b47b3e0s1edae6150929684f@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200703132012.44321.mws@twisted-brains.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 13 March 2007, Pierre Ossman wrote:
+> Pavel Machek wrote:
+> > 
+> > Uhuh. User error, lets close the report.
+> > 
+> > mmc changed the major to 
+> > 
+> > 236 mmc
+> > 
+> > ... while it was something else in 2.6.20. Can we get stable device
+> > allocation for mmc?
+> 
+> What kind of savages do not use udev these days?! ;)
+> 
+> I don't have the time and energy to jump through all the hoops required to get
+> an official number right now. Most users use udev and those that don't can use
+> the "major" parameter for mmc_block.
+> 
+> Rgds
 
-Michael, please stop spreading this utter bullshit _now_.  You're so
-full of half-knowledge that it's not funny anymore, and you try
-to insult people knowing a few magniutes more than you left and right.
+hi,
 
-Can you please select a different mailinglist for your trolling?
+i don't know if you ever used linux on embedded devices like set-top-boxes.
+
+you have a mostly fixed device infrastructure on those devices.
+
+even if you call it a "kind of savage",
+using udev there instead of fixed major device numbers is crap.
+
+best regards
+marcel
+
+
+
+
 
