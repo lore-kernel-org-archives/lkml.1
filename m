@@ -1,77 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933256AbXCMU1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbXCMU1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933256AbXCMU1D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933215AbXCMU1D
+	id S933258AbXCMU1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933251AbXCMU1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:27:03 -0400
-Received: from mail29.syd.optusnet.com.au ([211.29.132.171]:36442 "EHLO
-	mail29.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933258AbXCMU07 (ORCPT
+	Tue, 13 Mar 2007 16:27:33 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:52866
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933258AbXCMU1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:26:59 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.21-rc3-mm1 RSDL results
-Date: Wed, 14 Mar 2007 07:26:26 +1100
-User-Agent: KMail/1.9.5
-Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Matt Mackall <mpm@selenic.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-References: <20070309053931.GA10459@waste.org> <200703111034.02159.kernel@kolivas.org> <45F6EBB2.8090700@rtr.ca>
-In-Reply-To: <45F6EBB2.8090700@rtr.ca>
+	Tue, 13 Mar 2007 16:27:32 -0400
+Date: Tue, 13 Mar 2007 13:27:26 -0700
+To: David Schwartz <davids@webmaster.com>
+Cc: jeremy@goop.org,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>,
+       Con Kolivas <kernel@kolivas.org>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+Message-ID: <20070313202726.GA9520@gnuppy.monkey.org>
+References: <45F6E69B.9000602@goop.org> <MDEHLPKNGKAHNMBLJOLKIELACDAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703140726.26994.kernel@kolivas.org>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIELACDAC.davids@webmaster.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 March 2007 05:21, Mark Lord wrote:
-> Con Kolivas wrote:
-> > Can you try the new version of RSDL. Assuming it doesn't oops on you it
-> > has some accounting bugfixes which may have been biting you.
->
-> Retesting today with 2.6.21-rc3-git7 + 2.6.21-rc3-sched-rsdl-0.30.patch.
->
-> Still not pleasant to use the GUI with a kernel build (-j1 or -j2)
-> happening unless the build is manually "nice'd".
->
-> Also, accounting looks weird in top(1).
->
-> With a 100% busy machine, top will show something like this :
-> > top - 14:20:11 up 10:22,  1 user,  load average: 2.65, 2.80, 2.18
-> > Tasks: 134 total,   4 running, 128 sleeping,   0 stopped,   2 zombie
-> > Cpu(s): 68.7% us,  6.7% sy, 24.7% ni,  0.0% id,  0.0% wa,  0.0% hi,  0.0%
-> > si Mem:   2076964k total,  2002560k used,    74404k free,   148924k
-> > buffers Swap:  2409740k total,      244k used,  2409496k free,  1448876k
-> > cached
-> >
-> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> >  1824 root      36  10 11748 7244 1936 R  4.0  0.3   0:00.12 cc1
-> >  1845 root      31   0  8080 5272 1412 R  1.7  0.3   0:00.05 cc1
-> >  4139 root      20   0  176m  35m 6860 S  1.3  1.7  18:59.35 Xorg
-> > 29381 root      20   0 33712  16m  12m R  1.0  0.8   0:27.24 konsole
-> >     3 root      20   0     0    0    0 S  0.3  0.0   0:00.49 events/0
-> >  1529 root      20   0  2556 1460  752 S  0.3  0.1   0:00.05 make
-> > 14623 root      20   0  2200 1144  860 R  0.3  0.1   0:00.89 top
-> >     1 root      20   0  1568  532  464 S  0.0  0.0   0:00.22 init
-> >     2 root      39  19     0    0    0 S  0.0  0.0   0:00.01 ksoftirqd/0
-> >     4 root      20   0     0    0    0 S  0.0  0.0   0:00.00 khelper
-> >     5 root      20   0     0    0    0 S  0.0  0.0   0:00.00 kthread
->
-> Mmm.. I wonder where all of that 100% CPU went to.. the busiest tasks
-> are only showing up as 4.0% and 1.7% (when in fact they are using near
-> 100%).
+On Tue, Mar 13, 2007 at 12:58:01PM -0700, David Schwartz wrote:
+> > But saying that the user needs to explicitly hold the schedulers hand
+> > and nice everything to tell it how to schedule seems to be an abdication
+> > of duty, an admission of failure.  We can't expect users to finesse all
+> > their processes with nice, and it would be a bad user interface to ask
+> > them to do so.
+> 
+> Then you will always get cases where the scheduler does not do what the user
+> wants because the scheduler does not *know* what the user wants. You always
+> have to tell a computer what you want it to do, and the best it can do is
+> faithfully follow your request.
+> 
+> I think it's completely irrational to ask for a scheduler that automatically
+> gives more CPU time to CPU hogs.
 
-Nothing ever looks like it stays running for very long. That would be enough 
-to account for this sort of top picture. What HZ are you running? Do you 
-usually run two makes at different nice levels?
+SGI machines had an interactive term in their scheduler as well as a
+traditional nice priority. It might be useful for Con to possibly consider
+this as an extension for problematic (badly hacked) processes like X.
 
-Thanks.
+Nice as a control mechanism is rather coarse, yet overly strict because of
+the sophistication of his scheduler. Having an additional term (control knob)
+would be nice for a scheduler that is built upon (correct me if I'm wrong Con):
 
--- 
--ck
+1) has rudimentary bandwidth control for a group of runnable processes
+2) has a basic deadline mechanism
+
+The "nice" term is only an indirect way of controlling his scheduler and
+think and this kind of imprecise tweeking being done with various apps is an
+indicator of how lacking it is as a control term in the scheduler. It would
+be good to have some kind of coherent and direct control over the knobs that
+are (1) and (2).
+
+Schedulers like this have superior control over these properties and they
+should be fully exploited with terms in additional to "nice".
+
+Item (1) is subject to a static "weight" multiplication in relation to other
+runnable tasks. It also might be useful to make a part of that term a bit
+dynamic to get some kind of interactivity control back. It's a matter of
+testing, tweeking, etc... and are not easy for apps that don't have a
+direct thread context to control like a thread unaware X system.
+
+> > And if someone/distro *does* go to all the effort of managing how to get
+> > all the processes at the right nice levels, you have this big legacy
+> > problem where you're now stuck keeping all those nice values meaningful
+> > as you continue to develop the scheduler.  Its bad enough to make them
+> > do the work in the first place, but its worse if they need to make it a
+> > kernel version dependent function.
+> 
+> I agree. I'm not claiming to have the perfect solution. Let's not let the
+> perfect be the enemy of the good though.
+
+I hope this was useful.
+
+bill
+
