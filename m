@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932873AbXCMTHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXCMTKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932873AbXCMTHT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 15:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbXCMTHT
+	id S933006AbXCMTKK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 15:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbXCMTKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 15:07:19 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:51549 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932873AbXCMTHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 15:07:17 -0400
-Message-ID: <45F6F677.1070302@drzeus.cx>
-Date: Tue, 13 Mar 2007 20:07:35 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [1/6] 2.6.21-rc3: known regressions
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313124957.GR18731@stusta.de> <45F6A240.3090601@drzeus.cx> <200703131436.15586.oneukum@suse.de> <20070313181147.GA12224@elf.ucw.cz>
-In-Reply-To: <20070313181147.GA12224@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 15:10:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53857 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933006AbXCMTKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 15:10:08 -0400
+Date: Tue, 13 Mar 2007 19:09:49 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+       7eggert@gmx.de, dada1@cosmosbay.com, linux-kernel@vger.kernel.org
+Subject: Re: sys_write() racy for multi-threaded append?
+Message-ID: <20070313190949.GA3417@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"Michael K. Edwards" <medwards.linux@gmail.com>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+	7eggert@gmx.de, dada1@cosmosbay.com, linux-kernel@vger.kernel.org
+References: <f2b55d220703121746k1a849b78rec3131cb6f5eae38@mail.gmail.com> <20070313022430.57503b08@lxorguk.ukuu.org.uk> <f2b55d220703130025l48ea2e8ci15ddf0563cf21bf9@mail.gmail.com> <20070313.004224.41634994.davem@davemloft.net> <f2b55d220703130924h11786d9fh1d87f90bcd1b3d60@mail.gmail.com> <f2b55d220703131059j2b47b3e0s1edae6150929684f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f2b55d220703131059j2b47b3e0s1edae6150929684f@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> 
-> Uhuh. User error, lets close the report.
-> 
-> mmc changed the major to 
-> 
-> 236 mmc
-> 
-> ... while it was something else in 2.6.20. Can we get stable device
-> allocation for mmc?
 
-What kind of savages do not use udev these days?! ;)
+Michael, please stop spreading this utter bullshit _now_.  You're so
+full of half-knowledge that it's not funny anymore, and you try
+to insult people knowing a few magniutes more than you left and right.
 
-I don't have the time and energy to jump through all the hoops required to get
-an official number right now. Most users use udev and those that don't can use
-the "major" parameter for mmc_block.
+Can you please select a different mailinglist for your trolling?
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
