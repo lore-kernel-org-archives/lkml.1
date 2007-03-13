@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbXCMDHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbXCMEEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753084AbXCMDHM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Mar 2007 23:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbXCMDHM
+	id S1753102AbXCMEEq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 00:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbXCMEEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Mar 2007 23:07:12 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50299 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753084AbXCMDHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Mar 2007 23:07:10 -0400
-Date: Tue, 13 Mar 2007 08:44:11 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Aneesh Kumar <aneesh.kumar@gmail.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH] kthread_should_stop_check_freeze (was: Re: [PATCH -mm 3/7] Freezer: Remove PF_NOFREEZE from rcutorture thread)
-Message-ID: <20070313031411.GC9881@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <200702260800.49603.rjw@sisk.pl> <20070312043854.GA4124@linux.vnet.ibm.com> <20070312081459.GI5242@elf.ucw.cz> <200703121219.12072.rjw@sisk.pl> <20070312223906.GA9749@elf.ucw.cz> <20070312224524.GB807@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070312224524.GB807@kryten>
-User-Agent: Mutt/1.5.11
+	Tue, 13 Mar 2007 00:04:46 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:44652 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753090AbXCMEEp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 00:04:45 -0400
+Date: Tue, 13 Mar 2007 00:04:42 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Stracing Amanda (was: RSDL for 2.6.21-rc3- 0.29)
+In-reply-to: <29495f1d0703122001x67158365s53dea258acb1aa24@mail.gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Nish Aravamudan" <nish.aravamudan@gmail.com>,
+       "Douglas McNaught" <doug@mcnaught.org>,
+       "Patrick Mau" <mau@oscar.ping.de>
+Message-id: <200703130004.42854.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-2022-jp
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070311013506.GD10459@waste.org>
+ <200703122239.29256.gene.heskett@gmail.com>
+ <29495f1d0703122001x67158365s53dea258acb1aa24@mail.gmail.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2007 at 05:45:24PM -0500, Anton Blanchard wrote:
-> Then please document it _clearly_ with the kthread code somewhere. 
+On Monday 12 March 2007, Nish Aravamudan wrote:
+>On 3/12/07, Gene Heskett <gene.heskett@gmail.com> wrote:
+>> On Monday 12 March 2007, Douglas McNaught wrote:
+>> >Patrick Mau <mau@oscar.ping.de> writes:
+>> >> Why not temporarly replace "/bin/tar" with a shell script that
+>> >> does:
+>> >>
+>> >> #!/bin/sh
+>> >> exec strace -f -o output /bin/real.tar $@
+>> >
+>> >You beat me to it.  :) I've done that before; it's a great
+>> > suggestion.
+>> >
+>> >Except that if you expect 'tar' to be invoked multiple times in a
+>> > run, you should probably use 'output.$$' for the output filename so
+>> > things don't get clobbered.
+>> >
+>> >-Doug
+>>
+>> In my case, Doug, it will get invoked 64 times, amanda does a dummy
+>> run to get an estimate, calculates what to do based on that output
+>> which is 32 runs, 1 per disklist entry and I have 32, and then reruns
+>> tar with the appropriate level options against each individual
+>> disklist entry.
+>>
+>> But I'm puzzled a bit, what does the double $$ do?, or it buried
+>> someplace in the bash manpage?  Its not something I've stumbled over
+>> yet.
+>
+>buried indeed:
+>
+>"Special Parameters:
+>  ...
+>       $      Expands to the process ID of the shell.  In a  () 
+> subshell,  it expands  to  the  process  ID of the current shell, not
+> the sub‐ shell.
+>"
 
-Document as well in the kernel_thread() API, as I notice people still
-use kernel_thread() some places (ex: rtasd.c in powerpc arch)?
+Well, that's clear enough, but what of the double $$ case?  Would this 
+them make a PID unique to each invocation untill it finally wraps a 16 
+bit value, or will the kernel re-use them because they won't all be 
+running simultainiously, but limited by the number of unique 'spindle' 
+numbers on the system, this to prevent as best as it can, the thrashing 
+of a drive by having tar working on 2 separate (or more) partitions at 
+the same time.  In my case 2 are possible, as /var is on a separate 
+drive.
 
-> The reason I brought this up is I had no idea we had to put the freezer gunk
-> in all kernel thread loops and Ive been writing kernel threads for years.
+>Thanks,
+>Nish
 
-I noticed that in the Powerpc code (atleast for rtas kernel thread)
-here:
 
-	http://lkml.org/lkml/2007/1/9/61
-
-That was not a serious problem perhaps because process freezer was mostly used
-in software suspend and only those platforms supporting software suspend
-had to worry abt it.
-
-But now we intend to use process freezer for CPU hotplug as well, so all
-platforms wanting to support CPU hotplug better support process freezer!
-
-P.S : I believe kprobes is already using process freezer as well.
 
 -- 
-Regards,
-vatsa
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+"Say yur prayers, yuh flea-pickin' varmint!"
+-- Yosemite Sam
