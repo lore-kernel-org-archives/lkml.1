@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbXCMKw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXCMK51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbXCMKw5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 06:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXCMKw5
+	id S933012AbXCMK51 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 06:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXCMK51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 06:52:57 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:41898 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753221AbXCMKw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 06:52:56 -0400
-Date: Tue, 13 Mar 2007 03:52:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: clameter@sgi.com, linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
-Message-Id: <20070313035250.f908a50e.akpm@linux-foundation.org>
-In-Reply-To: <45F65ADA.9010501@yahoo.com.au>
-References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>
-	<20070313005334.853559ca.akpm@linux-foundation.org>
-	<45F65ADA.9010501@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 06:57:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:35139 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753224AbXCMK50 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 06:57:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=GHbZMxPjjKpFaNuBOAshFu6SFvju0IuPb0k8NAkBrwN979zxemi8pnm4YDtvry7vjA1anLRfXLitU/2lRbIcHep6gF0BL76ZnVcRK7uVqVioJNkAEj+bF2iFBPvuHVACTS+0N1jG3XxgUSmEo0OxN3nHuhH2qkdUuCWmx565YMg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Frank van Maarseveen <frankvm@frankvm.com>
+Subject: Re: 2.6.20*: PATA DMA timeout, hangs (2)
+Date: Tue, 13 Mar 2007 12:04:31 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <20070312085447.GA10955@janus> <200703122140.25682.bzolnier@gmail.com> <20070313091936.GA23765@janus>
+In-Reply-To: <20070313091936.GA23765@janus>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200703131204.31435.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 13 Mar 2007 19:03:38 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> Andrew Morton wrote:
-> >>On Tue, 13 Mar 2007 00:13:25 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
-> >>Page table pages have the characteristics that they are typically zero
-> >>or in a known state when they are freed.
+
+On Tuesday 13 March 2007, Frank van Maarseveen wrote:
+> On Mon, Mar 12, 2007 at 09:40:25PM +0100, Bartlomiej Zolnierkiewicz wrote:
 > > 
+> > Hi,
 > > 
-> > Well if they're zero then perhaps they should be released to the page allocator
-> > to satisfy the next __GFP_ZERO request.  If that request is for a pagetable
-> > page, we break even (except we get to remove special-case code).  If that
-> > __GFP_ZERO allocation was or some application other than for a pagetable, we
-> > win.
+> > On Monday 12 March 2007, Frank van Maarseveen wrote:
+> > > On Mon, Mar 12, 2007 at 01:21:18PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > > 
+> > > > Hi,
+> > > > 
+> > > > Could you check if this is the same problem as this one:
+> > > > 
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=8169
+> > > 
+> > > Looks like it except that I don't see "lost interrupt" messages here. So,
+> > > it might be something different (I don't know).
 > > 
-> > iow, can we just nuke 'em?
+> > From the first mail:
+> > 
+> > hda: max request size: 128KiB
+> > hda: 40021632 sectors (20491 MB) w/2048KiB Cache, CHS=39704/16/63
+> > hda: cache flushes not supported
+> >  hda: hda1 hda2 hda4
+> > 
+> > It seems that DMA is not used by default (CONFIG_IDEDMA_PCI_AUTO=n),
+> > so this is probably exactly the same issue.
+> > 
+> > Please try the patch attached to the bugzilla bug entry.
 > 
-> Page allocator still requires interrupts to be disabled, which this doesn't.
+> 2.6.20.2 rejects this patch and I don't see a way to apply it by hand:
+> ide_set_dma() isn't there, nothing seems to match.
 
-Bah.  How many cli/sti statements fit into a single cachemiss?
+The patch is for 2.6.21-rc3, sorry for not making it clear.
 
-> Considering there isn't much else that frees known zeroed pages, I wonder if
-> it is worthwhile.
-
-If you want a zeroed page for pagecache and someone has just stuffed a
-known-zero, cache-hot page into the pagetable quicklists, you have good
-reason to be upset.
-
-In fact, if you want a _non_-zeroed page and someone has just stuffed a
-known-zero, cache-hot page into the pagetable quicklists, you still have
-reason to be upset.  You *want* that cache-hot page.
-
-Generally, all these little private lists of pages (such as the ones which
-slab had/has) are a bad deal.  Cache effects preponderate and I do think
-we're generally better off tossing the things into a central pool.
-
-Plus, we can get in a situation where take a cache-cold, known-zero page
-from the pte quicklist when there is a cache-hot, non-zero page sitting in
-the page allocator.  I suspect that zeroing the cache-hot page would take a
-similar amount of time to a single miss agains the cache-cold page.
-
-I'm not saying that I _know_ that the quicklists are pointless, but I don't
-think it's established that they are pointful.
-
-ISTR that experiments with removing the i386 quicklists made zero
-difference, but that was an awfully long time ago.  Significantly, it
-predated per-cpu-pages..
-
-
-> Last time the zeroidle discussion came up was IIRC not actually real performance
-> gain, just cooking the 1024 CPU threaded pagefault numbers ;)
-
-Maybe, dunno.  It was apparently a win on powerpc many years ago.  I had a
-fiddle with it 5-6 years ago on x86 using a cache-disabled mapping of the
-page.  But it needed too much support in core VM to bother.  Since then
-we've grown per-cpu page magazines and __GFP_ZERO.  Plus I'm not aware of
-anyone having tried doing it on x86 with non-temporal stores.
-
+Bart
