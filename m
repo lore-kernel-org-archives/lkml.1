@@ -1,123 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbXCMHPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbXCMHWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbXCMHPw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 03:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXCMHPw
+	id S1753174AbXCMHWq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 03:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbXCMHWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 03:15:52 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:31606 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753183AbXCMHPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 03:15:51 -0400
-Message-ID: <45F65022.2030201@sw.ru>
-Date: Tue, 13 Mar 2007 10:17:54 +0300
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Tue, 13 Mar 2007 03:22:46 -0400
+Received: from smtp103.plus.mail.mud.yahoo.com ([68.142.206.236]:40464 "HELO
+	smtp103.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753174AbXCMHWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 03:22:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=S6O4O0wJg6WQgZV7bzeOCcEsLR1fVKvaznyMjWTYWAqKXtE1HFmCAgbtZ2U76OzqM8bMxCeQGGieL/Ytd0OUljOBZKdO0Bs7TmXeFfAnNBsZTDnA0jFZeYq5uoWBhN5s+c+0JCn5kL7vrd5TB3EjqWP1wgbm6ZqPnXjYCPZk5VU=  ;
+X-YMail-OSG: apz2rWsVM1liCx.nSiwCEDRVPsXhB8dV0.3TgVipIDegvMPOKRoBmWjQHdC15z_lXDK31V4QBMeaaGjDLoUIg92Ch2ETmxBMtGpLH0GCVZT90XcUjA6dl5Ukr7.YMNq4TAaeVsBKKt2cMT4-
+Message-ID: <45F6512E.8000802@yahoo.com.au>
+Date: Tue, 13 Mar 2007 18:22:22 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Herbert Poetzl <herbert@13thfloor.at>
-CC: Andrew Morton <akpm@linux-foundation.org>, Kirill Korotaev <dev@sw.ru>,
-       containers@lists.osdl.org, menage@google.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 2/7] RSS controller core
-References: <45ED7DEC.7010403@sw.ru> <45ED80E1.7030406@sw.ru> <20070306140036.4e85bd2f.akpm@linux-foundation.org> <45F3F581.9030503@sw.ru> <20070311045111.62d3e9f9.akpm@linux-foundation.org> <20070312010039.GC21861@MAIL.13thfloor.at> <45F51709.1010409@sw.ru> <20070312211111.GB21258@MAIL.13thfloor.at>
-In-Reply-To: <20070312211111.GB21258@MAIL.13thfloor.at>
-Content-Type: text/plain; charset=ISO-8859-1
+To: davids@webmaster.com
+CC: Matt Mackall <mpm@selenic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, ck@vds.kolivas.org
+Subject: Re: RSDL-mm 0.28
+References: <MDEHLPKNGKAHNMBLJOLKAEBACDAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAEBACDAC.davids@webmaster.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Poetzl wrote:
-> On Mon, Mar 12, 2007 at 12:02:01PM +0300, Pavel Emelianov wrote:
->>>>> Maybe you have some ideas how we can decide on this?
->>>> We need to work out what the requirements are before we can 
->>>> settle on an implementation.
->>> Linux-VServer (and probably OpenVZ):
->>>
->>>  - shared mappings of 'shared' files (binaries 
->>>    and libraries) to allow for reduced memory
->>>    footprint when N identical guests are running
->> This is done in current patches.
+David Schwartz wrote:
+>>>There's a substantial performance hit for not yield, so we probably
+>>>want to investigate alternate semantics for it. It seems reasonable
+>>>for apps to say "let me not hog the CPU" without completely expiring
+>>>them. Imagine you're in the front of the line (aka queue) and you
+>>>spend a moment fumbling for your wallet. The polite thing to do is to
+>>>let the next guy in front. But with the current sched_yield, you go
+>>>all the way to the back of the line.
 > 
-> nice, but the question was about _requirements_
-> (so your requirements are?)
 > 
->>>  - virtual 'physical' limit should not cause
->>>    swap out when there are still pages left on
->>>    the host system (but pages of over limit guests
->>>    can be preferred for swapping)
->> So what to do when virtual physical limit is hit?
->> OOM-kill current task?
+>>Well... are you advocating we change sched_yield semantics to a
+>>gentler form? This is a cinch to implement but I know how Ingo feels
+>>about this. It will only encourage more lax coding using sched_yield
+>>instead of proper blocking (see huge arguments with the ldap people on
+>>this one who insist it's impossible not to use yield).
 > 
-> when the RSS limit is hit, but there _are_ enough
-> pages left on the physical system, there is no
-> good reason to swap out the page at all
 > 
->  - there is no benefit in doing so (performance
->    wise, that is)
+> The basic point of sched_yield is to allow every other process at the same
+> static priority level a chance to use the CPU before you get it back. It is
+> generally an error to use sched_yield to be nice. It's nice to get your work
+> done when the scheduler gives you the CPU, that's why it gave it to you.
 > 
->  - it actually hurts performance, and could
->    become a separate source for DoS
+> It is proper to use sched_yield as an optimization when it more efficient to
+> allow another process/thread to run than you, for example, when you
+> encounter a task you cannot do efficiently at that time because another
+> thread holds a lock.
 > 
-> what should happen instead (in an ideal world :)
-> is that the page is considered swapped out for
-> the guest (add guest penality for swapout), and 
-
-Is the page stays mapped for the container or not?
-If yes then what's the use of limits? Container mapped
-pages more than the limit is but all the pages are
-still in memory. Sounds weird.
-
-> when the page would be swapped in again, the guest
-> takes a penalty (for the 'virtual' page in) and
-> the page is returned to the guest, possibly kicking
-> out (again virtually) a different page
+> It's also useful prior to doing something that can most efficiently be done
+> without interruption. So a thread that returns from 'sched_yield' should
+> ideally be given a full timeslice if possible. This may not be sensible if
+> the 'sched_yield' didn't actuall yield, but then again, if nothing else
+> wants to run, why not give the only task that does a full slice?
 > 
->>>  - accounting and limits have to be consistent
->>>    and should roughly represent the actual used
->>>    memory/swap (modulo optimizations, I can go
->>>    into detail here, if necessary)
->> This is true for current implementation for
->> booth - this patchset ang OpenVZ beancounters.
->>
->> If you sum up the physpages values for all containers
->> you'll get the exact number of RAM pages used.
+> In no case is much of anything guaranteed, of course. (What can you do if
+> there's no other process to yield to?)
 > 
-> hmm, including or excluding the host pages?
-
-Depends on whether you account host pages or not.
-
->>>  - OOM handling on a per guest basis, i.e. some
->>>    out of memory condition in guest A must not
->>>    affect guest B
->> This is done in current patches.
+> Note that processes that call sched_yield should be rewarded for doing so
+> just as process that block on I/O are, assuming they do in fact wind up
+> giving up the CPU when they would otherwise have had it.
 > 
->> Herbert, did you look at the patches before
->> sending this mail or do you just want to
->> 'take part' in conversation w/o understanding
->> of hat is going on?
+> DS
 > 
-> again, the question was about requirements, not
-> your patches, and yes, I had a look at them _and_
-> the OpenVZ implementations ...
 > 
-> best,
-> Herbert
-> 
-> PS: hat is going on? :)
-> 
->>> HTC,
->>> Herbert
->>>
->>>> Sigh.  Who is running this show?   Anyone?
->>>>
->>>> You can actually do a form of overcommittment by allowing multiple
->>>> containers to share one or more of the zones. Whether that is
->>>> sufficient or suitable I don't know. That depends on the requirements,
->>>> and we haven't even discussed those, let alone agreed to them.
->>>>
->>>> _______________________________________________
->>>> Containers mailing list
->>>> Containers@lists.osdl.org
->>>> https://lists.osdl.org/mailman/listinfo/containers
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 
+
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
