@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933755AbXCMVsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933740AbXCMVvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933755AbXCMVsp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 17:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933675AbXCMVso
+	id S933740AbXCMVvD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 17:51:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933745AbXCMVvC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 17:48:44 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37325 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933755AbXCMVso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 17:48:44 -0400
-Date: Tue, 13 Mar 2007 14:39:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
+	Tue, 13 Mar 2007 17:51:02 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:38150 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933740AbXCMVvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 17:51:01 -0400
+Date: Tue, 13 Mar 2007 14:45:12 -0700
+From: Chris Wright <chrisw@sous-sol.org>
 To: Steven Rostedt <rostedt@goodmis.org>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>,
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
        Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
        Glauber de Oliveira Costa <glommer@gmail.com>
 Subject: Re: [RFC/PATCH 00/59] Make common x86 arch area for i386 and x86_64
-In-Reply-To: <1173820919.28042.3.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0703131432400.9690@woody.linux-foundation.org>
+Message-ID: <20070313214512.GM10574@sequoia.sous-sol.org>
 References: <1173820919.28042.3.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173820919.28042.3.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> Recently I've been doing some work that will affect both the i386 and x86_64
+> architectures.  So there will be common code for both, as well as code
+> that will be unique for the specific arch.  So I was looking into a way
+> to do this cleanly, and found that there is no clean way to share code
+> between x86_64 and i386.
 
+Thanks for taking this on.  I'm sure Andi has a bunch of ideas on this
+topic, but it would be nice to see the consolidation.
 
-On Tue, 13 Mar 2007, Steven Rostedt wrote:
-> 
-> What we have currently is a bunch of hacks.  Seems that people can't make
-> up their mind to what to do.
+> So the move patches are a simple move of one file, with the slight exception 
+> of files that hold the speedstep-lib.h file.  This file was moved from the
+> arch/i386/kerne/cpu/cpufreq directory and put into the include/asm-i386
+> directory.  This was due to the fact that some of the moved files included
+> it, and some files that were not moved also included it. Instead of using
+> the #include "../../x86/" hack again, I just simply moved it to the global
+> i386 include directory.  Only the arch/x86 will use the include/asm-i386
 
-I don't mind the patches, but I'd be a lot happier if it also was a stated 
-intention to actually make it be buildable as "x86", the same way that the 
-separate 32-bit and 64-bit POWER architectures were merged into just one 
-architecture that could be built either way.
+what about asm-x86/ dir?  the asm/ symlink would still point to relevant
+arch, but the file there could be simply #include <asm-x86/file.h> ?
 
-For the POWER merge, we had (and probably still have) legacy platforms 
-that could only be built the old way (ie if you needed to build for 
-certain legacy 32-bit targets, you still needed to use the "ppc" 
-architecture, so I'm not saying that it has to all be converted, but I 
-think that we should at least *aim* for unifying 32-bit and 64-bit x86.
-
-The "32-bit code has legcay issues" thing that Andi complained about (eg 
-there's no guarantee of a HPET on 32-bit x86) doesn't really change the 
-fact that yes, we have to support those legacy issues *anyway*, and 64-bit 
-x86 certainly has its set of issues already too.
-
-We've started to notice that the i386 build gets broken now that most 
-developers tend to have newer CPU's and run mostly on x86-64 (and yes, 
-that's me too), and while I don't think unifying things will guarantee 
-that doesn't happen in the future, it will hopefully at least help make it 
-not get much *worse*.
-
-As it is, the build environment has to know to pass in "-m32/-m64" 
-anyway..
-
-		Linus
+thanks,
+-chris
