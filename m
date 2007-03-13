@@ -1,100 +1,882 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXCMJ5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbXCMJ6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753199AbXCMJ5i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 05:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbXCMJ5d
+	id S1752289AbXCMJ6F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 05:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbXCMJ5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 05:57:33 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4649 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbXCMJ5F (ORCPT
+	Tue, 13 Mar 2007 05:57:42 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44344 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753200AbXCMJ5C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 05:57:05 -0400
-Date: Tue, 13 Mar 2007 09:56:52 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andreas Schwab <schwab@suse.de>,
-       Giuliano Pochini <pochini@denise.shiny.it>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: /sys/devices/system/cpu/cpuX/online are missing
-Message-ID: <20070313095652.GB20518@flint.arm.linux.org.uk>
-Mail-Followup-To: Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Andreas Schwab <schwab@suse.de>,
-	Giuliano Pochini <pochini@denise.shiny.it>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Suresh Siddha <suresh.b.siddha@intel.com>
-References: <20070311222652.5ea40da1.pochini@shiny.it> <20070312085826.GA9985@osiris.boeblingen.de.ibm.com> <Pine.LNX.4.64.0703122337350.25919@denise.shiny.it> <je6496asea.fsf@sykes.suse.de> <20070313090350.GA9890@osiris.boeblingen.de.ibm.com> <20070313091159.GB9890@osiris.boeblingen.de.ibm.com> <20070313094038.GA20518@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070313094038.GA20518@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 13 Mar 2007 05:57:02 -0400
+Message-Id: <20070313095549.813330645@bull.net>
+References: <20070313095203.154246923@bull.net>
+User-Agent: quilt/0.46-1
+Date: Tue, 13 Mar 2007 10:52:07 +0100
+From: Pierre.Peiffer@bull.net
+To: akpm@linux-foundation.org
+Cc: mingo@elte.hu, drepper@redhat.com, linux-kernel@vger.kernel.org,
+       jean-pierre.dion@bull.net, Pierre Peiffer <pierre.peiffer@bull.net>
+Subject: [PATCH 2.6.21-rc3-mm2 4/4] sys_futex64 : allows 64bit futexes
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/03/2007 10:58:49,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/03/2007 10:58:51,
+	Serialize complete at 13/03/2007 10:58:51
+Content-Disposition: inline; filename=futex-64bit.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 09:40:39AM +0000, Russell King wrote:
-> On Tue, Mar 13, 2007 at 10:11:59AM +0100, Heiko Carstens wrote:
-> > On Tue, Mar 13, 2007 at 10:03:50AM +0100, Heiko Carstens wrote:
-> > > I was referring to arch/ppc not arch/powerpc. But it seems that arch/ppc
-> > > doesn't support cpu hotplug anyway. So I guess it's indeed just a missing
-> > > config option.
-> > > 
-> > > Grepping a bit further shows that arm suffered by the change that inverted
-> > > the logic if the 'online' attribute for cpus should appear. Since arm
-> > > supports cpu hotplug but the patch left arm out, it doesn't work there
-> > > anymore (cc'ing arm people: changeset 72486f1f8f0a2bc828b9d30cf4690cf2dd6807fc
-> > > is most probably disabling cpu hotplug support on arm like it did on s390).
-> > 
-> > Should have cc'ed Suresh Siddha who caused the breakage ;)
-> 
-> Welcome to why cleanups are bad news. ;(  Yes, ARM also needs to be fixed
-> and I'd ask that in future people doing cleanups in core code take a little
-> more time to review the code before submitting patches *AND* give heads-up
-> to *EVERYONE* who might be affected by the change.
+This last patch is an adaptation of the sys_futex64 syscall provided in -rt
+patch (originally written by Ingo). It allows the use of 64bit futex.
 
-Right, here's the ARM fix which is now in the ARM tree:
+I have re-worked most of the code to avoid the duplication of the code.
 
-# Base git commit: 8b9909ded6922c33c221b105b26917780cfa497d
-#	(Merge branch 'merge' of master.kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc)
-#
-# Author:    Russell King (Tue Mar 13 09:54:21 GMT 2007)
-# Committer: Russell King (Tue Mar 13 09:54:21 GMT 2007)
-#   
-#   [ARM] Fix breakage caused by 72486f1f8f0a2bc828b9d30cf4690cf2dd6807fc
-#   
-#   72486f1f8f0a2bc828b9d30cf4690cf2dd6807fc inverted the sense for
-#   enabling hotplug CPU controls without reference to any other
-#   architecture other than i386, ia64 and PowerPC.  This left
-#   everyone else without hotplug CPU control.
-#   
-#   Fix ARM for this brain damage.
-#   
-#   Signed-off-by: Russell King
-#
-#    arch/arm/kernel/setup.c |    7 +++++--
-#    1 files changed, 5 insertions(+), 2 deletions(-)
-#
-diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
-index 03e37af..0453dcc 100644
---- a/arch/arm/kernel/setup.c
-+++ b/arch/arm/kernel/setup.c
-@@ -839,8 +839,11 @@ static int __init topology_init(void)
+It does not provide the functionality for all architectures (only for x64 for now).
+
+Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+
+---
+ include/asm-x86_64/futex.h  |  113 ++++++++++++++++++++
+ include/asm-x86_64/unistd.h |    4 
+ include/linux/futex.h       |    7 -
+ include/linux/syscalls.h    |    3 
+ kernel/futex.c              |  248 +++++++++++++++++++++++++++++++-------------
+ kernel/futex_compat.c       |    3 
+ kernel/sys_ni.c             |    1 
+ 7 files changed, 301 insertions(+), 78 deletions(-)
+
+Index: b/include/asm-x86_64/futex.h
+===================================================================
+--- a/include/asm-x86_64/futex.h
++++ b/include/asm-x86_64/futex.h
+@@ -41,6 +41,39 @@
+ 	  "=&r" (tem)						\
+ 	: "r" (oparg), "i" (-EFAULT), "m" (*uaddr), "1" (0))
+ 
++#define __futex_atomic_op1_64(insn, ret, oldval, uaddr, oparg) \
++  __asm__ __volatile (						\
++"1:	" insn "\n"						\
++"2:	.section .fixup,\"ax\"\n\
++3:	movq	%3, %1\n\
++	jmp	2b\n\
++	.previous\n\
++	.section __ex_table,\"a\"\n\
++	.align	8\n\
++	.quad	1b,3b\n\
++	.previous"						\
++	: "=r" (oldval), "=r" (ret), "=m" (*uaddr)		\
++	: "i" (-EFAULT), "m" (*uaddr), "0" (oparg), "1" (0))
++
++#define __futex_atomic_op2_64(insn, ret, oldval, uaddr, oparg) \
++  __asm__ __volatile (						\
++"1:	movq	%2, %0\n\
++	movq	%0, %3\n"					\
++	insn "\n"						\
++"2:	" LOCK_PREFIX "cmpxchgq %3, %2\n\
++	jnz	1b\n\
++3:	.section .fixup,\"ax\"\n\
++4:	movq	%5, %1\n\
++	jmp	3b\n\
++	.previous\n\
++	.section __ex_table,\"a\"\n\
++	.align	8\n\
++	.quad	1b,4b,2b,4b\n\
++	.previous"						\
++	: "=&a" (oldval), "=&r" (ret), "=m" (*uaddr),		\
++	  "=&r" (tem)						\
++	: "r" (oparg), "i" (-EFAULT), "m" (*uaddr), "1" (0))
++
+ static inline int
+ futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
  {
- 	int cpu;
+@@ -95,6 +128,60 @@ futex_atomic_op_inuser (int encoded_op, 
+ }
  
--	for_each_possible_cpu(cpu)
--		register_cpu(&per_cpu(cpu_data, cpu).cpu, cpu);
-+	for_each_possible_cpu(cpu) {
-+		struct cpuinfo_arm *cpuinfo = &per_cpu(cpu_data, cpu);
-+		cpuinfo->cpu.hotpluggable = 1;
-+		register_cpu(&cpuinfo->cpu, cpu);
+ static inline int
++futex_atomic_op_inuser64 (int encoded_op, u64 __user *uaddr)
++{
++	int op = (encoded_op >> 28) & 7;
++	int cmp = (encoded_op >> 24) & 15;
++	u64 oparg = (encoded_op << 8) >> 20;
++	u64 cmparg = (encoded_op << 20) >> 20;
++	u64 oldval = 0, ret, tem;
++
++	if (encoded_op & (FUTEX_OP_OPARG_SHIFT << 28))
++		oparg = 1 << oparg;
++
++	if (! access_ok (VERIFY_WRITE, uaddr, sizeof(u64)))
++		return -EFAULT;
++
++	inc_preempt_count();
++
++	switch (op) {
++	case FUTEX_OP_SET:
++		__futex_atomic_op1_64("xchgq %0, %2", ret, oldval, uaddr, oparg);
++		break;
++	case FUTEX_OP_ADD:
++		__futex_atomic_op1_64(LOCK_PREFIX "xaddq %0, %2", ret, oldval,
++				   uaddr, oparg);
++		break;
++	case FUTEX_OP_OR:
++		__futex_atomic_op2_64("orq %4, %3", ret, oldval, uaddr, oparg);
++		break;
++	case FUTEX_OP_ANDN:
++		__futex_atomic_op2_64("andq %4, %3", ret, oldval, uaddr, ~oparg);
++		break;
++	case FUTEX_OP_XOR:
++		__futex_atomic_op2_64("xorq %4, %3", ret, oldval, uaddr, oparg);
++		break;
++	default:
++		ret = -ENOSYS;
 +	}
++
++	dec_preempt_count();
++
++	if (!ret) {
++		switch (cmp) {
++		case FUTEX_OP_CMP_EQ: ret = (oldval == cmparg); break;
++		case FUTEX_OP_CMP_NE: ret = (oldval != cmparg); break;
++		case FUTEX_OP_CMP_LT: ret = (oldval < cmparg); break;
++		case FUTEX_OP_CMP_GE: ret = (oldval >= cmparg); break;
++		case FUTEX_OP_CMP_LE: ret = (oldval <= cmparg); break;
++		case FUTEX_OP_CMP_GT: ret = (oldval > cmparg); break;
++		default: ret = -ENOSYS;
++		}
++	}
++	return ret;
++}
++
++static inline int
+ futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
+ {
+ 	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
+@@ -121,5 +208,31 @@ futex_atomic_cmpxchg_inatomic(int __user
+ 	return oldval;
+ }
  
++static inline u64
++futex_atomic_cmpxchg_inatomic64(u64 __user *uaddr, u64 oldval, u64 newval)
++{
++	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(u64)))
++		return -EFAULT;
++
++	__asm__ __volatile__(
++		"1:	" LOCK_PREFIX "cmpxchgq %3, %1		\n"
++
++		"2:	.section .fixup, \"ax\"			\n"
++		"3:	mov     %2, %0				\n"
++		"	jmp     2b				\n"
++		"	.previous				\n"
++
++		"	.section __ex_table, \"a\"		\n"
++		"	.align  8				\n"
++		"	.quad   1b,3b				\n"
++		"	.previous				\n"
++
++		: "=a" (oldval), "=m" (*uaddr)
++		: "i" (-EFAULT), "r" (newval), "0" (oldval)
++		: "memory"
++	);
++
++	return oldval;
++}
+ #endif
+ #endif
+Index: b/include/asm-x86_64/unistd.h
+===================================================================
+--- a/include/asm-x86_64/unistd.h
++++ b/include/asm-x86_64/unistd.h
+@@ -619,8 +619,10 @@ __SYSCALL(__NR_sync_file_range, sys_sync
+ __SYSCALL(__NR_vmsplice, sys_vmsplice)
+ #define __NR_move_pages		279
+ __SYSCALL(__NR_move_pages, sys_move_pages)
++#define __NR_futex64		280
++__SYSCALL(__NR_futex64, sys_futex64)
+ 
+-#define __NR_syscall_max __NR_move_pages
++#define __NR_syscall_max __NR_futex64
+ 
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
+Index: b/include/linux/syscalls.h
+===================================================================
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -178,6 +178,9 @@ asmlinkage long sys_set_tid_address(int 
+ asmlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
+ 			struct timespec __user *utime, u32 __user *uaddr2,
+ 			u32 val3);
++asmlinkage long sys_futex64(u64 __user *uaddr, int op, u64 val,
++			struct timespec __user *utime, u64 __user *uaddr2,
++			u64 val3);
+ 
+ asmlinkage long sys_init_module(void __user *umod, unsigned long len,
+ 				const char __user *uargs);
+Index: b/kernel/futex.c
+===================================================================
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -61,6 +61,44 @@
+ 
+ #define FUTEX_HASHBITS (CONFIG_BASE_SMALL ? 4 : 8)
+ 
++#ifdef CONFIG_64BIT
++static inline unsigned long
++futex_cmpxchg_inatomic(unsigned long __user *uaddr, unsigned long oldval,
++		       unsigned long newval, int futex64)
++{
++	if (futex64)
++		return futex_atomic_cmpxchg_inatomic64((u64 __user *)uaddr,
++						       oldval, newval);
++	else {
++		u32 ov = oldval, nv = newval;
++		return futex_atomic_cmpxchg_inatomic((int __user *)uaddr, ov,
++						     nv);
++	}
++}
++
++static inline int
++futex_get_user(unsigned long *val, unsigned long __user *uaddr, int futex64)
++{
++	int ret;
++
++	if (futex64)
++		ret = get_user(*val, uaddr);
++	else {
++		u32 __user *addr = (u32 __user *)uaddr;
++
++		ret = get_user(*val, addr);
++	}
++	return ret;
++}
++
++#else
++#define futex_cmpxchg_inatomic(uaddr, oldval, newval, futex64)	\
++	futex_atomic_cmpxchg_inatomic((u32*)uaddr, oldval, newval)
++
++#define futex_get_user(val, uaddr, futex64) get_user(*val, uaddr)
++
++#endif
++
+ /*
+  * Priority Inheritance state:
+  */
+@@ -140,6 +178,7 @@ static struct futex_hash_bucket *hash_fu
+ 	return &futex_queues[hash & ((1 << FUTEX_HASHBITS)-1)];
+ }
+ 
++
+ /*
+  * Return 1 if two futex_keys are equal, 0 otherwise.
+  */
+@@ -162,7 +201,7 @@ static inline int match_futex(union fute
+  *
+  * Should be called with &current->mm->mmap_sem but NOT any spinlocks.
+  */
+-int get_futex_key(u32 __user *uaddr, union futex_key *key)
++int get_futex_key(void __user *uaddr, union futex_key *key)
+ {
+ 	unsigned long address = (unsigned long)uaddr;
+ 	struct mm_struct *mm = current->mm;
+@@ -287,13 +326,30 @@ void drop_futex_key_refs(union futex_key
+ }
+ EXPORT_SYMBOL_GPL(drop_futex_key_refs);
+ 
+-static inline int get_futex_value_locked(u32 *dest, u32 __user *from)
++static inline int
++get_futex_value_locked(unsigned long *dest, unsigned long __user *from,
++		       int futex64)
+ {
+ 	int ret;
+ 
++#ifdef CONFIG_64BIT
++	if (futex64) {
++		pagefault_disable();
++		ret = __copy_from_user_inatomic(dest, from, sizeof(u64));
++		pagefault_enable();
++	} else {
++		u32 d;
++		pagefault_disable();
++		ret = __copy_from_user_inatomic(&d, from, sizeof(u32));
++		pagefault_enable();
++
++		*dest = d;
++	}
++#else
+ 	pagefault_disable();
+ 	ret = __copy_from_user_inatomic(dest, from, sizeof(u32));
+ 	pagefault_enable();
++#endif
+ 
+ 	return ret ? -EFAULT : 0;
+ }
+@@ -566,11 +622,12 @@ static void wake_futex(struct futex_q *q
+ 	q->lock_ptr = NULL;
+ }
+ 
+-static int wake_futex_pi(u32 __user *uaddr, u32 uval, struct futex_q *this)
++static int wake_futex_pi(unsigned long __user *uaddr, unsigned long uval,
++			 struct futex_q *this, int futex64)
+ {
+ 	struct task_struct *new_owner;
+ 	struct futex_pi_state *pi_state = this->pi_state;
+-	u32 curval, newval;
++	unsigned long curval, newval;
+ 
+ 	if (!pi_state)
+ 		return -EINVAL;
+@@ -597,7 +654,7 @@ static int wake_futex_pi(u32 __user *uad
+ 		newval |= (uval & FUTEX_WAITER_REQUEUED);
+ 
+ 		pagefault_disable();
+-		curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
++		curval = futex_cmpxchg_inatomic(uaddr, uval, newval, futex64);
+ 		pagefault_enable();
+ 		if (curval == -EFAULT)
+ 			return -EFAULT;
+@@ -621,16 +678,17 @@ static int wake_futex_pi(u32 __user *uad
  	return 0;
  }
-
+ 
+-static int unlock_futex_pi(u32 __user *uaddr, u32 uval)
++static int unlock_futex_pi(unsigned long __user *uaddr, unsigned long uval,
++			   int futex64)
+ {
+-	u32 oldval;
++	unsigned long oldval;
+ 
+ 	/*
+ 	 * There is no waiter, so we unlock the futex. The owner died
+ 	 * bit has not to be preserved here. We are the owner:
+ 	 */
+ 	pagefault_disable();
+-	oldval = futex_atomic_cmpxchg_inatomic(uaddr, uval, 0);
++	oldval = futex_cmpxchg_inatomic(uaddr, uval, 0, futex64);
+ 	pagefault_enable();
+ 
+ 	if (oldval == -EFAULT)
+@@ -661,7 +719,7 @@ double_lock_hb(struct futex_hash_bucket 
+  * Wake up all waiters hashed on the physical page that is mapped
+  * to this virtual address:
+  */
+-static int futex_wake(u32 __user *uaddr, int nr_wake)
++static int futex_wake(unsigned long __user *uaddr, int nr_wake)
+ {
+ 	struct futex_hash_bucket *hb;
+ 	struct futex_q *this, *next;
+@@ -704,18 +762,19 @@ out:
+  * or create a new one without owner.
+  */
+ static inline int
+-lookup_pi_state_for_requeue(u32 __user *uaddr, struct futex_hash_bucket *hb,
++lookup_pi_state_for_requeue(unsigned long __user *uaddr,
++			    struct futex_hash_bucket *hb,
+ 			    union futex_key *key,
+-			    struct futex_pi_state **pi_state)
++			    struct futex_pi_state **pi_state, int futex64)
+ {
+-	u32 curval, uval, newval;
++	unsigned long curval, uval, newval;
+ 
+ retry:
+ 	/*
+ 	 * We can't handle a fault cleanly because we can't
+ 	 * release the locks here. Simply return the fault.
+ 	 */
+-	if (get_futex_value_locked(&curval, uaddr))
++	if (get_futex_value_locked(&curval, uaddr, futex64))
+ 		return -EFAULT;
+ 
+ 	/* set the flags FUTEX_WAITERS and FUTEX_WAITER_REQUEUED */
+@@ -729,7 +788,7 @@ retry:
+ 		newval = uval | FUTEX_WAITERS | FUTEX_WAITER_REQUEUED;
+ 
+ 		pagefault_disable();
+-		curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
++		curval = futex_cmpxchg_inatomic(uaddr, uval, newval, futex64);
+ 		pagefault_enable();
+ 
+ 		if (unlikely(curval == -EFAULT))
+@@ -760,8 +819,9 @@ retry:
+  * and requeue the next nr_requeue waiters following hashed on
+  * one physical page to another physical page (PI-futex uaddr2)
+  */
+-static int futex_requeue_pi(u32 __user *uaddr1, u32 __user *uaddr2,
+-			    int nr_wake, int nr_requeue, u32 *cmpval)
++static int
++futex_requeue_pi(unsigned long __user *uaddr1, unsigned long __user *uaddr2,
++		 int nr_wake, int nr_requeue, unsigned long *cmpval, int futex64)
+ {
+ 	union futex_key key1, key2;
+ 	struct futex_hash_bucket *hb1, *hb2;
+@@ -794,9 +854,9 @@ retry:
+ 	double_lock_hb(hb1, hb2);
+ 
+ 	if (likely(cmpval != NULL)) {
+-		u32 curval;
++		unsigned long curval;
+ 
+-		ret = get_futex_value_locked(&curval, uaddr1);
++		ret = get_futex_value_locked(&curval, uaddr1, futex64);
+ 
+ 		if (unlikely(ret)) {
+ 			spin_unlock(&hb1->lock);
+@@ -809,7 +869,7 @@ retry:
+ 			 */
+ 			up_read(&current->mm->mmap_sem);
+ 
+-			ret = get_user(curval, uaddr1);
++			ret = futex_get_user(&curval, uaddr1, futex64);
+ 
+ 			if (!ret)
+ 				goto retry;
+@@ -836,7 +896,8 @@ retry:
+ 				int s;
+ 				/* do this only the first time we requeue someone */
+ 				s = lookup_pi_state_for_requeue(uaddr2, hb2,
+-								&key2, &pi_state2);
++								&key2, &pi_state2,
++								futex64);
+ 				if (s) {
+ 					ret = s;
+ 					goto out_unlock;
+@@ -950,8 +1011,8 @@ out:
+  * to this virtual address:
+  */
+ static int
+-futex_wake_op(u32 __user *uaddr1, u32 __user *uaddr2,
+-	      int nr_wake, int nr_wake2, int op)
++futex_wake_op(unsigned long __user *uaddr1, unsigned long __user *uaddr2,
++	      int nr_wake, int nr_wake2, int op, int futex64)
+ {
+ 	union futex_key key1, key2;
+ 	struct futex_hash_bucket *hb1, *hb2;
+@@ -975,9 +1036,16 @@ retryfull:
+ retry:
+ 	double_lock_hb(hb1, hb2);
+ 
+-	op_ret = futex_atomic_op_inuser(op, uaddr2);
++#ifdef CONFIG_64BIT
++	if (futex64)
++		op_ret = futex_atomic_op_inuser64(op, (u64 __user *)uaddr2);
++	else
++		op_ret = futex_atomic_op_inuser(op, (int __user *)uaddr2);
++#else
++	op_ret = futex_atomic_op_inuser(op, (int __user *)uaddr2);
++#endif
+ 	if (unlikely(op_ret < 0)) {
+-		u32 dummy;
++		unsigned long dummy;
+ 
+ 		spin_unlock(&hb1->lock);
+ 		if (hb1 != hb2)
+@@ -1019,7 +1087,7 @@ retry:
+ 		 */
+ 		up_read(&current->mm->mmap_sem);
+ 
+-		ret = get_user(dummy, uaddr2);
++		ret = futex_get_user(&dummy, uaddr2, futex64);
+ 		if (ret)
+ 			return ret;
+ 
+@@ -1062,8 +1130,9 @@ out:
+  * Requeue all waiters hashed on one physical page to another
+  * physical page.
+  */
+-static int futex_requeue(u32 __user *uaddr1, u32 __user *uaddr2,
+-			 int nr_wake, int nr_requeue, u32 *cmpval)
++static int
++futex_requeue(unsigned long __user *uaddr1, unsigned long __user *uaddr2,
++	      int nr_wake, int nr_requeue, unsigned long *cmpval, int futex64)
+ {
+ 	union futex_key key1, key2;
+ 	struct futex_hash_bucket *hb1, *hb2;
+@@ -1087,9 +1156,9 @@ static int futex_requeue(u32 __user *uad
+ 	double_lock_hb(hb1, hb2);
+ 
+ 	if (likely(cmpval != NULL)) {
+-		u32 curval;
++		unsigned long curval;
+ 
+-		ret = get_futex_value_locked(&curval, uaddr1);
++		ret = get_futex_value_locked(&curval, uaddr1, futex64);
+ 
+ 		if (unlikely(ret)) {
+ 			spin_unlock(&hb1->lock);
+@@ -1102,7 +1171,7 @@ static int futex_requeue(u32 __user *uad
+ 			 */
+ 			up_read(&current->mm->mmap_sem);
+ 
+-			ret = get_user(curval, uaddr1);
++			ret = futex_get_user(&curval, uaddr1, futex64);
+ 
+ 			if (!ret)
+ 				goto retry;
+@@ -1287,13 +1356,13 @@ static void unqueue_me_pi(struct futex_q
+  * The cur->mm semaphore must be  held, it is released at return of this
+  * function.
+  */
+-static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
++static int fixup_pi_state_owner(unsigned long  __user *uaddr, struct futex_q *q,
+ 				struct futex_hash_bucket *hb,
+-				struct task_struct *curr)
++				struct task_struct *curr, int futex64)
+ {
+-	u32 newtid = curr->pid | FUTEX_WAITERS;
++	unsigned long newtid = curr->pid | FUTEX_WAITERS;
+ 	struct futex_pi_state *pi_state = q->pi_state;
+-	u32 uval, curval, newval;
++	unsigned long uval, curval, newval;
+ 	int ret;
+ 
+ 	/* Owner died? */
+@@ -1320,12 +1389,12 @@ static int fixup_pi_state_owner(u32 __us
+ 	 * TID. This must be atomic as we have preserve the
+ 	 * owner died bit here.
+ 	 */
+-	ret = get_user(uval, uaddr);
++	ret = futex_get_user(&uval, uaddr, futex64);
+ 	while (!ret) {
+ 		newval = (uval & FUTEX_OWNER_DIED) | newtid;
+ 		newval |= (uval & FUTEX_WAITER_REQUEUED);
+-		curval = futex_atomic_cmpxchg_inatomic(uaddr,
+-						       uval, newval);
++		curval = futex_cmpxchg_inatomic(uaddr,uval,
++						newval, futex64);
+ 		if (curval == -EFAULT)
+  			ret = -EFAULT;
+ 		if (curval == uval)
+@@ -1335,13 +1404,14 @@ static int fixup_pi_state_owner(u32 __us
+ 	return ret;
+ }
+ 
+-static int futex_wait(u32 __user *uaddr, u32 val, struct timespec *time)
++static int futex_wait(unsigned long __user *uaddr, unsigned long val,
++		      struct timespec *time, int futex64)
+ {
+ 	struct task_struct *curr = current;
+ 	DECLARE_WAITQUEUE(wait, curr);
+ 	struct futex_hash_bucket *hb;
+ 	struct futex_q q;
+-	u32 uval;
++	unsigned long uval;
+ 	int ret;
+ 	struct hrtimer_sleeper t, *to = NULL;
+ 	int rem = 0;
+@@ -1376,7 +1446,7 @@ static int futex_wait(u32 __user *uaddr,
+ 	 * We hold the mmap semaphore, so the mapping cannot have changed
+ 	 * since we looked it up in get_futex_key.
+ 	 */
+-	ret = get_futex_value_locked(&uval, uaddr);
++	ret = get_futex_value_locked(&uval, uaddr, futex64);
+ 
+ 	if (unlikely(ret)) {
+ 		queue_unlock(&q, hb);
+@@ -1386,8 +1456,7 @@ static int futex_wait(u32 __user *uaddr,
+ 		 * start all over again.
+ 		 */
+ 		up_read(&curr->mm->mmap_sem);
+-
+-		ret = get_user(uval, uaddr);
++		ret = futex_get_user(&uval, uaddr, futex64);
+ 
+ 		if (!ret)
+ 			goto retry;
+@@ -1500,7 +1569,7 @@ static int futex_wait(u32 __user *uaddr,
+ 
+ 			/* mmap_sem and hash_bucket lock are unlocked at
+ 			   return of this function */
+-			ret = fixup_pi_state_owner(uaddr, &q, hb, curr);
++			ret = fixup_pi_state_owner(uaddr, &q, hb, curr, futex64);
+ 		} else {
+ 			/*
+ 			 * Catch the rare case, where the lock was released
+@@ -1593,13 +1662,13 @@ static void set_pi_futex_owner(struct fu
+  * if there are waiters then it will block, it does PI, etc. (Due to
+  * races the kernel might see a 0 value of the futex too.)
+  */
+-static int futex_lock_pi(u32 __user *uaddr, int detect, struct timespec *time,
+-			 int trylock)
++static int futex_lock_pi(unsigned long __user *uaddr, int detect,
++			 struct timespec *time, int trylock, int futex64)
+ {
+ 	struct hrtimer_sleeper timeout, *to = NULL;
+ 	struct task_struct *curr = current;
+ 	struct futex_hash_bucket *hb;
+-	u32 uval, newval, curval;
++	unsigned long uval, newval, curval;
+ 	struct futex_q q;
+ 	int ret, lock_held, attempt = 0;
+ 
+@@ -1634,7 +1703,7 @@ static int futex_lock_pi(u32 __user *uad
+ 	newval = current->pid;
+ 
+ 	pagefault_disable();
+-	curval = futex_atomic_cmpxchg_inatomic(uaddr, 0, newval);
++	curval = futex_cmpxchg_inatomic(uaddr, 0, newval, futex64);
+ 	pagefault_enable();
+ 
+ 	if (unlikely(curval == -EFAULT))
+@@ -1679,7 +1748,7 @@ static int futex_lock_pi(u32 __user *uad
+ 		newval = curval | FUTEX_WAITERS;
+ 
+ 	pagefault_disable();
+-	curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
++	curval = futex_cmpxchg_inatomic(uaddr, uval, newval, futex64);
+ 	pagefault_enable();
+ 
+ 	if (unlikely(curval == -EFAULT))
+@@ -1716,8 +1785,8 @@ static int futex_lock_pi(u32 __user *uad
+ 				FUTEX_OWNER_DIED | FUTEX_WAITERS;
+ 
+ 			pagefault_disable();
+-			curval = futex_atomic_cmpxchg_inatomic(uaddr,
+-							       uval, newval);
++			curval = futex_cmpxchg_inatomic(uaddr, uval,
++							newval, futex64);
+ 			pagefault_enable();
+ 
+ 			if (unlikely(curval == -EFAULT))
+@@ -1761,7 +1830,7 @@ static int futex_lock_pi(u32 __user *uad
+ 	 */
+ 	if (!ret && q.pi_state->owner != curr)
+ 		/* mmap_sem is unlocked at return of this function */
+-		ret = fixup_pi_state_owner(uaddr, &q, hb, curr);
++		ret = fixup_pi_state_owner(uaddr, &q, hb, curr, futex64);
+ 	else {
+ 		/*
+ 		 * Catch the rare case, where the lock was released
+@@ -1807,7 +1876,7 @@ static int futex_lock_pi(u32 __user *uad
+ 	queue_unlock(&q, hb);
+ 	up_read(&curr->mm->mmap_sem);
+ 
+-	ret = get_user(uval, uaddr);
++	ret = futex_get_user(&uval, uaddr, futex64);
+ 	if (!ret && (uval != -EFAULT))
+ 		goto retry;
+ 
+@@ -1819,17 +1888,17 @@ static int futex_lock_pi(u32 __user *uad
+  * This is the in-kernel slowpath: we look up the PI state (if any),
+  * and do the rt-mutex unlock.
+  */
+-static int futex_unlock_pi(u32 __user *uaddr)
++static int futex_unlock_pi(unsigned long __user *uaddr, int futex64)
+ {
+ 	struct futex_hash_bucket *hb;
+ 	struct futex_q *this, *next;
+-	u32 uval;
++	unsigned long uval;
+ 	struct plist_head *head;
+ 	union futex_key key;
+ 	int ret, attempt = 0;
+ 
+ retry:
+-	if (get_user(uval, uaddr))
++	if (futex_get_user(&uval, uaddr, futex64))
+ 		return -EFAULT;
+ 	/*
+ 	 * We release only a lock we actually own:
+@@ -1856,7 +1925,7 @@ retry_locked:
+ 	 */
+ 	if (!(uval & FUTEX_OWNER_DIED)) {
+ 		pagefault_disable();
+-		uval = futex_atomic_cmpxchg_inatomic(uaddr, current->pid, 0);
++		uval = futex_cmpxchg_inatomic(uaddr, current->pid, 0, futex64);
+ 		pagefault_enable();
+ 	}
+ 
+@@ -1878,7 +1947,7 @@ retry_locked:
+ 	plist_for_each_entry_safe(this, next, head, list) {
+ 		if (!match_futex (&this->key, &key))
+ 			continue;
+-		ret = wake_futex_pi(uaddr, uval, this);
++		ret = wake_futex_pi(uaddr, uval, this, futex64);
+ 		/*
+ 		 * The atomic access to the futex value
+ 		 * generated a pagefault, so retry the
+@@ -1892,7 +1961,7 @@ retry_locked:
+ 	 * No waiters - kernel unlocks the futex:
+ 	 */
+ 	if (!(uval & FUTEX_OWNER_DIED)) {
+-		ret = unlock_futex_pi(uaddr, uval);
++		ret = unlock_futex_pi(uaddr, uval, futex64);
+ 		if (ret == -EFAULT)
+ 			goto pi_faulted;
+ 	}
+@@ -1922,7 +1991,7 @@ pi_faulted:
+ 	spin_unlock(&hb->lock);
+ 	up_read(&current->mm->mmap_sem);
+ 
+-	ret = get_user(uval, uaddr);
++	ret = futex_get_user(&uval, uaddr, futex64);
+ 	if (!ret && (uval != -EFAULT))
+ 		goto retry;
+ 
+@@ -2158,7 +2227,7 @@ retry:
+ 		 */
+ 		if (!pi) {
+ 			if (uval & FUTEX_WAITERS)
+-				futex_wake(uaddr, 1);
++				futex_wake((unsigned long __user *)uaddr, 1);
+ 		}
+ 	}
+ 	return 0;
+@@ -2240,42 +2309,46 @@ void exit_robust_list(struct task_struct
+ 	}
+ }
+ 
+-long do_futex(u32 __user *uaddr, int op, u32 val, struct timespec *timeout,
+-		u32 __user *uaddr2, u32 val2, u32 val3)
++long do_futex(unsigned long __user *uaddr, int op, unsigned long val,
++	      struct timespec *timeout, unsigned long __user *uaddr2,
++	      unsigned long val2, unsigned long val3, int fut64)
+ {
+ 	int ret;
+ 
+ 	switch (op) {
+ 	case FUTEX_WAIT:
+-		ret = futex_wait(uaddr, val, timeout);
++		ret = futex_wait(uaddr, val, timeout, fut64);
+ 		break;
+ 	case FUTEX_WAKE:
+ 		ret = futex_wake(uaddr, val);
+ 		break;
+ 	case FUTEX_FD:
+-		/* non-zero val means F_SETOWN(getpid()) & F_SETSIG(val) */
+-		ret = futex_fd(uaddr, val);
++		if (fut64)
++			ret = -ENOSYS;
++		else
++			/* non-zero val means F_SETOWN(getpid()) & F_SETSIG(val) */
++			ret = futex_fd((u32 __user *)uaddr, val);
+ 		break;
+ 	case FUTEX_REQUEUE:
+-		ret = futex_requeue(uaddr, uaddr2, val, val2, NULL);
++		ret = futex_requeue(uaddr, uaddr2, val, val2, NULL, fut64);
+ 		break;
+ 	case FUTEX_CMP_REQUEUE:
+-		ret = futex_requeue(uaddr, uaddr2, val, val2, &val3);
++		ret = futex_requeue(uaddr, uaddr2, val, val2, &val3, fut64);
+ 		break;
+ 	case FUTEX_WAKE_OP:
+-		ret = futex_wake_op(uaddr, uaddr2, val, val2, val3);
++		ret = futex_wake_op(uaddr, uaddr2, val, val2, val3, fut64);
+ 		break;
+ 	case FUTEX_LOCK_PI:
+-		ret = futex_lock_pi(uaddr, val, timeout, 0);
++		ret = futex_lock_pi(uaddr, val, timeout, 0, fut64);
+ 		break;
+ 	case FUTEX_UNLOCK_PI:
+-		ret = futex_unlock_pi(uaddr);
++		ret = futex_unlock_pi(uaddr, fut64);
+ 		break;
+ 	case FUTEX_TRYLOCK_PI:
+-		ret = futex_lock_pi(uaddr, 0, timeout, 1);
++		ret = futex_lock_pi(uaddr, 0, timeout, 1, fut64);
+ 		break;
+ 	case FUTEX_CMP_REQUEUE_PI:
+-		ret = futex_requeue_pi(uaddr, uaddr2, val, val2, &val3);
++		ret = futex_requeue_pi(uaddr, uaddr2, val, val2, &val3, fut64);
+ 		break;
+ 	default:
+ 		ret = -ENOSYS;
+@@ -2283,6 +2356,34 @@ long do_futex(u32 __user *uaddr, int op,
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_64BIT
++
++asmlinkage long
++sys_futex64(u64 __user *uaddr, int op, u64 val,
++	    struct timespec __user *utime, u64 __user *uaddr2, u64 val3)
++{
++	struct timespec t, *tp = NULL;
++	u64 val2 = 0;
++
++	if (utime && (op == FUTEX_WAIT || op == FUTEX_LOCK_PI)) {
++		if (copy_from_user(&t, utime, sizeof(t)) != 0)
++			return -EFAULT;
++		if (!timespec_valid(&t))
++			return -EINVAL;
++		tp = &t;
++	}
++	/*
++	 * requeue parameter in 'utime' if op == FUTEX_REQUEUE.
++	 */
++	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE
++	    || op == FUTEX_CMP_REQUEUE_PI)
++		val2 = (unsigned long) utime;
++
++	return do_futex((unsigned long __user*)uaddr, op, val, tp,
++			(unsigned long __user*)uaddr2, val2, val3, 1);
++}
++
++#endif
+ 
+ asmlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
+ 			  struct timespec __user *utime, u32 __user *uaddr2,
+@@ -2305,7 +2406,8 @@ asmlinkage long sys_futex(u32 __user *ua
+ 	    || op == FUTEX_CMP_REQUEUE_PI)
+ 		val2 = (u32) (unsigned long) utime;
+ 
+-	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
++	return do_futex((unsigned long __user*)uaddr, op, val, tp,
++			(unsigned long __user*)uaddr2, val2, val3, 0);
+ }
+ 
+ static int futexfs_get_sb(struct file_system_type *fs_type,
+Index: b/kernel/sys_ni.c
+===================================================================
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -41,6 +41,7 @@ cond_syscall(sys_sendmsg);
+ cond_syscall(sys_recvmsg);
+ cond_syscall(sys_socketcall);
+ cond_syscall(sys_futex);
++cond_syscall(sys_futex64);
+ cond_syscall(compat_sys_futex);
+ cond_syscall(sys_set_robust_list);
+ cond_syscall(compat_sys_set_robust_list);
+Index: b/include/linux/futex.h
+===================================================================
+--- a/include/linux/futex.h
++++ b/include/linux/futex.h
+@@ -100,8 +100,9 @@ struct robust_list_head {
+ #define ROBUST_LIST_LIMIT	2048
+ 
+ #ifdef __KERNEL__
+-long do_futex(u32 __user *uaddr, int op, u32 val, struct timespec *timeout,
+-	      u32 __user *uaddr2, u32 val2, u32 val3);
++long do_futex(unsigned long __user *uaddr, int op, unsigned long val,
++	      struct timespec *timeout, unsigned long __user *uaddr2,
++	      unsigned long val2, unsigned long val3, int futex64);
+ 
+ extern int
+ handle_futex_death(u32 __user *uaddr, struct task_struct *curr, int pi);
+@@ -131,7 +132,7 @@ union futex_key {
+ 		int offset;
+ 	} both;
+ };
+-int get_futex_key(u32 __user *uaddr, union futex_key *key);
++int get_futex_key(void __user *uaddr, union futex_key *key);
+ void get_futex_key_refs(union futex_key *key);
+ void drop_futex_key_refs(union futex_key *key);
+ 
+Index: b/kernel/futex_compat.c
+===================================================================
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -155,5 +155,6 @@ asmlinkage long compat_sys_futex(u32 __u
+ 	    || op == FUTEX_CMP_REQUEUE_PI)
+ 		val2 = (int) (unsigned long) utime;
+ 
+-	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
++	return do_futex((unsigned long __user*)uaddr, op, val, tp,
++			(unsigned long __user*)uaddr2, val2, val3, 0);
+ }
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+-- 
+Pierre Peiffer
