@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933280AbXCMUbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933215AbXCMUcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933280AbXCMUbA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 16:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXCMUbA
+	id S933215AbXCMUcs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 16:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbXCMUcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 16:31:00 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41753 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933280AbXCMUa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 16:30:58 -0400
-Message-ID: <45F70A15.8030502@drzeus.cx>
-Date: Tue, 13 Mar 2007 21:31:17 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [1/6] 2.6.21-rc3: known regressions
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313124957.GR18731@stusta.de> <45F6A240.3090601@drzeus.cx> <200703131436.15586.oneukum@suse.de> <20070313181147.GA12224@elf.ucw.cz> <45F6F677.1070302@drzeus.cx> <20070313200542.GC12370@elf.ucw.cz>
-In-Reply-To: <20070313200542.GC12370@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 16:32:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43228 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933215AbXCMUcr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 16:32:47 -0400
+Date: Tue, 13 Mar 2007 20:32:44 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Kandan Venkataraman <kven709@cse.unsw.EDU.AU>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Loop device - Tracking page writes made to a loop device through mmap
+Message-ID: <20070313203244.GA13914@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Kandan Venkataraman <kven709@cse.unsw.EDU.AU>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <Pine.LNX.4.64.0703140712080.18655@williams.orchestra.cse.unsw.EDU.AU>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703140712080.18655@williams.orchestra.cse.unsw.EDU.AU>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+On Wed, Mar 14, 2007 at 07:21:41AM +1100, Kandan Venkataraman wrote:
+> All comments have been taken care of.
 > 
-> That's okay, but if one of those savages got major for you, would you
-> be willing to use it? :-).
+> Description:
+> 
+> A  file_operations structure variable called loop_fops is initialised with
+> the default block device file operations (def_blk_fops).
+> The mmap operation is overriden with a new function called loop_file_mmap.
 
-Indeed I would.
+NACK.  block device driver should never ever play around with file
+operations themselves.  If you want functionality like the one you
+have please don't overload the loop driver, but start a new (character)
+driver doing specificaly what you want.  And even then I'm not sure
+we'd want functionality like this in the mainline tree, but at least
+we can have an open discussion if it's done properly.
 
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
