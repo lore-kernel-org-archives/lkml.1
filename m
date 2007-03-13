@@ -1,59 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbXCMPbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXCMPgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753282AbXCMPbz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 11:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXCMPbz
+	id S1753280AbXCMPgv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 11:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbXCMPgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 11:31:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:56094 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753279AbXCMPby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 11:31:54 -0400
-Message-ID: <45F6C3E9.5020207@goop.org>
-Date: Tue, 13 Mar 2007 08:31:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: _proxy_pda still makes linking modules fail
-References: <1173315479.12472.9.camel@qrnik>	<p73lki39s3a.fsf@bingen.suse.de>	<45F49E0A.3090607@goop.org>	<20070312094805.GA11644@one.firstfloor.org>	<1173736726.10618.1.camel@localhost.localdomain>	<1173767032.10618.43.camel@localhost.localdomain> <17910.26926.138067.731855@cargo.ozlabs.ibm.com>
-In-Reply-To: <17910.26926.138067.731855@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 11:36:50 -0400
+Received: from cpe-67-49-92-118.socal.res.rr.com ([67.49.92.118]:51284 "EHLO
+	mail.blackbean.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753280AbXCMPgu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 11:36:50 -0400
+Date: Tue, 13 Mar 2007 08:30:50 -0700
+From: Jim Radford <radford@blackbean.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
+       Oliver Neukum <oneukum@suse.de>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] usb-serial regression fix
+Message-ID: <20070313153050.GA14687@blackbean.org>
+References: <200703121948.21453.oneukum@suse.de> <45F5B67E.7000105@rtr.ca> <20070312203331.GA6769@kroah.com> <20070312224235.GB3709@blackbean.org> <20070312225922.GA4064@blackbean.org> <20070313001819.GA6147@kroah.com> <20070313004142.GA4835@blackbean.org> <45F60482.6010501@rtr.ca> <20070313091408.GA7205@blackbean.org> <45F6AD5D.4020700@rtr.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F6AD5D.4020700@rtr.ca>
+User-Agent: Mutt/1.4.2.2i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (mail.blackbean.org [127.0.0.1]); Tue, 13 Mar 2007 08:30:52 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> There is a fundamental problem with using __thread, which is that gcc
-> assumes that the addresses of __thread variables are constant within
-> one thread, and that therefore it can cache the result of address
-> calculations.  However, with preempt, threads in the kernel can't rely
-> on staying on one cpu, and therefore the addresses of per-cpu
-> variables can change.  There appears to be no way to tell gcc to drop
-> all cached __thread variable address calculations at a given point
-> (e.g. when enabling or disabling preemption).  That is basically why I
-> gave up on using __thread for per-cpu variables on powerpc.
->   
+On Tue, Mar 13, 2007 at 09:55:41AM -0400, Mark Lord wrote:
+> Jim Radford wrote:
+> >On Mon, Mar 12, 2007 at 09:55:14PM -0400, Mark Lord wrote:
+> >
+> >>So where does the memory get freed -- the structure pointed at
+> >>by the serial->port[i] thingie ?  It's not a leak, is it?
+> >
+> >It gets free'd through device_unregister
+> >
+> >    for (i = 0; i < num_ports; ++i) {
+> >       ...
+> >       port->dev.release = &port_release;
+> >       ...
+> >       retval = device_register(&port->dev);
+> >
+> >which means that until all the drivers get converted to use
+> >->port_probe() and ->port_remove() (which gets called by
+> >device_unregister) and stop using the ->port[] array in ->shutdown()
+> >we need to have ->shutdown() called before device_unregister.
+> >
+> >>>>>Look at changeset d9a7ecacac5f8274d2afce09aadcf37bdb42b93a in Linus's
+> >>>>>tree from Jim Radford:
+> >
+> >>>>>http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d9a7ecacac5f8274d2afce09aadcf37bdb42b93a
 
-Doesn't that fall under the general class of "you have to be pinned to a
-particular cpu in order to meaningfully use per-cpu variables"?
+> >So, this patch should be reverted for now.
 
-Or do you mean that if you have:
+> Okay, so.. Jim, could you spell it out for us now?
 
-	preempt_disable();
-	use_my_percpu++;
-	preempt_enable();
-	// switch cpus
-	preempt_disable();
-	use_my_percpu++;
-	preempt_enable();
+> I'm confused.
 
-then it will still use the old pointer to use_my_percpu?
+> Based on the current 2.6.21-rc3-git*, tell us *exactly* what (if
+> any) needs to be reverted, and *exactly* which (if any) of my
+> suggested patches to apply ?
 
-In principle gcc could CSE the value of smp_processor_id() across a cpu
-change in the same way.
+The simple change to not NULL the ->port[] array after unregister was
+not quite enough, as ->shutdown() would, as hinted at by Mark, then
+access kfree'd memory.
 
-    J
+The best thing to do is to just revert
+d9a7ecacac5f8274d2afce09aadcf37bdb42b93a and work out a better fix for
+the next release.  My patches to fix ftdi_sio no longer require this
+patch, so it is pointless at this late state if it breaks *anything*,
+and it does.
+
+
+This patch reverts d9a7ecacac5f8274d2afce09aadcf37bdb42b93a since it
+breaks drivers that need to access the ->port[] array in shutdown
+(most of them).
+
+Signed-Off: Jim Radford <radford@blackbean.org>
+
+--- b/drivers/usb/serial/usb-serial.c
++++ a/drivers/usb/serial/usb-serial.c
+@@ -137,6 +135,11 @@
+ 
+ 	dbg("%s - %s", __FUNCTION__, serial->type->description);
+ 
++	serial->type->shutdown(serial);
++
++	/* return the minor range that this device had */
++	return_serial(serial);
++
+ 	for (i = 0; i < serial->num_ports; ++i)
+ 		serial->port[i]->open_count = 0;
+ 
+@@ -147,12 +150,6 @@
+ 			serial->port[i] = NULL;
+ 		}
+ 
+-	if (serial->type->shutdown)
+-		serial->type->shutdown(serial);
+-
+-	/* return the minor range that this device had */
+-	return_serial(serial);
+-
+ 	/* If this is a "fake" port, we have to clean it up here, as it will
+ 	 * not get cleaned up in port_release() as it was never registered with
+ 	 * the driver core */
+
+
+
