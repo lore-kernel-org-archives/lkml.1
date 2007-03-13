@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbXCMPyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbXCMP5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288AbXCMPyE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 11:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXCMPyD
+	id S1753285AbXCMP5I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 11:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXCMP5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 11:54:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:12815 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753288AbXCMPyB (ORCPT
+	Tue, 13 Mar 2007 11:57:08 -0400
+Received: from MAIL.13thfloor.at ([213.145.232.33]:39751 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753285AbXCMP5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 11:54:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bwHmHvR4rXhqjn7tH/XEu9dJ19qPZUE2i0mwvy9K3YjHROi1H1KMvPBevytxd0Mq9NaKWtROru5/mgkV9gFPi23tDMgB7I3llwhVU/77TnDGMdk3PpJgal0QamqOxCIIunOQPJajGpXNXCxHb+IJgxWttnsI10cmOk9KWTApyvE=
-Message-ID: <75b66ecd0703130853p4c7d029en2405caee4447d29e@mail.gmail.com>
-Date: Tue, 13 Mar 2007 11:53:56 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Ash Milsted" <thatistosayiseenem@gawab.com>
-Subject: Re: [ck] RSDL v0.30 cpu scheduler for mainline kernels
-Cc: "Con Kolivas" <kernel@kolivas.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "ck list" <ck@vds.kolivas.org>
-In-Reply-To: <20070313153514.428dc3e1.thatistosayiseenem@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Mar 2007 11:57:07 -0400
+Date: Tue, 13 Mar 2007 16:57:06 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: Paul Menage <menage@google.com>
+Cc: Paul Jackson <pj@sgi.com>, ebiederm@xmission.com, matthltc@us.ibm.com,
+       ckrm-tech@lists.sourceforge.net, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       winget@google.com, xemul@sw.ru
+Subject: Re: [ckrm-tech] [PATCH 0/2] resource control file system - aka containers on top of nsproxy!
+Message-ID: <20070313155706.GO8755@MAIL.13thfloor.at>
+Mail-Followup-To: Paul Menage <menage@google.com>,
+	Paul Jackson <pj@sgi.com>, ebiederm@xmission.com,
+	matthltc@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+	containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, winget@google.com, xemul@sw.ru
+References: <6599ad830703071857yf711921ja3440c4276bbe58e@mail.gmail.com> <45EF83CB.9080903@vilain.net> <1173334209.13172.61.camel@localhost.localdomain> <m11wk08c9h.fsf@ebiederm.dsl.xmission.com> <20070309010628.GE4506@MAIL.13thfloor.at> <45F27503.1020108@vilain.net> <20070311141555.9951b7ba.pj@sgi.com> <6599ad830703120300x63ca5732wfe865f76cb5125a9@mail.gmail.com> <20070312232143.GC6832@MAIL.13thfloor.at> <6599ad830703121925p7049db95nccedfc32609e6ae6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200703121058.11966.kernel@kolivas.org>
-	 <20070313153514.428dc3e1.thatistosayiseenem@gawab.com>
-X-Google-Sender-Auth: d93693f95c91cf73
+In-Reply-To: <6599ad830703121925p7049db95nccedfc32609e6ae6@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/13/07, Ash Milsted <thatistosayiseenem@gawab.com> wrote:
-> Desktop use whilst talking on Wengophone (run at nice -5): Under RSDL
-> some GUI use e.g. opening a new folder in nautilus causes pops (buffer
-> underruns) which do not occur with mainline. I suppose the changes in
-> RSDL might require a lower nice value for equivalent performance, but
-> (as a user) I am limited to -5.
->
-> Low-latency audio with JACK and Ardour2: Rock-solid performance with
-> either scheduler.. realtime works nicely.
+On Mon, Mar 12, 2007 at 07:25:48PM -0700, Paul Menage wrote:
+> On 3/12/07, Herbert Poetzl <herbert@13thfloor.at> wrote:
+> >
+> > why? you simply enter that specific space and
+> > use the existing mechanisms (netlink, proc, whatever)
+> > to retrieve the information with _existing_ tools,
+> 
+> That's assuming that you're using network namespace virtualization,
 
-Sounds like Wengophone is broken.  It should be using RT threads for
-time critical work, as JACK and Ardour2 are doing.
+or isolation :)
 
-No scheduler can help if the apps are not correctly written...
+> with each group of tasks in a separate namespace. 
 
-Lee
+correct ...
+
+> What if you don't want the virtualization overhead, just the
+> accounting?
+
+there should be no 'virtualization' overhead, and what
+do you want to account for, if not by a group of tasks?
+
+maybe I'm missing the grouping condition here, but I
+assume you assign tasks to the accounting containers
+
+note: network isolation is not supposed to add overhead
+compared to the host system (at least not measureable
+overhead)
+
+best,
+Herbert
+
+> Paul
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/containers
