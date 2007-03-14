@@ -1,76 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932500AbXCNSmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbXCNSmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932500AbXCNSmA (ORCPT <rfc822;w@1wt.eu>);
+	id S932325AbXCNSmA (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 14 Mar 2007 14:42:00 -0400
 Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbXCNSmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 14 Mar 2007 14:42:00 -0400
-Received: from gw.goop.org ([64.81.55.164]:34908 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932500AbXCNSl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 14:41:59 -0400
-Message-ID: <45F841EE.6060703@goop.org>
-Date: Wed, 14 Mar 2007 11:41:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: Re: Stolen and degraded time and schedulers
-References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org>	 <1173888673.3101.12.camel@imap.mvista.com>  <45F824BE.1060708@goop.org>	 <1173891595.3101.17.camel@imap.mvista.com>  <45F82C01.3000704@goop.org> <1173895607.3101.58.camel@imap.mvista.com>
-In-Reply-To: <1173895607.3101.58.camel@imap.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-15
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:12850 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932325AbXCNSl6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 14:41:58 -0400
+Date: Wed, 14 Mar 2007 19:43:37 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
+       <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+Message-ID: <20070314194337.5d439dab@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0703141048530.3112-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.64.0703131418300.9690@woody.linux-foundation.org>
+	<Pine.LNX.4.44L0.0703141048530.3112-100000@iolanthe.rowland.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> >From prior emails I think your suggesting that 1ms (or 5 or 10) of time
-> should actually be a variable X that is changed inside sched_clock().
-> That's not the purpose of that API call, sched_clock() measure real time
-> period.
->   
+On Wed, 14 Mar 2007 12:12:37 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-To what purpose?  What is it really measuring?  My understanding is that
-its for the scheduler to work out how much time a process actually ran
-for.  Aside from its use in printk as a general monotonic timestamp,
-this seems to be how it gets used everywhere.  If I change it to return
-cpu-ns (ie, make it not count time that the cpu was stolen by the
-hypervisor), then it will return what its callers actually want to know.
+> This seems more elegant (not yet tested).  Cornelia, does it look okay to 
+> you?
 
-If I scale its result according to the cpu's current speed compared to
-its maximum speed, it would also be producing results consistent with
-what its callers want to know.
+Works for me (grouping & ungrouping ctc) and looks sane. Some more
+comments below.
 
-> After reading your emails it sounds like what you really want is similar
-> to accurate state accounting which is used for scheduling purposes. Part
-> of that has already been implemented at least twice that I know of.
-> Accounting real time against specific states was done in two version of
-> microstate accounting. Those are fine starting points for the changes
-> you are wanting.
 
-I haven't looked at the microstate accounting patches in any detail, but
-I'm assuming that they take a timestamp at each CPU state transition and
-use that to account time to the appropriate entities (tell me if I'm
-missing something pertinent here).  There are two problems with that
-approach in this case:
+> +struct other_task_struct {
+> +	struct kobject 		*kobj;
+> +	void			(*func)(void *);
+> +	void			*data;
+> +	struct work_struct	work;
+> +};
+> +
+> +static void other_task_work(struct work_struct *work)
+> +{
+> +	struct other_task_struct *ots = container_of(work,
+> +			struct other_task_struct, work);
+> +
+> +	(ots->func)(ots->data);
+> +	kobject_put(ots->kobj);
+> +	kfree(ots);
+> +}
 
-   1. If the cpu is stolen by the hypervisor, the kernel will get no
-      state transition notification.  It can generally find out that
-      some time was stolen after the fact, but there's no specific event
-      at the time it happens.
-   2. It doesn't map particularly well to a cpu changing speed.  In
-      particular if a cpu has continuously varying execution speed
-      (Transmeta?), then the best you can hope for is the integration of
-      cpu work done over a time period rather than discrete cpu
-      speed-change events.
+The naming seems a bit unintuitive, but I don't have a good
+alternative idea. Perhaps sysfs_work_struct, sysfs_delayed_work()?
 
-    J
+> +
+> +/**
+> + * sysfs_access_in_other_task - delay access from an attribute method.
+> + * @kobj: object we're acting for.
+> + * @func: callback function to invoke later.
+> + * @data: argument to pass to @func.
+> + *
+> + * sysfs attribute methods must not unregister themselves or their parent
+> + * kobject (which would amount to the same thing).  Attempts to do so will
+> + * deadlock, since unregistration is mutually exclusive with driver
+> + * callbacks.
+> + *
+> + * Instead methods can call this routine, which will attempt to allocate
+> + * and schedule a workqueue request to carry out the requested function
+> + * in the workqueue's process context.
+> + *
+> + * Returns 0 if the request was submitted, -ENOMEM if storage could not
+> + * be allocated.
+> + */
+> +int sysfs_access_in_other_task(struct kobject *kobj, void (*func)(void *),
+> +		void *data)
+
+sysfs_delay_access()?
+
+
+> +/**
+> + * device_access_in_other_task - delay access from an attribute method.
+> + * @dev: device.
+> + * @func: callback function to invoke later.
+> + *
+> + * Attribute methods must not unregister themselves or their parent device
+> + * (which would amount to the same thing).  Attempts to do so will deadlock,
+> + * since unregistration is mutually exclusive with driver callbacks.
+> + *
+> + * Instead methods can call this routine, which will attempt to allocate
+> + * and schedule a workqueue request to carry out the requested function
+> + * in the workqueue's process context.
+> + *
+> + * Returns 0 if the request was submitted, -ENOMEM if storage could not
+> + * be allocated.
+> + */
+> +int device_access_in_other_task(struct device *dev,
+> +		void (*func)(struct device *))
+> +{
+> +	return sysfs_access_in_other_task(&dev->kobj,
+> +			(void (*)(void *)) func, dev);
+> +}
+> +EXPORT_SYMBOL_GPL(device_access_in_other_task);
+
+device_delay_access()?
+
