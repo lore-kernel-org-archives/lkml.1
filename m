@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161334AbXCNPIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161335AbXCNPL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161334AbXCNPIX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161331AbXCNPIX
+	id S1161335AbXCNPL0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422636AbXCNPL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:08:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:45607 "EHLO mail.goop.org"
+	Wed, 14 Mar 2007 11:11:26 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:58895 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161335AbXCNPIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:08:22 -0400
-Message-ID: <45F80FE1.3030603@goop.org>
-Date: Wed, 14 Mar 2007 08:08:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1161335AbXCNPLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 11:11:25 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Mel Gorman <mel@skynet.ie>
+Subject: Re: 2.6.21-rc3-mm2 (oops in move_freepages)
+Date: Wed, 14 Mar 2007 09:11:16 -0600
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070307201915.4d579113.akpm@linux-foundation.org> <200703132152.10136.bjorn.helgaas@hp.com> <20070314094454.GA1652@skynet.ie>
+In-Reply-To: <20070314094454.GA1652@skynet.ie>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com,
-       cpufreq@lists.linux.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Stolen and degraded time and schedulers
-References: <45F6D1D0.6080905@goop.org> <1173816769.22180.14.camel@localhost> <45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <20070314135845.GG22466@csclub.uwaterloo.ca>
-In-Reply-To: <20070314135845.GG22466@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703140911.16537.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> How would you deal with something like a pentium 4 HT processor where
-> you may run slower just because you got scheduled on the sibling of a
-> cpu that happens to run something else needing the same execution units
-> you do, causing you to get delayed more, even though the cpu is running
-> full speed and nothing else is trying to use your "cpu"?  I don't think
-> there is any way to know what the real impact of two processes on a HT
-> cpu have on each other.
->
-> Interesting goal.  Not sure it can be done.
+On Wednesday 14 March 2007 03:44, Mel Gorman wrote:
+> Please try the following patch from Yasunori Goto.
+> ...
+> --- current_test.orig/mm/page_alloc.c	2007-03-08 15:44:10.000000000 +0900
+> +++ current_test/mm/page_alloc.c	2007-03-08 16:17:29.000000000 +0900
+> @@ -707,7 +707,7 @@ int move_freepages(struct zone *zone,
+>  	unsigned long order;
+>  	int blocks_moved = 0;
+>  
+> -	BUG_ON(page_zone(start_page) != page_zone(end_page));
+> +	BUG_ON(page_zone(start_page) != page_zone(end_page - 1));
+>  
 
-You're right.  That's a very tough case.  I don't know if there's any
-way to do a reasonable estimate of the slowdown.  You could handwave it
-and say "if both threads are running a process, then apply an X scaling
-factor to their rate of progress".  That might be enough.
-
-    J
+I should have mentioned that I already tried this patch.  The
+oops still occurs, although now it's when loading the value
+pointed to by "end_page - 1" instead of "end_page".
