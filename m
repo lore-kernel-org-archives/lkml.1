@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933147AbXCNUPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933153AbXCNUR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933147AbXCNUPn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 16:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933153AbXCNUPn
+	id S933153AbXCNUR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 16:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933156AbXCNUR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 16:15:43 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:40584 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933147AbXCNUPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 16:15:42 -0400
-Date: Wed, 14 Mar 2007 15:15:41 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] eCryptfs: Fix possible NULL ptr deref in ecryptfs_d_release()
-Message-ID: <20070314201541.GB3676@us.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Wed, 14 Mar 2007 16:17:57 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:58914 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933153AbXCNUR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 16:17:57 -0400
+Date: Wed, 14 Mar 2007 10:54:51 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: New thread RDSL, post-2.6.20 kernels and amanda (tar) miss-fires
+In-reply-to: <20070314061922.GR2986@holomorphy.com>
+To: linux-kernel@vger.kernel.org
+Cc: William Lee Irwin III <wli@holomorphy.com>
+Message-id: <200703141054.56595.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703130428.11014.gene.heskett@gmail.com>
+ <200703140209.58375.gene.heskett@gmail.com>
+ <20070314061922.GR2986@holomorphy.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ecryptfs_d_release() first dereferences a pointer (via
-ecryptfs_dentry_to_lower()) and then afterwards checks to see if the
-pointer it just dereferenced is NULL (via
-ecryptfs_dentry_to_private()). This patch moves all of the work done
-on the dereferenced pointer inside a block governed by the condition
-that the pointer is non-NULL.
+On Wednesday 14 March 2007, William Lee Irwin III wrote:
+>> On Wednesday 14 March 2007, William Lee Irwin III wrote:
+>> >On Tue, Mar 13, 2007 at 11:31:53PM -0400, Gene Heskett wrote:
+>> >> Now, can someone suggest a patch I can revert that might fix this?
+>> >> The total number of patches between 2.6.20 and 2.6.21-rc1 will have
+>> >> me building kernels to bisect this till the middle of June at this
+>> >> rate.
+>> >
+>> >4 billion patches could be bisected in 34 boots. Between 2.6.20 and
+>> >2.6.21-rc1 there are only:
+>> >
+>> >$ git rev-list --no-merges v2.6.20..v2.6.21-rc1  |wc -l
+>> >3118
+>> >
+>> >patches, requiring 14 boots. In general ceil(log(n)/log(2))+2 boots.
+>> >
+>> >Of course, this is a little optimistic because it assumes no
+>> > additional breakage occurring at the various bisection points. In
+>> > any event, assuming (pessimistically) 10 minutes per build, this is
+>> > 280 minutes or 4 hours and 40 minutes of build time. I estimate the
+>> > process should complete well before Friday of this week, never mind
+>> > June.
+>
+>On Wed, Mar 14, 2007 at 02:09:57AM -0400, Gene Heskett wrote:
+>> Chuckle, sorry to disappoint you wli, on that 32 cpu Niagra Con was
+>> calling 'poor equipment', maybe.
+>> Even using  ccache, its about 15-18 minutes per build, with another 10
+>> to edit my build script and construct the kernel tree with the proper
+>> patches applied.  Then a reboot, probably 10 minutes by the time I get
+>> the nvidia driver installed for the new kernel and get startx'd, then
+>> its another 2 hours or a bit less for an amanda run to test it.
+>
+>2 hours, 48 minutes times 13 boots (see the correction post) is 36
+>hours, 24 minutes. One attempt a day (24 hours instead of 2 hours, 48
+>minutes) yyields 2 weeks. So you're still done by April, not June.
+>
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/ecryptfs/dentry.c |   15 +++++----------
- 1 files changed, 5 insertions(+), 10 deletions(-)
+Back to the original theme of this thread, 2.6.20.3 works, now I'm booted 
+to 2.6.20.3-rdsl-0.30 and trying that.  And 10 minutes into it, its going 
+to be good from the looks of an amstatus report.
 
-diff --git a/fs/ecryptfs/dentry.c b/fs/ecryptfs/dentry.c
-index 329efcd..cb20b96 100644
---- a/fs/ecryptfs/dentry.c
-+++ b/fs/ecryptfs/dentry.c
-@@ -78,18 +78,13 @@ struct kmem_cache *ecryptfs_dentry_info_cache;
-  */
- static void ecryptfs_d_release(struct dentry *dentry)
- {
--	struct dentry *lower_dentry;
--
--	lower_dentry = ecryptfs_dentry_to_lower(dentry);
--	if (ecryptfs_dentry_to_private(dentry))
-+	if (ecryptfs_dentry_to_private(dentry)) {
-+		if (ecryptfs_dentry_to_lower(dentry)) {
-+			mntput(ecryptfs_dentry_to_lower_mnt(dentry));
-+			dput(ecryptfs_dentry_to_lower(dentry));
-+		}
- 		kmem_cache_free(ecryptfs_dentry_info_cache,
- 				ecryptfs_dentry_to_private(dentry));
--	if (lower_dentry) {
--		struct vfsmount *lower_mnt =
--			ecryptfs_dentry_to_lower_mnt(dentry);
--
--		mntput(lower_mnt);
--		dput(lower_dentry);
- 	}
- 	return;
- }
+
+>
+>-- wli
+
+
+
 -- 
-1.4.4.4
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+"Ahead warp factor 1"
+- Captain Kirk
