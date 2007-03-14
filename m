@@ -1,219 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933813AbXCNC1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbXCNDBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933813AbXCNC1Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 22:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933817AbXCNC1Z
+	id S1750999AbXCNDBM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 23:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbXCNDBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 22:27:25 -0400
-Received: from mx2.suse.de ([195.135.220.15]:48919 "EHLO mx2.suse.de"
+	Tue, 13 Mar 2007 23:01:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33881 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933807AbXCNC1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 22:27:23 -0400
-Date: Tue, 13 Mar 2007 19:27:13 -0700
-From: Seth Arnold <seth.arnold@suse.de>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-security-module@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com, zohar@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [Patch 1/1] IBAC Patch
-Message-ID: <20070314022713.GI27643@suse.de>
-Mail-Followup-To: Mimi Zohar <zohar@linux.vnet.ibm.com>,
-	linux-security-module@vger.kernel.org, safford@watson.ibm.com,
-	serue@linux.vnet.ibm.com, kjhall@linux.vnet.ibm.com,
-	zohar@us.ibm.com, linux-kernel@vger.kernel.org
-References: <1173394696.5981.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zkC76Fx3DIm/XDBj"
-Content-Disposition: inline
-In-Reply-To: <1173394696.5981.12.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+	id S1750999AbXCNDBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 23:01:10 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/linus
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: Alan Stern's message of  Tuesday, 13 March 2007 14:56:29 -0400 <Pine.LNX.4.44L0.0703131230540.2509-100000@iolanthe.rowland.org>
+X-Shopping-List: (1) Runcible lotion
+   (2) Erratic transient breath
+   (3) Prestigious transplanted clasps
+Message-Id: <20070314030033.16B471801C5@magilla.sf.frob.com>
+Date: Tue, 13 Mar 2007 20:00:33 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Yes, the code could be reworked by moving some of the data from the CPU
+> hw-breakpoint info into the thread's info.  I'll see how much simpler it
+> ends up being.
 
---zkC76Fx3DIm/XDBj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I don't quite understand that characterization of the kind of change I'm
+advocating.  If the common case path in context switch has really anything
+at all more than the example I gave, something is wrong.
 
-On Thu, Mar 08, 2007 at 05:58:16PM -0500, Mimi Zohar wrote:
-> This is a request for comments for a new Integrity Based Access
-> Control(IBAC) LSM module which bases access control decisions
-> on the new integrity framework services.=20
+> It isn't quite that easy.  Even though the number of user breakpoints may
+> not have changed, their identities may have.  So the unlikely case has to
+> encompass two possibilities: the number of installable user breakpoints
+> has changed, or any user breakpoints have been registered or unregistered.
 
-Thanks Mimi, nice to see an example of how the integrity framework ought
-to be used.
+Why does it matter?  When a new user breakpoint was made the
+highest-priority one, it ought to update tdr[0..3] right then before the
+registration call returns.  It seems fine to me for it to make an
+uninstalled callback right away rather than at the thread's next switch-in.
+But even if you wanted to delay it, you could just set active_dr7 to zero
+or something so that the unlikely case triggers.
 
-> (Hopefully this will help clarify the interaction between an LSM=20
-> module and LIM module.)
+> > For the masks to work as I described, you need to use the same enable bit
+> > (or both) for kernel and user allocations.  It really doesn't matter which
+> > one you use, since all of Linux is "local" for the sense of the dr7 enable
+> > bits (i.e. you should just use DR_GLOBAL_ENABLE).
+> 
+> This shouldn't be necessary.  So long as DR_GLOBAL_ENABLE always belongs
+> to the kernel's part of DR7 and DR_LOCAL_ENABLE always belongs to the
+> thread's part there will be no interference between them.
 
-Is this module intended to clarify an interface, or be useful in and of
-itself?
+The plan I suggested relies on setting want_dr7 with the enable bits that
+do include the ones the kernel uses (for contested slots).  Of course it
+works as well to use either bit for this, as long as you're consistent.
+But as I've said at least twice already, there is no actual meaning
+whatsoever to choosing one enable bit over the other.  It's just confusing
+and misleading to have the code make special efforts to set one rather than
+the other for different cases.  You talk about them as if they meant
+something, which keeps making me wonder if you're confused.  Since the
+hardware doesn't care which bit you set, you could overload them to record
+a bit and a half of information there if really wanted to, but you're not
+even doing that, unless I'm confused.
 
-> Index: linux-2.6.21-rc3-mm2/security/ibac/Makefile
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- /dev/null
-> +++ linux-2.6.21-rc3-mm2/security/ibac/Makefile
-> @@ -0,0 +1,6 @@
-> +#
-> +# Makefile for building IBAC
-> +#
-> +
-> +obj-$(CONFIG_SECURITY_IBAC) +=3D ibac.o
-> +ibac-y 	:=3D ibac_main.o
-> Index: linux-2.6.21-rc3-mm2/security/ibac/ibac_main.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- /dev/null
-> +++ linux-2.6.21-rc3-mm2/security/ibac/ibac_main.c
-> @@ -0,0 +1,126 @@
-> +/*
-> + * Integrity Based Access Control (IBAC)
-> + *
-> + * Copyright (C) 2007 IBM Corporation
-> + * Author: Mimi Zohar <zohar@us.ibm.com>
-> + *
-> + *      This program is free software; you can redistribute it and/or mo=
-dify
-> + *      it under the terms of the GNU General Public License as publishe=
-d by
-> + *      the Free Software Foundation, version 2 of the License.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/moduleparam.h>
-> +#include <linux/kernel.h>
-> +#include <linux/security.h>
-> +#include <linux/integrity.h>
-> +
-> +#ifdef CONFIG_SECURITY_IBAC_BOOTPARAM
-> +int ibac_enabled =3D CONFIG_SECURITY_IBAC_BOOTPARAM_VALUE;
-> +
-> +static int __init ibac_enabled_setup(char *str)
-> +{
-> +	ibac_enabled =3D simple_strtol(str, NULL, 0);
-> +	return 1;
-> +}
-> +
-> +__setup("ibac=3D", ibac_enabled_setup);
-> +#else
-> +int ibac_enabled =3D 0;
-> +#endif
+> Maybe.  I always had in the back of my mind the possibility that there
+> might be a user I/O breakpoint set.  It could be triggered by an interrupt
+> handler even in the SIGKILL case.  But since we're not supporting I/O
+> breakpoints now, that's a moot point.
 
-If the command line option isn't enabled, how will ibac_enabled ever be
-set to '1'? Have I overlooked or forgotten some helper routine elsewhere?
+How would that happen?  This would mean that some user process has been
+allowed to enable ioperm for some io port that kernel drivers also send to
+from interrupt handlers.  Can that ever happen?
 
-> +static unsigned int integrity_enforce =3D 0;
-> +static int __init integrity_enforce_setup(char *str)
-> +{
-> +	integrity_enforce =3D simple_strtol(str, NULL, 0);
-> +	return 1;
-> +}
-> +
-> +__setup("ibac_enforce=3D", integrity_enforce_setup);
-> +
-> +#define XATTR_NAME "security.evm.hash"
+> Actually the code _doesn't_ already know what's there; the chbi area
+> doesn't include any storage for the kernel DR7 value.  I figured it was at
+> least as easy to read it from the CPU register as to read it from memory.  
+> But maybe that's not true; according to my ancient processor manual, moves
+> to/from debug registers take many more clock cycles than moves to/from
+> memory.
 
-Is this name unique to this IBAC module? Or should it be kept in sync
-with the integrity framework?
+The purpose of the chbi area is to optimize this path.  Make it store
+whatever precomputed values are most convenient for the hot paths.  This
+path doesn't need num_kbps, it needs kdr7.  So precompute that and do that
+one load, instead of a load of chbi->num_bkps we don't otherwise need plus
+a load from kdr7_masks that can be avoided altogether on hot paths.
 
-> +static inline int is_kernel_thread(struct task_struct *tsk)
-> +{
-> +	return (!tsk->mm) ? 1 : 0;
-> +}
-> +
-> +static int ibac_bprm_check_security(struct linux_binprm *bprm)
-> +{
-> +	struct dentry *dentry =3D bprm->file->f_dentry;
-> +	int xattr_len;
-> +	char *xattr_value =3D NULL;
-> +	int rc, status;
-> +
-> +	rc =3D integrity_verify_metadata(dentry, XATTR_NAME,
-> +				       &xattr_value, &xattr_len, &status);
-> +	if (rc < 0 && rc =3D=3D -EOPNOTSUPP) {
-> +		kfree(xattr_value);
-> +		return 0;
-> +	}
-> +
-> +	if (rc < 0) {
-> +		printk(KERN_INFO "verify_metadata %s failed "
-> +		       "(rc: %d - status: %d)\n", bprm->filename, rc, status);
-> +		if (!integrity_enforce)
-> +			rc =3D 0;
-> +		goto out;
-> +	}
-> +	if (status !=3D INTEGRITY_PASS) {	/* FAIL | NO_LABEL */
-> +		if (!is_kernel_thread(current)) {
+I don't really know about the slowness of reading debug registers, though I
+would guess it is slower than most common operations.  But regardless, you
+can avoid it because kdr7 is something you need anyway, so you're not
+replacing it with a load but letting a load you already had kill two birds.
 
-Please remind me why kernel threads are exempt?
+> No.  If a debugger has removed some user breakpoints since the last time
+> the thread ran, the chbi->bps[] entries could still be present.  Likewise
+> if the previously-running task had more breakpoints than the current one.
 
-> +			printk(KERN_INFO "verify_metadata %s "
-> +			       "(Integrity status: FAIL)\n", bprm->filename);
+I don't really get why user breakpoints would be in chbi->bps at all.
+When a debug trap hits, you can check kdr7 or whatnot to see if it was a
+kernel allocation, and otherwise look in current->thbi->bps to find it.
 
-Integrity status may be FAIL or NO_LABEL at this point -- would it be
-more useful to report the whole truth?
+> I don't like using DR_LEN_1, because it would force asm/debugreg.h to be 
+> #included by any user of hw_breakpoint.  The raw numerical value should do 
+> just as well.
 
-> +			if (integrity_enforce) {
-> +				rc =3D -EACCES;
-> +				goto out;
-> +			}
-> +		}
-> +	}
-> +
-> +	rc =3D integrity_verify_data(dentry, &status);
-> +	if (rc < 0) {
-> +		printk(KERN_INFO "%s verify_data failed "
-> +		       "(rc: %d - status: %d)\n", bprm->filename, rc, status);
-> +		if (!integrity_enforce)
-> +			rc =3D 0;
-> +		goto out;
-> +	}
-> +	if (status !=3D INTEGRITY_PASS) {
-> +		if (!is_kernel_thread(current)) {
+Agreed.  (I just used DR_LEN_1 as shorthand and was not hot on including
+asm/debugreg.h in asm/hw_breakpoint.h in the actual version.)
 
-Please remind me why kernel threads are exempt?
+> > On powerpc, the address breakpoint is always for an 8-byte address range.
+> 
+> So there's no way to trap on accesses to a particular byte within a
+> string?
 
-> +			printk(KERN_INFO "verify_data %s "
-> +			       "(Integrity status: FAIL)\n", bprm->filename);
+There's no way to tell which of the 8 bytes were accessed, AFAIK.  It's the
+same as LEN8 on x86_64 or LEN[42] on i386: some byte in there was accessed.
 
-Same question about FAIL vs NO_LABEL.. (Would NO_LABEL be caught by a
-failing verify_metadata above?)
+> Better yet, if type is HW_BREAKPOINT_TYPE_EXECUTE then just ignore the
+> caller's len and always use the correct value.
 
-> +			if (integrity_enforce) {
-> +				rc =3D -EACCES;
-> +				goto out;
-> +			}
-> +		}
-> +	}
-> +
-> +	kfree(xattr_value);
-> +
-> +	/* measure all integrity level executables */
-> +	integrity_measure(dentry, bprm->filename, MAY_EXEC);
-> +	return 0;
+That is probably fine too.
 
-If integrity_measure() fails (can it fail?) is allowing the exec still the
-right approach? (I seem to recall that "measuring integrity" is actually
-something more like "go off an compute the integrity, but don't compare
-it against anything" -- but even if it fails, is continuing correct?)
+> Since PPC doesn't allow lengths shorter than 8, perhaps on that 
+> architecture the bottom bits of the address should silently be cleared.
 
-Rest elided :) Thanks Mimi
+You're not suggesting this for lengths 2, 4, or 8 on i386/x86_64, and I
+don't see the distinction.  In all those cases, any low bits set in the
+address are being ignored.  I think it is much better to enforce the
+alignment so that callers are told explicitly what their parameteres really
+mean.  A caller passing an unaligned address with DR_LEN_4 might be
+thinking it will catch the four bytes starting at that unaligned byte,
+which is not true.
 
---zkC76Fx3DIm/XDBj
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+> It gives drivers a way to tell whether or not the breakpoint is currently 
+> installed without having to do explicit tracking of installed() and 
+> uninstalled() callbacks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+How could that ever be used that would not be racy and thus buggy?  A
+registration call on another CPU could cause a change and callback just
+after you fetched the value.
 
-iD8DBQFF912B+9nuM9mwoJkRAknsAJ43mq1hQ80S0Pkxfot14prYHp7VkwCcD+zG
-JP/25P+t9ETvtWmx09Slbc8=
-=SJ+A
------END PGP SIGNATURE-----
+> These changes to the API sound pretty good.  Stay tuned for the next
+> version...
 
---zkC76Fx3DIm/XDBj--
+You keep rewriting it and I'll keep changing my mind!  
+(Just kidding, but fair warning. ;-)
+I look forward to it.
+
+
+Thanks,
+Roland
