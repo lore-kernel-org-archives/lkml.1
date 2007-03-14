@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932124AbXCNTr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbXCNTr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932124AbXCNTr1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 15:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932501AbXCNTr1
+	id S932367AbXCNTr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 15:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932501AbXCNTr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 15:47:27 -0400
-Received: from hoefnix.telenet-ops.be ([195.130.132.54]:48253 "EHLO
+	Wed, 14 Mar 2007 15:47:29 -0400
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:48331 "EHLO
 	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932124AbXCNTr0 (ORCPT
+	with ESMTP id S932367AbXCNTr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 15:47:26 -0400
-Date: Wed, 14 Mar 2007 20:45:50 +0100 (CET)
+	Wed, 14 Mar 2007 15:47:28 -0400
+Date: Wed, 14 Mar 2007 20:46:06 +0100 (CET)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Al Viro <viro@ftp.linux.org.uk>
 Cc: torvalds@linux-foundation.org,
        Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 12/13] rtc-cmos needs RTC_ALWAYS_BCD known
-In-Reply-To: <E1HRPbK-0003Gn-Of@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0703142045270.5429@anakin>
-References: <E1HRPbK-0003Gn-Of@ZenIV.linux.org.uk>
+Subject: Re: [PATCH 17/17] m68k dma-mapping: gfp_t annotations
+In-Reply-To: <E1HRPey-0003d4-2p@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0703142045530.5429@anakin>
+References: <E1HRPey-0003d4-2p@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,21 +30,22 @@ On Wed, 14 Mar 2007, Al Viro wrote:
 Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 > ---
->  include/asm-m68k/mc146818rtc.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+>  include/asm-m68k/dma-mapping.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/include/asm-m68k/mc146818rtc.h b/include/asm-m68k/mc146818rtc.h
-> index 11fe12d..9f70a01 100644
-> --- a/include/asm-m68k/mc146818rtc.h
-> +++ b/include/asm-m68k/mc146818rtc.h
-> @@ -11,6 +11,7 @@
->  #include <asm/atarihw.h>
+> diff --git a/include/asm-m68k/dma-mapping.h b/include/asm-m68k/dma-mapping.h
+> index 00259ed..a26cdeb 100644
+> --- a/include/asm-m68k/dma-mapping.h
+> +++ b/include/asm-m68k/dma-mapping.h
+> @@ -32,7 +32,7 @@ extern void dma_free_coherent(struct device *, size_t,
+>  			      void *, dma_addr_t);
 >  
->  #define RTC_PORT(x)	(TT_RTC_BAS + 2*(x))
-> +#define RTC_ALWAYS_BCD	0
->  
->  #define CMOS_READ(addr) ({ \
->  atari_outb_p((addr),RTC_PORT(0)); \
+>  static inline void *dma_alloc_noncoherent(struct device *dev, size_t size,
+> -					  dma_addr_t *handle, int flag)
+> +					  dma_addr_t *handle, gfp_t flag)
+>  {
+>  	return dma_alloc_coherent(dev, size, handle, flag);
+>  }
 
 Gr{oetje,eeting}s,
 
