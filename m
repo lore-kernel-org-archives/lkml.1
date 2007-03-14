@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422670AbXCNVnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbXCNVoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422670AbXCNVnB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 17:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422673AbXCNVnB
+	id S1752815AbXCNVoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 17:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXCNVoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 17:43:01 -0400
-Received: from gw.goop.org ([64.81.55.164]:56030 "EHLO mail.goop.org"
+	Wed, 14 Mar 2007 17:44:19 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:51608 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422670AbXCNVnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 17:43:01 -0400
-Message-ID: <45F86C60.7060903@goop.org>
-Date: Wed, 14 Mar 2007 14:42:56 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+	id S1752815AbXCNVoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 17:44:18 -0400
+Date: Wed, 14 Mar 2007 22:34:34 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
        Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: Re: Stolen and degraded time and schedulers
-References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org>	 <1173888673.3101.12.camel@imap.mvista.com>  <45F824BE.1060708@goop.org>	 <1173891595.3101.17.camel@imap.mvista.com>  <45F82C01.3000704@goop.org>	 <1173895607.3101.58.camel@imap.mvista.com>  <45F841EE.6060703@goop.org>	 <1173898800.3101.81.camel@imap.mvista.com>  <45F8508F.3070109@goop.org>	 <1173904438.3101.92.camel@imap.mvista.com>  <45F8663D.5050102@goop.org> <1173908065.3101.97.camel@imap.mvista.com>
-In-Reply-To: <1173908065.3101.97.camel@imap.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+ Take 2
+In-Reply-To: <20070314202131.GC376@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.61.0703142233330.1199@yvahk01.tjqt.qr>
+References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de>
+ <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
+ <20070314180933.GA12994@elte.hu> <Pine.LNX.4.64.0703141120530.9690@woody.linux-foundation.org>
+ <20070314195916.GA5674@elte.hu> <20070314201156.GA9603@elte.hu>
+ <20070314202131.GC376@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> It's used for measuring execution time, but timers are triggered based
-> on that time, so it needs to be actual execution time. I don't know to
-> what extent this is already inaccurate on some system tho.
->   
 
-Well, "actual execution time" is a bit ambiguous: should that be "time
-actually spent executing", or "time we should have spent executing"?
+On Mar 14 2007 21:21, Andi Kleen wrote:
+>
+>> also, having the x32_ and x64_ prefix is a painful daily reminder for 
+>> all of us changing the architecture that 'this stuff needs to be 
+>> unified!'.
+>
+>We would probably stuck with that forever and it just looks ugly.
+>Non paravirt xen uses such a setup and I always hated it.
+>
+>Besides the architecture is called x86_64
 
-It looks like cpu_clock_sample() will only return accurate results on
-yourself; if you get the sched_ns on a thread on another cpu, it won't
-include the time accumulated since the start of its timeslice.
+If you don't like x{32,64}_ suffixes, _{32,64} suffixes would also be a
+possibility. powerpc/mm/init_32.c for example does it that way.
 
-    J
 
+Jan
+-- 
