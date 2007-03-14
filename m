@@ -1,56 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030891AbXCNUjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1160997AbXCNUm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030891AbXCNUjd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 16:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030894AbXCNUjd
+	id S1160997AbXCNUm2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 16:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1160998AbXCNUm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 16:39:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58302 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030891AbXCNUjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 16:39:32 -0400
-Date: Wed, 14 Mar 2007 21:38:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com,
-       cpufreq@lists.linux.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       paulus@au.ibm.com, schwidefsky@de.ibm.com,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: Stolen and degraded time and schedulers
-Message-ID: <20070314203826.GA15394@elte.hu>
-References: <45F6D1D0.6080905@goop.org> <1173816769.22180.14.camel@localhost> <45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org>
+	Wed, 14 Mar 2007 16:42:28 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:47561 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1160997AbXCNUm1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 16:42:27 -0400
+Subject: Re: [RFC][PATCH 2/7] RSS controller core
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Mel Gorman <mel@skynet.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kirill Korotaev <dev@sw.ru>,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       Mel Gorman <MELGOR@ie.ibm.com>, Andy Wihitcroft <apw@shadowen.org>
+In-Reply-To: <20070314153824.GA6607@skynet.ie>
+References: <20070306140036.4e85bd2f.akpm@linux-foundation.org>
+	 <45F3F581.9030503@sw.ru>
+	 <20070311045111.62d3e9f9.akpm@linux-foundation.org>
+	 <20070312010039.GC21861@MAIL.13thfloor.at>
+	 <1173724979.11945.103.camel@localhost.localdomain>
+	 <20070312224129.GC21258@MAIL.13thfloor.at>
+	 <20070312220439.677b4787.akpm@linux-foundation.org>
+	 <45F67AC9.4080707@sw.ru>
+	 <20070313034834.14013bb0.akpm@linux-foundation.org>
+	 <1173805534.6680.26.camel@localhost.localdomain>
+	 <20070314153824.GA6607@skynet.ie>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 13:42:18 -0700
+Message-Id: <1173904938.6680.104.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F84E39.7030507@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-03-14 at 15:38 +0000, Mel Gorman wrote:
+> On (13/03/07 10:05), Dave Hansen didst pronounce:
+> > How do we determine what is shared, and goes into the shared zones?
+> 
+> Assuming we had a means of creating a zone that was assigned to a container,
+> a second zone for shared data between a set of containers.  For shared data,
+> the time the pages are being allocated is at page fault time. At that point,
+> the faulting VMA is known and you also know if it's MAP_SHARED or not.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Well, but MAP_SHARED does not necessarily mean shared outside of the
+container, right?  Somebody wishing to get around resource limits could
+just MAP_SHARED any data they wished to use, and get it into the shared
+area before their initial use, right?
 
-> I added stolen time accounting to xen-pv_ops last night.  For Xen, at 
-> least, it wasn't hard to fit into the clockevent infrastructure.  I 
-> just update the stolen time accounting for each cpu when it gets a 
-> timer tick; they seem to get a tick every couple of seconds even when 
-> idle.
+How do normal read/write()s fit into this?
 
-touching the 'timer tick' is the wrong approach. 'stolen time' only 
-matters to the /scheduler tick/. So extend the hypervisor interface to 
-allow the injection of 'virtual' scheduler tick events: via the use of a 
-special clockevents device - do not change clockevents itself.
+> > There's a conflict between the resize granularity of the zones, and the
+> > storage space their lookup consumes.  We'd want a container to have a
+> > limited ability to fill up memory with stuff like the dcache, so we'd
+> > appear to need to put the dentries inside the software zone.  But, that
+> > gets us to our inability to evict arbitrary dentries. 
+> 
+> Stuff like shrinking dentry caches is already pretty course-grained.
+> Last I looked, we couldn't even shrink within a specific node, let alone
+> a zone or a specific dentry. This is a separate problem.
 
-	Ingo
+I shouldn't have used dentries as an example.  I'm just saying that if
+we end up (or can end up with) with a whole ton of these software zones,
+we might have troubles storing them.  I would imagine the issue would
+come immediately from lack of page->flags to address lots of them.
+
+> > After a while,
+> > would containers tend to pin an otherwise empty zone into place?  We
+> > could resize it, but what is the cost of keeping zones that can be
+> > resized down to a small enough size that we don't mind keeping it there?
+> > We could merge those "orphaned" zones back into the shared zone.
+> 
+> Merging "orphaned" zones back into the "main" zone would seem a sensible
+> choice.
+
+OK, but merging wouldn't be possible if they're not physically
+contiguous.  I guess this could be worked around by just calling it a
+shared zone, no matter where it is physically.
+
+> > Were there any requirements about physical contiguity? 
+> 
+> For the lookup to software zone to be efficient, it would be easiest to have
+> them as MAX_ORDER_NR_PAGES contiguous. This would avoid having to break the
+> existing assumptions in the buddy allocator about MAX_ORDER_NR_PAGES
+> always being in the same zone.
+
+I was mostly wondering about zones spanning other zones.  We _do_
+support this today, and it might make quite a bit more merging possible.
+
+> > If we really do bind a set of processes strongly to a set of memory on a
+> > set of nodes, then those really do become its home NUMA nodes.  If the
+> > CPUs there get overloaded, running it elsewhere will continue to grab
+> > pages from the home.  Would this basically keep us from ever being able
+> > to move tasks around a NUMA system?
+> 
+> Moving the tasks around would not be easy. It would require a new zone
+> to be created based on the new NUMA node and all the data migrated. hmm
+
+I know we _try_ to avoid this these days, but I'm not sure how taking it
+away as an option will affect anything.
+
+-- Dave
+
