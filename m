@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXCNTsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030360AbXCNTtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932690AbXCNTsL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 15:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030310AbXCNTsL
+	id S1030360AbXCNTtp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 15:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030391AbXCNTtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 15:48:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:35838 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932690AbXCNTsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 15:48:09 -0400
-Message-ID: <45F8516E.0@goop.org>
-Date: Wed, 14 Mar 2007 12:47:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com,
-       cpufreq@lists.linux.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com,
-       schwidefsky@de.ibm.com
-Subject: Re: Stolen and degraded time and schedulers
-References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org> <45F850BF.5030702@redhat.com>
-In-Reply-To: <45F850BF.5030702@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Mar 2007 15:49:45 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:46728 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030360AbXCNTto (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 15:49:44 -0400
+Date: Wed, 14 Mar 2007 19:49:41 +0000
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, ak@suse.com,
+       linux-ia64@vger.kernel.org, holt@sgi.com, mpm@selenic.com
+Subject: Re: [QUICKLIST 4/6] x86_64: Single Quicklist
+Message-ID: <20070314194941.GA21862@skynet.ie>
+References: <20070311020923.19905.49260.sendpatchset@schroedinger.engr.sgi.com> <20070311020944.19905.87599.sendpatchset@schroedinger.engr.sgi.com> <200703110854.05799.ak@suse.de> <Pine.LNX.4.64.0703110939140.24216@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703110939140.24216@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Jeremy Fitzhardinge wrote:
->
->> It doesn't matter why you didn't get the time; 
->
-> Oh, but it does.
+On (11/03/07 09:44), Christoph Lameter didst pronounce:
+> On Sun, 11 Mar 2007, Andi Kleen wrote:
+> 
+> > This and i386 version are ok to me, although it might be better to just
+> > finish __GFP_ZERO support to do this.
+> 
+> This would not work for pgds on i386 and x86_64
+> 
+> GFP_ZERO support the way I have done it in the past would mean another set 
+> of buddy lists in the page allocator and another issue with fragmentation. 
+> So I have stayed away from it although patches exist in my archives (See 
+> my ftp.kernel.org archive).
 
-I meant specifically from a scheduling perspective.
+I haven't checked this in a while but when we experimented with keeping
+zero'd pages on separate lists before, the performance sucked. I haven't
+looked at it in a *long* time though.
 
-> System administrators can use steal time the same way they
-> use iowait time: to spot bottlenecks on their systems.
->
-> If you have a lot of iowait time, you know you want either
-> faster IO or more memory.
->
-> If you have a lot of steal time, you know you need to spread
-> your virtual machines over more CPUs.
->
-> Steal time allows you to see the difference between a busy
-> system and an overloaded system.
+> 
+> Maybe we could implemento limited GFP_ZERO support by just keeping an 
+> additional per cpu list of pages?
 
-Sure, the various accounting tools can go into as much detail as you
-want.  I just added stolen time accounting to the xen-pv_ops patchset
-which is equivalent to the xen-unstable stolen time accounting.  Is that
-sufficient for these purposes?
+I imagine that adding an additional per-cpu list will not be welcome.
 
-    J
+> The issue with that one is that a page
+> may grow cold on that list.
+
+And that growing cold appeared to hurt before. It could be checked out
+again though. The anti-fragmentation breaks out the buddy lists already
+and has the ability to search the per-cpu lists for pages of an
+appropriate type.
+
+I'll try and find an hour or two to hack something together to see what
+it looks like but I suspect it'll still be a performance loss. At least
+then though, we can see if quicklists are a better plan or not.
+
+> One usually want the page to be hot in the 
+> cache when it is allocated. This is different for page table pages. Page 
+> table pages are typically sparsely accessed.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
