@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbXCNBMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbXCNBNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752687AbXCNBMo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 21:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXCNBMo
+	id S1752696AbXCNBNA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 21:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbXCNBNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 21:12:44 -0400
-Received: from holomorphy.com ([66.93.40.71]:59103 "EHLO holomorphy.com"
+	Tue, 13 Mar 2007 21:13:00 -0400
+Received: from ozlabs.org ([203.10.76.45]:33918 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752687AbXCNBMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 21:12:44 -0400
-Date: Tue, 13 Mar 2007 18:12:44 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, clameter@sgi.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
-Message-ID: <20070314011244.GM2986@holomorphy.com>
-References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com> <20070313005334.853559ca.akpm@linux-foundation.org> <45F65ADA.9010501@yahoo.com.au> <20070313035250.f908a50e.akpm@linux-foundation.org> <45F685C6.8070806@yahoo.com.au> <20070313041551.565891b5.akpm@linux-foundation.org> <45F68B4B.9020200@yahoo.com.au> <20070313044756.b45649ac.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070313044756.b45649ac.akpm@linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752696AbXCNBM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 21:12:59 -0400
+Subject: Re: _proxy_pda still makes linking modules fail
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <45F6C3E9.5020207@goop.org>
+References: <1173315479.12472.9.camel@qrnik>
+	 <p73lki39s3a.fsf@bingen.suse.de>	<45F49E0A.3090607@goop.org>
+	 <20070312094805.GA11644@one.firstfloor.org>
+	 <1173736726.10618.1.camel@localhost.localdomain>
+	 <1173767032.10618.43.camel@localhost.localdomain>
+	 <17910.26926.138067.731855@cargo.ozlabs.ibm.com>
+	 <45F6C3E9.5020207@goop.org>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 12:12:49 +1100
+Message-Id: <1173834769.5443.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 04:47:56AM -0800, Andrew Morton wrote:
-> I'm trying to remember why we ever would have needed to zero out the
-> pagetable pages if we're taking down the whole mm?  Maybe it's
-> because "oh, the arch wants to put this page into a quicklist to
-> recycle it", which is all rather circular.
-> It would be interesting to look at a) leave the page full of random
-> garbage if we're releasing the whole mm and b) return it straight to
-> the page allocator.
+On Tue, 2007-03-13 at 08:31 -0700, Jeremy Fitzhardinge wrote:
+> Paul Mackerras wrote:
+> > There is a fundamental problem with using __thread, which is that gcc
+> > assumes that the addresses of __thread variables are constant within
+> > one thread, and that therefore it can cache the result of address
+> > calculations.  However, with preempt, threads in the kernel can't rely
+> > on staying on one cpu, and therefore the addresses of per-cpu
+> > variables can change.  There appears to be no way to tell gcc to drop
+> > all cached __thread variable address calculations at a given point
+> > (e.g. when enabling or disabling preemption).  That is basically why I
+> > gave up on using __thread for per-cpu variables on powerpc.
 
-We never did need to modify ptes on exit() or other pagetable prunings
-(not that they were ever done outside exit() before 2.6.x). The only
-subtlety is that pruning on munmap() needs a TLB flush for the TLB
-itself to drop the references to the pages referred to by the PTE's on
-pruning in the presence of hardware pagetable walkers (in the exit()
-case there are no user execution contexts left to potentially utilize
-the dead translations so it's less important). That's handled by
-tlb_remove_page() and shouldn't need any updates across such a change.
+[ Thanks for the enlightenment, Paul ]
 
-I believe the zeroing on teardown was largely a result of idiom vs.
-any particular need. Essentially using ptep_get_and_clear() to handle
-the non-pruning munmap() case in a manner unified with other pagetable
-teardowns. Also likely is 2.4.x legacy from when that and possibly
-earlier kernels maintained arch-private quicklists for pagetables.
+> Doesn't that fall under the general class of "you have to be pinned to a
+> particular cpu in order to meaningfully use per-cpu variables"?
 
-There are furthermore distinctions to make between fork() and execve().
-fork() stomps over the entire process address space copying pagetables
-en masse. After execve() a process incrementally faults in PTE's one at
-a time. It should be clear that if case analyses are of interest at
-all, fork() will want cache-hot pages (cache-preloaded pages?) where
-such are largely wasted on incremental faults after execve(). The copy
-operations in fork() should probably also be examined in the context of
-shared pagetables at some point.
+No, it makes assumptions about the *address* of a per-cpu variable not
+changing, even across barriers.
+
+> In principle gcc could CSE the value of smp_processor_id() across a cpu
+> change in the same way.
+
+No, this is why preempt_enable and the like are memory barriers.
+Rusty.
 
 
--- wli
