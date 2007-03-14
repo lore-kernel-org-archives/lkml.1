@@ -1,112 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbXCNCAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbXCNCRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933805AbXCNCAN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 22:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbXCNCAN
+	id S933781AbXCNCRG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 22:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933801AbXCNCRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 22:00:13 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:51096 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933796AbXCNCAL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 22:00:11 -0400
-Subject: Re: Stolen and degraded time and schedulers
-From: Daniel Walker <dwalker@mvista.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-In-Reply-To: <45F71EA5.2090203@goop.org>
-References: <45F6D1D0.6080905@goop.org>
-	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>
-	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>
+	Tue, 13 Mar 2007 22:17:06 -0400
+Received: from ozlabs.org ([203.10.76.45]:38019 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933796AbXCNCRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 22:17:05 -0400
+Subject: Re: _proxy_pda still makes linking modules fail
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070313155747.GA11162@one.firstfloor.org>
+References: <1173315479.12472.9.camel@qrnik>
+	 <p73lki39s3a.fsf@bingen.suse.de> <45F49E0A.3090607@goop.org>
+	 <20070312094805.GA11644@one.firstfloor.org>
+	 <1173736726.10618.1.camel@localhost.localdomain>
+	 <1173767032.10618.43.camel@localhost.localdomain>
+	 <20070313155747.GA11162@one.firstfloor.org>
 Content-Type: text/plain
-Date: Tue, 13 Mar 2007 19:00:05 -0700
-Message-Id: <1173837606.23595.32.camel@imap.mvista.com>
+Date: Wed, 14 Mar 2007 13:17:03 +1100
+Message-Id: <1173838623.5443.20.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 14:59 -0700, Jeremy Fitzhardinge wrote:
-> Daniel Walker wrote:
-> > The frequency tracking you mention is done to some extent inside the
-> > timekeeping adjustment functions, but I'm not sure it's totally accurate
-> > for non-timekeeping, and it also tracks things like interrupt latency.
-> > Tracking frequency changes where it's important to get it right
-> > shouldn't be done I think ..
-> >
-> > If you want accurate time accounting, don't use the TSC .
-> >   
+On Tue, 2007-03-13 at 16:57 +0100, Andi Kleen wrote:
+> On Tue, Mar 13, 2007 at 05:23:52PM +1100, Rusty Russell wrote:
+> > In particular, it's been put in GCC 4.1 for
+> > CONFIG_CC_STACKPROTECTOR, which assumes %gs:40 will give the stack
+> > canary.
 > 
-> I'm not sure I follow you here.  Clocksources have the means to adjust
-> the rate of time progression, mostly to warp the time for things like
-> ntp.  The stability or otherwise of the tsc is irrelevant.
+> Yes that was always ugly, but I don't know a better way.
 
-The adjustments that I spoke of above are working regardless of ntp ..
-The stability of the TSC directly effects the clock mult adjustments in
-timekeeping, as does interrupt latency since the clock is essentially
-validated against the timer interrupt.
+Well, "%gs:__gcc_stack_protector" would have been better.  We could have
+defined __gcc_stack_protector as an absolute symbol (0x40) at the
+moment, and made it a real per-cpu var later.
 
-> If you had a clocksource which was explicitly using the rate at which a
-> CPU does work as a timebase, then using the same warping mechanism would
-> allow you to model CPU speed changes.
-
-like I said there are other factors so that's not going to exactly model
-cpu speed changes. You could come up with another method, but that would
-likely require another known constant clock.
-
-> > The sched_clock interface is basically a stripped down clocksource..
-> > I've implemented sched_clock as a clocksource in the past ..
-> >   
+> > For the record: the PDA should never have existed, that's what percpu
+> > vars were supposed to be for.  Something went wrong here 8(
 > 
-> Yes, that works.  But a clocksource is strictly about measuring the
-> progression of real time, and so doesn't generally measure how much work
-> a CPU has done.
+> PDA predates per cpu.
 
-sched_clock doesn't measure amounts of cpu work either, it's all about
-timing. 
+Indeed, but I should have converted it over back in 2003 (?) when the
+per-cpu stuff went in 8(
 
-> >> We currently have a sched_clock interface in paravirt_ops to deal with
-> >> the hypervisor aspect.  It only occurred to me this morning that cpufreq
-> >> presents exactly the same problem to the rest of the kernel, and so
-> >> there's room for a more general solution.
-> >>     
-> >
-> > Are there other architecture which have this per-cpu clock frequency
-> > changing issue? I worked with several other architectures beyond just
-> > x86 and haven't seen this issue ..
+> > The ideal solution has always been to use __thread, but no architecture
+> > has yet managed it (I tried for i386, and it quickly caused unbearable
 > 
-> Well, lots of cpus have dynamic frequencies.  Any scheduler which
-> maintains history will suffer the same problem, even on UP.  If
-> processes A and B are supposed to have the same priority and they both
-> execute for 1ms of real time, did they make the same amount of
-> progress?  Not if the cpu changed speed in between.
+> I tried it too, but __thread is hopeless for kernel code
+> 
+> > pain).  On x86-64 that uses "%fs" on x86-64, not "%gs" as the kernel
+> > does, but I might try that if I feel particularly masochistic soon...
+> 
+> Then swapgs wouldn't work anymore (there is no swapfs)
 
-That's true, but given a constant clock (like what sched_clock should
-have) then the accounting is similarly inaccurate. Any connection
-between the scheduler and the TSC frequency changes aren't part of the
-design AFAIK ..
+Good point.
 
-> And any system which commonly runs virtualized (s390, power, etc) will
-> need to deal with the notion of stolen time.
-
-I haven't followed the "stolen time" discussion, but just a brief look
-at your first email I'd say don't mess with the clocks .. The clocks
-should always reflect the time accurately .. That's the point of the
-clocks, and when the TSC, or any other clock, changes frequency it
-sucks..
-
-I haven't thought it through completely, but you might be able to solve
-the issue by adding a value to each jiffie in the scheduler or altering
-the scheduler to extend the number of jiffies a task gets pending on the
-virtual speed of the cpu..
-
-Daniel
+Thanks,
+Rusty.
 
