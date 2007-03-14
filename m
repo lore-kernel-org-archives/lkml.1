@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbXCNRIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbXCNROZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752245AbXCNRIr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 13:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXCNRIr
+	id S1752197AbXCNROZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 13:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbXCNROZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 13:08:47 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:21349 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752236AbXCNRIp (ORCPT
+	Wed, 14 Mar 2007 13:14:25 -0400
+Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:11568 "EHLO
+	webmail.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751597AbXCNROY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 13:08:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ngXX7WNXoNJb80+rs9rG/hlB3h70SKX2hg75JJT/upmhh5xduiFXZX7tO2AUYtB/oLCtW0cSu16X1ByRgNFK3W6Q8Vg3CJJoYnAnxEIKucyOQi2KtO7MmOmlHvBcl1mWnaR1W/tmJwzvv2TNTJIlwDYvlv2JglXvRlPwwVpFyVk=
-Message-ID: <b0943d9e0703141008o4d6cb243r7bc328d79cccfa2e@mail.gmail.com>
-Date: Wed, 14 Mar 2007 17:08:34 +0000
-From: "Catalin Marinas" <catalin.marinas@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: Possible "struct pid" leak from tty_io.c
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <m1wt1jq45w.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Mar 2007 13:14:24 -0400
+X-Greylist: delayed 848 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Mar 2007 13:14:24 EDT
+Subject: [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
+From: Ian Campbell <Ian.Campbell@XenSource.com>
+To: vgoyal@in.ibm.com, hbabu@us.ibm.com
+Cc: fastboot@lists.osdl.org, linux-kernel@vger.kernel.org,
+       Horms <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 17:00:09 +0000
+Message-Id: <1173891609.8591.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b0943d9e0703080927hde01f7dt9ae06433e0c87549@mail.gmail.com>
-	 <m13b4f7ggy.fsf@ebiederm.dsl.xmission.com>
-	 <b0943d9e0703090844i6459372auba8e408ccce0c1f0@mail.gmail.com>
-	 <m1lki64a3i.fsf@ebiederm.dsl.xmission.com>
-	 <b0943d9e0703120807t796e6c62k2422a93f6161db3a@mail.gmail.com>
-	 <m1veh5q6s7.fsf@ebiederm.dsl.xmission.com>
-	 <b0943d9e0703140259p773b0eb8p9c142d33934e64ff@mail.gmail.com>
-	 <m1wt1jq45w.fsf@ebiederm.dsl.xmission.com>
+X-OriginalArrivalTime: 14 Mar 2007 17:00:15.0317 (UTC) FILETIME=[3C9A1850:01C7665A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14/03/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> How does this look?
+The specific case I am encountering is kdump under Xen with a 64 bit
+hypervisor and 32 bit kernel/userspace. The dump created is a 64 bit due
+to the hypervisor but the dump kernel is 32 bit to match the domain 0
+kernel.
 
-It seems to fix the leak. I looked at the logs and proc_set_tty calls
-put_pid twice for pid 245 (the unresolved leak) and get_pid for pid
-296, which is later passed to put_pid via do_tty_hangup.
+It's possibly less likely to be useful in a purely native scenario but I
+see no reason to disallow it.
 
-I still get the "error attempted to write to tty [0x00000000] = NULL"
-when debugging is enabled in tty_io.c but it seems harmless.
+Signed-off-by: Ian Campbell <ian.campbell@xensource.com>
 
-> I don't have the setup to test this easily, but this bit makes seems to
-> make sense.
+--- pristine-linux-2.6.18/include/asm-i386/elf.h	2006-09-20 04:42:06.000000000 +0100
++++ linux-2.6.18-xen/include/asm-i386/elf.h	2007-03-14 16:42:30.000000000 +0000
+@@ -36,7 +36,7 @@
+  * This is used to ensure we don't load something for the wrong architecture.
+  */
+ #define elf_check_arch(x) \
+-	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
++	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486) || ((x)->e_machine == EM_X86_64))
+ 
+ /*
+  * These are used to set parameters in the core dumps.
 
-And I don't have a fully tested kmemleak patch to post either :-).
 
-Thanks.
-
--- 
-Catalin
