@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933804AbXCNCZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933801AbXCNCZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933804AbXCNCZw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 22:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933806AbXCNCZw
+	id S933801AbXCNCZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 22:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933807AbXCNCZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 22:25:52 -0400
-Received: from ozlabs.org ([203.10.76.45]:43676 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933804AbXCNCZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 22:25:51 -0400
-Subject: Re: [PATCH 0/8] x86 boot, pda and gdt cleanups
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-In-Reply-To: <45F70E25.7050704@goop.org>
-References: <1173184747.4644.23.camel@localhost.localdomain>
-	 <45F70E25.7050704@goop.org>
-Content-Type: text/plain
-Date: Wed, 14 Mar 2007 13:25:49 +1100
-Message-Id: <1173839149.5443.26.camel@localhost.localdomain>
+	Tue, 13 Mar 2007 22:25:58 -0400
+Received: from h80ad26cc.async.vt.edu ([128.173.38.204]:36606 "EHLO
+	h80ad26cc.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933801AbXCNCZ5 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 22:25:57 -0400
+Message-Id: <200703140225.l2E2PJ2k007003@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: Con Kolivas <kernel@kolivas.org>, Xavier Bestel <xavier.bestel@free.fr>,
+       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][RSDL-mm 0/7] RSDL cpu scheduler for 2.6.21-rc3-mm2
+In-Reply-To: Your message of "Mon, 12 Mar 2007 17:38:38 BST."
+             <1173717518.26350.6.camel@localhost>
+From: Valdis.Kletnieks@vt.edu
+References: <200703111457.17624.kernel@kolivas.org> <200703122022.43021.kernel@kolivas.org> <1173692319.5835.611.camel@frg-rhel40-em64t-03> <200703122134.13554.kernel@kolivas.org>
+            <1173717518.26350.6.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: multipart/signed; boundary="==_Exmh_1173839119_4410P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Mar 2007 22:25:19 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 13:48 -0700, Jeremy Fitzhardinge wrote:
-> Rusty Russell wrote:
-> > Hi all,
-> >
-> > 	The GDT stuff on x86 is a little more complex than it need be, but
-> > playing with boot code is always dangerous.  These compile and boot on
-> > UP and SMP for me, but Andrew should let the cook in -mm for a while.
-> >   
-> Hi Rusty,
-> 
-> This is my rough hacking patch I needed to get things into a Xen-shape
-> state.
+--==_Exmh_1173839119_4410P
+Content-Type: text/plain; charset=us-ascii
 
-Looks good.  Just one thing:
+On Mon, 12 Mar 2007 17:38:38 BST, Kasper Sandberg said:
+> with latest xorg, xlib will be using xcb internally,
 
->  void __devinit native_smp_prepare_boot_cpu(void)
->  {
-> -	cpu_set(smp_processor_id(), cpu_online_map);
-> -	cpu_set(smp_processor_id(), cpu_callout_map);
-> -	cpu_set(smp_processor_id(), cpu_present_map);
-> -	cpu_set(smp_processor_id(), cpu_possible_map);
-> -	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
-> +	int cpu = smp_processor_id();
-> +
-> +	cpu_set(cpu, cpu_online_map);
-> +	cpu_set(cpu, cpu_callout_map);
-> +	cpu_set(cpu, cpu_present_map);
-> +	cpu_set(cpu, cpu_possible_map);
-> +	per_cpu(cpu_state, cpu) = CPU_ONLINE;
->  
->  	/* Set up %fs to point to our per-CPU area now it's allocated */
-> -	init_gdt(smp_processor_id(), &init_task);
-> -	cpu_set_gdt(smp_processor_id());
-> +	init_gdt(cpu, &init_task);
-> +	cpu_set_gdt(cpu);
->  }
+Out of curiosity, when is this "latest" Xorg going to escape to distros,
+and is it far enough along that beta testers can gather usable numbers?
 
-This is called "pissing in the corners".  Don't do it: we don't need to
-touch that code and I actually prefer the original anyway (explicit is
-*good*).  
 
-The habit of extracting cpu number once then using it is an optimization
-which we should be aiming to get rid of (it simply hurts archs with
-efficient per-cpu implementations).
+--==_Exmh_1173839119_4410P
+Content-Type: application/pgp-signature
 
-Cheers,
-Rusty.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFF910PcC3lWbTT17ARAsJlAJ9/Tilt69/S7iJ74SZRnpSYOuMnvwCgoWMS
+b4fKwVVKPw/7IK0ZorndGcc=
+=H48J
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1173839119_4410P--
