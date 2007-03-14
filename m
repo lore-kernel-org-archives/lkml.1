@@ -1,65 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030829AbXCNJs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030825AbXCNJuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030829AbXCNJs1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 05:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030835AbXCNJs1
+	id S1030825AbXCNJuU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 05:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030842AbXCNJuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 05:48:27 -0400
-Received: from ag-out-0708.google.com ([72.14.246.245]:30675 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030829AbXCNJs0 (ORCPT
+	Wed, 14 Mar 2007 05:50:19 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:57157 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030825AbXCNJuS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 05:48:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M91wteKKOlNlTj3EuJo09KlLQMWZjX4beQJTmUxa8T9KamjO0Sr/USBqVm4L+qVTKb2PHhm4aBxHUajwzREM4vVAuq4Vu1sdxkhFzHUoDkZBz3Vlc1dEy4cveE08H1PePB9oyrPhI0caKwmyJA0Uy5YxlPxOtr7M7HbTbUoFq30=
-Message-ID: <77e1146f0703140248ua2e3a4dn660de5f2b5f500d1@mail.gmail.com>
-Date: Wed, 14 Mar 2007 15:18:26 +0530
-From: "sujay g" <mail.sujayg@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 - Take 2
-In-Reply-To: <p73slc8863r.fsf@bingen.suse.de>
+	Wed, 14 Mar 2007 05:50:18 -0400
+Date: Wed, 14 Mar 2007 10:50:16 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
+In-Reply-To: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
+References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070314050819.536207642@goodmis.org>
-	 <p73slc8863r.fsf@bingen.suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 14 Mar 2007, Al Viro wrote:
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-I am newbie developing a routing application which
-needs three features;
+NAK
 
-1. if the fib lookup fails, my application needs to know about using
-preferably
-netlink, -- any direction to some sample code or files in the kernel???
+There are several problems with making it modular. I did try, cfr. the
+incomplete patchlets below.
 
-2. I need a counter recording the hits a fib entry is chosen for
-packet forwarding. Is it the function fn_trie_lookup in file
-/net/ipv4/fib_trie.c i need to modify and look into?
--- ?? and therefore is it safe to add a int counter in fib_node w/o
-breaking the build??
+> ---
+>  arch/powerpc/platforms/ps3/htab.c |    2 ++
+>  drivers/video/Kconfig             |    2 +-
+>  include/asm-powerpc/ps3fb.h       |    5 -----
+>  3 files changed, 3 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
+> index e12e59f..67d6f58 100644
+> --- a/arch/powerpc/platforms/ps3/htab.c
+> +++ b/arch/powerpc/platforms/ps3/htab.c
+> @@ -235,7 +235,9 @@ static void ps3_hpte_invalidate(unsigned long slot, unsigned long va,
+>  static void ps3_hpte_clear(void)
+>  {
+>  	/* Make sure to clean up the frame buffer device first */
+> +#ifdef CONFIG_PS3_FB
+>  	ps3fb_cleanup();
+> +#endif
 
-2. need to read the entire fib, i.e dump the fib to the user space,
--- again any direction to some sample code etc..
-i have seen a fn in /source/net/ipv4/fib_frontend.c , which looks like
-is supposed to dump the routes but not sure how to use it..
+I'm not sure it will survive a kexec() of a new kernel if ps3fb_cleanup()
+isn't called when ps3fb.ko has been loaded. But that's an issue for later...
 
-line no.581 int inet_dump_fib(struct sk_buff *skb, struct
-netlink_callback *cb)
-Also;
-fn_trie_dump() in /net/ipv4/fib_trie.c
+> index ad81cf4..a447387 100644
+> --- a/include/asm-powerpc/ps3fb.h
+> +++ b/include/asm-powerpc/ps3fb.h
+> @@ -43,13 +43,8 @@ struct ps3fb_ioctl_res {
+>  
+>  #ifdef __KERNEL__
+>  
+> -#ifdef CONFIG_FB_PS3
+>  extern void ps3fb_flip_ctl(int on);
+>  extern void ps3fb_cleanup(void);
+> -#else
+> -static inline void ps3fb_flip_ctl(int on) {}
+> -static inline void ps3fb_cleanup(void) {}
+> -#endif
 
+Now it fails to link with:
 
-This could be an inappropriate list for the above questions,  if it is
-request for
-some direction on the appropriate mailing list
+| drivers/built-in.o: In function `ps3av_cmd_avb_param':ps3-linux-2.6.21-rc3/drivers/ps3/ps3av_cmd.c:855: undefined reference to `.ps3fb_flip_ctl'
+| :ps3-linux-2.6.21-rc3/drivers/ps3/ps3av_cmd.c:869: undefined reference to `.ps3fb_flip_ctl'
 
-Appreciate any help.
+Which could be fixed with something like:
 
-Thanking you,
-Sujay
+--- ps3-linux-2.6.20.orig/drivers/ps3/ps3av.c
++++ ps3-linux-2.6.20/drivers/ps3/ps3av.c
+@@ -868,6 +868,22 @@ int ps3av_dev_close(void)
+ 
+ EXPORT_SYMBOL_GPL(ps3av_dev_close);
+ 
++void ps3av_register_flip_ctl(void (*flip_ctl)(int on))
++{
++	mutex_lock(&ps3av.mutex);
++	ps3av.flip_ctl = flip_ctl;
++	mutex_unlock(&ps3av.mutex);
++}
++EXPORT_SYMBOL_GPL(ps3av_register_flip_ctl);
++
++void ps3av_flip_ctl(int on)
++{
++	mutex_lock(&ps3av.mutex);
++	if (ps3av.flip_ctl)
++		ps3av.flip_ctl(on);
++	mutex_unlock(&ps3av.mutex);
++}
++
+ static int ps3av_probe(struct ps3_vuart_port_device *dev)
+ {
+ 	int res;
+--- ps3-linux-2.6.20.orig/drivers/ps3/ps3av_cmd.c
++++ ps3-linux-2.6.20/drivers/ps3/ps3av_cmd.c
+@@ -852,7 +852,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ {
+ 	int res;
+ 
+-	ps3fb_flip_ctl(0);	/* flip off */
++	ps3av_flip_ctl(0);	/* flip off */
+ 
+ 	/* avb packet */
+ 	res = ps3av_do_pkt(PS3AV_CID_AVB_PARAM, send_len, sizeof(*avb),
+@@ -866,7 +866,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ 			 res);
+ 
+       out:
+-	ps3fb_flip_ctl(1);	/* flip on */
++	ps3av_flip_ctl(1);	/* flip on */
+ 	return res;
+ }
+ 
+--- ps3-linux-2.6.20.orig/include/asm-powerpc/ps3av.h
++++ ps3-linux-2.6.20/include/asm-powerpc/ps3av.h
+@@ -660,6 +660,7 @@ struct ps3av {
+ 	u32 audio_port;
+ 	int ps3av_mode;
+ 	int ps3av_mode_old;
++	void (*flip_ctl)(int on);
+ };
+ 
+ /** command status **/
+@@ -734,5 +735,7 @@ extern int ps3av_video_mute(int);
+ extern int ps3av_audio_mute(int);
+ extern int ps3av_dev_open(void);
+ extern int ps3av_dev_close(void);
++extern void ps3av_register_flip_ctl(void (*func)(int on));
++extern void ps3av_flip_ctl(int on);
+ 
+ #endif	/* _ASM_POWERPC_PS3AV_H_ */
+
+and calling ps3av_register_flip_ctl() from ps3fb at the appropriate places.
+
+Still, the module won't load, as ps3fb needs ps3fb_videomemory[] (do you
+know a better way to allocate a few mebibytes of physically contiguous
+memory?):
+
+--- ps3-linux-2.6.20.orig/arch/powerpc/platforms/ps3/setup.c
++++ ps3-linux-2.6.20/arch/powerpc/platforms/ps3/setup.c
+@@ -115,12 +115,13 @@ static void prealloc(struct ps3_prealloc
+ 	       p->address);
+ }
+ 
+-#ifdef CONFIG_FB_PS3
++#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
+ struct ps3_prealloc ps3fb_videomemory = {
+     .name = "ps3fb videomemory",
+     .size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
+     .align = 1024*1024			/* the GPU requires 1 MiB alignment */
+ };
++EXPORT_SYMBOL_GPL(ps3fb_videomemory);
+ #define prealloc_ps3fb_videomemory()	prealloc(&ps3fb_videomemory)
+ 
+ static int __init early_parse_ps3fb(char *p)
+
+And finally, make sure CONFIG_LOGO=n, as there's a bug in the logo code: logos
+are __initdata but the logo code still tries to draw them for a modular fbdev.
+Originally (eons ago) this case was handled by the flag initmem_freed, which no
+longer exists.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
