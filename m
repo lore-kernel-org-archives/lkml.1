@@ -1,102 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932504AbXCNSr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbXCNSss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932504AbXCNSr7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 14:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932517AbXCNSr7
+	id S932601AbXCNSss (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 14:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932635AbXCNSsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 14:47:59 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:7361 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932504AbXCNSr6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 14:47:58 -0400
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Mar 2007 14:47:58 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Clarification required about select vs wake_up race condition
-Date: Wed, 14 Mar 2007 11:38:18 -0700
-Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A41E@xmb-sjc-214.amer.cisco.com>
-In-Reply-To: <b647ffbd0703141008o3f0d6bfsfbd9e9d793efdee@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Clarification required about select vs wake_up race condition
-thread-index: AcdmW1iAm9OjFYbAThS7wq3v+3vg/wACqYuA
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A411@xmb-sjc-214.amer.cisco.com> <b647ffbd0703141008o3f0d6bfsfbd9e9d793efdee@mail.gmail.com>
-From: "Ravinandan Arakali \(rarakali\)" <rarakali@cisco.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 14 Mar 2007 18:38:19.0113 (UTC) FILETIME=[EF9E1D90:01C76667]
-Authentication-Results: sj-dkim-2; header.From=rarakali@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Wed, 14 Mar 2007 14:48:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38858 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932601AbXCNSsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 14:48:46 -0400
+Date: Wed, 14 Mar 2007 11:48:42 -0700
+From: Seth Arnold <seth.arnold@suse.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [Patch 1/1] IBAC Patch
+Message-ID: <20070314184841.GJ27643@suse.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <1173394696.5981.12.camel@localhost.localdomain> <20070314022713.GI27643@suse.de> <1173871526.18147.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mxgVX529wKDqfd1k"
+Content-Disposition: inline
+In-Reply-To: <1173871526.18147.3.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry,
-Thanks for the explanation. That would mean that if
-process is not put to sleep, it will go back to
-top of for() loop in do_select(), set state back
-to TASK_INTERRUPTIBLE and re-check for incoming data.
 
-Ravi 
+--mxgVX529wKDqfd1k
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
------Original Message-----
-From: Dmitry Adamushko [mailto:dmitry.adamushko@gmail.com] 
-Sent: Wednesday, March 14, 2007 10:08 AM
-To: Ravinandan Arakali (rarakali)
-Cc: Linux Kernel
-Subject: Re: Clarification required about select vs wake_up race
-condition
+On Wed, Mar 14, 2007 at 07:25:26AM -0400, Mimi Zohar wrote:
+> It's a little bit of both. :-) Initially it was written to help me with=
+=20
 
-On 12/03/07, Ravinandan Arakali (rarakali) <rarakali@cisco.com> wrote:
-> Hi,
-> I am facing following problem and was wondering if somebody could help
+:)
 
-> me out.
-> Our char driver(pretty much like all other char drivers) does a
-> poll_wait()
-> and returns status depending on whether data is available to be read.
-> Even though some data is available to be read(verified using one of 
-> our internal commands), the select() never wakes up, inspite of any 
-> no. of messages sent.
->
-> To understand this, I was looking at the code of select vs 
-> wake_up_interruptible().
-> I feel I am misunderstanding some part of the kernel code but will be 
-> glad if somebody can point it out.
->
-> My understanding:
-> The do_select() sets the state of task to TASK_INTERRUPTIBLE and calls
+> implementing and testing the integrity provider.  But it could definitely=
+ stand
+> on it's own.  As Serge Hallyn commented http://lkml.org/lkml/2007/3/13/22=
+0, by=20
+> adding the mmap hook, IBAC could replace the LSM aspect of digsig and a g=
+pg=20
+> based integrity provider, could be written, instead of EVM, which is TPM =
+based.
 
-> the driver's poll entry point. In our poll(), let's say immediately 
-> after we determine that there's nothing to be read, some data arrives 
-> causing a wake_up_interruptible() on another CPU.
-> The wake up happens in the context of process sending the data. Since 
-> the receiving process was already added to the list of listeners, from
+Thanks.
 
-> looking at the code of try_to_wake_up(), it looks like it can set the 
-> state of the receiving process to TASK_RUNNING(I don't see any lock 
-> preventing this). After this happens, the receiving process goes to 
-> sleep (because of schedule_timeout called by do_select) but state is 
-> still set to TASK_RUNNING.
+> > > +	if (status !=3D INTEGRITY_PASS) {	/* FAIL | NO_LABEL */
+> > > +		if (!is_kernel_thread(current)) {
+> >=20
+> > Please remind me why kernel threads are exempt?
+>=20
+> You really don't want to prevent kernel threads from working. Nasty things
+> happen.
 
-No, it's not going to sleep then.
+But under what conditions would a kernel thread not pass integrity? I
+guess if it doesn't have an associated dentry... or the dentry refers
+to something else? (What does knfsd do -- it is started by a userland
+program which causes the kernel to start up some tasks for NFS..)
 
-The effect of schedule() being called with current->state ==
-TASK_RUNNING is a re-scheduling to another task with a higher prio (if
-any) or just getting back (iow, the task doesn't lose a cpu). For both
-cases, the task is on the runqueue.
+> For integrity_measure(), EVM calls IMA, if enabled, to extend the
+> measurement list with the hash value it provides. In most cases, EVM
+> has already calculated the hash value, when it was called to verify the
+> data. integrity_measure() is not meant to be intrusive, so it is defined
+> as void.
 
-/ Look how/when deactivate_task() is called in schedule() /
+Oh, ok, thanks.
 
-Maybe there is a race in your code between (1) how you check "data is
-available" in poll and (2) a part that sets this fact (data is
-available)...
+> Thank you for your comments.
 
+My pleasure, thanks for the quick responses.
 
---
-Best regards,
-Dmitry Adamushko
+--mxgVX529wKDqfd1k
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFF+EOJ+9nuM9mwoJkRAhcGAKCTtUCrs0djtIioKQ0U91KT6iWBrgCfcJil
+3Z4jWNGmRUyEijFgYsrTe3M=
+=b8S1
+-----END PGP SIGNATURE-----
+
+--mxgVX529wKDqfd1k--
