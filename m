@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbXCNFk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933840AbXCNFkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933869AbXCNFk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 01:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933840AbXCNFkZ
+	id S933840AbXCNFkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 01:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933873AbXCNFkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 01:40:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:58074 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933869AbXCNFkY (ORCPT
+	Wed, 14 Mar 2007 01:40:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59141
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S933870AbXCNFkg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 01:40:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=naxM7duECMeYvehewokBP7CXMXxwVMag3uIxLyLQLITZu30YyB2jB7KNB49fn6Tq8zwGKB6KesMW/jlEDrawK0K2k1s7SXm0/sejoCiy1PHwET6htJtMykxctC2OSyG0hH/p2uC3iqHfuqBcc/WiehOR3VJgIfDmUuj27yVx0o0=
-Message-ID: <5c49b0ed0703132240h2087eb12xb44652bf0d235521@mail.gmail.com>
-Date: Tue, 13 Mar 2007 22:40:22 -0700
-From: "Nate Diller" <nate.diller@gmail.com>
-To: "Vladimir V. Saveliev" <vs@namesys.com>
-Subject: [BUG] reiser4: page lock recursion in reiser4_write_extent
-Cc: reiserfs-dev <reiserfs-dev@namesys.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Mar 2007 01:40:36 -0400
+Date: Tue, 13 Mar 2007 22:40:35 -0700 (PDT)
+Message-Id: <20070313.224035.70218068.davem@davemloft.net>
+To: nish.aravamudan@gmail.com
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       torvalds@osdl.org, stable@kernel.org, sparclinux@vger.kernel.org
+Subject: Re: Linux 2.6.20.3
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <29495f1d0703131729y56a99d9cj15288e7c18e277a8@mail.gmail.com>
+References: <20070313.152054.31641425.davem@davemloft.net>
+	<29495f1d0703131551k5c06170bma138f8c1f1f9c84e@mail.gmail.com>
+	<29495f1d0703131729y56a99d9cj15288e7c18e277a8@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This little code snippet seems to have a page_lock recursion, in
-addition to overall looking particularly fragile to me.  It seems to
-be handling the case where a page needs to be brought uptodate because
-a partial page write is being done.  The page gets locked as many as 3
-times, each checking PageUptodate, however the two failure cases here
-go BUG() instead of returning an error.  I'm starting to think that
-somehow the whole suspect branch just never gets taken, because
-otherwise I would expect to see bug reports related to -EIO, -ENOMEM,
-etc causing this to barf.
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+Date: Tue, 13 Mar 2007 17:29:17 -0700
 
-either way, it seems there's a lock recursion if another thread races
-to bring @page uptodate while we're waiting on the first lock_page()
-call.
+> Ok, truly bizarre, I found that I was not running stock 2.6.20.3, but
+> had your small hugetlb patch on top.
+> 
+> So I went back and patched 2.6.20.1 with your patch, rebooted, got a
+> soft lockup. Went back to stock 2.6.20.1 and did not.
+> 
+> I don't see how your patch (C&P below for reference) could make any
+> difference...Especially because no hugepages were in use at the time.
+> On patched 2.6.20.1, I was just trying to check if my source tree had
+> your patch applied (by `patch -p1 < davem.patch`) and got the
+> soft-lockup I saw in 2.6.20.3 with the patch applied. I am going to
+> try a clean 2.6.20.3 as well, now.
 
----
+We've seen cases in the past where something benign like this
+triggers a bug because it moves the data/bss/etc. sections
+around.
 
-                page = jnode_page(jnodes[i]);
-                if (page_offset(page) < inode->i_size &&
-                    !PageUptodate(page) && to_page != PAGE_CACHE_SIZE) {
-                        /*
-                         * the above is not optimal for partial write to last
-                         * page of file when file size is not at boundary of
-                         * page
-                         */
-takes the lock
-                        lock_page(page);
-raced with readpage?
-                        if (!PageUptodate(page)) {
-readpage drops lock
-                                result = readpage_unix_file(NULL, page);
-                                BUG_ON(result != 0);
--ENOMEM?
-                                /* wait for read completion */
-                                lock_page(page);
-                                BUG_ON(!PageUptodate(page));
--EIO?
-                                unlock_page(page);
-                        } else
-still have the lock here
-                                result = 0;
-                }
+For example, if the used parts of the kernel image end up extending
+into another page, this can influence the bootup memory detection
+logic.
 
-                BUG_ON(get_current_context()->trans->atom != NULL);
-                fault_in_pages_readable(buf, to_page);
-                BUG_ON(get_current_context()->trans->atom != NULL);
+The softlockup in your first trace shows it spinning in the journaling
+code.  Perhaps what is happening is that it is looping endlessly over
+some data structure which is in a corrupted state.  This could happen
+if the bootup code erroneously frees up pages it should not have.
+I would recommend figuring out exactly what the journaling code is
+stuck on, then try to trace the life of that page of memory from
+early bootup until it is allocated.
 
-BOOM!!!
-                lock_page(page);
-                if (!PageUptodate(page) && to_page != PAGE_CACHE_SIZE) {
+I hope this can help you figure out this bug as I can't reproduce it
+here at all, and I did merge the hugetlb fix into Linus's tree
+already (and that is the right thing to do as we certainly have some
+unrelated bug here).
 
----
-
-NATE
+On the flip side, I bet removing some kernel config option might make
+the heisenbug go away if you're just eager to test the hugetlb patch
+:-)
