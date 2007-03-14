@@ -1,238 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932687AbXCNTDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932773AbXCNTH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932687AbXCNTDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 15:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXCNTDw
+	id S932773AbXCNTH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 15:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932782AbXCNTH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 15:03:52 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1190 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932687AbXCNTDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 15:03:51 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc3-mm1
-Date: Wed, 14 Mar 2007 20:06:02 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20070307201839.6f45735b.akpm@linux-foundation.org>
-In-Reply-To: <20070307201839.6f45735b.akpm@linux-foundation.org>
+	Wed, 14 Mar 2007 15:07:28 -0400
+Received: from gw.goop.org ([64.81.55.164]:55680 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932773AbXCNTH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 15:07:27 -0400
+Message-ID: <45F847E2.7040102@goop.org>
+Date: Wed, 14 Mar 2007 12:07:14 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_ceE+F93WKtSZHF9"
-Message-Id: <200703142006.04547.m.kozlowski@tuxland.pl>
+To: Dan Hecht <dhecht@vmware.com>, Zachary Amsden <zach@vmware.com>
+CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       john stultz <johnstul@us.ibm.com>
+Subject: [PATCH/RFC] replace get_scheduled_cycles with sched_clock paravirt_op
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_ceE+F93WKtSZHF9
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Subject: Add a sched_clock paravirt_op
 
-Hello,
+The tsc-based get_scheduled_cycles interface is not a good match for
+Xen's runstate accounting, which reports everything in nanoseconds.
 
-	Today after +- 24h of uptime I found some more page allocation
-failures ('eth1: Can't allocate skb for Rx'). You'll find more here:
+This patch replaces this interface with a sched_clock interface, which
+matches both Xen and VMI's requirements.
 
-http://tuxland.pl/misc/2.6.21-rc3-mm1-page-allocation-failure.txt
+In order to do this, we:
+   1. replace get_scheduled_cycles with sched_clock
+   2. hoist cycles_2_ns into a common header
+   3. update vmi accordingly
 
-System wasn't doing anything unusual, as usual ;-) X, some p2p 
-software, firefox+flash playing music.
+One thing to note: because sched_clock is implemented as a weak function in
+kernel/sched.c, we must define a real function in order to override this weak
+binding.  This means the usual paravirt_ops technique of using an inline
+function won't work in this case.
 
-Regards,
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Dan Hecht <dhecht@vmware.com>
+Cc: john stultz <johnstul@us.ibm.com>
 
-	Mariusz Kozlowski
+---
+ arch/i386/kernel/paravirt.c |    2 +-
+ arch/i386/kernel/tsc.c      |   23 +++++++++++++++--------
+ arch/i386/kernel/vmi.c      |    2 +-
+ arch/i386/kernel/vmitime.c  |    6 +++---
+ include/asm-i386/paravirt.h |    7 +++++--
+ include/asm-i386/timer.h    |   32 +++++++++++++++++++++++++++++++-
+ include/asm-i386/vmi_time.h |    2 +-
+ 7 files changed, 57 insertions(+), 17 deletions(-)
 
---Boundary-00=_ceE+F93WKtSZHF9
-Content-Type: application/x-gzip;
-  name="config.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
-	filename="config.gz"
+===================================================================
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -552,7 +552,7 @@ struct paravirt_ops paravirt_ops = {
+ 	.write_msr = native_write_msr,
+ 	.read_tsc = native_read_tsc,
+ 	.read_pmc = native_read_pmc,
+-	.get_scheduled_cycles = native_read_tsc,
++	.sched_clock = native_sched_clock,
+ 	.get_cpu_khz = native_calculate_cpu_khz,
+ 	.load_tr_desc = native_load_tr_desc,
+ 	.set_ldt = native_set_ldt,
+===================================================================
+--- a/arch/i386/kernel/tsc.c
++++ b/arch/i386/kernel/tsc.c
+@@ -81,7 +81,7 @@ static inline int check_tsc_unstable(voi
+  *
+  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
+  */
+-static unsigned long cyc2ns_scale __read_mostly;
++unsigned long cyc2ns_scale __read_mostly;
+ 
+ #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+ 
+@@ -90,15 +90,10 @@ static inline void set_cyc2ns_scale(unsi
+ 	cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
+ }
+ 
+-static inline unsigned long long cycles_2_ns(unsigned long long cyc)
+-{
+-	return (cyc * cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
+-}
+-
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+  */
+-unsigned long long sched_clock(void)
++unsigned long long native_sched_clock(void)
+ {
+ 	unsigned long long this_offset;
+ 
+@@ -110,11 +105,23 @@ unsigned long long sched_clock(void)
+ 		return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
+ 
+ 	/* read the Time Stamp Counter: */
+-	get_scheduled_cycles(this_offset);
++	rdtscll(this_offset);
+ 
+ 	/* return the value in ns */
+ 	return cycles_2_ns(this_offset);
+ }
++
++/* We need to define a real function for sched_clock, to override the
++   weak default version */
++#ifdef CONFIG_PARAVIRT
++unsigned long long sched_clock(void)
++{
++	return paravirt_sched_clock();
++}
++#else
++unsigned long long sched_clock(void)
++	__attribute__((alias("native_sched_clock")));
++#endif
+ 
+ unsigned long native_calculate_cpu_khz(void)
+ {
+===================================================================
+--- a/arch/i386/kernel/vmi.c
++++ b/arch/i386/kernel/vmi.c
+@@ -871,7 +871,7 @@ static inline int __init activate_vmi(vo
+ 		paravirt_ops.setup_boot_clock = vmi_timer_setup_boot_alarm;
+ 		paravirt_ops.setup_secondary_clock = vmi_timer_setup_secondary_alarm;
+ #endif
+-		paravirt_ops.get_scheduled_cycles = vmi_get_sched_cycles;
++		paravirt_ops.sched_clock = vmi_sched_clock;
+  		paravirt_ops.get_cpu_khz = vmi_cpu_khz;
+ 
+ 		/* We have true wallclock functions; disable CMOS clock sync */
+===================================================================
+--- a/arch/i386/kernel/vmitime.c
++++ b/arch/i386/kernel/vmitime.c
+@@ -163,9 +163,9 @@ int vmi_set_wallclock(unsigned long now)
+ 	return -1;
+ }
+ 
+-unsigned long long vmi_get_sched_cycles(void)
+-{
+-	return read_available_cycles();
++unsigned long long vmi_sched_clock(void)
++{
++	return cycles_2_ns(read_available_cycles());
+ }
+ 
+ unsigned long vmi_cpu_khz(void)
+===================================================================
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -92,7 +92,7 @@ struct paravirt_ops
+ 
+ 	u64 (*read_tsc)(void);
+ 	u64 (*read_pmc)(void);
+- 	u64 (*get_scheduled_cycles)(void);
++ 	unsigned long long (*sched_clock)(void);
+ 	unsigned long (*get_cpu_khz)(void);
+ 
+ 	void (*load_tr_desc)(void);
+@@ -549,7 +549,10 @@ static inline void halt(void)
+ 
+ #define rdtscll(val) (val = PVOP_CALL0(u64, read_tsc))
+ 
+-#define get_scheduled_cycles(val) (val = paravirt_ops.get_scheduled_cycles())
++static inline unsigned long long paravirt_sched_clock(void)
++{
++	return PVOP_CALL0(unsigned long long, sched_clock);
++}
+ #define calculate_cpu_khz() (paravirt_ops.get_cpu_khz())
+ 
+ #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
+===================================================================
+--- a/include/asm-i386/timer.h
++++ b/include/asm-i386/timer.h
+@@ -17,8 +17,38 @@ extern int recalibrate_cpu_khz(void);
+ extern int recalibrate_cpu_khz(void);
+ 
+ #ifndef CONFIG_PARAVIRT
+-#define get_scheduled_cycles(val) rdtscll(val)
+ #define calculate_cpu_khz() native_calculate_cpu_khz()
+ #endif
+ 
++/* Accellerators for sched_clock()
++ * convert from cycles(64bits) => nanoseconds (64bits)
++ *  basic equation:
++ *		ns = cycles / (freq / ns_per_sec)
++ *		ns = cycles * (ns_per_sec / freq)
++ *		ns = cycles * (10^9 / (cpu_khz * 10^3))
++ *		ns = cycles * (10^6 / cpu_khz)
++ *
++ *	Then we use scaling math (suggested by george@mvista.com) to get:
++ *		ns = cycles * (10^6 * SC / cpu_khz) / SC
++ *		ns = cycles * cyc2ns_scale / SC
++ *
++ *	And since SC is a constant power of two, we can convert the div
++ *  into a shift.
++ *
++ *  We can use khz divisor instead of mhz to keep a better percision, since
++ *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
++ *  (mathieu.desnoyers@polymtl.ca)
++ *
++ *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
++ */
++extern unsigned long cyc2ns_scale __read_mostly;
++
++#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
++
++static inline unsigned long long cycles_2_ns(unsigned long long cyc)
++{
++	return (cyc * cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
++}
++
++
+ #endif
+===================================================================
+--- a/include/asm-i386/vmi_time.h
++++ b/include/asm-i386/vmi_time.h
+@@ -49,7 +49,7 @@ extern void __init vmi_time_init(void);
+ extern void __init vmi_time_init(void);
+ extern unsigned long vmi_get_wallclock(void);
+ extern int vmi_set_wallclock(unsigned long now);
+-extern unsigned long long vmi_get_sched_cycles(void);
++extern unsigned long long vmi_sched_clock(void);
+ extern unsigned long vmi_cpu_khz(void);
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
 
-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
-
---Boundary-00=_ceE+F93WKtSZHF9--
