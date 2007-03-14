@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161274AbXCNOOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161286AbXCNO0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161274AbXCNOOJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 10:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161282AbXCNOOJ
+	id S1161286AbXCNO0h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 10:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161287AbXCNO0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 10:14:09 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59592 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161274AbXCNOOH (ORCPT
+	Wed, 14 Mar 2007 10:26:37 -0400
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:35825 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161286AbXCNO0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 10:14:07 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelianov <xemul@sw.ru>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [RFC] kernel/pid.c pid allocation wierdness
-References: <45F7A4B3.5040005@sw.ru>
-Date: Wed, 14 Mar 2007 08:12:35 -0600
-In-Reply-To: <45F7A4B3.5040005@sw.ru> (Pavel Emelianov's message of "Wed, 14
-	Mar 2007 10:30:59 +0300")
-Message-ID: <m16493rk18.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 14 Mar 2007 10:26:36 -0400
+Date: Wed, 14 Mar 2007 15:27:12 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
+       Russell King <rmk+lkml@arm.linux.org.uk>, Jan Dittmer <jdi@l4x.org>,
+       Pavel Machek <pavel@ucw.cz>
+Message-ID: <20070314142710.GJ3802@enneenne.com>
+References: <20070216185230.GO8882@enneenne.com> <20070313213842.GA23178@enneenne.com> <20070313224817.GF22466@csclub.uwaterloo.ca> <20070314093146.GE24556@enneenne.com> <20070314131934.GL22464@csclub.uwaterloo.ca> <20070314140623.GF3802@enneenne.com> <20070314141253.GM22464@csclub.uwaterloo.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070314141253.GM22464@csclub.uwaterloo.ca>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov <xemul@sw.ru> writes:
+On Wed, Mar 14, 2007 at 10:12:53AM -0400, Lennart Sorensen wrote:
+> 
+> I looked at those, and they didn't sound important.  I will grab it
+> anyhow just for completeness.
 
-> Hi.
->
-> I'm looking at how alloc_pid() works and can't understand
-> one (simple/stupid) thing.
->
-> It first kmem_cache_alloc()-s a strct pid, then calls
-> alloc_pidmap() and at the end it taks a global pidmap_lock()
-> to add new pid to hash.
->
-> The question is - why does alloc_pidmap() use at least
-> two atomic ops and potentially loop to find a zero bit
-> in pidmap? Why not call alloc_pidmap() under pidmap_lock
-> and find zero pid in pidmap w/o any loops and atomics?
->
-> The same is for free_pid(). Do I miss something?
+Ok! Thanks.
 
-Well as far as I can tell that is just the way the code
-evolved.
+> Well I think I may just write a small tool to do the ioctl to enable it
+> so I don't need the full setserial around.
 
-Looking at the history.  At the time I started messing with it
-alloc_pidmap was the function and it behaved pretty much as it
-does today with locking (except it didn't disable irqs).
+Yes, this could be a good solution while waiting for a new setserial.
 
-To add the allocation of struct pid.  I added alloc_pid
-as a wrapper.  Left alloc_pidmap alone, and added the hash
-table manipulation code.  I know this results is fairly
-short hold times which is moderately important for a global lock.
+Ciao,
 
-We loop in alloc_pidnmap because of what we are trying to do.  Simply
-returning the first free pid number would have bad effects on user
-space, so we have the simple requirement that we don't reuse pid
-numbers for as long as is practical.  We achieve that doing full walks
-through the pid space before we consider a pid again.  So we have to
-start from the last place we looked.  In addition  we may have
-multiple pages of bitmap to traverse (when our pid limit is high) and
-those pages are not physically contiguous.
+Rodolfo
 
-So while I wouldn't call alloc_pidmap perfect it does seem to be
-reasonable.
+-- 
 
->From what I can tell for the low number of pids that we usually have
-the pid hash table seems near optimal.
-
-If we do dig into this more we need to consider a radix_tree to hold
-the pid values.  That could replace both the pid map and the hash
-table, gracefully handle but large and small pid counts, might
-be a smidgin simpler, possibly be more space efficient, and it would
-more easily handle multiple pid namespaces.   The downside to using a
-radix tree is that is looks like it will have more cache misses for
-the normal pid map size, and it is yet another change that we would
-need to validate.
-
-Eric
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
