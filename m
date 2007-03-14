@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161186AbXCNMPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161204AbXCNMQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161186AbXCNMPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 08:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161197AbXCNMPp
+	id S1161204AbXCNMQO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 08:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161198AbXCNMQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 08:15:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43589 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161186AbXCNMPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 08:15:44 -0400
-Date: Wed, 14 Mar 2007 13:15:43 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: [patch 2/2] splice: dont readpage
-Message-ID: <20070314121543.GB926@wotan.suse.de>
-References: <20070314121440.GA926@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Mar 2007 08:16:14 -0400
+Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:3156 "EHLO
+	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161199AbXCNMQM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 08:16:12 -0400
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: [ANNOUNCE] iproute2 2.6.20-070313
+Date: Wed, 14 Mar 2007 13:16:05 +0100
+User-Agent: KMail/1.9.6
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       lartc@mailman.ds9a.nl
+References: <20070313151549.332004c9@freekitty> <200703141223.48927.arekm@maven.pl> <45F7E527.6030307@trash.net>
+In-Reply-To: <45F7E527.6030307@trash.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070314121440.GA926@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200703141316.05509.arekm@maven.pl>
+X-Authenticated-Id: arekm
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 14 of March 2007, Patrick McHardy wrote:
+> Arkadiusz Miskiewicz wrote:
+> > This patch
+> >
+> > http://www.mail-archive.com/netdev@vger.kernel.org/msg27506.html
+> >
+> > didn't make into upstream linux kernel it seems.
+>
+> As mentioned in the changelog, its in 2.6.19.
 
-Splice does not need to readpage to bring the page uptodate before writing
-to it, because prepare_write will take care of that for us.
+Hm, why no RTA_FWMASK in HEAD rtnetlink.h
 
-Splice is also wrong to SetPageUptodate before the page is actually uptodate.
-This results in the old uninitialised memory leak. This gets fixed as a
-matter of course when removing the readpage logic.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=include/linux/rtnetlink.h;h=4a629ea70cc4ca60a6f486f8653974af68dbe8cd;hb=HEAD
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+and 2.6.19
 
-Index: linux-2.6/fs/splice.c
-===================================================================
---- linux-2.6.orig/fs/splice.c
-+++ linux-2.6/fs/splice.c
-@@ -593,36 +593,6 @@ find_page:
- 			goto out;
- 	}
- 
--	/*
--	 * We get here with the page locked. If the page is also
--	 * uptodate, we don't need to do more. If it isn't, we
--	 * may need to bring it in if we are not going to overwrite
--	 * the full page.
--	 */
--	if (!PageUptodate(page)) {
--		if (this_len < PAGE_CACHE_SIZE) {
--			ret = mapping->a_ops->readpage(file, page);
--			if (unlikely(ret))
--				goto out;
--
--			lock_page(page);
--
--			if (!PageUptodate(page)) {
--				/*
--				 * Page got invalidated, repeat.
--				 */
--				if (!page->mapping) {
--					unlock_page(page);
--					page_cache_release(page);
--					goto find_page;
--				}
--				ret = -EIO;
--				goto out;
--			}
--		} else
--			SetPageUptodate(page);
--	}
--
- 	ret = mapping->a_ops->prepare_write(file, page, offset, offset+this_len);
- 	if (unlikely(ret)) {
- 		loff_t isize = i_size_read(mapping->host);
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=include/linux/rtnetlink.h;h=3a18addaed4ccb7436bffc9cf5fd0666f145d35c;hb=0215ffb08ce99e2bb59eca114a99499a4d06e704
+
+?
+
+> Last time I looked at the WRR patch it was a huge mess and
+> used architecture dependant types in the netlink messages.
+> Unless someone fixed this, adding support to iproute is a
+> bad idea since in case it would get merged compatibility
+> would break.
+Ok.
+
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
