@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbXCNPWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933283AbXCNPVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933151AbXCNPWA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933043AbXCNPV6
+	id S933283AbXCNPVz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933151AbXCNPVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:21:58 -0400
-Received: from smtp.nokia.com ([131.228.20.170]:63496 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933927AbXCNPVh (ORCPT
+	Wed, 14 Mar 2007 11:21:42 -0400
+Received: from smtp.nokia.com ([131.228.20.172]:23382 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422667AbXCNPUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:21:37 -0400
+	Wed, 14 Mar 2007 11:20:50 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Frank Haverkamp <haver@vnet.ibm.com>,
@@ -17,22 +17,20 @@ Cc: Frank Haverkamp <haver@vnet.ibm.com>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Artem Bityutskiy <dedekind@infradead.org>
-Date: Wed, 14 Mar 2007 17:21:10 +0200
-Message-Id: <20070314152110.1112.89392.sendpatchset@localhost.localdomain>
+Date: Wed, 14 Mar 2007 17:20:24 +0200
+Message-Id: <20070314152024.1112.15655.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
 References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-Subject: [PATCH 19/22 take 3] UBI: debugging stuff
-X-OriginalArrivalTime: 14 Mar 2007 15:21:10.0071 (UTC) FILETIME=[64F58C70:01C7664C]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070314172116-1EAC7BB0-5A8E7AA6/0-0/0-1
+Subject: [PATCH 10/22 take 3] UBI: EBA unit
+X-OriginalArrivalTime: 14 Mar 2007 15:20:24.0662 (UTC) FILETIME=[49E4AF60:01C7664C]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/debug.c tmp-to/drivers/mtd/ubi/debug.c
---- tmp-from/drivers/mtd/ubi/debug.c	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/debug.c	2007-03-14 17:15:50.000000000 +0200
-@@ -0,0 +1,546 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/eba.c tmp-to/drivers/mtd/ubi/eba.c
+--- tmp-from/drivers/mtd/ubi/eba.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/eba.c	2007-03-14 17:15:50.000000000 +0200
+@@ -0,0 +1,1735 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
 + *
@@ -53,679 +51,1718 @@ diff -auNrp tmp-from/drivers/mtd/ubi/debug.c tmp-to/drivers/mtd/ubi/debug.c
 + * Author: Artem B. Bityutskiy
 + */
 +
-+/**
-+ * Here we keep all the UBI debugging stuff which should normally be disabled
-+ * and compiled-out, but it is extremly helpful when hunting bugs or doing big
-+ * changes.
++/*
++ * The UBI Eraseblock Association (EBA) unit.
++ *
++ * This unit maintains the Eraseblock Association Table (EBA table). The EBA
++ * table is a data structure which maps (volume ID, logical eraseblock number)
++ * pairs to physical eraseblock numbers.
++ *
++ * All the UBI input/output goes via the EBA unit. The only reservation is made
++ * for the initialization time when different units may directly do
++ * input/output from physical eraseblocks.
++ *
++ * Although in this implementation the EBA table is fully kept and managed in
++ * RAM, which assumes poor UBI scalability, it might be (partially) maintained
++ * on flash in future implementations.
++ *
++ * The EBA unit implements per-logical eraseblock locking. Before accessing a
++ * logical eraseblock it is locked for reading or writing. The per-logical
++ * eraseblock locking is implemented by means of a lock tree. The lock tree is
++ * an RB-tree which refers all the currently locked logical eraseblocks. The
++ * lock tree elements are &struct ubi_eba_ltree_entry objects. They are indexed
++ * by (@vol_id, @lnum) pairs.
++ *
++ * EBA also maintains the global sequence counter which is incremented each
++ * time a logical eraseblock is mapped to a physical eraseblock and it is
++ * stored in the volume identifier header. This means that each VID header has
++ * a unique sequence number. The sequence number is only increased an we assume
++ * 64 bits is enough to never overflow.
 + */
 +
-+#include <stdarg.h>
-+#include <linux/module.h>
-+#include <linux/debugfs.h>
-+#include <linux/stat.h>
-+#include <linux/random.h>
++#include <linux/slab.h>
++#include <linux/crc32.h>
++#include <linux/err.h>
 +#include "ubi.h"
 +
-+/* Level of UBI debugging prints */
-+#define UBI_DBG_LEVEL KERN_DEBUG
-+
-+/* Prefixes of debugging messages */
-+#define UBI_DBG_UIF_PREF     "[UBI DBG uif]"
-+#define UBI_DBG_VTBL_PREF    "[UBI DBG vtbl]"
-+#define UBI_DBG_EBA_PREF     "[UBI DBG eba]"
-+#define UBI_DBG_WL_PREF      "[UBI DBG wl]"
-+#define UBI_DBG_IO_PREF      "[UBI DBG io]"
-+#define UBI_DBG_BLD_PREF     "[UBI DBG bld]"
-+#define UBI_DBG_SCAN_PREF    "[UBI DBG scan]"
-+
-+#ifdef CONFIG_MTD_UBI_DEBUG_MSG_UIF
-+static int uif_prints = 1;
-+#else
-+static int uif_prints;
-+#endif
-+#ifdef CONFIG_MTD_UBI_DEBUG_MSG_VTBL
-+static int vtbl_prints = 1;
-+#else
-+static int vtbl_prints;
-+#endif
-+#ifdef CONFIG_MTD_UBI_DEBUG_MSG_EBA
-+static int eba_prints = 1;
-+#else
-+static int eba_prints;
-+#endif
-+#ifdef CONFIG_MTD_UBI_DEBUG_MSG_WL
-+static int wl_prints = 1;
-+#else
-+static int wl_prints;
-+#endif
-+#ifdef CONFIG_MTD_UBI_DEBUG_MSG_IO
-+static int io_prints = 1;
-+#else
-+static int io_prints;
-+#endif
-+#ifdef CONFIG_MTD_UBI_DEBUG_MSG_BLD
-+static int bld_prints = 1;
-+static int scan_prints = 1;
-+#else
-+static int bld_prints;
-+static int scan_prints;
-+#endif
-+
-+/* If bit-flips should be emulated */
-+#ifdef CONFIG_MTD_UBI_DEBUG_EMULATE_BITFLIPS
-+static int emulate_bitflips = 1;
-+#else
-+static int emulate_bitflips;
-+#endif
-+
-+/* If write failures should be emulated */
-+#ifdef CONFIG_MTD_UBI_DEBUG_EMULATE_WRITE_FAILURES
-+static int emulate_write_failures = 1;
-+#else
-+static int emulate_write_failures;
-+#endif
-+
-+/* If erase failures should be emulated */
-+#ifdef CONFIG_MTD_UBI_DEBUG_EMULATE_ERASE_FAILURES
-+static int emulate_erase_failures = 1;
-+#else
-+static int emulate_erase_failures;
-+#endif
-+
-+/* Direntries of the UBI debugfs files */
-+
-+/* <debugfs>/ubi */
-+static struct dentry *debugfs_root;
-+/* <debugfs>/ubi/uif_prints */
-+static struct dentry *debugfs_uif_prints;
-+/* <debugfs>/ubi/vtbl_prints */
-+static struct dentry *debugfs_vtbl_prints;
-+/* <debugfs>/ubi/eba_prints */
-+static struct dentry *debugfs_eba_prints;
-+/* <debugfs>/ubi/wl_prints */
-+static struct dentry *debugfs_wl_prints;
-+/* <debugfs>/ubi/io_prints */
-+static struct dentry *debugfs_io_prints;
-+/* <debugfs>/ubi/bld_prints */
-+static struct dentry *debugfs_bld_prints;
-+
-+/* Serializes prints */
-+static spinlock_t dbg_prints_lock = SPIN_LOCK_UNLOCKED;
++/**
++ * struct ubi_eba_tbl_rec - a record in the eraseblock association table.
++ *
++ * @pnum: physical eraseblock number
++ * @leb_ver: LEB version (obsolete)
++ *
++ * This structure represents a record in the eraseblock association table.
++ */
++struct ubi_eba_tbl_rec {
++	int pnum;
++	uint32_t leb_ver; /* FIXME: obsolete, to be removed */
++};
 +
 +/**
-+ * ubi_dbg_init - initialize the debugging unit.
++ * struct ubi_eba_tbl_volume - a volume in the the eraseblock association
++ * table.
++ *
++ * @recs: an array of per-logical eraseblock records (for each logical
++ * eraseblock of this volume)
++ * @leb_count: how many logical eraseblock this volume has
++ */
++struct ubi_eba_tbl_volume {
++	struct ubi_eba_tbl_rec *recs;
++	int leb_count;
++};
++
++/**
++ * struct ubi_eba_ltree_entry - an entry in the lock tree.
++ *
++ * @rb: links RB-tree nodes
++ * @vol_id: volume ID of the locked logical eraseblock
++ * @lnum: locked logical eraseblock number
++ * @users: how many tasks are using this logical eraseblock or wait for it
++ * @mutex: a read/write mutex to implement read/write access serialization to
++ * the (@vol_id, @lnum) logical eraseblock
++ *
++ * When a logical eraseblock is being locked - corresponding &struct
++ * ubi_eba_ltree_entry object is inserted to the lock tree (@eba->ltree).
++ */
++struct ubi_eba_ltree_entry {
++	struct rb_node rb;
++	int vol_id;
++	int lnum;
++	int users;
++	struct rw_semaphore mutex;
++};
++
++/*
++ * The top-most bit in logical-to-physical eraseblock mappings is used to
++ * indicate that the logical eraseblock is not mapped.
++ */
++#define NOT_MAPPED 0x80000000
++
++#ifdef CONFIG_MTD_UBI_DEBUG_PARANOID_EBA
++static int paranoid_check_leb(const struct ubi_info *ubi, int pnum, int vol_id,
++			      int lnum, const struct ubi_vid_hdr *vid_hdr);
++static int paranoid_check_leb_locked(struct ubi_info *ubi, int vol_id,
++				     int lnum);
++#else
++#define paranoid_check_leb(ubi, vol_id, pnum, lnum, vid_hdr) 0
++#define paranoid_check_leb_locked(ubi, vol_id, lnum)
++#endif
++
++/* Slab cache for lock-tree entries */
++static struct kmem_cache *eba_ltree_entry_slab;
++
++/**
++ * vol_id2idx - turn volume ID to the EBA table index.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID
++ */
++static inline int vol_id2idx(const struct ubi_info *ubi, int vol_id)
++{
++	if (vol_id >= UBI_INTERNAL_VOL_START)
++		return vol_id - UBI_INTERNAL_VOL_START + ubi->vtbl.vt_slots;
++	else
++		return vol_id;
++}
++
++/**
++ * idx2vol_id - turn an EBA table index to the volume ID.
++ *
++ * @ubi: the UBI device description object
++ * @idx: the EBA table index
++ */
++static inline int idx2vol_id(const struct ubi_info *ubi, int idx)
++{
++	if (idx >= ubi->vtbl.vt_slots)
++		return idx - ubi->vtbl.vt_slots + UBI_INTERNAL_VOL_START;
++	else
++		return idx;
++}
++
++/**
++ * leb_get_ver - get logical eraseblock version.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID
++ * @lnum: the logical eraseblock number
++ *
++ * The logical eraseblock has to be locked. Note, all this leb_ver stuff is
++ * obsolete and will be removed eventually. FIXME: to be removed together with
++ * leb_ver support.
++ */
++static inline int leb_get_ver(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	int idx, leb_ver;
++
++	idx = vol_id2idx(ubi, vol_id);
++
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	ubi_assert(ubi->eba.eba_tbl[idx].recs);
++	leb_ver = ubi->eba.eba_tbl[idx].recs[lnum].leb_ver;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
++
++	return leb_ver;
++}
++
++/**
++ * next_sqnum - get next sequence number.
++ *
++ * @ubi: the UBI device description object
++ *
++ * This function returns next sequence number to use, which is just the current
++ * global sequence counter value. It also increases the global sequence
++ * counter.
++ */
++static unsigned long long next_sqnum(struct ubi_info *ubi)
++{
++	unsigned long long sqnum;
++
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	sqnum = ubi->eba.global_sq_cnt++;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
++
++	return sqnum;
++}
++
++/**
++ * leb_map - map a logical eraseblock to a physical eraseblock.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID
++ * @lnum: the logical eraseblock number
++ * @pnum: the physical eraseblock
++ *
++ * The logical eraseblock has to be locked.
++ */
++static inline void leb_map(struct ubi_info *ubi, int vol_id, int lnum, int pnum)
++{
++	int idx;
++
++	idx = vol_id2idx(ubi, vol_id);
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	ubi_assert(ubi->eba.eba_tbl[idx].recs);
++	ubi_assert(ubi->eba.eba_tbl[idx].recs[lnum].pnum < 0);
++	ubi->eba.eba_tbl[idx].recs[lnum].pnum = pnum;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
++}
++
++/**
++ * leb_unmap - un-map a logical eraseblock.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID
++ * @lnum: the logical eraseblock number to unmap
++ *
++ * This function un-maps a logical eraseblock and increases its version. The
++ * logical eraseblock has to be locked.
++ */
++static inline void leb_unmap(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	int idx;
++
++	idx = vol_id2idx(ubi, vol_id);
++
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	ubi_assert(ubi->eba.eba_tbl[idx].recs);
++	ubi_assert(ubi->eba.eba_tbl[idx].recs[lnum].pnum >= 0);
++	ubi->eba.eba_tbl[idx].recs[lnum].pnum |= NOT_MAPPED;
++	ubi->eba.eba_tbl[idx].recs[lnum].leb_ver += 1;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
++}
++
++/**
++ * leb2peb - get physical eraseblock number by logical eraseblock number.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID
++ * @lnum: the logical eraseblock number
++ *
++ * If the logical eraseblock is mapped, this function returns a positive
++ * physical eraseblock number. If it is not mapped, this function returns
++ * a negative number.
++ */
++static inline int leb2peb(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	int idx, pnum;
++
++	idx = vol_id2idx(ubi, vol_id);
++
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	ubi_assert(ubi->eba.eba_tbl[idx].recs);
++	pnum = ubi->eba.eba_tbl[idx].recs[lnum].pnum;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
++
++	return pnum;
++}
++
++/**
++ * ubi_eba_mkvol - create EBA mapping for a new volume.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: ID of the new volume
++ * @leb_count: how many eraseblocks are reserved for this volume
 + *
 + * This function returns zero in case of success and a negative error code in
 + * case of failure.
 + */
-+int __init ubi_dbg_init(void)
++int ubi_eba_mkvol(struct ubi_info *ubi, int vol_id, int reserved_pebs)
 +{
-+	int err = -ENODEV;
++	int i, idx, sz;
++	struct ubi_eba_tbl_rec *new_ebs;
++	struct ubi_eba_tbl_volume *eba_tbl = ubi->eba.eba_tbl;
 +
-+	/* Create debugging files and directories */
++	dbg_eba("create volume %d, size %d", vol_id, reserved_pebs);
 +
-+	debugfs_root = debugfs_create_dir("ubi", NULL);
-+	if (!debugfs_root || IS_ERR(debugfs_root))
-+		goto out;
++	ubi_assert(vol_id >= 0);
++	ubi_assert(reserved_pebs > 0);
++	ubi_assert(!ubi_is_ivol(vol_id));
++	ubi_assert(vol_id < ubi->vtbl.vt_slots);
 +
-+	debugfs_uif_prints = debugfs_create_bool("uif_prints",
-+		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &uif_prints);
-+	if (!debugfs_uif_prints || IS_ERR(debugfs_uif_prints))
-+		goto out_root;
++	if (ubi->io.ro_mode) {
++		dbg_err("read-only mode");
++		return -EROFS;
++	}
 +
-+	debugfs_vtbl_prints = debugfs_create_bool("vtbl_prints",
-+		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &vtbl_prints);
-+	if (!debugfs_vtbl_prints || IS_ERR(debugfs_vtbl_prints))
-+		goto out_uif;
++	sz = reserved_pebs * sizeof(struct ubi_eba_tbl_rec);
++	new_ebs = kmalloc(sz, GFP_KERNEL);
++	if (!new_ebs)
++		return -ENOMEM;
 +
-+	debugfs_eba_prints = debugfs_create_bool("eba_prints",
-+		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &eba_prints);
-+	if (!debugfs_eba_prints || IS_ERR(debugfs_eba_prints))
-+		goto out_vtbl;
++	for (i = 0; i < reserved_pebs; i++) {
++		new_ebs[i].pnum = NOT_MAPPED;
++		new_ebs[i].leb_ver = 0xFFFFFFF0;
++	}
 +
-+	debugfs_wl_prints = debugfs_create_bool("wl_prints",
-+		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &wl_prints);
-+	if (!debugfs_wl_prints || IS_ERR(debugfs_wl_prints))
-+		goto out_eba;
++	idx = vol_id2idx(ubi, vol_id);
 +
-+	debugfs_io_prints = debugfs_create_bool("io_prints",
-+		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &io_prints);
-+	if (!debugfs_io_prints || IS_ERR(debugfs_io_prints))
-+		goto out_wl;
-+
-+	debugfs_bld_prints = debugfs_create_bool("bld_prints",
-+		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &bld_prints);
-+	if (!debugfs_bld_prints || IS_ERR(debugfs_bld_prints))
-+		goto out_io;
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	ubi_assert(!eba_tbl[idx].recs);
++	eba_tbl[idx].recs = new_ebs;
++	eba_tbl[idx].leb_count = reserved_pebs;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
 +
 +	return 0;
++}
 +
-+out_io:
-+	debugfs_remove(debugfs_io_prints);
-+out_wl:
-+	debugfs_remove(debugfs_wl_prints);
-+out_eba:
-+	debugfs_remove(debugfs_eba_prints);
-+out_vtbl:
-+	debugfs_remove(debugfs_vtbl_prints);
-+out_uif:
-+	debugfs_remove(debugfs_uif_prints);
-+out_root:
-+        debugfs_remove(debugfs_root);
-+out:
++/**
++ * ubi_eba_rmvol - remove EBA mapping of a volume.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: ID of the volume to be removed
++ *
++ * This function removes a volume from the EBA table. It un-maps all the
++ * logical eraseblocks and the corresponding physical eraseblocks are scheduled
++ * for erasure. Returns zero in case of success and a negative error code in
++ * case of failure.
++ */
++int ubi_eba_rmvol(struct ubi_info *ubi, int vol_id)
++{
++	int err = 0, i, idx, to_put;
++	struct ubi_eba_tbl_rec *rm_ebs;
++	struct ubi_eba_tbl_volume *eba_tbl = ubi->eba.eba_tbl;
++
++	dbg_eba("remove volume %d", vol_id);
++
++	ubi_assert(vol_id >= 0);
++	ubi_assert(!ubi_is_ivol(vol_id));
++	ubi_assert(vol_id < ubi->vtbl.vt_slots);
++
++	if (ubi->io.ro_mode) {
++		dbg_err("read-only mode");
++		return -EROFS;
++	}
++
++	idx = vol_id2idx(ubi, vol_id);
++
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	ubi_assert(eba_tbl[idx].recs);
++	to_put = eba_tbl[idx].leb_count;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
++
++	for (i = 0; i < to_put; i++) {
++		err = ubi_eba_unmap_leb(ubi, vol_id, i);
++		if (err)
++			break;
++	}
++
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	rm_ebs = eba_tbl[idx].recs;
++	eba_tbl[idx].recs = NULL;
++	eba_tbl[idx].leb_count = 0;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
++
++	kfree(rm_ebs);
 +	return err;
 +}
 +
 +/**
-+ * ubi_dbg_close - close the debugging unit.
-+ */
-+void __exit ubi_dbg_close(void)
-+{
-+	debugfs_remove(debugfs_bld_prints);
-+	debugfs_remove(debugfs_io_prints);
-+	debugfs_remove(debugfs_wl_prints);
-+	debugfs_remove(debugfs_eba_prints);
-+	debugfs_remove(debugfs_vtbl_prints);
-+	debugfs_remove(debugfs_uif_prints);
-+	debugfs_remove(debugfs_root);
-+}
-+
-+static void ubi_dbg_vprint_nolock(int type, const char *func, const char *fmt,
-+				  va_list args);
-+
-+/**
-+ * ubi_dbg_print - print a message.
++ * ubi_eba_rsvol - re-size EBA mapping for a volume.
 + *
-+ * @type: type of the message
-+ * @func: printing function name
-+ * @fmt: format string
++ * @ubi: the UBI device description object
++ * @vol_id: ID of the volume to be re-sized
++ * @reserved_pebs: new count of physical eraseblocks in this volume
 + *
-+ * This function prints a message to the console, the debugging log, or both.
-+ * Normal, warning, and error messages always go to both console and debugging
-+ * log. Debugging messages always go to the debugging log, and if the
-+ * corresponding option is enabled, they also go to the console.
++ * This function changes the EBA table accordingly to the volume re-size
++ * operation. If the volume is actually shrunken, the dropped logical
++ * eraseblocks are got unmapped an thus, the corresponding physical eraseblocks
++ * are scheduled for erasure. This function returns zero in case of success and
++ * a negative error code in case of failure.
 + */
-+void ubi_dbg_print(int type, const char *func, const char *fmt, ...)
++int ubi_eba_rsvol(struct ubi_info *ubi, int vol_id, int reserved_pebs)
 +{
-+	va_list args;
++	int err = 0, i, idx, min, to_put, sz;
++	struct ubi_eba_tbl_rec *new_ebs, *old_ebs;
++	struct ubi_eba_tbl_volume *eba_tbl = ubi->eba.eba_tbl;
 +
-+	va_start(args, fmt);
-+	spin_lock(&dbg_prints_lock);
-+	ubi_dbg_vprint_nolock(type, func, fmt, args);
-+	spin_unlock(&dbg_prints_lock);
-+	va_end(args);
-+}
++	dbg_eba("re-size volume %d to %d PEBs", vol_id, reserved_pebs);
 +
-+static void ubi_dbg_vprint_nolock(int type, const char *func, const char *fmt,
-+				  va_list args)
-+{
-+	const char *prefix;
++	ubi_assert(vol_id >= 0);
++	ubi_assert(!ubi_is_ivol(vol_id));
++	ubi_assert(vol_id < ubi->vtbl.vt_slots);
++	ubi_assert(reserved_pebs > 0);
 +
-+	switch (type) {
-+	case UBI_DBG_UIF:
-+		if (!uif_prints)
-+			return;
-+		prefix = UBI_DBG_UIF_PREF;
-+		break;
-+	case UBI_DBG_VTBL:
-+		if (!vtbl_prints)
-+			return;
-+		prefix = UBI_DBG_VTBL_PREF;
-+		break;
-+	case UBI_DBG_EBA:
-+		if (!eba_prints)
-+			return;
-+		prefix = UBI_DBG_EBA_PREF;
-+		break;
-+	case UBI_DBG_WL:
-+		if (!wl_prints)
-+			return;
-+		prefix = UBI_DBG_WL_PREF;
-+		break;
-+	case UBI_DBG_IO:
-+		if (!io_prints)
-+			return;
-+		prefix = UBI_DBG_IO_PREF;
-+		break;
-+	case UBI_DBG_BLD:
-+		if (!bld_prints)
-+			return;
-+		prefix = UBI_DBG_BLD_PREF;
-+		break;
-+	case UBI_DBG_SCAN:
-+		if (!scan_prints)
-+			return;
-+		prefix = UBI_DBG_SCAN_PREF;
-+		break;
-+	default:
-+		BUG();
-+		return;
++	if (ubi->io.ro_mode) {
++		dbg_err("read-only mode");
++		return -EROFS;
 +	}
 +
-+	printk(UBI_DBG_LEVEL "%s (pid:%d) ", prefix, current->pid);
-+	if (func)
-+		printk("%s: ", func);
-+	vprintk(fmt, args);
-+	printk("\n");
-+}
++	sz = reserved_pebs * sizeof(struct ubi_eba_tbl_rec);
++	new_ebs = kmalloc(sz, GFP_KERNEL);
++	if (!new_ebs)
++		return -ENOMEM;
 +
-+/**
-+ * ubi_dbg_dump_ec_hdr - dump an erase counter header.
-+ *
-+ * @ec_hdr: the erase counter header to dump
-+ */
-+void ubi_dbg_dump_ec_hdr(const struct ubi_ec_hdr *ec_hdr)
-+{
-+	spin_lock(&dbg_prints_lock);
-+	ubi_msg("erase counter header dump:");
-+	ubi_msg("magic          %#08x", ubi32_to_cpu(ec_hdr->magic));
-+	ubi_msg("version        %d",    (int)ec_hdr->version);
-+	ubi_msg("ec             %llu",  (long long)ubi64_to_cpu(ec_hdr->ec));
-+	ubi_msg("vid_hdr_offset %d",    ubi32_to_cpu(ec_hdr->vid_hdr_offset));
-+	ubi_msg("data_offset    %d",    ubi32_to_cpu(ec_hdr->data_offset));
-+	ubi_msg("hdr_crc        %#08x", ubi32_to_cpu(ec_hdr->hdr_crc));
-+	ubi_msg("erase counter header hexdump:");
-+	spin_unlock(&dbg_prints_lock);
-+	ubi_dbg_hexdump(ec_hdr, UBI_EC_HDR_SIZE);
-+}
-+
-+/**
-+ * ubi_dbg_dump_vid_hdr - dump a volume identifier header.
-+ *
-+ * @vid_hdr: the volume identifier header to dump
-+ */
-+void ubi_dbg_dump_vid_hdr(const struct ubi_vid_hdr *vid_hdr)
-+{
-+	spin_lock(&dbg_prints_lock);
-+	ubi_msg("volume identifier header dump:");
-+	ubi_msg("magic     %08x", ubi32_to_cpu(vid_hdr->magic));
-+	ubi_msg("version   %d",   (int)vid_hdr->version);
-+	ubi_msg("vol_type  %d",   (int)vid_hdr->vol_type);
-+	ubi_msg("copy_flag %d",   (int)vid_hdr->copy_flag);
-+	ubi_msg("compat    %d",   (int)vid_hdr->compat);
-+	ubi_msg("vol_id    %d",   ubi32_to_cpu(vid_hdr->vol_id));
-+	ubi_msg("lnum      %d",   ubi32_to_cpu(vid_hdr->lnum));
-+	ubi_msg("leb_ver   %u",   ubi32_to_cpu(vid_hdr->leb_ver));
-+	ubi_msg("data_size %d",   ubi32_to_cpu(vid_hdr->data_size));
-+	ubi_msg("used_ebs  %d",   ubi32_to_cpu(vid_hdr->used_ebs));
-+	ubi_msg("data_pad  %d",   ubi32_to_cpu(vid_hdr->data_pad));
-+	ubi_msg("sqnum     %llu",
-+		(unsigned long long)ubi64_to_cpu(vid_hdr->sqnum));
-+	ubi_msg("hdr_crc   %08x", ubi32_to_cpu(vid_hdr->hdr_crc));
-+	ubi_msg("volume identifier header hexdump:");
-+	spin_unlock(&dbg_prints_lock);
-+	ubi_dbg_hexdump(vid_hdr, UBI_VID_HDR_SIZE_CRC);
-+}
-+
-+/**
-+ * ubi_dbg_dump_vtr - dump a &struct ubi_vtbl_vtr object.
-+ *
-+ * @vtr: the object to dump
-+ */
-+void ubi_dbg_dump_vtr(const struct ubi_vtbl_vtr *vtr)
-+{
-+	spin_lock(&dbg_prints_lock);
-+	ubi_msg("volume table record dump:");
-+	ubi_msg("reserved_pebs   %d", vtr->reserved_pebs);
-+	ubi_msg("alignment       %d", vtr->alignment);
-+	ubi_msg("data_pad        %d", vtr->data_pad);
-+	ubi_msg("vol_type        %d", vtr->vol_type);
-+	ubi_msg("name_len        %d", vtr->name_len);
-+	ubi_msg("usable_leb_size %d", vtr->usable_leb_size);
-+	ubi_msg("used_ebs        %d", vtr->used_ebs);
-+	ubi_msg("used_bytes      %lld", vtr->used_bytes);
-+	ubi_msg("last_eb_bytes   %d", vtr->last_eb_bytes);
-+	ubi_msg("corrupted       %d", vtr->corrupted);
-+	ubi_msg("upd_marker      %d", vtr->upd_marker);
-+
-+	if (vtr->name == NULL) {
-+		ubi_msg("name          NULL");
-+		spin_unlock(&dbg_prints_lock);
-+		return;
++	for (i = 0; i < reserved_pebs; i++) {
++		new_ebs[i].pnum = NOT_MAPPED;
++		new_ebs[i].leb_ver = 0;
 +	}
 +
-+	if (vtr->name_len <= UBI_VOL_NAME_MAX &&
-+	    strnlen(vtr->name, vtr->name_len + 1) == vtr->name_len) {
-+		ubi_msg("name          %s", vtr->name);
++	idx = vol_id2idx(ubi, vol_id);
++
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	ubi_assert(eba_tbl[idx].recs);
++
++	if (reserved_pebs < eba_tbl[idx].leb_count) {
++		min = reserved_pebs;
++		to_put = eba_tbl[idx].leb_count - reserved_pebs;
 +	} else {
-+		ubi_msg("the 1st 5 characters of the name: %c%c%c%c%c",
-+			vtr->name[0], vtr->name[1], vtr->name[2],
-+			vtr->name[3], vtr->name[4]);
++		min = eba_tbl[idx].leb_count;
++		to_put = 0;
 +	}
 +
-+	spin_unlock(&dbg_prints_lock);
-+}
-+
-+/**
-+ * ubi_dbg_dump_vol_tbl_record - dump a &struct ubi_vol_tbl_record object.
-+ *
-+ * @r: the object to dump
-+ */
-+void ubi_dbg_dump_vol_tbl_record(const struct ubi_vol_tbl_record *r)
-+{
-+	int name_len = ubi16_to_cpu(r->name_len);
-+
-+	spin_lock(&dbg_prints_lock);
-+	ubi_msg("raw volume table record dump:");
-+	ubi_msg("reserved_pebs   %d", ubi32_to_cpu(r->reserved_pebs));
-+	ubi_msg("alignment       %d", ubi32_to_cpu(r->alignment));
-+	ubi_msg("data_pad        %d", ubi32_to_cpu(r->data_pad));
-+	ubi_msg("vol_type        %d", (int)r->vol_type);
-+	ubi_msg("upd_marker      %d", (int)r->upd_marker);
-+	ubi_msg("name_len        %d", name_len);
-+
-+	if (r->name[0] == '\0') {
-+		ubi_msg("name          NULL");
-+		spin_unlock(&dbg_prints_lock);
-+		return;
++	for (i = 0; i < min; i++) {
++		new_ebs[i].pnum = eba_tbl[idx].recs[i].pnum;
++		new_ebs[i].leb_ver = eba_tbl[idx].recs[i].leb_ver;
 +	}
++	spin_unlock(&ubi->eba.eba_tbl_lock);
 +
-+	if (name_len <= UBI_VOL_NAME_MAX &&
-+	    strnlen(&r->name[0], name_len + 1) == name_len) {
-+		ubi_msg("name          %s", &r->name[0]);
-+	} else {
-+		ubi_msg("the 1st 5 characters of the name: %c%c%c%c%c",
-+			r->name[0], r->name[1], r->name[2], r->name[3],
-+			r->name[4]);
-+	}
-+	spin_unlock(&dbg_prints_lock);
-+}
-+
-+/**
-+ * ubi_dbg_dump_sv - dump a &struct ubi_scan_volume object.
-+ *
-+ * @sv: the object to dump
-+ */
-+void ubi_dbg_dump_sv(const struct ubi_scan_volume *sv)
-+{
-+	spin_lock(&dbg_prints_lock);
-+	ubi_msg("volume scanning information dump:");
-+	ubi_msg("vol_id         %d", sv->vol_id);
-+	ubi_msg("highest_lnum   %d", sv->highest_lnum);
-+	ubi_msg("leb_count      %d", sv->leb_count);
-+	ubi_msg("compat         %d", sv->compat);
-+	ubi_msg("vol_type       %d", sv->vol_type);
-+	ubi_msg("used_ebs       %d", sv->used_ebs);
-+	ubi_msg("last_data_size %d", sv->last_data_size);
-+	ubi_msg("data_pad       %d", sv->data_pad);
-+	spin_unlock(&dbg_prints_lock);
-+}
-+
-+/**
-+ * ubi_dbg_dump_seb - dump a &struct ubi_scan_leb object.
-+ *
-+ * @seb: the object to dump
-+ * @type: object type: 0 - not corrupted, 1 - corrupted
-+ */
-+void ubi_dbg_dump_seb(const struct ubi_scan_leb *seb, int type)
-+{
-+	spin_lock(&dbg_prints_lock);
-+	ubi_msg("eraseblock scanning information dump:");
-+	ubi_msg("ec       %d", seb->ec);
-+	ubi_msg("pnum     %d", seb->pnum);
-+	switch (type) {
-+		case 0:
-+			ubi_msg("lnum     %d", seb->lnum);
-+			ubi_msg("scrub    %d", seb->scrub);
-+			ubi_msg("sqnum    %llu", seb->sqnum);
-+			ubi_msg("leb_ver  %u", seb->leb_ver);
-+			break;
-+		case 1:
++	for (i = 0; i < to_put; i++) {
++		err = ubi_eba_unmap_leb(ubi, vol_id, i);
++		if (err)
 +			break;
 +	}
-+	spin_unlock(&dbg_prints_lock);
++
++	spin_lock(&ubi->eba.eba_tbl_lock);
++	old_ebs = eba_tbl[idx].recs;
++	eba_tbl[idx].recs = new_ebs;
++	eba_tbl[idx].leb_count = reserved_pebs;
++	spin_unlock(&ubi->eba.eba_tbl_lock);
++
++	kfree(old_ebs);
++	return err;
 +}
 +
 +/**
-+ * ubi_dbg_dump_mkvol_req - dump a &struct ubi_mkvol_req object.
++ * ltree_lookup - look up the lock tree.
 + *
-+ * @req: the object to dump
++ * @eba: the EBA unit description data structure
++ * @vol_id: volume ID of the logical eraseblock to look up
++ * @lnum: the logical eraseblock to look up
++ *
++ * This function returns a pointer to the corresponding
++ * &struct ubi_eba_ltree_entry object if the logical eraseblock is locked and
++ * %NULL if it is not. The @ubi->eba.ltree_lock has to be locked.
 + */
-+void ubi_dbg_dump_mkvol_req(const struct ubi_mkvol_req *req)
++static struct ubi_eba_ltree_entry *ltree_lookup(struct ubi_info *ubi,
++						int vol_id, int lnum)
 +{
-+	char nm[17];
++	struct rb_node *p;
 +
-+	spin_lock(&dbg_prints_lock);
-+	ubi_msg("volume creation request dump:");
-+	ubi_msg("vol_id    %d",   req->vol_id);
-+	ubi_msg("alignment %d",   req->alignment);
-+	ubi_msg("bytes     %lld", (long long)req->bytes);
-+	ubi_msg("vol_type  %d",   req->vol_type);
-+	ubi_msg("name_len  %d",   req->name_len);
++	p = ubi->eba.ltree.rb_node;
++	while (p) {
++		struct ubi_eba_ltree_entry *le;
 +
-+	memcpy(nm, req->name, 16);
-+	nm[16] = 0;
-+	ubi_msg("the 1st 16 characters of the name: %s", nm);
-+	spin_unlock(&dbg_prints_lock);
++		le = rb_entry(p, struct ubi_eba_ltree_entry, rb);
++
++		if (vol_id < le->vol_id)
++			p = p->rb_left;
++		else if (vol_id > le->vol_id)
++			p = p->rb_right;
++		else {
++			if (lnum < le->lnum)
++				p = p->rb_left;
++			else if (lnum > le->lnum)
++				p = p->rb_right;
++			else
++				return le;
++		}
++	}
++
++	return NULL;
 +}
 +
-+#define BYTES_PER_LINE 32
++/**
++ * ltree_add_entry - add new entry to the lock tree.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: volume ID of the logical eraseblock
++ * @lnum: logical eraseblock number
++ *
++ * This function adds new entry for logical eraseblock (@vol_id, @lnum) to the
++ * lock tree. If such entry is already there, its usage counter is increased.
++ * Returns a pointer to the lock tree entry or %-ENOMEM if memory allocation
++ * failed.
++ */
++static struct ubi_eba_ltree_entry *ltree_add_entry(struct ubi_info *ubi,
++						   int vol_id, int lnum)
++{
++	struct ubi_eba_ltree_entry *le, *le1, *le_free;
++
++	le = kmem_cache_alloc(eba_ltree_entry_slab, GFP_KERNEL);
++	if (unlikely(!le))
++		return ERR_PTR(-ENOMEM);
++
++	le->vol_id = vol_id;
++	le->lnum = lnum;
++
++	spin_lock(&ubi->eba.ltree_lock);
++	le1 = ltree_lookup(ubi, vol_id, lnum);
++
++	if (le1) {
++		/*
++		 * This logical eraseblock is already locked. The newly
++		 * allocated lock entry is not needed.
++		 */
++		le_free = le;
++		le = le1;
++	} else {
++		struct rb_node **p, *parent = NULL;
++
++		/*
++		 * No lock entry, add the newly allocated one to the
++		 * @ubi->eba.ltree RB-tree.
++		 */
++		le_free = NULL;
++
++		p = &ubi->eba.ltree.rb_node;
++		while (*p) {
++			parent = *p;
++			le1 = rb_entry(parent, struct ubi_eba_ltree_entry, rb);
++
++			if (vol_id < le1->vol_id)
++				p = &(*p)->rb_left;
++			else if (vol_id > le1->vol_id)
++				p = &(*p)->rb_right;
++			else {
++				ubi_assert(lnum != le1->lnum);
++				if (lnum < le1->lnum)
++					p = &(*p)->rb_left;
++				else
++					p = &(*p)->rb_right;
++			}
++		}
++
++		rb_link_node(&le->rb, parent, p);
++		rb_insert_color(&le->rb, &ubi->eba.ltree);
++	}
++	le->users += 1;
++	spin_unlock(&ubi->eba.ltree_lock);
++
++	if (le_free)
++		kmem_cache_free(eba_ltree_entry_slab, le_free);
++
++	return le;
++}
 +
 +/**
-+ * ubi_dbg_hexdump - dump a buffer.
++ * leb_read_lock - lock logical eraseblock for reading.
 + *
-+ * @buf: the buffer to dump
-+ * @size: buffer size which must be multiple of 4 bytes
++ * @ubi: the UBI device description object
++ * @vol_id: volume ID
++ * @lnum: the logical eraseblock to lock
++ *
++ * This function locks a logical eraseblock for reading. Returns zero in case
++ * of success and a negative error code in case of failure.
 + */
-+void ubi_dbg_hexdump(const void *ptr, int size)
++static int leb_read_lock(struct ubi_info *ubi, int vol_id, int lnum)
 +{
-+	int i, k = 0, rows, columns;
-+	const uint8_t *p = ptr;
++	struct ubi_eba_ltree_entry *le;
 +
-+	size = ALIGN(size, 4);
-+	rows = size/BYTES_PER_LINE + size % BYTES_PER_LINE;
-+	for (i = 0; i < rows; i++) {
-+		int j;
++	le = ltree_add_entry(ubi, vol_id, lnum);
++	if (unlikely(IS_ERR(le)))
++		return PTR_ERR(le);
++	down_read(&le->mutex);
++	return 0;
++}
++
++/**
++ * leb_read_unlock - unlock logical eraseblock.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: volume ID
++ * @lnum: the logical eraseblock to unlock
++ */
++static void leb_read_unlock(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	int free = 0;
++	struct ubi_eba_ltree_entry *le;
++
++	spin_lock(&ubi->eba.ltree_lock);
++	le = ltree_lookup(ubi, vol_id, lnum);
++	le->users -= 1;
++	ubi_assert(le->users >= 0);
++	if (le->users == 0) {
++		rb_erase(&le->rb, &ubi->eba.ltree);
++		free = 1;
++	}
++	spin_unlock(&ubi->eba.ltree_lock);
++
++	up_read(&le->mutex);
++	if (free)
++		kmem_cache_free(eba_ltree_entry_slab, le);
++}
++
++/**
++ * leb_write_lock - lock logical eraseblock for writing.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: volume ID
++ * @lnum: the logical eraseblock to lock
++ *
++ * This function locks a logical eraseblock for writing. Returns zero in case
++ * of success and a negative error code in case of failure.
++ */
++static int leb_write_lock(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	struct ubi_eba_ltree_entry *le;
++
++	le = ltree_add_entry(ubi, vol_id, lnum);
++	if (unlikely(IS_ERR(le)))
++		return PTR_ERR(le);
++	down_write(&le->mutex);
++	return 0;
++}
++
++/**
++ * leb_write_unlock - unlock logical eraseblock.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: volume ID
++ * @lnum: the logical eraseblock to unlock
++ */
++static void leb_write_unlock(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	int free;
++	struct ubi_eba_ltree_entry *le;
++
++	spin_lock(&ubi->eba.ltree_lock);
++	le = ltree_lookup(ubi, vol_id, lnum);
++	le->users -= 1;
++	ubi_assert(le->users >= 0);
++	if (le->users == 0) {
++		rb_erase(&le->rb, &ubi->eba.ltree);
++		free = 1;
++	} else
++		free = 0;
++	spin_unlock(&ubi->eba.ltree_lock);
++
++	up_write(&le->mutex);
++	if (free)
++		kmem_cache_free(eba_ltree_entry_slab, le);
++}
++
++/**
++ * ubi_eba_unmap_leb - un-map a logical eraseblock.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: volume ID
++ * @lnum: the logical eraseblock to erase
++ *
++ * This function un-maps the logical eraseblock and schedules corresponding
++ * physical eraseblock for erasure. Returns zero in case of success and a
++ * negative error code in case of failure.
++ */
++int ubi_eba_unmap_leb(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	int err, pnum;
++
++	ubi_assert(vol_id >= 0);
++	ubi_assert(vol_id < ubi->vtbl.vt_slots || ubi_is_ivol(vol_id));
++	ubi_assert(lnum >= 0);
++	ubi_assert(ubi->eba.eba_tbl[vol_id2idx(ubi, vol_id)].recs);
++	ubi_assert(lnum < ubi->eba.eba_tbl[vol_id2idx(ubi, vol_id)].leb_count);
++
++	cond_resched();
++
++	if (unlikely(ubi->io.ro_mode)) {
++		dbg_err("read-only mode");
++		return -EROFS;
++	}
++
++	err = leb_write_lock(ubi, vol_id, lnum);
++	if (unlikely(err))
++		return err;
++
++	pnum = leb2peb(ubi, vol_id, lnum);
++	if (pnum < 0) {
++		/* This logical eraseblock is already unmapped */
++		dbg_eba("erase LEB %d:%d (unmapped)", vol_id, lnum);
++		goto out_unlock;
++	}
++	dbg_eba("erase LEB %d:%d, PEB %d", vol_id, lnum, pnum);
++
++	leb_unmap(ubi, vol_id, lnum);
++
++	err = ubi_wl_put_peb(ubi, pnum, 0);
++
++out_unlock:
++	leb_write_unlock(ubi, vol_id, lnum);
++	return err;
++}
++
++/**
++ * ubi_eba_read_leb - read data from a logical eraseblock.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: volume ID from where to read
++ * @lnum: the logical eraseblock to read from
++ * @buf: buffer to store the read data
++ * @offset: offset within the logical eraseblock from where to read
++ * @len: how many bytes to read
++ * @check: data CRC check flag
++ *
++ * If the logical eraseblock @lnum is unmapped, @buf is filled with 0xFF
++ * bytes. The @check flag only makes sense for static volumes and forces
++ * eraseblock data CRC checking.
++ *
++ * In case of success this function returns zero. In case of a static volume,
++ * id data CRC mismatches - %-EBADMSG is returned. %-EBADMSG may also be
++ * returned for any volume type if an ECC error was detected by the MTD device
++ * driver. Other negative error cored may be returned in case of other errors.
++ */
++int ubi_eba_read_leb(struct ubi_info *ubi, int vol_id, int lnum, void *buf,
++		     int offset, int len, int check)
++{
++	int err, pnum, scrub = 0;
++	const struct ubi_vtbl_vtr *vtr;
++	uint32_t data_crc;
++	struct ubi_vid_hdr *vid_hdr;
++
++	ubi_assert(vol_id >= 0);
++	ubi_assert(vol_id < ubi->vtbl.vt_slots || ubi_is_ivol(vol_id));
++	ubi_assert(lnum >= 0);
++	ubi_assert(offset >= 0);
++	ubi_assert(len > 0);
++
++	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
++	ubi_assert(!IS_ERR(vtr));
++	ubi_assert(offset + len <= ubi->io.leb_size - vtr->data_pad);
++	ubi_assert(lnum < ubi->eba.eba_tbl[vol_id2idx(ubi, vol_id)].leb_count);
++
++	cond_resched();
++
++	err = leb_read_lock(ubi, vol_id, lnum);
++	if (unlikely(err))
++		return err;
++
++	pnum = leb2peb(ubi, vol_id, lnum);
++
++	if (pnum < 0) {
++		/*
++		 * The logical eraseblock is not mapped, fill the whole buffer
++		 * by 0xFF bytes. The exception is static volumes for which it
++		 * is an error to read unmapped logical eraseblocks.
++		 */
++		dbg_eba("read %d bytes from offset %d of LEB %d:%d (unmapped)",
++			len, offset, vol_id, lnum);
++		leb_read_unlock(ubi, vol_id, lnum);
++		ubi_assert(vtr->vol_type != UBI_STATIC_VOLUME);
++		memset(buf, 0xFF, len);
++		return 0;
++	}
++
++	dbg_eba("read %d bytes from offset %d of LEB %d:%d, PEB %d",
++		len, offset, vol_id, lnum, pnum);
++
++	if (vtr->vol_type == UBI_DYNAMIC_VOLUME)
++		/* In case of dynamic volumes no checking is needed */
++		check = 0;
++
++	if (check) {
++		vid_hdr = ubi_zalloc_vid_hdr(ubi);
++		if (unlikely(!vid_hdr)) {
++			err = -ENOMEM;
++			goto out_unlock;
++		}
++
++		err = ubi_io_read_vid_hdr(ubi, pnum, vid_hdr, 1);
++		if (unlikely(err) && err != UBI_IO_BITFLIPS) {
++			if (err > 0) {
++				/*
++				 * The header is either absent or corrupted.
++				 * The former case means there is a bug -
++				 * switch to read-only mode just in case.
++				 * The latter case means a real corruption - we
++				 * may try to recover data. FIXME: but this is
++				 * not implemented.
++				 */
++				if (err == UBI_IO_BAD_VID_HDR) {
++					ubi_warn("bad VID header at PEB %d, LEB"
++						 "%d:%d", pnum, vol_id, lnum);
++					err = -EBADMSG;
++				} else
++					ubi_ro_mode(ubi);
++			}
++			goto out_free;
++		} else if (unlikely(err == UBI_IO_BITFLIPS))
++			scrub = 1;
++
++		err = paranoid_check_leb(ubi, pnum, vol_id, lnum, vid_hdr);
++		if (unlikely(err)) {
++			if (err > 0)
++				err = -EINVAL;
++			goto out_free;
++		}
++
++		ubi_assert(lnum < ubi32_to_cpu(vid_hdr->used_ebs));
++		ubi_assert(len == ubi32_to_cpu(vid_hdr->data_size));
++
++		data_crc = ubi32_to_cpu(vid_hdr->data_crc);
++		ubi_free_vid_hdr(ubi, vid_hdr);
++	}
++
++	err = ubi_io_read_data(ubi, buf, pnum, offset, len);
++	if (unlikely(err) && err != UBI_IO_BITFLIPS)
++		goto out_unlock;
++	else if (unlikely(err == UBI_IO_BITFLIPS)) {
++		scrub = 1;
++		err = 0;
++	}
++
++	if (check) {
++		uint32_t crc;
++
++		crc = crc32(UBI_CRC32_INIT, buf, len);
++		if (unlikely(crc != data_crc)) {
++			ubi_warn("CRC error: calculated %#08x, must be %#08x",
++				 crc, data_crc);
++			err = -EBADMSG;
++			goto out_unlock;
++		}
++
++		if (err)
++			dbg_eba("error %d while reading, but data CRC is OK, "
++				"ignore the error", err);
++		err = 0;
++		dbg_eba("data is OK, CRC matches");
++	}
++
++	if (unlikely(err))
++		goto out_unlock;
++
++	if (unlikely(scrub))
++		err = ubi_wl_scrub_peb(ubi, pnum);
++
++	leb_read_unlock(ubi, vol_id, lnum);
++	return err;
++
++out_free:
++	ubi_free_vid_hdr(ubi, vid_hdr);
++out_unlock:
++	leb_read_unlock(ubi, vol_id, lnum);
++	return err;
++}
++
++/**
++ * recover_peb - recover from write failure.
++ *
++ * @ubi: the UBI device description object
++ * @pnum: the physical eraseblock to recover
++ * @vol_id: volume ID
++ * @lnum: logical eraseblock number
++ * @buf: data which was not written because of a write failure
++ * @offset: offset of the failed write
++ * @len: how many bytes should have been written
++ *
++ * This function is called in case of a write failure and moves all good data
++ * foam the potentially bad physical eraseblock to a good physical eraseblock.
++ * This function also writes the data which was not written due to the failure.
++ * Returns new physical eraseblock number in case of success, and a negative
++ * error code in case of failure.
++ */
++int recover_peb(struct ubi_info *ubi, int pnum, int vol_id, int lnum,
++		const void *buf, int offset, int len)
++{
++	int err, new_pnum, data_size, tries = 0;
++	struct ubi_vid_hdr *vid_hdr;
++	unsigned char *new_buf;
++
++	ubi_assert(ubi->io.bad_allowed);
++
++retry:
++	new_pnum = ubi_wl_get_peb(ubi, UBI_DATA_UNKNOWN);
++	if (new_pnum < 0)
++		return new_pnum;
++
++	ubi_msg("recover PEB %d, move data to PEB %d", pnum, new_pnum);
++
++	/* At first recover the VID header */
++
++	vid_hdr = ubi_zalloc_vid_hdr(ubi);
++	if (!vid_hdr) {
++		err = -ENOMEM;
++		goto out_put;
++	}
++
++	err = ubi_io_read_vid_hdr(ubi, pnum, vid_hdr, 1);
++	if (err && err != UBI_IO_BITFLIPS) {
++		if (err > 0)
++			err = -EIO;
++		goto out_free;
++	}
++
++	vid_hdr->leb_ver = cpu_to_ubi32(ubi32_to_cpu(vid_hdr->leb_ver) + 1);
++	err = ubi_io_write_vid_hdr(ubi, new_pnum, vid_hdr);
++	if (err)
++		goto write_error;
++
++	/* Now recover the data */
++
++	data_size = offset + len;
++	new_buf = kmalloc(data_size, GFP_KERNEL);
++	if (unlikely(!new_buf)) {
++		err = -ENOMEM;
++		goto out_free;
++	}
++	memset(new_buf + offset, 0xFF, len);
++
++	/* Read everything before the area where the write failure happened */
++	if (offset > 0) {
++		err = ubi_io_read_data(ubi, new_buf, pnum, 0, offset);
++		if (err && err != UBI_IO_BITFLIPS) {
++			kfree(new_buf);
++			goto out_free;
++		}
++	}
++
++	/*
++	 * Now we assume that before the failed write the (offset, offset+len)
++	 * area contained all 0xFF bytes. This is true for NAND. This is not
++	 * always true for NOR, but NOR don't admit of bad PEBs.
++	 */
++	memcpy(new_buf + offset, buf, len);
++
++	err = ubi_io_write_data(ubi, new_buf, new_pnum, 0, data_size);
++	if (err) {
++		kfree(new_buf);
++		goto write_error;
++	}
++
++	kfree(new_buf);
++	ubi_free_vid_hdr(ubi, vid_hdr);
++	ubi_eba_leb_remap(ubi, vol_id, lnum, new_pnum);
++	ubi_wl_put_peb(ubi, pnum, 1);
++	ubi_msg("data was successfully recovered");
++	return 0;
++
++out_free:
++	ubi_free_vid_hdr(ubi, vid_hdr);
++out_put:
++	ubi_wl_put_peb(ubi, new_pnum, 1);
++	return err;
++
++write_error:
++	/*
++	 * Bad luck? This physical eraseblock is bad too? Crud. Let's try to
++	 * get another one.
++	 */
++	ubi_warn("failed to write to PEB %d", new_pnum);
++	ubi_free_vid_hdr(ubi, vid_hdr);
++	ubi_wl_put_peb(ubi, new_pnum, 1);
++	if (++tries > 5)
++		/* We've tried too many times */
++		return err;
++	ubi_msg("try again");
++	goto retry;
++}
++
++/**
++ * ubi_eba_write_leb - write data to logical eraseblock of a dynamic volume.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID where to write
++ * @lnum: the logical eraseblock number to write
++ * @buf: the data to write
++ * @offset: the offset within the logical eraseblock where to write
++ * @len: how many bytes to write
++ * @dtype: data type
++ *
++ * This function writes data to logical eraseblock @lnum of a dynamic volume
++ * @vol_id. Returns zero in case of success and a negative error code in case
++ * of failure. In case of an error, it is possible that something was still
++ * written to the flash media, but may be some garbage.
++ */
++int ubi_eba_write_leb(struct ubi_info *ubi, int vol_id, int lnum,
++		      const void *buf, int offset, int len,
++		      enum ubi_data_type dtype)
++{
++	int err, pnum, tries = 0;
++	uint32_t leb_ver;
++	uint64_t sqnum;
++	struct ubi_vid_hdr *vid_hdr;
++	const struct ubi_vtbl_vtr *vtr;
++
++retry:
++	ubi_assert(vol_id >= 0);
++	ubi_assert(vol_id < ubi->vtbl.vt_slots || ubi_is_ivol(vol_id));
++	ubi_assert(lnum >= 0);
++	ubi_assert(offset >= 0);
++	ubi_assert(len >= 0);
++	ubi_assert(dtype == UBI_DATA_LONGTERM || dtype == UBI_DATA_SHORTTERM ||
++		   dtype == UBI_DATA_UNKNOWN);
++
++	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
++	ubi_assert(!IS_ERR(vtr));
++	ubi_assert(offset + len <= ubi->io.leb_size - vtr->data_pad);
++	ubi_assert(lnum < ubi->eba.eba_tbl[vol_id2idx(ubi, vol_id)].leb_count);
++	ubi_assert(len % ubi->io.min_io_size == 0);
++	ubi_assert(offset % ubi->io.min_io_size == 0);
++	ubi_assert(vtr->vol_type == UBI_DYNAMIC_VOLUME);
++
++	cond_resched();
++
++	if (unlikely(ubi->io.ro_mode)) {
++		dbg_err("read-only mode");
++		return -EROFS;
++	}
++
++	err = leb_write_lock(ubi, vol_id, lnum);
++	if (unlikely(err))
++		return err;
++
++	pnum = leb2peb(ubi, vol_id, lnum);
++	if (pnum >= 0) {
++		dbg_eba("write %d bytes at offset %d of LEB %d:%d, PEB %d",
++			len, offset, vol_id, lnum, pnum);
++
++		if (len != 0) {
++			err = ubi_io_write_data(ubi, buf, pnum, offset, len);
++			if (unlikely(err))
++				goto data_write_error;
++		}
++		leb_write_unlock(ubi, vol_id, lnum);
++		return err;
++	}
++
++	/*
++	 * The logical eraseblock is not mapped. We have to get a free physical
++	 * eraseblock and write the volume identifier header there first.
++	 */
++	vid_hdr = ubi_zalloc_vid_hdr(ubi);
++	if (unlikely(!vid_hdr)) {
++		err = -ENOMEM;
++		goto out_unlock;
++	}
++
++	sqnum = next_sqnum(ubi);
++	leb_ver = leb_get_ver(ubi, vol_id, lnum);
++
++	vid_hdr->vol_type = UBI_VID_DYNAMIC;
++	vid_hdr->sqnum = cpu_to_ubi64(sqnum);
++	vid_hdr->leb_ver = cpu_to_ubi32(leb_ver);
++	vid_hdr->vol_id = cpu_to_ubi32(vol_id);
++	vid_hdr->lnum = cpu_to_ubi32(lnum);
++	vid_hdr->compat = ubi_get_compat(ubi, vol_id);
++	vid_hdr->data_pad = cpu_to_ubi32(vtr->data_pad);
++
++	pnum = ubi_wl_get_peb(ubi, dtype);
++	if (unlikely(pnum < 0)) {
++		err = pnum;
++		ubi_free_vid_hdr(ubi, vid_hdr);
++		goto out_unlock;
++	}
++
++	dbg_eba("write VID hdr and %d bytes at offset %d of LEB %d:%d, PEB %d",
++		len, offset, vol_id, lnum, pnum);
++
++	err = ubi_io_write_vid_hdr(ubi, pnum, vid_hdr);
++	if (unlikely(err)) {
++		ubi_warn("failed to write VID header to PEB %d", pnum);
++		ubi_free_vid_hdr(ubi, vid_hdr);
++		if (err != -EIO || !ubi->io.bad_allowed)
++			goto no_bad_eraseblocks;
++
++		/*
++		 * Fortunately, we did not write any data there yet, so just put this
++		 * physical eraseblock and request a new one. We assume that if this
++		 * physical eraseblock went bad, the erase code will handle that.
++		 */
++		ubi_msg("try to recover form the error");
++		err = ubi_wl_put_peb(ubi, pnum, 1);
++		leb_write_unlock(ubi, vol_id, lnum);
++		if (err || ++tries > 5) {
++			ubi_ro_mode(ubi);
++			return err;
++		}
++		goto retry;
++	}
++
++	leb_map(ubi, vol_id, lnum, pnum);
++
++	if (len != 0) {
++		err = ubi_io_write_data(ubi, buf, pnum, offset, len);
++		if (unlikely(err)) {
++			ubi_free_vid_hdr(ubi, vid_hdr);
++			goto data_write_error;
++		}
++	}
++
++	leb_write_unlock(ubi, vol_id, lnum);
++	ubi_free_vid_hdr(ubi, vid_hdr);
++	return 0;
++
++out_unlock:
++	leb_write_unlock(ubi, vol_id, lnum);
++	return err;
++
++	/* Failed to write data */
++data_write_error:
++	ubi_warn("failed to write data to PEB %d", pnum);
++	if (err != -EIO || !ubi->io.bad_allowed)
++		goto no_bad_eraseblocks;
++
++	err = recover_peb(ubi, pnum, vol_id, lnum, buf, offset, len);
++	if (err)
++		ubi_ro_mode(ubi);
++	leb_write_unlock(ubi, vol_id, lnum);
++	return err;
++
++	/*
++	 * This flash device does not admit of bad eraseblocks or something
++	 * nasty and unexpected happened. Switch to read-only mode just in
++	 * case.
++	 */
++no_bad_eraseblocks:
++	ubi_ro_mode(ubi);
++	leb_write_unlock(ubi, vol_id, lnum);
++	return err;
++}
++
++/**
++ * ubi_eba_write_leb_st - write data to a logical eraseblock of a static
++ * volume.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID where to write
++ * @lnum: the logical eraseblock number to write
++ * @buf: the data to write
++ * @len: how many bytes to write
++ * @dtype: data type
++ * @used_ebs: how many logical eraseblocks will this volume contain (used only
++ * for static volumes)
++ *
++ * This function writes data to a logical eraseblock of a static volume. The
++ * @used_ebs argument should contain total number of logical eraseblock which
++ * will contain any data in this static volume.
++ *
++ * When writing to the last logical eraseblock of a static volume, the @len
++ * argument doesn't have to be aligned to the minimal I/O unit size. Instead,
++ * it has to be equivalent to the real data size, although the @buf buffer has
++ * to contain the alignment. In all other cases, @len has to be aligned.
++ *
++ * Note, it is prohibited to write more then once to logical eraseblocks of
++ * static volumes.
++ *
++ * This function returns zero in case of success and a negative error code in
++ * case of failure.
++ */
++int ubi_eba_write_leb_st(struct ubi_info *ubi, int vol_id, int lnum,
++			 const void *buf, int len, enum ubi_data_type dtype,
++			 int used_ebs)
++{
++	int err, pnum, tries = 0, data_size = len;
++	uint32_t leb_ver, crc;
++	uint64_t sqnum;
++	struct ubi_vid_hdr *vid_hdr;
++	const struct ubi_vtbl_vtr *vtr;
++
++retry:
++	ubi_assert(vol_id >= 0);
++	ubi_assert(vol_id < ubi->vtbl.vt_slots || ubi_is_ivol(vol_id));
++	ubi_assert(lnum >= 0);
++	ubi_assert(len > 0);
++	ubi_assert(dtype == UBI_DATA_LONGTERM || dtype == UBI_DATA_SHORTTERM ||
++		   dtype == UBI_DATA_UNKNOWN);
++
++	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
++	ubi_assert(!IS_ERR(vtr));
++	ubi_assert(lnum < ubi->eba.eba_tbl[vol_id2idx(ubi, vol_id)].leb_count);
++	ubi_assert(lnum < used_ebs);
++	ubi_assert(used_ebs >= 0);
++	ubi_assert(vtr->vol_type == UBI_STATIC_VOLUME);
++
++	cond_resched();
++
++	if (lnum == used_ebs - 1) {
++		/*
++		 * If this is the last logical eraseblock of a static
++		 * volume, @len may be unaligned.
++		 */
++		ubi_assert(len <= ubi->io.leb_size - vtr->data_pad);
++		len = align_up(data_size, ubi->io.min_io_size);
++	} else {
++		ubi_assert(len == ubi->io.leb_size - vtr->data_pad);
++		ubi_assert(len % ubi->io.min_io_size == 0);
++	}
++
++	if (unlikely(ubi->io.ro_mode)) {
++		dbg_err("read-only mode");
++		return -EROFS;
++	}
++
++	err = leb_write_lock(ubi, vol_id, lnum);
++	if (unlikely(err))
++		return err;
++
++	ubi_assert(leb2peb(ubi, vol_id, lnum) < 0);
++
++	/*
++	 * Get a free physical eraseblock and write the volume identifier
++	 * header.
++	 */
++	vid_hdr = ubi_zalloc_vid_hdr(ubi);
++	if (unlikely(!vid_hdr)) {
++		err = -ENOMEM;
++		goto out_unlock;
++	}
++
++	sqnum = next_sqnum(ubi);
++	leb_ver = leb_get_ver(ubi, vol_id, lnum);
++
++	vid_hdr->sqnum = cpu_to_ubi64(sqnum);
++	vid_hdr->leb_ver = cpu_to_ubi32(leb_ver);
++	vid_hdr->vol_id = cpu_to_ubi32(vol_id);
++	vid_hdr->lnum = cpu_to_ubi32(lnum);
++	vid_hdr->compat = ubi_get_compat(ubi, vol_id);
++	vid_hdr->data_pad = cpu_to_ubi32(vtr->data_pad);
++
++	crc = crc32(UBI_CRC32_INIT, buf, data_size);
++	vid_hdr->vol_type = UBI_VID_STATIC;
++	vid_hdr->data_size = cpu_to_ubi32(data_size);
++	vid_hdr->used_ebs = cpu_to_ubi32(used_ebs);
++	vid_hdr->data_crc = cpu_to_ubi32(crc);
++
++	pnum = ubi_wl_get_peb(ubi, dtype);
++	if (unlikely(pnum < 0)) {
++		err = pnum;
++		ubi_free_vid_hdr(ubi, vid_hdr);
++		goto out_unlock;
++	}
++
++	dbg_eba("write VID hdr and %d bytes at of LEB %d:%d, PEB %d",
++		len, vol_id, lnum, pnum);
++
++	err = ubi_io_write_vid_hdr(ubi, pnum, vid_hdr);
++	if (unlikely(err)) {
++		ubi_warn("failed to write VID header to PEB %d", pnum);
++		goto write_error;
++	}
++
++	leb_map(ubi, vol_id, lnum, pnum);
++
++	err = ubi_io_write_data(ubi, buf, pnum, 0, len);
++	if (unlikely(err)) {
++		ubi_warn("failed to write data to PEB %d", pnum);
++		goto write_error;
++	}
++
++	leb_write_unlock(ubi, vol_id, lnum);
++	ubi_free_vid_hdr(ubi, vid_hdr);
++	return 0;
++
++out_unlock:
++	leb_write_unlock(ubi, vol_id, lnum);
++	return err;
++
++	/* Write failure */
++write_error:
++	ubi_free_vid_hdr(ubi, vid_hdr);
++	ubi_free_vid_hdr(ubi, vid_hdr);
++	if (err != -EIO || !ubi->io.bad_allowed) {
++		/*
++		 * This flash device does not admit of bad eraseblocks or
++		 * something nasty and unexpected happened. Switch to read-only
++		 * mode just in case.
++		 */
++		ubi_ro_mode(ubi);
++		leb_write_unlock(ubi, vol_id, lnum);
++		return err;
++	}
++
++	/*
++	 * We assume that if this physical eraseblock went bad - the erase code
++	 * will handle that.
++	 */
++	ubi_msg("try to recover form the error");
++	err = ubi_wl_put_peb(ubi, pnum, 1);
++	leb_write_unlock(ubi, vol_id, lnum);
++	if (err || ++tries > 5) {
++		ubi_ro_mode(ubi);
++		return err;
++	}
++	goto retry;
++}
++
++/**
++ * ubi_eba_leb_is_mapped - check if a logical eraseblock is mapped.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: volume ID
++ * @lnum: the logical eraseblock to check
++ *
++ * This function checks if logical eraseblock @lnum is mapped to a physical
++ * eraseblock. Returns %1 if it is mapped, and %0 if not.
++ */
++int ubi_eba_leb_is_mapped(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	dbg_eba("check LEB %d:%d PEBs", vol_id, lnum);
++
++	ubi_assert(vol_id >= 0 && vol_id < ubi->vtbl.vt_slots);
++	ubi_assert(lnum >= 0);
++	ubi_assert(lnum < ubi->eba.eba_tbl[vol_id2idx(ubi, vol_id)].leb_count);
++
++	return leb2peb(ubi, vol_id, lnum) >= 0;
++}
++
++/**
++ * ubi_eba_leb_remap - re-map a logical eraseblock to another physical
++ * eraseblock.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID
++ * @lnum: the logical eraseblock number
++ * @pnum: new physical eraseblock to map to
++ *
++ * The logical eraseblock must be locked before re-mapping.
++ */
++void ubi_eba_leb_remap(struct ubi_info *ubi, int vol_id, int lnum, int pnum)
++{
++	/* The logical eraseblock is supposed to be locked */
++	paranoid_check_leb_locked(ubi, vol_id, lnum);
++	leb_unmap(ubi, vol_id, lnum);
++	leb_map(ubi, vol_id, lnum, pnum);
++}
++
++/**
++ * build_eba_tbl - build the eraseblock association table.
++ *
++ * @ubi: the UBI device description object
++ * @si: scanning info
++ *
++ * This function returns zero in case of success and a negative error code in
++ * case of failure.
++ */
++static int build_eba_tbl(const struct ubi_info *ubi,
++			 const struct ubi_scan_info *si)
++{
++	int i, err, idx;
++	struct ubi_eba_tbl_volume *eba_tbl = ubi->eba.eba_tbl;
++
++	for (idx = 0; idx < ubi->eba.num_volumes; idx++) {
++		struct rb_node *rb;
++		struct ubi_scan_leb *seb;
++		struct ubi_scan_volume *sv;
++		const struct ubi_vtbl_vtr *vtr;
++		int sz;
 +
 +		cond_resched();
 +
-+		columns = min(size - k, BYTES_PER_LINE) / 4;
-+		if (columns == 0)
-+			break;
++		vtr = ubi_vtbl_get_vtr(ubi, idx2vol_id(ubi, idx));
++		if (IS_ERR(vtr))
++			continue;
 +
-+		spin_lock(&dbg_prints_lock);
-+		printk(UBI_DBG_LEVEL "%5d:  ", i * BYTES_PER_LINE);
++		dbg_eba("found volume %d (idx %d)", idx2vol_id(ubi, idx), idx);
 +
-+		for (j = 0; j < columns; j++) {
-+			int n, N;
++		eba_tbl[idx].leb_count = vtr->reserved_pebs;
 +
-+			N = size - k > 4 ? 4 : size - k;
-+			for (n = 0; n < N; n++)
-+				printk("%02x", p[k++]);
-+			printk(" ");
++		sz = vtr->reserved_pebs * sizeof(struct ubi_eba_tbl_rec);
++		eba_tbl[idx].recs = kmalloc(sz, GFP_KERNEL);
++		if (unlikely(!eba_tbl[idx].recs)) {
++			err = -ENOMEM;
++			goto out;
 +		}
-+		printk("\n");
-+		spin_unlock(&dbg_prints_lock);
++
++		for (i = 0; i < vtr->reserved_pebs; i++) {
++			ubi->eba.eba_tbl[idx].recs[i].pnum = NOT_MAPPED;
++			ubi->eba.eba_tbl[idx].recs[i].leb_ver = 0;
++		}
++
++		sv = ubi_scan_find_sv(si, idx2vol_id(ubi, idx));
++		if (!sv)
++			continue;
++
++		rb_for_each_entry(rb, seb, &sv->root, u.rb) {
++			ubi->eba.eba_tbl[idx].recs[seb->lnum].pnum = seb->pnum;
++			ubi->eba.eba_tbl[idx].recs[seb->lnum].leb_ver
++							= seb->leb_ver + 100;
++		}
 +	}
++
++	return 0;
++
++out:
++	for (i = 0; i < ubi->eba.num_volumes; i++)
++		kfree(ubi->eba.eba_tbl[i].recs);
++
++	return err;
 +}
 +
 +/**
-+ * ubi_dbg_is_bitflip - if its time to emulate a bit-flip.
++ * ltree_entry_ctor - lock tree entries slab cache constructor.
 + *
-+ * Returns non-zero if a bit-flip should be emulated, otherwise returns zero.
++ * @obj: the lock-tree entry to construct
++ * @cache: the lock tree entry slab cache
++ * @flag: constructor flags
 + */
-+int ubi_dbg_is_bitflip(void)
++static void ltree_entry_ctor(void *obj, struct kmem_cache *cache,
++			     unsigned long flags)
 +{
-+	if (emulate_bitflips)
-+		return !(random32() % 50);
-+	else
-+		return 0;
++	struct ubi_eba_ltree_entry *le = obj;
++
++	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) !=
++	    SLAB_CTOR_CONSTRUCTOR)
++		return;
++
++	le->users = 0;
++	init_rwsem(&le->mutex);
 +}
 +
 +/**
-+ * ubi_dbg_is_write_failure - if its time to emulate a write failure.
++ * ubi_eba_init_scan - initialize the EBA unit using scanning information.
 + *
-+ * Returns non-zero if a write failure should be emulated, otherwise returns
-+ * zero.
++ * @ubi: the UBI device description object
++ * @si: pointer to the scanning information
++ *
++ * This function returns zero in case of success and a negative error code in
++ * case of failure.
 + */
-+int ubi_dbg_is_write_failure(void)
++int ubi_eba_init_scan(struct ubi_info *ubi, struct ubi_scan_info *si)
 +{
-+	if (emulate_write_failures)
-+		return !(random32() % 100);
-+	else
-+		return 0;
++	int err, sz;
++
++	dbg_eba("initialize the EBA unit");
++
++	spin_lock_init(&ubi->eba.eba_tbl_lock);
++	spin_lock_init(&ubi->eba.ltree_lock);
++	ubi->eba.ltree = RB_ROOT;
++
++	if (ubis_num == 0) {
++		eba_ltree_entry_slab =
++			kmem_cache_create("ubi_eba_ltree_entry_slab",
++					  sizeof(struct ubi_eba_ltree_entry), 0,
++					  0, &ltree_entry_ctor, NULL);
++		if (!eba_ltree_entry_slab)
++			return -ENOMEM;
++	}
++
++	ubi->eba.global_sq_cnt = si->max_sqnum;
++
++	ubi->eba.num_volumes = ubi->vtbl.vt_slots + UBI_INT_VOL_COUNT;
++	sz = ubi->eba.num_volumes * sizeof(struct ubi_eba_tbl_volume);
++	ubi->eba.eba_tbl = kzalloc(sz, GFP_KERNEL);
++	if (!ubi->eba.eba_tbl)
++		goto out;
++
++	err = build_eba_tbl(ubi, si);
++	if (err)
++		goto out;
++
++	dbg_eba("the EBA unit is initialized");
++	return 0;
++
++out:
++	kfree(ubi->eba.eba_tbl);
++	if (ubis_num == 0)
++		kmem_cache_destroy(eba_ltree_entry_slab);
++	return err;
 +}
 +
 +/**
-+ * ubi_dbg_is_erase_failure - if its time to emulate an erase failure.
++ * ubi_eba_close - close the EBA unit.
 + *
-+ * Returns non-zero if an erase failure should be emulated, otherwise returns
-+ * zero.
++ * @ubi: the UBI device description object
 + */
-+int ubi_dbg_is_erase_failure(void)
++void ubi_eba_close(const struct ubi_info *ubi)
 +{
-+	if (emulate_erase_failures)
-+		return !(random32() % 100);
-+	else
-+		return 0;
++	unsigned int i;
++
++	dbg_eba("close EBA management unit");
++
++	for (i = 0; i < ubi->eba.num_volumes; i++)
++		kfree(ubi->eba.eba_tbl[i].recs);
++	if (ubis_num == 1)
++		kmem_cache_destroy(eba_ltree_entry_slab);
 +}
-diff -auNrp tmp-from/drivers/mtd/ubi/debug.h tmp-to/drivers/mtd/ubi/debug.h
---- tmp-from/drivers/mtd/ubi/debug.h	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/debug.h	2007-03-14 17:15:50.000000000 +0200
-@@ -0,0 +1,146 @@
-+/*
-+ * Copyright (c) International Business Machines Corp., 2006
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-+ * the GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ *
-+ * Author: Artem B. Bityutskiy
-+ */
-+
-+#ifndef __UBI_DEBUG_H__
-+#define __UBI_DEBUG_H__
-+
-+#ifdef CONFIG_MTD_UBI_DEBUG
-+
-+#ifdef CONFIG_MTD_UBI_DEBUG_DISABLE_BGT
-+#define DBG_DISABLE_BGT 1
-+#else
-+#define DBG_DISABLE_BGT 0
-+#endif
-+#define UBI_DEBUG 1
-+
-+#define ubi_assert(expr) BUG_ON(!(expr))
-+
-+#define ubi_dbg_dump_stack() dump_stack()
-+
-+/* Debugging messages from different UBI units */
-+
-+/* A verbose error messages */
-+#define dbg_err(fmt, ...) ubi_err(fmt, ##__VA_ARGS__)
-+/* User interface unit */
-+#define dbg_uif(fmt, ...) \
-+	ubi_dbg_print(UBI_DBG_UIF, __FUNCTION__, fmt, ##__VA_ARGS__)
-+/* Volume table unit */
-+#define dbg_vtbl(fmt, ...) \
-+	ubi_dbg_print(UBI_DBG_VTBL, __FUNCTION__, fmt, ##__VA_ARGS__)
-+/* Eraseblock association unit */
-+#define dbg_eba(fmt, ...) \
-+	ubi_dbg_print(UBI_DBG_EBA, __FUNCTION__, fmt, ##__VA_ARGS__)
-+/* Wear-leveling unit */
-+#define dbg_wl(fmt, ...) \
-+	ubi_dbg_print(UBI_DBG_WL, __FUNCTION__, fmt, ##__VA_ARGS__)
-+/* Input/output unit */
-+#define dbg_io(fmt, ...) \
-+	ubi_dbg_print(UBI_DBG_IO, __FUNCTION__, fmt, ##__VA_ARGS__)
-+/* Build unit */
-+#define dbg_bld(fmt, ...) \
-+	ubi_dbg_print(UBI_DBG_BLD, __FUNCTION__, fmt, ##__VA_ARGS__)
-+/* Scanning unit */
-+#define dbg_scan(fmt, ...) \
-+	ubi_dbg_print(UBI_DBG_SCAN, __FUNCTION__, fmt, ##__VA_ARGS__)
 +
 +/**
-+ * UBI message types.
++ * ubi_eba_copy_leb - copy logical eraseblock.
 + *
-+ * @UBI_DBG_UIF: a debugging message from the user interfaces unit
-+ * @UBI_DBG_VTBL: a debugging message from the volume table unit
-+ * @UBI_DBG_EBA: a debugging message from the eraseblock association unit
-+ * @UBI_DBG_WL: a debugging message from the wear-leveling unit
-+ * @UBI_DBG_IO: a debugging message from the input/output unit
-+ * @UBI_DBG_BLD: a UBI build debugging message from the build unit
-+ * @UBI_DBG_SCAN: a debugging message from the scanning unit
++ * @ubi: the UBI device description object
++ * @from: physical eraseblock number from where to move
++ * @to: physical eraseblock number where to move
++ * @vid_hdr: VID header of the @from physical eraseblock
++ *
++ * This function copies logical eraseblock from physical eraseblock @from to
++ * physical eraseblock @to. The @vid_hdr buffer may be changed by this
++ * function. Returns zero in case of success, %UBI_IO_BITFLIPS if the operation
++ * was canceled because bit-flips were detected at the target PEB, and a
++ * negative error code in case of failure.
 + */
-+enum {
-+	UBI_DBG_UIF,
-+	UBI_DBG_VTBL,
-+	UBI_DBG_EBA,
-+	UBI_DBG_WL,
-+	UBI_DBG_IO,
-+	UBI_DBG_BLD,
-+	UBI_DBG_SCAN
-+};
++int ubi_eba_copy_leb(struct ubi_info *ubi, int from, int to,
++		     struct ubi_vid_hdr *vid_hdr)
++{
++	int err, vol_id, lnum, data_size, aldata_size, pnum;
++	uint32_t crc;
++	unsigned long long sqnum;
++	void *buf;
 +
-+struct ubi_ec_hdr;
-+struct ubi_vid_hdr;
-+struct ubi_vtbl_vtr;
-+struct ubi_vol_tbl_record;
-+struct ubi_scan_volume;
-+struct ubi_scan_leb;
-+struct ubi_mkvol_req;
++	vol_id = ubi32_to_cpu(vid_hdr->vol_id);
++	lnum = ubi32_to_cpu(vid_hdr->lnum);
 +
-+void ubi_dbg_print(int type, const char *func, const char *fmt, ...);
-+void ubi_dbg_dump_ec_hdr(const struct ubi_ec_hdr *ec_hdr);
-+void ubi_dbg_dump_vid_hdr(const struct ubi_vid_hdr *vid_hdr);
-+void ubi_dbg_dump_vtr(const struct ubi_vtbl_vtr *vtr);
-+void ubi_dbg_dump_vol_tbl_record(const struct ubi_vol_tbl_record *r);
-+void ubi_dbg_dump_sv(const struct ubi_scan_volume *sv);
-+void ubi_dbg_dump_seb(const struct ubi_scan_leb *seb, int type);
-+void ubi_dbg_dump_mkvol_req(const struct ubi_mkvol_req *req);
-+void ubi_dbg_hexdump(const void *buf, int size);
++	dbg_eba("copy LEB %d:%d, PEB %d to PEB %d",
++		vol_id, lnum, from, to);
 +
-+int ubi_dbg_is_bitflip(void);
-+int ubi_dbg_is_write_failure(void);
-+int ubi_dbg_is_erase_failure(void);
++	if (vid_hdr->vol_type == UBI_VID_STATIC) {
++		data_size = ubi32_to_cpu(vid_hdr->data_size);
++		aldata_size = align_up(data_size, ubi->io.min_io_size);
++	} else
++		data_size = aldata_size =
++			    ubi->io.leb_size - ubi32_to_cpu(vid_hdr->data_pad);
 +
-+int __init ubi_dbg_init(void);
-+void __exit ubi_dbg_close(void);
++	ubi_assert(aldata_size % ubi->io.min_io_size == 0);
 +
-+#else
++	buf = kmalloc(aldata_size, GFP_KERNEL);
++	if (unlikely(!buf))
++		return -ENOMEM;
 +
-+#define UBI_DEBUG 0
++	/*
++	 * We do not want anybody to write to this logical eraseblock while we
++	 * are moving it, so we lock it.
++	 */
++	err = leb_write_lock(ubi, vol_id, lnum);
++	if (unlikely(err))
++		goto out_free;
 +
-+#define DBG_DISABLE_BGT 0
++	/*
++	 * But the logical eraseblock might have been put by this time.
++	 * Cancel if it is true.
++	 */
++	pnum = leb2peb(ubi, vol_id, lnum);
++	if (pnum != from) {
++		dbg_eba("LEB %d:%d is no longer mapped to PEB %d, mapped to "
++			"PEB %d, cancel", vol_id, lnum, from, pnum);
++		goto out_unlock;
++	}
 +
-+#define ubi_assert(expr) ({})
++	/*
++	 * OK, now the LEB is locked and we can safely start moving it.
++	 */
 +
-+#define dbg_err(fmt, ...)  ({})
-+#define dbg_uif(fmt, ...)  ({})
-+#define dbg_vtbl(fmt, ...) ({})
-+#define dbg_eba(fmt, ...)  ({})
-+#define dbg_wl(fmt, ...)   ({})
-+#define dbg_io(fmt, ...)   ({})
-+#define dbg_bld(fmt, ...)  ({})
-+#define dbg_scan(fmt, ...) ({})
++	dbg_eba("read %d bytes of data", aldata_size);
 +
-+#define ubi_dbg_print(func, fmt, ...)  ({})
-+#define ubi_dbg_dump_stack()           ({})
-+#define ubi_dbg_dump_ec_hdr(ec_hdr)    ({})
-+#define ubi_dbg_dump_vid_hdr(vid_hdr)  ({})
-+#define ubi_dbg_dump_vtr(vtr)          ({})
-+#define ubi_dbg_dump_vol_tbl_record(r) ({})
-+#define ubi_dbg_dump_sv(sv)            ({})
-+#define ubi_dbg_dump_seb(seb, type)    ({})
-+#define ubi_dbg_dump_mkvol_req(req)    ({})
-+#define ubi_dbg_hexdump(buf, size)     ({})
++	err = ubi_io_read_data(ubi, buf, from, 0, aldata_size);
++	if (unlikely(err) && err != UBI_IO_BITFLIPS) {
++		ubi_warn("error %d while reading data from PEB %d",
++			 err, from);
++		goto out_unlock;
++	}
 +
-+#define ubi_dbg_is_bitflip()       0
-+#define ubi_dbg_is_write_failure() 0
-+#define ubi_dbg_is_erase_failure() 0
++	/*
++	 * Now we have got to calculate how much data we have to to copy. In
++	 * case of a static volume it is fairly easy - the VID header contains
++	 * the data size. In case of a dynamic volume it is more difficult - we
++	 * have to read the contents, cut 0xFF bytes from the end and copy only
++	 * the first part. We must do this to avoid writing 0xFF bytes as it
++	 * may have some side-effects. And not only this. It is important not
++	 * to include those 0xFFs to CRC because later the they may be filled
++	 * by data.
++	 */
++	if (vid_hdr->vol_type == UBI_VID_DYNAMIC)
++		aldata_size = data_size =
++				ubi_calc_data_len(ubi, buf, data_size);
 +
-+#define ubi_dbg_init()  0
-+#define ubi_dbg_close()
++	cond_resched();
++	crc = crc32(UBI_CRC32_INIT, buf, data_size);
++	cond_resched();
 +
-+#endif /* !CONFIG_MTD_UBI_DEBUG */
++	/*
++	 * It may turn out that the whole @from physical eraseblock contains
++	 * only 0xFF bytes. Then we have to only write the VID header and do
++	 * not write any data. This also means we should not set
++	 * @vid_hdr->copy_flag, @vid_hdr->data_size, and @vid_hdr->data_crc.
++	 */
++	if (likely(data_size > 0)) {
++		vid_hdr->copy_flag = 1;
++		vid_hdr->data_size = cpu_to_ubi32(data_size);
++		vid_hdr->data_crc = cpu_to_ubi32(crc);
++	}
++	vid_hdr->leb_ver = cpu_to_ubi32(ubi32_to_cpu(vid_hdr->leb_ver) + 1);
++	sqnum = next_sqnum(ubi);
++	vid_hdr->sqnum = cpu_to_ubi64(sqnum);
 +
-+#endif /* !__UBI_DEBUG_H__ */
++	err = ubi_io_write_vid_hdr(ubi, to, vid_hdr);
++	if (unlikely(err))
++		goto out_unlock;
++
++	cond_resched();
++
++	/* Read the VID header back and check if it was written correctly */
++	err = ubi_io_read_vid_hdr(ubi, to, vid_hdr, 1);
++	if (unlikely(err)) {
++		if (err != UBI_IO_BITFLIPS)
++			ubi_warn("cannot read VID header back from PEB %d", to);
++		goto out_unlock;
++	}
++
++	if (likely(data_size > 0)) {
++		void *buf1;
++
++		err = ubi_io_write_data(ubi, buf, to, 0, aldata_size);
++		if (unlikely(err))
++			goto out_unlock;
++
++		/*
++		 * We've written the data and are going to read it back to make
++		 * sure it was written correctly.
++		 */
++		buf1 = kmalloc(aldata_size, GFP_KERNEL);
++		if (unlikely(!buf1)) {
++			err = -ENOMEM;
++			goto out_unlock;
++		}
++
++		cond_resched();
++
++		err = ubi_io_read_data(ubi, buf1, to, 0, aldata_size);
++		if (unlikely(err)) {
++			kfree(buf1);
++			if (err != UBI_IO_BITFLIPS)
++				ubi_warn("cannot read data back from PEB %d",
++					 to);
++			goto out_unlock;
++		}
++
++		cond_resched();
++
++		if (unlikely(memcmp(buf, buf1, aldata_size))) {
++			ubi_warn("read data back from PEB %d - it is different",
++				 to);
++			kfree(buf1);
++			goto out_unlock;
++		}
++		kfree(buf1);
++	}
++
++	ubi_eba_leb_remap(ubi, vol_id, lnum, to);
++	leb_write_unlock(ubi, vol_id, lnum);
++	kfree(buf);
++
++	return 0;
++
++out_unlock:
++	leb_write_unlock(ubi, vol_id, lnum);
++out_free:
++	kfree(buf);
++	return err;
++}
++
++#ifdef CONFIG_MTD_UBI_DEBUG_PARANOID_EBA
++
++/**
++ * paranoid_check_leb - check that a logical eraseblock has correct erase
++ * counter and volume identifier headers.
++ *
++ * @ubi: the UBI device description object
++ * @pnum: the physical eraseblock number
++ * @vol_id: the volume ID to check
++ * @lnum: the logical eraseblock number to check
++ * @vid_hdr: volume identifier header to check
++ *
++ * This function returns zero if the headers are all right, %1 if not, and a
++ * negative error code in case of error.
++ */
++static int paranoid_check_leb(const struct ubi_info *ubi, int pnum, int vol_id,
++			      int lnum, const struct ubi_vid_hdr *vid_hdr)
++{
++	int err, hdr_vol_id, hdr_lnum;
++	struct ubi_ec_hdr *ec_hdr;
++
++	/* Check the EC header */
++	ec_hdr = kzalloc(ubi->io.ec_hdr_alsize, GFP_KERNEL);
++	if (unlikely(!ec_hdr))
++		return -ENOMEM;
++
++	err = ubi_io_read_ec_hdr(ubi, pnum, ec_hdr, 1);
++	kfree(ec_hdr);
++	if (unlikely(err) && err != UBI_IO_BITFLIPS) {
++		if (err < 0)
++			return err;
++		goto fail;
++	}
++
++	hdr_vol_id = ubi32_to_cpu(vid_hdr->vol_id);
++	hdr_lnum = ubi32_to_cpu(vid_hdr->lnum);
++
++	if (unlikely(vol_id != hdr_vol_id)) {
++		ubi_err("bad vol_id %d, should be %d", hdr_vol_id, vol_id);
++		goto fail;
++	}
++
++	if (unlikely(lnum != hdr_lnum)) {
++		ubi_err("bad lnum %d, should be %d", hdr_lnum, lnum);
++		goto fail;
++	}
++
++	return 0;
++
++fail:
++	ubi_err("paranoid check failed");
++	ubi_dbg_dump_stack();
++	return 1;
++}
++
++/**
++ * paranoid_check_leb_locked - ensure that a logical eraseblock is locked.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID to check
++ * @lnum: the logical eraseblock number to check
++ *
++ * This function returns zero if the logical eraseblock is locked and %1 if
++ * not.
++ */
++static int paranoid_check_leb_locked(struct ubi_info *ubi, int vol_id, int lnum)
++{
++	struct ubi_eba_ltree_entry *le;
++
++	spin_lock(&ubi->eba.ltree_lock);
++	le = ltree_lookup(ubi, vol_id, lnum);
++	spin_unlock(&ubi->eba.ltree_lock);
++	if (likely(le))
++		return 0;
++
++	ubi_err("paranoid check failed");
++	ubi_dbg_dump_stack();
++	return 1;
++}
++
++#endif /* CONFIG_MTD_UBI_DEBUG_PARANOID_EBA */
