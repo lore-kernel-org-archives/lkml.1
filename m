@@ -1,91 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbXCNT7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbXCNUAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932943AbXCNT7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 15:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030310AbXCNT7d
+	id S932501AbXCNUAY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 16:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933055AbXCNUAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 15:59:33 -0400
-Received: from services106.cs.uwaterloo.ca ([129.97.152.164]:36654 "EHLO
-	services106.cs.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932943AbXCNT7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 15:59:33 -0400
-Date: Wed, 14 Mar 2007 15:58:43 -0400 (EDT)
-From: Ashif Harji <asharji@cs.uwaterloo.ca>
-To: linux-mm@kvack.org
-cc: Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-In-Reply-To: <20070313185554.GA5105@duck.suse.cz>
-Message-ID: <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca>
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca>
- <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de>
- <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca>
- <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca>
- <20070313185554.GA5105@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0 (services106.cs.uwaterloo.ca [129.97.152.132]); Wed, 14 Mar 2007 15:59:14 -0400 (EDT)
-X-Miltered: at psamathe with ID 45F8540C.000 by Joe's j-chkmail (http://j-chkmail.ensmp.fr)!
-X-UUID: 6698b40f-707c-4159-b18a-730a77c14017
+	Wed, 14 Mar 2007 16:00:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43246 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932501AbXCNUAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 16:00:22 -0400
+Date: Wed, 14 Mar 2007 20:59:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 - Take 2
+Message-ID: <20070314195916.GA5674@elte.hu>
+References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org> <20070314180933.GA12994@elte.hu> <Pine.LNX.4.64.0703141120530.9690@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703141120530.9690@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patch unconditionally calls mark_page_accessed to prevent pages, 
-especially for small files, from being evicted from the page cache despite 
-frequent access.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Signed-off-by: Ashif Harji <asharji@beta.uwaterloo.ca>
+> > of code. i386 is 87847 lines of code, x86_64 is 40978 lines of code, 
+> > a total of 128825. That means we move about 10% of the code. Not 
+> > insignificant but not earth-shattering either. With alot more effort 
+> > (and testing) we could realistically go up to maybe 20% - but that's 
+> > still a bit low to spread out all the files, isnt it?
+> 
+> Well, I'd like it to be 100% _eventually_, and just unify the 
+> architectures.
 
----
+ok, having a single bi-arch final tree is indeed intriquing and i didnt 
+realize that you were suggesting that. (I had the impression that 
+arch/x86/ was more of a 'common library' thing, not a target 
+architecture. What felt weird to me was having 3 separate hierarchies - 
+but as long as it's just a temporary state it's OK.)
 
-If the same page of a file is repeatedly accessed (without accessing other 
-pages of that file) via the same file descriptor, mark_page_accessed is 
-never called after the first time the page is accessed.
+> We've now done that both for S/390 and POWER, and I think in both 
+> cases it's been a clear win. So it's not like this is even a radical 
+> idea.
 
-The implication of this code is that for files of size less than or equal 
-to a single page, the page associated with such a file is likely to get 
-evicted from the cache regardless of how frequently it is accessed. 
-However, this behaviour also occurs with files of any size if the same 
-page is repeatedly accessed.
+the x86_64 and i386 trees have diverged quite a bit though, so this will 
+be a major logistical undertaking. And with Andi opposed to 
+fundamentally it it also lacks a bit of manpower i guess :-/
 
-As a benchmark, I have an experimental web server that uses sendfile to 
-repeatedly transmit files.  The files are based on the static portion of 
-the SPECweb99 fileset and range in size to model a reasonable workload. 
-With this workload, a significant number of the requests are for files of 
-size 4 KB or less.
+> There really is almost nothing in i386 that shouldn't be supported on 
+> x86-64 too, unless it literally is the actual low-level asm files and 
+> vm86 mode support (which in turn is best left as just a config option 
+> that would just *depend* on 32-bit, so even that could sanely be 
+> represented in a shared tree without any real downside at all).
 
-By changing the kernel to always call mark_page_accessed, the server 
-throughput is increased by as much as 20%.  With one test, for example, 
-without the change I get throughput of around 868 Mbps.  After making the 
-change, performance increases to 1111 Mbps.
+yeah. But this really scares the sh*t out of me. I already tried to 
+unify some of the most fragile lowlevel bits recently: for example the 
+SMP bootup, TSC sync and APIC initialization sequences were totally 
+different on x86 and x86_64. And those kind of random deviations have 
+spread all around the tree. But ... my experience has been pretty 
+positive: touching both codebases at once tends to dust off old code and 
+tends to fix more bugs. And in the process of doing that we broke 
+Andrew's laptop only half a dozen times! ;) But .. in the long run, it's 
+alot easier to think about unified code. 32-bit x86 will certainly stay 
+with us for at least 10-20 years, and the best model for maintainance is 
+having one codebase.
 
-Using a configuration that should be unaffected by the change, performance 
-was around 855 Mbps without the change and around 851 Mbps with the 
-change.  As expected the change had no appreciable effect.
+Another practical complication is that even for modular stuff, sometimes 
+x86_64 has the better code, sometimes i386. But ... the more i think 
+about it the more i like it. -m32 certainly works fine and does the 
+right thing.
 
-See thread http://lkml.org/lkml/2007/3/9/403 for additional discussion on 
-this change.
-
-This patch is for kernel version 2.6.20.1.
-
-Andrew, can you also put this change into the -mm kernels for testing?
-
-
---- linux-2.6.20.1/mm/filemap.c.orig	2007-03-14 10:31:58.000000000 -0500
-+++ linux-2.6.20.1/mm/filemap.c	2007-03-13 16:11:54.000000000 -0500
-@@ -943,12 +943,7 @@ page_ok:
-  		if (mapping_writably_mapped(mapping))
-  			flush_dcache_page(page);
-
--		/*
--		 * When (part of) the same page is read multiple times
--		 * in succession, only mark it as accessed the first time.
--		 */
--		if (prev_index != index)
--			mark_page_accessed(page);
-+		mark_page_accessed(page);
-  		prev_index = index;
-
-  		/*
+	Ingo
