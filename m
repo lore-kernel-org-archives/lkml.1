@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932808AbXCNTOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932635AbXCNTS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932808AbXCNTOn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 15:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932813AbXCNTOn
+	id S932635AbXCNTS5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 15:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932869AbXCNTS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 15:14:43 -0400
-Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:47930 "EHLO
-	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932808AbXCNTOm (ORCPT
+	Wed, 14 Mar 2007 15:18:57 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:31440 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932635AbXCNTS4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 15:14:42 -0400
-X-Greylist: delayed 4197 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Mar 2007 15:14:42 EDT
-Message-ID: <45F83930.4060401@gmail.com>
-Date: Wed, 14 Mar 2007 20:04:32 +0200
-From: Anssi Hannula <anssi.hannula@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070308)
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       johann deneux <johann.deneux@gmail.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+	Wed, 14 Mar 2007 15:18:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J6qGEbrQLNYcwf681gqS670eqPPUgZRuo4bBu/K4+FHmCWsEUofO0RjOiK/KpcIqnVijDmOKjIcQlQfBDlJ4hv51l0gbTdJ0GNzKWYRRbdcLogWn7qCal1OtYI2EcEku9d1WffT8TCaXz405SwKs9JSatJTZiBxxCjjKRqL2lXo=
+Message-ID: <8e4ff20a0703141218r3add7923n74470b5e16f58c5c@mail.gmail.com>
+Date: Wed, 14 Mar 2007 20:18:54 +0100
+From: "=?ISO-8859-1?Q?STenyaK_(Bruno_Gonz=E1lez)?=" <stenyak@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom driver]
+Cc: "Anssi Hannula" <anssi.hannula@gmail.com>,
+       "Jiri Slaby" <jirislaby@gmail.com>,
+       "johann deneux" <johann.deneux@gmail.com>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
        linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom
- driver]
-References: <2460126662758025813@fi.muni.cz>	 <d120d5000703070647t223f8858i8c495dcc3e1378a2@mail.gmail.com>	 <45EEEAA3.50009@gmail.com>	 <d120d5000703070856of068f19k62c5a7ce1f829336@mail.gmail.com>	 <4af2d03a0703130919nb4893b1ja9ec795dcf4bf53c@mail.gmail.com>	 <38b3b7c0703131450v2646e63fj2be4b9dda7f928c0@mail.gmail.com>	 <45F722CE.9000602@gmail.com> <d120d5000703140802jb48bc74tbbe7ee2b120b1798@mail.gmail.com> <45F82626.8000108@gmail.com>
-In-Reply-To: <45F82626.8000108@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <d120d5000703141213k6554f7f6o58e4a9da1aa6a20a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2460126662758025813@fi.muni.cz>
+	 <d120d5000703070856of068f19k62c5a7ce1f829336@mail.gmail.com>
+	 <4af2d03a0703130919nb4893b1ja9ec795dcf4bf53c@mail.gmail.com>
+	 <38b3b7c0703131450v2646e63fj2be4b9dda7f928c0@mail.gmail.com>
+	 <45F722CE.9000602@gmail.com>
+	 <d120d5000703140802jb48bc74tbbe7ee2b120b1798@mail.gmail.com>
+	 <45F82626.8000108@gmail.com> <45F83930.4060401@gmail.com>
+	 <8e4ff20a0703141147n4b690ab8g4cc8138d1ecc94e1@mail.gmail.com>
+	 <d120d5000703141213k6554f7f6o58e4a9da1aa6a20a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Dmitry Torokhov napsal(a):
->> On 3/13/07, Jiri Slaby <jirislaby@gmail.com> wrote:
->>> Why did you remove all Cced people? Anyway I filtered some of them out
->>>
->>> johann deneux napsal(a):
->>>> You are right, the direction in ff_effect is meant to be an angle.
->>>> A dirty solution would be to use the 16 bits as two 8-bits angles. Or
->>> That would be a problem as I need 3x 16bits.
-
-Interesting. What kind of device is that? i.e. what is the third
-direction value?
-
->>>> maybe we should change the API. I don't think there are many
->>>> applications using force feedback yet, so maybe that should be ok?
->>>>
->>>> If we change the API, we should remove the assumption that a device has
->>>> at most two axes to render effects. We could for instance have a
->>>> magnitude argument for each axis which is capable of rendering effects.
->>>> That might be necessary even for more common gaming devices like racing
->>>> wheels: One can think pedals could also be capable of force feedback
->>>> some day, not just the steering wheel.
->>> I can do that, but in that case, I need to know how people (especially
->>> those
->>> input one) want me to do...
->>>
->> Since we have no idea how many programs (if any) are using force
->> feedback interface I would be wary of changing existing effcets and
-> 
-> I definitely agree.
+On 3/14/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > I have a question: if the force is to be 3D, why only 3 possible values?
+> > What would they be, 3 torques or 3 forces? In the case of car sims (ff
+> > steering wheels), only one axis of torque is usually used (except for 6 dof
+> > platforms, as mentioned).
+> >
 >
->> rather add new set of 3D effects.
-> 
-> I was thinking about having "raw" (e.g. FF_RAW) effect, which would be only
-> X "axes"/entries of u32, where X is about 10 for future use and simply
-> posting these values further to HW (maybe after clamping or driver specific
-> processing) from this array. This seems to be augmentation of FF_CONSTANT
-> but the fact, it doesn't compute forces from direction.
+> I wonder if we could somehow extend or augment FF envelope se we could
+> specify a plane for the effect.. Then a vector could be represented by
+> a sum 3 constant effects in 3 separate planes and we could also use
+> spring and other effects as well.
 
-I don't like the idea of a driver-specific "raw" effect, I'd rather add
-real effect types.
-
-> Also yet another one such as FF_VECTOR or FF_3D could be considered as one
-> posibility, but it's still the same -- to have no more than 3 entries to
-> pass forces...
-> 
->> Do we have any idea if there any users of FF out there?
-> 
-> At least me :). I'm using it for wheel and joystick in modules for locally
-> developped multiplatform virtual reality system.
-
-Wine and BZflag come to mind, though I think the support is quite
-limited in both.
+Ideally, afaik we should use:
+-3 values for translation force (linear force): x,y,z components of
+the force vector.
+-4 values for rotation force (torque): x,y,z,w components of the
+quaternion. You can also use euler angles (and i think there are
+another one or two notations), which is just 3 values, but i'm not
+sure it will be a correct decision (due to the gimbal lock problem,
+which may or may not be present in ff devices, dunno).
 
 -- 
-Anssi Hannula
+Saludos,
+     STenyaK
 
+_______________________________________________
+Site:   http://1ksurvivor.homeip.net  <1kSurvivor>
+         http://motorsport-sim.org     <Motorsport>
+         http://kwh.iespana.es         <KuantikalWareHouse>
+         http://emuletutorial.info     <EmuleTutorial>
+ICQ:    153709484
+Mail:   stenyak AT gmail DOT com
