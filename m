@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161178AbXCNMGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161184AbXCNMGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161178AbXCNMGM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 08:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161180AbXCNMGM
+	id S1161184AbXCNMGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 08:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161182AbXCNMGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 08:06:12 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:31718 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161178AbXCNMGL (ORCPT
+	Wed, 14 Mar 2007 08:06:21 -0400
+Received: from stinky.trash.net ([213.144.137.162]:37165 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161179AbXCNMGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 08:06:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=lilEnSXhzt3CxnINXGP7bdXsLr7i6sCbBJudAqu93XnGj7/Ul8QPxJJO4B7fzBcmS/TgrM9JIfEfKoOIGnd6y950W3IBYGtclJAgKLvEm+s12PA6vkxZBMB7dJjf+lJe/rk6WuoKh3Xw2+va0FuytbMcRgk16+vuf3xAxkk8NYc=
-Message-ID: <84144f020703140505g5ad5a821lf44faa84749234f0@mail.gmail.com>
-Date: Wed, 14 Mar 2007 14:05:33 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Marco Berizzi" <pupilla@hotmail.com>
-Subject: Re: kernel BUG at mm/slab.c:610
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <BAY103-DAV1644D38E44649CAF3A2C74B2730@phx.gbl>
+	Wed, 14 Mar 2007 08:06:20 -0400
+Message-ID: <45F7E527.6030307@trash.net>
+Date: Wed, 14 Mar 2007 13:05:59 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       lartc@mailman.ds9a.nl
+Subject: Re: [ANNOUNCE] iproute2 2.6.20-070313
+References: <20070313151549.332004c9@freekitty> <200703141223.48927.arekm@maven.pl>
+In-Reply-To: <200703141223.48927.arekm@maven.pl>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <BAY103-DAV1644D38E44649CAF3A2C74B2730@phx.gbl>
-X-Google-Sender-Auth: 372adf3c977dd927
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/14/07, Marco Berizzi <pupilla@hotmail.com> wrote:
-> Only to tell you, that on the console linux was printing
-> this message:
->
-> atkbd.c: Spurious ACK on isa0060/serio0. Some program might be trying
-> access hardware directly.
+Arkadiusz Miskiewicz wrote:
+> This patch
+> 
+> http://www.mail-archive.com/netdev@vger.kernel.org/msg27506.html
+> 
+> didn't make into upstream linux kernel it seems.
 
-Probably unrelated. CONFIG_SLAB_DEBUG should tell us what's corrupting the slab.
+As mentioned in the changelog, its in 2.6.19.
+
+> The question is - are patches adding some functionality that's not in upstream 
+> kernel accepted?
+> 
+> There is one wrr patch for iproute floating around that I'm thinking about.
+
+Last time I looked at the WRR patch it was a huge mess and
+used architecture dependant types in the netlink messages.
+Unless someone fixed this, adding support to iproute is a
+bad idea since in case it would get merged compatibility
+would break.
+
