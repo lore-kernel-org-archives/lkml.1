@@ -1,118 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbXCNRPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752336AbXCNRVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751597AbXCNRPT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 13:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXCNRPT
+	id S1752336AbXCNRVo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 13:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXCNRVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 13:15:19 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:38896 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751597AbXCNRPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 13:15:16 -0400
-Message-ID: <45F82CF3.3050904@free.fr>
-Date: Wed, 14 Mar 2007 18:12:19 +0100
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: johnstul@us.ibm.com, mingo@elte.hu, zippel@linux-m68k.org,
-       tglx@timesys.com, linux.kernel@free.fr
-Subject: 2.6.20-rt8 patch tweaked for 2.6.20.3
-Content-Type: multipart/mixed;
- boundary="------------000601000700040801040103"
+	Wed, 14 Mar 2007 13:21:44 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:43154 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751602AbXCNRVn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 13:21:43 -0400
+Date: Wed, 14 Mar 2007 17:21:41 +0000
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc3-mm2 (oops in move_freepages)
+Message-ID: <20070314172141.GA17891@skynet.ie>
+References: <20070307201915.4d579113.akpm@linux-foundation.org> <200703140911.16537.bjorn.helgaas@hp.com> <20070314161327.GA14416@skynet.ie> <200703141052.19792.bjorn.helgaas@hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200703141052.19792.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000601000700040801040103
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On (14/03/07 10:52), Bjorn Helgaas didst pronounce:
+> On Wednesday 14 March 2007 10:13, Mel Gorman wrote:
+> > Ok. This looks like another case of HOLES_IN_ZONE hilarity with page_zone().
+> > As I take a new look at the BUG_ON check in move_freepages(), it isn't even
+> > necessary as move_freepages_block() already checks the zone boundaries.  At a
+> > later date when the code has survived a while without new bug reports, I'll
+> > submit a patch that simply deletes this check because it should be redundant.
+> > Just in case, I'd like to preserve the check in the non-HOLES_IN_ZONE
+> > case for now.
+> > 
+> > Can you try this patch please? It should apply on top of Yasunori Goto's
+> > patch.
+> > ...
+> > +#ifndef CONFIG_HOLES_IN_ZONE
+> > +	/*
+> > +	 * page_zone is not safe to call in this context when
+> > +	 * CONFIG_HOLES_IN_ZONE is set but this bug check is
+> > +	 * redundant anyway as we check zone boundaries in
+> > +	 * move_freepages_block()
+> > +	 */
+> >  	BUG_ON(page_zone(start_page) != page_zone(end_page - 1));
+> > +#endif
+> >  
+> 
+> Your patch applied fine, but I'm sorry to say it still doesn't
+> work.  I added this patch on top of yours:
+> 
+> --- work-mm10.orig/mm/page_alloc.c      2007-03-14 09:34:42.000000000 -0700
+> +++ work-mm10/mm/page_alloc.c   2007-03-14 09:42:31.000000000 -0700
+> @@ -707,6 +707,10 @@
+>         unsigned long order;
+>         int blocks_moved = 0;
+>  
+> +       printk("%s: zone %s zone_start_pfn 0x%lx start_page 0x%p end_page 0x%p\n",
+> +               __FUNCTION__, zone->name, zone->zone_start_pfn, start_page,
+> +               end_page);
+> +
+>  #ifndef CONFIG_HOLES_IN_ZONE
+>         /*
+>          * page_zone is not safe to call in this context when
+> 
+> and it crashed like this.  Let me know if I can collect more information
+> for you.
 
-Hello,
+Can you tell me if the faulting line was at the check for PageBuddy?  Can you
+also apply the following patch and boot with loglevel=8 please? The
+patch moves the check for pfn_valid() before PageBuddy() is called.
 
-I've tweaked patch-2.6.20-rt8 so that it applies to 2.6.20.3
+Thanks
 
-The unified diff is attached to this message.
-
-I'd be happy to hear comments on what I've done wrong!
-
-Regards.
-
---------------000601000700040801040103
-Content-Type: text/plain;
- name="2.6.20-to-2.6.20.3-diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2.6.20-to-2.6.20.3-diff"
-
---- patch-2.6.20-rt8	2007-02-16 10:48:03.000000000 +0100
-+++ patch-2.6.20.3-rt8	2007-03-14 18:00:24.000000000 +0100
-@@ -770,8 +770,8 @@
-  VERSION = 2
-  PATCHLEVEL = 6
-  SUBLEVEL = 20
---EXTRAVERSION =
--+EXTRAVERSION = -rt8
-+-EXTRAVERSION = .3
-++EXTRAVERSION = .3-rt8
-  NAME = Homicidal Dwarf Hamster
-  
-  # *DOCUMENTATION*
-@@ -19927,15 +19927,6 @@
-  unsigned long segment_base(u16 selector);
-  
-  void kvm_mmu_pre_write(struct kvm_vcpu *vcpu, gpa_t gpa, int bytes);
--@@ -558,7 +587,7 @@ static inline void load_gs(u16 sel)
-- #ifndef load_ldt
-- static inline void load_ldt(u16 sel)
-- {
---	asm ("lldt %0" : : "g"(sel));
--+	asm ("lldt %0" : : "rm"(sel));
-- }
-- #endif
-- 
- @@ -627,4 +656,6 @@ static inline u32 get_rdx_init_val(void)
-  #define TSS_REDIRECTION_SIZE (256 / 8)
-  #define RMODE_TSS_SIZE (TSS_BASE_SIZE + TSS_REDIRECTION_SIZE + TSS_IOPB_SIZE + 1)
-@@ -54910,9 +54901,9 @@
- --- linux.orig/kernel/time/clocksource.c
- +++ linux/kernel/time/clocksource.c
- @@ -28,6 +28,7 @@
-- #include <linux/sysdev.h>
-  #include <linux/init.h>
-  #include <linux/module.h>
-+ #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
- +#include <linux/tick.h>
-  
-  /* XXX - Would like a better way for initializing curr_clocksource */
-@@ -66089,27 +66080,6 @@
-  }
-  
-  /* When dgram socket disconnects (or changes its peer), we clear its receive
--Index: linux/net/xfrm/xfrm_user.c
--===================================================================
----- linux.orig/net/xfrm/xfrm_user.c
--+++ linux/net/xfrm/xfrm_user.c
--@@ -1273,13 +1273,12 @@ static int xfrm_get_policy(struct sk_buf
-- 		xp = xfrm_policy_bysel_ctx(type, p->dir, &p->sel, tmp.security, delete);
-- 		security_xfrm_policy_free(&tmp);
-- 	}
---	if (delete)
---		xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
---			       AUDIT_MAC_IPSEC_DELSPD, (xp) ? 1 : 0, xp, NULL);
---
-- 	if (xp == NULL)
-- 		return -ENOENT;
-- 
--+	xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
--+		       AUDIT_MAC_IPSEC_DELSPD, delete, xp, NULL);
--+
-- 	if (!delete) {
-- 		struct sk_buff *resp_skb;
-- 
- Index: linux/scripts/Makefile
- ===================================================================
- --- linux.orig/scripts/Makefile
-
---------------000601000700040801040103--
-
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc3-mm2-bjorn_testfix/mm/page_alloc.c linux-2.6.21-rc3-mm2-bjorn_testfix-2/mm/page_alloc.c
+--- linux-2.6.21-rc3-mm2-bjorn_testfix/mm/page_alloc.c	2007-03-14 16:01:00.000000000 +0000
++++ linux-2.6.21-rc3-mm2-bjorn_testfix-2/mm/page_alloc.c	2007-03-14 17:17:57.000000000 +0000
+@@ -718,10 +718,6 @@ int move_freepages(struct zone *zone,
+ #endif
+ 
+ 	for (page = start_page; page < end_page;) {
+-		if (!PageBuddy(page)) {
+-			page++;
+-			continue;
+-		}
+ #ifdef CONFIG_HOLES_IN_ZONE
+ 		if (!pfn_valid(page_to_pfn(page))) {
+ 			page++;
+@@ -729,6 +725,11 @@ int move_freepages(struct zone *zone,
+ 		}
+ #endif
+ 
++		if (!PageBuddy(page)) {
++			page++;
++			continue;
++		}
++
+ 		order = page_order(page);
+ 		list_del(&page->lru);
+ 		list_add(&page->lru,
