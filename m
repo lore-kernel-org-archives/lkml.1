@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030852AbXCNOAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030862AbXCNODL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030852AbXCNOAq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 10:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030861AbXCNOAq
+	id S1030862AbXCNODL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 10:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030865AbXCNODL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 10:00:46 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:10326 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030852AbXCNOAp (ORCPT
+	Wed, 14 Mar 2007 10:03:11 -0400
+Received: from csclub1.cs.uwaterloo.ca ([129.97.7.226]:60158 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030862AbXCNODK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 10:00:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BnZIYhmryKT1rEljNbvx7Pv68AjOX52y9ncN6p18qRM4xPuMdpMG7EPMLrswyvynJ3iMHysZ4ZcM7gpNolXdbltU1jA1nXWODf3d9CWli5wZ+OeRX7qEDu1KplFv/WvmzKV5ToJtG/r0pnAQkS4TNMUCNh3kIaYCyYVWgj2kcdg=
-Message-ID: <2375c9f90703140700k9fb4606pad0f0dc401764323@mail.gmail.com>
-Date: Wed, 14 Mar 2007 22:00:44 +0800
-From: "Cong WANG" <xiyou.wangcong@gmail.com>
-To: linux-kernel@vger.kernel.org, "Nicolas Boichat" <nicolas@boichat.ch>
-Subject: Re: [RFC][PATCH] Apple SMC driver (hardware monitoring and control)
-In-Reply-To: <2375c9f90703140411k1d40d31fx248a438d7b2859c1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Mar 2007 10:03:10 -0400
+Date: Wed, 14 Mar 2007 10:03:09 -0400
+To: Faik Uygur <faik@pardus.org.tr>
+Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kernel-parameters.txt: ATAPI enabled by default
+Message-ID: <20070314140309.GH22466@csclub.uwaterloo.ca>
+References: <200703141107.41168.faik@pardus.org.tr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45F7C083.7090504@boichat.ch>
-	 <2375c9f90703140411k1d40d31fx248a438d7b2859c1@mail.gmail.com>
+In-Reply-To: <200703141107.41168.faik@pardus.org.tr>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/3/14, Cong WANG wrote:
-> I am sorry. I forgot to CC to the list.
->
-> 2007/3/14, Nicolas Boichat wrote:
-> > Hello,
-> >
->
-> <snip>
->
-> > +static ssize_t applesmc_show_fan_manual(struct device *dev, char *buf,
-> > +                                                               int offset)
-> > +{
-> > +       int ret;
-> > +       u16 manual = 0;
-> > +       u8 buffer[2];
-> > +
-> > +       down(&applesmc_sem);
-> > +
-> > +       ret = applesmc_read_key(FANS_MANUAL, buffer, 2);
-> > +       manual = ((buffer[0] << 8 | buffer[1]) >> offset) & 0x01;
-> > +
-> > +       up(&applesmc_sem);
-> > +       if (ret)
-> > +               return ret;
-> > +       else
-> > +               return sprintf(buf, "%d\n", manual);
-> > +}
-> > +
->
-> I doubt about your last 'sprintf'. Your 'buf' just has only two 'u8's,
-> which maybe only has two bytes, and '\n' already consumes one. So only
-> one byte is left for the decimal vaule of 'manual'. Even it is just
-> less than 10, just as what you want, the final '\0' is omitted!
->
-> What's more, you can't get such information from the return value of
-> 'sprintf'. So I suggest you to choose 'snprintf' instead.
->
+On Wed, Mar 14, 2007 at 11:07:40AM +0200, Faik Uygur wrote:
+> In case of libata, discovery of ATAPI devices is the default behaviour.
+> 
+> Signed-off-by: Faik Uygur <faik@pardus.org.tr>
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 856c8b1..96b6ec5 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -695,11 +695,9 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			Format: <irq>
+>  
+>  	combined_mode=	[HW] control which driver uses IDE ports in combined
+> -			mode: legacy IDE driver, libata, or both
+> -			(in the libata case, libata.atapi_enabled=1 may be
+> -			useful as well).  Note that using the ide or libata
+> -			options may affect your device naming (e.g. by
+> -			changing hdc to sdb).
+> +			mode: legacy IDE driver, libata, or both. Note that
+> +			using the ide or libata options may affect your device
+> +			naming (e.g. by changing hdc to sdb).
+>  			Format: combined (default), ide, or libata
 
-Sorry. I thought his 'buffer' as 'buf'. But my suggestion is still
-worthy your thinking.
+I am having trouble parsing this one. 
+
+Does combined_mode=combined mean both?
+
+What does using both legacy and libata at the same time mean?
+
+Who runs the PATA ports?
+
+Please don't use the term IDE ports, since I have no idea what that
+means anymore.
+
+This message is really not very helpful right now.
+
+--
+Len Sorensen
