@@ -1,121 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751220AbXCNP2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751033AbXCNP27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751220AbXCNP2M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXCNP2L
+	id S1751033AbXCNP27 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXCNP2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:28:11 -0400
-Received: from smtp.nokia.com ([131.228.20.170]:65139 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbXCNP1x (ORCPT
+	Wed, 14 Mar 2007 11:28:33 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:58674 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751461AbXCNP2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:27:53 -0400
-From: Artem Bityutskiy <dedekind@infradead.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Frank Haverkamp <haver@vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Artem Bityutskiy <dedekind@infradead.org>
-Date: Wed, 14 Mar 2007 17:21:15 +0200
-Message-Id: <20070314152115.1112.86256.sendpatchset@localhost.localdomain>
-In-Reply-To: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-Subject: [PATCH 20/22 take 3] UBI: JFFS2 UBI support
-X-OriginalArrivalTime: 14 Mar 2007 15:21:14.0973 (UTC) FILETIME=[67E188D0:01C7664C]
-X-Nokia-AV: Clean
+	Wed, 14 Mar 2007 11:28:23 -0400
+Date: Wed, 14 Mar 2007 15:26:03 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [IDE] au1xxx: Fix use of mixed declarations and code
+Message-ID: <20070314152603.GA5934@linux-mips.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/fs/jffs2/fs.c tmp-to/fs/jffs2/fs.c
---- tmp-from/fs/jffs2/fs.c	2007-03-14 17:15:49.000000000 +0200
-+++ tmp-to/fs/jffs2/fs.c	2007-03-14 17:15:50.000000000 +0200
-@@ -672,6 +672,13 @@ static int jffs2_flash_setup(struct jffs
- 			return ret;
- 	}
+drivers/ide/mips/au1xxx-ide.c:684: warning: ISO C90 forbids mixed declarations and code
+
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+
+diff --git a/drivers/ide/mips/au1xxx-ide.c b/drivers/ide/mips/au1xxx-ide.c
+index b2dc028..d54d9fe 100644
+--- a/drivers/ide/mips/au1xxx-ide.c
++++ b/drivers/ide/mips/au1xxx-ide.c
+@@ -639,6 +639,7 @@ static int au_ide_probe(struct device *dev)
+ 	_auide_hwif *ahwif = &auide_hwif;
+ 	ide_hwif_t *hwif;
+ 	struct resource *res;
++	hw_regs_t *hw;
+ 	int ret = 0;
  
-+	/* and an UBI volume */
-+	if (jffs2_ubivol(c)) {
-+		ret = jffs2_ubivol_setup(c);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	return ret;
- }
+ #if defined(CONFIG_BLK_DEV_IDE_AU1XXX_MDMA2_DBDMA)
+@@ -681,7 +682,7 @@ static int au_ide_probe(struct device *dev)
+ 	/* FIXME:  This might possibly break PCMCIA IDE devices */
  
-@@ -690,4 +697,9 @@ void jffs2_flash_cleanup(struct jffs2_sb
- 	if (jffs2_nor_wbuf_flash(c)) {
- 		jffs2_nor_wbuf_flash_cleanup(c);
- 	}
-+
-+	/* and an UBI volume */
-+	if (jffs2_ubivol(c)) {
-+		jffs2_ubivol_cleanup(c);
-+	}
- }
-diff -auNrp tmp-from/fs/jffs2/os-linux.h tmp-to/fs/jffs2/os-linux.h
---- tmp-from/fs/jffs2/os-linux.h	2007-03-14 17:15:49.000000000 +0200
-+++ tmp-to/fs/jffs2/os-linux.h	2007-03-14 17:15:50.000000000 +0200
-@@ -98,6 +98,9 @@ static inline void jffs2_init_inode_info
- #define jffs2_nor_wbuf_flash(c) (0)
- #define jffs2_nor_wbuf_flash_setup(c) (0)
- #define jffs2_nor_wbuf_flash_cleanup(c) do {} while (0)
-+#define jffs2_ubivol(c) (0)
-+#define jffs2_ubivol_setup(c) (0)
-+#define jffs2_ubivol_cleanup(c) do {} while (0)
+ 	hwif                            = &ide_hwifs[pdev->id];
+-	hw_regs_t *hw 			= &hwif->hw;
++	hw 				= &hwif->hw;
+ 	hwif->irq = hw->irq             = ahwif->irq;
+ 	hwif->chipset                   = ide_au1xxx;
  
- #else /* NAND and/or ECC'd NOR support present */
- 
-@@ -133,6 +136,9 @@ void jffs2_nand_flash_cleanup(struct jff
- #define jffs2_dataflash(c) (c->mtd->type == MTD_DATAFLASH)
- int jffs2_dataflash_setup(struct jffs2_sb_info *c);
- void jffs2_dataflash_cleanup(struct jffs2_sb_info *c);
-+#define jffs2_ubivol(c) (c->mtd->type == MTD_UBIVOLUME)
-+int jffs2_ubivol_setup(struct jffs2_sb_info *c);
-+void jffs2_ubivol_cleanup(struct jffs2_sb_info *c);
- 
- #define jffs2_nor_wbuf_flash(c) (c->mtd->type == MTD_NORFLASH && ! (c->mtd->flags & MTD_BIT_WRITEABLE))
- int jffs2_nor_wbuf_flash_setup(struct jffs2_sb_info *c);
-diff -auNrp tmp-from/fs/jffs2/wbuf.c tmp-to/fs/jffs2/wbuf.c
---- tmp-from/fs/jffs2/wbuf.c	2007-03-14 17:15:49.000000000 +0200
-+++ tmp-to/fs/jffs2/wbuf.c	2007-03-14 17:15:50.000000000 +0200
-@@ -1274,3 +1274,27 @@ int jffs2_nor_wbuf_flash_setup(struct jf
- void jffs2_nor_wbuf_flash_cleanup(struct jffs2_sb_info *c) {
- 	kfree(c->wbuf);
- }
-+
-+int jffs2_ubivol_setup(struct jffs2_sb_info *c) {
-+	c->cleanmarker_size = 0;
-+
-+	if (c->mtd->writesize == 1)
-+		/* We do not need write-buffer */
-+		return 0;
-+
-+	init_rwsem(&c->wbuf_sem);
-+
-+	c->wbuf_pagesize =  c->mtd->writesize;
-+	c->wbuf_ofs = 0xFFFFFFFF;
-+	c->wbuf = kmalloc(c->wbuf_pagesize, GFP_KERNEL);
-+	if (!c->wbuf)
-+		return -ENOMEM;
-+
-+	printk(KERN_INFO "JFFS2 write-buffering enabled buffer (%d) erasesize (%d)\n", c->wbuf_pagesize, c->sector_size);
-+
-+	return 0;
-+}
-+
-+void jffs2_ubivol_cleanup(struct jffs2_sb_info *c) {
-+	kfree(c->wbuf);
-+}
-diff -auNrp tmp-from/include/mtd/mtd-abi.h tmp-to/include/mtd/mtd-abi.h
---- tmp-from/include/mtd/mtd-abi.h	2007-03-14 17:15:49.000000000 +0200
-+++ tmp-to/include/mtd/mtd-abi.h	2007-03-14 17:15:50.000000000 +0200
-@@ -24,6 +24,7 @@ struct mtd_oob_buf {
- #define MTD_NORFLASH		3
- #define MTD_NANDFLASH		4
- #define MTD_DATAFLASH		6
-+#define MTD_UBIVOLUME		7
- 
- #define MTD_WRITEABLE		0x400	/* Device is writeable */
- #define MTD_BIT_WRITEABLE	0x800	/* Single bits can be flipped */
