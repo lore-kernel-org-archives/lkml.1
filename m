@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbXCNWud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbXCNW5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbXCNWud (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 18:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbXCNWud
+	id S1753269AbXCNW5c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 18:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbXCNW5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 18:50:33 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:53528 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753318AbXCNWuc convert rfc822-to-8bit (ORCPT
+	Wed, 14 Mar 2007 18:57:32 -0400
+Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:41605 "EHLO
+	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753269AbXCNW5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 18:50:32 -0400
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: oops in __nodemgr_remove_host_dev (was Re: Ooops with suspend to RAM)
-Date: Thu, 15 Mar 2007 00:51:29 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       Greg KH <greg@kroah.com>
-References: <200703140642.28390.ismail@pardus.org.tr> <200703141858.39531.ismail@pardus.org.tr> <45F83E14.3060003@s5r6.in-berlin.de>
-In-Reply-To: <45F83E14.3060003@s5r6.in-berlin.de>
+	Wed, 14 Mar 2007 18:57:32 -0400
+From: Kandan Venkataraman <kven709@cse.unsw.EDU.AU>
+To: Christoph Hellwig <hch@infradead.org>
+Date: Thu, 15 Mar 2007 09:57:09 +1100 (EST)
+X-X-Sender: kven709@williams.orchestra.cse.unsw.EDU.AU
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Loop device - Tracking page writes made to a loop device
+ through mmap
+In-Reply-To: <20070313203244.GA13914@infradead.org>
+Message-ID: <Pine.LNX.4.64.0703150928270.10389@williams.orchestra.cse.unsw.EDU.AU>
+References: <Pine.LNX.4.64.0703140712080.18655@williams.orchestra.cse.unsw.EDU.AU>
+ <20070313203244.GA13914@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703150051.29945.ismail@pardus.org.tr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 March 2007 20:25:24 Stefan Richter wrote:
-> Ismail Dönmez wrote:
-> > On Wednesday 14 March 2007 13:14:42 Stefan Richter wrote:
-> >> Do you have a script or config which marks the
-> >> ohci1394 module to be unloaded before suspend?
-> >
-> > I used kpowersave to suspend, I failed to find anything related to
-> > ohci1394 in its config but rmmod ohci1394 gives exact oops so it must be
-> > rmmoding it.
+On Tue, 13 Mar 2007, Christoph Hellwig wrote:
+
+> On Wed, Mar 14, 2007 at 07:21:41AM +1100, Kandan Venkataraman wrote:
+>> All comments have been taken care of.
+>>
+>> Description:
+>>
+>> A  file_operations structure variable called loop_fops is initialised with
+>> the default block device file operations (def_blk_fops).
+>> The mmap operation is overriden with a new function called loop_file_mmap.
 >
-> [...]
+> NACK.  block device driver should never ever play around with file
+> operations themselves.  If you want functionality like the one you
+> have please don't overload the loop driver, but start a new (character)
+> driver doing specificaly what you want.  And even then I'm not sure
+> we'd want functionality like this in the mainline tree, but at least
+> we can have an open discussion if it's done properly.
 >
-> > Are you able to rmmod it?
->
-> Yes, but on 2.6.20 and earlier kernels, most of the time with
-> development versions of the 1394 drivers. I still haven't tried
-> 2.6.21-rc, will hopefully get to it tonight.
 
-Ok then that explains a bit, without suspend if I rmmod ohci1394 module I got 
-the exact oops.
+The reason I chose the loop device was the following:
 
-Regards.
+The loop device has backing storage and makes use of the page cache. The 
+nopage method for all block device files and most disk files is 
+implemented by filemap_nopage. This function uses the page cache. Thus, 
+this allows me to mmap a large address space.
 
--- 
-Happiness in intelligent people is the rarest thing I know. (Ernest Hemingway)
+If I wrote a character device, I would have to store the contents in 
+kernel memory as the function filemap_nopage is not suitable for character 
+devices. This would severly restrict the size of my mmap.
 
-Ismail Donmez ismail (at) pardus.org.tr
-GPG Fingerprint: 7ACD 5836 7827 5598 D721 DF0D 1A9D 257A 5B88 F54C
-Pardus Linux / KDE developer
+I am out my depth here, any pointers on how to proceed would be very 
+helpful
+
+Thanks
+Kandan
