@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161148AbXCNLZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161143AbXCNLZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161148AbXCNLZB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 07:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161149AbXCNLZA
+	id S1161143AbXCNLZf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 07:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161149AbXCNLZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 07:25:00 -0400
-Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:1602 "EHLO
-	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161139AbXCNLZA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 07:25:00 -0400
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-Organization: SelfOrganizing
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [ANNOUNCE] iproute2 2.6.20-070313
-Date: Wed, 14 Mar 2007 12:24:57 +0100
-User-Agent: KMail/1.9.6
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lartc@mailman.ds9a.nl
-References: <20070313151549.332004c9@freekitty> <200703141223.48927.arekm@maven.pl>
-In-Reply-To: <200703141223.48927.arekm@maven.pl>
+	Wed, 14 Mar 2007 07:25:35 -0400
+Received: from xenotime.net ([66.160.160.81]:51704 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1161143AbXCNLZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 07:25:34 -0400
+Date: Wed, 14 Mar 2007 04:25:22 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Nilshar@gmail.com,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bug 8040] Hang before INIT when CONFIG_HIGHMEM4G=y
+In-Reply-To: <20070314041710.770708c4.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.58.0703140422260.28950@shark.he.net>
+References: <200703141013.l2EADP6c027144@fire-2.osdl.org>
+ <20070314041710.770708c4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703141224.57925.arekm@maven.pl>
-X-Authenticated-Id: arekm
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 of March 2007, Arkadiusz Miskiewicz wrote:
+On Wed, 14 Mar 2007, Andrew Morton wrote:
 
-Of course I mean:
-
-> This patch
+> > On Wed, 14 Mar 2007 03:13:25 -0700 bugme-daemon@bugzilla.kernel.org wrote:
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8040
+> >
+> >
+> > ------- Additional Comments From Nilshar@gmail.com  2007-03-14 03:13 -------
+> > Any news on that bug please ?
 >
-> http://www.mail-archive.com/netdev@vger.kernel.org/msg27506.html
+> None whatsoever.  Three people are reporting this and it's a drop-dead
+> showstopper for a 2.6.21 release so we just have to wait until someone
+> wakes up and thinks about it.
 >
+> It would be very useful if one of the reporters could perform a git-bisect
+> search to identify the offending change, please.
+>
+> I would dearly like to point you at a document or web page which describes
+> kernel-git-bisect-for-newbies, but afaik there isn't such a thing, which is
+> a huge failing.
 
-adds functionality that...
-
-> didn't make into upstream linux kernel it seems.
+I have one of those one-of-my-machines-wont-boot-2.6.21-rc*
+and I expect that I'll try to use git bisect on it, in which case
+I will also document it.
 
 -- 
-Arkadiusz Mi¶kiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+~Randy
