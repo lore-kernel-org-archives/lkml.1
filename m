@@ -1,116 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932642AbXCNS7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbXCNTAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932642AbXCNS7h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 14:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932645AbXCNS7h
+	id S932645AbXCNTAJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 15:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932765AbXCNTAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 14:59:37 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:45908 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932642AbXCNS7g (ORCPT
+	Wed, 14 Mar 2007 15:00:08 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:65013 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932645AbXCNTAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 14:59:36 -0400
-Date: Wed, 14 Mar 2007 18:59:34 +0000 (GMT)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc3-mm2 (oops in move_freepages)
-In-Reply-To: <200703141236.09599.bjorn.helgaas@hp.com>
-Message-ID: <Pine.LNX.4.64.0703141855010.18468@skynet.skynet.ie>
-References: <20070307201915.4d579113.akpm@linux-foundation.org>
- <200703141052.19792.bjorn.helgaas@hp.com> <20070314172141.GA17891@skynet.ie>
- <200703141236.09599.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 14 Mar 2007 15:00:05 -0400
+Subject: Re: Stolen and degraded time and schedulers
+From: Daniel Walker <dwalker@mvista.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Peter Chubb <peterc@gelato.unsw.edu.au>
+In-Reply-To: <45F841EE.6060703@goop.org>
+References: <45F6D1D0.6080905@goop.org>
+	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>
+	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>
+	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org>
+	 <1173888673.3101.12.camel@imap.mvista.com>  <45F824BE.1060708@goop.org>
+	 <1173891595.3101.17.camel@imap.mvista.com>  <45F82C01.3000704@goop.org>
+	 <1173895607.3101.58.camel@imap.mvista.com>  <45F841EE.6060703@goop.org>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 12:00:00 -0700
+Message-Id: <1173898800.3101.81.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Mar 2007, Bjorn Helgaas wrote:
+On Wed, 2007-03-14 at 11:41 -0700, Jeremy Fitzhardinge wrote:
+> Daniel Walker wrote:
+> > >From prior emails I think your suggesting that 1ms (or 5 or 10) of time
+> > should actually be a variable X that is changed inside sched_clock().
+> > That's not the purpose of that API call, sched_clock() measure real time
+> > period.
+> >   
+> 
+> To what purpose?  What is it really measuring?  My understanding is that
+> its for the scheduler to work out how much time a process actually ran
+> for.  Aside from its use in printk as a general monotonic timestamp,
+> this seems to be how it gets used everywhere.  If I change it to return
+> cpu-ns (ie, make it not count time that the cpu was stolen by the
+> hypervisor), then it will return what its callers actually want to know.
 
-> On Wednesday 14 March 2007 11:21, Mel Gorman wrote:
->> Can you tell me if the faulting line was at the check for PageBuddy?
->
-> I don't know, sorry.
->
+sched_clock is used to bank real time against some specific states
+inside the scheduler, and no it doesn't _just_ measure a processes
+executing time.
 
-No problem, the fact the patch booted lets me know that calling 
-PageBuddy() on an invalid page had the same problem as calling 
-page_zone(). This is no real suprise as both need a valid struct page and 
-virtual mem_map shows up these sort of suprises that don't occur 
-elsewhere. Obvious now :/
+> > After reading your emails it sounds like what you really want is similar
+> > to accurate state accounting which is used for scheduling purposes. Part
+> > of that has already been implemented at least twice that I know of.
+> > Accounting real time against specific states was done in two version of
+> > microstate accounting. Those are fine starting points for the changes
+> > you are wanting.
+> 
+> I haven't looked at the microstate accounting patches in any detail, but
+> I'm assuming that they take a timestamp at each CPU state transition and
+> use that to account time to the appropriate entities (tell me if I'm
+> missing something pertinent here).  There are two problems with that
+> approach in this case:
+> 
+>    1. If the cpu is stolen by the hypervisor, the kernel will get no
+>       state transition notification.  It can generally find out that
+>       some time was stolen after the fact, but there's no specific event
+>       at the time it happens.
 
->> Can you
->> also apply the following patch and boot with loglevel=8 please? The
->> patch moves the check for pfn_valid() before PageBuddy() is called.
->
-> Boots fine with this patch:
->
+The hypervisor would need to do it's own accounting I'd imagine then
+provide that to the scheduler.
 
-Thanks for testing. A proper patch will be posted soon.
+>    2. It doesn't map particularly well to a cpu changing speed.  In
+>       particular if a cpu has continuously varying execution speed
+>       (Transmeta?), then the best you can hope for is the integration of
+>       cpu work done over a time period rather than discrete cpu
+>       speed-change events.
 
-> <SNIP>
-> Virtual mem_map starts at 0xa0007fffc7200000
-> Zone PFN ranges:
+True, but as I said in my original email it's not trivial to follow
+physical cpu speed changes since the changes are free form and change
+potentially per system. Your better off do it just with the hypervisor
+since you can control it ..
 
-Total aside, a message should have been printed out here with 
-"sizeof(struct page) = ??" when loglevel was set to 8. I wanted it so I 
-could work out PFNs from the faulting addresses. Can you find such a 
-string in the output of dmesg?
+Daniel
 
-> <SNIP>
->
-> Please contribute if you find this software useful.
-> For info, please visit http://www.isc.org/dhcp-contrib.html
->
-> PM: Writing back config space on device 0000:20:02.0 at offset b (was 164514e4, writing 12a4103c)
-> PM: Writing back config space on device 0000:20:02.0 at offset 3 (was 0, writing c020)
-> PM: Writing back config space on device 0000:20:02.0 at offset 2 (was 2000000, writing 2000015)
-> PM: Writing back config space on device 0000:20:02.0 at offset 1 (was 2b00000, writing 2b00146)
-> BUG: at drivers/pci/pci.c:679 pci_restore_state()
->
-> Call Trace:
-> [<a000000100014980>] show_stack+0x40/0xa0
->                                sp=e000004063a5fb90 bsp=e000004063a58f98
-> [<a0000001000152b0>] dump_stack+0x30/0x60
->                                sp=e000004063a5fd60 bsp=e000004063a58f80
-> [<a0000001003f8800>] pci_restore_state+0x480/0x4a0
->                                sp=e000004063a5fd60 bsp=e000004063a58f38
-> [<a00000010051a0b0>] tg3_chip_reset+0x6d0/0x1020
->                                sp=e000004063a5fd70 bsp=e000004063a58ef0
-> [<a00000010051b190>] tg3_reset_hw+0xb0/0x3e20
->                                sp=e000004063a5fd80 bsp=e000004063a58e90
-> [<a00000010051efb0>] tg3_init_hw+0xb0/0xe0
->                                sp=e000004063a5fdc0 bsp=e000004063a58e68
-> [<a000000100523af0>] tg3_open+0x690/0xe00
->                                sp=e000004063a5fdc0 bsp=e000004063a58e10
-> [<a000000100647f90>] dev_open+0xf0/0x1e0
->                                sp=e000004063a5fdd0 bsp=e000004063a58de0
-> [<a000000100645c00>] dev_change_flags+0xc0/0x240
->                                sp=e000004063a5fdd0 bsp=e000004063a58da0
-> [<a0000001006df200>] devinet_ioctl+0x5a0/0xfe0
->                                sp=e000004063a5fdd0 bsp=e000004063a58d40
-> [<a0000001006dfdd0>] inet_ioctl+0x190/0x240
->                                sp=e000004063a5fe10 bsp=e000004063a58d10
-> [<a00000010062cf00>] sock_ioctl+0x5c0/0x620
->                                sp=e000004063a5fe10 bsp=e000004063a58ce0
-> [<a000000100172cb0>] do_ioctl+0x90/0x180
->                                sp=e000004063a5fe10 bsp=e000004063a58ca0
-> [<a000000100173650>] vfs_ioctl+0x8b0/0x920
->                                sp=e000004063a5fe10 bsp=e000004063a58c58
-> [<a000000100173720>] sys_ioctl+0x60/0xc0
->                                sp=e000004063a5fe20 bsp=e000004063a58bd8
-> [<a00000010000c180>] ia64_ret_from_syscall+0x0/0x20
->                                sp=e000004063a5fe30 bsp=e000004063a58bd8
-> [<a000000000010620>] __kernel_syscall_via_break+0x0/0x20
->                                sp=e000004063a60000 bsp=e000004063a58bd8
-
-That doesn't look particularly healthy! Is this a known problem?
-
-> Remainder snipped
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
