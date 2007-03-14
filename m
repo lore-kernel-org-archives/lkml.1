@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161204AbXCNMQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161205AbXCNMQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161204AbXCNMQO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 08:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161198AbXCNMQO
+	id S1161205AbXCNMQu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 08:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161196AbXCNMQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 08:16:14 -0400
-Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:3156 "EHLO
-	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161199AbXCNMQM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 08:16:12 -0400
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-Organization: SelfOrganizing
-To: Patrick McHardy <kaber@trash.net>
-Subject: Re: [ANNOUNCE] iproute2 2.6.20-070313
-Date: Wed, 14 Mar 2007 13:16:05 +0100
-User-Agent: KMail/1.9.6
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lartc@mailman.ds9a.nl
-References: <20070313151549.332004c9@freekitty> <200703141223.48927.arekm@maven.pl> <45F7E527.6030307@trash.net>
-In-Reply-To: <45F7E527.6030307@trash.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703141316.05509.arekm@maven.pl>
-X-Authenticated-Id: arekm
+	Wed, 14 Mar 2007 08:16:50 -0400
+Received: from main.gmane.org ([80.91.229.2]:33371 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161205AbXCNMQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 08:16:49 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Leroy van Logchem <leroy.vanlogchem@wldelft.nl>
+Subject: Re: [Bug 8040] Hang before INIT when =?utf-8?b?Q09ORklHX0hJR0hNRU00Rz15?=
+Date: Wed, 14 Mar 2007 12:16:30 +0000 (UTC)
+Message-ID: <loom.20070314T131349-236@post.gmane.org>
+References: <200703141013.l2EADP6c027144@fire-2.osdl.org>  <20070314041710.770708c4.akpm@linux-foundation.org> <6bffcb0e0703140430i2202f14dw1681d5c70c1d4e28@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 145.9.150.34 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20060601 Firefox/2.0.0.2 (Ubuntu-edgy))
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 of March 2007, Patrick McHardy wrote:
-> Arkadiusz Miskiewicz wrote:
-> > This patch
-> >
-> > http://www.mail-archive.com/netdev@vger.kernel.org/msg27506.html
-> >
-> > didn't make into upstream linux kernel it seems.
->
-> As mentioned in the changelog, its in 2.6.19.
+> > None whatsoever.  Three people are reporting this and it's a drop-dead
+> > showstopper for a 2.6.21 release so we just have to wait until someone
+> > wakes up and thinks about it.
 
-Hm, why no RTA_FWMASK in HEAD rtnetlink.h
+The topic should be "when CONFIG_HIGHMEM64G=y" imo.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=include/linux/rtnetlink.h;h=4a629ea70cc4ca60a6f486f8653974af68dbe8cd;hb=HEAD
+I'll try to do my first bi-sect today.
 
-and 2.6.19
+--
+Leroy
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=include/linux/rtnetlink.h;h=3a18addaed4ccb7436bffc9cf5fd0666f145d35c;hb=0215ffb08ce99e2bb59eca114a99499a4d06e704
-
-?
-
-> Last time I looked at the WRR patch it was a huge mess and
-> used architecture dependant types in the netlink messages.
-> Unless someone fixed this, adding support to iproute is a
-> bad idea since in case it would get merged compatibility
-> would break.
-Ok.
-
--- 
-Arkadiusz Mi¶kiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
