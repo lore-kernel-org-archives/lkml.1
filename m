@@ -1,103 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752336AbXCNRVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbXCNRXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752336AbXCNRVo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 13:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXCNRVo
+	id S1752506AbXCNRXN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 13:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXCNRXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 13:21:44 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:43154 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751602AbXCNRVn (ORCPT
+	Wed, 14 Mar 2007 13:23:13 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:32835 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752561AbXCNRXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 13:21:43 -0400
-Date: Wed, 14 Mar 2007 17:21:41 +0000
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc3-mm2 (oops in move_freepages)
-Message-ID: <20070314172141.GA17891@skynet.ie>
-References: <20070307201915.4d579113.akpm@linux-foundation.org> <200703140911.16537.bjorn.helgaas@hp.com> <20070314161327.GA14416@skynet.ie> <200703141052.19792.bjorn.helgaas@hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200703141052.19792.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+	Wed, 14 Mar 2007 13:23:12 -0400
+Date: Wed, 14 Mar 2007 18:23:10 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
+In-Reply-To: <20070314170720.GL4095@ftp.linux.org.uk>
+Message-ID: <Pine.LNX.4.62.0703141822240.28462@pademelon.sonytel.be>
+References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
+ <Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
+ <20070314160258.GK4095@ftp.linux.org.uk> <Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
+ <20070314170720.GL4095@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (14/03/07 10:52), Bjorn Helgaas didst pronounce:
-> On Wednesday 14 March 2007 10:13, Mel Gorman wrote:
-> > Ok. This looks like another case of HOLES_IN_ZONE hilarity with page_zone().
-> > As I take a new look at the BUG_ON check in move_freepages(), it isn't even
-> > necessary as move_freepages_block() already checks the zone boundaries.  At a
-> > later date when the code has survived a while without new bug reports, I'll
-> > submit a patch that simply deletes this check because it should be redundant.
-> > Just in case, I'd like to preserve the check in the non-HOLES_IN_ZONE
-> > case for now.
+On Wed, 14 Mar 2007, Al Viro wrote:
+> On Wed, Mar 14, 2007 at 05:17:45PM +0100, Geert Uytterhoeven wrote:
+> > On Wed, 14 Mar 2007, Al Viro wrote:
+> > > On Wed, Mar 14, 2007 at 10:50:16AM +0100, Geert Uytterhoeven wrote:
+> > > > On Wed, 14 Mar 2007, Al Viro wrote:
+> > > > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> > > > 
+> > > > NAK
+> > > 
+> > > Lovely...  Consider that one withdrawn, please.  FWIW, if we leave it bool
+> > > (and flip_ctl mess alone would make a good reason for that) we probably want
+> > > to have it depend on FB=y
 > > 
-> > Can you try this patch please? It should apply on top of Yasunori Goto's
-> > patch.
-> > ...
-> > +#ifndef CONFIG_HOLES_IN_ZONE
-> > +	/*
-> > +	 * page_zone is not safe to call in this context when
-> > +	 * CONFIG_HOLES_IN_ZONE is set but this bug check is
-> > +	 * redundant anyway as we check zone boundaries in
-> > +	 * move_freepages_block()
-> > +	 */
-> >  	BUG_ON(page_zone(start_page) != page_zone(end_page - 1));
-> > +#endif
-> >  
+> > What's the advantage of making FB_PS3 depend on FB=y vs. plain FB?
+> > In both cases it can be enabled if FB=y only, right? Or am I missing something?
 > 
-> Your patch applied fine, but I'm sorry to say it still doesn't
-> work.  I added this patch on top of yours:
-> 
-> --- work-mm10.orig/mm/page_alloc.c      2007-03-14 09:34:42.000000000 -0700
-> +++ work-mm10/mm/page_alloc.c   2007-03-14 09:42:31.000000000 -0700
-> @@ -707,6 +707,10 @@
->         unsigned long order;
->         int blocks_moved = 0;
->  
-> +       printk("%s: zone %s zone_start_pfn 0x%lx start_page 0x%p end_page 0x%p\n",
-> +               __FUNCTION__, zone->name, zone->zone_start_pfn, start_page,
-> +               end_page);
-> +
->  #ifndef CONFIG_HOLES_IN_ZONE
->         /*
->          * page_zone is not safe to call in this context when
-> 
-> and it crashed like this.  Let me know if I can collect more information
-> for you.
+> Nope.  How can kconfig distinguish that from a boolean option in modular
+> driver?  bool *can* depend on tristate and be selected when tristate is
+> set to m.
 
-Can you tell me if the faulting line was at the check for PageBuddy?  Can you
-also apply the following patch and boot with loglevel=8 please? The
-patch moves the check for pfn_valid() before PageBuddy() is called.
+Sorry, you're right. I tried it before sending the previous mail, but
+apparently I made a mistake. I tried again, and now it indeed allows me to
+select FB_PS3.
 
-Thanks
+Gr{oetje,eeting}s,
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc3-mm2-bjorn_testfix/mm/page_alloc.c linux-2.6.21-rc3-mm2-bjorn_testfix-2/mm/page_alloc.c
---- linux-2.6.21-rc3-mm2-bjorn_testfix/mm/page_alloc.c	2007-03-14 16:01:00.000000000 +0000
-+++ linux-2.6.21-rc3-mm2-bjorn_testfix-2/mm/page_alloc.c	2007-03-14 17:17:57.000000000 +0000
-@@ -718,10 +718,6 @@ int move_freepages(struct zone *zone,
- #endif
- 
- 	for (page = start_page; page < end_page;) {
--		if (!PageBuddy(page)) {
--			page++;
--			continue;
--		}
- #ifdef CONFIG_HOLES_IN_ZONE
- 		if (!pfn_valid(page_to_pfn(page))) {
- 			page++;
-@@ -729,6 +725,11 @@ int move_freepages(struct zone *zone,
- 		}
- #endif
- 
-+		if (!PageBuddy(page)) {
-+			page++;
-+			continue;
-+		}
-+
- 		order = page_order(page);
- 		list_del(&page->lru);
- 		list_add(&page->lru,
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
