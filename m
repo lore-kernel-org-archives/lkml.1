@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030250AbXCNTwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030866AbXCNTxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030250AbXCNTwr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 15:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030391AbXCNTwr
+	id S1030866AbXCNTxd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 15:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030872AbXCNTxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 15:52:47 -0400
-Received: from verein.lst.de ([213.95.11.210]:55057 "EHLO mail.lst.de"
+	Wed, 14 Mar 2007 15:53:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56238 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030250AbXCNTwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 15:52:46 -0400
-From: Olaf Kirch <okir@lst.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/2] avoid OPEN_MAX in SCM_MAX_FD
-Date: Wed, 14 Mar 2007 20:52:22 +0100
-User-Agent: KMail/1.9.1
-Cc: Roland McGrath <roland@redhat.com>, Benjamin LaHaise <bcrl@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <20070314005508.DDC121801C5@magilla.sf.frob.com> <Pine.LNX.4.64.0703131814160.9690@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703131814160.9690@woody.linux-foundation.org>
+	id S1030866AbXCNTxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 15:53:32 -0400
+Message-ID: <45F850BF.5030702@redhat.com>
+Date: Wed, 14 Mar 2007 15:45:03 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com,
+       cpufreq@lists.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com,
+       schwidefsky@de.ibm.com
+Subject: Re: Stolen and degraded time and schedulers
+References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org>
+In-Reply-To: <45F84E39.7030507@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703142052.24659.okir@lst.de>
-X-Spam-Score: -0.6 () BAYES_01
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 March 2007 02:15, Linus Torvalds wrote:
-> Sure. I'm just saying that some people may use OPEN_MAX the way I know
-> people use PATH_MAX - whether it's what you're supposed to or not.
+Jeremy Fitzhardinge wrote:
 
-glibc removed OPEN_MAX from its header files several years ago. If you
-want to find a piece of code that still uses it, it's most likely something
-that hasn't seen a compiler in years - and will likely continue to do
-so.
+>> How is time quantum getting stolen less important?  Time quantum
+>> getting stolen results directly in more unnecessary context switches
+>> since we might steal the entire timeslice before the process even ran.
+> 
+> It doesn't matter why you didn't get the time; 
 
-Olaf
+Oh, but it does.
+
+System administrators can use steal time the same way they
+use iowait time: to spot bottlenecks on their systems.
+
+If you have a lot of iowait time, you know you want either
+faster IO or more memory.
+
+If you have a lot of steal time, you know you need to spread
+your virtual machines over more CPUs.
+
+Steal time allows you to see the difference between a busy
+system and an overloaded system.
+
 -- 
-Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
-okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
