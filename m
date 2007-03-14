@@ -1,200 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161272AbXCNNTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161263AbXCNNZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161272AbXCNNTg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 09:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161268AbXCNNTg
+	id S1161263AbXCNNZd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 09:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161264AbXCNNZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 09:19:36 -0400
-Received: from csclub1.cs.uwaterloo.ca ([129.97.7.226]:58351 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1161264AbXCNNTf (ORCPT
+	Wed, 14 Mar 2007 09:25:33 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:37596 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161263AbXCNNZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 09:19:35 -0400
-Date: Wed, 14 Mar 2007 09:19:34 -0400
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
-       Russell King <rmk+lkml@arm.linux.org.uk>, Jan Dittmer <jdi@l4x.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-Message-ID: <20070314131934.GL22464@csclub.uwaterloo.ca>
-References: <20070216185230.GO8882@enneenne.com> <20070313213842.GA23178@enneenne.com> <20070313224817.GF22466@csclub.uwaterloo.ca> <20070314093146.GE24556@enneenne.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070314093146.GE24556@enneenne.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Wed, 14 Mar 2007 09:25:32 -0400
+Message-ID: <45F7F7B4.50100@linux.vnet.ibm.com>
+Date: Wed, 14 Mar 2007 18:55:08 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+MIME-Version: 1.0
+To: balbir@in.ibm.com
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Kirill Korotaev <dev@sw.ru>,
+       containers@lists.osdl.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@sw.ru>,
+       Dave Hansen <hansendc@us.ibm.com>
+Subject: Re: [RFC][PATCH 4/7] RSS accounting hooks over the code
+References: <45ED7DEC.7010403@sw.ru> <45ED81F2.80402@sw.ru>	<m14porwq1c.fsf@ebiederm.dsl.xmission.com> <45F57E7D.6080604@sw.ru>	<1173718208.11945.54.camel@localhost.localdomain>	<20070312235452.GB11578@MAIL.13thfloor.at>	<m1veh5sbwy.fsf@ebiederm.dsl.xmission.com>	<45F67C2D.7020303@yahoo.com.au> <m1odmxrv2l.fsf@ebiederm.dsl.xmission.com> <45F77149.7040604@yahoo.com.au> <45F7993E.2010200@in.ibm.com> <45F79CF3.1090302@yahoo.com.au> <45F7A8D3.3010109@in.ibm.com>
+In-Reply-To: <45F7A8D3.3010109@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 10:31:46AM +0100, Rodolfo Giometti wrote:
-> On Tue, Mar 13, 2007 at 06:48:17PM -0400, Lennart Sorensen wrote:
-> > 
-> > I have tried out 3.0.0-rc2 which seems to work pretty well so far (when
+
+
+Balbir Singh wrote:
+> Nick Piggin wrote:
+>> Balbir Singh wrote:
+>>> Nick Piggin wrote:
+>>>> And strangely, this example does not go outside the parameters of
+>>>> what you asked for AFAIKS. In the worst case of one container getting
+>>>> _all_ the shared pages, they will still remain inside their maximum
+>>>> rss limit.
+>>>>
+>>> When that does happen and if a container hits it limit, with a LRU
+>>> per-container, if the container is not actually using those pages,
+>>> they'll get thrown out of that container and get mapped into the
+>>> container that is using those pages most frequently.
+>> Exactly. Statistically, first touch will work OK. It may mean some
+>> reclaim inefficiencies in corner cases, but things will tend to
+>> even out.
+>>
 > 
-> Thanks. I just posted to the linux kernel ML the last release
-> 3.0.0. Maybe you can do a "git pull" and try it out. :)
-
-I will grab the last couple of commits and try although they didn't
-sound like they really make much difference.
-
-> > combined with the patches to the jsm driver I just posted).  It took soe
-> > work to get ntp's refclock_nmea to work though, since the patch that is
-> > linked to from the linuxpps page seems out of date.  Here is the patch
-> > that seems to be working for me, although I am still testing it.  Given
-> > you know the linuxpps code better perhaps you can see if it looks sane
-> > to you.
-> > 
-> > --- ntpd/refclock_nmea.c.ori	2007-03-13 18:38:01.000000000 -0400
-> > +++ ntpd/refclock_nmea.c	2007-03-13 18:44:47.000000000 -0400
-> > @@ -79,6 +79,7 @@
-> >  #define RANGEGATE	500000	/* range gate (ns) */
-> >  
-> >  #define LENNMEA		75	/* min timecode length */
-> > +#define LENPPS		PPS_MAX_NAME_LEN
-> >  
-> >  /*
-> >   * Tables to compute the ddd of year form icky dd/mm timecode. Viva la
-> > @@ -99,6 +100,7 @@
-> >  	pps_params_t pps_params; /* pps parameters */
-> >  	pps_info_t pps_info;	/* last pps data */
-> >  	pps_handle_t handle;	/* pps handlebars */
-> > +	int handle_created;	/* pps handle created flag */
-> >  #endif /* HAVE_PPSAPI */
-> >  };
-> >  
-> > @@ -147,6 +149,11 @@
-> >  	register struct nmeaunit *up;
-> >  	struct refclockproc *pp;
-> >  	int fd;
-> > +#ifdef PPS_HAVE_FINDPATH
-> > +	char id[LENPPS] = "",
-> > +	     path[LENPPS],
-> > +	     mylink[LENPPS] = "";    /* just a default device */
-> > +#endif	/* PPS_HAVE_FINDPATH */
-> >  	char device[20];
-> >  
-> >  	/*
-> > @@ -201,7 +208,20 @@
-> >  #else
-> >              return (0);
-> >  #endif
-> > -        }
-> > +        } else {
-> > +            struct serial_struct  ss;
-> > +            if (ioctl(fd, TIOCGSERIAL, &ss) < 0 ||
-> > +                (
-> > +		 ss.flags |= ASYNC_HARDPPS_CD,
-> > +                 ioctl(fd, TIOCSSERIAL, &ss)) < 0) {
-> > +                 msyslog(LOG_NOTICE, "refclock_nmea: TIOCSSERIAL fd %d, %m", fd);
-> > +                 msyslog(LOG_NOTICE,
-> > +                         "refclock_nmea: optional PPS processing not available");
-> > +            } else {
-> > +                msyslog(LOG_INFO,
-> > +                        "refclock_nmea: PPS detection on");
-> > +            }
-> > +	}
+> Exactly!
 > 
-> You should use "setserial" here. Keep in mind that the PPS source
-> could be _not_ connected with the serial line at all.
-
-I couldn't find any way to do that with setserial (at least not the
-version I have), and I would rather not have to install setserial just
-to do that.  Which version of setserial is needed and what arguments
-does it need to do it?
-
-If it is NOT connected to the same device, then how would you specify
-it?  The ntp configuration is rather sparse when it comes to specifying
-anything and seems to rely in symlinks to hardcoded device names for
-finding everything.  I suppose one could have gps# for the nmea messages
-and pps# for the associated pps device name symlink (which may point
-to something that doesn't even exist if there is an internal source of
-that name with no associated device).  Does that seem reasonable?  I can
-certainly change it to do that.  Certainly refclock_atom already uses
-/dev/pps# as it's device, so using that again may be reasonable.
-
-> >  	/*
-> >  	 * Allocate and initialize unit structure
-> > @@ -238,12 +258,26 @@
-> >  	 * Start the PPSAPI interface if it is there. Default to use
-> >  	 * the assert edge and do not enable the kernel hardpps.
-> >  	 */
-> > +#ifdef PPS_HAVE_FINDPATH
-> > +	/* Get the PPS source's real name */
-> > +	//time_pps_readlink(mylink, LENPPS, path, LENPPS);
+>>>> So they might get penalised a bit on reclaim, but maximum rss limits
+>>>> will work fine, and you can (almost) guarantee X amount of memory for
+>>>> a given container, and it will _work_.
+>>>>
+>>>> But I also take back my comments about this being the only design I
+>>>> have seen that gets everything, because the node-per-container idea
+>>>> is a really good one on the surface. And it could mean even less impact
+>>>> on the core VM than this patch. That is also a first-touch scheme.
+>>>>
+>>> With the proposed node-per-container, we will need to make massive core
+>>> VM changes to reorganize zones and nodes. We would want to allow
+>>>
+>>> 1. For sharing of nodes
+>>> 2. Resizing nodes
+>>> 3. May be more
+>> But a lot of that is happening anyway for other reasons (eg. memory
+>> plug/unplug). And I don't consider node/zone setup to be part of the
+>> "core VM" as such... it is _good_ if we can move extra work into setup
+>> rather than have it in the mm.
+>>
+>> That said, I don't think this patch is terribly intrusive either.
+>>
 > 
-> Remove unneeded code.
-
-Oops.  Missed that one.  I was changing it to the below line to reuse
-the same serial device already specified for the NMEA messages.
-
-I actually find the way it determines the pps device a bit annoying.
-Right now I have to do this:
-
-cd /dev
-ln -s ttyn0 jsm0
-ln -s jsm0 gps0
-
-This way gps0 is the symlink the ntp refclock looks for when asked for
-device 0, and readlink turns that into jsm0 (since the internal driver
-name for ttyn0 is jsm, that is what the pps code insists it must be
-named), which then is another symlink to the real device name.  Same for
-ttyS3 <- serial3 <- gps0.  Now it would be nice if the internal driver
-name matched the device name, but apparently that really never seems to
-happen.  Is all this symlink spagheti really necesary?
-
-> > +	time_pps_readlink(device, LENPPS, path, LENPPS);
+> Thanks, thats one of our goals, to keep it simple, understandable and
+> non-intrusive.
 > 
-> Test the return value (see the wiki at
-> http://wiki.enneenne.com/index.php/LinuxPPS_support#How_to_modify_a_refclock_to_work_with_LinuxPPS).
-
-OK, I will do that too.  Apparently the current refclock_nmea patch
-fails that too then.
-
-> > +	/* Try to find the source */
-> > +	fd = time_pps_findpath(path, LENPPS, id, LENPPS);
-> > +	if (fd < 0) {
-> > +		msyslog(LOG_ERR, "refclock_nmea: cannot find PPS path \"%s\" in the system", path);
-> > +		return (0);
-> > +	}
-> > +	msyslog(LOG_INFO, "refclock_nmea: found PPS source \"%s\" at id #%d on \"%s\"", path, fd, id);
-> > +#endif	/* PPS_HAVE_FINDPATH */
-> >  	if (time_pps_create(fd, &up->handle) < 0) {
-> > -		up->handle = 0;
-> > +		up->handle_created = 0;
-> >  		msyslog(LOG_ERR,
-> >  		    "refclock_nmea: time_pps_create failed: %m");
-> >  		return (1);
-> >  	}
-> > +	up->handle_created = ~0;
-> >  	return(nmea_ppsapi(peer, 0, 0));
-> >  #else
-> >  	return (1);
-> > @@ -265,8 +299,10 @@
-> >  	pp = peer->procptr;
-> >  	up = (struct nmeaunit *)pp->unitptr;
-> >  #ifdef HAVE_PPSAPI
-> > -	if (up->handle != 0)
-> > +	if (up->handle_created) {
-> >  		time_pps_destroy(up->handle);
-> > +		up->handle_created = 0;
-> > +	}
-> >  #endif /* HAVE_PPSAPI */
-> >  	io_closeclock(&pp->io);
-> >  	free(up);
-> > @@ -374,7 +410,7 @@
-> >  	/*
-> >  	 * Convert the timespec nanoseconds field to ntp l_fp units.
-> >  	 */ 
-> > -	if (up->handle == 0)
-> > +	if (!up->handle_created)
-> >  		return (0);
-> >  	timeout.tv_sec = 0;
-> >  	timeout.tv_nsec = 0;
+>>> With the node-per-container idea, it will hard to control page cache
+>>> limits, independent of RSS limits or mlock limits.
+>>>
+>>> NOTE: page cache == unmapped page cache here.
+>> I don't know that it would be particularly harder than any other
+>> first-touch scheme. If one container ends up being charged with too
+>> much pagecache, eventually they'll reclaim a bit of it and the pages
+>> will get charged to more frequent users.
+>>
+>>
 > 
-> Please, rewiev and test the code and I'll publish it.
+> Yes, true, but what if a user does not want to control the page
+> cache usage in a particular container or wants to turn off
+> RSS control.
+> 
+>>>>> However the messed up accounting that doesn't handle sharing between
+>>>>> groups of processes properly really bugs me.  Especially when we have
+>>>>> the infrastructure to do it right.
+>>>>>
+>>>>> Does that make more sense?
+>>>>
+>>>> I think it is simplistic.
+>>>>
+>>>> Sure you could probably use some of the rmap stuff to account shared
+>>>> mapped _user_ pages once for each container that touches them. And
+>>>> this patchset isn't preventing that.
+>>>>
+>>>> But how do you account kernel allocations? How do you account unmapped
+>>>> pagecache?
+>>>>
+>>>> What's the big deal so many accounting people have with just RSS? I'm
+>>>> not a container person, this is an honest question. Because from my
+>>>> POV if you conveniently ignore everything else... you may as well just
+>>>> not do any accounting at all.
+>>>>
+>>> We decided to implement accounting and control in phases
+>>>
+>>> 1. RSS control
+>>> 2. unmapped page cache control
+>>> 3. mlock control
+>>> 4. Kernel accounting and limits
+>>>
+>>> This has several advantages
+>>>
+>>> 1. The limits can be individually set and controlled.
+>>> 2. The code is broken down into simpler chunks for review and merging.
+>> But this patch gives the groundwork to handle 1-4, and it is in a small
+>> chunk, and one would be able to apply different limits to different types
+>> of pages with it. Just using rmap to handle 1 does not really seem like a
+>> viable alternative because it fundamentally isn't going to handle 2 or 4.
+>>
+> 
+> For (2), we have the basic setup in the form of a per-container LRU list
+> and a pointer from struct page to the container that first brought in
+> the page.
+> 
+>> I'm not saying that you couldn't _later_ add something that uses rmap or
+>> our current RSS accounting to tweak container-RSS semantics. But isn't it
+>> sensible to lay the groundwork first? Get a clear path to something that
+>> is good (not perfect), but *works*?
+>>
+> 
+> I agree with your development model suggestion. One of things we are going 
+> to do in the near future is to build (2) and then add (3) and (4). So far,
+> we've not encountered any difficulties on building on top of (1).
+> 
+> Vaidy, any comments?
 
-Will do.
+Accounting becomes easy if we have a container pointer in struct page.
+ This can form base ground for building controllers since any memory
+related controller would be interested in tracking pages.  However we
+still want to evaluate if we can build them without bloating the
+struct page.  Pagecache controller (2) we can implement with container
+pointer in struct page or container pointer in struct address space.
 
---
-Len Sorensen
+Building on this patchset is much simple and and we hope the bloat in
+struct page will be compensated by the benefits in memory controllers
+in terms of performance and simplicity.
+
+Adding too many controllers and accounting parameters to start with
+will make the patch too big and complex.  As Balbir mentioned, we have
+a plan and we shall add new control parameters in stages.
+
+--Vaidy
