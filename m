@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161311AbXCNOoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161326AbXCNOok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161311AbXCNOoj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 10:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161325AbXCNOoj
+	id S1161326AbXCNOok (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 10:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161325AbXCNOok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 14 Mar 2007 10:44:40 -0400
+Received: from web36706.mail.mud.yahoo.com ([209.191.85.40]:48205 "HELO
+	web36706.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1161314AbXCNOoj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Mar 2007 10:44:39 -0400
-Received: from holomorphy.com ([66.93.40.71]:47193 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161311AbXCNOoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 10:44:38 -0400
-Date: Wed, 14 Mar 2007 07:43:58 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Pavel Emelianov <xemul@sw.ru>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] kernel/pid.c pid allocation wierdness
-Message-ID: <20070314144358.GS2986@holomorphy.com>
-References: <45F7A4B3.5040005@sw.ru>
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=S/eUT+ydnW+ViisD9T8w3a5CdQou4XUiZpXgHH6pIzJW7OHB1+x37P695jJvEWETD1ojps/Kubz8A0sIrvXC18bOeX7LCbJMwWbwV9mtIcP83xdDFubb7wUCUzsv8ZSwzifAFj72aCvhd3TAbkCObe3jaKzggV5KJON1ti6paZ4=  ;
+Message-ID: <20070314144437.3695.qmail@web36706.mail.mud.yahoo.com>
+X-YMail-OSG: DrzKUL0VM1l8yap7pBJLyDdJ74hyk4JYGvIzx8jqX.wqrqMlm6_SA14H0Se2ol9nBwRgPwVXbEqSzeJRcXmScrPnAoWWrJWjMKoYaK8YeLQXoMkpY2fiP8OaHpLTVsotvhGN3ltUCDsvnBUVaBU8Vg5jgg--
+Date: Wed, 14 Mar 2007 07:44:37 -0700 (PDT)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Weird MMC errors: 1 of 2 - bad ocr value
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <45D9995F.9070108@drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F7A4B3.5040005@sw.ru>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 10:30:59AM +0300, Pavel Emelianov wrote:
-> I'm looking at how alloc_pid() works and can't understand
-> one (simple/stupid) thing.
-> It first kmem_cache_alloc()-s a strct pid, then calls
-> alloc_pidmap() and at the end it taks a global pidmap_lock()
-> to add new pid to hash.
-> The question is - why does alloc_pidmap() use at least
-> two atomic ops and potentially loop to find a zero bit
-> in pidmap? Why not call alloc_pidmap() under pidmap_lock
-> and find zero pid in pidmap w/o any loops and atomics?
-> The same is for free_pid(). Do I miss something?
+Recently, I've obtained a bug report concerning an MMC card. Two problems are described, both
+sporadic.
+Problem 1: illegal ocr value is returned. You may notice, in the non-working case, obviously
+incorrect ocr value (0xffffffff) is returned. The card won't work after this, unless reinserted.
+What, to your opinion, shall we do about it?
 
-pidmap_lock protects the ->page elements of the pidmap array. The
-bitmap is not protected by it. It was intended to be as lockless as
-possible, so the lock there essentially stands in for a cmpxchg().
-
-A loop of some kind is strictly necessary regardless; in this lockless
-case concurrent bitmap updates can trigger looping. It's very important
-that only O(1) operations happen under the lock. These operations are
-installing freshly-allocated pidmap pages, inserting a struct pid into
-a hashtable collision chain, and removing a struct pid from a hashtable
-collision chain. Traversals of hashtable collision chains are lockless
-as per RCU. In any event, the atomic bit operations allow purely
-lockless bitmap updates as well as purely lockless bitmap reads.
-
-Essentially the idioms you're noticing are all for SMP scalability; in
-particular, pid allocation used to cause enormous stress on tasklist_lock
-that would trigger NMI-based deadlock detectors. Backing out such
-optimizations is tantamount to making the systems affected by that (i.e.
-any with enough cpus) crash that way again.
+---- Normal case - everything works: ----------
+Mar 14 09:15:39 Tirion kernel: mmc0: starting CMD1 arg 00300000 flags 00000061
+Mar 14 09:15:39 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x1, arg: 0x300000, mask: 
+0x1340
+Mar 14 09:15:39 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 1001, flags 0
+Mar 14 09:15:39 Tirion kernel: mmc0: req done (CMD1): 0/0/0: 00ff8000 00000000 00000000 00000000
+Mar 14 09:15:39 Tirion kernel: mmc0: starting CMD1 arg 00300000 flags 00000061
+Mar 14 09:15:39 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x1, arg: 0x300000, mask: 
+0x1340
+Mar 14 09:15:39 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 1001, flags 0
+Mar 14 09:15:39 Tirion kernel: mmc0: req done (CMD1): 0/0/0: 00ff8000 00000000 00000000 00000000
+Mar 14 09:15:39 Tirion kernel: mmc0: starting CMD1 arg 00300000 flags 00000061
+Mar 14 09:15:39 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x1, arg: 0x300000, mask: 
+0x1340
+Mar 14 09:15:39 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 1, flags 0
+Mar 14 09:15:39 Tirion kernel: mmc0: req done (CMD1): 0/0/0: 80ff8000 00000000 00000000 00000000
+Mar 14 09:15:39 Tirion kernel: mmc0: starting CMD2 arg 00000000 flags 00000067
+Mar 14 09:15:39 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x2, arg: 0x0, mask: 0x1240
+Mar 14 09:15:39 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 1, flags 0
+Mar 14 09:15:39 Tirion kernel: mmc0: req done (CMD2): 0/0/0: 06000131 364d2020 20011d43 332479ad
+-------------------
 
 
--- wli
+------- Error case: OCR value is bad, card is left in bad state and won't work: ---------
+Mar 14 09:15:24 Tirion kernel: mmc0: starting CMD1 arg 00300000 flags 00000061
+Mar 14 09:15:24 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x1, arg: 0x300000, mask: 
+0x1340
+Mar 14 09:15:24 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 1001, flags 0
+Mar 14 09:15:24 Tirion kernel: mmc0: req done (CMD1): 0/0/0: 00ff8000 00000000 00000000 00000000
+Mar 14 09:15:24 Tirion kernel: mmc0: starting CMD1 arg 00300000 flags 00000061
+Mar 14 09:15:24 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x1, arg: 0x300000, mask: 
+0x1340
+Mar 14 09:15:24 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 1, flags 0
+Mar 14 09:15:24 Tirion kernel: mmc0: req done (CMD1): 0/0/0: ffffffff 00000000 00000000 00000000
+Mar 14 09:15:24 Tirion kernel: mmc0: starting CMD2 arg 00000000 flags 00000067
+Mar 14 09:15:24 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x2, arg: 0x0, mask: 0x1240
+Mar 14 09:15:24 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 80, flags 0
+Mar 14 09:15:24 Tirion kernel: mmc0: req done (CMD2): 1/0/0: 00000000 00000000 00000000 00000000
+---------------------
+
+
+ 
+____________________________________________________________________________________
+Don't get soaked.  Take a quick peek at the forecast
+with the Yahoo! Search weather shortcut.
+http://tools.search.yahoo.com/shortcuts/#loc_weather
