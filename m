@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933831AbXCNFMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933856AbXCNFMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933831AbXCNFMA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 01:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbXCNFMA
+	id S933856AbXCNFMZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 01:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933861AbXCNFMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 01:12:00 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:45240 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933831AbXCNFL7 (ORCPT
+	Wed, 14 Mar 2007 01:12:24 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:63766 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933856AbXCNFMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 01:11:59 -0400
-Message-Id: <20070314051047.869228088@goodmis.org>
+	Wed, 14 Mar 2007 01:12:20 -0400
+Message-Id: <20070314051049.805214464@goodmis.org>
 References: <20070314050819.536207642@goodmis.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 14 Mar 2007 01:08:21 -0400
+Date: Wed, 14 Mar 2007 01:08:32 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,14 +22,13 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
        Glauber de Oliveira Costa <glommer@gmail.com>,
        Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 02/18] x86 Makefile changes
-Content-Disposition: inline; filename=x86-makefile.patch
+Subject: [PATCH 13/18] create x86/lib/Makefile
+Content-Disposition: inline; filename=lib-makefile.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create the arch/x86/Makefile and modify the i386 and x86_64
-Makefiles accordingly.
-
+Create the Makefile in the common hold and adjust the i386 and
+x86_64 code accordingly.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Cc: Glauber de Oliveira Costa <glommer@gmail.com>
@@ -38,60 +37,33 @@ Cc: Chris Wright <chrisw@sous-sol.org>
 Cc: Andi Kleen <ak@muc.de>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>
 
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
 new file mode 100644
-index 0000000..97407b2
+index 0000000..d683d55
 --- /dev/null
-+++ b/arch/x86/Makefile
-@@ -0,0 +1,3 @@
-+
-+
-+drivers-$(CONFIG_OPROFILE)		+= arch/x86/oprofile/
-diff --git a/arch/i386/Makefile b/arch/i386/Makefile
-index bd28f9f..78e59ef 100644
---- a/arch/i386/Makefile
-+++ b/arch/i386/Makefile
-@@ -98,15 +98,17 @@ mflags-y += -Iinclude/asm-i386/mach-default
++++ b/arch/x86/lib/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_SMP)	+= msr-on-cpu.o
+diff --git a/arch/i386/lib/Makefile b/arch/i386/lib/Makefile
+index 22d8ac5..304f754 100644
+--- a/arch/i386/lib/Makefile
++++ b/arch/i386/lib/Makefile
+@@ -8,4 +8,3 @@ lib-y = checksum.o delay.o usercopy.o getuser.o putuser.o memcpy.o strstr.o \
  
- head-y := arch/i386/kernel/head.o arch/i386/kernel/init_task.o
+ lib-$(CONFIG_X86_USE_3DNOW) += mmx.o
  
--libs-y 					+= arch/i386/lib/
-+libs-y 					+= arch/i386/lib/ \
-+					   arch/x86/lib/
- core-y					+= arch/i386/kernel/ \
-+					   arch/x86/kernel/ \
- 					   arch/i386/mm/ \
-+					   arch/x86/mm/ \
- 					   arch/i386/$(mcore-y)/ \
- 					   arch/i386/crypto/
- drivers-$(CONFIG_MATH_EMULATION)	+= arch/i386/math-emu/
- drivers-$(CONFIG_PCI)			+= arch/i386/pci/
- # must be linked after kernel/
--drivers-$(CONFIG_OPROFILE)		+= arch/i386/oprofile/
- drivers-$(CONFIG_PM)			+= arch/i386/power/
+-obj-$(CONFIG_SMP)	+= msr-on-cpu.o
+diff --git a/arch/x86_64/lib/Makefile b/arch/x86_64/lib/Makefile
+index c943271..8d5f835 100644
+--- a/arch/x86_64/lib/Makefile
++++ b/arch/x86_64/lib/Makefile
+@@ -5,7 +5,6 @@
+ CFLAGS_csum-partial.o := -funroll-loops
  
- CFLAGS += $(mflags-y)
-diff --git a/arch/x86_64/Makefile b/arch/x86_64/Makefile
-index 2941a91..150942b 100644
---- a/arch/x86_64/Makefile
-+++ b/arch/x86_64/Makefile
-@@ -79,11 +79,15 @@ head-y := arch/x86_64/kernel/head.o arch/x86_64/kernel/head64.o arch/x86_64/kern
+ obj-y := io.o iomap_copy.o
+-obj-$(CONFIG_SMP)	+= msr-on-cpu.o
  
- libs-y 					+= arch/x86_64/lib/
- core-y					+= arch/x86_64/kernel/ \
-+					   arch/x86/kernel/ \
- 					   arch/x86_64/mm/ \
--					   arch/x86_64/crypto/
-+					   arch/x86/mm/ \
-+					   arch/x86_64/crypto/ \
-+					   arch/x86/lib/
- core-$(CONFIG_IA32_EMULATION)		+= arch/x86_64/ia32/
- drivers-$(CONFIG_PCI)			+= arch/x86_64/pci/
--drivers-$(CONFIG_OPROFILE)		+= arch/x86_64/oprofile/
-+
-+include arch/x86/Makefile
- 
- boot := arch/x86_64/boot
- 
+ lib-y := csum-partial.o csum-copy.o csum-wrappers.o delay.o \
+ 	usercopy.o getuser.o putuser.o  \
 
 --
