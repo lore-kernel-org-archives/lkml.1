@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbXCNFRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933865AbXCNFhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbXCNFRy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 01:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933869AbXCNFRZ
+	id S933865AbXCNFhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 01:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933855AbXCNFhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 01:17:25 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:45250 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933832AbXCNFMB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 01:12:01 -0400
-Message-Id: <20070314051048.029055418@goodmis.org>
-References: <20070314050819.536207642@goodmis.org>
-User-Agent: quilt/0.45-1
-Date: Wed, 14 Mar 2007 01:08:22 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 03/18] acpi Makefile updates
-Content-Disposition: inline; filename=acpi-makefile.patch
+	Wed, 14 Mar 2007 01:37:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50154 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933833AbXCNFhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 01:37:39 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Mathieu =?iso-8859-1?q?B=E9rard?= <Mathieu.Berard@crans.org>
+Subject: Re: Regression between 2.6.20 and 2.6.21-rc1: NCQ problem with ahci and Hitachi drive
+Date: Wed, 14 Mar 2007 01:31:28 -0400
+User-Agent: KMail/1.9.5
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
+References: <45EB6980.90600@crans.org> <45EB79C1.3070107@gmail.com> <45EC8B3E.7040706@crans.org>
+In-Reply-To: <45EC8B3E.7040706@crans.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703140131.28251.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create the arch/x86/acpi/Makefile, and remove the associate stuff
-from the i386 and x86_64.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Chris Wright <chrisw@sous-sol.org>
-Cc: Andi Kleen <ak@muc.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+> Yes It works with acpi=off (2.6.21-rc1):
+> Please notice that IRQ is changed from 19 with ACPI to 11 without.
 
-diff --git a/arch/x86/kernel/acpi/Makefile b/arch/x86/kernel/acpi/Makefile
-new file mode 100644
-index 0000000..f4aa6dc
---- /dev/null
-+++ b/arch/x86/kernel/acpi/Makefile
-@@ -0,0 +1,5 @@
-+obj-$(CONFIG_ACPI)		+= boot.o
-+
-+ifneq ($(CONFIG_ACPI_PROCESSOR),)
-+obj-y		+= processor.o cstate.o
-+endif
-diff --git a/arch/x86_64/kernel/acpi/Makefile b/arch/x86_64/kernel/acpi/Makefile
-index 080b996..eb4bc11 100644
---- a/arch/x86_64/kernel/acpi/Makefile
-+++ b/arch/x86_64/kernel/acpi/Makefile
-@@ -1,9 +1,2 @@
--obj-y			:= boot.o
--boot-y			:= ../../../i386/kernel/acpi/boot.o
- obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup.o
- 
--ifneq ($(CONFIG_ACPI_PROCESSOR),)
--obj-y			+= processor.o
--processor-y		:= ../../../i386/kernel/acpi/processor.o ../../../i386/kernel/acpi/cstate.o
--endif
--
+Please verify the problem still exists in the latest 2.6.21 git.
 
---
+If yes, please file a bug here:
+http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+
+For 2.6.20.stable, please attach
+the complete output from dmesg -s64000
+output from acpidump
+output from lspci -vv
+and paste a copy of /proc/interrupts
+
+For 2.6.21.broken, please attach as much
+of the dmesg as you can capture, and the /proc/interrupts
+if you can get that far.
+
+thanks,
+-Len
