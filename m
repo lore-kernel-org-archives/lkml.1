@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbXCNAzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbXCNBAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbXCNAzS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 20:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXCNAzR
+	id S1752666AbXCNBAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 21:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbXCNBAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 20:55:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56815 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbXCNAzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 20:55:16 -0400
+	Tue, 13 Mar 2007 21:00:51 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:42715 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752666AbXCNBAv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 21:00:51 -0400
+Message-ID: <45F74917.40806@cosmosbay.com>
+Date: Wed, 14 Mar 2007 02:00:07 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Benjamin LaHaise <bcrl@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] avoid OPEN_MAX in SCM_MAX_FD
-In-Reply-To: Linus Torvalds's message of  Tuesday, 13 March 2007 14:28:00 -0700 <Pine.LNX.4.64.0703131420230.9690@woody.linux-foundation.org>
-X-Fcc: ~/Mail/linus
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20070314005508.DDC121801C5@magilla.sf.frob.com>
-Date: Tue, 13 Mar 2007 17:55:08 -0700 (PDT)
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+CC: Anton Blanchard <anton@samba.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Rik van Riel <riel@redhat.com>,
+       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: SMP performance degradation with sysbench
+References: <1172425476.5489.11.camel@odyssey.lan>	 <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au>	 <20070312220042.GA807@kryten> <29495f1d0703131736l74a63c15n94f03527d7e63500@mail.gmail.com>
+In-Reply-To: <29495f1d0703131736l74a63c15n94f03527d7e63500@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 14 Mar 2007 02:00:13 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'd actually prefer this as part of the "remove OPEN_MAX" patch.
+Nish Aravamudan a écrit :
+> On 3/12/07, Anton Blanchard <anton@samba.org> wrote:
+>>
+>> Hi Nick,
+>>
+>> > Anyway, I'll keep experimenting. If anyone from MySQL wants to help 
+>> look
+>> > at this, send me a mail (eg. especially with the sched_setscheduler 
+>> issue,
+>> > you might be able to do something better).
+>>
+>> I took a look at this today and figured Id document it:
+>>
+>> http://ozlabs.org/~anton/linux/sysbench/
+>>
+>> Bottom line: it looks like issues in the glibc malloc library, replacing
+>> it with the google malloc library fixes the negative scaling:
+>>
+>> # apt-get install libgoogle-perftools0
+>> # LD_PRELOAD=/usr/lib/libtcmalloc.so /usr/sbin/mysqld
+> 
+> Quick datapoint, still collecting data and trying to verify it's
+> always the case: on my 8-way Xeon, I'm actually seeing *much* worse
+> performance with libtcmalloc.so compared to mainline. Am generating
+> graphs and such still, but maybe someone else with x86_64 hardware
+> could try the google PRELOAD and see if it helps/hurts (to rule out
+> tester stupidity)?
 
-Ok.  (But now you're going to argue with me about "remove OPEN_MAX",
-and you haven't said you have any problem with changing SCM_MAX_FD,
-so why make it wait?)
+I wish I had a 8-way test platform :)
 
-> That said, it actually worries me that you should call "_SC_OPEN_MAX". 
-[...]
-> For example, I know perfectly well that I should use _SC_PATH_MAX, but a 
-> *lot* of code simply doesn't care. In git, I used PATH_MAX, and the reason 
-[...]
-
-Ok, fine.  But PATH_MAX is a real constant that has some meaning in the
-kernel.  It's perfectly correct to use PATH_MAX as a constant on a system
-like Linux that defines it and means what it says.  Conversely, OPEN_MAX
-has no useful relationship with anything the kernel is doing at all.
-
-> So, what's the likelihood that this will break some old programs? I 
-> realize that modern distributions don't put the kernel headers in their 
-> user-visible includes any more, but the breakage is most likely exactly 
-> for old programs and older distributions.
-
-Well, I don't know for sure.  It doesn't seem all that likely to me (not
-like PATH_MAX), as there has been getdtablesize() since before there was
-OPEN_MAX by that name (not to mention before there was Linux).  If things
-use OPEN_MAX as a constant for arrays, they're already broken unless they
-call setrlimit to constrain themselves.  Getting things fixed has to start
-somewhere.
-
-
-Thanks,
-Roland
+Anyway, could you post some oprofile results ?
 
