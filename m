@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbXCNRAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXCNRBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751596AbXCNRAG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 13:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXCNRAF
+	id S1751724AbXCNRBq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 13:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXCNRBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 13:00:05 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:24877 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbXCNRAB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 13:00:01 -0400
-Subject: Re: Stolen and degraded time and schedulers
-From: Daniel Walker <dwalker@mvista.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-In-Reply-To: <45F824BE.1060708@goop.org>
-References: <45F6D1D0.6080905@goop.org>
-	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>
-	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>
-	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org>
-	 <1173888673.3101.12.camel@imap.mvista.com>  <45F824BE.1060708@goop.org>
-Content-Type: text/plain
-Date: Wed, 14 Mar 2007 09:59:55 -0700
-Message-Id: <1173891595.3101.17.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Wed, 14 Mar 2007 13:01:46 -0400
+Received: from mail.alkar.net ([195.248.191.95]:59073 "EHLO mail.alkar.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724AbXCNRBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 13:01:45 -0400
+X-Greylist: delayed 1801 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Mar 2007 13:01:45 EDT
+From: "Vladimir V. Saveliev" <vs@namesys.com>
+To: "Nate Diller" <nate.diller@gmail.com>
+Subject: Re: [BUG] reiser4: page lock recursion in reiser4_write_extent
+Date: Wed, 14 Mar 2007 19:30:46 +0300
+User-Agent: KMail/1.8.2
+Cc: reiserfs-dev@namesys.com, "Linux Kernel" <linux-kernel@vger.kernel.org>
+References: <5c49b0ed0703132240h2087eb12xb44652bf0d235521@mail.gmail.com>
+In-Reply-To: <5c49b0ed0703132240h2087eb12xb44652bf0d235521@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703141930.46868.vs@namesys.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-14 at 09:37 -0700, Jeremy Fitzhardinge wrote:
-> Daniel Walker wrote:
-> > Then your direction is wrong, sched_clock() should be constant ideally
-> > (1millisecond should really be 1millisecond). 
+Hello
+
+On Wednesday 14 March 2007 08:40, Nate Diller wrote:
+> This little code snippet seems to have a page_lock recursion, in
+> addition to overall looking particularly fragile to me.  It seems to
+> be handling the case where a page needs to be brought uptodate because
+> a partial page write is being done.  The page gets locked as many as 3
+> times, each checking PageUptodate, however the two failure cases here
+> go BUG() instead of returning an error.  I'm starting to think that
+> somehow the whole suspect branch just never gets taken, because
+> otherwise I would expect to see bug reports related to -EIO, -ENOMEM,
+> etc causing this to barf.
 > 
-> Rather than repeating myself, I suggest you read my original post
-> again.  But my point is that "I was runnable on a cpu for 1ms of real
-> time" is a meaningless measurement: you want to measure "I ran for 1
-> cpu-ms", which is a unit which depends on how work a particular CPU does
-> in relationship to other CPUs on the system, or even itself at some
-> previous time.
-
-I understood, I just don't agree that you suggested modification are the
-correct ones to make.
-
-> > Like I said in the last
-> > email, change the scheduler to make it aware of the variable quantum
-> > values.
+> either way, it seems there's a lock recursion if another thread races
+> to bring @page uptodate while we're waiting on the first lock_page()
+> call.
 > 
-> I suppose you could, but that seems more complex.  I think you could
-> encode the same information in the measurement of how much work a cpu
-> actually got done while a process was scheduled on it.
+> ---
+> 
+>                 page = jnode_page(jnodes[i]);
+>                 if (page_offset(page) < inode->i_size &&
+>                     !PageUptodate(page) && to_page != PAGE_CACHE_SIZE) {
+>                         /*
+>                          * the above is not optimal for partial write to last
+>                          * page of file when file size is not at boundary of
+>                          * page
+>                          */
+> takes the lock
+>                         lock_page(page);
+> raced with readpage?
+>                         if (!PageUptodate(page)) {
+> readpage drops lock
+>                                 result = readpage_unix_file(NULL, page);
+>                                 BUG_ON(result != 0);
+> -ENOMEM?
+>                                 /* wait for read completion */
+>                                 lock_page(page);
+>                                 BUG_ON(!PageUptodate(page));
+> -EIO?
+>                                 unlock_page(page);
+>                         } else
+> still have the lock here
+>                                 result = 0;
+>                 }
+> 
+>                 BUG_ON(get_current_context()->trans->atom != NULL);
+>                 fault_in_pages_readable(buf, to_page);
+>                 BUG_ON(get_current_context()->trans->atom != NULL);
+> 
+> BOOM!!!
+>                 lock_page(page);
+>                 if (!PageUptodate(page) && to_page != PAGE_CACHE_SIZE) {
 
-I know it's more complex, but that seems more like the "right" thing to
-do.
-
-Daniel
-
+you are right, I will make a patch.
