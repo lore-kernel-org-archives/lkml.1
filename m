@@ -1,178 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422681AbXCNVpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422673AbXCNVtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422681AbXCNVpE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 17:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422676AbXCNVpE
+	id S1422673AbXCNVtb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 17:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422674AbXCNVtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 17:45:04 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:24193 "EHLO
+	Wed, 14 Mar 2007 17:49:31 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:31239 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422674AbXCNVpA (ORCPT
+	with ESMTP id S1422673AbXCNVta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 17:45:00 -0400
+	Wed, 14 Mar 2007 17:49:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MHS4Ea3u/ooTW/wgcPNhW0ibN4mrIy9pNC5oPFBoImnJbw257YGMPm4eKES/GjMHclAoOUFkifzhS/HVHQCG4H9Dri9ya6Mxm9Nl2gOINna6T7GseHSfmDm23nJUlt6+ch74PRRu3Jjm2iy+oDe+h2+lSCRZSQmDe5pkK2Jtuhs=
-Message-ID: <3d53b7120703141444k6484ccfeyd08cf60ecbbb894a@mail.gmail.com>
-Date: Thu, 15 Mar 2007 03:14:54 +0530
-From: "Syed Ahemed" <kingkhan@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: NPTL patch for linux 2.4.28
-Cc: linux-kernel@vger.kernel.org, msnyder@redhat.com, jjohnstn@redhat.com
-In-Reply-To: <20070314055556.GP943@1wt.eu>
+        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=psG/APFrN/5JL7ccf1cOQ4JqvWdW9fVBzaFAsN9ml6cwFh8A2Uej4Ak7EaidWqusu2PIRwp/BT3Bz4K0/voMYypbLFkow2JPOrhOJYUaS9h+jy8VvIMozXP1ago5nASPhR+hsv3CCk74sOEIe4VZ2mmSnRDYs+omLJ+YCdxST1E=
+Message-ID: <2c0942db0703141449h5f6eb2e4sadf493741d67ecc0@mail.gmail.com>
+Date: Wed, 14 Mar 2007 14:49:28 -0700
+From: "Ray Lee" <madrabbit@gmail.com>
+Reply-To: ray-gmail@madrabbit.org
+To: "Gene Heskett" <gene.heskett@gmail.com>
+Subject: Re: New thread RDSL, post-2.6.20 kernels and amanda (tar) miss-fires
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200703132331.56140.gene.heskett@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com>
-	 <20070314055556.GP943@1wt.eu>
+References: <200703130428.11014.gene.heskett@gmail.com>
+	 <200703131436.33509.gene.heskett@gmail.com>
+	 <200703132331.56140.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Thanks for the answer , I have already checked the core files size
-diff which was surprising in a way.The corefile on linux 2.4.28 (which
-actually shows less information than redhat) is bigger than redhat's
-2.4.20-8 system core file.
-Which brings me to the point that it has to be the generation of
-corefiles and as a result lack of debugging support in 2.4.28 that is
-causing the problem ( With or without NPTL is what i am out to find
-out.
-
-Getting RHEL's source ( http://lkml.org/lkml/2005/3/21/380 ) was an
-idea i thought about but then a download of the RHEL source from the
-following location was denied .
-http://download.fedora.redhat.com/pub/fedora/linux/core/1/SRPMS/  and
-the rpmfind site.
-(Guess need to be a paid subscriber for that right ?)
-
-Apart from the fact that am relying on a "free " patch (even if that
-means i have to spend time forward porting it to 2.4.28 ) .I cannot go
-the RHEL way for fear of having to port or debug custom applications
-written on 2.4.28 .
-
-I totally understand the fact that 2.4.28 does rarely have support for
-patches and updates relative to the more active 2.4.20 or 2.6 kernel
-,I still wonder why there aren't any NPTL patches available in the
-non-redhat sites for kernels like 2.4.21 or more .
-Please point me to NPTL patch location or the kernel SRPM if you could.
-
-Regards
-Azhar
-
-
-
-On 3/14/07, Willy Tarreau <w@1wt.eu> wrote:
-> On Wed, Mar 14, 2007 at 05:49:22AM +0530, Syed Ahemed wrote:
-> > Hello all.
-> > I have a tricky problem on  hand and a straight forward question.
+On 3/13/07, Gene Heskett <gene.heskett@gmail.com> wrote:
+> On Tuesday 13 March 2007, Gene Heskett wrote:
+> >On Tuesday 13 March 2007, Gene Heskett wrote:
+> >>Greetings;
+> >>Someone suggested a fresh thread for this.
+> >>
+> >>I now have my scripts more or less under control, and I can report that
+> >>kernel-2.6.20.1 with no other patches does not exhibit the undesirable
+> >>behaviour where tar thinks its all new, even when told to do a level 2
+> >> on a directory tree that hasn't been touched in months to update
+> >> anything.
+> >>
+> >>Next up, 2.6.20.2, plain and with the latest RDSL-0.30 patch.
 > >
-> > Tricky problem:
-> > ---------------------
-> > While debugging a simple multithreaded application using gdb linux
-> > 2.4.28 , i noticed the thread that has crashed after sigsegv has
-> > complete information on the gdb (both  address and function at the
-> > time of crash ) .But the other threads that are in wait state (
-> > executing glibc functions at the time of crash ) just has the address
-> > but not the function name as shown below.
+> >And amanda/tar worked normally for 2.6.20.2 plain.
 > >
-> >
-> > sh-2.05b# ./gdb a.out /mnt/cf/engg_files/core_files/
-> > a.out.1173437318.core.5312   a.out.1173453940.core.9829
-> > a.out.1173438125.core.16016  lost+found
-> > a.out.1173438881.core.18721
-> > <f/engg_files/core_files/a.out.1173453940.core.9829
-> > GNU gdb 6.3
-> > Copyright 2004 Free Software Foundation, Inc.
-> > GDB is free software, covered by the GNU General Public License, and you are
-> > welcome to change it and/or distribute copies of it under certain
-> > conditions.
-> > Type "show copying" to see the conditions.
-> > There is absolutely no warranty for GDB.  Type "show warranty" for details.
-> > This GDB was configured as "i686-pc-linux-gnu"...Using host libthread_db
-> > library
-> > "/lib/libthread_db.so.1".
-> >
-> > warning: exec file is newer than core file.
-> > Core was generated by `./a.out'.
-> > Program terminated with signal 11, Segmentation fault.
-> > Reading symbols from /lib/libpthread.so.0...done.
-> > Loaded symbols for /lib/libpthread.so.0
-> > Reading symbols from /lib/libc.so.6...done.
-> > Loaded symbols for /lib/libc.so.6
-> > Reading symbols from /opt/lib/ld-linux.so.2...done.
-> > Loaded symbols for /opt//lib/ld-linux.so.2
-> > #0  0x080485df in a (p=0x0) at threadcore.c:34
-> > 34      threadcore.c: No such file or directory.
-> >        in threadcore.c
-> > (gdb) info threads
-> >  3 process 10993  0x08053840 in ?? ()
-> >  2 process 1267  0xbf5ff9d0 in ?? ()
-> > * 1 process 9829  0x080485df in a (p=0x0) at threadcore.c:34
-> > (gdb) thread 3
-> > [Switching to thread 3 (process 10993)]#0  0x08053840 in ?? ()
-> > (gdb) bt
-> > #0  0x08053840 in ?? ()
-> > Cannot access memory at address 0x2b
-> > (gdb)
-> > #0  0x08053840 in ?? ()
-> > Cannot access memory at address 0x2b
-> > (gdb) thread 1
-> > [Switching to thread 1 (process 9829)]#0  0x080485df in a (p=0x0)
-> >    at threadcore.c:34
-> > 34      in threadcore.c
-> > (gdb) bt
-> > #0  0x080485df in a (p=0x0) at threadcore.c:34
-> > #1  0x080485bc in main () at threadcore.c:21
-> > (gdb) thread 2
-> > [Switching to thread 2 (process 1267)]#0  0xbf5ff9d0 in ?? ()
-> > (gdb) bt
-> > #0  0xbf5ff9d0 in ?? ()
-> > Cannot access memory at address 0x2b
-> > (gdb) q
-> > sh-2.05b#
-> >
-> >
-> > The problem is with the same glibc and gdb , Redhat 9 linux 2.4.20-8
-> > does  give me complete information of all the threads in the "info
-> > threads" command.
-> > Having read similar problems on various mailing lists , i believe the
-> > only difference is redhat 9 has patched its kernel with NTPL or
-> > debugging support for linux in the kernel.
-> >
-> > Wanted to confirm if it this correct .
+> >Next up, 2.6.21-rc1 if it will build here.
 >
-> I really have no idea about this problem.
+> It built, it booted, and its busted big time.  First, with an amdump
+> running in the background, the machine is so close to unusable that I
+> considered rebooting, but I needed the data to show the problem.  I am
+> losing the keyboard and mouse for a minute or more at a time but the
+> keystrokes seem to be being registered so it eventually catches up.
 >
-> > My question
-> > ------------------
-> >
-> > Someone would say move to 2.6 kernel and a different glibc,But with
-> > custom applications at stake .I can't take that risk as yet .So i
-> > would want an NTPL patch for 2.4.28 kernel
-> > Where do i get it ? Please do respond .
+> Disk i/o seems to be the killer according to gkrellm.
 >
-> Last time I saw an NPTL patch, it was for something like 2.4.21 patched
-> with O(1) scheduler. I bet you'll have a hard time merging those together
-> in 2.4.28. It is also possible that core dumps don't look the same. I
-> have in mind some old changes about thread core dumps, but that's too
-> far away to say anything reliable on the subject. Check that your core
-> files are of the same sizes between NPTL and no-NPTL kernels.
+> But to give one an idea of the fits this is giving tar, I'll snip a line
+> or 2 from an amstatus report here:
+> coyote:/GenesAmandaHelper-0.6 1 planner: [dumps way too big, 138200 KB,
+> must skip incremental dumps]
 >
-> Alternatively, you could try RHEL3's kernel (2.4.21) which has all those
-> things and which is still supported.
+> Huh?  138.2GB?  A 'du -h .' in that dir says 766megs.
 >
-> Regards,
-> Willy
+> coyote:/root                  1     4426m wait for dumping
+> du -h says 5.0GB so that's ballpark, but its also a level 1, so maybe 20
+> megs is actually new since 15:57 this afternoon local.  kmails final
+> maildir is in that dir.
 >
+> This goes on for much of the amstatus report, very few of the reported
+> sizes are close to sane.
 >
+> Now, can someone suggest a patch I can revert that might fix this?  The
+> total number of patches between 2.6.20 and 2.6.21-rc1 will have me
+> building kernels to bisect this till the middle of June at this rate.
 
+In a previous email, you said you were using ext3. If that's the case,
+there doesn't appear to be much going on in terms of patches between
+2.6.20 and 2.6.21-rc1. The only one that even comes close to looking
+like it might have an effect would only come in to play if you have a
+filesystem that has ACL information, but is mounted by a kernel that
+doesn't have ACL support.
 
--- 
-Azhar khan
+I have to echo wli here, I'm afraid, and recommend at least a *few*
+bisections to help narrow down the list of suspect patches.
 
-I'm afraid that I've seen too many people fix bugs by looking at
-debugger output, and that almost inevitably leads to fixing the
-symptoms rather than the underlying problems.
-	
---Linus
+There are tutorials out there for git users. I use the mercurial
+repository, as I find the mercurial interface and workflow a lot more
+intuitive, but it has the same capability.
+
+Even 2-5 bisections will greatly help others hunt the bug down.
+
+Ray
