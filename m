@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030887AbXCNUfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030891AbXCNUjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030887AbXCNUfG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 16:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030892AbXCNUfG
+	id S1030891AbXCNUjd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 16:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030894AbXCNUjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 16:35:06 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54605 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030887AbXCNUfA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 16:35:00 -0400
-Date: Wed, 14 Mar 2007 21:34:54 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 - Take 2
-Message-ID: <20070314203454.GD376@one.firstfloor.org>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org> <20070314180933.GA12994@elte.hu> <Pine.LNX.4.64.0703141120530.9690@woody.linux-foundation.org> <20070314195916.GA5674@elte.hu> <20070314200704.GB376@one.firstfloor.org> <20070314201944.GA11583@elte.hu>
+	Wed, 14 Mar 2007 16:39:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58302 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030891AbXCNUjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 16:39:32 -0400
+Date: Wed, 14 Mar 2007 21:38:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com,
+       cpufreq@lists.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       paulus@au.ibm.com, schwidefsky@de.ibm.com,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: Stolen and degraded time and schedulers
+Message-ID: <20070314203826.GA15394@elte.hu>
+References: <45F6D1D0.6080905@goop.org> <1173816769.22180.14.camel@localhost> <45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070314201944.GA11583@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <45F84E39.7030507@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> the basic dynamics of legacies does not change if we have only 50% of 
-> them: right now x86_64 is just growing its own set of legacies, at the 
-> same rate as i386 did it 10 years ago. 
 
-Modern system are much more similar to each other than older systems
-due to Windows forcing them and they are using much more hardware. 
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-For example we'll never have the tons of weird APIC errata again old 
-platforms had.
+> I added stolen time accounting to xen-pv_ops last night.  For Xen, at 
+> least, it wasn't hard to fit into the clockevent infrastructure.  I 
+> just update the stolen time accounting for each cpu when it gets a 
+> timer tick; they seem to get a tick every couple of seconds even when 
+> idle.
 
-And the 64bit APIC code is already much cleaner because of this
-and this made new work (like Eric's rework which only happened
-partially on i386) much easier.
+touching the 'timer tick' is the wrong approach. 'stolen time' only 
+matters to the /scheduler tick/. So extend the hypervisor interface to 
+allow the injection of 'virtual' scheduler tick events: via the use of a 
+special clockevents device - do not change clockevents itself.
 
-Also 64bit doesn't support any weirdnesses like visws,voyager
-which probably should have been ripped out long ago because
-they cause large issues in the code and are practically unused
-(I bet both have userbases I can count on my fingers) 
-
-> practice: those legacies will quickly necessiate the _same_ kinds of 
-> abstractions that allow the flexible injection of hardware-dependent 
-> quirks. In another 5 years the x86_64 tree will end up looking and 
-
-That's not my experience.
-
-> behaving _just like the i386_ tree, the only difference will be less 
-> compatibility. (In fact, it will likely look worse because currently our 
-> efforts are 50% split between i386 and x86_64, and the random 
-
-That's also not how it works. Typically bug fixes are applied to both.
-
-> Also, 90% of our users are still running 32bit kernels _even on 64-bit 
-> capable hardware_, so we might as well prepare ourselves for a really 
-> long march towards a pure 64-bit world. (Which will likely never come.)
-
-32bit is not the problem, the problem is old platforms/weird not quite
-PC platforms (which don't exist in the 64bit world)/very old CPUs.
-32bit has some ugly legacies  (like vm86) but they are handleable.
-The old bugs aren't imho.
-
-When a new unified port was done it could be done for modern x86 only,
-with arch/i386 kept for the old legacy stuff.
-That would be fine for me. The trouble is just that I'm not sure
-that distributions would actually ship it e.g. because not supporting
-P5s anymore might be still too radical. And if it was not shipped
-then it would be useless.
-
-Besides it's would be a lot of work and frankly not very interesting work.
-
--Andi
-
+	Ingo
