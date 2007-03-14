@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030683AbXCNHKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030694AbXCNH2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030683AbXCNHKU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 03:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030690AbXCNHKU
+	id S1030694AbXCNH2W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 03:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030693AbXCNH2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 03:10:20 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:22026 "EHLO relay.sw.ru"
+	Wed, 14 Mar 2007 03:28:22 -0400
+Received: from mail1.perex.cz ([212.20.107.53]:56193 "EHLO mail1.perex.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030683AbXCNHKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 03:10:20 -0400
-Message-ID: <45F7A04B.6000504@sw.ru>
-Date: Wed, 14 Mar 2007 10:12:11 +0300
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	id S1030694AbXCNH2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 03:28:21 -0400
+Date: Wed, 14 Mar 2007 08:28:19 +0100 (CET)
+From: Jaroslav Kysela <perex@suse.cz>
+X-X-Sender: perex@tm8103.perex-int.cz
+To: Linus Torvalds <torvalds@osdl.org>
+cc: Andrew Morton <akpm@osdl.org>, Takashi Iwai <tiwai@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [ALSA PATCH] alsa-git merge request
+Message-ID: <Pine.LNX.4.61.0703140826380.8322@tm8103.perex-int.cz>
 MIME-Version: 1.0
-To: vatsa@in.ibm.com
-CC: Herbert Poetzl <herbert@13thfloor.at>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/7] Resource counters
-References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru> <45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru> <20070309163711.GA3647@MAIL.13thfloor.at> <m1fy8bwqps.fsf@ebiederm.dsl.xmission.com> <20070312011612.GD21861@MAIL.13thfloor.at> <m1bqixtsr1.fsf@ebiederm.dsl.xmission.com> <20070313152150.GK8755@MAIL.13thfloor.at> <45F6C611.7070400@sw.ru> <20070313160707.GF19939@in.ibm.com>
-In-Reply-To: <20070313160707.GF19939@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> On Tue, Mar 13, 2007 at 06:41:05PM +0300, Pavel Emelianov wrote:
->>> right, but atomic ops have much less impact on most
->>> architectures than locks :)
->> Right. But atomic_add_unless() is slower as it is
->> essentially a loop. See my previous letter in this sub-thread.
-> 
-> If I am not mistaken, you shouldn't loop in normal cases, which means
-> it boils down to a atomic_read() + atomic_cmpxch()
-> 
-> 
 
-So does the lock - in a normal case (when it's not
-heavily contented) it will boil down to atomic_dec_and_test().
+Linus, please pull from [the linus branch at]:
 
-Nevertheless, making charge like in this patchset
-requires two atomic ops with atomic_xxx and only
-one with spin_lock().
+  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
+gitweb interface:
+  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
+
+The GNU patch is available at:
+
+  ftp://ftp.alsa-project.org/pub/kernel-patches/alsa-git-2007-03-14.patch.gz
+
+Additional notes:
+
+  Only fixes / new hardware IDs.
+
+
+The following files will be updated:
+
+ Documentation/sound/alsa/ALSA-Configuration.txt |    1 +
+ include/sound/version.h                         |    2 +-
+ sound/pci/ac97/ac97_patch.c                     |   13 ++++---
+ sound/pci/hda/hda_intel.c                       |   13 ++++++-
+ sound/pci/hda/patch_analog.c                    |   41 +++++++++++++++++++++--
+ sound/pci/hda/patch_realtek.c                   |    1 +
+ sound/pci/hda/patch_sigmatel.c                  |    5 +++
+ sound/pci/intel8x0.c                            |   10 ++++--
+ sound/soc/Kconfig                               |    2 +
+ sound/soc/at91/Kconfig                          |    3 +-
+ sound/soc/pxa/Kconfig                           |    3 +-
+ 11 files changed, 76 insertions(+), 18 deletions(-)
+
+
+The following things were done:
+
+Jaroslav Kysela (1):
+      [ALSA] version 1.0.14rc3
+
+Randy Cushman (1):
+      [ALSA] ac97 - fix AD shared shared jack control logic
+
+Takashi Iwai (5):
+      [ALSA] soc - Fix dependencies in Kconfig files
+      [ALSA] hda-intel - Fix codec probe with ATI contorllers
+      [ALSA] hda-codec - Fix speaker output on MacPro
+      [ALSA] intel8x0 - Fix Oops at kdump crash kernel
+      [ALSA] hda-codec - Add model for HP Compaq d5700
+
+Tobin Davis (2):
+      [ALSA] hda-codec - Add suppoprt for Asus M2N-SLI motherboard
+      [ALSA] hda-codec - more systems for Analog Devices
+
+Tommi Kyntola (1):
+      [ALSA] intel8x0 - Fix speaker output after S2RAM
