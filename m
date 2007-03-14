@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbXCNQJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXCNQLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932134AbXCNQJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 12:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932207AbXCNQJT
+	id S932207AbXCNQLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 12:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbXCNQLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 12:09:19 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:47718 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932134AbXCNQJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 12:09:17 -0400
-Message-ID: <45F81FDA.5@sw.ru>
-Date: Wed, 14 Mar 2007 19:16:26 +0300
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, balbir@in.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+	Wed, 14 Mar 2007 12:11:20 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:14178 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932207AbXCNQLT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 12:11:19 -0400
+Subject: Re: Stolen and degraded time and schedulers
+From: Daniel Walker <dwalker@mvista.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Chris Wright <chrisw@sous-sol.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@sw.ru>,
-       Dave Hansen <hansendc@us.ibm.com>
-Subject: Re: [RFC][PATCH 4/7] RSS accounting hooks over the code
-References: <45ED7DEC.7010403@sw.ru> <45ED81F2.80402@sw.ru>	<m14porwq1c.fsf@ebiederm.dsl.xmission.com> <45F57E7D.6080604@sw.ru>	<1173718208.11945.54.camel@localhost.localdomain>	<20070312235452.GB11578@MAIL.13thfloor.at>	<m1veh5sbwy.fsf@ebiederm.dsl.xmission.com>	<45F67C2D.7020303@yahoo.com.au> <m1odmxrv2l.fsf@ebiederm.dsl.xmission.com> <45F77149.7040604@yahoo.com.au> <45F7993E.2010200@in.ibm.com> <45F79CF3.1090302@yahoo.com.au> <45F7A8D3.3010109@in.ibm.com> <45F7F7B4.50100@linux.vnet.ibm.com> <45F7FD53.8000908@yahoo.com.au>
-In-Reply-To: <45F7FD53.8000908@yahoo.com.au>
-Content-Type: text/plain; charset=us-ascii
+       cpufreq@lists.linux.org.uk,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+In-Reply-To: <45F79B9C.20609@goop.org>
+References: <45F6D1D0.6080905@goop.org>
+	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>
+	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>
+	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 09:11:13 -0700
+Message-Id: <1173888673.3101.12.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick,
+On Tue, 2007-03-13 at 23:52 -0700, Jeremy Fitzhardinge wrote:
 
->>Accounting becomes easy if we have a container pointer in struct page.
->> This can form base ground for building controllers since any memory
->>related controller would be interested in tracking pages.  However we
->>still want to evaluate if we can build them without bloating the
->>struct page.  Pagecache controller (2) we can implement with container
->>pointer in struct page or container pointer in struct address space.
+> >
+> > That's true, but given a constant clock (like what sched_clock should
+> > have) then the accounting is similarly inaccurate. Any connection
+> > between the scheduler and the TSC frequency changes aren't part of the
+> > design AFAIK ..
+> >   
 > 
-> 
-> The thing is, you have to worry about actually getting anything in the
-> kernel rather than trying to do fancy stuff.
-> 
-> The approaches I have seen that don't have a struct page pointer, do
-> intrusive things like try to put hooks everywhere throughout the kernel
-> where a userspace task can cause an allocation (and of course end up
-> missing many, so they aren't secure anyway)... and basically just
-> nasty stuff that will never get merged.
+> Well, my whole argument is that sched_clock /should not/ be a constant
+> clock.  And I'm not quite sure why you keep bringing up the tsc, because
+> it has no relevance.
 
-User beancounters patch has got through all these...
-The approach where each charged object has a pointer to the owner container,
-who has charged it - is the most easy/clean way to handle
-all the problems with dynamic context change, races, etc.
-and 1 pointer in page struct is just 0.1% overehad.
+Then your direction is wrong, sched_clock() should be constant ideally
+(1millisecond should really be 1millisecond). Like I said in the last
+email, change the scheduler to make it aware of the variable quantum
+values.
 
-> Struct page overhead really isn't bad. Sure, nobody who doesn't use
-> containers will want to turn it on, but unless you're using a big PAE
-> system you're actually unlikely to notice.
-
-big PAE doesn't make any difference IMHO
-(until struct pages are not created for non-present physical memory areas)
-
-> But again, I'll say the node-container approach of course does avoid
-> this nicely (because we already can get the node from the page). So
-> definitely that approach needs to be discredited before going with this
-> one.
-
-But it lacks some other features:
-1. page can't be shared easily with another container
-2. shared page can't be accounted honestly to containers
-   as fraction=PAGE_SIZE/containers-using-it
-3. It doesn't help accounting of kernel memory structures.
-   e.g. in OpenVZ we use exactly the same pointer on the page
-   to track which container owns it, e.g. pages used for page
-   tables are accounted this way.
-4. I guess container destroy requires destroy of memory zone,
-   which means write out of dirty data. Which doesn't sound
-   good for me as well.
-5. memory reclamation in case of global memory shortage
-   becomes a tricky/unfair task.
-6. You cannot overcommit. AFAIU, the memory should be granted
-   to node exclusive usage and cannot be used by by another containers,
-   even if it is unused. This is not an option for us.
-
->>Building on this patchset is much simple and and we hope the bloat in
->>struct page will be compensated by the benefits in memory controllers
->>in terms of performance and simplicity.
->>
->>Adding too many controllers and accounting parameters to start with
->>will make the patch too big and complex.  As Balbir mentioned, we have
->>a plan and we shall add new control parameters in stages.
-> 
-> Everyone seems to have a plan ;) I don't read the containers list...
-> does everyone still have *different* plans, or is any sort of consensus
-> being reached?
-
-hope we'll have it soon :)
-
-Thanks,
-Kirill
+Daniel
 
