@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbXCNRXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbXCNRbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752506AbXCNRXN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 13:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXCNRXN
+	id S1752439AbXCNRbT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 13:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbXCNRbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 13:23:13 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:32835 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752561AbXCNRXM (ORCPT
+	Wed, 14 Mar 2007 13:31:19 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59415 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752439AbXCNRbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 13:23:12 -0400
-Date: Wed, 14 Mar 2007 18:23:10 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
-In-Reply-To: <20070314170720.GL4095@ftp.linux.org.uk>
-Message-ID: <Pine.LNX.4.62.0703141822240.28462@pademelon.sonytel.be>
-References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
- <Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
- <20070314160258.GK4095@ftp.linux.org.uk> <Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
- <20070314170720.GL4095@ftp.linux.org.uk>
+	Wed, 14 Mar 2007 13:31:18 -0400
+Date: Wed, 14 Mar 2007 18:31:20 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Florian Lohoff <flo@rfc822.org>
+Subject: Re: [6/6] 2.6.21-rc3: known regressions
+Message-ID: <20070314173120.GD18731@stusta.de>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313125025.GW18731@stusta.de> <1173818777.13341.128.camel@localhost.localdomain> <20070314114417.GB18731@stusta.de> <45F7E7B1.3030600@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <45F7E7B1.3030600@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Mar 2007, Al Viro wrote:
-> On Wed, Mar 14, 2007 at 05:17:45PM +0100, Geert Uytterhoeven wrote:
-> > On Wed, 14 Mar 2007, Al Viro wrote:
-> > > On Wed, Mar 14, 2007 at 10:50:16AM +0100, Geert Uytterhoeven wrote:
-> > > > On Wed, 14 Mar 2007, Al Viro wrote:
-> > > > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > > > 
-> > > > NAK
-> > > 
-> > > Lovely...  Consider that one withdrawn, please.  FWIW, if we leave it bool
-> > > (and flip_ctl mess alone would make a good reason for that) we probably want
-> > > to have it depend on FB=y
-> > 
-> > What's the advantage of making FB_PS3 depend on FB=y vs. plain FB?
-> > In both cases it can be enabled if FB=y only, right? Or am I missing something?
+On Wed, Mar 14, 2007 at 01:16:49PM +0100, Jiri Slaby wrote:
+> Adrian Bunk napsal(a):
+> >On Tue, Mar 13, 2007 at 09:46:17PM +0100, Thomas Gleixner wrote:
+> >>On Tue, 2007-03-13 at 13:50 +0100, Adrian Bunk wrote:
+> >>>This email lists some known regressions in Linus' tree compared to 
+> >>>2.6.20.
+> >>>
+> >>>If you find your name in the Cc header, you are either submitter of one
+> >>>of the bugs, maintainer of an affectected subsystem or driver, a patch
+> >>>of you caused a breakage or I'm considering you in any other way
+> >>>possibly involved with one or more of these issues.
+> >>>
+> >>>Due to the huge amount of recipients, please trim the Cc when answering.
+> >>>Subject    : Clocksource tsc unstable (delta = -154983451 ns)
+> >>>References : http://lkml.org/lkml/2007/3/9/271
+> >>>Submitter  : Jiri Slaby <jirislaby@gmail.com>
+> >>>Status     : unknown
+> >>That's not a regression. That's an informal message, when the TSC
+> >>watchdog detects that the TSC is unreliable. 
+> >
+> >Looking at [1], there's also be a probably related "doesn't boot" 
+> >problem.
+> >My first guess would be commit 6bb74df481223731af6c7e0ff3adb31f6442cfcd
+> >"clocksource init adjustments (fix bug #7426)".
+> >
+> >Jiri, is the message also present with 2.6.21-rc2 (at a different place 
+> >of the dmesg) for you?
 > 
-> Nope.  How can kconfig distinguish that from a boolean option in modular
-> driver?  bool *can* depend on tristate and be selected when tristate is
-> set to m.
+> Yes, it's present there too, some lines below the place, where it is placed 
+> in -rc3.
 
-Sorry, you're right. I tried it before sending the previous mail, but
-apparently I made a mistake. I tried again, and now it indeed allows me to
-select FB_PS3.
+OK, then it's according to Thomas normal and expected.
 
-Gr{oetje,eeting}s,
+> regards,
 
-						Geert
+cu
+Adrian
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
