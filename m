@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXCNMdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161209AbXCNMfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161228AbXCNMdm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 08:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161227AbXCNMdm
+	id S1161209AbXCNMfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 08:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161223AbXCNMfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 08:33:42 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:45635 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161225AbXCNMdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 08:33:41 -0400
-Message-ID: <45F7EB9C.3070208@gmail.com>
-Date: Wed, 14 Mar 2007 13:33:32 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
-MIME-Version: 1.0
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-CC: netdev@vger.kernel.org, vortex@scyld.com
-Subject: 3c59x regression (transmission stop)
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 14 Mar 2007 08:35:37 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:59719 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161209AbXCNMfg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 08:35:36 -0400
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+	Take 2
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+In-Reply-To: <p73slc8863r.fsf@bingen.suse.de>
+References: <20070314050819.536207642@goodmis.org>
+	 <p73slc8863r.fsf@bingen.suse.de>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 08:35:08 -0400
+Message-Id: <1173875708.31159.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 14 Mar 2007 13:33:35 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Wed, 2007-03-14 at 11:36 +0100, Andi Kleen wrote:
+> Steven Rostedt <rostedt@goodmis.org> writes:
+> > 
+> > So I spent last night hacking up something to try to make a common ground
+> > for all code that is shared between x86_64 and i386.  I called this
+> > 
+> >    arch/x86
+> 
+> NACK. I think the current ways work just fine. 
 
-I have a problem with 3c59x network driver. After some time (now it happened 
-after 6 days of uptime) the card stops transmitting packets. Interrupt 
-counter increments, the card recieves and trasmits some buffers, but the 
-more time, the less packets are trasmitted and in the end it stops 
-trasmitting at all. I don't know how to debug this, rmmod and modprobe of 
-the module back helps to solve this for some time.
+Fine.
 
-What kind of info should I post and how to track this nasty thing down? 
-Note, that this is server and hence things like bisecting is no-go for me.
+The thing is others and I (and you) are working on getting paravirt_ops
+working for x86_64.  There's a lot of overlap between i386 and x86_64.
+Right now the i386 is ahead of x86_64 and the code seems to be put more
+in the arch/i386 arch.  So now we are going to introduce a
+new ../../i386 hack to get to a shared paravirt_shared.c(?).  Or do we
+just continue on keeping the x86_64 as a separate entity, with a lot of
+duplicate code?
 
-# lspci -vvxs 00:0e
-00:0e.0 Ethernet controller: 3Com Corporation 3c905B 100BaseTX [Cyclone] 
-(rev 64)
-         Subsystem: 3Com Corporation 3C905B Fast Etherlink XL 10/100
-         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- 
-Stepping- SERR- FastB2B-
-         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Latency: 32 (2500ns min, 2500ns max), Cache Line Size: 32 bytes
-         Interrupt: pin A routed to IRQ 10
-         Region 0: I/O ports at a800 [size=128]
-         Region 1: Memory at f5000000 (32-bit, non-prefetchable) [size=128]
-         [virtual] Expansion ROM at 30000000 [disabled] [size=128K]
-         Capabilities: [dc] Power Management version 1
-                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
-PME(D0-,D1+,D2+,D3hot+,D3cold-)
-                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-00: b7 10 55 90 17 00 10 02 64 00 00 02 08 20 00 00
-10: 01 a8 00 00 00 00 00 f5 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 b7 10 55 90
-30: 00 00 00 00 dc 00 00 00 00 00 00 00 0a 01 0a 0a
+I'm OK with either way. I just wanted to set a standard while it's still
+early enough to set one.
 
-# cat /proc/interrupts
-            CPU0
-   0:  524969030    XT-PIC-XT        timer
-   1:       2270    XT-PIC-XT        i8042
-   2:          0    XT-PIC-XT        cascade
-   5:       1357    XT-PIC-XT        uhci_hcd:usb1, uhci_hcd:usb2, uhci_hcd:usb3
-   6:          5    XT-PIC-XT        floppy
-   7:         78    XT-PIC-XT        parport0
-   8:          1    XT-PIC-XT        rtc
-   9:          0    XT-PIC-XT        acpi
-  10:   55418579    XT-PIC-XT        CMI8738-MC6, eth0
-  11:   31568244    XT-PIC-XT        nvidia
-  12:      12934    XT-PIC-XT        i8042
-  14:    1946936    XT-PIC-XT        ide0
-  15:    1293985    XT-PIC-XT        ide1
-NMI:          0
-ERR:          0
+-- Steve
 
-I know, that I have disabled APIC, I noted it yesterday and rebuilt the 
-kernel with the APIC support, but still didn't reboot. If this is required 
-I'll do so, but before that, there was running smp kernel and that kind of 
-hangs appeared too.
 
-There is nothing significant in dmesg, 2.6.17-rc5 was fine, so this is 
-definitely a regression.
-
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
