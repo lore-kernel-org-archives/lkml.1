@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933868AbXCNFQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbXCNFQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933868AbXCNFQZ (ORCPT <rfc822;w@1wt.eu>);
+	id S933853AbXCNFQZ (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 14 Mar 2007 01:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933853AbXCNFMd
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933855AbXCNFMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 01:12:33 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:45364 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933850AbXCNFMT (ORCPT
+	Wed, 14 Mar 2007 01:12:32 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:51796 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933853AbXCNFMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Mar 2007 01:12:19 -0400
-Message-Id: <20070314051050.313710539@goodmis.org>
+Message-Id: <20070314051049.092023381@goodmis.org>
 References: <20070314050819.536207642@goodmis.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 14 Mar 2007 01:08:35 -0400
+Date: Wed, 14 Mar 2007 01:08:28 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,12 +22,13 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
        Glauber de Oliveira Costa <glommer@gmail.com>,
        Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 16/18] kconfig for oprofile
-Content-Disposition: inline; filename=oprofile-kconfig.patch
+Subject: [PATCH 09/18] create x86/kernel/cpu/mcheck/Makefile
+Content-Disposition: inline; filename=cpu-mcheck-makefile.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Merge the oprofile configs.
+Create the Makefile in the common hold and adjust the i386 and
+x86_64 code accordingly.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Cc: Glauber de Oliveira Costa <glommer@gmail.com>
@@ -36,28 +37,21 @@ Cc: Chris Wright <chrisw@sous-sol.org>
 Cc: Andi Kleen <ak@muc.de>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>
 
-diff --git a/arch/x86_64/oprofile/Kconfig b/arch/x86_64/oprofile/Kconfig
-deleted file mode 100644
-index d8a8408..0000000
---- a/arch/x86_64/oprofile/Kconfig
-+++ /dev/null
-@@ -1,17 +0,0 @@
--config PROFILING
--	bool "Profiling support (EXPERIMENTAL)"
--	help
--	  Say Y here to enable the extended profiling support mechanisms used
--	  by profilers such as OProfile.
--	  
--
--config OPROFILE
--	tristate "OProfile system profiling (EXPERIMENTAL)"
--	depends on PROFILING
--	help
--	  OProfile is a profiling system capable of profiling the
--	  whole system, include the kernel, kernel modules, libraries,
--	  and applications.
--
--	  If unsure, say N.
--
+diff --git a/arch/x86/kernel/cpu/mcheck/Makefile b/arch/x86/kernel/cpu/mcheck/Makefile
+new file mode 100644
+index 0000000..6e7cb4c
+--- /dev/null
++++ b/arch/x86/kernel/cpu/mcheck/Makefile
+@@ -0,0 +1 @@
++obj-y	= therm_throt.o
+\ No newline at end of file
+diff --git a/arch/i386/kernel/cpu/mcheck/Makefile b/arch/i386/kernel/cpu/mcheck/Makefile
+index f1ebe1c..30808f3 100644
+--- a/arch/i386/kernel/cpu/mcheck/Makefile
++++ b/arch/i386/kernel/cpu/mcheck/Makefile
+@@ -1,2 +1,2 @@
+-obj-y	=	mce.o k7.o p4.o p5.o p6.o winchip.o therm_throt.o
++obj-y	=	mce.o k7.o p4.o p5.o p6.o winchip.o
+ obj-$(CONFIG_X86_MCE_NONFATAL)	+=	non-fatal.o
 
 --
