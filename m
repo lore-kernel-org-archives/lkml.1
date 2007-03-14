@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932419AbXCNS0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbXCNS0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932419AbXCNS0I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 14:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932425AbXCNS0I
+	id S932346AbXCNS0d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 14:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932446AbXCNS0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 14:26:08 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:49468 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932346AbXCNS0G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 14:26:06 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <45F83E14.3060003@s5r6.in-berlin.de>
-Date: Wed, 14 Mar 2007 19:25:24 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070303 SeaMonkey/1.1.1
+	Wed, 14 Mar 2007 14:26:33 -0400
+Received: from styx.suse.cz ([82.119.242.94]:58731 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932346AbXCNS0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 14:26:32 -0400
+Date: Wed, 14 Mar 2007 19:25:59 +0100
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Eric Piel <Eric.Piel@tremplin-utc.net>, mitr@volny.cz, otauber@web.de,
+       linux-kernel@vger.kernel.org,
+       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
+Subject: Re: [PATCH 0/2] wistron_btns: More keymaps
+Message-ID: <20070314182559.GC5264@suse.cz>
+References: <45ECA23A.5010503@tremplin-utc.net> <d120d5000703060536k7743ece9hb20fa4d1f7ad7ad7@mail.gmail.com> <45ED8809.70309@tremplin-utc.net> <45F72D37.6090004@tremplin-utc.net> <d120d5000703140654y4d8cb0a3oafd49c48a045bd77@mail.gmail.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>
-CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       Greg KH <greg@kroah.com>
-Subject: Re: oops in __nodemgr_remove_host_dev (was Re: Ooops with suspend
- to RAM)
-References: <200703140642.28390.ismail@pardus.org.tr> <45F7D922.6010501@s5r6.in-berlin.de> <200703141858.39531.ismail@pardus.org.tr>
-In-Reply-To: <200703141858.39531.ismail@pardus.org.tr>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d120d5000703140654y4d8cb0a3oafd49c48a045bd77@mail.gmail.com>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ismail Dönmez wrote:
-> On Wednesday 14 March 2007 13:14:42 Stefan Richter wrote:
->> Do you have a script or config which marks the
->> ohci1394 module to be unloaded before suspend?  
+On Wed, Mar 14, 2007 at 09:54:27AM -0400, Dmitry Torokhov wrote:
+> Hi Eric,
 > 
-> I used kpowersave to suspend, I failed to find anything related to ohci1394 in 
-> its config but rmmod ohci1394 gives exact oops so it must be rmmoding it. 
-[...]
-> Are you able to rmmod it?
+> On 3/13/07, Eric Piel <Eric.Piel@tremplin-utc.net> wrote:
+> >Hello,
+> >
+> >As a sequel to my patch "Wistron button support for TravelMate 610" of
+> >last week, here is a bigger addition of keymaps for the wistron_btns.
+> >
+> >Patch 1 adds all the database of acerhk which fits this driver (about 25
+> >more laptops).
+> >Patch 2 adds a generic map that should fit most users but has the
+> >disadvantage of not being automatic.
+> >
+> >Dmitry, I've tried to make them against your tree. Still, if they don't
+> >apply cleanly, just tell me and I'll try harder!
+> >
+> 
+> I have couple of comments/requests:
+> 
+> 1. KEY_OPEN and KEY_CLOSE should not be used to signal state of the
+> lid, they correspond to Accpication Control Open and Close keys from
+> USB HID HUT spec:
+> 
+>     http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
+> 
+> SW_LID shoudl be used to signal lid state instead.
+> 
+> 2. I also have a concern about using KEY_SCREEN to signal toggling
+> display on and off. I am CCing Vojtech - he must know what the
+> original intent of this key code was. BTW, when user presses
+> corresponding button - does the display actually goes off? Maybe we
+> need another switch.
 
-Yes, but on 2.6.20 and earlier kernels, most of the time with
-development versions of the 1394 drivers. I still haven't tried
-2.6.21-rc, will hopefully get to it tonight.
+Sorry, Dmitry, I probably should have documented it back then, I don't
+have the slightest idea anymore.
 
-[...]
-> I'll give -mm a try sometime this weekend then.
+> 3. The number of keymap tables grew considerably ;) Do you think it
+> woudl make sense to allocate memory for keymap at device creation time
+> and copy selected keymap and them mark all original keymaps as
+> __initdata so they are discarded one module completed initialization?
+> 
+> Thank you.
 
-It will most certainly behave the same, unless you use the new
-alternative FireWire drivers which are a whole different game. I hate to
-say it but they don't have suspend + resume support yet. Like the
-vanilla Linux drivers before 2.6.20/21, they have to be unloaded before
-suspend or at least reloaded after resume.
 -- 
-Stefan Richter
--=====-=-=== --== -===-
-http://arcgraph.de/sr/
+Vojtech Pavlik
+Director SuSE Labs
