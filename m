@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbXCNPWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbXCNPXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752654AbXCNPWh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933926AbXCNPVz
+	id S1752467AbXCNPXM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932642AbXCNPWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:21:55 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:64029 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752711AbXCNPVx (ORCPT
+	Wed, 14 Mar 2007 11:22:40 -0400
+Received: from smtp.nokia.com ([131.228.20.172]:23722 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933925AbXCNPVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:21:53 -0400
+	Wed, 14 Mar 2007 11:21:36 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Frank Haverkamp <haver@vnet.ibm.com>,
@@ -17,182 +17,274 @@ Cc: Frank Haverkamp <haver@vnet.ibm.com>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Artem Bityutskiy <dedekind@infradead.org>
-Date: Wed, 14 Mar 2007 17:19:44 +0200
-Message-Id: <20070314151944.1112.44.sendpatchset@localhost.localdomain>
+Date: Wed, 14 Mar 2007 17:21:25 +0200
+Message-Id: <20070314152125.1112.94096.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
 References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/22 take 3] UBI: user-space API header
-X-OriginalArrivalTime: 14 Mar 2007 15:19:44.0367 (UTC) FILETIME=[31E027F0:01C7664C]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070314172003-22E7ABB0-69D13980/0-0/0-1
+Subject: [PATCH 22/22 take 3] UBI: Linux build integration
+X-OriginalArrivalTime: 14 Mar 2007 15:21:25.0020 (UTC) FILETIME=[6DDE95C0:01C7664C]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/include/mtd/ubi-user.h tmp-to/include/mtd/ubi-user.h
---- tmp-from/include/mtd/ubi-user.h	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/include/mtd/ubi-user.h	2007-03-14 17:15:49.000000000 +0200
-@@ -0,0 +1,163 @@
-+/*
-+ * Copyright (c) International Business Machines Corp., 2006
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-+ * the GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ *
-+ * Author: Artem B. Bityutskiy
-+ */
+diff -auNrp tmp-from/drivers/mtd/Kconfig tmp-to/drivers/mtd/Kconfig
+--- tmp-from/drivers/mtd/Kconfig	2007-03-14 17:15:49.000000000 +0200
++++ tmp-to/drivers/mtd/Kconfig	2007-03-14 17:15:49.000000000 +0200
+@@ -292,5 +292,7 @@ source "drivers/mtd/nand/Kconfig"
+ 
+ source "drivers/mtd/onenand/Kconfig"
+ 
++source "drivers/mtd/ubi/Kconfig"
 +
-+#ifndef __UBI_USER_H__
-+#define __UBI_USER_H__
+ endmenu
+ 
+diff -auNrp tmp-from/drivers/mtd/Makefile tmp-to/drivers/mtd/Makefile
+--- tmp-from/drivers/mtd/Makefile	2007-03-14 17:15:49.000000000 +0200
++++ tmp-to/drivers/mtd/Makefile	2007-03-14 17:15:49.000000000 +0200
+@@ -28,3 +28,5 @@ nftl-objs		:= nftlcore.o nftlmount.o
+ inftl-objs		:= inftlcore.o inftlmount.o
+ 
+ obj-y		+= chips/ maps/ devices/ nand/ onenand/
 +
-+/*
-+ * UBI volume creation
-+ * ~~~~~~~~~~~~~~~~~~~
-+ *
-+ * UBI volumes are created via the %UBI_IOCMKVOL IOCTL command of UBI character
-+ * device. A &struct ubi_mkvol_req object has to be properly filled and a
-+ * pointer to it has to be passed to the IOCTL.
-+ *
-+ * UBI volume deletion
-+ * ~~~~~~~~~~~~~~~~~~~
-+ *
-+ * To delete a volume, the %UBI_IOCRMVOL IOCTL command of the UBI character
-+ * device should be used. A pointer to the 32-bit volume ID hast to be passed
-+ * to the IOCTL.
-+ *
-+ * UBI volume re-size
-+ * ~~~~~~~~~~~~~~~~~~
-+ *
-+ * To re-size a volume, the %UBI_IOCRSVOL IOCTL command of the UBI character
-+ * device should be used. A &struct ubi_rsvol_req object has to be properly
-+ * filled and a pointer to it has to be passed to the IOCTL.
-+ *
-+ * UBI volume update
-+ * ~~~~~~~~~~~~~~~~~
-+ *
-+ * Volume update should be done via the %UBI_IOCVOLUP IOCTL command of the
-+ * corresponding UBI volume character device. A pointer to a 64-bit update
-+ * size should be passed to the IOCTL. After then, UBI expects user to write
-+ * this number of bytes to the volume character device. The update is finished
-+ * when the claimed number of bytes is passed. So, the volume update sequence
-+ * is something like:
-+ *
-+ * fd = open("/dev/my_volume");
-+ * ioctl(fd, UBI_IOCVOLUP, &image_size);
-+ * write(fd, buf, image_size);
-+ * close(fd);
-+ */
++obj-$(CONFIG_MTD_UBI)		+= ubi/
+diff -auNrp tmp-from/drivers/mtd/ubi/Kconfig tmp-to/drivers/mtd/ubi/Kconfig
+--- tmp-from/drivers/mtd/ubi/Kconfig	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/Kconfig	2007-03-14 17:15:49.000000000 +0200
+@@ -0,0 +1,60 @@
++# drivers/mtd/ubi/Kconfig
 +
-+/*
-+ * When a new volume is created, users may either specify the volume number they
-+ * want to create or to let UBI automatically assign a volume number using this
-+ * constant.
-+ */
-+#define UBI_VOL_NUM_AUTO (-1)
++menu "UBI - Unsorted block images"
++	depends on MTD
 +
-+/* Maximum volume name length */
-+#define UBI_MAX_VOLUME_NAME 127
++config MTD_UBI
++	tristate "Enable UBI"
++	depends on MTD
++	select CRC32
++	help
++	  UBI is a software layer above MTD layer which admits of LVM-like
++	  logical volumes on top of MTD devices, hides some complexities of
++	  flash chips like wear and bad blocks and provides some other useful
++	  capabilities. Please, consult the MTD web site for more details
++	  (www.linux-mtd.infradead.org).
 +
-+/* IOCTL commands of UBI character devices */
++config MTD_UBI_WL_THRESHOLD
++	int "UBI wear-leveling threshold"
++	default 4096
++	range 2 65536
++	depends on MTD_UBI
++	help
++	  This parameter defines the maximum difference between the highest
++	  erase counter value and the lowest erase counter value of eraseblocks
++	  of UBI devices. When this threshold is exceeded, UBI starts performing
++	  wear leveling by means of moving data from eraseblock with low erase
++	  counter to eraseblocks with high erase counter. Leave the default
++	  value if unsure.
 +
-+#define UBI_IOC_MAGIC 'o'
++config MTD_UBI_BEB_RESERVE
++	int "Percentage of reserved eraseblocks for bad eraseblocks handling"
++	default 1
++	range 0 25
++	depends on MTD_UBI
++	help
++	  If the MTD device admits of bad eraseblocks (e.g. NAND flash), UBI
++	  reserves some amount of physical eraseblocks to handle new bad
++	  eraseblocks. For example, if a flash physical eraseblock becomes bad,
++	  UBI uses these reserved physical eraseblocks to relocate the bad one.
++	  This option specifies how many physical eraseblocks will be reserved
++	  for bad eraseblock handling (percents of total number of good flash
++	  eraseblocks). If the underlying flash does not admit of bad
++	  eraseblocks (e.g. NOR flash), this value is ignored and nothing is
++	  reserved. Leave the default value if unsure.
 +
-+/* Create an UBI volume */
-+#define UBI_IOCMKVOL _IOW(UBI_IOC_MAGIC, 0, struct ubi_mkvol_req)
-+/* Remove an UBI volume */
-+#define UBI_IOCRMVOL _IOW(UBI_IOC_MAGIC, 1, int32_t)
-+/* Re-size an UBI volume */
-+#define UBI_IOCRSVOL _IOW(UBI_IOC_MAGIC, 2, struct ubi_rsvol_req)
++config MTD_UBI_GLUEBI
++	bool "Emulate MTD devices"
++	default n
++	depends on MTD_UBI
++	help
++	   This option enables MTD devices emulation on top of UBI volumes: for
++	   each UBI volumes an MTD device is created, and all I/O to this MTD
++	   device is redirected to the UBI volume. This is handy to make
++	   MTD-oriented software (like JFFS2) work on top of UBI. Do not enable
++	   this if no legacy software will be used.
 +
-+/* IOCTL commands of UBI volume character devices */
++# There are a lot of debugging options, so they are moved to a distinct file
++source "drivers/mtd/ubi/Kconfig.debug"
 +
-+#define UBI_VOL_IOC_MAGIC 'O'
++endmenu
+diff -auNrp tmp-from/drivers/mtd/ubi/Kconfig.debug tmp-to/drivers/mtd/ubi/Kconfig.debug
+--- tmp-from/drivers/mtd/ubi/Kconfig.debug	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/Kconfig.debug	2007-03-14 17:15:49.000000000 +0200
+@@ -0,0 +1,153 @@
++# UBI debugging configuration options, part of drivers/mtd/ubi/Kconfig
 +
-+/* Start UBI volume update */
-+#define UBI_IOCVOLUP _IOW(UBI_VOL_IOC_MAGIC, 0, int64_t)
-+/* An eraseblock erasure command, used for debugging, disabled by default */
-+#define UBI_IOCEBER _IOW(UBI_VOL_IOC_MAGIC, 1, int32_t)
++comment "UBI debugging options"
++	depends on MTD_UBI
 +
-+/*
-+ * UBI volume type constants.
-+ *
-+ * @UBI_DYNAMIC_VOLUME: dynamic volume
-+ * @UBI_STATIC_VOLUME:  static volume
-+ */
-+enum {
-+	UBI_DYNAMIC_VOLUME = 3,
-+	UBI_STATIC_VOLUME = 4
-+};
++config MTD_UBI_DEBUG
++	bool "UBI debugging"
++	depends on SYSFS
++	depends on MTD_UBI
++	select DEBUG_FS
++	select KALLSYMS_ALL
++	help
++	  This enables UBI debugging support: enables various assertions in the
++	  code, verbose debugging messages and allows to switch many other
++	  debugging features on. UBI exposes its debugging stuff via the Linux
++	  debugfs virtual file-system under the "ubi" directory. Mount debugfs
++	  to access this stuff: mount -t debugfs none <mount_point>
 +
-+/**
-+ * struct ubi_mkvol_req - volume description data structure used in
-+ * volume creation requests.
-+ *
-+ * @vol_id: volume number
-+ * @alignment: volume alignment
-+ * @bytes: volume size in bytes
-+ * @vol_type: volume type (%UBI_DYNAMIC_VOLUME or %UBI_STATIC_VOLUME)
-+ * @padding1: reserved for future, not used
-+ * @name_len: volume name length
-+ * @padding2: reserved for future, not used
-+ * @name: volume name
-+ *
-+ * This structure is used by userspace programs when creating new volumes. The
-+ * @used_bytes field is only necessary when creating static volumes.
-+ *
-+ * The @alignment field specifies the required alignment of the volume logical
-+ * eraseblock. This means, that the size of logical eraseblocks will be aligned
-+ * to this number, i.e.,
-+ *	(UBI device logical eraseblock size) mod (@alignment) = 0.
-+ *
-+ * To put it differently, the logical eraseblock of this volume may be slightly
-+ * shortened in order to make it properly aligned. The alignment has to be
-+ * multiple of the flash minimal input/output unit, or %1 to utilize the entire
-+ * available space of logical eraseblocks.
-+ *
-+ * The @alignment field may be useful, for example, when one wants to maintain
-+ * a block device on top of an UBI volume. In this case, it is desirable to fit
-+ * an integer number of blocks in logical eraseblocks of this UBI volume. With
-+ * alignment it is possible to update this volume using plane UBI volume image
-+ * BLOBs, without caring about how to properly align them.
-+ */
-+struct ubi_mkvol_req {
-+	int32_t vol_id;
-+	int32_t alignment;
-+	int64_t bytes;
-+	int8_t vol_type;
-+	int8_t padding1;
-+	int16_t name_len;
-+	int8_t padding2[4];
-+	char name[UBI_MAX_VOLUME_NAME + 1];
-+} __attribute__ ((packed));
++config MTD_UBI_DEBUG_DISABLE_BGT
++	bool "Do not enable the UBI background thread"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option switches the background thread off by default. The thread
++	  may be also be enabled/disabled via UBI sysfs.
 +
-+/**
-+ * struct ubi_rsvol_req - a data structure used in volume re-size requests.
-+ *
-+ * @vol_id: ID of the volume to re-size
-+ * @bytes: new size of the volume in bytes
-+ *
-+ * Re-sizing is possible for both dynamic and static volumes. But while dynamic
-+ * volumes may be re-sized arbitrarily, static volumes cannot be made to be
-+ * smaller then the number of bytes they bear. To arbitrarily shrink a static
-+ * volume, it must be wiped out first (by means of volume update operation with
-+ * zero number of bytes).
-+ */
-+struct ubi_rsvol_req {
-+	int64_t bytes;
-+	int32_t vol_id;
-+} __attribute__ ((packed));
++config MTD_UBI_DEBUG_USERSPACE_IO
++	bool "Direct user-space write/erase support"
++	default n
++	depends on MTD_UBI
++	help
++	  By default, users cannot directly write and erase individual
++	  eraseblocks of dynamic volumes, and have to use update operation
++	  instead. This option enables this capability - it is very useful for
++	  debugging and testing.
 +
-+#endif /* __UBI_USER_H__ */
++config MTD_UBI_DEBUG_EMULATE_BITFLIPS
++	bool "Emulate flash bit-flips"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option emulates bit-flips with probability 1/50, which in turn
++	  causes scrubbing. Useful for debugging and stressing UBI.
++
++config MTD_UBI_DEBUG_EMULATE_WRITE_FAILURES
++	bool "Emulate flash write failures"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option emulates write failures with probability 1/100. Useful for
++	  debugging and testing how UBI handlines errors.
++
++config MTD_UBI_DEBUG_EMULATE_ERASE_FAILURES
++	bool "Emulate flash erase failures"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option emulates erase failures with probability 1/100. Useful for
++	  debugging and testing how UBI handlines errors.
++
++menu "UBI debugging messages"
++	depends on MTD_UBI_DEBUG
++
++config MTD_UBI_DEBUG_MSG_UIF
++	bool "User interface unit messages"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option enables debugging messages from the UBI user interfaces
++	  unit.
++
++config MTD_UBI_DEBUG_MSG_VTBL
++	bool "Volume table unit messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables debugging messages from the UBI volume table
++	  unit.
++
++config MTD_UBI_DEBUG_MSG_EBA
++	bool "Eraseblock association unit messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables debugging messages from the UBI eraseblock
++	  association unit.
++
++config MTD_UBI_DEBUG_MSG_WL
++	bool "Wear-leveling unit messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables debugging messages from the UBI wear-leveling
++	  unit.
++
++config MTD_UBI_DEBUG_MSG_IO
++	bool "Input/output unit messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables debugging messages from the UBI input/output unit.
++
++config MTD_UBI_DEBUG_MSG_BLD
++	bool "UBI build messages"
++	default n
++	depends on MTD_UBI_DEBUG
++	help
++	  This option enables UBI build debugging messages
++
++endmenu # UBI debugging messages
++
++menu "UBI paranoid checks"
++	depends on MTD_UBI_DEBUG
++
++config MTD_UBI_DEBUG_PARANOID_VTBL
++	bool "Paranoid checks in the volume table unit"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option enables extra self-checks in the volume table unit.
++
++config MTD_UBI_DEBUG_PARANOID_EBA
++	bool "Paranoid checks in the eraseblock association unit"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option enables extra self-checks in the eraseblock association
++	  unit.
++
++config MTD_UBI_DEBUG_PARANOID_WL
++	bool "Paranoid checks in the wear-leveling unit"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option enables extra self-checks in the wear-leveling unit.
++
++config MTD_UBI_DEBUG_PARANOID_IO
++	bool "Paranoid checks in the input/output unit"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option enables extra self-checks in the input/output unit.
++	  Warning, this is rather heavy-weight and will slow UBI down.
++
++config MTD_UBI_DEBUG_PARANOID_SCAN
++	bool "Paranoid checks in the scanning unit"
++	depends on MTD_UBI_DEBUG
++	default n
++	help
++	  This option enables extra self-checks in the scanning unit. Warning,
++	  this is rather heavy-weight and will slow UBI down.
++
++endmenu # UBI paranoid checks
+diff -auNrp tmp-from/drivers/mtd/ubi/Makefile tmp-to/drivers/mtd/ubi/Makefile
+--- tmp-from/drivers/mtd/ubi/Makefile	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/Makefile	2007-03-14 17:15:49.000000000 +0200
+@@ -0,0 +1,7 @@
++obj-$(CONFIG_MTD_UBI) += ubi.o
++
++ubi-y += upd.o sysfs.o cdev.o uif.o vtbl.o vmt.o eba.o io.o wl.o scan.o build.o
++ubi-y += account.o misc.o
++
++ubi-$(CONFIG_MTD_UBI_DEBUG) += debug.o
++ubi-$(CONFIG_MTD_UBI_GLUEBI) += gluebi.o
+diff -auNrp tmp-from/include/mtd/Kbuild tmp-to/include/mtd/Kbuild
+--- tmp-from/include/mtd/Kbuild	2007-03-14 17:15:49.000000000 +0200
++++ tmp-to/include/mtd/Kbuild	2007-03-14 17:15:49.000000000 +0200
+@@ -3,3 +3,5 @@ header-y += jffs2-user.h
+ header-y += mtd-abi.h
+ header-y += mtd-user.h
+ header-y += nftl-user.h
++header-y += ubi-header.h
++header-y += ubi-user.h
