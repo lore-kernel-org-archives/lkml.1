@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbXCNBJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbXCNBMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbXCNBJq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 21:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXCNBJq
+	id S1752687AbXCNBMo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 21:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXCNBMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 21:09:46 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:6146 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752688AbXCNBJo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 21:09:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dVs8HxPXO6YM7liby/VMi/TmYoRLBfmh6WNAtltET4IfaGThM4/0Jm9Q3LZw6nia61gIjXI8zSEW6b2K33UGGqh1yHAy1z/q/pEjWZyztQmFLbq710x4i9pKOb6cYFDcx042XguZXk161eDB78uj0xVbFwVbtBhBHbJEUhHIXX8=
-Message-ID: <29495f1d0703131809i6f76e409q2c505a33f0b23a8d@mail.gmail.com>
-Date: Tue, 13 Mar 2007 18:09:42 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: SMP performance degradation with sysbench
-Cc: "Anton Blanchard" <anton@samba.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Lorenzo Allegrucci" <l_allegrucci@yahoo.it>,
-       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <45F74917.40806@cosmosbay.com>
+	Tue, 13 Mar 2007 21:12:44 -0400
+Received: from holomorphy.com ([66.93.40.71]:59103 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752687AbXCNBMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 21:12:44 -0400
+Date: Tue, 13 Mar 2007 18:12:44 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
+Message-ID: <20070314011244.GM2986@holomorphy.com>
+References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com> <20070313005334.853559ca.akpm@linux-foundation.org> <45F65ADA.9010501@yahoo.com.au> <20070313035250.f908a50e.akpm@linux-foundation.org> <45F685C6.8070806@yahoo.com.au> <20070313041551.565891b5.akpm@linux-foundation.org> <45F68B4B.9020200@yahoo.com.au> <20070313044756.b45649ac.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1172425476.5489.11.camel@odyssey.lan>
-	 <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au>
-	 <20070312220042.GA807@kryten>
-	 <29495f1d0703131736l74a63c15n94f03527d7e63500@mail.gmail.com>
-	 <45F74917.40806@cosmosbay.com>
+In-Reply-To: <20070313044756.b45649ac.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/13/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> Nish Aravamudan a écrit :
-> > On 3/12/07, Anton Blanchard <anton@samba.org> wrote:
-> >>
-> >> Hi Nick,
-> >>
-> >> > Anyway, I'll keep experimenting. If anyone from MySQL wants to help
-> >> look
-> >> > at this, send me a mail (eg. especially with the sched_setscheduler
-> >> issue,
-> >> > you might be able to do something better).
-> >>
-> >> I took a look at this today and figured Id document it:
-> >>
-> >> http://ozlabs.org/~anton/linux/sysbench/
-> >>
-> >> Bottom line: it looks like issues in the glibc malloc library, replacing
-> >> it with the google malloc library fixes the negative scaling:
-> >>
-> >> # apt-get install libgoogle-perftools0
-> >> # LD_PRELOAD=/usr/lib/libtcmalloc.so /usr/sbin/mysqld
-> >
-> > Quick datapoint, still collecting data and trying to verify it's
-> > always the case: on my 8-way Xeon, I'm actually seeing *much* worse
-> > performance with libtcmalloc.so compared to mainline. Am generating
-> > graphs and such still, but maybe someone else with x86_64 hardware
-> > could try the google PRELOAD and see if it helps/hurts (to rule out
-> > tester stupidity)?
->
-> I wish I had a 8-way test platform :)
->
-> Anyway, could you post some oprofile results ?
+On Tue, Mar 13, 2007 at 04:47:56AM -0800, Andrew Morton wrote:
+> I'm trying to remember why we ever would have needed to zero out the
+> pagetable pages if we're taking down the whole mm?  Maybe it's
+> because "oh, the arch wants to put this page into a quicklist to
+> recycle it", which is all rather circular.
+> It would be interesting to look at a) leave the page full of random
+> garbage if we're releasing the whole mm and b) return it straight to
+> the page allocator.
 
-Hopefully soon -- want to still make sure I'm not doing something
-dumb. Am also hoping to get some of the gdb backtraces like Anton had.
+We never did need to modify ptes on exit() or other pagetable prunings
+(not that they were ever done outside exit() before 2.6.x). The only
+subtlety is that pruning on munmap() needs a TLB flush for the TLB
+itself to drop the references to the pages referred to by the PTE's on
+pruning in the presence of hardware pagetable walkers (in the exit()
+case there are no user execution contexts left to potentially utilize
+the dead translations so it's less important). That's handled by
+tlb_remove_page() and shouldn't need any updates across such a change.
 
-Thanks,
-Nish
+I believe the zeroing on teardown was largely a result of idiom vs.
+any particular need. Essentially using ptep_get_and_clear() to handle
+the non-pruning munmap() case in a manner unified with other pagetable
+teardowns. Also likely is 2.4.x legacy from when that and possibly
+earlier kernels maintained arch-private quicklists for pagetables.
+
+There are furthermore distinctions to make between fork() and execve().
+fork() stomps over the entire process address space copying pagetables
+en masse. After execve() a process incrementally faults in PTE's one at
+a time. It should be clear that if case analyses are of interest at
+all, fork() will want cache-hot pages (cache-preloaded pages?) where
+such are largely wasted on incremental faults after execve(). The copy
+operations in fork() should probably also be examined in the context of
+shared pagetables at some point.
+
+
+-- wli
