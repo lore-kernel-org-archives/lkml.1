@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933849AbXCNFOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933863AbXCNFP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933849AbXCNFOn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 01:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933847AbXCNFOL
+	id S933863AbXCNFP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 01:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933861AbXCNFMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 01:14:11 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:48938 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933870AbXCNFMp (ORCPT
+	Wed, 14 Mar 2007 01:12:38 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:51756 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933847AbXCNFMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 01:12:45 -0400
-Message-Id: <20070314051048.391547801@goodmis.org>
+	Wed, 14 Mar 2007 01:12:13 -0400
+Message-Id: <20070314051048.919247301@goodmis.org>
 References: <20070314050819.536207642@goodmis.org>
 User-Agent: quilt/0.45-1
-Date: Wed, 14 Mar 2007 01:08:24 -0400
+Date: Wed, 14 Mar 2007 01:08:27 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,15 +22,13 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
        Glauber de Oliveira Costa <glommer@gmail.com>,
        Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 05/18] mv kernel/cpu/cpufreq/p4-clockmod.c
-Content-Disposition: inline; filename=cpu-freq-mv-p4-clockmod.patch
+Subject: [PATCH 08/18] create x86/kernel/cpu/Makefile
+Content-Disposition: inline; filename=cpu-makefile.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move kernel/cpu/cpufreq/p4-clockmod.c to the common hold.
-
-Also has the slight change to reference speedstep-lib.h that is being moved
-to include/asm-i386.
+Create the Makefile in the common hold and adjust the i386 and
+x86_64 code accordingly.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Cc: Glauber de Oliveira Costa <glommer@gmail.com>
@@ -39,22 +37,34 @@ Cc: Chris Wright <chrisw@sous-sol.org>
 Cc: Andi Kleen <ak@muc.de>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>
 
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-rename to arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-index 4786fed..ac5d5a1 100644
---- a/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-+++ b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-@@ -33,7 +33,7 @@
- #include <asm/msr.h>
- #include <asm/timex.h>
+diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+new file mode 100644
+index 0000000..bf4ae59
+--- /dev/null
++++ b/arch/x86/kernel/cpu/Makefile
+@@ -0,0 +1,5 @@
++
++obj-$(CONFIG_MTRR)	+= 	mtrr/
++obj-y				+= intel_cacheinfo.o
++obj-$(CONFIG_X86_MCE)	+=	mcheck/
++obj-$(CONFIG_CPU_FREQ)	+=	cpufreq/
+diff --git a/arch/i386/kernel/cpu/Makefile b/arch/i386/kernel/cpu/Makefile
+index 010aecf..e484d74 100644
+--- a/arch/i386/kernel/cpu/Makefile
++++ b/arch/i386/kernel/cpu/Makefile
+@@ -8,12 +8,11 @@ obj-y	+=	amd.o
+ obj-y	+=	cyrix.o
+ obj-y	+=	centaur.o
+ obj-y	+=	transmeta.o
+-obj-y	+=	intel.o intel_cacheinfo.o
++obj-y	+=	intel.o
+ obj-y	+=	rise.o
+ obj-y	+=	nexgen.o
+ obj-y	+=	umc.o
  
--#include "speedstep-lib.h"
-+#include <asm-i386/speedstep-lib.h>
+ obj-$(CONFIG_X86_MCE)	+=	mcheck/
  
- #define PFX	"p4-clockmod: "
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "p4-clockmod", msg)
+-obj-$(CONFIG_MTRR)	+= 	mtrr/
+ obj-$(CONFIG_CPU_FREQ)	+=	cpufreq/
 
 --
