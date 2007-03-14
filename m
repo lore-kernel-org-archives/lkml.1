@@ -1,154 +1,88 @@
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S1753107AbXCMEF3 (ORCPT <rfc822;ralf@linux-mips.org>); Tue, 13 Mar 2007 00:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXCMEF3 (ORCPT <rfc822;linux-kernel-outgoing>); Tue, 13 Mar 2007 00:05:29 -0400
-Received: from sample.avertlabs.com ([205.227.136.198]:59958 "EHLO dalsmrelay4.avertlabs.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP id S1753107AbXCMEFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Tue, 13 Mar 2007 00:05:00 -0400
-Message-ID: <023A8B2E7263454CA0F330E2E9EC2CF20180BCB5@avert-exchange1.na.nai.com>
-From: Virus Research <Virus_Research@avertlabs.com>
-To: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
-Subject: 3280277 - ynlg
-Date: Mon, 12 Mar 2007 19:22:12 -0800
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S1752706AbXCNEDO (ORCPT <rfc822;ralf@linux-mips.org>); Wed, 14 Mar 2007 00:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbXCNEDO (ORCPT <rfc822;linux-kernel-outgoing>); Wed, 14 Mar 2007 00:03:14 -0400
+Received: from kubico.com ([207.210.125.26]:47162 "EHLO alfa.kubico.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP id S1752706AbXCNEDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Wed, 14 Mar 2007 00:03:13 -0400
+X-Greylist: delayed 8571 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Mar 2007 00:03:13 EDT
+To: linux-kernel@vger.kernel.org
+Subject: Presentes para o Dia do Pai
+Date: Wed, 14 Mar 2007 01:39:55 +0000
+From: marketing@kubico.com
+Message-ID: <74cee438ba06cd8abba291d536010f85@www.kubico.com>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
+X-Mailer: phplist v2.10.3
+X-MessageID: 17
+X-ListMember: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2653.19)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-Content-Type: text/plain
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=iso-8859-1
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - alfa.kubico.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [99 99] / [47 12]
+X-AntiAbuse: Sender Address Domain - alfa.kubico.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753107AbXCMEF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752706AbXCNEDO@vger.kernel.org>
 
-AVERT Labs - Beaverton
+**KUBICO**
 
-Current Scan Engine Version:5100.0194
+Os melhores pre=E7os de PDA's do mercado.
 
-Current DAT Version:4982.0000
+O presente ideal para o DIA DO PAI.
 
-Thank you for your submission.
+ PDA00024=20
+ HP IPAQ HW6915 MOBILE MESSENGER FA736AA=20
+ =AC591,61=20
 
+ PDA00030=20
+ HTC MTEOR 3G SMARTPHONE=20
+ =AC440,30=20
 
-Analysis ID: 3280277
+ PDA00029=20
+ HTC P3300 WIN MOBILE ING C/SISTEMA NAVEGA=C7=C3O NDRIVE IBERIA=20
+ =AC596,09=20
 
-File Name            Findings                       Detection
-Type         Extra
---------------------|------------------------------|------------------------
-----|------------|-----
-virus_research@nai.c|current detection             |w32/mydoom.o@mm!zip
-|Virus       |no   
+ PDA00025=20
+ HTC TYTN SMART PHONE BLUETOOTH WI-FI 3G TRI BAND PT=20
+ =AC604,50=20
 
-current detection [virus_research@nai.com.zip]
+ PDA00028=20
+ NDRIVE GO QTEK G100 + MAPA IBERICO=20
+ =AC315,62=20
 
+*IVA 21% inclu=EDdo.
 
-   The file received is infected and can be detected and removed with our
-current DAT     
-files and engine. It is recommended that you update your DAT and engine
-files and scan 
-your computer again.
+VISITE-NOS em:
+http://www.kubico.com
 
+ou
+http://www.kubico.com/loja
 
-If you are not seeing this with the product you are using, please speak with
-technical 
-support so that they can help you determine the cause of this discrepancy.
 
 
-To find detailed information about viruses and other malware, please review
-AVERT's    
-Virus Information Library:
+--
+Se n=E3o quiser receber mais nenhuma das nossas newsletters,=20
+http://www.kubico.com/listas/?p=3Dunsubscribe&uid=3D54514fb564ba608941c=
+54507db859095
 
+Para actualizar os seus dados visite
+http://www.kubico.com/listas/?p=3Dpreferences&uid=3D54514fb564ba608941c=
+54507db859095
+Para reeencaminhar esta mensagem
+http://www.kubico.com/listas/?p=3Dforward&uid=3D54514fb564ba608941c5450=
+7db859095&mid=3D17
 
-http://vil.mcafeesecurity.com
 
+--
+Powered by PHPlist, www.phplist.com --
 
-In order to get the fastest possible response, you may wish to submit future
 
-virus-samples to:
-
-
-https://www.webimmune.net/default.asp
-
-
-In most cases it can respond almost instantly with a solution. This may also
-be the    
-best option if you are having a problem with gateway scanners stripping your
-sample    
-submission.
-
-
-If you believe your computer is infected, but are unsure which files should
-be         
-submitted to AVERT for review, please visit:
-
-
-http://vil.mcafeesecurity.com/vil/submit-sample.aspx
-
-
-For other virus-related information, please review the AVERT homepage at:
-
-
-http://www.mcafee.com/us/threat_center/default.asp
-
-
-Support -
-
-
-Virus Research accepts file-samples for analysis and possible inclusion into
-AV        
-signature DAT sets. We are also prepared to answer general virus questions.
-All        
-product-related questions and comments can be addressed through technical
-support and  
-customer service, including:
-
-
-* Product installation and update questions
-
-* Product usage questions
-
-* Specific operating system/version questions
-
-* Assistance with detection and cleaning or removal of viruses or trojans
-
-
-Use the following link to update your DAT and scan engine to the most
-current version: 
-
-http://www.mcafee.com/apps/downloads/security_updates/dat.asp
-
-
-Use the following links to reach online technical support for McAfee
-products -        
-
-Corporate Customers:
-
-
-http://www.mcafeesecurity.com/us/support/
-
-
-Single User/Retail Customers:
-
-
-http://www.mcafeehelp.com
-
-
-Note -
-
-
-Due to the prevalence of network gateway AV products, it is important that
-all         
-submissions be zipped and the zip file password-protected (password -
-infected). Some  
-products will reject an email that contains a virus that is not sent in this
-way. In   
-addition, often we receive a file that appears not to have been infected, to
-find      
-later that the file was infected when it left the sender, and was cleaned
-somewhere    
-along the line.
-
-
-Regards,
-
-
-
-
-McAfee AVERT tm
-
-A division of McAfee, Inc
-
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
