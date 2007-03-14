@@ -1,55 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbXCNVoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422681AbXCNVpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbXCNVoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 17:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXCNVoT
+	id S1422681AbXCNVpE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 17:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422676AbXCNVpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 17:44:19 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:51608 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752815AbXCNVoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 17:44:18 -0400
-Date: Wed, 14 Mar 2007 22:34:34 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-In-Reply-To: <20070314202131.GC376@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.61.0703142233330.1199@yvahk01.tjqt.qr>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de>
- <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
- <20070314180933.GA12994@elte.hu> <Pine.LNX.4.64.0703141120530.9690@woody.linux-foundation.org>
- <20070314195916.GA5674@elte.hu> <20070314201156.GA9603@elte.hu>
- <20070314202131.GC376@one.firstfloor.org>
+	Wed, 14 Mar 2007 17:45:04 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:24193 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422674AbXCNVpA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 17:45:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MHS4Ea3u/ooTW/wgcPNhW0ibN4mrIy9pNC5oPFBoImnJbw257YGMPm4eKES/GjMHclAoOUFkifzhS/HVHQCG4H9Dri9ya6Mxm9Nl2gOINna6T7GseHSfmDm23nJUlt6+ch74PRRu3Jjm2iy+oDe+h2+lSCRZSQmDe5pkK2Jtuhs=
+Message-ID: <3d53b7120703141444k6484ccfeyd08cf60ecbbb894a@mail.gmail.com>
+Date: Thu, 15 Mar 2007 03:14:54 +0530
+From: "Syed Ahemed" <kingkhan@gmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: NPTL patch for linux 2.4.28
+Cc: linux-kernel@vger.kernel.org, msnyder@redhat.com, jjohnstn@redhat.com
+In-Reply-To: <20070314055556.GP943@1wt.eu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com>
+	 <20070314055556.GP943@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ Thanks for the answer , I have already checked the core files size
+diff which was surprising in a way.The corefile on linux 2.4.28 (which
+actually shows less information than redhat) is bigger than redhat's
+2.4.20-8 system core file.
+Which brings me to the point that it has to be the generation of
+corefiles and as a result lack of debugging support in 2.4.28 that is
+causing the problem ( With or without NPTL is what i am out to find
+out.
 
-On Mar 14 2007 21:21, Andi Kleen wrote:
+Getting RHEL's source ( http://lkml.org/lkml/2005/3/21/380 ) was an
+idea i thought about but then a download of the RHEL source from the
+following location was denied .
+http://download.fedora.redhat.com/pub/fedora/linux/core/1/SRPMS/  and
+the rpmfind site.
+(Guess need to be a paid subscriber for that right ?)
+
+Apart from the fact that am relying on a "free " patch (even if that
+means i have to spend time forward porting it to 2.4.28 ) .I cannot go
+the RHEL way for fear of having to port or debug custom applications
+written on 2.4.28 .
+
+I totally understand the fact that 2.4.28 does rarely have support for
+patches and updates relative to the more active 2.4.20 or 2.6 kernel
+,I still wonder why there aren't any NPTL patches available in the
+non-redhat sites for kernels like 2.4.21 or more .
+Please point me to NPTL patch location or the kernel SRPM if you could.
+
+Regards
+Azhar
+
+
+
+On 3/14/07, Willy Tarreau <w@1wt.eu> wrote:
+> On Wed, Mar 14, 2007 at 05:49:22AM +0530, Syed Ahemed wrote:
+> > Hello all.
+> > I have a tricky problem on  hand and a straight forward question.
+> >
+> > Tricky problem:
+> > ---------------------
+> > While debugging a simple multithreaded application using gdb linux
+> > 2.4.28 , i noticed the thread that has crashed after sigsegv has
+> > complete information on the gdb (both  address and function at the
+> > time of crash ) .But the other threads that are in wait state (
+> > executing glibc functions at the time of crash ) just has the address
+> > but not the function name as shown below.
+> >
+> >
+> > sh-2.05b# ./gdb a.out /mnt/cf/engg_files/core_files/
+> > a.out.1173437318.core.5312   a.out.1173453940.core.9829
+> > a.out.1173438125.core.16016  lost+found
+> > a.out.1173438881.core.18721
+> > <f/engg_files/core_files/a.out.1173453940.core.9829
+> > GNU gdb 6.3
+> > Copyright 2004 Free Software Foundation, Inc.
+> > GDB is free software, covered by the GNU General Public License, and you are
+> > welcome to change it and/or distribute copies of it under certain
+> > conditions.
+> > Type "show copying" to see the conditions.
+> > There is absolutely no warranty for GDB.  Type "show warranty" for details.
+> > This GDB was configured as "i686-pc-linux-gnu"...Using host libthread_db
+> > library
+> > "/lib/libthread_db.so.1".
+> >
+> > warning: exec file is newer than core file.
+> > Core was generated by `./a.out'.
+> > Program terminated with signal 11, Segmentation fault.
+> > Reading symbols from /lib/libpthread.so.0...done.
+> > Loaded symbols for /lib/libpthread.so.0
+> > Reading symbols from /lib/libc.so.6...done.
+> > Loaded symbols for /lib/libc.so.6
+> > Reading symbols from /opt/lib/ld-linux.so.2...done.
+> > Loaded symbols for /opt//lib/ld-linux.so.2
+> > #0  0x080485df in a (p=0x0) at threadcore.c:34
+> > 34      threadcore.c: No such file or directory.
+> >        in threadcore.c
+> > (gdb) info threads
+> >  3 process 10993  0x08053840 in ?? ()
+> >  2 process 1267  0xbf5ff9d0 in ?? ()
+> > * 1 process 9829  0x080485df in a (p=0x0) at threadcore.c:34
+> > (gdb) thread 3
+> > [Switching to thread 3 (process 10993)]#0  0x08053840 in ?? ()
+> > (gdb) bt
+> > #0  0x08053840 in ?? ()
+> > Cannot access memory at address 0x2b
+> > (gdb)
+> > #0  0x08053840 in ?? ()
+> > Cannot access memory at address 0x2b
+> > (gdb) thread 1
+> > [Switching to thread 1 (process 9829)]#0  0x080485df in a (p=0x0)
+> >    at threadcore.c:34
+> > 34      in threadcore.c
+> > (gdb) bt
+> > #0  0x080485df in a (p=0x0) at threadcore.c:34
+> > #1  0x080485bc in main () at threadcore.c:21
+> > (gdb) thread 2
+> > [Switching to thread 2 (process 1267)]#0  0xbf5ff9d0 in ?? ()
+> > (gdb) bt
+> > #0  0xbf5ff9d0 in ?? ()
+> > Cannot access memory at address 0x2b
+> > (gdb) q
+> > sh-2.05b#
+> >
+> >
+> > The problem is with the same glibc and gdb , Redhat 9 linux 2.4.20-8
+> > does  give me complete information of all the threads in the "info
+> > threads" command.
+> > Having read similar problems on various mailing lists , i believe the
+> > only difference is redhat 9 has patched its kernel with NTPL or
+> > debugging support for linux in the kernel.
+> >
+> > Wanted to confirm if it this correct .
 >
->> also, having the x32_ and x64_ prefix is a painful daily reminder for 
->> all of us changing the architecture that 'this stuff needs to be 
->> unified!'.
+> I really have no idea about this problem.
 >
->We would probably stuck with that forever and it just looks ugly.
->Non paravirt xen uses such a setup and I always hated it.
+> > My question
+> > ------------------
+> >
+> > Someone would say move to 2.6 kernel and a different glibc,But with
+> > custom applications at stake .I can't take that risk as yet .So i
+> > would want an NTPL patch for 2.4.28 kernel
+> > Where do i get it ? Please do respond .
 >
->Besides the architecture is called x86_64
+> Last time I saw an NPTL patch, it was for something like 2.4.21 patched
+> with O(1) scheduler. I bet you'll have a hard time merging those together
+> in 2.4.28. It is also possible that core dumps don't look the same. I
+> have in mind some old changes about thread core dumps, but that's too
+> far away to say anything reliable on the subject. Check that your core
+> files are of the same sizes between NPTL and no-NPTL kernels.
+>
+> Alternatively, you could try RHEL3's kernel (2.4.21) which has all those
+> things and which is still supported.
+>
+> Regards,
+> Willy
+>
+>
 
-If you don't like x{32,64}_ suffixes, _{32,64} suffixes would also be a
-possibility. powerpc/mm/init_32.c for example does it that way.
 
-
-Jan
 -- 
+Azhar khan
+
+I'm afraid that I've seen too many people fix bugs by looking at
+debugger output, and that almost inevitably leads to fixing the
+symptoms rather than the underlying problems.
+	
+--Linus
