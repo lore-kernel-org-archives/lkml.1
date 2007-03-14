@@ -1,39 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161128AbXCNLMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161131AbXCNLMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161128AbXCNLMG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 07:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161130AbXCNLMG
+	id S1161131AbXCNLMs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 07:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161132AbXCNLMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 07:12:06 -0400
-Received: from ns1.suse.de ([195.135.220.2]:50911 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161128AbXCNLMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 07:12:05 -0400
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
-       pmarques@grupopie.com
-Subject: Re: [PATCH] Race between cat /proc/kallsyms and rmmod
-References: <20070314111328.GA6807@localhost.sw.ru>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 14 Mar 2007 13:11:06 +0100
-In-Reply-To: <20070314111328.GA6807@localhost.sw.ru>
-Message-ID: <p73odmw81ph.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Wed, 14 Mar 2007 07:12:48 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:24122 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161131AbXCNLMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 07:12:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iDQlzmsA14PPSh0bVo7JPdRmXFqKUSZdrdmfGfpHc5iT1zdQJ+0EDJShOtplYn72QkCHbWCkKtLD9ntP+g4Oo3M1NBxygq6OTfrbcItEG80elyuSvJXUewpQyyN8BrDPWC4KCogtNfO6D+DI+8rnzDKmTkJlfui9r8LUsqHcKuc=
+Message-ID: <2375c9f90703140411k1d40d31fx248a438d7b2859c1@mail.gmail.com>
+Date: Wed, 14 Mar 2007 19:11:49 +0800
+From: "Cong WANG" <xiyou.wangcong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Apple SMC driver (hardware monitoring and control)
+In-Reply-To: <45F7C083.7090504@boichat.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45F7C083.7090504@boichat.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan <adobriyan@sw.ru> writes:
-> 
-> --- a/kernel/kallsyms.c
-> +++ b/kernel/kallsyms.c
-> @@ -40,6 +40,8 @@ extern const u16 kallsyms_token_index[] 
->  
->  extern const unsigned long kallsyms_markers[] __attribute__((weak));
->  
-> +extern struct mutex module_mutex;
+I am sorry. I forgot to CC to the list.
 
-No externs in .c files
+2007/3/14, Nicolas Boichat wrote:
+> Hello,
+>
 
--Andi
+<snip>
+
+> +static ssize_t applesmc_show_fan_manual(struct device *dev, char *buf,
+> +                                                               int offset)
+> +{
+> +       int ret;
+> +       u16 manual = 0;
+> +       u8 buffer[2];
+> +
+> +       down(&applesmc_sem);
+> +
+> +       ret = applesmc_read_key(FANS_MANUAL, buffer, 2);
+> +       manual = ((buffer[0] << 8 | buffer[1]) >> offset) & 0x01;
+> +
+> +       up(&applesmc_sem);
+> +       if (ret)
+> +               return ret;
+> +       else
+> +               return sprintf(buf, "%d\n", manual);
+> +}
+> +
+
+I doubt about your last 'sprintf'. Your 'buf' just has only two 'u8's,
+which maybe only has two bytes, and '\n' already consumes one. So only
+one byte is left for the decimal vaule of 'manual'. Even it is just
+less than 10, just as what you want, the final '\0' is omitted!
+
+What's more, you can't get such information from the return value of
+'sprintf'. So I suggest you to choose 'snprintf' instead.
