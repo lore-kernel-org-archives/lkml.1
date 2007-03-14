@@ -1,73 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161199AbXCNMRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161200AbXCNMRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161199AbXCNMRa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 08:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161201AbXCNMRa
+	id S1161200AbXCNMRx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 08:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161208AbXCNMRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 08:17:30 -0400
-Received: from 195-13-16-24.net.novis.pt ([195.23.16.24]:40398 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1161200AbXCNMR3 (ORCPT
+	Wed, 14 Mar 2007 08:17:53 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:62277 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161200AbXCNMRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 08:17:29 -0400
-Message-ID: <45F7E7D6.1000904@grupopie.com>
-Date: Wed, 14 Mar 2007 12:17:26 +0000
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+	Wed, 14 Mar 2007 08:17:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=OvA+b+QSBcOlLx12vOKd64ugFD3eha2HHQaiDmEayfym7DFt2Vs5N/BPOctpoH2c7zKRfT2OeHZvtqMnczkYjmInNwg6grQEXX1xU99FwUR5aDBKKXRVN0S3VVfxTwKLM6t5PTZTN+62bbVWjedpOxxOpW9nxM2zRRyr03pwM+Y=
+Message-ID: <45F7E7E9.6010703@gmail.com>
+Date: Wed, 14 Mar 2007 21:17:45 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: /proc/kallsyms race vs module unload
-References: <20070313181815.GA5580@martell.zuzino.mipt.ru> <45F6F24E.4080600@grupopie.com> <20070313230753.GB5623@martell.zuzino.mipt.ru>
-In-Reply-To: <20070313230753.GB5623@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Conke Hu <conke.hu@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ahci.c: fix ati sb600 sata IRQ_TF_ERR
+References: <5767b9100703140222k79dbed9dq6419b4f35d276242@mail.gmail.com>
+In-Reply-To: <5767b9100703140222k79dbed9dq6419b4f35d276242@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Tue, Mar 13, 2007 at 06:49:50PM +0000, Paulo Marques wrote:
->> Alexey Dobriyan wrote:
->>> [...]
->>> What happens is that module_get_kallsym() drops module_mutex,
->>> returns "struct module *", module unloaded, "struct module *"
->>> used.
->> The only use for the "struct module *" is to display the name of the
->> module.
-> 
-> Ehh?
-> 
->> This can be solved by adding a "char mod_name[MODULE_NAME_LEN];" field
->> to "kallsym_iter" and copy the name of the module over, while still
->> holding module_mutex. It would be slightly slower, but safer.
-> 
-> 	iter->owner = module_get_kallsym(iter->pos - kallsyms_num_syms,
-> 					 &iter->value, &iter->type,
-> 					 iter->name, sizeof(iter->name));
-> 	if (iter->owner == NULL)
-> 		return 0;
-> 
-> 	/* Label it "global" if it is exported, "local" if not exported. */
-> 	iter->type = is_exported(iter->name, iter->owner)
-> 					     ^^^^^^^^^^^
+Hello,
 
-Yes, there is this "is_exported" call, but his can be moved completely 
-into "module_get_kallsym" and have the "type" returned be already upper 
-/ lower case.
+Conke Hu wrote:
+>    When there is no media in SATA CD/DVD drive or media is not ready,
+> AHCI controller fails to execute the ATAPI commands TEST_UNIT_READY,
+> READ_CAPACITY or READ_TOC and reports PORT_IRQ_TF_ERR. But ATI SB600
+> SATA controller sets SERR_INTERNAL bit in the error register at the
+> same time, which is not necessary. This patch is just to ignore the
+> INTERNAL ERROR in such case. Without this patch, ahci error handler
+> will report many errors as below:
 
-That, together with filling the module name "module_get_kallsym()" would 
-make the returned "struct module *" unneeded.
+Whoa, SERR_INTERNAL on ATAPI check condition?  Just for fun, here's what
+the spec says about SERR_INTERNAL.
 
-Since kallsyms is the only caller of that function, we can change its 
-interface to not return a "struct module *" at all, and return just an 
-integer that means "symbol found" or "no more symbols".
+E  Internal error: The host bus adapter experienced an internal error
+that caused the operation to fail and may have put the host bus adapter
+into an error state. Host software should reset the interface before
+re-trying the operation. If the condition persists, the host bus adapter
+may suffer from a design issue rendering it incompatible with the
+attached device.
 
-I'm still volunteering to do that patch, but you seem more active than 
-me at the moment...
+Anyways thanks for fixing this.  Just a few comments.
+
+> --- linux-2.6.21-rc3-git8/drivers/ata/ahci.c.orig    2007-03-25
+> 20:57:31.000000000 +0800
+> +++ linux-2.6.21-rc3-git8/drivers/ata/ahci.c    2007-03-25
+> 21:03:54.000000000 +0800
+> @@ -80,6 +80,7 @@ enum {
+>     board_ahci_pi        = 1,
+>     board_ahci_vt8251    = 2,
+>     board_ahci_ign_iferr    = 3,
+> +    board_ahci_ati    = 4,
+> 
+>     /* global controller registers */
+>     HOST_CAP        = 0x00, /* host capabilities */
+> @@ -168,6 +169,7 @@ enum {
+>     AHCI_FLAG_NO_NCQ        = (1 << 24),
+>     AHCI_FLAG_IGN_IRQ_IF_ERR    = (1 << 25), /* ignore IRQ_IF_ERR */
+>     AHCI_FLAG_HONOR_PI        = (1 << 26), /* honor PORTS_IMPL */
+> +    AHCI_FLAG_TF_ERR_FIX    = (1 << 27), /* ignore INTERNAL ERROR on
+> IRQ_TF_ERROR */
+
+Can we use board_ahci_ign_interr and AHCI_FLAG_IGN_SERR_INTERNAL to keep
+it more consistent with the other IGN flag?
+
+> -    { PCI_VDEVICE(ATI, 0x4380), board_ahci }, /* ATI SB600 non-raid */
+> +    { PCI_VDEVICE(ATI, 0x4380), board_ahci_ati }, /* ATI SB600 non-raid */
+>     { PCI_VDEVICE(ATI, 0x4381), board_ahci }, /* ATI SB600 raid */
+
+4381 isn't affected while 4380 is?
+
+Hmmm... Okay, this is weird.  I'm feeling very strong deja vu.
+
+Well, I must be getting alzheimer.  I did almost the same patch a month
+ago and was waiting for verification to properly submit the patch.
+
+  http://thread.gmane.org/gmane.linux.ide/16049/focus=16437
+
+Anyways, Conke Hu, can you please take a look at my patch from a month
+ago?  It's almost identical but SERR_INTERNAL is always ignored on both
+SB600 PCI IDs, which I think is safer.  Does this fix what you're seeing?
+
+Thanks.
 
 -- 
-Paulo Marques
-Software Development Department - Grupo PIE, S.A.
-Phone: +351 252 290600, Fax: +351 252 290601
-Web: www.grupopie.com
+tejun
