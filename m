@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbXCNSQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932226AbXCNSV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbXCNSQF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 14:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXCNSQE
+	id S932226AbXCNSV4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 14:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXCNSV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 14:16:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57197 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752768AbXCNSQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 14:16:01 -0400
-Date: Wed, 14 Mar 2007 19:15:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 - Take 2
-Message-ID: <20070314181508.GB12994@elte.hu>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <1173879210.31159.30.camel@localhost.localdomain> <20070314134112.GB13486@elte.hu> <Pine.LNX.4.64.0703140945530.9690@woody.linux-foundation.org>
+	Wed, 14 Mar 2007 14:21:56 -0400
+Received: from www.osadl.org ([213.239.205.134]:40262 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752763AbXCNSV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 14:21:56 -0400
+Subject: Re: [6/6] 2.6.21-rc3: known regressions
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Florian Lohoff <flo@rfc822.org>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070314180209.GA15640@paradigm.rfc822.org>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+	 <20070313125025.GW18731@stusta.de>
+	 <1173818777.13341.128.camel@localhost.localdomain>
+	 <20070314114417.GB18731@stusta.de>
+	 <20070314180209.GA15640@paradigm.rfc822.org>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 19:28:36 +0100
+Message-Id: <1173896916.13341.167.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703140945530.9690@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > symbolic links perhaps? In that case i'd also introduce a common 
-> > naming scheme: x86_early_printk.c - to make sure we know it right 
-> > away that those files are bi-arch.
+On Wed, 2007-03-14 at 19:02 +0100, Florian Lohoff wrote:
+> On Wed, Mar 14, 2007 at 12:44:17PM +0100, Adrian Bunk wrote:
+> > > > Due to the huge amount of recipients, please trim the Cc when answering.
+> > > > Subject    : Clocksource tsc unstable (delta = -154983451 ns)
+> > > > References : http://lkml.org/lkml/2007/3/9/271
+> > > > Submitter  : Jiri Slaby <jirislaby@gmail.com>
+> > > > Status     : unknown
+> > > 
+> > > That's not a regression. That's an informal message, when the TSC
+> > > watchdog detects that the TSC is unreliable. 
+> > 
+> > Looking at [1], there's also be a probably related "doesn't boot" 
+> > problem.
+> > My first guess would be commit 6bb74df481223731af6c7e0ff3adb31f6442cfcd
+> > "clocksource init adjustments (fix bug #7426)".
+> > 
+> > Jiri, is the message also present with 2.6.21-rc2 (at a different place 
+> > of the dmesg) for you?
 > 
-> Hey, I know! This is a radical idea, but what if we put the name at 
-> the head of the file, and called it
-> 
-> 	arch/x86/kernel/early_printk.c
-> 
-> instead? Then we could teach each of i386 and x86-64 to include it 
-> from that area, and we could put other shared files under the same 
-> directory hierarchy so that it would be easy to see which ones are 
-> shared?
+> With the current git of today the halt on boot is gone. I am running 
+> it now ...
 
-that is nice too, but it has some disadvantages as well in practice. For 
-example i often want to see 'everything' that belongs to an arch in just 
-one subdirectory. That way one can grep it for example, instead of 
-having to grep two separate places. Symlinks would be fine for that, but 
-an explicit split not really i think - unless we can get some really 
-significant chunk of code into that hierarchy, so that it makes 
-functional /sense/ to look at it in isolation.
+I'm really curious what made it go away.
 
-with the prefix suggestion we can keep these 'shared' files merged in a 
-single, main functional tree (x86_64), but still have them marked in the 
-VFS as being shared. But ... either way is fine to me - no strong 
-feelings, really.
+	tglx
 
-	Ingo
+
