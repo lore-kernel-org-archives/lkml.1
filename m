@@ -1,65 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161151AbXCNLbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161146AbXCNLcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161151AbXCNLbc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 07:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161155AbXCNLbb
+	id S1161146AbXCNLcl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 07:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161157AbXCNLcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 07:31:31 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59040 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161151AbXCNLba (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 07:31:30 -0400
-Date: Wed, 14 Mar 2007 12:31:33 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stephane Casset <sept@logidee.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Emil Karlson <jkarlson@cc.hut.fi>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
-       linux-pm@lists.osdl.org
-Subject: Re: [6/6] 2.6.21-rc3: known regressions
-Message-ID: <20070314113133.GA18731@stusta.de>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313125025.GW18731@stusta.de> <1173816328.13341.101.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 14 Mar 2007 07:32:41 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:18239 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161146AbXCNLck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 07:32:40 -0400
+Date: Wed, 14 Mar 2007 14:40:07 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org, pmarques@grupopie.com,
+       andi@firstfloor.org
+Subject: [PATCH v2] Race between cat /proc/kallsyms and rmmod
+Message-ID: <20070314114006.GB6807@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173816328.13341.101.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 09:05:28PM +0100, Thomas Gleixner wrote:
-> On Tue, 2007-03-13 at 13:50 +0100, Adrian Bunk wrote:
-> > Subject    : hrtimer_switch_to_hres():
-> >              wrong tick_init_highres() return value handling
-> > References : http://lkml.org/lkml/2007/3/6/262
-> > Submitter  : Linus Torvalds <torvalds@linux-foundation.org>
-> > Caused-By  : Thomas Gleixner <tglx@linutronix.de>
-> >              commit 54cdfdb47f73b5af3d1ebb0f1e383efbe70fde9e
-> > Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> > Status     : unknown
-> 
-> Linus merged the original patch, which solved the real problem. 
-> 
-> He just gave me a lesson how to do it right next time.
+Iterating code of /proc/kallsyms calls module_get_kallsym() which grabs
+and drops module_mutex internally and returns "struct module *",
+module is removed, aforementioned "struct module *" is used in non-trivial
+way.
 
-Sorry, my fault.
+So, grab module_mutex for entire operation like /proc/modules does.
 
-> 	tglx
+Steps to reproduce:
+	while true; do modprobe xfs; rmmod xfs; done
+		vs
+	while true; do cat /proc/kallsyms >/dev/null; done
 
-cu
-Adrian
+[where xfs could be any module, I haven't tried]
 
--- 
+BUG: unable to handle kernel paging request at virtual address e19f808c
+ printing eip:
+c01dc361
+*pde = 1ff5f067
+*pte = 00000000
+Oops: 0000 [#1]
+PREEMPT
+Modules linked in:
+CPU:    0
+EIP:    0060:[<c01dc361>]    Not tainted VLI
+EFLAGS: 00010297   (2.6.21-rc3-8b9909ded6922c33c221b105b26917780cfa497d #2)
+EIP is at vsnprintf+0x2af/0x48c
+eax: e19f808c   ebx: ffffffff   ecx: e19f808c   edx: fffffffe
+esi: dbe7aa84   edi: dbe2bf3c   ebp: ffffffff   esp: dbe2bec4
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process cat (pid: 7242, ti=dbe2b000 task=df5790b0 task.ti=dbe2b000)
+Stack: e19d6fde 00000000 00000010 00000008 ffffffff 00000001 00000598 dbe7aa68
+       0002f362 00000010 dbe7b000 00000000 ffffffff c034bbe0 dbe7aa68 dfd31880
+       dfa31e80 00001000 c01586b0 dbe2bf2c dbe2bf2c dfd31880 dfd31880 c01289f6
+Call Trace:
+ [<c01586b0>] seq_printf+0x2e/0x4b
+ [<c01289f6>] s_show+0x4b/0x7f
+ [<c0158c6e>] seq_read+0x196/0x278
+ [<c0158ad8>] seq_read+0x0/0x278
+ [<c0143c35>] vfs_read+0x72/0x93
+ [<c0143f1c>] sys_read+0x41/0x67
+ [<c0102486>] sysenter_past_esp+0x5f/0x85
+=======================
+Code: 74 24 28 73 03 c6 06 20 46 4d 85 ed 7f f1 e9 b9 00 00 00 8b 0f 81 f9 ff 0f 00 00 b8 ea 45 36 c0 0f 46 c8 8b 54 24 30 89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 89 c3 89 e8 f6 44 24
+EIP: [<c01dc361>] vsnprintf+0x2af/0x48c SS:ESP 0068:dbe2bec4
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
+
+ include/linux/module.h |    2 ++
+ kernel/kallsyms.c      |    2 ++
+ kernel/module.c        |    5 +----
+ 3 files changed, 5 insertions(+), 4 deletions(-)
+
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -20,6 +20,8 @@ #include <asm/local.h>
+ 
+ #include <asm/module.h>
+ 
++extern struct mutex module_mutex;
++
+ /* Not Yet Implemented */
+ #define MODULE_SUPPORTED_DEVICE(name)
+ 
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -369,6 +369,7 @@ static void *s_next(struct seq_file *m, 
+ 
+ static void *s_start(struct seq_file *m, loff_t *pos)
+ {
++	mutex_lock(&module_mutex);
+ 	if (!update_iter(m->private, *pos))
+ 		return NULL;
+ 	return m->private;
+@@ -376,6 +377,7 @@ static void *s_start(struct seq_file *m,
+ 
+ static void s_stop(struct seq_file *m, void *p)
+ {
++	mutex_unlock(&module_mutex);
+ }
+ 
+ static int s_show(struct seq_file *m, void *p)
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -62,7 +62,7 @@ #define INIT_OFFSET_MASK (1UL << (BITS_P
+ static DEFINE_SPINLOCK(modlist_lock);
+ 
+ /* List of modules, protected by module_mutex AND modlist_lock */
+-static DEFINE_MUTEX(module_mutex);
++DEFINE_MUTEX(module_mutex);
+ static LIST_HEAD(modules);
+ 
+ static BLOCKING_NOTIFIER_HEAD(module_notify_list);
+@@ -2124,19 +2124,16 @@ struct module *module_get_kallsym(unsign
+ {
+ 	struct module *mod;
+ 
+-	mutex_lock(&module_mutex);
+ 	list_for_each_entry(mod, &modules, list) {
+ 		if (symnum < mod->num_symtab) {
+ 			*value = mod->symtab[symnum].st_value;
+ 			*type = mod->symtab[symnum].st_info;
+ 			strlcpy(name, mod->strtab + mod->symtab[symnum].st_name,
+ 				namelen);
+-			mutex_unlock(&module_mutex);
+ 			return mod;
+ 		}
+ 		symnum -= mod->num_symtab;
+ 	}
+-	mutex_unlock(&module_mutex);
+ 	return NULL;
+ }
+ 
 
