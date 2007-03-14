@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbXCNRIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbXCNRIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752246AbXCNRIH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 13:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbXCNRIH
+	id S1751930AbXCNRIV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 13:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbXCNRIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 13:08:07 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:20707 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbXCNRIE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 13:08:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ABUKHAvzb3omb9oS77oHg8lwFon4k9gMRPsMbF3ZZrbLoyQfFSpUcDUXBceclO0liE51LqcFAkBSM004UahbCQjuTg5GuTFwjykt4xvcd0P1vn6qDpxecsctAbWsrHHxwwOukNnio63pN1eyNRX/ZLT5RWkym1NMU2VVg7/uA8Q=
-Message-ID: <b647ffbd0703141008o3f0d6bfsfbd9e9d793efdee@mail.gmail.com>
-Date: Wed, 14 Mar 2007 18:08:02 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
-Subject: Re: Clarification required about select vs wake_up race condition
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A411@xmb-sjc-214.amer.cisco.com>
+	Wed, 14 Mar 2007 13:08:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:60890 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751930AbXCNRIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 13:08:18 -0400
+Message-ID: <45F82C01.3000704@goop.org>
+Date: Wed, 14 Mar 2007 10:08:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Daniel Walker <dwalker@mvista.com>
+CC: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: Stolen and degraded time and schedulers
+References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org>	 <1173888673.3101.12.camel@imap.mvista.com>  <45F824BE.1060708@goop.org> <1173891595.3101.17.camel@imap.mvista.com>
+In-Reply-To: <1173891595.3101.17.camel@imap.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A411@xmb-sjc-214.amer.cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03/07, Ravinandan Arakali (rarakali) <rarakali@cisco.com> wrote:
-> Hi,
-> I am facing following problem and was wondering if somebody could help
-> me out.
-> Our char driver(pretty much like all other char drivers) does a
-> poll_wait()
-> and returns status depending on whether data is available to be read.
-> Even though some data is available to be read(verified using one of our
-> internal
-> commands), the select() never wakes up, inspite of any no. of messages
-> sent.
+Daniel Walker wrote:
+>> I suppose you could, but that seems more complex.  I think you could
+>> encode the same information in the measurement of how much work a cpu
+>> actually got done while a process was scheduled on it.
+>>     
 >
-> To understand this, I was looking at the code of select vs
-> wake_up_interruptible().
-> I feel I am misunderstanding some part of the kernel code but will be
-> glad if
-> somebody can point it out.
->
-> My understanding:
-> The do_select() sets the state of task to TASK_INTERRUPTIBLE and calls
-> the driver's
-> poll entry point. In our poll(), let's say immediately after we
-> determine that there's
-> nothing to be read, some data arrives causing a wake_up_interruptible()
-> on another CPU.
-> The wake up happens in the context of process sending the data. Since
-> the receiving
-> process was already added to the list of listeners, from looking at the
-> code of
-> try_to_wake_up(), it looks like it can set the state of the receiving
-> process to
-> TASK_RUNNING(I don't see any lock preventing this). After this happens,
-> the receiving
-> process goes to sleep (because of schedule_timeout called by do_select)
-> but
-> state is still set to TASK_RUNNING.
+> I know it's more complex, but that seems more like the "right" thing to
+> do.
 
-No, it's not going to sleep then.
+Why's that?
 
-The effect of schedule() being called with current->state ==
-TASK_RUNNING is a re-scheduling to another task with a higher prio (if
-any) or just getting back (iow, the task doesn't lose a cpu). For both
-cases, the task is on the runqueue.
+I'm proposing that rather than using "time spent scheduled" as an
+approximation of how much progress a process made on a particular CPU
+during its timeslice, we should measure it directly. It seems to me that
+this usefully encapsulates both the problems of variable-speed cpus and
+hypervisors stealing time from guests.
 
-/ Look how/when deactivate_task() is called in schedule() /
+The actual length of the timeslices is an orthogonal issue.  It may be
+that you want to give processes more cpu time by making their quanta
+longer to compensate for lost cpu time, but that would affect their
+real-time characteristics.  Or you could keep the quanta small, and give
+those processes more of them.
 
-Maybe there is a race in your code between (1) how you check "data is
-available" in poll and (2) a part that sets this fact (data is
-available)...
+But all this is getting deep into scheduler design, which is not what I
+want to get into; I'm just proposing a better metric for a scheduler to
+use in whatever way it wants.
 
-
--- 
-Best regards,
-Dmitry Adamushko
+    J
