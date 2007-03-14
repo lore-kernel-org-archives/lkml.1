@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXCNLoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161169AbXCNLqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161140AbXCNLoP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 07:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161152AbXCNLoP
+	id S1161169AbXCNLqJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 07:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161171AbXCNLqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 07:44:15 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59064 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161140AbXCNLoO (ORCPT
+	Wed, 14 Mar 2007 07:46:09 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:40502 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161169AbXCNLqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 07:44:14 -0400
-Date: Wed, 14 Mar 2007 12:44:17 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Florian Lohoff <flo@rfc822.org>
-Subject: Re: [6/6] 2.6.21-rc3: known regressions
-Message-ID: <20070314114417.GB18731@stusta.de>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org> <20070313125025.GW18731@stusta.de> <1173818777.13341.128.camel@localhost.localdomain>
+	Wed, 14 Mar 2007 07:46:08 -0400
+Message-ID: <45F7E063.7060901@s5r6.in-berlin.de>
+Date: Wed, 14 Mar 2007 12:45:39 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1173818777.13341.128.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Greg KH <greg@kroah.com>
+CC: =?ISO-8859-15?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>,
+       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Subject: Re: oops in __nodemgr_remove_host_dev
+References: <200703140642.28390.ismail@pardus.org.tr> <45F7D922.6010501@s5r6.in-berlin.de>
+In-Reply-To: <45F7D922.6010501@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 09:46:17PM +0100, Thomas Gleixner wrote:
-> On Tue, 2007-03-13 at 13:50 +0100, Adrian Bunk wrote:
-> > This email lists some known regressions in Linus' tree compared to 2.6.20.
-> > 
-> > If you find your name in the Cc header, you are either submitter of one
-> > of the bugs, maintainer of an affectected subsystem or driver, a patch
-> > of you caused a breakage or I'm considering you in any other way
-> > possibly involved with one or more of these issues.
-> > 
-> > Due to the huge amount of recipients, please trim the Cc when answering.
-> > Subject    : Clocksource tsc unstable (delta = -154983451 ns)
-> > References : http://lkml.org/lkml/2007/3/9/271
-> > Submitter  : Jiri Slaby <jirislaby@gmail.com>
-> > Status     : unknown
-> 
-> That's not a regression. That's an informal message, when the TSC
-> watchdog detects that the TSC is unreliable. 
+I wrote:
+> As a side note, the IEEE 1394 subsystem features quite a fat usage of
+> the driver core. [...] Maybe we should redesign nodemgr to work without
+> host devices and node entry devices.
 
-Looking at [1], there's also be a probably related "doesn't boot" 
-problem.
-My first guess would be commit 6bb74df481223731af6c7e0ff3adb31f6442cfcd
-"clocksource init adjustments (fix bug #7426)".
-
-Jiri, is the message also present with 2.6.21-rc2 (at a different place 
-of the dmesg) for you?
-
-> 	tglx
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2007/3/13/219
-
+Greg, you once indicated you had class device conversion patches for
+1394 in the pipeline, but they couldn't go out to -mm or wherever
+because of them depending on unfinished driver core changes.  If you
+found that the 1394 subsystem needed some special treatment, there might
+be a chance to eliminate this by pulling some historically grown but now
+obsolete infrastructure out.  (Of course not for 2.6.21-rc anymore, but
+perhaps post 2.6.21 if we take it on quickly.)
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Stefan Richter
+-=====-=-=== --== -===-
+http://arcgraph.de/sr/
