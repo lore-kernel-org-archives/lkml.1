@@ -1,114 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbXCNQ0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbXCNQdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932270AbXCNQ0M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 12:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbXCNQ0M
+	id S932293AbXCNQdr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 12:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXCNQdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 12:26:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:2205 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932270AbXCNQ0K (ORCPT
+	Wed, 14 Mar 2007 12:33:46 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:17633 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932293AbXCNQdp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 12:26:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ZMrXr4iOM7Gslgq0ZQRbMuv2Xa4ESzsJayQRrGHa5tHPqn/wKXgRfknhp7Fpeyn40FuzAHHoe28ARK8Ic+rHSzzubTFi/dvWfRihbq43YHbm1HzHv9OjHC9sgx4+Qna8gIFxjDY9CBvjSGNJ3mAoc9c3RzGDn31Jl4D3u+S/3qA=
-Message-ID: <b647ffbd0703140926v1aa861alecd1a2eb4c6d0f5d@mail.gmail.com>
-Date: Wed, 14 Mar 2007 17:26:07 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: [BUG: kernel/irq/proc.c] unprotected iteration over the IRQ action list in name_unique()
-Cc: mingo@elte.hu
+	Wed, 14 Mar 2007 12:33:45 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Clarification required about select vs wake_up race condition
+Date: Wed, 14 Mar 2007 09:33:41 -0700
+Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A419@xmb-sjc-214.amer.cisco.com>
+In-Reply-To: <1173870475.3538.4.camel@laptopd505.fenrus.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Clarification required about select vs wake_up race condition
+thread-index: AcdmKTxwk05dnXwdQvi/Lhf1UUGD+wALCcCQ
+References: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A411@xmb-sjc-214.amer.cisco.com> <1173870475.3538.4.camel@laptopd505.fenrus.org>
+From: "Ravinandan Arakali \(rarakali\)" <rarakali@cisco.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 14 Mar 2007 16:33:42.0387 (UTC) FILETIME=[87244430:01C76656]
+Authentication-Results: sj-dkim-1; header.From=rarakali@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
+Our driver is not in the kernel tree yet.
+The code snippet from poll entry point is as follows:
 
-1-st issue:  unprotected iteration over the IRQ action list in name_unique()
+    mask = 0;
+    poll_wait(filp, &(sap_desc->recv_any_wq), poll_table);
+    /* We don't have yet a waiting queue for writers... */
+    lock_mts();
+    if ((sap_desc->recv_q.first != NULL) &&
+        (block_ssync_event(sap_desc->recv_q.first) == FALSE)) {
+        /* The queue can be read. */
+        mask |= POLLIN | POLLRDNORM;
+    }
+    unlock_mts();
+    //MTS_HOOK(mts_syscall_exit,__FUNCTION__,mask);
+    return mask; 
 
+The wake_up_interruptible(&(sap_desc->recv_any_wq)) is executed
+from the sending process.
 
-the racing sequences:
+Hope this is sufficient. As I mentioned in my previous mail, what I
+am trying to understand better is the kernel code path of do_select() 
+versus wake_up_interruptible.
 
-[ 1 ]  request_irq() -> setup_irq() -> register_handler_proc() ->
-name_unique() -> iterate over the action list (*)
+Thanks,
+Ravi
 
-setup_irq() releases a desc->lock before calling register_handler_proc().
+-----Original Message-----
+From: Arjan van de Ven [mailto:arjan@infradead.org] 
+Sent: Wednesday, March 14, 2007 4:08 AM
+To: Ravinandan Arakali (rarakali)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Clarification required about select vs wake_up race
+condition
 
-[ 2 ]  free_irq() -> delete some element while (*) is still in progress -> bum!
+On Mon, 2007-03-12 at 12:44 -0700, Ravinandan Arakali (rarakali) wrote:
+> Hi,
+> I am facing following problem and was wondering if somebody could help
 
-something like this should make it safe :
-
---- kernel/irq/proc-old.c       2007-03-14 16:34:52.828981000 +0100
-+++ kernel/irq/proc.c   2007-03-14 16:59:47.236950000 +0100
-@@ -66,11 +66,18 @@ static int name_unique(unsigned int irq,
- {
-        struct irq_desc *desc = irq_desc + irq;
-        struct irqaction *action;
-+       unsigned long flags;
-+
-+       spin_lock_irqsave(&desc->lock, flags);
-
-        for (action = desc->action ; action; action = action->next)
-                if ((action != new_action) && action->name &&
--                               !strcmp(new_action->name, action->name))
-+                               !strcmp(new_action->name, action->name)) {
-+                       spin_unlock_irqrestore(&desc->lock, flags);
-                        return 0;
-+               }
-+
-+       spin_unlock_irqrestore(&desc->lock, flags);
-        return 1;
- }
-
-
-2-nd issue:  now it's about register_irq_proc() which is also called
-by setup_irq().
-
-register_irq_proc() is called for all descriptors for which
-
-(irq_desc[irq].chip == &no_irq_chip) != 0           (*)
-
-at startup time from init_irq_proc().
-
-Let's suppose (*) is not true for some desc at startup and changes at
-some point later.
-
-If so, register_irq_proc() takes effect being called from setup_irq().
-
-Now let's suppose request_irq() is called on 2 cpus for the same
-interrupt line and both end up in (%) below
-
-[ request_irq() -> setup_irq() -> register_irq_proc() ]
-
-void register_irq_proc(unsigned int irq)
-{
-        char name [MAX_NAMELEN];
-
-        if (!root_irq_dir ||
-                (irq_desc[irq].chip == &no_irq_chip) ||
-                        irq_desc[irq].dir)
-                return;
-
-            (%)  <=== both are here
-
-        memset(name, 0, MAX_NAMELEN);
-        sprintf(name, "%d", irq);
-
-        /* create /proc/irq/1234 */
-        irq_desc[irq].dir = proc_mkdir(name, root_irq_dir);
-...
-
-Both will try to initialize "irq_desc[irq].dir" and "smp_affinity"
-entry... Not bum, but a possible leak indeed.
+> me out.
+> Our char driver(pretty much like all other char drivers) does a
+> poll_wait()
 
 
-TIA,
-
--- 
-Best regards,
-Dmitry Adamushko
+you forgot to include your (full) sourcecode or a pointer to that...
