@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422663AbXCNVdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbXCNVec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422663AbXCNVdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 17:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422670AbXCNVdT
+	id S932433AbXCNVec (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 17:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933234AbXCNVec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 17:33:19 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:52150 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422663AbXCNVdT (ORCPT
+	Wed, 14 Mar 2007 17:34:32 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:51490 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932433AbXCNVeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 17:33:19 -0400
-Date: Wed, 14 Mar 2007 22:33:17 +0100
-From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-Message-ID: <20070314213317.GA22234@rhlx01.hs-esslingen.de>
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173905741.8763.36.camel@kleikamp.austin.ibm.com>
+	Wed, 14 Mar 2007 17:34:31 -0400
+Subject: Re: Stolen and degraded time and schedulers
+From: Daniel Walker <dwalker@mvista.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Peter Chubb <peterc@gelato.unsw.edu.au>
+In-Reply-To: <45F8663D.5050102@goop.org>
+References: <45F6D1D0.6080905@goop.org>
+	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>
+	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>
+	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org>
+	 <1173888673.3101.12.camel@imap.mvista.com>  <45F824BE.1060708@goop.org>
+	 <1173891595.3101.17.camel@imap.mvista.com>  <45F82C01.3000704@goop.org>
+	 <1173895607.3101.58.camel@imap.mvista.com>  <45F841EE.6060703@goop.org>
+	 <1173898800.3101.81.camel@imap.mvista.com>  <45F8508F.3070109@goop.org>
+	 <1173904438.3101.92.camel@imap.mvista.com>  <45F8663D.5050102@goop.org>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 14:34:25 -0700
+Message-Id: <1173908065.3101.97.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173905741.8763.36.camel@kleikamp.austin.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-03-14 at 14:16 -0700, Jeremy Fitzhardinge wrote:
 
-On Wed, Mar 14, 2007 at 03:55:41PM -0500, Dave Kleikamp wrote:
-> On Wed, 2007-03-14 at 15:58 -0400, Ashif Harji wrote:
-> > This patch unconditionally calls mark_page_accessed to prevent pages, 
-> > especially for small files, from being evicted from the page cache despite 
-> > frequent access.
 > 
-> I guess the downside to this is if a reader is reading a large file, or
-> several files, sequentially with a small read size (smaller than
-> PAGE_SIZE), the pages will be marked active after just one read pass.
-> My gut says the benefits of this patch outweigh the cost.  I would
-> expect real-world backup apps, etc. to read at least PAGE_SIZE.
+> >  It's also used for some posix cpu timers
+> > (sched_ns) , and it used for migration thread initialization.
+> 
+> sched_ns doesn't use it directly except for the case where the process
+> is currently running.  Anyway, it's compatible with what I'm talking about.
 
-I also think that the patch is somewhat problematic, since the original
-intention seems to have been a reduction of the number of (expensive?)
-mark_page_accessed() calls, but this of course falls flat on its face in case
-of permanent single-page accesses or accesses with progressing but very small
-read size (single-byte reads or so), since the cached page content will expire
-eventually due to lack of mark_page_accessed() updates; thus this patch
-decided to call mark_page_accessed() unconditionally which may be a large
-performance penalty for subsequent tiny-sized reads.
+It's used for measuring execution time, but timers are triggered based
+on that time, so it needs to be actual execution time. I don't know to
+what extent this is already inaccurate on some system tho.
 
-I've been thinking hard how to avoid the mark_page_accessed() starvation in
-case of a fixed, (almost) non-changing access state, but this seems hard since
-it'd seem we need some kind of state management here to figure out good
-intervals of when to call mark_page_accessed() *again* for this page. E.g.
-despite non-changing access patterns you could still call mark_page_accessed()
-every 32 calls or so to avoid expiry, but this would need extra helper
-variables.
+Daniel
 
-A rather ugly way to do it may be to abuse ra.cache_hit or ra.mmap_hit content
-with a
-	if ((prev_index != index) || (ra.cache_hit % 32 == 0))
-		mark_page_accessed(page);
-This assumes that ra.cache_hit gets incremented for every access (haven't
-checked whether this is the case).
-That way (combined with an enhanced comment properly explaining the dilemma)
-you would avoid most mark_page_accessed() invocations of subsequent same-page reads
-but still do page status updates from time to time to avoid page deprecation.
-
-Does anyone think this would be acceptable? Any better idea?
-
-Andreas Mohr
-
-P.S.: since I'm not too familiar with this area I could be rather wrong after all...
