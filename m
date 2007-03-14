@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964806AbXCNX36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbXCNXdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964806AbXCNX36 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 19:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964813AbXCNX36
+	id S964825AbXCNXdL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 19:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964826AbXCNXdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 19:29:58 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:42470 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964806AbXCNX35 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 19:29:57 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 14 Mar 2007 16:24:54 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Benjamin LaHaise <bcrl@kvack.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>
-Subject: Re: [patch 13/13] signalfd/timerfd/asyncfd v5 - KAIO asyncfd support
- (example/maybe-broken) ...
-In-Reply-To: <20070314231920.GB1246@kvack.org>
-Message-ID: <Pine.LNX.4.64.0703141620340.4982@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.13805.1173910770.13>
- <20070314231920.GB1246@kvack.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Mar 2007 19:33:10 -0400
+Received: from mga09.intel.com ([134.134.136.24]:25082 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964825AbXCNXdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 19:33:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,285,1170662400"; 
+   d="scan'208"; a="58657650:sNHT23361336"
+Date: Wed, 14 Mar 2007 16:33:01 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrea Arcangeli <andrea@suse.de>, Anton Blanchard <anton@samba.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: SMP performance degradation with sysbench
+Message-ID: <20070314233301.GK30596@linux-os.sc.intel.com>
+References: <20070312220042.GA807@kryten> <45F63266.1080509@yahoo.com.au> <20070313094559.GC8992@v2.random> <45F67796.4040508@yahoo.com.au> <20070313103134.GF8992@v2.random> <45F67F02.5020401@yahoo.com.au> <20070313105742.GG8992@v2.random> <45F68713.9040608@yahoo.com.au> <20070313114215.GI8992@v2.random> <45F6945B.2030309@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F6945B.2030309@yahoo.com.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Mar 2007, Benjamin LaHaise wrote:
+On Tue, Mar 13, 2007 at 05:08:59AM -0700, Nick Piggin wrote:
+> I would agree that it points to MySQL scalability issues, however the
+> fact that such large gains come from tcmalloc is still interesting.
 
-> On Wed, Mar 14, 2007 at 03:19:21PM -0700, Davide Libenzi wrote:
-> > +	/*
-> > +	 * Check if the user asked us to deliver the result through an
-> > +	 * asyncfd. Note that asyncfd_add_results() may sleep. It seems
-> > +	 * OK looking at the code, but I'm not sure since inside a USB driver,
-> > +	 * aio_complete() is called with a spinlock held. !!CHECK
-> > +	 */
-> 
-> That won't work.  aio_complete() is supposed to be irq safe.
+What glibc version are you, Anton and others are using?
 
-Can you point me to a kernel path that ends up calling aio_complete() in a 
-do-not-sleep mode?
-The offender I see is drivers/usb/gadget/inode.c that calls it with a 
-spinlock held.
-The aio_run_iocb function seem to release/reacquire the lock before 
-calling aio_complete().
+Does that version has this fix included?
 
+Dynamically size mmap treshold if the program frees mmaped blocks.
 
+http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/malloc/malloc.c.diff?r1=1.158&r2=1.159&cvsroot=glibc
 
-- Davide
-
-
+thanks,
+suresh
