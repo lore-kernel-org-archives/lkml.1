@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161071AbXCNUmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161041AbXCNUq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161071AbXCNUmw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 16:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161195AbXCNUmw
+	id S1161041AbXCNUq2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 16:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161062AbXCNUq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 16:42:52 -0400
-Received: from stinky.trash.net ([213.144.137.162]:46713 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161071AbXCNUmu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 16:42:50 -0400
-Message-ID: <45F85E40.6050409@trash.net>
-Date: Wed, 14 Mar 2007 21:42:40 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
-X-Accept-Language: en-us, en
+	Wed, 14 Mar 2007 16:46:28 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:53426 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161041AbXCNUq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 16:46:27 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.21-rc3-mm2 (oops in move_freepages)
+Date: Wed, 14 Mar 2007 14:46:16 -0600
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070307201915.4d579113.akpm@linux-foundation.org> <200703141236.09599.bjorn.helgaas@hp.com> <Pine.LNX.4.64.0703141855010.18468@skynet.skynet.ie>
+In-Reply-To: <Pine.LNX.4.64.0703141855010.18468@skynet.skynet.ie>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Arkadiusz Miskiewicz <arekm@maven.pl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, lartc@mailman.ds9a.nl
-Subject: Re: [ANNOUNCE] iproute2 2.6.20-070313
-References: <20070313151549.332004c9@freekitty>	<200703141223.48927.arekm@maven.pl>	<45F7E527.6030307@trash.net>	<200703141316.05509.arekm@maven.pl>	<45F7EB5C.5010901@trash.net> <20070314101443.4347efdd@freekitty>
-In-Reply-To: <20070314101443.4347efdd@freekitty>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703141446.16274.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> On Wed, 14 Mar 2007 13:32:28 +0100
-> Patrick McHardy <kaber@trash.net> wrote:
+On Wednesday 14 March 2007 12:59, Mel Gorman wrote:
+> > <SNIP>
+> > Virtual mem_map starts at 0xa0007fffc7200000
+> > Zone PFN ranges:
 > 
->>RTA_* attributes aren't used for routing rules anymore inside
->>the kernel.
-> 
-> 
-> But we need to keep them in iproute2 for back compatibility?
+> Total aside, a message should have been printed out here with 
+> "sizeof(struct page) = ??" when loglevel was set to 8. I wanted it so I 
+> could work out PFNs from the faulting addresses. Can you find such a 
+> string in the output of dmesg?
 
-Not really for compatibility, its the numerical values that matter.
-iproute hasn't been changed to use the FRA_* attributes for routing
-rules, but it might be a good idea to do this before adding the next
-RTA_* attribute since RTA_FWMASK doesn't have any meaning for routes
-in the kernel, so the next RTA attribute we add could just use the
-same value instead of leaving a hole.
+You probably don't need this anymore, but sizeof(struct page) = 56.
 
+> > BUG: at drivers/pci/pci.c:679 pci_restore_state()
+> >
+> > Call Trace:
+> > [<a000000100014980>] show_stack+0x40/0xa0
+> >                                sp=e000004063a5fb90 bsp=e000004063a58f98
+> > [<a0000001000152b0>] dump_stack+0x30/0x60
+> >                                sp=e000004063a5fd60 bsp=e000004063a58f80
+> > [<a0000001003f8800>] pci_restore_state+0x480/0x4a0
+> >                                sp=e000004063a5fd60 bsp=e000004063a58f38
+> > [<a00000010051a0b0>] tg3_chip_reset+0x6d0/0x1020
+> ...
+> That doesn't look particularly healthy! Is this a known problem?
+
+Yeah, that's ugly, isn't it?  I hadn't got to worrying about that yet.
