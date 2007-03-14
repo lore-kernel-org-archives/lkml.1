@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751840AbXCNQ6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbXCNRAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751840AbXCNQ6j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 12:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXCNQ6i
+	id S1751596AbXCNRAG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 13:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXCNRAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 12:58:38 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:42877 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751840AbXCNQ6h convert rfc822-to-8bit (ORCPT
+	Wed, 14 Mar 2007 13:00:05 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:24877 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbXCNRAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 12:58:37 -0400
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: Ooops with suspend to RAM
-Date: Wed, 14 Mar 2007 18:59:30 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <200703140642.28390.ismail@pardus.org.tr> <20070314115047.GC18731@stusta.de>
-In-Reply-To: <20070314115047.GC18731@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200703141859.30555.ismail@pardus.org.tr>
+	Wed, 14 Mar 2007 13:00:01 -0400
+Subject: Re: Stolen and degraded time and schedulers
+From: Daniel Walker <dwalker@mvista.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+In-Reply-To: <45F824BE.1060708@goop.org>
+References: <45F6D1D0.6080905@goop.org>
+	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>
+	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>
+	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org>
+	 <1173888673.3101.12.camel@imap.mvista.com>  <45F824BE.1060708@goop.org>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 09:59:55 -0700
+Message-Id: <1173891595.3101.17.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 March 2007 13:50:47 Adrian Bunk wrote:
-> On Wed, Mar 14, 2007 at 06:42:28AM +0200, Ismail Dönmez wrote:
-> > Hi all,
-> >
-> > With latest GIT tree I am getting the following oops when I try to
-> > suspend to RAM:
-> >...
->
-> Is this an old problem, or what was the last kernel that worked for you?
+On Wed, 2007-03-14 at 09:37 -0700, Jeremy Fitzhardinge wrote:
+> Daniel Walker wrote:
+> > Then your direction is wrong, sched_clock() should be constant ideally
+> > (1millisecond should really be 1millisecond). 
+> 
+> Rather than repeating myself, I suggest you read my original post
+> again.  But my point is that "I was runnable on a cpu for 1ms of real
+> time" is a meaningless measurement: you want to measure "I ran for 1
+> cpu-ms", which is a unit which depends on how work a particular CPU does
+> in relationship to other CPUs on the system, or even itself at some
+> previous time.
 
-I changed my .config totally so I'll have to check with older kernels and get 
-back to you. I hope to try latest -mm and 2.6.20 this weekend.
+I understood, I just don't agree that you suggested modification are the
+correct ones to make.
 
-Thanks.
+> > Like I said in the last
+> > email, change the scheduler to make it aware of the variable quantum
+> > values.
+> 
+> I suppose you could, but that seems more complex.  I think you could
+> encode the same information in the measurement of how much work a cpu
+> actually got done while a process was scheduled on it.
 
--- 
-Happiness in intelligent people is the rarest thing I know. (Ernest Hemingway)
+I know it's more complex, but that seems more like the "right" thing to
+do.
 
-Ismail Donmez ismail (at) pardus.org.tr
-GPG Fingerprint: 7ACD 5836 7827 5598 D721 DF0D 1A9D 257A 5B88 F54C
-Pardus Linux / KDE developer
+Daniel
+
