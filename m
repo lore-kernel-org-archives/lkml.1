@@ -1,143 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161141AbXCNLVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161137AbXCNLXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161141AbXCNLVw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 07:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161137AbXCNLVw
+	id S1161137AbXCNLXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 07:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161142AbXCNLXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 07:21:52 -0400
-Received: from bay0-omc3-s39.bay0.hotmail.com ([65.54.246.239]:11595 "EHLO
-	bay0-omc3-s39.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161141AbXCNLVv (ORCPT
+	Wed, 14 Mar 2007 07:23:22 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:37755 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161137AbXCNLXV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 07:21:51 -0400
-Message-ID: <BAY103-DAV345FF2E476BD4B029C5FAB2730@phx.gbl>
-X-Originating-IP: [85.36.106.198]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: <linux-kernel@vger.kernel.org>
-References: <BAY103-DAV1337A9B2136C6C89DC0C0DB2730@phx.gbl> <84144f020703140341p322d9dc5wb9edc37bf923685d@mail.gmail.com>
-Subject: Re: kernel BUG at mm/slab.c:610
-Date: Wed, 14 Mar 2007 12:21:32 +0100
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1123
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
-X-OriginalArrivalTime: 14 Mar 2007 11:21:51.0394 (UTC) FILETIME=[F6855020:01C7662A]
+	Wed, 14 Mar 2007 07:23:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=j8hkaWzUCSz4Ay62eatJlED22TKGzLtBkSR9MgiiFkpIsctfSxG2sQdSfpNkFn1XSFgA8l7yiH0IZj485VY/3sDfXx70lg2SVoUE/AdNeGKGgwQu3vaxu1Dp1eEtm4stDamAA4V5356XUpknIb22JOB70vAUL2fbfJgmF3djMVI=
+Message-ID: <84144f020703140423h2562a353g40c156584943bb7@mail.gmail.com>
+Date: Wed, 14 Mar 2007 13:23:02 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: gregkh@suse.de
+Subject: Re: [BUG] Linux 2.6.20.2 - unable to handle kernel paging request - still accessing freed memory
+Cc: linux-kernel@vger.kernel.org, "Chris Rankin" <rankincj@yahoo.com>
+In-Reply-To: <170606.12059.qm@web52911.mail.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <170606.12059.qm@web52911.mail.yahoo.com>
+X-Google-Sender-Auth: ec48faed5b12e937
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
+Hi Greg,
 
-Hi Pekka,
+I think there's some sort of reference counting problem with sysfs in
+2.6.20 kernels. Can you please help us debug it further?
 
-> So, can you please repost the original oops?
+On 3/10/07, Chris Rankin <rankincj@yahoo.com> wrote:
+> It looks like 2.6.20.2 is still doing Bad Things in /sys.
+>
+> BUG: unable to handle kernel paging request at virtual address 6b6b6d6b
 
-Here is:
+[snip]
 
-Mar 14 03:42:25 Mimosa kernel: ------------[ cut here ]------------
-Mar 14 03:42:25 Mimosa kernel: kernel BUG at mm/slab.c:610!
-Mar 14 03:42:25 Mimosa kernel: invalid opcode: 0000 [#1]
-Mar 14 03:42:25 Mimosa kernel: Modules linked in: sch_sfq sch_htb cls_fw
-nf_nat_pptp nf_nat_proto_gre nf_conntrack_pptp nf_conntrack_proto_gre
-nf_nat_ftp nf_conntrack_ftp 3c59x mii
-Mar 14 03:42:25 Mimosa kernel: CPU:    0
-Mar 14 03:42:25 Mimosa kernel: EIP:    0060:[<c014ca99>]    Not tainted
-VLI
-Mar 14 03:42:25 Mimosa kernel: EFLAGS: 00010046   (2.6.20 #1)
-Mar 14 03:42:25 Mimosa kernel: EIP is at free_block+0xd9/0xf0
-Mar 14 03:42:25 Mimosa kernel: eax: 00080000   ebx: c1000000   ecx:
-c0e7d4e0   edx: c101cfa0
-Mar 14 03:42:25 Mimosa kernel: esi: c1210000   edi: c1176560   ebp:
-00000000   esp: c119bef0
-Mar 14 03:42:25 Mimosa kernel: ds: 007b   es: 007b   ss: 0068
-Mar 14 03:42:25 Mimosa kernel: Process events/0 (pid: 3, ti=c119a000
-task=c118f030 task.ti=c119a000)
-Mar 14 03:42:25 Mimosa kernel: Stack: c1213a10 161c9ed5 c1210010
-c1210010 c1210000 161c9ed5 c1176560 c014d201
-Mar 14 03:42:25 Mimosa kernel:        00000000 c1180420 c1176560
-c1180d60 c014d220 c014d26b 00000000 00000000
-Mar 14 03:42:25 Mimosa kernel:        c03b7ae0 c03b7ae0 00000282
-c0123d37 00000000 c118f13c 0000007b 0000508b
-Mar 14 03:42:25 Mimosa kernel: Call Trace:
-Mar 14 03:42:25 Mimosa kernel:  [<c014d201>] drain_array+0x91/0xb0
-Mar 14 03:42:25 Mimosa kernel:  [<c014d220>] cache_reap+0x0/0xf0
-Mar 14 03:42:25 Mimosa kernel:  [<c014d26b>] cache_reap+0x4b/0xf0
-Mar 14 03:42:25 Mimosa kernel:  [<c0123d37>] run_workqueue+0x67/0x130
-Mar 14 03:42:25 Mimosa kernel:  [<c0123f3a>] worker_thread+0x13a/0x170
-Mar 14 03:42:25 Mimosa kernel:  [<c01123e0>]
-default_wake_function+0x0/0x10
-Mar 14 03:42:25 Mimosa kernel:  [<c0112427>] __wake_up_common+0x37/0x70
-Mar 14 03:42:25 Mimosa kernel:  [<c01123e0>]
-default_wake_function+0x0/0x10
-Mar 14 03:42:25 Mimosa kernel:  [<c0123e00>] worker_thread+0x0/0x170
-Mar 14 03:42:25 Mimosa kernel:  [<c01271a6>] kthread+0xb6/0xc0
-Mar 14 03:42:25 Mimosa kernel:  [<c01270f0>] kthread+0x0/0xc0
-Mar 14 03:42:25 Mimosa kernel:  [<c01036a3>]
-kernel_thread_helper+0x7/0x14
-Mar 14 03:42:25 Mimosa kernel:  =======================
-Mar 14 03:42:25 Mimosa kernel: Code: ff 83 c4 0c 5b 5e 5f 5d c3 8b 57 20
-29 d0 89 da 89 46 18 89 f8 e8 78 f1 ff ff eb da 89 33 8b 46 04 89 5e 04
-89 18 89 43 04 eb cb <0f> 0b 90 8d 74 26 00 eb fe 8b 52 0c e9 57 ff ff
-ff 8d b6 00 00
-Mar 14 03:42:25 Mimosa kernel: EIP: [<c014ca99>] free_block+0xd9/0xf0
-SS:ESP 0068:c119bef0
+> EIP:    0060:[<c01300ff>]    Not tainted VLI
+> EFLAGS: 00010202   (2.6.20.2 #1)
+> EIP is at module_put+0x20/0x52
+> eax: 6b6b6d6b   ebx: 6b6b6b6b   ecx: 00000001   edx: e7a01000
+> esi: edb7e4e4   edi: 6b6b6b6b   ebp: e79fd50c   esp: e7a01f58
+> ds: 007b   es: 007b   ss: 0068
+> Process udevd (pid: 9656, ti=e7a01000 task=f7a46030 task.ti=e7a01000)
+> Stack: eba628a0 c0183a1e 00000010 ed570870 e7a641d0 c0151263 00000000 00000000
+>        f7ff2208 ed570870 f745b678 00000000 ed570870 c014eda0 00000003 00000003
+>        f745b678 f745b6f8 c014fd99 00000003 00000007 00000003 e7a01000 c0102bde
+> Call Trace:
+>  [<c0183a1e>] sysfs_release+0x2d/0x4c
+>  [<c0151263>] __fput+0x96/0x13c
+>  [<c014eda0>] filp_close+0x51/0x58
+>  [<c014fd99>] sys_close+0x70/0xa7
+>  [<c0102bde>] sysenter_past_esp+0x5f/0x85
+>  [<c0270033>] __sched_text_start+0x613/0x971
 
-Here is from another machine:
+There's also some previous discussion here:
 
-Mar 14 08:53:47 Gemini kernel: ------------[ cut here ]------------
-Mar 14 08:53:47 Gemini kernel: kernel BUG at mm/slab.c:610!
-Mar 14 08:53:47 Gemini kernel: invalid opcode: 0000 [#1]
-Mar 14 08:53:47 Gemini kernel: Modules linked in: nf_nat_pptp
-nf_nat_proto_gre nf_conntrack_pptp nf_conntrack_proto_gre nf_nat_ftp
-nf_conntrack_ftp 3c59x mii
-Mar 14 08:53:47 Gemini kernel: CPU:    0
-Mar 14 08:53:47 Gemini kernel: EIP:    0060:[<c014ce86>]    Not tainted
-VLI
-Mar 14 08:53:47 Gemini kernel: EFLAGS: 00010046   (2.6.20 #1)
-Mar 14 08:53:47 Gemini kernel: EIP is at free_block+0xd6/0xf0
-Mar 14 08:53:47 Gemini kernel: eax: 80000000   ebx: c1000000   ecx:
-c9ae64e0   edx: c1135cc0
-Mar 14 08:53:47 Gemini kernel: esi: c1210000   edi: c1176560   ebp:
-00000000   esp: c119bef0
-Mar 14 08:53:47 Gemini kernel: ds: 007b   es: 007b   ss: 0068
-Mar 14 08:53:47 Gemini kernel: Process events/0 (pid: 3, ti=c119a000
-task=c118f030 task.ti=c119a000)
-Mar 14 08:53:47 Gemini kernel: Stack: c1179a10 110b04c7 c1210010
-c1210010 c1210000 110b04c7 c1176560 c014d5f1
-Mar 14 08:53:47 Gemini kernel:        00000000 c1180420 c1176560
-c1180d60 c014d610 c014d65b 00000000 00000000
-Mar 14 08:53:47 Gemini kernel:        c03b7a60 c03b7a60 00000282
-c0124157 00000000 c118f13c 00000076 00005e32
-Mar 14 08:53:47 Gemini kernel: Call Trace:
-Mar 14 08:53:47 Gemini kernel:  [<c014d5f1>] drain_array+0x91/0xb0
-Mar 14 08:53:47 Gemini kernel:  [<c014d610>] cache_reap+0x0/0xf0
-Mar 14 08:53:47 Gemini kernel:  [<c014d65b>] cache_reap+0x4b/0xf0
-Mar 14 08:53:47 Gemini kernel:  [<c0124157>] run_workqueue+0x67/0x130
-Mar 14 08:53:47 Gemini kernel:  [<c012435a>] worker_thread+0x13a/0x170
-Mar 14 08:53:47 Gemini kernel:  [<c0112810>]
-default_wake_function+0x0/0x10
-Mar 14 08:53:47 Gemini kernel:  [<c0112857>] __wake_up_common+0x37/0x70
-Mar 14 08:53:47 Gemini kernel:  [<c0112810>]
-default_wake_function+0x0/0x10
-Mar 14 08:53:47 Gemini kernel:  [<c0124220>] worker_thread+0x0/0x170
-Mar 14 08:53:47 Gemini kernel:  [<c01275c6>] kthread+0xb6/0xc0
-Mar 14 08:53:47 Gemini kernel:  [<c0127510>] kthread+0x0/0xc0
-Mar 14 08:53:47 Gemini kernel:  [<c01036c7>]
-kernel_thread_helper+0x7/0x10
-Mar 14 08:53:47 Gemini kernel:  =======================
-Mar 14 08:53:47 Gemini kernel: Code: ff 83 c4 0c 5b 5e 5f 5d c3 8b 57 20
-29 d0 89 da 89 46 18 89 f8 e8 7b f1 ff ff eb da 89 33 8b 46 04 89 5e 04
-89 18 89 43 04 eb cb <0f> 0b 90 8d b4 26 00 00 00 00 eb fe 8b 52 0c e9
-57 ff ff ff 8d
-Mar 14 08:53:47 Gemini kernel: EIP: [<c014ce86>] free_block+0xd6/0xf0
-SS:ESP 0068:c119bef0
+http://lkml.org/lkml/2007/3/1/114
 
-> Also, please enable
-> CONFIG_DEBUG_SLAB  and try to reproduce. Thanks.
-
-I'm rebuilding all kernel with this option (2.6.20.3)
-
-Thanks for the feedback.
-
-
+                                           Pekka
