@@ -1,74 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751540AbXCNWH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbXCNWJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751540AbXCNWH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 18:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXCNWH1
+	id S1752010AbXCNWJD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 18:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXCNWJC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 18:07:27 -0400
-Received: from 1wt.eu ([62.212.114.60]:1180 "EHLO 1wt.eu"
+	Wed, 14 Mar 2007 18:09:02 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49775 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751749AbXCNWH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 18:07:27 -0400
-Date: Wed, 14 Mar 2007 23:07:02 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: kostik@atnn.ru
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kswapd & 2.4.21-47.0.0.1
-Message-ID: <20070314220701.GQ943@1wt.eu>
-References: <45F7FA3B.6070303@atnn.ru>
+	id S1752010AbXCNWJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 18:09:00 -0400
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+Cc: Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20070314213317.GA22234@rhlx01.hs-esslingen.de>
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca>
+	 <20070312142012.GH30777@atrey.karlin.mff.cuni.cz>
+	 <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz>
+	 <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca>
+	 <20070312173500.GF23532@duck.suse.cz>
+	 <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca>
+	 <20070313185554.GA5105@duck.suse.cz>
+	 <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca>
+	 <1173905741.8763.36.camel@kleikamp.austin.ibm.com>
+	 <20070314213317.GA22234@rhlx01.hs-esslingen.de>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 17:08:58 -0500
+Message-Id: <1173910138.8763.45.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F7FA3B.6070303@atnn.ru>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On Wed, Mar 14, 2007 at 04:35:55PM +0300, Konstantin Kalin wrote:
-> Hello, All
+On Wed, 2007-03-14 at 22:33 +0100, Andreas Mohr wrote:
+> Hi,
 > 
-> I have the following configuration: CentOS 3.8, kernel 
-> 2.4.21-41.0.01.EL, Dialogic boards.
-> Sometimes a kernel panic happens. I setup netdump and got several crash 
-> dumps and logs. Backtrace shows that kswapd called BUG in try_to_unmap 
-> function. Unfortunately I couldn't upgrade the kernel because of 
-> proprietary Dialogic drivers which are precompiled.
+> On Wed, Mar 14, 2007 at 03:55:41PM -0500, Dave Kleikamp wrote:
+> > On Wed, 2007-03-14 at 15:58 -0400, Ashif Harji wrote:
+> > > This patch unconditionally calls mark_page_accessed to prevent pages, 
+> > > especially for small files, from being evicted from the page cache despite 
+> > > frequent access.
+> > 
+> > I guess the downside to this is if a reader is reading a large file, or
+> > several files, sequentially with a small read size (smaller than
+> > PAGE_SIZE), the pages will be marked active after just one read pass.
+> > My gut says the benefits of this patch outweigh the cost.  I would
+> > expect real-world backup apps, etc. to read at least PAGE_SIZE.
 > 
-> Could somebody help me? I tried to find similar issues in maillist and 
-> failed with it. There are a few messages but they describe another case.
+> I also think that the patch is somewhat problematic, since the original
+> intention seems to have been a reduction of the number of (expensive?)
+> mark_page_accessed() calls,
 
-Well, I think you're trying to get both the cake and the money for it.
-You use a vendor-specific stable kernel in order to get a high reliability
-and good hardware support, but without paying for the customer support
-associated with it, and when you have a problem you ask for free help
-here where people don't know much about it (except for those who worked
-on it).
+mark_page_accessed() isn't expensive.  If called repeatedly, starting
+with the third call, it will check two page flags and return.  The only
+real expense is that the page appears busier than it may be and will be
+retained in memory longer than it should.
 
-By trying to get all advantages, you're in the worst situation : you have
-a bug with a kernel that nobody knows except the vendor, and you can't
-beat the vendor for this. I don't know if CentOS offers community-based
-support through mailing lists or such, but maybe you'd loose less time
-and money by buying the smallest support contract from RH and ask them
-to help you on this problem.
+> but this of course falls flat on its face in case
+> of permanent single-page accesses or accesses with progressing but very small
+> read size (single-byte reads or so), since the cached page content will expire
+> eventually due to lack of mark_page_accessed() updates; thus this patch
+> decided to call mark_page_accessed() unconditionally which may be a large
+> performance penalty for subsequent tiny-sized reads.
 
-> As I understand the rmap.c are under active development and it's 
-> strongly been changing per each kernel version. Also if I understand 
-> correct rmap.c has appeared in the kernel 2.6.x and my version of the 
-> kernel is a backport by RedHat from 2.6 to 2.4.
+Any application doing many tiny-sized reads isn't exactly asking for
+great performance.
 
-Nope, it was initially written for 2.4 by Rik van Riel, and supported
-for a long time as a patch for these kernels. Later it got merged in
-2.4-ac which became a base for RHEL3. It was also merged in 2.6 but
-I believe that it got important changes, though I'm not sure.
+> I've been thinking hard how to avoid the mark_page_accessed() starvation in
+> case of a fixed, (almost) non-changing access state, but this seems hard since
+> it'd seem we need some kind of state management here to figure out good
+> intervals of when to call mark_page_accessed() *again* for this page. E.g.
+> despite non-changing access patterns you could still call mark_page_accessed()
+> every 32 calls or so to avoid expiry, but this would need extra helper
+> variables.
+> 
+> A rather ugly way to do it may be to abuse ra.cache_hit or ra.mmap_hit content
+> with a
+> 	if ((prev_index != index) || (ra.cache_hit % 32 == 0))
+> 		mark_page_accessed(page);
+> This assumes that ra.cache_hit gets incremented for every access (haven't
+> checked whether this is the case).
+> That way (combined with an enhanced comment properly explaining the dilemma)
+> you would avoid most mark_page_accessed() invocations of subsequent same-page reads
+> but still do page status updates from time to time to avoid page deprecation.
+> 
+> Does anyone think this would be acceptable? Any better idea?
 
-> Information about the crash is below. The specific of my system is a lot 
-> of java thread (up to 1500).
+I wouldn't go looking for anything more complicated than Ashif's patch,
+unless testing shows it to be harmful in some realistic workload.
 
-I'm not sure that many people here will be able to provide you with much
-help, unfortunately.
+> Andreas Mohr
+> 
+> P.S.: since I'm not too familiar with this area I could be rather wrong after all...
 
-Regards,
-Willy
+I could be missing something as well.  :-)
+
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
