@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbXCNQdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbXCNQhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932293AbXCNQdr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 12:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXCNQdq
+	id S932238AbXCNQhV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 12:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbXCNQhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 12:33:46 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:17633 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932293AbXCNQdp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 12:33:45 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 14 Mar 2007 12:37:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:46501 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932238AbXCNQhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 12:37:20 -0400
+Message-ID: <45F824BE.1060708@goop.org>
+Date: Wed, 14 Mar 2007 09:37:18 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Clarification required about select vs wake_up race condition
-Date: Wed, 14 Mar 2007 09:33:41 -0700
-Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A419@xmb-sjc-214.amer.cisco.com>
-In-Reply-To: <1173870475.3538.4.camel@laptopd505.fenrus.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Clarification required about select vs wake_up race condition
-thread-index: AcdmKTxwk05dnXwdQvi/Lhf1UUGD+wALCcCQ
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A411@xmb-sjc-214.amer.cisco.com> <1173870475.3538.4.camel@laptopd505.fenrus.org>
-From: "Ravinandan Arakali \(rarakali\)" <rarakali@cisco.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 14 Mar 2007 16:33:42.0387 (UTC) FILETIME=[87244430:01C76656]
-Authentication-Results: sj-dkim-1; header.From=rarakali@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: Daniel Walker <dwalker@mvista.com>
+CC: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: Stolen and degraded time and schedulers
+References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org>	 <1173837606.23595.32.camel@imap.mvista.com>  <45F79B9C.20609@goop.org> <1173888673.3101.12.camel@imap.mvista.com>
+In-Reply-To: <1173888673.3101.12.camel@imap.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Our driver is not in the kernel tree yet.
-The code snippet from poll entry point is as follows:
+Daniel Walker wrote:
+> Then your direction is wrong, sched_clock() should be constant ideally
+> (1millisecond should really be 1millisecond). 
 
-    mask = 0;
-    poll_wait(filp, &(sap_desc->recv_any_wq), poll_table);
-    /* We don't have yet a waiting queue for writers... */
-    lock_mts();
-    if ((sap_desc->recv_q.first != NULL) &&
-        (block_ssync_event(sap_desc->recv_q.first) == FALSE)) {
-        /* The queue can be read. */
-        mask |= POLLIN | POLLRDNORM;
-    }
-    unlock_mts();
-    //MTS_HOOK(mts_syscall_exit,__FUNCTION__,mask);
-    return mask; 
+Rather than repeating myself, I suggest you read my original post
+again.  But my point is that "I was runnable on a cpu for 1ms of real
+time" is a meaningless measurement: you want to measure "I ran for 1
+cpu-ms", which is a unit which depends on how work a particular CPU does
+in relationship to other CPUs on the system, or even itself at some
+previous time.
 
-The wake_up_interruptible(&(sap_desc->recv_any_wq)) is executed
-from the sending process.
+> Like I said in the last
+> email, change the scheduler to make it aware of the variable quantum
+> values.
 
-Hope this is sufficient. As I mentioned in my previous mail, what I
-am trying to understand better is the kernel code path of do_select() 
-versus wake_up_interruptible.
+I suppose you could, but that seems more complex.  I think you could
+encode the same information in the measurement of how much work a cpu
+actually got done while a process was scheduled on it.
 
-Thanks,
-Ravi
-
------Original Message-----
-From: Arjan van de Ven [mailto:arjan@infradead.org] 
-Sent: Wednesday, March 14, 2007 4:08 AM
-To: Ravinandan Arakali (rarakali)
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Clarification required about select vs wake_up race
-condition
-
-On Mon, 2007-03-12 at 12:44 -0700, Ravinandan Arakali (rarakali) wrote:
-> Hi,
-> I am facing following problem and was wondering if somebody could help
-
-> me out.
-> Our char driver(pretty much like all other char drivers) does a
-> poll_wait()
-
-
-you forgot to include your (full) sourcecode or a pointer to that...
+    J
