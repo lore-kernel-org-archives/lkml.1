@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161038AbXCNKJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161039AbXCNKJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161038AbXCNKJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 06:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161039AbXCNKJh
+	id S1161039AbXCNKJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 06:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161042AbXCNKJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 06:09:37 -0400
-Received: from seehuhn.de ([80.68.93.199]:4453 "EHLO seehuhn.de"
+	Wed, 14 Mar 2007 06:09:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46120 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161038AbXCNKJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 06:09:36 -0400
-X-Greylist: delayed 1451 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Mar 2007 06:09:36 EDT
-In-Reply-To: <Pine.LNX.4.64.0703131814160.9690@woody.linux-foundation.org>
-References: <20070314005508.DDC121801C5@magilla.sf.frob.com> <Pine.LNX.4.64.0703131814160.9690@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A641066C-5E6B-459E-8244-87ECAB378583@seehuhn.de>
-Cc: Roland McGrath <roland@redhat.com>, Benjamin LaHaise <bcrl@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: =?ISO-8859-1?Q?Jochen_Vo=DF?= <voss@seehuhn.de>
-Subject: Re: [PATCH 1/2] avoid OPEN_MAX in SCM_MAX_FD
-Date: Wed, 14 Mar 2007 09:45:09 +0000
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
+	id S1161039AbXCNKJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 06:09:48 -0400
+Date: Wed, 14 Mar 2007 11:08:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Johannes Bauer <JohannesBauer@gmx.de>,
+       linux-kernel@vger.kernel.org, schwab@suse.de,
+       Stable Kernel Team <stable@kernel.org>, Greg KH <greg@kroah.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] hrtimer: prevent overrun DoS in hrtimer_forward()
+Message-ID: <20070314100816.GA10799@elte.hu>
+References: <45F6F3A6.9060405@gmx.de> <45F7033B.2030204@redhat.com> <1173817985.13341.120.camel@localhost.localdomain> <1173866413.13341.154.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173866413.13341.154.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On 14 Mar 2007, at 01:15, Linus Torvalds wrote:
-> On Tue, 13 Mar 2007, Roland McGrath wrote:
->> Ok, fine.  But PATH_MAX is a real constant that has some meaning  
->> in the
->> kernel.  It's perfectly correct to use PATH_MAX as a constant on a  
->> system
->> like Linux that defines it and means what it says.  Conversely,  
->> OPEN_MAX
->> has no useful relationship with anything the kernel is doing at all.
->
-> Sure. I'm just saying that some people may use OPEN_MAX the way I know
-> people use PATH_MAX - whether it's what you're supposed to or not.
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-To contribute a data point here: searching for the regular expression
+> hrtimer_forward() does not check for the possible overflow of 
+> timer->expires. This can happen on 64 bit machines with large interval 
+> values and results currently in an endless loop in the softirq because 
+> the expiry value becomes negative and therefor the timer is expired 
+> all the time.
+> 
+> Check for this condition and set the expiry value to the max. expiry 
+> time in the future.
+> 
+> The fix should be applied to stable kernel series as well.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix,de>
 
-     \[\ *OPEN_MAX\ *\]
+ouch ... nice one.
 
-on google code search [1] gives 25 hits for me.  Replacing OPEN_MAX  
-with PATH_MAX results in "about 19,700" hits.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-[1] http://www.google.com/codesearch?hl=en&q=+%5C%5B%5C+*OPEN_MAX%5C+* 
-%5C%5D&start=20&sa=N
-
-I hope this helps,
-Jochen
---
-http://seehuhn.de/
-
-
+	Ingo
