@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030875AbXCNUGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030877AbXCNUHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030875AbXCNUGc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 16:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030877AbXCNUGc
+	id S1030877AbXCNUHL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 16:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030880AbXCNUHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 16:06:32 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:48837 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030875AbXCNUGb (ORCPT
+	Wed, 14 Mar 2007 16:07:10 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39503 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030877AbXCNUHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 16:06:31 -0400
-Date: Wed, 14 Mar 2007 16:06:28 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: David Howells <dhowells@redhat.com>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] question on irqs and memory ordering
-In-Reply-To: <200703142044.23018.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0703141557210.7723-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Mar 2007 16:07:08 -0400
+Date: Wed, 14 Mar 2007 21:07:04 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 - Take 2
+Message-ID: <20070314200704.GB376@one.firstfloor.org>
+References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org> <20070314180933.GA12994@elte.hu> <Pine.LNX.4.64.0703141120530.9690@woody.linux-foundation.org> <20070314195916.GA5674@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070314195916.GA5674@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Mar 2007, Oliver Neukum wrote:
+> the x86_64 and i386 trees have diverged quite a bit though, so this will 
+> be a major logistical undertaking. And with Andi opposed to 
+> fundamentally it it also lacks a bit of manpower i guess :-/
 
-> Hi,
-> 
-> I am looking at this code:
-> 
-> 	if (new_msr &
-> 	    (MOS_MSR_DELTA_CTS | MOS_MSR_DELTA_DSR | MOS_MSR_DELTA_RI |
-> 	     MOS_MSR_DELTA_CD)) {
-> 		icount = &mos7840_port->icount;
-> 
-> 		/* update input line counters */
-> 		if (new_msr & MOS_MSR_DELTA_CTS) {
-> 			icount->cts++;
-> 		}
-> 		if (new_msr & MOS_MSR_DELTA_DSR) {
-> 			icount->dsr++;
-> 		}
-> 		if (new_msr & MOS_MSR_DELTA_CD) {
-> 			icount->dcd++;
-> 		}
-> 		if (new_msr & MOS_MSR_DELTA_RI) {
-> 			icount->rng++;
-> 		}
-> 	}
-> 
-> It is called in interrupt and uses no locking. What happens if the next
-> irq is processed on another cpu? Is that cpu guaranteed to see the updates
-> to the incremented variables?
+I'm not fundamentally opposed, just sceptical on the effort:gain ratio.
 
-I _think_ it's okay.  Taking an interrupt and returning from an interrupt
-ought to have explicit or implicit memory barriers.
+> Andrew's laptop only half a dozen times! ;) But .. in the long run, it's 
+> alot easier to think about unified code. 32-bit x86 will certainly stay 
+> with us for at least 10-20 years, and the best model for maintainance is 
+> having one codebase.
 
-It wouldn't hurt to ask someone else.  David Howells wrote
-Documentation/memory-barriers.txt so maybe he knows.  (The document itself
-doesn't say one way or the other.)
+Not sure -- i'm often glad I don't have to care about all the old 32bit
+systems on x86-64. I have no problem with modern 32bit x86 systems,
+but old x86 tends to be very different from new x86. And all the old erratas
+are scary.
 
-Alan Stern
-
+-Andi
