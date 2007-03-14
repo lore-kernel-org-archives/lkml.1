@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161315AbXCNOnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161311AbXCNOoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161315AbXCNOnh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 10:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161314AbXCNOnh
+	id S1161311AbXCNOoj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 10:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161325AbXCNOoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 10:43:37 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:52249 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161311AbXCNOng (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 10:43:36 -0400
-Message-ID: <45F80A00.1080007@linux.vnet.ibm.com>
-Date: Wed, 14 Mar 2007 20:13:12 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+	Wed, 14 Mar 2007 10:44:39 -0400
+Received: from holomorphy.com ([66.93.40.71]:47193 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161311AbXCNOoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 10:44:38 -0400
+Date: Wed, 14 Mar 2007 07:43:58 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] kernel/pid.c pid allocation wierdness
+Message-ID: <20070314144358.GS2986@holomorphy.com>
+References: <45F7A4B3.5040005@sw.ru>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: balbir@in.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, Kirill Korotaev <dev@sw.ru>,
-       containers@lists.osdl.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@sw.ru>,
-       Dave Hansen <hansendc@us.ibm.com>
-Subject: Re: [RFC][PATCH 4/7] RSS accounting hooks over the code
-References: <45ED7DEC.7010403@sw.ru> <45ED81F2.80402@sw.ru>	<m14porwq1c.fsf@ebiederm.dsl.xmission.com> <45F57E7D.6080604@sw.ru>	<1173718208.11945.54.camel@localhost.localdomain>	<20070312235452.GB11578@MAIL.13thfloor.at>	<m1veh5sbwy.fsf@ebiederm.dsl.xmission.com>	<45F67C2D.7020303@yahoo.com.au> <m1odmxrv2l.fsf@ebiederm.dsl.xmission.com> <45F77149.7040604@yahoo.com.au> <45F7993E.2010200@in.ibm.com> <45F79CF3.1090302@yahoo.com.au> <45F7A8D3.3010109@in.ibm.com> <45F7F7B4.50100@linux.vnet.ibm.com> <45F7FD53.8000908@yahoo.com.au>
-In-Reply-To: <45F7FD53.8000908@yahoo.com.au>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <45F7A4B3.5040005@sw.ru>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 14, 2007 at 10:30:59AM +0300, Pavel Emelianov wrote:
+> I'm looking at how alloc_pid() works and can't understand
+> one (simple/stupid) thing.
+> It first kmem_cache_alloc()-s a strct pid, then calls
+> alloc_pidmap() and at the end it taks a global pidmap_lock()
+> to add new pid to hash.
+> The question is - why does alloc_pidmap() use at least
+> two atomic ops and potentially loop to find a zero bit
+> in pidmap? Why not call alloc_pidmap() under pidmap_lock
+> and find zero pid in pidmap w/o any loops and atomics?
+> The same is for free_pid(). Do I miss something?
+
+pidmap_lock protects the ->page elements of the pidmap array. The
+bitmap is not protected by it. It was intended to be as lockless as
+possible, so the lock there essentially stands in for a cmpxchg().
+
+A loop of some kind is strictly necessary regardless; in this lockless
+case concurrent bitmap updates can trigger looping. It's very important
+that only O(1) operations happen under the lock. These operations are
+installing freshly-allocated pidmap pages, inserting a struct pid into
+a hashtable collision chain, and removing a struct pid from a hashtable
+collision chain. Traversals of hashtable collision chains are lockless
+as per RCU. In any event, the atomic bit operations allow purely
+lockless bitmap updates as well as purely lockless bitmap reads.
+
+Essentially the idioms you're noticing are all for SMP scalability; in
+particular, pid allocation used to cause enormous stress on tasklist_lock
+that would trigger NMI-based deadlock detectors. Backing out such
+optimizations is tantamount to making the systems affected by that (i.e.
+any with enough cpus) crash that way again.
 
 
-Nick Piggin wrote:
-> Vaidyanathan Srinivasan wrote:
-> 
->> Accounting becomes easy if we have a container pointer in struct page.
->>  This can form base ground for building controllers since any memory
->> related controller would be interested in tracking pages.  However we
->> still want to evaluate if we can build them without bloating the
->> struct page.  Pagecache controller (2) we can implement with container
->> pointer in struct page or container pointer in struct address space.
-> 
-> The thing is, you have to worry about actually getting anything in the
-> kernel rather than trying to do fancy stuff.
-> 
-> The approaches I have seen that don't have a struct page pointer, do
-> intrusive things like try to put hooks everywhere throughout the kernel
-> where a userspace task can cause an allocation (and of course end up
-> missing many, so they aren't secure anyway)... and basically just
-> nasty stuff that will never get merged.
-> 
-> Struct page overhead really isn't bad. Sure, nobody who doesn't use
-> containers will want to turn it on, but unless you're using a big PAE
-> system you're actually unlikely to notice.
-> 
-> But again, I'll say the node-container approach of course does avoid
-> this nicely (because we already can get the node from the page). So
-> definitely that approach needs to be discredited before going with this
-> one.
-
-I agree :)
-
->> Building on this patchset is much simple and and we hope the bloat in
->> struct page will be compensated by the benefits in memory controllers
->> in terms of performance and simplicity.
->>
->> Adding too many controllers and accounting parameters to start with
->> will make the patch too big and complex.  As Balbir mentioned, we have
->> a plan and we shall add new control parameters in stages.
-> 
-> Everyone seems to have a plan ;) I don't read the containers list...
-> does everyone still have *different* plans, or is any sort of consensus
-> being reached?
-
-Consensus?  I believe at this point we have a sort of consensus on the
-base container infrastructure and the need for memory controller to
-control RSS, pagecache, mlock, kernel memory etc.  However the
-implementation and approach taken is still being discussed :)
-
---Vaidy
-
+-- wli
