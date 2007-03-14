@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161280AbXCNOMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161274AbXCNOOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161280AbXCNOMz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 10:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161282AbXCNOMz
+	id S1161274AbXCNOOJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 10:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161282AbXCNOOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 10:12:55 -0400
-Received: from csclub1.cs.uwaterloo.ca ([129.97.7.226]:60479 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1161280AbXCNOMy (ORCPT
+	Wed, 14 Mar 2007 10:14:09 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59592 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161274AbXCNOOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 10:12:54 -0400
-Date: Wed, 14 Mar 2007 10:12:53 -0400
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
-       Russell King <rmk+lkml@arm.linux.org.uk>, Jan Dittmer <jdi@l4x.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-Message-ID: <20070314141253.GM22464@csclub.uwaterloo.ca>
-References: <20070216185230.GO8882@enneenne.com> <20070313213842.GA23178@enneenne.com> <20070313224817.GF22466@csclub.uwaterloo.ca> <20070314093146.GE24556@enneenne.com> <20070314131934.GL22464@csclub.uwaterloo.ca> <20070314140623.GF3802@enneenne.com>
-Mime-Version: 1.0
+	Wed, 14 Mar 2007 10:14:07 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [RFC] kernel/pid.c pid allocation wierdness
+References: <45F7A4B3.5040005@sw.ru>
+Date: Wed, 14 Mar 2007 08:12:35 -0600
+In-Reply-To: <45F7A4B3.5040005@sw.ru> (Pavel Emelianov's message of "Wed, 14
+	Mar 2007 10:30:59 +0300")
+Message-ID: <m16493rk18.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070314140623.GF3802@enneenne.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 03:06:23PM +0100, Rodolfo Giometti wrote:
-> Some fixes up... see the git log for further info.
+Pavel Emelianov <xemul@sw.ru> writes:
 
-I looked at those, and they didn't sound important.  I will grab it
-anyhow just for completeness.
+> Hi.
+>
+> I'm looking at how alloc_pid() works and can't understand
+> one (simple/stupid) thing.
+>
+> It first kmem_cache_alloc()-s a strct pid, then calls
+> alloc_pidmap() and at the end it taks a global pidmap_lock()
+> to add new pid to hash.
+>
+> The question is - why does alloc_pidmap() use at least
+> two atomic ops and potentially loop to find a zero bit
+> in pidmap? Why not call alloc_pidmap() under pidmap_lock
+> and find zero pid in pidmap w/o any loops and atomics?
+>
+> The same is for free_pid(). Do I miss something?
 
-> Unluckely you need a patched version of setserial (see the patch on my
-> site). On the same site you can find a precompiled version which I use
-> for my tests, maybe it works for you...
+Well as far as I can tell that is just the way the code
+evolved.
 
-OK, that explains why it wasn't in setserial's code.
+Looking at the history.  At the time I started messing with it
+alloc_pidmap was the function and it behaved pretty much as it
+does today with locking (except it didn't disable irqs).
 
-> This is a specific problem of NTPD not of LinuxPPS itself. I wrote
-> some letters about this problem into NTP list but with no results.
-> 
-> The sysadm shoulkd use setserial to enable a serial port to become a
-> PPS source and then NTPD should verify if such PPS source exists
-> (using time_pps_findpath() & Co.).
+To add the allocation of struct pid.  I added alloc_pid
+as a wrapper.  Left alloc_pidmap alone, and added the hash
+table manipulation code.  I know this results is fairly
+short hold times which is moderately important for a global lock.
 
-Well I think I may just write a small tool to do the ioctl to enable it
-so I don't need the full setserial around.
+We loop in alloc_pidnmap because of what we are trying to do.  Simply
+returning the first free pid number would have bad effects on user
+space, so we have the simple requirement that we don't reuse pid
+numbers for as long as is practical.  We achieve that doing full walks
+through the pid space before we consider a pid again.  So we have to
+start from the last place we looked.  In addition  we may have
+multiple pages of bitmap to traverse (when our pid limit is high) and
+those pages are not physically contiguous.
 
-> Did you read this example on the wiki?
-> 
->    giometti@jeeg:~/linuxpps$ cat /sys/class/pps/01/name
->    serial1 
->    giometti@jeeg:~/linuxpps$ cat /sys/class/pps/01/path
->    /dev/ttyS1 
->    giometti at jeeg:~/linuxpps/test$ sudo ln -sf /dev/ttyS1 /dev/gps0
->    giometti at jeeg:~/linuxpps/test$ sudo ./ppstest /dev/gps0
->    found PPS source #2 "serial1" on "/dev/ttyS1"
->    giometti at jeeg:~/linuxpps/test$ sudo ln -sf ktimer /dev/gps0
->    giometti at jeeg:~/linuxpps/test$ sudo ./ppstest /dev/gps0
->    found PPS source #0 "ktimer" on ""
-> 
-> it doesn't work for you?
+So while I wouldn't call alloc_pidmap perfect it does seem to be
+reasonable.
 
-I will have to try that again to be sure.  I may have got myself
-confused when I first tried it.  One symlink I can deal with (that's
-ntpd sillyness after all).
+>From what I can tell for the low number of pids that we usually have
+the pid hash table seems near optimal.
 
---
-Len Sorensen
+If we do dig into this more we need to consider a radix_tree to hold
+the pid values.  That could replace both the pid map and the hash
+table, gracefully handle but large and small pid counts, might
+be a smidgin simpler, possibly be more space efficient, and it would
+more easily handle multiple pid namespaces.   The downside to using a
+radix tree is that is looks like it will have more cache misses for
+the normal pid map size, and it is yet another change that we would
+need to validate.
+
+Eric
