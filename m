@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161294AbXCNOwC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161313AbXCNPCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161294AbXCNOwC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 10:52:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161306AbXCNOwC
+	id S1161313AbXCNPCm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161314AbXCNPCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 10:52:02 -0400
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:36118 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161294AbXCNOwA (ORCPT
+	Wed, 14 Mar 2007 11:02:42 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:46793 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161313AbXCNPCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 10:52:00 -0400
-Date: Wed, 14 Mar 2007 15:52:39 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
-       Russell King <rmk+lkml@arm.linux.org.uk>, Jan Dittmer <jdi@l4x.org>,
-       Pavel Machek <pavel@ucw.cz>
-Message-ID: <20070314145239.GK3802@enneenne.com>
-References: <20070216185230.GO8882@enneenne.com> <20070313213842.GA23178@enneenne.com> <20070313224817.GF22466@csclub.uwaterloo.ca> <20070314093146.GE24556@enneenne.com> <20070314131934.GL22464@csclub.uwaterloo.ca> <20070314140623.GF3802@enneenne.com> <20070314141253.GM22464@csclub.uwaterloo.ca> <20070314142710.GJ3802@enneenne.com> <20070314144251.GN22464@csclub.uwaterloo.ca>
+	Wed, 14 Mar 2007 11:02:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pYJ5UOpc3Tcfqxl5hXS+L03KkDWd7kI+vdWoc7CCNC3LJ1g7jdYYa7G2VgckuvgAWfXFa2R9irhs1vkwRNvjqCS5+1Ftu2zJeaSmbsEO7SlZDkSgVvwCKE/04fU1aX6zvpr3iGvASUOjxxLxEMBFGqpbrHvhXNvLt7OKWmaoN9c=
+Message-ID: <d120d5000703140802jb48bc74tbbe7ee2b120b1798@mail.gmail.com>
+Date: Wed, 14 Mar 2007 11:02:37 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom driver]
+Cc: "johann deneux" <johann.deneux@gmail.com>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       "Anssi Hannula" <anssi.hannula@gmail.com>
+In-Reply-To: <45F722CE.9000602@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070314144251.GN22464@csclub.uwaterloo.ca>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+References: <2460126662758025813@fi.muni.cz>
+	 <d120d5000703070647t223f8858i8c495dcc3e1378a2@mail.gmail.com>
+	 <45EEEAA3.50009@gmail.com>
+	 <d120d5000703070856of068f19k62c5a7ce1f829336@mail.gmail.com>
+	 <4af2d03a0703130919nb4893b1ja9ec795dcf4bf53c@mail.gmail.com>
+	 <38b3b7c0703131450v2646e63fj2be4b9dda7f928c0@mail.gmail.com>
+	 <45F722CE.9000602@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 10:42:51AM -0400, Lennart Sorensen wrote:
-> 
-> Now you said to check the return value of time_pps_readlink.  Well it
+On 3/13/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> Why did you remove all Cced people? Anyway I filtered some of them out
+>
+> johann deneux napsal(a):
+> > You are right, the direction in ff_effect is meant to be an angle.
+> > A dirty solution would be to use the 16 bits as two 8-bits angles. Or
+>
+> That would be a problem as I need 3x 16bits.
+>
+> > maybe we should change the API. I don't think there are many
+> > applications using force feedback yet, so maybe that should be ok?
+> >
+> > If we change the API, we should remove the assumption that a device has
+> > at most two axes to render effects. We could for instance have a
+> > magnitude argument for each axis which is capable of rendering effects.
+> > That might be necessary even for more common gaming devices like racing
+> > wheels: One can think pedals could also be capable of force feedback
+> > some day, not just the steering wheel.
+>
+> I can do that, but in that case, I need to know how people (especially those
+> input one) want me to do...
+>
 
-I refere to readlink(), not to time_pps_readlink(). I'm sorry for
-mistake.
+Since we have no idea how many programs (if any) are using force
+feedback interface I would be wary of changing existing effcets and
+rather add new set of 3D effects.
 
-> If the call was to readlink directly it needs to be done, while your
-> time_pps_readlink is just a handy wrapper that does all that for you,
-> right?
-
-Right.
-
-Ciao,
-
-Rodolfo
+Do we have any idea if there any users of FF out there?
 
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Dmitry
