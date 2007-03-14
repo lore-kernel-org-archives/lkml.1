@@ -1,128 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964883AbXCNF4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030332AbXCNGHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964883AbXCNF4L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 01:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964953AbXCNF4L
+	id S1030332AbXCNGHU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 02:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965196AbXCNGHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 01:56:11 -0400
-Received: from 1wt.eu ([62.212.114.60]:1170 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964883AbXCNF4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 01:56:10 -0400
-Date: Wed, 14 Mar 2007 06:55:57 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Syed Ahemed <kingkhan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, msnyder@redhat.com, jjohnstn@redhat.com
-Subject: Re: NPTL patch for linux 2.4.28
-Message-ID: <20070314055556.GP943@1wt.eu>
-References: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Wed, 14 Mar 2007 02:07:20 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:46917 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965157AbXCNGHS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 02:07:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=QX1d00tCms5K3NVYPRkDZvT+3iHkKzvaZ9noAbgJo92i7q7ZKOT1p5F5QnEUXAlNKEW+LkifT7RAHQIxIzKdLCMk6z/gbFzkURoW9fggMV7MeIniA6QYna8p5VSzPCcvIWEOIccQ1VjRGqnsQFxb9uakDZgu3UL3as1bmqyk9To=
+Message-ID: <45F7910C.6060502@gmail.com>
+Date: Wed, 14 Mar 2007 15:07:08 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: =?UTF-8?B?TWF0aGlldSBCw6lyYXJk?= <Mathieu.Berard@crans.org>
+CC: Jeff Garzik <jeff@garzik.org>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org,
+       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>,
+       Fabio Comolli <fabio.comolli@gmail.com>,
+       Janosch Machowinski <jmachowinski@gmx.de>,
+       Lukas Hejtmanek <xhejtman@fi.muni.cz>, Meelis Roos <mroos@linux.ee>,
+       Olivier Mondoloni <darkcore71@yahoo.fr>,
+       Thomas Renninger <trenn@suse.de>, Robert Moore <robert.moore@intel.com>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [3/6] 2.6.21-rc2: known regressions
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015036.GH3441@stusta.de> <45EE9E39.3010800@garzik.org> <45F20541.9090208@crans.org> <45F53B60.8020908@gmail.com> <45F69989.70702@crans.org> <45F69C02.2020206@gmail.com> <45F71003.4030003@crans.org>
+In-Reply-To: <45F71003.4030003@crans.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 05:49:22AM +0530, Syed Ahemed wrote:
-> Hello all.
-> I have a tricky problem on  hand and a straight forward question.
-> 
-> Tricky problem:
-> ---------------------
-> While debugging a simple multithreaded application using gdb linux
-> 2.4.28 , i noticed the thread that has crashed after sigsegv has
-> complete information on the gdb (both  address and function at the
-> time of crash ) .But the other threads that are in wait state (
-> executing glibc functions at the time of crash ) just has the address
-> but not the function name as shown below.
-> 
-> 
-> sh-2.05b# ./gdb a.out /mnt/cf/engg_files/core_files/
-> a.out.1173437318.core.5312   a.out.1173453940.core.9829
-> a.out.1173438125.core.16016  lost+found
-> a.out.1173438881.core.18721
-> <f/engg_files/core_files/a.out.1173453940.core.9829
-> GNU gdb 6.3
-> Copyright 2004 Free Software Foundation, Inc.
-> GDB is free software, covered by the GNU General Public License, and you are
-> welcome to change it and/or distribute copies of it under certain 
-> conditions.
-> Type "show copying" to see the conditions.
-> There is absolutely no warranty for GDB.  Type "show warranty" for details.
-> This GDB was configured as "i686-pc-linux-gnu"...Using host libthread_db 
-> library
-> "/lib/libthread_db.so.1".
-> 
-> warning: exec file is newer than core file.
-> Core was generated by `./a.out'.
-> Program terminated with signal 11, Segmentation fault.
-> Reading symbols from /lib/libpthread.so.0...done.
-> Loaded symbols for /lib/libpthread.so.0
-> Reading symbols from /lib/libc.so.6...done.
-> Loaded symbols for /lib/libc.so.6
-> Reading symbols from /opt/lib/ld-linux.so.2...done.
-> Loaded symbols for /opt//lib/ld-linux.so.2
-> #0  0x080485df in a (p=0x0) at threadcore.c:34
-> 34      threadcore.c: No such file or directory.
->        in threadcore.c
-> (gdb) info threads
->  3 process 10993  0x08053840 in ?? ()
->  2 process 1267  0xbf5ff9d0 in ?? ()
-> * 1 process 9829  0x080485df in a (p=0x0) at threadcore.c:34
-> (gdb) thread 3
-> [Switching to thread 3 (process 10993)]#0  0x08053840 in ?? ()
-> (gdb) bt
-> #0  0x08053840 in ?? ()
-> Cannot access memory at address 0x2b
-> (gdb)
-> #0  0x08053840 in ?? ()
-> Cannot access memory at address 0x2b
-> (gdb) thread 1
-> [Switching to thread 1 (process 9829)]#0  0x080485df in a (p=0x0)
->    at threadcore.c:34
-> 34      in threadcore.c
-> (gdb) bt
-> #0  0x080485df in a (p=0x0) at threadcore.c:34
-> #1  0x080485bc in main () at threadcore.c:21
-> (gdb) thread 2
-> [Switching to thread 2 (process 1267)]#0  0xbf5ff9d0 in ?? ()
-> (gdb) bt
-> #0  0xbf5ff9d0 in ?? ()
-> Cannot access memory at address 0x2b
-> (gdb) q
-> sh-2.05b#
-> 
-> 
-> The problem is with the same glibc and gdb , Redhat 9 linux 2.4.20-8
-> does  give me complete information of all the threads in the "info
-> threads" command.
-> Having read similar problems on various mailing lists , i believe the
-> only difference is redhat 9 has patched its kernel with NTPL or
-> debugging support for linux in the kernel.
-> 
-> Wanted to confirm if it this correct .
+Hello,
 
-I really have no idea about this problem.
+Mathieu Bérard wrote:
+> [   15.031823] ata1.00: taskfile_load_raw: (0x1f1-1f7): hex: 10 03 00 00
+> 00 a0 ef
 
-> My question
-> ------------------
-> 
-> Someone would say move to 2.6 kernel and a different glibc,But with
-> custom applications at stake .I can't take that risk as yet .So i
-> would want an NTPL patch for 2.4.28 kernel
-> Where do i get it ? Please do respond .
+Okay, this is interesting.  This is Enable Device-Initiated Interface
+Power State Transitions.  So, after this command is executed the device
+will try to transit to partial/slumber SATA PHY power states at its
+discretion, which is all cool and dandy in theory but depending on
+controller and drive firmware can cause all sorts of problems.
 
-Last time I saw an NPTL patch, it was for something like 2.4.21 patched
-with O(1) scheduler. I bet you'll have a hard time merging those together
-in 2.4.28. It is also possible that core dumps don't look the same. I
-have in mind some old changes about thread core dumps, but that's too
-far away to say anything reliable on the subject. Check that your core
-files are of the same sizes between NPTL and no-NPTL kernels.
+The NCQ problem you're seeing probably is some side effect of device
+initiated link PS.  Can't tell whether the controller or the drive's
+firmware is problem without further info.  Due to blacklisting, NCQ
+won't be turned on your drive in future kernels and link PS doesn't seem
+to cause any problem no non-NCQ, so your case is taken care of here but
+this leaves me a bit worried about what _GTF feeds us.
 
-Alternatively, you could try RHEL3's kernel (2.4.21) which has all those
-things and which is still supported.
+I don't think we can reliably filter out command TFs as it might even
+contain vendor-specific commands but it might be better to always log
+TFs executed for _GTF such that we at least know what's going on with
+the drive.
 
-Regards,
-Willy
+Thanks.
 
+-- 
+tejun
