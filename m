@@ -1,48 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbXCNXdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964839AbXCNXk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964825AbXCNXdL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 19:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964826AbXCNXdK
+	id S964839AbXCNXk7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 19:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964840AbXCNXk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 19:33:10 -0400
-Received: from mga09.intel.com ([134.134.136.24]:25082 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964825AbXCNXdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 19:33:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,285,1170662400"; 
-   d="scan'208"; a="58657650:sNHT23361336"
-Date: Wed, 14 Mar 2007 16:33:01 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrea Arcangeli <andrea@suse.de>, Anton Blanchard <anton@samba.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: SMP performance degradation with sysbench
-Message-ID: <20070314233301.GK30596@linux-os.sc.intel.com>
-References: <20070312220042.GA807@kryten> <45F63266.1080509@yahoo.com.au> <20070313094559.GC8992@v2.random> <45F67796.4040508@yahoo.com.au> <20070313103134.GF8992@v2.random> <45F67F02.5020401@yahoo.com.au> <20070313105742.GG8992@v2.random> <45F68713.9040608@yahoo.com.au> <20070313114215.GI8992@v2.random> <45F6945B.2030309@yahoo.com.au>
+	Wed, 14 Mar 2007 19:40:59 -0400
+Received: from smtp-out19.alice.it ([85.33.2.19]:3871 "EHLO
+	smtp-out19.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964839AbXCNXk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 19:40:58 -0400
+X-Greylist: delayed 851 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Mar 2007 19:40:58 EDT
+Date: Thu, 15 Mar 2007 00:30:20 +0100
+From: Giuliano Pochini <pochini@shiny.it>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: heiko.carstens@de.ibm.com, schwab@suse.de, pochini@denise.shiny.it,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com
+Subject: Re: /sys/devices/system/cpu/cpuX/online are missing
+Message-Id: <20070315003020.250097b1.pochini@shiny.it>
+In-Reply-To: <20070313095652.GB20518@flint.arm.linux.org.uk>
+References: <20070311222652.5ea40da1.pochini@shiny.it>
+	<20070312085826.GA9985@osiris.boeblingen.de.ibm.com>
+	<Pine.LNX.4.64.0703122337350.25919@denise.shiny.it>
+	<je6496asea.fsf@sykes.suse.de>
+	<20070313090350.GA9890@osiris.boeblingen.de.ibm.com>
+	<20070313091159.GB9890@osiris.boeblingen.de.ibm.com>
+	<20070313094038.GA20518@flint.arm.linux.org.uk>
+	<20070313095652.GB20518@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; powerpc-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F6945B.2030309@yahoo.com.au>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Mar 2007 23:26:45.0314 (UTC) FILETIME=[3AEAD220:01C76690]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 05:08:59AM -0700, Nick Piggin wrote:
-> I would agree that it points to MySQL scalability issues, however the
-> fact that such large gains come from tcmalloc is still interesting.
+On Tue, 13 Mar 2007 09:56:52 +0000
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-What glibc version are you, Anton and others are using?
+> Right, here's the ARM fix which is now in the ARM tree:
+> [...]
 
-Does that version has this fix included?
 
-Dynamically size mmap treshold if the program frees mmaped blocks.
+The following patch seems to fix the issue (+ minor style fix). I'm not sure
+it's ok due to my poor knowledge of this code.
 
-http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/malloc/malloc.c.diff?r1=1.158&r2=1.159&cvsroot=glibc
 
-thanks,
-suresh
+Signed-off-by: Giuliano Pochini <pochini@shiny.it>
+
+--- linux-2.6.21rc3/arch/powerpc/kernel/setup_32.c__orig	2007-03-15 00:05:02.000000000 +0100
++++ linux-2.6.21rc3/arch/powerpc/kernel/setup_32.c	2007-03-15 00:07:02.000000000 +0100
+@@ -195,18 +195,22 @@ EXPORT_SYMBOL(nvram_sync);
+ 
+ #endif /* CONFIG_NVRAM */
+ 
+-static struct cpu cpu_devices[NR_CPUS];
++static DEFINE_PER_CPU(struct cpu, cpu_devices);
+ 
+ int __init ppc_init(void)
+ {
+-	int i;
++	int cpu;
+ 
+ 	/* clear the progress line */
+-	if ( ppc_md.progress ) ppc_md.progress("             ", 0xffff);
++	if (ppc_md.progress)
++		ppc_md.progress("             ", 0xffff);
+ 
+ 	/* register CPU devices */
+-	for_each_possible_cpu(i)
+-		register_cpu(&cpu_devices[i], i);
++	for_each_possible_cpu(cpu) {
++		struct cpu *c = &per_cpu(cpu_devices, cpu);
++		c->hotpluggable = 1;
++		register_cpu(c, cpu);
++	}
+ 
+ 	/* call platform init */
+ 	if (ppc_md.init != NULL) {
+
+
+--
+Giuliano.
