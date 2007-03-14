@@ -1,126 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751701AbXCNPok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbXCNPo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751701AbXCNPok (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXCNPoj
+	id S1751782AbXCNPo5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXCNPo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:44:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:60478 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751638AbXCNPoi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:44:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rZ5QHv82TNCTH3XyuWORCOhvL+tnhNOzfPQrY/WmteLeRZoIO2mTZu/5bg7GNGxyhGFyfNEm2Tm6D7J6jMszbtJzABCt5HawxbNrfBAagCMuX2Mq17sHI2bF85HkLxSDkj4A67UXCNbnS86dmQj2HZj19i6vUg23D+B960+rSyo=
-Message-ID: <d120d5000703140844q736d47te89c8b388dc13969@mail.gmail.com>
-Date: Wed, 14 Mar 2007 11:44:36 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "=?ISO-8859-1?Q?=C9ric_Piel?=" <Eric.Piel@tremplin-utc.net>
-Subject: Re: [PATCH 0/2] wistron_btns: More keymaps
-Cc: mitr@volny.cz, otauber@web.de, linux-kernel@vger.kernel.org,
-       linux-input <linux-input@atrey.karlin.mff.cuni.cz>,
-       "Vojtech Pavlik" <vojtech@suse.cz>
-In-Reply-To: <45F812A1.3060108@tremplin-utc.net>
+	Wed, 14 Mar 2007 11:44:57 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42640 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751783AbXCNPoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 11:44:55 -0400
+Date: Wed, 14 Mar 2007 08:44:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 18/18] Straight file moves
+In-Reply-To: <20070314051050.688415057@goodmis.org>
+Message-ID: <Pine.LNX.4.64.0703140837300.9690@woody.linux-foundation.org>
+References: <20070314050819.536207642@goodmis.org> <20070314051050.688415057@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <45ECA23A.5010503@tremplin-utc.net>
-	 <d120d5000703060536k7743ece9hb20fa4d1f7ad7ad7@mail.gmail.com>
-	 <45ED8809.70309@tremplin-utc.net> <45F72D37.6090004@tremplin-utc.net>
-	 <d120d5000703140654y4d8cb0a3oafd49c48a045bd77@mail.gmail.com>
-	 <45F812A1.3060108@tremplin-utc.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/14/07, Éric Piel <Eric.Piel@tremplin-utc.net> wrote:
-> 03/14/2007 02:54 PM, Dmitry Torokhov wrote/a écrit:
-> > Hi Eric,
-> >
-> :
-> > I have couple of comments/requests:
-> >
-> > 1. KEY_OPEN and KEY_CLOSE should not be used to signal state of the
-> > lid, they correspond to Accpication Control Open and Close keys from
-> > USB HID HUT spec:
-> >
-> >     http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
-> >
-> > SW_LID shoudl be used to signal lid state instead.
-> The keycodes put in the keymap are simply the same as in acerhk, just
-> because I couldn't think of better. Indeed, KEY_OPEN and KEY_CLOSE seem
-> to badly fit if they might be interpreted by userland as opening or
-> closing a document! That would be better to generate a SW_LID event, but
-> I'm not sure how to do that, is it just about using
-> input_report_switch(x, SW_LID, 0 or 1) instead of using
-> input_report_key()?
 
-Yes.
 
-> Probably I need to update input_dev->swbit as well.
-
-Yes.
-
-> Do I have to anything else to generate switch events?
-
-No, that should be it. Oh, you need to set SW_BIT in dev->evbit.
-
+On Wed, 14 Mar 2007, Steven Rostedt wrote:
 >
-> Sincerely, I don't think anyone is using this info (especially because
-> probably the info is also passed though ACPI) so that would be fine with
-> me to just not generate any event :-P Tell me if you think it worths it.
->
+> Here's a list of files that were moved from either i386 or x86_64 over
+> to the arch/x86 directory.
 
-I think it shoudl be OK to send this event even if ACPI also sends it.
-Recently I changed ACPI button driver to send SW_LID events and since
-siwiches have state (on/off, open/closed) applications shoudl not get
-confised by getting 2 events in a row (they shoudl not interpret it as
-toggle).
+Well, this means that your patch series doesn't actually *compile* as a 
+series.
 
-> > 2. I also have a concern about using KEY_SCREEN to signal toggling
-> > display on and off. I am CCing Vojtech - he must know what the
-> > original intent of this key code was. BTW, when user presses
-> > corresponding button - does the display actually goes off? Maybe we
-> > need another switch.
-> Only few laptops generate an event for this key (most of the laptop
-> simply switch the screen). I don't have access to any of those, so I've
-> no idea if it's the userland which has to control the display or if it's
-> just information for the userland. Maybe Olaf knows? I don't think it's
-> possible to convert it to a switch event because it doesn't report the
-> information about if screen is on or off.
->
-> On the same topic, there are some "KEY_MEDIA" generated when key to
-> change display output is pressed. Is it fine for you or do have a more
-> suiting keycode in mind?
->
+In other words, it's a pointless series, since the individual patches just 
+generate a non-working kernel, until they have all been applied. 
 
-I wonder what KEY_SWITCHVIDEOMODE does on Macs... Any Mac users out there?
+So I really meant that each patch should be generated with "git diff -M", 
+and you'd have a series of patches that are all working and move one part 
+of the tree at a time (with Makefile changes etc integrated).
 
->
-> > 3. The number of keymap tables grew considerably ;) Do you think it
-> > woudl make sense to allocate memory for keymap at device creation time
-> > and copy selected keymap and them mark all original keymaps as
-> > __initdata so they are discarded one module completed initialization?
-> In the patch, I've reduced the keymap structure to only take 32bits per
-> key. So, in the absolute, it's not that terrible with each keymap taking
-> about 40 bytes. Still, it wouldn't hurt to save space knowing that it's
-> likely that the list keeps growing up. It shouldn't be hard to do as you
-> propose with the __initdata.
->
-> I had thought about a different way: as the generic keymap should fit
-> most of the laptop, we could save only the difference of a given laptop
-> to this keymap (then behaving more like a "quirk"). This would have the
-> advantage of saving space even in the source file ;-)
->
-> I'll try to tinker a bit with both approaches and see what fit best.
-> Anyway, is it ok for you to merge those patches first and later I'll
-> come up with a space-saver patch?
->
+Also, in case you didn't notice, it's also perfectly fine to have  
+"impure" moves, ie a move that not only renames something, but also 
+changes something (commonly the comments at the top of the file). Maybe 
+you simply didn't have anything like that, but I thought I'd mention it 
+just in case you tried to avoid it on purpose.
 
-Yes, I will merge the fisrt 2 patches once we work out the proper
-keycodes/other events.
+The reason I really want the whole series to be compileable is that 
+especially with a lot of people using "git bisect", if you have something 
+that doesn't compile in the middle, not only does it show that the series 
+wasn't a series, it also means that you cannot automate the bisect and you 
+need manual intervention.
 
--- 
-Dmitry
+		Linus
