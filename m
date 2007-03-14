@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbXCNSZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932419AbXCNS0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932339AbXCNSZi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 14:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbXCNSZi
+	id S932419AbXCNS0I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 14:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932425AbXCNS0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 14:25:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59209 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932339AbXCNSZh (ORCPT
+	Wed, 14 Mar 2007 14:26:08 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49468 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932346AbXCNS0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 14:25:37 -0400
-Date: Wed, 14 Mar 2007 18:25:28 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
-Message-ID: <20070314182528.GN4095@ftp.linux.org.uk>
-References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk> <Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be> <20070314160258.GK4095@ftp.linux.org.uk> <Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be> <20070314170720.GL4095@ftp.linux.org.uk> <Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org> <20070314175936.GM4095@ftp.linux.org.uk> <Pine.LNX.4.62.0703141907290.28462@pademelon.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0703141907290.28462@pademelon.sonytel.be>
-User-Agent: Mutt/1.4.1i
+	Wed, 14 Mar 2007 14:26:06 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45F83E14.3060003@s5r6.in-berlin.de>
+Date: Wed, 14 Mar 2007 19:25:24 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070303 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>
+CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       Greg KH <greg@kroah.com>
+Subject: Re: oops in __nodemgr_remove_host_dev (was Re: Ooops with suspend
+ to RAM)
+References: <200703140642.28390.ismail@pardus.org.tr> <45F7D922.6010501@s5r6.in-berlin.de> <200703141858.39531.ismail@pardus.org.tr>
+In-Reply-To: <200703141858.39531.ismail@pardus.org.tr>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 07:09:40PM +0100, Geert Uytterhoeven wrote:
-> On Wed, 14 Mar 2007, Al Viro wrote:
-> > On Wed, Mar 14, 2007 at 10:30:31AM -0700, Linus Torvalds wrote:
-> > > Maybe not "bool" vs "mbool", but it might be nice to have
-> > > 
-> > > 	bool FB_PS3
-> > > 		depends strictly on FB
-> > > 
-> > > ie a "depends strictly" refuses to upgrade a bool dependency from "m" to 
-> > > "y", while a regular depends allows it.
-> > > 
-> > > Or something.. The "depends strictly on X" thing would really be just a 
-> > > mental shorthand for "depends on (X)=y" (it's actually longer to type, but 
-> > > I think it's a bit more intuitive, thus "mental shortcut").
-> > 
-> > There's a fun side question, though: what should allmodconfig do?  FB=m,
-> > FB_PS3=n?  Or FB=y, FB_PS3=y?
+Ismail Dönmez wrote:
+> On Wednesday 14 March 2007 13:14:42 Stefan Richter wrote:
+>> Do you have a script or config which marks the
+>> ohci1394 module to be unloaded before suspend?  
 > 
-> >From `make help':
-> | New config selecting modules when possible
-> 
-> FB can be a module, so FB=m, FB_PS3=n.
-> 
-> It doesn't say anything about things that can't be modules :-)
-> 
-> But I agree the chances of getting a system that doesn't work increase...
+> I used kpowersave to suspend, I failed to find anything related to ohci1394 in 
+> its config but rmmod ohci1394 gives exact oops so it must be rmmoding it. 
+[...]
+> Are you able to rmmod it?
 
-No, I realize what kind of behaviour we'll get if we go for dependency on
-FB=y.  However, if we really introduce a new kconfig primitive, it might
-make sense to teach allmodconfig to deal with it.
+Yes, but on 2.6.20 and earlier kernels, most of the time with
+development versions of the 1394 drivers. I still haven't tried
+2.6.21-rc, will hopefully get to it tonight.
+
+[...]
+> I'll give -mm a try sometime this weekend then.
+
+It will most certainly behave the same, unless you use the new
+alternative FireWire drivers which are a whole different game. I hate to
+say it but they don't have suspend + resume support yet. Like the
+vanilla Linux drivers before 2.6.20/21, they have to be unloaded before
+suspend or at least reloaded after resume.
+-- 
+Stefan Richter
+-=====-=-=== --== -===-
+http://arcgraph.de/sr/
