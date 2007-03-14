@@ -1,77 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933914AbXCNNya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030863AbXCNNzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933914AbXCNNya (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 09:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933915AbXCNNya
+	id S1030863AbXCNNzO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 09:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030865AbXCNNzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 09:54:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:4607 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933914AbXCNNy3 (ORCPT
+	Wed, 14 Mar 2007 09:55:13 -0400
+Received: from web52903.mail.yahoo.com ([206.190.49.13]:29781 "HELO
+	web52903.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1030863AbXCNNzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 09:54:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WGJx61pChepGFEQpkXPABWTovHjxPeNUNMGiwnxJbWFFTWKVITzkCf6+5hwlpX3wCM51KxhTq8M1FUkIYmQKiDel28XeJ2v/8xpGpmtF8OBwm9JjHX1XMBzqRa1M21M6tCpAtCHB4pDD/9jiHTVwyOhb1yczFuRKUDkfij7gqnc=
-Message-ID: <d120d5000703140654y4d8cb0a3oafd49c48a045bd77@mail.gmail.com>
-Date: Wed, 14 Mar 2007 09:54:27 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Eric Piel" <Eric.Piel@tremplin-utc.net>
-Subject: Re: [PATCH 0/2] wistron_btns: More keymaps
-Cc: mitr@volny.cz, otauber@web.de, linux-kernel@vger.kernel.org,
-       linux-input <linux-input@atrey.karlin.mff.cuni.cz>,
-       "Vojtech Pavlik" <vojtech@suse.cz>
-In-Reply-To: <45F72D37.6090004@tremplin-utc.net>
+	Wed, 14 Mar 2007 09:55:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Scs4EdxNmJPp3rUEcglVzb+7QvoKZibgpd+YH9Xo93SDpTKK7qc8rG23XTJJxXOM1u2IN2SfGuIzhYPwfQlXoEUAHVjWwIqyVGupicBcWUoUqtxtdNfzw/7kwYqeGGkv0YVES5wr7EoP7oInf/0WALPOmGLi1OVr3HshHBHl8TE=;
+X-YMail-OSG: pTzYsYkVM1kS_Y8K9TnvanPN8pNVQn7zvOEJA3c_jOCsZAdpp8GQ.0shM2fDseb9.5mKjM13..MubpWSDHhOXGFnoDuiqSD8HC1cfC23XqH6DmhEfowfA0UYzUZMEP1hc12cu_.3EXsAFlWcP89Q9o5.NQ--
+Date: Wed, 14 Mar 2007 13:55:09 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: kernel BUG at mm/slab.c:610
+To: linux-kernel@vger.kernel.org
+Cc: pupilla@hotmail.com, penberg@cs.helsinki.fi
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45ECA23A.5010503@tremplin-utc.net>
-	 <d120d5000703060536k7743ece9hb20fa4d1f7ad7ad7@mail.gmail.com>
-	 <45ED8809.70309@tremplin-utc.net> <45F72D37.6090004@tremplin-utc.net>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <541739.61872.qm@web52903.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
-
-On 3/13/07, Eric Piel <Eric.Piel@tremplin-utc.net> wrote:
-> Hello,
+Marco Berizzi wrote:
+> Here is:
 >
-> As a sequel to my patch "Wistron button support for TravelMate 610" of
-> last week, here is a bigger addition of keymaps for the wistron_btns.
->
-> Patch 1 adds all the database of acerhk which fits this driver (about 25
-> more laptops).
-> Patch 2 adds a generic map that should fit most users but has the
-> disadvantage of not being automatic.
->
-> Dmitry, I've tried to make them against your tree. Still, if they don't
-> apply cleanly, just tell me and I'll try harder!
->
+> Mar 14 03:42:25 Mimosa kernel: ------------[ cut here ]------------
+> Mar 14 03:42:25 Mimosa kernel: kernel BUG at mm/slab.c:610!
+> Mar 14 03:42:25 Mimosa kernel: invalid opcode: 0000 [#1]
+> Mar 14 03:42:25 Mimosa kernel: Modules linked in: sch_sfq sch_htb
+cls_fw
+> nf_nat_pptp nf_nat_proto_gre nf_conntrack_pptp nf_conntrack_proto_gre
+> nf_nat_ftp nf_conntrack_ftp 3c59x mii
+> Mar 14 03:42:25 Mimosa kernel: CPU: 0
+> Mar 14 03:42:25 Mimosa kernel: EIP: 0060:[<c014ca99>] Not
+tainted
+> VLI
+> Mar 14 03:42:25 Mimosa kernel: EFLAGS: 00010046 (2.6.20 #1)
+> Mar 14 03:42:25 Mimosa kernel: EIP is at free_block+0xd9/0xf0
+> Mar 14 03:42:25 Mimosa kernel: eax: 00080000 ebx: c1000000 ecx:
+> c0e7d4e0 edx: c101cfa0
+> Mar 14 03:42:25 Mimosa kernel: esi: c1210000 edi: c1176560 ebp:
+> 00000000 esp: c119bef0
+> Mar 14 03:42:25 Mimosa kernel: ds: 007b es: 007b ss: 0068
+> Mar 14 03:42:25 Mimosa kernel: Process events/0 (pid: 3, ti=c119a000
+> task=c118f030 task.ti=c119a000)
+> Mar 14 03:42:25 Mimosa kernel: Stack: c1213a10 161c9ed5 c1210010
+> c1210010 c1210000 161c9ed5 c1176560 c014d201
+> Mar 14 03:42:25 Mimosa kernel: 00000000 c1180420 c1176560
+> c1180d60 c014d220 c014d26b 00000000 00000000
+> Mar 14 03:42:25 Mimosa kernel: c03b7ae0 c03b7ae0 00000282
+> c0123d37 00000000 c118f13c 0000007b 0000508b
+> Mar 14 03:42:25 Mimosa kernel: Call Trace:
+> Mar 14 03:42:25 Mimosa kernel: [<c014d201>] drain_array+0x91/0xb0
+> Mar 14 03:42:25 Mimosa kernel: [<c014d220>] cache_reap+0x0/0xf0
+> Mar 14 03:42:25 Mimosa kernel: [<c014d26b>] cache_reap+0x4b/0xf0
+> Mar 14 03:42:25 Mimosa kernel: [<c0123d37>] run_workqueue+0x67/0x130
+> Mar 14 03:42:25 Mimosa kernel: [<c0123f3a>] worker_thread+0x13a/0x170
+> Mar 14 03:42:25 Mimosa kernel: [<c01123e0>]
+> default_wake_function+0x0/0x10
+> Mar 14 03:42:25 Mimosa kernel: [<c0112427>]
+__wake_up_common+0x37/0x70
+> Mar 14 03:42:25 Mimosa kernel: [<c01123e0>]
+> default_wake_function+0x0/0x10
+> Mar 14 03:42:25 Mimosa kernel: [<c0123e00>] worker_thread+0x0/0x170
+> Mar 14 03:42:25 Mimosa kernel: [<c01271a6>] kthread+0xb6/0xc0
+> Mar 14 03:42:25 Mimosa kernel: [<c01270f0>] kthread+0x0/0xc0
+> Mar 14 03:42:25 Mimosa kernel: [<c01036a3>]
+> kernel_thread_helper+0x7/0x14
+> Mar 14 03:42:25 Mimosa kernel: =======================
+> Mar 14 03:42:25 Mimosa kernel: Code: ff 83 c4 0c 5b 5e 5f 5d c3 8b 57
+20
+> 29 d0 89 da 89 46 18 89 f8 e8 78 f1 ff ff eb da 89 33 8b 46 04 89 5e
+04
+> 89 18 89 43 04 eb cb <0f> 0b 90 8d 74 26 00 eb fe 8b 52 0c e9 57 ff ff
+> ff 8d b6 00 00
+> Mar 14 03:42:25 Mimosa kernel: EIP: [<c014ca99>] free_block+0xd9/0xf0
+> SS:ESP 0068:c119bef0
 
-I have couple of comments/requests:
+> Only to tell you, that on the console linux was printing
+> this message:
 
-1. KEY_OPEN and KEY_CLOSE should not be used to signal state of the
-lid, they correspond to Accpication Control Open and Close keys from
-USB HID HUT spec:
+> atkbd.c: Spurious ACK on isa0060/serio0. Some program might be trying
+> access hardware directly.
 
-     http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
+That sounds familiar... I had similar trouble with 2.6.20.1 (running UP on a 200 MHz Pentium MMX
+machine) when I unloaded the nf_conntrack_h323 kernel module. The messages continued until I
+rebooted, although I never saw an oops. I am currently avoiding the problem by *not* unloading any
+netfilter modules.
 
-SW_LID shoudl be used to signal lid state instead.
+Cheers,
+Chris
 
-2. I also have a concern about using KEY_SCREEN to signal toggling
-display on and off. I am CCing Vojtech - he must know what the
-original intent of this key code was. BTW, when user presses
-corresponding button - does the display actually goes off? Maybe we
-need another switch.
 
-3. The number of keymap tables grew considerably ;) Do you think it
-woudl make sense to allocate memory for keymap at device creation time
-and copy selected keymap and them mark all original keymaps as
-__initdata so they are discarded one module completed initialization?
 
-Thank you.
-
--- 
-Dmitry
+		
+___________________________________________________________ 
+All new Yahoo! Mail "The new Interface is stunning in its simplicity and ease of use." - PC Magazine
+http://uk.docs.yahoo.com/nowyoucan.html
