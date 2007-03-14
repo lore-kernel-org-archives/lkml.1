@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXCNUVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933166AbXCNUXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933175AbXCNUVd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 16:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933156AbXCNUVd
+	id S933166AbXCNUXq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 16:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbXCNUXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 16:21:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48880 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933226AbXCNUVc (ORCPT
+	Wed, 14 Mar 2007 16:23:46 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:44522 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933166AbXCNUXp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 16:21:32 -0400
-Date: Wed, 14 Mar 2007 21:21:31 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 14 Mar 2007 16:23:45 -0400
+Message-ID: <45F859CF.8040100@vmware.com>
+Date: Wed, 14 Mar 2007 12:23:43 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Benjamin LaHaise <bcrl@kvack.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 - Take 2
-Message-ID: <20070314202131.GC376@one.firstfloor.org>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org> <20070314180933.GA12994@elte.hu> <Pine.LNX.4.64.0703141120530.9690@woody.linux-foundation.org> <20070314195916.GA5674@elte.hu> <20070314201156.GA9603@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070314201156.GA9603@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [patch 28/34] Xen-pv_ops: Xen SMP guest support
+References: <20070313233017.933601256@goop.org> <20070313233034.586018620@goop.org> <20070314132820.GL6209@kvack.org>
+In-Reply-To: <20070314132820.GL6209@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> also, having the x32_ and x64_ prefix is a painful daily reminder for 
-> all of us changing the architecture that 'this stuff needs to be 
-> unified!'.
+Benjamin LaHaise wrote:
+>   
+>> +/*
+>> + * We aggressively remove defunct pgd from cr3. We execute unmap_vmas()
+>> + * *much* faster this way.
+>> + */
+>>     
+>
+> Are you switching mms in order to avoid all of the overhead associated with 
+> flushing an active mm during task exit?  If so, it makes much more sense to 
+> do this in the generic helper, as it should be a win on x86 and x86-64 
+> where switching to init_mm is relatively low cost given the support for 
+> global pages.  I'll run some tests on a couple of systems this evening and 
+> post the results.
+>   
 
-We would probably stuck with that forever and it just looks ugly.
-Non paravirt xen uses such a setup and I always hated it.
+I tried this experiment on both x86 and x86-64 and I recall not seeing 
+any effect.  The mmu_gather optimization does most of this already.
 
-Besides the architecture is called x86_64
-
-I don't see a problem with step by step unifying what makes sense 
-in the current setup.
-
--Andi
-
+Zach
