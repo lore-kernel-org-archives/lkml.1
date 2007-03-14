@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752639AbXCNPVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbXCNPWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752639AbXCNPVy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933283AbXCNPVp
+	id S933151AbXCNPWA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933043AbXCNPV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:21:45 -0400
-Received: from smtp.nokia.com ([131.228.20.172]:23375 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422657AbXCNPUt (ORCPT
+	Wed, 14 Mar 2007 11:21:58 -0400
+Received: from smtp.nokia.com ([131.228.20.170]:63496 "EHLO
+	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933927AbXCNPVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:20:49 -0400
+	Wed, 14 Mar 2007 11:21:37 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Frank Haverkamp <haver@vnet.ibm.com>,
@@ -17,20 +17,22 @@ Cc: Frank Haverkamp <haver@vnet.ibm.com>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Artem Bityutskiy <dedekind@infradead.org>
-Date: Wed, 14 Mar 2007 17:20:29 +0200
-Message-Id: <20070314152029.1112.32730.sendpatchset@localhost.localdomain>
+Date: Wed, 14 Mar 2007 17:21:10 +0200
+Message-Id: <20070314152110.1112.89392.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
 References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-Subject: [PATCH 11/22 take 3] UBI: user-interfaces unit
-X-OriginalArrivalTime: 14 Mar 2007 15:20:29.0807 (UTC) FILETIME=[4CF5BFF0:01C7664C]
+Subject: [PATCH 19/22 take 3] UBI: debugging stuff
+X-OriginalArrivalTime: 14 Mar 2007 15:21:10.0071 (UTC) FILETIME=[64F58C70:01C7664C]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070314172116-1EAC7BB0-5A8E7AA6/0-0/0-1
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/uif.c tmp-to/drivers/mtd/ubi/uif.c
---- tmp-from/drivers/mtd/ubi/uif.c	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/uif.c	2007-03-14 17:15:50.000000000 +0200
-@@ -0,0 +1,842 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/debug.c tmp-to/drivers/mtd/ubi/debug.c
+--- tmp-from/drivers/mtd/ubi/debug.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/debug.c	2007-03-14 17:15:50.000000000 +0200
+@@ -0,0 +1,546 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
 + *
@@ -51,825 +53,679 @@ diff -auNrp tmp-from/drivers/mtd/ubi/uif.c tmp-to/drivers/mtd/ubi/uif.c
 + * Author: Artem B. Bityutskiy
 + */
 +
-+/*
-+ * UBI user interfaces unit.
-+ *
-+ * This unit implements all the UBI user interfaces: kernel interfaces,
-+ * character device interfaces, and sysfs interfaces.
-+ *
-+ * This file mostly implements kernel-API functions, character device
-+ * operations are implemented in cdev.c, update functionality is implemented in
-+ * upd.c, volume chane functionality - in vmt.c, and sysfs interfaces are
-+ * implemented in sysfs.c.
-+ *
-+ * There are two kinds of character devices: UBI character devices and UBI
-+ * volume character devices. UBI character devices allow users to manipulate
-+ * whole volumes: create, remove, and re-size them. Volume character devices
-+ * provide volume I/O capabilities.
-+ *
-+ * Major and minor numbers are assigned dynamically to both UBI and volume
-+ * character devices.
++/**
++ * Here we keep all the UBI debugging stuff which should normally be disabled
++ * and compiled-out, but it is extremly helpful when hunting bugs or doing big
++ * changes.
 + */
 +
++#include <stdarg.h>
 +#include <linux/module.h>
-+#include <linux/err.h>
-+#include <asm/div64.h>
++#include <linux/debugfs.h>
++#include <linux/stat.h>
++#include <linux/random.h>
 +#include "ubi.h"
 +
-+/**
-+ * ubi_get_device_info - get information about an UBI device.
-+ *
-+ * @ubi_num: UBI device number
-+ * @di: the volume information is returned here
-+ *
-+ * This function fills the provided @di object with the information about the
-+ * UBI device number @ubi_num. Returns %0 in case of success and a %-ENODEV if
-+ * there is no such UBI device.
-+ */
-+int ubi_get_device_info(int ubi_num, struct ubi_dev_info *di)
-+{
-+	const struct ubi_info *ubi;
-+	int err = -ENODEV;
++/* Level of UBI debugging prints */
++#define UBI_DBG_LEVEL KERN_DEBUG
 +
-+	if (!try_module_get(THIS_MODULE))
-+		return err;
++/* Prefixes of debugging messages */
++#define UBI_DBG_UIF_PREF     "[UBI DBG uif]"
++#define UBI_DBG_VTBL_PREF    "[UBI DBG vtbl]"
++#define UBI_DBG_EBA_PREF     "[UBI DBG eba]"
++#define UBI_DBG_WL_PREF      "[UBI DBG wl]"
++#define UBI_DBG_IO_PREF      "[UBI DBG io]"
++#define UBI_DBG_BLD_PREF     "[UBI DBG bld]"
++#define UBI_DBG_SCAN_PREF    "[UBI DBG scan]"
 +
-+	if (ubi_num < 0 || ubi_num >= UBI_MAX_DEVICES)
-+		goto out_put;
++#ifdef CONFIG_MTD_UBI_DEBUG_MSG_UIF
++static int uif_prints = 1;
++#else
++static int uif_prints;
++#endif
++#ifdef CONFIG_MTD_UBI_DEBUG_MSG_VTBL
++static int vtbl_prints = 1;
++#else
++static int vtbl_prints;
++#endif
++#ifdef CONFIG_MTD_UBI_DEBUG_MSG_EBA
++static int eba_prints = 1;
++#else
++static int eba_prints;
++#endif
++#ifdef CONFIG_MTD_UBI_DEBUG_MSG_WL
++static int wl_prints = 1;
++#else
++static int wl_prints;
++#endif
++#ifdef CONFIG_MTD_UBI_DEBUG_MSG_IO
++static int io_prints = 1;
++#else
++static int io_prints;
++#endif
++#ifdef CONFIG_MTD_UBI_DEBUG_MSG_BLD
++static int bld_prints = 1;
++static int scan_prints = 1;
++#else
++static int bld_prints;
++static int scan_prints;
++#endif
 +
-+	if (!ubis[ubi_num])
-+		goto out_put;
++/* If bit-flips should be emulated */
++#ifdef CONFIG_MTD_UBI_DEBUG_EMULATE_BITFLIPS
++static int emulate_bitflips = 1;
++#else
++static int emulate_bitflips;
++#endif
 +
-+	ubi = ubis[ubi_num];
++/* If write failures should be emulated */
++#ifdef CONFIG_MTD_UBI_DEBUG_EMULATE_WRITE_FAILURES
++static int emulate_write_failures = 1;
++#else
++static int emulate_write_failures;
++#endif
 +
-+	di->ubi_num = ubi->ubi_num;
-+	di->leb_size = ubi->io.leb_size;
-+	di->min_io_size = ubi->io.min_io_size;
-+	di->ro_mode = ubi->io.ro_mode;
-+	di->cdev = MKDEV(ubi->uif.major, 0);
-+	err = 0;
++/* If erase failures should be emulated */
++#ifdef CONFIG_MTD_UBI_DEBUG_EMULATE_ERASE_FAILURES
++static int emulate_erase_failures = 1;
++#else
++static int emulate_erase_failures;
++#endif
 +
-+out_put:
-+	module_put(THIS_MODULE);
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(ubi_get_device_info);
++/* Direntries of the UBI debugfs files */
 +
-+/**
-+ * ubi_get_volume_info - get information about an UBI volume.
-+ *
-+ * @desc: volume descriptor
-+ * @vi: the volume information is returned here
-+ */
-+void ubi_get_volume_info(struct ubi_vol_desc *desc, struct ubi_vol_info *vi)
-+{
-+	int vol_id = desc->vol->vol_id;
-+	const struct ubi_info *ubi = desc->vol->ubi;
-+	const struct ubi_vtbl_vtr *vtr;
++/* <debugfs>/ubi */
++static struct dentry *debugfs_root;
++/* <debugfs>/ubi/uif_prints */
++static struct dentry *debugfs_uif_prints;
++/* <debugfs>/ubi/vtbl_prints */
++static struct dentry *debugfs_vtbl_prints;
++/* <debugfs>/ubi/eba_prints */
++static struct dentry *debugfs_eba_prints;
++/* <debugfs>/ubi/wl_prints */
++static struct dentry *debugfs_wl_prints;
++/* <debugfs>/ubi/io_prints */
++static struct dentry *debugfs_io_prints;
++/* <debugfs>/ubi/bld_prints */
++static struct dentry *debugfs_bld_prints;
 +
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	vi->vol_id = vol_id;
-+	vi->ubi_num = ubi->ubi_num;
-+	vi->size = vtr->reserved_pebs;
-+	vi->used_bytes = vtr->used_bytes;
-+	vi->vol_type = vtr->vol_type;
-+	vi->corrupted = vtr->corrupted;
-+	vi->upd_marker = vtr->upd_marker;
-+	vi->alignment = vtr->alignment;
-+	vi->usable_leb_size = vtr->usable_leb_size;
-+	vi->name_len = vtr->name_len;
-+	vi->name = vtr->name;
-+	vi->cdev = MKDEV(ubi->uif.major, vi->vol_id + 1);
-+}
-+EXPORT_SYMBOL_GPL(ubi_get_volume_info);
-+
-+/*
-+ * ubi_open_volume - open an UBI volume.
-+ *
-+ * @ubi_num: the UBI device number
-+ * @vol_id: ID of the volume to open
-+ * @mode: volume open mode
-+ *
-+ * This function opens an UBI volume. The @mode parameter specifies if the
-+ * volume should be opened in read-only mode, read-write mode, or exclusive
-+ * mode. The exclusive mode guarantees that nobody else will be able to open
-+ * this volume. UBI allows to have many volume readers and one writer at a
-+ * time.
-+ *
-+ * If a static volume is being opened for the first time since boot, the volume
-+ * will be checked by this function, which means it will be fully read and the
-+ * CRC checksum of each logical eraseblock will be checked.
-+ *
-+ * This function returns an UBI volume descriptor in case of success. In case
-+ * of failure, the following error codes may be returned:
-+ *
-+ * o %-EBUSY if the volume is busy (it is being updated, or it is already
-+ *   opened in exclusive or read-write mode by somebody else);
-+ * o %-EINVAL if the input arguments are invalid;
-+ * o %-ENODEV if this volume does not exist or the UBI device does not exist;
-+ * o other negative error codes in case of other errors.
-+ */
-+struct ubi_vol_desc *ubi_open_volume(int ubi_num, int vol_id, int mode)
-+{
-+	int err, found = 0;
-+	struct ubi_vol_desc *desc;
-+	struct ubi_info *ubi;
-+	struct ubi_uif_volume *vol;
-+
-+	dbg_uif("open device %d volume %d, mode %d", ubi_num, vol_id, mode);
-+
-+	err = -ENODEV;
-+	if (!try_module_get(THIS_MODULE))
-+		return ERR_PTR(err);
-+
-+	if (ubi_num < 0 || ubi_num >= UBI_MAX_DEVICES)
-+		goto out_put;
-+
-+	if (!ubis[ubi_num])
-+		goto out_put;
-+
-+	ubi = ubis[ubi_num];
-+	ubi_assert(ubi->ubi_num == ubi_num);
-+
-+	desc = kmalloc(sizeof(struct ubi_vol_desc), GFP_KERNEL);
-+	if (!desc) {
-+		err = -ENOMEM;
-+		goto out_put;
-+	}
-+
-+	err = -EINVAL;
-+	if (vol_id < 0 || vol_id >= ubi->vtbl.vt_slots)
-+		goto out_free;
-+
-+	if (mode != UBI_READONLY && mode != UBI_READWRITE &&
-+	    mode != UBI_EXCLUSIVE)
-+		goto out_free;
-+
-+	spin_lock(&ubi->uif.volumes_list_lock);
-+	list_for_each_entry(vol, &ubi->uif.volumes, list) {
-+		if (vol->vol_id == vol_id) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+
-+	if (!found) {
-+		err = -ENODEV;
-+		goto out_unlock;
-+	}
-+
-+	err = -EBUSY;
-+	spin_lock(&vol->vol_lock);
-+	switch (mode) {
-+	case UBI_READONLY:
-+		if (vol->exclusive)
-+			goto out_unlock_vol;
-+		vol->readers += 1;
-+		break;
-+
-+	case UBI_READWRITE:
-+		if (vol->exclusive || vol->writers > 0)
-+			goto out_unlock_vol;
-+		vol->writers += 1;
-+		break;
-+
-+	case UBI_EXCLUSIVE:
-+		if (vol->exclusive || vol->writers || vol->readers)
-+			goto out_unlock_vol;
-+		vol->exclusive = 1;
-+		break;
-+	}
-+	spin_unlock(&vol->vol_lock);
-+	spin_unlock(&ubi->uif.volumes_list_lock);
-+
-+	desc->vol = vol;
-+	desc->mode = mode;
-+
-+	mutex_lock(&ubi->uif.vol_check_lock);
-+	if (!vol->checked) {
-+		/*
-+		 * This is the first time this volume is being opened, we have
-+		 * to check it. If the volume is corrupted, we still return
-+		 * success, but mark it as corrupted and return %-EUCLEAN on
-+		 * any further read.
-+		 */
-+		err = ubi_check_volume(ubi, vol_id);
-+		if (err < 0)
-+			goto unlock_close;
-+
-+		if (err == 1) {
-+			ubi_warn("volume %d on UBI device %d is corrupted",
-+				 vol_id, ubi->ubi_num);
-+			err = ubi_vtbl_set_corrupted(ubi, vol_id);
-+			if (err)
-+				goto unlock_close;
-+		}
-+		vol->checked = 1;
-+	}
-+	mutex_unlock(&ubi->uif.vol_check_lock);
-+
-+	return desc;
-+
-+out_unlock_vol:
-+	spin_unlock(&vol->vol_lock);
-+out_unlock:
-+	spin_unlock(&ubi->uif.volumes_list_lock);
-+out_free:
-+	kfree(desc);
-+out_put:
-+	module_put(THIS_MODULE);
-+	return ERR_PTR(err);
-+
-+unlock_close:
-+	mutex_unlock(&ubi->uif.vol_check_lock);
-+	ubi_close_volume(desc);
-+	return ERR_PTR(err);
-+}
-+EXPORT_SYMBOL_GPL(ubi_open_volume);
-+
-+/*
-+ * ubi_open_volume_nm - open an UBI volume by volume name.
-+ *
-+ * @ubi_num: the UBI device number
-+ * @name: volume name
-+ * @mode: volume open mode
-+ *
-+ * This function is similar to the 'ubi_open_volume()' function, but opens UBI
-+ * volumes by name.
-+ */
-+struct ubi_vol_desc *ubi_open_volume_nm(int ubi_num, const char *name, int mode)
-+{
-+	int vol_id = -1, len;
-+	struct ubi_vol_desc *ret;
-+	struct ubi_info *ubi;
-+	struct ubi_uif_volume *vol;
-+
-+	dbg_uif("open volume by name %s, mode %d", name, mode);
-+
-+	if (!name)
-+		return ERR_PTR(-EINVAL);
-+
-+	len = strnlen(name, UBI_VOL_NAME_MAX + 1);
-+	if (len > UBI_VOL_NAME_MAX)
-+		return ERR_PTR(-EINVAL);
-+
-+	ret = ERR_PTR(-ENODEV);
-+	if (!try_module_get(THIS_MODULE))
-+		return ret;
-+
-+	if (ubi_num < 0 || ubi_num >= UBI_MAX_DEVICES)
-+		goto out_put;
-+
-+	if (!ubis[ubi_num])
-+		goto out_put;
-+
-+	ubi = ubis[ubi_num];
-+	ubi_assert(ubi->ubi_num == ubi_num);
-+
-+	/* Walk all volumes of this UBI device */
-+	spin_lock(&ubi->uif.volumes_list_lock);
-+	list_for_each_entry(vol, &ubi->uif.volumes, list) {
-+		const struct ubi_vtbl_vtr *vtr;
-+
-+		vtr = ubi_vtbl_get_vtr(vol->ubi, vol->vol_id);
-+		if (len == vtr->name_len && !strcmp(name, vtr->name)) {
-+			vol_id = vol->vol_id;
-+			spin_unlock(&vol->vol_lock);
-+			break;
-+		}
-+	}
-+	spin_unlock(&ubi->uif.volumes_list_lock);
-+
-+	if (vol_id < 0)
-+		goto out_put;
-+
-+	ret = ubi_open_volume(ubi_num, vol_id, mode);
-+
-+out_put:
-+	module_put(THIS_MODULE);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(ubi_open_volume_nm);
++/* Serializes prints */
++static spinlock_t dbg_prints_lock = SPIN_LOCK_UNLOCKED;
 +
 +/**
-+ * ubi_close_volume - close an UBI volume.
-+ *
-+ * @desc: UBI volume descriptor
-+ */
-+void ubi_close_volume(struct ubi_vol_desc *desc)
-+{
-+	struct ubi_uif_volume *vol = desc->vol;
-+
-+	dbg_uif("close volume %d, mode %d", vol->vol_id, desc->mode);
-+
-+	spin_lock(&vol->vol_lock);
-+	switch (desc->mode) {
-+	case UBI_READONLY:
-+		ubi_assert(vol->readers > 0 && vol->writers >= 0);
-+		ubi_assert(vol->exclusive == 0);
-+		vol->readers -= 1;
-+		break;
-+
-+	case UBI_READWRITE:
-+		ubi_assert(vol->readers >= 0 && vol->writers == 1);
-+		ubi_assert(vol->exclusive == 0);
-+		vol->writers -= 1;
-+		break;
-+
-+	case UBI_EXCLUSIVE:
-+		ubi_assert(vol->readers == 0 && vol->writers == 0);
-+		ubi_assert(vol->exclusive == 1);
-+		vol->exclusive = 0;
-+	}
-+	spin_unlock(&vol->vol_lock);
-+
-+	kfree(desc);
-+	module_put(THIS_MODULE);
-+}
-+EXPORT_SYMBOL_GPL(ubi_close_volume);
-+
-+/**
-+ * ubi_eraseblock_read - read data from a logical eraseblock.
-+ *
-+ * @desc: volume descriptor
-+ * @lnum: the logical eraseblock number to read from
-+ * @buf: a buffer where to store the read data
-+ * @offset: the offset within the logical eraseblock from where to read
-+ * @len: how many bytes to read
-+ * @check: whether UBI has to check the read data's CRC or not.
-+ *
-+ * This function reads data from offset @offset of the logical eraseblock @lnum
-+ * and stores the read data at @buf. When reading from static volumes, @check
-+ * may be used to specify whether the read data has to be checked or not. If
-+ * checking is requested, the whole logical eraseblock will be read and its CRC
-+ * checksum will be checked (i.e., the CRC checksum is per-eraseblock). So
-+ * checking may substantially slow down the read speed. The @check argument is
-+ * ignored for dynamic volumes.
-+ *
-+ * In case of success, this function returns zero. In case of failure, this
-+ * function returns a negative error code.
-+ *
-+ * A special %-EBADMSG error code is returned:
-+ * o for both static and dynamic volumes if the MTD driver has detected a data
-+ *   integrity problem (unrecoverable ECC checksum mismatch in case of NAND);
-+ * o for static volumes if the data CRC mismatches.
-+ *
-+ * In case of reading a corrupted UBI volume, this function never returns zero,
-+ * but %-EUCLEAN is returned instead, even though the data was read without
-+ * errors because the corruption did not affect this particular piece of data,
-+ * otherwise %-EBADMSG would have been returned. Thus, %-EUCLEAN just means
-+ * that the read static volume is corrupted, but the read data is actually OK.
-+ *
-+ * %-EUCLEAN is not returned for dynamic volumes, because UBI does not protect
-+ * their contents.
-+ *
-+ * If the volume is damaged because of an interrupted update this function just
-+ * returns immediately with %-EBADF error code.
-+ */
-+int ubi_eraseblock_read(struct ubi_vol_desc *desc, int lnum, char *buf,
-+			int offset, int len, int check)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_info *ubi = desc->vol->ubi;
-+	int err, vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("read %d bytes from LEB %d:%d:%d",
-+		len, vol_id, lnum, offset);
-+
-+	if (unlikely(vol_id < 0 || vol_id >= ubi->vtbl.vt_slots))
-+		return -EINVAL;
-+
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->used_ebs))
-+		return -EINVAL;
-+
-+	if (unlikely(offset < 0 || len < 0 ||
-+		     offset + len > vtr->usable_leb_size))
-+		return -EINVAL;
-+
-+	if (unlikely(vtr->vol_type == UBI_STATIC_VOLUME &&
-+		     lnum == vtr->used_ebs - 1 &&
-+		     offset + len > vtr->last_eb_bytes))
-+		return -EINVAL;
-+
-+	if (unlikely(vtr->upd_marker))
-+		return -EBADF;
-+
-+	if (unlikely(len == 0))
-+		return 0;
-+
-+reread:
-+	err = ubi_eba_read_leb(ubi, vol_id, lnum, buf, offset, len, check);
-+	if (unlikely(err)) {
-+		if (err == -EBADMSG && vtr->vol_type == UBI_STATIC_VOLUME &&
-+		    !vtr->corrupted) {
-+			int err1;
-+
-+			/*
-+			 * We have read a static volume and result in data
-+			 * integrity error. If we did not do checking, re-read
-+			 * with checking enabled. Otherwise mark this static
-+			 * eraseblock as corrupted.
-+			 */
-+			if (!check) {
-+				check = 1;
-+				goto reread;
-+			}
-+
-+			ubi_warn("mark volume %d as corrupted", vol_id);
-+			err1 = ubi_vtbl_set_corrupted(ubi, vol_id);
-+			if (err1)
-+				err = err1;
-+		}
-+		return err;
-+	}
-+
-+	if (unlikely(vtr->corrupted)) {
-+		ubi_assert(vtr->vol_type == UBI_STATIC_VOLUME);
-+		err = -EUCLEAN;
-+	}
-+
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_read);
-+
-+/**
-+ * ubi_eraseblock_write - write data to a logical eraseblock.
-+ *
-+ * @desc: volume descriptor
-+ * @lnum: the logical eraseblock number to write to
-+ * @buf: the data to write
-+ * @offset: offset within the logical eraseblock where to write
-+ * @len: how many bytes from @buf to write
-+ * @dtype: expected data type
-+ *
-+ * This function writes @len bytes of data from buffer @buf to offset @offset
-+ * of logical eraseblock @lnum. The @dtype argument describes the expected
-+ * lifetime of the data that is being written.
-+ *
-+ * Note, this function takes care of physical eraseblock write failures. If a
-+ * write to the physical eraseblock write operation fails, the logical
-+ * eraseblock is re-mapped to another physical eraseblock, the data is
-+ * recovered, and the write finishes. UBI has a pool of reserved physical
-+ * eraseblocks for this.
-+ *
-+ * If all the data were successfully written, zero is returned. If an error
-+ * occurred and UBI has not been able to recover from it, this function returns
-+ * a negative error code. Note, in case of an error, it is possible that
-+ * something was still written to the flash media, but that may be some
-+ * garbage.
-+ *
-+ * If the volume is damaged because of an interrupted update this function just
-+ * returns immediately with %-EBADF error code.
-+ */
-+int ubi_eraseblock_write(struct ubi_vol_desc *desc, int lnum, const void *buf,
-+			 int offset, int len, int dtype)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_info *ubi = desc->vol->ubi;
-+	int vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("write %zd bytes to LEB %d:%d:%d",
-+		len, vol_id, lnum, offset);
-+
-+	if (unlikely(vol_id < 0 || vol_id >= ubi->vtbl.vt_slots))
-+		return -EINVAL;
-+
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(desc->mode == UBI_READONLY ||
-+		     vtr->vol_type == UBI_STATIC_VOLUME))
-+		return -EROFS;
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->reserved_pebs))
-+		return -EINVAL;
-+
-+	if (unlikely(offset < 0 || len < 0 ||
-+		     offset + len > vtr->usable_leb_size))
-+		return -EINVAL;
-+
-+	if (unlikely(offset % ubi->io.min_io_size ||
-+		     len % ubi->io.min_io_size))
-+		return -EINVAL;
-+
-+	if (unlikely(dtype != UBI_DATA_LONGTERM &&
-+		     dtype != UBI_DATA_SHORTTERM &&
-+		     dtype != UBI_DATA_UNKNOWN))
-+		return -EINVAL;
-+
-+	if (unlikely(vtr->upd_marker))
-+		return -EBADF;
-+
-+	if (unlikely(len == 0))
-+		return 0;
-+
-+	return ubi_eba_write_leb(ubi, vol_id, lnum, buf, offset, len, dtype);
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_write);
-+
-+/**
-+ * ubi_eraseblock_erase - erase a logical eraseblock.
-+ *
-+ * @desc: volume descriptor
-+ * @lnum: the logical eraseblock number to erase
-+ *
-+ * This function un-maps logical eraseblock @lnum and synchronously erases the
-+ * correspondent physical eraseblock. Returns zero in case of success and a
-+ * negative error code in case of failure.
-+ *
-+ * If the volume is damaged because of an interrupted update this function just
-+ * returns immediately with %-EBADF error code.
-+ */
-+int ubi_eraseblock_erase(struct ubi_vol_desc *desc, int lnum)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_info *ubi = desc->vol->ubi;
-+	int err, vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("erase LEB %d:%d", vol_id, lnum);
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(desc->mode == UBI_READONLY ||
-+	             vtr->vol_type == UBI_STATIC_VOLUME))
-+		return -EROFS;
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->reserved_pebs))
-+		return -EINVAL;
-+
-+	if (unlikely(vtr->upd_marker))
-+		return -EBADF;
-+
-+	err = ubi_eba_unmap_leb(ubi, vol_id, lnum);
-+	if (unlikely(err))
-+		return err;
-+
-+	return ubi_wl_flush(ubi);
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_erase);
-+
-+/**
-+ * ubi_eraseblock_unmap - un-map a logical eraseblock.
-+ *
-+ * @desc: volume descriptor
-+ * @lnum: the logical eraseblock number to un-map
-+ *
-+ * This function un-maps logical eraseblock @lnum and schedules the
-+ * corresponding physical eraseblock for erasure, so that it will eventually be
-+ * physically erased in background. So this operation is much faster then the
-+ * erase operation.
-+ *
-+ * Unlike erase, the un-map operation does not guarantee that the logical
-+ * eraseblock will contain all 0xFF bytes when UBI is initialized again. For
-+ * example, if several logical eraseblocks are un-mapped, and an unclean reboot
-+ * happens after this, the logical eraseblocks will not necessarily be
-+ * un-mapped again when this MTD device is attached. They may actually be
-+ * mapped to the same physical eraseblocks again. So, this function has to be
-+ * used with care.
-+ *
-+ * In other words, when un-mapping a logical eraseblock, UBI does not store
-+ * any information about this on the flash media, it just marks the logical
-+ * eraseblock as "un-mapped" in RAM. If UBI is detached before the physical
-+ * eraseblock is physically erased, the physical eraseblock will be mapped
-+ * again to the same logical eraseblock when the MTD device is attached again.
-+ *
-+ * The main and obvious use-case of this function is when the contents of a
-+ * logical eraseblock has to be re-written. Then it is much more efficient to
-+ * first un-map it, then write new data, rather then first erase it, then write
-+ * new data. Note, once new data has been written to the logical eraseblock,
-+ * UBI guarantees that the old contents has gone forever. In other words, if an
-+ * unclean reboot happens after the logical eraseblock has been un-mapped and
-+ * then written to, it will contain the last written data.
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure. If the volume is damaged because of an interrupted update
-+ * this function just returns immediately with %-EBADF error code.
-+ */
-+int ubi_eraseblock_unmap(struct ubi_vol_desc *desc, int lnum)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_info *ubi = desc->vol->ubi;
-+	int vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("unmap LEB %d:%d", vol_id, lnum);
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(desc->mode == UBI_READONLY ||
-+	             vtr->vol_type == UBI_STATIC_VOLUME))
-+		return -EROFS;
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->reserved_pebs))
-+		return -EINVAL;
-+
-+	if (unlikely(vtr->upd_marker))
-+		return -EBADF;
-+
-+	return ubi_eba_unmap_leb(ubi, vol_id, lnum);
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_unmap);
-+
-+/**
-+ * ubi_eraseblock_is_mapped - check if a logical eraseblock is mapped to a
-+ * physical eraseblock
-+ *
-+ * @desc: volume descriptor
-+ * @lnum: the logical eraseblock number to erase
-+ *
-+ * This function checks if a logical eraseblock is mapped to a physical
-+ * eraseblock. Unmapped logical eraseblocks are equivalent to erased logical
-+ * eraseblocks and contain only 0xFF bytes. Mapped logical eraseblocks are
-+ * those that were explicitly written to. They may also contain only 0xFF
-+ * bytes if these were written there.
-+ *
-+ * Note, if a logical eraseblock is unmapped, this does not necessarily mean
-+ * it will still be un-mapped after the corresponding UBI device is detached
-+ * and attached again. After the UBI device is re-attached, the logical
-+ * eraseblock may become mapped to the physical eraseblock it was last mapped
-+ * to. Se the 'ubi_eraseblock_unmap()' function for more explanation.
-+ *
-+ * This function returns %1 if the LEB is mapped, %0 if not, and a negative
-+ * error code in case of failure. If the volume is damaged because of an
-+ * interrupted update this function just returns immediately with %-EBADF error
-+ * code.
-+ */
-+int ubi_eraseblock_is_mapped(struct ubi_vol_desc *desc, int lnum)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_info *ubi = desc->vol->ubi;
-+	int vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("check LEB %d:%d", vol_id, lnum);
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->reserved_pebs))
-+		return -EINVAL;
-+
-+	if (unlikely(vtr->upd_marker))
-+		return -EBADF;
-+
-+	return ubi_eba_leb_is_mapped(ubi, vol_id, lnum);
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_is_mapped);
-+
-+/**
-+ * kill_volumes - close user interfaces for all volumes.
-+ *
-+ * @ubi: the UBI device description object
-+ *
-+ * This function is called when the UBI device is detached so no locking is
-+ * needed.
-+ */
-+static void kill_volumes(struct ubi_info *ubi)
-+{
-+	struct ubi_uif_volume *vol, *vol_tmp;
-+
-+	list_for_each_entry_safe(vol, vol_tmp, &ubi->uif.volumes, list) {
-+		int err;
-+
-+		list_del(&vol->list);
-+		err = ubi_gluebi_vol_close(vol);
-+		BUG_ON(err);
-+		cdev_del(&vol->cdev);
-+		ubi_sysfs_vol_close(vol);
-+	}
-+}
-+
-+/**
-+ * ubi_uif_init - initialize user interfaces for an UBI device.
-+ *
-+ * @ubi: the UBI device description object
++ * ubi_dbg_init - initialize the debugging unit.
 + *
 + * This function returns zero in case of success and a negative error code in
 + * case of failure.
 + */
-+int ubi_uif_init(struct ubi_info *ubi)
++int __init ubi_dbg_init(void)
 +{
-+	int i, err;
++	int err = -ENODEV;
 +
-+	dbg_uif("initialize the user interfaces unit");
++	/* Create debugging files and directories */
 +
-+	spin_lock_init(&ubi->uif.volumes_list_lock);
-+	mutex_init(&ubi->uif.vol_check_lock);
-+	mutex_init(&ubi->uif.vol_change_lock);
-+	INIT_LIST_HEAD(&ubi->uif.volumes);
++	debugfs_root = debugfs_create_dir("ubi", NULL);
++	if (!debugfs_root || IS_ERR(debugfs_root))
++		goto out;
 +
-+	sprintf(ubi->uif.ubi_name, UBI_STRING_NAME "%d", ubi->ubi_num);
++	debugfs_uif_prints = debugfs_create_bool("uif_prints",
++		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &uif_prints);
++	if (!debugfs_uif_prints || IS_ERR(debugfs_uif_prints))
++		goto out_root;
 +
-+	err = ubi_cdev_init(ubi);
-+	if (err)
-+		return 0;
++	debugfs_vtbl_prints = debugfs_create_bool("vtbl_prints",
++		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &vtbl_prints);
++	if (!debugfs_vtbl_prints || IS_ERR(debugfs_vtbl_prints))
++		goto out_uif;
 +
-+	err = ubi_sysfs_init(ubi);
-+	if (err)
-+		goto out_cdev;
++	debugfs_eba_prints = debugfs_create_bool("eba_prints",
++		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &eba_prints);
++	if (!debugfs_eba_prints || IS_ERR(debugfs_eba_prints))
++		goto out_vtbl;
 +
-+	for (i = 0; i < ubi->vtbl.vt_slots; i++) {
-+		const struct ubi_vtbl_vtr *vtr;
++	debugfs_wl_prints = debugfs_create_bool("wl_prints",
++		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &wl_prints);
++	if (!debugfs_wl_prints || IS_ERR(debugfs_wl_prints))
++		goto out_eba;
 +
-+		cond_resched();
++	debugfs_io_prints = debugfs_create_bool("io_prints",
++		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &io_prints);
++	if (!debugfs_io_prints || IS_ERR(debugfs_io_prints))
++		goto out_wl;
 +
-+		vtr = ubi_vtbl_get_vtr(ubi, i);
-+		if (IS_ERR(vtr))
-+			continue;
++	debugfs_bld_prints = debugfs_create_bool("bld_prints",
++		S_IFREG | S_IRUGO | S_IWUGO, debugfs_root, &bld_prints);
++	if (!debugfs_bld_prints || IS_ERR(debugfs_bld_prints))
++		goto out_io;
 +
-+		err = ubi_vmt_mkvol(ubi, i, NULL);
-+		if (err < 0)
-+			goto out_volumes;
-+	}
-+
-+	dbg_uif("the user interfaces unit is initialized");
 +	return 0;
 +
-+out_volumes:
-+	kill_volumes(ubi);
-+	ubi_sysfs_close(ubi);
-+out_cdev:
-+	ubi_cdev_close(ubi);
++out_io:
++	debugfs_remove(debugfs_io_prints);
++out_wl:
++	debugfs_remove(debugfs_wl_prints);
++out_eba:
++	debugfs_remove(debugfs_eba_prints);
++out_vtbl:
++	debugfs_remove(debugfs_vtbl_prints);
++out_uif:
++	debugfs_remove(debugfs_uif_prints);
++out_root:
++        debugfs_remove(debugfs_root);
++out:
 +	return err;
 +}
 +
 +/**
-+ * ubi_uif_close - close the UBI user interface unit for an UBI device.
-+ *
-+ * @ubi: the UBI device description object
++ * ubi_dbg_close - close the debugging unit.
 + */
-+void ubi_uif_close(struct ubi_info *ubi)
++void __exit ubi_dbg_close(void)
 +{
-+	dbg_uif("close the user interface unit for %s", ubi->uif.ubi_name);
-+
-+	kill_volumes(ubi);
-+	ubi_sysfs_close(ubi);
-+	ubi_cdev_close(ubi);
++	debugfs_remove(debugfs_bld_prints);
++	debugfs_remove(debugfs_io_prints);
++	debugfs_remove(debugfs_wl_prints);
++	debugfs_remove(debugfs_eba_prints);
++	debugfs_remove(debugfs_vtbl_prints);
++	debugfs_remove(debugfs_uif_prints);
++	debugfs_remove(debugfs_root);
 +}
 +
-+/**
-+ * ubi_uif_get_exclusive - get exclusive access to an UBI volume.
-+ *
-+ * @desc: volume descriptor
-+ *
-+ * This function changes UBI volume mode to "exclusive". Obviously, the caller
-+ * has to be the only holder of the volume to make this function succeed.
-+ * Returns previous mode value (positive integer) in case of success and a
-+ * negative error code in case of failure.
-+ */
-+int ubi_uif_get_exclusive(struct ubi_vol_desc *desc)
-+{
-+	int users, ret;
-+	struct ubi_uif_volume *vol = desc->vol;
++static void ubi_dbg_vprint_nolock(int type, const char *func, const char *fmt,
++				  va_list args);
 +
-+	spin_lock(&vol->vol_lock);
-+	users = vol->readers + vol->writers + vol->exclusive;
-+	ubi_assert(users > 0);
-+	if (users > 1) {
-+		dbg_err("%d users for volume %d", users, vol->vol_id);
-+		ret = -EBUSY;
-+	} else {
-+		dbg_uif("changed volume %d mode %d to exclusive",
-+			vol->vol_id, desc->mode);
-+		vol->readers = vol->writers = 0;
-+		vol->exclusive = 1;
++/**
++ * ubi_dbg_print - print a message.
++ *
++ * @type: type of the message
++ * @func: printing function name
++ * @fmt: format string
++ *
++ * This function prints a message to the console, the debugging log, or both.
++ * Normal, warning, and error messages always go to both console and debugging
++ * log. Debugging messages always go to the debugging log, and if the
++ * corresponding option is enabled, they also go to the console.
++ */
++void ubi_dbg_print(int type, const char *func, const char *fmt, ...)
++{
++	va_list args;
++
++	va_start(args, fmt);
++	spin_lock(&dbg_prints_lock);
++	ubi_dbg_vprint_nolock(type, func, fmt, args);
++	spin_unlock(&dbg_prints_lock);
++	va_end(args);
++}
++
++static void ubi_dbg_vprint_nolock(int type, const char *func, const char *fmt,
++				  va_list args)
++{
++	const char *prefix;
++
++	switch (type) {
++	case UBI_DBG_UIF:
++		if (!uif_prints)
++			return;
++		prefix = UBI_DBG_UIF_PREF;
++		break;
++	case UBI_DBG_VTBL:
++		if (!vtbl_prints)
++			return;
++		prefix = UBI_DBG_VTBL_PREF;
++		break;
++	case UBI_DBG_EBA:
++		if (!eba_prints)
++			return;
++		prefix = UBI_DBG_EBA_PREF;
++		break;
++	case UBI_DBG_WL:
++		if (!wl_prints)
++			return;
++		prefix = UBI_DBG_WL_PREF;
++		break;
++	case UBI_DBG_IO:
++		if (!io_prints)
++			return;
++		prefix = UBI_DBG_IO_PREF;
++		break;
++	case UBI_DBG_BLD:
++		if (!bld_prints)
++			return;
++		prefix = UBI_DBG_BLD_PREF;
++		break;
++	case UBI_DBG_SCAN:
++		if (!scan_prints)
++			return;
++		prefix = UBI_DBG_SCAN_PREF;
++		break;
++	default:
++		BUG();
++		return;
 +	}
-+	spin_unlock(&vol->vol_lock);
 +
-+	ret = desc->mode;
-+	desc->mode = UBI_EXCLUSIVE;
-+	return ret;
++	printk(UBI_DBG_LEVEL "%s (pid:%d) ", prefix, current->pid);
++	if (func)
++		printk("%s: ", func);
++	vprintk(fmt, args);
++	printk("\n");
 +}
 +
 +/**
-+ * ubi_uif_revoke_exclusive - switch to a non-exclusive open mode.
++ * ubi_dbg_dump_ec_hdr - dump an erase counter header.
 + *
-+ * @desc: volume descriptor
-+ * @mode: the new mode to switch to
-+ *
-+ * This function revokes the "exclusive" mode and switches to the @mode mode.
++ * @ec_hdr: the erase counter header to dump
 + */
-+void ubi_uif_revoke_exclusive(struct ubi_vol_desc *desc, int mode)
++void ubi_dbg_dump_ec_hdr(const struct ubi_ec_hdr *ec_hdr)
 +{
-+	struct ubi_uif_volume *vol = desc->vol;
-+
-+	spin_lock(&vol->vol_lock);
-+	ubi_assert(vol->readers == 0 && vol->writers == 0);
-+	ubi_assert(vol->exclusive == 1 && desc->mode == UBI_EXCLUSIVE);
-+
-+	vol->exclusive = 0;
-+	if (mode == UBI_READONLY)
-+		vol->readers = 1;
-+	else if (mode == UBI_READWRITE)
-+		vol->writers = 1;
-+	else
-+		vol->exclusive = 1;
-+
-+	spin_unlock(&vol->vol_lock);
-+
-+	desc->mode = mode;
-+	dbg_uif("revoke exclusive mode for volume %d, new mode is %d",
-+		vol->vol_id, mode);
++	spin_lock(&dbg_prints_lock);
++	ubi_msg("erase counter header dump:");
++	ubi_msg("magic          %#08x", ubi32_to_cpu(ec_hdr->magic));
++	ubi_msg("version        %d",    (int)ec_hdr->version);
++	ubi_msg("ec             %llu",  (long long)ubi64_to_cpu(ec_hdr->ec));
++	ubi_msg("vid_hdr_offset %d",    ubi32_to_cpu(ec_hdr->vid_hdr_offset));
++	ubi_msg("data_offset    %d",    ubi32_to_cpu(ec_hdr->data_offset));
++	ubi_msg("hdr_crc        %#08x", ubi32_to_cpu(ec_hdr->hdr_crc));
++	ubi_msg("erase counter header hexdump:");
++	spin_unlock(&dbg_prints_lock);
++	ubi_dbg_hexdump(ec_hdr, UBI_EC_HDR_SIZE);
 +}
++
++/**
++ * ubi_dbg_dump_vid_hdr - dump a volume identifier header.
++ *
++ * @vid_hdr: the volume identifier header to dump
++ */
++void ubi_dbg_dump_vid_hdr(const struct ubi_vid_hdr *vid_hdr)
++{
++	spin_lock(&dbg_prints_lock);
++	ubi_msg("volume identifier header dump:");
++	ubi_msg("magic     %08x", ubi32_to_cpu(vid_hdr->magic));
++	ubi_msg("version   %d",   (int)vid_hdr->version);
++	ubi_msg("vol_type  %d",   (int)vid_hdr->vol_type);
++	ubi_msg("copy_flag %d",   (int)vid_hdr->copy_flag);
++	ubi_msg("compat    %d",   (int)vid_hdr->compat);
++	ubi_msg("vol_id    %d",   ubi32_to_cpu(vid_hdr->vol_id));
++	ubi_msg("lnum      %d",   ubi32_to_cpu(vid_hdr->lnum));
++	ubi_msg("leb_ver   %u",   ubi32_to_cpu(vid_hdr->leb_ver));
++	ubi_msg("data_size %d",   ubi32_to_cpu(vid_hdr->data_size));
++	ubi_msg("used_ebs  %d",   ubi32_to_cpu(vid_hdr->used_ebs));
++	ubi_msg("data_pad  %d",   ubi32_to_cpu(vid_hdr->data_pad));
++	ubi_msg("sqnum     %llu",
++		(unsigned long long)ubi64_to_cpu(vid_hdr->sqnum));
++	ubi_msg("hdr_crc   %08x", ubi32_to_cpu(vid_hdr->hdr_crc));
++	ubi_msg("volume identifier header hexdump:");
++	spin_unlock(&dbg_prints_lock);
++	ubi_dbg_hexdump(vid_hdr, UBI_VID_HDR_SIZE_CRC);
++}
++
++/**
++ * ubi_dbg_dump_vtr - dump a &struct ubi_vtbl_vtr object.
++ *
++ * @vtr: the object to dump
++ */
++void ubi_dbg_dump_vtr(const struct ubi_vtbl_vtr *vtr)
++{
++	spin_lock(&dbg_prints_lock);
++	ubi_msg("volume table record dump:");
++	ubi_msg("reserved_pebs   %d", vtr->reserved_pebs);
++	ubi_msg("alignment       %d", vtr->alignment);
++	ubi_msg("data_pad        %d", vtr->data_pad);
++	ubi_msg("vol_type        %d", vtr->vol_type);
++	ubi_msg("name_len        %d", vtr->name_len);
++	ubi_msg("usable_leb_size %d", vtr->usable_leb_size);
++	ubi_msg("used_ebs        %d", vtr->used_ebs);
++	ubi_msg("used_bytes      %lld", vtr->used_bytes);
++	ubi_msg("last_eb_bytes   %d", vtr->last_eb_bytes);
++	ubi_msg("corrupted       %d", vtr->corrupted);
++	ubi_msg("upd_marker      %d", vtr->upd_marker);
++
++	if (vtr->name == NULL) {
++		ubi_msg("name          NULL");
++		spin_unlock(&dbg_prints_lock);
++		return;
++	}
++
++	if (vtr->name_len <= UBI_VOL_NAME_MAX &&
++	    strnlen(vtr->name, vtr->name_len + 1) == vtr->name_len) {
++		ubi_msg("name          %s", vtr->name);
++	} else {
++		ubi_msg("the 1st 5 characters of the name: %c%c%c%c%c",
++			vtr->name[0], vtr->name[1], vtr->name[2],
++			vtr->name[3], vtr->name[4]);
++	}
++
++	spin_unlock(&dbg_prints_lock);
++}
++
++/**
++ * ubi_dbg_dump_vol_tbl_record - dump a &struct ubi_vol_tbl_record object.
++ *
++ * @r: the object to dump
++ */
++void ubi_dbg_dump_vol_tbl_record(const struct ubi_vol_tbl_record *r)
++{
++	int name_len = ubi16_to_cpu(r->name_len);
++
++	spin_lock(&dbg_prints_lock);
++	ubi_msg("raw volume table record dump:");
++	ubi_msg("reserved_pebs   %d", ubi32_to_cpu(r->reserved_pebs));
++	ubi_msg("alignment       %d", ubi32_to_cpu(r->alignment));
++	ubi_msg("data_pad        %d", ubi32_to_cpu(r->data_pad));
++	ubi_msg("vol_type        %d", (int)r->vol_type);
++	ubi_msg("upd_marker      %d", (int)r->upd_marker);
++	ubi_msg("name_len        %d", name_len);
++
++	if (r->name[0] == '\0') {
++		ubi_msg("name          NULL");
++		spin_unlock(&dbg_prints_lock);
++		return;
++	}
++
++	if (name_len <= UBI_VOL_NAME_MAX &&
++	    strnlen(&r->name[0], name_len + 1) == name_len) {
++		ubi_msg("name          %s", &r->name[0]);
++	} else {
++		ubi_msg("the 1st 5 characters of the name: %c%c%c%c%c",
++			r->name[0], r->name[1], r->name[2], r->name[3],
++			r->name[4]);
++	}
++	spin_unlock(&dbg_prints_lock);
++}
++
++/**
++ * ubi_dbg_dump_sv - dump a &struct ubi_scan_volume object.
++ *
++ * @sv: the object to dump
++ */
++void ubi_dbg_dump_sv(const struct ubi_scan_volume *sv)
++{
++	spin_lock(&dbg_prints_lock);
++	ubi_msg("volume scanning information dump:");
++	ubi_msg("vol_id         %d", sv->vol_id);
++	ubi_msg("highest_lnum   %d", sv->highest_lnum);
++	ubi_msg("leb_count      %d", sv->leb_count);
++	ubi_msg("compat         %d", sv->compat);
++	ubi_msg("vol_type       %d", sv->vol_type);
++	ubi_msg("used_ebs       %d", sv->used_ebs);
++	ubi_msg("last_data_size %d", sv->last_data_size);
++	ubi_msg("data_pad       %d", sv->data_pad);
++	spin_unlock(&dbg_prints_lock);
++}
++
++/**
++ * ubi_dbg_dump_seb - dump a &struct ubi_scan_leb object.
++ *
++ * @seb: the object to dump
++ * @type: object type: 0 - not corrupted, 1 - corrupted
++ */
++void ubi_dbg_dump_seb(const struct ubi_scan_leb *seb, int type)
++{
++	spin_lock(&dbg_prints_lock);
++	ubi_msg("eraseblock scanning information dump:");
++	ubi_msg("ec       %d", seb->ec);
++	ubi_msg("pnum     %d", seb->pnum);
++	switch (type) {
++		case 0:
++			ubi_msg("lnum     %d", seb->lnum);
++			ubi_msg("scrub    %d", seb->scrub);
++			ubi_msg("sqnum    %llu", seb->sqnum);
++			ubi_msg("leb_ver  %u", seb->leb_ver);
++			break;
++		case 1:
++			break;
++	}
++	spin_unlock(&dbg_prints_lock);
++}
++
++/**
++ * ubi_dbg_dump_mkvol_req - dump a &struct ubi_mkvol_req object.
++ *
++ * @req: the object to dump
++ */
++void ubi_dbg_dump_mkvol_req(const struct ubi_mkvol_req *req)
++{
++	char nm[17];
++
++	spin_lock(&dbg_prints_lock);
++	ubi_msg("volume creation request dump:");
++	ubi_msg("vol_id    %d",   req->vol_id);
++	ubi_msg("alignment %d",   req->alignment);
++	ubi_msg("bytes     %lld", (long long)req->bytes);
++	ubi_msg("vol_type  %d",   req->vol_type);
++	ubi_msg("name_len  %d",   req->name_len);
++
++	memcpy(nm, req->name, 16);
++	nm[16] = 0;
++	ubi_msg("the 1st 16 characters of the name: %s", nm);
++	spin_unlock(&dbg_prints_lock);
++}
++
++#define BYTES_PER_LINE 32
++
++/**
++ * ubi_dbg_hexdump - dump a buffer.
++ *
++ * @buf: the buffer to dump
++ * @size: buffer size which must be multiple of 4 bytes
++ */
++void ubi_dbg_hexdump(const void *ptr, int size)
++{
++	int i, k = 0, rows, columns;
++	const uint8_t *p = ptr;
++
++	size = ALIGN(size, 4);
++	rows = size/BYTES_PER_LINE + size % BYTES_PER_LINE;
++	for (i = 0; i < rows; i++) {
++		int j;
++
++		cond_resched();
++
++		columns = min(size - k, BYTES_PER_LINE) / 4;
++		if (columns == 0)
++			break;
++
++		spin_lock(&dbg_prints_lock);
++		printk(UBI_DBG_LEVEL "%5d:  ", i * BYTES_PER_LINE);
++
++		for (j = 0; j < columns; j++) {
++			int n, N;
++
++			N = size - k > 4 ? 4 : size - k;
++			for (n = 0; n < N; n++)
++				printk("%02x", p[k++]);
++			printk(" ");
++		}
++		printk("\n");
++		spin_unlock(&dbg_prints_lock);
++	}
++}
++
++/**
++ * ubi_dbg_is_bitflip - if its time to emulate a bit-flip.
++ *
++ * Returns non-zero if a bit-flip should be emulated, otherwise returns zero.
++ */
++int ubi_dbg_is_bitflip(void)
++{
++	if (emulate_bitflips)
++		return !(random32() % 50);
++	else
++		return 0;
++}
++
++/**
++ * ubi_dbg_is_write_failure - if its time to emulate a write failure.
++ *
++ * Returns non-zero if a write failure should be emulated, otherwise returns
++ * zero.
++ */
++int ubi_dbg_is_write_failure(void)
++{
++	if (emulate_write_failures)
++		return !(random32() % 100);
++	else
++		return 0;
++}
++
++/**
++ * ubi_dbg_is_erase_failure - if its time to emulate an erase failure.
++ *
++ * Returns non-zero if an erase failure should be emulated, otherwise returns
++ * zero.
++ */
++int ubi_dbg_is_erase_failure(void)
++{
++	if (emulate_erase_failures)
++		return !(random32() % 100);
++	else
++		return 0;
++}
+diff -auNrp tmp-from/drivers/mtd/ubi/debug.h tmp-to/drivers/mtd/ubi/debug.h
+--- tmp-from/drivers/mtd/ubi/debug.h	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/debug.h	2007-03-14 17:15:50.000000000 +0200
+@@ -0,0 +1,146 @@
++/*
++ * Copyright (c) International Business Machines Corp., 2006
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
++ * the GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ *
++ * Author: Artem B. Bityutskiy
++ */
++
++#ifndef __UBI_DEBUG_H__
++#define __UBI_DEBUG_H__
++
++#ifdef CONFIG_MTD_UBI_DEBUG
++
++#ifdef CONFIG_MTD_UBI_DEBUG_DISABLE_BGT
++#define DBG_DISABLE_BGT 1
++#else
++#define DBG_DISABLE_BGT 0
++#endif
++#define UBI_DEBUG 1
++
++#define ubi_assert(expr) BUG_ON(!(expr))
++
++#define ubi_dbg_dump_stack() dump_stack()
++
++/* Debugging messages from different UBI units */
++
++/* A verbose error messages */
++#define dbg_err(fmt, ...) ubi_err(fmt, ##__VA_ARGS__)
++/* User interface unit */
++#define dbg_uif(fmt, ...) \
++	ubi_dbg_print(UBI_DBG_UIF, __FUNCTION__, fmt, ##__VA_ARGS__)
++/* Volume table unit */
++#define dbg_vtbl(fmt, ...) \
++	ubi_dbg_print(UBI_DBG_VTBL, __FUNCTION__, fmt, ##__VA_ARGS__)
++/* Eraseblock association unit */
++#define dbg_eba(fmt, ...) \
++	ubi_dbg_print(UBI_DBG_EBA, __FUNCTION__, fmt, ##__VA_ARGS__)
++/* Wear-leveling unit */
++#define dbg_wl(fmt, ...) \
++	ubi_dbg_print(UBI_DBG_WL, __FUNCTION__, fmt, ##__VA_ARGS__)
++/* Input/output unit */
++#define dbg_io(fmt, ...) \
++	ubi_dbg_print(UBI_DBG_IO, __FUNCTION__, fmt, ##__VA_ARGS__)
++/* Build unit */
++#define dbg_bld(fmt, ...) \
++	ubi_dbg_print(UBI_DBG_BLD, __FUNCTION__, fmt, ##__VA_ARGS__)
++/* Scanning unit */
++#define dbg_scan(fmt, ...) \
++	ubi_dbg_print(UBI_DBG_SCAN, __FUNCTION__, fmt, ##__VA_ARGS__)
++
++/**
++ * UBI message types.
++ *
++ * @UBI_DBG_UIF: a debugging message from the user interfaces unit
++ * @UBI_DBG_VTBL: a debugging message from the volume table unit
++ * @UBI_DBG_EBA: a debugging message from the eraseblock association unit
++ * @UBI_DBG_WL: a debugging message from the wear-leveling unit
++ * @UBI_DBG_IO: a debugging message from the input/output unit
++ * @UBI_DBG_BLD: a UBI build debugging message from the build unit
++ * @UBI_DBG_SCAN: a debugging message from the scanning unit
++ */
++enum {
++	UBI_DBG_UIF,
++	UBI_DBG_VTBL,
++	UBI_DBG_EBA,
++	UBI_DBG_WL,
++	UBI_DBG_IO,
++	UBI_DBG_BLD,
++	UBI_DBG_SCAN
++};
++
++struct ubi_ec_hdr;
++struct ubi_vid_hdr;
++struct ubi_vtbl_vtr;
++struct ubi_vol_tbl_record;
++struct ubi_scan_volume;
++struct ubi_scan_leb;
++struct ubi_mkvol_req;
++
++void ubi_dbg_print(int type, const char *func, const char *fmt, ...);
++void ubi_dbg_dump_ec_hdr(const struct ubi_ec_hdr *ec_hdr);
++void ubi_dbg_dump_vid_hdr(const struct ubi_vid_hdr *vid_hdr);
++void ubi_dbg_dump_vtr(const struct ubi_vtbl_vtr *vtr);
++void ubi_dbg_dump_vol_tbl_record(const struct ubi_vol_tbl_record *r);
++void ubi_dbg_dump_sv(const struct ubi_scan_volume *sv);
++void ubi_dbg_dump_seb(const struct ubi_scan_leb *seb, int type);
++void ubi_dbg_dump_mkvol_req(const struct ubi_mkvol_req *req);
++void ubi_dbg_hexdump(const void *buf, int size);
++
++int ubi_dbg_is_bitflip(void);
++int ubi_dbg_is_write_failure(void);
++int ubi_dbg_is_erase_failure(void);
++
++int __init ubi_dbg_init(void);
++void __exit ubi_dbg_close(void);
++
++#else
++
++#define UBI_DEBUG 0
++
++#define DBG_DISABLE_BGT 0
++
++#define ubi_assert(expr) ({})
++
++#define dbg_err(fmt, ...)  ({})
++#define dbg_uif(fmt, ...)  ({})
++#define dbg_vtbl(fmt, ...) ({})
++#define dbg_eba(fmt, ...)  ({})
++#define dbg_wl(fmt, ...)   ({})
++#define dbg_io(fmt, ...)   ({})
++#define dbg_bld(fmt, ...)  ({})
++#define dbg_scan(fmt, ...) ({})
++
++#define ubi_dbg_print(func, fmt, ...)  ({})
++#define ubi_dbg_dump_stack()           ({})
++#define ubi_dbg_dump_ec_hdr(ec_hdr)    ({})
++#define ubi_dbg_dump_vid_hdr(vid_hdr)  ({})
++#define ubi_dbg_dump_vtr(vtr)          ({})
++#define ubi_dbg_dump_vol_tbl_record(r) ({})
++#define ubi_dbg_dump_sv(sv)            ({})
++#define ubi_dbg_dump_seb(seb, type)    ({})
++#define ubi_dbg_dump_mkvol_req(req)    ({})
++#define ubi_dbg_hexdump(buf, size)     ({})
++
++#define ubi_dbg_is_bitflip()       0
++#define ubi_dbg_is_write_failure() 0
++#define ubi_dbg_is_erase_failure() 0
++
++#define ubi_dbg_init()  0
++#define ubi_dbg_close()
++
++#endif /* !CONFIG_MTD_UBI_DEBUG */
++
++#endif /* !__UBI_DEBUG_H__ */
