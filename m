@@ -1,156 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbXCNDvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbXCNDw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbXCNDvp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 23:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbXCNDvp
+	id S1752705AbXCNDw3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 23:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXCNDw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 23:51:45 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:29130 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752703AbXCNDvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 23:51:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=a9/ZvuB/7YOpQyEgt3KbKTD9GYaAGdwmpUJN9KHrzTM7cqQRK/HCyrYiqyLMQJVWvBXLhIrYPZMpMUbHmEgOd0wQNlKv1mo+tMYf1eMHtSzSAetumDY3PWAa5eRZ1zppIV3R3ljn7ZfOkcb0tzO54tETssdazGe1oou8Y9nITgU=  ;
-X-YMail-OSG: JVa7zOwVM1m9mj2bmF9.2Pzd6AhxozciFWa6YELQNt4Qbax5ukGT9TSE_Ol8NhrGcSNvf1HCbv8r4RkB9QHjhGc7Nc5XTvfSZYUx2.ruyO1DlX0daYnIZBE6qYGo31yetZXKKak4caLlxxo_aVlT1CqWKg--
-Message-ID: <45F77149.7040604@yahoo.com.au>
-Date: Wed, 14 Mar 2007 14:51:37 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 13 Mar 2007 23:52:29 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:36483 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752705AbXCNDw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 23:52:27 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc3-mm2 (oops in move_freepages)
+Date: Tue, 13 Mar 2007 21:52:09 -0600
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
+References: <20070307201915.4d579113.akpm@linux-foundation.org>
+In-Reply-To: <20070307201915.4d579113.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Herbert Poetzl <herbert@13thfloor.at>, Kirill Korotaev <dev@sw.ru>,
-       containers@lists.osdl.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@sw.ru>,
-       Dave Hansen <hansendc@us.ibm.com>
-Subject: Re: [RFC][PATCH 4/7] RSS accounting hooks over the code
-References: <45ED7DEC.7010403@sw.ru> <45ED81F2.80402@sw.ru>	<m14porwq1c.fsf@ebiederm.dsl.xmission.com> <45F57E7D.6080604@sw.ru>	<1173718208.11945.54.camel@localhost.localdomain>	<20070312235452.GB11578@MAIL.13thfloor.at>	<m1veh5sbwy.fsf@ebiederm.dsl.xmission.com>	<45F67C2D.7020303@yahoo.com.au> <m1odmxrv2l.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1odmxrv2l.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200703132152.10136.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> 
-> 
->>Eric W. Biederman wrote:
->>
->>>First touch page ownership does not guarantee give me anything useful
->>>for knowing if I can run my application or not.  Because of page
->>>sharing my application might run inside the rss limit only because
->>>I got lucky and happened to share a lot of pages with another running
->>>application.  If the next I run and it isn't running my application
->>>will fail.  That is ridiculous.
->>
->>Let's be practical here, what you're asking is basically impossible.
->>
->>Unless by deterministic you mean that it never enters the a non
->>trivial syscall, in which case, you just want to know about maximum
->>RSS of the process, which we already account).
-> 
-> 
-> Not per process I want this on a group of processes, and yes that
-> is all I want just.  I just want accounting of the maximum RSS of
-> a group of processes and then the mechanism to limit that maximum rss.
+FYI, I'm seeing the following oops with 2.6.21-rc3-mm1 (and -mm2)
+on the HP rx2600 and an Intel Tiger (both ia64 boxes).
 
-Well don't you just sum up the maximum for each process?
-
-Or do you want to only count shared pages inside a container once,
-or something difficult like that?
+I haven't investigated this other than to determine that it
+does not occur with 2.6.21-rc3 or 2.6.20-rc3-mm1, and the
+instruction at move_freepages+0x10 is a load of the value
+pointed to by the third argument (end_page).
 
 
->>>I don't want sharing between vservers/VE/containers to affect how many
->>>pages I can have mapped into my processes at once.
->>
->>You seem to want total isolation. You could use virtualization?
-> 
-> 
-> No.  I don't want the meaning of my rss limit to be affected by what
-> other processes are doing.  We have constraints of how many resources
-> the box actually has.  But I don't want accounting so sloppy that
-> processes outside my group of processes can artificially
-> lower my rss value, which magically raises my rss limit.
+Linux version 2.6.21-rc3-mm1 (helgaas@tiger) (gcc version 4.0.3 (Debian 4.0.3-1)) #2 SMP Tue Mar 13 16:16:22 MST 2007
+...
+mptbase: Initiating ioc0 bringup
+ioc0: 53C1030: Capabilities={Initiator,Target}
+scsi0 : ioc0: LSI53C1030, FwRev=01032300h, Ports=1, MaxQ=255, IRQ=53
+scsi 0:0:0:0: Direct-Access     HP 36.4G ST336706LC       HP04 PQ: 0 ANSI: 2
+ target0:0:0: Beginning Domain Validation
+ target0:0:0: Ending Domain Validation
+ target0:0:0: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 63)
+Unable to handle kernel paging request at virtual address a0007fffc7580000
+swapper[1]: Oops 8813272891392 [1]
+Modules linked in:
 
-So what are you going to do about all the shared caches and slabs
-inside the kernel?
+Pid: 1, CPU 1, comm:              swapper
+psr : 00001010085a2010 ifs : 800000000000040b ip  : [<a0000001000fe5d0>]    Not 
+tainted
+ip is at move_freepages+0x10/0x340
+unat: 0000000000000000 pfs : 000000000000030a rsc : 0000000000000003
+rnat: 0000000000000000 bsps: 0000000000000000 pr  : 000000000000a581
+ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a74433f
+csd : 0000000000000000 ssd : 0000000000000000
+b0  : a0000001000fea10 b6  : a0000001005ad980 b7  : a00000010000bb20
+f6  : 1003e0000000000000000 f7  : 1003ed37a6f4de9bd37a7
+f8  : 1003e0000000000000000 f9  : 1003e0000000194a0cb8b
+f10 : 1003e70658ddf530a940d f11 : 1003e0000000000000000
+r1  : a000000100dfe280 r2  : 0000000000000000 r3  : 0000000000000000
+r8  : 0000000000000000 r9  : 0000000000004000 r10 : ffffffffffff0000
+r11 : 0000000000020000 r12 : e00000406004fc10 r13 : e000004060048000
+r14 : 0000000000010000 r15 : 000000000001c000 r16 : 0000000000040000
+r17 : 0000000000000400 r18 : a0007fffc7200000 r19 : 0000000000004000
+r20 : ffffffffffff4000 r21 : 00002fffffff4000 r22 : ffffd00000000000
+r23 : 000000005fff4000 r24 : 00002fffa0000000 r25 : 0000000063180000
+r26 : 000000000318c000 r27 : 0000000000c5c000 r28 : 00000000000c4000
+r29 : 0000000000080000 r30 : 000000000003fc00 r31 : 00000000000e0000
 
-
->>It is basically handwaving anyway. The only approach I've seen with
->>a sane (not perfect, but good) way of accounting memory use is this
->>one. If you care to define "proper", then we could discuss that.
-> 
-> 
-> I will agree that this patchset is probably in the right general ballpark.
-> But the fact that pages are assigned exactly one owner is pure non-sense.
-> We can do better.  That is all I am asking for someone to at least attempt
-> to actually account for the rss of a group of processes and get the numbers
-> right when we have shared pages, between different groups of
-> processes.  We have the data structures to support this with rmap.
-
-Well rmap only supports mapped, userspace pages.
-
-
-> Let me describe the situation where I think the accounting in the
-> patchset goes totally wonky. 
-> 
-> 
-> Gcc as I recall maps the pages it is compiling with mmap.
-> If in a single kernel tree I do:
-> make -jN O=../compile1 &
-> make -jN O=../compile2 &
-> 
-> But set it up so that the two compiles are in different rss groups.
-> If I run the concurrently they will use the same files at the same
-> time and most likely because of the first touch rss limit rule even
-> if I have a draconian rss limit the compiles will both be able to
-> complete and finish.   However if I run either of them alone if I
-> use the most draconian rss limit I can that allows both compiles to
-> finish I won't be able to compile a single kernel tree.
-
-Yeah it is not perfect. Fortunately, there is no perfect solution,
-so we don't have to be too upset about that.
-
-And strangely, this example does not go outside the parameters of
-what you asked for AFAIKS. In the worst case of one container getting
-_all_ the shared pages, they will still remain inside their maximum
-rss limit.
-
-So they might get penalised a bit on reclaim, but maximum rss limits
-will work fine, and you can (almost) guarantee X amount of memory for
-a given container, and it will _work_.
-
-But I also take back my comments about this being the only design I
-have seen that gets everything, because the node-per-container idea
-is a really good one on the surface. And it could mean even less impact
-on the core VM than this patch. That is also a first-touch scheme.
-
-
-> However the messed up accounting that doesn't handle sharing between
-> groups of processes properly really bugs me.  Especially when we have
-> the infrastructure to do it right.
-> 
-> Does that make more sense?
-
-I think it is simplistic.
-
-Sure you could probably use some of the rmap stuff to account shared
-mapped _user_ pages once for each container that touches them. And
-this patchset isn't preventing that.
-
-But how do you account kernel allocations? How do you account unmapped
-pagecache?
-
-What's the big deal so many accounting people have with just RSS? I'm
-not a container person, this is an honest question. Because from my
-POV if you conveniently ignore everything else... you may as well just
-not do any accounting at all.
-
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+Call Trace:
+ [<a000000100014840>] show_stack+0x40/0xa0
+                                sp=e00000406004f7c0 bsp=e0000040600496f8
+ [<a000000100015120>] show_regs+0x880/0x8a0
+                                sp=e00000406004f990 bsp=e0000040600496a0
+ [<a0000001000387c0>] die+0x1c0/0x2c0
+                                sp=e00000406004f990 bsp=e000004060049658
+ [<a00000010005e1e0>] ia64_do_page_fault+0x820/0x9c0
+                                sp=e00000406004f9b0 bsp=e000004060049608
+ [<a00000010000c320>] ia64_leave_kernel+0x0/0x270
+                                sp=e00000406004fa40 bsp=e000004060049608
+ [<a0000001000fe5d0>] move_freepages+0x10/0x340
+                                sp=e00000406004fc10 bsp=e0000040600495a8
+ [<a0000001000fea10>] move_freepages_block+0x110/0x140
+                                sp=e00000406004fc10 bsp=e000004060049578
+ [<a0000001000fef20>] __rmqueue+0x4e0/0x7e0
+                                sp=e00000406004fc10 bsp=e000004060049518
+ [<a0000001000ff270>] rmqueue_bulk+0x50/0x120
+                                sp=e00000406004fc10 bsp=e0000040600494d0
+ [<a0000001000ff7a0>] get_page_from_freelist+0x460/0xd40
+                                sp=e00000406004fc10 bsp=e000004060049420
+ [<a0000001001016e0>] __alloc_pages+0xa0/0x580
+                                sp=e00000406004fc10 bsp=e0000040600493a8
+ [<a000000100147df0>] kmem_getpages+0x150/0x3a0
+                                sp=e00000406004fc20 bsp=e000004060049370
+ [<a00000010014b200>] cache_grow+0x1e0/0x640
+                                sp=e00000406004fc30 bsp=e000004060049308
+ [<a00000010014baf0>] cache_alloc_refill+0x490/0x580
+                                sp=e00000406004fc30 bsp=e0000040600492a0
+ [<a00000010014ca80>] kmem_cache_alloc+0x120/0x1e0
+                                sp=e00000406004fc30 bsp=e000004060049270
+ [<a0000001005af6f0>] sd_revalidate_disk+0x90/0x1c20
+                                sp=e00000406004fc30 bsp=e0000040600491f0
+ [<a0000001005b1d20>] sd_probe+0x6c0/0x7c0
+                                sp=e00000406004fc70 bsp=e000004060049198
+ [<a0000001004c3650>] driver_probe_device+0x230/0x360
+                                sp=e00000406004fc80 bsp=e000004060049160
+ [<a0000001004c37b0>] __device_attach+0x30/0x60
+                                sp=e00000406004fc80 bsp=e000004060049138
+ [<a0000001004c1480>] bus_for_each_drv+0x80/0x120
+                                sp=e00000406004fc80 bsp=e000004060049100
+ [<a0000001004c3f50>] device_attach+0x190/0x200
+                                sp=e00000406004fca0 bsp=e0000040600490c8
+ [<a0000001004c1660>] bus_attach_device+0x80/0x160
+                                sp=e00000406004fca0 bsp=e000004060049090
+ [<a0000001004be7e0>] device_add+0x940/0xf60
+                                sp=e00000406004fca0 bsp=e000004060049028
+ [<a00000010057daa0>] scsi_sysfs_add_sdev+0x60/0x520
+                                sp=e00000406004fca0 bsp=e000004060048fd8
+ [<a000000100578e20>] scsi_probe_and_add_lun+0x1000/0x1200
+                                sp=e00000406004fca0 bsp=e000004060048f68
+ [<a000000100579bf0>] __scsi_scan_target+0x150/0xae0
+                                sp=e00000406004fcd0 bsp=e000004060048f10
+ [<a00000010057a5e0>] scsi_scan_channel+0x60/0xe0
+                                sp=e00000406004fd30 bsp=e000004060048ed0
+ [<a00000010057a790>] scsi_scan_host_selected+0x130/0x200
+                                sp=e00000406004fd30 bsp=e000004060048e88
+ [<a00000010057a9d0>] do_scsi_scan_host+0x170/0x1a0
+                                sp=e00000406004fd30 bsp=e000004060048e60
+ [<a00000010057acd0>] scsi_scan_host+0x2d0/0x320
+                                sp=e00000406004fd30 bsp=e000004060048e18
+ [<a0000001005ca2c0>] mptspi_probe+0x680/0x6e0
+                                sp=e00000406004fd30 bsp=e000004060048dc8
+ [<a0000001003fdd10>] pci_device_probe+0x270/0x3a0
+                                sp=e00000406004fd30 bsp=e000004060048d88
+ [<a0000001004c3650>] driver_probe_device+0x230/0x360
+                                sp=e00000406004fd80 bsp=e000004060048d50
+ [<a0000001004c3a40>] __driver_attach+0x100/0x1a0
+                                sp=e00000406004fd80 bsp=e000004060048d20
+ [<a0000001004c1260>] bus_for_each_dev+0x80/0x100
+                                sp=e00000406004fd80 bsp=e000004060048ce8
+ [<a0000001004c3060>] driver_attach+0x40/0x60
+                                sp=e00000406004fda0 bsp=e000004060048cc8
+ [<a0000001004c2130>] bus_add_driver+0xf0/0x3a0
+                                sp=e00000406004fda0 bsp=e000004060048c88
+ [<a0000001004c4540>] driver_register+0x160/0x180
+                                sp=e00000406004fda0 bsp=e000004060048c68
+ [<a0000001003fce80>] __pci_register_driver+0xc0/0x140
+                                sp=e00000406004fda0 bsp=e000004060048c30
+ [<a00000010090c840>] mptspi_init+0x180/0x1c0
+                                sp=e00000406004fdb0 bsp=e000004060048c10
+ [<a0000001008d5580>] init+0x420/0x6c0
+                                sp=e00000406004fdb0 bsp=e000004060048bd8
+ [<a0000001000134d0>] kernel_thread_helper+0xd0/0x100
+                                sp=e00000406004fe30 bsp=e000004060048bb0
+ [<a0000001000094c0>] start_kernel_thread+0x20/0x40
+                                sp=e00000406004fe30 bsp=e000004060048bb0
