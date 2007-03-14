@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161115AbXCNLJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161128AbXCNLMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161115AbXCNLJE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 07:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161123AbXCNLJE
+	id S1161128AbXCNLMG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 07:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161130AbXCNLMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 07:09:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59259 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161115AbXCNLJD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 07:09:03 -0400
-Subject: Re: Clarification required about select vs wake_up race condition
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A411@xmb-sjc-214.amer.cisco.com>
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC30183A411@xmb-sjc-214.amer.cisco.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 14 Mar 2007 04:07:55 -0700
-Message-Id: <1173870475.3538.4.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 14 Mar 2007 07:12:06 -0400
+Received: from ns1.suse.de ([195.135.220.2]:50911 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161128AbXCNLMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 07:12:05 -0400
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
+       pmarques@grupopie.com
+Subject: Re: [PATCH] Race between cat /proc/kallsyms and rmmod
+References: <20070314111328.GA6807@localhost.sw.ru>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 14 Mar 2007 13:11:06 +0100
+In-Reply-To: <20070314111328.GA6807@localhost.sw.ru>
+Message-ID: <p73odmw81ph.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-03-12 at 12:44 -0700, Ravinandan Arakali (rarakali) wrote:
-> Hi,
-> I am facing following problem and was wondering if somebody could help
-> me out.
-> Our char driver(pretty much like all other char drivers) does a
-> poll_wait() 
+Alexey Dobriyan <adobriyan@sw.ru> writes:
+> 
+> --- a/kernel/kallsyms.c
+> +++ b/kernel/kallsyms.c
+> @@ -40,6 +40,8 @@ extern const u16 kallsyms_token_index[] 
+>  
+>  extern const unsigned long kallsyms_markers[] __attribute__((weak));
+>  
+> +extern struct mutex module_mutex;
 
+No externs in .c files
 
-you forgot to include your (full) sourcecode or a pointer to that...
-
-
+-Andi
