@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbXCNW6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422744AbXCNXBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbXCNW6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 18:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXCNW6e
+	id S1422744AbXCNXBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 19:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422745AbXCNXBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 18:58:34 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2643 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbXCNW6d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 18:58:33 -0400
-Date: Wed, 14 Mar 2007 22:58:18 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Tejun Heo <htejun@gmail.com>, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, michal.k.k.piotrowski@gmail.com,
-       linux-ide@vger.kernel.org, tglx@linutronix.de,
-       shemminger@linux-foundation.org, mlord@pobox.com,
-       linux-pm@lists.osdl.org
-Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ storm and rogue DMA access
-Message-ID: <20070314225818.GB7194@flint.arm.linux.org.uk>
-Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
-	Tejun Heo <htejun@gmail.com>, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	michal.k.k.piotrowski@gmail.com, linux-ide@vger.kernel.org,
-	tglx@linutronix.de, shemminger@linux-foundation.org,
-	mlord@pobox.com, linux-pm@lists.osdl.org
-References: <20070314152302.GB15600@htj.dyndns.org> <20070314215605.GA7194@flint.arm.linux.org.uk> <45F87863.9040408@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Mar 2007 19:01:22 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50179 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422744AbXCNXBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 19:01:21 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: discuss@x86-64.org
+Subject: Re: [discuss] [PATCH] x86_64: fix cpu MHz reporting on constant_tsc cpus
+Date: Thu, 15 Mar 2007 00:01:09 +0100
+User-Agent: KMail/1.9.5
+Cc: "Joerg Roedel" <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org
+References: <20070313100043.GC21463@amd.com>
+In-Reply-To: <20070313100043.GC21463@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45F87863.9040408@garzik.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200703150001.09390.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 06:34:11PM -0400, Jeff Garzik wrote:
-> Russell King wrote:
-> >pci_enable_device() doesn't deal with this; in most PCI setups I've
-> >seen, there is no control at PCI level over whether a device generates
-> >an interrupt on the bus.  Certainly the memory and io command enables
+On Tuesday 13 March 2007 11:00, Joerg Roedel wrote:
+> From: Mark Langsdorf <mark.langsdorf@amd.com>
+> From: Joerg Roedel <joerg.roedel@amd.com>
 > 
-> PCI grew an interrupt enable while you weren't looking: 
-> PCI_COMMAND_INTX_DISABLE
+> This patch fixes the reporting of cpu_mhz in /proc/cpuinfo on CPUs with
+> a constant TSC rate and a kernel with disabled cpufreq.
+> 
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> 
 
-That's fine for devices which conform to the later PCI specs, but not
-all do.
++       cpu_khz = tsc_khz;
++       if (cpu_has(&boot_cpu_data, X86_FEATURE_CONSTANT_TSC) &&
++                       nmi_known_cpu()) {
++               cpu_khz = tsc_calibrate_cpu_khz(); 
++       }
+ 
 
-> It was added in PCI 2.3 I think.
+I don't think this will do the right thing on Intel CPUs of which tsc_calibrate_cpu_khz()
+knows nothing about. 
 
-Correct.
-
-> Older PCI devices certainly do not have this standardized bit.
-
-No PCI device that I have has that bit - including the raid card I
-bought last year...
-
-In any case, relying on such a new control bit to implement this kind
-of functionality would result in a very hit and miss result; Linux
-tends to get used on things other than the bleeding edge of hardware
-technology.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+-Andi
