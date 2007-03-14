@@ -1,125 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbXCNATY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbXCNA3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbXCNATY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 20:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbXCNATY
+	id S1752668AbXCNA3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 20:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXCNA3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 20:19:24 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:31788 "EHLO
+	Tue, 13 Mar 2007 20:29:20 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:44852 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752667AbXCNATX (ORCPT
+	with ESMTP id S1752668AbXCNA3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 20:19:23 -0400
+	Tue, 13 Mar 2007 20:29:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=MnO2WWUUyzm10ablcOeRUMktfcasZ5d8PW/D0sxivX16GRpvgJOCoK2clpzHLhvCRiegWPrPpXXoU6Tq1AnFOzHuH80cEuhxZ6Mgi49di7yzOSfsj2rDoQ8/J0fHpC+g0c4vpIWckQ6xWEvnofaXZvpOOffj4p7NXDcYM+MBE08=
-Message-ID: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com>
-Date: Wed, 14 Mar 2007 05:49:22 +0530
-From: "Syed Ahemed" <kingkhan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: NPTL patch for linux 2.4.28
-Cc: msnyder@redhat.com, jjohnstn@redhat.com
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=I1mVcDK/dn+3F5MOxRzpH5EppPFzwxrKFstwj7ccpOhzAGPD7ZaxDk/afjEmm08PR1gcLCi9565vpVoUjhevFz/2LPJl081Xqy6ihWV8F4WQsxRjbg9V+vdljHjP9W0SEhGDpTzk+Az0MepR8x0XJ7y7Rks1uNkkngDFHVmxpBE=
+Message-ID: <29495f1d0703131729y56a99d9cj15288e7c18e277a8@mail.gmail.com>
+Date: Tue, 13 Mar 2007 17:29:17 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: Linux 2.6.20.3
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       torvalds@osdl.org, stable@kernel.org, sparclinux@vger.kernel.org
+In-Reply-To: <29495f1d0703131551k5c06170bma138f8c1f1f9c84e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20070313183353.GA7434@kroah.com>
+	 <29495f1d0703131457i43883529p5da1502b68ff0948@mail.gmail.com>
+	 <29495f1d0703131458j18f9aee1tcd9a2b2ff6ecdf41@mail.gmail.com>
+	 <20070313.152054.31641425.davem@davemloft.net>
+	 <29495f1d0703131551k5c06170bma138f8c1f1f9c84e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all.
-I have a tricky problem on  hand and a straight forward question.
+On 3/13/07, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
+> On 3/13/07, David Miller <davem@davemloft.net> wrote:
+> > From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+> > Date: Tue, 13 Mar 2007 14:58:24 -0700
+> >
+> > > On 3/13/07, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
+> > > > On 3/13/07, Greg KH <greg@kroah.com> wrote:
+> > > > > We (the -stable team) are announcing the release of the 2.6.20.3 kernel.
+> > > > > It contains a number of bugfixes and all 2.6.20 users are recommended to
+> > > > > upgrade.
+> > > > >
+> > > > > The diffstat and short summary of the fixes are below.
+> > > > >
+> > > > > I'll also be replying to this message with a copy of the patch between
+> > > > > 2.6.20.2 and 2.6.20.3.
+> > > >
+> > > > Compared to 2.6.20.1 (will try 2.6.20.2 as well), I now get:
+> > >
+> > > err, duh -- this is a Sun Ultra 60, debian testing install.
+> >
+> > Figure out if 2.6.20.2 does it too, then please try to git bisect
+> > it down further.
+>
+> Yep, that's the plan, just wanted to make folks aware.
+>
+> > I took a quick look and the two sparc64 commits between 2.6.20.1
+> > and 2.6.20.2 are benign, a fix for E450 interrupts and a kenvctrld
+> > fix which is for a driver for hardware your ultra60 doesn't have. :)
+> >
+> > There is a decent amount of raid and nfs fixes in here, do you
+> > use either?
+>
+> Neither.
+>
+> > Another commit that might be relevant is:
+> >
+> > commit 530b09160744a12450fdacb2b78779c9830a29c8
+> > Author: Aristeu Sergio Rozanski Filho <aristeu.sergio@gmail.com>
+> > Date:   Thu Mar 1 19:02:55 2007 -0500
+> >
+> >     tty_io: fix race in master pty close/slave pty close path
+> >
+> > Hmmm...
+> >
+> > Please let us know if you can narrow it down further.
+>
+> Building 2.6.20.2 right now, will let you know.
 
-Tricky problem:
----------------------
-While debugging a simple multithreaded application using gdb linux
-2.4.28 , i noticed the thread that has crashed after sigsegv has
-complete information on the gdb (both  address and function at the
-time of crash ) .But the other threads that are in wait state (
-executing glibc functions at the time of crash ) just has the address
-but not the function name as shown below.
+Ok, truly bizarre, I found that I was not running stock 2.6.20.3, but
+had your small hugetlb patch on top.
 
+So I went back and patched 2.6.20.1 with your patch, rebooted, got a
+soft lockup. Went back to stock 2.6.20.1 and did not.
 
-sh-2.05b# ./gdb a.out /mnt/cf/engg_files/core_files/
-a.out.1173437318.core.5312   a.out.1173453940.core.9829
-a.out.1173438125.core.16016  lost+found
-a.out.1173438881.core.18721
-<f/engg_files/core_files/a.out.1173453940.core.9829
-GNU gdb 6.3
-Copyright 2004 Free Software Foundation, Inc.
-GDB is free software, covered by the GNU General Public License, and you are
-welcome to change it and/or distribute copies of it under certain conditions.
-Type "show copying" to see the conditions.
-There is absolutely no warranty for GDB.  Type "show warranty" for details.
-This GDB was configured as "i686-pc-linux-gnu"...Using host libthread_db library
- "/lib/libthread_db.so.1".
+I don't see how your patch (C&P below for reference) could make any
+difference...Especially because no hugepages were in use at the time.
+On patched 2.6.20.1, I was just trying to check if my source tree had
+your patch applied (by `patch -p1 < davem.patch`) and got the
+soft-lockup I saw in 2.6.20.3 with the patch applied. I am going to
+try a clean 2.6.20.3 as well, now.
 
-warning: exec file is newer than core file.
-Core was generated by `./a.out'.
-Program terminated with signal 11, Segmentation fault.
-Reading symbols from /lib/libpthread.so.0...done.
-Loaded symbols for /lib/libpthread.so.0
-Reading symbols from /lib/libc.so.6...done.
-Loaded symbols for /lib/libc.so.6
-Reading symbols from /opt/lib/ld-linux.so.2...done.
-Loaded symbols for /opt//lib/ld-linux.so.2
-#0  0x080485df in a (p=0x0) at threadcore.c:34
-34      threadcore.c: No such file or directory.
-        in threadcore.c
-(gdb) info threads
-  3 process 10993  0x08053840 in ?? ()
-  2 process 1267  0xbf5ff9d0 in ?? ()
-* 1 process 9829  0x080485df in a (p=0x0) at threadcore.c:34
-(gdb) thread 3
-[Switching to thread 3 (process 10993)]#0  0x08053840 in ?? ()
-(gdb) bt
-#0  0x08053840 in ?? ()
-Cannot access memory at address 0x2b
-(gdb)
-#0  0x08053840 in ?? ()
-Cannot access memory at address 0x2b
-(gdb) thread 1
-[Switching to thread 1 (process 9829)]#0  0x080485df in a (p=0x0)
-    at threadcore.c:34
-34      in threadcore.c
-(gdb) bt
-#0  0x080485df in a (p=0x0) at threadcore.c:34
-#1  0x080485bc in main () at threadcore.c:21
-(gdb) thread 2
-[Switching to thread 2 (process 1267)]#0  0xbf5ff9d0 in ?? ()
-(gdb) bt
-#0  0xbf5ff9d0 in ?? ()
-Cannot access memory at address 0x2b
-(gdb) q
-sh-2.05b#
+diff --git a/arch/sparc64/mm/hugetlbpage.c b/arch/sparc64/mm/hugetlbpage.c
+index 33fd0b2..00677b5 100644
+--- a/arch/sparc64/mm/hugetlbpage.c
++++ b/arch/sparc64/mm/hugetlbpage.c
+@@ -248,6 +248,7 @@ void set_huge_pte_at(struct mm_struct *mm,
+unsigned long addr,
+        if (!pte_present(*ptep) && pte_present(entry))
+                mm->context.huge_pte_count++;
 
++       addr &= HPAGE_MASK;
+        for (i = 0; i < (1 << HUGETLB_PAGE_ORDER); i++) {
+                set_pte_at(mm, addr, ptep, entry);
+                ptep++;
+@@ -266,6 +267,8 @@ pte_t huge_ptep_get_and_clear(struct mm_struct
+*mm, unsigned long addr,
+        if (pte_present(entry))
+                mm->context.huge_pte_count--;
 
-The problem is with the same glibc and gdb , Redhat 9 linux 2.4.20-8
-does  give me complete information of all the threads in the "info
-threads" command.
-Having read similar problems on various mailing lists , i believe the
-only difference is redhat 9 has patched its kernel with NTPL or
-debugging support for linux in the kernel.
-
-Wanted to confirm if it this correct .
-
-My question
-------------------
-
-Someone would say move to 2.6 kernel and a different glibc,But with
-custom applications at stake .I can't take that risk as yet .So i
-would want an NTPL patch for 2.4.28 kernel
-Where do i get it ? Please do respond .
-
-
-
-
-Regards
--- 
-Syed
-
-I'm afraid that I've seen too many people fix bugs by looking at
-debugger output, and that almost inevitably leads to fixing the
-symptoms rather than the underlying problems.
-	
---Linus
++       addr &= HPAGE_MASK;
++
+        for (i = 0; i < (1 << HUGETLB_PAGE_ORDER); i++) {
+                pte_clear(mm, addr, ptep);
+                addr += PAGE_SIZE;
