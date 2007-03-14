@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbXCNS2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXCNS33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932446AbXCNS2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 14:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbXCNS2h
+	id S932469AbXCNS33 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 14:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbXCNS32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 14:28:37 -0400
-Received: from mga03.intel.com ([143.182.124.21]:1789 "EHLO mga03.intel.com"
+	Wed, 14 Mar 2007 14:29:28 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:49336 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932446AbXCNS2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 14:28:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,285,1170662400"; 
-   d="scan'208"; a="196376105:sNHT74546486"
-Date: Wed, 14 Mar 2007 11:25:42 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ACPI: eliminate useless bay events
-Message-Id: <20070314112542.3d28f659.kristen.c.accardi@intel.com>
-In-Reply-To: <20070307021649.GA1448@khazad-dum.debian.net>
-References: <20070306154046.942b0706.kristen.c.accardi@intel.com>
-	<20070307021649.GA1448@khazad-dum.debian.net>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S932469AbXCNS31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 14:29:27 -0400
+Date: Wed, 14 Mar 2007 11:27:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+ Take 2
+In-Reply-To: <20070314180933.GA12994@elte.hu>
+Message-ID: <Pine.LNX.4.64.0703141120530.9690@woody.linux-foundation.org>
+References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de>
+ <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
+ <20070314180933.GA12994@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Mar 2007 23:16:49 -0300
-Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
 
-> On Tue, 06 Mar 2007, Kristen Carlson Accardi wrote:
-> > Eliminate bay events on resume if nothing has changed.
+
+On Wed, 14 Mar 2007, Ingo Molnar wrote:
 > 
-> Are these *really* useless?  What if the *contents* of the bay changed?
+> then i decided to analyze the patches: currently they move 13452 lines 
+> of code. i386 is 87847 lines of code, x86_64 is 40978 lines of code, a 
+> total of 128825. That means we move about 10% of the code. Not 
+> insignificant but not earth-shattering either. With alot more effort 
+> (and testing) we could realistically go up to maybe 20% - but that's 
+> still a bit low to spread out all the files, isnt it?
 
-Humm... good point.  I will play with this some more to solve the bug
-I'm trying to fix a different way.
+Well, I'd like it to be 100% _eventually_, and just unify the 
+architectures.
 
-Please ignore the patch.
+We've now done that both for S/390 and POWER, and I think in both cases 
+it's been a clear win. So it's not like this is even a radical idea.
 
-Kristen
+The POWER architecture merge was actually done exactly the incremental 
+way, one file or directory at a time, and seemed to work out fine.
+
+So while I'd like 100%, I'd be happy to even just get started with the 
+really obvious stuff. And the stuff that we *already* share certainly fall 
+under that "really obvious" label.
+
+> So i thought it's a better idea to continue with the current more 
+> finegrained scheme of sharing some files between the architectures by 
+> having arch/x86_64 be the 'main' repository, with i386 inheriting them 
+> back, instead of spreading out the files?
+
+That's really illogical, because historially, i386 was the main one, so 
+you'd have to either:
+ - have a really strange mix
+OR
+ - move files around just to share them.
+
+So I'd much rather have just a totally new architecture, and hope that we 
+can migrate more and more to it. Whether we ever get to the POWER 
+situation where only some really odd-ball special cases are still using 
+ppc or not, who knows? It might be, for example, that only the odder i386 
+cases (ie the "non-PC" subarchitectures - Voyager, Summit, NUMAQ and the 
+like) would stay in i386.
+
+There really is almost nothing in i386 that shouldn't be supported on 
+x86-64 too, unless it literally is the actual low-level asm files and vm86 
+mode support (which in turn is best left as just a config option that 
+would just *depend* on 32-bit, so even that could sanely be represented 
+in a shared tree without any real downside at all).
+
+			Linus
