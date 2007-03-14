@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161313AbXCNPCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161318AbXCNPC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161313AbXCNPCm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161314AbXCNPCm
+	id S1161318AbXCNPC7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161325AbXCNPC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:02:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:46793 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161313AbXCNPCj (ORCPT
+	Wed, 14 Mar 2007 11:02:59 -0400
+Received: from web36714.mail.mud.yahoo.com ([209.191.85.48]:40280 "HELO
+	web36714.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1161318AbXCNPCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:02:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pYJ5UOpc3Tcfqxl5hXS+L03KkDWd7kI+vdWoc7CCNC3LJ1g7jdYYa7G2VgckuvgAWfXFa2R9irhs1vkwRNvjqCS5+1Ftu2zJeaSmbsEO7SlZDkSgVvwCKE/04fU1aX6zvpr3iGvASUOjxxLxEMBFGqpbrHvhXNvLt7OKWmaoN9c=
-Message-ID: <d120d5000703140802jb48bc74tbbe7ee2b120b1798@mail.gmail.com>
-Date: Wed, 14 Mar 2007 11:02:37 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: FF layer restrictions [Was: [PATCH 1/1] Input: add sensable phantom driver]
-Cc: "johann deneux" <johann.deneux@gmail.com>,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       "Anssi Hannula" <anssi.hannula@gmail.com>
-In-Reply-To: <45F722CE.9000602@gmail.com>
+	Wed, 14 Mar 2007 11:02:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=rq5FkRrOkGlA7CuuWtyLbQdfGbcTNKYUYFmZ6jxwkm/E/ISxbYoOnZfeKSJmAUWlAOijfAegLsP7TekOTBjd8Wt+p7ALuw3lEmDnlmt997ZYWskyyEq742AKDZA7i0I84zd1uGTSLcOdbRpvK0/wm+xg2skrK7rIUAoWrTjPeKA=  ;
+Message-ID: <20070314150254.22941.qmail@web36714.mail.mud.yahoo.com>
+X-YMail-OSG: HqrhVlIVM1kJo._0eZp0KYbkTOAhDn.AWFJOy8xBn3mzSNJZ221l9cOFbkYehtumuHh1SZTLcxvbhmR3Ow6WxePJgAlyQO74.ut63mAVabRNlojNqQ.7GHzeVa0ZXZso1qAggkqsm3mi2PCzoWpATRujog--
+Date: Wed, 14 Mar 2007 08:02:54 -0700 (PDT)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: Weird MMC errors: 2 of 2 - inconsistent state after data crc error
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2460126662758025813@fi.muni.cz>
-	 <d120d5000703070647t223f8858i8c495dcc3e1378a2@mail.gmail.com>
-	 <45EEEAA3.50009@gmail.com>
-	 <d120d5000703070856of068f19k62c5a7ce1f829336@mail.gmail.com>
-	 <4af2d03a0703130919nb4893b1ja9ec795dcf4bf53c@mail.gmail.com>
-	 <38b3b7c0703131450v2646e63fj2be4b9dda7f928c0@mail.gmail.com>
-	 <45F722CE.9000602@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/13/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> Why did you remove all Cced people? Anyway I filtered some of them out
->
-> johann deneux napsal(a):
-> > You are right, the direction in ff_effect is meant to be an angle.
-> > A dirty solution would be to use the 16 bits as two 8-bits angles. Or
->
-> That would be a problem as I need 3x 16bits.
->
-> > maybe we should change the API. I don't think there are many
-> > applications using force feedback yet, so maybe that should be ok?
-> >
-> > If we change the API, we should remove the assumption that a device has
-> > at most two axes to render effects. We could for instance have a
-> > magnitude argument for each axis which is capable of rendering effects.
-> > That might be necessary even for more common gaming devices like racing
-> > wheels: One can think pedals could also be capable of force feedback
-> > some day, not just the steering wheel.
->
-> I can do that, but in that case, I need to know how people (especially those
-> input one) want me to do...
->
+Problem 2: After a data crc error all subsequent commands fail. May it be caused by stop command
+leaving card in some bad state (something clearable by SEND_STATUS)? On the other hand, is there a
+real need to issue a stop command in case main command failed?
 
-Since we have no idea how many programs (if any) are using force
-feedback interface I would be wary of changing existing effcets and
-rather add new set of 3D effects.
+---- Example: ----
+Mar 14 09:25:13 Tirion kernel:  mmcblk0:<7>mmc0: starting CMD18 arg 00000000 flags 00000035
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: setting dma for 8 blocks
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x12, arg: 0x0, mask: 0xb100
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 1, flags 0
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 40, flags 1
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0xc, arg: 0x0, mask: 0x2900
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 80, flags 9
+Mar 14 09:25:13 Tirion kernel: mmc0: req done (CMD18): 0/2/1: 00000900 00000000 00000000 00000000
+Mar 14 09:25:13 Tirion kernel: mmcblk0: error 2 transferring data
+Mar 14 09:25:13 Tirion kernel: end_request: I/O error, dev mmcblk0, sector 0
+Mar 14 09:25:13 Tirion kernel: printk: 342 messages suppressed.
+Mar 14 09:25:13 Tirion kernel: Buffer I/O error on device mmcblk0, logical block 0
+Mar 14 09:25:13 Tirion kernel: mmc0: starting CMD18 arg 00000000 flags 00000035
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: setting dma for 8 blocks
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0x12, arg: 0x0, mask: 0xb100
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 80, flags 0
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: executing opcode 0xc, arg: 0x0, mask: 0x2900
+Mar 14 09:25:13 Tirion kernel: tifm_sd tifm_sd0:1: host event: host_status 80, flags 8
+Mar 14 09:25:13 Tirion kernel: mmc0: req done (CMD18): 1/0/1: 00000000 00000000 00000000 00000000
 
-Do we have any idea if there any users of FF out there?
 
--- 
-Dmitry
+
+ 
+____________________________________________________________________________________
+Sucker-punch spam with award-winning protection. 
+Try the free Yahoo! Mail Beta.
+http://advision.webevents.yahoo.com/mailbeta/features_spam.html
