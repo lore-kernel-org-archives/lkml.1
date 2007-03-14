@@ -1,124 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751480AbXCNPhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751461AbXCNPiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751480AbXCNPhJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXCNPhI
+	id S1751461AbXCNPiI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbXCNPiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:37:08 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:35842 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751149AbXCNPhG (ORCPT
+	Wed, 14 Mar 2007 11:38:08 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:5544 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751149AbXCNPiE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:37:06 -0400
-Date: Wed, 14 Mar 2007 11:37:05 -0400
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
-       Russell King <rmk+lkml@arm.linux.org.uk>, Jan Dittmer <jdi@l4x.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-Message-ID: <20070314153705.GP22464@csclub.uwaterloo.ca>
-References: <20070216185230.GO8882@enneenne.com> <20070313213842.GA23178@enneenne.com> <20070313224817.GF22466@csclub.uwaterloo.ca> <20070314093146.GE24556@enneenne.com> <20070314131934.GL22464@csclub.uwaterloo.ca> <20070314140623.GF3802@enneenne.com> <20070314141253.GM22464@csclub.uwaterloo.ca> <20070314142710.GJ3802@enneenne.com> <20070314144251.GN22464@csclub.uwaterloo.ca> <20070314145239.GK3802@enneenne.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070314145239.GK3802@enneenne.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Wed, 14 Mar 2007 11:38:04 -0400
+Message-ID: <45F816D7.7090600@fr.ibm.com>
+Date: Wed, 14 Mar 2007 16:37:59 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Pavel Emelianov <xemul@sw.ru>
+CC: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       devel@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org, Kirill Korotaev <dev@sw.ru>
+Subject: Re: [RFC][PATCH 4/7] RSS accounting hooks over the code
+References: <45ED7DEC.7010403@sw.ru> <45ED81F2.80402@sw.ru>
+In-Reply-To: <45ED81F2.80402@sw.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well here is my current version of the refclock_nmea.c.patch for
-LinuxPPS.  It now uses /dev/gps# for the nmea messages and /dev/pps# for
-the PPS device (which in my case is of course the same device).  I am
-running some more tests on it, but I think it is OK.
+> --- linux-2.6.20.orig/mm/migrate.c	2007-02-04 21:44:54.000000000 +0300
+> +++ linux-2.6.20-0/mm/migrate.c	2007-03-06 13:33:28.000000000 +0300
+> @@ -134,6 +134,7 @@ static void remove_migration_pte(struct 
+>  	pte_t *ptep, pte;
+>   	spinlock_t *ptl;
+>  	unsigned long addr = page_address_in_vma(new, vma);
+> +	struct page_container *pcont;
+> 
+>  	if (addr == -EFAULT)
+>  		return;
+> @@ -157,6 +158,11 @@ static void remove_migration_pte(struct 
+>   		return;
+>   	}
+> 
+> +	if (container_rss_prepare(new, vma, &pcont)) {
+> +		pte_unmap(ptep);
+> +		return;
+> +	}
+> +
+>   	ptl = pte_lockptr(mm, pmd);
+>   	spin_lock(ptl);
+>  	pte = *ptep;
+> @@ -175,16 +181,19 @@ static void remove_migration_pte(struct 
+>  	set_pte_at(mm, addr, ptep, pte);
+> 
+>  	if (PageAnon(new))
+> -		page_add_anon_rmap(new, vma, addr);
+> +		page_add_anon_rmap(new, vma, addr, pcont);
+>  	else
+> -		page_add_file_rmap(new);
+> +		page_add_file_rmap(new, pcont);
+> 
+>  	/* No need to invalidate - it was non-present before */
+>  	update_mmu_cache(vma, addr, pte);
+>  	lazy_mmu_prot_update(pte);
+> +	pte_unmap_unlock(ptep, ptl);
+> +	return;
+> 
+>  out:
+>  	pte_unmap_unlock(ptep, ptl);
+> +	container_rss_release(pcont);
+>  }
+> 
+>  /*
 
---- refclock_nmea.c.ori	2007-03-14 11:24:14.000000000 -0400
-+++ refclock_nmea.c	2007-03-14 11:31:04.000000000 -0400
-@@ -69,6 +69,7 @@
- # define DEVICE "COM%d:" 	/* COM 1 - 3 supported */
- #else
- # define DEVICE	"/dev/gps%d"	/* name of radio device */
-+# define PPSDEVICE	"/dev/pps%d"	/* name of pps device */
- #endif
- #define	SPEED232	B4800	/* uart speed (4800 bps) */
- #define	PRECISION	(-9)	/* precision assumed (about 2 ms) */
-@@ -79,6 +80,7 @@
- #define RANGEGATE	500000	/* range gate (ns) */
- 
- #define LENNMEA		75	/* min timecode length */
-+#define LENPPS		PPS_MAX_NAME_LEN
- 
- /*
-  * Tables to compute the ddd of year form icky dd/mm timecode. Viva la
-@@ -99,6 +101,7 @@
- 	pps_params_t pps_params; /* pps parameters */
- 	pps_info_t pps_info;	/* last pps data */
- 	pps_handle_t handle;	/* pps handlebars */
-+	int handle_created;	/* pps handle created flag */
- #endif /* HAVE_PPSAPI */
- };
- 
-@@ -147,6 +150,11 @@
- 	register struct nmeaunit *up;
- 	struct refclockproc *pp;
- 	int fd;
-+#ifdef PPS_HAVE_FINDPATH
-+	char id[LENPPS] = "",
-+	     path[LENPPS],
-+	     ppsdevice[LENPPS] = "";    /* just a default device */
-+#endif	/* PPS_HAVE_FINDPATH */
- 	char device[20];
- 
- 	/*
-@@ -238,12 +246,26 @@
- 	 * Start the PPSAPI interface if it is there. Default to use
- 	 * the assert edge and do not enable the kernel hardpps.
- 	 */
-+#ifdef PPS_HAVE_FINDPATH
-+	/* Get the PPS source's real name */
-+	(void)sprintf(ppsdevice, PPSDEVICE, unit);
-+	time_pps_readlink(ppsdevice, LENPPS, path, LENPPS);
-+
-+	/* Try to find the source */
-+	fd = time_pps_findpath(path, LENPPS, id, LENPPS);
-+	if (fd < 0) {
-+		msyslog(LOG_ERR, "refclock_nmea: cannot find PPS path \"%s\" in the system", path);
-+		return (0);
-+	}
-+	msyslog(LOG_INFO, "refclock_nmea: found PPS source \"%s\" at id #%d on \"%s\"", path, fd, id);
-+#endif	/* PPS_HAVE_FINDPATH */
- 	if (time_pps_create(fd, &up->handle) < 0) {
--		up->handle = 0;
-+		up->handle_created = 0;
- 		msyslog(LOG_ERR,
- 		    "refclock_nmea: time_pps_create failed: %m");
- 		return (1);
- 	}
-+	up->handle_created = ~0;
- 	return(nmea_ppsapi(peer, 0, 0));
- #else
- 	return (1);
-@@ -265,8 +287,10 @@
- 	pp = peer->procptr;
- 	up = (struct nmeaunit *)pp->unitptr;
- #ifdef HAVE_PPSAPI
--	if (up->handle != 0)
-+	if (up->handle_created) {
- 		time_pps_destroy(up->handle);
-+		up->handle_created = 0;
-+	}
- #endif /* HAVE_PPSAPI */
- 	io_closeclock(&pp->io);
- 	free(up);
-@@ -374,7 +398,7 @@
- 	/*
- 	 * Convert the timespec nanoseconds field to ntp l_fp units.
- 	 */ 
--	if (up->handle == 0)
-+	if (!up->handle_created)
- 		return (0);
- 	timeout.tv_sec = 0;
- 	timeout.tv_nsec = 0;
+you missed out an include in mm/migrate.c
 
---
-Len Sorensen
+cheers,
+
+C.
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+---
+ mm/migrate.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: 2.6.20/mm/migrate.c
+===================================================================
+--- 2.6.20.orig/mm/migrate.c
++++ 2.6.20/mm/migrate.c
+@@ -28,6 +28,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/vmalloc.h>
+ #include <linux/security.h>
++#include <linux/rss_container.h>
+ 
+ #include "internal.h"
+
