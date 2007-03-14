@@ -1,42 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933796AbXCNCWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933804AbXCNCZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933796AbXCNCWj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 22:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933801AbXCNCWj
+	id S933804AbXCNCZw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 22:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933806AbXCNCZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 22:22:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57281
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933796AbXCNCWi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 22:22:38 -0400
-Date: Tue, 13 Mar 2007 19:22:37 -0700 (PDT)
-Message-Id: <20070313.192237.112853631.davem@davemloft.net>
-To: samuel@sortiz.org
-Cc: davej@redhat.com, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: irda rmmod lockdep trace.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070314005003.GA15151@sortiz.org>
-References: <20070312003843.GA3394@sortiz.org>
-	<20070312.164921.71090866.davem@davemloft.net>
-	<20070314005003.GA15151@sortiz.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 13 Mar 2007 22:25:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:43676 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933804AbXCNCZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 22:25:51 -0400
+Subject: Re: [PATCH 0/8] x86 boot, pda and gdt cleanups
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+In-Reply-To: <45F70E25.7050704@goop.org>
+References: <1173184747.4644.23.camel@localhost.localdomain>
+	 <45F70E25.7050704@goop.org>
+Content-Type: text/plain
+Date: Wed, 14 Mar 2007 13:25:49 +1100
+Message-Id: <1173839149.5443.26.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Samuel Ortiz <samuel@sortiz.org>
-Date: Wed, 14 Mar 2007 02:50:03 +0200
+On Tue, 2007-03-13 at 13:48 -0700, Jeremy Fitzhardinge wrote:
+> Rusty Russell wrote:
+> > Hi all,
+> >
+> > 	The GDT stuff on x86 is a little more complex than it need be, but
+> > playing with boot code is always dangerous.  These compile and boot on
+> > UP and SMP for me, but Andrew should let the cook in -mm for a while.
+> >   
+> Hi Rusty,
+> 
+> This is my rough hacking patch I needed to get things into a Xen-shape
+> state.
 
-> On Mon, Mar 12, 2007 at 04:49:21PM -0700, David Miller wrote:
-> > I would strongly caution against adding any run-time overhead just to
-> > cure a false lockdep warning.  Even adding a new function argument
-> > is too much IMHO.
-> > 
-> > Make the cost show up for lockdep only, perhaps by putting each
-> > hashbin lock into a seperate locking class?
-> Does that look better to you:
+Looks good.  Just one thing:
 
-Yes, it does.:)
+>  void __devinit native_smp_prepare_boot_cpu(void)
+>  {
+> -	cpu_set(smp_processor_id(), cpu_online_map);
+> -	cpu_set(smp_processor_id(), cpu_callout_map);
+> -	cpu_set(smp_processor_id(), cpu_present_map);
+> -	cpu_set(smp_processor_id(), cpu_possible_map);
+> -	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
+> +	int cpu = smp_processor_id();
+> +
+> +	cpu_set(cpu, cpu_online_map);
+> +	cpu_set(cpu, cpu_callout_map);
+> +	cpu_set(cpu, cpu_present_map);
+> +	cpu_set(cpu, cpu_possible_map);
+> +	per_cpu(cpu_state, cpu) = CPU_ONLINE;
+>  
+>  	/* Set up %fs to point to our per-CPU area now it's allocated */
+> -	init_gdt(smp_processor_id(), &init_task);
+> -	cpu_set_gdt(smp_processor_id());
+> +	init_gdt(cpu, &init_task);
+> +	cpu_set_gdt(cpu);
+>  }
+
+This is called "pissing in the corners".  Don't do it: we don't need to
+touch that code and I actually prefer the original anyway (explicit is
+*good*).  
+
+The habit of extracting cpu number once then using it is an optimization
+which we should be aiming to get rid of (it simply hurts archs with
+efficient per-cpu implementations).
+
+Cheers,
+Rusty.
+
