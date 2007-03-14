@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161137AbXCNLXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161142AbXCNLX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161137AbXCNLXW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 07:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161142AbXCNLXW
+	id S1161142AbXCNLX6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 07:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161146AbXCNLX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 07:23:22 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:37755 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161137AbXCNLXV (ORCPT
+	Wed, 14 Mar 2007 07:23:57 -0400
+Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:2832 "EHLO
+	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161142AbXCNLX4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 07:23:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=j8hkaWzUCSz4Ay62eatJlED22TKGzLtBkSR9MgiiFkpIsctfSxG2sQdSfpNkFn1XSFgA8l7yiH0IZj485VY/3sDfXx70lg2SVoUE/AdNeGKGgwQu3vaxu1Dp1eEtm4stDamAA4V5356XUpknIb22JOB70vAUL2fbfJgmF3djMVI=
-Message-ID: <84144f020703140423h2562a353g40c156584943bb7@mail.gmail.com>
-Date: Wed, 14 Mar 2007 13:23:02 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: gregkh@suse.de
-Subject: Re: [BUG] Linux 2.6.20.2 - unable to handle kernel paging request - still accessing freed memory
-Cc: linux-kernel@vger.kernel.org, "Chris Rankin" <rankincj@yahoo.com>
-In-Reply-To: <170606.12059.qm@web52911.mail.yahoo.com>
+	Wed, 14 Mar 2007 07:23:56 -0400
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [ANNOUNCE] iproute2 2.6.20-070313
+Date: Wed, 14 Mar 2007 12:23:48 +0100
+User-Agent: KMail/1.9.6
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       lartc@mailman.ds9a.nl
+References: <20070313151549.332004c9@freekitty>
+In-Reply-To: <20070313151549.332004c9@freekitty>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <170606.12059.qm@web52911.mail.yahoo.com>
-X-Google-Sender-Auth: ec48faed5b12e937
+Message-Id: <200703141223.48927.arekm@maven.pl>
+X-Authenticated-Id: arekm
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
-
-I think there's some sort of reference counting problem with sysfs in
-2.6.20 kernels. Can you please help us debug it further?
-
-On 3/10/07, Chris Rankin <rankincj@yahoo.com> wrote:
-> It looks like 2.6.20.2 is still doing Bad Things in /sys.
+On Tuesday 13 of March 2007, Stephen Hemminger wrote:
+> This is an experimental to the iproute2 command set.
 >
-> BUG: unable to handle kernel paging request at virtual address 6b6b6d6b
+> The version number includes the kernel version to denote what features are
+> supported. The same source should build on older systems, but obviously the
+> newer kernel features won't be available. As much as possible, this package
+> tries to be source compatible across releases.
+>
+> It can be downloaded from:
+>  
+> http://developer.osdl.org/dev/iproute2/download/iproute2-2.6.20-070313.tar.
+>gz
 
-[snip]
+This patch
 
-> EIP:    0060:[<c01300ff>]    Not tainted VLI
-> EFLAGS: 00010202   (2.6.20.2 #1)
-> EIP is at module_put+0x20/0x52
-> eax: 6b6b6d6b   ebx: 6b6b6b6b   ecx: 00000001   edx: e7a01000
-> esi: edb7e4e4   edi: 6b6b6b6b   ebp: e79fd50c   esp: e7a01f58
-> ds: 007b   es: 007b   ss: 0068
-> Process udevd (pid: 9656, ti=e7a01000 task=f7a46030 task.ti=e7a01000)
-> Stack: eba628a0 c0183a1e 00000010 ed570870 e7a641d0 c0151263 00000000 00000000
->        f7ff2208 ed570870 f745b678 00000000 ed570870 c014eda0 00000003 00000003
->        f745b678 f745b6f8 c014fd99 00000003 00000007 00000003 e7a01000 c0102bde
-> Call Trace:
->  [<c0183a1e>] sysfs_release+0x2d/0x4c
->  [<c0151263>] __fput+0x96/0x13c
->  [<c014eda0>] filp_close+0x51/0x58
->  [<c014fd99>] sys_close+0x70/0xa7
->  [<c0102bde>] sysenter_past_esp+0x5f/0x85
->  [<c0270033>] __sched_text_start+0x613/0x971
+http://www.mail-archive.com/netdev@vger.kernel.org/msg27506.html
 
-There's also some previous discussion here:
+didn't make into upstream linux kernel it seems.
 
-http://lkml.org/lkml/2007/3/1/114
+The question is - are patches adding some functionality that's not in upstream 
+kernel accepted?
 
-                                           Pekka
+There is one wrr patch for iproute floating around that I'm thinking about.
+
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
