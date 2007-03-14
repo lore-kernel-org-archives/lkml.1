@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbXCNRj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752261AbXCNRpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752610AbXCNRj2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 13:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbXCNRj1
+	id S1752261AbXCNRpb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 13:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbXCNRpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 13:39:27 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:40612 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbXCNRj1 (ORCPT
+	Wed, 14 Mar 2007 13:45:31 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:33171 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752382AbXCNRpa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 13:39:27 -0400
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
-	Take 2
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-In-Reply-To: <Pine.LNX.4.61.0703141732540.1199@yvahk01.tjqt.qr>
-References: <20070314050819.536207642@goodmis.org>
-	 <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu>
-	 <1173879210.31159.30.camel@localhost.localdomain>
-	 <20070314134112.GB13486@elte.hu>
-	 <1173883577.31159.50.camel@localhost.localdomain>
-	 <Pine.LNX.4.61.0703141732540.1199@yvahk01.tjqt.qr>
-Content-Type: text/plain
-Date: Wed, 14 Mar 2007 13:39:04 -0400
-Message-Id: <1173893944.31159.60.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Mar 2007 13:45:30 -0400
+Date: Wed, 14 Mar 2007 18:45:29 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Al Viro <viro@ftp.linux.org.uk>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
+In-Reply-To: <Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.62.0703141838030.28462@pademelon.sonytel.be>
+References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
+ <Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
+ <20070314160258.GK4095@ftp.linux.org.uk> <Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
+ <20070314170720.GL4095@ftp.linux.org.uk> <Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-14 at 17:33 +0100, Jan Engelhardt wrote:
-> On Mar 14 2007 10:46, Steven Rostedt wrote:
-> >
-> >> symbolic links perhaps? In that case i'd also introduce a common naming 
-> >> scheme: x86_early_printk.c - to make sure we know it right away that 
-> >> those files are bi-arch.
-> >
-> >Does the Linux code tree already support sym links? IOW, are there
-> >already sym links in the code tree? (/me probably should just look ;)
+On Wed, 14 Mar 2007, Linus Torvalds wrote:
+> On Wed, 14 Mar 2007, Al Viro wrote:
+> > Nope.  How can kconfig distinguish that from a boolean option in modular
+> > driver?  bool *can* depend on tristate and be selected when tristate is
+> > set to m.
 > 
-> /usr/src/linux/include/asm -> /usr/src/linux/include/asm-i386
+> Btw, this is one of those things that easily causes problems.
 
-That's created at build time.  But I don't see anywhere in a freshly
-cloned repo or fresh untar of the linux tarball, where there exists any
-symbolic links.
+I just found another caveat: while `select' is some super-override-it-all that
+ignores depends on non-existent symbols, it doesn't promote `m' to `y'.
+E.g. `select FB_CFB_FILLRECT' from a bool still gives FB_CFB_FILLRECT=m if
+FB=m.
 
--- Steve
+Anyway, here's a fix for the 3 problematic cases I found.
 
+Subject: bool fbdevs must depend on FB = y
 
+Frame buffer device drivers that cannot be built as modules must depend on
+`FB = y'.  Correct the 3 remaining offenders.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 7f5a598..e4f0dd0 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1320,7 +1320,7 @@ config FB_AU1100
+ 
+ config FB_AU1200
+ 	bool "Au1200 LCD Driver"
+-	depends on FB && MIPS && SOC_AU1200
++	depends on (FB = y) && MIPS && SOC_AU1200
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -1470,7 +1470,7 @@ config FB_G364
+ 
+ config FB_68328
+ 	bool "Motorola 68328 native frame buffer support"
+-	depends on FB && (M68328 || M68EZ328 || M68VZ328)
++	depends on (FB = y) && (M68328 || M68EZ328 || M68VZ328)
+  	select FB_CFB_FILLRECT
+  	select FB_CFB_COPYAREA
+  	select FB_CFB_IMAGEBLIT
+@@ -1616,7 +1616,7 @@ config FB_IBM_GXT4500
+ 
+ config FB_PS3
+ 	bool "PS3 GPU framebuffer driver"
+-	depends on FB && PS3_PS3AV
++	depends on (FB = y) && PS3_PS3AV
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
