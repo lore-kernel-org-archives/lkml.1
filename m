@@ -1,49 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030812AbXCNJWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030808AbXCNJWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030812AbXCNJWw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 05:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030814AbXCNJWH
+	id S1030808AbXCNJWx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 05:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030779AbXCNJTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 05:22:07 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:60563 "EHLO
+	Wed, 14 Mar 2007 05:19:37 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60500 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030796AbXCNJUU (ORCPT
+	with ESMTP id S1030740AbXCNJTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 05:20:20 -0400
+	Wed, 14 Mar 2007 05:19:30 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH 15/17] kill bogus casts in amd64 uaccess.h
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1HRPee-0003bH-2R@ZenIV.linux.org.uk>
+Subject: [PATCH 10/17] C99 initializers, proper use of const in drivers/ps3
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Message-Id: <E1HRPdq-0003Vz-1V@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 14 Mar 2007 09:20:20 +0000
+Date: Wed, 14 Mar 2007 09:19:30 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- include/asm-x86_64/uaccess.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/ps3/ps3av_cmd.c |   24 +++++++++++++-----------
+ 1 files changed, 13 insertions(+), 11 deletions(-)
 
-diff --git a/include/asm-x86_64/uaccess.h b/include/asm-x86_64/uaccess.h
-index 1981f70..9df30b9 100644
---- a/include/asm-x86_64/uaccess.h
-+++ b/include/asm-x86_64/uaccess.h
-@@ -373,12 +373,12 @@ extern long __copy_user_nocache(void *dst, const void __user *src, unsigned size
- static inline int __copy_from_user_nocache(void *dst, const void __user *src, unsigned size)
+diff --git a/drivers/ps3/ps3av_cmd.c b/drivers/ps3/ps3av_cmd.c
+index 21c97c8..bc70e81 100644
+--- a/drivers/ps3/ps3av_cmd.c
++++ b/drivers/ps3/ps3av_cmd.c
+@@ -485,12 +485,12 @@ static u8 ps3av_cnv_mclk(u32 fs)
+ 
+ static const u32 ps3av_ns_table[][5] = {
+ 					/*   D1,    D2,    D3,    D4,    D5 */
+-	[PS3AV_CMD_AUDIO_FS_44K-BASE]	{  6272,  6272, 17836, 17836,  8918 },
+-	[PS3AV_CMD_AUDIO_FS_48K-BASE]	{  6144,  6144, 11648, 11648,  5824 },
+-	[PS3AV_CMD_AUDIO_FS_88K-BASE]	{ 12544, 12544, 35672, 35672, 17836 },
+-	[PS3AV_CMD_AUDIO_FS_96K-BASE]	{ 12288, 12288, 23296, 23296, 11648 },
+-	[PS3AV_CMD_AUDIO_FS_176K-BASE]	{ 25088, 25088, 71344, 71344, 35672 },
+-	[PS3AV_CMD_AUDIO_FS_192K-BASE]	{ 24576, 24576, 46592, 46592, 23296 }
++	[PS3AV_CMD_AUDIO_FS_44K-BASE] =	{  6272,  6272, 17836, 17836,  8918 },
++	[PS3AV_CMD_AUDIO_FS_48K-BASE] =	{  6144,  6144, 11648, 11648,  5824 },
++	[PS3AV_CMD_AUDIO_FS_88K-BASE] =	{ 12544, 12544, 35672, 35672, 17836 },
++	[PS3AV_CMD_AUDIO_FS_96K-BASE] =	{ 12288, 12288, 23296, 23296, 11648 },
++	[PS3AV_CMD_AUDIO_FS_176K-BASE] =	{ 25088, 25088, 71344, 71344, 35672 },
++	[PS3AV_CMD_AUDIO_FS_192K-BASE] =	{ 24576, 24576, 46592, 46592, 23296 }
+ };
+ 
+ static void ps3av_cnv_ns(u8 *ns, u32 fs, u32 video_vid)
+@@ -543,9 +543,10 @@ static void ps3av_cnv_ns(u8 *ns, u32 fs, u32 video_vid)
+ 
+ #undef BASE
+ 
+-static u8 ps3av_cnv_enable(u32 source, u8 *enable)
++static u8 ps3av_cnv_enable(u32 source, const u8 *enable)
  {
- 	might_sleep();
--	return __copy_user_nocache(dst, (__force void *)src, size, 1);
-+	return __copy_user_nocache(dst, src, size, 1);
+-	u8 *p, ret = 0;
++	const u8 *p;
++	u8 ret = 0;
+ 
+ 	if (source == PS3AV_CMD_AUDIO_SOURCE_SPDIF) {
+ 		ret = 0x03;
+@@ -559,9 +560,10 @@ static u8 ps3av_cnv_enable(u32 source, u8 *enable)
+ 	return ret;
  }
  
- static inline int __copy_from_user_inatomic_nocache(void *dst, const void __user *src, unsigned size)
+-static u8 ps3av_cnv_fifomap(u8 *map)
++static u8 ps3av_cnv_fifomap(const u8 *map)
  {
--	return __copy_user_nocache(dst, (__force void *)src, size, 0);
-+	return __copy_user_nocache(dst, src, size, 0);
+-	u8 *p, ret = 0;
++	const u8 *p;
++	u8 ret = 0;
+ 
+ 	p = map;
+ 	ret = p[0] + (p[1] << 2) + (p[2] << 4) + (p[3] << 6);
+@@ -615,7 +617,7 @@ static void ps3av_cnv_info(struct ps3av_audio_info_frame *info,
+ 	info->pb5.lsv = mode->audio_downmix_level;
  }
  
- #endif /* __X86_64_UACCESS_H */
+-static void ps3av_cnv_chstat(u8 *chstat, u8 *cs_info)
++static void ps3av_cnv_chstat(u8 *chstat, const u8 *cs_info)
+ {
+ 	memcpy(chstat, cs_info, 5);
+ }
 -- 
 1.5.0-rc2.GIT
 
