@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbXCNW5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbXCNW6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269AbXCNW5c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 18:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbXCNW5c
+	id S1753319AbXCNW6e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 18:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXCNW6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 18:57:32 -0400
-Received: from note.orchestra.cse.unsw.EDU.AU ([129.94.242.24]:41605 "EHLO
-	note.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753269AbXCNW5c (ORCPT
+	Wed, 14 Mar 2007 18:58:34 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2643 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753319AbXCNW6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 18:57:32 -0400
-From: Kandan Venkataraman <kven709@cse.unsw.EDU.AU>
-To: Christoph Hellwig <hch@infradead.org>
-Date: Thu, 15 Mar 2007 09:57:09 +1100 (EST)
-X-X-Sender: kven709@williams.orchestra.cse.unsw.EDU.AU
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Loop device - Tracking page writes made to a loop device
- through mmap
-In-Reply-To: <20070313203244.GA13914@infradead.org>
-Message-ID: <Pine.LNX.4.64.0703150928270.10389@williams.orchestra.cse.unsw.EDU.AU>
-References: <Pine.LNX.4.64.0703140712080.18655@williams.orchestra.cse.unsw.EDU.AU>
- <20070313203244.GA13914@infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 14 Mar 2007 18:58:33 -0400
+Date: Wed, 14 Mar 2007 22:58:18 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, michal.k.k.piotrowski@gmail.com,
+       linux-ide@vger.kernel.org, tglx@linutronix.de,
+       shemminger@linux-foundation.org, mlord@pobox.com,
+       linux-pm@lists.osdl.org
+Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ storm and rogue DMA access
+Message-ID: <20070314225818.GB7194@flint.arm.linux.org.uk>
+Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
+	Tejun Heo <htejun@gmail.com>, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	michal.k.k.piotrowski@gmail.com, linux-ide@vger.kernel.org,
+	tglx@linutronix.de, shemminger@linux-foundation.org,
+	mlord@pobox.com, linux-pm@lists.osdl.org
+References: <20070314152302.GB15600@htj.dyndns.org> <20070314215605.GA7194@flint.arm.linux.org.uk> <45F87863.9040408@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45F87863.9040408@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Mar 2007, Christoph Hellwig wrote:
+On Wed, Mar 14, 2007 at 06:34:11PM -0400, Jeff Garzik wrote:
+> Russell King wrote:
+> >pci_enable_device() doesn't deal with this; in most PCI setups I've
+> >seen, there is no control at PCI level over whether a device generates
+> >an interrupt on the bus.  Certainly the memory and io command enables
+> 
+> PCI grew an interrupt enable while you weren't looking: 
+> PCI_COMMAND_INTX_DISABLE
 
-> On Wed, Mar 14, 2007 at 07:21:41AM +1100, Kandan Venkataraman wrote:
->> All comments have been taken care of.
->>
->> Description:
->>
->> A  file_operations structure variable called loop_fops is initialised with
->> the default block device file operations (def_blk_fops).
->> The mmap operation is overriden with a new function called loop_file_mmap.
->
-> NACK.  block device driver should never ever play around with file
-> operations themselves.  If you want functionality like the one you
-> have please don't overload the loop driver, but start a new (character)
-> driver doing specificaly what you want.  And even then I'm not sure
-> we'd want functionality like this in the mainline tree, but at least
-> we can have an open discussion if it's done properly.
->
+That's fine for devices which conform to the later PCI specs, but not
+all do.
 
-The reason I chose the loop device was the following:
+> It was added in PCI 2.3 I think.
 
-The loop device has backing storage and makes use of the page cache. The 
-nopage method for all block device files and most disk files is 
-implemented by filemap_nopage. This function uses the page cache. Thus, 
-this allows me to mmap a large address space.
+Correct.
 
-If I wrote a character device, I would have to store the contents in 
-kernel memory as the function filemap_nopage is not suitable for character 
-devices. This would severly restrict the size of my mmap.
+> Older PCI devices certainly do not have this standardized bit.
 
-I am out my depth here, any pointers on how to proceed would be very 
-helpful
+No PCI device that I have has that bit - including the raid card I
+bought last year...
 
-Thanks
-Kandan
+In any case, relying on such a new control bit to implement this kind
+of functionality would result in a very hit and miss result; Linux
+tends to get used on things other than the bleeding edge of hardware
+technology.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
