@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750857AbXCNPZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751630AbXCNP00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750857AbXCNPZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 11:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXCNPVY
+	id S1751630AbXCNP00 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 11:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbXCNPVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 11:21:24 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:63753 "EHLO
+	Wed, 14 Mar 2007 11:21:21 -0400
+Received: from smtp.nokia.com ([131.228.20.173]:63835 "EHLO
 	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422668AbXCNPVF (ORCPT
+	with ESMTP id S1422673AbXCNPVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 11:21:05 -0400
+	Wed, 14 Mar 2007 11:21:13 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Frank Haverkamp <haver@vnet.ibm.com>,
@@ -17,22 +17,20 @@ Cc: Frank Haverkamp <haver@vnet.ibm.com>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Artem Bityutskiy <dedekind@infradead.org>
-Date: Wed, 14 Mar 2007 17:20:50 +0200
-Message-Id: <20070314152050.1112.50792.sendpatchset@localhost.localdomain>
+Date: Wed, 14 Mar 2007 17:21:00 +0200
+Message-Id: <20070314152100.1112.37277.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
 References: <20070314151934.1112.70126.sendpatchset@localhost.localdomain>
-Subject: [PATCH 15/22 take 3] UBI: sysfs functionality
-X-OriginalArrivalTime: 14 Mar 2007 15:20:49.0931 (UTC) FILETIME=[58F46DB0:01C7664C]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070314172051-22E7ABB0-7051BF01/0-0/0-1
+Subject: [PATCH 17/22 take 3] UBI: gluebi functionality
+X-OriginalArrivalTime: 14 Mar 2007 15:20:59.0993 (UTC) FILETIME=[5EF3C490:01C7664C]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/sysfs.c tmp-to/drivers/mtd/ubi/sysfs.c
---- tmp-from/drivers/mtd/ubi/sysfs.c	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/sysfs.c	2007-03-14 17:15:50.000000000 +0200
-@@ -0,0 +1,408 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/gluebi.c tmp-to/drivers/mtd/ubi/gluebi.c
+--- tmp-from/drivers/mtd/ubi/gluebi.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/gluebi.c	2007-03-14 17:15:50.000000000 +0200
+@@ -0,0 +1,361 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
 + *
@@ -50,394 +48,347 @@ diff -auNrp tmp-from/drivers/mtd/ubi/sysfs.c tmp-to/drivers/mtd/ubi/sysfs.c
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 + *
-+ * Author: Artem B. Bityutskiy
++ * Author: Artem B. Bityutskiy, Joern Engel
 + */
 +
-+#include <linux/kobject.h>
-+#include <linux/stat.h>
++/*
++ * This is a part of the user interfaces unit. Here we implement fake MTD
++ * devices for each UBI volume. This sounds strange, but it is in fact quite
++ * useful to make MTD-oriented software (including all the legacy software) to
++ * work on top of UBI.
++ *
++ * Gluebi emulates MTD devices of "MTD_UBIVOLUME" type. Their minimal I/O unit
++ * size (mtd->writesize) is equivalent to the minimal I/O unit of the
++ * underlying (real) MTD device. The eraseblock size is equivalent to the
++ * logical eraseblock size of the volume.
++ */
++
++#include <asm/div64.h>
 +#include "ubi.h"
 +
-+static struct class *ubi_class;
-+
-+/* "Show" and "store" methods for files in '/<sysfs>/class/ubi/' */
-+static ssize_t ubi_version_show(struct class *class, char *buf)
-+{
-+	return sprintf(buf, "%d\n", UBI_VERSION);
-+}
-+
-+/* Class attributes corresponding to files in '/<sysfs>/class/ubi/' */
-+static struct class_attribute ubi_version =
-+	__ATTR(version, S_IRUGO, ubi_version_show, NULL);
-+
 +/**
-+ * ubi_sysfs_infr_init - initialize UBI sysfs infrastructure support.
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure.
-+ */
-+int ubi_sysfs_infr_init(void)
-+{
-+	int err;
-+
-+	ubi_class = class_create(THIS_MODULE, UBI_STRING_NAME);
-+	if (IS_ERR(ubi_class))
-+		return PTR_ERR(ubi_class);
-+
-+	err = class_create_file(ubi_class, &ubi_version);
-+	if (err)
-+		goto out_class;
-+
-+	return 0;
-+
-+out_class:
-+	class_destroy(ubi_class);
-+	return err;
-+}
-+
-+/**
-+ * ubi_sysfs_infr_close - close UBI sysfs infrastructure.
-+ */
-+void ubi_sysfs_infr_close(void)
-+{
-+	class_remove_file(ubi_class, &ubi_version);
-+	class_destroy(ubi_class);
-+}
-+
-+/**
-+ * dev2ubi - find UBI device description object by the pointer to the device
++ * mtd2vol - find the user interface volume description object by an MTD
 + * object.
 + *
-+ * @dev: device object pointer
++ * @mtd: the MTD object
 + *
-+ * This function returns a pointer to the UBI device description object.
++ * This function returns the user interface volume description object
++ * corresponding to the @mtd object.
 + */
-+static inline struct ubi_info *dev2ubi(struct device *dev)
++static inline struct ubi_uif_volume *mtd2vol(struct mtd_info *mtd)
 +{
-+	return container_of(dev, struct ubi_info, uif.dev);
++	return container_of(mtd, struct ubi_uif_volume, gluebi_mtd);
 +}
 +
-+static ssize_t dev_attribute_show(struct device *dev,
-+				  struct device_attribute *attr, char *buf);
-+
-+/*
-+ * Device attributes corresponding to files in '/<sysfs>/class/ubi/ubiX'.
++/**
++ * gluebi_get_device - get MTD device reference.
++ *
++ * @mtd: the MTD device description object
++ *
++ * This function is called every time the MTD device is being opened and
++ * implements the MTD get_device() operation. Returns zero in case of success
++ * and a negative error code in case of failure.
 + */
-+static struct device_attribute dev_eraseblock_size =
-+	__ATTR(eraseblock_size, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_avail_eraseblocks =
-+	__ATTR(avail_eraseblocks, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_total_eraseblocks =
-+	__ATTR(total_eraseblocks, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_volumes_count =
-+	__ATTR(volumes_count, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_max_ec =
-+	__ATTR(max_ec, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_reserved_for_bad =
-+	__ATTR(reserved_for_bad, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_bad_peb_count =
-+	__ATTR(bad_peb_count, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_max_vol_count =
-+	__ATTR(max_vol_count, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_min_io_size =
-+	__ATTR(min_io_size, S_IRUGO, dev_attribute_show, NULL);
-+static struct device_attribute dev_bgt_enabled =
-+	__ATTR(bgt_enabled, S_IRUGO, dev_attribute_show, NULL);
-+
-+/* "Show" method for files in '/<sysfs>/class/ubi/ubiX/' */
-+static ssize_t dev_attribute_show(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
++static int gluebi_get_device(struct mtd_info *mtd)
 +{
-+	const struct ubi_info *ubi = dev2ubi(dev);
++	struct ubi_uif_volume *vol = mtd2vol(mtd);
 +
-+	if (attr == &dev_eraseblock_size)
-+		return sprintf(buf, "%d\n", ubi->io.leb_size);
-+	else if (attr == &dev_avail_eraseblocks)
-+		return sprintf(buf, "%d\n", ubi->acc.avail_pebs);
-+	else if (attr == &dev_total_eraseblocks)
-+		return sprintf(buf, "%d\n", ubi->io.good_peb_count);
-+	else if (attr == &dev_volumes_count)
-+		return sprintf(buf, "%d\n", ubi->vtbl.vol_count);
-+	else if (attr == &dev_max_ec)
-+		return sprintf(buf, "%d\n", ubi->wl.max_ec);
-+	else if (attr == &dev_reserved_for_bad)
-+		return sprintf(buf, "%d\n", ubi->acc.beb_rsvd_pebs);
-+	else if (attr == &dev_bad_peb_count)
-+		return sprintf(buf, "%d\n", ubi->io.bad_peb_count);
-+	else if (attr == &dev_max_vol_count)
-+		return sprintf(buf, "%d\n", ubi->vtbl.vt_slots);
-+	else if (attr == &dev_min_io_size)
-+		return sprintf(buf, "%d\n", ubi->io.min_io_size);
-+	else if (attr == &dev_bgt_enabled) {
-+		return sprintf(buf, "%d\n", ubi->wl.thread_enabled);
++	/*
++	 * We do not introduce locks for gluebi reference count because the
++	 * get_device()/put_device() calls are already serialized at MTD.
++	 */
++	if (vol->gluebi_refcount > 0) {
++		/*
++		 * The MTD device is already referenced and this is just one
++		 * more reference. MTD allows many users to open the same
++		 * volume simultaneously and do not distinguish between
++		 * readers/writers/exclusive openers as UBI does. So we do not
++		 * open the UBI volume again - just increase the reference
++		 * counter and return.
++		 */
++		vol->gluebi_refcount += 1;
++		return 0;
 +	}
 +
++	/*
++	 * This is the first reference to this UBI volume via the MTD device
++	 * interface. Open the corresponding volume in read-write mode.
++	 */
++	vol->gluebi_desc = ubi_open_volume(vol->ubi->ubi_num, vol->vol_id,
++					   UBI_READWRITE);
++	if (IS_ERR(vol->gluebi_desc))
++		return PTR_ERR(vol->gluebi_desc);
++	vol->gluebi_refcount += 1;
 +	return 0;
 +}
 +
-+/* "Release" method for UBI devices */
-+static void dev_release(struct device *dev)
++/**
++ * gluebi_put_device - put MTD device reference.
++ *
++ * @mtd: the MTD device description object
++ *
++ * This function is called every time the MTD device is being put. Returns
++ * zero in case of success and a negative error code in case of failure.
++ */
++static void gluebi_put_device(struct mtd_info *mtd)
 +{
-+	return;
++	struct ubi_uif_volume *vol = mtd2vol(mtd);
++
++	vol->gluebi_refcount -= 1;
++	ubi_assert(vol->gluebi_refcount >= 0);
++	if (vol->gluebi_refcount == 0)
++		ubi_close_volume(vol->gluebi_desc);
 +}
 +
 +/**
-+ * ubi_sysfs_init - initialize sysfs for an UBI device.
++ * gluebi_read - read operation of emulated MTD devices.
 + *
-+ * @ubi: the UBI device description object
++ * @mtd: the MTD device description object
++ * @from: absolute offset from where to read
++ * @len: how many bytes to read
++ * @retlen: count of read bytes is returned here
++ * @buf: the buffer to store the data to
 + *
 + * This function returns zero in case of success and a negative error code in
 + * case of failure.
 + */
-+int ubi_sysfs_init(struct ubi_info *ubi)
++static int gluebi_read(struct mtd_info *mtd, loff_t from, size_t len,
++		       size_t *retlen, unsigned char *buf)
 +{
-+	int err;
++	int err = 0, lnum, offs, total_read;
++	struct ubi_uif_volume *vol = mtd2vol(mtd);
++	struct ubi_info *ubi = vol->ubi;
 +
-+	ubi->uif.dev.release = dev_release;
-+	ubi->uif.dev.devt = MKDEV(ubi->uif.major, 0);
-+	ubi->uif.dev.class = ubi_class;
-+	sprintf(&ubi->uif.dev.bus_id[0], UBI_STRING_NAME"%d", ubi->ubi_num);
-+	err = device_register(&ubi->uif.dev);
-+	if (err)
-+		goto out;
++	dbg_uif("read %zd bytes from offset %lld", len, from);
 +
-+	err = device_create_file(&ubi->uif.dev, &dev_eraseblock_size);
-+	if (err)
-+		goto out_unregister;
-+	err = device_create_file(&ubi->uif.dev, &dev_avail_eraseblocks);
-+	if (err)
-+		goto out_eraseblock_size;
-+	err = device_create_file(&ubi->uif.dev, &dev_total_eraseblocks);
-+	if (err)
-+		goto out_avail_eraseblocks;
-+	err = device_create_file(&ubi->uif.dev, &dev_volumes_count);
-+	if (err)
-+		goto out_total_eraseblocks;
-+	err = device_create_file(&ubi->uif.dev, &dev_max_ec);
-+	if (err)
-+		goto out_volumes_count;
-+	err = device_create_file(&ubi->uif.dev, &dev_reserved_for_bad);
-+	if (err)
-+		goto out_volumes_max_ec;
-+	err = device_create_file(&ubi->uif.dev, &dev_bad_peb_count);
-+	if (err)
-+		goto out_reserved_for_bad;
-+	err = device_create_file(&ubi->uif.dev, &dev_max_vol_count);
-+	if (err)
-+		goto out_bad_peb_count;
-+	err = device_create_file(&ubi->uif.dev, &dev_min_io_size);
-+	if (err)
-+		goto out_max_vol_count;
-+	err = device_create_file(&ubi->uif.dev, &dev_bgt_enabled);
-+	if (err)
-+		goto out_min_io_size;
++	if (unlikely(len < 0 || from < 0 || from + len > mtd->size))
++		return -EINVAL;
 +
-+	return 0;
++	offs = do_div(from, mtd->erasesize);
++	lnum = from;
 +
-+out_min_io_size:
-+	device_remove_file(&ubi->uif.dev, &dev_min_io_size);
-+out_max_vol_count:
-+	device_remove_file(&ubi->uif.dev, &dev_max_vol_count);
-+out_bad_peb_count:
-+	device_remove_file(&ubi->uif.dev, &dev_bad_peb_count);
-+out_reserved_for_bad:
-+	device_remove_file(&ubi->uif.dev, &dev_reserved_for_bad);
-+out_volumes_max_ec:
-+	device_remove_file(&ubi->uif.dev, &dev_max_ec);
-+out_volumes_count:
-+	device_remove_file(&ubi->uif.dev, &dev_volumes_count);
-+out_total_eraseblocks:
-+	device_remove_file(&ubi->uif.dev, &dev_total_eraseblocks);
-+out_avail_eraseblocks:
-+	device_remove_file(&ubi->uif.dev, &dev_avail_eraseblocks);
-+out_eraseblock_size:
-+	device_remove_file(&ubi->uif.dev, &dev_eraseblock_size);
-+out_unregister:
-+	device_unregister(&ubi->uif.dev);
-+out:
-+	ubi_err("failed to initialize sysfs for UBI device %d", ubi->ubi_num);
++	total_read = len;
++	while (total_read) {
++		size_t to_read = mtd->erasesize - offs;
++
++		if (to_read > total_read)
++			to_read = total_read;
++
++		dbg_uif("read %zd bytes from LEB %d:%d, offset %d",
++			to_read, vol->vol_id, lnum, offs);
++
++		err = ubi_eba_read_leb(ubi, vol->vol_id, lnum, buf, offs,
++				       to_read, 0);
++		if (unlikely(err))
++			break;
++
++		lnum += 1;
++		offs = 0;
++		total_read -= to_read;
++		buf += to_read;
++	}
++
++	*retlen = len - total_read;
 +	return err;
 +}
 +
 +/**
-+ * ubi_sysfs_close - close sysfs for an UBI device.
++ * gluebi_write - write operation of emulated MTD devices.
 + *
-+ * @ubi: the UBI device description object
++ * @mtd: the MTD device description object
++ * @to: absolute offset where to write
++ * @len: how many bytes to write
++ * @retlen: count of written bytes is returned here
++ * @buf: the buffer with data to write
++ *
++ * This function returns zero in case of success and a negative error code in
++ * case of failure.
 + */
-+void ubi_sysfs_close(struct ubi_info *ubi)
++static int gluebi_write(struct mtd_info *mtd, loff_t to, size_t len,
++		       size_t *retlen, const u_char *buf)
 +{
-+	device_remove_file(&ubi->uif.dev, &dev_bgt_enabled);
-+	device_remove_file(&ubi->uif.dev, &dev_min_io_size);
-+	device_remove_file(&ubi->uif.dev, &dev_max_vol_count);
-+	device_remove_file(&ubi->uif.dev, &dev_bad_peb_count);
-+	device_remove_file(&ubi->uif.dev, &dev_reserved_for_bad);
-+	device_remove_file(&ubi->uif.dev, &dev_max_ec);
-+	device_remove_file(&ubi->uif.dev, &dev_volumes_count);
-+	device_remove_file(&ubi->uif.dev, &dev_total_eraseblocks);
-+	device_remove_file(&ubi->uif.dev, &dev_avail_eraseblocks);
-+	device_remove_file(&ubi->uif.dev, &dev_eraseblock_size);
-+	device_unregister(&ubi->uif.dev);
++	int err = 0, lnum, offs, total_written;
++	struct ubi_uif_volume *vol = mtd2vol(mtd);
++	struct ubi_info *ubi = vol->ubi;
++
++	dbg_uif("write %zd bytes to offset %lld", len, to);
++
++	if (unlikely(len < 0 || to < 0 || len + to > mtd->size))
++		return -EINVAL;
++
++	if (unlikely(ubi->io.ro_mode))
++		return -EROFS;
++
++	offs = do_div(to, mtd->erasesize);
++	lnum = to;
++
++	if (unlikely(len % mtd->writesize || offs % mtd->writesize))
++		return -EINVAL;
++
++	total_written = len;
++	while (total_written) {
++		size_t to_write = mtd->erasesize - offs;
++
++		if (to_write > total_written)
++			to_write = total_written;
++
++		dbg_uif("write %zd bytes to LEB %d:%d, offset %d",
++			to_write, vol->vol_id, lnum, offs);
++
++		err = ubi_eba_write_leb(ubi, vol->vol_id, lnum, buf, offs,
++					to_write, UBI_DATA_UNKNOWN);
++		if (unlikely(err))
++			break;
++
++		lnum += 1;
++		offs = 0;
++		total_written -= to_write;
++		buf += to_write;
++	}
++
++	*retlen = len - total_written;
++	return err;
 +}
 +
 +/**
-+ * dev2ubi - find volume description object by the pointer to the device
-+ * object.
++ * gluebi_erase - erase operation of emulated MTD devices.
 + *
-+ * @dev: device object pointer
++ * @mtd: the MTD device description object
++ * @instr: the erase operation description
 + *
-+ * This function returns a pointer to the UBI volume description object.
++ * This function calls the erase callback when finishes. Returns zero in case
++ * of success and a negative error code in case of failure.
 + */
-+static inline struct ubi_uif_volume *dev2vol(struct device *dev)
++static int gluebi_erase(struct mtd_info *mtd, struct erase_info *instr)
 +{
-+	return container_of(dev, struct ubi_uif_volume, dev);
++	int err, i, lnum, count;
++	struct ubi_uif_volume *vol = mtd2vol(mtd);
++	struct ubi_info *ubi = vol->ubi;
++
++	dbg_uif("erase %u bytes at offset %u", instr->len, instr->addr);
++
++	if (unlikely(instr->addr < 0 ||
++		     instr->addr > mtd->size - mtd->erasesize))
++		return -EINVAL;
++
++	if (unlikely(instr->len < 0 ||
++		     instr->addr + instr->len > mtd->size))
++		return -EINVAL;
++
++	if (unlikely(instr->addr % mtd->writesize ||
++		     instr->len % mtd->writesize))
++		return -EINVAL;
++
++	lnum = instr->addr / mtd->erasesize;
++	count = instr->len / mtd->erasesize;
++
++	if (unlikely(ubi->io.ro_mode))
++		return -EROFS;
++
++	for (i = 0; i < count; i++) {
++		dbg_uif("erase LEB %d", lnum);
++
++		err = ubi_eba_unmap_leb(ubi, vol->vol_id, lnum + i);
++		if (unlikely(err))
++			goto out_err;
++	}
++
++	/*
++	 * MTD erase operations are synchronous, so we have to make sure the
++	 * physical eraseblock is wiped out.
++	 */
++	err = ubi_wl_flush(ubi);
++	if (unlikely(err))
++		goto out_err;
++
++        instr->state = MTD_ERASE_DONE;
++        mtd_erase_callback(instr);
++
++	return 0;
++
++out_err:
++	instr->state = MTD_ERASE_FAILED;
++	instr->fail_addr = lnum * mtd->erasesize;
++	return err;
 +}
 +
-+static ssize_t vol_attribute_show(struct device *dev,
-+				  struct device_attribute *attr, char *buf);
-+
-+/* Device attributes corresponding to files in '/<sysfs>/class/ubi/ubiX_Y' */
-+static struct device_attribute vol_reserved_ebs =
-+	__ATTR(reserved_ebs, S_IRUGO, vol_attribute_show, NULL);
-+static struct device_attribute vol_type =
-+	__ATTR(type, S_IRUGO, vol_attribute_show, NULL);
-+static struct device_attribute vol_name =
-+	__ATTR(name, S_IRUGO, vol_attribute_show, NULL);
-+static struct device_attribute vol_corrupted =
-+	__ATTR(corrupted, S_IRUGO, vol_attribute_show, NULL);
-+static struct device_attribute vol_alignment =
-+	__ATTR(alignment, S_IRUGO, vol_attribute_show, NULL);
-+static struct device_attribute vol_usable_eb_size =
-+	__ATTR(usable_eb_size, S_IRUGO, vol_attribute_show, NULL);
-+static struct device_attribute vol_data_bytes =
-+	__ATTR(data_bytes, S_IRUGO, vol_attribute_show, NULL);
-+static struct device_attribute vol_upd_marker =
-+	__ATTR(upd_marker, S_IRUGO, vol_attribute_show, NULL);
-+
-+/*
-+ * "Show" method for files in '/<sysfs>/class/ubi/ubiX_Y/'.
++/**
++ * ubi_gluebi_vol_init - initialize gluebi for an UBI volume.
 + *
-+ * Consider a situation:
-+ * A. process 1 opens a sysfs file related to volume Y, say
-+ *    /<sysfs>/class/ubi/ubiX_Y/reserved_ebs;
-+ * B. process 2 removes volume Y;
-+ * C. process 1 starts reading the /<sysfs>/class/ubi/ubiX_Y/reserved_ebs file;
++ * @ubi: the UBI device description object
++ * @vol: user interfaces unit volume description object
 + *
-+ * What we want to do in a situation like that is to return error when the file
-+ * is read. This is done by means of the 'removed' flag and the 'vol_lock' of
-+ * the UBI UIF volume information structure.
++ * This function is called when an UBI volume is created in order to create
++ * corresponding fake MTD device. Returns zero in case of success and a
++ * negative error code in case of failure.
 + */
-+static ssize_t vol_attribute_show(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
++int ubi_gluebi_vol_init(const struct ubi_info *ubi, struct ubi_uif_volume *vol)
 +{
-+	int usable_eb_size, ret = 0;
++	int err;
++	struct mtd_info *mtd = &vol->gluebi_mtd;
 +	const struct ubi_vtbl_vtr *vtr;
-+	const char *tp;
-+	struct ubi_uif_volume *vol = dev2vol(dev);
 +
-+	spin_lock(&vol->vol_lock);
-+	if (vol->removed) {
-+		spin_unlock(&vol->vol_lock);
-+		dbg_err("volume %d was removed", vol->vol_id);
-+		return -EIO;
++	vtr = ubi_vtbl_get_vtr(ubi, vol->vol_id);
++	ubi_assert(!IS_ERR(vtr));
++
++	mtd->name = kmemdup(vtr->name, vtr->name_len + 1, GFP_KERNEL);
++	if (!mtd->name)
++		return -ENOMEM;
++
++	mtd->type = MTD_UBIVOLUME;
++	if (!ubi->io.ro_mode)
++		mtd->flags = MTD_WRITEABLE;
++	mtd->writesize  = ubi->io.min_io_size;
++	mtd->owner      = THIS_MODULE;
++	mtd->size       = vtr->usable_leb_size * vtr->reserved_pebs;
++	mtd->erasesize  = vtr->usable_leb_size;
++	mtd->read       = gluebi_read;
++	mtd->write      = gluebi_write;
++	mtd->erase      = gluebi_erase;
++	mtd->get_device = gluebi_get_device;
++	mtd->put_device = gluebi_put_device;
++
++	if (add_mtd_device(mtd)) {
++		ubi_err("cannot not add MTD device\n");
++
++		/*
++		 * Unfortunately, add_mtd_device() does not return sane error
++		 * code. So, let's name it -ENOMEM;
++		 */
++		err = -ENOMEM;
++		goto out_free;
 +	}
-+	vtr = ubi_vtbl_get_vtr(vol->ubi, vol->vol_id);
-+	if (attr == &vol_reserved_ebs)
-+		ret = sprintf(buf, "%d\n", vtr->reserved_pebs);
-+	else if (attr == &vol_type) {
-+		tp = vtr->vol_type == UBI_DYNAMIC_VOLUME ? "dynamic" : "static";
-+		ret = sprintf(buf, "%s\n", tp);
-+	} else if (attr == &vol_name)
-+		ret = sprintf(buf, "%s\n", vtr->name);
-+	else if (attr == &vol_corrupted)
-+		ret = sprintf(buf, "%d\n", vtr->corrupted);
-+	else if (attr == &vol_alignment)
-+		ret = sprintf(buf, "%d\n", vtr->alignment);
-+	else if (attr == &vol_usable_eb_size) {
-+		usable_eb_size = vol->ubi->io.leb_size - vtr->data_pad;
-+		ret = sprintf(buf, "%d\n", usable_eb_size);
-+	} else if (attr == &vol_data_bytes)
-+		ret = sprintf(buf, "%lld\n", vtr->used_bytes);
-+	else if (attr == &vol_upd_marker)
-+		ret = sprintf(buf, "%d\n", vtr->upd_marker);
-+	spin_unlock(&vol->vol_lock);
-+	return ret;
-+}
 +
-+/* Release method for volume devices */
-+static void vol_release(struct device *dev)
-+{
-+	const struct ubi_uif_volume *vol = dev2vol(dev);
++	dbg_uif("added mtd%d (\"%s\"), size %u, EB size %u",
++		mtd->index, mtd->name, mtd->size, mtd->erasesize);
 +
-+	dbg_uif("release volume %d", vol->vol_id);
-+	kfree(vol);
++	return 0;
++
++out_free:
++	kfree(mtd->name);
++	return err;
 +}
 +
 +/**
-+ * ubi_sysfs_vol_init - initialize sysfs for an UBI volume.
++ * ubi_gluebi_vol_close - close gluebi for an UBI volume.
 + *
-+ * @ubi: the UBI device description object
-+ * @vol: volume description object
++ * @vol: user interfaces unit volume description object
 + *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure.
-+ *
-+ * Note, this function does not free allocated resources in case of failure -
-+ * the caller does it. This is because this would cause release() here and the
-+ * caller would oops.
++ * This function is called when an UBI volume is removed in order to remove
++ * corresponding fake MTD device. Returns zero in case of success and a
++ * negative error code in case of failure.
 + */
-+int ubi_sysfs_vol_init(struct ubi_info *ubi, struct ubi_uif_volume *vol)
++int ubi_gluebi_vol_close(struct ubi_uif_volume *vol)
 +{
 +	int err;
++	struct mtd_info *mtd = &vol->gluebi_mtd;
 +
-+	vol->dev.release = vol_release;
-+	vol->dev.parent = &ubi->uif.dev;
-+	vol->dev.devt = MKDEV(ubi->uif.major, vol->vol_id + 1);
-+	vol->dev.class = ubi_class;
-+	sprintf(&vol->dev.bus_id[0], "%s_%d", ubi->uif.ubi_name, vol->vol_id);
-+	err = device_register(&vol->dev);
++	dbg_uif("remove mtd%d", mtd->index);
++
++	err = del_mtd_device(mtd);
 +	if (err)
 +		return err;
 +
-+	err = device_create_file(&vol->dev, &vol_reserved_ebs);
-+	if (err)
-+		return err;
-+	err = device_create_file(&vol->dev, &vol_type);
-+	if (err)
-+		return err;
-+	err = device_create_file(&vol->dev, &vol_name);
-+	if (err)
-+		return err;
-+	err = device_create_file(&vol->dev, &vol_corrupted);
-+	if (err)
-+		return err;
-+	err = device_create_file(&vol->dev, &vol_alignment);
-+	if (err)
-+		return err;
-+	err = device_create_file(&vol->dev, &vol_usable_eb_size);
-+	if (err)
-+		return err;
-+	err = device_create_file(&vol->dev, &vol_data_bytes);
-+	if (err)
-+		return err;
-+	err = device_create_file(&vol->dev, &vol_upd_marker);
-+	if (err)
-+		return err;
++	kfree(mtd->name);
 +	return 0;
-+}
-+
-+/**
-+ * ubi_sysfs_vol_close - close sysfs for an UBI volume.
-+ *
-+ * @vol: volume description object
-+ */
-+void ubi_sysfs_vol_close(struct ubi_uif_volume *vol)
-+{
-+	device_remove_file(&vol->dev, &vol_upd_marker);
-+	device_remove_file(&vol->dev, &vol_data_bytes);
-+	device_remove_file(&vol->dev, &vol_usable_eb_size);
-+	device_remove_file(&vol->dev, &vol_alignment);
-+	device_remove_file(&vol->dev, &vol_corrupted);
-+	device_remove_file(&vol->dev, &vol_name);
-+	device_remove_file(&vol->dev, &vol_type);
-+	device_remove_file(&vol->dev, &vol_reserved_ebs);
-+	device_unregister(&vol->dev);
 +}
