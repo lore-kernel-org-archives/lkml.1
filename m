@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbXCNCRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933796AbXCNCWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933781AbXCNCRG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Mar 2007 22:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933801AbXCNCRG
+	id S933796AbXCNCWj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Mar 2007 22:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933801AbXCNCWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Mar 2007 22:17:06 -0400
-Received: from ozlabs.org ([203.10.76.45]:38019 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933796AbXCNCRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Mar 2007 22:17:05 -0400
-Subject: Re: _proxy_pda still makes linking modules fail
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Marcin 'Qrczak' Kowalczyk" <qrczak@knm.org.pl>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070313155747.GA11162@one.firstfloor.org>
-References: <1173315479.12472.9.camel@qrnik>
-	 <p73lki39s3a.fsf@bingen.suse.de> <45F49E0A.3090607@goop.org>
-	 <20070312094805.GA11644@one.firstfloor.org>
-	 <1173736726.10618.1.camel@localhost.localdomain>
-	 <1173767032.10618.43.camel@localhost.localdomain>
-	 <20070313155747.GA11162@one.firstfloor.org>
-Content-Type: text/plain
-Date: Wed, 14 Mar 2007 13:17:03 +1100
-Message-Id: <1173838623.5443.20.camel@localhost.localdomain>
+	Tue, 13 Mar 2007 22:22:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57281
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S933796AbXCNCWi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Mar 2007 22:22:38 -0400
+Date: Tue, 13 Mar 2007 19:22:37 -0700 (PDT)
+Message-Id: <20070313.192237.112853631.davem@davemloft.net>
+To: samuel@sortiz.org
+Cc: davej@redhat.com, linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: irda rmmod lockdep trace.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070314005003.GA15151@sortiz.org>
+References: <20070312003843.GA3394@sortiz.org>
+	<20070312.164921.71090866.davem@davemloft.net>
+	<20070314005003.GA15151@sortiz.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-13 at 16:57 +0100, Andi Kleen wrote:
-> On Tue, Mar 13, 2007 at 05:23:52PM +1100, Rusty Russell wrote:
-> > In particular, it's been put in GCC 4.1 for
-> > CONFIG_CC_STACKPROTECTOR, which assumes %gs:40 will give the stack
-> > canary.
-> 
-> Yes that was always ugly, but I don't know a better way.
+From: Samuel Ortiz <samuel@sortiz.org>
+Date: Wed, 14 Mar 2007 02:50:03 +0200
 
-Well, "%gs:__gcc_stack_protector" would have been better.  We could have
-defined __gcc_stack_protector as an absolute symbol (0x40) at the
-moment, and made it a real per-cpu var later.
+> On Mon, Mar 12, 2007 at 04:49:21PM -0700, David Miller wrote:
+> > I would strongly caution against adding any run-time overhead just to
+> > cure a false lockdep warning.  Even adding a new function argument
+> > is too much IMHO.
+> > 
+> > Make the cost show up for lockdep only, perhaps by putting each
+> > hashbin lock into a seperate locking class?
+> Does that look better to you:
 
-> > For the record: the PDA should never have existed, that's what percpu
-> > vars were supposed to be for.  Something went wrong here 8(
-> 
-> PDA predates per cpu.
-
-Indeed, but I should have converted it over back in 2003 (?) when the
-per-cpu stuff went in 8(
-
-> > The ideal solution has always been to use __thread, but no architecture
-> > has yet managed it (I tried for i386, and it quickly caused unbearable
-> 
-> I tried it too, but __thread is hopeless for kernel code
-> 
-> > pain).  On x86-64 that uses "%fs" on x86-64, not "%gs" as the kernel
-> > does, but I might try that if I feel particularly masochistic soon...
-> 
-> Then swapgs wouldn't work anymore (there is no swapfs)
-
-Good point.
-
-Thanks,
-Rusty.
-
+Yes, it does.:)
