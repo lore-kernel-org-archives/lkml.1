@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933916AbXCPQdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965498AbXCPQdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933916AbXCPQdn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 12:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933937AbXCPQdn
+	id S965498AbXCPQdt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 12:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965484AbXCPQdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 12:33:43 -0400
-Received: from gw.goop.org ([64.81.55.164]:41668 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933916AbXCPQdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 12:33:42 -0400
-Message-ID: <45FAC6E6.5090000@goop.org>
-Date: Fri, 16 Mar 2007 09:33:42 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Zachary Amsden <zach@vmware.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: [RFC, PATCH] Fixup COMPAT_VDSO to work with CONFIG_PARAVIRT
-References: <45FA054F.6020107@vmware.com> <m17itho10v.fsf@ebiederm.dsl.xmission.com> <45FAC4EF.4060305@goop.org> <20070316163118.GA12999@elte.hu>
-In-Reply-To: <20070316163118.GA12999@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Mar 2007 12:33:49 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3015 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933786AbXCPQdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 12:33:47 -0400
+Date: Wed, 14 Mar 2007 20:08:19 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, debian-user@lists.debian.org,
+       bytes@linuxgazette.net
+Subject: Re: Intel Core Duo/Solo Temperature Monitoring Working On Intel DG965 Motherboard
+Message-ID: <20070314200818.GA4006@ucw.cz>
+References: <Pine.LNX.4.64.0703100707320.3807@p34.internal.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703100707320.3807@p34.internal.lan>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> that's what is the case right now, but much of the intention behind the 
-> vma based vDSO is to enable per-process randomized vdso locations, and 
-> various distributions do that. So the 'modern' vDSO concept is very much 
-> relocatable.
+Hi!
 
-No, the point is that it never needs relocating.  The kernel can map it
-anywhere and userspace can cope.  Its only the broken glibcs which
-require relocation.
+> DISCLAIMER: This patch is still experimental. 
+> AUTHOR: Rudolf Marek has written the coretemp module for 
+> Intel Core Duo/Solo
+> processors.
 
-    J
+This is not proper changelog, see Doc*/Submit*.
+
+> +Author: Rudolf Marek
+> +Contact: Rudolf Marek <edited_out>
+
+Heh.
+
+> +The TjMax temperature is set to 85C if undocumented 
+> model specific register
+> +(UMSR) 0xee has bit 30 set. If not the TjMax is 100C as 
+> documented in processor
+> +datasheet. Intel will not disclose this information to 
+> individuals.
+
+ROFL.
+
+Missing signed-off-by:...
+						Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
