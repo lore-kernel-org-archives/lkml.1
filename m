@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbXCNTr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXCNTsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932367AbXCNTr3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 15:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932501AbXCNTr3
+	id S932690AbXCNTsL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 15:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030310AbXCNTsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 15:47:29 -0400
-Received: from hoefnix.telenet-ops.be ([195.130.132.54]:48331 "EHLO
-	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932367AbXCNTr2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 15:47:28 -0400
-Date: Wed, 14 Mar 2007 20:46:06 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: torvalds@linux-foundation.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 17/17] m68k dma-mapping: gfp_t annotations
-In-Reply-To: <E1HRPey-0003d4-2p@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0703142045530.5429@anakin>
-References: <E1HRPey-0003d4-2p@ZenIV.linux.org.uk>
+	Wed, 14 Mar 2007 15:48:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:35838 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932690AbXCNTsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 15:48:09 -0400
+Message-ID: <45F8516E.0@goop.org>
+Date: Wed, 14 Mar 2007 12:47:58 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rik van Riel <riel@redhat.com>
+CC: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com,
+       cpufreq@lists.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com,
+       schwidefsky@de.ibm.com
+Subject: Re: Stolen and degraded time and schedulers
+References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org> <45F850BF.5030702@redhat.com>
+In-Reply-To: <45F850BF.5030702@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Mar 2007, Al Viro wrote:
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Rik van Riel wrote:
+> Jeremy Fitzhardinge wrote:
+>
+>> It doesn't matter why you didn't get the time; 
+>
+> Oh, but it does.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+I meant specifically from a scheduling perspective.
 
-> ---
->  include/asm-m68k/dma-mapping.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/asm-m68k/dma-mapping.h b/include/asm-m68k/dma-mapping.h
-> index 00259ed..a26cdeb 100644
-> --- a/include/asm-m68k/dma-mapping.h
-> +++ b/include/asm-m68k/dma-mapping.h
-> @@ -32,7 +32,7 @@ extern void dma_free_coherent(struct device *, size_t,
->  			      void *, dma_addr_t);
->  
->  static inline void *dma_alloc_noncoherent(struct device *dev, size_t size,
-> -					  dma_addr_t *handle, int flag)
-> +					  dma_addr_t *handle, gfp_t flag)
->  {
->  	return dma_alloc_coherent(dev, size, handle, flag);
->  }
+> System administrators can use steal time the same way they
+> use iowait time: to spot bottlenecks on their systems.
+>
+> If you have a lot of iowait time, you know you want either
+> faster IO or more memory.
+>
+> If you have a lot of steal time, you know you need to spread
+> your virtual machines over more CPUs.
+>
+> Steal time allows you to see the difference between a busy
+> system and an overloaded system.
 
-Gr{oetje,eeting}s,
+Sure, the various accounting tools can go into as much detail as you
+want.  I just added stolen time accounting to the xen-pv_ops patchset
+which is equivalent to the xen-unstable stolen time accounting.  Is that
+sufficient for these purposes?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+    J
