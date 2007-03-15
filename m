@@ -1,80 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965430AbXCOFrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965494AbXCOFrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965430AbXCOFrr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 01:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965494AbXCOFrr
+	id S965494AbXCOFrw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 01:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965511AbXCOFrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 01:47:47 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44658 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965430AbXCOFrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 01:47:46 -0400
-Date: Thu, 15 Mar 2007 11:17:26 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Horms <horms@verge.net.au>
-Cc: Ian Campbell <Ian.Campbell@XenSource.com>, hbabu@us.ibm.com,
-       fastboot@lists.osdl.org, linux-kernel@vger.kernel.org,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
-Message-ID: <20070315054726.GC6766@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <1173891609.8591.41.camel@localhost.localdomain> <20070315014635.GC28396@verge.net.au> <20070315045536.GA6766@in.ibm.com> <20070315050754.GB22329@verge.net.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070315050754.GB22329@verge.net.au>
-User-Agent: Mutt/1.5.11
+	Thu, 15 Mar 2007 01:47:51 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:39265 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965494AbXCOFru (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 01:47:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Xg8KPEH4z95Q/yWEoKW7qorAn6itHM6JVMUlVOBt/eruB2BMROqZsHvvziqEBzytJWGQ1J0Q3KSE+fPT1RvjP2F+LsCzqvIiYyUQ7xqwYYOXPDrolIQ2tfU1K35blmAyzQC7ZCWAFJkeKeGi2ivpFNyvqgngVAbIH86NO6osPvk=
+Message-ID: <45F8DDFE.4080504@gmail.com>
+Date: Thu, 15 Mar 2007 14:47:42 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, michal.k.k.piotrowski@gmail.com,
+       linux-ide@vger.kernel.org, tglx@linutronix.de,
+       shemminger@linux-foundation.org, mlord@pobox.com,
+       linux-pm@lists.osdl.org
+CC: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ
+ storm and rogue DMA access
+References: <20070314152302.GB15600@htj.dyndns.org> <20070314215605.GA7194@flint.arm.linux.org.uk> <45F87863.9040408@garzik.org> <20070314225818.GB7194@flint.arm.linux.org.uk>
+In-Reply-To: <20070314225818.GB7194@flint.arm.linux.org.uk>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 02:07:56PM +0900, Horms wrote:
-> On Thu, Mar 15, 2007 at 10:25:36AM +0530, Vivek Goyal wrote:
-> > On Thu, Mar 15, 2007 at 10:46:38AM +0900, Horms wrote:
-> > > On Wed, Mar 14, 2007 at 05:00:09PM +0000, Ian Campbell wrote:
-> > > > The specific case I am encountering is kdump under Xen with a 64 bit
-> > > > hypervisor and 32 bit kernel/userspace. The dump created is a 64 bit due
-> > > > to the hypervisor but the dump kernel is 32 bit to match the domain 0
-> > > > kernel.
-> > > > 
-> > > > It's possibly less likely to be useful in a purely native scenario but I
-> > > > see no reason to disallow it.
-> > > 
-> > > For native Linux, would this cover the case where the pre-crash kernel
-> > > is 64bit and the crashdump (post-crash) kernel is 32bit?
-> > > 
-> > 
-> > I think so. Though I have never tried this.
-> > 
-> > > > Signed-off-by: Ian Campbell <ian.campbell@xensource.com>
-> > > > 
-> > > > --- pristine-linux-2.6.18/include/asm-i386/elf.h	2006-09-20 04:42:06.000000000 +0100
-> > > > +++ linux-2.6.18-xen/include/asm-i386/elf.h	2007-03-14 16:42:30.000000000 +0000
-> > > > @@ -36,7 +36,7 @@
-> > > >   * This is used to ensure we don't load something for the wrong architecture.
-> > > >   */
-> > > >  #define elf_check_arch(x) \
-> > > > -	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
-> > > > +	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486) || ((x)->e_machine == EM_X86_64))
-> > 
-> > But I think changing this macro might run into issues. It is being used at
-> > few places in kernel, for example while loading module. This will essentially
-> > mean that we allow loading 64bit x86_64 modules on 32bit i386 systems?
-> > 
-> > Similarly, load_elf_interp() is using it, again will we allow loading a 
-> > interp written for X86_64 on a 32bit i386 machine?
-> > 
-> > Should we create a separate macro something like elf_check_allowed_arch(),
-> > to take care of such corner cases?
+[cc'ing Andi, Hi!]
+
+Hello,
+
+Russell King wrote:
+> On Wed, Mar 14, 2007 at 06:34:11PM -0400, Jeff Garzik wrote:
+>> Russell King wrote:
+>>> pci_enable_device() doesn't deal with this; in most PCI setups I've
+>>> seen, there is no control at PCI level over whether a device generates
+>>> an interrupt on the bus.  Certainly the memory and io command enables
+>> PCI grew an interrupt enable while you weren't looking: 
+>> PCI_COMMAND_INTX_DISABLE
 > 
-> That sounds reasonable to me. Though perhaps it could just be
-> kexec_elf_check_arch() for now, as I don't think there are any
-> other consumers of it.
+> That's fine for devices which conform to the later PCI specs, but not
+> all do.
+> 
+>> It was added in PCI 2.3 I think.
+> 
+> Correct.
+> 
+>> Older PCI devices certainly do not have this standardized bit.
+> 
+> No PCI device that I have has that bit - including the raid card I
+> bought last year...
 
-Kexec will also not allow loading an x86_64 kernel on a 32bit machine.
-So how about something like vmcore_elf_allowed_cross_arch()? Vmcore code
-can continue to check elf_check_arch() and if that fails it can invoke
-vmcore_elf_allowed_cross_arch() to find out what cross arch are allowed
-for vmcore.
+Many recent ATA and network controllers do and most new ones will
+probably do.
 
-Thanks
-Vivek
+> In any case, relying on such a new control bit to implement this kind
+> of functionality would result in a very hit and miss result; Linux
+> tends to get used on things other than the bleeding edge of hardware
+> technology.
+
+I don't think INTX_DISABLE is on the bleeding edge of hardware
+technology and many common cases will benefit from using it (just think
+about the number of newish notebook users).  The problem with
+INTX_DISABLE is that there doesn't seem to be any way to tell whether
+writing to that bit is safe or not.
+
+You are right in that turning off IRQ mechanisms in pci_enable_device()
+doesn't fix all the problems as PCI-wise it only enables IO and memory
+address space access, but to some extent it does because in the arch
+code, it enables the IRQ line and the physical IRQ line might not be
+shared even if the final IRQ number is shared (Andi, am I correct)?
+
+Anyways, I think the proper solution is to make sure all generic IRQ
+controls including INTX turned off early in the boot during PCI
+subsystem initialization (ie. do the disable part of
+pcim_prepare_device() early in the boot before any IRQ line is
+requested) and let each driver enable after initialization as necessary
+and do similar things during resume.  Note that drivers still need to be
+modified to signify when the device is initialized enough to enable IRQ,
+and bus mastering.
+
+We can also arch-dep IRQ enabling to the activation time.  That will
+give us more protection even when INTX_DISABLE is not available.
+
+Thanks.
+
+-- 
+tejun
