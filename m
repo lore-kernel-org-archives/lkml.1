@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbXCOX7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbXCPADQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426AbXCOX7B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 19:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbXCOX7B
+	id S1753440AbXCPADQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 20:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbXCPADP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 19:59:01 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33570 "EHLO ogre.sisk.pl"
+	Thu, 15 Mar 2007 20:03:15 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:44330 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753426AbXCOX7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 19:59:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] swsusp: Do not use page flags
-Date: Fri, 16 Mar 2007 01:01:25 +0100
-User-Agent: KMail/1.9.5
-Cc: Jiri Kosina <jikos@jikos.cz>, Pavel Machek <pavel@ucw.cz>,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
-References: <200703122214.02657.rjw@sisk.pl> <Pine.LNX.4.64.0703152317260.12394@twin.jikos.cz> <20070315152328.228379db.akpm@linux-foundation.org>
-In-Reply-To: <20070315152328.228379db.akpm@linux-foundation.org>
+	id S1753445AbXCPADP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 20:03:15 -0400
+Date: Fri, 16 Mar 2007 08:46:16 +0900
+From: Horms <horms@verge.net.au>
+To: Ian Campbell <Ian.Campbell@XenSource.com>
+Cc: vgoyal@in.ibm.com, hbabu@us.ibm.com, fastboot@lists.osdl.org,
+       linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
+Message-ID: <20070315234614.GA10861@verge.net.au>
+References: <1173891609.8591.41.camel@localhost.localdomain> <20070315014635.GC28396@verge.net.au> <20070315045536.GA6766@in.ibm.com> <20070315050754.GB22329@verge.net.au> <20070315054726.GC6766@in.ibm.com> <1173961378.8591.63.camel@localhost.localdomain> <20070315132616.GH6766@in.ibm.com> <1173966159.8591.82.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703160101.26384.rjw@sisk.pl>
+In-Reply-To: <1173966159.8591.82.camel@localhost.localdomain>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 15 March 2007 23:23, Andrew Morton wrote:
-> On Thu, 15 Mar 2007 23:19:02 +0100 (CET)
-> Jiri Kosina <jikos@jikos.cz> wrote:
-> 
-> > On Thu, 15 Mar 2007, Andrew Morton wrote:
+On Thu, Mar 15, 2007 at 01:42:39PM +0000, Ian Campbell wrote:
+> On Thu, 2007-03-15 at 18:56 +0530, Vivek Goyal wrote:
 > > 
-> > > > > And why _does_ suspend use GFP_ATOMIC all over the place?
-> > > > Generally, because it cannot sleep.
-> > > Why not?
-> > 
-> > I guess it's simply beucase of kswapd being already frozen, so there is no 
-> > chance that once GFP_KERNEL allocation goes to sleep, it is going to get 
-> > any free pages eventually ... ?
+> > Ideal place for this probably should have been arch dependent
+> > crash_dump.h file. But we don't have one and no point introducing one
+> > just for this  macro.
 > 
-> No, things should run fine with a dead kswapd.
+> Agreed.
 > 
-> There are reasons why we can't call into filesystems from there, but
-> GFP_NOIO will ensure that and it is heaps better than GFP_ATOMIC.
+> > This change looks good to me. 
+> 
+> Is there a kdump tree which you'll apply to or shall I resend CCing
+> apkm? (I'll add an Acked-by if that's ok).
 
-In fact the role of swsusp_shrink_memory() is to ensure that our subsequent
-atomic allocations won't fail.
+There isn't a kexec tree at this time (though I am happy to entertain
+creating one). For now most patches go in either through Andrew or the
+relevant architecture maintainers.
 
-Still, the particular allocations in create_basic_memory_bitmaps() are made
-before we call swsusp_shrink_memory(), so it's better to use GFP_NOIO in there.
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
-I'll prepare a patch for that on top of the current series.
