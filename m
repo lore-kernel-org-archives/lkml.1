@@ -1,50 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933439AbXCOTst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933253AbXCOTui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933439AbXCOTst (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 15:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933259AbXCOTst
+	id S933253AbXCOTui (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 15:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933473AbXCOTui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 15:48:49 -0400
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:46009 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933233AbXCOTsr (ORCPT
+	Thu, 15 Mar 2007 15:50:38 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54360 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933253AbXCOTuh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 15:48:47 -0400
-X-Sasl-enc: yqdtimQGDB0LupCzK85RZSDP5k0DWpbsour2y/58beyy 1173988124
-Date: Thu, 15 Mar 2007 16:48:40 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: linux-acpi@vger.kernel.org, Chris Wedgwood <cw@f00f.org>,
-       ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [ibm-acpi-devel] [PATCH] ACPI: ibm-acpi: allow module to load when acpi notifiers can't be set
-Message-ID: <20070315194840.GF14394@khazad-dum.debian.net>
-References: <20070315071019.GA22613@tuatara.stupidest.org> <20070315175113.GA6596@khazad-dum.debian.net> <20070315122654.468bdd39.kristen.c.accardi@intel.com>
+	Thu, 15 Mar 2007 15:50:37 -0400
+Date: Thu, 15 Mar 2007 15:50:34 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Hugh Dickins <hugh@veritas.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
+       <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       <linux-s390@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sysfs and driver core: add callback helper, used by SCSI
+ and S390
+In-Reply-To: <Pine.LNX.4.64.0703150944250.3816@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0703151546190.2482-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070315122654.468bdd39.kristen.c.accardi@intel.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, Kristen Carlson Accardi wrote:
-> this patch gives me the following compile error:
-> 
-> drivers/acpi/ibm_acpi.c: In function ???ibm_init???:
-> drivers/acpi/ibm_acpi.c:2605: warning: implicit declaration of function ???ibm_exit???
-> drivers/acpi/ibm_acpi.c: At top level:
-> drivers/acpi/ibm_acpi.c:2616: warning: conflicting types for ???ibm_exit???
-> drivers/acpi/ibm_acpi.c:2616: error: static declaration of ???ibm_exit??? follows non-static declaration
-> drivers/acpi/ibm_acpi.c:2605: error: previous implicit declaration of ???ibm_exit??? was here
+This patch (as868) adds a helper routine for device drivers that need
+to set up a callback to perform some action in a different process's
+context.  This is intended for use by attribute methods that want to
+unregister themselves or their parent device.  Attribute method calls
+are mutually exclusive with unregistration, so such actions cannot be
+taken directly.
 
-Fixed in v2.  I developed it against acpi-test, which has a header file that
-prototypes ibm_exit, and sent it before it finished compiling on 2.6.21.
-Drat, that teaches me about not waiting for these things...
+Two attribute methods are converted to use the new helper routine: one
+for SCSI device deletion and one for System/390 ccwgroup devices.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+---
+
+Index: 2.6.21-rc3-git9/include/linux/sysfs.h
+===================================================================
+--- 2.6.21-rc3-git9.orig/include/linux/sysfs.h
++++ 2.6.21-rc3-git9/include/linux/sysfs.h
+@@ -78,6 +78,9 @@ struct sysfs_ops {
+ 
+ #ifdef CONFIG_SYSFS
+ 
++extern int sysfs_schedule_callback(struct kobject *kobj,
++		void (*func)(void *), void *data);
++
+ extern int __must_check
+ sysfs_create_dir(struct kobject *, struct dentry *);
+ 
+@@ -132,6 +135,12 @@ extern int __must_check sysfs_init(void)
+ 
+ #else /* CONFIG_SYSFS */
+ 
++static inline int sysfs_schedule_callback(struct kobject *kobj,
++		void (*func)(void *), void *data)
++{
++	return -ENOSYS;
++}
++
+ static inline int sysfs_create_dir(struct kobject * k, struct dentry *shadow)
+ {
+ 	return 0;
+Index: 2.6.21-rc3-git9/fs/sysfs/file.c
+===================================================================
+--- 2.6.21-rc3-git9.orig/fs/sysfs/file.c
++++ 2.6.21-rc3-git9/fs/sysfs/file.c
+@@ -629,6 +629,60 @@ void sysfs_remove_file_from_group(struct
+ }
+ EXPORT_SYMBOL_GPL(sysfs_remove_file_from_group);
+ 
++struct sysfs_schedule_callback_struct {
++	struct kobject 		*kobj;
++	void			(*func)(void *);
++	void			*data;
++	struct work_struct	work;
++};
++
++static void sysfs_schedule_callback_work(struct work_struct *work)
++{
++	struct sysfs_schedule_callback_struct *ss = container_of(work,
++			struct sysfs_schedule_callback_struct, work);
++
++	(ss->func)(ss->data);
++	kobject_put(ss->kobj);
++	kfree(ss);
++}
++
++/**
++ * sysfs_schedule_callback - helper to schedule a callback for a kobject
++ * @kobj: object we're acting for.
++ * @func: callback function to invoke later.
++ * @data: argument to pass to @func.
++ *
++ * sysfs attribute methods must not unregister themselves or their parent
++ * kobject (which would amount to the same thing).  Attempts to do so will
++ * deadlock, since unregistration is mutually exclusive with driver
++ * callbacks.
++ *
++ * Instead methods can call this routine, which will attempt to allocate
++ * and schedule a workqueue request to call back @func with @data as its
++ * argument in the workqueue's process context.  @kobj will be pinned
++ * until @func returns.
++ *
++ * Returns 0 if the request was submitted, -ENOMEM if storage could not
++ * be allocated.
++ */
++int sysfs_schedule_callback(struct kobject *kobj, void (*func)(void *),
++		void *data)
++{
++	struct sysfs_schedule_callback_struct *ss;
++
++	ss = kmalloc(sizeof(*ss), GFP_KERNEL);
++	if (!ss)
++		return -ENOMEM;
++	kobject_get(kobj);
++	ss->kobj = kobj;
++	ss->func = func;
++	ss->data = data;
++	INIT_WORK(&ss->work, sysfs_schedule_callback_work);
++	schedule_work(&ss->work);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(sysfs_schedule_callback);
++
+ 
+ EXPORT_SYMBOL_GPL(sysfs_create_file);
+ EXPORT_SYMBOL_GPL(sysfs_remove_file);
+Index: 2.6.21-rc3-git9/include/linux/device.h
+===================================================================
+--- 2.6.21-rc3-git9.orig/include/linux/device.h
++++ 2.6.21-rc3-git9/include/linux/device.h
+@@ -353,6 +353,8 @@ extern int __must_check device_create_bi
+ 					       struct bin_attribute *attr);
+ extern void device_remove_bin_file(struct device *dev,
+ 				   struct bin_attribute *attr);
++extern int device_schedule_callback(struct device *dev,
++		void (*func)(struct device *));
+ 
+ /* device resource management */
+ typedef void (*dr_release_t)(struct device *dev, void *res);
+Index: 2.6.21-rc3-git9/drivers/base/core.c
+===================================================================
+--- 2.6.21-rc3-git9.orig/drivers/base/core.c
++++ 2.6.21-rc3-git9/drivers/base/core.c
+@@ -407,6 +407,35 @@ void device_remove_bin_file(struct devic
+ }
+ EXPORT_SYMBOL_GPL(device_remove_bin_file);
+ 
++/**
++ * device_schedule_callback - helper to schedule a callback for a device
++ * @dev: device.
++ * @func: callback function to invoke later.
++ *
++ * Attribute methods must not unregister themselves or their parent device
++ * (which would amount to the same thing).  Attempts to do so will deadlock,
++ * since unregistration is mutually exclusive with driver callbacks.
++ *
++ * Instead methods can call this routine, which will attempt to allocate
++ * and schedule a workqueue request to call back @func with @dev as its
++ * argument in the workqueue's process context.  @dev will be pinned until
++ * @func returns.
++ *
++ * Returns 0 if the request was submitted, -ENOMEM if storage could not
++ * be allocated.
++ *
++ * NOTE: This routine won't work if CONFIG_SYSFS isn't set!  It uses an
++ * underlying sysfs routine (since it is intended for use by attribute
++ * methods), and if sysfs isn't available you'll get nothing but -ENOSYS.
++ */
++int device_schedule_callback(struct device *dev,
++		void (*func)(struct device *))
++{
++	return sysfs_schedule_callback(&dev->kobj,
++			(void (*)(void *)) func, dev);
++}
++EXPORT_SYMBOL_GPL(device_schedule_callback);
++
+ static void klist_children_get(struct klist_node *n)
+ {
+ 	struct device *dev = container_of(n, struct device, knode_parent);
+Index: 2.6.21-rc3-git9/drivers/scsi/scsi_sysfs.c
+===================================================================
+--- 2.6.21-rc3-git9.orig/drivers/scsi/scsi_sysfs.c
++++ 2.6.21-rc3-git9/drivers/scsi/scsi_sysfs.c
+@@ -452,10 +452,22 @@ store_rescan_field (struct device *dev, 
+ }
+ static DEVICE_ATTR(rescan, S_IWUSR, NULL, store_rescan_field);
+ 
++static void sdev_store_delete_callback(struct device *dev)
++{
++	scsi_remove_device(to_scsi_device(dev));
++}
++
+ static ssize_t sdev_store_delete(struct device *dev, struct device_attribute *attr, const char *buf,
+ 				 size_t count)
+ {
+-	scsi_remove_device(to_scsi_device(dev));
++	int rc;
++
++	/* An attribute cannot be unregistered by one of its own methods,
++	 * so we have to use this roundabout approach.
++	 */
++	rc = device_schedule_callback(dev, sdev_store_delete_callback);
++	if (rc)
++		count = rc;
+ 	return count;
+ };
+ static DEVICE_ATTR(delete, S_IWUSR, NULL, sdev_store_delete);
+Index: 2.6.21-rc3-git9/drivers/s390/cio/ccwgroup.c
+===================================================================
+--- 2.6.21-rc3-git9.orig/drivers/s390/cio/ccwgroup.c
++++ 2.6.21-rc3-git9/drivers/s390/cio/ccwgroup.c
+@@ -71,19 +71,31 @@ __ccwgroup_remove_symlinks(struct ccwgro
+  * Provide an 'ungroup' attribute so the user can remove group devices no
+  * longer needed or accidentially created. Saves memory :)
+  */
++static void ccwgroup_ungroup_callback(struct device *dev)
++{
++	struct ccwgroup_device *gdev = to_ccwgroupdev(dev);
++
++	__ccwgroup_remove_symlinks(gdev);
++	device_unregister(dev);
++}
++
+ static ssize_t
+ ccwgroup_ungroup_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ {
+ 	struct ccwgroup_device *gdev;
++	int rc;
+ 
+ 	gdev = to_ccwgroupdev(dev);
+ 
+ 	if (gdev->state != CCWGROUP_OFFLINE)
+ 		return -EINVAL;
+ 
+-	__ccwgroup_remove_symlinks(gdev);
+-	device_unregister(dev);
+-
++	/* Note that we cannot unregister the device from one of its
++	 * attribute methods, so we have to use this roundabout approach.
++	 */
++	rc = device_schedule_callback(dev, ccwgroup_ungroup_callback);
++	if (rc)
++		count = rc;
+ 	return count;
+ }
+ 
+
