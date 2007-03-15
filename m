@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992431AbXCOX3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbXCOXkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992431AbXCOX3B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 19:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992437AbXCOX3B
+	id S1753402AbXCOXkt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 19:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbXCOXkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 19:29:01 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40459 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992431AbXCOX3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 19:29:00 -0400
-Date: Fri, 16 Mar 2007 00:28:37 +0100
-From: Andrea Arcangeli <andrea@suse.de>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Ashif Harji <asharji@cs.uwaterloo.ca>,
-       Miquel van Smoorenburg <miquels@cistron.nl>, linux-mm@kvack.org,
-       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-Message-ID: <20070315232837.GH6687@v2.random>
-References: <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <45F96CCB.4000709@redhat.com> <20070315162944.GI8321@wotan.suse.de> <Pine.LNX.4.64.0703151719380.32335@blonde.wat.veritas.com> <20070315225928.GF6687@v2.random> <1174000545.14380.22.camel@kleikamp.austin.ibm.com>
+	Thu, 15 Mar 2007 19:40:49 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:37152 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753402AbXCOXks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 19:40:48 -0400
+Message-ID: <45F9D974.1050309@zytor.com>
+Date: Thu, 15 Mar 2007 16:40:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1174000545.14380.22.camel@kleikamp.austin.ibm.com>
+To: Alon Bar-Lev <alon.barlev@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [REPOST] x86_64, i386: Add command line length to boot
+ protocol
+References: <20070315210516.GA28998@strauss.suse.de> <9e0cf0bf0703151416r644e5302t9e053eae24d9d398@mail.gmail.com>
+In-Reply-To: <9e0cf0bf0703151416r644e5302t9e053eae24d9d398@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 06:15:45PM -0500, Dave Kleikamp wrote:
-> On Thu, 2007-03-15 at 23:59 +0100, Andrea Arcangeli wrote:
-> > On Thu, Mar 15, 2007 at 05:44:01PM +0000, Hugh Dickins wrote:
-> > > who removed the !offset condition, he should be consulted on its
-> > > reintroduction.
-> > 
-> > the !offset check looks a pretty broken heuristic indeed, it would
-> > break random I/O.
+Alon Bar-Lev wrote:
+> Hello,
 > 
-> I wouldn't call it broken.  At worst, I'd say it's imperfect.  But
-> that's the nature of a heuristic.  It most likely works in a huge
-> majority of cases.
+> I really don' t understand why you insist that the boot protocol
+>> =2.02 had 255 limit!
+> Please remove this from the description.
+> You want to add size, that's OK, but please don't mess with previous
+> definitions.
+> Boot protocol 2.02 introduced the null terminated string truncated by
+> kernel, which can be at any size.
+> 
 
-well, IMHO in the huge majority of cases the prev_page check isn't
-necessary in the first place (and IMHO it hurts a lot more than it can
-help, as demonstrated by specweb, since we'll bite on the good guys to
-help the bad guys).
+Well, except for a very brief window, the limit *was* 255.  If the boot 
+loader wants to verify nontruncation, this is a valid concern.
 
-The only case where I can imagine the prev_page to make sense is to
-handle contiguous I/O made with a small buffer, so clearly an
-inefficient code in the first place. But if this guy is reading with
-<PAGE_SIZE buffer there's no guarantee that he's reading f_pos aligned
-either, hence the need of taking last_offset into account too so at
-least it's a "perfect" heuristic that will reliably detect contiguous
-I/O no matter in what shape or form you execute it, as long as it is
-contiguous I/O.
-
-Any other variation of behavior besides the autodetection of
-contiguous I/O run in whatever buffer/aligned form, should be mandated
-by userland through fadvise/madvise IMHO or we run into the toes of
-the good guys.
+	-hpa
