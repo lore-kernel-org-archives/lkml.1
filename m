@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933549AbXCONmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933568AbXCONqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933549AbXCONmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 09:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933563AbXCONmq
+	id S933568AbXCONqK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 09:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933569AbXCONqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 09:42:46 -0400
-Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:51998 "EHLO
-	webmail.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933549AbXCONmp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 09:42:45 -0400
-Subject: Re: [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
-From: Ian Campbell <Ian.Campbell@XenSource.com>
-To: vgoyal@in.ibm.com
-Cc: Horms <horms@verge.net.au>, hbabu@us.ibm.com, fastboot@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>
-In-Reply-To: <20070315132616.GH6766@in.ibm.com>
-References: <1173891609.8591.41.camel@localhost.localdomain>
-	 <20070315014635.GC28396@verge.net.au> <20070315045536.GA6766@in.ibm.com>
-	 <20070315050754.GB22329@verge.net.au> <20070315054726.GC6766@in.ibm.com>
-	 <1173961378.8591.63.camel@localhost.localdomain>
-	 <20070315132616.GH6766@in.ibm.com>
-Content-Type: text/plain
-Date: Thu, 15 Mar 2007 13:42:39 +0000
-Message-Id: <1173966159.8591.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Mar 2007 13:42:44.0969 (UTC) FILETIME=[CFA83D90:01C76707]
+	Thu, 15 Mar 2007 09:46:10 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:46041 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933568AbXCONqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 09:46:09 -0400
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Dmitriy Monakhov <dmonakhov@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] splice: partial write handling fix
+References: <871wjrg6qf.fsf@sw.ru> <20070315122127.GO15400@kernel.dk>
+From: Dmitriy Monakhov <dmonakhov@sw.ru>
+Date: Thu, 15 Mar 2007 16:46:32 +0300
+In-Reply-To: <20070315122127.GO15400@kernel.dk> (Jens Axboe's message of "Thu, 15 Mar 2007 13:21:27 +0100")
+Message-ID: <87fy86oc07.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-15 at 18:56 +0530, Vivek Goyal wrote:
-> 
-> Ideal place for this probably should have been arch dependent
-> crash_dump.h file. But we don't have one and no point introducing one
-> just for this  macro.
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-Agreed.
+> On Wed, Mar 14 2007, Dmitriy Monakhov wrote:
+>> currently if partial write has happened while ->commit_write() then page
+>> wasn't marked as accessed and rebalanced. 
+>
+> The ->commit_write() return values aren't very well designed imho. Is
+> your fix correct getting the pipe_to_file() return value correct now?
+I think yes, after my patch this path look like follows:
 
-> This change looks good to me. 
+        ret = mapping->a_ops->commit_write(file, page, offset, offset+this_len);
+        if (ret) {
+                if(ret == AOP_TRUNCATED_PAGE) {
+                        page_cache_release(page);
+                        goto find_page;
+                }
+                if (ret < 0)
+                        goto out;
+                /*
+                 * Partial write has happened, so 'ret' already initialized by
+                 * number of bytes written, Where is nothing we have to do here.
+                 */
+        } else
+                ret = this_len;
+        /*
+         * Return the number of bytes written and mark page as
+         * accessed, we are now done!
+         */
+        mark_page_accessed(page);
+        balance_dirty_pages_ratelimited(mapping);
+out:
+        page_cache_release(page);
+        unlock_page(page);
+out_ret:
+        return ret;
+}
 
-Is there a kdump tree which you'll apply to or shall I resend CCing
-apkm? (I'll add an Acked-by if that's ok).
-
-Ian.
-
+But off corse this patch does't fix issues spotted by Nick. 
+>
+> -- 
+> Jens Axboe
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
