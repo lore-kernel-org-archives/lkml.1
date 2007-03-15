@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422723AbXCOO1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422725AbXCOOa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422723AbXCOO1V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 10:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422726AbXCOO1V
+	id S1422725AbXCOOa4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 10:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422720AbXCOOa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 10:27:21 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:43979 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1422723AbXCOO1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 10:27:20 -0400
-Date: Thu, 15 Mar 2007 10:27:19 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
-       <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
-In-Reply-To: <20070315112725.7eadb7b7@gondolin.boeblingen.de.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0703150953420.13086-100000@iolanthe.rowland.org>
+	Thu, 15 Mar 2007 10:30:56 -0400
+Received: from h155.mvista.com ([63.81.120.155]:25654 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422725AbXCOOaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 10:30:55 -0400
+Message-ID: <45F9588C.7020108@ru.mvista.com>
+Date: Thu, 15 Mar 2007 17:30:36 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+Cc: bzolnier@gmail.com, torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] BLK_DEV_IDE_CELLEB dependency fix
+References: <200703150628.l2F6SPa3028035@toshiba.co.jp>
+In-Reply-To: <200703150628.l2F6SPa3028035@toshiba.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, Cornelia Huck wrote:
+Hello.
 
-> > > The naming seems a bit unintuitive, but I don't have a good
-> > > alternative idea. Perhaps sysfs_work_struct, sysfs_delayed_work()?
-> > 
-> > sysfs_work_struct is too generic; other parts of sysfs might also want to
-> > use workqueues for different purposes.
-> 
-> > I don't like calling it "delayed"-anything, because the operations aren't
-> > necessarily delayed!  On an SMP system they might even execute before the
-> > sysfs_access_in_other_task() call returns.  (Although the two examples we
-> > have so far can't do that because of lock contention.)
-> 
-> Sure. But then you shouldn't refer to "delay" in the comments for the
-> functions as well :)
+Akira Iguchi wrote:
 
-Fair enough.  One use of "delay" is in a comment you wrote; I'll change it 
-as well.
+> It's bool and it depends on BLK_DEV_IDE
+>  => should depend on BLK_DEV_IDE=y
 
-> > The major feature added here is that the work takes place in a different 
-> > task's context, not that it is delayed.  Hence the choice of names.
-> 
-> Hm. Perhaps device_schedule_access()?
+    Hm, why I'm seeing module_init() in the driver? :-)
 
-On Thu, 15 Mar 2007, Hugh Dickins wrote:
+> And move it to "if BLK_DEV_IDEDMA_PCI" block because it depends on 
+> BLK_DEV_IDEDMA_PCI.
 
-> It's really none of my business, I'm merely the reporter the
-> deadlock being fixed, and I don't know my way around sysfs at all ...
-> 
-> ... but I have to say I share your discomfort with Alan's
-> "sysfs_access_in_other_task" naming, it sounded very weird to me.
-> 
-> Quite apart from this mysterious "other task", I don't understand
-> "access" either.
-> 
-> Perhaps "defer" would best capture the idea of another-task and
-> maybe-delay?  sysfs_defer_work(), struct sysfs_deferred_work?  
+    IMHO, that driver shouldn't be in drivers/ide/ppc/ then...  Why it got 
+there (the same question about PowerMac driver)?
 
-On Thu, 15 Mar 2007, Oliver Neukum wrote:
+> diff -Nrpu -X linux-2.6.21-rc3/Documentation/dontdiff linux-2.6.21-rc3/drivers/ide/Kconfig linux-2.6.21-rc3.mod/drivers/ide/Kconfig
+> --- linux-2.6.21-rc3/drivers/ide/Kconfig	2007-03-07 13:41:20.000000000 +0900
+> +++ linux-2.6.21-rc3.mod/drivers/ide/Kconfig	2007-03-15 23:49:33.000000000 +0900
+> @@ -769,6 +769,14 @@ config BLK_DEV_TC86C001
+>  	help
+>  	This driver adds support for Toshiba TC86C001 GOKU-S chip.
+>  
+> +config BLK_DEV_IDE_CELLEB
+> +	bool "Toshiba's Cell Reference Set IDE support"
+> +	depends on PPC_CELLEB && BLK_DEV_IDE=y
+> +	help
+> +	  This driver provides support for the built-in IDE controller on
+> +	  Toshiba Cell Reference Board.
+> +	  If unsure, say Y.
+> +
+>  endif
+>  
+>  config BLK_DEV_IDE_PMAC
+> @@ -800,14 +808,6 @@ config BLK_DEV_IDEDMA_PMAC
+>  	  to transfer data to and from memory.  Saying Y is safe and improves
+>  	  performance.
+>  
+> -config BLK_DEV_IDE_CELLEB
+> -	bool "Toshiba's Cell Reference Set IDE support"
+> -	depends on PPC_CELLEB
+> -	help
+> -	  This driver provides support for the built-in IDE controller on
+> -	  Toshiba Cell Reference Board.
+> -	  If unsure, say Y.
+> -
+>  config BLK_DEV_IDE_SWARM
+>  	tristate "IDE for Sibyte evaluation boards"
+>  	depends on SIBYTE_SB1xxx_SOC
 
-> But we do not wish to defer or delay anything.
-> How about: sysfs_action_from_neutral_context  
-
-On Thu, 15 Mar 2007, Dmitry Torokhov wrote:
-
-> How about sysfs_schedule_work? That is what it does - schedules a work
-> on a sysfs object and everyone here knows what schedule_work() does.  
-
-On Thu, 15 Mar 2007, Hugh Dickins wrote:
-
-> I'm ashamed to have suggested anything else: certainly gets my vote.
-
-Personally I don't understand what was wrong with my name.  What's weird 
-or unintuitive about doing something in a different task's context?
-
-Dmitry's suggestion is slightly inappropriate because the function doesn't
-take a workstruct as an argument and it isn't itself a workqueue callback.  
-
-Would people be happier with sysfs_schedule_callback() and
-device_schedule_callback()?  At least the functions do take a callback 
-pointer as an argument, even though they aren't callbacks themselves.
-
-Alan Stern
+MBR, Sergei
 
