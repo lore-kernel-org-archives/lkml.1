@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933410AbXCOHh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933413AbXCOHjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933410AbXCOHh7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 03:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbXCOHh6
+	id S933413AbXCOHjf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 03:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933425AbXCOHjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 03:37:58 -0400
-Received: from s-utl01-sjpop.stsn.net ([72.254.0.201]:63516 "HELO
-	s-utl01-sjpop.stsn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933410AbXCOHh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 03:37:58 -0400
-Date: Thu, 15 Mar 2007 00:25:03 -0700
-From: Greg KH <greg@kroah.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Remove "decl_subsys_name" macro and single usage of it.
-Message-ID: <20070315072503.GB8016@kroah.com>
-References: <Pine.LNX.4.64.0703011205510.20928@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703011205510.20928@CPE00045a9c397f-CM001225dbafb6>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 15 Mar 2007 03:39:35 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42934 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933413AbXCOHje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 03:39:34 -0400
+Date: Thu, 15 Mar 2007 00:39:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: paulus@samba.org, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       ak@suse.com, holt@sgi.com, linux-ia64@vger.kernel.org, mpm@selenic.com
+Subject: Re: [QUICKLIST 0/6] Arch independent quicklists V1
+Message-Id: <20070315003916.8a78dd0c.akpm@linux-foundation.org>
+In-Reply-To: <20070315.003118.41650094.davem@davemloft.net>
+References: <20070312.192616.63128242.davem@davemloft.net>
+	<20070312.193211.30184040.davem@davemloft.net>
+	<20070315002249.9e531578.akpm@linux-foundation.org>
+	<20070315.003118.41650094.davem@davemloft.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 12:09:59PM -0500, Robert P. J. Day wrote:
+> On Thu, 15 Mar 2007 00:31:18 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Thu, 15 Mar 2007 00:22:49 -0800
 > 
->   Remove the macro "decl_subsys_name" which can be used to declare a
-> sysfs subsystem, along with the single invocation of it in the source
-> tree, since there appears to be little value in creating a subsystem
-> whose subsystem name differs from its structure name.  Everyone else
-> just uses "decl_subsys".
+> > So...  what would happen if sparc64 were to use neither quicklists nor
+> > slab?  Just grab these pages from the page allocator and clear them?
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> 
-> @@ -800,7 +800,7 @@ MODULE_LICENSE("GPL");
->  module_param(debug, bool, 0644);
->  MODULE_PARM_DESC(debug, "Debugging mode enabled or not");
-> 
-> -EXPORT_SYMBOL_GPL(pci_hotplug_slots_subsys);
-> +EXPORT_SYMBOL_GPL(slots_subsys);
+> The page table allocator is heavier weight than the quicklists,
+> although obviously not as heavy weight as SLAB.
 
-No, don't polute the namespace incorrectly here.  We really want the
-variable to still have the "pci_hotplug_" prefix if at all possible.
+Spose so, although only in the case where we go into the buddy lists, I hope.
 
-thanks,
+otoh, releasing a cache-hot page into the page allocator makes it available for
+other use.
 
-greg k-h
-
+It'd be nice if you could run the numbers sometime, please - if it's OK then
+we can remove code...
