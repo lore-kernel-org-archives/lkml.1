@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933211AbXCOTkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932911AbXCOTlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933211AbXCOTkc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 15:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933228AbXCOTkc
+	id S932911AbXCOTlj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 15:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933208AbXCOTli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 15:40:32 -0400
-Received: from mga03.intel.com ([143.182.124.21]:1178 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933211AbXCOTk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 15:40:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,289,1170662400"; 
-   d="scan'208"; a="197118721:sNHT64486016"
-Date: Thu, 15 Mar 2007 12:37:32 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: [PATCH] ACPI: ibm-acpi: allow module to load when acpi
- notifiers can't be set
-Message-Id: <20070315123732.2ac478a3.kristen.c.accardi@intel.com>
-In-Reply-To: <20070315191721.GB2556@tuatara.stupidest.org>
-References: <20070315071019.GA22613@tuatara.stupidest.org>
-	<20070315175113.GA6596@khazad-dum.debian.net>
-	<20070315191721.GB2556@tuatara.stupidest.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Mar 2007 15:41:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:40693 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932911AbXCOTlh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 15:41:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=W3TdUOL3EfUD7pTjVTsOJKy0+imTTg5WNavd9TIzy1QR9UfvNI2/zt/qb/KcbFih2U3lRvWdNlNNltOYoSNIA1levGWJcjpezTaRnumlaqSpKyXhhS5YkEw3OyN+TjOFeUt1fsCG8xdLNZPGrGUiakeAuKdMmufXrFMgz1kFouI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH 10/13] BLK_DEV_IDE_CELLEB dependency fix
+Date: Thu, 15 Mar 2007 20:48:42 +0100
+User-Agent: KMail/1.9.6
+Cc: Akira Iguchi <akira2.iguchi@toshiba.co.jp>, torvalds@linux-foundation.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk> <200703150608.l2F68JY2026403@toshiba.co.jp> <20070315084645.GR4095@ftp.linux.org.uk>
+In-Reply-To: <20070315084645.GR4095@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703152048.42972.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007 12:17:21 -0700
-Chris Wedgwood <cw@f00f.org> wrote:
 
-> On Thu, Mar 15, 2007 at 02:51:14PM -0300, Henrique de Moraes Holschuh wrote:
+On Thursday 15 March 2007, Al Viro wrote:
+> On Thu, Mar 15, 2007 at 03:10:20PM +0900, Akira Iguchi wrote:
+> > Al wrote:
+> > >
+> > >Eh...  You still need dependency on IDE=y; otherwise you'll get configs
+> > >with IDE=m, BLK_DEV_IDE_CELLEB=y and those won't link.  BLK_DEV_IDEDMA_PCI
+> > >is selectable just fine with IDE=m.
+> > >
+> > >It's the same problem as with ps3 fb.
+> > >
+> > 
+> > I'm sorry I missed this case.
+> > Using some configurations, I found BLK_DEV_IDE=y was better.
+> > (I failed to link when IDE=y and BLK_DEV_IDE=m.)
 > 
-> > This patch allows for ibm-acpi to coexist (with diminished
-> > functionality) with other drivers like ACPI_BAY.
+> Umm...  Point taken.  After looking at the entire thing... well.
 > 
-> Given the ACP_IBM_BAY implementation is more complete (or seems to be,
-> please comment if that isn't the case) we should probably actually
-> make sure that is the *preferred* code used (on suitable hardware) at
-> run time surely?
+> a) BLK_DEV_IDE_PMAC has bogus dependency on IDE=y.  If anything, that
+> should've been BLK_DEV_IDE=y; however, it *does* build with ide modular -
+> it doesn't generate a separate module and its initialization is called
+> explicitly from ide one.  AFAICS, we can simply drop that dependency.
 
-I haven't followed the ibm_acpi development lately, but when I first
-wrote the bay driver, it had a couple features that ibm_acpi didn't have,
-and then of course, is missing some it does have.  What used to be the
-case is that if bay was inserted after the laptop was booted, the ibm_acpi
-driver would not capture the events because it would only install it's 
-notifier at driver load time on bay devices that existed.  The second
-case is that if you are using the generic dock driver (which is more
-funtional than the ibm_acpi dock feature), for certain ibm laptops such
-as the X60, you need to have undock events sent to the bay device so that
-it can alert user space to unmount cd's etc (since the bay is on the ultrabase).
+agreed
 
+> b) BLK_DEV_IDE_PMAC does *not* build without BLK_DEV_IDEDMA_PMAC.  Quoting
+> benh, "I don't see any reason to keep that dma thingy optional anyway".
+
+ditto
+
+> c) BLK_DEV_MPC8xx_IDE depends on BLK_DEV_IDE=y *and* IDE=y.  The latter is
+> obviously redundant.  The former...  No idea, 8xx is currently b0rken in
+
+ditto
+
+> ARCH=powerpc and I can't be arsed to wade through arch/ppc bitrot.  As it
+> is, driver definitely wants ARCH=ppc stuff (__res, for one thing).
 > 
-> That way distributions can build both options and on IBM/Lenovo
-> hardware it will use the IBM ACPI code and otherwise will use the
-> generic ACPI BAY code?
-
-I think for now this is a good idea - the ibm_acpi solution should be
-preferred over the generic bay driver till it is more fully developed.
-I don't know how to ensure this is done wrt load order though.
-
+> Now, BLK_DEV_IDE_CELLEB looks interesting.  The nature of breakage is not
+> the same as usual (non-modular driver depends on stuff that might be built
+> modular); what's going on here is funnier.  If you get ide-core modular,
+> you'll have BLK_DEV_IDE_CELLEB code *linked* *into* ide-core.ko.  Unlike
+> the rest of its ilk, however, it doesn't have its init called directly from
+> ide init.  It uses module_init(), which happens to work when it goes into
+> the kernel image (ide-core.o has several initcalls, not a problem), but breaks
+> when it goes into a modular ide-core.ko; there multiple module_init() are
+> fatal.
 > 
-> Perhaps the IBM_ACPI_BAY code should go away and any missing
-> functionality provided there should be merged into ACPI_BAY?
-> 
+> So AFAICS the minimal fix for that sucker is dependency on BLK_DEV_IDE=y;
+> however, I really wonder if
+> 	* it needs to be linked into ide-core (as opposed to being a normal
+> module of its own)
 
-I think this is a good idea.  It would certainly be less confusing for users.
-too late for this release though, perhaps this can be targetted at 2.6.22/23?
+AFAICS there are no legacy device ordering issues with scc_pata so it doesn't
+need to be linked into ide-core but I'll leave the definitive answer to Akira
+
+> 	* alternatively, its init should be called explicitly.
+> 
+> Comments?
+
+Care to provide patch for non-scc_pata issues that you've discovered? :-)
+
+Thanks,
+Bart
