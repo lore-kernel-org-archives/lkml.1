@@ -1,94 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422906AbXCOP5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422908AbXCOP5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422906AbXCOP5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 11:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422905AbXCOP5V
+	id S1422908AbXCOP5b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 11:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422909AbXCOP5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 11:57:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49890 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422906AbXCOP5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 11:57:20 -0400
-Message-ID: <45F96CCB.4000709@redhat.com>
-Date: Thu, 15 Mar 2007 11:56:59 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Thu, 15 Mar 2007 11:57:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:5535 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422908AbXCOP5a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 11:57:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZYmhXVtr7YU00gjmKzkwOK6/1jWSCq3bxbwrNroc4IfO4mglQAP4IuQTegpMsOPfnvpDg0wyhyLY42oi58jDTlWOdZSllP7AJDWHdAdy2Coi8gUstb+uv74UKMey/3Rb86h7T9tQDoDmZphBrqsAlPklkzrM6qfFgylCWZ5sL9g=
+Message-ID: <ed5aea430703150857i4c60dbfdrd5c871235815e5da@mail.gmail.com>
+Date: Thu, 15 Mar 2007 09:57:28 -0600
+From: "David Mosberger-Tang" <dmosberger@gmail.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [BUGFIX][PATCH] fixing placement of register stack under ulimit -s
+Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070315171743.e85b8405.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Ashif Harji <asharji@cs.uwaterloo.ca>
-CC: linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca>
-In-Reply-To: <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca>
-Content-Type: multipart/mixed;
- boundary="------------060500060806000801000906"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070315171743.e85b8405.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060500060806000801000906
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+But aren't you going to be limited to less than a page worth of
+register-backing store even with your patch applied because the
+backing store will end up overflowing the memory stack?
 
-Ashif Harji wrote:
-> 
-> This patch unconditionally calls mark_page_accessed to prevent pages,
-> especially for small files, from being evicted from the page cache
-> despite frequent access.
-> 
-> Signed-off-by: Ashif Harji <asharji@beta.uwaterloo.ca>
-> 
+  --david
 
-I like mine better -- it leaves the comment:
+On 3/15/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> This patch fixes ia64's bug in ulimit -s handling. against 2.6.21-rc3.
+>
+> At first,the address of register stack is defined by this
+> == ia64_set_rbs_bot()
+> unsigned long stack_size = current->signal->rlim[RLIMIT_STACK].rlim_max & -16;
+>
+>         if (stack_size > MAX_USER_STACK_SIZE)
+>                 stack_size = MAX_USER_STACK_SIZE;
+>         current->thread.rbs_bot = STACK_TOP - stack_size;
+> }
+> ==
+> default rlim[RLIMIT_STACK].rlim_max is very big.
+>
+> If ulimit -s is used, rlim_max can be small. As a result, rbs_bot can be
+> very high address. Because of stack-address-randomize, there is a case that
+> "regiter stack" is placed in the higher address than "memory stack".
+> == example...
+> [kamezawa@drpq linux-2.6.21-rc2]$ ulimit -s
+> 8192
+> [kamezawa@drpq linux-2.6.21-rc2]$ cat /proc/self/maps
+> 00000000-00004000 r--p 00000000 00:00 0
+> 2000000000000000-2000000000038000 r-xp 00000000 08:02 5991525            /lib/ld-2.5.so
+> 2000000000044000-2000000000050000 rw-p 00034000 08:02 5991525            /lib/ld-2.5.so
+> 2000000000064000-20000000002c8000 r-xp 00000000 08:02 5990699            /lib/libc-2.5.so
+> 20000000002c8000-20000000002d4000 ---p 00264000 08:02 5990699            /lib/libc-2.5.so
+> 20000000002d4000-20000000002e0000 rw-p 00260000 08:02 5990699            /lib/libc-2.5.so
+> 20000000002e0000-20000000002ec000 rw-p 20000000002e0000 00:00 0
+> 20000000002ec000-2000000003a24000 r--p 00000000 08:02 9472842            /usr/lib/locale/locale-archive
+> 4000000000000000-4000000000008000 r-xp 00000000 08:02 4157490            /bin/cat
+> 6000000000004000-600000000000c000 rw-p 00004000 08:02 4157490            /bin/cat
+> 600000000000c000-6000000000030000 rw-p 600000000000c000 00:00 0          [heap]
+> 60000fffff5f4000-60000fffff648000 rw-p 60000fffff5f4000 00:00 0          [stack]
+> 60000fffff7fc000-60000fffff800000 rw-p 60000fffff7fc000 00:00 0          (*)
+> a000000000000000-a000000000020000 ---p 00000000 00:00 0                  [vdso]
+> (*) is register stack.
+> ==
+> This register-stack/memory-stack upside down is not expected.
+> Current ia64 page fault handler doesn't handle this case. In this case,
+> register stack expansion causes SEGV.
+> This means that the user program can use only 1 page for its register stack.
+>
+> This patch fixes the above case by moving register stack to suitable place.
+> Note) fixing page fault handler seems to be another way...but a bit complicated.
+>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+> Index: linux-2.6.21-rc3/arch/ia64/mm/init.c
+> ===================================================================
+> --- linux-2.6.21-rc3.orig/arch/ia64/mm/init.c
+> +++ linux-2.6.21-rc3/arch/ia64/mm/init.c
+> @@ -155,7 +155,7 @@ ia64_set_rbs_bot (void)
+>
+>         if (stack_size > MAX_USER_STACK_SIZE)
+>                 stack_size = MAX_USER_STACK_SIZE;
+> -       current->thread.rbs_bot = STACK_TOP - stack_size;
+> +       current->thread.rbs_bot = PAGE_ALIGN(current->mm->start_stack - stack_size);
+>  }
+>
+>  /*
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
 
-
---------------060500060806000801000906
-Content-Type: text/plain;
- name="linux-2.6-fix_mark_page_accessed.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6-fix_mark_page_accessed.patch"
-
-From: Chuck Ebbert <cebbert@redhat.com>
-
-Always mark page as accessed when reading multiple times.
-Original idea and patch by Ashif Harji <asharji@cs.uwaterloo.ca>
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-
---- 2.6.20.2-t.orig/mm/filemap.c
-+++ 2.6.20.2-t/mm/filemap.c
-@@ -887,7 +887,6 @@
- 	unsigned long offset;
- 	unsigned long last_index;
- 	unsigned long next_index;
--	unsigned long prev_index;
- 	loff_t isize;
- 	struct page *cached_page;
- 	int error;
-@@ -896,7 +895,6 @@
- 	cached_page = NULL;
- 	index = *ppos >> PAGE_CACHE_SHIFT;
- 	next_index = index;
--	prev_index = ra.prev_page;
- 	last_index = (*ppos + desc->count + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
- 	offset = *ppos & ~PAGE_CACHE_MASK;
- 
-@@ -945,11 +943,9 @@
- 
- 		/*
- 		 * When (part of) the same page is read multiple times
--		 * in succession, only mark it as accessed the first time.
-+		 * in succession, always mark it accessed.
- 		 */
--		if (prev_index != index)
--			mark_page_accessed(page);
--		prev_index = index;
-+		mark_page_accessed(page);
- 
- 		/*
- 		 * Ok, we have the page, and it's up-to-date, so
-
---------------060500060806000801000906--
+-- 
+Mosberger Consulting LLC, http://www.mosberger-consulting.com/
