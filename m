@@ -1,89 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422827AbXCOGGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422829AbXCOGGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422827AbXCOGGn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 02:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422829AbXCOGGm
+	id S1422829AbXCOGGr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 02:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422830AbXCOGGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 02:06:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:56875 "EHLO mail.goop.org"
+	Thu, 15 Mar 2007 02:06:46 -0400
+Received: from gw.goop.org ([64.81.55.164]:56884 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422827AbXCOGGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 02:06:42 -0400
-Message-ID: <45F8E272.2030903@goop.org>
-Date: Wed, 14 Mar 2007 23:06:42 -0700
+	id S1422829AbXCOGGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 02:06:46 -0400
+Message-ID: <45F8E276.5020609@goop.org>
+Date: Wed, 14 Mar 2007 23:06:46 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
 To: Andi Kleen <ak@suse.de>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Clean up ELF note generation
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: [PATCH REPOST] No need to use -traditional for processing asm in
+ arch/i386/
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Three cleanups:
-
-1: ELF notes are never mapped, so there's no need to have any access
-flags in their phdr.
-
-2: When generating them from asm, tell the assembler to use a SHT_NOTE
-section type.  There doesn't seem to be a way to do this from C.
-
-3: Use ANSI rather than traditional cpp behaviour to stringify the
-macro argument.
+No need to use -traditional for processing asm in arch/i386/
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
 
 ---
- arch/i386/kernel/vmlinux.lds.S    |    2 +-
- include/asm-generic/vmlinux.lds.h |    2 +-
- include/linux/elfnote.h           |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/i386/boot/Makefile            |    4 ++--
+ arch/i386/boot/compressed/Makefile |    1 -
+ arch/i386/kernel/Makefile          |    2 --
+ arch/i386/kernel/entry.S           |    2 +-
+ include/asm-i386/percpu.h          |    4 ++--
+ 5 files changed, 5 insertions(+), 8 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/vmlinux.lds.S
-+++ b/arch/i386/kernel/vmlinux.lds.S
-@@ -34,7 +34,7 @@ PHDRS {
- PHDRS {
- 	text PT_LOAD FLAGS(5);	/* R_E */
- 	data PT_LOAD FLAGS(7);	/* RWE */
--	note PT_NOTE FLAGS(4);	/* R__ */
-+	note PT_NOTE FLAGS(0);	/* ___ */
- }
- SECTIONS
- {
-===================================================================
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -208,7 +208,7 @@
- 	}
+--- a/arch/i386/boot/Makefile
++++ b/arch/i386/boot/Makefile
+@@ -36,9 +36,9 @@ HOSTCFLAGS_build.o := $(LINUXINCLUDE)
+ # ---------------------------------------------------------------------------
  
- #define NOTES								\
--		.notes : { *(.note.*) } :note
-+	.notes : { *(.note.*) } :note
+ $(obj)/zImage:  IMAGE_OFFSET := 0x1000
+-$(obj)/zImage:  EXTRA_AFLAGS := -traditional $(SVGA_MODE) $(RAMDISK)
++$(obj)/zImage:  EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK)
+ $(obj)/bzImage: IMAGE_OFFSET := 0x100000
+-$(obj)/bzImage: EXTRA_AFLAGS := -traditional $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
++$(obj)/bzImage: EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
+ $(obj)/bzImage: BUILDFLAGS   := -b
  
- #define INITCALLS							\
-   	*(.initcall0.init)						\
+ quiet_cmd_image = BUILD   $@
 ===================================================================
---- a/include/linux/elfnote.h
-+++ b/include/linux/elfnote.h
-@@ -39,12 +39,12 @@
-  *      ELFNOTE(XYZCo, 12, .long, 0xdeadbeef)
-  */
- #define ELFNOTE(name, type, desctype, descdata)	\
--.pushsection .note.name			;	\
-+.pushsection .note.name, "",@note	;	\
-   .align 4				;	\
-   .long 2f - 1f		/* namesz */	;	\
-   .long 4f - 3f		/* descsz */	;	\
-   .long type				;	\
--1:.asciz "name"				;	\
-+1:.asciz #name				;	\
- 2:.align 4				;	\
- 3:desctype descdata			;	\
- 4:.align 4				;	\
+--- a/arch/i386/boot/compressed/Makefile
++++ b/arch/i386/boot/compressed/Makefile
+@@ -6,7 +6,6 @@
+ 
+ targets		:= vmlinux vmlinux.bin vmlinux.bin.gz head.o misc.o piggy.o \
+ 			vmlinux.bin.all vmlinux.relocs
+-EXTRA_AFLAGS	:= -traditional
+ 
+ LDFLAGS_vmlinux := -T
+ CFLAGS_misc.o += -fPIC
+===================================================================
+--- a/arch/i386/kernel/Makefile
++++ b/arch/i386/kernel/Makefile
+@@ -44,8 +44,6 @@ obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+ obj-y				+= pcspeaker.o
+ 
+-EXTRA_AFLAGS   := -traditional
+-
+ obj-$(CONFIG_SCx200)		+= scx200.o
+ 
+ # vsyscall.o contains the vsyscall DSO images as __initdata.
+===================================================================
+--- a/arch/i386/kernel/entry.S
++++ b/arch/i386/kernel/entry.S
+@@ -635,7 +635,7 @@ ENTRY(name)				\
+ 	SAVE_ALL;			\
+ 	TRACE_IRQS_OFF			\
+ 	movl %esp,%eax;			\
+-	call smp_/**/name;		\
++	call smp_##name;		\
+ 	jmp ret_from_intr;		\
+ 	CFI_ENDPROC;			\
+ ENDPROC(name)
+===================================================================
+--- a/include/asm-i386/percpu.h
++++ b/include/asm-i386/percpu.h
+@@ -20,10 +20,10 @@
+ #ifdef CONFIG_SMP
+ #define PER_CPU(var, cpu) \
+ 	movl __per_cpu_offset(,cpu,4), cpu;	\
+-	addl $per_cpu__/**/var, cpu;
++	addl $per_cpu__##var, cpu;
+ #else /* ! SMP */
+ #define PER_CPU(var, cpu) \
+-	movl $per_cpu__/**/var, cpu;
++	movl $per_cpu__##var, cpu;
+ #endif	/* SMP */
+ 
+ #endif /* !__ASSEMBLY__ */
 
 
