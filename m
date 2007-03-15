@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933641AbXCOUHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbXCOUHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933641AbXCOUHO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 16:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933638AbXCOUHO
+	id S933605AbXCOUHW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 16:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933638AbXCOUHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 16:07:14 -0400
-Received: from pat.uio.no ([129.240.10.15]:41468 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933228AbXCOUHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 16:07:11 -0400
-Subject: Re: [patch 2/5] fs: introduce new aops and infrastructure
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070315041329.GB21942@ca-server1.us.oracle.com>
-References: <20070314112529.13798.35417.sendpatchset@linux.site>
-	 <20070314112540.13798.97719.sendpatchset@linux.site>
-	 <20070315041329.GB21942@ca-server1.us.oracle.com>
-Content-Type: text/plain
-Date: Thu, 15 Mar 2007 16:06:39 -0400
-Message-Id: <1173989199.6506.109.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+	Thu, 15 Mar 2007 16:07:22 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:36537 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933605AbXCOUHT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 16:07:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dvnatilZjkQQv3/sB2cRE5HCiAuHN96RGvBM2STtNI+qw+k/o7bkzATL7hiPVxv1LVo6LH4aGG8Nt5j9xhC6i6HlE9vB/o+LXgFgEypZ55quvlC4TzeNcmxr2Sj+7bADKjvNnsiHmto93uvMQnPh/2EC4mENs5YD4nK4A8S/WMk=
+Message-ID: <d120d5000703151307w110c5258q6a4c53381e71e89c@mail.gmail.com>
+Date: Thu, 15 Mar 2007 16:07:18 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: [linux-usb-devel] USB Keyboard
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <Pine.LNX.4.61.0703151541430.4459@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: DA8F928E7FA823A471917BC022FD73CD558C150A
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 113 total 506109 max/h 7466 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+References: <Pine.LNX.4.44L0.0703151506010.2482-100000@iolanthe.rowland.org>
+	 <Pine.LNX.4.61.0703151541430.4459@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-03-14 at 21:13 -0700, Mark Fasheh wrote:
-> Hi Nick,
-> 
-> On Wed, Mar 14, 2007 at 02:38:22PM +0100, Nick Piggin wrote:
-> > Introduce write_begin, write_end, and perform_write aops.
-> > 
-> > These are intended to replace prepare_write and commit_write with more
-> > flexible alternatives that are also able to avoid the buffered write
-> > deadlock problems efficiently (which prepare_write is unable to do).
-> 
-> > Index: linux-2.6/include/linux/fs.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/fs.h
-> > +++ linux-2.6/include/linux/fs.h
-> > @@ -449,6 +449,17 @@ struct address_space_operations {
-> >  	 */
-> >  	int (*prepare_write)(struct file *, struct page *, unsigned, unsigned);
-> >  	int (*commit_write)(struct file *, struct page *, unsigned, unsigned);
-> > +
-> > +	int (*write_begin)(struct file *, struct address_space *mapping,
-> > +				loff_t pos, unsigned len, int intr,
-> > +				struct page **pagep, void **fsdata);
-> > +	int (*write_end)(struct file *, struct address_space *mapping,
-> > +				loff_t pos, unsigned len, unsigned copied,
-> > +				struct page *page, void *fsdata);
-> 
-> Are we going to get rid of the file and intr arguments btw? I'm not sure
-> intr is useful, and mapping is probably enough to get whatever we inside
-> ->write_begin / ->write_end.
+On 3/15/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+> echo "Loading uhci-hcd.ko module"
+> insmod /lib/uhci-hcd.ko
+> echo "Loading ehci-hcd.ko module"
+> insmod /lib/ehci-hcd.ko
 
-Hell no! Struct file carries information that is essential for those of
-us that use strong authentication. It stays.
+I don't see you loading OHCI and I thought AMD boxes used that flavor.
 
-Trond
+> echo "Loading usbhid.ko module"
+> insmod /lib/usbhid.ko
+> echo "Loading usbkbd.ko module"
+> insmod /lib/usbkbd.ko
+> echo "sleeping for a few seconds"
+> sleep 2
+> echo "Mounting root filesystem"
+> /bin/findroot
+> mount -o defaults --ro -t iso9660 /dev/root /sysroot
+> pivot_root /sysroot /sysroot/initrd
+> umount /initrd/proc
+> exec /sbin/init
+>
 
+-- 
+Dmitry
