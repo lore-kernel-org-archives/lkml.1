@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965491AbXCOG2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422850AbXCOGaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965491AbXCOG2c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 02:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965511AbXCOG2c
+	id S1422850AbXCOGaf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 02:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422841AbXCOGaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 02:28:32 -0400
-Received: from imx12.toshiba.co.jp ([61.202.160.132]:64648 "EHLO
-	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965491AbXCOG2b (ORCPT
+	Thu, 15 Mar 2007 02:30:35 -0400
+Received: from vms048pub.verizon.net ([206.46.252.48]:42762 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422813AbXCOGae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 02:28:31 -0400
-Message-Id: <200703150628.l2F6SPma012518@toshiba.co.jp>
-MIME-Version: 1.0
-Date: Thu, 15 Mar 2007 15:30:25 +0900
-X-Mailer: Denshin 8 Go V32.1.4.5
-X-My-Real-Login-Name: a_iguchi; 133.114.92.20
-From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: bzolnier@gmail.com, torvalds@linux-foundation.org
-Cc: Al Viro <viro@ftp.linux.org.uk>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] BLK_DEV_IDE_CELLEB dependency fix
+	Thu, 15 Mar 2007 02:30:34 -0400
+Date: Thu, 15 Mar 2007 02:30:33 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: New thread RDSL, post-2.6.20 kernels and amanda (tar) miss-fires
+In-reply-to: <45F8CF68.8060400@madrabbit.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ray Lee <ray@madrabbit.org>
+Message-id: <200703150230.33141.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703130428.11014.gene.heskett@gmail.com>
+ <200703142312.48852.gene.heskett@gmail.com> <45F8CF68.8060400@madrabbit.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's bool and it depends on BLK_DEV_IDE
- => should depend on BLK_DEV_IDE=y
+On Thursday 15 March 2007, Ray Lee wrote:
+>Gene Heskett wrote:
+>> Here is an example
+>> [root@coyote data]# dd if=00010.coyote._lib.1 bs=32k count=1
+>> AMANDA: FILE 20070314104344 coyote /lib  lev 1 comp .gz program
+>> /bin/tar To restore, position tape at start of file and run:
+>>  dd if=<tape> bs=32k skip=1 |  /bin/gzip -dc |  /bin/tar -f - ...
+>>
+>> And the elipsis is an error if not removed.  Then one is supposed to
+>> be able to redirect tars output with the usual >/tmp/test/ syntax
+>>
+>> So:
+>> [root@coyote data]# dd if=00010.coyote._lib.1 bs=32k
+>> skip=1 |  /bin/gzip -dc |  /bin/tar -f - >/tmp/test/
+>> -bash: /tmp/test/: Is a directory
+>>
+>> which is the return from any variation in how the redirect is done.
+>>
+>> So what is it that am I doing wrong in the above command line?, so I
+>> can add it to my helper scripts to be published eventually on
+>> zmanda.org.
+>
+>One of us is confused, and it may very well be me, but...
+>
+>the /bin/tar -f - >/tmp/test/ looks to me like it should fail exactly as
+>bash says it does. the output redirect (>) will only write out to a
+>file, not a directory. (So, /tmp/file should work, /tmp/file/ won't.)
+>
+>Are you trying to redirect where the files get restored? That should be
+>done with a cd before doing the uncompress.
+>
+>Or am I misunderstanding what you're telling me?
+>
+>Ray
 
-And move it to "if BLK_DEV_IDEDMA_PCI" block because it depends on 
-BLK_DEV_IDEDMA_PCI.
+No, apparently its me that's been running with a fubar'd understanding.
+I was certain that tar (or bash) should have been able to put the 
+recovered files IN the directory /tmp/test but that turns out to need 
+more options after the '-f -' section of that sample line I posted.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
----
+Thanks.  A bunch..
 
-diff -Nrpu -X linux-2.6.21-rc3/Documentation/dontdiff linux-2.6.21-rc3/drivers/ide/Kconfig linux-2.6.21-rc3.mod/drivers/ide/Kconfig
---- linux-2.6.21-rc3/drivers/ide/Kconfig	2007-03-07 13:41:20.000000000 +0900
-+++ linux-2.6.21-rc3.mod/drivers/ide/Kconfig	2007-03-15 23:49:33.000000000 +0900
-@@ -769,6 +769,14 @@ config BLK_DEV_TC86C001
- 	help
- 	This driver adds support for Toshiba TC86C001 GOKU-S chip.
- 
-+config BLK_DEV_IDE_CELLEB
-+	bool "Toshiba's Cell Reference Set IDE support"
-+	depends on PPC_CELLEB && BLK_DEV_IDE=y
-+	help
-+	  This driver provides support for the built-in IDE controller on
-+	  Toshiba Cell Reference Board.
-+	  If unsure, say Y.
-+
- endif
- 
- config BLK_DEV_IDE_PMAC
-@@ -800,14 +808,6 @@ config BLK_DEV_IDEDMA_PMAC
- 	  to transfer data to and from memory.  Saying Y is safe and improves
- 	  performance.
- 
--config BLK_DEV_IDE_CELLEB
--	bool "Toshiba's Cell Reference Set IDE support"
--	depends on PPC_CELLEB
--	help
--	  This driver provides support for the built-in IDE controller on
--	  Toshiba Cell Reference Board.
--	  If unsure, say Y.
--
- config BLK_DEV_IDE_SWARM
- 	tristate "IDE for Sibyte evaluation boards"
- 	depends on SIBYTE_SB1xxx_SOC
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Mal: "You are very much lacking in imagination."
 
+Zoe: "I imagine that's so, sir."
+				--Episode #8, "Out of Gas"
