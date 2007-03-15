@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933568AbXCONqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161218AbXCONto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933568AbXCONqK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 09:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933569AbXCONqK
+	id S1161218AbXCONto (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 09:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933569AbXCONto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 09:46:10 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:46041 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933568AbXCONqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 09:46:09 -0400
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Dmitriy Monakhov <dmonakhov@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] splice: partial write handling fix
-References: <871wjrg6qf.fsf@sw.ru> <20070315122127.GO15400@kernel.dk>
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Thu, 15 Mar 2007 16:46:32 +0300
-In-Reply-To: <20070315122127.GO15400@kernel.dk> (Jens Axboe's message of "Thu, 15 Mar 2007 13:21:27 +0100")
-Message-ID: <87fy86oc07.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Thu, 15 Mar 2007 09:49:44 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:59907 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933564AbXCONtn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 09:49:43 -0400
+Date: Thu, 15 Mar 2007 19:19:21 +0530
+To: Linux Memory Management <linux-mm@kvack.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] oom fix: prevent oom from killing a process with children/sibling unkillable
+Message-ID: <20070315134921.GD18033@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: ankita@in.ibm.com (Ankita Garg)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
 
-> On Wed, Mar 14 2007, Dmitriy Monakhov wrote:
->> currently if partial write has happened while ->commit_write() then page
->> wasn't marked as accessed and rebalanced. 
->
-> The ->commit_write() return values aren't very well designed imho. Is
-> your fix correct getting the pipe_to_file() return value correct now?
-I think yes, after my patch this path look like follows:
+Looking at oom_kill.c, found that the intention to not kill the selected
+process if any of its children/siblings has OOM_DISABLE set, is not being met.
 
-        ret = mapping->a_ops->commit_write(file, page, offset, offset+this_len);
-        if (ret) {
-                if(ret == AOP_TRUNCATED_PAGE) {
-                        page_cache_release(page);
-                        goto find_page;
-                }
-                if (ret < 0)
-                        goto out;
-                /*
-                 * Partial write has happened, so 'ret' already initialized by
-                 * number of bytes written, Where is nothing we have to do here.
-                 */
-        } else
-                ret = this_len;
-        /*
-         * Return the number of bytes written and mark page as
-         * accessed, we are now done!
-         */
-        mark_page_accessed(page);
-        balance_dirty_pages_ratelimited(mapping);
-out:
-        page_cache_release(page);
-        unlock_page(page);
-out_ret:
-        return ret;
-}
 
-But off corse this patch does't fix issues spotted by Nick. 
->
-> -- 
-> Jens Axboe
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Ankita Garg <ankita@in.ibm.com>
 
+Index: ankita/linux-2.6.20.1/mm/oom_kill.c
+===================================================================
+--- ankita.orig/linux-2.6.20.1/mm/oom_kill.c	2007-02-20 12:04:32.000000000 +0530
++++ ankita/linux-2.6.20.1/mm/oom_kill.c	2007-03-15 12:44:50.000000000 +0530
+@@ -320,7 +320,7 @@
+ 	 * Don't kill the process if any threads are set to OOM_DISABLE
+ 	 */
+ 	do_each_thread(g, q) {
+-		if (q->mm == mm && p->oomkilladj == OOM_DISABLE)
++		if (q->mm == mm && q->oomkilladj == OOM_DISABLE)
+ 			return 1;
+ 	} while_each_thread(g, q);
+ 
+
+Regards,
+-- 
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
