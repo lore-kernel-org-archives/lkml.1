@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422976AbXCORFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750738AbXCORWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422976AbXCORFs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 13:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422977AbXCORFs
+	id S1750738AbXCORWe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 13:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbXCORWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 13:05:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55831 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422976AbXCORFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 13:05:47 -0400
-Date: Thu, 15 Mar 2007 13:00:09 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
-Message-ID: <20070315170009.GB17658@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Greg Kroah-Hartman <gregkh@suse.de>
-References: <20070313040828.GA17893@redhat.com> <200703131022.54322.rjw@sisk.pl> <20070313132218.GA25910@redhat.com> <m1d53apjvu.fsf@ebiederm.dsl.xmission.com>
+	Thu, 15 Mar 2007 13:22:34 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:59888 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbXCORWd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 13:22:33 -0400
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+	Take 2
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Bligh <mbligh@mbligh.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+In-Reply-To: <20070315170112.GA14759@one.firstfloor.org>
+References: <20070314050819.536207642@goodmis.org>
+	 <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu>
+	 <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
+	 <45F96B57.10206@mbligh.org>
+	 <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org>
+	 <20070315160648.GA11812@one.firstfloor.org>
+	 <1173977264.7922.24.camel@localhost.localdomain>
+	 <1173977839.7922.27.camel@localhost.localdomain>
+	 <20070315170112.GA14759@one.firstfloor.org>
+Content-Type: text/plain
+Date: Thu, 15 Mar 2007 13:21:21 -0400
+Message-Id: <1173979281.7922.33.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1d53apjvu.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 10:11:01AM -0600, Eric W. Biederman wrote:
+On Thu, 2007-03-15 at 18:01 +0100, Andi Kleen wrote:
+> > Oops, sorry, you did say "in the includes".  Yeah, that holds the same
+> > crap that I'm talking about. 
+> 
+> It's a simple and obvious solution that does exactly what it is 
+> supposed to do. Why do you call it crap? 
 
- > I haven't heard anything more on this thread.
+Yes, it's a simple solution. The reason I called it crap was because it
+does what the other hacks do. It hides from the developer a dependency
+that can create bugs in the other arch, and is not IMNSHO clean.
 
-Sorry, I've been stuck in meetings the last two days..
+When one works on one arch, you should not need to be worried about
+breaking other archs when you stay within the arch/ and asm-<arch>
+directories.
 
- > I just wanted to double check.  The tree that failed did it include
- > commits: 
- > 392ee1e6dd901db6c4504617476f6442ed91f72d and
- > 9f35575dfc172f0a93fb464761883c8f49599b7a
- > 
- > Mostly I was wondering if any of my later work to sort out msi 
- > suspend/resume actually solved anything.
+-- Steve
 
-I'll kick off some compiles and find out.
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
