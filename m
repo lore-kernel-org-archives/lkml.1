@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422919AbXCOQAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422925AbXCOQB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422919AbXCOQAo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 12:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422917AbXCOQAo
+	id S1422925AbXCOQB2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 12:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422924AbXCOQB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 12:00:44 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:57807 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422919AbXCOQAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 12:00:43 -0400
-Date: Thu, 15 Mar 2007 08:59:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Martin Bligh <mbligh@mbligh.org>
-cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-In-Reply-To: <45F96B57.10206@mbligh.org>
-Message-ID: <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de>
- <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
- <45F96B57.10206@mbligh.org>
+	Thu, 15 Mar 2007 12:01:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57370 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422925AbXCOQB1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 12:01:27 -0400
+From: John Keller <jpk@sgi.com>
+Message-Id: <200703151601.l2FG1PHm002278@fcbayern.americas.sgi.com>
+Subject: Re: [PATCH] Fix wrong /proc/iomem on SGI Altix
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 15 Mar 2007 11:01:24 -0500 (CDT)
+Cc: bwalle@suse.de
+In-Reply-To: <20070314180746.GA22814@strauss.suse.de> from "Bernhard Walle" at Mar 14, 2007 07:07:47 PM
+X-Mailer: ELM [version 2.5 PL2]
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Looks good.
+Feel free to add.
+
+Acked-by: John Keller <jpk@sgi.com>
 
 
-On Thu, 15 Mar 2007, Martin Bligh wrote:
 > 
-> Can't we move the shared files into a new shared arch/ subdirectory
-> (ia32_64 or whatever), and have them included from both places?
+> In sn_io_slot_fixup(), the parent is re-set from the bus to
+> io(port|mem)_resource because the address is changed in a way that it's not
+> child of the bus any more.
+> 
+> However, only the root is set but not the parent/child/sibling relationship in
+> the resource tree which causes 'cat /proc/iomem' to stop after this memory
+> area. Depding on the poition in the tree the iomem may be nearly completely
+> empty.
+> 
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> 
+> ---
+>  arch/ia64/sn/kernel/io_init.c |   12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
+> 
+> Index: b/arch/ia64/sn/kernel/io_init.c
+> ===================================================================
+> --- a/arch/ia64/sn/kernel/io_init.c
+> +++ b/arch/ia64/sn/kernel/io_init.c
+> @@ -247,10 +247,18 @@ sn_io_slot_fixup(struct pci_dev *dev)
+>  		addr = ((addr << 4) >> 4) | __IA64_UNCACHED_OFFSET;
+>  		dev->resource[idx].start = addr;
+>  		dev->resource[idx].end = addr + size;
+> +
+> +		/*
+> +		 * if it's already in the device structure, remove it before
+> +		 * inserting
+> +		 */
+> +		if (dev->resource[idx].parent && dev->resource[idx].parent->child)
+> +			release_resource(&dev->resource[idx]);
+> +
+>  		if (dev->resource[idx].flags & IORESOURCE_IO)
+> -			dev->resource[idx].parent = &ioport_resource;
+> +			insert_resource(&ioport_resource, &dev->resource[idx]);
+>  		else
+> -			dev->resource[idx].parent = &iomem_resource;
+> +			insert_resource(&iomem_resource, &dev->resource[idx]);
+>  		/* If ROM, mark as shadowed in PROM */
+>  		if (idx == PCI_ROM_RESOURCE)
+>  			dev->resource[idx].flags |= IORESOURCE_ROM_BIOS_COPY;
+> -
 
-That's *exactly* what the patches do (except it's called "arch/x86", which 
-is clearly the best option - please don't use "ia" _anywhere_ except for 
-"ia64", since that's the only architecture that is really "intel 
-architecture").
-
-> On the downside, it's more ../../.. type stuff. On the upside,
-> they're more cleanly separated and it's apparent what's going on.
-> Seems nicer to me than drivers/ and kernel/ for stuff that's
-> really arch specific, but shared between two arches.
-
-Absolutely. I'm agreeing violently. I just suspect not a lot of people 
-really looked at the patches..
-
-		Linus
