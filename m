@@ -1,30 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965511AbXCOMhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965544AbXCOMjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965511AbXCOMhY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 08:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965547AbXCOMhY
+	id S965544AbXCOMjD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 08:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965547AbXCOMjC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 08:37:24 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:7752
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965511AbXCOMhX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 08:37:23 -0400
-Message-Id: <45F94C45.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Thu, 15 Mar 2007 12:38:13 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: PCI DAC DMA APIs
+	Thu, 15 Mar 2007 08:39:02 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56444 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965544AbXCOMjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 08:39:01 -0400
+Date: Thu, 15 Mar 2007 13:38:59 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
+       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+Message-ID: <20070315123859.GC8321@wotan.suse.de>
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173955154.25356.28.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1173955154.25356.28.camel@twins>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While the kernel headers provide for this, there don't appear to be any
-in-tree users (which seems contrary to general Linux policies). Would there
-be objections to remove all of these?
+On Thu, Mar 15, 2007 at 11:39:14AM +0100, Peter Zijlstra wrote:
+> On Wed, 2007-03-14 at 15:58 -0400, Ashif Harji wrote:
+> > This patch unconditionally calls mark_page_accessed to prevent pages, 
+> > especially for small files, from being evicted from the page cache despite 
+> > frequent access.
+> 
+> Since we're hackling over the use-once stuff again...
+> 
+> /me brings up: http://marc.info/?l=linux-mm&m=115316894804385&w=2 and
+> ducks.
 
-Jan
+Join the club ;) 
+
+http://groups.google.com.au/group/linux.kernel/msg/7b3237b8e715475b?hl=en&
+
+I can't find the patch where I actually did combine it with a PG_usedonce
+bit, but the end result is pretty similar to your patch. And I think one
+or two others have also independently invented the same thing.
+
+So it *has* to be good, doesn't it? ;)
