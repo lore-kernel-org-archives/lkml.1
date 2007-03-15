@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933078AbXCOTau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbXCOTb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933078AbXCOTau (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 15:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933024AbXCOTat
+	id S932980AbXCOTb5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 15:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbXCOTb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 15:30:49 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37714 "EHLO smtp.osdl.org"
+	Thu, 15 Mar 2007 15:31:56 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:37738 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933078AbXCOTas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 15:30:48 -0400
-Date: Thu, 15 Mar 2007 11:25:32 -0800
+	id S932980AbXCOTbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 15:31:55 -0400
+Date: Thu, 15 Mar 2007 11:31:36 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-stable <stable@kernel.org>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: Three critical patches still aren't merged in 2.6.21
-Message-Id: <20070315112532.7d6a6521.akpm@linux-foundation.org>
-In-Reply-To: <45F9757F.2020900@redhat.com>
-References: <45F9757F.2020900@redhat.com>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Pierre.Peiffer@bull.net, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       jean-pierre.dion@bull.net
+Subject: Re: [PATCH 2.6.21-rc3-mm2 4/4] sys_futex64 : allows 64bit futexes
+Message-Id: <20070315113136.b04ce342.akpm@linux-foundation.org>
+In-Reply-To: <45F99A8B.4050003@redhat.com>
+References: <20070313095203.154246923@bull.net>
+	<20070313095549.813330645@bull.net>
+	<20070315110752.f1df4509.akpm@linux-foundation.org>
+	<45F99A8B.4050003@redhat.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,24 +28,15 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007 12:34:07 -0400 Chuck Ebbert <cebbert@redhat.com> wrote:
+On Thu, 15 Mar 2007 12:12:11 -0700 Ulrich Drepper <drepper@redhat.com> wrote:
 
-> I've been holding off sending these in for -stable until they're
-> merged, but now I wonder when that will happen.
-
-We'll get there.  I just got off the plane.
-
-> http://lkml.org/lkml/2007/3/14/99
-> [PATCH] hrtimer: prevent overrun DoS in hrtimer_forward()
-> From: Thomas Gleixner <tglx@linutronix,de> 
+> Andrew Morton wrote:
+> > Why do we want 64-bit futexes?
 > 
-> http://lkml.org/lkml/2007/3/12/268
-> NFS: nfs_getattr() can't call nfs_sync_mapping_range() for non-regular files
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> I sent this to you already on 1/12/2007:
 > 
-> http://lkml.org/lkml/2007/3/12/60
-> [patch] futex: PI state locking fix
-> From: Ingo Molnar <mingo@elte.hu>
+> http://udrepper.livejournal.com/13123.html
+> 
 
-I have all three in various stages of queuedness, but I am presently
-expecting Trond to merge the NFS one.  I can send it if he wants?
+Well OK.  But that doesn't actually explain why 64-bit mutexes are needed.
+It just says they are required.
