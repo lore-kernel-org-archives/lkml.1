@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965544AbXCOMjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030187AbXCOMj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965544AbXCOMjD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 08:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965547AbXCOMjC
+	id S1030187AbXCOMj3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 08:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030185AbXCOMj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 08:39:02 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56444 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965544AbXCOMjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 08:39:01 -0400
-Date: Thu, 15 Mar 2007 13:38:59 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
-       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-Message-ID: <20070315123859.GC8321@wotan.suse.de>
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173955154.25356.28.camel@twins>
-Mime-Version: 1.0
+	Thu, 15 Mar 2007 08:39:29 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33342 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030187AbXCOMj2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 08:39:28 -0400
+Date: Thu, 15 Mar 2007 13:38:29 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [patch 2/2] splice: dont readpage
+Message-ID: <20070315123829.GR15400@kernel.dk>
+References: <20070314121440.GA926@wotan.suse.de> <20070314121543.GB926@wotan.suse.de> <20070315115454.GN15400@kernel.dk> <20070315122736.GB8321@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173955154.25356.28.camel@twins>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070315122736.GB8321@wotan.suse.de>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 11:39:14AM +0100, Peter Zijlstra wrote:
-> On Wed, 2007-03-14 at 15:58 -0400, Ashif Harji wrote:
-> > This patch unconditionally calls mark_page_accessed to prevent pages, 
-> > especially for small files, from being evicted from the page cache despite 
-> > frequent access.
+On Thu, Mar 15 2007, Nick Piggin wrote:
+> On Thu, Mar 15, 2007 at 12:54:54PM +0100, Jens Axboe wrote:
+> > On Wed, Mar 14 2007, Nick Piggin wrote:
+> > > 
+> > > Splice does not need to readpage to bring the page uptodate before writing
+> > > to it, because prepare_write will take care of that for us.
+> > 
+> > Ah great, always good to get rid of some code.
 > 
-> Since we're hackling over the use-once stuff again...
+> Yeah, it should especially make block (but not page) sized and aligned
+> writes into uncached files work much better, AFAIKS (won't require the
+> synchronous read).
+
+Yep, it's a nice improvement! Plus a cleanup.
+
+> > > Splice is also wrong to SetPageUptodate before the page is actually uptodate.
+> > > This results in the old uninitialised memory leak. This gets fixed as a
+> > > matter of course when removing the readpage logic.
+> > 
+> > Leak, how? The page should still be locked all through to the copy.
+> > Anyway, doesn't matter since you've killed it anyway. I have applied
+> > this patch.
 > 
-> /me brings up: http://marc.info/?l=linux-mm&m=115316894804385&w=2 and
-> ducks.
+> The read side doesn't need to lock the page if it is uptodate, and doesn't.
 
-Join the club ;) 
+Oh, then there's definitely an issue.
 
-http://groups.google.com.au/group/linux.kernel/msg/7b3237b8e715475b?hl=en&
+-- 
+Jens Axboe
 
-I can't find the patch where I actually did combine it with a PG_usedonce
-bit, but the end result is pretty similar to your patch. And I think one
-or two others have also independently invented the same thing.
-
-So it *has* to be good, doesn't it? ;)
