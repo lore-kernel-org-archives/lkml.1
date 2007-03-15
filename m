@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbXCOU7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751255AbXCOVDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbXCOU7M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 16:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbXCOU7M
+	id S1751255AbXCOVDO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 17:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbXCOVDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 16:59:12 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:64385 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753365AbXCOU7K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 16:59:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NReWJYoYfcgRubHOpp865pWBpBgFMpJSEtTNZihoNbOZI3QpDJj4fGo27vLT+4epsgRJ0G4K8jmKCWe0TEmfDJmqlt+3dUrcYyhGVMsYijD04Gnz71kGhS1ndwjWMk+EYPPcbBrAsHTrP59JEv5wJEzmzfn7QkkyxmZKP+3sjOc=
-Message-ID: <a36005b50703151359r3aa951dbtfedda605c0966ff1@mail.gmail.com>
-Date: Thu, 15 Mar 2007 12:59:09 -0800
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: thread stacks and strict vm overcommit accounting
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Dan Aloni" <da-x@monatomic.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0703152021130.21129@blonde.wat.veritas.com>
+	Thu, 15 Mar 2007 17:03:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60982 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751255AbXCOVDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 17:03:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] swsusp: Do not use page flags
+Date: Thu, 15 Mar 2007 22:05:53 +0100
+User-Agent: KMail/1.9.5
+Cc: pavel@ucw.cz, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
+References: <200703122214.02657.rjw@sisk.pl> <200703122219.21171.rjw@sisk.pl> <20070315110816.8b4102b3.akpm@linux-foundation.org>
+In-Reply-To: <20070315110816.8b4102b3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070313163320.GA28104@localdomain>
-	 <20070315110621.9a9defaf.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0703152021130.21129@blonde.wat.veritas.com>
+Message-Id: <200703152205.54639.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/15/07, Hugh Dickins <hugh@veritas.com> wrote:
-> I'm guessing that the pthread stacks are mmap'ed as greatest extents
-> (probably because that's the easiest way to keep them apart), rather
-> than as small MAP_GROWSDOWN areas to be expanded later on fault.
+On Thursday, 15 March 2007 20:08, Andrew Morton wrote:
+> > On Mon, 12 Mar 2007 22:19:20 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > +int create_basic_memory_bitmaps(void)
+> > +{
+> > +	struct memory_bitmap *bm1, *bm2;
+> > +	int error = 0;
+> > +
+> > +	BUG_ON(forbidden_pages_map || free_pages_map);
+> > +
+> > +	bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_ATOMIC);
+> > +	if (!bm1)
+> > +		return -ENOMEM;
+> > +
+> > +	error = memory_bm_create(bm1, GFP_ATOMIC | __GFP_COLD, PG_ANY);
+> > +	if (error)
+> > +		goto Free_first_object;
+> > +
+> > +	bm2 = kzalloc(sizeof(struct memory_bitmap), GFP_ATOMIC);
+> > +	if (!bm2)
+> > +		goto Free_first_bitmap;
+> > +
+> > +	error = memory_bm_create(bm2, GFP_ATOMIC | __GFP_COLD, PG_ANY);
+> > +	if (error)
+> 
+> What is the risk that we'll go OOM here?  GFP_ATOMIC is rather unreliable.
 
-Please all, forget about MAP_GROWSDOWN.  It's useless.  If thread
-stacks are not completely mapped (address space allocation, memory
-allocation is not needed) it means subsequent unrelated mmaps can fall
-into the address space which is meant to be used for the stack, hence
-preventing the stack from growing.
+Well, this can be called after processes (including kswapd) has been frozen.
+We can't go to sleep at this point.
 
-libpthread uses an mmap for the complete stack size all the time and
-this of course is accounted for in the kernel.
+> And why _does_ suspend use GFP_ATOMIC all over the place?
+
+Generally, because it cannot sleep.
