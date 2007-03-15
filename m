@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbXCOTMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932801AbXCOTM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932672AbXCOTMd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 15:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932796AbXCOTMd
+	id S932801AbXCOTM7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 15:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933439AbXCOTM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 15:12:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35949 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932672AbXCOTMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 15:12:31 -0400
-Message-ID: <45F99A8B.4050003@redhat.com>
-Date: Thu, 15 Mar 2007 12:12:11 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 15 Mar 2007 15:12:58 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60494 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932806AbXCOTM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 15:12:57 -0400
+Date: Thu, 15 Mar 2007 20:12:59 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: fake config option w/kbuild?
+Message-ID: <20070315191258.GA752@stusta.de>
+References: <C6F49569-655E-4B17-B9DA-9644C8B3668D@kernel.crashing.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Pierre.Peiffer@bull.net, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       jean-pierre.dion@bull.net
-Subject: Re: [PATCH 2.6.21-rc3-mm2 4/4] sys_futex64 : allows 64bit futexes
-References: <20070313095203.154246923@bull.net>	<20070313095549.813330645@bull.net> <20070315110752.f1df4509.akpm@linux-foundation.org>
-In-Reply-To: <20070315110752.f1df4509.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB97AC00A631EBB0E89538564"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <C6F49569-655E-4B17-B9DA-9644C8B3668D@kernel.crashing.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB97AC00A631EBB0E89538564
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Andrew Morton wrote:
-> Why do we want 64-bit futexes?
-
-I sent this to you already on 1/12/2007:
-
-http://udrepper.livejournal.com/13123.html
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
+On Thu, Mar 15, 2007 at 10:19:03AM -0500, Kumar Gala wrote:
+>...
+> My initial question is that I don't want anyone using CONFIG_QE_83xx  
+> or CONFIG_QE_85xx in code, the second part is if there is a way to  
+> remove duplicating the QE_83xx/QE_85xx options down in platform/8{3,5} 
+> xx/Kconfig.
 
 
---------------enigB97AC00A631EBB0E89538564
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+What about the following solution:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-iD8DBQFF+ZqL2ijCOnn/RHQRAuARAKCsI9Wm4n7MYQv7TQzzQOJRg2oRYACeNvC9
-EgMkfOxe1RRVlfOvvRqt+pM=
-=7EKG
------END PGP SIGNATURE-----
+arch/powerpc/Kconfig.qe:
 
---------------enigB97AC00A631EBB0E89538564--
+<--  snip  -->
+
+config MACH_SUPPORTS_QE
+	bool
+
+config QE
+	bool "QUICC Engine Support"
+	depends on MACH_SUPPORTS_QE
+	help
+	  ...
+
+<--  snip  -->
+
+
+arch/powerpc/platforms/83xx/Kconfig:
+
+<--  snip  -->
+
+...
+source arch/powerpc/Kconfig.qe
+
+config PPC_MPC836x
+        bool
+	select MACH_SUPPORTS_QE
+	...
+....
+
+<--  snip  -->
+
+
+> thanks
+> 
+> - kumar
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
