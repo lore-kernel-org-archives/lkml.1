@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbXCOWJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbXCOWPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753393AbXCOWJp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 18:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbXCOWJp
+	id S1753414AbXCOWPZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 18:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbXCOWPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 18:09:45 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3628 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753393AbXCOWJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 18:09:44 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] blackfin: balance parenthesis in macros
-Date: Thu, 15 Mar 2007 23:12:21 +0100
-User-Agent: KMail/1.9.5
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+	Thu, 15 Mar 2007 18:15:25 -0400
+Received: from mx.pathscale.com ([198.186.3.68]:33685 "EHLO mx.pathscale.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753397AbXCOWPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 18:15:24 -0400
+X-Greylist: delayed 1792 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Mar 2007 18:15:24 EDT
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703152312.21981.m.kozlowski@tuxland.pl>
+Subject: [PATCH 13 of 33] IB/ipath - Fix CQ flushing when QP is modified to
+	error state
+X-Mercurial-Node: aaee8124e3bc44ec423b5e1c46ef90ede9f21483
+Message-Id: <aaee8124e3bc44ec423b.1173995097@iqa-25.internal.keyresearch.com>
+In-Reply-To: <patchbomb.1173995084@iqa-25.internal.keyresearch.com>
+Date: Thu, 15 Mar 2007 14:44:57 -0700
+From: "Bryan O'Sullivan" <bos@pathscale.com>
+To: rdreier@cisco.com
+Cc: openib-general@openfabrics.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+# HG changeset patch
+# User Bryan O'Sullivan <bos@pathscale.com>
+# Date 1173994465 25200
+# Node ID aaee8124e3bc44ec423b5e1c46ef90ede9f21483
+# Parent  84a9691cf7ff54ce76de402d2353a451ba9c555b
+IB/ipath - Fix CQ flushing when QP is modified to error state
 
-	This patch (against 2.6.21-rc3-mm1) balances parenthesis in blackfin
-header files.
+If a receive work request has been removed from the queue but
+has not had a CQ entry generated for it and the QP is modified
+to the error state, the completion entry generated is
+incorrect.  This patch fixes the problem.
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Signed-off-by: Ralph Campbell <ralph.campbell@qlogic.com>
+Signed-off-by: Bryan O'Sullivan <bryan.osullivan@qlogic.com>
 
- include/asm-blackfin/mach-bf535/bf535.h |    4 ++--
- include/asm-blackfin/scatterlist.h      |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff -u linux-2.6.21-rc3-mm1-a/include/asm-blackfin/mach-bf535/bf535.h linux-2.6.21-rc3-mm1-b/include/asm-blackfin/mach-bf535/bf535.h
---- linux-2.6.21-rc3-mm1-a/include/asm-blackfin/mach-bf535/bf535.h	2007-03-15 22:25:34.000000000 +0100
-+++ linux-2.6.21-rc3-mm1-b/include/asm-blackfin/mach-bf535/bf535.h	2007-03-15 22:33:09.000000000 +0100
-@@ -224,7 +224,7 @@
- #define UART0_LSR_TEMT			0x40	/* TSR and UARTx_thr both empty */
+diff -r 84a9691cf7ff -r aaee8124e3bc drivers/infiniband/hw/ipath/ipath_qp.c
+--- a/drivers/infiniband/hw/ipath/ipath_qp.c	Thu Mar 15 14:34:25 2007 -0700
++++ b/drivers/infiniband/hw/ipath/ipath_qp.c	Thu Mar 15 14:34:25 2007 -0700
+@@ -519,7 +519,7 @@ int ipath_modify_qp(struct ib_qp *ibqp, 
+ 		break;
  
- #define UART0_MSR_ADDR		0xffc0180c	/* UART 0 Modem status register  16 bit */
--#define UART0_MSR			HALFWORD_REF(UART0_MSR_ADDR
-+#define UART0_MSR			HALFWORD_REF(UART0_MSR_ADDR)
- #define UART0_SCR_ADDR		0xffc0180e	/* UART 0 Scratch register  16 bit */
- #define UART0_SCR			HALFWORD_REF(UART0_SCR_ADDR)
- #define UART0_IRCR_ADDR		0xffc01810	/* UART 0 IrDA Control register  16 bit */
-@@ -331,7 +331,7 @@
- #define UART1_LSR_TEMT          0x40	/* TSR and UARTx_thr both empty */
+ 	case IB_QPS_ERR:
+-		ipath_error_qp(qp, IB_WC_GENERAL_ERR);
++		ipath_error_qp(qp, IB_WC_WR_FLUSH_ERR);
+ 		break;
  
- #define UART1_MSR_ADDR		0xffc01c0c	/* UART 1 Modem status register  16 bit */
--#define UART1_MSR			HALFWORD_REF(UART1_MSR_ADDR
-+#define UART1_MSR			HALFWORD_REF(UART1_MSR_ADDR)
- #define UART1_SCR_ADDR		0xffc01c0e	/* UART 1 Scratch register  16 bit */
- #define UART1_SCR			HALFWORD_REF(UART1_SCR_ADDR)
- 
-diff -upr linux-2.6.21-rc3-mm1-a/include/asm-blackfin/scatterlist.h linux-2.6.21-rc3-mm1-b/include/asm-blackfin/scatterlist.h
---- linux-2.6.21-rc3-mm1-a/include/asm-blackfin/scatterlist.h	2007-03-15 22:25:34.000000000 +0100
-+++ linux-2.6.21-rc3-mm1-b/include/asm-blackfin/scatterlist.h	2007-03-15 22:30:18.000000000 +0100
-@@ -17,7 +17,7 @@ struct scatterlist {
-  * returns, or alternatively stop on the first sg_dma_len(sg) which
-  * is 0.
-  */
--#define sg_address(sg) (page_address((sg)->page) + (sg)->offset
-+#define sg_address(sg) (page_address((sg)->page) + (sg)->offset)
- #define sg_dma_address(sg)      ((sg)->dma_address)
- #define sg_dma_len(sg)          ((sg)->length)
-
-
-
-Regards,
-
-	Mariusz Kozlowski
-
+ 	default:
+diff -r 84a9691cf7ff -r aaee8124e3bc drivers/infiniband/hw/ipath/ipath_ud.c
+--- a/drivers/infiniband/hw/ipath/ipath_ud.c	Thu Mar 15 14:34:25 2007 -0700
++++ b/drivers/infiniband/hw/ipath/ipath_ud.c	Thu Mar 15 14:34:25 2007 -0700
+@@ -647,6 +647,7 @@ void ipath_ud_rcv(struct ipath_ibdev *de
+ 		ipath_skip_sge(&qp->r_sge, sizeof(struct ib_grh));
+ 	ipath_copy_sge(&qp->r_sge, data,
+ 		       wc.byte_len - sizeof(struct ib_grh));
++	qp->r_wrid_valid = 0;
+ 	wc.wr_id = qp->r_wr_id;
+ 	wc.status = IB_WC_SUCCESS;
+ 	wc.opcode = IB_WC_RECV;
