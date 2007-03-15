@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbXCOU2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750797AbXCOUcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751962AbXCOU2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 16:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXCOU2i
+	id S1750797AbXCOUcE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 16:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbXCOUcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 16:28:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49851 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751962AbXCOU2h (ORCPT
+	Thu, 15 Mar 2007 16:32:04 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:41251 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbXCOUcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 16:28:37 -0400
-Date: Thu, 15 Mar 2007 13:28:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
-In-Reply-To: <20070313042742.e35b7511.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703151324150.27311@schroedinger.engr.sgi.com>
-References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com>
- <20070313005334.853559ca.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703130413080.5720@schroedinger.engr.sgi.com>
- <20070313042742.e35b7511.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Mar 2007 16:32:01 -0400
+Date: Thu, 15 Mar 2007 21:31:59 +0100
+From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ashif Harji <asharji@cs.uwaterloo.ca>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-mm@kvack.org, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+Message-ID: <20070315203159.GA15463@rhlx01.hs-esslingen.de>
+References: <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <45F96CCB.4000709@redhat.com> <20070315162944.GI8321@wotan.suse.de> <Pine.GSO.4.64.0703151532530.29483@cpu102.cs.uwaterloo.ca> <20070315200739.GD19625@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070315200739.GD19625@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Mar 2007, Andrew Morton wrote:
+Hi,
 
-> > 1. We need to support other states of pages other than zeroed.
-> 
-> What does this mean?
+On Thu, Mar 15, 2007 at 09:07:39PM +0100, Nick Piggin wrote:
+> Well in general we like to help applications that help themselves. It
+> is actually a good heuristic, surprisingly. If an application randomly
+> accesses the same page (and there is no write activity going on), then
+> it would be better off to cache it in userspace, and if it doesn't care
+> to do that then it won't mind having to read it off disk now and again :)
 
-pgd are not completely zeroed. They contain mappings that are always 
-present. Thus the state is not a zeroed state.
+Sounds like a good plan since this probably is a nice way to make stupid apps
+doing stupid things sit up and take notice, and maybe the authors will then go
+so far as fixing up a few more things that are hurting them once they actually
+recognize that something is weird due to overly bad performance.
 
-> > 2. Prezeroing does not make much sense if a large portion of the
-> >    page is being used. Performance is better if the whole page 
-> >    is zeroed directly before use.Prezeroing only makes sense for sparse
-> >    allocations like the page table pages.
-> 
-> This is not related to the above discussion.
+Why go to great lengths to support stupid apps when there are still so many things
+which could be done to help well-behaving ones? ;)
 
-Really? I definitely see the word prezeroing in the discussion.
-
-> > I already tried that 3 years ago and there was *no* benefit for usual
-> > users of the a page allocator. The advantage exists only if a small
-> > portion of the page is used. F.e. For one cacheline there was a 4x 
-> > improvement. See lkml archives for prezeroing.
-> 
-> Unsurprised.  Were non-temporal stores tried?
-
-Yes with no material change. The work lead to making ia64 use non 
-temporal stores for spin unlock but it was not useful for prezeroing.
-
+Andreas Mohr
