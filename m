@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbXCOKZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752804AbXCOK1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbXCOKZr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 06:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXCOKZr
+	id S1752804AbXCOK1H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 06:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXCOK1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 06:25:47 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:42197 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752791AbXCOKZq (ORCPT
+	Thu, 15 Mar 2007 06:27:07 -0400
+Received: from vulpecula.futurs.inria.fr ([195.83.212.5]:37235 "EHLO
+	vulpecula.futurs.inria.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752804AbXCOK1F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 06:25:46 -0400
-Date: Thu, 15 Mar 2007 11:27:25 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
-       <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
-Message-ID: <20070315112725.7eadb7b7@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0703141516150.7723-100000@iolanthe.rowland.org>
-References: <20070314194337.5d439dab@gondolin.boeblingen.de.ibm.com>
-	<Pine.LNX.4.44L0.0703141516150.7723-100000@iolanthe.rowland.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Mar 2007 06:27:05 -0400
+Message-ID: <45F91F73.8040200@tremplin-utc.net>
+Date: Thu, 15 Mar 2007 11:26:59 +0100
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Thunderbird 2.0b2 (X11/20070307)
+MIME-Version: 1.0
+To: Vojtech Pavlik <vojtech@suse.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, mitr@volny.cz, otauber@web.de,
+       linux-kernel@vger.kernel.org,
+       linux-input <linux-input@atrey.karlin.mff.cuni.cz>
+Subject: Re: [PATCH 0/2] wistron_btns: More keymaps
+References: <45ECA23A.5010503@tremplin-utc.net> <d120d5000703060536k7743ece9hb20fa4d1f7ad7ad7@mail.gmail.com> <45ED8809.70309@tremplin-utc.net> <45F72D37.6090004@tremplin-utc.net> <d120d5000703140654y4d8cb0a3oafd49c48a045bd77@mail.gmail.com> <20070314182559.GC5264@suse.cz> <d120d5000703141158t4d02b8b7pc4ab967722dac@mail.gmail.com> <20070314190254.GA5843@suse.cz>
+In-Reply-To: <20070314190254.GA5843@suse.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Mar 2007 15:23:10 -0400 (EDT),
-Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> > > +struct other_task_struct {
-> > > +	struct kobject 		*kobj;
-> > > +	void			(*func)(void *);
-> > > +	void			*data;
-> > > +	struct work_struct	work;
-> > > +};
-> > > +
-> > > +static void other_task_work(struct work_struct *work)
-> > > +{
-> > > +	struct other_task_struct *ots = container_of(work,
-> > > +			struct other_task_struct, work);
-> > > +
-> > > +	(ots->func)(ots->data);
-> > > +	kobject_put(ots->kobj);
-> > > +	kfree(ots);
-> > > +}
-> > 
-> > The naming seems a bit unintuitive, but I don't have a good
-> > alternative idea. Perhaps sysfs_work_struct, sysfs_delayed_work()?
+03/14/2007 08:02 PM, Vojtech Pavlik wrote/a écrit:
+> On Wed, Mar 14, 2007 at 02:58:49PM -0400, Dmitry Torokhov wrote:
 > 
-> sysfs_work_struct is too generic; other parts of sysfs might also want to
-> use workqueues for different purposes.
+>>>> 2. I also have a concern about using KEY_SCREEN to signal toggling
+>>>> display on and off. I am CCing Vojtech - he must know what the
+>>>> original intent of this key code was. BTW, when user presses
+>>>> corresponding button - does the display actually goes off? Maybe we
+>>>> need another switch.
+>>> Sorry, Dmitry, I probably should have documented it back then, I don't
+>>> have the slightest idea anymore.
+>>>
+>> That's what I was afraid of ;) Well, maybe we should just use it to
+>> indicate display switch and add a comment to that effect to input.h...
+> 
+> Digging somewhat deeper into my memory, I think it just so happened that
+> there was a keyboard with a key with a pictogram of a computer screen on
+> it with no really defined purpose. Since at that time there was only a
+> limited number of different extended keyboard types, it was added.
+> 
+> I think it'd make sense to use it eg. for the key that switches between
+> internal and external output on laptops, if the laptop generates a
+> keycode for the key at all. But maybe that function is already taken by
+> KEY_SWITCHVIDEOMODE ...
 
-> I don't like calling it "delayed"-anything, because the operations aren't
-> necessarily delayed!  On an SMP system they might even execute before the
-> sysfs_access_in_other_task() call returns.  (Although the two examples we
-> have so far can't do that because of lock contention.)
+Ok, so let me summarize:
 
-Sure. But then you shouldn't refer to "delay" in the comments for the
-functions as well :)
+There are two kinds of keys on those laptops (for which we are not sure 
+about the keycode that it should generate):
+* Laptop screen on/off
+* Display output selection (for instance: laptop/external/both)
 
-> The major feature added here is that the work takes place in a different 
-> task's context, not that it is delayed.  Hence the choice of names.
+The possible keycodes that we could assign to them:
+KEY_SCREEN
+KEY_MEDIA
+KEY_MODE
+KEY_VIDEO
+KEY_SWITCHVIDEOMODE
+KEY_COMPUTER
+KEY_PC
 
-Hm. Perhaps device_schedule_access()?
+ From the discussion, I had the feeling this association would be the 
+less incorrect:
+Screen on/off : KEY_SCREEN
+Display selection : KEY_SWITCHVIDEOMODE
+
+Is that ok with everyone? If not, please suggest something better ;-)
+
+See you,
+Eric
+
+PS: So far, I believe that for all laptops, those keys are just normal 
+keys (as opposed to a key which would also do by itself its intended 
+action).  At least on a 3020, pressing "screen on/off" doesn't 
+automatically switch on/off the screen.
+
+
+
