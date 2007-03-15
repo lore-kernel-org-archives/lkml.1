@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbXCONkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933549AbXCONmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933559AbXCONkX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 09:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933563AbXCONkX
+	id S933549AbXCONmq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 09:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933563AbXCONmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 09:40:23 -0400
-Received: from 1wt.eu ([62.212.114.60]:1189 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933559AbXCONkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 09:40:22 -0400
-Date: Thu, 15 Mar 2007 14:40:02 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Syed Ahemed <kingkhan@gmail.com>, linux-kernel@vger.kernel.org,
-       msnyder@redhat.com, jjohnstn@redhat.com
-Subject: Re: NPTL patch for linux 2.4.28
-Message-ID: <20070315134002.GB16199@1wt.eu>
-References: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com> <20070314055556.GP943@1wt.eu> <3d53b7120703141444k6484ccfeyd08cf60ecbbb894a@mail.gmail.com> <1173945186.25356.23.camel@twins>
+	Thu, 15 Mar 2007 09:42:46 -0400
+Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:51998 "EHLO
+	webmail.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933549AbXCONmp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 09:42:45 -0400
+Subject: Re: [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
+From: Ian Campbell <Ian.Campbell@XenSource.com>
+To: vgoyal@in.ibm.com
+Cc: Horms <horms@verge.net.au>, hbabu@us.ibm.com, fastboot@lists.osdl.org,
+       linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>
+In-Reply-To: <20070315132616.GH6766@in.ibm.com>
+References: <1173891609.8591.41.camel@localhost.localdomain>
+	 <20070315014635.GC28396@verge.net.au> <20070315045536.GA6766@in.ibm.com>
+	 <20070315050754.GB22329@verge.net.au> <20070315054726.GC6766@in.ibm.com>
+	 <1173961378.8591.63.camel@localhost.localdomain>
+	 <20070315132616.GH6766@in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 15 Mar 2007 13:42:39 +0000
+Message-Id: <1173966159.8591.82.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173945186.25356.23.camel@twins>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Mar 2007 13:42:44.0969 (UTC) FILETIME=[CFA83D90:01C76707]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 08:53:06AM +0100, Peter Zijlstra wrote:
-> On Thu, 2007-03-15 at 03:14 +0530, Syed Ahemed wrote:
+On Thu, 2007-03-15 at 18:56 +0530, Vivek Goyal wrote:
 > 
-> > Getting RHEL's source ( http://lkml.org/lkml/2005/3/21/380 ) was an
-> > idea i thought about but then a download of the RHEL source from the
-> > following location was denied .
-> > http://download.fedora.redhat.com/pub/fedora/linux/core/1/SRPMS/  and
-> > the rpmfind site.
-> > (Guess need to be a paid subscriber for that right ?)
-> 
-> Strangely enough you try to download Fedora Core SRPMs whilst you speak
-> of RHEL. Try this one:
-> 
-> ftp://ftp.redhat.com/pub/redhat/linux/enterprise/3/en/os/i386/SRPMS/kernel-2.4.21-4.EL.src.rpm
-> 
-> Also, CentOS would have similar sources. Google could have informed you
-> on that.
-> 
-> > I still wonder why there aren't any NPTL patches available in the
-> > non-redhat sites for kernels like 2.4.21 or more .
-> 
-> Because most people, especially the ones on this mailing list have moved
-> on to 2.6 quite some time ago. May I suggest you do the same?
+> Ideal place for this probably should have been arch dependent
+> crash_dump.h file. But we don't have one and no point introducing one
+> just for this  macro.
 
-... or they stick to 2.4 for specific uses and do not need NPTL at all, which
-came late in the development cycle.
+Agreed.
 
-Regards,
-Willy
+> This change looks good to me. 
+
+Is there a kdump tree which you'll apply to or shall I resend CCing
+apkm? (I'll add an Acked-by if that's ok).
+
+Ian.
+
 
