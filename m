@@ -1,109 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751431AbXCOVt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751060AbXCOVvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751431AbXCOVt7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 17:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbXCOVt7
+	id S1751060AbXCOVvo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 17:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbXCOVvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 17:49:59 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:3861 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751408AbXCOVt6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 17:49:58 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 15 Mar 2007 21:49:56.0273 (UTC) FILETIME=[DEDF4210:01C7674B]
-Content-class: urn:content-classes:message
-Subject: Re: [linux-usb-devel] USB Keyboard
-Date: Thu, 15 Mar 2007 17:49:56 -0400
-Message-ID: <Pine.LNX.4.61.0703151745360.5799@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.64.0703152236390.12394@twin.jikos.cz>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [linux-usb-devel] USB Keyboard
-Thread-Index: AcdnS97wWGbN3ImKQC+fZdAj5w/CRA==
-References: <Pine.LNX.4.44L0.0703151506010.2482-100000@iolanthe.rowland.org> <Pine.LNX.4.61.0703151541430.4459@chaos.analogic.com> <Pine.LNX.4.64.0703152236390.12394@twin.jikos.cz>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Linux kernel" <linux-kernel@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+	Thu, 15 Mar 2007 17:51:44 -0400
+Received: from www.osadl.org ([213.239.205.134]:44755 "EHLO mail.tglx.de"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751060AbXCOVvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 17:51:43 -0400
+Subject: Re: [patch 6/13] signalfd/timerfd/asyncfd v5 - timerfd core ...
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <send-serie.davidel@xmailserver.org.13805.1173910766.6>
+References: <send-serie.davidel@xmailserver.org.13805.1173910766.6>
+Content-Type: text/plain
+Date: Thu, 15 Mar 2007 22:58:09 +0100
+Message-Id: <1173995889.13341.217.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Davide,
 
-On Thu, 15 Mar 2007, Jiri Kosina wrote:
+On Wed, 2007-03-14 at 15:19 -0700, Davide Libenzi wrote:
 
-> On Thu, 15 Mar 2007, linux-os (Dick Johnson) wrote:
->
-> [...]
->> The initrd "linuxrc" file that loads the modules is here. One can see
->> the order in which the modules are loaded. We had to make our own shell
->> to replace 'nash' because the SCSI drivers spawned "children" that
->> confused nash with SIGCHLD when they executed.
-> [...]
->> echo "Loading uhci-hcd.ko module"
->> insmod /lib/uhci-hcd.ko
->> echo "Loading ehci-hcd.ko module"
->> insmod /lib/ehci-hcd.ko
->> echo "Loading usbhid.ko module"
->> insmod /lib/usbhid.ko
->> echo "Loading usbkbd.ko module"
->> insmod /lib/usbkbd.ko
->
-> Could you please try to *not* insmod usbkbd module? Or is there any
-> special particular reason for you doing so?
->
-> This module is not what should be used in a normal situation on production
-> and fully working systems. Everything for USB keyboard to work is normally
-> handled by the usbhid module. Please see the description of what usbkbd
-> is:
->
-> config USB_KBD
->        tristate "USB HIDBP Keyboard (simple Boot) support"
->        depends on USB && INPUT
->        ---help---
->          Say Y here only if you are absolutely sure that you don't want
->          to use the generic HID driver for your USB keyboard and prefer
->          to use the keyboard in its limited Boot Protocol mode instead.
->
->          This is almost certainly not what you want.  This is mostly
->          useful for embedded applications or simple keyboards.
->
->          To compile this driver as a module, choose M here: the
->          module will be called usbkbd.
->
->          If even remotely unsure, say N.
->
-> The module could be buggy, your keyboard might be hidbp incompatible, or
-> whatever. usbkbd is very rarely used and is there only for really special
-> ocasions, as the Kconfig help text clearly states.
->
-> So could you please try without this module loaded and let me know the
-> result?
->
-> -- 
-> Jiri Kosina
+> +static int timerfd_tmrproc(struct hrtimer *htmr)
+> +{
+> +	struct timerfd_ctx *ctx = container_of(htmr, struct timerfd_ctx, tmr);
+> +	int rval = HRTIMER_NORESTART;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&ctx->lock, flags);
+> +	ctx->ticks++;
+> +	wake_up_locked(&ctx->wqh);
+> +	if (ctx->tintv.tv64 != 0) {
+> +		hrtimer_forward(htmr, htmr->base->softirq_time, ctx->tintv);
 
-Yes! I will try it in the morning. It's now past quitting time and,
-following this thread, you will note that the ohci module needed to
-be loaded for this AMD unit so the keyboard now works! I will
-remove the unused modules tomorrow morning and post hopefully
-good news. I used the usbkbd module in a blind attempt to get
-things working (I have been following a lot of suggestions).
+Sorry, I missed that in the first reviews. Please use
+hrtimer_cb_get_time(htmr) instead of htmr->base->softirq_time, so this
+is high res timer safe.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5615.29 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
+> +		rval = HRTIMER_RESTART;
+> +	}
+> +	spin_unlock_irqrestore(&ctx->lock, flags);
+> +
+> +	return rval;
+> +}
+> +
+> +
+> +static int timerfd_setup(struct timerfd_ctx *ctx, int clockid, int flags,
+> +			 const struct itimerspec *ktmr)
+> +{
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Make this void, returns 0 anyway
 
-Thank you.
+> +	enum hrtimer_mode htmode;
+> +
+> +	htmode = (flags & TFD_TIMER_ABSTIME) ? HRTIMER_ABS: HRTIMER_REL;
+> +
+> +	ctx->ticks = 0;
+> +	ctx->clockid = clockid;
+> +	ctx->flags = flags;
+> +	ctx->texp = timespec_to_ktime(ktmr->it_value);
+
+clockid is stored in the timer on setup, so no need to store it again.
+expiry time and flags are not used after setup.
+
+Please remove those fields.
+
+> +	ctx->tintv = timespec_to_ktime(ktmr->it_interval);
+> +	hrtimer_init(&ctx->tmr, ctx->clockid, htmode);
+> +	ctx->tmr.expires = ctx->texp;
+> +	ctx->tmr.function = timerfd_tmrproc;
+> +	if (ctx->texp.tv64 != 0)
+> +		hrtimer_start(&ctx->tmr, ctx->texp, htmode);
+> +
+> +	return 0;
+> +}
+> +
+> +	if (ufd == -1) {
+> +		ctx = kmem_cache_alloc(timerfd_ctx_cachep, GFP_KERNEL);
+> +		if (!ctx)
+> +			return -ENOMEM;
+> +
+> +		init_waitqueue_head(&ctx->wqh);
+> +		spin_lock_init(&ctx->lock);
+> +		ctx->clockid = -1;
+> +
+> +		error = timerfd_setup(ctx, clockid, flags, &ktmr);
+> +		if (error)
+> +			goto err_ctxfree;
+
+Timer setup can not fail
+
+> +		/*
+> +		 * When we call this, the initialization must be complete, since
+> +		 * aino_getfd() will install the fd.
+> +		 */
+> +		error = aino_getfd(&ufd, &inode, &file, "[timerfd]",
+> +				   &timerfd_fops, ctx);
+> +		if (error)
+> +			goto err_ctxfree;
+
+Again: Please turn this around. No need to start the timer before we
+know, that everything works. 
+
+> +	} else {
+> +		file = fget(ufd);
+> +		if (!file)
+> +			return -EBADF;
+> +		ctx = file->private_data;
+> +		if (file->f_op != &timerfd_fops) {
+> +			fput(file);
+> +			return -EINVAL;
+> +		}
+> +		/*
+> +		 * We need to stop the existing timer before reprogramming
+> +		 * it to the new values.
+> +		 */
+> +		for (;;) {
+> +			spin_lock_irq(&ctx->lock);
+> +			if (hrtimer_try_to_cancel(&ctx->tmr) >= 0)
+> +				break;
+> +			spin_unlock_irq(&ctx->lock);
+> +			cpu_relax();
+> +		}
+> +		/*
+> +		 * Re-program the timer to the new value ...
+> +		 */
+> +		error = timerfd_setup(ctx, clockid, flags, &ktmr);
+
+Timer setup can not fail
+
+> +		spin_unlock_irq(&ctx->lock);
+> +		fput(file);
+> +		if (error)
+> +			return error;
+> +	}
+> +
+> +	return ufd;
+> +
+> +err_ctxfree:
+> +	timerfd_cleanup(ctx);
+> +	return error;
+> +}
+> +
+> +
+> +static void timerfd_cleanup(struct timerfd_ctx *ctx)
+> +{
+> +	if (ctx->clockid >= 0)
+> +		hrtimer_cancel(&ctx->tmr);
+
+You don't have a file descriptor, when the setup failed. So the timer is
+always initialized.
+
+> +	kmem_cache_free(timerfd_ctx_cachep, ctx);
+> +}
+> +
+> +
+> +static int timerfd_close(struct inode *inode, struct file *file)
+> +{
+> +	timerfd_cleanup(file->private_data);
+> +	return 0;
+> +}
+> +
+
+Please move the timerfd_cleanup code into close(). 
+
+	tglx
+
+
