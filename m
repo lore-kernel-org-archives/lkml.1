@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422876AbXCOPEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422879AbXCOPG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422876AbXCOPEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 11:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422872AbXCOPEQ
+	id S1422879AbXCOPG6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 11:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422881AbXCOPG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 11:04:16 -0400
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:34860 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422867AbXCOPEP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 11:04:15 -0400
-X-Sasl-enc: 2QRBerheaDESzTJGKpYgSGNizHGvxBvPEqP5ua8oJotE 1173971054
-Date: Thu, 15 Mar 2007 12:04:02 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] ACPI_IBM_BAY can not coexist with ACPI_BAY
-Message-ID: <20070315150402.GA1048@khazad-dum.debian.net>
-References: <20070315071019.GA22613@tuatara.stupidest.org>
+	Thu, 15 Mar 2007 11:06:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52689 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422879AbXCOPG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 11:06:57 -0400
+Message-ID: <45F960D9.1020609@redhat.com>
+Date: Thu, 15 Mar 2007 11:06:01 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070315071019.GA22613@tuatara.stupidest.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Nick Piggin <npiggin@suse.de>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
+       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173955154.25356.28.camel@twins> <20070315123859.GC8321@wotan.suse.de>
+In-Reply-To: <20070315123859.GC8321@wotan.suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, Chris Wedgwood wrote:
-> ACPI_IBM_BAY cannot coexist with ACPI_BAY --- it causes the IBM ACPI
-> code to fail to initialize so all the IBM ACPI functionality is
-> missing.  The simplest fix is to just make sure the Kconfig magic
-> disallows ACPI_IBM_BAY when ACPI_BAY is enabled.
+Nick Piggin wrote:
+> On Thu, Mar 15, 2007 at 11:39:14AM +0100, Peter Zijlstra wrote:
+>> On Wed, 2007-03-14 at 15:58 -0400, Ashif Harji wrote:
+>>> This patch unconditionally calls mark_page_accessed to prevent pages, 
+>>> especially for small files, from being evicted from the page cache despite 
+>>> frequent access.
+>> Since we're hackling over the use-once stuff again...
+>>
+>> /me brings up: http://marc.info/?l=linux-mm&m=115316894804385&w=2 and
+>> ducks.
 > 
-> Signed-off-by: Chris Wedgwood <cw@f00f.org>
+> Join the club ;) 
+> 
+> http://groups.google.com.au/group/linux.kernel/msg/7b3237b8e715475b?hl=en&
+> 
+> I can't find the patch where I actually did combine it with a PG_usedonce
+> bit, but the end result is pretty similar to your patch.
 
-NAK.
+Except for the bit where vmscan throws away page cache pages
+with PageReferenced set, unless they are mapped :)
 
-I have looked into this issue, and I am working on a better fix to ibm-acpi
-that allows it to coexist somewhat with ACPI_BAY (by disabling ibm-acpi bay
-functionality at runtime if ACPI_BAY is loaded).
+Also, pages that only got accessed once will have the referenced
+bit set too, so your patch gives no way to distinguish between
+pages that were accessed once and pages that were accessed multiple
+times.
+
+> And I think one
+> or two others have also independently invented the same thing.
+> 
+> So it *has* to be good, doesn't it? ;)
+
+No argument there :)
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
