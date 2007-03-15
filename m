@@ -1,1244 +1,332 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030420AbXCOPtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030456AbXCOPue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030420AbXCOPtV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 11:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030459AbXCOPtV
+	id S1030456AbXCOPue (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 11:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030463AbXCOPue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 11:49:21 -0400
-Received: from wlserva2.wldelft.nl ([145.9.150.101]:51646 "EHLO wldelft.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030420AbXCOPtT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 11:49:19 -0400
-Message-ID: <45F96AF7.3000409@wldelft.nl>
-Date: Thu, 15 Mar 2007 16:49:11 +0100
-From: Leroy van Logchem <leroy.vanlogchem@wldelft.nl>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       rdunlap@xenotime.net, Nilshar <nilshar@gmail.com>
-Subject: Re: [Bug 8040] Hang before INIT when CONFIG_HIGHMEM4G=y [Fix CONFIG_COMPAT_VDSO]
-  <- Bad
-References: <200703141013.l2EADP6c027144@fire-2.osdl.org>  <20070314041710.770708c4.akpm@linux-foundation.org> <6bffcb0e0703140430i2202f14dw1681d5c70c1d4e28@mail.gmail.com> <loom.20070314T131349-236@post.gmane.org> <loom.20070314T184515-284@post.gmane.org> <45F966B4.8070607@redhat.com>
-In-Reply-To: <45F966B4.8070607@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Mar 2007 11:50:34 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40392 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030456AbXCOPud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 11:50:33 -0400
+Message-Id: <20070315154638.944768000@suse.de>
+User-Agent: quilt/0.46-14
+Date: Thu, 15 Mar 2007 16:46:39 +0100
+From: Gerd Hoffmann <kraxel@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Ralf Baechle <ralf@linux-mips.org>,
+       Andi Kleen <ak@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [patch v2] Fixes and cleanups for earlyprintk aka boot console.
+Content-Disposition: inline; filename=early-printk-boot-console.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> Leroy van Logchem wrote:
->   
->> Bisecting went well, after 13 compiles this commit was found:
->>
->> a1f3bb9ae4497a2ed3eac773fd7798ac33a0371f is first bad commit
->> commit a1f3bb9ae4497a2ed3eac773fd7798ac33a0371f
->> Author: Roland McGrath <roland@redhat.com>
->> Date:   Fri Jan 26 00:56:46 2007 -0800
->>
->>     [PATCH] Fix CONFIG_COMPAT_VDSO
->>     
->
-> So you do have CONFIG_COMPAT_VDSO in your config, then?
->   
-Yes. 2.6.20 and 2.6.20.1 hang using this .config:
-(Nilshar now also reported all is fine with 2.6.20.3)
-
-# Thu Mar 15 14:24:32 2007
-#
-CONFIG_X86_32=y
-CONFIG_GENERIC_TIME=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_X86=y
-CONFIG_MMU=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-
-#
-# Code maturity level options
-#
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-
-#
-# General setup
-#
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_BSD_PROCESS_ACCT=y
-CONFIG_AUDIT=y
-CONFIG_AUDITSYSCALL=y
-CONFIG_SYSFS_DEPRECATED=y
-CONFIG_INITRAMFS_SOURCE=""
-CONFIG_SYSCTL=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_EXTRA_PASS=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SHMEM=y
-CONFIG_SLAB=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-
-#
-# Loadable module support
-#
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODVERSIONS=y
-CONFIG_KMOD=y
-CONFIG_STOP_MACHINE=y
-
-#
-# Block layer
-#
-CONFIG_BLOCK=y
-CONFIG_LBD=y
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-
-#
-# Processor type and features
-#
-CONFIG_SMP=y
-CONFIG_X86_GENERICARCH=y
-CONFIG_X86_CYCLONE_TIMER=y
-CONFIG_M686=y
-CONFIG_X86_GENERIC=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_XADD=y
-CONFIG_X86_L1_CACHE_SHIFT=7
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_PPRO_FENCE=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_CMPXCHG64=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-CONFIG_NR_CPUS=32
-CONFIG_SCHED_SMT=y
-CONFIG_SCHED_MC=y
-CONFIG_PREEMPT_VOLUNTARY=y
-CONFIG_PREEMPT_BKL=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_X86_MCE=y
-CONFIG_X86_MCE_P4THERMAL=y
-CONFIG_VM86=y
-CONFIG_TOSHIBA=m
-CONFIG_I8K=m
-CONFIG_MICROCODE=m
-CONFIG_MICROCODE_OLD_INTERFACE=y
-CONFIG_X86_MSR=m
-CONFIG_X86_CPUID=m
-
-#
-# Firmware Drivers
-#
-CONFIG_EDD=m
-CONFIG_DELL_RBU=m
-CONFIG_DCDBAS=m
-CONFIG_HIGHMEM64G=y
-CONFIG_PAGE_OFFSET=0xC0000000
-CONFIG_HIGHMEM=y
-CONFIG_X86_PAE=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_RESOURCES_64BIT=y
-CONFIG_HIGHPTE=y
-CONFIG_MTRR=y
-CONFIG_SECCOMP=y
-CONFIG_HZ_250=y
-CONFIG_HZ=250
-CONFIG_PHYSICAL_START=0x100000
-CONFIG_PHYSICAL_ALIGN=0x100000
-CONFIG_COMPAT_VDSO=y
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-
-#
-# Power management options (ACPI, APM)
-#
-CONFIG_PM=y
-CONFIG_PM_LEGACY=y
-
-#
-# ACPI (Advanced Configuration and Power Interface) Support
-#
-CONFIG_ACPI=y
-CONFIG_ACPI_AC=m
-CONFIG_ACPI_BATTERY=m
-CONFIG_ACPI_BUTTON=m
-CONFIG_ACPI_FAN=y
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_THERMAL=y
-CONFIG_ACPI_ASUS=m
-CONFIG_ACPI_TOSHIBA=m
-CONFIG_ACPI_BLACKLIST_YEAR=2001
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-
-#
-# APM (Advanced Power Management) BIOS Support
-#
-CONFIG_APM=y
-CONFIG_APM_CPU_IDLE=y
-CONFIG_APM_RTC_IS_GMT=y
-
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=m
-
-#
-# CPUFreq processor drivers
-#
-CONFIG_X86_ACPI_CPUFREQ=y
-CONFIG_X86_POWERNOW_K6=m
-CONFIG_X86_POWERNOW_K7=y
-CONFIG_X86_POWERNOW_K7_ACPI=y
-CONFIG_X86_SPEEDSTEP_CENTRINO=y
-CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI=y
-CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
-CONFIG_X86_SPEEDSTEP_ICH=y
-CONFIG_X86_P4_CLOCKMOD=m
-CONFIG_X86_LONGRUN=y
-CONFIG_X86_LONGHAUL=y
-
-#
-# shared options
-#
-CONFIG_X86_SPEEDSTEP_LIB=y
-
-#
-# Bus options (PCI, PCMCIA, EISA, MCA, ISA)
-#
-CONFIG_PCI=y
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-CONFIG_PCI_MSI=y
-CONFIG_HT_IRQ=y
-CONFIG_ISA_DMA_API=y
-CONFIG_ISA=y
-CONFIG_K8_NB=y
-
-#
-# PCCARD (PCMCIA/CardBus) support
-#
-
-#
-# PCI Hotplug Support
-#
-
-#
-# Executable file formats
-#
-CONFIG_BINFMT_ELF=y
-CONFIG_BINFMT_MISC=y
-
-#
-# Networking
-#
-CONFIG_NET=y
-
-#
-# Networking options
-#
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-CONFIG_XFRM_USER=y
-CONFIG_NET_KEY=m
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-CONFIG_IP_ADVANCED_ROUTER=y
-CONFIG_ASK_IP_FIB_HASH=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_MULTIPLE_TABLES=y
-CONFIG_IP_ROUTE_MULTIPATH=y
-CONFIG_IP_ROUTE_VERBOSE=y
-CONFIG_NET_IPIP=m
-CONFIG_NET_IPGRE=m
-CONFIG_NET_IPGRE_BROADCAST=y
-CONFIG_IP_MROUTE=y
-CONFIG_IP_PIMSM_V1=y
-CONFIG_IP_PIMSM_V2=y
-CONFIG_SYN_COOKIES=y
-CONFIG_INET_AH=m
-CONFIG_INET_ESP=m
-CONFIG_INET_IPCOMP=m
-CONFIG_INET_XFRM_TUNNEL=m
-CONFIG_INET_TUNNEL=m
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-
-#
-# IP: Virtual Server Configuration
-#
-CONFIG_IP_VS=m
-CONFIG_IP_VS_TAB_BITS=12
-
-#
-# IPVS transport protocol load balancing support
-#
-CONFIG_IP_VS_PROTO_TCP=y
-CONFIG_IP_VS_PROTO_UDP=y
-CONFIG_IP_VS_PROTO_ESP=y
-CONFIG_IP_VS_PROTO_AH=y
-
-#
-# IPVS scheduler
-#
-CONFIG_IP_VS_RR=m
-CONFIG_IP_VS_WRR=m
-CONFIG_IP_VS_LC=m
-CONFIG_IP_VS_WLC=m
-CONFIG_IP_VS_LBLC=m
-CONFIG_IP_VS_LBLCR=m
-CONFIG_IP_VS_DH=m
-CONFIG_IP_VS_SH=m
-CONFIG_IP_VS_SED=m
-CONFIG_IP_VS_NQ=m
-
-#
-# IPVS application helper
-#
-CONFIG_IP_VS_FTP=m
-CONFIG_NETWORK_SECMARK=y
-CONFIG_NETFILTER=y
-CONFIG_BRIDGE_NETFILTER=y
-
-#
-# Core Netfilter Configuration
-#
-
-#
-# IP: Netfilter Configuration
-#
-CONFIG_IP_NF_QUEUE=m
-
-#
-# Bridge: Netfilter Configuration
-#
-CONFIG_BRIDGE_NF_EBTABLES=m
-CONFIG_BRIDGE_EBT_BROUTE=m
-CONFIG_BRIDGE_EBT_T_FILTER=m
-CONFIG_BRIDGE_EBT_T_NAT=m
-CONFIG_BRIDGE_EBT_802_3=m
-CONFIG_BRIDGE_EBT_AMONG=m
-CONFIG_BRIDGE_EBT_ARP=m
-CONFIG_BRIDGE_EBT_IP=m
-CONFIG_BRIDGE_EBT_LIMIT=m
-CONFIG_BRIDGE_EBT_MARK=m
-CONFIG_BRIDGE_EBT_PKTTYPE=m
-CONFIG_BRIDGE_EBT_STP=m
-CONFIG_BRIDGE_EBT_VLAN=m
-CONFIG_BRIDGE_EBT_ARPREPLY=m
-CONFIG_BRIDGE_EBT_DNAT=m
-CONFIG_BRIDGE_EBT_MARK_T=m
-CONFIG_BRIDGE_EBT_REDIRECT=m
-CONFIG_BRIDGE_EBT_SNAT=m
-CONFIG_BRIDGE_EBT_LOG=m
-CONFIG_BRIDGE=m
-CONFIG_VLAN_8021Q=m
-CONFIG_LLC=m
-
-#
-# QoS and/or fair queueing
-#
-CONFIG_NET_SCHED=y
-CONFIG_NET_SCH_FIFO=y
-CONFIG_NET_SCH_CLK_JIFFIES=y
-
-#
-# Queueing/Scheduling
-#
-CONFIG_NET_SCH_CBQ=m
-CONFIG_NET_SCH_HTB=m
-CONFIG_NET_SCH_HFSC=m
-CONFIG_NET_SCH_PRIO=m
-CONFIG_NET_SCH_RED=m
-CONFIG_NET_SCH_SFQ=m
-CONFIG_NET_SCH_TEQL=m
-CONFIG_NET_SCH_TBF=m
-CONFIG_NET_SCH_GRED=m
-CONFIG_NET_SCH_DSMARK=m
-CONFIG_NET_SCH_NETEM=m
-CONFIG_NET_SCH_INGRESS=m
-
-#
-# Classification
-#
-CONFIG_NET_CLS=y
-CONFIG_NET_CLS_TCINDEX=m
-CONFIG_NET_CLS_ROUTE4=m
-CONFIG_NET_CLS_ROUTE=y
-CONFIG_NET_CLS_FW=m
-CONFIG_NET_CLS_U32=m
-CONFIG_CLS_U32_PERF=y
-CONFIG_NET_CLS_RSVP=m
-CONFIG_NET_CLS_RSVP6=m
-CONFIG_NET_CLS_POLICE=y
-CONFIG_NET_CLS_IND=y
-CONFIG_NET_ESTIMATOR=y
-
-#
-# Network testing
-#
-CONFIG_BT=m
-CONFIG_BT_L2CAP=m
-CONFIG_BT_SCO=m
-CONFIG_BT_RFCOMM=m
-CONFIG_BT_RFCOMM_TTY=y
-CONFIG_BT_BNEP=m
-CONFIG_BT_BNEP_MC_FILTER=y
-CONFIG_BT_BNEP_PROTO_FILTER=y
-CONFIG_BT_HIDP=m
-
-#
-# Bluetooth device drivers
-#
-CONFIG_BT_HCIUART=m
-CONFIG_BT_HCIUART_H4=y
-CONFIG_BT_HCIUART_BCSP=y
-CONFIG_BT_HCIVHCI=m
-CONFIG_IEEE80211=m
-CONFIG_IEEE80211_CRYPT_WEP=m
-CONFIG_IEEE80211_CRYPT_CCMP=m
-CONFIG_FIB_RULES=y
-
-#
-# Device Drivers
-#
-
-#
-# Generic Driver Options
-#
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-
-#
-# Connector - unified userspace <-> kernelspace linker
-#
-
-#
-# Memory Technology Devices (MTD)
-#
-CONFIG_MTD=m
-CONFIG_MTD_CONCAT=m
-CONFIG_MTD_PARTITIONS=y
-CONFIG_MTD_REDBOOT_PARTS=m
-CONFIG_MTD_REDBOOT_DIRECTORY_BLOCK=-1
-
-#
-# User Modules And Translation Layers
-#
-CONFIG_MTD_CHAR=m
-CONFIG_MTD_BLKDEVS=m
-CONFIG_MTD_BLOCK=m
-CONFIG_MTD_BLOCK_RO=m
-CONFIG_FTL=m
-CONFIG_NFTL=m
-CONFIG_NFTL_RW=y
-
-#
-# RAM/ROM/Flash chip drivers
-#
-CONFIG_MTD_CFI=m
-CONFIG_MTD_JEDECPROBE=m
-CONFIG_MTD_GEN_PROBE=m
-CONFIG_MTD_MAP_BANK_WIDTH_1=y
-CONFIG_MTD_MAP_BANK_WIDTH_2=y
-CONFIG_MTD_MAP_BANK_WIDTH_4=y
-CONFIG_MTD_CFI_I1=y
-CONFIG_MTD_CFI_I2=y
-CONFIG_MTD_CFI_INTELEXT=m
-CONFIG_MTD_CFI_AMDSTD=m
-CONFIG_MTD_CFI_STAA=m
-CONFIG_MTD_CFI_UTIL=m
-CONFIG_MTD_RAM=m
-CONFIG_MTD_ROM=m
-CONFIG_MTD_ABSENT=m
-
-#
-# Mapping drivers for chip access
-#
-CONFIG_MTD_COMPLEX_MAPPINGS=y
-CONFIG_MTD_SC520CDP=m
-CONFIG_MTD_NETSC520=m
-CONFIG_MTD_ICHXROM=m
-
-#
-# Self-contained MTD device drivers
-#
-CONFIG_MTD_MTDRAM=m
-CONFIG_MTDRAM_TOTAL_SIZE=4096
-CONFIG_MTDRAM_ERASE_SIZE=128
-
-#
-# Disk-On-Chip Device Drivers
-#
-
-#
-# NAND Flash Device Drivers
-#
-CONFIG_MTD_NAND=m
-CONFIG_MTD_NAND_IDS=m
-
-#
-# OneNAND Flash Device Drivers
-#
-
-#
-# Parallel port support
-#
-CONFIG_PARPORT=m
-CONFIG_PARPORT_PC=m
-CONFIG_PARPORT_SERIAL=m
-CONFIG_PARPORT_1284=y
-
-#
-# Plug and Play support
-#
-CONFIG_PNP=y
-
-#
-# Protocols
-#
-
-#
-# Block devices
-#
-CONFIG_BLK_DEV_FD=m
-CONFIG_BLK_CPQ_DA=m
-CONFIG_BLK_CPQ_CISS_DA=m
-CONFIG_CISS_SCSI_TAPE=y
-CONFIG_BLK_DEV_DAC960=m
-CONFIG_BLK_DEV_LOOP=m
-CONFIG_BLK_DEV_CRYPTOLOOP=m
-CONFIG_BLK_DEV_NBD=m
-CONFIG_BLK_DEV_SX8=m
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_COUNT=16
-CONFIG_BLK_DEV_RAM_SIZE=16384
-CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-CONFIG_BLK_DEV_INITRD=y
-
-#
-# Misc devices
-#
-
-#
-# ATA/ATAPI/MFM/RLL support
-#
-CONFIG_IDE=y
-CONFIG_BLK_DEV_IDE=y
-
-#
-# Please see Documentation/ide.txt for help/info on IDE drives
-#
-CONFIG_BLK_DEV_IDEDISK=y
-CONFIG_IDEDISK_MULTI_MODE=y
-CONFIG_BLK_DEV_IDECD=y
-CONFIG_BLK_DEV_IDEFLOPPY=y
-CONFIG_BLK_DEV_IDESCSI=m
-
-#
-# IDE chipset support/bugfixes
-#
-CONFIG_IDE_GENERIC=y
-CONFIG_BLK_DEV_IDEPNP=y
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-CONFIG_BLK_DEV_GENERIC=y
-CONFIG_BLK_DEV_RZ1000=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_IDEDMA_PCI_AUTO=y
-CONFIG_BLK_DEV_AEC62XX=y
-CONFIG_BLK_DEV_ALI15X3=y
-CONFIG_BLK_DEV_AMD74XX=y
-CONFIG_BLK_DEV_ATIIXP=y
-CONFIG_BLK_DEV_CMD64X=y
-CONFIG_BLK_DEV_TRIFLEX=y
-CONFIG_BLK_DEV_CY82C693=y
-CONFIG_BLK_DEV_CS5530=y
-CONFIG_BLK_DEV_HPT34X=y
-CONFIG_BLK_DEV_HPT366=y
-CONFIG_BLK_DEV_PIIX=y
-CONFIG_BLK_DEV_PDC202XX_OLD=y
-CONFIG_BLK_DEV_PDC202XX_NEW=y
-CONFIG_BLK_DEV_SVWKS=y
-CONFIG_BLK_DEV_SIIMAGE=y
-CONFIG_BLK_DEV_SIS5513=y
-CONFIG_BLK_DEV_SLC90E66=y
-CONFIG_BLK_DEV_VIA82CXXX=y
-CONFIG_BLK_DEV_IDEDMA=y
-CONFIG_IDEDMA_AUTO=y
-
-#
-# SCSI device support
-#
-CONFIG_SCSI=m
-CONFIG_SCSI_NETLINK=y
-CONFIG_SCSI_PROC_FS=y
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=m
-CONFIG_CHR_DEV_SG=m
-
-#
-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-#
-CONFIG_SCSI_CONSTANTS=y
-CONFIG_SCSI_LOGGING=y
-
-#
-# SCSI Transports
-#
-CONFIG_SCSI_SPI_ATTRS=m
-CONFIG_SCSI_FC_ATTRS=m
-CONFIG_SCSI_ISCSI_ATTRS=m
-
-#
-# SCSI low-level drivers
-#
-CONFIG_SCSI_ARCMSR=m
-
-#
-# Serial ATA (prod) and Parallel ATA (experimental) drivers
-#
-
-#
-# Old CD-ROM drivers (not SCSI, not IDE)
-#
-
-#
-# Multi-device support (RAID and LVM)
-#
-CONFIG_MD=y
-CONFIG_BLK_DEV_MD=y
-CONFIG_MD_LINEAR=m
-CONFIG_MD_RAID0=m
-CONFIG_MD_RAID1=m
-CONFIG_MD_MULTIPATH=m
-CONFIG_BLK_DEV_DM=m
-
-#
-# Fusion MPT device support
-#
-
-#
-# IEEE 1394 (FireWire) support
-#
-
-#
-# I2O device support
-#
-CONFIG_I2O=m
-CONFIG_I2O_LCT_NOTIFY_ON_CHANGES=y
-CONFIG_I2O_EXT_ADAPTEC=y
-CONFIG_I2O_EXT_ADAPTEC_DMA64=y
-CONFIG_I2O_CONFIG=m
-CONFIG_I2O_CONFIG_OLD_IOCTL=y
-CONFIG_I2O_BLOCK=m
-CONFIG_I2O_SCSI=m
-CONFIG_I2O_PROC=m
-
-#
-# Network device support
-#
-CONFIG_NETDEVICES=y
-CONFIG_DUMMY=m
-CONFIG_BONDING=m
-CONFIG_TUN=m
-
-#
-# ARCnet devices
-#
-
-#
-# PHY device support
-#
-
-#
-# Ethernet (10 or 100Mbit)
-#
-
-#
-# Ethernet (1000 Mbit)
-#
-CONFIG_E1000=y
-CONFIG_E1000_NAPI=y
-
-#
-# Ethernet (10000 Mbit)
-#
-
-#
-# Token Ring devices
-#
-
-#
-# Wireless LAN (non-hamradio)
-#
-
-#
-# Wan interfaces
-#
-
-#
-# ISDN subsystem
-#
-
-#
-# Telephony Support
-#
-
-#
-# Input device support
-#
-CONFIG_INPUT=y
-
-#
-# Userland interfaces
-#
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_JOYDEV=y
-CONFIG_INPUT_EVDEV=y
-
-#
-# Input Device Drivers
-#
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MISC=y
-CONFIG_INPUT_PCSPKR=m
-CONFIG_INPUT_UINPUT=m
-
-#
-# Hardware I/O ports
-#
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_SERPORT=y
-CONFIG_SERIO_LIBPS2=y
-
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_NONSTANDARD=y
-CONFIG_SYNCLINK=m
-CONFIG_SYNCLINKMP=m
-CONFIG_N_HDLC=m
-CONFIG_STALDRV=y
-
-#
-# Serial drivers
-#
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_8250_EXTENDED=y
-CONFIG_SERIAL_8250_SHARE_IRQ=y
-CONFIG_SERIAL_8250_DETECT_IRQ=y
-CONFIG_SERIAL_8250_RSA=y
-
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_PRINTER=m
-CONFIG_LP_CONSOLE=y
-CONFIG_PPDEV=m
-
-#
-# IPMI
-#
-CONFIG_IPMI_HANDLER=m
-CONFIG_IPMI_DEVICE_INTERFACE=m
-CONFIG_IPMI_SI=m
-CONFIG_IPMI_WATCHDOG=m
-CONFIG_IPMI_POWEROFF=m
-
-#
-# Watchdog Cards
-#
-CONFIG_WATCHDOG=y
-
-#
-# Watchdog Device Drivers
-#
-CONFIG_SOFT_WATCHDOG=m
-CONFIG_ACQUIRE_WDT=m
-CONFIG_ADVANTECH_WDT=m
-CONFIG_ALIM1535_WDT=m
-CONFIG_ALIM7101_WDT=m
-CONFIG_SC520_WDT=m
-CONFIG_EUROTECH_WDT=m
-CONFIG_IB700_WDT=m
-CONFIG_WAFER_WDT=m
-CONFIG_I8XX_TCO=m
-CONFIG_SC1200_WDT=m
-CONFIG_CPU5_WDT=m
-CONFIG_W83627HF_WDT=m
-CONFIG_W83877F_WDT=m
-CONFIG_MACHZ_WDT=m
-
-#
-# ISA-based Watchdog Cards
-#
-CONFIG_PCWATCHDOG=m
-CONFIG_WDT=m
-
-#
-# PCI-based Watchdog Cards
-#
-CONFIG_PCIPCWATCHDOG=m
-CONFIG_WDTPCI=m
-CONFIG_WDT_501_PCI=y
-CONFIG_HW_RANDOM=m
-CONFIG_HW_RANDOM_INTEL=m
-CONFIG_HW_RANDOM_AMD=m
-CONFIG_HW_RANDOM_GEODE=m
-CONFIG_HW_RANDOM_VIA=m
-CONFIG_NVRAM=m
-CONFIG_RTC=y
-CONFIG_DTLK=m
-CONFIG_AGP=y
-CONFIG_AGP_ALI=y
-CONFIG_AGP_ATI=y
-CONFIG_AGP_AMD=y
-CONFIG_AGP_AMD64=y
-CONFIG_AGP_INTEL=y
-CONFIG_AGP_NVIDIA=y
-CONFIG_AGP_SIS=y
-CONFIG_AGP_SWORKS=y
-CONFIG_AGP_VIA=y
-CONFIG_AGP_EFFICEON=y
-CONFIG_DRM=y
-CONFIG_DRM_R128=m
-CONFIG_DRM_RADEON=m
-CONFIG_DRM_I810=m
-CONFIG_DRM_I830=m
-CONFIG_DRM_I915=m
-CONFIG_DRM_MGA=m
-CONFIG_RAW_DRIVER=y
-CONFIG_MAX_RAW_DEVS=8192
-CONFIG_HANGCHECK_TIMER=m
-
-#
-# TPM devices
-#
-
-#
-# I2C support
-#
-
-#
-# SPI support
-#
-
-#
-# Dallas's 1-wire bus
-#
-
-#
-# Hardware Monitoring support
-#
-
-#
-# Multimedia devices
-#
-
-#
-# Digital Video Broadcasting Devices
-#
-
-#
-# Graphics support
-#
-
-#
-# Console display driver support
-#
-CONFIG_VGA_CONSOLE=y
-CONFIG_VIDEO_SELECT=y
-CONFIG_MDA_CONSOLE=m
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_BACKLIGHT_CLASS_DEVICE=m
-CONFIG_BACKLIGHT_DEVICE=y
-
-#
-# Sound
-#
-
-#
-# HID Devices
-#
-CONFIG_HID=y
-
-#
-# USB support
-#
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-
-#
-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-#
-
-#
-# USB Gadget Support
-#
-
-#
-# MMC/SD Card support
-#
-
-#
-# LED devices
-#
-
-#
-# LED drivers
-#
-
-#
-# LED Triggers
-#
-
-#
-# InfiniBand support
-#
-
-#
-# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
-#
-
-#
-# Real Time Clock
-#
-
-#
-# DMA Engine support
-#
-
-#
-# DMA Clients
-#
-
-#
-# DMA Devices
-#
-
-#
-# Virtualization
-#
-
-#
-# File systems
-#
-CONFIG_EXT2_FS=y
-CONFIG_EXT2_FS_XATTR=y
-CONFIG_EXT2_FS_POSIX_ACL=y
-CONFIG_EXT2_FS_SECURITY=y
-CONFIG_EXT3_FS=m
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_EXT3_FS_POSIX_ACL=y
-CONFIG_EXT3_FS_SECURITY=y
-CONFIG_JBD=m
-CONFIG_FS_MBCACHE=y
-CONFIG_FS_POSIX_ACL=y
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-CONFIG_QUOTA=y
-CONFIG_QFMT_V2=y
-CONFIG_QUOTACTL=y
-CONFIG_DNOTIFY=y
-CONFIG_AUTOFS4_FS=m
-
-#
-# CD-ROM/DVD Filesystems
-#
-CONFIG_ISO9660_FS=y
-CONFIG_JOLIET=y
-CONFIG_ZISOFS=y
-CONFIG_ZISOFS_FS=y
-CONFIG_UDF_FS=m
-CONFIG_UDF_NLS=y
-
-#
-# DOS/FAT/NT Filesystems
-#
-CONFIG_FAT_FS=m
-CONFIG_MSDOS_FS=m
-CONFIG_VFAT_FS=m
-CONFIG_FAT_DEFAULT_CODEPAGE=437
-CONFIG_FAT_DEFAULT_IOCHARSET="ascii"
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_HUGETLBFS=y
-CONFIG_HUGETLB_PAGE=y
-CONFIG_RAMFS=y
-
-#
-# Miscellaneous filesystems
-#
-CONFIG_CRAMFS=m
-CONFIG_VXFS_FS=m
-
-#
-# Network File Systems
-#
-CONFIG_NFS_FS=m
-CONFIG_NFS_V3=y
-CONFIG_NFS_V3_ACL=y
-CONFIG_NFS_DIRECTIO=y
-CONFIG_NFSD=m
-CONFIG_NFSD_V2_ACL=y
-CONFIG_NFSD_V3=y
-CONFIG_NFSD_V3_ACL=y
-CONFIG_NFSD_TCP=y
-CONFIG_LOCKD=m
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=m
-CONFIG_NFS_ACL_SUPPORT=m
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=m
-CONFIG_SMB_FS=m
-
-#
-# Partition Types
-#
-CONFIG_PARTITION_ADVANCED=y
-CONFIG_OSF_PARTITION=y
-CONFIG_MAC_PARTITION=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_BSD_DISKLABEL=y
-CONFIG_MINIX_SUBPARTITION=y
-CONFIG_SOLARIS_X86_PARTITION=y
-CONFIG_UNIXWARE_DISKLABEL=y
-CONFIG_SGI_PARTITION=y
-CONFIG_SUN_PARTITION=y
-CONFIG_EFI_PARTITION=y
-
-#
-# Native Language Support
-#
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="utf8"
-CONFIG_NLS_CODEPAGE_437=y
-CONFIG_NLS_CODEPAGE_737=m
-CONFIG_NLS_CODEPAGE_775=m
-CONFIG_NLS_CODEPAGE_850=m
-CONFIG_NLS_CODEPAGE_852=m
-CONFIG_NLS_CODEPAGE_855=m
-CONFIG_NLS_CODEPAGE_857=m
-CONFIG_NLS_CODEPAGE_860=m
-CONFIG_NLS_CODEPAGE_861=m
-CONFIG_NLS_CODEPAGE_862=m
-CONFIG_NLS_CODEPAGE_863=m
-CONFIG_NLS_CODEPAGE_864=m
-CONFIG_NLS_CODEPAGE_865=m
-CONFIG_NLS_CODEPAGE_866=m
-CONFIG_NLS_CODEPAGE_869=m
-CONFIG_NLS_CODEPAGE_936=m
-CONFIG_NLS_CODEPAGE_950=m
-CONFIG_NLS_CODEPAGE_932=m
-CONFIG_NLS_CODEPAGE_949=m
-CONFIG_NLS_CODEPAGE_874=m
-CONFIG_NLS_ISO8859_8=m
-CONFIG_NLS_CODEPAGE_1250=m
-CONFIG_NLS_CODEPAGE_1251=m
-CONFIG_NLS_ASCII=y
-CONFIG_NLS_ISO8859_1=m
-CONFIG_NLS_ISO8859_2=m
-CONFIG_NLS_ISO8859_3=m
-CONFIG_NLS_ISO8859_4=m
-CONFIG_NLS_ISO8859_5=m
-CONFIG_NLS_ISO8859_6=m
-CONFIG_NLS_ISO8859_7=m
-CONFIG_NLS_ISO8859_9=m
-CONFIG_NLS_ISO8859_13=m
-CONFIG_NLS_ISO8859_14=m
-CONFIG_NLS_ISO8859_15=m
-CONFIG_NLS_KOI8_R=m
-CONFIG_NLS_KOI8_U=m
-CONFIG_NLS_UTF8=m
-
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_UNUSED_SYMBOLS=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_LOG_BUF_SHIFT=17
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_DEBUG_HIGHMEM=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_INFO=y
-CONFIG_FORCED_INLINING=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_DEBUG_STACKOVERFLOW=y
-CONFIG_DEBUG_STACK_USAGE=y
-CONFIG_4KSTACKS=y
-CONFIG_X86_FIND_SMP_CONFIG=y
-CONFIG_X86_MPPARSE=y
-CONFIG_DOUBLEFAULT=y
-
-#
-# Security options
-#
-CONFIG_KEYS=y
-CONFIG_KEYS_DEBUG_PROC_KEYS=y
-CONFIG_SECURITY=y
-CONFIG_SECURITY_NETWORK=y
-CONFIG_SECURITY_CAPABILITIES=y
-CONFIG_SECURITY_SELINUX=y
-CONFIG_SECURITY_SELINUX_BOOTPARAM=y
-CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=1
-CONFIG_SECURITY_SELINUX_DISABLE=y
-CONFIG_SECURITY_SELINUX_DEVELOP=y
-CONFIG_SECURITY_SELINUX_AVC_STATS=y
-CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=1
-
-#
-# Cryptographic options
-#
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_BLKCIPHER=m
-CONFIG_CRYPTO_HASH=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_HMAC=y
-CONFIG_CRYPTO_NULL=m
-CONFIG_CRYPTO_MD4=m
-CONFIG_CRYPTO_MD5=m
-CONFIG_CRYPTO_SHA1=y
-CONFIG_CRYPTO_SHA256=m
-CONFIG_CRYPTO_SHA512=m
-CONFIG_CRYPTO_WP512=m
-CONFIG_CRYPTO_ECB=m
-CONFIG_CRYPTO_CBC=m
-CONFIG_CRYPTO_DES=m
-CONFIG_CRYPTO_BLOWFISH=m
-CONFIG_CRYPTO_TWOFISH=m
-CONFIG_CRYPTO_TWOFISH_COMMON=m
-CONFIG_CRYPTO_SERPENT=m
-CONFIG_CRYPTO_AES=m
-CONFIG_CRYPTO_AES_586=m
-CONFIG_CRYPTO_CAST5=m
-CONFIG_CRYPTO_CAST6=m
-CONFIG_CRYPTO_TEA=m
-CONFIG_CRYPTO_ARC4=m
-CONFIG_CRYPTO_KHAZAD=m
-CONFIG_CRYPTO_DEFLATE=m
-CONFIG_CRYPTO_MICHAEL_MIC=m
-CONFIG_CRYPTO_CRC32C=m
-
-#
-# Hardware crypto devices
-#
-CONFIG_CRYPTO_DEV_PADLOCK=m
-CONFIG_CRYPTO_DEV_PADLOCK_AES=m
-CONFIG_CRYPTO_DEV_PADLOCK_SHA=m
-CONFIG_CRYPTO_DEV_GEODE=m
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-CONFIG_CRC_CCITT=m
-CONFIG_CRC32=y
-CONFIG_LIBCRC32C=m
-CONFIG_AUDIT_GENERIC=y
-CONFIG_ZLIB_INFLATE=y
-CONFIG_ZLIB_DEFLATE=m
-CONFIG_PLIST=y
-CONFIG_IOMAP_COPY=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_GENERIC_PENDING_IRQ=y
-CONFIG_X86_SMP=y
-CONFIG_X86_HT=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_X86_TRAMPOLINE=y
-CONFIG_KTIME_SCALAR=y
+The console subsystem already has an idea of a boot console, using the
+CON_BOOT flag.  The implementation has some flaws though.  The major
+problem is that presence of a boot console makes register_console()
+ignore any other console devices (unless explicitly specified on the
+kernel command line).
+
+This patch fixes the console selection code to *not* consider a boot
+console a full-featured one, so the first non-boot console registering
+will become the default console instead.  This way the unregister call
+for the boot console in the register_console() function actually
+triggers and the handover from the boot console to the real console
+device works smoothly.  Added a printk for the handover, so you know
+which console device the output goes to when the boot console stops
+printing messages.
+
+The disable_early_printk() call is obsolete with that patch, explicitly
+disabling the early console isn't needed any more as it works
+automagically with that patch.
+
+I've walked through the tree, dropped all disable_early_printk()
+instances found below arch/ and tagged the consoles with CON_BOOT if
+needed.  The code is tested on x86, sh (thanks to Paul) and mips
+(thanks to Ralf).
+
+Changes to last version: Rediffed against -rc3, adapted to mips
+cleanups by Ralf, fixed "udbg-immortal" cmd line arg on powerpc.
+
+Signed-off-by: Gerd Hoffmann <kraxel@exsuse.de>
+Acked-by: Paul Mundt <lethal@linux-sh.org>
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+---
+ arch/alpha/kernel/setup.c         |    9 ---------
+ arch/alpha/kernel/srmcons.c       |    2 +-
+ arch/mips/kernel/early_printk.c   |    5 -----
+ arch/powerpc/kernel/udbg.c        |   19 ++++++-------------
+ arch/sh/kernel/early_printk.c     |   18 ++++++------------
+ arch/sh64/kernel/early_printk.c   |    8 +-------
+ arch/x86_64/kernel/early_printk.c |   20 +++++---------------
+ drivers/char/tty_io.c             |    5 -----
+ kernel/printk.c                   |   26 ++++++++++++++++----------
+ 9 files changed, 35 insertions(+), 77 deletions(-)
+
+===================================================================
+Index: vanilla-2.6.21-rc3/arch/x86_64/kernel/early_printk.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/arch/x86_64/kernel/early_printk.c
++++ vanilla-2.6.21-rc3/arch/x86_64/kernel/early_printk.c
+@@ -244,22 +244,12 @@ static int __init setup_early_printk(cha
+  		early_console = &simnow_console;
+  		keep_early = 1;
+ 	}
++
++	if (keep_early)
++		early_console->flags &= ~CON_BOOT;
++	else
++		early_console->flags |= CON_BOOT;
+ 	register_console(early_console);
+ 	return 0;
+ }
+-
+ early_param("earlyprintk", setup_early_printk);
+-
+-void __init disable_early_printk(void)
+-{
+-	if (!early_console_initialized || !early_console)
+-		return;
+-	if (!keep_early) {
+-		printk("disabling early console\n");
+-		unregister_console(early_console);
+-		early_console_initialized = 0;
+-	} else {
+-		printk("keeping early console\n");
+-	}
+-}
+-
+Index: vanilla-2.6.21-rc3/kernel/printk.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/kernel/printk.c
++++ vanilla-2.6.21-rc3/kernel/printk.c
+@@ -931,8 +931,16 @@ void register_console(struct console *co
+ {
+ 	int i;
+ 	unsigned long flags;
++	struct console *bootconsole = NULL;
+ 
+-	if (preferred_console < 0)
++	if (console_drivers) {
++		if (console->flags & CON_BOOT)
++			return;
++		if (console_drivers->flags & CON_BOOT)
++			bootconsole = console_drivers;
++	}
++
++	if (preferred_console < 0 || bootconsole || !console_drivers)
+ 		preferred_console = selected_console;
+ 
+ 	/*
+@@ -978,8 +986,11 @@ void register_console(struct console *co
+ 	if (!(console->flags & CON_ENABLED))
+ 		return;
+ 
+-	if (console_drivers && (console_drivers->flags & CON_BOOT)) {
+-		unregister_console(console_drivers);
++	if (bootconsole) {
++		printk(KERN_INFO "console handover: boot [%s%d] -> real [%s%d]\n",
++		       bootconsole->name, bootconsole->index,
++		       console->name, console->index);
++		unregister_console(bootconsole);
+ 		console->flags &= ~CON_PRINTBUFFER;
+ 	}
+ 
+@@ -1030,16 +1041,11 @@ int unregister_console(struct console *c
+ 		}
+ 	}
+ 
+-	/* If last console is removed, we re-enable picking the first
+-	 * one that gets registered. Without that, pmac early boot console
+-	 * would prevent fbcon from taking over.
+-	 *
++	/*
+ 	 * If this isn't the last console and it has CON_CONSDEV set, we
+ 	 * need to set it on the next preferred console.
+ 	 */
+-	if (console_drivers == NULL)
+-		preferred_console = selected_console;
+-	else if (console->flags & CON_CONSDEV)
++	if (console_drivers != NULL && console->flags & CON_CONSDEV)
+ 		console_drivers->flags |= CON_CONSDEV;
+ 
+ 	release_console_sem();
+Index: vanilla-2.6.21-rc3/drivers/char/tty_io.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/drivers/char/tty_io.c
++++ vanilla-2.6.21-rc3/drivers/char/tty_io.c
+@@ -141,8 +141,6 @@ static DECLARE_MUTEX(allocated_ptys_lock
+ static int ptmx_open(struct inode *, struct file *);
+ #endif
+ 
+-extern void disable_early_printk(void);
+-
+ static void initialize_tty_struct(struct tty_struct *tty);
+ 
+ static ssize_t tty_read(struct file *, char __user *, size_t, loff_t *);
+@@ -3893,9 +3891,6 @@ void __init console_init(void)
+ 	 * set up the console device so that later boot sequences can 
+ 	 * inform about problems etc..
+ 	 */
+-#ifdef CONFIG_EARLY_PRINTK
+-	disable_early_printk();
+-#endif
+ 	call = __con_initcall_start;
+ 	while (call < __con_initcall_end) {
+ 		(*call)();
+Index: vanilla-2.6.21-rc3/arch/alpha/kernel/setup.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/arch/alpha/kernel/setup.c
++++ vanilla-2.6.21-rc3/arch/alpha/kernel/setup.c
+@@ -744,15 +744,6 @@ setup_arch(char **cmdline_p)
+ 	paging_init();
+ }
+ 
+-void __init
+-disable_early_printk(void)
+-{
+-	if (alpha_using_srm && srmcons_output) {
+-		unregister_srm_console();
+-		srmcons_output = 0;
+-	}
+-}
+-
+ static char sys_unknown[] = "Unknown";
+ static char systype_names[][16] = {
+ 	"0",
+Index: vanilla-2.6.21-rc3/arch/alpha/kernel/srmcons.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/arch/alpha/kernel/srmcons.c
++++ vanilla-2.6.21-rc3/arch/alpha/kernel/srmcons.c
+@@ -300,7 +300,7 @@ static struct console srmcons = {
+ 	.write		= srm_console_write,
+ 	.device		= srm_console_device,
+ 	.setup		= srm_console_setup,
+-	.flags		= CON_PRINTBUFFER,
++	.flags		= CON_PRINTBUFFER | CON_BOOT,
+ 	.index		= -1,
+ };
+ 
+Index: vanilla-2.6.21-rc3/arch/powerpc/kernel/udbg.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/arch/powerpc/kernel/udbg.c
++++ vanilla-2.6.21-rc3/arch/powerpc/kernel/udbg.c
+@@ -142,29 +142,22 @@ static void udbg_console_write(struct co
+ static struct console udbg_console = {
+ 	.name	= "udbg",
+ 	.write	= udbg_console_write,
+-	.flags	= CON_PRINTBUFFER | CON_ENABLED,
++	.flags	= CON_PRINTBUFFER | CON_ENABLED | CON_BOOT,
+ 	.index	= -1,
+ };
+ 
+ static int early_console_initialized;
+ 
+-void __init disable_early_printk(void)
+-{
+-	if (!early_console_initialized)
+-		return;
+-	if (strstr(boot_command_line, "udbg-immortal")) {
+-		printk(KERN_INFO "early console immortal !\n");
+-		return;
+-	}
+-	unregister_console(&udbg_console);
+-	early_console_initialized = 0;
+-}
+-
+ /* called by setup_system */
+ void register_early_udbg_console(void)
+ {
+ 	if (early_console_initialized)
+ 		return;
++
++	if (strstr(boot_command_line, "udbg-immortal")) {
++		printk(KERN_INFO "early console immortal !\n");
++		udbg_console.flags &= ~CON_BOOT;
++	}
+ 	early_console_initialized = 1;
+ 	register_console(&udbg_console);
+ }
+Index: vanilla-2.6.21-rc3/arch/sh/kernel/early_printk.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/arch/sh/kernel/early_printk.c
++++ vanilla-2.6.21-rc3/arch/sh/kernel/early_printk.c
+@@ -192,20 +192,14 @@ int __init setup_early_printk(char *buf)
+ 	}
+ #endif
+ 
+-	if (likely(early_console))
++	if (likely(early_console)) {
++		if (keep_early)
++			early_console->flags &= ~CON_BOOT;
++		else
++			early_console->flags |= CON_BOOT;
+ 		register_console(early_console);
++	}
+ 
+ 	return 0;
+ }
+ early_param("earlyprintk", setup_early_printk);
+-
+-void __init disable_early_printk(void)
+-{
+-	if (!early_console_initialized || !early_console)
+-		return;
+-	if (!keep_early) {
+-		printk("disabling early console\n");
+-		unregister_console(early_console);
+-	} else
+-		printk("keeping early console\n");
+-}
+Index: vanilla-2.6.21-rc3/arch/sh64/kernel/early_printk.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/arch/sh64/kernel/early_printk.c
++++ vanilla-2.6.21-rc3/arch/sh64/kernel/early_printk.c
+@@ -79,7 +79,7 @@ static struct console sh_console = {
+ 	.name		= "scifcon",
+ 	.write		= sh_console_write,
+ 	.setup		= sh_console_setup,
+-	.flags		= CON_PRINTBUFFER,
++	.flags		= CON_PRINTBUFFER | CON_BOOT,
+ 	.index		= -1,
+ };
+ 
+@@ -97,9 +97,3 @@ void __init enable_early_printk(void)
+ 
+ 	register_console(&sh_console);
+ }
+-
+-void disable_early_printk(void)
+-{
+-	unregister_console(&sh_console);
+-}
+-
+Index: vanilla-2.6.21-rc3/arch/mips/kernel/early_printk.c
+===================================================================
+--- vanilla-2.6.21-rc3.orig/arch/mips/kernel/early_printk.c
++++ vanilla-2.6.21-rc3/arch/mips/kernel/early_printk.c
+@@ -33,8 +33,3 @@ void __init setup_early_printk(void)
+ {
+ 	register_console(&early_console);
+ }
+-
+-void __init disable_early_printk(void)
+-{
+-	unregister_console(&early_console);
+-}
+
+-- 
+Gerd Hoffmann <kraxel@suse.de>
 
