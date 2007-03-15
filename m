@@ -1,92 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422721AbXCOO0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422723AbXCOO1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422721AbXCOO0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 10:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422722AbXCOO0A
+	id S1422723AbXCOO1V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 10:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422726AbXCOO1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 10:26:00 -0400
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:43845 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422721AbXCOOZ7 (ORCPT
+	Thu, 15 Mar 2007 10:27:21 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43979 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1422723AbXCOO1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 10:25:59 -0400
-Message-Id: <1173968759.13755.1179613375@webmail.messagingengine.com>
-X-Sasl-Enc: +QDX5CJjOH7ExiWCRdv56LOrrHViBcgRvIF0ePoPm4G9 1173968759
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: sbhushan@cadence.com, linux-kernel@vger.kernel.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Thu, 15 Mar 2007 10:27:20 -0400
+Date: Thu, 15 Mar 2007 10:27:19 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
+       <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+In-Reply-To: <20070315112725.7eadb7b7@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0703150953420.13086-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <45F92C1E.2040604@cadence.com>
-Subject: Re: Files not visible across NFS
-In-Reply-To: <45F92C1E.2040604@cadence.com>
-Date: Thu, 15 Mar 2007 15:25:59 +0100
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007 16:51:02 +0530, "Sai Bhushan" <sbhushan@cadence.com>
-said:
-> Hi,
+On Thu, 15 Mar 2007, Cornelia Huck wrote:
+
+> > > The naming seems a bit unintuitive, but I don't have a good
+> > > alternative idea. Perhaps sysfs_work_struct, sysfs_delayed_work()?
+> > 
+> > sysfs_work_struct is too generic; other parts of sysfs might also want to
+> > use workqueues for different purposes.
 > 
-> I am facing a problem where-in some files are not visible across NFS and 
-> hence, not able to read those files. However, after sometime, the files 
-> become visible and the data is accessible. I have tried to do an 'ls -l' 
-> operation on the directory and repeat it till the directory gets mounted 
-> and visible. This works in some cases but sometimes fails as well.
+> > I don't like calling it "delayed"-anything, because the operations aren't
+> > necessarily delayed!  On an SMP system they might even execute before the
+> > sysfs_access_in_other_task() call returns.  (Although the two examples we
+> > have so far can't do that because of lock contention.)
 > 
-> Is there any reliable way of ensuring that the directory gets mounted 
-> and all files in it are visible before accessing the data ??
+> Sure. But then you shouldn't refer to "delay" in the comments for the
+> functions as well :)
+
+Fair enough.  One use of "delay" is in a comment you wrote; I'll change it 
+as well.
+
+> > The major feature added here is that the work takes place in a different 
+> > task's context, not that it is delayed.  Hence the choice of names.
 > 
-> Any help/pointers in this regard would be really great.
+> Hm. Perhaps device_schedule_access()?
 
-Hi,
+On Thu, 15 Mar 2007, Hugh Dickins wrote:
 
-Many Ubuntu users seem to be experiencing such problems on ubuntu-2.6.17
-kernels:
-
-https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.17/+bug/62308
-
-In my experience, everything works fine as long as all
-directory-elements in 
-the path on the nfs mount are set executable for user _and_others_. If
-that
-is not the case, files are available for about five seconds after the
-first
-access, after which they disappear. If I try to access the file again I
-get 
-a "permission denied" message. No messages get logged.
-
-For me, adding the "no_subtree_check" option in /etc/exports 'fixed' the
-problem. I'm on ubuntu-2.6.17-11-generic on amd64. This works for me:
-
-/home    
-192.168.22.0/255.255.255.0(rw,sync,no_subtree_check,mp=/home,fsid=12120)
-/scratch 
-192.168.22.0/255.255.255.0(rw,sync,no_subtree_check,mp=/scratch,fsid=12121)
-
-Anyhow, you did not give any information about your
-distro/kernel/hardware?
-
-Greetings,
-    Alexander
-
-> -Thanks & Regards
-> Sai
+> It's really none of my business, I'm merely the reporter the
+> deadlock being fixed, and I don't know my way around sysfs at all ...
 > 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> ... but I have to say I share your discomfort with Alan's
+> "sysfs_access_in_other_task" naming, it sounded very weird to me.
 > 
+> Quite apart from this mysterious "other task", I don't understand
+> "access" either.
 > 
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+> Perhaps "defer" would best capture the idea of another-task and
+> maybe-delay?  sysfs_defer_work(), struct sysfs_deferred_work?  
 
--- 
-http://www.fastmail.fm - Does exactly what it says on the tin
+On Thu, 15 Mar 2007, Oliver Neukum wrote:
+
+> But we do not wish to defer or delay anything.
+> How about: sysfs_action_from_neutral_context  
+
+On Thu, 15 Mar 2007, Dmitry Torokhov wrote:
+
+> How about sysfs_schedule_work? That is what it does - schedules a work
+> on a sysfs object and everyone here knows what schedule_work() does.  
+
+On Thu, 15 Mar 2007, Hugh Dickins wrote:
+
+> I'm ashamed to have suggested anything else: certainly gets my vote.
+
+Personally I don't understand what was wrong with my name.  What's weird 
+or unintuitive about doing something in a different task's context?
+
+Dmitry's suggestion is slightly inappropriate because the function doesn't
+take a workstruct as an argument and it isn't itself a workqueue callback.  
+
+Would people be happier with sysfs_schedule_callback() and
+device_schedule_callback()?  At least the functions do take a callback 
+pointer as an argument, even though they aren't callbacks themselves.
+
+Alan Stern
 
