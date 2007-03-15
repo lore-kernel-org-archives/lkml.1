@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965389AbXCOFXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965365AbXCOFYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965389AbXCOFXt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 01:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbXCOFXK
+	id S965365AbXCOFYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 01:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965437AbXCOFYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 01:23:10 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:35421 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965345AbXCOFR1 (ORCPT
+	Thu, 15 Mar 2007 01:24:18 -0400
+Received: from services106.cs.uwaterloo.ca ([129.97.152.164]:50937 "EHLO
+	services106.cs.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965365AbXCOFYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 01:17:27 -0400
-Message-Id: <20070315051531.695939835@goodmis.org>
-References: <20070315051337.488091591@goodmis.org>
-User-Agent: quilt/0.45-1
-Date: Thu, 15 Mar 2007 01:13:49 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH take3 12/20] mtrr directory switch
-Content-Disposition: inline; filename=13-mtrr.patch
+	Thu, 15 Mar 2007 01:24:12 -0400
+Date: Thu, 15 Mar 2007 01:22:45 -0400 (EDT)
+From: Ashif Harji <asharji@cs.uwaterloo.ca>
+To: Xiaoning Ding <dingxn@cse.ohio-state.edu>
+cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Andreas Mohr <andi@rhlx01.fht-esslingen.de>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+In-Reply-To: <45F8A301.90301@cse.ohio-state.edu>
+Message-ID: <Pine.GSO.4.64.0703150045550.18191@cpu102.cs.uwaterloo.ca>
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> 
+ <20070312142012.GH30777@atrey.karlin.mff.cuni.cz>  <20070312143900.GB6016@wotan.suse.de>
+ <20070312151355.GB23532@duck.suse.cz>  <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca>
+  <20070312173500.GF23532@duck.suse.cz>  <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca>
+  <20070313185554.GA5105@duck.suse.cz>  <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca>
+  <1173905741.8763.36.camel@kleikamp.austin.ibm.com> 
+ <20070314213317.GA22234@rhlx01.hs-esslingen.de> <1173910138.8763.45.camel@kleikamp.austin.ibm.com>
+ <45F8A301.90301@cse.ohio-state.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0 (services106.cs.uwaterloo.ca [129.97.152.132]); Thu, 15 Mar 2007 01:23:02 -0400 (EDT)
+X-Miltered: at psyche with ID 45F8D834.000 by Joe's j-chkmail (http://j-chkmail.ensmp.fr)!
+X-UUID: 78100018-3227-4536-8e26-7a3d9eb758ae
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the mtrr directory over to the common area.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-diff --git a/arch/i386/kernel/cpu/Makefile b/arch/i386/kernel/cpu/Makefile
-index 010aecf..f8eaef8 100644
---- a/arch/i386/kernel/cpu/Makefile
-+++ b/arch/i386/kernel/cpu/Makefile
-@@ -15,5 +15,4 @@ obj-y	+=	umc.o
- 
- obj-$(CONFIG_X86_MCE)	+=	mcheck/
- 
--obj-$(CONFIG_MTRR)	+= 	mtrr/
- obj-$(CONFIG_CPU_FREQ)	+=	cpufreq/
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 3e15c9e..c1a2b58 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -1,5 +1,7 @@
- obj-y				+= bootflag.o quirks.o i8237.o topology.o alternative.o
- 
-+obj-y				+= cpu/
-+
- obj-$(CONFIG_X86_MSR)		+= msr.o
- obj-$(CONFIG_X86_CPUID)		+= cpuid.o
- obj-$(CONFIG_MICROCODE)		+= microcode.o
-diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-new file mode 100644
-index 0000000..3e59ae7
---- /dev/null
-+++ b/arch/x86/kernel/cpu/Makefile
-@@ -0,0 +1,2 @@
-+
-+obj-$(CONFIG_MTRR)	+= 	mtrr/
-diff --git a/arch/i386/kernel/cpu/mtrr/Makefile b/arch/x86/kernel/cpu/mtrr/Makefile
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/Makefile
-rename to arch/x86/kernel/cpu/mtrr/Makefile
-diff --git a/arch/i386/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/amd.c
-rename to arch/x86/kernel/cpu/mtrr/amd.c
-diff --git a/arch/i386/kernel/cpu/mtrr/centaur.c b/arch/x86/kernel/cpu/mtrr/centaur.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/centaur.c
-rename to arch/x86/kernel/cpu/mtrr/centaur.c
-diff --git a/arch/i386/kernel/cpu/mtrr/cyrix.c b/arch/x86/kernel/cpu/mtrr/cyrix.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/cyrix.c
-rename to arch/x86/kernel/cpu/mtrr/cyrix.c
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/generic.c
-rename to arch/x86/kernel/cpu/mtrr/generic.c
-diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/if.c
-rename to arch/x86/kernel/cpu/mtrr/if.c
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/main.c
-rename to arch/x86/kernel/cpu/mtrr/main.c
-diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/mtrr.h
-rename to arch/x86/kernel/cpu/mtrr/mtrr.h
-diff --git a/arch/i386/kernel/cpu/mtrr/state.c b/arch/x86/kernel/cpu/mtrr/state.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/mtrr/state.c
-rename to arch/x86/kernel/cpu/mtrr/state.c
-diff --git a/arch/x86_64/kernel/Makefile b/arch/x86_64/kernel/Makefile
-index 3fae694..60918ad 100644
---- a/arch/x86_64/kernel/Makefile
-+++ b/arch/x86_64/kernel/Makefile
-@@ -14,7 +14,6 @@ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
- obj-$(CONFIG_X86_MCE)		+= mce.o therm_throt.o
- obj-$(CONFIG_X86_MCE_INTEL)	+= mce_intel.o
- obj-$(CONFIG_X86_MCE_AMD)	+= mce_amd.o
--obj-$(CONFIG_MTRR)		+= ../../i386/kernel/cpu/mtrr/
- obj-$(CONFIG_ACPI)		+= acpi/
- obj-$(CONFIG_SMP)		+= smp.o smpboot.o trampoline.o
- obj-y				+= apic.o  nmi.o
+On Wed, 14 Mar 2007, Xiaoning Ding wrote:
 
---
+> Dave Kleikamp wrote:
+>> On Wed, 2007-03-14 at 22:33 +0100, Andreas Mohr wrote:
+>>> Hi,
+>>> 
+>>> On Wed, Mar 14, 2007 at 03:55:41PM -0500, Dave Kleikamp wrote:
+>>>> On Wed, 2007-03-14 at 15:58 -0400, Ashif Harji wrote:
+>>>>> This patch unconditionally calls mark_page_accessed to prevent pages, 
+>>>>> especially for small files, from being evicted from the page cache 
+>>>>> despite frequent access.
+>>>> I guess the downside to this is if a reader is reading a large file, or
+>>>> several files, sequentially with a small read size (smaller than
+>>>> PAGE_SIZE), the pages will be marked active after just one read pass.
+>>>> My gut says the benefits of this patch outweigh the cost.  I would
+>>>> expect real-world backup apps, etc. to read at least PAGE_SIZE.
+>>> I also think that the patch is somewhat problematic, since the original
+>>> intention seems to have been a reduction of the number of (expensive?)
+>>> mark_page_accessed() calls,
+>> 
+>> mark_page_accessed() isn't expensive.  If called repeatedly, starting
+>> with the third call, it will check two page flags and return.  The only
+>> real expense is that the page appears busier than it may be and will be
+>> retained in memory longer than it should.
+>> 
+> If we allow mark_page_accessed() called multiple times for a single page,
+> a scan of large file with small-size reads would flush the buffer cache.
+> mark_page_accessed() also requests lru_lock when moving page from
+> inactive_list to active_list. It may also increase lock contention.
+
+The problem with the existing logic is that it is too coarse.  In trying 
+to deal with one usage pattern it is negatively impacting performance for 
+other reasonable access patterns.
+
+Further, consider the extreme case of scanning a file 1 byte at a time. 
+In this case, you are going to access a page over 4000 times, but that 
+page is not going to be marked as active and hence that page is likely to 
+be evicted from the cache.  Clearly, there are cases when scanning a file 
+that you would like the pages to be kept in the cache.
+
+Finally, the existing code is problematic as there is no reasonable way to 
+circumvent the negative impact for small files.
+
+Hence, I think a change is necessary.  The question is whether the 
+intent of conditionally calling mark_page_accessed() is still reasonable 
+and whether the amount of bookkeeping required to detect that usage 
+pattern but not create a problem for other usage patterns is reasonable.
+
+I would tend to agree with David that:  "Any application doing many 
+tiny-sized reads isn't exactly asking for great performance."  As well, 
+applications concerned with performance and caching problems can read in a 
+file in PAGE_SIZE chunks.  I still think the simple fix of removing the 
+condition is the best approach, but I'm certainly open to alternatives.
+
+ashif.
