@@ -1,103 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933543AbXCON0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030192AbXCON13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933543AbXCON0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 09:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933564AbXCON0W
+	id S1030192AbXCON13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 09:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030178AbXCON13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 09:26:22 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:34685 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933543AbXCON0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 09:26:21 -0400
-Date: Thu, 15 Mar 2007 18:56:16 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Ian Campbell <Ian.Campbell@xensource.com>
-Cc: Horms <horms@verge.net.au>, hbabu@us.ibm.com, fastboot@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] Allow i386 crash kernels to handle x86_64 dumps
-Message-ID: <20070315132616.GH6766@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <1173891609.8591.41.camel@localhost.localdomain> <20070315014635.GC28396@verge.net.au> <20070315045536.GA6766@in.ibm.com> <20070315050754.GB22329@verge.net.au> <20070315054726.GC6766@in.ibm.com> <1173961378.8591.63.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Thu, 15 Mar 2007 09:27:29 -0400
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:50903 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933549AbXCON12 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 09:27:28 -0400
+X-Sasl-enc: PvRVC0m/rNxO7wjNyrlNuJY0lrOSoPmWUw82c7ZECMIu 1173965247
+Date: Thu, 15 Mar 2007 10:27:17 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Chris Wedgwood <cw@f00f.org>
+Cc: Len Brown <lenb@kernel.org>, ibm-acpi@hmh.eng.br,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] ACPI_IBM_BAY can not coexist with ACPI_BAY
+Message-ID: <20070315132717.GB26862@khazad-dum.debian.net>
+References: <20070315071019.GA22613@tuatara.stupidest.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173961378.8591.63.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070315071019.GA22613@tuatara.stupidest.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 12:22:57PM +0000, Ian Campbell wrote:
-> On Thu, 2007-03-15 at 11:17 +0530, Vivek Goyal wrote:
-> > > > But I think changing this macro might run into issues. It is
-> > > > being used at few places in kernel, for example while loading
-> > > > module. This will essentially mean that we allow loading 64bit
-> > > > x86_64 modules on 32bit i386 systems?
+On Thu, 15 Mar 2007, Chris Wedgwood wrote:
+> ACPI_IBM_BAY cannot coexist with ACPI_BAY --- it causes the IBM ACPI
+> code to fail to initialize so all the IBM ACPI functionality is
+> missing.  The simplest fix is to just make sure the Kconfig magic
+> disallows ACPI_IBM_BAY when ACPI_BAY is enabled.
 > 
-> Yes, not sure how I missed that fact...
-> 
-> > Kexec will also not allow loading an x86_64 kernel on a 32bit machine.
-> 
-> For crash kernel only or for regular kexec too?
-> 
+> Signed-off-by: Chris Wedgwood <cw@f00f.org>
 
-I think for both. One of the possible reasons I think is that one never
-knows is underlying machine has got 64bit extensions or not. So even if
-we load the kernel it will never boot. Secondly, we might not be able to
-handle 64bit address in 32bit kernel/user space?
+I'd really like to know why the two can't coexist, first.  And I'd really
+prefer a patch that make the two load and run with bay functionality
+concurrently.  ACPI_BAY doesn't work right with bay batteries, and I didn't
+find a way to fix that yet (or I'd have sent in patches).
 
-> > So how about something like vmcore_elf_allowed_cross_arch()? Vmcore
-> > code can continue to check elf_check_arch() and if that fails it can
-> > invoke vmcore_elf_allowed_cross_arch() to find out what cross arch are
-> > allowed for vmcore. 
-> 
-> Something like this?
-> 
-> Ian.
-> 
-> ---  
-> 
-> Allow i386 crash kernels to handle x86_64 dumps.
-> 
-> The specific case I am encountering is kdump under Xen with a 64 bit
-> hypervisor and 32 bit kernel/userspace. The dump created is a 64 bit
-> due to the hypervisor but the dump kernel is 32 bit in for maximum
-> compatibility.
-> 
-> It's possibly less likely to be useful in a purely native scenario but
-> I see no reason to disallow it.
-> 
-> Signed-off-by: Ian Campbell <ian.campbell@xensource.com>
-> 
-> diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
-> index d960507..523e109 100644
-> --- a/fs/proc/vmcore.c
-> +++ b/fs/proc/vmcore.c
-> @@ -514,7 +514,7 @@ static int __init parse_crash_elf64_headers(void)
->  	/* Do some basic Verification. */
->  	if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0 ||
->  		(ehdr.e_type != ET_CORE) ||
-> -		!elf_check_arch(&ehdr) ||
-> +		!vmcore_elf_check_arch(&ehdr) ||
->  		ehdr.e_ident[EI_CLASS] != ELFCLASS64 ||
->  		ehdr.e_ident[EI_VERSION] != EV_CURRENT ||
->  		ehdr.e_version != EV_CURRENT ||
-> diff --git a/include/asm-i386/kexec.h b/include/asm-i386/kexec.h
-> index 4dfc9f5..c76737e 100644
-> --- a/include/asm-i386/kexec.h
-> +++ b/include/asm-i386/kexec.h
-> @@ -47,6 +47,9 @@
->  /* The native architecture */
->  #define KEXEC_ARCH KEXEC_ARCH_386
-> 
-> +/* We can also handle crash dumps from 64 bit kernel. */
-> +#define vmcore_elf_check_arch_cross(x) ((x)->e_machine == EM_X86_64)
-> +
+Otherwise, please change the patch to a "depends on ACPI_BAY=n ||
+ACPI_BAY=m".
 
-Ideal place for this probably should have been arch dependent crash_dump.h
-file. But we don't have one and no point introducing one just for this 
-macro.
-
-This change looks good to me.
-
-Thanks
-Vivek
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
