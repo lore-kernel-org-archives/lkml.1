@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933939AbXCOWVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422640AbXCOWVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933939AbXCOWVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 18:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXCOWTf
+	id S1422640AbXCOWVl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 18:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422975AbXCOWTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 18:19:35 -0400
-Received: from mx.pathscale.com ([198.186.3.68]:33715 "EHLO mx.pathscale.com"
+	Thu, 15 Mar 2007 18:19:33 -0400
+Received: from mx.pathscale.com ([198.186.3.68]:33716 "EHLO mx.pathscale.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753420AbXCOWP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753421AbXCOWP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Mar 2007 18:15:28 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 24 of 33] IB/ipath - fix driver crash (in interrupt or during
-	unload) after chip reset
-X-Mercurial-Node: 3e81a6b18b42bbe6dffab382fb26d754dfdf83a1
-Message-Id: <3e81a6b18b42bbe6dffa.1173995108@iqa-25.internal.keyresearch.com>
+Subject: [PATCH 26 of 33] IB/ipath - prevent random program use of diags
+	interface
+X-Mercurial-Node: 284c34f2adddd16f7cb4fe48a2f6fbe9ad4beea5
+Message-Id: <284c34f2adddd16f7cb4.1173995110@iqa-25.internal.keyresearch.com>
 In-Reply-To: <patchbomb.1173995084@iqa-25.internal.keyresearch.com>
-Date: Thu, 15 Mar 2007 14:45:08 -0700
+Date: Thu, 15 Mar 2007 14:45:10 -0700
 From: "Bryan O'Sullivan" <bos@pathscale.com>
 To: rdreier@cisco.com
 Cc: openib-general@openfabrics.org, linux-kernel@vger.kernel.org
@@ -25,107 +25,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 # HG changeset patch
-# User Michael Albaugh <Michael.Albaugh@QLogic.com>
+# User Bryan O'Sullivan <bos@pathscale.com>
 # Date 1173994465 25200
-# Node ID 3e81a6b18b42bbe6dffab382fb26d754dfdf83a1
-# Parent  01cde17958018b5262570cd9ea399378f95051e7
-IB/ipath - fix driver crash (in interrupt or during unload) after chip reset
+# Node ID 284c34f2adddd16f7cb4fe48a2f6fbe9ad4beea5
+# Parent  e9895e2ad504a2590b0943c037d1fa5f9568fda3
+IB/ipath - prevent random program use of diags interface
 
-Re-init of the kernel structures after a chip reset was leaving the
-portdata structure for port zero in an inconsistent state, and a pointer
-to it either stale (in re-init code) or NULL (in devdata) Fixing the
-order of operations on this struct, and the condition for interrupt
-access, prevents the crashes.
+To prevent random utility reads and writes of the diag interface to the
+chip, we first require a handshake of reading from offset 0 and writing
+to offset 0 before any other reads or writes can be done through the
+diags device.   Otherwise chip errors can be triggered.
 
+Signed-off-by: Dave Olson <dave.olson@qlogic.com>
 Signed-off-by: Bryan O'Sullivan <bryan.osullivan@qlogic.com>
 
-diff -r 01cde1795801 -r 3e81a6b18b42 drivers/infiniband/hw/ipath/ipath_init_chip.c
---- a/drivers/infiniband/hw/ipath/ipath_init_chip.c	Thu Mar 15 14:34:25 2007 -0700
-+++ b/drivers/infiniband/hw/ipath/ipath_init_chip.c	Thu Mar 15 14:34:25 2007 -0700
-@@ -216,6 +216,20 @@ static int bringup_link(struct ipath_dev
+diff -r e9895e2ad504 -r 284c34f2addd drivers/infiniband/hw/ipath/ipath_diag.c
+--- a/drivers/infiniband/hw/ipath/ipath_diag.c	Thu Mar 15 14:34:25 2007 -0700
++++ b/drivers/infiniband/hw/ipath/ipath_diag.c	Thu Mar 15 14:34:25 2007 -0700
+@@ -296,7 +296,7 @@ static int ipath_diag_open(struct inode 
+ 	}
+ 
+ 	fp->private_data = dd;
+-	ipath_diag_inuse = 1;
++	ipath_diag_inuse = -2;
+ 	diag_set_link = 0;
+ 	ret = 0;
+ 
+@@ -461,6 +461,8 @@ static ssize_t ipath_diag_read(struct fi
+ 	else if ((count % 4) || (*off % 4))
+ 		/* address or length is not 32-bit aligned, hence invalid */
+ 		ret = -EINVAL;
++	else if (ipath_diag_inuse < 1 && (*off || count != 8))
++		ret = -EINVAL;  /* prevent cat /dev/ipath_diag* */
+ 	else if ((count % 8) || (*off % 8))
+ 		/* address or length not 64-bit aligned; do 32-bit reads */
+ 		ret = ipath_read_umem32(dd, data, kreg_base + *off, count);
+@@ -470,6 +472,8 @@ static ssize_t ipath_diag_read(struct fi
+ 	if (ret >= 0) {
+ 		*off += count;
+ 		ret = count;
++		if (ipath_diag_inuse == -2)
++			ipath_diag_inuse++;
+ 	}
+ 
  	return ret;
- }
- 
-+static struct ipath_portdata *create_portdata0(struct ipath_devdata *dd)
-+{
-+	struct ipath_portdata *pd = NULL;
-+
-+	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-+	if (pd) {
-+		pd->port_dd = dd;
-+		pd->port_cnt = 1;
-+		/* The port 0 pkey table is used by the layer interface. */
-+		pd->port_pkeys[0] = IPATH_DEFAULT_P_KEY;
-+	}
-+	return pd;
-+}
-+
- static int init_chip_first(struct ipath_devdata *dd,
- 			   struct ipath_portdata **pdp)
- {
-@@ -271,20 +285,16 @@ static int init_chip_first(struct ipath_
- 		goto done;
- 	}
- 
--	dd->ipath_pd[0] = kzalloc(sizeof(*pd), GFP_KERNEL);
+@@ -489,6 +493,9 @@ static ssize_t ipath_diag_write(struct f
+ 	else if ((count % 4) || (*off % 4))
+ 		/* address or length is not 32-bit aligned, hence invalid */
+ 		ret = -EINVAL;
++	else if ((ipath_diag_inuse == -1 && (*off || count != 8)) ||
++		 ipath_diag_inuse == -2)  /* read qw off 0, write qw off 0 */
++		ret = -EINVAL;  /* before any other write allowed */
+ 	else if ((count % 8) || (*off % 8))
+ 		/* address or length not 64-bit aligned; do 32-bit writes */
+ 		ret = ipath_write_umem32(dd, kreg_base + *off, data, count);
+@@ -498,7 +505,9 @@ static ssize_t ipath_diag_write(struct f
+ 	if (ret >= 0) {
+ 		*off += count;
+ 		ret = count;
+-	}
 -
--	if (!dd->ipath_pd[0]) {
-+	pd = create_portdata0(dd);
+-	return ret;
+-}
++		if (ipath_diag_inuse == -1)
++			ipath_diag_inuse = 1; /* all read/write OK now */
++	}
 +
-+	if (!pd) {
- 		ipath_dev_err(dd, "Unable to allocate portdata for port "
- 			      "0, failing\n");
- 		ret = -ENOMEM;
- 		goto done;
- 	}
--	pd = dd->ipath_pd[0];
--	pd->port_dd = dd;
--	pd->port_port = 0;
--	pd->port_cnt = 1;
--	/* The port 0 pkey table is used by the layer interface. */
--	pd->port_pkeys[0] = IPATH_DEFAULT_P_KEY;
-+	dd->ipath_pd[0] = pd;
-+
- 	dd->ipath_rcvtidcnt =
- 		ipath_read_kreg32(dd, dd->ipath_kregs->kr_rcvtidcnt);
- 	dd->ipath_rcvtidbase =
-@@ -838,11 +848,24 @@ int ipath_init_chip(struct ipath_devdata
- 	 * Set up the port 0 (kernel) rcvhdr q and egr TIDs.  If doing
- 	 * re-init, the simplest way to handle this is to free
- 	 * existing, and re-allocate.
-+	 * Need to re-create rest of port 0 portdata as well.
- 	 */
- 	if (reinit) {
--		struct ipath_portdata *pd = dd->ipath_pd[0];
--		dd->ipath_pd[0] = NULL;
--		ipath_free_pddata(dd, pd);
-+		/* Alloc and init new ipath_portdata for port0,
-+		 * Then free old pd. Could lead to fragmentation, but also
-+		 * makes later support for hot-swap easier.
-+		 */
-+		struct ipath_portdata *npd;
-+		npd = create_portdata0(dd);
-+		if (npd) {
-+			ipath_free_pddata(dd, pd);
-+			dd->ipath_pd[0] = pd = npd;
-+		} else {
-+			ipath_dev_err(dd, "Unable to allocate portdata for"
-+				      "  port 0, failing\n");
-+			ret = -ENOMEM;
-+			goto done;
-+		}
- 	}
- 	dd->ipath_f_tidtemplate(dd);
- 	ret = ipath_create_rcvhdrq(dd, pd);
-diff -r 01cde1795801 -r 3e81a6b18b42 drivers/infiniband/hw/ipath/ipath_stats.c
---- a/drivers/infiniband/hw/ipath/ipath_stats.c	Thu Mar 15 14:34:25 2007 -0700
-+++ b/drivers/infiniband/hw/ipath/ipath_stats.c	Thu Mar 15 14:34:25 2007 -0700
-@@ -207,7 +207,7 @@ void ipath_get_faststats(unsigned long o
- 	 * don't access the chip while running diags, or memory diags can
- 	 * fail
- 	 */
--	if (!dd->ipath_kregbase || !(dd->ipath_flags & IPATH_PRESENT) ||
-+	if (!dd->ipath_kregbase || !(dd->ipath_flags & IPATH_INITTED) ||
- 	    ipath_diag_inuse)
- 		/* but re-arm the timer, for diags case; won't hurt other */
- 		goto done;
++	return ret;
++}
