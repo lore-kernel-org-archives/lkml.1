@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbXCONNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933544AbXCONWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933537AbXCONNI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 09:13:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933539AbXCONNI
+	id S933544AbXCONWb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 09:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933549AbXCONWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 09:13:08 -0400
-Received: from ns2.suse.de ([195.135.220.15]:58819 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933537AbXCONNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 09:13:06 -0400
-Date: Thu, 15 Mar 2007 14:13:05 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [patch 1/2] splice: dont steal
-Message-ID: <20070315131305.GF8321@wotan.suse.de>
-References: <20070314121440.GA926@wotan.suse.de> <20070315115237.GM15400@kernel.dk> <20070315122207.GA8321@wotan.suse.de> <20070315122723.GQ15400@kernel.dk> <20070315124531.GD8321@wotan.suse.de> <20070315125432.GT15400@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Mar 2007 09:22:31 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:13042 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933544AbXCONWa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 09:22:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s/AkgvHcJlGeZGAiJKOC8A9oD8EzX4+MqAI7P2wdUiGxQRvIjkCj2/5NOknVnzSdLlVIYLZCDYun0gVZXxNXpM/Vg99G5L5isJnj2Qr5hyLFma+/2rlDxdqQ2yzCYfWgbw3jcvzlufn3osGNaxDRUuCyUY6/aJnAz7ZipMoqWGU=
+Message-ID: <d120d5000703150622o43763828h5e01f313a3194f39@mail.gmail.com>
+Date: Thu, 15 Mar 2007 09:22:25 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Oliver Neukum" <oneukum@suse.de>
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+Cc: "Hugh Dickins" <hugh@veritas.com>,
+       "Cornelia Huck" <cornelia.huck@de.ibm.com>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Maneesh Soni" <maneesh@in.ibm.com>, gregkh@suse.de,
+       "Richard Purdie" <rpurdie@rpsys.net>,
+       "James Bottomley" <James.Bottomley@steeleye.com>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200703151402.08097.oneukum@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070315125432.GT15400@kernel.dk>
-User-Agent: Mutt/1.5.9i
+References: <20070314194337.5d439dab@gondolin.boeblingen.de.ibm.com>
+	 <20070315112725.7eadb7b7@gondolin.boeblingen.de.ibm.com>
+	 <Pine.LNX.4.64.0703151219540.12584@blonde.wat.veritas.com>
+	 <200703151402.08097.oneukum@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 01:54:32PM +0100, Jens Axboe wrote:
-> On Thu, Mar 15 2007, Nick Piggin wrote:
-> > On Thu, Mar 15, 2007 at 01:27:23PM +0100, Jens Axboe wrote:
-> > > On Thu, Mar 15 2007, Nick Piggin wrote:
-> > > > 
-> > > > We should be able to allow for it with the new a_ops API I'm working
-> > > > on.
-> > > 
-> > > "Should be" and in progress stuff, is it guarenteed to get there?
-> > 
-> > Well considering that it is needed in order to solve 3 different deadlock
-> > scenarios in the core write(2) path without taking a big performance hit,
-> > I'd hope so ;)
-> > 
-> > It isn't guaranteed, but I have only had positive feedback so far. Would
-> > take a while to actually get merged, though.
-> 
-> It's not that I don't believe you, I'm just a little reluctant to rip
-> stuff out with a promise to fix it later when foo and bar are merged,
-> since things like that have a tendency not to get done because they are
-> forgotten :-)
+On 3/15/07, Oliver Neukum <oneukum@suse.de> wrote:
+> Am Donnerstag, 15. März 2007 13:31 schrieb Hugh Dickins:
+> > Quite apart from this mysterious "other task", I don't understand
+> > "access" either.
+> >
+> > Perhaps "defer" would best capture the idea of another-task and
+> > maybe-delay? sysfs_defer_work(), struct sysfs_deferred_work?
+>
+> But we do not wish to defer or delay anything.
+> How about: sysfs_action_from_neutral_context
+>
 
-Fair enough. The API side is trivial, all I need to do is set a single
-flag and make splice pass down the page, and set that flag when stealing.
-Filesystems might vary from trivial to impossible, but I think most should
-be OK. If the flag is there then they at least have the option.
+How about sysfs_schedule_work? That is what it does - schedules a work
+on a sysfs object and everyone here knows what schedule_work() does.
 
-
-> Do you have a test case for stealing failures? What I'm really asking is
-> how critical is this?
-
-I guess you could fill a filesystem completely, and have a sparse file
-in it. Then steal a page and splice it in. The prepare_write should fail,
-but the page will still be in pagecache, until it gets reclaimed, then
-it will go back to zeroes.
-
-(no I don't have a test case ;)).
-
-You could do something like remove the page if prepare_write fails, but
-there is still a window where a read can see it. Basically I can't see
-a way that it can possibly work within our current prepare_write API,
-and it is a data corruption bug, so in my opinion it is a candidate for
-2.6.21 + stable.
-
+-- 
+Dmitry
