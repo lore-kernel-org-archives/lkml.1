@@ -1,98 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbXCOTUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932889AbXCOTUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932806AbXCOTUc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 15:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbXCOTUc
+	id S932889AbXCOTUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 15:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932980AbXCOTUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 15:20:32 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:40301 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932806AbXCOTUb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 15:20:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=J7DLQy5bLrwYahBESmFvANza0tcaj6NdKAwXPy0sB9cugAasf9zirkJ9fXbnVsqOi
-	3ZXChAiKVai4KDIe4K0IQ==
-Message-ID: <6599ad830703151212o524af40es6cc6893c4304175f@mail.gmail.com>
-Date: Thu, 15 Mar 2007 12:12:50 -0700
-From: "Paul Menage" <menage@google.com>
-To: vatsa@in.ibm.com
-Subject: Re: Summary of resource management discussion
-Cc: xemul@sw.ru, dev@sw.ru, pj@sgi.com, sam@vilain.net, ebiederm@xmission.com,
-       winget@google.com, serue@us.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, ckrm-tech@lists.sourceforge.net,
-       containers@lists.osdl.org
-In-Reply-To: <20070315170435.GA28692@in.ibm.com>
+	Thu, 15 Mar 2007 15:20:40 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:42576 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932889AbXCOTUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 15:20:39 -0400
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>, Ulrich Drepper <drepper@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 3/3] FUTEX : NUMA friendly global hashtable
+Date: Thu, 15 Mar 2007 20:20:43 +0100
+User-Agent: KMail/1.9.5
+Cc: Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
+       pravin b shelar <pravin.shelar@calsoftinc.com>,
+       linux-kernel@vger.kernel.org
+References: <20060808070708.GA3931@localhost.localdomain> <200608090826.28249.dada1@cosmosbay.com> <200608090843.52893.dada1@cosmosbay.com>
+In-Reply-To: <200608090843.52893.dada1@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070312124226.GD17151@in.ibm.com>
-	 <6599ad830703150424t3478cd55mf9d2699f3669c9f0@mail.gmail.com>
-	 <20070315170435.GA28692@in.ibm.com>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_LyZ+FDegvNTSVtk"
+Message-Id: <200703152020.43707.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/15/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
-> On Thu, Mar 15, 2007 at 04:24:37AM -0700, Paul Menage wrote:
-> > If there really was a grouping that was always guaranteed to match the
-> > way you wanted to group tasks for e.g. resource control, then yes, it
-> > would be great to use it. But I don't see an obvious candidate. The
-> > pid namespace is not it, IMO.
->
-> In vserver context, what is the "normal" case then? Atleast for Linux
-> Vserver pid namespace seems to be normal unit of resource control (as per
-> Herbert).
+--Boundary-00=_LyZ+FDegvNTSVtk
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Yes, for vserver the pid namespace is a good proxy for resource
-control groupings. But my point was that it's not universally
-suitable.
+[PATCH 3/3] FUTEX : NUMA friendly global hashtable
 
->
-> (the best I could draw using ASCII art!)
+On NUMA machines, we should get better performance using a big futex 
+hashtable, allocated with vmalloc() so that it is spreaded on several nodes.
 
-Right, I think those diagrams agree with the point I wanted to make -
-that resource control shouldn't be tied to the pid namespace.
+I chose a static size of four pages. (Very big NUMA machines have 64k page 
+size)
 
->
-> The benefit I see of this approach is it will avoid introduction of
-> additional pointers in struct task_struct and also additional structures
-> (struct container etc) in the kernel, but we will still be able to retain
-> same user interfaces you had in your patches.
->
-> Do you see any drawbacks of doing like this? What will break if we do
-> this?
+This patch should have a temporary effect, as most futexes are expected to be 
+stored in process private tables. We probably can drop it  in five years :)
 
-There are some things that benefit from having an abstract
-container-like object available to store state, e.g. "is this
-container deleted?", "should userspace get a callback when this
-container is empty?". But this indirection object wouldn't need to be
-on the fast path for subsystem access to their per-taskgroup state.
 
-> > >a. Paul Menage's patches:
-> > >
-> > >        (tsk->containers->container[cpu_ctlr.subsys_id] - X)->cpu_limit
-> >
-> > So what's the '-X' that you're referring to
->
-> Oh ..that's to seek pointer to begining of the cpulimit structure (subsys
-> pointer in 'struct container' points to a structure embedded in a larger
-> structure. -X gets you to point to the larger structure).
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+ kernel/futex.c |   26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
 
-OK, so shouldn't that be listed as an overhead for your rcfs version
-too? In practice, most subsystems that I've written tend to have the
-subsys object at the beginning of the per-subsys state, so X = 0 and
-is optimized out by the compiler. Even if it wasn't, X is constant and
-so won't hurt much or at all.
+--Boundary-00=_LyZ+FDegvNTSVtk
+Content-Type: text/plain;
+  charset="utf-8";
+  name="futex_p3.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="futex_p3.patch"
 
->
-> Yes me too. But maybe to keep in simple in initial versions, we should
-> avoid that optimisation and at the same time get statistics on duplicates?.
+--- linux-2.6.21-rc3/kernel/futex.c	2007-03-15 18:54:47.000000000 +0100
++++ linux-2.6.21-rc3-ed/kernel/futex.c	2007-03-15 18:54:47.000000000 +0100
+@@ -152,8 +152,13 @@ struct futex_hash_bucket {
+ # define FUTEX_HASH_SLOTS	16
+ # define FUTEX_NOPRIVHASH	/* no private hashtable, only one global */
+ #else
+-# define FUTEX_HASH_SLOTS	256
+-# define FUTEX_PRIVHASH_SLOTS	64
++# ifdef CONFIG_NUMA
++#  define FUTEX_HASH_SLOTS	((4*PAGE_SIZE)/sizeof(struct futex_hash_bucket))
++#  define FUTEX_PRIVHASH_SLOTS	(4096 / sizeof(struct futex_hash_bucket))
++# else
++#  define FUTEX_HASH_SLOTS	256
++#  define FUTEX_PRIVHASH_SLOTS	64
++# endif
+ #endif
+ 
+ #define FUTEX_PRIVHASH_SIZE \
+@@ -166,8 +171,14 @@ struct futex_hash_bucket {
+  * PTHREAD_PROCESS_PRIVATE futexes may be hashed into this table too if the 
+  * owner process failed to allocate its private hashtable (or CONFIG_BASE_SMALL)
+  *
++ * On NUMA configs, table is allocated with vmalloc() to spread this hash table
++ * up to 4 nodes (we use 4 pages)
+  */
++#ifdef CONFIG_NUMA
++static struct futex_hash_bucket *futex_queues __read_mostly;
++#else
+ static struct futex_hash_bucket futex_queues[FUTEX_HASH_SLOTS];
++#endif
+ 
+ /* Futex-fs vfsmount entry: */
+ static struct vfsmount *futex_mnt;
+@@ -2051,7 +2062,16 @@ static int __init init(void)
+ 		return PTR_ERR(futex_mnt);
+ 	}
+ 
+-	for (i = 0; i < ARRAY_SIZE(futex_queues); i++) {
++#ifdef CONFIG_NUMA
++	/*
++	 * vmalloc() is supposed to obey mempolicy and spread our 4 pages
++	 * on several nodes
++	 */
++	futex_queues = vmalloc(FUTEX_HASH_SLOTS * sizeof(*futex_queues));
++	if (!futex_queues)
++		panic("Failed to allocate futex hash table\n");
++#endif
++	for (i = 0; i < FUTEX_HASH_SLOTS; i++) {
+ 		INIT_LIST_HEAD(&futex_queues[i].chain);
+ 		spin_lock_init(&futex_queues[i].lock);
+ 	}
 
-That's an implementation detail - we have more important points to
-agree on right now ...
-
-Paul
+--Boundary-00=_LyZ+FDegvNTSVtk--
