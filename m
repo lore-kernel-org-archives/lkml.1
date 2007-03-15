@@ -1,203 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965310AbXCOFVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965236AbXCOFWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965310AbXCOFVx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 01:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965349AbXCOFVp
+	id S965236AbXCOFWh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 01:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965242AbXCOFWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 01:21:45 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:35456 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965242AbXCOFRg (ORCPT
+	Thu, 15 Mar 2007 01:22:23 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:29193 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965389AbXCOFWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 01:17:36 -0400
-Message-Id: <20070315051532.220959455@goodmis.org>
-References: <20070315051337.488091591@goodmis.org>
-User-Agent: quilt/0.45-1
-Date: Thu, 15 Mar 2007 01:13:52 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
+	Thu, 15 Mar 2007 01:22:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:reply-to:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=kUZrqb5nsXS0SL3MiHSsz4mm3bHja9xo27giU2XgIskaGZBQiwk+r8H88AF24O+z7Zb8iOyRQkiIdLbeuZqcP3zsyOASGkRuRtgpiN5PkkJskZErgoZ6fMH4nxiBn+LwFZ6NnSY6AxXJDDDNNpg0blhb4acYuOiXc3YNBOtkgkk=
+Message-ID: <45F8D809.90300@atnn.ru>
+Date: Thu, 15 Mar 2007 08:22:17 +0300
+Reply-To: kostik@atnn.ru
+User-Agent: Thunderbird 1.5.0.5 (Windows/20060719)
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH take3 15/20] cpufreq files switched
-Content-Disposition: inline; filename=16-cpufreq.patch
+Subject: Re: kswapd & 2.4.21-47.0.0.1
+References: <45F7FA3B.6070303@atnn.ru> <20070314220701.GQ943@1wt.eu>
+In-Reply-To: <20070314220701.GQ943@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Konstantin Kalin <konstantin.kalin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Moved the shared files that were in the arch/i386/kernel/cpu/cpufreq to
-the common area.  Since the speedstep-lib.h file was used by files that
-were moved as well as files that were not moved, a new directory was
-created to hold this shared header, called include/asm-x86.  Since this
-directory is not full featured yet (no x86 arch fully defined) all references
-to this file must be of #include <asm-x86/speedstep-lib.h>
+Well. I expected similar answer :) But unfortunately it's not my 
+decision to use CentOS. Also I couldn't get RH customer support for some 
+reasons.
+So anyway thank you for answer.
 
-But this allows for a stepping stone approach to a generic x86 arch and
-a place to put more asm-x86 headers.
+Regards,
+Kostya.
 
-The Kconfig for cpufreq in the x86_64 arch directory is not moved
-to simplify this patch.
+Willy Tarreau wrote:
+> Hello,
+>
+> On Wed, Mar 14, 2007 at 04:35:55PM +0300, Konstantin Kalin wrote:
+>   
+>> Hello, All
+>>
+>> I have the following configuration: CentOS 3.8, kernel 
+>> 2.4.21-41.0.01.EL, Dialogic boards.
+>> Sometimes a kernel panic happens. I setup netdump and got several crash 
+>> dumps and logs. Backtrace shows that kswapd called BUG in try_to_unmap 
+>> function. Unfortunately I couldn't upgrade the kernel because of 
+>> proprietary Dialogic drivers which are precompiled.
+>>
+>> Could somebody help me? I tried to find similar issues in maillist and 
+>> failed with it. There are a few messages but they describe another case.
+>>     
+>
+> Well, I think you're trying to get both the cake and the money for it.
+> You use a vendor-specific stable kernel in order to get a high reliability
+> and good hardware support, but without paying for the customer support
+> associated with it, and when you have a problem you ask for free help
+> here where people don't know much about it (except for those who worked
+> on it).
+>
+> By trying to get all advantages, you're in the worst situation : you have
+> a bug with a kernel that nobody knows except the vendor, and you can't
+> beat the vendor for this. I don't know if CentOS offers community-based
+> support through mailing lists or such, but maybe you'd loose less time
+> and money by buying the smallest support contract from RH and ask them
+> to help you on this problem.
+>
+>   
+>> As I understand the rmap.c are under active development and it's 
+>> strongly been changing per each kernel version. Also if I understand 
+>> correct rmap.c has appeared in the kernel 2.6.x and my version of the 
+>> kernel is a backport by RedHat from 2.6 to 2.4.
+>>     
+>
+> Nope, it was initially written for 2.4 by Rik van Riel, and supported
+> for a long time as a patch for these kernels. Later it got merged in
+> 2.4-ac which became a base for RHEL3. It was also merged in 2.6 but
+> I believe that it got important changes, though I'm not sure.
+>
+>   
+>> Information about the crash is below. The specific of my system is a lot 
+>> of java thread (up to 1500).
+>>     
+>
+> I'm not sure that many people here will be able to provide you with much
+> help, unfortunately.
+>
+> Regards,
+> Willy
+>
+>
+>
+>
+>   
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Chris Wright <chrisw@sous-sol.org>
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/Makefile b/arch/i386/kernel/cpu/cpufreq/Makefile
-index 560f776..49c4ca4 100644
---- a/arch/i386/kernel/cpu/cpufreq/Makefile
-+++ b/arch/i386/kernel/cpu/cpufreq/Makefile
-@@ -1,6 +1,6 @@
-+# See also arch/x86/kernel/cpu/cpufreq/Makefile
- obj-$(CONFIG_X86_POWERNOW_K6)		+= powernow-k6.o
- obj-$(CONFIG_X86_POWERNOW_K7)		+= powernow-k7.o
--obj-$(CONFIG_X86_POWERNOW_K8)		+= powernow-k8.o
- obj-$(CONFIG_X86_LONGHAUL)		+= longhaul.o
- obj-$(CONFIG_X86_E_POWERSAVER)		+= e_powersaver.o
- obj-$(CONFIG_ELAN_CPUFREQ)		+= elanfreq.o
-@@ -8,9 +8,5 @@ obj-$(CONFIG_SC520_CPUFREQ)		+= sc520_freq.o
- obj-$(CONFIG_X86_LONGRUN)		+= longrun.o  
- obj-$(CONFIG_X86_GX_SUSPMOD)		+= gx-suspmod.o
- obj-$(CONFIG_X86_SPEEDSTEP_ICH)		+= speedstep-ich.o
--obj-$(CONFIG_X86_SPEEDSTEP_LIB)		+= speedstep-lib.o
- obj-$(CONFIG_X86_SPEEDSTEP_SMI)		+= speedstep-smi.o
--obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o
--obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
--obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
- obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
-diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c b/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
-index b425cd3..97c14b3 100644
---- a/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
-+++ b/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
-@@ -25,7 +25,7 @@
- #include <linux/pci.h>
- #include <linux/slab.h>
- 
--#include "speedstep-lib.h"
-+#include <asm-x86/speedstep-lib.h>
- 
- 
- /* speedstep_chipset:
-diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c b/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
-index ff0d898..093d7d0 100644
---- a/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
-+++ b/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
-@@ -22,7 +22,7 @@
- #include <linux/delay.h>
- #include <asm/ist.h>
- 
--#include "speedstep-lib.h"
-+#include <asm-x86/speedstep-lib.h>
- 
- /* speedstep system management interface port/command.
-  *
-diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-index 6557e4a..4728c89 100644
---- a/arch/x86/kernel/cpu/Makefile
-+++ b/arch/x86/kernel/cpu/Makefile
-@@ -2,3 +2,4 @@ obj-y			+=	intel_cacheinfo.o
- 
- obj-$(CONFIG_X86_MCE)	+=	mcheck/
- obj-$(CONFIG_MTRR)	+= 	mtrr/
-+obj-$(CONFIG_CPU_FREQ)	+=	cpufreq/
-diff --git a/arch/x86/kernel/cpu/cpufreq/Makefile b/arch/x86/kernel/cpu/cpufreq/Makefile
-new file mode 100644
-index 0000000..883fae4
---- /dev/null
-+++ b/arch/x86/kernel/cpu/cpufreq/Makefile
-@@ -0,0 +1,6 @@
-+
-+obj-$(CONFIG_X86_POWERNOW_K8) += powernow-k8.o
-+obj-$(CONFIG_X86_SPEEDSTEP_LIB) += speedstep-lib.o
-+obj-$(CONFIG_X86_ACPI_CPUFREQ) += acpi-cpufreq.o
-+obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO) += speedstep-centrino.o
-+obj-$(CONFIG_X86_P4_CLOCKMOD) += p4-clockmod.o
-diff --git a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-rename to arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-diff --git a/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-rename to arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-index 4786fed..5024ea8 100644
---- a/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-+++ b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-@@ -33,7 +33,7 @@
- #include <asm/msr.h>
- #include <asm/timex.h>
- 
--#include "speedstep-lib.h"
-+#include <asm-x86/speedstep-lib.h>
- 
- #define PFX	"p4-clockmod: "
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "p4-clockmod", msg)
-diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-rename to arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-similarity index 100%
-rename from arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-rename to arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c b/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-rename to arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
-similarity index 100%
-rename from arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
-rename to arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
-index d59277c..2de6a69 100644
---- a/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
-@@ -17,7 +17,7 @@
- #include <linux/slab.h>
- 
- #include <asm/msr.h>
--#include "speedstep-lib.h"
-+#include <asm-x86/speedstep-lib.h>
- 
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "speedstep-lib", msg)
- 
-diff --git a/arch/x86_64/kernel/Makefile b/arch/x86_64/kernel/Makefile
-index 0a33b03..3d90462 100644
---- a/arch/x86_64/kernel/Makefile
-+++ b/arch/x86_64/kernel/Makefile
-@@ -23,7 +23,6 @@ obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o crash.o
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- obj-$(CONFIG_PM)		+= suspend.o
- obj-$(CONFIG_SOFTWARE_SUSPEND)	+= suspend_asm.o
--obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_IOMMU)		+= pci-gart.o aperture.o
- obj-$(CONFIG_CALGARY_IOMMU)	+= pci-calgary.o tce.o
- obj-$(CONFIG_SWIOTLB)		+= pci-swiotlb.o
-diff --git a/arch/x86_64/kernel/cpufreq/Makefile b/arch/x86_64/kernel/cpufreq/Makefile
-deleted file mode 100644
-index 753ce1d..0000000
---- a/arch/x86_64/kernel/cpufreq/Makefile
-+++ /dev/null
-@@ -1,17 +0,0 @@
--#
--# Reuse the i386 cpufreq drivers
--#
--
--SRCDIR := ../../../i386/kernel/cpu/cpufreq
--
--obj-$(CONFIG_X86_POWERNOW_K8) += powernow-k8.o
--obj-$(CONFIG_X86_ACPI_CPUFREQ) += acpi-cpufreq.o
--obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO) += speedstep-centrino.o
--obj-$(CONFIG_X86_P4_CLOCKMOD) += p4-clockmod.o
--obj-$(CONFIG_X86_SPEEDSTEP_LIB) += speedstep-lib.o
--
--powernow-k8-objs := ${SRCDIR}/powernow-k8.o
--speedstep-centrino-objs := ${SRCDIR}/speedstep-centrino.o
--acpi-cpufreq-objs := ${SRCDIR}/acpi-cpufreq.o
--p4-clockmod-objs := ${SRCDIR}/p4-clockmod.o
--speedstep-lib-objs := ${SRCDIR}/speedstep-lib.o
-diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h b/include/asm-x86/speedstep-lib.h
-similarity index 100%
-rename from arch/i386/kernel/cpu/cpufreq/speedstep-lib.h
-rename to include/asm-x86/speedstep-lib.h
-
---
