@@ -1,184 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751291AbXCOVEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751253AbXCOVFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751291AbXCOVEo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 17:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbXCOVEo
+	id S1751253AbXCOVFX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 17:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXCOVFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 17:04:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:63933 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751291AbXCOVEn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 17:04:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Pn3+WCxMSTcecoKspg2lg+/LuDrdLFQgPh/NhG05XKFeHMT1koEsXKGMuBZHeKB8I+WMMl5NyA26iVC/mkHBN5kvgZf1HrdJ06mwhnCrqfE2we6RXBOC48zGXCDDeBqqExVtDuxjgIB3aabKXj7+1CUl+yuxdGjZdPXjKCtvZv4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ide: remove CONFIG_IDEDMA_{ICS,PCI}_AUTO config options
-Date: Thu, 15 Mar 2007 21:46:48 +0100
-User-Agent: KMail/1.9.6
-Cc: Patrick Horn <phrh@yahoo.com>, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
+	Thu, 15 Mar 2007 17:05:23 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60212 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751253AbXCOVFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 17:05:22 -0400
+Date: Thu, 15 Mar 2007 22:05:16 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: alon.barlev@gmail.com, "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [REPOST] x86_64, i386: Add command line length to boot protocol
+Message-ID: <20070315210516.GA28998@strauss.suse.de>
+Mail-Followup-To: alon.barlev@gmail.com,
+	"H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703152146.48352.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] ide: remove CONFIG_IDEDMA_{ICS,PCI}_AUTO config options
+Because the command line is increased to 2048 characters after 2.6.21,
+it's not possible for boot loaders and userspace tools to determine the length
+of the command line the kernel can understand. The benefit of knowing the
+length is that users can be warned if the command line size is too long which
+prevents surprise if things don't work after bootup.
 
-All modern distributions have been setting these options to "y" for ages.
-(additionally "n" cases have been obsoleted for few years).  Therefore use
-DMA by default and remove CONFIG_IDEDMA_{ICS,PCI}_AUTO (also remove no longer
-needed CONFIG_IDEDMA_AUTO).  This fixes DMA support for rare configurations
-where CONFIG_IDEDMA_{ICS,PCI}_AUTO was set to "n" but "hdparm -d 1" was used
-to enable DMA support and which were forced to PIO mode by "ide: don't allow
-DMA to be enabled if CONFIG_IDEDMA_{ICS,PCI}_AUTO=n" patch.  There is no
-functionality loss because "ide=nodma" kernel option is still available.
+This patch updates the boot protocol to contain a field called
+"cmdline_size" that contain the length of the command line (excluding
+the terminating zero).
 
-Cc: Patrick Horn <phrh@yahoo.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+The patch also adds missing fields (of protocol version 2.05) to the x86_64
+setup code.
+
+
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+Cc: Alon Bar-Lev <alon.barlev@gmail.com>
+
 ---
+ Documentation/i386/boot.txt |   23 +++++++++++++++++------
+ arch/i386/boot/setup.S      |    7 ++++++-
+ arch/x86_64/boot/setup.S    |   15 ++++++++++++++-
+ 3 files changed, 37 insertions(+), 8 deletions(-)
 
- drivers/ide/Kconfig      |   32 --------------------------------
- drivers/ide/arm/icside.c |   13 +------------
- drivers/ide/ide.c        |    4 ----
- drivers/ide/setup-pci.c  |    5 -----
- 4 files changed, 1 insertion(+), 53 deletions(-)
-
-Index: b/drivers/ide/Kconfig
+Index: longer-cmdline-boot-proto-mm/Documentation/i386/boot.txt
 ===================================================================
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -434,24 +434,8 @@ config BLK_DEV_IDEDMA_FORCED
+--- longer-cmdline-boot-proto-mm.orig/Documentation/i386/boot.txt
++++ longer-cmdline-boot-proto-mm/Documentation/i386/boot.txt
+@@ -2,7 +2,7 @@
+ 		     ----------------------------
  
- 	  Generally say N here.
+ 		    H. Peter Anvin <hpa@zytor.com>
+-			Last update 2007-01-26
++			Last update 2007-03-06
  
--config IDEDMA_PCI_AUTO
--	bool "Use PCI DMA by default when available"
--	---help---
--	  Prior to kernel version 2.1.112, Linux used to automatically use
--	  DMA for IDE drives and chipsets which support it. Due to concerns
--	  about a couple of cases where buggy hardware may have caused damage,
--	  the default is now to NOT use DMA automatically. To revert to the
--	  previous behaviour, say Y to this question.
--
--	  If you suspect your hardware is at all flakey, say N here.
--	  Do NOT email the IDE kernel people regarding this issue!
--
--	  It is normally safe to answer Y to this question unless your
--	  motherboard uses a VIA VP2 chipset, in which case you should say N.
--
- config IDEDMA_ONLYDISK
- 	bool "Enable DMA only for disks "
--	depends on IDEDMA_PCI_AUTO
- 	help
- 	  This is used if you know your ATAPI Devices are going to fail DMA
- 	  Transfers.
-@@ -851,19 +835,6 @@ config BLK_DEV_IDEDMA_ICS
- 	  Say Y here if you want to add DMA (Direct Memory Access) support to
- 	  the ICS IDE driver.
+ On the i386 platform, the Linux kernel uses a rather complicated boot
+ convention.  This has evolved partially due to historical aspects, as
+@@ -35,9 +35,13 @@ Protocol 2.03:	(Kernel 2.4.18-pre1) Expl
+ 		initrd address available to the bootloader.
  
--config IDEDMA_ICS_AUTO
--	bool "Use ICS DMA by default"
--	depends on BLK_DEV_IDEDMA_ICS
--	help
--	  Prior to kernel version 2.1.112, Linux used to automatically use
--	  DMA for IDE drives and chipsets which support it. Due to concerns
--	  about a couple of cases where buggy hardware may have caused damage,
--	  the default is now to NOT use DMA automatically. To revert to the
--	  previous behaviour, say Y to this question.
--
--	  If you suspect your hardware is at all flakey, say N here.
--	  Do NOT email the IDE kernel people regarding this issue!
--
- config BLK_DEV_IDE_RAPIDE
- 	tristate "RapIDE interface support"
- 	depends on ARM && ARCH_ACORN
-@@ -1086,9 +1057,6 @@ config IDEDMA_IVB
+ Protocol 2.04:	(Kernel 2.6.14) Extend the syssize field to four bytes.
++
+ Protocol 2.05:	(Kernel 2.6.20) Make protected mode kernel relocatable.
+ 		Introduce relocatable_kernel and kernel_alignment fields.
  
- 	  It is normally safe to answer Y; however, the default is N.
++Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
++		the boot command line
++
  
--config IDEDMA_AUTO
--	def_bool IDEDMA_PCI_AUTO || IDEDMA_ICS_AUTO
--
- endif
+ **** MEMORY LAYOUT
  
- config BLK_DEV_HD_ONLY
-Index: b/drivers/ide/arm/icside.c
+@@ -133,6 +137,8 @@ Offset	Proto	Name		Meaning
+ 022C/4	2.03+	initrd_addr_max	Highest legal initrd address
+ 0230/4	2.05+	kernel_alignment Physical addr alignment required for kernel
+ 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
++0235/3	N/A	pad2		Unused
++0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
+ 
+ (1) For backwards compatibility, if the setup_sects field contains 0, the
+     real value is 4.
+@@ -233,6 +239,12 @@ filled out, however:
+ 	if your ramdisk is exactly 131072 bytes long and this field is
+ 	0x37FFFFFF, you can start your ramdisk at 0x37FE0000.)
+ 
++  cmdline_size:
++	The maximum size of the command line without the terminating
++	zero. This means that the command line can contain at most
++	cmdline_size characters. With protocol version 2.05 and
++	earlier, the maximum size was 255.
++
+ 
+ **** THE KERNEL COMMAND LINE
+ 
+@@ -241,11 +253,10 @@ loader to communicate with the kernel.  
+ relevant to the boot loader itself, see "special command line options"
+ below.
+ 
+-The kernel command line is a null-terminated string currently up to
+-255 characters long, plus the final null.  A string that is too long
+-will be automatically truncated by the kernel, a boot loader may allow
+-a longer command line to be passed to permit future kernels to extend
+-this limit.
++The kernel command line is a null-terminated string. The maximum
++length can be retrieved from the field cmdline_size.  Before protocol
++version 2.06, the maximum was 255 characters.  A string that is too
++long will be automatically truncated by the kernel.
+ 
+ If the boot protocol version is 2.02 or later, the address of the
+ kernel command line is given by the header field cmd_line_ptr (see
+Index: longer-cmdline-boot-proto-mm/arch/i386/boot/setup.S
 ===================================================================
---- a/drivers/ide/arm/icside.c
-+++ b/drivers/ide/arm/icside.c
-@@ -196,11 +196,6 @@ static void icside_maskproc(ide_drive_t 
- }
+--- longer-cmdline-boot-proto-mm.orig/arch/i386/boot/setup.S
++++ longer-cmdline-boot-proto-mm/arch/i386/boot/setup.S
+@@ -52,6 +52,7 @@
+ #include <asm/boot.h>
+ #include <asm/e820.h>
+ #include <asm/page.h>
++#include <asm/setup.h>
+ 	
+ /* Signature words to ensure LILO loaded us right */
+ #define SIG1	0xAA55
+@@ -81,7 +82,7 @@ start:
+ # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
  
- #ifdef CONFIG_BLK_DEV_IDEDMA_ICS
--
--#ifndef CONFIG_IDEDMA_ICS_AUTO
--#warning CONFIG_IDEDMA_ICS_AUTO=n support is obsolete, and will be removed soon.
--#endif
--
- /*
-  * SG-DMA support.
-  *
-@@ -474,12 +469,6 @@ static int icside_dma_lostirq(ide_drive_
+ 		.ascii	"HdrS"		# header signature
+-		.word	0x0205		# header version number (>= 0x0105)
++		.word	0x0206		# header version number (>= 0x0105)
+ 					# or else old loadlin-1.5 will fail)
+ realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
+ start_sys_seg:	.word	SYSSEG
+@@ -171,6 +172,10 @@ relocatable_kernel:    .byte 0
+ pad2:			.byte 0
+ pad3:			.word 0
  
- static void icside_dma_init(ide_hwif_t *hwif)
- {
--	int autodma = 0;
--
--#ifdef CONFIG_IDEDMA_ICS_AUTO
--	autodma = 1;
--#endif
--
- 	printk("    %s: SG-DMA", hwif->name);
- 
- 	hwif->atapi_dma		= 1;
-@@ -489,7 +478,7 @@ static void icside_dma_init(ide_hwif_t *
- 	hwif->dmatable_cpu	= NULL;
- 	hwif->dmatable_dma	= 0;
- 	hwif->speedproc		= icside_set_speed;
--	hwif->autodma		= autodma;
-+	hwif->autodma		= 1;
- 
- 	hwif->ide_dma_check	= icside_dma_check;
- 	hwif->dma_host_off	= icside_dma_host_off;
-Index: b/drivers/ide/ide.c
++cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
++                                                #added with boot protocol
++                                                #version 2.06
++
+ trampoline:	call	start_of_setup
+ 		.align 16
+ 					# The offset at this point is 0x240
+Index: longer-cmdline-boot-proto-mm/arch/x86_64/boot/setup.S
 ===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -177,11 +177,7 @@ DECLARE_MUTEX(ide_cfg_sem);
- static int ide_scan_direction; /* THIS was formerly 2.2.x pci=reverse */
- #endif
+--- longer-cmdline-boot-proto-mm.orig/arch/x86_64/boot/setup.S
++++ longer-cmdline-boot-proto-mm/arch/x86_64/boot/setup.S
+@@ -51,6 +51,7 @@
+ #include <asm/boot.h>
+ #include <asm/e820.h>
+ #include <asm/page.h>
++#include <asm/setup.h>
  
--#ifdef CONFIG_IDEDMA_AUTO
- int noautodma = 0;
--#else
--int noautodma = 1;
--#endif
+ /* Signature words to ensure LILO loaded us right */
+ #define SIG1	0xAA55
+@@ -80,7 +81,7 @@ start:
+ # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
  
- EXPORT_SYMBOL(noautodma);
+ 		.ascii	"HdrS"		# header signature
+-		.word	0x0204		# header version number (>= 0x0105)
++		.word	0x0206		# header version number (>= 0x0105)
+ 					# or else old loadlin-1.5 will fail)
+ realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
+ start_sys_seg:	.word	SYSSEG
+@@ -155,6 +156,18 @@ cmd_line_ptr:	.long 0			# (Header versio
+ 					# low memory 0x10000 or higher.
  
-Index: b/drivers/ide/setup-pci.c
-===================================================================
---- a/drivers/ide/setup-pci.c
-+++ b/drivers/ide/setup-pci.c
-@@ -505,11 +505,6 @@ static void ide_hwif_setup_dma(struct pc
- 		}
- 	}
- }
--
--#ifndef CONFIG_IDEDMA_PCI_AUTO
--#warning CONFIG_IDEDMA_PCI_AUTO=n support is obsolete, and will be removed soon.
--#endif
--
- #endif /* CONFIG_BLK_DEV_IDEDMA_PCI*/
- 
- /**
+ ramdisk_max:	.long 0xffffffff
++
++kernel_alignment:  .long CONFIG_PHYSICAL_START 	#physical addr alignment
++						#(not relocatable =>
++						#fixed start == alignment)
++
++relocatable_kernel:     .byte 0                 #x86_64 is currently not
++pad2:			.byte 0                 #relocatable
++pad3:			.word 0
++
++cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
++                                                #added with boot protocol
++                                                #version 2.06
+ 	
+ trampoline:	call	start_of_setup
+ 		.align 16
