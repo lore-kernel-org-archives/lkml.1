@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422783AbXCOAcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422786AbXCOAgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422783AbXCOAcc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 20:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422784AbXCOAcc
+	id S1422786AbXCOAgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 20:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422787AbXCOAgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 20:32:32 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:42511 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422783AbXCOAcb (ORCPT
+	Wed, 14 Mar 2007 20:36:46 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43498 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422786AbXCOAgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 20:32:31 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 14 Mar 2007 17:27:33 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Benjamin LaHaise <bcrl@kvack.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>
-Subject: Re: [patch 13/13] signalfd/timerfd/asyncfd v5 - KAIO asyncfd support
- (example/maybe-broken) ...
-In-Reply-To: <Pine.LNX.4.64.0703141702540.4982@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0703141726260.4982@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.13805.1173910770.13>
- <20070314231920.GB1246@kvack.org> <Pine.LNX.4.64.0703141620340.4982@alien.or.mcafeemobile.com>
- <20070314234208.GC1246@kvack.org> <Pine.LNX.4.64.0703141638570.4982@alien.or.mcafeemobile.com>
- <20070315000212.GD1246@kvack.org> <Pine.LNX.4.64.0703141702540.4982@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Mar 2007 20:36:45 -0400
+Date: Wed, 14 Mar 2007 19:36:43 -0500
+From: Robin Holt <holt@sgi.com>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Cliff Wickman <cpw@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+Message-ID: <20070315003642.GB7338@lnx-holt.americas.sgi.com>
+References: <20070309193925.B60891B8028@attica.americas.sgi.com> <20070309235859.GA20093@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309235859.GA20093@localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Mar 2007, Davide Libenzi wrote:
-
-> On Wed, 14 Mar 2007, Benjamin LaHaise wrote:
+On Fri, Mar 09, 2007 at 05:58:59PM -0600, Nathan Lynch wrote:
+> Hello-
 > 
-> > On Wed, Mar 14, 2007 at 04:41:58PM -0700, Davide Libenzi wrote:
-> > > Yeah, of course. I do not plan revolutions. Just asking if it's a possible 
-> > > thing to do. I can mlock the userspace ring, if imposing that burden over 
-> > > aio_complete() is seen as too heavy.
+> Cliff Wickman wrote:
+> > This patch would insert a preference to migrate such a task to a cpu within
+> > its cpuset (and set its cpus_allowed to its cpuset).
 > > 
-> > I'm not sure I follow what you're doing -- why isn't asyncfd merely calling 
-> > io_getevents() instead of reinventing everything the ringbuffer does?  The 
-> > aio ringbuffer is already locked in memory.  Fwiw, the aio ringbuffer was 
-> > originally wired up to a file descriptor, but that gave way to the actual 
-> > syscall in order to enforce proper typechecking and typical usage scenarios 
-> > with timeouts.
+> > With this patch, migrate the task to:
+> >  1) to any cpu on the same node as the disabled cpu, which is both online
+> >     and among that task's cpus_allowed
+> >  2) to any online cpu within the task's cpuset
+> >  3) to any cpu which is both online and among that task's cpus_allowed
 > 
-> The purpose of asyncfd is to provide a pollable (by the mean of 
-> f_op->poll) device that can be hosted inside a standard select/poll/epoll 
-> wait subsystem, and that, at the same time, provide a zero-copy way for 
-> kernel code (KAIO and syslets/threadlets were my thought) to deliver 
-> results to userspace.
+> I think I disagree with this change.
+> 
+> The kernel shouldn't have to be any smarter than it already is about
+> moving tasks off an offlined cpu.  The only way case 2) can be reached
+> is if the user has changed a task's cpu affinity.  If the user is
+> sophisticated enough to manipulate tasks' cpu affinity then they can
+> arrange to migrate tasks as they see fit before offlining a cpu.
 
-But, yeah. It can end up calling io_getevents() instead of doing it's own 
-thing. That'd make it even slimmer ;)
+You are assuming some sort of interlock between the admin and the user.
+While this may be true on your own personal desktop, I don't think you
+can expect this to be true on a development machine shared by hundreds
+of users and admin'd by a group of people.
 
+Additionally, ia64 is gaining support for offlining a cpu which is giving
+cache errors.
 
-
-- Davide
-
-
+Thanks,
+Robin
