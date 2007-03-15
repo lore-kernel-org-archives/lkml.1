@@ -1,83 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751647AbXCOVUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751725AbXCOVUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751647AbXCOVUT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 17:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXCOVUT
+	id S1751725AbXCOVUu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 17:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbXCOVUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 17:20:19 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:26924 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbXCOVUQ (ORCPT
+	Thu, 15 Mar 2007 17:20:50 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48303 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbXCOVUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 17:20:16 -0400
-X-AuditID: d80ac287-9e3d5bb000000de9-24-45f9b89061ac 
-Date: Thu, 15 Mar 2007 21:20:12 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: David Howells <dhowells@redhat.com>
-cc: bryan.wu@analog.com, Robin Holt <holt@sgi.com>,
-       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>, haoki@redhat.com,
-       Robin Getz <rgetz@blackfin.uclinux.org>
-Subject: Re: Move to unshared VMAs in NOMMU mode?
-In-Reply-To: <12852.1173449522@redhat.com>
-Message-ID: <Pine.LNX.4.64.0703152043290.24211@blonde.wat.veritas.com>
-References: <3378.1173204813@redhat.com>  <Pine.LNX.4.64.0703051843030.10272@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0703021646050.13167@blonde.wat.veritas.com>
- <20070216165042.GB409@lnx-holt.americas.sgi.com> <45D5B483.3020502@hitachi.com>
- <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com>
- <18817.1171656543@redhat.com> <29317.1172931029@redhat.com> 
- <12852.1173449522@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 15 Mar 2007 21:20:15.0610 (UTC) FILETIME=[B983A5A0:01C76747]
-X-Brightmail-Tracker: AAAAAA==
+	Thu, 15 Mar 2007 17:20:48 -0400
+Date: Fri, 16 Mar 2007 06:20:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "David Mosberger-Tang" <dmosberger@gmail.com>
+Cc: linux-ia64@vger.kernel.org, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][PATCH] fixing placement of register stack under ulimit
+ -s
+Message-Id: <20070316062047.fbdae1ed.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <ed5aea430703150857i4c60dbfdrd5c871235815e5da@mail.gmail.com>
+References: <20070315171743.e85b8405.kamezawa.hiroyu@jp.fujitsu.com>
+	<ed5aea430703150857i4c60dbfdrd5c871235815e5da@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Mar 2007, David Howells wrote:
+On Thu, 15 Mar 2007 09:57:28 -0600
+"David Mosberger-Tang" <dmosberger@gmail.com> wrote:
+
+> But aren't you going to be limited to less than a page worth of
+> register-backing store even with your patch applied because the
+> backing store will end up overflowing the memory stack?
 > 
-> I've been considering how to deal with the SYSV SHM problem, and I think we
-> may have to move to unshared VMAs in NOMMU mode to deal with this.  Currently,
-> what we have is each mm_struct has in its arch-specific context argument a
-> list of VMLs.  Take the FRV context for example:
->... 
-> Another way of dealing with the nattch count on NOMMU systems is to do it
-> through the VML list, but that then needs more special casing in the SHM
-> driver and perhaps others.
+
+I think pthread's stack, which is created by malloc, is also shared
+among register-stack and memory-stack. 
+(glibc's pthread's stack is limited by ulimit, too.)
+
+So, it seems stack_size_limit = register_stack_limit + memory_stack_limit
+is a consistent way. I'm sorry if I don't catch your point.
+
+ --Kame
+
+
+>   --david
 > 
-> Thoughts?
+> On 3/15/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > This patch fixes ia64's bug in ulimit -s handling. against 2.6.21-rc3.
+> >
+> > At first,the address of register stack is defined by this
+> > == ia64_set_rbs_bot()
+> > unsigned long stack_size = current->signal->rlim[RLIMIT_STACK].rlim_max & -16;
+> >
+> >         if (stack_size > MAX_USER_STACK_SIZE)
+> >                 stack_size = MAX_USER_STACK_SIZE;
+> >         current->thread.rbs_bot = STACK_TOP - stack_size;
+> > }
+> > ==
+> > default rlim[RLIMIT_STACK].rlim_max is very big.
+> >
+> > If ulimit -s is used, rlim_max can be small. As a result, rbs_bot can be
+> > very high address. Because of stack-address-randomize, there is a case that
+> > "regiter stack" is placed in the higher address than "memory stack".
+> > == example...
+> > [kamezawa@drpq linux-2.6.21-rc2]$ ulimit -s
+> > 8192
+> > [kamezawa@drpq linux-2.6.21-rc2]$ cat /proc/self/maps
+> > 00000000-00004000 r--p 00000000 00:00 0
+> > 2000000000000000-2000000000038000 r-xp 00000000 08:02 5991525            /lib/ld-2.5.so
+> > 2000000000044000-2000000000050000 rw-p 00034000 08:02 5991525            /lib/ld-2.5.so
+> > 2000000000064000-20000000002c8000 r-xp 00000000 08:02 5990699            /lib/libc-2.5.so
+> > 20000000002c8000-20000000002d4000 ---p 00264000 08:02 5990699            /lib/libc-2.5.so
+> > 20000000002d4000-20000000002e0000 rw-p 00260000 08:02 5990699            /lib/libc-2.5.so
+> > 20000000002e0000-20000000002ec000 rw-p 20000000002e0000 00:00 0
+> > 20000000002ec000-2000000003a24000 r--p 00000000 08:02 9472842            /usr/lib/locale/locale-archive
+> > 4000000000000000-4000000000008000 r-xp 00000000 08:02 4157490            /bin/cat
+> > 6000000000004000-600000000000c000 rw-p 00004000 08:02 4157490            /bin/cat
+> > 600000000000c000-6000000000030000 rw-p 600000000000c000 00:00 0          [heap]
+> > 60000fffff5f4000-60000fffff648000 rw-p 60000fffff5f4000 00:00 0          [stack]
+> > 60000fffff7fc000-60000fffff800000 rw-p 60000fffff7fc000 00:00 0          (*)
+> > a000000000000000-a000000000020000 ---p 00000000 00:00 0                  [vdso]
+> > (*) is register stack.
+> > ==
+> > This register-stack/memory-stack upside down is not expected.
+> > Current ia64 page fault handler doesn't handle this case. In this case,
+> > register stack expansion causes SEGV.
+> > This means that the user program can use only 1 page for its register stack.
+> >
+> > This patch fixes the above case by moving register stack to suitable place.
+> > Note) fixing page fault handler seems to be another way...but a bit complicated.
+> >
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> > Index: linux-2.6.21-rc3/arch/ia64/mm/init.c
+> > ===================================================================
+> > --- linux-2.6.21-rc3.orig/arch/ia64/mm/init.c
+> > +++ linux-2.6.21-rc3/arch/ia64/mm/init.c
+> > @@ -155,7 +155,7 @@ ia64_set_rbs_bot (void)
+> >
+> >         if (stack_size > MAX_USER_STACK_SIZE)
+> >                 stack_size = MAX_USER_STACK_SIZE;
+> > -       current->thread.rbs_bot = STACK_TOP - stack_size;
+> > +       current->thread.rbs_bot = PAGE_ALIGN(current->mm->start_stack - stack_size);
+> >  }
+> >
+> >  /*
+> >
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> 
+> 
+> -- 
+> Mosberger Consulting LLC, http://www.mosberger-consulting.com/
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Thoughts are in regrettably short supply at my end.
-
-I do appreciate all the trouble you've taken to explain it,
-in terms I'd understand.  And the way you've taken on board
-my anxiety about vma assumptions diverging between NO/MMU.
-
-But if "the SYSV SHM problem" you mention at the beginning
-is just the "nattch" problem you mention at the end, I doubt
-that's worth such a redesign as you're considering here.
-
-Actually, I'm rather surprised SHM needs any such nattch count,
-I'd expect it to deducible from file->f_count and mode&SHM_DEST
-(but haven't investigated whether that really works out at all).
-
-If you just need a little CONFIG_MMU in ipc/shm.c to solve your
-problem, I don't think more is justified.
-
-Your struct vm_region idea does look more to my taste than what
-you presently have; yet if you pursue it, I think it would just
-make divergence worse wouldn't it?  NOMMU wanting vma to contain
-a pointer to vm_region, MMU wanting vm_region embedded in vma.
-
-I don't really understand why NOMMU chooses to share vmas, or
-vm_regions, rather than just sharing the data which they indicate.
-Just because you can use less memory that way?  But no need to
-justify it now, I'm unlikely to study it in detail.
-
-Hugh
