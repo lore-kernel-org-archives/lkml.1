@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933936AbXCOW3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422989AbXCOWap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933936AbXCOW3J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 18:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422975AbXCOW2m
+	id S1422989AbXCOWap (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 18:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422977AbXCOWap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 18:28:42 -0400
-Received: from mx.pathscale.com ([198.186.3.68]:33697 "EHLO mx.pathscale.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753413AbXCOWP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 18:15:26 -0400
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+	Thu, 15 Mar 2007 18:30:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49462 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933934AbXCOWam (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 18:30:42 -0400
+Date: Fri, 16 Mar 2007 07:30:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: dmosberger@gmail.com, linux-ia64@vger.kernel.org, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][PATCH] fixing placement of register stack under ulimit
+ -s
+Message-Id: <20070316073047.8c92bcd1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070316062047.fbdae1ed.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070315171743.e85b8405.kamezawa.hiroyu@jp.fujitsu.com>
+	<ed5aea430703150857i4c60dbfdrd5c871235815e5da@mail.gmail.com>
+	<20070316062047.fbdae1ed.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 06 of 33] IB/ipath - NMI cpu lockup if local loopback used
-X-Mercurial-Node: 78ae7bddbd5e205adc12993ad2956e0402ca01d7
-Message-Id: <78ae7bddbd5e205adc12.1173995090@iqa-25.internal.keyresearch.com>
-In-Reply-To: <patchbomb.1173995084@iqa-25.internal.keyresearch.com>
-Date: Thu, 15 Mar 2007 14:44:50 -0700
-From: "Bryan O'Sullivan" <bos@pathscale.com>
-To: rdreier@cisco.com
-Cc: openib-general@openfabrics.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# HG changeset patch
-# User Ralph Campbell <ralph.campbell@qlogic.com>
-# Date 1173994464 25200
-# Node ID 78ae7bddbd5e205adc12993ad2956e0402ca01d7
-# Parent  fa38a027a0853a80c4f7dfc50345c89f195bc85b
-IB/ipath - NMI cpu lockup if local loopback used
+On Fri, 16 Mar 2007 06:20:47 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-If a post send is done in loopback and there is no receive queue entry,
-the sending QP is put on a timeout list for a while so the receiver has
-a chance to post a receive buffer. If the another post send is done,
-the code incorrectly tried to put the QP on the timeout list again an
-corrupted the timeout list. This eventually leads to a spin lock deadlock
-NMI due to the timer function looping forever with the lock held.
+> On Thu, 15 Mar 2007 09:57:28 -0600
+> "David Mosberger-Tang" <dmosberger@gmail.com> wrote:
+> 
+> > But aren't you going to be limited to less than a page worth of
+> > register-backing store even with your patch applied because the
+> > backing store will end up overflowing the memory stack?
+> > 
+> 
+> I think pthread's stack, which is created by malloc, is also shared
+> among register-stack and memory-stack. 
+> (glibc's pthread's stack is limited by ulimit, too.)
+> 
+> So, it seems stack_size_limit = register_stack_limit + memory_stack_limit
+> is a consistent way. I'm sorry if I don't catch your point.
+> 
+BTW, what way do you recommened to fix this register-stack/memory-stack upside
+down problem ?
 
-Signed-off-by: Bryan O'Sullivan <bryan.osullivan@qlogic.com>
+Plan A) just handle upside-down case in page fault handler.
+	This means ulimit -s limitation will limit amount of memory-stack and
+	register stack independently.
+Plan B) handle upside-down case in page fault handler and add modify 
+ 	acct_stack_growth() to be able to handle the limitation of sum
+	of separated vmas.(vma for reg stack and mem stack). 
+Plan C) don't allow this upside down as this patch. but change calculation of rbs_top.
 
-diff -r fa38a027a085 -r 78ae7bddbd5e drivers/infiniband/hw/ipath/ipath_ruc.c
---- a/drivers/infiniband/hw/ipath/ipath_ruc.c	Thu Mar 15 14:34:24 2007 -0700
-+++ b/drivers/infiniband/hw/ipath/ipath_ruc.c	Thu Mar 15 14:34:24 2007 -0700
-@@ -265,7 +265,8 @@ again:
- again:
- 	spin_lock_irqsave(&sqp->s_lock, flags);
- 
--	if (!(ib_ipath_state_ops[sqp->state] & IPATH_PROCESS_SEND_OK)) {
-+	if (!(ib_ipath_state_ops[sqp->state] & IPATH_PROCESS_SEND_OK) ||
-+	    qp->s_rnr_timeout) {
- 		spin_unlock_irqrestore(&sqp->s_lock, flags);
- 		goto done;
- 	}
+Note:
+To see the problem which my patch want to fix run following code under ulimit -s.
+
+==
+void eat_stack(int num) {
+	printf("%d\n", num);
+	eat_stack(num - 1);
+}
+
+int main (void) {
+	eat_stack(10000);
+}
+==
+
+-- Kame
+
