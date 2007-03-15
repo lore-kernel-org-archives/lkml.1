@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933921AbXCOWVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933939AbXCOWVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933921AbXCOWVH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 18:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422640AbXCOWTg
+	id S933939AbXCOWVk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 18:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXCOWTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 18:19:36 -0400
-Received: from mx.pathscale.com ([198.186.3.68]:33713 "EHLO mx.pathscale.com"
+	Thu, 15 Mar 2007 18:19:35 -0400
+Received: from mx.pathscale.com ([198.186.3.68]:33715 "EHLO mx.pathscale.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753398AbXCOWP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753420AbXCOWP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Mar 2007 18:15:28 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 09 of 33] IB/ipath - fix QP error completion queue entries
-X-Mercurial-Node: ec38d8f91d79a765cf53aaa7e8a59622418f2c9f
-Message-Id: <ec38d8f91d79a765cf53.1173995093@iqa-25.internal.keyresearch.com>
+Subject: [PATCH 24 of 33] IB/ipath - fix driver crash (in interrupt or during
+	unload) after chip reset
+X-Mercurial-Node: 3e81a6b18b42bbe6dffab382fb26d754dfdf83a1
+Message-Id: <3e81a6b18b42bbe6dffa.1173995108@iqa-25.internal.keyresearch.com>
 In-Reply-To: <patchbomb.1173995084@iqa-25.internal.keyresearch.com>
-Date: Thu, 15 Mar 2007 14:44:53 -0700
+Date: Thu, 15 Mar 2007 14:45:08 -0700
 From: "Bryan O'Sullivan" <bos@pathscale.com>
 To: rdreier@cisco.com
 Cc: openib-general@openfabrics.org, linux-kernel@vger.kernel.org
@@ -24,72 +25,107 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 # HG changeset patch
-# User Ralph Campbell <ralph.campbell@qlogic.com>
-# Date 1173994464 25200
-# Node ID ec38d8f91d79a765cf53aaa7e8a59622418f2c9f
-# Parent  187ff5af5e5dd2b1f2ca48ba6ad0056ce7fc7403
-IB/ipath - fix QP error completion queue entries
+# User Michael Albaugh <Michael.Albaugh@QLogic.com>
+# Date 1173994465 25200
+# Node ID 3e81a6b18b42bbe6dffab382fb26d754dfdf83a1
+# Parent  01cde17958018b5262570cd9ea399378f95051e7
+IB/ipath - fix driver crash (in interrupt or during unload) after chip reset
 
-When switching to the QP error state, the completion queue entries
-(error or flush) were not being generated correctly.
+Re-init of the kernel structures after a chip reset was leaving the
+portdata structure for port zero in an inconsistent state, and a pointer
+to it either stale (in re-init code) or NULL (in devdata) Fixing the
+order of operations on this struct, and the condition for interrupt
+access, prevents the crashes.
 
 Signed-off-by: Bryan O'Sullivan <bryan.osullivan@qlogic.com>
 
-diff -r 187ff5af5e5d -r ec38d8f91d79 drivers/infiniband/hw/ipath/ipath_qp.c
---- a/drivers/infiniband/hw/ipath/ipath_qp.c	Thu Mar 15 14:34:24 2007 -0700
-+++ b/drivers/infiniband/hw/ipath/ipath_qp.c	Thu Mar 15 14:34:24 2007 -0700
-@@ -361,7 +361,7 @@ static void ipath_reset_qp(struct ipath_
-  * @err: the receive completion error to signal if a RWQE is active
-  *
-  * Flushes both send and receive work queues.
-- * QP s_lock should be held and interrupts disabled.
-+ * The QP s_lock should be held and interrupts disabled.
-  */
+diff -r 01cde1795801 -r 3e81a6b18b42 drivers/infiniband/hw/ipath/ipath_init_chip.c
+--- a/drivers/infiniband/hw/ipath/ipath_init_chip.c	Thu Mar 15 14:34:25 2007 -0700
++++ b/drivers/infiniband/hw/ipath/ipath_init_chip.c	Thu Mar 15 14:34:25 2007 -0700
+@@ -216,6 +216,20 @@ static int bringup_link(struct ipath_dev
+ 	return ret;
+ }
  
- void ipath_error_qp(struct ipath_qp *qp, enum ib_wc_status err)
-@@ -393,6 +393,8 @@ void ipath_error_qp(struct ipath_qp *qp,
- 	wc.port_num = 0;
- 	if (qp->r_wrid_valid) {
- 		qp->r_wrid_valid = 0;
-+		wc.wr_id = qp->r_wr_id;
-+		wc.opcode = IB_WC_RECV;
- 		wc.status = err;
- 		ipath_cq_enter(to_icq(qp->ibqp.send_cq), &wc, 1);
++static struct ipath_portdata *create_portdata0(struct ipath_devdata *dd)
++{
++	struct ipath_portdata *pd = NULL;
++
++	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
++	if (pd) {
++		pd->port_dd = dd;
++		pd->port_cnt = 1;
++		/* The port 0 pkey table is used by the layer interface. */
++		pd->port_pkeys[0] = IPATH_DEFAULT_P_KEY;
++	}
++	return pd;
++}
++
+ static int init_chip_first(struct ipath_devdata *dd,
+ 			   struct ipath_portdata **pdp)
+ {
+@@ -271,20 +285,16 @@ static int init_chip_first(struct ipath_
+ 		goto done;
  	}
-@@ -972,7 +974,7 @@ bail:
-  * @wc: the WC responsible for putting the QP in this state
-  *
-  * Flushes the send work queue.
-- * The QP s_lock should be held.
-+ * The QP s_lock should be held and interrupts disabled.
-  */
  
- void ipath_sqerror_qp(struct ipath_qp *qp, struct ib_wc *wc)
-@@ -998,12 +1000,12 @@ void ipath_sqerror_qp(struct ipath_qp *q
- 	wc->status = IB_WC_WR_FLUSH_ERR;
- 
- 	while (qp->s_last != qp->s_head) {
-+		wqe = get_swqe_ptr(qp, qp->s_last);
- 		wc->wr_id = wqe->wr.wr_id;
- 		wc->opcode = ib_ipath_wc_opcode[wqe->wr.opcode];
- 		ipath_cq_enter(to_icq(qp->ibqp.send_cq), wc, 1);
- 		if (++qp->s_last >= qp->s_size)
- 			qp->s_last = 0;
--		wqe = get_swqe_ptr(qp, qp->s_last);
+-	dd->ipath_pd[0] = kzalloc(sizeof(*pd), GFP_KERNEL);
+-
+-	if (!dd->ipath_pd[0]) {
++	pd = create_portdata0(dd);
++
++	if (!pd) {
+ 		ipath_dev_err(dd, "Unable to allocate portdata for port "
+ 			      "0, failing\n");
+ 		ret = -ENOMEM;
+ 		goto done;
  	}
- 	qp->s_cur = qp->s_tail = qp->s_head;
- 	qp->state = IB_QPS_SQE;
-diff -r 187ff5af5e5d -r ec38d8f91d79 drivers/infiniband/hw/ipath/ipath_rc.c
---- a/drivers/infiniband/hw/ipath/ipath_rc.c	Thu Mar 15 14:34:24 2007 -0700
-+++ b/drivers/infiniband/hw/ipath/ipath_rc.c	Thu Mar 15 14:34:24 2007 -0700
-@@ -895,8 +895,10 @@ static int do_rc_ack(struct ipath_qp *qp
- 			wc.opcode = ib_ipath_wc_opcode[wqe->wr.opcode];
- 			wc.vendor_err = 0;
- 			wc.byte_len = wqe->length;
-+			wc.imm_data = 0;
- 			wc.qp = &qp->ibqp;
- 			wc.src_qp = qp->remote_qpn;
-+			wc.wc_flags = 0;
- 			wc.pkey_index = 0;
- 			wc.slid = qp->remote_ah_attr.dlid;
- 			wc.sl = qp->remote_ah_attr.sl;
+-	pd = dd->ipath_pd[0];
+-	pd->port_dd = dd;
+-	pd->port_port = 0;
+-	pd->port_cnt = 1;
+-	/* The port 0 pkey table is used by the layer interface. */
+-	pd->port_pkeys[0] = IPATH_DEFAULT_P_KEY;
++	dd->ipath_pd[0] = pd;
++
+ 	dd->ipath_rcvtidcnt =
+ 		ipath_read_kreg32(dd, dd->ipath_kregs->kr_rcvtidcnt);
+ 	dd->ipath_rcvtidbase =
+@@ -838,11 +848,24 @@ int ipath_init_chip(struct ipath_devdata
+ 	 * Set up the port 0 (kernel) rcvhdr q and egr TIDs.  If doing
+ 	 * re-init, the simplest way to handle this is to free
+ 	 * existing, and re-allocate.
++	 * Need to re-create rest of port 0 portdata as well.
+ 	 */
+ 	if (reinit) {
+-		struct ipath_portdata *pd = dd->ipath_pd[0];
+-		dd->ipath_pd[0] = NULL;
+-		ipath_free_pddata(dd, pd);
++		/* Alloc and init new ipath_portdata for port0,
++		 * Then free old pd. Could lead to fragmentation, but also
++		 * makes later support for hot-swap easier.
++		 */
++		struct ipath_portdata *npd;
++		npd = create_portdata0(dd);
++		if (npd) {
++			ipath_free_pddata(dd, pd);
++			dd->ipath_pd[0] = pd = npd;
++		} else {
++			ipath_dev_err(dd, "Unable to allocate portdata for"
++				      "  port 0, failing\n");
++			ret = -ENOMEM;
++			goto done;
++		}
+ 	}
+ 	dd->ipath_f_tidtemplate(dd);
+ 	ret = ipath_create_rcvhdrq(dd, pd);
+diff -r 01cde1795801 -r 3e81a6b18b42 drivers/infiniband/hw/ipath/ipath_stats.c
+--- a/drivers/infiniband/hw/ipath/ipath_stats.c	Thu Mar 15 14:34:25 2007 -0700
++++ b/drivers/infiniband/hw/ipath/ipath_stats.c	Thu Mar 15 14:34:25 2007 -0700
+@@ -207,7 +207,7 @@ void ipath_get_faststats(unsigned long o
+ 	 * don't access the chip while running diags, or memory diags can
+ 	 * fail
+ 	 */
+-	if (!dd->ipath_kregbase || !(dd->ipath_flags & IPATH_PRESENT) ||
++	if (!dd->ipath_kregbase || !(dd->ipath_flags & IPATH_INITTED) ||
+ 	    ipath_diag_inuse)
+ 		/* but re-arm the timer, for diags case; won't hurt other */
+ 		goto done;
