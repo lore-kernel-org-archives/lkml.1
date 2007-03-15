@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933601AbXCOUCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933641AbXCOUHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933601AbXCOUCL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 16:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933638AbXCOUCL
+	id S933641AbXCOUHO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 16:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933638AbXCOUHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 16:02:11 -0400
-Received: from ns.suse.de ([195.135.220.2]:52477 "EHLO mx1.suse.de"
+	Thu, 15 Mar 2007 16:07:14 -0400
+Received: from pat.uio.no ([129.240.10.15]:41468 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933601AbXCOUCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 16:02:09 -0400
-Date: Thu, 15 Mar 2007 21:01:59 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Ashif Harji <asharji@cs.uwaterloo.ca>,
-       Miquel van Smoorenburg <miquels@cistron.nl>, linux-mm@kvack.org,
-       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-Message-ID: <20070315200159.GC19625@wotan.suse.de>
-References: <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <45F96CCB.4000709@redhat.com> <20070315162944.GI8321@wotan.suse.de> <Pine.LNX.4.64.0703151719380.32335@blonde.wat.veritas.com>
+	id S933228AbXCOUHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 16:07:11 -0400
+Subject: Re: [patch 2/5] fs: introduce new aops and infrastructure
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070315041329.GB21942@ca-server1.us.oracle.com>
+References: <20070314112529.13798.35417.sendpatchset@linux.site>
+	 <20070314112540.13798.97719.sendpatchset@linux.site>
+	 <20070315041329.GB21942@ca-server1.us.oracle.com>
+Content-Type: text/plain
+Date: Thu, 15 Mar 2007 16:06:39 -0400
+Message-Id: <1173989199.6506.109.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703151719380.32335@blonde.wat.veritas.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.0 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: DA8F928E7FA823A471917BC022FD73CD558C150A
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 113 total 506109 max/h 7466 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 05:44:01PM +0000, Hugh Dickins wrote:
-> On Thu, 15 Mar 2007, Nick Piggin wrote:
-> > On Thu, Mar 15, 2007 at 11:56:59AM -0400, Chuck Ebbert wrote:
-> > > Ashif Harji wrote:
-> > > > 
-> > > > This patch unconditionally calls mark_page_accessed to prevent pages,
-> > > > especially for small files, from being evicted from the page cache
-> > > > despite frequent access.
-> > > > 
-> > > > Signed-off-by: Ashif Harji <asharji@beta.uwaterloo.ca>
+On Wed, 2007-03-14 at 21:13 -0700, Mark Fasheh wrote:
+> Hi Nick,
 > 
-> Yeah, yeah, I'm not a real mman, I don't have my own patch and
-> website for this ;) but I'm old, let me mumble some history...
+> On Wed, Mar 14, 2007 at 02:38:22PM +0100, Nick Piggin wrote:
+> > Introduce write_begin, write_end, and perform_write aops.
+> > 
+> > These are intended to replace prepare_write and commit_write with more
+> > flexible alternatives that are also able to avoid the buffered write
+> > deadlock problems efficiently (which prepare_write is unable to do).
 > 
-> Ashif's patch would take us back to 2.4.10 when mark_page_accessed
-> was introduced: in 2.4.11 someone (probably Andrea) immediately
-> added a !offset || !filp->f_reada condition on it there, which
-> remains in 2.4 to this day.  That _probably_ means that Ashif's
-> patch is suboptimal, and that your !offset patch is good.
+> > Index: linux-2.6/include/linux/fs.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/fs.h
+> > +++ linux-2.6/include/linux/fs.h
+> > @@ -449,6 +449,17 @@ struct address_space_operations {
+> >  	 */
+> >  	int (*prepare_write)(struct file *, struct page *, unsigned, unsigned);
+> >  	int (*commit_write)(struct file *, struct page *, unsigned, unsigned);
+> > +
+> > +	int (*write_begin)(struct file *, struct address_space *mapping,
+> > +				loff_t pos, unsigned len, int intr,
+> > +				struct page **pagep, void **fsdata);
+> > +	int (*write_end)(struct file *, struct address_space *mapping,
+> > +				loff_t pos, unsigned len, unsigned copied,
+> > +				struct page *page, void *fsdata);
 > 
-> f_reada went away in 2.5.8, and the !offset condition remained
-> until 2.6.11, when Miquel (CC'ed) replaced it by today's prev_index
-> condition.  His changelog entry appended below.  Since it's Miquel
-> who removed the !offset condition, he should be consulted on its
-> reintroduction.
+> Are we going to get rid of the file and intr arguments btw? I'm not sure
+> intr is useful, and mapping is probably enough to get whatever we inside
+> ->write_begin / ->write_end.
 
-Yeah I did go back and check up on that changelog, because I knew
-we had a !offset check there at one stage, which is immune to this
-problem (or at least can handle it a little better).
+Hell no! Struct file carries information that is essential for those of
+us that use strong authentication. It stays.
 
-I suspect that Miquel was probably more interested in _increasing_
-mark_page_accessed coverage with his new condition than restricting
-it from the !offset cases.
+Trond
 
-Thanks for digging it up and posting here, though.
