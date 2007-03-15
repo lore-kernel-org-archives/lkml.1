@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965528AbXCOM2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965543AbXCOMby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965528AbXCOM2Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 08:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965543AbXCOM2Z
+	id S965543AbXCOMby (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 08:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965547AbXCOMby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 08:28:25 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:28843 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965528AbXCOM2Y (ORCPT
+	Thu, 15 Mar 2007 08:31:54 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:25912 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965544AbXCOMbx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 08:28:24 -0400
-Date: Thu, 15 Mar 2007 13:27:23 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [patch 1/2] splice: dont steal
-Message-ID: <20070315122723.GQ15400@kernel.dk>
-References: <20070314121440.GA926@wotan.suse.de> <20070315115237.GM15400@kernel.dk> <20070315122207.GA8321@wotan.suse.de>
+	Thu, 15 Mar 2007 08:31:53 -0400
+X-AuditID: d80ac287-9edd6bb000000de9-22-45f93cb826ed 
+Date: Thu, 15 Mar 2007 12:31:50 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Alan Stern <stern@rowland.harvard.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
+       gregkh@suse.de, Richard Purdie <rpurdie@rpsys.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+In-Reply-To: <20070315112725.7eadb7b7@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0703151219540.12584@blonde.wat.veritas.com>
+References: <20070314194337.5d439dab@gondolin.boeblingen.de.ibm.com>
+ <Pine.LNX.4.44L0.0703141516150.7723-100000@iolanthe.rowland.org>
+ <20070315112725.7eadb7b7@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070315122207.GA8321@wotan.suse.de>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 15 Mar 2007 12:31:51.0978 (UTC) FILETIME=[E8AD50A0:01C766FD]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15 2007, Nick Piggin wrote:
-> On Thu, Mar 15, 2007 at 12:52:37PM +0100, Jens Axboe wrote:
-> > On Wed, Mar 14 2007, Nick Piggin wrote:
-> > > Here are a couple of splice patches I found when digging in the area.
-> > > I could be wrong, so I'd appreciate confirmation.
-> > > 
-> > > Untested other than compile, because I don't have a good splice test
-> > > setup.
-> > > 
-> > > Considering these are data corruption / information leak issues, then
-> > > we could do worse than to merge them in 2.6.21 and earlier stable
-> > > trees.
-> > > 
-> > > Does anyone really use splice stealing?
+On Thu, 15 Mar 2007, Cornelia Huck wrote:
+> On Wed, 14 Mar 2007 15:23:10 -0400 (EDT),
+> Alan Stern <stern@rowland.harvard.edu> wrote:
 > > 
-> > That's a damn shame, I'd greatly prefer if we can try and fix it
-> > instead. Splice isn't really all that used yet to my knowledge, but
-> > stealing is one of the niftier features I think. Otherwise you're just
-> > copying data again.
+> > sysfs_work_struct is too generic; other parts of sysfs might also want to
+> > use workqueues for different purposes.
 > 
-> We should be able to allow for it with the new a_ops API I'm working
-> on.
-
-"Should be" and in progress stuff, is it guarenteed to get there?
-
-> Basically we can pass the page down to the filesystem, and tell it to
-> attempt to install that page in-place.
+> > I don't like calling it "delayed"-anything, because the operations aren't
+> > necessarily delayed!  On an SMP system they might even execute before the
+> > sysfs_access_in_other_task() call returns.  (Although the two examples we
+> > have so far can't do that because of lock contention.)
 > 
-> The problem is that we can't just put this page here hoping the fs can
-> take it, becaue it might fail allocating blocks, for example.
+> Sure. But then you shouldn't refer to "delay" in the comments for the
+> functions as well :)
 > 
-> Anyway, we can still copy files with 1 less copy than read/write ;)
+> > The major feature added here is that the work takes place in a different 
+> > task's context, not that it is delayed.  Hence the choice of names.
+> 
+> Hm. Perhaps device_schedule_access()?
 
-It's not about 1 vs 2 copies, it's more about 0 vs 1 copy. But yes, we
-can file copy with less copies.
+It's really none of my business, I'm merely the reporter the
+deadlock being fixed, and I don't know my way around sysfs at all ...
 
-> It is a nifty feature, but I think it is more of a niche than simply
-> saving that 1 copy, because you have to know that the source isn't
-> going to be used again.
+... but I have to say I share your discomfort with Alan's
+"sysfs_access_in_other_task" naming, it sounded very weird to me.
 
-Well yes, same as when you free() a page. A little more tricky, but
-that's mainly the vm assumptions/requirements for page stealing.
+Quite apart from this mysterious "other task", I don't understand
+"access" either.
 
-> But I'll try to support it with begin_write.
+Perhaps "defer" would best capture the idea of another-task and
+maybe-delay?  sysfs_defer_work(), struct sysfs_deferred_work?
 
--- 
-Jens Axboe
-
+Hugh
