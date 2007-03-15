@@ -1,126 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751725AbXCOVUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751694AbXCOVZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751725AbXCOVUu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 17:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbXCOVUu
+	id S1751694AbXCOVZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 17:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbXCOVZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 17:20:50 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48303 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbXCOVUs (ORCPT
+	Thu, 15 Mar 2007 17:25:46 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49751 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751693AbXCOVZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 17:20:48 -0400
-Date: Fri, 16 Mar 2007 06:20:47 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "David Mosberger-Tang" <dmosberger@gmail.com>
-Cc: linux-ia64@vger.kernel.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUGFIX][PATCH] fixing placement of register stack under ulimit
- -s
-Message-Id: <20070316062047.fbdae1ed.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <ed5aea430703150857i4c60dbfdrd5c871235815e5da@mail.gmail.com>
-References: <20070315171743.e85b8405.kamezawa.hiroyu@jp.fujitsu.com>
-	<ed5aea430703150857i4c60dbfdrd5c871235815e5da@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Mar 2007 17:25:45 -0400
+Date: Thu, 15 Mar 2007 17:25:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] USB Keyboard
+In-Reply-To: <d120d5000703151307w110c5258q6a4c53381e71e89c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0703151723350.2482-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007 09:57:28 -0600
-"David Mosberger-Tang" <dmosberger@gmail.com> wrote:
+On Thu, 15 Mar 2007, Dmitry Torokhov wrote:
 
-> But aren't you going to be limited to less than a page worth of
-> register-backing store even with your patch applied because the
-> backing store will end up overflowing the memory stack?
+> On 3/15/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+> > echo "Loading uhci-hcd.ko module"
+> > insmod /lib/uhci-hcd.ko
+> > echo "Loading ehci-hcd.ko module"
+> > insmod /lib/ehci-hcd.ko
 > 
+> I don't see you loading OHCI and I thought AMD boxes used that flavor.
 
-I think pthread's stack, which is created by malloc, is also shared
-among register-stack and memory-stack. 
-(glibc's pthread's stack is limited by ulimit, too.)
+It depends on the chipset used for the motherboard.  Intel and VIA use 
+UHCI, pretty much everyone else uses OHCI.
 
-So, it seems stack_size_limit = register_stack_limit + memory_stack_limit
-is a consistent way. I'm sorry if I don't catch your point.
+Dick, there's an even simpler way to debug this.  Install your special CD 
+on a machine with an old-fashioned PS/2 keyboard and use that!
 
- --Kame
-
-
->   --david
-> 
-> On 3/15/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > This patch fixes ia64's bug in ulimit -s handling. against 2.6.21-rc3.
-> >
-> > At first,the address of register stack is defined by this
-> > == ia64_set_rbs_bot()
-> > unsigned long stack_size = current->signal->rlim[RLIMIT_STACK].rlim_max & -16;
-> >
-> >         if (stack_size > MAX_USER_STACK_SIZE)
-> >                 stack_size = MAX_USER_STACK_SIZE;
-> >         current->thread.rbs_bot = STACK_TOP - stack_size;
-> > }
-> > ==
-> > default rlim[RLIMIT_STACK].rlim_max is very big.
-> >
-> > If ulimit -s is used, rlim_max can be small. As a result, rbs_bot can be
-> > very high address. Because of stack-address-randomize, there is a case that
-> > "regiter stack" is placed in the higher address than "memory stack".
-> > == example...
-> > [kamezawa@drpq linux-2.6.21-rc2]$ ulimit -s
-> > 8192
-> > [kamezawa@drpq linux-2.6.21-rc2]$ cat /proc/self/maps
-> > 00000000-00004000 r--p 00000000 00:00 0
-> > 2000000000000000-2000000000038000 r-xp 00000000 08:02 5991525            /lib/ld-2.5.so
-> > 2000000000044000-2000000000050000 rw-p 00034000 08:02 5991525            /lib/ld-2.5.so
-> > 2000000000064000-20000000002c8000 r-xp 00000000 08:02 5990699            /lib/libc-2.5.so
-> > 20000000002c8000-20000000002d4000 ---p 00264000 08:02 5990699            /lib/libc-2.5.so
-> > 20000000002d4000-20000000002e0000 rw-p 00260000 08:02 5990699            /lib/libc-2.5.so
-> > 20000000002e0000-20000000002ec000 rw-p 20000000002e0000 00:00 0
-> > 20000000002ec000-2000000003a24000 r--p 00000000 08:02 9472842            /usr/lib/locale/locale-archive
-> > 4000000000000000-4000000000008000 r-xp 00000000 08:02 4157490            /bin/cat
-> > 6000000000004000-600000000000c000 rw-p 00004000 08:02 4157490            /bin/cat
-> > 600000000000c000-6000000000030000 rw-p 600000000000c000 00:00 0          [heap]
-> > 60000fffff5f4000-60000fffff648000 rw-p 60000fffff5f4000 00:00 0          [stack]
-> > 60000fffff7fc000-60000fffff800000 rw-p 60000fffff7fc000 00:00 0          (*)
-> > a000000000000000-a000000000020000 ---p 00000000 00:00 0                  [vdso]
-> > (*) is register stack.
-> > ==
-> > This register-stack/memory-stack upside down is not expected.
-> > Current ia64 page fault handler doesn't handle this case. In this case,
-> > register stack expansion causes SEGV.
-> > This means that the user program can use only 1 page for its register stack.
-> >
-> > This patch fixes the above case by moving register stack to suitable place.
-> > Note) fixing page fault handler seems to be another way...but a bit complicated.
-> >
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> > Index: linux-2.6.21-rc3/arch/ia64/mm/init.c
-> > ===================================================================
-> > --- linux-2.6.21-rc3.orig/arch/ia64/mm/init.c
-> > +++ linux-2.6.21-rc3/arch/ia64/mm/init.c
-> > @@ -155,7 +155,7 @@ ia64_set_rbs_bot (void)
-> >
-> >         if (stack_size > MAX_USER_STACK_SIZE)
-> >                 stack_size = MAX_USER_STACK_SIZE;
-> > -       current->thread.rbs_bot = STACK_TOP - stack_size;
-> > +       current->thread.rbs_bot = PAGE_ALIGN(current->mm->start_stack - stack_size);
-> >  }
-> >
-> >  /*
-> >
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> 
-> 
-> -- 
-> Mosberger Consulting LLC, http://www.mosberger-consulting.com/
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Alan Stern
 
