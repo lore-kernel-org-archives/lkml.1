@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933383AbXCOCbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933403AbXCOChq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933383AbXCOCbL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 22:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933388AbXCOCbL
+	id S933403AbXCOChq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 22:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933406AbXCOChq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 22:31:11 -0400
-Received: from mga01.intel.com ([192.55.52.88]:44395 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933383AbXCOCbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 22:31:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,286,1170662400"; 
-   d="scan'208"; a="212857118:sNHT23067996"
-Date: Wed, 14 Mar 2007 19:31:03 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-Subject: Re: RSDL v0.30 cpu scheduler for mainline kernels
-Message-ID: <20070315023102.GL30596@linux-os.sc.intel.com>
-References: <200703121058.11966.kernel@kolivas.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200703121058.11966.kernel@kolivas.org>
-User-Agent: Mutt/1.4.1i
+	Wed, 14 Mar 2007 22:37:46 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:29874 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933405AbXCOCho (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 22:37:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=cH0wxqM3OOSfkDX6yDs6y9ewrx9ToY90zenGHMY6LYaQkWIbg6j7I8CAs6N4KghXDWWrIHcYRoRPycQtFJsL7vs0pm4tIvGxK7xNr3xFqaD44QajQiglLz4s65EhFgtgpupg+k3hFUYvw4QQ4TZkVoCDccN+Up6KETy30tzEGpw=
+Message-ID: <45F8B160.6010603@gmail.com>
+Date: Thu, 15 Mar 2007 11:37:20 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: gregkh@suse.de, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       michal.k.k.piotrowski@gmail.com, linux-ide@vger.kernel.org,
+       tglx@linutronix.de, mlord@pobox.com, linux-pm@lists.osdl.org
+Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ
+ storm and rogue DMA access
+References: <20070314152302.GB15600@htj.dyndns.org> <20070314100716.5965dca1@freekitty>
+In-Reply-To: <20070314100716.5965dca1@freekitty>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con,
+Stephen Hemminger wrote:
+> The problem is the BIOS is busted on these machines. How much effort
+> do we want to put into dealing with systems with broken BIOS?
+> I would rather have the root cause fixed than creating a bandaid that
+> has to be maintained for all the other architectures and platforms.
 
-On Mon, Mar 12, 2007 at 10:58:11AM +1100, Con Kolivas wrote:
-> There are updated patches for 2.6.20, 2.6.20.2, 2.6.21-rc3 and 2.6.21-rc3-mm2 
-> to bring RSDL up to version 0.30 for download here:
+For sky2/skge, it might be caused by broken BIOS.  For some ATA devices, 
+it's just the hardware which is designed that way.  Also, under non-x86 
+machines and during resume, there's no BIOS to nudge chips into sane 
+state.  This is an existing problem which has to be solved.  How much 
+effort we are gonna put into it is certainly debatable.
 
-I tried this on a Core 2 Quad cpu system(system has 4 cores on a single
-package). When I run SPECjbb2000 with number of threads varying from 1-8,
-I see ~4.5% perf regression with RSDL (compared to native 2.6.21-rc3) in
-the 8 threads case. This I think, is coming from increased number of
-context switches, when we have more than one thread(at same user priority) on
-the same logical cpu.
+Also, the current implementation doesn't have any arch independent part. 
+  It's wholly contained in arch independent PCI layer, but it might be 
+beneficial to have arch dependent hooks (IRQ line enable/disable?) in 
+the future.
 
-Just to see the % increase in number of context switches, I ran 8 infinite
-loops (simple while(1); 's) and with 2.6.21-rc3 I see ~70 context switches
-every second, whereas with RSDL I see ~530 context switches.
+> What if the device with the IRQ problem is never loaded? Sometimes
+> devices aren't loaded until after boot.
 
-thanks,
-suresh
+What do you mean by loading a device?  Do you mean loading driver for 
+the device?  The patch as posted is probably not a complete solution. 
+We probably need to make sure during early boot and resume that all IRQ 
+/ bus master are turned off where possible and let low level drivers 
+enable them as needed and after certain amount of initialization is 
+performed.
+
+> If you use MSI interrupts, they aren't shared so there isn't a problem.
+> Maybe the root cause of this is bad MSI emulation handling in BIOS.
+
+Yes, if MSI is used things are better.
+
+> Any change like this has to be done without changing device drivers.
+> Changing the skge/sky2 drivers as special case is not acceptable.
+
+I dunno about that.  What I'm proposing is alternative two-step PCI 
+initialization step - the first step enables the device just enough for 
+initialization/reset and the second one enables full access.  We're 
+doing part of it already for bus master.  I'm proposing to expand that 
+approach and make them handled by generic PCI layer.  As you can see, it 
+doesn't add noticeable complexity to drivers.  I think it's even clearer 
+than doing pci_set_master() explicitly.
+
+If this way of solving the problem is chosen, eventually most drivers 
+should be converted to new initialization steps.  And there is no way to 
+do this without modifying low level driver.  Only low level driver knows 
+when full blown access can be enabled and such thing must happen before 
+registering the device to upper layer (e.g. ATA/SCSI, netif).
+
+sky2/skge aren't exceptions.  If this way of solving the problem is 
+chosen, eventually most if not all drivers should be converted to new 
+model.  It may take two years, maybe five, but as a start just 
+converting ATA and network drivers shouldn't take too long and that 
+would help a lot of cases.
+
+Thanks.
+
+-- 
+tejun
