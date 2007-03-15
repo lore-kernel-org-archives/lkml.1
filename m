@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965412AbXCOMUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXCOMWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965412AbXCOMUL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 08:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965490AbXCOMUL
+	id S933046AbXCOMWO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 08:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933536AbXCOMWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 08:20:11 -0400
-Received: from mx-sanjose.Cadence.COM ([158.140.2.60]:53720 "EHLO
-	mx-sanjose.cadence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965412AbXCOMUJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 08:20:09 -0400
-X-Greylist: delayed 3542 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Mar 2007 08:20:09 EDT
-Message-ID: <45F92C1E.2040604@cadence.com>
-Date: Thu, 15 Mar 2007 16:51:02 +0530
-From: Sai Bhushan <sbhushan@cadence.com>
-Reply-To: sbhushan@cadence.com
-Organization: Cadence Design Systems India Pvt. Ltd.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4) Gecko/20030624 Netscape/7.1
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Files not visible across NFS
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Mar 2007 11:21:02.0305 (UTC) FILETIME=[03ACAD10:01C766F4]
+	Thu, 15 Mar 2007 08:22:14 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55393 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933046AbXCOMWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 08:22:13 -0400
+Date: Thu, 15 Mar 2007 13:22:07 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [patch 1/2] splice: dont steal
+Message-ID: <20070315122207.GA8321@wotan.suse.de>
+References: <20070314121440.GA926@wotan.suse.de> <20070315115237.GM15400@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070315115237.GM15400@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Mar 15, 2007 at 12:52:37PM +0100, Jens Axboe wrote:
+> On Wed, Mar 14 2007, Nick Piggin wrote:
+> > Here are a couple of splice patches I found when digging in the area.
+> > I could be wrong, so I'd appreciate confirmation.
+> > 
+> > Untested other than compile, because I don't have a good splice test
+> > setup.
+> > 
+> > Considering these are data corruption / information leak issues, then
+> > we could do worse than to merge them in 2.6.21 and earlier stable
+> > trees.
+> > 
+> > Does anyone really use splice stealing?
+> 
+> That's a damn shame, I'd greatly prefer if we can try and fix it
+> instead. Splice isn't really all that used yet to my knowledge, but
+> stealing is one of the niftier features I think. Otherwise you're just
+> copying data again.
 
-I am facing a problem where-in some files are not visible across NFS and 
-hence, not able to read those files. However, after sometime, the files 
-become visible and the data is accessible. I have tried to do an 'ls -l' 
-operation on the directory and repeat it till the directory gets mounted 
-and visible. This works in some cases but sometimes fails as well.
+We should be able to allow for it with the new a_ops API I'm working
+on.
 
-Is there any reliable way of ensuring that the directory gets mounted 
-and all files in it are visible before accessing the data ??
+Basically we can pass the page down to the filesystem, and tell it to
+attempt to install that page in-place.
 
-Any help/pointers in this regard would be really great.
+The problem is that we can't just put this page here hoping the fs can
+take it, becaue it might fail allocating blocks, for example.
 
--Thanks & Regards
-Sai
+Anyway, we can still copy files with 1 less copy than read/write ;)
 
+It is a nifty feature, but I think it is more of a niche than simply
+saving that 1 copy, because you have to know that the source isn't
+going to be used again.
+
+But I'll try to support it with begin_write.
