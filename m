@@ -1,80 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422725AbXCOOa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422726AbXCOOcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422725AbXCOOa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 10:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422720AbXCOOa4
+	id S1422726AbXCOOcK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 10:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422720AbXCOOcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 10:30:56 -0400
-Received: from h155.mvista.com ([63.81.120.155]:25654 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422725AbXCOOaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 10:30:55 -0400
-Message-ID: <45F9588C.7020108@ru.mvista.com>
-Date: Thu, 15 Mar 2007 17:30:36 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 15 Mar 2007 10:32:10 -0400
+Received: from scalix.xandros.com ([142.46.212.37]:35254 "EHLO
+	scalix.xandros.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422726AbXCOOcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 10:32:08 -0400
+X-Greylist: delayed 456 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Mar 2007 10:32:08 EDT
+Date: Thu, 15 Mar 2007 10:22:44 -0400
+From: Woody Suwalski <woodys@xandros.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Message-ID: <45F956B4.1060309@xandros.com>
+In-Reply-To: <45F86058.6090509@ru.mvista.com>
+References: <200703102209.59918.bzolnier@gmail.com>
+References: <45F32860.8040901@ru.mvista.com>
+References: <200703102332.12716.bzolnier@gmail.com>
+References: <45F551E5.8010904@ru.mvista.com>
+References: <45F86058.6090509@ru.mvista.com>
+Subject: Re: [PATCH 10/13] sl82c105: add ->speedproc support
+x-scalix-Hops: 1
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-Cc: bzolnier@gmail.com, torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] BLK_DEV_IDE_CELLEB dependency fix
-References: <200703150628.l2F6SPa3028035@toshiba.co.jp>
-In-Reply-To: <200703150628.l2F6SPa3028035@toshiba.co.jp>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="ISO-8859-1";
+	format="flowed"
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Sergei Shtylyov wrote:
+> Hello, I wrote:
+>
+>>>> Bartlomiej Zolnierkiewicz wrote:
+>
+>>>>> [PATCH] sl82c105: add ->speedproc support
+>
+>>>>> * add sl82c105_tunepio() wrapper for sl82c105_tune_drive()
+>>>>>  (just to get the error value)
+>
+>>>>> * add sl82c105_tune_chipset() (->speedproc method) for setting
+>>>>>  transfer mode
+>
+>>>>    Thanks for the patch!
+>
+>>>>  > Index: b/drivers/ide/pci/sl82c105.c
+>
+>>>>> ===================================================================
+>>>>> --- a/drivers/ide/pci/sl82c105.c
+>>>>> +++ b/drivers/ide/pci/sl82c105.c
+>
+>> [...]
+>
+>>>>> @@ -114,17 +114,45 @@ static void sl82c105_tune_drive(ide_driv
+>>>>>      */
+>>>>>     drive->io_32bit = 1;
+>>>>>     drive->unmask    = 1;
+>>>>> +
+>>>>> +    return 0;
+>>>>> +}
+>>>>> +
+>>>>> +static void sl82c105_tune_drive(ide_drive_t *drive, u8 pio)
+>>>>> +{
+>>>>> +    /*
+>>>>> +     * TODO: find best PIO mode and set device speed here
+>>>>> +     *       (requires adding helper function for getting PIO 
+>>>>> cycle time)
+>>>>> +     */
+>
+>>>>   I thought we were doing it by calling ide_get_best_pio_mode() 
+>>>> above...
+>
+>>> We are also using ide_get_best_pio_mode() to get PIO cycle time
+>>> so we can't move it here ATM.
+>
+>>   I've found/used quite convenient workaround for that -- return PIO 
+>> mode actually selected from xxx_tune_pio(), then call 
+>> ide_config_drive_speed() from the real tuneproc() method.
+>
+>    Works like charm with ignoring the result, since 
+> ide_get_best_pio_mode() returns the same explicit mode as was passed 
+> to it -- so is good for the speedproc() methods also...
+>
+>>>>> +    (void)sl82c105_tunepio(drive, pio);
+>
+>>>>    Erm, I thought afterwards that I vainly folded one into another. 
+>>>> I think it's worth moving those io_32bit and unmask flag 
+>>>> assignments above back there... May also recast my patch. :-)
+>
+>>> Moving them to ->init_hwif where they belong would be even better... 
+>>> ;-)
+>
+>>    Well, I wasn't sure where they belong... :-)
+>>    So, OK to recast that patch?
+>
+>   Recasted it and reworked your patch atop of it (adding MWDMA 0/1 
+> support as a bonus! :-) -- now need to conduct some testing on a 
+> remote target...
+>
+>>>>> +static int sl82c105_tune_chipset(ide_drive_t *drive, u8 mode)
+>>>>> +{
+>>>>> +    mode = ide_rate_filter(drive, mode);
+>>>>> +
+>>>>> +    if (mode >= XFER_PIO_0 && mode <= XFER_PIO_5)
+>>>>> +        return sl82c105_tunepio(drive, mode - XFER_PIO_0);
+>>>>> +
+>>>>> +    /*
+>>>>> +     * TODO: add MWDMA0/1 support
+>>>>> +     */
+>>>>> +    BUG_ON(mode != XFER_MW_DMA_2);
+>
+>   I wonder is there are some W83C554 users anywhere -- that chipset 
+> also supports UltraDMA...
+>
+> MBR, Sergei
+Sergei,
 
-Akira Iguchi wrote:
+ARM Netwinder machines are running hard disk IDE on SL82c105.
+Could you send me the actual source file to try (or a patch)?
 
-> It's bool and it depends on BLK_DEV_IDE
->  => should depend on BLK_DEV_IDE=y
-
-    Hm, why I'm seeing module_init() in the driver? :-)
-
-> And move it to "if BLK_DEV_IDEDMA_PCI" block because it depends on 
-> BLK_DEV_IDEDMA_PCI.
-
-    IMHO, that driver shouldn't be in drivers/ide/ppc/ then...  Why it got 
-there (the same question about PowerMac driver)?
-
-> diff -Nrpu -X linux-2.6.21-rc3/Documentation/dontdiff linux-2.6.21-rc3/drivers/ide/Kconfig linux-2.6.21-rc3.mod/drivers/ide/Kconfig
-> --- linux-2.6.21-rc3/drivers/ide/Kconfig	2007-03-07 13:41:20.000000000 +0900
-> +++ linux-2.6.21-rc3.mod/drivers/ide/Kconfig	2007-03-15 23:49:33.000000000 +0900
-> @@ -769,6 +769,14 @@ config BLK_DEV_TC86C001
->  	help
->  	This driver adds support for Toshiba TC86C001 GOKU-S chip.
->  
-> +config BLK_DEV_IDE_CELLEB
-> +	bool "Toshiba's Cell Reference Set IDE support"
-> +	depends on PPC_CELLEB && BLK_DEV_IDE=y
-> +	help
-> +	  This driver provides support for the built-in IDE controller on
-> +	  Toshiba Cell Reference Board.
-> +	  If unsure, say Y.
-> +
->  endif
->  
->  config BLK_DEV_IDE_PMAC
-> @@ -800,14 +808,6 @@ config BLK_DEV_IDEDMA_PMAC
->  	  to transfer data to and from memory.  Saying Y is safe and improves
->  	  performance.
->  
-> -config BLK_DEV_IDE_CELLEB
-> -	bool "Toshiba's Cell Reference Set IDE support"
-> -	depends on PPC_CELLEB
-> -	help
-> -	  This driver provides support for the built-in IDE controller on
-> -	  Toshiba Cell Reference Board.
-> -	  If unsure, say Y.
-> -
->  config BLK_DEV_IDE_SWARM
->  	tristate "IDE for Sibyte evaluation boards"
->  	depends on SIBYTE_SB1xxx_SOC
-
-MBR, Sergei
+Thanks, Woody
 
