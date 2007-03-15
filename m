@@ -1,146 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965054AbXCOERs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965150AbXCOEgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965054AbXCOERs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 00:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965085AbXCOERk
+	id S965150AbXCOEgp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 00:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965149AbXCOEgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 00:17:40 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:42670 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965082AbXCOERX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 00:17:23 -0400
-X-AuthUser: davidel@xmailserver.org
-From: Davide Libenzi <davidel@xmailserver.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>
-Date: Wed, 14 Mar 2007 21:12:26 -0700
-Subject: [patch 5/5] eventfd+KAIO - KAIO eventfd support (example/maybe-broken) ...
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.5447.1173931948.5>
+	Thu, 15 Mar 2007 00:36:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:35762 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965085AbXCOEgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 00:36:44 -0400
+Date: Thu, 15 Mar 2007 05:36:42 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2/5] fs: introduce new aops and infrastructure
+Message-ID: <20070315043642.GF15069@wotan.suse.de>
+References: <20070314112529.13798.35417.sendpatchset@linux.site> <20070314112540.13798.97719.sendpatchset@linux.site> <20070315041329.GB21942@ca-server1.us.oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070315041329.GB21942@ca-server1.us.oracle.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is another example about how to add eventfd support to the current
-KAIO code.
-The KAIO code simply signals the eventfd fd when events are ready, and
-this triggers a POLLIN in the fd.
-I made a quick test program to verify the patch, and it runs fine here:
+On Wed, Mar 14, 2007 at 09:13:29PM -0700, Mark Fasheh wrote:
+> Hi Nick,
+> 
+> On Wed, Mar 14, 2007 at 02:38:22PM +0100, Nick Piggin wrote:
+> > Introduce write_begin, write_end, and perform_write aops.
+> > 
+> > These are intended to replace prepare_write and commit_write with more
+> > flexible alternatives that are also able to avoid the buffered write
+> > deadlock problems efficiently (which prepare_write is unable to do).
+> 
+> > Index: linux-2.6/include/linux/fs.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/fs.h
+> > +++ linux-2.6/include/linux/fs.h
+> > @@ -449,6 +449,17 @@ struct address_space_operations {
+> >  	 */
+> >  	int (*prepare_write)(struct file *, struct page *, unsigned, unsigned);
+> >  	int (*commit_write)(struct file *, struct page *, unsigned, unsigned);
+> > +
+> > +	int (*write_begin)(struct file *, struct address_space *mapping,
+> > +				loff_t pos, unsigned len, int intr,
+> > +				struct page **pagep, void **fsdata);
+> > +	int (*write_end)(struct file *, struct address_space *mapping,
+> > +				loff_t pos, unsigned len, unsigned copied,
+> > +				struct page *page, void *fsdata);
+> 
+> Are we going to get rid of the file and intr arguments btw? I'm not sure
+> intr is useful, and mapping is probably enough to get whatever we inside
+> ->write_begin / ->write_end.
 
-http://www.xmailserver.org/eventfd-aio-test.c
+Yeah, I was going to, but I had this version ready to go so decided
+to leave them in at the last minute. We can definitely take them out
+if people agree.
 
-The test program uses poll(2), but it'd, of course, work with epoll too.
-This can allow to schedule both block I/O and other poll-able devices
-requests, and wait for results using select/poll/epoll.
-
-
-
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-
+However a side note about intr -- I wonder if it might be wise to
+include a flags argument, in case we might want to add something like
+that later? (definitely if we do keep intr, then it should be done as
+a flag rather than its own int).
 
 
-- Davide
+> Also, I noticed that you didn't export block_write_begin(),
+> simple_write_begin(), block_write_end() and simple_write_end() - I think we
+> want those for client modules.
+
+Yep, simple oversight on my part.
 
 
+> Attached is a quick patch to hook up the existing ocfs2 write code. This has
+> been compile tested only for now - one of my test machines isn't
+> cooperating, so a runtime test will have to wait until tommorrow.
+> 
+> One interesting side effect is that we no longer pass AOP_TRUNCATE_PAGE up a
+> level. This gives callers less to deal with. And it means that ocfs2 doesn't
+> have to use the ocfs2_*_lock_with_page() cluster lock variants in
+> ocfs2_block_write_begin() because it can order cluster locks outside of the
+> page lock there.
 
-Index: linux-2.6.20.ep2/fs/aio.c
-===================================================================
---- linux-2.6.20.ep2.orig/fs/aio.c	2007-03-14 20:51:32.000000000 -0700
-+++ linux-2.6.20.ep2/fs/aio.c	2007-03-14 20:54:37.000000000 -0700
-@@ -30,6 +30,7 @@
- #include <linux/highmem.h>
- #include <linux/workqueue.h>
- #include <linux/security.h>
-+#include <linux/eventfd.h>
- 
- #include <asm/kmap_types.h>
- #include <asm/uaccess.h>
-@@ -422,6 +423,7 @@
- 	req->private = NULL;
- 	req->ki_iovec = NULL;
- 	INIT_LIST_HEAD(&req->ki_run_list);
-+	req->ki_eventfd = ERR_PTR(-EINVAL);
- 
- 	/* Check if the completion queue has enough free space to
- 	 * accept an event from this io.
-@@ -463,6 +465,8 @@
- {
- 	assert_spin_locked(&ctx->ctx_lock);
- 
-+	if (!IS_ERR(req->ki_eventfd))
-+		fput(req->ki_eventfd);
- 	if (req->ki_dtor)
- 		req->ki_dtor(req);
- 	if (req->ki_iovec != &req->ki_inline_vec)
-@@ -947,6 +951,13 @@
- 		return 1;
- 	}
- 
-+	/*
-+	 * Check if the user asked us to deliver the result through an
-+	 * eventfd.
-+	 */
-+	if (unlikely(!IS_ERR(iocb->ki_eventfd)))
-+		eventfd_signal(iocb->ki_eventfd, 1);
-+
- 	info = &ctx->ring_info;
- 
- 	/* add a completion event to the ring buffer.
-@@ -1556,6 +1567,18 @@
- 		fput(file);
- 		return -EAGAIN;
- 	}
-+	if (iocb->aio_resfd != 0) {
-+		/*
-+		 * If the aio_resfd field of the iocb is not zero, get an
-+		 * instance of the file* now. This will be the place to deliver
-+		 * AIO results to.
-+		 */
-+		req->ki_eventfd = eventfd_fget((int) iocb->aio_resfd);
-+		if (IS_ERR(req->ki_eventfd)) {
-+			ret = PTR_ERR(req->ki_eventfd);
-+			goto out_put_req;
-+		}
-+	}
- 
- 	req->ki_filp = file;
- 	ret = put_user(req->ki_key, &user_iocb->aio_key);
-Index: linux-2.6.20.ep2/include/linux/aio.h
-===================================================================
---- linux-2.6.20.ep2.orig/include/linux/aio.h	2007-03-14 20:51:32.000000000 -0700
-+++ linux-2.6.20.ep2/include/linux/aio.h	2007-03-14 20:54:37.000000000 -0700
-@@ -119,6 +119,12 @@
- 
- 	struct list_head	ki_list;	/* the aio core uses this
- 						 * for cancellation */
-+
-+	/*
-+	 * If the aio_resfd field of the userspace iocb is not zero,
-+	 * this is the underlying file* to deliver event to.
-+	 */
-+	struct file		*ki_eventfd;
- };
- 
- #define is_sync_kiocb(iocb)	((iocb)->ki_key == KIOCB_SYNC_KEY)
-Index: linux-2.6.20.ep2/include/linux/aio_abi.h
-===================================================================
---- linux-2.6.20.ep2.orig/include/linux/aio_abi.h	2007-03-14 20:51:32.000000000 -0700
-+++ linux-2.6.20.ep2/include/linux/aio_abi.h	2007-03-14 20:56:00.000000000 -0700
-@@ -84,7 +84,11 @@
- 
- 	/* extra parameters */
- 	__u64	aio_reserved2;	/* TODO: use this for a (struct sigevent *) */
--	__u64	aio_reserved3;
-+	__u32	aio_reserved3;
-+	/*
-+	 * If different from 0, this is an eventfd to deliver AIO results to
-+	 */
-+	__u32	aio_resfd;
- }; /* 64 bytes */
- 
- #undef IFBIG
+OK that's very cool. I was hoping that would be the case. If GFS2 can
+avoid that too, then we might be able to get rid of AOP_TRUNCATE_PAGE
+handling from the legacy prepare/commit_write paths, which will make
+them simpler.
 
+> My ocfs2 write rework will be a more serious user of these stuff, including
+> the fsdata backpointer. That code will also eliminate the entire
+> ocfs2_*_lock_with_page() cluster locking workarounds for write (they'll have
+> to remain for ->readpage()). I'm beginning work on cleaning those ocfs2
+> patches up and getting them plugged into this stuff. I hope to post them in
+> the next day or two.
+
+OK, well I'll add this to my queue for now, and post the full patchset
+after incorporating feedback I've had so far, and doing more testing,
+so people can actually apply them and boot kernels.
+
+Thanks,
+Nick
