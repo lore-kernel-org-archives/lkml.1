@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbXCOJXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbXCOJYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbXCOJXL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 05:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbXCOJXL
+	id S1752711AbXCOJYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 05:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbXCOJYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 05:23:11 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:56345 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752689AbXCOJXK (ORCPT
+	Thu, 15 Mar 2007 05:24:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:48945 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbXCOJYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 05:23:10 -0400
-Message-ID: <45F9107C.8090506@vmware.com>
-Date: Thu, 15 Mar 2007 01:23:08 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 15 Mar 2007 05:24:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=lbtcVAbwkPMoWQzq6CoeoP3EaHaHPwA6wtAAS7AdB0SSp+mw7kI3IHJfVwZPbB1ORe9vpOdWvngPTLGlN3/JYxyWBm0uQH9vtEC6/3KZM6UWo/uZSdj4CfwyL1UcRRhA7DDvDXylwhtuwfq72PBCcR9uQ8HbrVcfenXS0Xe3xDg=
+Date: Thu, 15 Mar 2007 09:22:41 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linville@tuxdriver.com
+Subject: ipw2200: can't load firmware (was Re: 2.6.21-rc3-mm1)
+Message-ID: <20070315092241.GA16781@slug>
+References: <20070307201839.6f45735b.akpm@linux-foundation.org> <20070309114043.GE12727@slug>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Jaroslav Kysela <perex@suse.cz>, Lee Revell <rlrevell@joe-job.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: alsa was Re: ABI coupling to hypervisors via CONFIG_PARAVIRT
-References: <20070309180230.GA17988@elte.hu> <Pine.LNX.4.64.0703091022490.10832@woody.linux-foundation.org> <20070309192420.GA27747@elte.hu> <Pine.LNX.4.61.0703092135450.8799@yvahk01.tjqt.qr> <75b66ecd0703091450l26bdc12es4091018f2d87f0d3@mail.gmail.com> <20070314084155.GA3993@ucw.cz> <Pine.LNX.4.61.0703141644400.8322@tm8103.perex-int.cz> <20070315090330.GF16330@elf.ucw.cz> <20070315091048.GA17886@elf.ucw.cz>
-In-Reply-To: <20070315091048.GA17886@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070309114043.GE12727@slug>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+On Fri, Mar 09, 2007 at 11:40:43AM +0000, Frederik Deweerdt wrote:
+> On Wed, Mar 07, 2007 at 08:18:39PM -0800, Andrew Morton wrote:
+> > - The wireless changes in here need a lot of testers, please.  It is major
+> >   rework.
+> [...]
+> >   I was able to get ipw2200 working after some fumbling,
+> Any details on the symptoms? I'm unable to boot rc3-mm2, and it hangs
+> right after printing the ipw2200 driver message. I'll investigate that
+> this week-end.
+Sorry for the delay, I could give it a try today. It appears
+that it doesn't hang, it just spends a lot of time in
+ipw_init:pci_register_driver, due to a firmware loading failure
 
->> 	download & install alsalib
->> 	download & install alsautils
->> 	create 1007 nodes in /dev
+[   12.296637] RAMDISK driver initialized: 16 RAM disks of 32000K size 1024 blocksize
+[   12.322581] ipw2200: Intel(R) PRO/Wireless 2200/2915 Network Driver, 1.2.0kdmprq
+[   12.348822] ipw2200: Copyright(c) 2003-2006 Intel Corporation
+[   12.366936] PCI: Found IRQ 10 for device 0000:03:03.0
+[   12.376280] PCI: Sharing IRQ 10 with 0000:00:1d.1
+[   12.385729] PCI: Sharing IRQ 10 with 0000:00:1e.3
+[   12.395134] PCI: Sharing IRQ 10 with 0000:00:1f.2
+[   12.404385] ipw2200: Detected Intel PRO/Wireless 2200BG Network Connection
+[   72.391870] ipw2200: ipw2200-bss.fw request_firmware failed: Reason -2
+[   72.400563] ipw2200: Unable to load firmware: -2
+[   72.408956] ipw2200: failed to register network device
+[   72.417178] ipw2200: probe of 0000:03:03.0 failed with error -5
 
-I really hope you meant permission 1007 nodes, not 1007 nodes!  I'm 
-checking right now, and if the latter is the case, I'm going to 
-uninstall alsa, even if that means my computer will forever be silent, 
-it will be silent in protest.
+(Booted with acpi=off due to some framebuffer problems mangling the
+console output, but the problem persists even without that kernel
+parameter)
 
-> (Just for the record, I should note that networking is misdesigned in
-> similar way; that's why we have eth0 instead of /dev/eth0, and need
-> special tools to rename network interface. But this mistake dates to
-> BSD days or something, so we got used to it... and at least you do not
-> need to keep libnetwork up to date to keep your  net devices working.
->
-> So networking provides _ugly_ hardware abstraction, but it provides
-> it).
->   
-
-I might add it got only worse with wireless support, now you can not 
-configure card without both ifconfig and iwconfig, so not only is the 
-API diverging, the userspace tools to manage it are doing so as well.
-
-Zach
+Regards,
+Frederik
