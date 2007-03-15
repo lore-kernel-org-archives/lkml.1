@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030192AbXCON13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbXCONkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030192AbXCON13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 09:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030178AbXCON13
+	id S933559AbXCONkX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 09:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933563AbXCONkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 09:27:29 -0400
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:50903 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933549AbXCON12 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 09:27:28 -0400
-X-Sasl-enc: PvRVC0m/rNxO7wjNyrlNuJY0lrOSoPmWUw82c7ZECMIu 1173965247
-Date: Thu, 15 Mar 2007 10:27:17 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: Len Brown <lenb@kernel.org>, ibm-acpi@hmh.eng.br,
-       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] ACPI_IBM_BAY can not coexist with ACPI_BAY
-Message-ID: <20070315132717.GB26862@khazad-dum.debian.net>
-References: <20070315071019.GA22613@tuatara.stupidest.org>
-MIME-Version: 1.0
+	Thu, 15 Mar 2007 09:40:23 -0400
+Received: from 1wt.eu ([62.212.114.60]:1189 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933559AbXCONkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 09:40:22 -0400
+Date: Thu, 15 Mar 2007 14:40:02 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Syed Ahemed <kingkhan@gmail.com>, linux-kernel@vger.kernel.org,
+       msnyder@redhat.com, jjohnstn@redhat.com
+Subject: Re: NPTL patch for linux 2.4.28
+Message-ID: <20070315134002.GB16199@1wt.eu>
+References: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com> <20070314055556.GP943@1wt.eu> <3d53b7120703141444k6484ccfeyd08cf60ecbbb894a@mail.gmail.com> <1173945186.25356.23.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070315071019.GA22613@tuatara.stupidest.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1173945186.25356.23.camel@twins>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, Chris Wedgwood wrote:
-> ACPI_IBM_BAY cannot coexist with ACPI_BAY --- it causes the IBM ACPI
-> code to fail to initialize so all the IBM ACPI functionality is
-> missing.  The simplest fix is to just make sure the Kconfig magic
-> disallows ACPI_IBM_BAY when ACPI_BAY is enabled.
+On Thu, Mar 15, 2007 at 08:53:06AM +0100, Peter Zijlstra wrote:
+> On Thu, 2007-03-15 at 03:14 +0530, Syed Ahemed wrote:
 > 
-> Signed-off-by: Chris Wedgwood <cw@f00f.org>
+> > Getting RHEL's source ( http://lkml.org/lkml/2005/3/21/380 ) was an
+> > idea i thought about but then a download of the RHEL source from the
+> > following location was denied .
+> > http://download.fedora.redhat.com/pub/fedora/linux/core/1/SRPMS/  and
+> > the rpmfind site.
+> > (Guess need to be a paid subscriber for that right ?)
+> 
+> Strangely enough you try to download Fedora Core SRPMs whilst you speak
+> of RHEL. Try this one:
+> 
+> ftp://ftp.redhat.com/pub/redhat/linux/enterprise/3/en/os/i386/SRPMS/kernel-2.4.21-4.EL.src.rpm
+> 
+> Also, CentOS would have similar sources. Google could have informed you
+> on that.
+> 
+> > I still wonder why there aren't any NPTL patches available in the
+> > non-redhat sites for kernels like 2.4.21 or more .
+> 
+> Because most people, especially the ones on this mailing list have moved
+> on to 2.6 quite some time ago. May I suggest you do the same?
 
-I'd really like to know why the two can't coexist, first.  And I'd really
-prefer a patch that make the two load and run with bay functionality
-concurrently.  ACPI_BAY doesn't work right with bay batteries, and I didn't
-find a way to fix that yet (or I'd have sent in patches).
+... or they stick to 2.4 for specific uses and do not need NPTL at all, which
+came late in the development cycle.
 
-Otherwise, please change the patch to a "depends on ACPI_BAY=n ||
-ACPI_BAY=m".
+Regards,
+Willy
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
