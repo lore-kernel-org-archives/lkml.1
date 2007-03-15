@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422786AbXCOAgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422784AbXCOAoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422786AbXCOAgq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 20:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422787AbXCOAgq
+	id S1422784AbXCOAoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 20:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422787AbXCOAoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 20:36:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43498 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422786AbXCOAgp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 20:36:45 -0400
-Date: Wed, 14 Mar 2007 19:36:43 -0500
-From: Robin Holt <holt@sgi.com>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Cliff Wickman <cpw@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
-Message-ID: <20070315003642.GB7338@lnx-holt.americas.sgi.com>
-References: <20070309193925.B60891B8028@attica.americas.sgi.com> <20070309235859.GA20093@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Mar 2007 20:44:23 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:45208 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422784AbXCOAoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 20:44:22 -0400
+From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: oops in __nodemgr_remove_host_dev (was Re: Ooops with suspend to RAM)
+Date: Thu, 15 Mar 2007 02:45:19 +0200
+User-Agent: KMail/1.9.6
+Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
+References: <200703140642.28390.ismail@pardus.org.tr> <200703150051.29945.ismail@pardus.org.tr> <45F88E8B.90403@s5r6.in-berlin.de>
+In-Reply-To: <45F88E8B.90403@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070309235859.GA20093@localdomain>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200703150245.20553.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 09, 2007 at 05:58:59PM -0600, Nathan Lynch wrote:
-> Hello-
-> 
-> Cliff Wickman wrote:
-> > This patch would insert a preference to migrate such a task to a cpu within
-> > its cpuset (and set its cpus_allowed to its cpuset).
-> > 
-> > With this patch, migrate the task to:
-> >  1) to any cpu on the same node as the disabled cpu, which is both online
-> >     and among that task's cpus_allowed
-> >  2) to any online cpu within the task's cpuset
-> >  3) to any cpu which is both online and among that task's cpus_allowed
-> 
-> I think I disagree with this change.
-> 
-> The kernel shouldn't have to be any smarter than it already is about
-> moving tasks off an offlined cpu.  The only way case 2) can be reached
-> is if the user has changed a task's cpu affinity.  If the user is
-> sophisticated enough to manipulate tasks' cpu affinity then they can
-> arrange to migrate tasks as they see fit before offlining a cpu.
+On Thursday 15 March 2007 02:08:43 Stefan Richter wrote:
+[...]
+> Ismail, if you have the opportunity, the next thing you could test would
+> be to unload eth1394 explicitly before ohci1394 on 2.6.21-rc3. This
+> would _not_ oops according to my observation.
 
-You are assuming some sort of interlock between the admin and the user.
-While this may be true on your own personal desktop, I don't think you
-can expect this to be true on a development machine shared by hundreds
-of users and admin'd by a group of people.
+rmmod eth1394 and modprobe -r eth1394 both hangs here no oops nothing.
 
-Additionally, ia64 is gaining support for offlining a cpu which is giving
-cache errors.
+Regards.
 
-Thanks,
-Robin
+-- 
+Happiness in intelligent people is the rarest thing I know. (Ernest Hemingway)
+
+Ismail Donmez ismail (at) pardus.org.tr
+GPG Fingerprint: 7ACD 5836 7827 5598 D721 DF0D 1A9D 257A 5B88 F54C
+Pardus Linux / KDE developer
