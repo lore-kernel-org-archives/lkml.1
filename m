@@ -1,37 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933616AbXCOUQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933795AbXCOUXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933616AbXCOUQM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 16:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933790AbXCOUQM
+	id S933795AbXCOUXH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 16:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933798AbXCOUXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 16:16:12 -0400
-Received: from gw.goop.org ([64.81.55.164]:59413 "EHLO mail.goop.org"
+	Thu, 15 Mar 2007 16:23:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60494 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933616AbXCOUQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 16:16:08 -0400
-Message-ID: <45F9A980.3090004@goop.org>
-Date: Thu, 15 Mar 2007 13:16:00 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S933795AbXCOUXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 16:23:06 -0400
+Message-ID: <45F9A93A.2030400@redhat.com>
+Date: Thu, 15 Mar 2007 16:14:50 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, eranian@hpl.hp.com, rdunlap@xenotime.net,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH] i386: Simplify smp_call_function*() by using common implementation
-References: <45F5FA97.8070705@goop.org>	<20070315110805.262e1fa3.akpm@linux-foundation.org>	<45F99B6F.9000604@goop.org>	<20070315113301.5150a415.akpm@linux-foundation.org>	<45F9A0E1.2080900@goop.org> <p73wt1i6xco.fsf@bingen.suse.de>
-In-Reply-To: <p73wt1i6xco.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dan Hecht <dhecht@vmware.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, dwalker@mvista.com,
+       cpufreq@lists.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com,
+       schwidefsky@de.ibm.com, Zachary Amsden <zach@vmware.com>
+Subject: Re: Stolen and degraded time and schedulers
+References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org> <45F85A62.8050001@vmware.com> <45F85BBB.70707@goop.org> <45F85F43.9030803@vmware.com> <45F866AF.9060609@goop.org> <45F999D4.6080602@vmware.com> <45F9A42D.7090205@goop.org> <45F9A788.1010008@vmware.com>
+In-Reply-To: <45F9A788.1010008@vmware.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> I already got that patch, but haven't synced it out yet.
+Dan Hecht wrote:
 
-My patch?  I just rebased it against Jan's patch
-(x86_64-mm-consolidate-smp_send_stop.patch) which was causing the
-conflict.  Do you want that version instead?
+> Yes, the part in the "i.e." above is describing available time.  So, it 
+> is essentially is the same definition of stolen time VMI uses:
 
+> stolen time     == ready to run but not running
+> available time  == running or not ready to run
 
-    J
+S390 too.  We were quite careful to make sure that steal time
+means the same on the different platforms when the code was
+introduced.
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
