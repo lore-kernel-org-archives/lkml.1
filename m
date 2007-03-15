@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030603AbXCORBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422969AbXCORFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030603AbXCORBQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 13:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030649AbXCORBQ
+	id S1422969AbXCORFP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 13:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422974AbXCORFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 13:01:16 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48864 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030603AbXCORBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 13:01:15 -0400
-Date: Thu, 15 Mar 2007 18:01:12 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Bligh <mbligh@mbligh.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 - Take 2
-Message-ID: <20070315170112.GA14759@one.firstfloor.org>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org> <45F96B57.10206@mbligh.org> <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org> <20070315160648.GA11812@one.firstfloor.org> <1173977264.7922.24.camel@localhost.localdomain> <1173977839.7922.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1173977839.7922.27.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 15 Mar 2007 13:05:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55344 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422969AbXCORFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 13:05:14 -0400
+Message-ID: <45F97C9B.6060503@redhat.com>
+Date: Thu, 15 Mar 2007 13:04:27 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: Chuck Ebbert <cebbert@redhat.com>, Ashif Harji <asharji@cs.uwaterloo.ca>,
+       linux-mm@kvack.org, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <45F96CCB.4000709@redhat.com> <20070315162944.GI8321@wotan.suse.de>
+In-Reply-To: <20070315162944.GI8321@wotan.suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Oops, sorry, you did say "in the includes".  Yeah, that holds the same
-> crap that I'm talking about. 
+Nick Piggin wrote:
 
-It's a simple and obvious solution that does exactly what it is 
-supposed to do. Why do you call it crap? 
+> A change to make database style random read() workloads perform better, by
+> calling mark_page_accessed for some non-page-aligned reads broke the case of
+> < PAGE_CACHE_SIZE files, which will not get their prev_index moved past the
+> first page.
+> 
+> Combine both heuristics for marking the page accessed.
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
 
--Andi
+Acked-by: Rik van Riel <riel@redhat.com>
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
