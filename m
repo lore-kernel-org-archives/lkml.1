@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964844AbXCOANo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbXCOAOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964844AbXCOANo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 20:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964855AbXCOANo
+	id S964840AbXCOAOK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 20:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXCOAOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 20:13:44 -0400
-Received: from mout2.freenet.de ([194.97.50.155]:38314 "EHLO mout2.freenet.de"
+	Wed, 14 Mar 2007 20:14:10 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53085 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964844AbXCOANn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 20:13:43 -0400
-X-Greylist: delayed 3684 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Mar 2007 20:13:43 EDT
-Message-ID: <45F8814E.7000902@freenet.de>
-Date: Thu, 15 Mar 2007 00:12:14 +0100
-From: Patrick Ringl <patrick_@freenet.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	id S964840AbXCOAOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 20:14:08 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Leroy van Logchem <leroy.vanlogchem@wldelft.nl>
+Subject: Re: [Bug 8040] Hang before INIT when CONFIG_HIGHMEM4G=y [Fix CONFIG_COMPAT_VDSO] <- Bad
+Date: Thu, 15 Mar 2007 01:13:53 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200703141013.l2EADP6c027144@fire-2.osdl.org> <loom.20070314T184515-284@post.gmane.org> <20070314170113.9c3c75c7.akpm@linux-foundation.org>
+In-Reply-To: <20070314170113.9c3c75c7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: zippel@linux-m68k.org, alan@redhat.com
-Subject: [PATCH] cosmetic adaption of drivers/ide/Kconfig concerning SATA
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200703150113.53212.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-since Serial ATA has it's own menu point now, I guess we can change the
-description of the deprecated SATA driver as well, since the new S-ATA
-subsystem is not configured through a SCSI low-level driver anymore.
+On Thursday 15 March 2007 02:01, Andrew Morton wrote:
+> > On Wed, 14 Mar 2007 17:52:01 +0000 (UTC) Leroy van Logchem <leroy.vanlogchem@wldelft.nl> wrote:
+> > Leroy van Logchem <leroy.vanlogchem <at> wldelft.nl> writes:
+> > 
 
-The following patch is against 2.6.21-rc3:
+Where does it hang exactly? Do you have a boot log?
 
---- linux-2.6.20.orig/drivers/ide/Kconfig    2007-03-12
-01:34:38.000000000 +0100
-+++ linux-2.6.20/drivers/ide/Kconfig    2007-03-12 01:47:10.000000000 +0100
-@@ -103,7 +103,7 @@
-     ---help---
-       There are two drivers for Serial ATA controllers.
+> > > > > None whatsoever.  Three people are reporting this and it's a drop-dead
+> > > > > showstopper for a 2.6.21 release so we just have to wait until someone
+> > > > > wakes up and thinks about it.
+> > > 
+> > > The topic should be "when CONFIG_HIGHMEM64G=y" imo.
+> > > 
+> > > I'll try to do my first bi-sect today.
+> 
+> Thanks.   Please always do reply-to-all.  Cc's restored (and added..)
+> 
+> > Bisecting went well, after 13 compiles this commit was found:
+> > 
+> > a1f3bb9ae4497a2ed3eac773fd7798ac33a0371f is first bad commit
+> > commit a1f3bb9ae4497a2ed3eac773fd7798ac33a0371f
+> > Author: Roland McGrath <roland@redhat.com>
+> > Date:   Fri Jan 26 00:56:46 2007 -0800
 
--      The main driver, "libata", exists inside the SCSI subsystem
-+      The main driver, "libata", exists in the "Serial ATA subsystem"
-       and supports most modern SATA controllers.
+Can you please double check this by trying with/without again -- sometimes bisects go bad.
 
-       The IDE driver (which you are currently configuring) supports
-
-
-Since I am not subscribed to the list, I'd find it great if I were
-personally CC'ed. :-)
-
-
-Best regards
-Patrick
-
-
-
-
+-Andi
