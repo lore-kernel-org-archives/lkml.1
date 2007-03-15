@@ -1,76 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030471AbXCOPuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422906AbXCOP5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030471AbXCOPuu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 11:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030505AbXCOPuu
+	id S1422906AbXCOP5V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 11:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422905AbXCOP5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 11:50:50 -0400
-Received: from dvhart.com ([64.146.134.43]:52770 "EHLO dvhart.com"
+	Thu, 15 Mar 2007 11:57:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49890 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030471AbXCOPut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 11:50:49 -0400
-Message-ID: <45F96B57.10206@mbligh.org>
-Date: Thu, 15 Mar 2007 08:50:47 -0700
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	id S1422906AbXCOP5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 11:57:20 -0400
+Message-ID: <45F96CCB.4000709@redhat.com>
+Date: Thu, 15 Mar 2007 11:56:59 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Ashif Harji <asharji@cs.uwaterloo.ca>
+CC: linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca>
+In-Reply-To: <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca>
+Content-Type: multipart/mixed;
+ boundary="------------060500060806000801000906"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Wed, 14 Mar 2007, Ingo Molnar wrote:
->> and that's how i think unification of architectures should be done: move 
->> code into kernel/* and drivers/*, _not_ into another architecture. That 
->> way all architectures benefit.
-> 
-> Don't be silly.
-> 
-> Did you even *look* at the patches?
-> 
-> We're talking about things like
-> 
-> 	b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-> 
-> so please tell me what drugs you are on that say that we should move this 
-> into kernel/* and drivers/* and make all architectures benefit. It's 
-> *x86* specific, it's just that k8 exists both in 32-bit and 64-bit land.
-> 
-> The file is *already* shared, it's just that right now it is not in a 
-> shared location. Right now it is in arch/i386/ (as if it was 
-> i386-specific) and then x86-64 includes it with:
-> 
-> arch/x86_64/kernel/cpufreq/Makefile:
-> 
-> 	#
-> 	# Reuse the i386 cpufreq drivers
-> 	#
-> 	
-> 	SRCDIR := ../../../i386/kernel/cpu/cpufreq
-> 
-> and anybody who thinks this is "nice" simply has no taste at all.
+This is a multi-part message in MIME format.
+--------------060500060806000801000906
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Can't we move the shared files into a new shared arch/ subdirectory
-(ia32_64 or whatever), and have them included from both places?
-At least then it's obvious they're shared, and it's a migration
-strategy to the shared arch that you want.
+Ashif Harji wrote:
+> 
+> This patch unconditionally calls mark_page_accessed to prevent pages,
+> especially for small files, from being evicted from the page cache
+> despite frequent access.
+> 
+> Signed-off-by: Ashif Harji <asharji@beta.uwaterloo.ca>
+> 
 
-On the downside, it's more ../../.. type stuff. On the upside,
-they're more cleanly separated and it's apparent what's going on.
-Seems nicer to me than drivers/ and kernel/ for stuff that's
-really arch specific, but shared between two arches.
+I like mine better -- it leaves the comment:
 
-M.
+
+
+--------------060500060806000801000906
+Content-Type: text/plain;
+ name="linux-2.6-fix_mark_page_accessed.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6-fix_mark_page_accessed.patch"
+
+From: Chuck Ebbert <cebbert@redhat.com>
+
+Always mark page as accessed when reading multiple times.
+Original idea and patch by Ashif Harji <asharji@cs.uwaterloo.ca>
+
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+
+--- 2.6.20.2-t.orig/mm/filemap.c
++++ 2.6.20.2-t/mm/filemap.c
+@@ -887,7 +887,6 @@
+ 	unsigned long offset;
+ 	unsigned long last_index;
+ 	unsigned long next_index;
+-	unsigned long prev_index;
+ 	loff_t isize;
+ 	struct page *cached_page;
+ 	int error;
+@@ -896,7 +895,6 @@
+ 	cached_page = NULL;
+ 	index = *ppos >> PAGE_CACHE_SHIFT;
+ 	next_index = index;
+-	prev_index = ra.prev_page;
+ 	last_index = (*ppos + desc->count + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
+ 	offset = *ppos & ~PAGE_CACHE_MASK;
+ 
+@@ -945,11 +943,9 @@
+ 
+ 		/*
+ 		 * When (part of) the same page is read multiple times
+-		 * in succession, only mark it as accessed the first time.
++		 * in succession, always mark it accessed.
+ 		 */
+-		if (prev_index != index)
+-			mark_page_accessed(page);
+-		prev_index = index;
++		mark_page_accessed(page);
+ 
+ 		/*
+ 		 * Ok, we have the page, and it's up-to-date, so
+
+--------------060500060806000801000906--
