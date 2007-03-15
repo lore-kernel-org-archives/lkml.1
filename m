@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933490AbXCOLl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbXCOLw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933490AbXCOLl7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 07:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933483AbXCOLl7
+	id S933502AbXCOLw6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 07:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933504AbXCOLw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 07:41:59 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:54187 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933471AbXCOLl6 (ORCPT
+	Thu, 15 Mar 2007 07:52:58 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:64064 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933502AbXCOLw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 07:41:58 -0400
-Date: Thu, 15 Mar 2007 17:11:41 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Tejun Heo <htejun@gmail.com>, gregkh@suse.de,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, michal.k.k.piotrowski@gmail.com,
-       linux-ide@vger.kernel.org, tglx@linutronix.de,
-       shemminger@linux-foundation.org, mlord@pobox.com,
-       linux-pm@lists.osdl.org
-Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ storm and rogue DMA access
-Message-ID: <20070315114141.GA10753@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070314152302.GB15600@htj.dyndns.org> <p73fy878pmg.fsf@bingen.suse.de>
+	Thu, 15 Mar 2007 07:52:57 -0400
+Subject: Re: [PATCH take3 16/20] acpi files switched
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <200703150236.43214.lenb@kernel.org>
+References: <20070315051337.488091591@goodmis.org>
+	 <20070315051532.400874263@goodmis.org> <200703150236.43214.lenb@kernel.org>
+Content-Type: text/plain
+Date: Thu, 15 Mar 2007 07:51:02 -0400
+Message-Id: <1173959462.7922.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73fy878pmg.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 14, 2007 at 10:46:47PM +0100, Andi Kleen wrote:
-> Tejun Heo <htejun@gmail.com> writes:
-> > 
-> > Let's assume there's a device which shares its INTX IRQ line with
-> > another device and the other one is already initialized.  During boot,
-> > due to BIOS's fault, bad hardware design or sheer bad luck, the device
-> > has got a pending IRQ.
+On Thu, 2007-03-15 at 02:36 -0400, Len Brown wrote:
+> On Thursday 15 March 2007 01:13, Steven Rostedt wrote:
+> > Moved the shared files that were in arch/i386/kernel/acpi to the common
+> > area.
 > 
-> This seems to be also common after kexec during kexec crashdumps
-> where the device just continues doing what it did before the crash.
-> 
+> When I do a "make cscope" on an i386 or an x86_64 box,
+> will it find these files in the common area?
 
-That's true. It happens very frequently in kdump case where underlying device
-can very well have pending interrupts while second kernel is booting.
-Currently we allow the kernel to disable that irq line and we boot the kernel
-with "irqpoll" so that device still operates in polling mode.
+At the moment, "no".
 
-But getting this fixed will help. If device interrupts are enabled only after
-driver has had a chance to reset the device, things will be better, at least
-from kdump perspective.
+With this quick hack, it will work, and I'm sure someone can come up
+with a better idea.
 
-Thanks
-Vivek
+Currently, the "make cscope" and "make TAGS" only get the files that are
+physically located in the arch. As I mentioned to Ingo, it took me an
+hour when I first looked for early_printk. Since it wasn't in the TAGS
+and my own search scripts were also arch specific.  I was working in
+i386, and early_printk is not.
+
+But here's a hack that will let both x86_64 and i386 see the same code
+in the common area for a "make cscope" or "make TAGS".
+
+-- Steve
+
+diff --git a/Makefile b/Makefile
+index 6393738..974c05b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1265,8 +1265,16 @@ endif
+ 
+ ifeq ($(ALLSOURCE_ARCHS),)
+ ifeq ($(ARCH),um)
++ALLSOURCE_ARCHS := $(ARCH)
+ ALLINCLUDE_ARCHS := $(ARCH) $(SUBARCH)
++else ifeq ($(ARCH),x86_64)
++ALLSOURCE_ARCHS := $(ARCH) x86
++ALLINCLUDE_ARCHS := $(ARCH) x86
++else ifeq ($(ARCH),i386)
++ALLSOURCE_ARCHS := $(ARCH) x86
++ALLINCLUDE_ARCHS := $(ARCH) x86
+ else
++ALLSOURCE_ARCHS := $(ARCH)
+ ALLINCLUDE_ARCHS := $(ARCH)
+ endif
+ else
+@@ -1274,8 +1282,6 @@ else
+ ALLINCLUDE_ARCHS := $(ALLSOURCE_ARCHS)
+ endif
+ 
+-ALLSOURCE_ARCHS := $(ARCH)
+-
+ define find-sources
+         ( find $(__srctree) $(RCS_FIND_IGNORE) \
+ 	       \( -name include -o -name arch \) -prune -o \
+
+
