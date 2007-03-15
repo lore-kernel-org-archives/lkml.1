@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965365AbXCOFYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965485AbXCOFY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965365AbXCOFYS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 01:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965437AbXCOFYS
+	id S965485AbXCOFY2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 01:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965425AbXCOFY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 01:24:18 -0400
-Received: from services106.cs.uwaterloo.ca ([129.97.152.164]:50937 "EHLO
-	services106.cs.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965365AbXCOFYM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 01:24:12 -0400
-Date: Thu, 15 Mar 2007 01:22:45 -0400 (EDT)
-From: Ashif Harji <asharji@cs.uwaterloo.ca>
-To: Xiaoning Ding <dingxn@cse.ohio-state.edu>
-cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Andreas Mohr <andi@rhlx01.fht-esslingen.de>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-In-Reply-To: <45F8A301.90301@cse.ohio-state.edu>
-Message-ID: <Pine.GSO.4.64.0703150045550.18191@cpu102.cs.uwaterloo.ca>
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> 
- <20070312142012.GH30777@atrey.karlin.mff.cuni.cz>  <20070312143900.GB6016@wotan.suse.de>
- <20070312151355.GB23532@duck.suse.cz>  <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca>
-  <20070312173500.GF23532@duck.suse.cz>  <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca>
-  <20070313185554.GA5105@duck.suse.cz>  <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca>
-  <1173905741.8763.36.camel@kleikamp.austin.ibm.com> 
- <20070314213317.GA22234@rhlx01.hs-esslingen.de> <1173910138.8763.45.camel@kleikamp.austin.ibm.com>
- <45F8A301.90301@cse.ohio-state.edu>
+	Thu, 15 Mar 2007 01:24:27 -0400
+Received: from ozlabs.org ([203.10.76.45]:36523 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965430AbXCOFYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 01:24:25 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0 (services106.cs.uwaterloo.ca [129.97.152.132]); Thu, 15 Mar 2007 01:23:02 -0400 (EDT)
-X-Miltered: at psyche with ID 45F8D834.000 by Joe's j-chkmail (http://j-chkmail.ensmp.fr)!
-X-UUID: 78100018-3227-4536-8e26-7a3d9eb758ae
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17912.55404.556847.350399@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Mar 2007 16:23:56 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com,
+       cpufreq@lists.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, schwidefsky@de.ibm.com,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: Stolen and degraded time and schedulers
+In-Reply-To: <45F84E39.7030507@goop.org>
+References: <45F6D1D0.6080905@goop.org>
+	<1173816769.22180.14.camel@localhost>
+	<45F70A71.9090205@goop.org>
+	<1173821224.1416.24.camel@dwalker1>
+	<45F71EA5.2090203@goop.org>
+	<45F74515.7010808@vmware.com>
+	<45F77C27.8090604@goop.org>
+	<45F846AB.6060200@vmware.com>
+	<45F84E39.7030507@goop.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge writes:
 
+> Sure.  But on a given machine, the CPUs are likely to be closely enough
+> matched that a cycle on one CPU is more or less equivalent to a cycle on
+> another CPU.  The fact that a cycle represents a different amount of
 
-On Wed, 14 Mar 2007, Xiaoning Ding wrote:
+A cycle on one thread of a machine with SMT/hyperthreading when the
+other thread is idle *isn't* equivalent to a cycle when the other
+thread is busy.  We run into this on POWER5, where we have hardware
+that counts cycles when each of the two threads in each core gets to
+dispatch instructions (on each cycle, one thread or the other gets to
+dispatch).  That helps but still doesn't give a totally accurate
+estimate of how much computation a given process has managed to do.
 
-> Dave Kleikamp wrote:
->> On Wed, 2007-03-14 at 22:33 +0100, Andreas Mohr wrote:
->>> Hi,
->>> 
->>> On Wed, Mar 14, 2007 at 03:55:41PM -0500, Dave Kleikamp wrote:
->>>> On Wed, 2007-03-14 at 15:58 -0400, Ashif Harji wrote:
->>>>> This patch unconditionally calls mark_page_accessed to prevent pages, 
->>>>> especially for small files, from being evicted from the page cache 
->>>>> despite frequent access.
->>>> I guess the downside to this is if a reader is reading a large file, or
->>>> several files, sequentially with a small read size (smaller than
->>>> PAGE_SIZE), the pages will be marked active after just one read pass.
->>>> My gut says the benefits of this patch outweigh the cost.  I would
->>>> expect real-world backup apps, etc. to read at least PAGE_SIZE.
->>> I also think that the patch is somewhat problematic, since the original
->>> intention seems to have been a reduction of the number of (expensive?)
->>> mark_page_accessed() calls,
->> 
->> mark_page_accessed() isn't expensive.  If called repeatedly, starting
->> with the third call, it will check two page flags and return.  The only
->> real expense is that the page appears busier than it may be and will be
->> retained in memory longer than it should.
->> 
-> If we allow mark_page_accessed() called multiple times for a single page,
-> a scan of large file with small-size reads would flush the buffer cache.
-> mark_page_accessed() also requests lru_lock when moving page from
-> inactive_list to active_list. It may also increase lock contention.
+> Not at all.  You might have an unimportant but cpu-bound process which
+> doesn't merit increasing the cpu speed, but should also be scheduled
+> properly compared to other processes.  I often nice my kernel builds
+> (which cpufreq takes as a hint to not ramp up the cpu speed) on my
+> laptop so to save power.
 
-The problem with the existing logic is that it is too coarse.  In trying 
-to deal with one usage pattern it is negatively impacting performance for 
-other reasonable access patterns.
+Just as a side note - that's probably actually a bad strategy; you
+almost certainly consume less total energy by running the cpu at full
+speed until the build is done and then going to the deepest sleep mode
+you can achieve.
 
-Further, consider the extreme case of scanning a file 1 byte at a time. 
-In this case, you are going to access a page over 4000 times, but that 
-page is not going to be marked as active and hence that page is likely to 
-be evicted from the cache.  Clearly, there are cases when scanning a file 
-that you would like the pages to be kept in the cache.
+> That's true.  But this is a case of the left brain not talking to the
+> right brain: cpufreq might decide to slow a cpu down, but the scheduler
+> doesn't take that into account.  Making the timebase of sched_clock
+> reflect the current cpu speed (or more specifically, the integral of the
+> cpu speed over a time interval) is a good way of communicating between
+> the two subsystems.
 
-Finally, the existing code is problematic as there is no reasonable way to 
-circumvent the negative impact for small files.
+What was the original proposal?  I came into this discussion late...
 
-Hence, I think a change is necessary.  The question is whether the 
-intent of conditionally calling mark_page_accessed() is still reasonable 
-and whether the amount of bookkeeping required to detect that usage 
-pattern but not create a problem for other usage patterns is reasonable.
-
-I would tend to agree with David that:  "Any application doing many 
-tiny-sized reads isn't exactly asking for great performance."  As well, 
-applications concerned with performance and caching problems can read in a 
-file in PAGE_SIZE chunks.  I still think the simple fix of removing the 
-condition is the best approach, but I'm certainly open to alternatives.
-
-ashif.
+Paul.
