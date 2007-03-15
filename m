@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750797AbXCOUcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751935AbXCOUfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750797AbXCOUcE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 16:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbXCOUcE
+	id S1751935AbXCOUfj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 16:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXCOUfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 16:32:04 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:41251 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbXCOUcB (ORCPT
+	Thu, 15 Mar 2007 16:35:39 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42085 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751935AbXCOUfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 16:32:01 -0400
-Date: Thu, 15 Mar 2007 21:31:59 +0100
-From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ashif Harji <asharji@cs.uwaterloo.ca>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-mm@kvack.org, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-Message-ID: <20070315203159.GA15463@rhlx01.hs-esslingen.de>
-References: <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <45F96CCB.4000709@redhat.com> <20070315162944.GI8321@wotan.suse.de> <Pine.GSO.4.64.0703151532530.29483@cpu102.cs.uwaterloo.ca> <20070315200739.GD19625@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070315200739.GD19625@wotan.suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+	Thu, 15 Mar 2007 16:35:38 -0400
+Message-ID: <45F9AE1D.7080203@vmware.com>
+Date: Thu, 15 Mar 2007 13:35:41 -0700
+From: Dan Hecht <dhecht@vmware.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, dwalker@mvista.com,
+       cpufreq@lists.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com,
+       schwidefsky@de.ibm.com, Zachary Amsden <zach@vmware.com>
+Subject: Re: Stolen and degraded time and schedulers
+References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org> <45F85A62.8050001@vmware.com> <45F85BBB.70707@goop.org> <45F85F43.9030803@vmware.com> <45F866AF.9060609@goop.org> <45F999D4.6080602@vmware.com> <45F9A42D.7090205@goop.org> <45F9A788.1010008@vmware.com> <45F9A93A.2030400@redhat.com>
+In-Reply-To: <45F9A93A.2030400@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Mar 2007 20:35:36.0965 (UTC) FILETIME=[7CEADB50:01C76741]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 03/15/2007 01:14 PM, Rik van Riel wrote:
+> Dan Hecht wrote:
+> 
+>> Yes, the part in the "i.e." above is describing available time.  So, 
+>> it is essentially is the same definition of stolen time VMI uses:
+> 
+>> stolen time     == ready to run but not running
+>> available time  == running or not ready to run
+> 
+> S390 too.  We were quite careful to make sure that steal time
+> means the same on the different platforms when the code was
+> introduced.
+> 
 
-On Thu, Mar 15, 2007 at 09:07:39PM +0100, Nick Piggin wrote:
-> Well in general we like to help applications that help themselves. It
-> is actually a good heuristic, surprisingly. If an application randomly
-> accesses the same page (and there is no write activity going on), then
-> it would be better off to cache it in userspace, and if it doesn't care
-> to do that then it won't mind having to read it off disk now and again :)
+The S390 folks should correct me if I'm mistaken, but I think S390 works 
+a bit differently.  I don't think their "steal clock" will differentiate 
+between idle time and stolen time (since it's implemented as a hardware 
+clock that counts the time a particular vcpu context is executing on the 
+pcpu).  So they need the kernel to differentiate between really stolen 
+time and just idle time.  At least, I assume this is why 
+account_steal_time() can then sometimes account steal time towards idle, 
+and looking at arch/s390/kernel/vtime.c seems to indicate this.
 
-Sounds like a good plan since this probably is a nice way to make stupid apps
-doing stupid things sit up and take notice, and maybe the authors will then go
-so far as fixing up a few more things that are hurting them once they actually
-recognize that something is weird due to overly bad performance.
+In the Xen and VMI case, the hypervisor differentiates between stolen 
+and idle time, which is why we use the hack to call into 
+account_steal_time with NULL tsk (so that all of steal gets accounted to 
+stolen, even if the idle task happened to be current).  This allows us 
+to account stolen time that happened on the tail end of an idle period.
 
-Why go to great lengths to support stupid apps when there are still so many things
-which could be done to help well-behaving ones? ;)
 
-Andreas Mohr
+
