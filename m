@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965337AbXCOFRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965291AbXCOFR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965337AbXCOFRW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 01:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965236AbXCOFQr
+	id S965291AbXCOFR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 01:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965338AbXCOFRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 01:16:47 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:47813 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965233AbXCOFQq (ORCPT
+	Thu, 15 Mar 2007 01:17:25 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:52115 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965291AbXCOFQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 01:16:46 -0400
-Message-Id: <20070315051531.335255998@goodmis.org>
+	Thu, 15 Mar 2007 01:16:57 -0400
+Message-Id: <20070315051529.702919481@goodmis.org>
 References: <20070315051337.488091591@goodmis.org>
 User-Agent: quilt/0.45-1
-Date: Thu, 15 Mar 2007 01:13:47 -0400
+Date: Thu, 15 Mar 2007 01:13:40 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,61 +22,61 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
        Glauber de Oliveira Costa <glommer@gmail.com>,
        Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH take3 10/20] microcode.c switch
-Content-Disposition: inline; filename=11-microcode.patch
+Subject: [PATCH take3 03/20] bootflag.c switch
+Content-Disposition: inline; filename=03-bootflag.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the microcode.c to the common area.
+Move the bootflag.c to the common area.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 diff --git a/arch/i386/kernel/Makefile b/arch/i386/kernel/Makefile
-index 4437181..ac925bc 100644
+index c8fe439..4622355 100644
 --- a/arch/i386/kernel/Makefile
 +++ b/arch/i386/kernel/Makefile
-@@ -14,7 +14,6 @@ obj-y				+= cpu/
- obj-y				+= acpi/
- obj-$(CONFIG_X86_BIOS_REBOOT)	+= reboot.o
- obj-$(CONFIG_MCA)		+= mca.o
--obj-$(CONFIG_MICROCODE)		+= microcode.o
- obj-$(CONFIG_APM)		+= apm.o
- obj-$(CONFIG_X86_SMP)		+= smp.o smpboot.o
- obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
+@@ -6,7 +6,7 @@ extra-y := head.o init_task.o vmlinux.lds
+ 
+ obj-y	:= process.o signal.o entry.o traps.o irq.o \
+ 		ptrace.o time.o ioport.o ldt.o setup.o i8259.o sys_i386.o \
+-		pci-dma.o i386_ksyms.o i387.o bootflag.o e820.o\
++		pci-dma.o i386_ksyms.o i387.o e820.o\
+ 		quirks.o i8237.o topology.o alternative.o i8253.o tsc.o
+ 
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
 diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 912421a..f1c6b2e 100644
+index bd548e6..fe2e4ea 100644
 --- a/arch/x86/kernel/Makefile
 +++ b/arch/x86/kernel/Makefile
-@@ -2,6 +2,7 @@ obj-y				+= bootflag.o quirks.o i8237.o topology.o alternative.o
+@@ -1,3 +1,4 @@
++obj-y				+= bootflag.o
  
- obj-$(CONFIG_X86_MSR)		+= msr.o
- obj-$(CONFIG_X86_CPUID)		+= cpuid.o
-+obj-$(CONFIG_MICROCODE)		+= microcode.o
  obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
  
- # i386 defines CONFIG_X86_SMP when CONFIG_SMP and !CONFIG_X86_VOYAGER
-diff --git a/arch/i386/kernel/microcode.c b/arch/x86/kernel/microcode.c
+diff --git a/arch/i386/kernel/bootflag.c b/arch/x86/kernel/bootflag.c
 similarity index 100%
-rename from arch/i386/kernel/microcode.c
-rename to arch/x86/kernel/microcode.c
+rename from arch/i386/kernel/bootflag.c
+rename to arch/x86/kernel/bootflag.c
 diff --git a/arch/x86_64/kernel/Makefile b/arch/x86_64/kernel/Makefile
-index f5997f3..08795d8 100644
+index 54fe500..1ffc4ea 100644
 --- a/arch/x86_64/kernel/Makefile
 +++ b/arch/x86_64/kernel/Makefile
-@@ -16,7 +16,6 @@ obj-$(CONFIG_X86_MCE_INTEL)	+= mce_intel.o
- obj-$(CONFIG_X86_MCE_AMD)	+= mce_amd.o
- obj-$(CONFIG_MTRR)		+= ../../i386/kernel/cpu/mtrr/
- obj-$(CONFIG_ACPI)		+= acpi/
--obj-$(CONFIG_MICROCODE)		+= microcode.o
- obj-$(CONFIG_SMP)		+= smp.o smpboot.o trampoline.o
- obj-y				+= apic.o  nmi.o
- obj-y				+= io_apic.o mpparse.o \
-@@ -44,6 +43,5 @@ obj-y				+= pcspeaker.o
+@@ -7,7 +7,7 @@ EXTRA_AFLAGS	:= -traditional
+ obj-y	:= process.o signal.o entry.o traps.o irq.o \
+ 		ptrace.o time.o ioport.o ldt.o setup.o i8259.o sys_x86_64.o \
+ 		x8664_ksyms.o i387.o syscall.o vsyscall.o \
+-		setup64.o bootflag.o e820.o reboot.o quirks.o i8237.o \
++		setup64.o e820.o reboot.o quirks.o i8237.o \
+ 		pci-dma.o pci-nommu.o alternative.o hpet.o tsc.o
+ 
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+@@ -47,7 +47,6 @@ obj-y				+= pcspeaker.o
  CFLAGS_vsyscall.o		:= $(PROFILING) -g0
  
  therm_throt-y                   += ../../i386/kernel/cpu/mcheck/therm_throt.o
--microcode-$(subst m,y,$(CONFIG_MICROCODE))  += ../../i386/kernel/microcode.o
- intel_cacheinfo-y		+= ../../i386/kernel/cpu/intel_cacheinfo.o
- pcspeaker-y			+= ../../i386/kernel/pcspeaker.o
+-bootflag-y			+= ../../i386/kernel/bootflag.o
+ cpuid-$(subst m,y,$(CONFIG_X86_CPUID))  += ../../i386/kernel/cpuid.o
+ topology-y                     += ../../i386/kernel/topology.o
+ microcode-$(subst m,y,$(CONFIG_MICROCODE))  += ../../i386/kernel/microcode.o
 
 --
