@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422958AbXCOQxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422964AbXCOQyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422958AbXCOQxp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 12:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030636AbXCOQxp
+	id S1422964AbXCOQyK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 12:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422963AbXCOQyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 12:53:45 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47325 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030603AbXCOQxo (ORCPT
+	Thu, 15 Mar 2007 12:54:09 -0400
+Received: from 195-13-16-24.net.novis.pt ([195.23.16.24]:53307 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1422964AbXCOQyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 12:53:44 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelianov <xemul@sw.ru>
-Cc: vatsa@in.ibm.com, Herbert Poetzl <herbert@13thfloor.at>,
-       containers@lists.osdl.org, Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/7] Resource counters
-References: <45ED7DEC.7010403@sw.ru> <45ED7F69.60108@sw.ru>
-	<45EE39A5.7010804@in.ibm.com> <45EE6769.9060701@sw.ru>
-	<20070309163711.GA3647@MAIL.13thfloor.at>
-	<m1fy8bwqps.fsf@ebiederm.dsl.xmission.com>
-	<20070312011612.GD21861@MAIL.13thfloor.at>
-	<m1bqixtsr1.fsf@ebiederm.dsl.xmission.com>
-	<20070313152150.GK8755@MAIL.13thfloor.at> <45F6C611.7070400@sw.ru>
-	<20070313160707.GF19939@in.ibm.com> <45F7A04B.6000504@sw.ru>
-Date: Thu, 15 Mar 2007 10:51:46 -0600
-In-Reply-To: <45F7A04B.6000504@sw.ru> (Pavel Emelianov's message of "Wed, 14
-	Mar 2007 10:12:11 +0300")
-Message-ID: <m18xdyphzx.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 15 Mar 2007 12:54:07 -0400
+Message-ID: <45F97A27.4030002@grupopie.com>
+Date: Thu, 15 Mar 2007 16:53:59 +0000
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Alexey Dobriyan <adobriyan@sw.ru>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org,
+       mingo@elte.hu, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH] Fix some kallsyms_lookup() vs rmmod races
+References: <20070315161442.GA6812@localhost.sw.ru>
+In-Reply-To: <20070315161442.GA6812@localhost.sw.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov <xemul@sw.ru> writes:
+Alexey Dobriyan wrote:
+> [cc'ing folks whose proc files are affected]
+> 
+> kallsyms_lookup() can call module_address_lookup() which iterates over
+> modules list without module_mutex taken. Comment at the top of
+> module_address_lookup() says it's for oops resolution so races are
+> irrelevant, but in some cases it's reachable from regular code:
 
-> Srivatsa Vaddagiri wrote:
->> On Tue, Mar 13, 2007 at 06:41:05PM +0300, Pavel Emelianov wrote:
->>>> right, but atomic ops have much less impact on most
->>>> architectures than locks :)
->>> Right. But atomic_add_unless() is slower as it is
->>> essentially a loop. See my previous letter in this sub-thread.
->> 
->> If I am not mistaken, you shouldn't loop in normal cases, which means
->> it boils down to a atomic_read() + atomic_cmpxch()
->> 
->> 
->
-> So does the lock - in a normal case (when it's not
-> heavily contented) it will boil down to atomic_dec_and_test().
->
-> Nevertheless, making charge like in this patchset
-> requires two atomic ops with atomic_xxx and only
-> one with spin_lock().
+So maybe we should just add a new parameter to "kallsyms_lookup" to 
+inform it if it is safe to take a mutex or not.
 
-To be very clear.  If you care about optimization cache lines
-and lock hold times (to keep contention down) are the important
-things.
+Spreading module_mutex everywhere doesn't seem like the right interface 
+for several reasons:
 
-With spin locks you have to be a little more careful to put them
-on the same cache line as your data and to keep should hold times
-short.  With atomic ops you get that automatically.
+  - new users of "kallsyms_lookup" might not be aware that they should 
+take module_mutex if it is safe
 
-There is really no significant advantage in either approach.
-The number of atomic ops doesn't matter.  You bring in
-the cache line and manipulate it.  The expensive part is
-acquiring the cache line exclusively.  This is expensive even if
-things are never contended but there are many users.
+  - many times we will be taking module_mutex even when we are fetching 
+a kernel symbol that shouldn't require the mutex at all
 
-Sorry for the rant, but I just wanted to set the record straight.
-spin_locks vs atomic ops is a largely meaningless debate.
+  - it just creates new dependencies (hint: this patch shouldn't even 
+compile with current git since module_mutex is not declared in module.h, 
+not to mention compile when CONFIG_MODULES not set)
 
-Eric
+IMHO we should not expose module_mutex outside of module.c. That is just 
+wrong from an encapsulation point of view.
+
+-- 
+Paulo Marques - www.grupopie.com
+
+"667: The neighbor of the beast."
+
