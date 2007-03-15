@@ -1,32 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXCOAUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422783AbXCOAcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964868AbXCOAUL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 20:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964919AbXCOAUL
+	id S1422783AbXCOAcc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 20:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422784AbXCOAcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 20:20:11 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:42501 "EHLO
+	Wed, 14 Mar 2007 20:32:32 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:42511 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964868AbXCOAUK (ORCPT
+	with ESMTP id S1422783AbXCOAcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 20:20:10 -0400
+	Wed, 14 Mar 2007 20:32:31 -0400
 X-AuthUser: davidel@xmailserver.org
-Date: Wed, 14 Mar 2007 17:15:13 -0700 (PDT)
+Date: Wed, 14 Mar 2007 17:27:33 -0700 (PDT)
 From: Davide Libenzi <davidel@xmailserver.org>
 X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Benjamin LaHaise <bcrl@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
+To: Benjamin LaHaise <bcrl@kvack.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
        Zach Brown <zach.brown@oracle.com>
 Subject: Re: [patch 13/13] signalfd/timerfd/asyncfd v5 - KAIO asyncfd support
  (example/maybe-broken) ...
-In-Reply-To: <Pine.LNX.4.64.0703141711451.9690@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703141713380.4982@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0703141702540.4982@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0703141726260.4982@alien.or.mcafeemobile.com>
 References: <send-serie.davidel@xmailserver.org.13805.1173910770.13>
  <20070314231920.GB1246@kvack.org> <Pine.LNX.4.64.0703141620340.4982@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0703141711451.9690@woody.linux-foundation.org>
+ <20070314234208.GC1246@kvack.org> <Pine.LNX.4.64.0703141638570.4982@alien.or.mcafeemobile.com>
+ <20070315000212.GD1246@kvack.org> <Pine.LNX.4.64.0703141702540.4982@alien.or.mcafeemobile.com>
 X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
 X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
@@ -34,27 +35,30 @@ Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Mar 2007, Linus Torvalds wrote:
+On Wed, 14 Mar 2007, Davide Libenzi wrote:
 
-> On Wed, 14 Mar 2007, Davide Libenzi wrote:
-> > >
-> > > That won't work.  aio_complete() is supposed to be irq safe.
+> On Wed, 14 Mar 2007, Benjamin LaHaise wrote:
+> 
+> > On Wed, Mar 14, 2007 at 04:41:58PM -0700, Davide Libenzi wrote:
+> > > Yeah, of course. I do not plan revolutions. Just asking if it's a possible 
+> > > thing to do. I can mlock the userspace ring, if imposing that burden over 
+> > > aio_complete() is seen as too heavy.
 > > 
-> > Can you point me to a kernel path that ends up calling aio_complete() in a 
-> > do-not-sleep mode?
+> > I'm not sure I follow what you're doing -- why isn't asyncfd merely calling 
+> > io_getevents() instead of reinventing everything the ringbuffer does?  The 
+> > aio ringbuffer is already locked in memory.  Fwiw, the aio ringbuffer was 
+> > originally wired up to a file descriptor, but that gave way to the actual 
+> > syscall in order to enforce proper typechecking and typical usage scenarios 
+> > with timeouts.
 > 
-> All of them.
-> 
-> It's called from dio_bio_end_aio(), which is the bi_end_io function for an 
-> AIO action. Which in turn is called at IO completion time. 
-> 
-> Which is basically _always_ interrupt context.
-> 
-> So you cannot sleep. It's not about holding spinlocks (which it might well 
-> do as well). It's about a much more fundamental issue: you can only sleep 
-> in process context, not from interrupts.
+> The purpose of asyncfd is to provide a pollable (by the mean of 
+> f_op->poll) device that can be hosted inside a standard select/poll/epoll 
+> wait subsystem, and that, at the same time, provide a zero-copy way for 
+> kernel code (KAIO and syslets/threadlets were my thought) to deliver 
+> results to userspace.
 
-Ack! Gotcha. Sigh! :)
+But, yeah. It can end up calling io_getevents() instead of doing it's own 
+thing. That'd make it even slimmer ;)
 
 
 
