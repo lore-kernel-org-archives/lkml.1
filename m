@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422791AbXCOAsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964960AbXCOBJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422791AbXCOAsK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 20:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422800AbXCOAsK
+	id S964960AbXCOBJU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 21:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964968AbXCOBJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 20:48:10 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:45230 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422791AbXCOAsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 20:48:08 -0400
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: oops in __nodemgr_remove_host_dev (was Re: Ooops with suspend to RAM)
-Date: Thu, 15 Mar 2007 02:49:03 +0200
-User-Agent: KMail/1.9.6
-Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
-References: <200703140642.28390.ismail@pardus.org.tr> <200703150051.29945.ismail@pardus.org.tr> <45F88E8B.90403@s5r6.in-berlin.de>
-In-Reply-To: <45F88E8B.90403@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 14 Mar 2007 21:09:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45666
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S964960AbXCOBJT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 21:09:19 -0400
+Date: Wed, 14 Mar 2007 18:09:15 -0700 (PDT)
+Message-Id: <20070314.180915.74747355.davem@davemloft.net>
+To: wli@holomorphy.com
+Cc: viro@ftp.linux.org.uk, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/17] sparc: nr_free_pages() is unsigned long
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070314150612.GU2986@holomorphy.com>
+References: <E1HRPdC-0003S1-0h@ZenIV.linux.org.uk>
+	<20070314150612.GU2986@holomorphy.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703150249.04169.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 March 2007 02:08:43 Stefan Richter wrote:
-[...]
->
-> Ismail, if you have the opportunity, the next thing you could test would
-> be to unload eth1394 explicitly before ohci1394 on 2.6.21-rc3. This
-> would _not_ oops according to my observation.
+From: William Lee Irwin III <wli@holomorphy.com>
+Date: Wed, 14 Mar 2007 08:06:12 -0700
 
-On a clean reboot it works as expected ;
+> On Wed, Mar 14, 2007 at 09:18:50AM +0000, Al Viro wrote:
+> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> > ---
+> >  arch/sparc/mm/init.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> Dave, I trust you'll pick it up until I get a git tree going.
+> 
+> Acked-by: William Irwin <wli@holomorphy.com>
 
-southpark cartman # rmmod eth1394
-southpark cartman # rmmod ohci1394
-southpark cartman #
-
-No oops.
-
-Thanks.
-
--- 
-Happiness in intelligent people is the rarest thing I know. (Ernest Hemingway)
-
-Ismail Donmez ismail (at) pardus.org.tr
-GPG Fingerprint: 7ACD 5836 7827 5598 D721 DF0D 1A9D 257A 5B88 F54C
-Pardus Linux / KDE developer
+What usually happens when Al sends a set like this is that
+Linus picks it up directly, and I've just verified that this
+is in fact what has happened this time too :-)
