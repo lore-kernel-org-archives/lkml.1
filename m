@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422969AbXCORFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422976AbXCORFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422969AbXCORFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 13:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422974AbXCORFP
+	id S1422976AbXCORFs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 13:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422977AbXCORFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 13:05:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55344 "EHLO mx1.redhat.com"
+	Thu, 15 Mar 2007 13:05:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55831 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422969AbXCORFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 13:05:14 -0400
-Message-ID: <45F97C9B.6060503@redhat.com>
-Date: Thu, 15 Mar 2007 13:04:27 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Chuck Ebbert <cebbert@redhat.com>, Ashif Harji <asharji@cs.uwaterloo.ca>,
-       linux-mm@kvack.org, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <45F96CCB.4000709@redhat.com> <20070315162944.GI8321@wotan.suse.de>
-In-Reply-To: <20070315162944.GI8321@wotan.suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1422976AbXCORFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 13:05:47 -0400
+Date: Thu, 15 Mar 2007 13:00:09 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
+Message-ID: <20070315170009.GB17658@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Greg Kroah-Hartman <gregkh@suse.de>
+References: <20070313040828.GA17893@redhat.com> <200703131022.54322.rjw@sisk.pl> <20070313132218.GA25910@redhat.com> <m1d53apjvu.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1d53apjvu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
+On Thu, Mar 15, 2007 at 10:11:01AM -0600, Eric W. Biederman wrote:
 
-> A change to make database style random read() workloads perform better, by
-> calling mark_page_accessed for some non-page-aligned reads broke the case of
-> < PAGE_CACHE_SIZE files, which will not get their prev_index moved past the
-> first page.
-> 
-> Combine both heuristics for marking the page accessed.
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
+ > I haven't heard anything more on this thread.
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Sorry, I've been stuck in meetings the last two days..
+
+ > I just wanted to double check.  The tree that failed did it include
+ > commits: 
+ > 392ee1e6dd901db6c4504617476f6442ed91f72d and
+ > 9f35575dfc172f0a93fb464761883c8f49599b7a
+ > 
+ > Mostly I was wondering if any of my later work to sort out msi 
+ > suspend/resume actually solved anything.
+
+I'll kick off some compiles and find out.
+
+	Dave
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+http://www.codemonkey.org.uk
