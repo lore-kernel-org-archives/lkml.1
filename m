@@ -1,197 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbXCOJof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933463AbXCOJxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbXCOJof (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 05:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933459AbXCOJof
+	id S933463AbXCOJxP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 05:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933461AbXCOJxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 05:44:35 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:38793 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752778AbXCOJoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 05:44:34 -0400
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: [patch 2/5] fs: introduce new aops and infrastructure
-References: <20070314112529.13798.35417.sendpatchset@linux.site>
-	<20070314112540.13798.97719.sendpatchset@linux.site>
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Thu, 15 Mar 2007 12:44:37 +0300
-In-Reply-To: <20070314112540.13798.97719.sendpatchset@linux.site> (Nick Piggin's message of "Wed, 14 Mar 2007 14:38:22 +0100 (CET)")
-Message-ID: <87bqiuzvqy.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Thu, 15 Mar 2007 05:53:15 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:13676 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933463AbXCOJxO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 05:53:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DWXPU2QxM5Ox1eTGyu6pAoIGStjJG15Mcxj1srbpAG6zVp6dvH881kGXZh0PkPiTL8yv3YI+nj50x6aQBdpXP7qntbUY0jFZt36Jq9ZzYkzRAeakp3/ygvN4jTLTUVqSKqIwp21q0RIYBnAuV3FJth6Y0B0M3WRwn9Oysk/BbgA=
+Message-ID: <b647ffbd0703150253q36d19c4ej8fe19ed644520017@mail.gmail.com>
+Date: Thu, 15 Mar 2007 10:53:13 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG: kernel/irq/proc.c] unprotected iteration over the IRQ action list in name_unique()
+In-Reply-To: <b647ffbd0703140926v1aa861alecd1a2eb4c6d0f5d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b647ffbd0703140926v1aa861alecd1a2eb4c6d0f5d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> writes:
+On 14/03/07, Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
 
-> Index: linux-2.6/fs/splice.c
-> ===================================================================
-> --- linux-2.6.orig/fs/splice.c
-> +++ linux-2.6/fs/splice.c
-> @@ -559,7 +559,7 @@ static int pipe_to_file(struct pipe_inod
->  	struct address_space *mapping = file->f_mapping;
->  	unsigned int offset, this_len;
->  	struct page *page;
-> -	pgoff_t index;
-> +	void *fsdata;
->  	int ret;
->  
->  	/*
-> @@ -569,13 +569,13 @@ static int pipe_to_file(struct pipe_inod
->  	if (unlikely(ret))
->  		return ret;
->  
-> -	index = sd->pos >> PAGE_CACHE_SHIFT;
->  	offset = sd->pos & ~PAGE_CACHE_MASK;
->  
->  	this_len = sd->len;
->  	if (this_len + offset > PAGE_CACHE_SIZE)
->  		this_len = PAGE_CACHE_SIZE - offset;
->  
-> +#if 0
->  	/*
->  	 * Reuse buf page, if SPLICE_F_MOVE is set and we are doing a full
->  	 * page.
-> @@ -587,86 +587,11 @@ static int pipe_to_file(struct pipe_inod
->  		 * locked on successful return.
->  		 */
->  		if (buf->ops->steal(pipe, buf))
-> -			goto find_page;
-> +#endif
-One more note. It's looks like you just disabled all fancy zero copy logic.
-Off corse this is just rfc patchset.
-But i think where is fundamental problem with it:
- Previous logic was following:
-  1)splice code responsible for: stealing(if possible) and loking the page
-  2)prepare_write() code responsible for: do fs speciffic stuff
+> 1-st issue:  unprotected iteration over the IRQ action list in name_unique()
+>
+>
+> the racing sequences:
+>
+> [ 1 ]  request_irq() -> setup_irq() -> register_handler_proc() ->
+> name_unique() -> iterate over the action list (*)
+>
+> setup_irq() releases a desc->lock before calling register_handler_proc().
+>
+> [ 2 ]  free_irq() -> delete some element while (*) is still in progress -> bum!
 
- But with new write_begin() logic  all steps (grubbing, locking, preparing)
- happened internaly inside write_begin() witch doesn't even know about what
- kind of data will be copied between write_begin/write_end.
- So fancy zero copy logic is impossible :(
-I think this can be solved somehow, but i dont know yet, how can this be done
-without implementing it inside begin_write().
+"delete" == remove from the list + kfree() as synchronize_irq() is not
+going to prevent it for obvious reasons.
 
->  
-> -		page = buf->page;
-> -		if (add_to_page_cache(page, mapping, index, GFP_KERNEL)) {
-> -			unlock_page(page);
-> -			goto find_page;
-> -		}
-> -
-> -		page_cache_get(page);
-> -
-> -		if (!(buf->flags & PIPE_BUF_FLAG_LRU))
-> -			lru_cache_add(page);
-> -	} else {
-> -find_page:
-> -		page = find_lock_page(mapping, index);
-> -		if (!page) {
-> -			ret = -ENOMEM;
-> -			page = page_cache_alloc_cold(mapping);
-> -			if (unlikely(!page))
-> -				goto out_ret;
-> -
-> -			/*
-> -			 * This will also lock the page
-> -			 */
-> -			ret = add_to_page_cache_lru(page, mapping, index,
-> -						    GFP_KERNEL);
-> -			if (unlikely(ret))
-> -				goto out;
-> -		}
-> -
-> -		/*
-> -		 * We get here with the page locked. If the page is also
-> -		 * uptodate, we don't need to do more. If it isn't, we
-> -		 * may need to bring it in if we are not going to overwrite
-> -		 * the full page.
-> -		 */
-> -		if (!PageUptodate(page)) {
-> -			if (this_len < PAGE_CACHE_SIZE) {
-> -				ret = mapping->a_ops->readpage(file, page);
-> -				if (unlikely(ret))
-> -					goto out;
-> -
-> -				lock_page(page);
-> -
-> -				if (!PageUptodate(page)) {
-> -					/*
-> -					 * Page got invalidated, repeat.
-> -					 */
-> -					if (!page->mapping) {
-> -						unlock_page(page);
-> -						page_cache_release(page);
-> -						goto find_page;
-> -					}
-> -					ret = -EIO;
-> -					goto out;
-> -				}
-> -			} else
-> -				SetPageUptodate(page);
-> -		}
-> -	}
-> -
-> -	ret = mapping->a_ops->prepare_write(file, page, offset, offset+this_len);
-> -	if (unlikely(ret)) {
-> -		loff_t isize = i_size_read(mapping->host);
-> -
-> -		if (ret != AOP_TRUNCATED_PAGE)
-> -			unlock_page(page);
-> -		page_cache_release(page);
-> -		if (ret == AOP_TRUNCATED_PAGE)
-> -			goto find_page;
-> -
-> -		/*
-> -		 * prepare_write() may have instantiated a few blocks
-> -		 * outside i_size.  Trim these off again.
-> -		 */
-> -		if (sd->pos + this_len > isize)
-> -			vmtruncate(mapping->host, isize);
-> -
-> -		goto out_ret;
-> -	}
-> +	ret = pagecache_write_begin(file, mapping, sd->pos, sd->len, 0, &page, &fsdata);
-> +	if (unlikely(ret))
-> +		goto out;
->  
->  	if (buf->page != page) {
->  		/*
-> @@ -676,28 +601,13 @@ find_page:
->  		char *dst = kmap_atomic(page, KM_USER1);
->  
->  		memcpy(dst + offset, src + buf->offset, this_len);
-> -		flush_dcache_page(page);
->  		kunmap_atomic(dst, KM_USER1);
->  		buf->ops->unmap(pipe, buf, src);
->  	}
->  
-> -	ret = mapping->a_ops->commit_write(file, page, offset, offset+this_len);
-> -	if (!ret) {
-> -		/*
-> -		 * Return the number of bytes written and mark page as
-> -		 * accessed, we are now done!
-> -		 */
-> -		ret = this_len;
-> -		mark_page_accessed(page);
-> -		balance_dirty_pages_ratelimited(mapping);
-> -	} else if (ret == AOP_TRUNCATED_PAGE) {
-> -		page_cache_release(page);
-> -		goto find_page;
-> -	}
-> +	ret = pagecache_write_end(file, mapping, sd->pos, sd->len, sd->len, page, fsdata);
-> +
->  out:
-> -	page_cache_release(page);
-> -	unlock_page(page);
-> -out_ret:
->  	return ret;
->  }
->  
+Of course, request_irq() and free_irq() are called for the same
+/shared/ irq line but for /different/ handlers.
 
+Looks too obvious to be true. I already expected someone prooving me
+wrong, at the very least by pointing out a special option of vim to
+activate some hidden synchronization code :o)
+
+
+-- 
+Best regards,
+Dmitry Adamushko
