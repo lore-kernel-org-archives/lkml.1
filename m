@@ -1,90 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbXCOLw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933506AbXCOLxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933502AbXCOLw6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 07:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933504AbXCOLw6
+	id S933506AbXCOLxs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 07:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933510AbXCOLxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 07:52:58 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:64064 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933502AbXCOLw5 (ORCPT
+	Thu, 15 Mar 2007 07:53:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:15884 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933506AbXCOLxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 07:52:57 -0400
-Subject: Re: [PATCH take3 16/20] acpi files switched
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <200703150236.43214.lenb@kernel.org>
-References: <20070315051337.488091591@goodmis.org>
-	 <20070315051532.400874263@goodmis.org> <200703150236.43214.lenb@kernel.org>
-Content-Type: text/plain
-Date: Thu, 15 Mar 2007 07:51:02 -0400
-Message-Id: <1173959462.7922.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Mar 2007 07:53:47 -0400
+Date: Thu, 15 Mar 2007 12:52:37 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [patch 1/2] splice: dont steal
+Message-ID: <20070315115237.GM15400@kernel.dk>
+References: <20070314121440.GA926@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070314121440.GA926@wotan.suse.de>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-15 at 02:36 -0400, Len Brown wrote:
-> On Thursday 15 March 2007 01:13, Steven Rostedt wrote:
-> > Moved the shared files that were in arch/i386/kernel/acpi to the common
-> > area.
+On Wed, Mar 14 2007, Nick Piggin wrote:
+> Here are a couple of splice patches I found when digging in the area.
+> I could be wrong, so I'd appreciate confirmation.
 > 
-> When I do a "make cscope" on an i386 or an x86_64 box,
-> will it find these files in the common area?
+> Untested other than compile, because I don't have a good splice test
+> setup.
+> 
+> Considering these are data corruption / information leak issues, then
+> we could do worse than to merge them in 2.6.21 and earlier stable
+> trees.
+> 
+> Does anyone really use splice stealing?
 
-At the moment, "no".
+That's a damn shame, I'd greatly prefer if we can try and fix it
+instead. Splice isn't really all that used yet to my knowledge, but
+stealing is one of the niftier features I think. Otherwise you're just
+copying data again.
 
-With this quick hack, it will work, and I'm sure someone can come up
-with a better idea.
-
-Currently, the "make cscope" and "make TAGS" only get the files that are
-physically located in the arch. As I mentioned to Ingo, it took me an
-hour when I first looked for early_printk. Since it wasn't in the TAGS
-and my own search scripts were also arch specific.  I was working in
-i386, and early_printk is not.
-
-But here's a hack that will let both x86_64 and i386 see the same code
-in the common area for a "make cscope" or "make TAGS".
-
--- Steve
-
-diff --git a/Makefile b/Makefile
-index 6393738..974c05b 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1265,8 +1265,16 @@ endif
- 
- ifeq ($(ALLSOURCE_ARCHS),)
- ifeq ($(ARCH),um)
-+ALLSOURCE_ARCHS := $(ARCH)
- ALLINCLUDE_ARCHS := $(ARCH) $(SUBARCH)
-+else ifeq ($(ARCH),x86_64)
-+ALLSOURCE_ARCHS := $(ARCH) x86
-+ALLINCLUDE_ARCHS := $(ARCH) x86
-+else ifeq ($(ARCH),i386)
-+ALLSOURCE_ARCHS := $(ARCH) x86
-+ALLINCLUDE_ARCHS := $(ARCH) x86
- else
-+ALLSOURCE_ARCHS := $(ARCH)
- ALLINCLUDE_ARCHS := $(ARCH)
- endif
- else
-@@ -1274,8 +1282,6 @@ else
- ALLINCLUDE_ARCHS := $(ALLSOURCE_ARCHS)
- endif
- 
--ALLSOURCE_ARCHS := $(ARCH)
--
- define find-sources
-         ( find $(__srctree) $(RCS_FIND_IGNORE) \
- 	       \( -name include -o -name arch \) -prune -o \
-
+-- 
+Jens Axboe
 
