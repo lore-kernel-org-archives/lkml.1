@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXCOWYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933935AbXCOWYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbXCOWYE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 18:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932274AbXCOWXb
+	id S933935AbXCOWYo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 18:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932315AbXCOWYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 18:23:31 -0400
-Received: from mx.pathscale.com ([198.186.3.68]:33701 "EHLO mx.pathscale.com"
+	Thu, 15 Mar 2007 18:24:10 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:43342 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753410AbXCOWP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 18:15:27 -0400
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+	id S1753406AbXCOWX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 18:23:58 -0400
+Date: Thu, 15 Mar 2007 15:23:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] swsusp: Do not use page flags
+Message-Id: <20070315152328.228379db.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703152317260.12394@twin.jikos.cz>
+References: <200703122214.02657.rjw@sisk.pl>
+	<200703122219.21171.rjw@sisk.pl>
+	<20070315110816.8b4102b3.akpm@linux-foundation.org>
+	<200703152205.54639.rjw@sisk.pl>
+	<20070315142955.7cbe62c1.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0703152317260.12394@twin.jikos.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 20 of 33] IB/ipath - call free_irq on chip specific
-	initialization failure
-X-Mercurial-Node: 8a013b707785accfd71589334bbf8e4029ffa892
-Message-Id: <8a013b707785accfd715.1173995104@iqa-25.internal.keyresearch.com>
-In-Reply-To: <patchbomb.1173995084@iqa-25.internal.keyresearch.com>
-Date: Thu, 15 Mar 2007 14:45:04 -0700
-From: "Bryan O'Sullivan" <bos@pathscale.com>
-To: rdreier@cisco.com
-Cc: openib-general@openfabrics.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# HG changeset patch
-# User Arthur Jones <arthur.jones@qlogic.com>
-# Date 1173994465 25200
-# Node ID 8a013b707785accfd71589334bbf8e4029ffa892
-# Parent  c96d13efde155eb60dc0eca0bd56e81ecd36281b
-IB/ipath - call free_irq on chip specific initialization failure
+On Thu, 15 Mar 2007 23:19:02 +0100 (CET)
+Jiri Kosina <jikos@jikos.cz> wrote:
 
-In initialization, if we bailed at chip specific initialization, we
-forgot to clean up the irq we had requested.
+> On Thu, 15 Mar 2007, Andrew Morton wrote:
+> 
+> > > > And why _does_ suspend use GFP_ATOMIC all over the place?
+> > > Generally, because it cannot sleep.
+> > Why not?
+> 
+> I guess it's simply beucase of kswapd being already frozen, so there is no 
+> chance that once GFP_KERNEL allocation goes to sleep, it is going to get 
+> any free pages eventually ... ?
 
-Signed-off-by: Bryan O'Sullivan <bryan.osullivan@qlogic.com>
+No, things should run fine with a dead kswapd.
 
-diff -r c96d13efde15 -r 8a013b707785 drivers/infiniband/hw/ipath/ipath_driver.c
---- a/drivers/infiniband/hw/ipath/ipath_driver.c	Thu Mar 15 14:34:25 2007 -0700
-+++ b/drivers/infiniband/hw/ipath/ipath_driver.c	Thu Mar 15 14:34:25 2007 -0700
-@@ -486,7 +486,7 @@ static int __devinit ipath_init_one(stru
- 
- 	ret = ipath_init_chip(dd, 0);	/* do the chip-specific init */
- 	if (ret)
--		goto bail_iounmap;
-+		goto bail_irqsetup;
- 
- 	ret = ipath_enable_wc(dd);
- 
-@@ -504,6 +504,9 @@ static int __devinit ipath_init_one(stru
- 	ipath_register_ib_device(dd);
- 
- 	goto bail;
-+
-+bail_irqsetup:
-+	if (pdev->irq) free_irq(pdev->irq, dd);
- 
- bail_iounmap:
- 	iounmap((volatile void __iomem *) dd->ipath_kregbase);
+There are reasons why we can't call into filesystems from there, but
+GFP_NOIO will ensure that and it is heaps better than GFP_ATOMIC.
+
+
+
