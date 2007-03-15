@@ -1,40 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750940AbXCOR0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbXCOR2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750940AbXCOR0d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 13:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbXCOR0d
+	id S1752803AbXCOR2o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 13:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXCOR2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 13:26:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50781 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750940AbXCOR0c (ORCPT
+	Thu, 15 Mar 2007 13:28:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:45762 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbXCOR2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 13:26:32 -0400
-Date: Thu, 15 Mar 2007 18:26:29 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 - Take 2
-Message-ID: <20070315172629.GA15026@one.firstfloor.org>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de> <20070314125330.GA13168@elte.hu> <1173879210.31159.30.camel@localhost.localdomain> <20070314134112.GB13486@elte.hu> <Pine.LNX.4.64.0703140945530.9690@woody.linux-foundation.org> <20070314181508.GB12994@elte.hu> <45F97971.7080000@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Mar 2007 13:28:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=i8BMaZAN53VuNE0FsDq7E5sX6CqjVGVcuOhxtwvN3M1gFqsu1qZ/ziFXlt4pWgLDfW4LYKdWJcNsh+JKZ7Pje5vsb9qJovbd9+6bQ3DqLSbIQ9ecD7LYffQGHxl9/vWzyt7OhScWMeVfc074ziQlIFOiVLZA5Olh8wR975imH98=
+Message-ID: <3d53b7120703151028g6232de75t8cca633d3ceb8ef@mail.gmail.com>
+Date: Thu, 15 Mar 2007 22:58:39 +0530
+From: "Syed Ahemed" <kingkhan@gmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: NPTL patch for linux 2.4.28
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       msnyder@redhat.com, jjohnstn@redhat.com
+In-Reply-To: <20070315134002.GB16199@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45F97971.7080000@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+References: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com>
+	 <20070314055556.GP943@1wt.eu>
+	 <3d53b7120703141444k6484ccfeyd08cf60ecbbb894a@mail.gmail.com>
+	 <1173945186.25356.23.camel@twins> <20070315134002.GB16199@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You could do both. Have the x86 directory that Linus suggests for shared
-> files, then have the build system generate the symlinks for you.
+Point taken Sir , Change to 2.6 is inevitable i believe ....Allthough
+i shall give the RHEL patch port to 2.4.28 a try over the weekend :-)
+Thanks  a lot Willy and Peter for the help .
 
-Symlinks are usually a bad idea because they tend to not work with objdirs. 
-We did that in 2.4.
+On 3/15/07, Willy Tarreau <w@1wt.eu> wrote:
+> On Thu, Mar 15, 2007 at 08:53:06AM +0100, Peter Zijlstra wrote:
+> > On Thu, 2007-03-15 at 03:14 +0530, Syed Ahemed wrote:
+> >
+> > > Getting RHEL's source ( http://lkml.org/lkml/2005/3/21/380 ) was an
+> > > idea i thought about but then a download of the RHEL source from the
+> > > following location was denied .
+> > > http://download.fedora.redhat.com/pub/fedora/linux/core/1/SRPMS/  and
+> > > the rpmfind site.
+> > > (Guess need to be a paid subscriber for that right ?)
+> >
+> > Strangely enough you try to download Fedora Core SRPMs whilst you speak
+> > of RHEL. Try this one:
+> >
+> > ftp://ftp.redhat.com/pub/redhat/linux/enterprise/3/en/os/i386/SRPMS/kernel-2.4.21-4.EL.src.rpm
+> >
+> > Also, CentOS would have similar sources. Google could have informed you
+> > on that.
+> >
+> > > I still wonder why there aren't any NPTL patches available in the
+> > > non-redhat sites for kernels like 2.4.21 or more .
+> >
+> > Because most people, especially the ones on this mailing list have moved
+> > on to 2.6 quite some time ago. May I suggest you do the same?
+>
+> ... or they stick to 2.4 for specific uses and do not need NPTL at all, which
+> came late in the development cycle.
+>
+> Regards,
+> Willy
+>
+>
 
--Andi
+
+-- 
+Azhar khan
+
+I'm afraid that I've seen too many people fix bugs by looking at
+debugger output, and that almost inevitably leads to fixing the
+symptoms rather than the underlying problems.
+	
+--Linus
