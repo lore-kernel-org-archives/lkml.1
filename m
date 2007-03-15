@@ -1,150 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422931AbXCOQH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422936AbXCOQLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422931AbXCOQH1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 12:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422936AbXCOQH0
+	id S1422936AbXCOQLO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 12:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422938AbXCOQLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 12:07:26 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:47760 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422931AbXCOQHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 12:07:24 -0400
-Date: Thu, 15 Mar 2007 19:14:42 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org, mingo@elte.hu,
-       tglx@linutronix.de, viro@zeniv.linux.org.uk, rusty@rustcorp.com.au
-Subject: [PATCH] Fix some kallsyms_lookup() vs rmmod races
-Message-ID: <20070315161442.GA6812@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Thu, 15 Mar 2007 12:11:14 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:46277 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422936AbXCOQLN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 12:11:13 -0400
+X-Originating-Ip: 74.108.131.3
+Date: Thu, 15 Mar 2007 12:08:22 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Kumar Gala <galak@kernel.crashing.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] PPC: Delete unused header file.
+In-Reply-To: <Pine.LNX.4.64.0703150955440.23053@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0703151205350.10198@localhost.localdomain>
+References: <Pine.LNX.4.64.0703101616060.27495@CPE00045a9c397f-CM001225dbafb6>
+ <Pine.LNX.4.64.0703150955440.23053@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_XP 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc'ing folks whose proc files are affected]
+On Thu, 15 Mar 2007, Kumar Gala wrote:
 
-kallsyms_lookup() can call module_address_lookup() which iterates over
-modules list without module_mutex taken. Comment at the top of
-module_address_lookup() says it's for oops resolution so races are
-irrelevant, but in some cases it's reachable from regular code:
+> On Sat, 10 Mar 2007, Robert P. J. Day wrote:
+>
+> >
+> >   Delete apparently unused header file
+> > arch/powerpc/platforms/83xx/mpc834x_itx.h.
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> >
+> > ---
+>
+> applied.
+>
+> In the future it would be helpful if you also copied the linuxppc-dev list
+> on ppc patches.
 
-BUG: unable to handle kernel paging request at virtual address f94fb19c
- printing eip:
-c0138097
-*pde = 33576067
-Oops: 0000 [#1]
-PREEMPT
-Modules linked in: ohci_hcd af_packet e1000 ehci_hcd uhci_hcd usbcore
-CPU:    0
-EIP:    0060:[<c0138097>]    Not tainted VLI
-EFLAGS: 00010246   (2.6.21-rc3-8b9909ded6922c33c221b105b26917780cfa497d #25)
-EIP is at module_address_lookup+0x43/0x24c
-eax: 00000000   ebx: 00000000   ecx: f94fb080   edx: f882e704
-esi: 00000000   edi: 00000000   ebp: 00000000   esp: d30b8e78
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process cat (pid: 13274, ti=d30b8000 task=d2b50af0 task.ti=d30b8000)
-Stack: d30b8f44 d30b8f48 00008001 00000000 c039a23c d30b8ec4 00000000 d30b8f44
-       d30b8f48 c013876c d30b8f4c 00000000 cf544000 fffffff4 d38ebb7c c01880ff
-       d30b8f4c d30b8ec4 00000246 c0399600 00000001 00000001 00000000 c0399654
-Call Trace:
- [<c013876c>] kallsyms_lookup+0x5e/0x7c
- [<c01880ff>] proc_pid_wchan+0x38/0x76
- [<c01404fe>] __alloc_pages+0x4f/0x2f9
- [<c01891c6>] proc_info_read+0x6f/0xa8
- [<c015bbfd>] sys_fstat64+0x1e/0x23
- [<c01592d4>] vfs_read+0x7d/0xb5
- [<c0189157>] proc_info_read+0x0/0xa8
- [<c0159621>] sys_read+0x41/0x6a
- [<c0103e72>] sysenter_past_esp+0x5f/0x99
- =======================
-Code: 04 8b 51 04 0f 18 02 90 81 3d 4c 8d 39 c0 4c 8d 39 c0 74 3f 8b b9 18 01 00 00 8b 99 10 01 00 00 39 eb 77 07 8d 04 3b 39 c5 72 32 <8b> b1 1c 01 00 00 8b 81 14 01 00 00 39 c5 72 06 01 f0 39 c5 72
-EIP: [<c0138097>] module_address_lookup+0x43/0x24c SS:ESP 0068:d30b8e78
+ok, but can you clarify the proper list of recipients for each patch?
+if the MAINTAINERS file lists one or more individual maintainers *and*
+one or more mailing lists, should *all* of them be CCed on a patch?
+what's the rule here?
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+rday
 
- fs/proc/base.c            |    7 +++++++
- kernel/time/timer_list.c  |    6 ++++++
- kernel/time/timer_stats.c |    6 ++++++
- mm/slab.c                 |    3 +++
- 4 files changed, 22 insertions(+)
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -61,6 +61,7 @@ #include <linux/seq_file.h>
- #include <linux/namei.h>
- #include <linux/mnt_namespace.h>
- #include <linux/mm.h>
-+#include <linux/module.h>
- #include <linux/smp_lock.h>
- #include <linux/rcupdate.h>
- #include <linux/kallsyms.h>
-@@ -282,7 +283,13 @@ static int proc_pid_wchan(struct task_st
- 
- 	wchan = get_wchan(task);
- 
-+	mutex_lock(&module_mutex);
- 	sym_name = kallsyms_lookup(wchan, &size, &offset, &modname, namebuf);
-+	/*
-+	 * size, offset, modname aren't used, sym_name is copied into namebuf,
-+	 * so drop it now.
-+	 */
-+	mutex_unlock(&module_mutex);
- 	if (sym_name)
- 		return sprintf(buffer, "%s", sym_name);
- 	return sprintf(buffer, "%lu", wchan);
---- a/kernel/time/timer_list.c
-+++ b/kernel/time/timer_list.c
-@@ -44,7 +44,13 @@ static void print_name_offset(struct seq
- 	const char *sym_name;
- 	char *modname;
- 
-+	mutex_lock(&module_mutex);
- 	sym_name = kallsyms_lookup(addr, &size, &offset, &modname, namebuf);
-+	/*
-+	 * size, offset, modname aren't used, sym_name is copied into namebuf,
-+	 * so drop it now.
-+	 */
-+	mutex_unlock(&module_mutex);
- 	if (sym_name)
- 		SEQ_printf(m, "%s", sym_name);
- 	else
---- a/kernel/time/timer_stats.c
-+++ b/kernel/time/timer_stats.c
-@@ -262,7 +262,13 @@ static void print_name_offset(struct seq
- 	const char *sym_name;
- 	char *modname;
- 
-+	mutex_lock(&module_mutex);
- 	sym_name = kallsyms_lookup(addr, &size, &offset, &modname, namebuf);
-+	/*
-+	 * size, offset, modname aren't used, sym_name is copied into namebuf,
-+	 * so drop it now.
-+	 */
-+	mutex_unlock(&module_mutex);
- 	if (sym_name)
- 		seq_printf(m, "%s", sym_name);
- 	else
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -4385,14 +4385,17 @@ #ifdef CONFIG_KALLSYMS
- 	unsigned long offset, size;
- 	char namebuf[KSYM_NAME_LEN+1];
- 
-+	mutex_lock(&module_mutex);
- 	name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
- 
- 	if (name) {
- 		seq_printf(m, "%s+%#lx/%#lx", name, offset, size);
- 		if (modname)
- 			seq_printf(m, " [%s]", modname);
-+		mutex_unlock(&module_mutex);
- 		return;
- 	}
-+	mutex_unlock(&module_mutex);
- #endif
- 	seq_printf(m, "%p", (void *)address);
- }
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
