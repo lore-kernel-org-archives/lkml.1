@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751322AbXCOVwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751446AbXCOVyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751322AbXCOVwj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 17:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbXCOVwj
+	id S1751446AbXCOVyt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 17:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbXCOVyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 17:52:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40010 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751322AbXCOVwi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 17:52:38 -0400
-Date: Thu, 15 Mar 2007 21:52:33 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Dmitriy Monakhov <dmonakhov@sw.ru>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, devel@openvz.org
-Subject: Re: [PATCH 1/2] mm: move common segment checks to separate helper function (v6)
-Message-ID: <20070315215233.GA3523@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Dmitriy Monakhov <dmonakhov@sw.ru>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Nick Piggin <npiggin@suse.de>, devel@openvz.org
-References: <878xe2rj0e.fsf@sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <878xe2rj0e.fsf@sw.ru>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 15 Mar 2007 17:54:49 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:46618 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751388AbXCOVys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 17:54:48 -0400
+Date: Thu, 15 Mar 2007 22:54:33 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+cc: Alan Stern <stern@rowland.harvard.edu>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [linux-usb-devel] USB Keyboard
+In-Reply-To: <Pine.LNX.4.61.0703151745360.5799@chaos.analogic.com>
+Message-ID: <Pine.LNX.4.64.0703152252560.12394@twin.jikos.cz>
+References: <Pine.LNX.4.44L0.0703151506010.2482-100000@iolanthe.rowland.org>
+ <Pine.LNX.4.61.0703151541430.4459@chaos.analogic.com>
+ <Pine.LNX.4.64.0703152236390.12394@twin.jikos.cz>
+ <Pine.LNX.4.61.0703151745360.5799@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Actually thinking about this a little more I don't think we should put
-this in.  Instead this loop should be moved up to fs/read_write.c because
-these are checks that we want for all filesystems/drivers that use
-vectored I/O.  We'll still need tiny loops to calculate the total
-I/O length for now in every method, but that will be gone as soon
-as we have our iodesc/uio/whatever structure.
+On Thu, 15 Mar 2007, linux-os (Dick Johnson) wrote:
+
+> Yes! I will try it in the morning. It's now past quitting time and, 
+> following this thread, you will note that the ohci module needed to be 
+> loaded for this AMD unit so the keyboard now works! I will remove the 
+
+Oh I see, looks like I have been deleted from CC in the middle of the 
+thread, so sorry for superfluous reply. However, the fact about usbkbd 
+still applies - it is almost certain that you don't want to use it, and 
+you'd better keep it unloaded.
+
+-- 
+Jiri Kosina
