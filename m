@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030622AbXCOQv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422959AbXCOQwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030622AbXCOQv5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 12:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030636AbXCOQv5
+	id S1422959AbXCOQwH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 12:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030636AbXCOQwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 12:51:57 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:40678 "EHLO
-	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030622AbXCOQv4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 12:51:56 -0400
-X-BigFish: VP
-X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
-Date: Thu, 15 Mar 2007 17:50:47 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: discuss@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [discuss] [PATCH] x86_64: fix cpu MHz reporting on
- constant_tsc cpus
-Message-ID: <20070315165047.GY21463@amd.com>
-References: <20070313100043.GC21463@amd.com>
- <200703150001.09390.ak@suse.de>
+	Thu, 15 Mar 2007 12:52:07 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:59392 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030603AbXCOQwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 12:52:05 -0400
+Date: Thu, 15 Mar 2007 09:51:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+cc: Alan Stern <stern@rowland.harvard.edu>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
+       gregkh@suse.de, Richard Purdie <rpurdie@rpsys.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+In-Reply-To: <Pine.LNX.4.64.0703151555240.26565@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0703150944250.3816@woody.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0703150953420.13086-100000@iolanthe.rowland.org>
+ <Pine.LNX.4.64.0703151555240.26565@blonde.wat.veritas.com>
 MIME-Version: 1.0
-In-Reply-To: <200703150001.09390.ak@suse.de>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 15 Mar 2007 16:51:35.0173 (UTC)
- FILETIME=[30FC2B50:01C76722]
-X-WSS-ID: 69E7A6102X02857864-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 12:01:09AM +0100, Andi Kleen wrote:
-> On Tuesday 13 March 2007 11:00, Joerg Roedel wrote:
-> > From: Mark Langsdorf <mark.langsdorf@amd.com>
-> > From: Joerg Roedel <joerg.roedel@amd.com>
-> > 
-> > This patch fixes the reporting of cpu_mhz in /proc/cpuinfo on CPUs with
-> > a constant TSC rate and a kernel with disabled cpufreq.
-> > 
-> > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > 
+
+
+On Thu, 15 Mar 2007, Hugh Dickins wrote:
 > 
-> +       cpu_khz = tsc_khz;
-> +       if (cpu_has(&boot_cpu_data, X86_FEATURE_CONSTANT_TSC) &&
-> +                       nmi_known_cpu()) {
-> +               cpu_khz = tsc_calibrate_cpu_khz(); 
-> +       }
->  
-> 
-> I don't think this will do the right thing on Intel CPUs of which tsc_calibrate_cpu_khz()
-> knows nothing about. 
+> sysfs_access_in_other_task() left me wondering what this "other" task
+> was, and what kind of "access" it's trying to get - or is the calling
+> task the other, and it's trying to access something it wouldn't
+> directly have access to?
 
-Yes. You are right. I will fix that and send a new version.  Thanks for
-the review.
+For naming clashes, I'd suggest:
 
-Joerg
+ - try to name according to *why* something is done, not necessarily what 
+   it does.
 
--- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
+   For example, is it really in "another task"? Maybe it's just an 
+   on-demand thread of the same task?  Do you actually care how the 
+   deferred work is done?
 
+ - avoid being vague. I agree with not liking the name much, and the 
+   "other" thing bothers me. Like Hugh, it makes me ask "_What_ other 
+   task?"
 
+So I would suggest not concentrating on some implementation issue, but on 
+the reason why you need it in the first place. Namely that you want to 
+defer the actual action to avoid deadlock due to recursive locking. So 
+that "why do I actually do this" thing implies something like 
+"sysfs_store_async()" or "sysfs_store_deferred()" or maybe actually 
+concentrate on the locking angle and say something like 
+"sysfs_store_needs_to_reacquire_lock()".
+
+(That last one wasn't really serious - it's too long and cumbersome, but 
+it's an example of not caring _how_ you do it, just abotu what you want 
+done).
+
+		Linus
