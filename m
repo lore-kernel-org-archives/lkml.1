@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422950AbXCOQYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422955AbXCOQ3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422950AbXCOQYm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 12:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422956AbXCOQYm
+	id S1422955AbXCOQ3I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 12:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422948AbXCOQ3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 12:24:42 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:58721 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422950AbXCOQYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 12:24:41 -0400
-Date: Thu, 15 Mar 2007 09:23:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Martin Bligh <mbligh@mbligh.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-In-Reply-To: <20070315160648.GA11812@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0703150919021.3816@woody.linux-foundation.org>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de>
- <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
- <45F96B57.10206@mbligh.org> <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org>
- <20070315160648.GA11812@one.firstfloor.org>
+	Thu, 15 Mar 2007 12:29:07 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:48585 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422955AbXCOQ3G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 12:29:06 -0400
+X-AuditID: d80ac287-9f7d7bb000000de9-04-45f974519ae7 
+Date: Thu, 15 Mar 2007 16:29:02 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
+       gregkh@suse.de, Richard Purdie <rpurdie@rpsys.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
+In-Reply-To: <Pine.LNX.4.44L0.0703150953420.13086-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.64.0703151555240.26565@blonde.wat.veritas.com>
+References: <Pine.LNX.4.44L0.0703150953420.13086-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 15 Mar 2007 16:29:04.0513 (UTC) FILETIME=[0BEDCF10:01C7671F]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 15 Mar 2007, Andi Kleen wrote:
-
-> > That's *exactly* what the patches do (except it's called "arch/x86", which 
-> > is clearly the best option - please don't use "ia" _anywhere_ except for 
-> > "ia64", since that's the only architecture that is really "intel 
-> > architecture").
+On Thu, 15 Mar 2007, Alan Stern wrote:
 > 
-> And i860 @)
+> Personally I don't understand what was wrong with my name.  What's weird 
+> or unintuitive about doing something in a different task's context?
 
-Yeah, well (and the i960).. I don't think it's very likely that we'll ever 
-support that in the kernel ;)
+The only thing wrong with sysfs_do_something_in_a_different_task_context()
+is the length of the name.  "do", that's good, much better than "access".
 
-(There are others. i432 is the really *classic* intel architecture. It was 
-such a spectacular failure that it's still remembered today, even though 
-it was never actually used).
+sysfs_access_in_other_task() left me wondering what this "other" task
+was, and what kind of "access" it's trying to get - or is the calling
+task the other, and it's trying to access something it wouldn't
+directly have access to?
 
-> Well I just see a lot of pain from these patches but I doubt 
-> they will avoid any bugs. If people don't compile test both
-> archs they will always likely break on another. There are lots
-> of subtle dependencies that are not expressed in the pathname
-> even after this intrusive operation (e.g. in the includes).
+> 
+> Dmitry's suggestion is slightly inappropriate because the function doesn't
+> take a workstruct as an argument and it isn't itself a workqueue callback.  
 
-Well, we'veliterally had bugs because people who modified i386 files 
-didn't even *realize* that they were also used on x86-64. 
+True, though since he's saying "work" rather than "workstruct",
+I was okay with that: it's a sysfs wrapper to schedule_work().
 
-I do agree that we'd need to look at do the same thing for include files, 
-for the same reason. 
+> 
+> Would people be happier with sysfs_schedule_callback() and
+> device_schedule_callback()?  At least the functions do take a callback 
+> pointer as an argument, even though they aren't callbacks themselves.
 
-			Linus
+A lot happier than with sysfs_access_in_other_task() -
+if you prefer this to Dmitry's, it's okay by me.
+
+Hugh
