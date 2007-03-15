@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751324AbXCOS1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbXCOSfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751324AbXCOS1F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 14:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXCOS1F
+	id S1751353AbXCOSfw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 14:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXCOSfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 14:27:05 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:29214 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbXCOS1C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 14:27:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=lHJw4BBotrikpDifDQQqP/TOdpisNxuuoPKLuwT/hlVyrti/mCh5YUzhfbY4DYDVuWCfFTVTlu1GObOy+nczPlr54tQwMlmtF7LkGxoPH5BhiG4V/BD6FxdGzJEd7Q7lq3DnrQeSOzaKMjj1lqjaF7u8xCq8OeYgOUwVT+bgv08=
-Date: Thu, 15 Mar 2007 21:26:53 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, devel@openvz.org, mingo@elte.hu,
-       tglx@linutronix.de, viro@zeniv.linux.org.uk, rusty@rustcorp.com.au
-Subject: Re: [PATCH] Fix some kallsyms_lookup() vs rmmod races
-Message-ID: <20070315182653.GA5333@martell.zuzino.mipt.ru>
-References: <20070315161442.GA6812@localhost.sw.ru> <45F97A27.4030002@grupopie.com>
+	Thu, 15 Mar 2007 14:35:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44197 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751353AbXCOSfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 14:35:51 -0400
+Message-ID: <45F991E5.1060001@redhat.com>
+Date: Thu, 15 Mar 2007 14:35:17 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F97A27.4030002@grupopie.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Valdis.Kletnieks@vt.edu
+CC: Andreas Mohr <andi@rhlx01.fht-esslingen.de>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173905741.8763.36.camel@kleikamp.austin.ibm.com>            <20070314213317.GA22234@rhlx01.hs-esslingen.de> <200703151737.l2FHb81d001600@turing-police.cc.vt.edu>
+In-Reply-To: <200703151737.l2FHb81d001600@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 04:53:59PM +0000, Paulo Marques wrote:
-> Alexey Dobriyan wrote:
-> >[cc'ing folks whose proc files are affected]
-> >
-> >kallsyms_lookup() can call module_address_lookup() which iterates over
-> >modules list without module_mutex taken. Comment at the top of
-> >module_address_lookup() says it's for oops resolution so races are
-> >irrelevant, but in some cases it's reachable from regular code:
->
-> So maybe we should just add a new parameter to "kallsyms_lookup" to
-> inform it if it is safe to take a mutex or not.
+Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 14 Mar 2007 22:33:17 BST, Andreas Mohr said:
+> 
+>> it'd seem we need some kind of state management here to figure out good
+>> intervals of when to call mark_page_accessed() *again* for this page. E.g.
+>> despite non-changing access patterns you could still call mark_page_accessed(
+> )
+>> every 32 calls or so to avoid expiry, but this would need extra helper
+>> variables.
+> 
+> What if you did something like
+> 
+> 	if (jiffies%32) {...
+> 
+> (Possibly scaling it so the low-order bits change).  No need to lock it, as
+> "right most of the time" is close enough.
 
-You have to drag "mod->name" out of kallsyms_lookup(), so if you drop
-module_mutex in it, you still have a bug.
+Bad idea.  That way you would only count page accesses if the
+phase of the moon^Wjiffie is just right.
 
-We can agree on kallsyms_lookup() or whatever other low-level function
-to copy everything into caller-supplied structure and not spreading
-module_mutex. module's name is 64 minus a little, so stack usage should
-be fine.
-
-> Spreading module_mutex everywhere doesn't seem like the right interface
-> for several reasons:
->
->  - new users of "kallsyms_lookup" might not be aware that they should
-> take module_mutex if it is safe
-
-Well, yes.
-
->  - many times we will be taking module_mutex even when we are fetching
-> a kernel symbol that shouldn't require the mutex at all
->
->  - it just creates new dependencies (hint: this patch shouldn't even
-> compile with current git since module_mutex is not declared in module.h,
-
-Yeah, I remembered about it only in subway :).
-
-This patch is techically dependent on http://lkml.org/lkml/2007/3/14/128 aka
-[PATCH v2] Race between cat /proc/kallsyms and rmmod
-
-> not to mention compile when CONFIG_MODULES not set)
-
-OK, I'll fix it.
-
-> IMHO we should not expose module_mutex outside of module.c. That is just
-> wrong from an encapsulation point of view.
-
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
