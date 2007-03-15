@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965547AbXCOMpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXCOMrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965547AbXCOMpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 08:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXCOMpd
+	id S965550AbXCOMrF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 08:47:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965558AbXCOMrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 08:45:33 -0400
-Received: from mail.suse.de ([195.135.220.2]:50222 "EHLO mx1.suse.de"
+	Thu, 15 Mar 2007 08:47:05 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:48559 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965547AbXCOMpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 08:45:32 -0400
-Date: Thu, 15 Mar 2007 13:45:31 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [patch 1/2] splice: dont steal
-Message-ID: <20070315124531.GD8321@wotan.suse.de>
-References: <20070314121440.GA926@wotan.suse.de> <20070315115237.GM15400@kernel.dk> <20070315122207.GA8321@wotan.suse.de> <20070315122723.GQ15400@kernel.dk>
+	id S965550AbXCOMrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 08:47:02 -0400
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Ashif Harji <asharji@cs.uwaterloo.ca>
+Cc: Xiaoning Ding <dingxn@cse.ohio-state.edu>,
+       Andreas Mohr <andi@rhlx01.fht-esslingen.de>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <Pine.GSO.4.64.0703150045550.18191@cpu102.cs.uwaterloo.ca>
+References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca>
+	 <Pine.GSO.4.64.0703150045550.18191@cpu102.cs.uwaterloo.ca>
+Content-Type: text/plain
+Date: Thu, 15 Mar 2007 07:46:56 -0500
+Message-Id: <1173962816.14380.8.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070315122723.GQ15400@kernel.dk>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 01:27:23PM +0100, Jens Axboe wrote:
-> On Thu, Mar 15 2007, Nick Piggin wrote:
-> > 
-> > We should be able to allow for it with the new a_ops API I'm working
-> > on.
-> 
-> "Should be" and in progress stuff, is it guarenteed to get there?
+On Thu, 2007-03-15 at 01:22 -0400, Ashif Harji wrote:
 
-Well considering that it is needed in order to solve 3 different deadlock
-scenarios in the core write(2) path without taking a big performance hit,
-I'd hope so ;)
+> I would tend to agree with David that:  "Any application doing many 
+> tiny-sized reads isn't exactly asking for great performance."  As well, 
+> applications concerned with performance and caching problems can read in a 
+> file in PAGE_SIZE chunks.  I still think the simple fix of removing the 
+> condition is the best approach, but I'm certainly open to alternatives.
 
-It isn't guaranteed, but I have only had positive feedback so far. Would
-take a while to actually get merged, though.
+A possible alternative might be to store the offset within the page in
+the readahead state, and call mark_page_accessed() when the read offset
+is less than or equal to the previous offset.
 
-Nick
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
