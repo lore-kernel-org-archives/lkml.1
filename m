@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422936AbXCOQLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422940AbXCOQMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422936AbXCOQLO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 12:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422938AbXCOQLO
+	id S1422940AbXCOQMN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 12:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422941AbXCOQMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 12:11:14 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:46277 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422936AbXCOQLN (ORCPT
+	Thu, 15 Mar 2007 12:12:13 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35063 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422940AbXCOQMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 12:11:13 -0400
-X-Originating-Ip: 74.108.131.3
-Date: Thu, 15 Mar 2007 12:08:22 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Kumar Gala <galak@kernel.crashing.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] PPC: Delete unused header file.
-In-Reply-To: <Pine.LNX.4.64.0703150955440.23053@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0703151205350.10198@localhost.localdomain>
-References: <Pine.LNX.4.64.0703101616060.27495@CPE00045a9c397f-CM001225dbafb6>
- <Pine.LNX.4.64.0703150955440.23053@localhost.localdomain>
+	Thu, 15 Mar 2007 12:12:12 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Dave Jones <davej@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
+References: <20070313040828.GA17893@redhat.com>
+	<200703131022.54322.rjw@sisk.pl> <20070313132218.GA25910@redhat.com>
+Date: Thu, 15 Mar 2007 10:11:01 -0600
+In-Reply-To: <20070313132218.GA25910@redhat.com> (Dave Jones's message of
+	"Tue, 13 Mar 2007 09:22:18 -0400")
+Message-ID: <m1d53apjvu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, TW_XP 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, Kumar Gala wrote:
+Dave Jones <davej@redhat.com> writes:
 
-> On Sat, 10 Mar 2007, Robert P. J. Day wrote:
+> On Tue, Mar 13, 2007 at 10:22:53AM +0100, Rafael J. Wysocki wrote:
+>  > On Tuesday, 13 March 2007 05:08, Dave Jones wrote:
+>  > > I spent considerable time over the last day or so bisecting to
+>  > > find out why an X60 stopped resuming somewhen between 2.6.20 and current
+> -git.
+>  > > (Total lockup, black screen of death).
+>  > 
+>  > Do you have CONFIG_TICK_ONESHOT or CONFIG_NO_HZ set?  If you do, could you
+>  > please unset them and retest?
 >
-> >
-> >   Delete apparently unused header file
-> > arch/powerpc/platforms/83xx/mpc834x_itx.h.
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> >
-> > ---
->
-> applied.
->
-> In the future it would be helpful if you also copied the linuxppc-dev list
-> on ppc patches.
+> I did try with NO_HZ unset, made no difference, I don't recall TICK_ONESHOT.
+> I'm in meetings all day, but I'll check when I get home.
 
-ok, but can you clarify the proper list of recipients for each patch?
-if the MAINTAINERS file lists one or more individual maintainers *and*
-one or more mailing lists, should *all* of them be CCed on a patch?
-what's the rule here?
+I haven't heard anything more on this thread.
 
-rday
+I just wanted to double check.  The tree that failed did it include
+commits: 
+392ee1e6dd901db6c4504617476f6442ed91f72d and
+9f35575dfc172f0a93fb464761883c8f49599b7a
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Mostly I was wondering if any of my later work to sort out msi 
+suspend/resume actually solved anything.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Eric
