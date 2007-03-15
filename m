@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422940AbXCOQMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422943AbXCOQYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422940AbXCOQMN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 12:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422941AbXCOQMN
+	id S1422943AbXCOQYG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 12:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422948AbXCOQYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 12:12:13 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35063 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422940AbXCOQMM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 12:12:12 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Dave Jones <davej@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Thu, 15 Mar 2007 12:24:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33464 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422943AbXCOQYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 12:24:02 -0400
+Subject: Re: [patch 2/5] fs: introduce new aops and infrastructure
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
-References: <20070313040828.GA17893@redhat.com>
-	<200703131022.54322.rjw@sisk.pl> <20070313132218.GA25910@redhat.com>
-Date: Thu, 15 Mar 2007 10:11:01 -0600
-In-Reply-To: <20070313132218.GA25910@redhat.com> (Dave Jones's message of
-	"Tue, 13 Mar 2007 09:22:18 -0400")
-Message-ID: <m1d53apjvu.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+In-Reply-To: <20070315043642.GF15069@wotan.suse.de>
+References: <20070314112529.13798.35417.sendpatchset@linux.site>
+	 <20070314112540.13798.97719.sendpatchset@linux.site>
+	 <20070315041329.GB21942@ca-server1.us.oracle.com>
+	 <20070315043642.GF15069@wotan.suse.de>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd
+Date: Thu, 15 Mar 2007 16:24:27 +0000
+Message-Id: <1173975867.32601.96.camel@quoit.chygwyn.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones <davej@redhat.com> writes:
+Hi,
 
-> On Tue, Mar 13, 2007 at 10:22:53AM +0100, Rafael J. Wysocki wrote:
->  > On Tuesday, 13 March 2007 05:08, Dave Jones wrote:
->  > > I spent considerable time over the last day or so bisecting to
->  > > find out why an X60 stopped resuming somewhen between 2.6.20 and current
-> -git.
->  > > (Total lockup, black screen of death).
->  > 
->  > Do you have CONFIG_TICK_ONESHOT or CONFIG_NO_HZ set?  If you do, could you
->  > please unset them and retest?
->
-> I did try with NO_HZ unset, made no difference, I don't recall TICK_ONESHOT.
-> I'm in meetings all day, but I'll check when I get home.
+On Thu, 2007-03-15 at 05:36 +0100, Nick Piggin wrote:
+> On Wed, Mar 14, 2007 at 09:13:29PM -0700, Mark Fasheh wrote:
+[some comments snipped]
+> > Attached is a quick patch to hook up the existing ocfs2 write code. This has
+> > been compile tested only for now - one of my test machines isn't
+> > cooperating, so a runtime test will have to wait until tommorrow.
+> > 
+> > One interesting side effect is that we no longer pass AOP_TRUNCATE_PAGE up a
+> > level. This gives callers less to deal with. And it means that ocfs2 doesn't
+> > have to use the ocfs2_*_lock_with_page() cluster lock variants in
+> > ocfs2_block_write_begin() because it can order cluster locks outside of the
+> > page lock there.
+> 
+> OK that's very cool. I was hoping that would be the case. If GFS2 can
+> avoid that too, then we might be able to get rid of AOP_TRUNCATE_PAGE
+> handling from the legacy prepare/commit_write paths, which will make
+> them simpler.
+> 
+Yes, I agree that with the new operations GFS2 should also no longer
+need AOP_TRUNCATE_PAGE for writes,
 
-I haven't heard anything more on this thread.
+Steve.
 
-I just wanted to double check.  The tree that failed did it include
-commits: 
-392ee1e6dd901db6c4504617476f6442ed91f72d and
-9f35575dfc172f0a93fb464761883c8f49599b7a
 
-Mostly I was wondering if any of my later work to sort out msi 
-suspend/resume actually solved anything.
-
-Eric
