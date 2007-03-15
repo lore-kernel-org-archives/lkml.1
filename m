@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422820AbXCOFxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422827AbXCOGGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422820AbXCOFxd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 01:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXCOFxd
+	id S1422827AbXCOGGn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 02:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422829AbXCOGGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 01:53:33 -0400
-Received: from imx9.toshiba.co.jp ([202.33.96.51]:53288 "EHLO
-	imx9.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422820AbXCOFxc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 01:53:32 -0400
-X-Greylist: delayed 1544 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Mar 2007 01:53:32 EDT
-Message-Id: <200703150523.l2F5Ne5i017704@toshiba.co.jp>
+	Thu, 15 Mar 2007 02:06:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:56875 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422827AbXCOGGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 02:06:42 -0400
+Message-ID: <45F8E272.2030903@goop.org>
+Date: Wed, 14 Mar 2007 23:06:42 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Date: Thu, 15 Mar 2007 14:25:40 +0900
-X-Mailer: Denshin 8 Go V32.1.4.5
-X-My-Real-Login-Name: a_iguchi; 133.114.92.20
-From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: (Your message of "Wed, 14 Mar 2007 09:16:34 +0000")
-  <E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk>
-References: <E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk>
-Subject: Re: [PATCH 10/13] BLK_DEV_IDE_CELLEB dependency fix
+To: Andi Kleen <ak@suse.de>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Clean up ELF note generation
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al wrote:
->
->It's bool and it depends on IDE => should depend on IDE=y
->
->Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Three cleanups:
 
-Move to "if BLK_DEV_IDEDMA_PCI" block because it depends on 
-BLK_DEV_IDEDMA_PCI.
+1: ELF notes are never mapped, so there's no need to have any access
+flags in their phdr.
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+2: When generating them from asm, tell the assembler to use a SHT_NOTE
+section type.  There doesn't seem to be a way to do this from C.
+
+3: Use ANSI rather than traditional cpp behaviour to stringify the
+macro argument.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+
 ---
+ arch/i386/kernel/vmlinux.lds.S    |    2 +-
+ include/asm-generic/vmlinux.lds.h |    2 +-
+ include/linux/elfnote.h           |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff -Nrpu -X linux-2.6.21-rc3/Documentation/dontdiff linux-2.6.21-rc3/drivers/ide/Kconfig linux-2.6.21-rc3.mod/drivers/ide/Kconfig
---- linux-2.6.21-rc3/drivers/ide/Kconfig	2007-03-07 13:41:20.000000000 +0900
-+++ linux-2.6.21-rc3.mod/drivers/ide/Kconfig	2007-03-15 22:47:14.000000000 +0900
-@@ -769,6 +769,14 @@ config BLK_DEV_TC86C001
- 	help
- 	This driver adds support for Toshiba TC86C001 GOKU-S chip.
+===================================================================
+--- a/arch/i386/kernel/vmlinux.lds.S
++++ b/arch/i386/kernel/vmlinux.lds.S
+@@ -34,7 +34,7 @@ PHDRS {
+ PHDRS {
+ 	text PT_LOAD FLAGS(5);	/* R_E */
+ 	data PT_LOAD FLAGS(7);	/* RWE */
+-	note PT_NOTE FLAGS(4);	/* R__ */
++	note PT_NOTE FLAGS(0);	/* ___ */
+ }
+ SECTIONS
+ {
+===================================================================
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -208,7 +208,7 @@
+ 	}
  
-+config BLK_DEV_IDE_CELLEB
-+	bool "Toshiba's Cell Reference Set IDE support"
-+	depends on PPC_CELLEB
-+	help
-+	  This driver provides support for the built-in IDE controller on
-+	  Toshiba Cell Reference Board.
-+	  If unsure, say Y.
-+
- endif
+ #define NOTES								\
+-		.notes : { *(.note.*) } :note
++	.notes : { *(.note.*) } :note
  
- config BLK_DEV_IDE_PMAC
-@@ -800,14 +808,6 @@ config BLK_DEV_IDEDMA_PMAC
- 	  to transfer data to and from memory.  Saying Y is safe and improves
- 	  performance.
- 
--config BLK_DEV_IDE_CELLEB
--	bool "Toshiba's Cell Reference Set IDE support"
--	depends on PPC_CELLEB
--	help
--	  This driver provides support for the built-in IDE controller on
--	  Toshiba Cell Reference Board.
--	  If unsure, say Y.
--
- config BLK_DEV_IDE_SWARM
- 	tristate "IDE for Sibyte evaluation boards"
- 	depends on SIBYTE_SB1xxx_SOC
+ #define INITCALLS							\
+   	*(.initcall0.init)						\
+===================================================================
+--- a/include/linux/elfnote.h
++++ b/include/linux/elfnote.h
+@@ -39,12 +39,12 @@
+  *      ELFNOTE(XYZCo, 12, .long, 0xdeadbeef)
+  */
+ #define ELFNOTE(name, type, desctype, descdata)	\
+-.pushsection .note.name			;	\
++.pushsection .note.name, "",@note	;	\
+   .align 4				;	\
+   .long 2f - 1f		/* namesz */	;	\
+   .long 4f - 3f		/* descsz */	;	\
+   .long type				;	\
+-1:.asciz "name"				;	\
++1:.asciz #name				;	\
+ 2:.align 4				;	\
+ 3:desctype descdata			;	\
+ 4:.align 4				;	\
+
 
