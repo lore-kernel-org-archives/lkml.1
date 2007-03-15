@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933208AbXCOTpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933439AbXCOTst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933208AbXCOTpY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 15:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933233AbXCOTpY
+	id S933439AbXCOTst (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 15:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933259AbXCOTst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 15:45:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:44234 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933208AbXCOTpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 15:45:23 -0400
-Message-ID: <45F9A250.7040409@goop.org>
-Date: Thu, 15 Mar 2007 12:45:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 15 Mar 2007 15:48:49 -0400
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:46009 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933233AbXCOTsr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 15:48:47 -0400
+X-Sasl-enc: yqdtimQGDB0LupCzK85RZSDP5k0DWpbsour2y/58beyy 1173988124
+Date: Thu, 15 Mar 2007 16:48:40 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: linux-acpi@vger.kernel.org, Chris Wedgwood <cw@f00f.org>,
+       ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [ibm-acpi-devel] [PATCH] ACPI: ibm-acpi: allow module to load when acpi notifiers can't be set
+Message-ID: <20070315194840.GF14394@khazad-dum.debian.net>
+References: <20070315071019.GA22613@tuatara.stupidest.org> <20070315175113.GA6596@khazad-dum.debian.net> <20070315122654.468bdd39.kristen.c.accardi@intel.com>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
-References: <20070313040828.GA17893@redhat.com> <200703131022.54322.rjw@sisk.pl> <20070313132218.GA25910@redhat.com> <m1d53apjvu.fsf@ebiederm.dsl.xmission.com> <20070315181059.GA1644@redhat.com>
-In-Reply-To: <20070315181059.GA1644@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070315122654.468bdd39.kristen.c.accardi@intel.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> I just did a build of top of tree, including those commits, and
-> it's still broken.  Booting with pci=nomsi no longer 'fixes' it
-> though, which may indicate that the MSI changes were a red herring.
-> (Or that the subsequent changes have regressed it even more,
->  which seems unlikely looking at the changes).
->   
+On Thu, 15 Mar 2007, Kristen Carlson Accardi wrote:
+> this patch gives me the following compile error:
+> 
+> drivers/acpi/ibm_acpi.c: In function ???ibm_init???:
+> drivers/acpi/ibm_acpi.c:2605: warning: implicit declaration of function ???ibm_exit???
+> drivers/acpi/ibm_acpi.c: At top level:
+> drivers/acpi/ibm_acpi.c:2616: warning: conflicting types for ???ibm_exit???
+> drivers/acpi/ibm_acpi.c:2616: error: static declaration of ???ibm_exit??? follows non-static declaration
+> drivers/acpi/ibm_acpi.c:2605: error: previous implicit declaration of ???ibm_exit??? was here
 
-I just found the same thing on my X60.  Current top-of-tree with
-pci=nomsi does not improve things.  When it resumes, the CPU is working
-(capslock toggles, sysreq-b reboots), but the screen is blank.
+Fixed in v2.  I developed it against acpi-test, which has a header file that
+prototypes ibm_exit, and sent it before it finished compiling on 2.6.21.
+Drat, that teaches me about not waiting for these things...
 
-I was about to try 2.6.21-rc3-mm2; I'll see if that's any different.
-
-    J
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
