@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422900AbXCOPas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422903AbXCOPbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422900AbXCOPas (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 11:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422901AbXCOPar
+	id S1422903AbXCOPbH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 11:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422905AbXCOPbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 11:30:47 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:5565 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422900AbXCOPar (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 11:30:47 -0400
-Date: Thu, 15 Mar 2007 16:32:27 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Oliver Neukum <oneukum@suse.de>, Maneesh Soni <maneesh@in.ibm.com>,
-       <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc suspend regression: sysfs deadlock
-Message-ID: <20070315163227.230774da@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0703150953420.13086-100000@iolanthe.rowland.org>
-References: <20070315112725.7eadb7b7@gondolin.boeblingen.de.ibm.com>
-	<Pine.LNX.4.44L0.0703150953420.13086-100000@iolanthe.rowland.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Mar 2007 11:31:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39297 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422903AbXCOPbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 11:31:05 -0400
+Message-ID: <45F966B4.8070607@redhat.com>
+Date: Thu, 15 Mar 2007 11:31:00 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Leroy van Logchem <leroy.vanlogchem@wldelft.nl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [Bug 8040] Hang before INIT when CONFIG_HIGHMEM4G=y [Fix CONFIG_COMPAT_VDSO]
+ <- Bad
+References: <200703141013.l2EADP6c027144@fire-2.osdl.org>  <20070314041710.770708c4.akpm@linux-foundation.org> <6bffcb0e0703140430i2202f14dw1681d5c70c1d4e28@mail.gmail.com> <loom.20070314T131349-236@post.gmane.org> <loom.20070314T184515-284@post.gmane.org>
+In-Reply-To: <loom.20070314T184515-284@post.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007 10:27:19 -0400 (EDT),
-Alan Stern <stern@rowland.harvard.edu> wrote:
+Leroy van Logchem wrote:
+> 
+> Bisecting went well, after 13 compiles this commit was found:
+> 
+> a1f3bb9ae4497a2ed3eac773fd7798ac33a0371f is first bad commit
+> commit a1f3bb9ae4497a2ed3eac773fd7798ac33a0371f
+> Author: Roland McGrath <roland@redhat.com>
+> Date:   Fri Jan 26 00:56:46 2007 -0800
+> 
+>     [PATCH] Fix CONFIG_COMPAT_VDSO
+>     
 
-> Fair enough.  One use of "delay" is in a comment you wrote; I'll change it 
-> as well.
+So you do have CONFIG_COMPAT_VDSO in your config, then?
 
-Fine with me.
-
-> Would people be happier with sysfs_schedule_callback() and
-> device_schedule_callback()?  At least the functions do take a callback 
-> pointer as an argument, even though they aren't callbacks themselves.
-
-Count one happy person here.
