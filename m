@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422975AbXCOWgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422977AbXCOWhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422975AbXCOWgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 18:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422977AbXCOWgY
+	id S1422977AbXCOWhr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 18:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422981AbXCOWhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 18:36:24 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:43768 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422975AbXCOWgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 18:36:22 -0400
-Date: Thu, 15 Mar 2007 15:36:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Hugh Dickins <hugh@veritas.com>, Dan Aloni <da-x@monatomic.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: thread stacks and strict vm overcommit accounting
-Message-Id: <20070315153613.3d2eaf10.akpm@linux-foundation.org>
-In-Reply-To: <20070315233343.662b019c@lxorguk.ukuu.org.uk>
-References: <20070313163320.GA28104@localdomain>
-	<20070315110621.9a9defaf.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0703152021130.21129@blonde.wat.veritas.com>
-	<20070315233343.662b019c@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Mar 2007 18:37:47 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:34726 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422977AbXCOWhp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 18:37:45 -0400
+Message-ID: <45F9CAB0.2000305@in.ibm.com>
+Date: Fri, 16 Mar 2007 04:07:36 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: rdunlap@xenotime.net, jlan@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: taskstats accounting info
+References: <Pine.LNX.4.58.0703140503250.28169@shark.he.net> <45F7E818.7010608@in.ibm.com> <20070315110655.5a815f2e.akpm@linux-foundation.org>
+In-Reply-To: <20070315110655.5a815f2e.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007 23:33:43 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > Stack RSS should certainly be included in Committed_AS,
-> > but RLIMIT_STACK merely limits how big the stack vma may grow to:
-> > at any moment the stack vma is probably very much smaller,
-> > and only its current size is accounted in Committed_AS.
+Andrew Morton wrote:
+>> On Wed, 14 Mar 2007 17:48:32 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
+>> Randy.Dunlap wrote:
+>>> Hi,
+>>>
+>>> Documentation/accounting/delay-accounting.txt says that the
+>>> getdelays program has a "-c cmd" argument, but that option
+>>> does not seem to exist in Documentation/account/getdelays.c.
+>>>
+>>> Do you have an updated version of getdelays.c?
+>>> If not, please correct that documentation.
+>>>
+>> Yes, I did, but then I changed my laptop. I should have it archived
+>> at some place, I'll dig it out or correct the documentation.
+>>
+>>> Is getdelays.c the best available example of a program
+>>> using the taskstats netlink interface?
+>>>
+>> It's the most portable example, since it does not depend on libnl.
 > 
-> With a typical size as a fuzz factor preaccounted in later kernels.
+> err, what is libnl?
 
-Where's that done?
+libnl is a library abstraction for netlink (libnetlink).
 
-> > > > Is this the intended behaviour?
-> > > 
-> > > That sounds like a bug to me.
-> > 
-> > I'm suspecting it's an oddity rather than a bug.
 > 
-> It is intended behaviour.
+> If there exists some real userspace infrastructure which utilises
+> taskstats, can we please get a referece to it into the kernel
+> Documentation?  Perhaps in the TASKSTATS Kconfig entry, thanks.
+> 
 
-Each instance of
+That sounds like a good idea. I'll check for details and get back.
 
-main()
-{
-	sleep(100);
-}
-
-appears to increase Committed_AS by around 200kb.  But we've committed to
-providing it with 8MB for stack.
-
-How come this is correct?
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
