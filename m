@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422879AbXCOPG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422888AbXCOPQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422879AbXCOPG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 11:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422881AbXCOPG5
+	id S1422888AbXCOPQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 11:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422889AbXCOPQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 11:06:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52689 "EHLO mx1.redhat.com"
+	Thu, 15 Mar 2007 11:16:58 -0400
+Received: from mail.kroah.org ([69.55.234.183]:55156 "EHLO perch.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422879AbXCOPG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 11:06:57 -0400
-Message-ID: <45F960D9.1020609@redhat.com>
-Date: Thu, 15 Mar 2007 11:06:01 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	id S1422888AbXCOPQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 11:16:57 -0400
+Date: Thu, 15 Mar 2007 07:54:14 -0700
+From: Greg KH <greg@kroah.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: kref refcounting breakage in mainline
+Message-ID: <20070315145414.GA18542@kroah.com>
+References: <20070302005833.949be737.akpm@linux-foundation.org> <20070306002521.GA12164@kroah.com> <1173159802.6955.6.camel@Homer.simpson.net> <20070306210445.GB29164@kroah.com> <1173245937.6613.26.camel@Homer.simpson.net> <1173541446.6561.32.camel@Homer.simpson.net> <20070315052724.GA12576@kroah.com> <1173945187.6624.14.camel@Homer.simpson.net> <20070315080639.GA14641@kroah.com> <1173953960.6624.45.camel@Homer.simpson.net>
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ashif Harji <asharji@cs.uwaterloo.ca>, linux-mm@kvack.org,
-       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
-References: <Pine.GSO.4.64.0703081612290.1080@cpu102.cs.uwaterloo.ca> <20070312142012.GH30777@atrey.karlin.mff.cuni.cz> <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <1173955154.25356.28.camel@twins> <20070315123859.GC8321@wotan.suse.de>
-In-Reply-To: <20070315123859.GC8321@wotan.suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1173947546.6624.29.camel@Homer.simpson.net> <1173953960.6624.45.camel@Homer.simpson.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Thu, Mar 15, 2007 at 11:39:14AM +0100, Peter Zijlstra wrote:
->> On Wed, 2007-03-14 at 15:58 -0400, Ashif Harji wrote:
->>> This patch unconditionally calls mark_page_accessed to prevent pages, 
->>> especially for small files, from being evicted from the page cache despite 
->>> frequent access.
->> Since we're hackling over the use-once stuff again...
->>
->> /me brings up: http://marc.info/?l=linux-mm&m=115316894804385&w=2 and
->> ducks.
+On Thu, Mar 15, 2007 at 11:19:20AM +0100, Mike Galbraith wrote:
+> On Thu, 2007-03-15 at 01:06 -0700, Greg KH wrote:
 > 
-> Join the club ;) 
+> > That's good.  But why don't we have a module name for this driver?
+> > 
+> > And if we don't have a module name, why would there be a symlink to
+> > remove?  That's what is keeping your module from unloading, right?
 > 
-> http://groups.google.com.au/group/linux.kernel/msg/7b3237b8e715475b?hl=en&
+> You keep saying "module", and that's making me a bit nervous ;-)
 > 
-> I can't find the patch where I actually did combine it with a PG_usedonce
-> bit, but the end result is pretty similar to your patch.
+> Just to be sure we're not talking past each other, when you say module,
+> don't mean the modprobe kind... i hope.  This "module" as in driver is
+> compiled in.  (said that before, but you may have missed it)
 
-Except for the bit where vmscan throws away page cache pages
-with PageReferenced set, unless they are mapped :)
+Ahh, that changes everything here, thanks for letting me know, I had
+missed this.
 
-Also, pages that only got accessed once will have the referenced
-bit set too, so your patch gives no way to distinguish between
-pages that were accessed once and pages that were accessed multiple
-times.
+The problem is that the module_init() is failing, yet this isn't really
+a module, it's built into the kernel.  So some of the module teardown
+logic is dieing when it thinks that we really have a full module
+structure here (owner and such).
 
-> And I think one
-> or two others have also independently invented the same thing.
-> 
-> So it *has* to be good, doesn't it? ;)
+I'll look at this further tomorrow, as I'm travelling pretty much all
+day today, sorry.
 
-No argument there :)
+thanks,
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+greg k-h
