@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbXCOTIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbXCOTIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932649AbXCOTIF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 15:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932750AbXCOTIE
+	id S1753350AbXCOTIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 15:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbXCOTIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 15:08:04 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:52629 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932722AbXCOTHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 15:07:33 -0400
-Date: Thu, 15 Mar 2007 15:07:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-cc: Jiri Kosina <jikos@jikos.cz>, Linux kernel <linux-kernel@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] USB Keyboard
-In-Reply-To: <Pine.LNX.4.61.0703151413160.4212@chaos.analogic.com>
-Message-ID: <Pine.LNX.4.44L0.0703151506010.2482-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Mar 2007 15:08:43 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:36736 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753350AbXCOTIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 15:08:24 -0400
+Date: Thu, 15 Mar 2007 11:07:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pierre.Peiffer@bull.net
+Cc: mingo@elte.hu, drepper@redhat.com, linux-kernel@vger.kernel.org,
+       jean-pierre.dion@bull.net, pierre.peiffer@bull.net
+Subject: Re: [PATCH 2.6.21-rc3-mm2 4/4] sys_futex64 : allows 64bit futexes
+Message-Id: <20070315110752.f1df4509.akpm@linux-foundation.org>
+In-Reply-To: <20070313095549.813330645@bull.net>
+References: <20070313095203.154246923@bull.net>
+	<20070313095549.813330645@bull.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, linux-os (Dick Johnson) wrote:
+> On Tue, 13 Mar 2007 10:52:07 +0100 Pierre.Peiffer@bull.net wrote:
+> This last patch is an adaptation of the sys_futex64 syscall provided in -rt
+> patch (originally written by Ingo). It allows the use of 64bit futex.
+> 
+> I have re-worked most of the code to avoid the duplication of the code.
+> 
+> It does not provide the functionality for all architectures (only for x64 for now).
 
-> >> Ouch!  I can't do anything by copy from a screen! There is no way to get
-> >> `dmesg` without the keyboard! That's why I sent a request to
-> >> linux-kernel, hoping that the problem would sound familiar. All I can do
-> >> is boot the system (off a CD-ROM) and then pull the plug when the
-> >> keyboad doesn't work!
+What a lot of code.
 
-Can you get the live-CD to initialize a network interface via DHCP and 
-then log in remotely?
-
-Alan Stern
-
+Why do we want 64-bit futexes?
