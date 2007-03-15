@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbXCOAOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964855AbXCOAOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964840AbXCOAOK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Mar 2007 20:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXCOAOK
+	id S964855AbXCOAOa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Mar 2007 20:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXCOAOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Mar 2007 20:14:10 -0400
-Received: from ns2.suse.de ([195.135.220.15]:53085 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964840AbXCOAOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Mar 2007 20:14:08 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Leroy van Logchem <leroy.vanlogchem@wldelft.nl>
-Subject: Re: [Bug 8040] Hang before INIT when CONFIG_HIGHMEM4G=y [Fix CONFIG_COMPAT_VDSO] <- Bad
-Date: Thu, 15 Mar 2007 01:13:53 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200703141013.l2EADP6c027144@fire-2.osdl.org> <loom.20070314T184515-284@post.gmane.org> <20070314170113.9c3c75c7.akpm@linux-foundation.org>
-In-Reply-To: <20070314170113.9c3c75c7.akpm@linux-foundation.org>
+	Wed, 14 Mar 2007 20:14:30 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:42328 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964855AbXCOAO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Mar 2007 20:14:29 -0400
+Message-ID: <45F88FC8.10202@s5r6.in-berlin.de>
+Date: Thu, 15 Mar 2007 01:14:00 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Adrian Bunk <bunk@stusta.de>
+CC: =?ISO-8859-1?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>,
+       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       Greg KH <greg@kroah.com>
+Subject: Re: oops in __nodemgr_remove_host_dev (was Re: Ooops with suspend
+ to RAM)
+References: <200703140642.28390.ismail@pardus.org.tr> <200703141858.39531.ismail@pardus.org.tr> <45F83E14.3060003@s5r6.in-berlin.de> <200703150051.29945.ismail@pardus.org.tr> <45F88E8B.90403@s5r6.in-berlin.de>
+In-Reply-To: <45F88E8B.90403@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703150113.53212.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 March 2007 02:01, Andrew Morton wrote:
-> > On Wed, 14 Mar 2007 17:52:01 +0000 (UTC) Leroy van Logchem <leroy.vanlogchem@wldelft.nl> wrote:
-> > Leroy van Logchem <leroy.vanlogchem <at> wldelft.nl> writes:
-> > 
+I wrote:
+> according to a quick test I made right now it is a regression post 2.6.20.
+> # modprobe ohci1394   # wait a bit, eth1394 is auto-loaded
+> # modprobe -r eth1394
+> # modprobe -r ohci1394
+> works.
+> # modprobe ohci1394   # wait a bit, eth1394 is auto-loaded
+> # modprobe -r ohci1394
+> oopses with the same trace as Ismael posted. And indeed, looking at his
+> trace once more I now also spot eth1394 among his linked-in modules.
 
-Where does it hang exactly? Do you have a boot log?
-
-> > > > > None whatsoever.  Three people are reporting this and it's a drop-dead
-> > > > > showstopper for a 2.6.21 release so we just have to wait until someone
-> > > > > wakes up and thinks about it.
-> > > 
-> > > The topic should be "when CONFIG_HIGHMEM64G=y" imo.
-> > > 
-> > > I'll try to do my first bi-sect today.
-> 
-> Thanks.   Please always do reply-to-all.  Cc's restored (and added..)
-> 
-> > Bisecting went well, after 13 compiles this commit was found:
-> > 
-> > a1f3bb9ae4497a2ed3eac773fd7798ac33a0371f is first bad commit
-> > commit a1f3bb9ae4497a2ed3eac773fd7798ac33a0371f
-> > Author: Roland McGrath <roland@redhat.com>
-> > Date:   Fri Jan 26 00:56:46 2007 -0800
-
-Can you please double check this by trying with/without again -- sometimes bisects go bad.
-
--Andi
+To avoid any misunderstandings: Both the former and the latter sequence
+work under 2.6.20 and earlier.
+-- 
+Stefan Richter
+-=====-=-=== --== -====
+http://arcgraph.de/sr/
