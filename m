@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbXCOXIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbXCOXM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330AbXCOXIn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 19:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbXCOXIn
+	id S1753434AbXCOXM7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 19:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbXCOXM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 19:08:43 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:62854 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753432AbXCOXIm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 19:08:42 -0400
-X-AuditID: d80ac287-a246cbb000000de9-27-45f9d1fa45db 
-Date: Thu, 15 Mar 2007 23:08:40 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
+	Thu, 15 Mar 2007 19:12:59 -0400
+Received: from holomorphy.com ([66.93.40.71]:54914 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753434AbXCOXM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 19:12:58 -0400
+Date: Thu, 15 Mar 2007 16:12:54 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dan Aloni <da-x@monatomic.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: thread stacks and strict vm overcommit accounting
-In-Reply-To: <20070315153613.3d2eaf10.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0703152258530.9602@blonde.wat.veritas.com>
-References: <20070313163320.GA28104@localdomain> <20070315110621.9a9defaf.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0703152021130.21129@blonde.wat.veritas.com>
- <20070315233343.662b019c@lxorguk.ukuu.org.uk> <20070315153613.3d2eaf10.akpm@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 0/4] Arch independent quicklists V2
+Message-ID: <20070315231254.GY2986@holomorphy.com>
+References: <20070313071325.4920.82870.sendpatchset@schroedinger.engr.sgi.com> <20070313005334.853559ca.akpm@linux-foundation.org> <45F65ADA.9010501@yahoo.com.au> <20070313035250.f908a50e.akpm@linux-foundation.org> <45F685C6.8070806@yahoo.com.au> <20070313041551.565891b5.akpm@linux-foundation.org> <45F68B4B.9020200@yahoo.com.au> <20070313044756.b45649ac.akpm@linux-foundation.org> <20070314011244.GM2986@holomorphy.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 15 Mar 2007 23:08:41.0662 (UTC) FILETIME=[DF6C65E0:01C76756]
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070314011244.GM2986@holomorphy.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, Andrew Morton wrote:
-> On Thu, 15 Mar 2007 23:33:43 +0000
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
-> > > Stack RSS should certainly be included in Committed_AS,
-> > > but RLIMIT_STACK merely limits how big the stack vma may grow to:
-> > > at any moment the stack vma is probably very much smaller,
-> > > and only its current size is accounted in Committed_AS.
-> > 
-> > With a typical size as a fuzz factor preaccounted in later kernels.
-> 
-> Where's that done?
+On Tue, Mar 13, 2007 at 06:12:44PM -0700, William Lee Irwin III wrote:
+> There are furthermore distinctions to make between fork() and execve().
+> fork() stomps over the entire process address space copying pagetables
+> en masse. After execve() a process incrementally faults in PTE's one at
+> a time. It should be clear that if case analyses are of interest at
+> all, fork() will want cache-hot pages (cache-preloaded pages?) where
+> such are largely wasted on incremental faults after execve(). The copy
+> operations in fork() should probably also be examined in the context of
+> shared pagetables at some point.
 
-I don't know what Alan is referring to there.
+To make this perfectly clear, we can deal with the varying usage cases
+with hot/cold flags to the pagetable allocator functions. Where bulk
+copies such as fork() are happening, it makes perfect sense to
+precharge the cache by eager zeroing. Where sparse single pte affairs
+such as incrementally faulting things in after execve() are involved,
+cache cold preconstructed pagetable pages are ideal. Address hints
+could furthermore be used to precharge single cachelines (e.g. via
+prefetch) in the sparse usage case.
 
-> 
-> > > > > Is this the intended behaviour?
-> > > > 
-> > > > That sounds like a bug to me.
-> > > 
-> > > I'm suspecting it's an oddity rather than a bug.
-> > 
-> > It is intended behaviour.
 
-Intended in the way the different stacks are implemented,
-but odd enough for us to wonder at the difference.
-
-> 
-> Each instance of
-> 
-> main()
-> {
-> 	sleep(100);
-> }
-> 
-> appears to increase Committed_AS by around 200kb.  But we've committed to
-> providing it with 8MB for stack.
-> 
-> How come this is correct?
-
-We've no more committed to providing each instance with 8MB of stack,
-than we've committed to providing each instance with RLIMIT_AS of
-address space.  The rlimits are limits, not commitments, surely?
-
-Hugh
+-- wli
