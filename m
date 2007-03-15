@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933464AbXCONHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbXCONNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933464AbXCONHM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 09:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933537AbXCONHM
+	id S933537AbXCONNI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 09:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933539AbXCONNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 09:07:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:53084 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933459AbXCONHL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 09:07:11 -0400
-Subject: Re: [PATCH] Remove "decl_subsys_name" macro and single usage of it.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-In-Reply-To: <Pine.LNX.4.64.0703150630270.23698@localhost.localdomain>
-References: <Pine.LNX.4.64.0703011205510.20928@CPE00045a9c397f-CM001225dbafb6>
-	 <3ae72650703150322h10882044nbcfdddd4187d31ce@mail.gmail.com>
-	 <Pine.LNX.4.64.0703150630270.23698@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 15 Mar 2007 14:08:07 +0100
-Message-Id: <1173964087.5099.14.camel@pim.off.vrfy.org>
+	Thu, 15 Mar 2007 09:13:08 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58819 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933537AbXCONNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 09:13:06 -0400
+Date: Thu, 15 Mar 2007 14:13:05 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [patch 1/2] splice: dont steal
+Message-ID: <20070315131305.GF8321@wotan.suse.de>
+References: <20070314121440.GA926@wotan.suse.de> <20070315115237.GM15400@kernel.dk> <20070315122207.GA8321@wotan.suse.de> <20070315122723.GQ15400@kernel.dk> <20070315124531.GD8321@wotan.suse.de> <20070315125432.GT15400@kernel.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+c2hxKyGZpqfpzGw4soEFMzJYkkDsxw5cZWiW
- uWXEqmUyYCNa+KJ5aKyVWVhClQ0K0FjFi+SofvZ+ZYcHYOUHrN
- MYCWrzzAj5spysB9UQvkQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070315125432.GT15400@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-03-15 at 08:52 -0400, Robert P. J. Day wrote:
-> On Thu, 15 Mar 2007, Kay Sievers wrote:
+On Thu, Mar 15, 2007 at 01:54:32PM +0100, Jens Axboe wrote:
+> On Thu, Mar 15 2007, Nick Piggin wrote:
+> > On Thu, Mar 15, 2007 at 01:27:23PM +0100, Jens Axboe wrote:
+> > > On Thu, Mar 15 2007, Nick Piggin wrote:
+> > > > 
+> > > > We should be able to allow for it with the new a_ops API I'm working
+> > > > on.
+> > > 
+> > > "Should be" and in progress stuff, is it guarenteed to get there?
+> > 
+> > Well considering that it is needed in order to solve 3 different deadlock
+> > scenarios in the core write(2) path without taking a big performance hit,
+> > I'd hope so ;)
+> > 
+> > It isn't guaranteed, but I have only had positive feedback so far. Would
+> > take a while to actually get merged, though.
 > 
-> > On 3/1/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> > >
-> > >   Remove the macro "decl_subsys_name" which can be used to declare a
-> > > sysfs subsystem, along with the single invocation of it in the source
-> > > tree, since there appears to be little value in creating a subsystem
-> > > whose subsystem name differs from its structure name.  Everyone else
-> > > just uses "decl_subsys".
-> >
-> > Sometimes you want shorter variable names as the created objects in
-> > sysfs, because the 80 columns limit of the kernel source makes long
-> > variable names pretty inconvenient.
-> > And all these decl_* macros, obviously can't create any names that
-> > contain '-', which is pretty annoying. There is also a user in the
-> > experimental patches in Greg's tree. Please leave it there for now.
-> 
-> no problem but that patch *was* based on a suggestion by greg in the
-> first place.  i'm guessing he just forgot. :-)
+> It's not that I don't believe you, I'm just a little reluctant to rip
+> stuff out with a promise to fix it later when foo and bar are merged,
+> since things like that have a tendency not to get done because they are
+> forgotten :-)
 
-A cleanup of the driver-core source is long overdue, that's why we like
-everything that goes away here, that isn't really needed. :)
+Fair enough. The API side is trivial, all I need to do is set a single
+flag and make splice pass down the page, and set that flag when stealing.
+Filesystems might vary from trivial to impossible, but I think most should
+be OK. If the flag is there then they at least have the option.
 
-In the end, we should probably just get rid of the whole "struct
-subsystem". We can move the lock to the kset and ditch the whole weird
-idea of a "subsystem", which is nothing but a collection of ksets, which
-the object model can handle without "struct subsystem" just fine.
 
-Thanks,
-Kay
+> Do you have a test case for stealing failures? What I'm really asking is
+> how critical is this?
+
+I guess you could fill a filesystem completely, and have a sparse file
+in it. Then steal a page and splice it in. The prepare_write should fail,
+but the page will still be in pagecache, until it gets reclaimed, then
+it will go back to zeroes.
+
+(no I don't have a test case ;)).
+
+You could do something like remove the page if prepare_write fails, but
+there is still a window where a read can see it. Basically I can't see
+a way that it can possibly work within our current prepare_write API,
+and it is a data corruption bug, so in my opinion it is a candidate for
+2.6.21 + stable.
 
