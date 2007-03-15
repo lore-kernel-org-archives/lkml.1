@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbXCOUAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933601AbXCOUCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933645AbXCOUAm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 16:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933679AbXCOUAm
+	id S933601AbXCOUCL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 16:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933638AbXCOUCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 16:00:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52921 "EHLO mx1.redhat.com"
+	Thu, 15 Mar 2007 16:02:11 -0400
+Received: from ns.suse.de ([195.135.220.2]:52477 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933645AbXCOUAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 16:00:40 -0400
-Date: Thu, 15 Mar 2007 16:00:12 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
-Message-ID: <20070315200012.GA5574@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Greg Kroah-Hartman <gregkh@suse.de>
-References: <20070313040828.GA17893@redhat.com> <200703131022.54322.rjw@sisk.pl> <20070313132218.GA25910@redhat.com> <m1d53apjvu.fsf@ebiederm.dsl.xmission.com> <20070315181059.GA1644@redhat.com> <45F9A250.7040409@goop.org>
+	id S933601AbXCOUCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 16:02:09 -0400
+Date: Thu, 15 Mar 2007 21:01:59 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Ashif Harji <asharji@cs.uwaterloo.ca>,
+       Miquel van Smoorenburg <miquels@cistron.nl>, linux-mm@kvack.org,
+       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] mm/filemap.c: unconditionally call mark_page_accessed
+Message-ID: <20070315200159.GC19625@wotan.suse.de>
+References: <20070312143900.GB6016@wotan.suse.de> <20070312151355.GB23532@duck.suse.cz> <Pine.GSO.4.64.0703121247210.7679@cpu102.cs.uwaterloo.ca> <20070312173500.GF23532@duck.suse.cz> <Pine.GSO.4.64.0703131438580.8193@cpu102.cs.uwaterloo.ca> <20070313185554.GA5105@duck.suse.cz> <Pine.GSO.4.64.0703141218530.28958@cpu102.cs.uwaterloo.ca> <45F96CCB.4000709@redhat.com> <20070315162944.GI8321@wotan.suse.de> <Pine.LNX.4.64.0703151719380.32335@blonde.wat.veritas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45F9A250.7040409@goop.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <Pine.LNX.4.64.0703151719380.32335@blonde.wat.veritas.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 12:45:20PM -0700, Jeremy Fitzhardinge wrote:
- > Dave Jones wrote:
- > > I just did a build of top of tree, including those commits, and
- > > it's still broken.  Booting with pci=nomsi no longer 'fixes' it
- > > though, which may indicate that the MSI changes were a red herring.
- > > (Or that the subsequent changes have regressed it even more,
- > >  which seems unlikely looking at the changes).
- > >   
- > 
- > I just found the same thing on my X60.  Current top-of-tree with
- > pci=nomsi does not improve things.  When it resumes, the CPU is working
- > (capslock toggles, sysreq-b reboots), but the screen is blank.
+On Thu, Mar 15, 2007 at 05:44:01PM +0000, Hugh Dickins wrote:
+> On Thu, 15 Mar 2007, Nick Piggin wrote:
+> > On Thu, Mar 15, 2007 at 11:56:59AM -0400, Chuck Ebbert wrote:
+> > > Ashif Harji wrote:
+> > > > 
+> > > > This patch unconditionally calls mark_page_accessed to prevent pages,
+> > > > especially for small files, from being evicted from the page cache
+> > > > despite frequent access.
+> > > > 
+> > > > Signed-off-by: Ashif Harji <asharji@beta.uwaterloo.ca>
+> 
+> Yeah, yeah, I'm not a real mman, I don't have my own patch and
+> website for this ;) but I'm old, let me mumble some history...
+> 
+> Ashif's patch would take us back to 2.4.10 when mark_page_accessed
+> was introduced: in 2.4.11 someone (probably Andrea) immediately
+> added a !offset || !filp->f_reada condition on it there, which
+> remains in 2.4 to this day.  That _probably_ means that Ashif's
+> patch is suboptimal, and that your !offset patch is good.
+> 
+> f_reada went away in 2.5.8, and the !offset condition remained
+> until 2.6.11, when Miquel (CC'ed) replaced it by today's prev_index
+> condition.  His changelog entry appended below.  Since it's Miquel
+> who removed the !offset condition, he should be consulted on its
+> reintroduction.
 
-Yeah, I noticed the capslock works.  Networking doesn't come back up
-though, and it doesn't seem to answer to command that I type blindly.
-Even trying to do something like..
+Yeah I did go back and check up on that changelog, because I knew
+we had a !offset check there at one stage, which is immune to this
+problem (or at least can handle it a little better).
 
-pm-suspend ; dmesg >dmesg.out; /sbin/reboot
+I suspect that Miquel was probably more interested in _increasing_
+mark_page_accessed coverage with his new condition than restricting
+it from the !offset cases.
 
-doesn't seem to execute the commands on resume.
-
-Switching tty's to X with alt-f7 seems to lock it up to the point that
-even capslock doesn't work any more.
-
-
-I'll try and hook up a usb serial cable and see if I'm lucky enough
-to get something useful out of it in the absense of a serial port..
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+Thanks for digging it up and posting here, though.
