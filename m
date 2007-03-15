@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933413AbXCOHjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751479AbXCOHxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933413AbXCOHjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 03:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933425AbXCOHjf
+	id S1751479AbXCOHxL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 03:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbXCOHxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 03:39:35 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:42934 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933413AbXCOHje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 03:39:34 -0400
-Date: Thu, 15 Mar 2007 00:39:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: paulus@samba.org, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       ak@suse.com, holt@sgi.com, linux-ia64@vger.kernel.org, mpm@selenic.com
-Subject: Re: [QUICKLIST 0/6] Arch independent quicklists V1
-Message-Id: <20070315003916.8a78dd0c.akpm@linux-foundation.org>
-In-Reply-To: <20070315.003118.41650094.davem@davemloft.net>
-References: <20070312.192616.63128242.davem@davemloft.net>
-	<20070312.193211.30184040.davem@davemloft.net>
-	<20070315002249.9e531578.akpm@linux-foundation.org>
-	<20070315.003118.41650094.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	Thu, 15 Mar 2007 03:53:11 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:43444 "EHLO
+	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751479AbXCOHxK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 03:53:10 -0400
+Subject: Re: NPTL patch for linux 2.4.28
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Syed Ahemed <kingkhan@gmail.com>
+Cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org, msnyder@redhat.com,
+       jjohnstn@redhat.com
+In-Reply-To: <3d53b7120703141444k6484ccfeyd08cf60ecbbb894a@mail.gmail.com>
+References: <3d53b7120703131719y7bac2dccpb7bf8e32f7d45768@mail.gmail.com>
+	 <20070314055556.GP943@1wt.eu>
+	 <3d53b7120703141444k6484ccfeyd08cf60ecbbb894a@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 15 Mar 2007 08:53:06 +0100
+Message-Id: <1173945186.25356.23.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.9.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 15 Mar 2007 00:31:18 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Thu, 15 Mar 2007 00:22:49 -0800
-> 
-> > So...  what would happen if sparc64 were to use neither quicklists nor
-> > slab?  Just grab these pages from the page allocator and clear them?
-> 
-> The page table allocator is heavier weight than the quicklists,
-> although obviously not as heavy weight as SLAB.
+On Thu, 2007-03-15 at 03:14 +0530, Syed Ahemed wrote:
 
-Spose so, although only in the case where we go into the buddy lists, I hope.
+> Getting RHEL's source ( http://lkml.org/lkml/2005/3/21/380 ) was an
+> idea i thought about but then a download of the RHEL source from the
+> following location was denied .
+> http://download.fedora.redhat.com/pub/fedora/linux/core/1/SRPMS/  and
+> the rpmfind site.
+> (Guess need to be a paid subscriber for that right ?)
 
-otoh, releasing a cache-hot page into the page allocator makes it available for
-other use.
+Strangely enough you try to download Fedora Core SRPMs whilst you speak
+of RHEL. Try this one:
 
-It'd be nice if you could run the numbers sometime, please - if it's OK then
-we can remove code...
+ftp://ftp.redhat.com/pub/redhat/linux/enterprise/3/en/os/i386/SRPMS/kernel-2.4.21-4.EL.src.rpm
+
+Also, CentOS would have similar sources. Google could have informed you
+on that.
+
+> I still wonder why there aren't any NPTL patches available in the
+> non-redhat sites for kernels like 2.4.21 or more .
+
+Because most people, especially the ones on this mailing list have moved
+on to 2.6 quite some time ago. May I suggest you do the same?
+
