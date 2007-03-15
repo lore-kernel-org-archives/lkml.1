@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751468AbXCOKQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbXCOKWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751468AbXCOKQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 06:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXCOKQz
+	id S1751380AbXCOKWz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 06:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbXCOKWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 06:16:55 -0400
-Received: from mx1.ciphirelabs.net ([217.72.114.64]:34462 "EHLO
-	mx1.ciphirelabs.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbXCOKQy (ORCPT
+	Thu, 15 Mar 2007 06:22:55 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:27768 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751380AbXCOKWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 06:16:54 -0400
-X-Greylist: delayed 1310 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Mar 2007 06:16:54 EDT
-From: Andreas Jellinghaus <aj@leogic.com>
-To: Con Kolivas <kernel@kolivas.org>
-Subject: rsdl 30 on 2.6.20.2 breaks user space usb
-Date: Thu, 15 Mar 2007 10:54:29 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+	Thu, 15 Mar 2007 06:22:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=n5jRE3HY4qUL/QHbj4a2ED/B70EWwv/oQYLYhtbN5Bm5a/GEavZasS1fW/OWZIsha0I9PQuw1X7mHgPQYwWSDnE2HaWpOeoLyFtR3axHpVQTVNXyNJst9ajCcMm2xpmJGzS2vG0uAQPnW2ZD4PeKqS7EzXjvRQzDziH2Db9aO1U=
+Message-ID: <3ae72650703150322h10882044nbcfdddd4187d31ce@mail.gmail.com>
+Date: Thu, 15 Mar 2007 11:22:52 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH] Remove "decl_subsys_name" macro and single usage of it.
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Greg KH" <greg@kroah.com>
+In-Reply-To: <Pine.LNX.4.64.0703011205510.20928@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200703151054.29591.aj@leogic.com>
-X-Ciphire-Security: plain
+References: <Pine.LNX.4.64.0703011205510.20928@CPE00045a9c397f-CM001225dbafb6>
+X-Google-Sender-Auth: 907f1c504ce4972a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-with plain 2.6.20.2 I get events / called from udev for /proc/bus/usb devices.
-with rsdl 0.30 added to the kernel I no longer get called for those devices
-(but I do get called for the new /dev/usbdev devices - except that I can't use 
-them).
+On 3/1/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+>
+>   Remove the macro "decl_subsys_name" which can be used to declare a
+> sysfs subsystem, along with the single invocation of it in the source
+> tree, since there appears to be little value in creating a subsystem
+> whose subsystem name differs from its structure name.  Everyone else
+> just uses "decl_subsys".
 
-any idea why and what to do? might be related to a race condition.
+Sometimes you want shorter variable names as the created objects in
+sysfs, because the 80 columns limit of the kernel source makes long
+variable names pretty inconvenient.
+And all these decl_* macros, obviously can't create any names that
+contain '-', which is pretty annoying. There is also a user in the
+experimental patches in Greg's tree. Please leave it there for now.
 
-I can also provide kernel config, dmesg, etc. whatever.
-system is x86 with ubuntu edgy installed. I noticed the problem
-with openct - the udev helper doesn't get spawned with the rsdl
-kernel, while it does get spawned with the normal kernel.
-
-Regards, Andreas
+Thanks,
+Kay
