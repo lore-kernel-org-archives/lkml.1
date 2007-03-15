@@ -1,156 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbXCOXHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbXCOXIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753431AbXCOXHQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 19:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbXCOXHQ
+	id S932330AbXCOXIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 19:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbXCOXIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 19:07:16 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:46728 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753431AbXCOXHO (ORCPT
+	Thu, 15 Mar 2007 19:08:43 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:62854 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753432AbXCOXIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 19:07:14 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 15 Mar 2007 16:02:54 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 6/13] signalfd/timerfd/asyncfd v5 - timerfd core ...
-In-Reply-To: <1173995889.13341.217.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0703151556290.4998@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.13805.1173910766.6>
- <1173995889.13341.217.camel@localhost.localdomain>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 15 Mar 2007 19:08:42 -0400
+X-AuditID: d80ac287-a246cbb000000de9-27-45f9d1fa45db 
+Date: Thu, 15 Mar 2007 23:08:40 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dan Aloni <da-x@monatomic.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: thread stacks and strict vm overcommit accounting
+In-Reply-To: <20070315153613.3d2eaf10.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703152258530.9602@blonde.wat.veritas.com>
+References: <20070313163320.GA28104@localdomain> <20070315110621.9a9defaf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703152021130.21129@blonde.wat.veritas.com>
+ <20070315233343.662b019c@lxorguk.ukuu.org.uk> <20070315153613.3d2eaf10.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 15 Mar 2007 23:08:41.0662 (UTC) FILETIME=[DF6C65E0:01C76756]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Mar 2007, Thomas Gleixner wrote:
-
-> Davide,
+On Thu, 15 Mar 2007, Andrew Morton wrote:
+> On Thu, 15 Mar 2007 23:33:43 +0000
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> On Wed, 2007-03-14 at 15:19 -0700, Davide Libenzi wrote:
+> > > Stack RSS should certainly be included in Committed_AS,
+> > > but RLIMIT_STACK merely limits how big the stack vma may grow to:
+> > > at any moment the stack vma is probably very much smaller,
+> > > and only its current size is accounted in Committed_AS.
+> > 
+> > With a typical size as a fuzz factor preaccounted in later kernels.
 > 
-> > +static int timerfd_tmrproc(struct hrtimer *htmr)
-> > +{
-> > +	struct timerfd_ctx *ctx = container_of(htmr, struct timerfd_ctx, tmr);
-> > +	int rval = HRTIMER_NORESTART;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&ctx->lock, flags);
-> > +	ctx->ticks++;
-> > +	wake_up_locked(&ctx->wqh);
-> > +	if (ctx->tintv.tv64 != 0) {
-> > +		hrtimer_forward(htmr, htmr->base->softirq_time, ctx->tintv);
+> Where's that done?
+
+I don't know what Alan is referring to there.
+
 > 
-> Sorry, I missed that in the first reviews. Please use
-> hrtimer_cb_get_time(htmr) instead of htmr->base->softirq_time, so this
-> is high res timer safe.
+> > > > > Is this the intended behaviour?
+> > > > 
+> > > > That sounds like a bug to me.
+> > > 
+> > > I'm suspecting it's an oddity rather than a bug.
+> > 
+> > It is intended behaviour.
 
-Heh, I was actually looking for a function instead of peeking over the 
-tiemr strcture, but 2.6.20 did not have. Rebased over 2.6.21-rc3 now, so I 
-can use it.
+Intended in the way the different stacks are implemented,
+but odd enough for us to wonder at the difference.
 
-
-
-
-> > +		rval = HRTIMER_RESTART;
-> > +	}
-> > +	spin_unlock_irqrestore(&ctx->lock, flags);
-> > +
-> > +	return rval;
-> > +}
-> > +
-> > +
-> > +static int timerfd_setup(struct timerfd_ctx *ctx, int clockid, int flags,
-> > +			 const struct itimerspec *ktmr)
-> > +{
 > 
-> Make this void, returns 0 anyway
-
-Ack
-
-
-
-> > +	enum hrtimer_mode htmode;
-> > +
-> > +	htmode = (flags & TFD_TIMER_ABSTIME) ? HRTIMER_ABS: HRTIMER_REL;
-> > +
-> > +	ctx->ticks = 0;
-> > +	ctx->clockid = clockid;
-> > +	ctx->flags = flags;
-> > +	ctx->texp = timespec_to_ktime(ktmr->it_value);
+> Each instance of
 > 
-> clockid is stored in the timer on setup, so no need to store it again.
-> expiry time and flags are not used after setup.
+> main()
+> {
+> 	sleep(100);
+> }
 > 
-> Please remove those fields.
-
-Ack
-
-
-
-> > +	if (ufd == -1) {
-> > +		ctx = kmem_cache_alloc(timerfd_ctx_cachep, GFP_KERNEL);
-> > +		if (!ctx)
-> > +			return -ENOMEM;
-> > +
-> > +		init_waitqueue_head(&ctx->wqh);
-> > +		spin_lock_init(&ctx->lock);
-> > +		ctx->clockid = -1;
-> > +
-> > +		error = timerfd_setup(ctx, clockid, flags, &ktmr);
-> > +		if (error)
-> > +			goto err_ctxfree;
+> appears to increase Committed_AS by around 200kb.  But we've committed to
+> providing it with 8MB for stack.
 > 
-> Timer setup can not fail
+> How come this is correct?
 
-Ack, the new version can't.
+We've no more committed to providing each instance with 8MB of stack,
+than we've committed to providing each instance with RLIMIT_AS of
+address space.  The rlimits are limits, not commitments, surely?
 
-
-
-> > +		/*
-> > +		 * When we call this, the initialization must be complete, since
-> > +		 * aino_getfd() will install the fd.
-> > +		 */
-> > +		error = aino_getfd(&ufd, &inode, &file, "[timerfd]",
-> > +				   &timerfd_fops, ctx);
-> > +		if (error)
-> > +			goto err_ctxfree;
-> 
-> Again: Please turn this around. No need to start the timer before we
-> know, that everything works. 
-
-The timerfd_setup() is not locked, so we need to make sure everything is 
-setup, before advertising the fd (and aino_getfd does that).
-
-
-
-> > +	kmem_cache_free(timerfd_ctx_cachep, ctx);
-> > +}
-> > +
-> > +
-> > +static int timerfd_close(struct inode *inode, struct file *file)
-> > +{
-> > +	timerfd_cleanup(file->private_data);
-> > +	return 0;
-> > +}
-> > +
-> 
-> Please move the timerfd_cleanup code into close(). 
-
-I usually prefer to have a cleanup function that works on the file's data, 
-but I moved the code in the release function now.
-Thx for the review! I'll repost a new version based on 2.6.21-rc3 ...
-
-
-
-
-- Davide
-
-
+Hugh
