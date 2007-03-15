@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422888AbXCOPQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422889AbXCOPS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422888AbXCOPQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 11:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422889AbXCOPQ6
+	id S1422889AbXCOPS5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 11:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422887AbXCOPS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 11:16:58 -0400
-Received: from mail.kroah.org ([69.55.234.183]:55156 "EHLO perch.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422888AbXCOPQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 11:16:57 -0400
-Date: Thu, 15 Mar 2007 07:54:14 -0700
-From: Greg KH <greg@kroah.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: kref refcounting breakage in mainline
-Message-ID: <20070315145414.GA18542@kroah.com>
-References: <20070302005833.949be737.akpm@linux-foundation.org> <20070306002521.GA12164@kroah.com> <1173159802.6955.6.camel@Homer.simpson.net> <20070306210445.GB29164@kroah.com> <1173245937.6613.26.camel@Homer.simpson.net> <1173541446.6561.32.camel@Homer.simpson.net> <20070315052724.GA12576@kroah.com> <1173945187.6624.14.camel@Homer.simpson.net> <20070315080639.GA14641@kroah.com> <1173953960.6624.45.camel@Homer.simpson.net>
-MIME-Version: 1.0
+	Thu, 15 Mar 2007 11:18:57 -0400
+Received: from csclub1.cs.uwaterloo.ca ([129.97.7.226]:46879 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422889AbXCOPS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 11:18:56 -0400
+Date: Thu, 15 Mar 2007 11:18:55 -0400
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
+       Russell King <rmk+lkml@arm.linux.org.uk>, Jan Dittmer <jdi@l4x.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+Message-ID: <20070315151855.GQ22464@csclub.uwaterloo.ca>
+References: <20070314131934.GL22464@csclub.uwaterloo.ca> <20070314140623.GF3802@enneenne.com> <20070314141253.GM22464@csclub.uwaterloo.ca> <20070314142710.GJ3802@enneenne.com> <20070314144251.GN22464@csclub.uwaterloo.ca> <20070314145239.GK3802@enneenne.com> <20070314153705.GP22464@csclub.uwaterloo.ca> <20070314154732.GP3802@enneenne.com> <20070314205732.GI22466@csclub.uwaterloo.ca> <20070315102912.GV3802@enneenne.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1173947546.6624.29.camel@Homer.simpson.net> <1173953960.6624.45.camel@Homer.simpson.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070315102912.GV3802@enneenne.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 11:19:20AM +0100, Mike Galbraith wrote:
-> On Thu, 2007-03-15 at 01:06 -0700, Greg KH wrote:
-> 
-> > That's good.  But why don't we have a module name for this driver?
-> > 
-> > And if we don't have a module name, why would there be a symlink to
-> > remove?  That's what is keeping your module from unloading, right?
-> 
-> You keep saying "module", and that's making me a bit nervous ;-)
-> 
-> Just to be sure we're not talking past each other, when you say module,
-> don't mean the modprobe kind... i hope.  This "module" as in driver is
-> compiled in.  (said that before, but you may have missed it)
+On Thu, Mar 15, 2007 at 11:29:12AM +0100, Rodolfo Giometti wrote:
+> Can you please provide a little help about it? A patch against current
+> wiki wuold be great! ;)
 
-Ahh, that changes everything here, thanks for letting me know, I had
-missed this.
+Well all I actually did was simply stick #define HAVE_PPSAPI at the tome
+of the refclock_nmea.c file.  The configure script in ntp is explcitly
+checking for PPS API version 1 so version 2 doesn't match and it claims
+you don't have a timepps.h file it can use.  Unfortunately I really have
+trouble understanding autoconf scripts and can't figure out where the
+code is that tells it how to do the check for timepps.h and the API
+version inside it.
 
-The problem is that the module_init() is failing, yet this isn't really
-a module, it's built into the kernel.  So some of the module teardown
-logic is dieing when it thinks that we really have a full module
-structure here (owner and such).
+> I modify your code add inquiry functionality. Can you please test it?
+>
+> See http://ftp.enneenne.com/pub/misc/linuxpps/test/ and the wiki at
+> http://wiki.enneenne.com/index.php/LinuxPPS_support#Compiling_the_code.
 
-I'll look at this further tomorrow, as I'm travelling pretty much all
-day today, sorry.
+I will try out the ppstest tool.
 
-thanks,
+How come none of the .patch files in
+http://ftp.enneenne.com/pub/misc/linuxpps/refclocks/nmea/ can be
+accessed?  Does your web server not like serving up .patch files?
 
-greg k-h
+--
+Len Sorensen
