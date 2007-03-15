@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXCOTSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXCOTSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903AbXCOTSi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 15:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbXCOTSi
+	id S932978AbXCOTSr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 15:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbXCOTSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 15:18:38 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38552 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932903AbXCOTSg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 15:18:36 -0400
-Date: Thu, 15 Mar 2007 19:18:34 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: PCI DAC DMA APIs
-Message-ID: <20070315191834.GA12603@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jan Beulich <jbeulich@novell.com>, linux-arch@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <45F94C45.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F94C45.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 15 Mar 2007 15:18:47 -0400
+Received: from gw.goop.org ([64.81.55.164]:45266 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932911AbXCOTSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 15:18:46 -0400
+Message-ID: <45F99C10.1070500@goop.org>
+Date: Thu, 15 Mar 2007 12:18:40 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Dan Hecht <dhecht@vmware.com>
+CC: dwalker@mvista.com, cpufreq@lists.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com,
+       schwidefsky@de.ibm.com, Rik van Riel <riel@redhat.com>,
+       Zachary Amsden <zach@vmware.com>
+Subject: Re: Stolen and degraded time and schedulers
+References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org> <45F85A62.8050001@vmware.com> <45F85BBB.70707@goop.org> <45F85F43.9030803@vmware.com> <45F866AF.9060609@goop.org> <45F999D4.6080602@vmware.com>
+In-Reply-To: <45F999D4.6080602@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 15, 2007 at 12:38:13PM +0000, Jan Beulich wrote:
-> While the kernel headers provide for this, there don't appear to be any
-> in-tree users (which seems contrary to general Linux policies). Would there
-> be objections to remove all of these?
+Dan Hecht wrote:
+> So, yes, it is per-vcpu.  But, the sched_clock() samples are rebased
+> when processes are migrated between runqueues; search sched.c for
+> most_recent_timestamp.  It's not perfect since most_recent_timestamp
+> between cpu0 and cpu1 do not correspond to the exact same instant, but
+> does prevent negative sleep time and is fairly close.
 
-They should go away.  Having them in for more than five years without
-any users is almost a guarantee for bitrot.
+Yes, I noticed that when I looked more carefully, but I wasn't sure
+whether it would be sufficient to make it all work out.
+
+    J
