@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965153AbXCOFGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965180AbXCOFQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965153AbXCOFGP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Mar 2007 01:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965180AbXCOFGP
+	id S965180AbXCOFQk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Mar 2007 01:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965175AbXCOFQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Mar 2007 01:06:15 -0400
-Received: from tapsys.com ([72.36.178.242]:32907 "EHLO tapsys.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965153AbXCOFGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Mar 2007 01:06:14 -0400
-X-Greylist: delayed 1240 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Mar 2007 01:06:14 EDT
-Message-ID: <45F8CF68.8060400@madrabbit.org>
-Date: Wed, 14 Mar 2007 21:45:28 -0700
-From: Ray Lee <ray@madrabbit.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: New thread RDSL, post-2.6.20 kernels and amanda (tar) miss-fires
-References: <200703130428.11014.gene.heskett@gmail.com> <200703132331.56140.gene.heskett@gmail.com> <2c0942db0703141449h5f6eb2e4sadf493741d67ecc0@mail.gmail.com> <200703142312.48852.gene.heskett@gmail.com>
-In-Reply-To: <200703142312.48852.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Mar 2007 01:16:40 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:39065 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965180AbXCOFQk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Mar 2007 01:16:40 -0400
+Message-Id: <20070315051530.404879228@goodmis.org>
+References: <20070315051337.488091591@goodmis.org>
+User-Agent: quilt/0.45-1
+Date: Thu, 15 Mar 2007 01:13:44 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH take3 07/20] alternative.c switch
+Content-Disposition: inline; filename=08-alternative.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> Here is an example
-> [root@coyote data]# dd if=00010.coyote._lib.1 bs=32k count=1
-> AMANDA: FILE 20070314104344 coyote /lib  lev 1 comp .gz program /bin/tar
-> To restore, position tape at start of file and run:
->  dd if=<tape> bs=32k skip=1 |  /bin/gzip -dc |  /bin/tar -f - ...
-> 
-> And the elipsis is an error if not removed.  Then one is supposed to be 
-> able to redirect tars output with the usual >/tmp/test/ syntax
-> 
-> So:
-> [root@coyote data]# dd if=00010.coyote._lib.1 bs=32k 
-> skip=1 |  /bin/gzip -dc |  /bin/tar -f - >/tmp/test/
-> -bash: /tmp/test/: Is a directory
-> 
-> which is the return from any variation in how the redirect is done.
-> 
-> So what is it that am I doing wrong in the above command line?, so I can 
-> add it to my helper scripts to be published eventually on zmanda.org.
+Move the alternative.c to the common area.
 
-One of us is confused, and it may very well be me, but...
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-the /bin/tar -f - >/tmp/test/ looks to me like it should fail exactly as
-bash says it does. the output redirect (>) will only write out to a
-file, not a directory. (So, /tmp/file should work, /tmp/file/ won't.)
+diff --git a/arch/i386/kernel/Makefile b/arch/i386/kernel/Makefile
+index 556da60..44c7d89 100644
+--- a/arch/i386/kernel/Makefile
++++ b/arch/i386/kernel/Makefile
+@@ -7,7 +7,7 @@ extra-y := head.o init_task.o vmlinux.lds
+ obj-y	:= process.o signal.o entry.o traps.o irq.o \
+ 		ptrace.o time.o ioport.o ldt.o setup.o i8259.o sys_i386.o \
+ 		pci-dma.o i386_ksyms.o i387.o e820.o\
+-		alternative.o i8253.o tsc.o
++		i8253.o tsc.o
+ 
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-y				+= cpu/
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index d70dbf3..b63f832 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -1,4 +1,4 @@
+-obj-y				+= bootflag.o quirks.o i8237.o topology.o
++obj-y				+= bootflag.o quirks.o i8237.o topology.o alternative.o
+ 
+ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+ 
+diff --git a/arch/i386/kernel/alternative.c b/arch/x86/kernel/alternative.c
+similarity index 100%
+rename from arch/i386/kernel/alternative.c
+rename to arch/x86/kernel/alternative.c
+diff --git a/arch/x86_64/kernel/Makefile b/arch/x86_64/kernel/Makefile
+index 3dc4c18..b12901c 100644
+--- a/arch/x86_64/kernel/Makefile
++++ b/arch/x86_64/kernel/Makefile
+@@ -8,7 +8,7 @@ obj-y	:= process.o signal.o entry.o traps.o irq.o \
+ 		ptrace.o time.o ioport.o ldt.o setup.o i8259.o sys_x86_64.o \
+ 		x8664_ksyms.o i387.o syscall.o vsyscall.o \
+ 		setup64.o e820.o reboot.o \
+-		pci-dma.o pci-nommu.o alternative.o hpet.o tsc.o
++		pci-dma.o pci-nommu.o hpet.o tsc.o
+ 
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-$(CONFIG_X86_MCE)		+= mce.o therm_throt.o
+@@ -50,5 +50,4 @@ cpuid-$(subst m,y,$(CONFIG_X86_CPUID))  += ../../i386/kernel/cpuid.o
+ microcode-$(subst m,y,$(CONFIG_MICROCODE))  += ../../i386/kernel/microcode.o
+ intel_cacheinfo-y		+= ../../i386/kernel/cpu/intel_cacheinfo.o
+ msr-$(subst m,y,$(CONFIG_X86_MSR))  += ../../i386/kernel/msr.o
+-alternative-y			+= ../../i386/kernel/alternative.o
+ pcspeaker-y			+= ../../i386/kernel/pcspeaker.o
 
-Are you trying to redirect where the files get restored? That should be
-done with a cd before doing the uncompress.
-
-Or am I misunderstanding what you're telling me?
-
-Ray
+--
