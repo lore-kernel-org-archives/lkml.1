@@ -1,52 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965969AbXCPVnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965957AbXCPVqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965969AbXCPVnu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 17:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965970AbXCPVnt
+	id S965957AbXCPVqj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 17:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965966AbXCPVqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 17:43:49 -0400
-Received: from waste.org ([66.93.16.53]:35141 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965969AbXCPVnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 17:43:49 -0400
-Date: Fri, 16 Mar 2007 16:29:48 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@osdl.org>, Daniel Walker <dwalker@mvista.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
+	Fri, 16 Mar 2007 17:46:39 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:46541 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965957AbXCPVqi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 17:46:38 -0400
+Message-Id: <200703162146.l2GLkV26012863@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Andrew Morton <akpm@osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9] Sched clock paravirt op fix.patch
-Message-ID: <20070316212948.GH10459@waste.org>
-References: <200703020254.l222sOaM009656@zach-dev.vmware.com> <20070313140129.GB92373@muc.de> <45F6C2A3.4040305@goop.org> <20070313160709.GH10574@sequoia.sous-sol.org> <20070313161656.GA12128@muc.de> <45F6D361.8080106@redhat.com> <20070313205628.GB46469@muc.de> <45F71207.8050605@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45F71207.8050605@goop.org>
-User-Agent: Mutt/1.5.9i
+Date: Fri, 16 Mar 2007 14:45:06 -0700
+Subject: [PATCH] cleanpatch: a script to clean up stealth whitespace added by a patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 02:05:11PM -0700, Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> > It depends -- under heavy network load you can spend a long time
-> > just processing interrupts.
-> 
-> Well, in that case you probably don't want to charge them to the process
-> which happens to be running at the time.
+This script is a companion to the "cleanfile" script.  This cleans
+up a patch in unified diff format *before* it is applied.  Note that
+the empty lines at the end of file detection *requires* that the diff was
+taken with at least one line of context around each hunk, or bad things
+will happen.
 
-It's actually a good first-order approximation of the right thing to
-do, as it will generally correlate with the userspace process
-servicing that network load.
+This script cleans up various classes of stealth whitespace.  In
+particular, it cleans up:
 
-If not (for instance, with routing loads), then you'd basically expect
-the charge to get spread around evenly in proportion to an
-application's CPU usage.
+- Whitespace (spaces or tabs)before newline;
+- DOS line endings (CR before LF);
+- Space before tab (spaces are deleted or converted to tabs);
+- Empty lines at end of file.
 
-The -rt kernel pushes most of the interrupt work off to threads, which
-of course follow the same scheduling and accounting rules as
-everything other thread.
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ scripts/cleanpatch |  206 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 206 insertions(+), 0 deletions(-)
+ create mode 100755 scripts/cleanpatch
 
+diff --git a/scripts/cleanpatch b/scripts/cleanpatch
+new file mode 100755
+index 0000000..a53f987
+--- /dev/null
++++ b/scripts/cleanpatch
+@@ -0,0 +1,206 @@
++#!/usr/bin/perl -w
++#
++# Clean a patch file -- or directory of patch files -- of stealth whitespace.
++# WARNING: this can be a highly destructive operation.  Use with caution.
++#
++
++use bytes;
++use File::Basename;
++
++#
++# Clean up space-tab sequences, either by removing spaces or
++# replacing them with tabs.
++sub clean_space_tabs($)
++{
++    no bytes;			# Tab alignment depends on characters
++
++    my($li) = @_;
++    my($lo) = '';
++    my $pos = 0;
++    my $nsp = 0;
++    my($i, $c);
++
++    for ($i = 0; $i < length($li); $i++) {
++	$c = substr($li, $i, 1);
++	if ($c eq "\t") {
++	    my $npos = ($pos+$nsp+8) & ~7;
++	    my $ntab = ($npos >> 3) - ($pos >> 3);
++	    $lo .= "\t" x $ntab;
++	    $pos = $npos;
++	    $nsp = 0;
++	} elsif ($c eq "\n" || $c eq "\r") {
++	    $lo .= " " x $nsp;
++	    $pos += $nsp;
++	    $nsp = 0;
++	    $lo .= $c;
++	    $pos = 0;
++	} elsif ($c eq " ") {
++	    $nsp++;
++	} else {
++	    $lo .= " " x $nsp;
++	    $pos += $nsp;
++	    $nsp = 0;
++	    $lo .= $c;
++	    $pos++;
++	}
++    }
++    $lo .= " " x $nsp;
++    return $lo;
++}
++
++$name = basename($0);
++
++foreach $f ( @ARGV ) {
++    print STDERR "$name: $f\n";
++
++    if (! -f $f) {
++	print STDERR "$f: not a file\n";
++	next;
++    }
++
++    if (!open(FILE, '+<', $f)) {
++	print STDERR "$name: Cannot open file: $f: $!\n";
++	next;
++    }
++
++    binmode FILE;
++
++    # First, verify that it is not a binary file; consider any file
++    # with a zero byte to be a binary file.  Is there any better, or
++    # additional, heuristic that should be applied?
++    $is_binary = 0;
++
++    while (read(FILE, $data, 65536) > 0) {
++	if ($data =~ /\0/) {
++	    $is_binary = 1;
++	    last;
++	}
++    }
++
++    if ($is_binary) {
++	print STDERR "$name: $f: binary file\n";
++	next;
++    }
++
++    seek(FILE, 0, 0);
++
++    $in_bytes = 0;
++    $out_bytes = 0;
++
++    @lines  = ();
++
++    $in_hunk = 0;
++    $err = 0;
++
++    while ( defined($line = <FILE>) ) {
++	$in_bytes += length($line);
++
++	if (!$in_hunk) {
++	    if ($line =~ /^\@\@\s+\-([0-9]+),([0-9]+)\s+\+([0-9]+),([0-9]+)\s\@\@/) {
++		$minus_lines = $2;
++		$plus_lines = $4;
++		if ($minus_lines || $plus_lines) {
++		    $in_hunk = 1;
++		    @hunk_lines = ($line);
++		}
++	    } else {
++		push(@lines, $line);
++		$out_bytes += length($line);
++	    }
++	} else {
++	    # We're in a hunk
++
++	    if ($line =~ /^\+/) {
++		$plus_lines--;
++
++		$text = substr($line, 1);
++		$text =~ s/[ \t\r]*$//;		# Remove trailing spaces
++		$text = clean_space_tabs($text);
++
++		push(@hunk_lines, '+'.$text);
++	    } elsif ($line =~ /^\-/) {
++		$minus_lines--;
++		push(@hunk_lines, $line);
++	    } elsif ($line =~ /^ /) {
++		$plus_lines--;
++		$minus_lines--;
++		push(@hunk_lines, $line);
++	    } else {
++		print STDERR "$name: $f: malformed patch\n";
++		$err = 1;
++		last;
++	    }
++
++	    if ($plus_lines < 0 || $minus_lines < 0) {
++		print STDERR "$name: $f: malformed patch\n";
++		$err = 1;
++		last;
++	    } elsif ($plus_lines == 0 && $minus_lines == 0) {
++		# End of a hunk.  Process this hunk.
++		my $i;
++		my $l;
++		my @h = ();
++		my $adj = 0;
++		my $done = 0;
++
++		for ($i = scalar(@hunk_lines)-1; $i > 0; $i--) {
++		    $l = $hunk_lines[$i];
++		    if (!$done && $l eq "+\n") {
++			$adj++; # Skip this line
++		    } elsif ($l =~ /^[ +]/) {
++			$done = 1;
++			unshift(@h, $l);
++		    } else {
++			unshift(@h, $l);
++		    }
++		}
++
++		$l = $hunk_lines[0];  # Hunk header
++		undef @hunk_lines;    # Free memory
++
++		if ($adj) {
++		    die unless
++			($l =~ /^\@\@\s+\-([0-9]+),([0-9]+)\s+\+([0-9]+),([0-9]+)\s\@\@(.*)$/);
++		    my $mstart = $1;
++		    my $mlin = $2;
++		    my $pstart = $3;
++		    my $plin = $4;
++		    my $tail = $5; # doesn't include the final newline
++
++		    $l = sprintf("@@ -%d,%d +%d,%d @@%s\n",
++				 $mstart, $mlin, $pstart, $plin-$adj,
++				 $tail);
++		}
++		unshift(@h, $l);
++
++		# Transfer to the output array
++		foreach $l (@h) {
++		    $out_bytes += length($l);
++		    push(@lines, $l);
++		}
++
++		$in_hunk = 0;
++	    }
++	}
++    }
++
++    if ($in_hunk) {
++	print STDERR "$name: $f: malformed patch\n";
++	$err = 1;
++    }
++
++    if (!$err) {
++	if ($in_bytes != $out_bytes) {
++	    # Only write to the file if changed
++	    seek(FILE, 0, 0);
++	    print FILE @lines;
++
++	    if ( !defined($where = tell(FILE)) ||
++		 !truncate(FILE, $where) ) {
++		die "$name: Failed to truncate modified file: $f: $!\n";
++	    }
++	}
++    }
++
++    close(FILE);
++}
 -- 
-Mathematics is the supreme nostalgia of our time.
+1.5.0.3
+
