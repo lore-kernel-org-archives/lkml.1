@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933275AbXCPJ7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbXCPKDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933275AbXCPJ7t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 05:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933286AbXCPJ7t
+	id S933320AbXCPKDL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 06:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933565AbXCPKDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 05:59:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51796 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933275AbXCPJ7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 05:59:48 -0400
-Date: Fri, 16 Mar 2007 10:58:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Keir Fraser <Keir.Fraser@xensource.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       xen-devel@lists.xensource.com, virtualization@lists.osdl.org,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc console infrastructure for Xen console
-Message-ID: <20070316095851.GB301@elte.hu>
-References: <20070316085451.GE23174@elte.hu> <C22013C9.B9E6%keir@xensource.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <C22013C9.B9E6%keir@xensource.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 16 Mar 2007 06:03:11 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:52902 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933320AbXCPKDK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 06:03:10 -0400
+Date: Fri, 16 Mar 2007 10:03:07 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc3-mm1
+In-Reply-To: <200703160743.52204.m.kozlowski@tuxland.pl>
+Message-ID: <Pine.LNX.4.64.0703161001080.32458@skynet.skynet.ie>
+References: <20070307201839.6f45735b.akpm@linux-foundation.org>
+ <200703151637.14558.m.kozlowski@tuxland.pl> <20070315195932.GB6236@skynet.ie>
+ <200703160743.52204.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 16 Mar 2007, Mariusz Kozlowski wrote:
 
-* Keir Fraser <Keir.Fraser@xensource.com> wrote:
+> Hello Mel,
+>
 
-> On 16/3/07 08:54, "Ingo Molnar" <mingo@elte.hu> wrote:
-> 
-> >> + prod = intf->in_prod;
-> >> + mb();
-> >> + BUG_ON((prod - cons) > sizeof(intf->in));
-> > 
-> > such mb()'s are typically a sign of "i have no clear idea what SMP
-> > serialization rules apply here, but something is needed because
-> > otherwise it breaks" ?
-> 
-> These mb()'s are pretty standard for lock-free producer/consumer 
-> rings. Write descriptor /then/ write the updated producer. Read the 
-> producer /then/ read any descriptors revealed by this new producer 
-> value.
+Hi
 
-then use rmb()/wmb(). Rarely does a ring protocol truly need mb().
+>>>>>> 	Today after +- 24h of uptime I found some more page allocation
+>>>>>> failures ('eth1: Can't allocate skb for Rx'). You'll find more here:
+>>>>>>
+>>>>>> http://tuxland.pl/misc/2.6.21-rc3-mm1-page-allocation-failure.txt
+>>>>>>
+>>>>>> System wasn't doing anything unusual, as usual ;-) X, some p2p
+>>>>>> software, firefox+flash playing music.
+>>>>>
+>>>>> Do other kernels do this, or is 2.6.21-rc3-mm1 worse?
+>>>>>
+>>>>> It is of course a non-fatal problem and will inevitably happen sometimes,
+>>>>> but we would like the VM to be able to minimise the occurrence of this
+>>>>> problem.
+>>>>
+>>>> Mariusz, I would be interested in finding out if this problem still occurs when
+>>>> you set min_free_kbytes to 16384 via /proc/sys/vm/min_free_kbytes. I understand
+>>>> that the problem is not easily reproduced and requiring configuration changes
+>>>> is far from ideal but it'd allow me to find out if options 2 or 3 below make
+>>>> sense in advance.
+>>>
+>>> After a few hours I can confirm that this happens with
+>>>
+>>> $ cat /proc/sys/vm/min_free_kbytes
+>>> 16384
+>>>
+>>> as well. See the syslog output below. Feel free to mail me to do some more tests.
+>>
+>> Ok, great. Well, not great because it's broken, but I know what's going
+>> on. I was able to reproduce the problem based on your report on my desktop
+>> and put together a fix for it. Full regression tests are still running but
+>> it should be in good enough state for you to test.
+>>
+>> Without this patch, I got allocation failures within 15 minutes by stressing
+>> the machine. With the patch below, it's been up an hour and 15 minutes and
+>> I'm seeing no problems so far. Will keep the machine running a few days to
+>> see what happens.
+>>
+>
+> [...]
+>
+>> Mariusz, please try the following patch. It should not be necessary to
+>> adjust your min_free_kbytes again but if you see a failure, please try
+>> with min_free_kbytes set to 16384. Thanks a lot.
+>
+> Works for me. min_free_kbytes was left at default 2791. I left the laptop with
+> X + aMule + azureus + firefox&flash (playing music) + kernel compilation so
+> the box was pushed a bit. Uptime close to 9 hours and no page allocation
+> failures. I leave it running some more. If anything pops out you'll know it :-)
+>
 
-	Ingo
+Excellent news.
+
+This patch has a few flaws in it and it failed regression tests on 
+sparsemem so it's far from ready but I know the basic idea appears sound 
+now. I'll work on bringing the patch up to scratch and hopefully send on 
+another version later today.
+
+Thanks a million for testing.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
