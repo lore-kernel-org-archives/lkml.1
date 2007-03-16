@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbXCPN4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933814AbXCPN6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933883AbXCPN4r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 09:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933844AbXCPN4r
+	id S933814AbXCPN6J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 09:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933916AbXCPN6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 09:56:47 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:47474 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933848AbXCPN4p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 09:56:45 -0400
-Date: Fri, 16 Mar 2007 07:56:33 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [BUG 2.6.21-rc3-git9] SATA NCQ failure with Samsum HD401LJ
-In-reply-to: <fa.wBi/iM3CKSfrll7UnPHTbU0scEQ@ifi.uio.no>
-To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Message-id: <45FAA211.5030402@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.wBi/iM3CKSfrll7UnPHTbU0scEQ@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Fri, 16 Mar 2007 09:58:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46900 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933814AbXCPN6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 09:58:07 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070316133238.GA2173@infradead.org> 
+References: <20070316133238.GA2173@infradead.org>  <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <20070316125016.3740.96837.stgit@warthog.cambridge.redhat.com> 
+To: Christoph Hellwig <hch@infradead.org>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH 1/5] AF_RXRPC: Add blkcipher accessors for using kernel data directly [try #2] 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Fri, 16 Mar 2007 13:57:45 +0000
+Message-ID: <25094.1174053465@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(linux-ide cc'ed)
+Christoph Hellwig <hch@infradead.org> wrote:
 
-Max Kellermann wrote:
-> Hi,
-> 
-> I have been trying to upgrade my 2.6.19 kernel for a while now,
-> without success.  All kernel versions since 2.6.20 failed with a
-> timeout while trying to write to my SATA hard disk.  After I wait for
-> a while (during which all I/O to the hard disk blocks), the kernel
-> message "NCQ disabled due to excessive errors" appears, and the system
-> seems to work perfectly.
-> 
-> My system is an Athlon64 X2 on an Asus A8N-Premium.  I'm using the
-> sata_nv driver for the on-board SATA controller.  My only hard disk is
-> a Samsum HD401LJ (400 GB).
-> 
-> The kernel is build statically, and the only module is nvidia.ko.  If
-> someone believes it may make a difference, I can try the kernel
-> without the proprietary module.
-> 
-> Please see the kernel config and dmesg attached to this email.
-> 
-> I don't know the libata subsystem well, but I suspect my hard drive
-> has to be added to the NCQ blacklist.
-> 
-> Max
+> I don't quite understand all these indirections.  What's the problem
+> with just having a helper that builds the scatterlist for you?
 
-This does indeed look like a drive side issue to me (the controller is 
-reporting CPBs with response flags 2 which as far as I can tell 
-indicates it's still waiting for the drive to complete the request).
+I was trying to avoid building a scatterlist completely.  There's not much
+point because the scatterlist approach involves finding out the page struct and
+then kmapping it just so that the FCrypt algorithm can read 8 or 16 bytes of
+data from kernel space.  Why do that if we can avoid it?  It's a waste of
+processing time, and has to be done on every secure packet.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> We allow dma access to arbitary pieces of _dynamically_ allocated kernel
+> memory, and I think using the crypto subsystem on the stack is not allowed
+> at all.
 
+FCrypt is only available in software as far as I know.  For producing and
+checking packet signatures, using hardware support would be a waste of time as
+the size of the crunched data is so small (a single 8-byte fragment per
+packet).
+
+> But the even bigger question is, how does this relate to rxrpc?
+
+RxRPC has security features, up to and including full packet content encryption
+if you select it.
+
+> very odd line split
+
+It's not really odd.  The "static" and "inline" don't actually add anything to
+the function template.  They're merely scope limiters / optimisation
+controllers, and so make a lot of sense placed on their own line.
+
+David
