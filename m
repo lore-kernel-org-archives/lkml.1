@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965719AbXCPUPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965737AbXCPUX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965719AbXCPUPo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965737AbXCPUPo
+	id S965737AbXCPUX4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965882AbXCPUX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:15:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36782 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965719AbXCPUPn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:15:43 -0400
-Date: Fri, 16 Mar 2007 13:15:38 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Bligh <mbligh@mbligh.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
- Take 2
-In-Reply-To: <20070316114415.GA26403@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
-References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de>
- <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
- <45F96B57.10206@mbligh.org> <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org>
- <20070315160648.GA11812@one.firstfloor.org> <1173977264.7922.24.camel@localhost.localdomain>
- <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com>
- <20070316114415.GA26403@one.firstfloor.org>
+	Fri, 16 Mar 2007 16:23:56 -0400
+Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:2095 "EHLO
+	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965737AbXCPUXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:23:55 -0400
+Message-ID: <45FAFCD9.5060207@rtr.ca>
+Date: Fri, 16 Mar 2007 16:23:53 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: John Coppens <john@jcoppens.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Conflict between ide and usb?
+References: <20070316154735.6de11eca.john@jcoppens.com>
+In-Reply-To: <20070316154735.6de11eca.john@jcoppens.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007, Andi Kleen wrote:
-
+John Coppens wrote:
+> Hi all.
 > 
-> > x86_64 is going to acquire more functionality that will not be available 
-> > for i386. We plan f.e. to add virtual memmap support for x86_64. Virtual 
+> I installed ueagle-atm, which, by itself, is working fine with an 
+> MT-810 modem.
 > 
-> What advantage would that have over the current setup?
-> We already should handle holes between nodes reasonably efficiently
-> and with nonlinear memory even holes inside nodes shouldn't be a problem.
+> The problem I have, is that when I copy a file from a DVD to harddisk,
+> the internet connection almost dies (it slows down terribly, so much so
+> that established connections actually disconnect, ping looses packets,
+> DNS lookup fails, etc). After copy ends, all returns to normal.
+> 
+> The machine is an AMD64, still in x86 mode though. CPU activity is very
+> low during the copy, so it's not a CPU problem. Kernel is 2.6.20.2. APIC
+> is enabled. No error message found in either /var/log/messages or syslog.
+> DVD and HD are on different IDE interfaces.
+> 
+> Can anyone suggest where to start looking for a solution?
+..
+>  16:       2591    1737056   IO-APIC-fasteoi   libata, HDA Intel
+>  17:         41          1   IO-APIC-fasteoi   libata, ehci_hcd:usb2
+..
 
-It is primarily a performance improvement since the sparsemem table 
-lookups would no longer be necessary and it also streamlines other 
-frequent cacheline uses. These page -> page_struct and vice versa 
-operations are key to the performance of various subsystem among them 
-the slab allocator.
+It pretty much has to be an IRQ sharing issue,
+most likely in the USB driver side of the house.
 
+I don't know enough about the USB drivers really,
+but the interrupt routine inside the ueagle-atm.c file
+doesn't seem too "sharing friendly".  But perhaps that
+part is handled by the layers above (?).
+
+That's where I'd start looking if I were you.
+
+-ml
