@@ -1,66 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965844AbXCPTDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965854AbXCPTEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965844AbXCPTDg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 15:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965854AbXCPTDg
+	id S965854AbXCPTEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 15:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965874AbXCPTEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 15:03:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:24320 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965844AbXCPTDf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 15:03:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lYNsPsbW/c/U/00tj/0+6x3a/HKjPTpeFWfXpz81K5xKfupIV4D7UZaq4rD1S+D72QJRM5YExJgC64gzvrD6Ax0jJ8WG2m+o6vcN6ytlm7Ato9l85CApdj9C/rAhUxM8TFdIx4VB6Fs/podEUEKO+/zqWL7csuvIgQhdNgpi4G8=
-Message-ID: <6bffcb0e0703161203v699d9b21x8fa6bf5175916441@mail.gmail.com>
-Date: Fri, 16 Mar 2007 20:03:29 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: Linux 2.6.21-rc4
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <s5hbqitj9xi.wl%tiwai@suse.de>
+	Fri, 16 Mar 2007 15:04:25 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:13545 "EHLO
+	outbound2-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965854AbXCPTEY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 15:04:24 -0400
+X-BigFish: VP
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <45FAD77A.1070709@googlemail.com> <s5hbqitj9xi.wl%tiwai@suse.de>
+Subject: RE: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc
+ console infrastructure for Xen console
+Date: Fri, 16 Mar 2007 14:01:50 -0500
+Message-ID: <7D748C767B7FA541A8AC5504A4C89A23015685C4@SAUSEXMB2.amd.com>
+In-Reply-To: <C22036DB.BA67%keir@xensource.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the
+ hvc console infrastructure for Xen console
+Thread-Index: AcdnwmNCoft8fNO1EduhtwAX8io7RQAOxjcg
+From: "Huang2, Wei" <Wei.Huang2@amd.com>
+To: "Keir Fraser" <keir@xensource.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+cc: xen-devel@lists.xensource.com, "Andi Kleen" <ak@muc.de>,
+       linux-kernel@vger.kernel.org, "Keir Fraser" <Keir.Fraser@xensource.com>,
+       "Wright" <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       "Ingo Molnar" <mingo@elte.hu>, Chris@smtp.osdl.org
+X-OriginalArrivalTime: 16 Mar 2007 19:01:51.0004 (UTC)
+ FILETIME=[8DFF15C0:01C767FD]
+X-WSS-ID: 69E436153281274506-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/03/07, Takashi Iwai <tiwai@suse.de> wrote:
-> At Fri, 16 Mar 2007 18:44:26 +0100,
-> Michal Piotrowski wrote:
-> >
-> > Takashi, unfortunately this bug isn't fixed
-> > http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/index.html#1684
->
-> The patch wasn't merged to rc4.
+But it is shorter than from JFK or Newark. 
 
-I know. I use patched 2.6.21-rc3-git4 for crashdump.
+-----Original Message-----
+From: xen-devel-bounces@lists.xensource.com
+[mailto:xen-devel-bounces@lists.xensource.com] On Behalf Of Keir Fraser
+Sent: Friday, March 16, 2007 6:58 AM
+To: Andrew Morton; Keir Fraser
+Cc: xen-devel@lists.xensource.com; Andi Kleen;
+linux-kernel@vger.kernel.org; Keir Fraser; Wright;
+virtualization@lists.osdl.org; Ingo Molnar; Chris@smtp.osdl.org
+Subject: Re: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc
+console infrastructure for Xen console
 
-> Or, do you mean the bug is still present even with the patch?
+On 16/3/07 11:41, "Andrew Morton" <akpm@linux-foundation.org> wrote:
 
-This patch doesn't fix the problem.
-http://www.ussg.iu.edu/hypermail/linux/kernel/0703.0/3080.html
+>> It's needed for writing data /after/ reading the consumer index that
+shows
+>> you have space to write. Looking through xenbus_comms.c I think all
+the
+>> barriers are correct except there is a spurious extra mb() in
+xb_read(),
+>> where there is a later rmb() which is sufficient by itself. All the
+others
+>> have a purpose.
+>> 
+> 
+> If Ingo couldn't work this out from reading the code then nobody else
+can,
+> and we have a maintainability problem which can only be solved with
+> adequate commenting.
 
-Tomorrow, I'll try to provide more info about this problem.
+Agreed. I've fixed up the commenting, removed the spurious mb(), and I
+just
+need Jeremy to merge that change into the Xen pv_ops patchset. :-)
 
->
->
-> Takashi
->
+ -- Keir
 
-Regards,
-Michal
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+_______________________________________________
+Xen-devel mailing list
+Xen-devel@lists.xensource.com
+http://lists.xensource.com/xen-devel
+
+
+
+
