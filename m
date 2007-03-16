@@ -1,55 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbXCPOQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbXCPOTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751704AbXCPOQE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 10:16:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXCPOQE
+	id S1752146AbXCPOTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 10:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbXCPOTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 10:16:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52719 "EHLO mx1.redhat.com"
+	Fri, 16 Mar 2007 10:19:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53811 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751704AbXCPOQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 10:16:01 -0400
+	id S1752146AbXCPOTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 10:19:21 -0400
 From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070316133824.GC2173@infradead.org> 
-References: <20070316133824.GC2173@infradead.org>  <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <20070316125031.3740.36610.stgit@warthog.cambridge.redhat.com> 
-To: Christoph Hellwig <hch@infradead.org>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
+In-Reply-To: <20070316151257.24238f2a@lxorguk.ukuu.org.uk> 
+References: <20070316151257.24238f2a@lxorguk.ukuu.org.uk>  <20070316133238.GA2173@infradead.org> <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <20070316125016.3740.96837.stgit@warthog.cambridge.redhat.com> <25094.1174053465@redhat.com> 
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>, davem@davemloft.net,
+       netdev@vger.kernel.org, herbert.xu@redhat.com,
        linux-kernel@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 4/5] AF_RXRPC: Key facility changes for AF_RXRPC [try #2] 
+Subject: Re: [PATCH 1/5] AF_RXRPC: Add blkcipher accessors for using kernel data directly [try #2] 
 X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Fri, 16 Mar 2007 14:15:46 +0000
-Message-ID: <25410.1174054546@redhat.com>
+Date: Fri, 16 Mar 2007 14:19:02 +0000
+Message-ID: <25477.1174054742@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> wrote:
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> You wrote the code so there must be some reason for this, but these
-> changes look rather odd to me :)
+> As do many things but the goal of the coding style is consistency and
+> almost all other code doesn't have the static inline wasting an extra
+> display line.
 
-The union is for use by the type in any way it sees fit, but it may not want to
-use it as a list_head.  So all I've done is to make it available as a pair of
-arbitrary pointers or a pair of arbitrary numbers.
-
-Maybe a better way would be to have an overlay struct that's private to the
-type, sort of how sk_buff::cb works.
-
-> Having a type exported is really odd, how is this supposed to be a public API?
-
-Keyrings are a special type.
-
-It occurred to me whilst doing this that the best way to achieve what I wanted
-was by dealing with rings of keys.  What I needed was for the server app to
-give the kernel a key for each security type it wanted to support, which the
-kernel would then have to retain.  It seems natural to use a keyring to do the
-retension as that's its purpose.
-
-Another way to look at it is that in the client I need just one key at once,
-and I can get that from the process as it's setting up the connection.
-However, in the server I need to have several keys, and I need them available
-up front because the server app doesn't set up a connection, the kernel does,
-and it needs the keys immediately.
-
-I'll add a mention to Documentation/keys.txt to record this exportation.
+Actually it doesn't waste an extra display line.  Either the static inline is
+on a line of its own, or the first argument is on a line of its own.  Either
+way it uses up two lines - unless you want to split it up further and have
+four lines as per Christoph's second suggestion (static inline / void /
+funcname / 1st arg).
 
 David
