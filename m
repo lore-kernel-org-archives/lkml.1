@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbXCPFQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbXCPFdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752033AbXCPFQZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 01:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXCPFQZ
+	id S1752457AbXCPFdJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 01:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbXCPFdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 01:16:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:40684 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbXCPFQY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 01:16:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uO+iPHQ69lT6qDLzpLXWip0taGWJBCUi05NcDsGRbk3xf3qSCf+6HfNuueFalUhegSue7UI/lsMi7mLPhj2TPGK8VR1qmlZgmeGDgWYtt/3dGxkJMJJ5VkLSpchtgcuwyRUeIOwpWh7iIxp9ufvWh3ZMB68N1/9f4bm3/rvR/Mg=
-Message-ID: <a36005b50703152216s6c2fce0ck71d41a124940265f@mail.gmail.com>
-Date: Thu, 15 Mar 2007 21:16:22 -0800
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: [patch 1/4] signalfd v1 - signalfd core ...
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703071406100.12756@alien.or.mcafeemobile.com>
+	Fri, 16 Mar 2007 01:33:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45329 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752457AbXCPFdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 01:33:05 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Norberto Bensa <nbensa@gmx.net>
+Subject: Re: core2 duo, interrupts: is this normal?
+Date: Fri, 16 Mar 2007 01:31:46 -0400
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+References: <200703152224.54607.nbensa@gmx.net>
+In-Reply-To: <200703152224.54607.nbensa@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0703061639370.3661@alien.or.mcafeemobile.com>
-	 <Pine.LNX.4.64.0703070854280.5963@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0703070943180.12283@alien.or.mcafeemobile.com>
-	 <45EF20F7.1050307@goop.org>
-	 <Pine.LNX.4.64.0703071241590.12756@alien.or.mcafeemobile.com>
-	 <45EF2DFF.4060209@goop.org>
-	 <Pine.LNX.4.64.0703071329080.12756@alien.or.mcafeemobile.com>
-	 <Pine.LNX.4.64.0703071347380.5963@woody.linux-foundation.org>
-	 <a36005b50703071401m2b166832rb06f4cf73224f45e@mail.gmail.com>
-	 <Pine.LNX.4.64.0703071406100.12756@alien.or.mcafeemobile.com>
+Message-Id: <200703160131.46789.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> Let's do this. How about you throw this way one of the case that would
-> possibly break, and I test it?
+On Thursday 15 March 2007 21:24, Norberto Bensa wrote:
+> Hello,
+> 
+> is this output, normal? I meant, why counters on CPU1 is zero? Isn't this 
+> balanced?
 
-Since you make such claims I assume your signalfd() implementation
-considers a signal delivered once it is reported to an epoll() caller.
- Right?
+yes, it is normal.
 
-This is not what you really want, at least not in all cases.  A signal
-might be something you want to react on right away.  Unless
-pthread_kill() is used it is delivered to the _process_ and not a
-specific thread.  But this means if epoll() reports two events to one
-thread calling epoll() (one of them being a signal) and this thread is
-then stuck processing the other request, the signal is not handled
-even though there might be a second or third thread available to
-receive the signal.  Those threads have the same right to receive the
-signal and the current implementation always looks for the
-best/fastest way to deliver the signal.
+If you had an interrupt-limited workload then irqbalance
+would pick things up and spread them out.
 
-This means to me that reporting the signal in epoll() does _not_ mark
-the signal as handled.  Somehow (probably using the signalfd()
-descriptor) the thread must explicitly request the signal to be
-delivered.  But if you do this the epoll() handling is fantastically
-racy if the signal is not blocked.
+-Len
+
+
+> $ cat /proc/interrupts
+>            CPU0       CPU1
+>   0:    4180170          0   IO-APIC-edge      timer
+>   1:       8060          0   IO-APIC-edge      i8042
+>   7:          0          0   IO-APIC-edge      parport0
+>   9:          0          0   IO-APIC-fasteoi   acpi
+>  12:          5          0   IO-APIC-edge      i8042
+>  16:     322297          0   IO-APIC-fasteoi   uhci_hcd:usb3, libata, nvidia, 
+> EMU10K1
+>  17:     896399          0   IO-APIC-fasteoi   bttv0, eth0, libata
+>  18:      72867          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb7
+>  19:      27770          0   IO-APIC-fasteoi   ehci_hcd:usb2, uhci_hcd:usb5
+>  20:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
+>  21:          0          0   IO-APIC-fasteoi   uhci_hcd:usb6
+>  22:          3          0   IO-APIC-fasteoi   ohci1394
+>  23:        155          0   IO-APIC-fasteoi   HDA Intel
+> 219:     103056          0   PCI-MSI-edge      libata
+> NMI:          0          0
+> LOC:    4077613    4077622
+> ERR:          0
+> MIS:          0
+> 
+> 
+> Many thanks in advance,
+> Norberto
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
