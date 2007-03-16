@@ -1,18 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933648AbXCPQbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933916AbXCPQdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933648AbXCPQbr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 12:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933916AbXCPQbq
+	id S933916AbXCPQdn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 12:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933937AbXCPQdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 12:31:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51190 "EHLO mx2.mail.elte.hu"
+	Fri, 16 Mar 2007 12:33:43 -0400
+Received: from gw.goop.org ([64.81.55.164]:41668 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933648AbXCPQbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 12:31:45 -0400
-Date: Fri, 16 Mar 2007 17:31:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+	id S933916AbXCPQdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 12:33:42 -0400
+Message-ID: <45FAC6E6.5090000@goop.org>
+Date: Fri, 16 Mar 2007 09:33:42 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
        Zachary Amsden <zach@vmware.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jan Beulich <jbeulich@novell.com>,
@@ -21,35 +24,21 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        Linus Torvalds <torvalds@osdl.org>,
        Virtualization Mailing List <virtualization@lists.osdl.org>
 Subject: Re: [RFC, PATCH] Fixup COMPAT_VDSO to work with CONFIG_PARAVIRT
-Message-ID: <20070316163118.GA12999@elte.hu>
-References: <45FA054F.6020107@vmware.com> <m17itho10v.fsf@ebiederm.dsl.xmission.com> <45FAC4EF.4060305@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45FAC4EF.4060305@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <45FA054F.6020107@vmware.com> <m17itho10v.fsf@ebiederm.dsl.xmission.com> <45FAC4EF.4060305@goop.org> <20070316163118.GA12999@elte.hu>
+In-Reply-To: <20070316163118.GA12999@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> that's what is the case right now, but much of the intention behind the 
+> vma based vDSO is to enable per-process randomized vdso locations, and 
+> various distributions do that. So the 'modern' vDSO concept is very much 
+> relocatable.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+No, the point is that it never needs relocating.  The kernel can map it
+anywhere and userspace can cope.  Its only the broken glibcs which
+require relocation.
 
-> > The practical question here is if we already have all of the 
-> > relocation logic for the VDSO why do we need to add more?
-> 
-> The kernel doesn't normally ever relocate the vdso; [...]
-
-that's what is the case right now, but much of the intention behind the 
-vma based vDSO is to enable per-process randomized vdso locations, and 
-various distributions do that. So the 'modern' vDSO concept is very much 
-relocatable.
-
-	Ingo
+    J
