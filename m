@@ -1,112 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbXCPUFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbXCPUIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbXCPUFf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbXCPUFf
+	id S1753646AbXCPUIO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbXCPUIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:05:35 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34898 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753638AbXCPUFe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:05:34 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: vatsa@in.ibm.com
-Cc: "Paul Menage" <menage@google.com>, xemul@sw.ru, dev@sw.ru, pj@sgi.com,
-       sam@vilain.net, winget@google.com, serue@us.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ckrm-tech@lists.sourceforge.net, containers@lists.osdl.org
-Subject: Re: Summary of resource management discussion
-References: <20070312124226.GD17151@in.ibm.com>
-	<6599ad830703150424t3478cd55mf9d2699f3669c9f0@mail.gmail.com>
-	<20070315170435.GA28692@in.ibm.com>
-	<6599ad830703151212o524af40es6cc6893c4304175f@mail.gmail.com>
-	<20070316014024.GC28692@in.ibm.com>
-Date: Fri, 16 Mar 2007 14:03:03 -0600
-In-Reply-To: <20070316014024.GC28692@in.ibm.com> (Srivatsa Vaddagiri's message
-	of "Fri, 16 Mar 2007 07:10:24 +0530")
-Message-ID: <m1d539lzwo.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Fri, 16 Mar 2007 16:08:13 -0400
+Received: from 1wt.eu ([62.212.114.60]:1206 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753646AbXCPUIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 16:08:12 -0400
+Date: Fri, 16 Mar 2007 21:08:07 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Grzegorz Ja?kiewicz <gryzman@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: pcap app causes kernel panic on 2.4.33.3 right after "NETDEV WATCHDOG: eth1: transmit timed out"
+Message-ID: <20070316200807.GA14656@1wt.eu>
+References: <2f4958ff0703120410j321c88a0pad91f78778520fc8@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2f4958ff0703120410j321c88a0pad91f78778520fc8@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri <vatsa@in.ibm.com> writes:
+Hi Grzegorz,
 
-> On Thu, Mar 15, 2007 at 12:12:50PM -0700, Paul Menage wrote:
->> >Yes me too. But maybe to keep in simple in initial versions, we should
->> >avoid that optimisation and at the same time get statistics on duplicates?.
->> 
->> That's an implementation detail - we have more important points to
->> agree on right now ...
->
-> yes :)
->
-> Eric, did you have any opinion on this thread?
+you were right to resend, I did not catch your first email.
+Sorry about that.
 
-A little.  Sorry for the delay this is my low priority discussion to
-follow.   Here comes a brain dump...
+On Mon, Mar 12, 2007 at 12:10:19PM +0100, Grzegorz Ja?kiewicz wrote:
+> Hi folks.
+> 
+> I have a simple program, that analyzes ethernet packets. Counting
+> traffic on from/to basis, and dumping that informatio nevery minute.
+> Everything is cleared - in terms of memory, valgrind doesn't complain
+> a bit.
+> 
+> But once every 2-3 days the router on which the software is running,
+> freezes. It is clear kernel panic.
 
-I do know of one case outside the context of containers/vservers where
-I would have liked a nice multi-process memory limit.  HPC jobs doing
-rdma have a bad habit of wanting to mlock all of memory and thus send
-the memory allocator into a tail spin.  So the separate use would be nice.
+Well, you speak about a freeze then a kernel panic. How can you ensure
+it's a kernel panic if you only see a freeze ? I mean, there can be a
+deadlock somewhere causing a freeze without necessarily a panic,
+eventhough you have a oops.
 
-I do suspect that we are likely to look at having a hierarchy for most
-of the limits. For limits if we can stand the cost having a hierarchy
-makes sense.  However I don't see the advantage of sharing the
-hierarchy between different classes of resource groups.
+> Before that panic occurs, I have "NETDEV WATCHDOG: eth1: transmit
+> timed out" . always right before crash.
 
-I do know that implementing hierarchical counters are inefficient for
-tracking resource consumption, and if we support deep hierarchies I
-expect we will want to optimize that, in non-trivial ways.   At which
-point the hierarchy will be composed of more that just a pointer to
-it's parent.  We could easily end up with children taking a lease from
-their parents saying you can have this many more before you look
-upwards in the hierarchy again.  So with non-trivial hierarchy
-information adding a pointer at a generic level doesn't seem to be
-much of a help.
+This is not good. Generally it implies stuck transceiver or interrupt.
+What driver is this ?
 
-Further my gut feel is that in general we will want to limit all
-resources on a per container basis.  At the same time I expect we will
-want to limit other resources to select process groups or users even
-farther inside of a container.  So a single hierarchy for multiple
-resources seems a little questionable.
+> I am sure, the software doesn't have memleaks. Everything in pcap was
+> programmed according with examples, and double checked - but I can
+> give source away on request.
 
-Which suggests that we want what I think was called multi-hierarchy
-support.
+I don't think it is a memleak either. You would have seen messages like
+"Out Of Memory - killing process".
 
-I guess also with hierarchies and entering we probably need a limit
-such that if you enter another resource group you can't do anything
-except stay at the same level or descend into the hierarchy.  But
-you can never remove your parent of that resource type.
+> I think the problem must lay somewhere between pcap and kernel (the
+> "transmit timed out" message sounds too dodgee, and it is always there
+> right before crash - only).
 
-With the whole shared subtree concept the mount namespace stores
-things you can enter into in the mount namespace.  This overcomes
-the difficulty of having to find a process who has the resources
-you want when you want to enter someplace.  I think that concept
-is a benefit of a filesystem interface.  Using mount and unmount to
-pin magic subsystem state seems a little more natural to me then
-having to do other filesystem manipulations.  Especially since
-the mount namespace is reference counted so you can be certain
-everything you have pinned will either remain visible to someone
-or automatically disappear.   I don't like interfaces like
-sysvipc that require manual destruction.  I do think there is some
-sense in layout out a palette into the mount namespace we can enter
-into.
+I even would not accuse pcap because a deadlock, oops or panic always
+find its roots in the kernel or lower (hardware).
 
-There is another issue I'm not quite certain how to address.  To some
-extent it makes sense to be able to compile out the resource
-controllers ensuring their overhead goes away completely.  However for
-the most part I think it makes sense to assume that when they are
-compiled in we have an initial set of resource controllers that either
-doesn't limit us at all or has very liberal limits that have the same
-effect.  Dealing with the case of possibly limiting things when we
-have the support compiled in does not seem to make a lot of sense to
-me.
+So please send your config, explain a bit what your router and/or
+program is doing before the crash. For instance, I see traces of
+udp_sendmsg() in your oops, from a process named "postmaster".
+Is it your network analyzer's name ? it sounds like a postfix process,
+which is not clear to me as to what it does on a network analyzer. If
+it is postfix, it is possible then that the UDP packet trying to go
+out is DNS resolving ?
 
-I hope that helps a little.  I'm still coming to terms with the issues
-brought on by resource groups and controlling filesystems. 
+If this is the case, does your router still crash when you disable pcap ?
+Is it possible to use another interface / another driver for outgoing
+traffic ?
 
-Eric
+I'm sorry, but a single oops out of any context is a bit hard to
+investigate. So please return lsmod, dmesg, config, processes and
+any information which can help.
+
+Regards,
+Willy
+
+> Oops:
+> 
+> Unable to handle kernel paging request at virtual address 909fe955
+> c013b582
+> *pde = 00000000
+> Oops: 0000
+> CPU:   0
+> eax: 909fe93d  ebx: 00000001 ecx: 909fe93d  edx: 00000000
+> esi: cf4e6d90  edi: 00000000 ebp: 00000000  esp: c3701c58
+> ds: 0018   es: 0018  ss: 0018
+> Process postmaster (pid:3838, stackpage=c3701000)
+> Stack: c031a7ec 00000000 cf4e6d80 cf4e6d80 c031a847 cf4e6d80 c3701c94 
+> cf4e6d80
+>        c7ad6810 c031a9ae cf4e6d80 00000000 cf4e6d80 c0339a6d cf4e6d80 
+>        c031f187
+>        00000000 c0468a5c 00000046 c0468a6c 00000246 cf4e6d80 cfd03740 
+>        00000000
+> Call Trace:    [<c031a7ec>] [<c031a847>] [<c031a9ae>] [<c0339a6d>] 
+> [<c031f187>]
+>   [<c031f70e>] [<c031f810>] [<c031f97f>] [<c0122586>] [<c033cad0>] 
+>   [<c0329c28>]
+>   [<c033cad0>] [<c033e58f>] [<c033cad0>] [<c035dfe2>] [<c035dc50>] 
+>   [<c01868dd>]
+>   [<c017e6fb>] [<c03169e4>] [<c03167bc>] [<c0317be4>] [<c018bbb8>] 
+>   [<c0186d68>]
+>   [<c0186e9c>] [<c0317c53>] [<c0318637>] [<c0108eff>]
+> Code: 8b 40 18 f6 c4 40 75 0b f0 ff 49 14 0f 94 c0 84 c0 75 01 c3
+> Using defaults from ksymoops -t elf32-i386 -a i386
+> 
+> 
+> >>esi; cf4e6d90 <_end+f026bf8/10603ec8>
+> >>esp; c3701c58 <_end+3241ac0/10603ec8>
+> 
+> Trace; c031a7ec <skb_release_data+4c/90>
+> Trace; c031a847 <kfree_skbmem+17/80>
+> Trace; c031a9ae <__kfree_skb+fe/160>
+> Trace; c0339a6d <ip_rcv+ad/4e0>
+> Trace; c031f187 <netif_rx+97/1f0>
+> Trace; c031f70e <netif_receive_skb+20e/270>
+> Trace; c031f810 <process_backlog+a0/140>
+> Trace; c031f97f <net_rx_action+cf/180>
+> Trace; c0122586 <do_softirq+76/e0>
+> Trace; c033cad0 <output_maybe_reroute+0/10>
+> Trace; c0329c28 <.text.lock.netfilter+b6/ce>
+> Trace; c033cad0 <output_maybe_reroute+0/10>
+> Trace; c033e58f <ip_build_xmit+3af/440>
+> Trace; c033cad0 <output_maybe_reroute+0/10>
+> Trace; c035dfe2 <udp_sendmsg+232/4a0>
+> Trace; c035dc50 <udp_getfrag+0/100>
+> Trace; c01868dd <journal_dirty_metadata+15d/220>
+> Trace; c017e6fb <ext3_do_update_inode+19b/450>
+> Trace; c03169e4 <sock_sendmsg+74/d0>
+> Trace; c03167bc <sockfd_lookup+1c/90>
+> Trace; c0317be4 <sys_sendto+f4/130>
+> Trace; c018bbb8 <log_wait_commit+68/b0>
+> Trace; c0186d68 <journal_stop+168/230>
+> Trace; c0186e9c <journal_force_commit+6c/90>
+> Trace; c0317c53 <sys_send+33/40>
+> Trace; c0318637 <sys_socketcall+167/280>
+> Trace; c0108eff <system_call+33/38>
+> 
+> Code;  00000000 Before first symbol
+> 00000000 <_EIP>:
+> Code;  00000000 Before first symbol
+>   0:   8b 40 18                  mov    0x18(%eax),%eax
+> Code;  00000003 Before first symbol
+>   3:   f6 c4 40                  test   $0x40,%ah
+> Code;  00000006 Before first symbol
+>   6:   75 0b                     jne    13 <_EIP+0x13>
+> Code;  00000008 Before first symbol
+>   8:   f0 ff 49 14               lock decl 0x14(%ecx)
+> Code;  0000000c Before first symbol
+>   c:   0f 94 c0                  sete   %al
+> Code;  0000000f Before first symbol
+>   f:   84 c0                     test   %al,%al
+> Code;  00000011 Before first symbol
+>  11:   75 01                     jne    14 <_EIP+0x14>
+> Code;  00000013 Before first symbol
+>  13:   c3                        ret
+> 
+> <0>Kernel panic: Aiee, killing interrupt handler!
+> 
+> 
+> -- 
+> GJ
+> 
+> MOTD: gocr sux so much, words can't describe
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
