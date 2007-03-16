@@ -1,89 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965854AbXCPTEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965864AbXCPTLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965854AbXCPTEZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 15:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965874AbXCPTEZ
+	id S965864AbXCPTLN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 15:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965874AbXCPTLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 15:04:25 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:13545 "EHLO
-	outbound2-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965854AbXCPTEY convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 15:04:24 -0400
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Subject: RE: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc
- console infrastructure for Xen console
-Date: Fri, 16 Mar 2007 14:01:50 -0500
-Message-ID: <7D748C767B7FA541A8AC5504A4C89A23015685C4@SAUSEXMB2.amd.com>
-In-Reply-To: <C22036DB.BA67%keir@xensource.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the
- hvc console infrastructure for Xen console
-Thread-Index: AcdnwmNCoft8fNO1EduhtwAX8io7RQAOxjcg
-From: "Huang2, Wei" <Wei.Huang2@amd.com>
-To: "Keir Fraser" <keir@xensource.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-cc: xen-devel@lists.xensource.com, "Andi Kleen" <ak@muc.de>,
-       linux-kernel@vger.kernel.org, "Keir Fraser" <Keir.Fraser@xensource.com>,
-       "Wright" <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
-       "Ingo Molnar" <mingo@elte.hu>, Chris@smtp.osdl.org
-X-OriginalArrivalTime: 16 Mar 2007 19:01:51.0004 (UTC)
- FILETIME=[8DFF15C0:01C767FD]
-X-WSS-ID: 69E436153281274506-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 Mar 2007 15:11:13 -0400
+Received: from hapkido.dreamhost.com ([66.33.216.122]:60157 "EHLO
+	hapkido.dreamhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965864AbXCPTLM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 15:11:12 -0400
+X-Greylist: delayed 1351 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Mar 2007 15:11:12 EDT
+Date: Fri, 16 Mar 2007 15:47:35 -0300
+From: John Coppens <john@jcoppens.com>
+To: linux-kernel@vger.kernel.org
+Subject: Conflict between ide and usb?
+Message-Id: <20070316154735.6de11eca.john@jcoppens.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-But it is shorter than from JFK or Newark. 
+Hi all.
 
------Original Message-----
-From: xen-devel-bounces@lists.xensource.com
-[mailto:xen-devel-bounces@lists.xensource.com] On Behalf Of Keir Fraser
-Sent: Friday, March 16, 2007 6:58 AM
-To: Andrew Morton; Keir Fraser
-Cc: xen-devel@lists.xensource.com; Andi Kleen;
-linux-kernel@vger.kernel.org; Keir Fraser; Wright;
-virtualization@lists.osdl.org; Ingo Molnar; Chris@smtp.osdl.org
-Subject: Re: [Xen-devel] Re: [patch 21/26] Xen-paravirt_ops: Use the hvc
-console infrastructure for Xen console
+I installed ueagle-atm, which, by itself, is working fine with an 
+MT-810 modem.
 
-On 16/3/07 11:41, "Andrew Morton" <akpm@linux-foundation.org> wrote:
+The problem I have, is that when I copy a file from a DVD to harddisk,
+the internet connection almost dies (it slows down terribly, so much so
+that established connections actually disconnect, ping looses packets,
+DNS lookup fails, etc). After copy ends, all returns to normal.
 
->> It's needed for writing data /after/ reading the consumer index that
-shows
->> you have space to write. Looking through xenbus_comms.c I think all
-the
->> barriers are correct except there is a spurious extra mb() in
-xb_read(),
->> where there is a later rmb() which is sufficient by itself. All the
-others
->> have a purpose.
->> 
-> 
-> If Ingo couldn't work this out from reading the code then nobody else
-can,
-> and we have a maintainability problem which can only be solved with
-> adequate commenting.
+The machine is an AMD64, still in x86 mode though. CPU activity is very
+low during the copy, so it's not a CPU problem. Kernel is 2.6.20.2. APIC
+is enabled. No error message found in either /var/log/messages or syslog.
+DVD and HD are on different IDE interfaces.
 
-Agreed. I've fixed up the commenting, removed the spurious mb(), and I
-just
-need Jeremy to merge that change into the Xen pv_ops patchset. :-)
+Can anyone suggest where to start looking for a solution?
 
- -- Keir
+Cheers,
+John
 
+$ cat interrupts
+           CPU0       CPU1       
+  0:   58428350    6031800    XT-PIC-XT        timer
+  1:     204337          9   IO-APIC-edge      i8042
+  6:          0          3   IO-APIC-edge      floppy
+  7:    6031308   58426101   IO-APIC-edge      parport0
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 12:     211041    5153326   IO-APIC-edge      i8042
+ 14:      93535     316012   IO-APIC-edge      ide0
+ 15:     246534         40   IO-APIC-edge      ide1
+ 16:       2591    1737056   IO-APIC-fasteoi   libata, HDA Intel
+ 17:         41          1   IO-APIC-fasteoi   libata, ehci_hcd:usb2
+ 18:    7717494   19142555   IO-APIC-fasteoi   eth0
+ 19:          0          0   IO-APIC-fasteoi   eth1
+ 20:   90833792    3057782   IO-APIC-fasteoi   ohci_hcd:usb1
+ 21:   22135804          1   IO-APIC-fasteoi   nvidia
+ 22:          0          0   IO-APIC-fasteoi   saa7130[0]
+NMI:          0          0 
+LOC:   64460593   64460595 
+ERR:          1
+MIS:          0
 
-_______________________________________________
-Xen-devel mailing list
-Xen-devel@lists.xensource.com
-http://lists.xensource.com/xen-devel
-
-
-
-
+$ lsmod
+Module                  Size  Used by
+pppoe                   9792  2 
+pppox                   3016  1 pppoe
+ppp_generic            21396  6 pppoe,pppox
+slhc                    5440  1 ppp_generic
+br2684                  6596  1 
+i2c_viapro              7380  0 
+w83627ehf              16140  0 
+i2c_isa                 4096  1 w83627ehf
+snd_seq_oss            26368  0 
+snd_seq_midi_event      5952  1 snd_seq_oss
+snd_seq                41232  4 snd_seq_oss,snd_seq_midi_event
+snd_seq_device          6284  2 snd_seq_oss,snd_seq
+snd_pcm_oss            34912  0 
+snd_mixer_oss          13376  4 snd_pcm_oss
+ipt_REJECT              3648  1 
+ipt_MASQUERADE          2944  1 
+ipt_LOG                 5760  1 
+xt_limit                2560  1 
+xt_state                2368  3 
+iptable_filter          2688  1 
+iptable_nat             6020  1 
+nf_nat                 13740  2 ipt_MASQUERADE,iptable_nat
+nf_conntrack_ipv4      11980  5 iptable_nat
+nf_conntrack           44168  5
+ipt_MASQUERADE,xt_state,iptable_nat,nf_nat,nf_conntrack_ipv4
+ip_tables               9700  2 iptable_filter,iptable_nat
+ueagle_atm             21032  0 firmware_class          7360  1 ueagle_atm
+usbatm                 14464  2 ueagle_atm
+atm                    33716  4 br2684,usbatm
+usblp                  11136  0 
+ide_scsi               13128  0 
+tuner                  55272  0 
+saa7134               105952  0 
+snd_hda_intel          15192  3 
+snd_hda_codec         149120  1 snd_hda_intel
+video_buf              18500  1 saa7134
+compat_ioctl32          1536  1 saa7134
+ir_kbd_i2c              6928  1 saa7134
+ir_common              26372  2 saa7134,ir_kbd_i2c
+ehci_hcd               24332  0 
+ohci_hcd               16708  0 
+videodev               23488  1 saa7134
+snd_pcm                61124  3 snd_pcm_oss,snd_hda_intel,snd_hda_codec
+snd_timer              16836  2 snd_seq,snd_pcm
+snd                    39268  9
+snd_seq_oss,snd_seq,snd_seq_device,snd_pcm_oss,snd_mixer_oss,snd_hda_intel,snd_hda_codec,snd_pcm,snd_timer
+snd_page_alloc          7368  2 snd_hda_intel,snd_pcm
+sg                     19032  0 i2c_nforce2             4800  0 
+nvidia               6817908  22 
+v4l2_common            21312  3 tuner,saa7134,videodev
+v4l1_compat            12036  2 saa7134,videodev
+k8temp                  4544  0 
+usbcore               101768  6 ueagle_atm,usbatm,usblp,ehci_hcd,ohci_hcd
+ne2k_pci                8736  0 
+8390                    7808  1 ne2k_pci
+forcedeth              37192  0 
+parport_pc             22628  0 
+parport                30728  1 parport_pc
