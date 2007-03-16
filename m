@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965499AbXCPQeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965519AbXCPQeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965499AbXCPQeH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 12:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965512AbXCPQeH
+	id S965519AbXCPQeY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 12:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965512AbXCPQeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 12:34:07 -0400
-Received: from ns.firmix.at ([62.141.48.66]:46725 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965499AbXCPQeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 12:34:03 -0400
-Subject: Re: [RFC] A need for "yesno"-function? (and "cleanup" of kernel.h)
-	(was: Re: [KJ] [RFC] A need for a "yesno"-function?)
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <45FAB6C5.8050302@student.ltu.se>
-References: <45F95351.60308@student.ltu.se>
-	 <39e6f6c70703152036m778ea054gf32723d0eda2be68@mail.gmail.com>
-	 <45FAB6C5.8050302@student.ltu.se>
-Content-Type: text/plain
-Organization: Firmix software GmbH
-Date: Fri, 16 Mar 2007 17:33:52 +0100
-Message-Id: <1174062833.26648.56.camel@tara.firmix.at>
+	Fri, 16 Mar 2007 12:34:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3017 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933626AbXCPQds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 12:33:48 -0400
+Date: Fri, 16 Mar 2007 16:21:17 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.21rc suspend to ram regression on Lenovo X60
+Message-ID: <20070316162117.GA3951@ucw.cz>
+References: <20070313040828.GA17893@redhat.com> <m1wt1ltveu.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.419 () AWL,BAYES_00,FORGED_RCVD_HELO
-X-Firmix-Spam-Status: No, hits=-2.419 required=5
-X-Spam-Score: -2.419 () AWL,BAYES_00,FORGED_RCVD_HELO
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <m1wt1ltveu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-03-16 at 16:24 +0100, Richard Knutsson wrote:
-[...]
-> more readable). The big problem is, where to put it? Seems wrong to put 
-> in <linux/string.h> since it appear to be a replica of userspace's 
-> <string.h> (otherwise, why put mem*-functions in there?).
+Hi!
 
-memcpy(3) and memcmp(3) are also there in user-space.
+> > Seeing a couple of MSI changes in there, on a hunch I booted latest tree with
+> > pci=nomsi, and it resumed again.
+> >
+> > Any ideas how to further debug this?
+> > I'll try backing out individual changes from that merge tomorrow.
+> 
+> Thanks.  
+> 
+> Of those msi patches you have identified I don't see anything really
+> obvious.  And you actually marked them as good in your bisect so
+> I don't expect it is core problem.
+> 
+> We do have a known e1000 regression, with msi and suspend/resume.
+> So it is possible the nomsi avoided a driver problem.  Especially
+> as we have a number of driver changes on the on Linus's side of
+> that merge.
+> 
+> I also know we have some known issues with pci_save_state and
+> pci_restore_state that require them to be paired for correct
+> operation.  For suspend and resume that is not generally a problem.
+> 
+> I have fixes for the pci_save_state and pci_restore_state in the -mm
+> and gregkh tree's.  Since they also happen to fix the e1000 driver as
+> a side effect they are worth looking at, at least if you have an
+> e1000.
+> 
+> I don't have a clue which hardware the x60 has so I don't know which
+> drivers it would be using.
 
-	Bernd
+x60 indeed has e1000.
+
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
