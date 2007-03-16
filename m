@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbXCPUM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965719AbXCPUPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933227AbXCPUM6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 16:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933304AbXCPUM6
+	id S965719AbXCPUPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 16:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965737AbXCPUPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 16:12:58 -0400
-Received: from mailbigip.dreamhost.com ([208.97.132.5]:52885 "EHLO
-	swarthymail-a2.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933227AbXCPUM5 (ORCPT
+	Fri, 16 Mar 2007 16:15:44 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36782 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965719AbXCPUPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 16:12:57 -0400
-X-Greylist: delayed 5118 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Mar 2007 16:12:57 EDT
-Date: Fri, 16 Mar 2007 17:12:53 -0300
-From: John Coppens <john@jcoppens.com>
-To: "Lee Revell" <rlrevell@joe-job.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Conflict between ide and usb?
-Message-Id: <20070316171253.2014deaf.john@jcoppens.com>
-In-Reply-To: <75b66ecd0703161252l60dcbd81s3c9beb7cb91b6c14@mail.gmail.com>
-References: <20070316154735.6de11eca.john@jcoppens.com>
-	<75b66ecd0703161252l60dcbd81s3c9beb7cb91b6c14@mail.gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Mar 2007 16:15:43 -0400
+Date: Fri, 16 Mar 2007 13:15:38 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Bligh <mbligh@mbligh.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 00/18] Make common x86 arch area for i386 and x86_64 -
+ Take 2
+In-Reply-To: <20070316114415.GA26403@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0703161313240.6204@schroedinger.engr.sgi.com>
+References: <20070314050819.536207642@goodmis.org> <p73slc8863r.fsf@bingen.suse.de>
+ <20070314125330.GA13168@elte.hu> <Pine.LNX.4.64.0703140850250.9690@woody.linux-foundation.org>
+ <45F96B57.10206@mbligh.org> <Pine.LNX.4.64.0703150858040.3816@woody.linux-foundation.org>
+ <20070315160648.GA11812@one.firstfloor.org> <1173977264.7922.24.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0703152123480.29284@schroedinger.engr.sgi.com>
+ <20070316114415.GA26403@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Mar 2007 15:52:12 -0400
-"Lee Revell" <rlrevell@joe-job.com> wrote:
+On Fri, 16 Mar 2007, Andi Kleen wrote:
 
-> On 3/16/07, John Coppens <john@jcoppens.com> wrote:
-> > The problem I have, is that when I copy a file from a DVD to harddisk,
-> > the internet connection almost dies (it slows down terribly, so much
-> > so that established connections actually disconnect, ping looses
-> > packets, DNS lookup fails, etc). After copy ends, all returns to
-> > normal.
 > 
-> Sounds like DMA starvation, it's been seen in the past with some SATA
-> controllers.  Presumably vendors do it to improve benchmark scores.
+> > x86_64 is going to acquire more functionality that will not be available 
+> > for i386. We plan f.e. to add virtual memmap support for x86_64. Virtual 
+> 
+> What advantage would that have over the current setup?
+> We already should handle holes between nodes reasonably efficiently
+> and with nonlinear memory even holes inside nodes shouldn't be a problem.
 
-Hi Lee.
+It is primarily a performance improvement since the sparsemem table 
+lookups would no longer be necessary and it also streamlines other 
+frequent cacheline uses. These page -> page_struct and vice versa 
+operations are key to the performance of various subsystem among them 
+the slab allocator.
 
-In this case SATA isn't used, as the copy is from IDE to IDE. But I
-doubt bandwidth has anything to do with it. The DVD transfer rate rarely 
-reaches 3.3 MB/s - which by itself isn't normal.
-
-> You can confirm it by forcing the hard drive and/or DVD drive to a
-> lower speed if your BIOS allows it.
-
-No... I didn't find any way to lower the speed.
-
-Thanks
-John
