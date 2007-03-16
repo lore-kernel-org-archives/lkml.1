@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965373AbXCPOpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965384AbXCPOpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965373AbXCPOpU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 10:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965371AbXCPOpT
+	id S965384AbXCPOpq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 10:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965378AbXCPOpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 10:45:19 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:50870 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965336AbXCPOpR (ORCPT
+	Fri, 16 Mar 2007 10:45:45 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33553 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965356AbXCPOpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 10:45:17 -0400
-From: Christian <christiand59@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [BUG 2.6.21-rc3-git9] SATA NCQ failure with Samsum HD401LJ
-Date: Fri, 16 Mar 2007 15:44:56 +0100
-User-Agent: KMail/1.9.6
-References: <fa.wBi/iM3CKSfrll7UnPHTbU0scEQ@ifi.uio.no> <45FAA211.5030402@shaw.ca>
-In-Reply-To: <45FAA211.5030402@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 16 Mar 2007 10:45:43 -0400
+Date: Fri, 16 Mar 2007 16:45:39 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, hch@infradead.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/5] revoke: core code
+In-Reply-To: <20070316042600.3e1bd424.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0703161637001.26209@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0703111330100.765@sbz-30.cs.Helsinki.FI>
+ <20070315173438.efadd514.akpm@linux-foundation.org>
+ <84144f020703152344u588da670ge14c1ec5797c2b86@mail.gmail.com>
+ <20070316032624.c6db84fc.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0703161331580.21300@sbz-30.cs.Helsinki.FI>
+ <20070316042600.3e1bd424.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703161544.59430.christiand59@web.de>
-X-Provags-ID: V01U2FsdGVkX19GkGjlc/8g/2tEzWD0NeFqla3js7SycplKkrQ
- s9JgDymmr1g56+zR6EBEKp4aS400f8XS/68z4ZPxK/oJB4wOGh
- xA9mf8aOgoIEXYLqsjj4Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This does indeed look like a drive side issue to me (the controller is
-> reporting CPBs with response flags 2 which as far as I can tell
-> indicates it's still waiting for the drive to complete the request).
+On Fri, 16 Mar 2007, Andrew Morton wrote:
+> What you're trying to do here is very similar to truncate(), and truncate()
+> has had a lot of work put into it, and it does work.
 
-I have been using this hw-config (SATA II, NCQ) since the nvidia ADMA support 
-made it in the -mm kernel (maybe around 2.6.19-mm? or even earlyer). I'm 
-seeing this problem excessively since I upgraded to 2.6.21-rc3-mm1. I think 
-something got broken recently...
+Indeed. revoke() is the same as truncate() without, well, the truncation 
+part.
 
--Christian
+On Fri, 16 Mar 2007, Andrew Morton wrote:
+> However, modifying i_size like this might be a problem - the inode could be
+> dirty and it'll get written to disk!  Perhaps we could change i_size_read()
+> to cheat and to return zero if there's a revoke in progress.
+
+Hmph, it's probably going to get too painful so I'll look at adding some 
+hooks to do_generic_mapping_read()...
+
+			Pekka
