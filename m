@@ -1,41 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965379AbXCPPOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965378AbXCPPOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965379AbXCPPOo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Mar 2007 11:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965381AbXCPPOo
+	id S965378AbXCPPOx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Mar 2007 11:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXCPPOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Mar 2007 11:14:44 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:40693 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965379AbXCPPOo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Mar 2007 11:14:44 -0400
-Message-ID: <45FAB458.2080304@nortel.com>
-Date: Fri, 16 Mar 2007 09:14:32 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][RSDL-mm 4/6] sched: dont renice kernel threads
-References: <200703170054.08641.kernel@kolivas.org>
-In-Reply-To: <200703170054.08641.kernel@kolivas.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Mar 2007 15:14:35.0901 (UTC) FILETIME=[CED77AD0:01C767DD]
+	Fri, 16 Mar 2007 11:14:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46177 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965378AbXCPPOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Mar 2007 11:14:51 -0400
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070316153408.3a9a244a@lxorguk.ukuu.org.uk> 
+References: <20070316153408.3a9a244a@lxorguk.ukuu.org.uk>  <20070316151305.04cbc352@lxorguk.ukuu.org.uk> <20070316125008.3740.44693.stgit@warthog.cambridge.redhat.com> <25571.1174054993@redhat.com> 
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, hch@infradead.org, arjan@infradead.org
+Subject: Re: [PATCH 0/5] [RFC] AF_RXRPC socket family implementation [try #2] 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Fri, 16 Mar 2007 15:14:31 +0000
+Message-ID: <26525.1174058071@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> The practice of renicing kernel threads to negative nice values is of
-> questionable benefit at best, and at worst leads to larger latencies when
-> kernel threads are busy on behalf of other tasks.
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-What about the priority implications of the renicing?  It seems a bit 
-iffy letting kernel threads compete for cpu time on an equal basis with 
-your default shell.
+> So your messages are neither reliable not unreliable, nor ordered, nor
+> unordered.
 
-Chris
+If you look at the LHS of each of your list of mappings again, you'll see
+you've made an assumption there in considering it to be an exhaustive list.
+You've assumed a service must be either a datagram service or a stream service;
+I content that RxRPC is neither.
+
+Let me explain.
+
+RxRPC is not a datagram service because:
+
+	A datagram is, to quote the Internet's Request for Comments 1594, "a
+	self-contained, independent entity of data carrying sufficient
+	information to be routed from the source to the destination computer
+	without reliance on earlier exchanges between this source and
+	destination computer and the transporting network.
+
+An RxRPC operation fails the "without reliance on earlier exchanges" bit, and
+I'd argue that it possibly fails the "self-contained" and "independent" bits
+too.
+
+RxRPC does use a datagram service as its transport, but it takes a minimum of
+three packets to complete an operation: a request from the client, a reply from
+the server and a final ACK from the client.  The second and third packets are
+dependent on the first to give them meaning.
+
+Looking at RxRPC from a client app point of view, you have to issue a request
+packet and then await for the reply _associated_ with it (as marked by the
+control data).  In the server app, you receive a request message, and then have
+to make a reply _associated_ with that request.
+
+Furthermore, you can have several operations in progress simultaneously on a
+socket.  They are ordered with respect to themselves only; they are not ordered
+with respect to each other.
+
+
+RxRPC is also not a streamed data service because it doesn't have a stream of
+data (either continuous [STREAM] or broken [SEQPACKET]) of indefinite length.
+It has operations, each of which follows a sequence of discrete phases
+(request, secure, secured, reply, final ACK).  Each operation is independent of
+the other operations, and may overlap temporally with those others.
+
+
+So, to summarise, I think this is a "new" type of flow model because:
+
+ (1) It has discrete components (operations) rather than a flow.
+
+ (2) The discrete components may overlap temporally (are unordered with respect
+     to each other).
+
+ (3) Each discrete component consists of a sequence of phases, first in one
+     direction then the other and then back again rather than discrete
+     independent messages (are ordered with respect to themselves).
+
+ (4) It is reliable.
+
+It also has security features, but I don't think that needs to be part of the
+definition, even though negotiating it does require the use of extra packets of
+special types.
+
+> Until you work out what your messages actually are
+
+I know what they are; and I don't think that what's available covers it.
+
+> and use a proper standard socket type.
+
+Assuming that that list is exhaustive...
+
+> And "but there are higher layers" isn't relevant here, this is true for
+> Appletalk as well and it doesn't have to go inventing new types for
+> everything as you seem to.
+
+The fact that there are higher layers is irrelevant.
+
+David
